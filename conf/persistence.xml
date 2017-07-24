@@ -1,0 +1,27 @@
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+             version="2.0">
+    <persistence-unit name="zstack.jpa" transaction-type="RESOURCE_LOCAL">
+        <mapping-file>persistence-mapping.xml</mapping-file>
+
+        <class>org.zstack.core.workflow.WorkFlowChainVO</class>
+        <class>org.zstack.core.workflow.WorkFlowVO</class>
+        <class>org.zstack.core.keyvalue.KeyValueBinaryVO</class>
+        <class>org.zstack.core.keyvalue.KeyValueVO</class>
+        <class>org.zstack.core.job.JobQueueVO</class>
+        <class>org.zstack.core.job.JobQueueEntryVO</class>
+        <class>org.zstack.core.config.GlobalConfigVO</class>
+        <class>org.zstack.header.scheduler.SchedulerVO</class>
+        <class>org.zstack.header.scheduler.SchedulerJobVO</class>
+        <class>org.zstack.header.scheduler.SchedulerTriggerVO</class>
+        <class>org.zstack.header.scheduler.SchedulerJobSchedulerTriggerRefVO</class>
+        <class>org.zstack.header.managementnode.ManagementNodeVO</class>
+        <class>org.zstack.header.managementnode.ManagementNodeContextVO</class>
+
+        <class>org.zstack.core.jsonlabel.JsonLabelVO</class>
+        <class>org.zstack.header.core.progress.TaskProgressVO</class>
+        <class>org.zstack.core.notification.NotificationVO</class>
+        <class>org.zstack.core.notification.NotificationSubscriptionVO</class>
+        <class>org.zstack.header.core.webhooks.WebhookVO</class>
+    </persistence-unit>
+</persistence>
