@@ -32,7 +32,7 @@ CREATE TABLE  `AccountVO` (
     `department` varchar(128) DEFAULT NULL COMMENT '部门',
     `industry` varchar(128) NOT NULL COMMENT '行业',
     `type` varchar(128) NOT NULL COMMENT 'account type',
-    `status` ENUM('AVAILABLE','DISABLED') NOT NULL COMMENT '状态:AVAILABLE可用 DISABLED禁用',
+    `status` varchar(128) NOT NULL COMMENT '状态',
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
     `createDate` timestamp,
     PRIMARY KEY  (`uuid`)
@@ -69,7 +69,7 @@ CREATE TABLE  `UserVO` (
     `phone` varchar(11) NOT NULL UNIQUE COMMENT '手机号',
     `trueName` varchar(128) NOT NULL COMMENT '姓名',
     `department` varchar(128) DEFAULT NULL COMMENT '部门',
-    `status` ENUM('AVAILABLE','DISABLED') NOT NULL COMMENT '状态:AVAILABLE可用 DISABLED禁用',
+    `status` varchar(128) NOT NULL COMMENT '状态',
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
     `createDate` timestamp,
     PRIMARY KEY  (`uuid`)
