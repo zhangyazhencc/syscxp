@@ -27,7 +27,6 @@ import org.zstack.account.header.identity.AccountConstant.StatementEffect;
 import org.zstack.account.header.identity.PolicyInventory.PolicyStatement;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.Action;
-import org.zstack.account.header.identity.SessionInventory;
 import org.zstack.header.identity.SessionLogoutExtensionPoint;
 import org.zstack.header.managementnode.PrepareDbInitialValueExtensionPoint;
 import org.zstack.header.message.*;
@@ -36,7 +35,6 @@ import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.logging.CLogger;
 
 import javax.persistence.Query;
-import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
@@ -598,7 +596,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         SessionInventory session = sessions.get(sessionUuid);
         if (session == null) {
             SessionVO svo = dbf.findByUuid(sessionUuid, SessionVO.class);
-            session = svo == null ? null : SessionInventory.valueOf(svo);
+            session = svo == null ? null : svo.toSessionInventory();
         }
 
         if (session == null) {
@@ -681,31 +679,37 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
         private void policyCheck() {
-            if (action.adminOnly) {
-                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
-                        String.format("API[%s] is admin only", msg.getClass().getSimpleName())));
-            }
-
-            if (action.accountOnly && !session.isAccountSession()) {
-                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
-                        String.format("API[%s] can only be called by an account, the current session is a user session[user uuid:%s]",
-                                msg.getClass().getSimpleName(), session.getUserUuid())
-                ));
-            }
-
-            if (action.accountCheckFields != null && !action.accountCheckFields.isEmpty()) {
-                try {
-                    accountFieldCheck();
-                } catch (ApiMessageInterceptionException ae) {
-                    throw ae;
-                } catch (Exception e) {
-                    throw new CloudRuntimeException(e);
-                }
-            }
-
-
-            if (session.isAccountSession()) {
+            if (session.isAdminAccountSession()) {
                 return;
+            }
+
+            if (!session.isAdminUserSession()) {
+                if (action.adminOnly) {
+                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
+                            String.format("API[%s] is admin only", msg.getClass().getSimpleName())));
+                }
+
+                if (action.accountOnly && !session.isAccountSession()) {
+                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
+                            String.format("API[%s] can only be called by an account, the current session is a user session[user uuid:%s]",
+                                    msg.getClass().getSimpleName(), session.getUserUuid())
+                    ));
+                }
+
+                if (action.accountCheckFields != null && !action.accountCheckFields.isEmpty()) {
+                    try {
+                        accountFieldCheck();
+                    } catch (ApiMessageInterceptionException ae) {
+                        throw ae;
+                    } catch (Exception e) {
+                        throw new CloudRuntimeException(e);
+                    }
+                }
+
+
+                if (session.isAccountSession()) {
+                    return;
+                }
             }
 
             SimpleQuery<UserVO> uq = dbf.createQuery(UserVO.class);

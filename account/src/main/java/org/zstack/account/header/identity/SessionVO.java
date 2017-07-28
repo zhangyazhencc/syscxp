@@ -1,12 +1,11 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.header.identity.AccountType;
+import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.vo.ForeignKey;
 import org.zstack.header.vo.ForeignKey.ReferenceOption;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
@@ -22,12 +21,27 @@ public class SessionVO {
     
     @Column
     private String userUuid;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private AccountType type;
     
     @Column
     private Timestamp expiredDate;
     
     @Column
     private Timestamp createDate;
+
+    public SessionInventory toSessionInventory() {
+        SessionInventory inv = new SessionInventory();
+        inv.setAccountUuid(this.getAccountUuid());
+        inv.setCreateDate(this.getCreateDate());
+        inv.setExpiredDate(this.getExpiredDate());
+        inv.setUserUuid(this.getUserUuid());
+        inv.setUuid(this.getUuid());
+        inv.setType(this.getType());
+        return inv;
+    }
 
     public String getUuid() {
         return uuid;
@@ -67,5 +81,13 @@ public class SessionVO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public AccountType getType() {
+        return type;
+    }
+
+    public void setType(AccountType type) {
+        this.type = type;
     }
 }
