@@ -1,4 +1,6 @@
-CREATE TABLE  `zstack_rest`.`RestAPIVO` (
+use syscxp_billing_rest;
+
+CREATE TABLE  `syscxp_billing_rest`.`RestAPIVO` (
     `uuid` varchar(32) NOT NULL UNIQUE,
     `apiMessageName` varchar(255) DEFAULT NULL,
     `state` varchar(255) NOT NULL,

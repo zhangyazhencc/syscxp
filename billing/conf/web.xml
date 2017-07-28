@@ -7,18 +7,18 @@
     <absolute-ordering />
     
     <servlet>
-        <servlet-name>ZStack Dispatcher Servlet</servlet-name>
+        <servlet-name>Account Dispatcher Servlet</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
         <init-param>
             <param-name>contextConfigLocation</param-name>
-            <param-value>/WEB-INF/classes/zstack-servlet-context.xml</param-value>
+            <param-value>/WEB-INF/classes/syscxp-servlet-context.xml</param-value>
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
 
     <context-param>
         <param-name>contextConfigLocation</param-name>
-        <param-value>/WEB-INF/classes/zstack-servlet-context.xml</param-value>
+        <param-value>/WEB-INF/classes/syscxp-servlet-context.xml</param-value>
     </context-param>
 
     <context-param>
@@ -27,7 +27,7 @@
     </context-param>
     
     <servlet-mapping>
-        <servlet-name>ZStack Dispatcher Servlet</servlet-name>
+        <servlet-name>Account Dispatcher Servlet</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
 
@@ -42,7 +42,7 @@
     </filter>
     <filter-mapping>
         <filter-name>UrlRewriteFilter</filter-name>
-        <url-pattern>/static/pypi/*</url-pattern>
+        <url-pattern>/static/*</url-pattern>
         <dispatcher>REQUEST</dispatcher>
         <dispatcher>FORWARD</dispatcher>
     </filter-mapping>

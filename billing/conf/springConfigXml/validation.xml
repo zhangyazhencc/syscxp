@@ -12,10 +12,17 @@
     http://zstack.org/schema/zstack/plugin.xsd"
     default-init-method="init" default-destroy-method="destroy">
 
-    <bean id="DebugManager" class="org.zstack.core.debug.DebugManagerImpl" >
+    <bean id="ValidationFacade" class="org.zstack.core.validation.ValidationFacadeImpl" >
         <zstack:plugin>
             <zstack:extension interface="org.zstack.header.Component" />
-            <zstack:extension interface="org.zstack.header.Service" />
         </zstack:plugin>
     </bean>
+
+
+    <bean id="DefaultValidator" class = "org.zstack.core.validation.DefaultValidator">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.header.core.validation.Validator" />
+        </zstack:plugin>
+    </bean>
+
 </beans>

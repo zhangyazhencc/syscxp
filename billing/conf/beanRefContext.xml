@@ -7,7 +7,7 @@
           class="org.springframework.context.support.ClassPathXmlApplicationContext">
         <constructor-arg>
             <list>
-                <value>zstack.xml</value>
+                <value>syscxp.xml</value>
             </list>
         </constructor-arg>
     </bean>

@@ -28,10 +28,4 @@
 		<category>identity</category>
 		<type>java.lang.Boolean</type>
 	</config>
-	<config>
-		<name>account.api.control</name>
-		<description>A list of admin-only APIs, split by comma, that the admin allows normal accounts to call</description>
-		<defaultValue></defaultValue>
-		<category>identity</category>
-	</config>
 </globalConfig>

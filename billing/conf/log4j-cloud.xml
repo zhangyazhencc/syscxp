@@ -40,10 +40,6 @@
         <level value="TRACE"/>
     </logger>
 
-    <logger name="org.zstack.compute.host">
-        <level value="DEBUG"/>
-    </logger>
-
     <logger name="org.zstack.core.rest">
         <level value="TRACE"/>
     </logger>

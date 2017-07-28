@@ -33,9 +33,6 @@
 		<fileSet>
 			<directory>../bin</directory>
 		</fileSet>
-		<fileSet>
-			<directory>../conf</directory>
-		</fileSet>
 	</fileSets>
 	<files>
 		<file>

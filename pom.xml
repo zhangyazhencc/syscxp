@@ -22,9 +22,10 @@
         <module>utils</module>
         <module>header</module>
         <module>portal</module>
-        <module>build</module>
         <module>search</module>
         <module>account</module>
+        <module>billing</module>
+        <module>build</module>
     </modules>
 
     <dependencyManagement>
@@ -395,9 +396,9 @@
                 <module>utils</module>
                 <module>header</module>
                 <module>portal</module>
-                <module>build</module>
                 <module>search</module>
                 <module>account</module>
+                <module>build</module>
             </modules>
         </profile>
 
