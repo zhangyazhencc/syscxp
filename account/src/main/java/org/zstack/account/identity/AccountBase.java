@@ -83,9 +83,6 @@ public class AccountBase extends AbstractAccount {
         if (msg.getName() != null) {
             account.setName(msg.getName());
         }
-        if (msg.getDescription() != null) {
-            account.setDescription(msg.getDescription());
-        }
         if (msg.getPassword() != null) {
             account.setPassword(msg.getPassword());
         }

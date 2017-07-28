@@ -20,7 +20,6 @@ import java.util.List;
 public class AccountInventory {
     private String uuid;
     private String name;
-    private String description;
     private String type;
     private Timestamp createDate;
     private Timestamp lastOpDate;
@@ -29,7 +28,6 @@ public class AccountInventory {
         AccountInventory inv = new AccountInventory();
         inv.setUuid(vo.getUuid());
         inv.setName(vo.getName());
-        inv.setDescription(vo.getDescription());
         inv.setType(vo.getType().toString());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -50,14 +48,6 @@ public class AccountInventory {
 
     public void setType(String type) {
         this.type = type;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getUuid() {
