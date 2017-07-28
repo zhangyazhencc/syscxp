@@ -13,7 +13,6 @@ import java.util.Collection;
 import java.util.List;
 
 @Inventory(mappingVOClass = UserVO.class)
-@PythonClassInventory
 @ExpandedQueries({
         @ExpandedQuery(expandedField = "account", inventoryClass = AccountInventory.class,
                 foreignKey = "accountUuid", expandedInventoryKey = "uuid"),

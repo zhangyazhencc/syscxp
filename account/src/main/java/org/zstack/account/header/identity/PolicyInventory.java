@@ -3,6 +3,8 @@ package org.zstack.account.header.identity;
 import org.zstack.account.header.identity.AccountConstant.StatementEffect;
 import org.zstack.header.query.ExpandedQueries;
 import org.zstack.header.query.ExpandedQuery;
+import org.zstack.header.query.ExpandedQueryAlias;
+import org.zstack.header.query.ExpandedQueryAliases;
 import org.zstack.header.search.Inventory;
 import org.zstack.utils.gson.JSONObjectUtil;
 
@@ -12,10 +14,14 @@ import java.util.Collection;
 import java.util.List;
 
 @Inventory(mappingVOClass = PolicyVO.class)
+
 @ExpandedQueries({
         @ExpandedQuery(expandedField = "account", inventoryClass = AccountInventory.class,
-                foreignKey = "accountUuid", expandedInventoryKey = "uuid")
+                foreignKey = "accountUuid", expandedInventoryKey = "uuid"),
+        @ExpandedQuery(expandedField = "userRef", inventoryClass = UserPolicyRefInventory.class,
+                foreignKey = "uuid", expandedInventoryKey = "policyUuid", hidden = true)
 })
+
 public class PolicyInventory {
     public static class PolicyStatement {
         private StatementEffect effect;
