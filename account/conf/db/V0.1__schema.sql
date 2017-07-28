@@ -43,17 +43,16 @@ CREATE TABLE  `ProxyAccountRefVO` (
 	`proxyUuid` varchar(32) NOT NULL COMMENT '代理商（包括系统管理员）UUID',
     `accountUuid` varchar(32) NOT NULL COMMENT '由代理商（包括系统管理员）创建的主账号',
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-    `createDate` timestamp,
-    PRIMARY KEY  (`uuid`)
+    `createDate` timestamp
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
    
 --主账号安全信息表
-CREATE TABLE  `AccountSecurityVO` (
+CREATE TABLE  `AccountApiSecurityVO` (
     `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
     `accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '所属账户UUID',
     `publicKey` varchar(128) DEFAULT NULL COMMENT 'API密钥-公钥',
     `privateKey` varchar(128) DEFAULT NULL COMMENT 'API密钥-私钥',
-    `allowIp` varchar(900) DEFAULT NULL COMMENT '允许访问IP的集合',
+    `allowIp` text DEFAULT NULL COMMENT '允许访问IP的集合',
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
     `createDate` timestamp,
     PRIMARY KEY  (`uuid`)

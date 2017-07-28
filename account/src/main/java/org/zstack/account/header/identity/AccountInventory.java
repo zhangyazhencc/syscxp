@@ -11,6 +11,12 @@ import java.util.Collection;
 import java.util.List;
 
 @Inventory(mappingVOClass = AccountVO.class)
+@ExpandedQueries({
+        @ExpandedQuery(expandedField = "user", inventoryClass = UserInventory.class,
+                foreignKey = "uuid", expandedInventoryKey = "accountUuid"),
+        @ExpandedQuery(expandedField = "policy", inventoryClass = PolicyInventory.class,
+                foreignKey = "uuid", expandedInventoryKey = "accountUuid"),
+})
 public class AccountInventory {
     private String uuid;
     private String name;
