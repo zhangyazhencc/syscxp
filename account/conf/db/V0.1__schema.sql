@@ -31,7 +31,7 @@ CREATE TABLE  `AccountVO` (
     `company` varchar(128) NOT NULL COMMENT '公司',
     `department` varchar(128) DEFAULT NULL COMMENT '部门',
     `industry` varchar(128) NOT NULL COMMENT '行业',
-    `type` ENUM('SYSTEM','PROXY','COMMON') NOT NULL COMMENT 'SYSTEM:系统管理员 PROXY:代理商 COMMON:普通',
+    `type` varchar(128) NOT NULL COMMENT 'account type',
     `status` ENUM('AVAILABLE','DISABLED') NOT NULL COMMENT '状态:AVAILABLE可用 DISABLED禁用',
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
     `createDate` timestamp,
@@ -103,6 +103,7 @@ CREATE TABLE  `SessionVO` (
     `uuid` varchar(32) NOT NULL UNIQUE,
     `accountUuid` varchar(32) NOT NULL,
     `userUuid` varchar(32) DEFAULT NULL,
+    `type` varchar(128) NOT NULL COMMENT 'account type',
     `expiredDate` timestamp NOT NULL,
     `createDate` timestamp,
     PRIMARY KEY  (`uuid`)
