@@ -7,6 +7,8 @@ import org.zstack.header.rest.SDK;
 public interface AccountConstant {
     String SERVICE_ID = "identity";
 
+    String INITIAL_SYSTEM_ADMIN_UUID = "36c27e8ff05c4780bf6d2fa65700f22e";
+
     String INITIAL_SYSTEM_ADMIN_NAME = "admin";
 
     String SYSTEM_ADMIN_ROLE = ".*";
@@ -15,9 +17,6 @@ public interface AccountConstant {
     int RESOURCE_PERMISSION_WRITE = 2;
 
     String ACTION_CATEGORY = "identity";
-    String READ_PERMISSION_POLICY = "default-read-permission";
-
-    String QUOTA_GLOBAL_CONFIG_CATETORY = "quota";
 
     enum RoleDecision {
         EXPLICIT_DENY,

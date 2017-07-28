@@ -1,13 +1,10 @@
 package org.zstack.account.identity;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
-import org.zstack.core.cloudbus.EventCallback;
 import org.zstack.core.cloudbus.EventFacade;
 import org.zstack.core.cloudbus.MessageSafe;
 import org.zstack.core.componentloader.PluginRegistry;
@@ -27,24 +24,20 @@ import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.errorcode.SysErrors;
 import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.account.header.identity.AccountConstant.StatementEffect;
+import org.zstack.account.header.identity.PolicyInventory.PolicyStatement;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.Action;
 import org.zstack.account.header.identity.SessionInventory;
 import org.zstack.header.identity.SessionLogoutExtensionPoint;
 import org.zstack.header.managementnode.PrepareDbInitialValueExtensionPoint;
 import org.zstack.header.message.*;
-import org.zstack.header.search.APIGetMessage;
-import org.zstack.header.search.APISearchMessage;
 import org.zstack.utils.*;
 import org.zstack.utils.function.ForEachFunction;
-import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
-import org.zstack.utils.path.PathUtil;
 
 import javax.persistence.Query;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
-import java.io.File;
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.util.*;
@@ -53,12 +46,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+
 import org.zstack.header.identity.*;
 import org.zstack.account.header.identity.*;
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
-import static org.zstack.utils.CollectionDSL.list;
 
 public class AccountManagerImpl extends AbstractService implements AccountManager, PrepareDbInitialValueExtensionPoint,
         SoftDeleteEntityExtensionPoint, HardDeleteEntityExtensionPoint,
@@ -339,11 +331,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
         reply.setInventory(getSession(vo.getUuid(), vo.getUuid()));
         bus.reply(msg, reply);
-    }
-
-
-    private void handle(APIListPolicyMsg msg) {
-
     }
 
     private void handle(APIListUserMsg msg) {
@@ -671,80 +658,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
         private void accountFieldCheck() throws IllegalAccessException {
-            Set resourceUuids = new HashSet();
-            Set operationTargetResourceUuids = new HashSet();
 
-            for (AccountCheckField af : action.accountCheckFields) {
-                Object value = af.field.get(msg);
-                if (value == null) {
-                    continue;
-                }
-
-                if (String.class.isAssignableFrom(af.field.getType())) {
-                    if (af.param.operationTarget()) {
-                        operationTargetResourceUuids.add(value);
-                    } else {
-                        resourceUuids.add(value);
-                    }
-                } else if (Collection.class.isAssignableFrom(af.field.getType())) {
-                    if (af.param.operationTarget()) {
-                        operationTargetResourceUuids.addAll((Collection) value);
-                    } else {
-                        resourceUuids.addAll((Collection) value);
-                    }
-                }
-            }
-
-            if (resourceUuids.isEmpty() && operationTargetResourceUuids.isEmpty()) {
-                return;
-            }
-
-            // if a resource uuid represents an operation target, it cannot be bypassed by
-            // the shared resources, as we don't support roles for cross-account sharing.
-            if (!resourceUuids.isEmpty()) {
-                SimpleQuery<SharedResourceVO> sq = dbf.createQuery(SharedResourceVO.class);
-                sq.select(SharedResourceVO_.receiverAccountUuid, SharedResourceVO_.toPublic, SharedResourceVO_.resourceUuid);
-                sq.add(SharedResourceVO_.resourceUuid, Op.IN, resourceUuids);
-                List<Tuple> ts = sq.listTuple();
-                for (Tuple t : ts) {
-                    String ruuid = t.get(0, String.class);
-                    Boolean toPublic = t.get(1, Boolean.class);
-                    String resUuid = t.get(2, String.class);
-                    if (toPublic || session.getAccountUuid().equals(ruuid)) {
-                        // this resource is shared to the account
-                        resourceUuids.remove(resUuid);
-                    }
-                }
-            }
-
-            resourceUuids.addAll(operationTargetResourceUuids);
-            if (resourceUuids.isEmpty()) {
-                return;
-            }
-
-            List<Tuple> ts = SQL.New(
-                    " select avo.name ,arrf.accountUuid ,arrf.resourceUuid ,arrf.resourceType " +
-                            "from AccountResourceRefVO arrf ,AccountVO avo " +
-                            "where arrf.resourceUuid in (:resourceUuids) and avo.uuid = arrf.accountUuid",Tuple.class)
-                    .param("resourceUuids",resourceUuids).list();
-
-            for (Tuple t : ts) {
-                String resourceOwnerName = t.get(0, String.class);
-                String resourceOwnerAccountUuid = t.get(1, String.class);
-                String resourceUuid = t.get(2, String.class);
-                String resourceType = t.get(3, String.class);
-                if (!session.getAccountUuid().equals(resourceOwnerAccountUuid)) {
-                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
-                            String.format("operation denied. The resource[uuid: %s, type: %s,ownerAccountName:%s, ownerAccountUuid:%s] doesn't belong to the account[uuid: %s]",
-                                    resourceUuid, resourceType, resourceOwnerName, resourceOwnerAccountUuid, session.getAccountUuid())
-                    ));
-                } else {
-                    if (logger.isTraceEnabled()) {
-                        logger.trace(String.format("account-check pass. The resource[uuid: %s, type: %s] belongs to the account[uuid: %s]",
-                                resourceUuid, resourceType, session.getAccountUuid()));
-                    }
-                }
-            }
         }
 
         private void useDecision(Decision d, boolean userPolicy) {
@@ -752,12 +666,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
             if (d.effect == StatementEffect.Allow) {
                 logger.debug(String.format("API[name: %s, action: %s] is approved by a %s[name: %s, uuid: %s]," +
-                                " statement[name: %s, action: %s]", msg.getClass().getSimpleName(), d.action,
-                        policyCategory, d.policy.getName(), d.policy.getUuid(), d.statement.getName(), d.actionRule));
+                                " statement[action: %s]", msg.getClass().getSimpleName(), d.action,
+                        policyCategory, d.policy.getName(), d.policy.getUuid(), d.actionRule));
             } else {
                 logger.debug(String.format("API[name: %s, action: %s] is denied by a %s[name: %s, uuid: %s]," +
-                                " statement[name: %s, action: %s]", msg.getClass().getSimpleName(), d.action,
-                        policyCategory, d.policy.getName(), d.policy.getUuid(), d.statement.getName(), d.actionRule));
+                                " statement[action: %s]", msg.getClass().getSimpleName(), d.action,
+                        policyCategory, d.policy.getName(), d.policy.getUuid(), d.actionRule));
 
                 throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
                         String.format("%s denied. user[name: %s, uuid: %s] is denied to execute API[%s]",
@@ -767,10 +681,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
         private void policyCheck() {
-            if (new QuotaUtil().isAdminAccount(session.getAccountUuid())) {
-                return;
-            }
-
             if (action.adminOnly) {
                 throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
                         String.format("API[%s] is admin only", msg.getClass().getSimpleName())));
@@ -793,30 +703,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 }
             }
 
-            if (action.accountControl) {
-                boolean allow = false;
-                for (Class clz : accountApiControl) {
-                    if (clz.isAssignableFrom(msg.getClass())) {
-                        allow = true;
-                        break;
-                    }
-                }
-
-                if (!allow) {
-                    for (Class clz : accountApiControlInternal) {
-                        if (clz.isAssignableFrom(msg.getClass())) {
-                            allow = true;
-                            break;
-                        }
-                    }
-                }
-
-                if (!allow) {
-                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
-                            String.format("the API[%s] is not allowed for normal accounts", msg.getClass())
-                    ));
-                }
-            }
 
             if (session.isAccountSession()) {
                 return;
@@ -827,19 +713,13 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             uq.add(UserVO_.uuid, Op.EQ, session.getUserUuid());
             username = uq.findValue();
 
-            List<PolicyInventory> userPolicies = getUserPolicies();
-            Decision d = decide(userPolicies);
+            List<PolicyInventory> userPolicys = getUserPolicys();
+            Decision d = decide(userPolicys);
             if (d != null) {
                 useDecision(d, true);
                 return;
             }
 
-            List<PolicyInventory> groupPolicies = getGroupPolicies();
-            d = decide(groupPolicies);
-            if (d != null) {
-                useDecision(d, false);
-                return;
-            }
 
             throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
                     String.format("user[name: %s, uuid: %s] has no policy set for this operation, API[%s] is denied by default. You may either create policies for this user" +
@@ -848,30 +728,18 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
 
-        @Transactional(readOnly = true)
-        private List<PolicyInventory> getGroupPolicies() {
-            String sql = "select p" +
-                    " from PolicyVO p, UserGroupUserRefVO ref, UserGroupPolicyRefVO gref" +
-                    " where p.uuid = gref.policyUuid" +
-                    " and gref.groupUuid = ref.groupUuid" +
-                    " and ref.userUuid = :uuid";
-            TypedQuery<PolicyVO> q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
-            q.setParameter("uuid", session.getUserUuid());
-            return PolicyInventory.valueOf(q.getResultList());
-        }
-
         class Decision {
             PolicyInventory policy;
             String action;
-            Statement statement;
+            PolicyStatement statement;
             String actionRule;
             StatementEffect effect;
         }
 
-        private Decision decide(List<PolicyInventory> userPolicies) {
+        private Decision decide(List<PolicyInventory> userPolicys) {
             for (String a : action.actions) {
-                for (PolicyInventory p : userPolicies) {
-                    for (Statement s : p.getStatements()) {
+                for (PolicyInventory p : userPolicys) {
+                    for (PolicyStatement s : p.getStatements()) {
                         for (String ac : s.getActions()) {
                             Pattern pattern = Pattern.compile(ac);
                             Matcher m = pattern.matcher(a);
@@ -888,8 +756,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
                             if (logger.isTraceEnabled()) {
                                 logger.trace(String.format("API[name: %s, action: %s] is not matched by policy[name: %s, uuid: %s" +
-                                                ", statement[name: %s, action: %s, effect: %s]", msg.getClass().getSimpleName(),
-                                        a, p.getName(), p.getUuid(), s.getName(), ac, s.getEffect()));
+                                                ", statement[action: %s, effect: %s]", msg.getClass().getSimpleName(),
+                                        a, p.getName(), p.getUuid(), ac, s.getEffect()));
                             }
                         }
                     }
@@ -900,7 +768,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
         @Transactional(readOnly = true)
-        private List<PolicyInventory> getUserPolicies() {
+        private List<PolicyInventory> getUserPolicys() {
             String sql = "select p from PolicyVO p, UserPolicyRefVO ref where ref.userUuid = :uuid and ref.policyUuid = p.uuid";
             TypedQuery<PolicyVO> q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
             q.setParameter("uuid", session.getUserUuid());
