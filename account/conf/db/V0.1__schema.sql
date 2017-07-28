@@ -20,35 +20,90 @@ CREATE TABLE  `syscxp_account`.`GlobalConfigVO` (
     PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `syscxp_account`.`AccountVO` (
-    `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'account uuid',
-    `name` varchar(128) NOT NULL UNIQUE COMMENT 'account name',
-    `password` varchar(255) NOT NULL COMMENT 'password',
-    `type` varchar(128) NOT NULL COMMENT 'account type',
-    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT 'last operation date',
+--主账号基本信息表
+CREATE TABLE  `AccountVO` (
+    `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+    `name` varchar(128) NOT NULL UNIQUE COMMENT '账户名称',
+    `password` varchar(128) NOT NULL COMMENT '账户密码',
+    `email` varchar(36) NOT NULL UNIQUE COMMENT '邮箱',
+    `phone` varchar(11) NOT NULL UNIQUE COMMENT '手机号',
+    `trueName` varchar(128) DEFAULT NULL COMMENT '姓名',
+    `company` varchar(128) NOT NULL COMMENT '公司',
+    `department` varchar(128) DEFAULT NULL COMMENT '部门',
+    `industry` varchar(128) NOT NULL COMMENT '行业',
+    `type` ENUM('SYSTEM','PROXY','COMMON') NOT NULL COMMENT 'SYSTEM:系统管理员 PROXY:代理商 COMMON:普通',
+    `status` ENUM('AVAILABLE','DISABLED') NOT NULL COMMENT '状态:AVAILABLE可用 DISABLED禁用',
+    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
     `createDate` timestamp,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `syscxp_account`.`UserVO` (
-    `uuid` varchar(32) NOT NULL UNIQUE,
-    `accountUuid` varchar(32) NOT NULL,
-    `name` varchar(128) NOT NULL,
-    `password` varchar(255) DEFAULT NULL,
-    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT 'last operation date',
+--代理商主账号关系表
+CREATE TABLE  `ProxyAccountRefVO` (
+	`proxyUuid` varchar(32) NOT NULL COMMENT '代理商（包括系统管理员）UUID',
+    `accountUuid` varchar(32) NOT NULL COMMENT '由代理商（包括系统管理员）创建的主账号',
+    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
     `createDate` timestamp,
-    PRIMARY KEY  (`uuid`),
-    CONSTRAINT `uqUserVO` UNIQUE(`accountUuid`, `name`),
-    CONSTRAINT `fkUserAccountUuid` FOREIGN KEY (`accountUuid`) REFERENCES `AccountVO` (`uuid`) ON DELETE CASCADE
+    PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `syscxp_account`.`SessionVO` (
+--主账号安全信息表
+CREATE TABLE  `AccountSecurityVO` (
+    `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+    `accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '所属账户UUID',
+    `publicKey` varchar(128) DEFAULT NULL COMMENT 'API密钥-公钥',
+    `privateKey` varchar(128) DEFAULT NULL COMMENT 'API密钥-私钥',
+    `allowIp` varchar(900) DEFAULT NULL COMMENT '允许访问IP的集合',
+    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+    `createDate` timestamp,
+    PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--用户信息表
+CREATE TABLE  `UserVO` (
+    `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+    `accountUuid` varchar(32) NOT NULL COMMENT '所属账户UUID',
+    `name` varchar(128) NOT NULL UNIQUE COMMENT '用户名称',
+    `password` varchar(128) NOT NULL COMMENT '用户密码',
+    `email` varchar(36) NOT NULL UNIQUE COMMENT '邮箱',
+    `phone` varchar(11) NOT NULL UNIQUE COMMENT '手机号',
+    `trueName` varchar(128) NOT NULL COMMENT '姓名',
+    `department` varchar(128) DEFAULT NULL COMMENT '部门',
+    `status` ENUM('AVAILABLE','DISABLED') NOT NULL COMMENT '状态:AVAILABLE可用 DISABLED禁用',
+    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+    `createDate` timestamp,
+    PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--角色策略表
+CREATE TABLE `PolicyVO` (
+	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+	`name` varchar(128) NOT NULL UNIQUE COMMENT '角色名称',
+	`description` varchar(255) DEFAULT NULL COMMENT '角色描述',
+	`accountUuid` varchar(32) NOT NULL COMMENT '所属账户UUID',
+	`policyStatement` text NOT NULL COMMENT '策略JSON字符串',
+	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+    `createDate` timestamp,
+    PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--用户角色关系表
+--用户被删除或者角色被删除，这条关联关系也被删除
+CREATE TABLE `UserPolicyRefVO` (
+	`userUuid` varchar(32) NOT NULL COMMENT '用户UUID',
+	`policyUuid` varchar(32) NOT NULL COMMENT '角色UUID',
+	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+    `createDate` timestamp
+    
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+--Session表
+--用户被删除，这条session记录也被删除
+CREATE TABLE  `SessionVO` (
     `uuid` varchar(32) NOT NULL UNIQUE,
     `accountUuid` varchar(32) NOT NULL,
     `userUuid` varchar(32) DEFAULT NULL,
     `expiredDate` timestamp NOT NULL,
     `createDate` timestamp,
-    CONSTRAINT `fkSessionAccountUuid` FOREIGN KEY (`accountUuid`) REFERENCES `AccountVO` (`uuid`) ON DELETE CASCADE,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
