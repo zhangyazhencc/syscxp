@@ -46,7 +46,7 @@ CREATE TABLE  `ProxyAccountRefVO` (
     `createDate` timestamp,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
+   
 --主账号安全信息表
 CREATE TABLE  `AccountSecurityVO` (
     `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
