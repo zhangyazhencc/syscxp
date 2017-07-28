@@ -45,7 +45,8 @@ CREATE TABLE  `ProxyAccountRefVO` (
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
     `createDate` timestamp
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-   
+
+
 --主账号安全信息表
 CREATE TABLE  `AccountApiSecurityVO` (
     `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
