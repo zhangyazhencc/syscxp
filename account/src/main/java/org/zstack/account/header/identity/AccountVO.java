@@ -1,5 +1,6 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
@@ -38,11 +39,28 @@ public class AccountVO {
 	@Enumerated(EnumType.STRING)
 	private AccountType type;
 
+    @Column
+    @Enumerated(EnumType.STRING)
+    private AccountStatus status;
+
+    @Column
+    private String phone;
+
+    @Column
+    private String email;
+
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
     }
 
+    public AccountStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AccountStatus status) {
+        this.status = status;
+    }
     public String getDescription() {
         return description;
     }
@@ -97,5 +115,21 @@ public class AccountVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 }

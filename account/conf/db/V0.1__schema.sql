@@ -20,17 +20,41 @@ CREATE TABLE  `syscxp_account`.`GlobalConfigVO` (
     PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE  `JobQueueVO` (
+    `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
+    `name` varchar(255) NOT NULL UNIQUE,
+    `owner` varchar(255) DEFAULT NULL,
+    `workerManagementNodeId` varchar(32) DEFAULT NULL,
+    `takenDate` timestamp DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  `JobQueueEntryVO` (
+    `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
+    `name` varchar(255) NOT NULL,
+    `jobQueueId` bigint unsigned NOT NULL,
+    `state` varchar(128) NOT NULL,
+    `context` blob DEFAULT NULL,
+    `owner` varchar(255) DEFAULT NULL,
+    `issuerManagementNodeId` varchar(32) DEFAULT NULL,
+    `restartable` tinyint(1) unsigned NOT NULL DEFAULT 0,
+    `inDate` timestamp DEFAULT CURRENT_TIMESTAMP,
+    `doneDate` timestamp NULL,
+    `errText` text DEFAULT NULL,
+    PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 --主账号基本信息表
 CREATE TABLE  `AccountVO` (
     `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
     `name` varchar(128) NOT NULL UNIQUE COMMENT '账户名称',
     `password` varchar(128) NOT NULL COMMENT '账户密码',
     `email` varchar(36) NOT NULL UNIQUE COMMENT '邮箱',
-    `phone` varchar(11) NOT NULL UNIQUE COMMENT '手机号',
+    `phone` varchar(32) NOT NULL UNIQUE COMMENT '手机号',
     `trueName` varchar(128) DEFAULT NULL COMMENT '姓名',
-    `company` varchar(128) NOT NULL COMMENT '公司',
+    `company` varchar(128) DEFAULT NULL COMMENT '公司',
     `department` varchar(128) DEFAULT NULL COMMENT '部门',
-    `industry` varchar(128) NOT NULL COMMENT '行业',
+    `industry` varchar(128) DEFAULT NULL COMMENT '行业',
     `type` varchar(128) NOT NULL COMMENT 'account type',
     `status` varchar(128) NOT NULL COMMENT '状态',
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',

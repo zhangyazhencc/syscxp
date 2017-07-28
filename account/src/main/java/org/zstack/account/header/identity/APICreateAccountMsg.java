@@ -1,9 +1,10 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.message.APICreateMessage;
+import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
-public class APICreateAccountMsg extends APICreateMessage {
+public class APICreateAccountMsg extends APIMessage {
     @APIParam(maxLength = 255)
     private String name;
     @APIParam(maxLength = 255)

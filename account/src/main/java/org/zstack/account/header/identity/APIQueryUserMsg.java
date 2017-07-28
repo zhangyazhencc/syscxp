@@ -17,8 +17,4 @@ import static java.util.Arrays.asList;
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"read"})
 public class APIQueryUserMsg extends APIQueryMessage {
 
-    public static List<String> __example__() {
-        return asList("name=test");
-    }
-
 }

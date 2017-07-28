@@ -352,17 +352,18 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             @Override
             protected AccountInventory scripts() {
                 AccountVO vo = new AccountVO();
-                if (msg.getResourceUuid() != null) {
-                    vo.setUuid(msg.getResourceUuid());
-                } else {
-                    vo.setUuid(Platform.getUuid());
-                }
+
+                vo.setUuid(Platform.getUuid());
+
                 vo.setName(msg.getName());
                 vo.setDescription(msg.getDescription());
                 vo.setPassword(msg.getPassword());
                 vo.setType(msg.getType() != null ? AccountType.valueOf(msg.getType()) : AccountType.Normal);
                 persist(vo);
                 reload(vo);
+
+
+
 
                 return AccountInventory.valueOf(vo);
             }
@@ -543,6 +544,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
             ma.actions.add(String.format("%s:%s", ma.category, clz.getName()));
             ma.actions.add(String.format("%s:%s", ma.category, clz.getSimpleName()));
+
             actions.put(clz, ma);
         }
     }
@@ -566,7 +568,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 vo.setUuid(AccountConstant.INITIAL_SYSTEM_ADMIN_UUID);
                 vo.setName(AccountConstant.INITIAL_SYSTEM_ADMIN_NAME);
                 vo.setPassword(AccountConstant.INITIAL_SYSTEM_ADMIN_PASSWORD);
+                vo.setPhone(AccountConstant.INITIAL_SYSTEM_ADMIN_PHONE);
+                vo.setEmail(AccountConstant.INITIAL_SYSTEM_ADMIN_EMAIL);
                 vo.setType(AccountType.SystemAdmin);
+                vo.setStatus(AccountStatus.Available);
+
                 dbf.persist(vo);
                 logger.debug(String.format("Created initial system admin account[name:%s]", AccountConstant.INITIAL_SYSTEM_ADMIN_NAME));
             }
@@ -657,6 +663,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             action = actions.get(msg.getClass());
 
             sessionCheck();
+
             policyCheck();
 
             msg.setSession(session);

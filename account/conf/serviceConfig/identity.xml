@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://zstack.org/schema/zstack">
+    <id>identity</id>
+    <interceptor>AccountManager</interceptor>
+    
+    <message>
+        <name>org.zstack.account.header.identity.APICreateAccountMsg</name>
+
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.identity.APIQueryUserMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+</service>
