@@ -436,9 +436,10 @@ public class DatabaseFacadeImpl implements DatabaseFacade, Component {
 
     @Transactional(readOnly = true)
     private void getDbVersionOnInit() {
-        String sql = "select version from schema_version order by version desc limit 1";
-        Query q = getEntityManager().createNativeQuery(sql);
-        dbVersion = (String) q.getSingleResult();
+//        String sql = "select version from schema_version order by version desc limit 1";
+//        Query q = getEntityManager().createNativeQuery(sql);
+//        dbVersion = (String) q.getSingleResult();
+        dbVersion = "1.0";
     }
 
     void init() {

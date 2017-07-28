@@ -275,7 +275,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         long expiredTime = getCurrentSqlDate().getTime() + TimeUnit.SECONDS.toMillis(sessionTimeout);
         svo.setExpiredDate(new Timestamp(expiredTime));
         svo = dbf.persistAndRefresh(svo);
-        SessionInventory session = SessionInventory.valueOf(svo);
+        SessionInventory session = svo.toSessionInventory();
         sessions.put(session.getUuid(), session);
         return session;
     }
@@ -556,6 +556,26 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     @Override
+    public void prepareDbInitialValue() {
+        try {
+            SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
+            q.add(AccountVO_.name, Op.EQ, AccountConstant.INITIAL_SYSTEM_ADMIN_NAME);
+            q.add(AccountVO_.type, Op.EQ, AccountType.SystemAdmin);
+            if (!q.isExists()) {
+                AccountVO vo = new AccountVO();
+                vo.setUuid(AccountConstant.INITIAL_SYSTEM_ADMIN_UUID);
+                vo.setName(AccountConstant.INITIAL_SYSTEM_ADMIN_NAME);
+                vo.setPassword(AccountConstant.INITIAL_SYSTEM_ADMIN_PASSWORD);
+                vo.setType(AccountType.SystemAdmin);
+                dbf.persist(vo);
+                logger.debug(String.format("Created initial system admin account[name:%s]", AccountConstant.INITIAL_SYSTEM_ADMIN_NAME));
+            }
+        } catch (Exception e) {
+            throw new CloudRuntimeException("Unable to create default system admin account", e);
+        }
+    }
+
+    @Override
     public List<Class> getEntityClassForSoftDeleteEntityExtension() {
         return resourceTypes;
     }
@@ -797,7 +817,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                     throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
                             "Session expired"));
                 }
-                session = SessionInventory.valueOf(svo);
+                session = svo.toSessionInventory();
                 sessions.put(session.getUuid(), session);
             }
 

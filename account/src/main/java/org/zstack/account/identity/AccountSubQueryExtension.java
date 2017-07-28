@@ -20,9 +20,9 @@ public class AccountSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
         }
 
         Class entityClass = QueryUtils.getEntityClassFromInventoryClass(inventoryClass);
-        if (!acntMgr.isResourceHavingAccountReference(entityClass)) {
-            return null;
-        }
+//        if (!acntMgr.isResourceHavingAccountReference(entityClass)) {
+//            return null;
+//        }
 
         String priKey = QueryUtils.getPrimaryKeyNameFromEntityClass(entityClass);
 

@@ -173,11 +173,11 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIDeleteUserMsg msg) {
         UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
         if (user != null) {
-            UserInventory inv = UserInventory.valueOf(user);
-            UserDeletedData d = new UserDeletedData();
-            d.setInventory(inv);
-            d.setUserUuid(inv.getUuid());
-            evtf.fire(IdentityCanonicalEvents.USER_DELETED_PATH, d);
+//            UserInventory inv = UserInventory.valueOf(user);
+//            UserDeletedData d = new UserDeletedData();
+//            d.setInventory(inv);
+//            d.setUserUuid(inv.getUuid());
+//            evtf.fire(IdentityCanonicalEvents.USER_DELETED_PATH, d);
 
             dbf.remove(user);
         }
@@ -213,7 +213,7 @@ public class AccountBase extends AbstractAccount {
         }
         pvo.setAccountUuid(vo.getUuid());
         pvo.setName(msg.getName());
-        pvo.setData(JSONObjectUtil.toJsonString(msg.getStatements()));
+        pvo.setPolicyStatement(JSONObjectUtil.toJsonString(msg.getStatements()));
 
         PolicyVO finalPvo = pvo;
         pvo = new SQLBatchWithReturn<PolicyVO>() {
@@ -221,7 +221,6 @@ public class AccountBase extends AbstractAccount {
             protected PolicyVO scripts() {
                 persist(finalPvo);
                 reload(finalPvo);
-                acntMgr.createAccountResourceRef(msg.getSession().getAccountUuid(), finalPvo.getUuid(), PolicyVO.class);
                 return finalPvo;
             }
         }.execute();
@@ -251,25 +250,6 @@ public class AccountBase extends AbstractAccount {
                 persist(uvo);
                 reload(uvo);
 
-                PolicyVO p = Q.New(PolicyVO.class).eq(PolicyVO_.name, "DEFAULT-READ")
-                        .eq(PolicyVO_.accountUuid, vo.getUuid()).find();
-                if (p != null) {
-                    UserPolicyRefVO uref = new UserPolicyRefVO();
-                    uref.setPolicyUuid(p.getUuid());
-                    uref.setUserUuid(uvo.getUuid());
-                    persist(uref);
-                }
-
-                p = Q.New(PolicyVO.class).eq(PolicyVO_.name, "USER-RESET-PASSWORD")
-                        .eq(PolicyVO_.accountUuid, vo.getUuid()).find();
-                if (p != null) {
-                    UserPolicyRefVO uref = new UserPolicyRefVO();
-                    uref.setPolicyUuid(p.getUuid());
-                    uref.setUserUuid(uvo.getUuid());
-                    persist(uref);
-                }
-
-                acntMgr.createAccountResourceRef(msg.getSession().getAccountUuid(), uvo.getUuid(), UserVO.class);
                 return uvo;
             }
         }.execute();

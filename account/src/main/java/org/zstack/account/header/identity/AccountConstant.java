@@ -11,6 +11,9 @@ public interface AccountConstant {
 
     String INITIAL_SYSTEM_ADMIN_NAME = "admin";
 
+    // 'password' SHA512 hex coding
+    String INITIAL_SYSTEM_ADMIN_PASSWORD = "b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86";
+
     String SYSTEM_ADMIN_ROLE = ".*";
 
     int RESOURCE_PERMISSION_READ = 1;
