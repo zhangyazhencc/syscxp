@@ -388,69 +388,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         try {
             buildActions();
             startExpiredSessionCollector();
-            configureGlobalConfig();
-
         } catch (Exception e) {
             throw new CloudRuntimeException(e);
         }
         return true;
     }
 
-
-    private void configureGlobalConfig() {
-        String v = IdentityGlobalConfig.ACCOUNT_API_CONTROL.value();
-        String[] classNames = v.split(",");
-        for (String cn : classNames) {
-            cn = cn.trim();
-            try {
-                Class clz = Class.forName(cn);
-                accountApiControl.add(clz);
-            } catch (ClassNotFoundException e) {
-                throw new CloudRuntimeException(String.format("no API found for %s", cn));
-            }
-        }
-
-        IdentityGlobalConfig.ACCOUNT_API_CONTROL.installValidateExtension(new GlobalConfigValidatorExtensionPoint() {
-            @Override
-            public void validateGlobalConfig(String category, String name, String oldValue, String newValue) throws GlobalConfigException {
-                if (newValue.isEmpty()) {
-                    return;
-                }
-
-                String[] classNames = newValue.split(",");
-                for (String cn : classNames) {
-                    cn = cn.trim();
-                    try {
-                        Class.forName(cn);
-                    } catch (ClassNotFoundException e) {
-                        throw new GlobalConfigException(String.format("no API found for %s", cn));
-                    }
-                }
-            }
-        });
-
-        IdentityGlobalConfig.ACCOUNT_API_CONTROL.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
-            @Override
-            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
-                accountApiControl.clear();
-
-                if (newConfig.value().isEmpty()) {
-                    return;
-                }
-
-                String[] classNames = newConfig.value().split(",");
-                for (String name : classNames) {
-                    try {
-                        name = name.trim();
-                        Class clz = Class.forName(name);
-                        accountApiControl.add(clz);
-                    } catch (ClassNotFoundException e) {
-                        throw new CloudRuntimeException(e);
-                    }
-                }
-            }
-        });
-    }
 
     private void startExpiredSessionCollector() {
         final int interval = IdentityGlobalConfig.SESSION_CLEANUP_INTERVAL.value(Integer.class);
@@ -559,6 +502,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     @Override
     public void prepareDbInitialValue() {
+        logger.debug("Created initial system admin account");
         try {
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.name, Op.EQ, AccountConstant.INITIAL_SYSTEM_ADMIN_NAME);

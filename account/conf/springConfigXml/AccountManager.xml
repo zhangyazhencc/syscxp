@@ -12,7 +12,7 @@
          http://zstack.org/schema/zstack/plugin.xsd"
        default-init-method="init" default-destroy-method="destroy">
 
-    <bean id="AccountManager" class="org.zstack.identity.AccountManagerImpl">
+    <bean id="AccountManager" class="org.zstack.account.identity.AccountManagerImpl">
         <zstack:plugin>
             <zstack:extension interface="org.zstack.header.Component"/>
             <zstack:extension interface="org.zstack.header.Service"/>
@@ -25,19 +25,14 @@
 
     </bean>
 
-    <bean id="AccountSubQueryExtension" class="org.zstack.identity.AccountSubQueryExtension">
+    <bean id="AccountSubQueryExtension" class="org.zstack.account.identity.AccountSubQueryExtension">
         <zstack:plugin>
             <zstack:extension interface="org.zstack.query.MysqlQuerySubQueryExtension"/>
         </zstack:plugin>
     </bean>
 
-    <bean id="QuotaChecker" class="org.zstack.identity.QuotaChecker">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.apimediator.GlobalApiMessageInterceptor"/>
-        </zstack:plugin>
-    </bean>
 
-    <bean id="AccountCascadeExtension" class="org.zstack.identity.AccountCascadeExtension">
+    <bean id="AccountCascadeExtension" class="org.zstack.account.identity.AccountCascadeExtension">
         <zstack:plugin>
             <zstack:extension interface="org.zstack.core.cascade.CascadeExtensionPoint"/>
         </zstack:plugin>

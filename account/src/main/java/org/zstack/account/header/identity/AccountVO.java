@@ -24,9 +24,6 @@ public class AccountVO {
     private String name;
 
     @Column
-    private String description;
-
-    @Column
     private String password;
 
     @Column
@@ -60,13 +57,6 @@ public class AccountVO {
 
     public void setStatus(AccountStatus status) {
         this.status = status;
-    }
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getUuid() {
