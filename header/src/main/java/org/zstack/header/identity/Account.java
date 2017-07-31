@@ -1,4 +1,4 @@
-package org.zstack.account.identity;
+package org.zstack.header.identity;
 
 import org.zstack.header.message.Message;
 

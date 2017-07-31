@@ -1,7 +1,6 @@
 package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.zstack.account.header.identity.AccountConstant;
 import org.zstack.header.query.APIQueryMessage;
 import org.zstack.query.AbstractMysqlQuerySubQueryExtension;
 import org.zstack.query.QueryUtils;
