@@ -74,6 +74,11 @@
                     <artifactId>search</artifactId>
                     <version>${project.version}</version>
                 </dependency>
+                <dependency>
+                    <groupId>org.zstack</groupId>
+                    <artifactId>account</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
 
             </dependencies>
         </profile>
@@ -143,10 +148,15 @@
             <artifactId>utils</artifactId>
             <version>${project.version}</version>
         </dependency>
-
         <dependency>
             <groupId>org.zstack</groupId>
             <artifactId>search</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.zstack</groupId>
+            <artifactId>account</artifactId>
             <version>${project.version}</version>
         </dependency>
 
