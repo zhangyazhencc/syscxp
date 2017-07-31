@@ -23,6 +23,12 @@
             <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
         </zstack:plugin>
 
+        <property name="resourceTypeForAccountRef">
+            <list>
+                <value>org.zstack.account.header.identity.PolicyVO</value>
+                <value>org.zstack.account.header.identity.UserVO</value>
+            </list>
+        </property>
     </bean>
 
     <bean id="AccountSubQueryExtension" class="org.zstack.account.identity.AccountSubQueryExtension">

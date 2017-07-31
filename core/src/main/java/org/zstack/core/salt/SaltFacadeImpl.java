@@ -82,8 +82,8 @@ public class SaltFacadeImpl extends AbstractService implements SaltFacade {
     private void prepareSaltMaster() throws IOException {
         File srcMasterConf = rewriteMasterConfFile();
         try {
-            IptablesUtils.insertRuleToFilterTable("-A INPUT -p tcp -m state --state NEW -m tcp --dport 4505 -j ACCEPT");
-            IptablesUtils.insertRuleToFilterTable("-A INPUT -p tcp -m state --state NEW -m tcp --dport 4506 -j ACCEPT");
+            //IptablesUtils.insertRuleToFilterTable("-A INPUT -p tcp -m state --state NEW -m tcp --dport 4505 -j ACCEPT");
+            //IptablesUtils.insertRuleToFilterTable("-A INPUT -p tcp -m state --state NEW -m tcp --dport 4506 -j ACCEPT");
 
             File dstMasterConf = new File(PathUtil.join(SaltConstant.SALT_CONF_HOME, SaltConstant.MASTER_CONF_NAME));
             if (deployFile(srcMasterConf, dstMasterConf)) {

@@ -33,6 +33,7 @@ import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.logging.CLogger;
 
 import javax.persistence.Query;
+import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
@@ -375,6 +376,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     @Override
     public boolean start() {
         try {
+            buildResourceTypes();
             buildActions();
             startExpiredSessionCollector();
         } catch (Exception e) {
@@ -383,6 +385,13 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         return true;
     }
 
+    private void buildResourceTypes() throws ClassNotFoundException {
+        resourceTypes = new ArrayList<>();
+        for (String resrouceTypeName : resourceTypeForAccountRef) {
+            Class<?> rs = Class.forName(resrouceTypeName);
+            resourceTypes.add(rs);
+        }
+    }
 
     private void startExpiredSessionCollector() {
         final int interval = IdentityGlobalConfig.SESSION_CLEANUP_INTERVAL.value(Integer.class);
@@ -616,7 +625,46 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
         private void accountFieldCheck() throws IllegalAccessException {
+            for (AccountCheckField af : action.accountCheckFields) {
+                Object value = af.field.get(msg);
+                if (value == null) {
+                    continue;
+                }
 
+                Set resourceUuids = new HashSet();
+
+                if (String.class.isAssignableFrom(af.field.getType())) {
+                    resourceUuids.add(value);
+                } else if (Collection.class.isAssignableFrom(af.field.getType())) {
+                    resourceUuids.addAll((Collection) value);
+
+                }
+
+                if (resourceUuids.isEmpty()) {
+                    return;
+                }
+
+                List<Tuple> ts = SQL.New(
+                        " select uuid, accountUuid from :resourceType where uuid in (:resourceUuids) ",Tuple.class)
+                        .param("resourceType", af.param.resourceType().getSimpleName())
+                        .param("resourceUuids", resourceUuids)
+                        .list();
+                for (Tuple t : ts) {
+                    String resourceUuid = t.get(0, String.class);
+                    String resourceOwnerAccountUuid = t.get(1, String.class);
+                    if (!session.getAccountUuid().equals(resourceOwnerAccountUuid)) {
+                        throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
+                                String.format("operation denied. The resource[uuid: %s, type: %s, ownerAccountUuid:%s] doesn't belong to the account[uuid: %s]",
+                                        resourceUuid, af.param.resourceType().getSimpleName(), resourceOwnerAccountUuid, session.getAccountUuid())
+                        ));
+                    } else {
+                        if (logger.isTraceEnabled()) {
+                            logger.trace(String.format("account-check pass. The resource[uuid: %s, type: %s] belongs to the account[uuid: %s]",
+                                    resourceUuid, af.param.resourceType().getSimpleName(), session.getAccountUuid()));
+                        }
+                    }
+                }
+            }
         }
 
         private void useDecision(Decision d, boolean userPolicy) {
@@ -643,11 +691,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 return;
             }
 
+            if (action.adminOnly) {
+                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
+                        String.format("API[%s] is admin only", msg.getClass().getSimpleName())));
+            }
+
             if (!session.isAdminUserSession()) {
-                if (action.adminOnly) {
-                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
-                            String.format("API[%s] is admin only", msg.getClass().getSimpleName())));
-                }
 
                 if (action.accountOnly && !session.isAccountSession()) {
                     throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
@@ -665,7 +714,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                         throw new CloudRuntimeException(e);
                     }
                 }
-
 
                 if (session.isAccountSession()) {
                     return;
@@ -690,7 +738,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                             " or add the user into a group with polices set", username, session.getUserUuid(), msg.getClass().getSimpleName())
             ));
         }
-
 
         class Decision {
             PolicyInventory policy;
@@ -849,6 +896,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             AccountMessage amsg = (AccountMessage) msg;
             bus.makeTargetServiceIdByResourceUuid(msg, AccountConstant.SERVICE_ID, amsg.getAccountUuid());
         }
+    }
+
+    @Override
+    public boolean isResourceHavingAccountReference(Class entityClass) {
+        return resourceTypes.contains(entityClass);
     }
 
     public void setResourceTypeForAccountRef(List<String> resourceTypeForAccountRef) {
