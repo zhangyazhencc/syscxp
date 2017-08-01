@@ -22,7 +22,7 @@ public class AccountSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
             return null;
         }
 
-        String priKey = QueryUtils.getPrimaryKeyNameFromEntityClass(entityClass);
+        //String priKey = QueryUtils.getPrimaryKeyNameFromEntityClass(entityClass);
 
         return String.format("%s.accountUuid = '%s'", inventoryClass.getSimpleName().toLowerCase(), msg.getSession().getAccountUuid());
 
