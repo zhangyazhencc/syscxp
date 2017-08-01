@@ -64,10 +64,12 @@ CREATE TABLE  `AccountVO` (
 
 --代理商主账号关系表
 CREATE TABLE  `ProxyAccountRefVO` (
+  `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
 	`proxyUuid` varchar(32) NOT NULL COMMENT '代理商（包括系统管理员）UUID',
-    `accountUuid` varchar(32) NOT NULL COMMENT '由代理商（包括系统管理员）创建的主账号',
-    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-    `createDate` timestamp
+  `accountUuid` varchar(32) NOT NULL COMMENT '由代理商（包括系统管理员）创建的主账号',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
@@ -114,11 +116,12 @@ CREATE TABLE `PolicyVO` (
 --用户角色关系表
 --用户被删除或者角色被删除，这条关联关系也被删除
 CREATE TABLE `UserPolicyRefVO` (
+  `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
 	`userUuid` varchar(32) NOT NULL COMMENT '用户UUID',
 	`policyUuid` varchar(32) NOT NULL COMMENT '角色UUID',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-    `createDate` timestamp
-    
+  `createDate` timestamp,
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 --Session表

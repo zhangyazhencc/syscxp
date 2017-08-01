@@ -83,14 +83,7 @@ public class ApiMediatorImpl extends AbstractService implements ApiMediator, Glo
             return;
         }
 
-        // this call is only for validate the API parameters
-        if (msg instanceof APISyncCallMessage) {
-            APIReply reply = new APIReply();
-            bus.reply(msg, reply);
-        } else {
-            APIEvent evt = new APIEvent(msg.getId());
-            bus.publish(evt);
-        }
+        bus.route(msg);
     }
 
 

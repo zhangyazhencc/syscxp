@@ -5,7 +5,17 @@
     
     <message>
         <name>org.zstack.account.header.identity.APICreateAccountMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.identity.APILogInByAccountMsg</name>
+    </message>
 
+    <message>
+        <name>org.zstack.account.header.identity.APILogInByUserMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.identity.APILogOutMsg</name>
     </message>
 
     <message>

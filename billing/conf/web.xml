@@ -36,17 +36,6 @@
         <url-pattern>/static/*</url-pattern>
     </servlet-mapping>
 
-    <filter>
-        <filter-name>UrlRewriteFilter</filter-name>
-        <filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
-    </filter>
-    <filter-mapping>
-        <filter-name>UrlRewriteFilter</filter-name>
-        <url-pattern>/static/*</url-pattern>
-        <dispatcher>REQUEST</dispatcher>
-        <dispatcher>FORWARD</dispatcher>
-    </filter-mapping>
-
     <!-- NOTE: this listener must be put as the first listener to execute, don't change the order !!! -->
     <listener>
         <listener-class>

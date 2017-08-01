@@ -244,7 +244,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         bus.reply(msg, reply);
     }
 
-    private SessionInventory getSession(String accountUuid, String userUuid) {
+    private SessionInventory getSession(String accountUuid, AccountType type, String userUuid) {
         int maxLoginTimes = IdentityGlobalConfig.MAX_CONCURRENT_SESSION.value(Integer.class);
         SimpleQuery<SessionVO> query = dbf.createQuery(SessionVO.class);
         query.add(SessionVO_.accountUuid, Op.EQ, accountUuid);
@@ -260,6 +260,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         svo.setUuid(Platform.getUuid());
         svo.setAccountUuid(accountUuid);
         svo.setUserUuid(userUuid);
+        svo.setType(type);
         long expiredTime = getCurrentSqlDate().getTime() + TimeUnit.SECONDS.toMillis(sessionTimeout);
         svo.setExpiredDate(new Timestamp(expiredTime));
         svo = dbf.persistAndRefresh(svo);
@@ -271,21 +272,20 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void handle(APILogInByUserMsg msg) {
         APILogInReply reply = new APILogInReply();
 
-        String accountUuid;
+        AccountVO account;
         if (msg.getAccountUuid() != null) {
-            accountUuid = msg.getAccountUuid();
+            account =  dbf.findByUuid(msg.getAccountUuid(), AccountVO.class);
         } else {
             SimpleQuery<AccountVO> accountq = dbf.createQuery(AccountVO.class);
-            accountq.select(AccountVO_.uuid);
             accountq.add(AccountVO_.name, Op.EQ, msg.getAccountName());
-            accountUuid = accountq.findValue();
-            if (accountUuid == null) {
-                throw new OperationFailureException(argerr("account[%s] not found", msg.getAccountName()));
-            }
+            account = accountq.find();
+        }
+        if (account == null) {
+            throw new OperationFailureException(argerr("account[%s] not found", msg.getAccountName()));
         }
 
         SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
-        q.add(UserVO_.accountUuid, Op.EQ, accountUuid);
+        q.add(UserVO_.accountUuid, Op.EQ, account.getUuid());
         q.add(UserVO_.password, Op.EQ, msg.getPassword());
         q.add(UserVO_.name, Op.EQ, msg.getUserName());
         UserVO user = q.find();
@@ -298,7 +298,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             return;
         }
 
-        reply.setInventory(getSession(user.getAccountUuid(), user.getUuid()));
+        reply.setInventory(getSession(user.getAccountUuid(), account.getType(), user.getUuid()));
         bus.reply(msg, reply);
     }
 
@@ -315,7 +315,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             return;
         }
 
-        reply.setInventory(getSession(vo.getUuid(), vo.getUuid()));
+        reply.setInventory(getSession(vo.getUuid(), vo.getType(), vo.getUuid()));
         bus.reply(msg, reply);
     }
 
