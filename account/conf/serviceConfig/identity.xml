@@ -12,10 +12,6 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateUserMsg</name>
-    </message>
-
-    <message>
         <name>org.zstack.account.header.identity.APILogInByAccountMsg</name>
     </message>
 
