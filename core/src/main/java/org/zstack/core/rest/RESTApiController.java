@@ -64,8 +64,7 @@ public class RESTApiController {
             rsp = restApi.send(amsg);
         }
 
-        //return JSONObjectUtil.toJsonString(rsp);
-        return rsp.getResult();
+        return JSONObjectUtil.toJsonString(rsp);
     }
 
     @RequestMapping(value = RESTConstant.REST_API_CALL, method = {RequestMethod.POST, RequestMethod.PUT})
