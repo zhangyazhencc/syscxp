@@ -4,7 +4,7 @@
     <interceptor>BillingManager</interceptor>
 
     <message>
-        <name>org.zstack.billing.service.APIGetAccountBalanceMsg</name>
+        <name>org.zstack.billing.header.identity.APIGetAccountBalanceMsg</name>
     </message>
 
 </service>

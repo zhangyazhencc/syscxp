@@ -1,4 +1,4 @@
-package org.zstack.billing.service.manage;
+package org.zstack.billing.identity;
 
 public interface BillingConstant {
 	

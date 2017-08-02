@@ -1,14 +1,14 @@
-package org.zstack.billing.service.manage;
+package org.zstack.billing.identity;
 
 import java.util.Collection;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.zstack.billing.service.APIGetAccountBalanceMsg;
-import org.zstack.billing.service.APIGetAccountBalanceReply;
-import org.zstack.billing.service.AccountBalanceInventory;
-import org.zstack.billing.service.AccountBalanceVO;
-import org.zstack.billing.service.AccountBalanceVO_;
+import org.zstack.billing.header.identity.APIGetAccountBalanceMsg;
+import org.zstack.billing.header.identity.APIGetAccountBalanceReply;
+import org.zstack.billing.header.identity.AccountBalanceInventory;
+import org.zstack.billing.header.identity.AccountBalanceVO_;
+import org.zstack.billing.header.identity.AccountBalanceVO;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.EventFacade;

@@ -1,4 +1,4 @@
-package org.zstack.billing.service;
+package org.zstack.billing.header.identity;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;

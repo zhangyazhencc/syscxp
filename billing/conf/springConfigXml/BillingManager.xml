@@ -12,7 +12,7 @@
          http://zstack.org/schema/zstack/plugin.xsd"
        default-init-method="init" default-destroy-method="destroy">
 
-    <bean id="BillingManager" class="org.zstack.billing.service.manage.BillingManagerImp">
+    <bean id="BillingManager" class="org.zstack.billing.identity.BillingManagerImp">
         <zstack:plugin>
             <zstack:extension interface="org.zstack.header.Component"/>
             <zstack:extension interface="org.zstack.header.Service"/>

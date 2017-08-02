@@ -9,7 +9,7 @@
         <class>org.zstack.core.job.JobQueueVO</class>
         <class>org.zstack.core.job.JobQueueEntryVO</class>
 
-        <class>org.zstack.billing.service.AccountBalanceVO</class>
+        <class>org.zstack.billing.header.identity.AccountBalanceVO</class>
 
     </persistence-unit>
 </persistence>
