@@ -20,9 +20,9 @@
 
     <bean id="DbFacadeDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
         <property name="driverClass" value="com.mysql.jdbc.Driver"/>
-        <property name="jdbcUrl" value="${DbFacadeDataSource.jdbcUrl:jdbc:mysql://localhost:3306/zstack}"/>
+        <property name="jdbcUrl" value="${DbFacadeDataSource.jdbcUrl:jdbc:mysql://localhost:3306/syscxp_billing}"/>
         <property name="user" value="${DbFacadeDataSource.user:root}"/>
-        <property name="password" value="${DbFacadeDataSource.password:}"/>
+        <property name="password" value="${DbFacadeDataSource.password:123456}"/>
         <property name="initialPoolSize" value="10"/>
         <property name="maxPoolSize" value="${DbFacadeDataSource.maxPoolSize:100}"/>
         <property name="idleConnectionTestPeriod" value="${DbFacadeDataSource.idleConnectionTestPeriod:3000}"/>

@@ -398,6 +398,7 @@
                 <module>portal</module>
                 <module>search</module>
                 <module>account</module>
+                <module>billing</module>
                 <module>build</module>
             </modules>
         </profile>

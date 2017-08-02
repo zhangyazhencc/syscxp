@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://zstack.org/schema/zstack">
+    <id>billing</id>
+    <interceptor>BillingManager</interceptor>
+
+    <message>
+        <name>org.zstack.billing.service.APIGetAccountBalanceMsg</name>
+    </message>
+
+</service>

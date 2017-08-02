@@ -76,7 +76,7 @@
                 </dependency>
                 <dependency>
                     <groupId>org.zstack</groupId>
-                    <artifactId>account</artifactId>
+                    <artifactId>billing</artifactId>
                     <version>${project.version}</version>
                 </dependency>
 
@@ -156,7 +156,7 @@
 
         <dependency>
             <groupId>org.zstack</groupId>
-            <artifactId>account</artifactId>
+            <artifactId>billing</artifactId>
             <version>${project.version}</version>
         </dependency>
 
