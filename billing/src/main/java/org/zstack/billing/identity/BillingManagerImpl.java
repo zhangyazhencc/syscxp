@@ -31,9 +31,7 @@ import org.zstack.header.managementnode.PrepareDbInitialValueExtensionPoint;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 
-public class BillingManagerImp extends AbstractService implements BillingManager, PrepareDbInitialValueExtensionPoint,
-SoftDeleteEntityExtensionPoint, HardDeleteEntityExtensionPoint,
-GlobalApiMessageInterceptor, ApiMessageInterceptor{
+public class BillingManagerImpl extends AbstractService implements BillingManager, GlobalApiMessageInterceptor{
 	
 	@Autowired
     private CloudBus bus;
@@ -131,31 +129,6 @@ GlobalApiMessageInterceptor, ApiMessageInterceptor{
 	@Override
 	public InterceptorPosition getPosition() {
 		return null;
-	}
-
-	@Override
-	public List<Class> getEntityClassForHardDeleteEntityExtension() {
-		return null;
-	}
-
-	@Override
-	public void postHardDelete(Collection entityIds, Class entityClass) {
-		
-	}
-
-	@Override
-	public List<Class> getEntityClassForSoftDeleteEntityExtension() {
-		return null;
-	}
-
-	@Override
-	public void postSoftDelete(Collection entityIds, Class entityClass) {
-		
-	}
-
-	@Override
-	public void prepareDbInitialValue() {
-		
 	}
 
 }
