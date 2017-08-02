@@ -42,6 +42,7 @@ import java.lang.reflect.Modifier;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.SocketException;
+import java.nio.charset.Charset;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -325,6 +326,10 @@ public class Platform {
     static {
         try {
             msId = getUuid();
+            logger.info(String.format("default charset of this Java virtual machine, %s", Charset.defaultCharset()));
+            if (! "UTF-8".equalsIgnoreCase(Charset.defaultCharset().toString()) && ! "UTF8".equalsIgnoreCase(Charset.defaultCharset().toString()) ){
+                throw new CloudRuntimeException(String.format("Java virtual machine charset must use UTF-8, now is %s", Charset.defaultCharset()));
+            }
 
             reflections = new Reflections(ClasspathHelper.forPackage("org.zstack"),
                     new SubTypesScanner(), new MethodAnnotationsScanner(), new FieldAnnotationsScanner(),
