@@ -15,82 +15,77 @@ import org.zstack.header.search.TriggerIndex;
 
 @Entity
 @Table
-@Inheritance(strategy=InheritanceType.JOINED)
+@Inheritance(strategy = InheritanceType.JOINED)
 @TriggerIndex
 @SqlTrigger
 public class AccountBalanceVO {
-	
-	  @Id
-	  @Column
-	  private String uuid;
-	  
-	  @Column
-	  private BigDecimal presentBalance;
-	  
-	  @Column
-	  private BigDecimal creditPoint;
-	  
-	  @Column 
-	  private BigDecimal cashBalance;
-	  
-	  @Column
-	  private Timestamp createDate;
-	    
-	  @Column
-	  private Timestamp lastOpDate;
 
-	public String getUuid() {
-		return uuid;
-	}
+    @Id
+    @Column
+    private String uuid;
 
-	public void setUuid(String uuid) {
-		this.uuid = uuid;
-	}
+    @Column
+    private BigDecimal presentBalance;
 
-	public BigDecimal getPresentBalance() {
-		return presentBalance;
-	}
+    @Column
+    private BigDecimal creditPoint;
 
-	public void setPresentBalance(BigDecimal presentBalance) {
-		this.presentBalance = presentBalance;
-	}
+    @Column
+    private BigDecimal cashBalance;
 
-	public BigDecimal getCreditPoint() {
-		return creditPoint;
-	}
+    @Column
+    private Timestamp createDate;
 
-	public void setCreditPoint(BigDecimal creditPoint) {
-		this.creditPoint = creditPoint;
-	}
+    @Column
+    private Timestamp lastOpDate;
 
-	public BigDecimal getCashBalance() {
-		return cashBalance;
-	}
+    public String getUuid() {
+        return uuid;
+    }
 
-	public void setCashBalance(BigDecimal cashBalance) {
-		this.cashBalance = cashBalance;
-	}
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
-	public Timestamp getCreateDate() {
-		return createDate;
-	}
+    public BigDecimal getPresentBalance() {
+        return presentBalance;
+    }
 
-	public void setCreateDate(Timestamp createDate) {
-		this.createDate = createDate;
-	}
+    public void setPresentBalance(BigDecimal presentBalance) {
+        this.presentBalance = presentBalance;
+    }
 
-	public Timestamp getLastOpDate() {
-		return lastOpDate;
-	}
+    public BigDecimal getCreditPoint() {
+        return creditPoint;
+    }
 
-	public void setLastOpDate(Timestamp lastOpDate) {
-		this.lastOpDate = lastOpDate;
-	}
-	  
-	  
-	    
-	  
-	  
-	    
+    public void setCreditPoint(BigDecimal creditPoint) {
+        this.creditPoint = creditPoint;
+    }
+
+    public BigDecimal getCashBalance() {
+        return cashBalance;
+    }
+
+    public void setCashBalance(BigDecimal cashBalance) {
+        this.cashBalance = cashBalance;
+    }
+
+    public Timestamp getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
+    }
+
+    public Timestamp getLastOpDate() {
+        return lastOpDate;
+    }
+
+    public void setLastOpDate(Timestamp lastOpDate) {
+        this.lastOpDate = lastOpDate;
+    }
+
 
 }
