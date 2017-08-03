@@ -1,6 +1,7 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.account.header.identity.AccountConstant.StatementEffect;
+import org.zstack.header.identity.StatementEffect;
+import org.zstack.header.identity.PolicyStatement;
 import org.zstack.header.query.ExpandedQueries;
 import org.zstack.header.query.ExpandedQuery;
 import org.zstack.header.query.ExpandedQueryAlias;
@@ -23,33 +24,6 @@ import java.util.List;
 })
 
 public class PolicyInventory {
-    public static class PolicyStatement {
-        private StatementEffect effect;
-        private List<String> actions;
-
-        public StatementEffect getEffect() {
-            return effect;
-        }
-
-        public void setEffect(StatementEffect effect) {
-            this.effect = effect;
-        }
-
-        public List<String> getActions() {
-            return actions;
-        }
-
-        public void setActions(List<String> actions) {
-            this.actions = actions;
-        }
-
-        public void addAction(String a) {
-            if (actions == null) {
-                actions = new ArrayList<String>();
-            }
-            actions.add(a);
-        }
-    }
 
     public static PolicyInventory valueOf(PolicyVO vo) {
         PolicyInventory inv = new PolicyInventory();

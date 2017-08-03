@@ -2,7 +2,8 @@ package org.zstack.account.header.identity;
 
 import org.springframework.http.HttpMethod;
 import org.zstack.header.identity.Action;
-import org.zstack.account.header.identity.PolicyInventory.PolicyStatement;
+import org.zstack.header.identity.PolicyStatement;
+import org.zstack.header.identity.StatementEffect;
 import org.zstack.header.message.APICreateMessage;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
@@ -58,7 +59,7 @@ public class APICreatePolicyMsg extends APICreateMessage implements AccountMessa
         msg.setName("USER-RESET-PASSWORD");
 
         PolicyStatement s = new PolicyStatement();
-        s.setEffect(AccountConstant.StatementEffect.Allow);
+        s.setEffect(StatementEffect.Allow);
         s.addAction(String.format("%s:%s", AccountConstant.ACTION_CATEGORY, APIUpdateUserMsg.class.getSimpleName()));
         msg.setStatements(list(s));
 
