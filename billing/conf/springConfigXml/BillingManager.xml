@@ -23,6 +23,25 @@
             <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
         </zstack:plugin>
 
+        <property name="resourceTypeForAccountRef">
+            <list>
+                <value>org.zstack.billing.header.identity.AccountBalanceVO</value>
+            </list>
+        </property>
+
+    </bean>
+
+    <bean id="AccountSubQueryExtension" class="org.zstack.billing.identity.BillingSubQueryExtension">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.query.MysqlQuerySubQueryExtension"/>
+        </zstack:plugin>
+    </bean>
+
+
+    <bean id="AccountCascadeExtension" class="org.zstack.billing.identity.BillingCascadeExtension">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.core.cascade.CascadeExtensionPoint"/>
+        </zstack:plugin>
     </bean>
 
 </beans>
