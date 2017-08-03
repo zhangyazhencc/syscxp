@@ -688,12 +688,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 return;
             }
 
-            if (action.adminOnly) {
-                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
-                        String.format("API[%s] is admin only", msg.getClass().getSimpleName())));
-            }
-
             if (!session.isAdminUserSession()) {
+
+                if (action.adminOnly) {
+                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
+                            String.format("API[%s] is admin only", msg.getClass().getSimpleName())));
+                }
 
                 if (action.accountOnly && !session.isAccountSession()) {
                     throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
