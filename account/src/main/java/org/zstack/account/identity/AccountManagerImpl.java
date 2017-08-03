@@ -597,28 +597,30 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             this.msg = msg;
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
                 return;
+            }else{
+                action = actions.get(msg.getClass());
+
+                sessionCheck();
+
+                policyCheck();
+
+                msg.setSession(session);
             }
 
-            action = actions.get(msg.getClass());
-
-            sessionCheck();
-
-            policyCheck();
-
-            msg.setSession(session);
         }
 
         void check(APIMessage msg) {
             this.msg = msg;
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
                 return;
+            }else {
+                DebugUtils.Assert(msg.getSession() != null, "session cannot be null");
+                session = msg.getSession();
+
+                action = actions.get(msg.getClass());
+                policyCheck();
             }
 
-            DebugUtils.Assert(msg.getSession() != null, "session cannot be null");
-            session = msg.getSession();
-
-            action = actions.get(msg.getClass());
-            policyCheck();
         }
 
         private void accountFieldCheck() throws IllegalAccessException {
