@@ -1,7 +1,5 @@
-package org.zstack.account.header.identity;
+package org.zstack.header.identity;
 
-import org.zstack.header.identity.APISessionMessage;
-import org.zstack.header.identity.SuppressCredentialCheck;
 import org.zstack.header.message.APIParam;
 
 /**
@@ -11,7 +9,7 @@ import org.zstack.header.message.APIParam;
  * To change this template use File | Settings | File Templates.
  */
 @SuppressCredentialCheck
-public class APIValidateSessionMsg extends APISessionMessage {
+public class APIGetSessionPolicyMsg extends APISessionMessage {
     @APIParam(nonempty = true)
     private String sessionUuid;
 
@@ -23,8 +21,8 @@ public class APIValidateSessionMsg extends APISessionMessage {
         this.sessionUuid = sessionUuid;
     }
  
-    public static APIValidateSessionMsg __example__() {
-        APIValidateSessionMsg msg = new APIValidateSessionMsg();
+    public static APIGetSessionPolicyMsg __example__() {
+        APIGetSessionPolicyMsg msg = new APIGetSessionPolicyMsg();
         msg.setSessionUuid(uuid());
         return msg;
     }

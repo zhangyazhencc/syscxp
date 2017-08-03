@@ -28,6 +28,10 @@
     </message>
 
     <message>
+        <name>org.zstack.header.identity.APIGetSessionPolicyMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.account.header.identity.APICreateUserMsg</name>
     </message>
 

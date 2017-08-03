@@ -24,6 +24,7 @@ import org.zstack.utils.*;
 import org.zstack.utils.logging.CLogger;
 
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -51,7 +52,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     @Autowired
     private PluginRegistry pluginRgty;
     @Autowired
-    private IdentiyInterceptor identiyBase;
+    private IdentiyInterceptor identiyInterceptor;
 
     @Override
     @MessageSafe
@@ -71,7 +72,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     @Override
     public void checkApiMessagePermission(APIMessage msg) {
-        identiyBase.check(msg);
+        identiyInterceptor.check(msg);
     }
 
     @Override
@@ -106,6 +107,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APILogOutMsg) msg);
         } else if (msg instanceof APIValidateSessionMsg) {
             handle((APIValidateSessionMsg) msg);
+        } else if (msg instanceof APIGetSessionPolicyMsg){
+            handle((APIGetSessionPolicyMsg) msg);
         } else if (msg instanceof APICheckApiPermissionMsg) {
             handle((APICheckApiPermissionMsg) msg);
         } else {
@@ -152,7 +155,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 api.setSession(session);
 
                 try {
-                    identiyBase.check(api);
+                    identiyInterceptor.check(api);
                     ret.put(apiName, StatementEffect.Allow.toString());
                 } catch (ApiMessageInterceptionException e) {
                     logger.debug(e.getMessage());
@@ -174,20 +177,20 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void handle(APIValidateSessionMsg msg) {
         APIValidateSessionReply reply = new APIValidateSessionReply();
 
-        SessionInventory s = identiyBase.getSessions().get(msg.getSessionUuid());
+        SessionInventory s = identiyInterceptor.getSessions().get(msg.getSessionUuid());
         Timestamp current = dbf.getCurrentSqlTime();
         boolean valid = true;
 
         if (s != null) {
             if (current.after(s.getExpiredDate())) {
                 valid = false;
-                identiyBase.logOutSession(s.getUuid());
+                identiyInterceptor.logOutSession(s.getUuid());
             }
         } else {
             SessionVO session = dbf.findByUuid(msg.getSessionUuid(), SessionVO.class);
             if (session != null && current.after(session.getExpiredDate())) {
                 valid = false;
-                identiyBase.logOutSession(session.getUuid());
+                identiyInterceptor.logOutSession(session.getUuid());
             } else if (session == null) {
                 valid = false;
             }
@@ -197,10 +200,70 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         bus.reply(msg, reply);
     }
 
+    private void handle(APIGetSessionPolicyMsg msg) {
+        APIGetSessionPolicyReply reply = new APIGetSessionPolicyReply();
+
+        SessionInventory s = identiyInterceptor.getSessions().get(msg.getSessionUuid());
+        Timestamp current = dbf.getCurrentSqlTime();
+        boolean valid = true;
+
+        if (s != null) {
+            if (current.after(s.getExpiredDate())) {
+                valid = false;
+                identiyInterceptor.logOutSession(s.getUuid());
+            }
+        } else {
+            SessionVO session = dbf.findByUuid(msg.getSessionUuid(), SessionVO.class);
+            if (session != null && current.after(session.getExpiredDate())) {
+                valid = false;
+                identiyInterceptor.logOutSession(session.getUuid());
+            } else if (session == null) {
+                valid = false;
+            }else{
+                s = session.toSessionInventory();
+            }
+        }
+
+        if (valid){
+            SessionPolicyInventory sp = new SessionPolicyInventory();
+            sp.setUuid(s.getUuid());
+            sp.setAccountUuid(s.getAccountUuid());
+            sp.setUserUuid(s.getUserUuid());
+            sp.setType(s.getType());
+            sp.setCreateDate(s.getCreateDate());
+            sp.setExpiredDate(s.getExpiredDate());
+
+            if (s.isUserSession() || s.isAdminUserSession()) {
+                List<SessionPolicyInventory.SessionPolicy> policys = new ArrayList<SessionPolicyInventory.SessionPolicy>();
+                List<PolicyInventory> userPolicys = getUserPolicys(sp.getUserUuid());
+                for (PolicyInventory pi : userPolicys) {
+                    SessionPolicyInventory.SessionPolicy p = new SessionPolicyInventory.SessionPolicy();
+                    p.setUuid(pi.getUuid());
+                    p.setName(pi.getName());
+                    p.setStatements(pi.getStatements());
+                    policys.add(p);
+                }
+                sp.setStatements(policys);
+            }
+
+            reply.setSessionPolicyInventory(sp);
+        }
+
+        reply.setValidSession(valid);
+        bus.reply(msg, reply);
+    }
+
+    private List<PolicyInventory> getUserPolicys(String userUuid) {
+        String sql = "select p from PolicyVO p, UserPolicyRefVO ref where ref.userUuid = :uuid and ref.policyUuid = p.uuid";
+        TypedQuery<PolicyVO> q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
+        q.setParameter("uuid", userUuid);
+        return PolicyInventory.valueOf(q.getResultList());
+    }
+
 
     private void handle(APILogOutMsg msg) {
         APILogOutReply reply = new APILogOutReply();
-        identiyBase.logOutSession(msg.getSessionUuid());
+        identiyInterceptor.logOutSession(msg.getSessionUuid());
         bus.reply(msg, reply);
     }
 
@@ -234,7 +297,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             return;
         }
 
-        reply.setInventory(identiyBase.getSession(user.getAccountUuid(), account.getType(), user.getUuid()));
+        reply.setInventory(identiyInterceptor.getSession(user.getAccountUuid(), account.getType(), user.getUuid()));
         bus.reply(msg, reply);
     }
 
@@ -251,7 +314,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             return;
         }
 
-        reply.setInventory(identiyBase.getSession(vo.getUuid(), vo.getType(), vo.getUuid()));
+        reply.setInventory(identiyInterceptor.getSession(vo.getUuid(), vo.getType(), vo.getUuid()));
         bus.reply(msg, reply);
     }
 
