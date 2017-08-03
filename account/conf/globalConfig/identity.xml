@@ -3,7 +3,7 @@
 	<config>
 		<name>session.maxConcurrent</name>
 		<description>Max number of sessions management server accepts. When this limit met, new session will be rejected</description>
-		<defaultValue>500</defaultValue>
+		<defaultValue>5000</defaultValue>
 		<category>identity</category>
 		<type>java.lang.Integer</type>
 	</config>
@@ -13,19 +13,5 @@
 		<defaultValue>7200</defaultValue>
 		<category>identity</category>
 		<type>java.lang.Integer</type>
-	</config>
-	<config>
-		<name>session.cleanup.interval</name>
-		<description>The interval management server checks expired sessions, in seconds</description>
-		<defaultValue>3600</defaultValue>
-		<category>identity</category>
-		<type>java.lang.Integer</type>
-	</config>
-	<config>
-		<name>admin.showAllResource</name>
-		<description>A boolean value indicating whether admin account can see resources of user account</description>
-		<defaultValue>true</defaultValue>
-		<category>identity</category>
-		<type>java.lang.Boolean</type>
 	</config>
 </globalConfig>

@@ -12,6 +12,4 @@ public interface AccountManager {
 
     boolean isAdmin(SessionInventory session);
 
-    boolean isResourceHavingAccountReference(Class entityClass);
-
 }

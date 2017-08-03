@@ -12,11 +12,8 @@
          http://zstack.org/schema/zstack/plugin.xsd"
        default-init-method="init" default-destroy-method="destroy">
 
-    <bean id="AccountManager" class="org.zstack.account.identity.AccountManagerImpl">
+    <bean id="IdentiyInterceptor" class="org.zstack.account.identity.IdentiyInterceptor">
         <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.Component"/>
-            <zstack:extension interface="org.zstack.header.Service"/>
-            <zstack:extension interface="org.zstack.header.managementnode.PrepareDbInitialValueExtensionPoint"/>
             <zstack:extension interface="org.zstack.header.apimediator.GlobalApiMessageInterceptor"/>
             <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
         </zstack:plugin>
@@ -27,6 +24,15 @@
                 <value>org.zstack.account.header.identity.UserVO</value>
             </list>
         </property>
+    </bean>
+
+    <bean id="AccountManager" class="org.zstack.account.identity.AccountManagerImpl">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.header.Component"/>
+            <zstack:extension interface="org.zstack.header.Service"/>
+            <zstack:extension interface="org.zstack.header.managementnode.PrepareDbInitialValueExtensionPoint"/>
+            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
+        </zstack:plugin>
     </bean>
 
     <bean id="AccountSubQueryExtension" class="org.zstack.account.identity.AccountSubQueryExtension">

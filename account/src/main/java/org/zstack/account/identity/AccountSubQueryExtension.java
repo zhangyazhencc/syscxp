@@ -9,7 +9,7 @@ import org.zstack.query.QueryUtils;
  */
 public class AccountSubQueryExtension extends AbstractMysqlQuerySubQueryExtension {
     @Autowired
-    private AccountManager acntMgr;
+    private IdentiyInterceptor identiyInterceptor;
 
     @Override
     public String makeSubquery(APIQueryMessage msg, Class inventoryClass) {
@@ -18,7 +18,7 @@ public class AccountSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
         }
 
         Class entityClass = QueryUtils.getEntityClassFromInventoryClass(inventoryClass);
-        if (!acntMgr.isResourceHavingAccountReference(entityClass)) {
+        if (!identiyInterceptor.isResourceHavingAccountReference(entityClass)) {
             return null;
         }
 
