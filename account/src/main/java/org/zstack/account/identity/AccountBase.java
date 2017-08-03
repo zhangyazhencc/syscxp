@@ -17,6 +17,7 @@ import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.account.header.identity.*;
 
 import org.zstack.header.identity.AbstractAccount;
+import org.zstack.account.header.identity.AfterCreateUserExtensionPoint;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.utils.CollectionUtils;

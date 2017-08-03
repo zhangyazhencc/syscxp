@@ -48,7 +48,9 @@ import org.zstack.header.identity.*;
 import org.zstack.account.header.identity.*;
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
-
+/**
+ * Created by zxhread on 17/8/3.
+ */
 public class AccountManagerImpl extends AbstractService implements AccountManager, PrepareDbInitialValueExtensionPoint,
         SoftDeleteEntityExtensionPoint, HardDeleteEntityExtensionPoint,
         GlobalApiMessageInterceptor, ApiMessageInterceptor {
@@ -106,7 +108,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void handleLocalMessage(Message msg) {
-            bus.dealWithUnknownMessage(msg);
+        bus.dealWithUnknownMessage(msg);
     }
 
     @Override
@@ -666,7 +668,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             }
         }
 
-        private void useDecision(Decision d, boolean userPolicy) {
+        private void useDecision(Auth.Decision d, boolean userPolicy) {
             String policyCategory = userPolicy ? "user policy" : "group policy";
 
             if (d.effect == StatementEffect.Allow) {
@@ -725,7 +727,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             username = uq.findValue();
 
             List<PolicyInventory> userPolicys = getUserPolicys();
-            Decision d = decide(userPolicys);
+            Auth.Decision d = decide(userPolicys);
             if (d != null) {
                 useDecision(d, true);
                 return;
@@ -755,7 +757,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                             Matcher m = pattern.matcher(a);
                             boolean ret = m.matches();
                             if (ret) {
-                                Decision d = new Decision();
+                                Auth.Decision d = new Auth.Decision();
                                 d.policy = p;
                                 d.action = a;
                                 d.statement = s;
@@ -853,7 +855,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         q.add(UserVO_.name, Op.EQ, msg.getName());
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("unable to create a user. A user called %s is already under the account[uuid:%s]",
-                            msg.getName(), msg.getAccountUuid()));
+                    msg.getName(), msg.getAccountUuid()));
         }
     }
 
@@ -886,7 +888,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
         if (!account.getUuid().equals(a.getUuid())) {
             throw new OperationFailureException(operr("account[uuid: %s, name: %s] is a normal account, it cannot reset the password of another account[uuid: %s]",
-                            account.getUuid(), account.getName(), msg.getUuid()));
+                    account.getUuid(), account.getName(), msg.getUuid()));
         }
     }
 
@@ -905,4 +907,5 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     public void setResourceTypeForAccountRef(List<String> resourceTypeForAccountRef) {
         this.resourceTypeForAccountRef = resourceTypeForAccountRef;
     }
+
 }

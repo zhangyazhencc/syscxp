@@ -28,7 +28,7 @@ public class APIUpdateAccountEvent extends APIEvent {
         APIUpdateAccountEvent event = new APIUpdateAccountEvent();
 
         AccountInventory inventory = new AccountInventory();
-        inventory.setName("test");
+        inventory.setName("AccountManagerImpl1");
         inventory.setType(AccountType.Normal.toString());
         inventory.setUuid(uuid());
 

@@ -9,7 +9,6 @@ import org.zstack.header.rest.RestResponse;
  * Time: 9:39 PM
  * To change this template use File | Settings | File Templates.
  */
-@RestResponse(fieldsTo = {"valid=validSession"})
 public class APIValidateSessionReply extends APIReply {
     private boolean validSession;
 

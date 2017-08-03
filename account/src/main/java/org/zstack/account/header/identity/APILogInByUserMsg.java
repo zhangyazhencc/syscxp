@@ -1,5 +1,7 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.header.identity.APISessionMessage;
+import org.zstack.header.identity.SuppressCredentialCheck;
 import org.zstack.header.message.APIParam;
 
 @SuppressCredentialCheck

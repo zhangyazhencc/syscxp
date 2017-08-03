@@ -1,8 +1,8 @@
 package org.zstack.account.header.identity;
 
-import org.springframework.http.HttpMethod;
+import org.zstack.header.identity.APISessionMessage;
+import org.zstack.header.identity.SuppressCredentialCheck;
 import org.zstack.header.message.APIParam;
-import org.zstack.header.rest.RestRequest;
 
 /**
  * Created with IntelliJ IDEA.
