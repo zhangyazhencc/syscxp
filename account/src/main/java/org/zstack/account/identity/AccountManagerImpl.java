@@ -52,7 +52,6 @@ import static org.zstack.core.Platform.operr;
  * Created by zxhread on 17/8/3.
  */
 public class AccountManagerImpl extends AbstractService implements AccountManager, PrepareDbInitialValueExtensionPoint,
-        SoftDeleteEntityExtensionPoint, HardDeleteEntityExtensionPoint,
         GlobalApiMessageInterceptor, ApiMessageInterceptor {
     private static final CLogger logger = Utils.getLogger(AccountManagerImpl.class);
 
@@ -523,33 +522,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     @Override
-    public List<Class> getEntityClassForSoftDeleteEntityExtension() {
-        return resourceTypes;
-    }
-
-    @Override
-    @Transactional
-    public void postSoftDelete(Collection entityIds, Class entityClass) {
-//        String sql = "delete from AccountResourceRefVO ref where ref.resourceUuid in (:uuids) and ref.resourceType = :resourceType";
-//        Query q = dbf.getEntityManager().createQuery(sql);
-//        q.setParameter("uuids", entityIds);
-//        q.setParameter("resourceType", entityClass.getSimpleName());
-//        q.executeUpdate();
-    }
-
-    @Override
-    public List<Class> getEntityClassForHardDeleteEntityExtension() {
-        return resourceTypes;
-    }
-
-    @Override
-    public void postHardDelete(Collection entityIds, Class entityClass) {
-        if (resourceTypes.contains(entityClass)) {
-            postSoftDelete(entityIds, entityClass);
-        }
-    }
-
-    @Override
     public List<Class> getMessageClassToIntercept() {
         return null;
     }
@@ -668,7 +640,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             }
         }
 
-        private void useDecision(Auth.Decision d, boolean userPolicy) {
+        private void useDecision(Decision d, boolean userPolicy) {
             String policyCategory = userPolicy ? "user policy" : "group policy";
 
             if (d.effect == StatementEffect.Allow) {
@@ -727,7 +699,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             username = uq.findValue();
 
             List<PolicyInventory> userPolicys = getUserPolicys();
-            Auth.Decision d = decide(userPolicys);
+            Decision d = decide(userPolicys);
             if (d != null) {
                 useDecision(d, true);
                 return;
@@ -757,7 +729,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                             Matcher m = pattern.matcher(a);
                             boolean ret = m.matches();
                             if (ret) {
-                                Auth.Decision d = new Auth.Decision();
+                                Decision d = new Decision();
                                 d.policy = p;
                                 d.action = a;
                                 d.statement = s;

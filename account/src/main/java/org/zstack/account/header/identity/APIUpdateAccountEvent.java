@@ -23,17 +23,5 @@ public class APIUpdateAccountEvent extends APIEvent {
     public void setInventory(AccountInventory inventory) {
         this.inventory = inventory;
     }
- 
-    public static APIUpdateAccountEvent __example__() {
-        APIUpdateAccountEvent event = new APIUpdateAccountEvent();
-
-        AccountInventory inventory = new AccountInventory();
-        inventory.setName("AccountManagerImpl1");
-        inventory.setType(AccountType.Normal.toString());
-        inventory.setUuid(uuid());
-
-        event.setInventory(inventory);
-        return event;
-    }
 
 }
