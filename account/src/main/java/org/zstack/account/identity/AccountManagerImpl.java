@@ -350,9 +350,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 persist(vo);
                 reload(vo);
 
-
-
-
                 return AccountInventory.valueOf(vo);
             }
         }.execute();
@@ -704,7 +701,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 useDecision(d, true);
                 return;
             }
-
 
             throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
                     String.format("user[name: %s, uuid: %s] has no policy set for this operation, API[%s] is denied by default. You may either create policies for this user" +

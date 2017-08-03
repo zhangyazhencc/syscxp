@@ -17,8 +17,6 @@
             <zstack:extension interface="org.zstack.header.Component"/>
             <zstack:extension interface="org.zstack.header.Service"/>
             <zstack:extension interface="org.zstack.header.managementnode.PrepareDbInitialValueExtensionPoint"/>
-            <zstack:extension interface="org.zstack.core.db.SoftDeleteEntityExtensionPoint"/>
-            <zstack:extension interface="org.zstack.core.db.HardDeleteEntityExtensionPoint"/>
             <zstack:extension interface="org.zstack.header.apimediator.GlobalApiMessageInterceptor"/>
             <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
         </zstack:plugin>
@@ -37,11 +35,5 @@
         </zstack:plugin>
     </bean>
 
-
-    <bean id="AccountCascadeExtension" class="org.zstack.account.identity.AccountCascadeExtension">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.core.cascade.CascadeExtensionPoint"/>
-        </zstack:plugin>
-    </bean>
 </beans>
 
