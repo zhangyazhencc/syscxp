@@ -1,15 +1,20 @@
 package org.zstack.billing.identity;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.billing.header.identity.AccountBalanceVO;
 import org.zstack.billing.header.identity.AccountBalanceVO_;
+import org.zstack.core.cloudbus.CloudBusImpl2;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.SQL;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
+import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.core.thread.PeriodicTask;
 import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
@@ -19,10 +24,13 @@ import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.*;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.message.GsonTransient;
+import org.zstack.header.message.Message;
 import org.zstack.header.rest.RESTFacade;
 import org.zstack.header.rest.RestAPIState;
 import org.zstack.utils.*;
 import org.zstack.utils.function.ForEachFunction;
+import org.zstack.utils.gson.GsonUtil;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.header.rest.RestAPIResponse;
@@ -434,9 +442,10 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             if (session == null) {
                 APIGetSessionPolicyMsg aMsg = new APIGetSessionPolicyMsg();
                 aMsg.setSessionUuid(msg.getSession().getUuid());
-                RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, aMsg, RestAPIResponse.class);
+                String gstr = RESTApiDecoder.dump(aMsg);
+                RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
                 if (rsp.getState().equals(RestAPIState.Done.toString())){
-                    APIGetSessionPolicyReply replay = JSONObjectUtil.toObject(rsp.getResult(), APIGetSessionPolicyReply.class);
+                    APIGetSessionPolicyReply replay = (APIGetSessionPolicyReply) RESTApiDecoder.loads(rsp.getResult());
                     if (replay.isValidSession()){
                         session = replay.getSessionPolicyInventory();}
                 }
