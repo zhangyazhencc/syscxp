@@ -111,7 +111,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIGetSessionPolicyMsg) msg);
         } else if (msg instanceof APICheckApiPermissionMsg) {
             handle((APICheckApiPermissionMsg) msg);
-        } else {
+        } else if(msg instanceof APIProvingSessionMsg){
+            handle((APIProvingSessionMsg) msg);
+        }else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -199,6 +201,31 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         reply.setValidSession(valid);
         bus.reply(msg, reply);
     }
+
+    private void handle(APIProvingSessionMsg msg) {
+        APIProvingSessionReply reply = new APIProvingSessionReply();
+
+        SessionInventory s = identiyInterceptor.getSessions().get(msg.getSessionUuid());
+        Timestamp current = dbf.getCurrentSqlTime();
+        boolean valid = true;
+        if (s != null && current.after(s.getExpiredDate())) {
+            valid = false;
+            identiyInterceptor.logOutSession(s.getUuid());
+        } else {
+            SessionVO session = dbf.findByUuid(msg.getSessionUuid(), SessionVO.class);
+            if (session == null ) {
+                valid = false;
+            } else if (session != null && current.after(session.getExpiredDate())) {
+                valid = false;
+                identiyInterceptor.logOutSession(session.getUuid());
+            }
+        }
+
+        reply.setValidSession(valid);
+        reply.setSessionInventory(s);
+        bus.reply(msg, reply);
+    }
+
 
     private void handle(APIGetSessionPolicyMsg msg) {
         APIGetSessionPolicyReply reply = new APIGetSessionPolicyReply();
