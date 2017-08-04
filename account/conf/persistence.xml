@@ -14,7 +14,6 @@
         <class>org.zstack.account.header.identity.PolicyVO</class>
         <class>org.zstack.account.header.identity.UserPolicyRefVO</class>
         <class>org.zstack.account.header.identity.SessionVO</class>
-        <class>org.zstack.account.header.identity.SessionVO</class>
 
     </persistence-unit>
 </persistence>
