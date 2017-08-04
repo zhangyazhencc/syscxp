@@ -48,15 +48,15 @@ CREATE TABLE  `syscxp_tunnel`.`JobQueueEntryVO` (
 ## 专线通道连接点
 CREATE TABLE  `EndpointVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `node_uuid` varchar(32) DEFAULT NULL,
+  `nodeUuid` varchar(32) DEFAULT NULL,
   `name` varchar(255) NOT NULL UNIQUE COMMENT '连接点名称',
   `code` varchar(128) NOT NULL COMMENT '连接点编号',
   `enabled` varchar(32)  DEFAULT NULL,
   `openToCustomers` varchar(32) DEFAULT 'false',
-  `deleted` TINYINT(1) NOT NULL DEFAULT '0',
   `status` varchar(32) DEFAULT NULL,
   `subType` varchar(64) DEFAULT NULL,
   `description` varchar(4000)  DEFAULT NULL,
+  `deleted` TINYINT(1) NOT NULL DEFAULT '0',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
@@ -84,26 +84,24 @@ CREATE TABLE  `HostVO` (
 CREATE TABLE  `SwitchVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `endpointUuid` varchar(32) DEFAULT NULL ,
-  `userUuid` varchar(128) DEFAULT NULL ,x``
   `code` varchar(128) DEFAULT NULL,
   `name` varchar(128) DEFAULT NULL,
   `brand` varchar(128) DEFAULT NULL,
   `model` varchar(32) DEFAULT NULL,
   `subModel` varchar(32) DEFAULT NULL,
-  `upper_type` varchar(32) DEFAULT NULL,
-  `enabled` varchar(32) DEFAULT NULL,
+  `upperType` varchar(32) DEFAULT NULL,
+  `enabled` TINYINT(1) DEFAULT NULL,
   `owner` varchar(128) DEFAULT NULL,
   `rack` varchar(32) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL,
   `vlanBegin` INT(11) DEFAULT NULL,
   `vlanEnd` INT(11) DEFAULT NULL,
-  `MgrIp` varchar(128) DEFAULT NULL,
+  `mIP` varchar(128) DEFAULT NULL,
   `username` varchar(128) DEFAULT NULL ,
   `password` varchar(128) DEFAULT NULL ,
-  `vxlanSupport` varchar(32) DEFAULT NULL ,
-  `password` varchar(128) DEFAULT NULL ,
-  `status` varchar(32) DEFAULT NULL COMMENT '状态',
-  `private` varchar(64) DEFAULT NULL,
+  `vxlanSupport` TINYINT(1) DEFAULT NULL ,
+  `status` varchar(16) DEFAULT NULL COMMENT '状态',
+  `isPrivate` varchar(16) DEFAULT NULL,
   `deleted` TINYINT(1) NOT NULL DEFAULT '0',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
@@ -112,12 +110,12 @@ CREATE TABLE  `SwitchVO` (
 
 
 ##主机交换机监控
-CREATE TABLE `hostSwitchMonitorVO` (
+CREATE TABLE `HostSwitchMonitorVO` (
   `uuid` VARCHAR(32) NOT NULL,
   `hostUuid` VARCHAR(32) DEFAULT NULL,
   `switchUuid` VARCHAR(32) DEFAULT NULL,
   `endpointUuid` VARCHAR(32) DEFAULT NULL,
-  `interface` varchar(128)  DEFAULT NULL,
+  `interfaceName` varchar(128)  DEFAULT NULL,
   `deleted` TINYINT(1) NOT NULL DEFAULT '0',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
@@ -145,14 +143,14 @@ CREATE TABLE `agentVO` (
 CREATE TABLE  `SwitchPortVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `switchUuid` varchar(32) DEFAULT NULL ,
-  `port` INT(11) DEFAULT NULL ,
-  `name` varchar(128) DEFAULT NULL,
+  `portNum` INT(11) DEFAULT NULL ,
+  `portName` varchar(128) DEFAULT NULL,
   `label` varchar(128) DEFAULT NULL ,
   `vlan` INT(11) DEFAULT NULL ,
   `endVlan` INT(11) DEFAULT NULL ,
+  `reuse` TINYINT(32) DEFAULT NULL,
+  `autoAlloc` TINYINT(1) DEFAULT NULL,
   `enabled` TINYINT(1) DEFAULT NULL,
-  `reuse` varchar(32) DEFAULT NULL,
-  `auto_alloc` varchar(32) DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
@@ -200,14 +198,14 @@ CREATE TABLE  `SubTaskVO` (
 
 
 ##部署任务
-CREATE TABLE `deployTask` (
+CREATE TABLE `DeployTaskVO` (
   `uuid` VARCHAR(32) NOT NULL,
   `tunnelPointUuid` VARCHAR(32) DEFAULT NULL,
   `state` varchar(32) DEFAULT NULL,
   `type` varchar(64) DEFAULT NULL,
   `description` varchar(4000)  DEFAULT NULL,
   `comment` varchar(4000) DEFAULT NULL,
-  `finish_by` varchar(64)  DEFAULT NULL,
+  `finishBy` varchar(64)  DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
@@ -228,7 +226,7 @@ CREATE TABLE  `NodeVO` (
   `longtitude` DECIMAL(10,5) DEFAULT NULL COMMENT '经度',
   `latitude` DECIMAL(10,5) DEFAULT NULL COMMENT '纬度',
   `property` varchar(128) DEFAULT NULL,
-  `status` varchar(64) DEFAULT NULL,
+  `status` varchar(16) DEFAULT NULL,
   `deleted` TINYINT(1) NOT NULL DEFAULT '0',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
@@ -247,7 +245,7 @@ CREATE TABLE  `NetworkTypeVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##agent网络类型
-CREATE TABLE `agentNetworkTypeVO` (
+CREATE TABLE `AgentNetworkTypeVO` (
   `uuid`varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `networkTypeUuid` varchar(32) DEFAULT NULL,
   `agentUuid` varchar(32) DEFAULT NULL,
@@ -260,36 +258,18 @@ CREATE TABLE `agentNetworkTypeVO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-##专线通道
-CREATE TABLE  `TunnelVO` (
-  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `nodeUuid` varchar(32) DEFAULT NULL,
-  `name` varchar(255) NOT NULL COMMENT '连接点名称',
-  `code` varchar(128) NOT NULL COMMENT '连接点编号',
-  `enabled` TINYINT(1)  DEFAULT NULL,
-  `openToCustomers` TINYINT(1) DEFAULT NULL COMMENT '0:true,1:false',
-  `deleted` TINYINT(1) NOT NULL DEFAULT '0',
-  `status` varchar(32)  DEFAULT NULL,
-  `subType` varchar(64) DEFAULT NULL,
-  `description` varchar(4000) DEFAULT NULL,
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  PRIMARY KEY (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 ##
-CREATE TABLE `speedRecordVO` (
+CREATE TABLE `SpeedRecordVO` (
   `uuid` VARCHAR(32) NOT NULL,
   `tunnelUuid` VARCHAR(32) DEFAULT NULL,
-  `userUuid` varchar(64) DEFAULT NULL,
   `protocol` varchar(32) DEFAULT NULL,
   `duration` int(11) DEFAULT NULL,
   `srcDirection` int(11) DEFAULT NULL,
   `dstDirection` int(11) DEFAULT NULL,
-  `completed` int(11) DEFAULT NULL,
   `avgSpeed` int(11) DEFAULT NULL,
   `maxSpeed` int(11) DEFAULT NULL,
   `minSpeed` int(11) DEFAULT NULL,
+  `completed` TINYINT(1) DEFAULT NULL,
   `deleted` TINYINT(11) NOT NULL DEFAULT '0',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
@@ -297,10 +277,9 @@ CREATE TABLE `speedRecordVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##通道
-CREATE TABLE `tunnelVO` (
+CREATE TABLE `TunnelVO` (
   `uuid` VARCHAR(32) NOT NULL,
   `networkTypeUuid` VARCHAR(32) DEFAULT NULL,
-  `userUuid` varchar(32) DEFAULT NULL,
   `projectUuid` varchar(32) DEFAULT NULL,
   `code` varchar(128) DEFAULT NULL,
   `name` varchar(256) DEFAULT NULL,
@@ -309,14 +288,14 @@ CREATE TABLE `tunnelVO` (
   `distance` decimal(10,2) DEFAULT NULL,
   `state` varchar(32) DEFAULT NULL,
   `status` varchar(32) DEFAULT NULL,
-  `endpointA` int(11) DEFAULT NULL,
-  `endpointB` int(11) DEFAULT NULL,
+  `endpointA` VARCHAR(32) DEFAULT NULL,
+  `endpointB` VARCHAR(32) DEFAULT NULL,
   `endpointAType` varchar(64) DEFAULT NULL,
   `endpointBType` varchar(64) DEFAULT NULL,
   `priExclusive` varchar(32) DEFAULT 'false',
-  `alarmed` int(11) NOT NULL DEFAULT '0',
+  `alarmed` TINYINT(11) NOT NULL DEFAULT '0',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0',
-  `billingAt` timestamp NULL DEFAULT NULL,
+  `billingDate` timestamp NULL DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
@@ -324,7 +303,7 @@ CREATE TABLE `tunnelVO` (
 
 
 ##通道端点
-CREATE TABLE `tunnelPointVO` (
+CREATE TABLE `TunnelPointVO` (
   `uuid` VARCHAR(32) NOT NULL ,
   `tunnelUuid` VARCHAR(32) DEFAULT NULL,
   `agentUuid` VARCHAR(32) DEFAULT NULL,
@@ -344,7 +323,7 @@ CREATE TABLE `tunnelPointVO` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
 ## 通道端口
-CREATE TABLE `tunnelPointSwitchPortVO` (
+CREATE TABLE `TunnelPointSwitchPortVO` (
   `uuid` VARCHAR(32) NOT NULL ,
   `switchUuid` VARCHAR(32) DEFAULT NULL,
   `switchPortUuid` VARCHAR(32) DEFAULT NULL,
@@ -362,7 +341,7 @@ CREATE TABLE `tunnelPointSwitchPortVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##通道监控
-CREATE TABLE `tunnelMonitorVO` (
+CREATE TABLE `TunnelMonitorVO` (
   `uuid` VARCHAR(32) NOT NULL,
   `tunnelUuid` VARCHAR(32) DEFAULT NULL,
   `tunnelPointAUuid` VARCHAR(32) DEFAULT NULL,
@@ -371,6 +350,16 @@ CREATE TABLE `tunnelMonitorVO` (
   `monitorBIp` varchar(64) DEFAULT NULL,
   `status` varchar(32) DEFAULT NULL,
   `msg` varchar(1024) DEFAULT NULL,
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `SwitchModelVO` (
+  `uuid` VARCHAR(32) NOT NULL,
+  `model` VARCHAR(128) DEFAULT NULL,
+  `subModel` VARCHAR(128) DEFAULT NULL,
+  `mpls` VARCHAR(128) DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
