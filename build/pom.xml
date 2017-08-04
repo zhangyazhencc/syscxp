@@ -84,7 +84,11 @@
                     <artifactId>account</artifactId>
                     <version>${project.version}</version>
                 </dependency>
-
+                <dependency>
+                    <groupId>org.zstack</groupId>
+                    <artifactId>tunnel</artifactId>
+                    <version>${project.version}</version>
+                </dependency>
             </dependencies>
         </profile>
     </profiles>

@@ -25,6 +25,7 @@
         <module>search</module>
         <module>account</module>
         <module>billing</module>
+        <module>tunnel</module>
         <module>build</module>
     </modules>
 
@@ -399,6 +400,7 @@
                 <module>search</module>
                 <module>account</module>
                 <module>billing</module>
+                <module>tunnel</module>
                 <module>build</module>
             </modules>
         </profile>
