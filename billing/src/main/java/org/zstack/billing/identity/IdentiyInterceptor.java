@@ -1,8 +1,8 @@
 package org.zstack.billing.identity;
 
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.zstack.billing.header.identity.AccountBalanceVO;
 import org.zstack.billing.header.identity.AccountBalanceVO_;
 import org.zstack.core.componentloader.PluginRegistry;
