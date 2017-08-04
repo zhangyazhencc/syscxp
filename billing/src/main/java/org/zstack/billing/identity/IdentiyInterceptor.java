@@ -1,10 +1,14 @@
 package org.zstack.billing.identity;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.zstack.billing.header.identity.AccountBalanceVO;
+import org.zstack.billing.header.identity.AccountBalanceVO_;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.SQL;
+import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.core.thread.PeriodicTask;
 import org.zstack.core.thread.ThreadFacade;
@@ -224,7 +228,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
     }
 
     @Transactional(readOnly = true)
-    private Timestamp getCurrentSqlDate() {
+    Timestamp getCurrentSqlDate() {
         Query query = dbf.getEntityManager().createNativeQuery("select current_timestamp()");
         return (Timestamp) query.getSingleResult();
     }
@@ -428,9 +432,9 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
 
             SessionPolicyInventory session = sessions.get(msg.getSession().getUuid());
             if (session == null) {
-                APIGetSessionPolicyMsg msg = new APIGetSessionPolicyMsg();
-                msg.setSessionUuid(msg.getSession().getUuid());
-                RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, msg, RestAPIResponse.class);
+                APIGetSessionPolicyMsg aMsg = new APIGetSessionPolicyMsg();
+                aMsg.setSessionUuid(msg.getSession().getUuid());
+                RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, aMsg, RestAPIResponse.class);
                 if (rsp.getState().equals(RestAPIState.Done.toString())){
                     APIGetSessionPolicyReply replay = JSONObjectUtil.toObject(rsp.getResult(), APIGetSessionPolicyReply.class);
                     if (replay.isValidSession()){
@@ -441,6 +445,18 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                             "Session expired"));
                 }
                 sessions.put(session.getUuid(), session);
+                String accountUuid = session.getAccountUuid();
+                if(!StringUtils.isEmpty(accountUuid)){
+                    SimpleQuery<AccountBalanceVO> q = dbf.createQuery(AccountBalanceVO.class);
+                    q.add(AccountBalanceVO_.uuid, SimpleQuery.Op.EQ, accountUuid);
+                    AccountBalanceVO a = q.find();
+                    if(a == null){
+                        AccountBalanceVO vo = new AccountBalanceVO();
+                        vo.setUuid(accountUuid);
+                        dbf.persist(vo);
+                    }
+                }
+
             }
 
             Timestamp curr = getCurrentSqlDate();

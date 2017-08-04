@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<globalConfig xmlns="http://zstack.org/schema/zstack">
+	<config>
+		<name>session.maxConcurrent</name>
+		<description>Max number of sessions management server accepts. When this limit met, new session will be rejected</description>
+		<defaultValue>5000</defaultValue>
+		<category>billing</category>
+		<type>java.lang.Integer</type>
+	</config>
+
+	<config>
+		<name>session.timeout</name>
+		<description>A timeout period assigned to a session. After timeout, the session will be cleaned out.</description>
+		<defaultValue>7200</defaultValue>
+		<category>billing</category>
+		<type>java.lang.Integer</type>
+	</config>
+
+	<config>
+		<name>session.cleanup.interval</name>
+		<description>interval repeated that the collector runs to cleanup timeout session</description>
+		<defaultValue>3600</defaultValue>
+		<category>billing</category>
+		<type>java.lang.Integer</type>
+	</config>
+
+	<config>
+		<name>admin.showAllResource</name>
+		<description>if user is an administrator then who can access all resources</description>
+		<defaultValue>7200</defaultValue>
+		<category>billing</category>
+		<type>java.lang.String</type>
+	</config>
+
+</globalConfig>
