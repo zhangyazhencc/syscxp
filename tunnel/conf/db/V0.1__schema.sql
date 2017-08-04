@@ -53,10 +53,10 @@ CREATE TABLE  `EndpointVO` (
   `code` varchar(128) NOT NULL COMMENT '连接点编号',
   `enabled` varchar(32)  DEFAULT NULL,
   `openToCustomers` varchar(32) DEFAULT 'false',
-  `deleted` TINYINT(1) NOT NULL DEFAULT '0',
   `status` varchar(32) DEFAULT NULL,
   `subType` varchar(64) DEFAULT NULL,
   `description` varchar(4000)  DEFAULT NULL,
+  `deleted` TINYINT(1) NOT NULL DEFAULT '0',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)

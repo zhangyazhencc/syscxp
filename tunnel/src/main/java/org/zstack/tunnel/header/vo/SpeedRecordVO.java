@@ -29,10 +29,10 @@ public class SpeedRecordVO {
     private String duration;
 
     @Column
-    private String srcDirection;
+    private Integer srcDirection;
 
     @Column
-    private String dstDirection;
+    private Integer dstDirection;
 
     @Column
     private Integer avgSpeed;
@@ -87,19 +87,19 @@ public class SpeedRecordVO {
         this.duration = duration;
     }
 
-    public String getSrcDirection() {
+    public Integer getSrcDirection() {
         return srcDirection;
     }
 
-    public void setSrcDirection(String srcDirection) {
+    public void setSrcDirection(Integer srcDirection) {
         this.srcDirection = srcDirection;
     }
 
-    public String getDstDirection() {
+    public Integer getDstDirection() {
         return dstDirection;
     }
 
-    public void setDstDirection(String dstDirection) {
+    public void setDstDirection(Integer dstDirection) {
         this.dstDirection = dstDirection;
     }
 

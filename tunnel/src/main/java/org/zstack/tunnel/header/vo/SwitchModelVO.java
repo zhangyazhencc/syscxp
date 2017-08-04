@@ -16,6 +16,7 @@ public class SwitchModelVO {
     @Id
     @Column
     private String uuid;
+
     @Column
     private String model;
 
