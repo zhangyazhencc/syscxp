@@ -9,7 +9,7 @@ import org.zstack.query.QueryUtils;
  */
 public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtension {
     @Autowired
-    private BillingManager billingMgr;
+    private IdentiyInterceptor identiyInterceptor;
 
     @Override
     public String makeSubquery(APIQueryMessage msg, Class inventoryClass) {
@@ -18,7 +18,7 @@ public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
         }
 
         Class entityClass = QueryUtils.getEntityClassFromInventoryClass(inventoryClass);
-        if (!billingMgr.isResourceHavingAccountReference(entityClass)) {
+        if (!identiyInterceptor.isResourceHavingAccountReference(entityClass)) {
             return null;
         }
 

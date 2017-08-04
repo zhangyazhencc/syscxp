@@ -5,11 +5,5 @@ import org.zstack.header.message.APIMessage;
 
 public interface BillingManager {
 
-    void checkApiMessagePermission(APIMessage msg);
-
-    boolean isAdmin(SessionInventory session);
-
-    boolean isResourceHavingAccountReference(Class entityClass);
-
 
 }

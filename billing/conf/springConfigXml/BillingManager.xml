@@ -12,13 +12,8 @@
          http://zstack.org/schema/zstack/plugin.xsd"
        default-init-method="init" default-destroy-method="destroy">
 
-    <bean id="BillingManager" class="org.zstack.billing.identity.BillingManagerImpl">
+    <bean id="IdentiyInterceptor" class="org.zstack.billing.identity.IdentiyInterceptor">
         <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.Component"/>
-            <zstack:extension interface="org.zstack.header.Service"/>
-            <zstack:extension interface="org.zstack.header.managementnode.PrepareDbInitialValueExtensionPoint"/>
-            <zstack:extension interface="org.zstack.core.db.SoftDeleteEntityExtensionPoint"/>
-            <zstack:extension interface="org.zstack.core.db.HardDeleteEntityExtensionPoint"/>
             <zstack:extension interface="org.zstack.header.apimediator.GlobalApiMessageInterceptor"/>
             <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
         </zstack:plugin>
@@ -28,15 +23,16 @@
                 <value>org.zstack.billing.header.identity.AccountBalanceVO</value>
             </list>
         </property>
-
     </bean>
 
-    <bean id="AccountSubQueryExtension" class="org.zstack.billing.identity.BillingSubQueryExtension">
+    <bean id="BillingManager" class="org.zstack.billing.identity.BillingManagerImpl">
         <zstack:plugin>
-            <zstack:extension interface="org.zstack.query.MysqlQuerySubQueryExtension"/>
+            <zstack:extension interface="org.zstack.header.Component"/>
+            <zstack:extension interface="org.zstack.header.Service"/>
+            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
         </zstack:plugin>
-    </bean>
 
+    </bean>
 
 </beans>
 

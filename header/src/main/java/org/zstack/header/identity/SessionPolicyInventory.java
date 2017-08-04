@@ -37,7 +37,16 @@ public class SessionPolicyInventory extends SessionInventory {
         }
     }
 
-
+    public static SessionPolicyInventory valueOf(SessionInventory session){
+        SessionPolicyInventory sp = new SessionPolicyInventory();
+        sp.setUuid(session.getUuid());
+        sp.setAccountUuid(session.getAccountUuid());
+        sp.setUserUuid(session.getUserUuid());
+        sp.setType(session.getType());
+        sp.setCreateDate(session.getCreateDate());
+        sp.setExpiredDate(session.getExpiredDate());
+        return sp;
+    }
     private List<SessionPolicy> sessionPolicys;
 
     public List<SessionPolicy> getSessionPolicys() {
