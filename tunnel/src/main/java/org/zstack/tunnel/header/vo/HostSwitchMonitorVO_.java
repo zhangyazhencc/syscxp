@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 public class HostSwitchMonitorVO_ {
     public static volatile SingularAttribute<HostSwitchMonitorVO, String> uuid;
     public static volatile SingularAttribute<HostSwitchMonitorVO, String> switchUuid;
+    public static volatile SingularAttribute<HostSwitchMonitorVO, String> endpointUuid;
     public static volatile SingularAttribute<HostSwitchMonitorVO, String> hostUuid;
     public static volatile SingularAttribute<HostSwitchMonitorVO, String> interfaceName;
     public static volatile SingularAttribute<HostSwitchMonitorVO, Integer> deleted;

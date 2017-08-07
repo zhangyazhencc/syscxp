@@ -43,6 +43,9 @@ public class NodeVO {
     private String city;
 
     @Column
+    private String address;
+
+    @Column
     private double longtitude;
 
     @Column
@@ -134,6 +137,10 @@ public class NodeVO {
     public void setCity(String city) {
         this.city = city;
     }
+
+    public String getAddress() { return address; }
+
+    public void setAddress(String address) { this.address = address; }
 
     public double getLongtitude() {
         return longtitude;
