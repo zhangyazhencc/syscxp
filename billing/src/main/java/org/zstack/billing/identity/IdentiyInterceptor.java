@@ -1,11 +1,10 @@
 package org.zstack.billing.identity;
 
-import com.google.gson.ExclusionStrategy;
-import com.google.gson.FieldAttributes;
-import com.google.gson.Gson;
 import org.apache.commons.lang.StringUtils;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.zstack.billing.header.identity.AccountBalanceVO;
 import org.zstack.billing.header.identity.AccountBalanceVO_;
 import org.zstack.core.cloudbus.CloudBusImpl2;
@@ -34,9 +33,9 @@ import org.zstack.utils.gson.GsonUtil;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.header.rest.RestAPIResponse;
+
 import javax.persistence.Query;
 import javax.persistence.Tuple;
-import javax.persistence.TypedQuery;
 import java.lang.reflect.Field;
 import java.sql.Timestamp;
 import java.util.*;
@@ -45,6 +44,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 import org.zstack.header.identity.SessionPolicyInventory.SessionPolicy;
 
 /**
@@ -62,7 +62,8 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
     @Autowired
     private PluginRegistry pluginRgty;
     @Autowired
-    private RESTFacade restf;;
+    private RESTFacade restf;
+    ;
 
     private List<String> resourceTypeForAccountRef;
     private List<Class> resourceTypes;
@@ -205,10 +206,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                 }
 
                 if (!String.class.isAssignableFrom(f.getType()) && !Collection.class.isAssignableFrom(f.getType())) {
-                    throw new CloudRuntimeException(String.format("@APIParam of %s.%s has checkAccount = true, however," +
-                                    " the type of the field is not String or Collection but %s. " +
-                                    "This field must be a resource UUID or a collection(e.g. List) of UUIDs",
-                            clz.getName(), f.getName(), f.getType()));
+                    throw new CloudRuntimeException(String.format("@APIParam of %s.%s has checkAccount = true, however," + " the type of the field is not String or Collection but %s. " + "This field must be a resource UUID or a collection(e.g. List) of UUIDs", clz.getName(), f.getName(), f.getType()));
                 }
 
                 AccountCheckField af = new AccountCheckField();
@@ -298,23 +296,15 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                     return;
                 }
 
-                List<Tuple> ts = SQL.New(
-                        " select uuid, accountUuid from :resourceType where uuid in (:resourceUuids) ", Tuple.class)
-                        .param("resourceType", af.param.resourceType().getSimpleName())
-                        .param("resourceUuids", resourceUuids)
-                        .list();
+                List<Tuple> ts = SQL.New(" select uuid, accountUuid from :resourceType where uuid in (:resourceUuids) ", Tuple.class).param("resourceType", af.param.resourceType().getSimpleName()).param("resourceUuids", resourceUuids).list();
                 for (Tuple t : ts) {
                     String resourceUuid = t.get(0, String.class);
                     String resourceOwnerAccountUuid = t.get(1, String.class);
                     if (!session.getAccountUuid().equals(resourceOwnerAccountUuid)) {
-                        throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
-                                String.format("operation denied. The resource[uuid: %s, type: %s, ownerAccountUuid:%s] doesn't belong to the account[uuid: %s]",
-                                        resourceUuid, af.param.resourceType().getSimpleName(), resourceOwnerAccountUuid, session.getAccountUuid())
-                        ));
+                        throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED, String.format("operation denied. The resource[uuid: %s, type: %s, ownerAccountUuid:%s] doesn't belong to the account[uuid: %s]", resourceUuid, af.param.resourceType().getSimpleName(), resourceOwnerAccountUuid, session.getAccountUuid())));
                     } else {
                         if (logger.isTraceEnabled()) {
-                            logger.trace(String.format("account-check pass. The resource[uuid: %s, type: %s] belongs to the account[uuid: %s]",
-                                    resourceUuid, af.param.resourceType().getSimpleName(), session.getAccountUuid()));
+                            logger.trace(String.format("account-check pass. The resource[uuid: %s, type: %s] belongs to the account[uuid: %s]", resourceUuid, af.param.resourceType().getSimpleName(), session.getAccountUuid()));
                         }
                     }
                 }
@@ -325,18 +315,11 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             String policyCategory = userPolicy ? "user policy" : "group policy";
 
             if (d.effect == StatementEffect.Allow) {
-                logger.debug(String.format("API[name: %s, action: %s] is approved by a %s[name: %s, uuid: %s]," +
-                                " statement[action: %s]", msg.getClass().getSimpleName(), d.action,
-                        policyCategory, d.policy.getName(), d.policy.getUuid(), d.actionRule));
+                logger.debug(String.format("API[name: %s, action: %s] is approved by a %s[name: %s, uuid: %s]," + " statement[action: %s]", msg.getClass().getSimpleName(), d.action, policyCategory, d.policy.getName(), d.policy.getUuid(), d.actionRule));
             } else {
-                logger.debug(String.format("API[name: %s, action: %s] is denied by a %s[name: %s, uuid: %s]," +
-                                " statement[action: %s]", msg.getClass().getSimpleName(), d.action,
-                        policyCategory, d.policy.getName(), d.policy.getUuid(), d.actionRule));
+                logger.debug(String.format("API[name: %s, action: %s] is denied by a %s[name: %s, uuid: %s]," + " statement[action: %s]", msg.getClass().getSimpleName(), d.action, policyCategory, d.policy.getName(), d.policy.getUuid(), d.actionRule));
 
-                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
-                        String.format("%s denied. user[name: %s, uuid: %s] is denied to execute API[%s]",
-                                policyCategory, username, session.getUuid(), msg.getClass().getSimpleName())
-                ));
+                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED, String.format("%s denied. user[name: %s, uuid: %s] is denied to execute API[%s]", policyCategory, username, session.getUuid(), msg.getClass().getSimpleName())));
             }
         }
 
@@ -348,15 +331,11 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             if (!session.isAdminUserSession()) {
 
                 if (action.adminOnly) {
-                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
-                            String.format("API[%s] is admin only", msg.getClass().getSimpleName())));
+                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED, String.format("API[%s] is admin only", msg.getClass().getSimpleName())));
                 }
 
                 if (action.accountOnly && !session.isAccountSession()) {
-                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
-                            String.format("API[%s] can only be called by an account, the current session is a user session[user uuid:%s]",
-                                    msg.getClass().getSimpleName(), session.getUserUuid())
-                    ));
+                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED, String.format("API[%s] can only be called by an account, the current session is a user session[user uuid:%s]", msg.getClass().getSimpleName(), session.getUserUuid())));
                 }
 
                 if (action.accountCheckFields != null && !action.accountCheckFields.isEmpty()) {
@@ -381,10 +360,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                 return;
             }
 
-            throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
-                    String.format("user[uuid: %s] has no policy set for this operation, API[%s] is denied by default. You may either create policies for this user" +
-                            " or add the user into a group with polices set", session.getUserUuid(), msg.getClass().getSimpleName())
-            ));
+            throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED, String.format("user[uuid: %s] has no policy set for this operation, API[%s] is denied by default. You may either create policies for this user" + " or add the user into a group with polices set", session.getUserUuid(), msg.getClass().getSimpleName())));
         }
 
         class Decision {
@@ -414,9 +390,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                             }
 
                             if (logger.isTraceEnabled()) {
-                                logger.trace(String.format("API[name: %s, action: %s] is not matched by policy[name: %s, uuid: %s" +
-                                                ", statement[action: %s, effect: %s]", msg.getClass().getSimpleName(),
-                                        a, p.getName(), p.getUuid(), ac, s.getEffect()));
+                                logger.trace(String.format("API[name: %s, action: %s] is not matched by policy[name: %s, uuid: %s" + ", statement[action: %s, effect: %s]", msg.getClass().getSimpleName(), a, p.getName(), p.getUuid(), ac, s.getEffect()));
                             }
                         }
                     }
@@ -429,13 +403,11 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
 
         private void sessionCheck() {
             if (msg.getSession() == null) {
-                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
-                        String.format("session of message[%s] is null", msg.getMessageName())));
+                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION, String.format("session of message[%s] is null", msg.getMessageName())));
             }
 
             if (msg.getSession().getUuid() == null) {
-                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
-                        "session uuid is null"));
+                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION, "session uuid is null"));
             }
 
             SessionPolicyInventory session = sessions.get(msg.getSession().getUuid());
@@ -444,22 +416,23 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                 aMsg.setSessionUuid(msg.getSession().getUuid());
                 String gstr = RESTApiDecoder.dump(aMsg);
                 RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
-                if (rsp.getState().equals(RestAPIState.Done.toString())){
+                if (rsp.getState().equals(RestAPIState.Done.toString())) {
                     APIGetSessionPolicyReply replay = (APIGetSessionPolicyReply) RESTApiDecoder.loads(rsp.getResult());
-                    if (replay.isValidSession()){
-                        session = replay.getSessionPolicyInventory();}
+                    if (replay.isValidSession()) {
+                        session = replay.getSessionPolicyInventory();
+                    }
+
                 }
                 if (session == null) {
-                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
-                            "Session expired"));
+                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION, "Session expired"));
                 }
                 sessions.put(session.getUuid(), session);
                 String accountUuid = session.getAccountUuid();
-                if(!StringUtils.isEmpty(accountUuid)){
+                if (!StringUtils.isEmpty(accountUuid)) {
                     SimpleQuery<AccountBalanceVO> q = dbf.createQuery(AccountBalanceVO.class);
                     q.add(AccountBalanceVO_.uuid, SimpleQuery.Op.EQ, accountUuid);
                     AccountBalanceVO a = q.find();
-                    if(a == null){
+                    if (a == null) {
                         AccountBalanceVO vo = new AccountBalanceVO();
                         vo.setUuid(accountUuid);
                         dbf.persist(vo);
@@ -470,8 +443,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
 
             Timestamp curr = getCurrentSqlDate();
             if (curr.after(session.getExpiredDate())) {
-                logger.debug(String.format("session expired[%s < %s] for account[uuid:%s, session id:%s]", curr,
-                        session.getExpiredDate(), session.getAccountUuid(), session.getUuid()));
+                logger.debug(String.format("session expired[%s < %s] for account[uuid:%s, session id:%s]", curr, session.getExpiredDate(), session.getAccountUuid(), session.getUuid()));
                 logOutSession(session.getUuid());
                 throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION, "Session expired"));
             }
@@ -488,13 +460,12 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         }
 
         final SessionPolicyInventory finalSession = session;
-        CollectionUtils.safeForEach(pluginRgty.getExtensionList(SessionLogoutExtensionPoint.class),
-                new ForEachFunction<SessionLogoutExtensionPoint>() {
-                    @Override
-                    public void run(SessionLogoutExtensionPoint ext) {
-                        ext.sessionLogout(finalSession);
-                    }
-                });
+        CollectionUtils.safeForEach(pluginRgty.getExtensionList(SessionLogoutExtensionPoint.class), new ForEachFunction<SessionLogoutExtensionPoint>() {
+            @Override
+            public void run(SessionLogoutExtensionPoint ext) {
+                ext.sessionLogout(finalSession);
+            }
+        });
 
         sessions.remove(sessionUuid);
     }

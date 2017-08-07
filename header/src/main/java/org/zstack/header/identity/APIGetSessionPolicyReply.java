@@ -25,4 +25,8 @@ public class APIGetSessionPolicyReply extends APIReply {
         this.sessionPolicyInventory = sessionPolicyInventory;
     }
 
+    @Override
+    public String toString() {
+        return "APIGetSessionPolicyReply{" + "validSession=" + validSession + ", sessionPolicyInventory=" + sessionPolicyInventory + '}';
+    }
 }
