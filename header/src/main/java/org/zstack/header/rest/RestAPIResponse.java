@@ -48,4 +48,9 @@ public class RestAPIResponse {
     public void setResult(String result) {
         this.result = result;
     }
+
+    @Override
+    public String toString() {
+        return "RestAPIResponse{" + "uuid='" + uuid + '\'' + ", state='" + state + '\'' + ", createdDate=" + createdDate + ", finishedDate=" + finishedDate + ", result='" + result + '\'' + '}';
+    }
 }
