@@ -37,6 +37,7 @@ import org.zstack.header.rest.RestAPIResponse;
 import javax.persistence.Query;
 import javax.persistence.Tuple;
 import java.lang.reflect.Field;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -435,6 +436,9 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                     if (a == null) {
                         AccountBalanceVO vo = new AccountBalanceVO();
                         vo.setUuid(accountUuid);
+                        vo.setCashBalance(new BigDecimal("0"));
+                        vo.setPresentBalance(new BigDecimal("0"));
+                        vo.setCreditPoint(new BigDecimal("0"));
                         dbf.persist(vo);
                     }
                 }
