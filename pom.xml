@@ -27,7 +27,6 @@
         <module>billing</module>
         <module>tunnel</module>
         <module>build</module>
-        <module>tunnel</module>
     </modules>
 
     <dependencyManagement>
