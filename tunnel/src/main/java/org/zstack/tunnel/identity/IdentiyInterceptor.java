@@ -1,15 +1,18 @@
 package org.zstack.tunnel.identity;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import com.google.gson.Gson;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.transaction.annotation.Transactional;
-import org.zstack.core.Platform;
+import org.zstack.core.cloudbus.CloudBusImpl2;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.SQL;
 import org.zstack.core.db.SimpleQuery;
-import org.zstack.core.db.SimpleQuery.Op;
 import org.zstack.core.errorcode.ErrorFacade;
+import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.core.thread.PeriodicTask;
 import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
@@ -19,10 +22,16 @@ import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.*;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.message.GsonTransient;
+import org.zstack.header.message.Message;
+import org.zstack.header.rest.RESTFacade;
+import org.zstack.header.rest.RestAPIState;
 import org.zstack.utils.*;
 import org.zstack.utils.function.ForEachFunction;
+import org.zstack.utils.gson.GsonUtil;
+import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
-
+import org.zstack.header.rest.RestAPIResponse;
 import javax.persistence.Query;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
@@ -34,6 +43,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.zstack.header.identity.SessionPolicyInventory.SessionPolicy;
 
 /**
  * Created by zxhread on 17/8/3.
@@ -49,11 +59,13 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
     private ThreadFacade thdf;
     @Autowired
     private PluginRegistry pluginRgty;
+    @Autowired
+    private RESTFacade restf;;
 
     private List<String> resourceTypeForAccountRef;
     private List<Class> resourceTypes;
 
-    private Map<String, SessionInventory> sessions = new ConcurrentHashMap<>();
+    private Map<String, SessionPolicyInventory> sessions = new ConcurrentHashMap<>();
 
 
     class AccountCheckField {
@@ -74,7 +86,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
     private Future<Void> expiredSessionCollector;
 
 
-    public Map<String, SessionInventory> getSessions() {
+    public Map<String, SessionPolicyInventory> getSessions() {
         return sessions;
     }
 
@@ -82,34 +94,8 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         new Auth().check(msg);
     }
 
-    public boolean isAdmin(SessionInventory session) {
+    public boolean isAdmin(SessionPolicyInventory session) {
         return session.isAdminAccountSession();
-    }
-
-
-    public SessionInventory getSession(String accountUuid, AccountType type, String userUuid) {
-        int maxLoginTimes = IdentityGlobalConfig.MAX_CONCURRENT_SESSION.value(Integer.class);
-        SimpleQuery<SessionVO> query = dbf.createQuery(SessionVO.class);
-        query.add(SessionVO_.accountUuid, Op.EQ, accountUuid);
-        query.add(SessionVO_.userUuid, Op.EQ, userUuid);
-        long count = query.count();
-        if (count >= maxLoginTimes) {
-            String err = String.format("Login sessions hit limit of max allowed concurrent login sessions, max allowed: %s", maxLoginTimes);
-            throw new BadCredentialsException(err);
-        }
-
-        int sessionTimeout = IdentityGlobalConfig.SESSION_TIMEOUT.value(Integer.class);
-        SessionVO svo = new SessionVO();
-        svo.setUuid(Platform.getUuid());
-        svo.setAccountUuid(accountUuid);
-        svo.setUserUuid(userUuid);
-        svo.setType(type);
-        long expiredTime = getCurrentSqlDate().getTime() + TimeUnit.SECONDS.toMillis(sessionTimeout);
-        svo.setExpiredDate(new Timestamp(expiredTime));
-        svo = dbf.persistAndRefresh(svo);
-        SessionInventory session = svo.toSessionInventory();
-        sessions.put(session.getUuid(), session);
-        return session;
     }
 
     public void init() {
@@ -141,19 +127,19 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
 
     private void startExpiredSessionCollector() {
         logger.debug("startExpiredSessionCollector");
-        final int interval = IdentityGlobalConfig.SESSION_CLEANUP_INTERVAL;
+        final int interval = IdentityGlobalProperty.SESSION_CLEANUP_INTERVAL;
         expiredSessionCollector = thdf.submitPeriodicTask(new PeriodicTask() {
 
             @Transactional
             private List<String> deleteExpiredSessions() {
-                String sql = "select s.uuid from SessionVO s where CURRENT_TIMESTAMP  >= s.expiredDate";
-                TypedQuery<String> q = dbf.getEntityManager().createQuery(sql, String.class);
-                List<String> uuids = q.getResultList();
-                if (!uuids.isEmpty()) {
-                    String dsql = "delete from SessionVO s where s.uuid in :uuids";
-                    Query dq = dbf.getEntityManager().createQuery(dsql);
-                    dq.setParameter("uuids", uuids);
-                    dq.executeUpdate();
+                List<String> uuids = new ArrayList<String>();
+                Timestamp curr = getCurrentSqlDate();
+                for (Map.Entry<String, SessionPolicyInventory> entry : sessions.entrySet()) {
+                    SessionPolicyInventory sp = entry.getValue();
+                    if (curr.after(sp.getExpiredDate())) {
+                        uuids.add(sp.getUuid());
+                    }
+
                 }
                 return uuids;
             }
@@ -247,39 +233,15 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         return InterceptorPosition.FRONT;
     }
 
-    public void logOutSession(String sessionUuid) {
-        SessionInventory session = sessions.get(sessionUuid);
-        if (session == null) {
-            SessionVO svo = dbf.findByUuid(sessionUuid, SessionVO.class);
-            session = svo == null ? null : svo.toSessionInventory();
-        }
-
-        if (session == null) {
-            return;
-        }
-
-        final SessionInventory finalSession = session;
-        CollectionUtils.safeForEach(pluginRgty.getExtensionList(SessionLogoutExtensionPoint.class),
-                new ForEachFunction<SessionLogoutExtensionPoint>() {
-                    @Override
-                    public void run(SessionLogoutExtensionPoint ext) {
-                        ext.sessionLogout(finalSession);
-                    }
-                });
-
-        sessions.remove(sessionUuid);
-        dbf.removeByPrimaryKey(sessionUuid, SessionVO.class);
-    }
-
     @Transactional(readOnly = true)
-    private Timestamp getCurrentSqlDate() {
+    Timestamp getCurrentSqlDate() {
         Query query = dbf.getEntityManager().createNativeQuery("select current_timestamp()");
         return (Timestamp) query.getSingleResult();
     }
 
     class Auth {
         APIMessage msg;
-        SessionInventory session;
+        SessionPolicyInventory session;
         MessageAction action;
         String username;
 
@@ -305,7 +267,8 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                 return;
             } else {
                 DebugUtils.Assert(msg.getSession() != null, "session cannot be null");
-                session = msg.getSession();
+
+                session = SessionPolicyInventory.valueOf(msg.getSession());
 
                 action = actions.get(msg.getClass());
                 policyCheck();
@@ -409,12 +372,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                 }
             }
 
-            SimpleQuery<UserVO> uq = dbf.createQuery(UserVO.class);
-            uq.select(UserVO_.name);
-            uq.add(UserVO_.uuid, Op.EQ, session.getUserUuid());
-            username = uq.findValue();
-
-            List<PolicyInventory> userPolicys = getUserPolicys();
+            List<SessionPolicy> userPolicys = session.getSessionPolicys();
             Decision d = decide(userPolicys);
             if (d != null) {
                 useDecision(d, true);
@@ -422,22 +380,22 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             }
 
             throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
-                    String.format("user[name: %s, uuid: %s] has no policy set for this operation, API[%s] is denied by default. You may either create policies for this user" +
-                            " or add the user into a group with polices set", username, session.getUserUuid(), msg.getClass().getSimpleName())
+                    String.format("user[uuid: %s] has no policy set for this operation, API[%s] is denied by default. You may either create policies for this user" +
+                            " or add the user into a group with polices set", session.getUserUuid(), msg.getClass().getSimpleName())
             ));
         }
 
         class Decision {
-            PolicyInventory policy;
+            SessionPolicy policy;
             String action;
             PolicyStatement statement;
             String actionRule;
             StatementEffect effect;
         }
 
-        private Decision decide(List<PolicyInventory> userPolicys) {
+        private Decision decide(List<SessionPolicy> userPolicys) {
             for (String a : action.actions) {
-                for (PolicyInventory p : userPolicys) {
+                for (SessionPolicy p : userPolicys) {
                     for (PolicyStatement s : p.getStatements()) {
                         for (String ac : s.getActions()) {
                             Pattern pattern = Pattern.compile(ac);
@@ -466,13 +424,6 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             return null;
         }
 
-        @Transactional(readOnly = true)
-        private List<PolicyInventory> getUserPolicys() {
-            String sql = "select p from PolicyVO p, UserPolicyRefVO ref where ref.userUuid = :uuid and ref.policyUuid = p.uuid";
-            TypedQuery<PolicyVO> q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
-            q.setParameter("uuid", session.getUserUuid());
-            return PolicyInventory.valueOf(q.getResultList());
-        }
 
         private void sessionCheck() {
             if (msg.getSession() == null) {
@@ -485,21 +436,31 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                         "session uuid is null"));
             }
 
-            SessionInventory session = sessions.get(msg.getSession().getUuid());
+            SessionPolicyInventory session = sessions.get(msg.getSession().getUuid());
             if (session == null) {
-                SessionVO svo = dbf.findByUuid(msg.getSession().getUuid(), SessionVO.class);
-                if (svo == null) {
+                APIGetSessionPolicyMsg aMsg = new APIGetSessionPolicyMsg();
+                aMsg.setSessionUuid(msg.getSession().getUuid());
+                String gstr = RESTApiDecoder.dump(aMsg);
+                RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
+                if (rsp.getState().equals(RestAPIState.Done.toString())){
+                    APIGetSessionPolicyReply replay = (APIGetSessionPolicyReply) RESTApiDecoder.loads(rsp.getResult());
+                    if (replay.isValidSession()){
+                        session = replay.getSessionPolicyInventory();}
+                }
+                if (session == null) {
                     throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
                             "Session expired"));
                 }
-                session = svo.toSessionInventory();
                 sessions.put(session.getUuid(), session);
+
+                //// TODO: your self init code
+
             }
 
             Timestamp curr = getCurrentSqlDate();
             if (curr.after(session.getExpiredDate())) {
-                logger.debug(String.format("session expired[%s < %s] for account[uuid:%s]", curr,
-                        session.getExpiredDate(), session.getAccountUuid()));
+                logger.debug(String.format("session expired[%s < %s] for account[uuid:%s, session id:%s]", curr,
+                        session.getExpiredDate(), session.getAccountUuid(), session.getUuid()));
                 logOutSession(session.getUuid());
                 throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION, "Session expired"));
             }
@@ -508,15 +469,30 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         }
     }
 
+    public void logOutSession(String sessionUuid) {
+        SessionPolicyInventory session = sessions.get(sessionUuid);
+
+        if (session == null) {
+            return;
+        }
+
+        final SessionPolicyInventory finalSession = session;
+        CollectionUtils.safeForEach(pluginRgty.getExtensionList(SessionLogoutExtensionPoint.class),
+                new ForEachFunction<SessionLogoutExtensionPoint>() {
+                    @Override
+                    public void run(SessionLogoutExtensionPoint ext) {
+                        ext.sessionLogout(finalSession);
+                    }
+                });
+
+        sessions.remove(sessionUuid);
+    }
+
     @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
         new Auth().validate(msg);
 
         return msg;
-    }
-
-    public void check(APIMessage msg){
-        new Auth().check(msg);
     }
 
     public boolean isResourceHavingAccountReference(Class entityClass) {
