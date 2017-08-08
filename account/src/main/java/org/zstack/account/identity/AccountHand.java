@@ -47,10 +47,11 @@ public class AccountHand {
     }
 
     public void handle(APIChangeUserPWDMsg msg) {
-        APIChangeuserPWDReply reply = new APIChangeuserPWDReply();
+        APIChangeResultReply reply = new APIChangeResultReply();
 
-        String sql = "update UserVO set password= :newpassword where name = :name and password = :oldpassword";
+        String sql = "update UserVO set password= :newpassword where accountUuid = :uuid and name = :name and password = :oldpassword";
         Query q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
+        q.setParameter("uuid", msg.getAccountUuid());
         q.setParameter("newpassword", msg.getNewpassword());
         q.setParameter("name", msg.getUsername());
         q.setParameter("oldpassword", msg.getOldpassword());
@@ -61,9 +62,72 @@ public class AccountHand {
             reply.setMessage("success");
         }else{
             reply.setSuccess(false);
-            reply.setMessage("bad old passwords");
+            reply.setMessage("bad old passwords or username");
         }
 
         bus.reply(msg, reply);
     }
+
+    public void handle(APIChangeAccountPWDMsg msg) {
+        APIChangeResultReply reply = new APIChangeResultReply();
+
+        String sql = "update AccountVO set password= :newpassword where uuid = :uuid and name = :name and password = :oldpassword";
+        Query q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
+        q.setParameter("uuid", msg.getAccountUuid());
+        q.setParameter("newpassword", msg.getNewpassword());
+        q.setParameter("name", msg.getAccountName());
+        q.setParameter("oldpassword", msg.getOldpassword());
+
+        int result = q.executeUpdate();
+        if(result > 0 ){
+            reply.setSuccess(true);
+            reply.setMessage("success");
+        }else{
+            reply.setMessage("bad old passwords or accountname");
+            reply.setSuccess(false);
+        }
+        bus.reply(msg, reply);
+    }
+
+    public void handle(APIChangeAccountPhoneMsg msg) {
+        APIChangeResultReply reply = new APIChangeResultReply();
+
+        String sql = "update AccountVO set phone= :newphone where uuid = :uuid and name = :name";
+        Query q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
+        q.setParameter("uuid", msg.getAccountUuid());
+        q.setParameter("newphone", msg.getNewPhone());
+        q.setParameter("name", msg.getAccountName());
+        int result = q.executeUpdate();
+
+        if(result > 0 ){
+            reply.setMessage("success");
+            reply.setSuccess(true);
+        }else{
+            reply.setSuccess(false);
+            reply.setMessage("bad uuid or accountname");
+        }
+        bus.reply(msg, reply);
+    }
+
+    public void handle(APIChangeUserPhoneMsg msg) {
+        APIChangeResultReply reply = new APIChangeResultReply();
+
+        String sql = "update UserVO set phone = :newphone where accountUuid = :uuid and name = :name";
+        Query q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
+        q.setParameter("uuid", msg.getAccountUuid());
+        q.setParameter("newphone", msg.getNewPhone());
+        q.setParameter("name", msg.getUserName());
+
+        int result = q.executeUpdate();
+        if(result > 0 ){
+            reply.setSuccess(true);
+            reply.setMessage("success");
+        }else{
+            reply.setSuccess(false);
+            reply.setMessage("bad uuid or username");
+        }
+        bus.reply(msg, reply);
+    }
+
+
 }

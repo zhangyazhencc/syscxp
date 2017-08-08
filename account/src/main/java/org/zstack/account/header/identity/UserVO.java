@@ -21,11 +21,26 @@ public class UserVO {
     private String name;
 
     @Column
-    private String description;
+    private String password;
 
     @Column
-    private String password;
-    
+    private String email;
+
+    @Column
+    private String phone;
+
+    @Column
+    private String trueName;
+
+    @Column
+    private String department;
+
+    @Column
+    private String status;
+
+    @Column
+    private String description;
+
     @Column
     private Timestamp createDate;
     
@@ -91,5 +106,45 @@ public class UserVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public String getTrueName() {
+        return trueName;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void setTrueName(String trueName) {
+        this.trueName = trueName;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }

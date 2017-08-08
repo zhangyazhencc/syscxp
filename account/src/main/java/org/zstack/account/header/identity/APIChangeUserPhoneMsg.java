@@ -6,12 +6,12 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by wangwg on 2017/8/8.
  */
-public class APIChangeAccountPhoneMsg extends APIMessage {
+public class APIChangeUserPhoneMsg extends APIMessage {
     @APIParam
     private String accountUuid;
 
     @APIParam
-    private String accountName;
+    private String userName;
 
     @APIParam(maxLength = 2048)
     private String newPhone;
@@ -24,12 +24,12 @@ public class APIChangeAccountPhoneMsg extends APIMessage {
         this.accountUuid = accountUuid;
     }
 
-    public String getAccountName() {
-        return accountName;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setAccountName(String accountName) {
-        this.accountName = accountName;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public String getNewPhone() {

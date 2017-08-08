@@ -117,7 +117,22 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             accounthand.handle((APIProvingSessionMsg) msg);
         }else if(msg instanceof APIChangeUserPWDMsg){
             accounthand.handle((APIChangeUserPWDMsg) msg);
-        }else{
+        }else if(msg instanceof APIChangeAccountPWDMsg){
+            accounthand.handle((APIChangeAccountPWDMsg) msg);
+        }else if(msg instanceof APIChangeUserPhoneMsg){
+            accounthand.handle((APIChangeUserPhoneMsg) msg);
+        }else if(msg instanceof APIChangeAccountPhoneMsg){
+            accounthand.handle((APIChangeAccountPhoneMsg) msg);
+        }
+        /*
+        else if(msg instanceof APIChangeAccountemailMsg){
+            accounthand.handle((APIChangeAccountemailMsg) msg);
+        }else if(msg instanceof APIChangeUseremailMsg){
+            accounthand.handle((APIChangeUseremailMsg) msg);
+        }
+        */
+
+        else{
             bus.dealWithUnknownMessage(msg);
         }
     }

@@ -1,13 +1,12 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.message.APIReply;
 
 /**
  *
- * Created by wangwg on 2017/8/5.
+ * Created by wangwg on 2017/8/8.
  */
-public class APIChangeuserPWDReply extends APIReply {
+public class APIChangeResultReply extends APIReply {
     private boolean success;
 
     private String message;

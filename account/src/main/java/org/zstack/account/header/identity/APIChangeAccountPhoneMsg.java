@@ -6,18 +6,15 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by wangwg on 2017/8/8.
  */
-public class APIChangeAccountPWDMsg extends APIMessage {
+public class APIChangeAccountPhoneMsg extends APIMessage {
     @APIParam
     private String accountUuid;
 
     @APIParam
     private String accountName;
 
-    @APIParam
-    private String oldpassword;
-
     @APIParam(maxLength = 2048)
-    private String newpassword;
+    private String newPhone;
 
     public String getAccountUuid() {
         return accountUuid;
@@ -31,24 +28,15 @@ public class APIChangeAccountPWDMsg extends APIMessage {
         return accountName;
     }
 
-    public String getOldpassword() {
-        return oldpassword;
-    }
-
-    public String getNewpassword() {
-        return newpassword;
-    }
-
     public void setAccountName(String accountName) {
         this.accountName = accountName;
     }
 
-    public void setOldpassword(String oldpassword) {
-        this.oldpassword = oldpassword;
+    public String getNewPhone() {
+        return newPhone;
     }
 
-    public void setNewpassword(String newpassword) {
-        this.newpassword = newpassword;
+    public void setNewPhone(String newPhone) {
+        this.newPhone = newPhone;
     }
-
 }
