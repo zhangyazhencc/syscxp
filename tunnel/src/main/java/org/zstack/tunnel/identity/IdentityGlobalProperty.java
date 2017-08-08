@@ -2,9 +2,6 @@ package org.zstack.tunnel.identity;
 
 import org.zstack.core.GlobalProperty;
 import org.zstack.core.GlobalPropertyDefinition;
-import org.zstack.core.config.GlobalConfig;
-import org.zstack.core.config.GlobalConfigDefinition;
-import org.zstack.core.config.GlobalConfigValidation;
 
 /**
  */

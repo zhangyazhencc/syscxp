@@ -27,6 +27,10 @@ public class HostSwitchMonitorVO {
     private String hostUuid;
 
     @Column
+    @ForeignKey(parentEntityClass = EndpointVO.class, parentKey = "uuid", onDeleteAction = ForeignKey.ReferenceOption.CASCADE)
+    private String endpointUuid;
+
+    @Column
     private String interfaceName;
 
     @Column
@@ -61,6 +65,10 @@ public class HostSwitchMonitorVO {
     public void setHostUuid(String hostUuid) {
         this.hostUuid = hostUuid;
     }
+
+    public String getEndpointUuid() { return endpointUuid; }
+
+    public void setEndpointUuid(String endpointUuid) { this.endpointUuid = endpointUuid; }
 
     public String getInterfaceName() {
         return interfaceName;

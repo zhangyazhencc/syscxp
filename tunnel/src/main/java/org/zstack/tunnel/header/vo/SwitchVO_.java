@@ -17,6 +17,17 @@ public class SwitchVO_ {
     public static volatile SingularAttribute<SwitchVO, String> owner;
     public static volatile SingularAttribute<SwitchVO, Integer> vlanBegin;
     public static volatile SingularAttribute<SwitchVO, Integer> vlanEnd;
+    public static volatile SingularAttribute<SwitchVO, Integer> deleted;
+    public static volatile SingularAttribute<SwitchVO, Integer> enabled;
+    public static volatile SingularAttribute<SwitchVO, Integer> vxlanSupport;
+    public static volatile SingularAttribute<SwitchVO, String> rack;
+    public static volatile SingularAttribute<SwitchVO, String> description;
+    public static volatile SingularAttribute<SwitchVO, String> mIP;
+    public static volatile SingularAttribute<SwitchVO, String> username;
+    public static volatile SingularAttribute<SwitchVO, String> password;
+    public static volatile SingularAttribute<SwitchVO, String> status;
+    public static volatile SingularAttribute<SwitchVO, String> isPrivate;
     public static volatile SingularAttribute<SwitchVO, Timestamp> createDate;
     public static volatile SingularAttribute<SwitchVO, Timestamp> lastOpDate;
+
 }

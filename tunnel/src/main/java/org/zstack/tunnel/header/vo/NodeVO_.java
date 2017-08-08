@@ -15,6 +15,7 @@ public class NodeVO_ {
     public static volatile SingularAttribute<NodeVO, String> telephone;
     public static volatile SingularAttribute<NodeVO, String> province;
     public static volatile SingularAttribute<NodeVO, String> city;
+    public static volatile SingularAttribute<NodeVO, String> address;
     public static volatile SingularAttribute<NodeVO, Double> longtitude;
     public static volatile SingularAttribute<NodeVO, Double> latitude;
     public static volatile SingularAttribute<NodeVO, String> property;
