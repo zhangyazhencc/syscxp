@@ -1,10 +1,15 @@
 package org.zstack.tunnel.identity;
 
+import com.google.gson.ExclusionStrategy;
+import com.google.gson.FieldAttributes;
+import com.google.gson.Gson;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.SQL;
+import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.core.thread.PeriodicTask;
@@ -22,8 +27,10 @@ import org.zstack.header.rest.RestAPIResponse;
 import org.zstack.header.rest.RestAPIState;
 import org.zstack.utils.*;
 import org.zstack.utils.function.ForEachFunction;
+import org.zstack.utils.gson.GsonUtil;
+import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
-
+import org.zstack.header.rest.RestAPIResponse;
 import javax.persistence.Query;
 import javax.persistence.Tuple;
 import java.lang.reflect.Field;
@@ -34,6 +41,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.zstack.header.identity.SessionPolicyInventory.SessionPolicy;
 
 /**
  * Created by zxhread on 17/8/3.
@@ -416,6 +424,9 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor ,ApiMessa
                             "Session expired"));
                 }
                 sessions.put(session.getUuid(), session);
+
+                //// TODO: your self init code
+
             }
 
             Timestamp curr = getCurrentSqlDate();

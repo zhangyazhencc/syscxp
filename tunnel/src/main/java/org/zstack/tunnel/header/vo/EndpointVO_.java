@@ -14,7 +14,8 @@ public class EndpointVO_ {
     public static volatile SingularAttribute<EndpointVO, String> openToCustomers;
     public static volatile SingularAttribute<EndpointVO, String> status;
     public static volatile SingularAttribute<EndpointVO, String> subType;
+    public static volatile SingularAttribute<EndpointVO, String> description;
     public static volatile SingularAttribute<EndpointVO, Integer> deleted;
-    public static volatile SingularAttribute<EndpointVO, Timestamp> description;
+    public static volatile SingularAttribute<EndpointVO, Timestamp> createDate;
     public static volatile SingularAttribute<EndpointVO, Timestamp> lastOpDate;
 }

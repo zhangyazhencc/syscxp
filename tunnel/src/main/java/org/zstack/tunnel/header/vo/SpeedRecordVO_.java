@@ -10,6 +10,7 @@ public class SpeedRecordVO_ {
     public static volatile SingularAttribute<SpeedRecordVO, String> tunnelUuid;
     public static volatile SingularAttribute<SpeedRecordVO, String> protocol;
     public static volatile SingularAttribute<SpeedRecordVO, Integer> srcDirection;
+    public static volatile SingularAttribute<SpeedRecordVO, Integer> duration;
     public static volatile SingularAttribute<SpeedRecordVO, Integer> dstDirection;
     public static volatile SingularAttribute<SpeedRecordVO, Integer> avgSpeed;
     public static volatile SingularAttribute<SpeedRecordVO, Integer> minSpeed;
