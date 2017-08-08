@@ -7,8 +7,6 @@ import org.zstack.header.rest.RestResponse;
 @RestResponse(allTo = "inventory")
 public class APIGetAccountBalanceReply extends APIReply {
 
-    private static final long serialVersionUID = -3095572798957478313L;
-
     private AccountBalanceInventory inventory;
 
     public AccountBalanceInventory getInventory() {
