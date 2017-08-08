@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://zstack.org/schema/zstack">
+    <id>tunnel</id>
+    <interceptor>TunnelManager</interceptor>
+
+    <message>
+        <name>org.zstack.tunnel.header.message.APICreateNodeMsg</name>
+    </message>
+
+</service>

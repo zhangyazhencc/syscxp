@@ -33,7 +33,6 @@
         <property name="defaultEncoding" value="UTF-8"></property>
     </bean>
 
-    <import resource="springConfigXml/AccountManager.xml"/>
     <import resource="springConfigXml/ApiMediator.xml"/>
     <import resource="springConfigXml/Aspect.xml"/>
     <import resource="springConfigXml/CascadeFacade.xml"/>
@@ -49,5 +48,6 @@
     <import resource="springConfigXml/RESTFacade.xml"/>
     <import resource="springConfigXml/ThreadFacade.xml"/>
     <import resource="springConfigXml/validation.xml"/>
+    <import resource="springConfigXml/TunnelManager.xml"/>
 
 </beans>

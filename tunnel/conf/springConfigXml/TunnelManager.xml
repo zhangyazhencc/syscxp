@@ -19,5 +19,13 @@
         </zstack:plugin>
     </bean>
 
+    <bean id="TunnelManager" class="org.zstack.tunnel.service.TunnelManagerImpl">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.header.Component"/>
+            <zstack:extension interface="org.zstack.header.Service"/>
+            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
+        </zstack:plugin>
+    </bean>
+
 
 </beans>

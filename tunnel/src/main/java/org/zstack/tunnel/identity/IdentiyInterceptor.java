@@ -10,8 +10,8 @@ import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.core.thread.PeriodicTask;
 import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
-import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.apimediator.GlobalApiMessageInterceptor;
+import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.*;
 import org.zstack.header.identity.SessionPolicyInventory.SessionPolicy;
@@ -38,7 +38,7 @@ import java.util.regex.Pattern;
 /**
  * Created by zxhread on 17/8/3.
  */
-public class IdentiyInterceptor implements GlobalApiMessageInterceptor,ApiMessageInterceptor {
+public class IdentiyInterceptor implements GlobalApiMessageInterceptor ,ApiMessageInterceptor{
     private static final CLogger logger = Utils.getLogger(IdentiyInterceptor.class);
 
     @Autowired
@@ -50,10 +50,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor,ApiMessag
     @Autowired
     private PluginRegistry pluginRgty;
     @Autowired
-    private RESTFacade restf;;
-
-    private List<String> resourceTypeForAccountRef;
-    private List<Class> resourceTypes;
+    private RESTFacade restf;
 
     private Map<String, SessionPolicyInventory> sessions = new ConcurrentHashMap<>();
 
@@ -74,19 +71,6 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor,ApiMessag
 
     private Map<Class, MessageAction> actions = new HashMap<>();
     private Future<Void> expiredSessionCollector;
-
-
-    public Map<String, SessionPolicyInventory> getSessions() {
-        return sessions;
-    }
-
-    public void checkApiMessagePermission(APIMessage msg) {
-        new Auth().check(msg);
-    }
-
-    public boolean isAdmin(SessionPolicyInventory session) {
-        return session.isAdminAccountSession();
-    }
 
     public void init() {
         logger.debug("IdentiyInterceptor init.");
@@ -470,14 +454,6 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor,ApiMessag
         new Auth().validate(msg);
 
         return msg;
-    }
-
-    public boolean isResourceHavingAccountReference(Class entityClass) {
-        return resourceTypes.contains(entityClass);
-    }
-
-    public void setResourceTypeForAccountRef(List<String> resourceTypeForAccountRef) {
-        this.resourceTypeForAccountRef = resourceTypeForAccountRef;
     }
 
 }
