@@ -54,6 +54,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     @Autowired
     private IdentiyInterceptor identiyInterceptor;
 
+    private AccountHand accounthand = new AccountHand();
+
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
@@ -112,8 +114,10 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         } else if (msg instanceof APICheckApiPermissionMsg) {
             handle((APICheckApiPermissionMsg) msg);
         } else if(msg instanceof APIProvingSessionMsg){
-            handle((APIProvingSessionMsg) msg);
-        }else {
+            accounthand.handle((APIProvingSessionMsg) msg);
+        }else if(msg instanceof APIChangeUserPWDMsg){
+            accounthand.handle((APIChangeUserPWDMsg) msg);
+        }else{
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -199,30 +203,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
         reply.setValidSession(valid);
-        bus.reply(msg, reply);
-    }
-
-    private void handle(APIProvingSessionMsg msg) {
-        APIProvingSessionReply reply = new APIProvingSessionReply();
-
-        SessionInventory s = identiyInterceptor.getSessions().get(msg.getSessionUuid());
-        Timestamp current = dbf.getCurrentSqlTime();
-        boolean valid = true;
-        if (s != null && current.after(s.getExpiredDate())) {
-            valid = false;
-            identiyInterceptor.logOutSession(s.getUuid());
-        } else {
-            SessionVO session = dbf.findByUuid(msg.getSessionUuid(), SessionVO.class);
-            if (session == null ) {
-                valid = false;
-            } else if (session != null && current.after(session.getExpiredDate())) {
-                valid = false;
-                identiyInterceptor.logOutSession(session.getUuid());
-            }
-        }
-
-        reply.setValidSession(valid);
-        reply.setSessionInventory(s);
         bus.reply(msg, reply);
     }
 
@@ -401,7 +381,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
         return true;
     }
-
 
     @Override
     public boolean stop() {

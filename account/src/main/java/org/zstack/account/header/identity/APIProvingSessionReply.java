@@ -4,10 +4,8 @@ import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.message.APIReply;
 
 /**
- * Created with IntelliJ IDEA.
- * User: frank
- * Time: 9:39 PM
- * To change this template use File | Settings | File Templates.
+ *
+ * Created by wangwg on 2017/8/5.
  */
 public class APIProvingSessionReply extends APIReply {
     private boolean validSession;

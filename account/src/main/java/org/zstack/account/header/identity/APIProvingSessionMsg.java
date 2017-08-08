@@ -5,10 +5,7 @@ import org.zstack.header.identity.SuppressCredentialCheck;
 import org.zstack.header.message.APIParam;
 
 /**
- * Created with IntelliJ IDEA.
- * User: frank
- * Time: 9:38 PM
- * To change this template use File | Settings | File Templates.
+ * Created by wangwg on 2017/8/5.
  */
 @SuppressCredentialCheck
 public class APIProvingSessionMsg extends APISessionMessage {

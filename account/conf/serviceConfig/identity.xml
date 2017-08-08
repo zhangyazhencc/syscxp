@@ -51,4 +51,23 @@
     <message>
         <name>org.zstack.account.header.identity.APIProvingSessionMsg</name>
     </message>
+
+    <message>
+        <name>org.zstack.account.header.identity.APICheckApiPermissionMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.identity.APIListAccountMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.identity.APIListUserMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.identity.APIChangeUserPWDMsg</name>
+    </message>
+
+
+
 </service>
