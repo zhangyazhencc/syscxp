@@ -18,7 +18,6 @@ public class AccountBalanceInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-
     public static AccountBalanceInventory valueOf(AccountBalanceVO vo) {
         AccountBalanceInventory inv = new AccountBalanceInventory();
         inv.setUuid(vo.getUuid());

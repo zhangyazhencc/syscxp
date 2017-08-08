@@ -5,18 +5,14 @@ import org.zstack.header.message.APISyncCallMessage;
 
 public class APIGetAccountBalanceMsg extends APISyncCallMessage {
 
-    private static final long serialVersionUID = -1865535181343567377L;
-
     @APIParam(nonempty = true)
-    private String uuid;
+    private String accountUuid;
 
-    public String getUuid() {
-        return uuid;
+    public String getAccountUuid() {
+        return accountUuid;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
-
-
 }
