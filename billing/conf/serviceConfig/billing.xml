@@ -6,5 +6,11 @@
     <message>
         <name>org.zstack.billing.header.identity.APIGetAccountBalanceMsg</name>
     </message>
+    <message>
+        <name>org.zstack.billing.header.identity.APIUpdateAccountBalanceMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.billing.header.identity.APICreateOrderMsg</name>
+    </message>
 
 </service>
