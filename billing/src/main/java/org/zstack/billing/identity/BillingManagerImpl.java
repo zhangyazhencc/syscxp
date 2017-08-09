@@ -82,7 +82,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     private void handle(APICreateOrderMsg msg) {
         switch (msg.getOrderState()) {
             case PAID:
-                transactionalHandle(msg);
+                createOrder(msg);
                 break;
             case NOTPAID:
                 break;
@@ -92,7 +92,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     @Transactional
-    void transactionalHandle(APICreateOrderMsg msg) {
+    private void createOrder(APICreateOrderMsg msg) {
         AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         if (abvo == null) {
             AccountBalanceVO vo = new AccountBalanceVO();
@@ -136,7 +136,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                     APIUpdateAccountBalanceMsg abMsg = new APIUpdateAccountBalanceMsg();
                     abMsg.setAccountUuid(msg.getAccountUuid());
                     abMsg.setPresentBalance(vo.getPresentBalance());
-                    transactionalUpdateAccountBalance(abMsg);
+                    updateAccountBalance(abMsg);
                     orderVo.setOrderPayPresent(total);
                     orderVo.setOrderPayCash(new BigDecimal("0"));
                 } else {
@@ -148,7 +148,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                     abMsg.setAccountUuid(msg.getAccountUuid());
                     abMsg.setPresentBalance(vo.getPresentBalance());
                     abMsg.setCashBalance(vo.getCashBalance());
-                    transactionalUpdateAccountBalance(abMsg);
+                    updateAccountBalance(abMsg);
                     orderVo.setOrderPayPresent(abvo.getPresentBalance());
                     orderVo.setOrderPayCash(total.subtract(abvo.getPresentBalance()));
                 }
@@ -159,7 +159,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 APIUpdateAccountBalanceMsg abMsg = new APIUpdateAccountBalanceMsg();
                 abMsg.setAccountUuid(msg.getAccountUuid());
                 abMsg.setCashBalance(vo.getCashBalance());
-                transactionalUpdateAccountBalance(abMsg);
+                updateAccountBalance(abMsg);
                 orderVo.setOrderPayPresent(new BigDecimal("0"));
                 orderVo.setOrderPayCash(total);
             }
@@ -174,7 +174,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
 
     private void handle(APIUpdateAccountBalanceMsg msg) {
-        AccountBalanceVO vo = transactionalUpdateAccountBalance(msg);
+        AccountBalanceVO vo = updateAccountBalance(msg);
         AccountBalanceInventory abi = AccountBalanceInventory.valueOf(vo);
         APIUpdateAccountBalanceEvent evt = new APIUpdateAccountBalanceEvent(msg.getId());
         evt.setInventory(abi);
@@ -183,83 +183,28 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     @Transactional
-    public AccountBalanceVO transactionalUpdateAccountBalance(APIUpdateAccountBalanceMsg msg){
-        String accountUuid = msg.getAccountUuid();
-        AccountBalanceVO vo = new AccountBalanceVO();
-        vo.setUuid(accountUuid);
+    public AccountBalanceVO updateAccountBalance(APIUpdateAccountBalanceMsg msg){
+        AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
 
-        if (!dbf.isExist(accountUuid, AccountBalanceVO.class)) {
-            if (msg.getCashBalance() != null) {
-                vo.setCashBalance(msg.getCashBalance());
-            } else {
-                vo.setCashBalance(new BigDecimal("0"));
-            }
-            if (msg.getPresentBalance() != null) {
-                vo.setPresentBalance(msg.getPresentBalance());
-            } else {
-                vo.setPresentBalance(new BigDecimal("0"));
-            }
-            if (msg.getCreditPoint() != null) {
-                vo.setCreditPoint(msg.getCreditPoint());
-            } else {
-                vo.setCreditPoint(new BigDecimal("0"));
-            }
-
-            dbf.persistAndRefresh(vo);
-        } else {
-            boolean isCashBalanceNeedUpdate = false;
-            boolean isPresentBalanceNeedUpdate = false;
-            boolean isCreditPointNeedUpdate = false;
-            StringBuilder sql = new StringBuilder();
-            sql.append(" update AccountBalanceVO set ");
-            if (msg.getCashBalance() != null) {
-                isCashBalanceNeedUpdate = true;
-                vo.setCashBalance(msg.getCashBalance());
-                sql.append(" cashBalance = :cashBalance,");
-            }
-            if (msg.getPresentBalance() != null) {
-                vo.setPresentBalance(msg.getPresentBalance());
-                isPresentBalanceNeedUpdate = true;
-                sql.append(" presentBalance = :presentBalance,");
-            }
-            if (msg.getCreditPoint() != null) {
-                vo.setCreditPoint(msg.getCreditPoint());
-                isCreditPointNeedUpdate = true;
-                sql.append(" creditPoint = :creditPoint,");
-            }
-
-            if (isCashBalanceNeedUpdate || isPresentBalanceNeedUpdate || isCreditPointNeedUpdate) {
-                sql.deleteCharAt(sql.length() - 1);
-                sql.append(" where uuid = :accountUuid ");
-                Query q = dbf.getEntityManager().createQuery(sql.toString());
-                if (isCashBalanceNeedUpdate) {
-                    q.setParameter("cashBalance", msg.getCashBalance());
-                }
-                if (isPresentBalanceNeedUpdate) {
-                    q.setParameter("presentBalance", msg.getPresentBalance());
-                }
-                if (isCreditPointNeedUpdate) {
-                    q.setParameter("creditPoint", msg.getCreditPoint());
-                }
-                q.setParameter("accountUuid", msg.getAccountUuid());
-                q.executeUpdate();
-                dbf.getEntityManager().flush();
-            }
+        if (msg.getCashBalance() != null) {
+            vo.setCashBalance(msg.getCashBalance());
         }
-        return vo;
+        if (msg.getPresentBalance() != null) {
+            vo.setPresentBalance(msg.getPresentBalance());
+        }
+        if (msg.getCreditPoint() != null) {
+            vo.setCreditPoint(msg.getCreditPoint());
+        }
+
+        return dbf.updateAndRefresh(vo);
     }
 
 
     private void handle(APIGetAccountBalanceMsg msg) {
-        SimpleQuery<AccountBalanceVO> q = dbf.createQuery(AccountBalanceVO.class);
-        q.add(AccountBalanceVO_.uuid, Op.EQ, msg.getAccountUuid());
-        AccountBalanceVO a = q.find();
+        AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         AccountBalanceInventory inventory = new AccountBalanceInventory();
-        if (a != null) {
-            inventory.setUuid(a.getUuid());
-            inventory.setCashBalance(a.getCashBalance());
-            inventory.setPresentBalance(a.getPresentBalance());
-            inventory.setCreditPoint(a.getCreditPoint());
+        if (vo != null) {
+            inventory = AccountBalanceInventory.valueOf(vo);
         }
 
         APIGetAccountBalanceReply reply = new APIGetAccountBalanceReply();
