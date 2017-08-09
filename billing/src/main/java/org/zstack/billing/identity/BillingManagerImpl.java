@@ -72,16 +72,15 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIGetAccountBalanceMsg) msg);
         } else if (msg instanceof APIUpdateAccountBalanceMsg) {
             handle((APIUpdateAccountBalanceMsg) msg);
-        } else if (msg instanceof APICreateOrderMsg){
+        } else if (msg instanceof APICreateOrderMsg) {
             handle((APICreateOrderMsg) msg);
-        } else{
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
-
     }
 
     private void handle(APICreateOrderMsg msg) {
-        switch (msg.getOrderState()){
+        switch (msg.getOrderState()) {
             case PAID:
                 transactionalHandle(msg);
                 break;
@@ -89,32 +88,29 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 break;
             case CANCELED:
                 break;
-
         }
-
-
     }
 
     @Transactional
     void transactionalHandle(APICreateOrderMsg msg) {
-        AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(),AccountBalanceVO.class);
-        if(abvo == null){
+        AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+        if (abvo == null) {
             AccountBalanceVO vo = new AccountBalanceVO();
             vo.setUuid(msg.getAccountUuid());
             vo.setCashBalance(new BigDecimal("0"));
             vo.setPresentBalance(new BigDecimal("0"));
             vo.setCreditPoint(new BigDecimal("0"));
             dbf.persistAndRefresh(vo);
-        }else{
+            throw new RuntimeException("you have no enough balance to pay this product.please go to recharge");
+        } else {
             BigDecimal total = msg.getTotal().multiply(msg.getProductDiscount()).divide(new BigDecimal(100));
             BigDecimal cashBalance = abvo.getCashBalance();
             BigDecimal presentBalance = abvo.getPresentBalance();
             BigDecimal creditPoint = abvo.getCreditPoint();
             BigDecimal mayPayTotal = cashBalance.add(presentBalance).add(creditPoint);
-            if(total.compareTo(mayPayTotal)>0){
-                throw new RuntimeException(String.format("you have no enough balance to pay this product. your pay money can not greater than %d.please go to recharge",mayPayTotal.doubleValue()));
+            if (total.compareTo(mayPayTotal) > 0) {
+                throw new RuntimeException(String.format("you have no enough balance to pay this product. your pay money can not greater than %d.please go to recharge", mayPayTotal.doubleValue()));
             }
-
 
             OrderVO orderVo = new OrderVO();
             String orderUuid = Platform.getUuid();
@@ -130,28 +126,38 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             orderVo.setProductDiscount(msg.getProductDiscount());
             orderVo.setProductDescription(msg.getProductDescription());
 
-            if(abvo.getPresentBalance()!=null && abvo.getPresentBalance().doubleValue()>0){
-                if(abvo.getPresentBalance().compareTo(total)>0){
+            if (abvo.getPresentBalance() != null && abvo.getPresentBalance().doubleValue() > 0) {
+                if (abvo.getPresentBalance().compareTo(total) > 0) {
                     AccountBalanceVO vo = new AccountBalanceVO();
                     vo.setUuid(msg.getAccountUuid());
                     vo.setPresentBalance(abvo.getPresentBalance().subtract(total));
-                    dbf.updateAndRefresh(vo);
+                    APIUpdateAccountBalanceMsg abMsg = new APIUpdateAccountBalanceMsg();
+                    abMsg.setAccountUuid(msg.getAccountUuid());
+                    abMsg.setPresentBalance(vo.getPresentBalance());
+                    transactionalUpdateAccountBalance(abMsg);
                     orderVo.setOrderPayPresent(total);
                     orderVo.setOrderPayCash(new BigDecimal("0"));
-                }else{
+                } else {
                     AccountBalanceVO vo = new AccountBalanceVO();
                     vo.setUuid(msg.getAccountUuid());
                     vo.setCashBalance(abvo.getCashBalance().subtract(total.subtract(abvo.getPresentBalance())));
                     vo.setPresentBalance(new BigDecimal("0"));
-                    dbf.updateAndRefresh(vo);
+                    APIUpdateAccountBalanceMsg abMsg = new APIUpdateAccountBalanceMsg();
+                    abMsg.setAccountUuid(msg.getAccountUuid());
+                    abMsg.setPresentBalance(vo.getPresentBalance());
+                    abMsg.setCashBalance(vo.getCashBalance());
+                    transactionalUpdateAccountBalance(abMsg);
                     orderVo.setOrderPayPresent(abvo.getPresentBalance());
                     orderVo.setOrderPayCash(total.subtract(abvo.getPresentBalance()));
                 }
-            }else {
+            } else {
                 AccountBalanceVO vo = new AccountBalanceVO();
                 vo.setUuid(msg.getAccountUuid());
                 vo.setCashBalance(abvo.getCashBalance().subtract(total));
-                dbf.updateAndRefresh(vo);
+                APIUpdateAccountBalanceMsg abMsg = new APIUpdateAccountBalanceMsg();
+                abMsg.setAccountUuid(msg.getAccountUuid());
+                abMsg.setCashBalance(vo.getCashBalance());
+                transactionalUpdateAccountBalance(abMsg);
                 orderVo.setOrderPayPresent(new BigDecimal("0"));
                 orderVo.setOrderPayCash(total);
             }
@@ -161,12 +167,21 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             APICreateOrderEvent evt = new APICreateOrderEvent(msg.getId());
             evt.setInventory(inventory);
             bus.publish(evt);
-
         }
     }
 
+
+    private void handle(APIUpdateAccountBalanceMsg msg) {
+        AccountBalanceVO vo = transactionalUpdateAccountBalance(msg);
+        AccountBalanceInventory abi = AccountBalanceInventory.valueOf(vo);
+        APIUpdateAccountBalanceEvent evt = new APIUpdateAccountBalanceEvent(msg.getId());
+        evt.setInventory(abi);
+        bus.publish(evt);
+
+    }
+
     @Transactional
-    void handle(APIUpdateAccountBalanceMsg msg) {
+    public AccountBalanceVO transactionalUpdateAccountBalance(APIUpdateAccountBalanceMsg msg){
         String accountUuid = msg.getAccountUuid();
         AccountBalanceVO vo = new AccountBalanceVO();
         vo.setUuid(accountUuid);
@@ -211,17 +226,17 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 sql.append(" creditPoint = :creditPoint,");
             }
 
-            if(isCashBalanceNeedUpdate || isPresentBalanceNeedUpdate || isCreditPointNeedUpdate){
-                sql.deleteCharAt(sql.length()-1);
+            if (isCashBalanceNeedUpdate || isPresentBalanceNeedUpdate || isCreditPointNeedUpdate) {
+                sql.deleteCharAt(sql.length() - 1);
                 sql.append(" where uuid = :accountUuid ");
-                Query q =  dbf.getEntityManager().createQuery(sql.toString());
-                if(isCashBalanceNeedUpdate){
+                Query q = dbf.getEntityManager().createQuery(sql.toString());
+                if (isCashBalanceNeedUpdate) {
                     q.setParameter("cashBalance", msg.getCashBalance());
                 }
-                if(isPresentBalanceNeedUpdate){
+                if (isPresentBalanceNeedUpdate) {
                     q.setParameter("presentBalance", msg.getPresentBalance());
                 }
-                if(isCreditPointNeedUpdate){
+                if (isCreditPointNeedUpdate) {
                     q.setParameter("creditPoint", msg.getCreditPoint());
                 }
                 q.setParameter("accountUuid", msg.getAccountUuid());
@@ -229,11 +244,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 dbf.getEntityManager().flush();
             }
         }
-        AccountBalanceInventory abi = AccountBalanceInventory.valueOf(vo);
-        APIUpdateAccountBalanceEvent evt = new APIUpdateAccountBalanceEvent(msg.getId());
-        evt.setInventory(abi);
-        bus.publish(evt);
-
+        return vo;
     }
 
 
@@ -280,16 +291,16 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
         if (msg instanceof APIGetAccountBalanceMsg) {
             validate((APIGetAccountBalanceMsg) msg);
-        }else if(msg instanceof APICreateOrderMsg){
-            validate((APICreateOrderMsg)msg);
+        } else if (msg instanceof APICreateOrderMsg) {
+            validate((APICreateOrderMsg) msg);
         }
         return msg;
     }
 
     private void validate(APICreateOrderMsg msg) {
-        try{
-            JSONObjectUtil.toObject(msg.getProductDescription(),Map.class);
-        }catch (Exception e){
+        try {
+            JSONObjectUtil.toObject(msg.getProductDescription(), Map.class);
+        } catch (Exception e) {
             throw new ApiMessageInterceptionException(Platform.argerr("product description must be a json syntactic"));
         }
 
