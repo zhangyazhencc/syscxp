@@ -53,6 +53,7 @@ public class OrderVO {
     private String productName;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private ProductType productType;
 
     @Column
