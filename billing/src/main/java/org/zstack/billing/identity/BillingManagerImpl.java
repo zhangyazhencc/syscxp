@@ -2,7 +2,9 @@ package org.zstack.billing.identity;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.google.gson.JsonSyntaxException;
 import org.apache.commons.lang.StringUtils;
@@ -74,9 +76,24 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIUpdateAccountBalanceMsg) msg);
         } else if (msg instanceof APICreateOrderMsg) {
             handle((APICreateOrderMsg) msg);
+        } else if (msg instanceof APIGetExpenseGrossMonthListMsg) {
+            handle((APIGetExpenseGrossMonthListMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetExpenseGrossMonthListMsg msg) {
+        String sql = "select DATE_FORMAT(payTime,'%Y-%m') mon,sum(orderPayPresent)+sum(orderPayCash) as payTotal from OrderVO where accountUuid = :accountUuid and orderState = 'PAID' and payTime between :dateStart and :dateEnd group by mon order by mon asc";
+        Query q =  dbf.getEntityManager().createNativeQuery(sql);
+        q.setParameter("accountUuid",msg.getAccountUuid());
+        q.setParameter("dateStart", msg.getDateStart());
+        q.setParameter("dateEnd", msg.getDateEnd());
+        List<Object[]> objs  = q.getResultList();
+        List<ExpenseGross> vos = objs.stream().map(ExpenseGross::new).collect(Collectors.toList());
+        APIGetExpenseGrossMonthListReply reply = new APIGetExpenseGrossMonthListReply();
+        reply.setInventories(vos);
+        bus.reply(msg,reply);
     }
 
     private void handle(APICreateOrderMsg msg) {
