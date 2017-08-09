@@ -1,4 +1,4 @@
-package org.zstack.account.header.identity;
+package org.zstack.account.header.identity.updatemsg;
 
 import org.zstack.header.message.APIReply;
 
@@ -10,6 +10,8 @@ public class APIChangeResultReply extends APIReply {
     private boolean success;
 
     private String message;
+
+    private Object object;
 
     @Override
     public boolean isSuccess() {
@@ -27,5 +29,13 @@ public class APIChangeResultReply extends APIReply {
 
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    public Object getObject() {
+        return object;
+    }
+
+    public void setObject(Object object) {
+        this.object = object;
     }
 }

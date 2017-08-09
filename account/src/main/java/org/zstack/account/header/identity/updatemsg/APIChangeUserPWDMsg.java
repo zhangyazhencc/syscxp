@@ -1,4 +1,4 @@
-package org.zstack.account.header.identity;
+package org.zstack.account.header.identity.updatemsg;
 
 import org.zstack.header.identity.APISessionMessage;
 import org.zstack.header.identity.Action;
@@ -7,13 +7,18 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by wangwg on 2017/8/8.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY)
 public class APIChangeUserPWDMsg extends APISessionMessage {
     @APIParam
-    private String accountUuid;
+    private String uuid;
 
     @APIParam
-    private String username;
+    private String phone;
+
+    @APIParam
+    private String code;
+
+    @APIParam
+    private boolean isupdate;
 
     @APIParam
     private String oldpassword;
@@ -21,12 +26,20 @@ public class APIChangeUserPWDMsg extends APISessionMessage {
     @APIParam(maxLength = 2048)
     private String newpassword;
 
-    public String getAccountUuid() {
-        return accountUuid;
+    public String getUuid() {
+        return uuid;
     }
 
-    public String getUsername() {
-        return username;
+    public String getPhone() {
+        return phone;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public boolean isIsupdate() {
+        return isupdate;
     }
 
     public String getOldpassword() {
@@ -37,19 +50,26 @@ public class APIChangeUserPWDMsg extends APISessionMessage {
         return newpassword;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
     public void setOldpassword(String oldpassword) {
         this.oldpassword = oldpassword;
     }
 
     public void setNewpassword(String newpassword) {
         this.newpassword = newpassword;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public void setIsupdate(boolean isupdate) {
+        this.isupdate = isupdate;
     }
 }

@@ -2,6 +2,7 @@ package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.zstack.account.header.identity.updatemsg.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.MessageSafe;
@@ -113,8 +114,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIGetSessionPolicyMsg) msg);
         } else if (msg instanceof APICheckApiPermissionMsg) {
             handle((APICheckApiPermissionMsg) msg);
-        } else if(msg instanceof APIProvingSessionMsg){
-            updatehand.handle((APIProvingSessionMsg) msg);
         }else if(msg instanceof APIChangeUserPWDMsg){
             updatehand.handle((APIChangeUserPWDMsg) msg);
         }else if(msg instanceof APIChangeAccountPWDMsg){
@@ -341,11 +340,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void handle(APIListUserMsg msg) {
-//        List<UserVO> vos = dl.listByApiMessage(msg, UserVO.class);
-//        List<UserInventory> invs = UserInventory.valueOf(vos);
-//        APIListUserReply reply = new APIListUserReply();
-//        reply.setInventories(invs);
-//        bus.reply(msg, reply);
+        List<UserVO> vos = dl.listByApiMessage(msg, UserVO.class);
+        List<UserInventory> invs = UserInventory.valueOf(vos);
+        APIListUserReply reply = new APIListUserReply();
+        reply.setInventories(invs);
+        bus.reply(msg, reply);
     }
 
     private void handle(APIListAccountMsg msg) {
@@ -444,6 +443,18 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APICreateUserMsg) msg);
         } else if (msg instanceof APILogInByUserMsg) {
             validate((APILogInByUserMsg) msg);
+        } else if (msg instanceof APIChangeUserPhoneMsg) {
+            validate((APIChangeUserPhoneMsg) msg);
+        } else if (msg instanceof APIChangeUserPWDMsg) {
+            validate((APIChangeUserPWDMsg) msg);
+        } else if (msg instanceof APIChangeUserEmailMsg) {
+            validate((APIChangeUserEmailMsg) msg);
+        } else if (msg instanceof APIChangeAccountPWDMsg) {
+            validate((APIChangeAccountPWDMsg) msg);
+        } else if (msg instanceof APIChangeAccountPhoneMsg) {
+            validate((APIChangeAccountPhoneMsg) msg);
+        } else if (msg instanceof APIChangeAccountEmailMsg) {
+            validate((APIChangeAccountEmailMsg) msg);
         }
 
         setServiceId(msg);
@@ -456,6 +467,48 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             throw new ApiMessageInterceptionException(argerr(
                     "accountName and accountUuid cannot both be null, you must specify at least one"
             ));
+        }
+    }
+
+    private void validate(APIChangeUserPhoneMsg msg) {
+        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhone()))) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match",
+                    msg.getUuid(), msg.getPhone()));
+        }
+    }
+
+    private void validate(APIChangeUserPWDMsg msg) {
+        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhone()))) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match",
+                    msg.getUuid(), msg.getPhone()));
+        }
+    }
+
+    private void validate(APIChangeUserEmailMsg msg) {
+        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getEmail()))) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match",
+                    msg.getUuid(), msg.getEmail()));
+        }
+    }
+
+    private void validate(APIChangeAccountPWDMsg msg) {
+        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhone()))) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match",
+                    msg.getUuid(), msg.getPhone()));
+        }
+    }
+
+    private void validate(APIChangeAccountPhoneMsg msg) {
+        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhone()))) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match",
+                    msg.getUuid(), msg.getPhone()));
+        }
+    }
+
+    private void validate(APIChangeAccountEmailMsg msg) {
+        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getEmail()))) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match",
+                    msg.getUuid(), msg.getEmail()));
         }
     }
 
