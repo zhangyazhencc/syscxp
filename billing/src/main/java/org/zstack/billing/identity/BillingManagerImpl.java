@@ -109,7 +109,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             BigDecimal creditPoint = abvo.getCreditPoint();
             BigDecimal mayPayTotal = cashBalance.add(presentBalance).add(creditPoint);
             if (total.compareTo(mayPayTotal) > 0) {
-                throw new RuntimeException(String.format("you have no enough balance to pay this product. your pay money can not greater than %d.please go to recharge", mayPayTotal.doubleValue()));
+                throw new RuntimeException(String.format("you have no enough balance to pay this product. your pay money can not greater than %d.please go to recharge", mayPayTotal.toString()));
             }
 
             OrderVO orderVo = new OrderVO();
@@ -117,6 +117,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             orderVo.setUuid(orderUuid);
             orderVo.setAccountUuid(msg.getAccountUuid());
             orderVo.setProductName(msg.getProductName());
+            orderVo.setOrderState(msg.getOrderState());
+            orderVo.setProductType(msg.getProductType());
             orderVo.setOrderType(msg.getOrderType());
             orderVo.setProductEffectTimeEnd(msg.getProductEffectTimeEnd());
             orderVo.setProductEffectTimeStart(msg.getProductEffectTimeStart());
