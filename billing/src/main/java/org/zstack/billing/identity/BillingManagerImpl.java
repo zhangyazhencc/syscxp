@@ -92,100 +92,66 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     @Transactional
-    private void createOrder(APICreateOrderMsg msg) {
+    public void createOrder(APICreateOrderMsg msg) {
         AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        if (abvo == null) {
-            AccountBalanceVO vo = new AccountBalanceVO();
-            vo.setUuid(msg.getAccountUuid());
-            vo.setCashBalance(new BigDecimal("0"));
-            vo.setPresentBalance(new BigDecimal("0"));
-            vo.setCreditPoint(new BigDecimal("0"));
-            dbf.persistAndRefresh(vo);
-            throw new RuntimeException("you have no enough balance to pay this product.please go to recharge");
-        } else {
-            BigDecimal total = msg.getTotal().multiply(msg.getProductDiscount()).divide(new BigDecimal(100));
-            BigDecimal cashBalance = abvo.getCashBalance();
-            BigDecimal presentBalance = abvo.getPresentBalance();
-            BigDecimal creditPoint = abvo.getCreditPoint();
-            BigDecimal mayPayTotal = cashBalance.add(presentBalance).add(creditPoint);
-            if (total.compareTo(mayPayTotal) > 0) {
-                throw new RuntimeException(String.format("you have no enough balance to pay this product. your pay money can not greater than %d.please go to recharge", mayPayTotal.toString()));
-            }
-
-            OrderVO orderVo = new OrderVO();
-            String orderUuid = Platform.getUuid();
-            orderVo.setUuid(orderUuid);
-            orderVo.setAccountUuid(msg.getAccountUuid());
-            orderVo.setProductName(msg.getProductName());
-            orderVo.setOrderState(msg.getOrderState());
-            orderVo.setProductType(msg.getProductType());
-            orderVo.setOrderType(msg.getOrderType());
-            orderVo.setProductEffectTimeEnd(msg.getProductEffectTimeEnd());
-            orderVo.setProductEffectTimeStart(msg.getProductEffectTimeStart());
-            orderVo.setProductChargeModel(msg.getProductChargeModel());
-            Timestamp currentTimeStamp = dbf.getCurrentSqlTime();
-            orderVo.setPayTime(currentTimeStamp);
-            orderVo.setProductDiscount(msg.getProductDiscount());
-            orderVo.setProductDescription(msg.getProductDescription());
-
-            if (abvo.getPresentBalance() != null && abvo.getPresentBalance().doubleValue() > 0) {
-                if (abvo.getPresentBalance().compareTo(total) > 0) {
-                    AccountBalanceVO vo = new AccountBalanceVO();
-                    vo.setUuid(msg.getAccountUuid());
-                    vo.setPresentBalance(abvo.getPresentBalance().subtract(total));
-                    APIUpdateAccountBalanceMsg abMsg = new APIUpdateAccountBalanceMsg();
-                    abMsg.setAccountUuid(msg.getAccountUuid());
-                    abMsg.setPresentBalance(vo.getPresentBalance());
-                    updateAccountBalance(abMsg);
-                    orderVo.setOrderPayPresent(total);
-                    orderVo.setOrderPayCash(new BigDecimal("0"));
-                } else {
-                    AccountBalanceVO vo = new AccountBalanceVO();
-                    vo.setUuid(msg.getAccountUuid());
-                    vo.setCashBalance(abvo.getCashBalance().subtract(total.subtract(abvo.getPresentBalance())));
-                    vo.setPresentBalance(new BigDecimal("0"));
-                    APIUpdateAccountBalanceMsg abMsg = new APIUpdateAccountBalanceMsg();
-                    abMsg.setAccountUuid(msg.getAccountUuid());
-                    abMsg.setPresentBalance(vo.getPresentBalance());
-                    abMsg.setCashBalance(vo.getCashBalance());
-                    updateAccountBalance(abMsg);
-                    orderVo.setOrderPayPresent(abvo.getPresentBalance());
-                    orderVo.setOrderPayCash(total.subtract(abvo.getPresentBalance()));
-                }
-            } else {
-                AccountBalanceVO vo = new AccountBalanceVO();
-                vo.setUuid(msg.getAccountUuid());
-                vo.setCashBalance(abvo.getCashBalance().subtract(total));
-                APIUpdateAccountBalanceMsg abMsg = new APIUpdateAccountBalanceMsg();
-                abMsg.setAccountUuid(msg.getAccountUuid());
-                abMsg.setCashBalance(vo.getCashBalance());
-                updateAccountBalance(abMsg);
-                orderVo.setOrderPayPresent(new BigDecimal("0"));
-                orderVo.setOrderPayCash(total);
-            }
-
-            dbf.persistAndRefresh(orderVo);
-            OrderInventory inventory = OrderInventory.valueOf(orderVo);
-            APICreateOrderEvent evt = new APICreateOrderEvent(msg.getId());
-            evt.setInventory(inventory);
-            bus.publish(evt);
+        BigDecimal total = msg.getTotal().multiply(msg.getProductDiscount()).divide(new BigDecimal(100));
+        BigDecimal cashBalance = abvo.getCashBalance();
+        BigDecimal presentBalance = abvo.getPresentBalance();
+        BigDecimal creditPoint = abvo.getCreditPoint();
+        BigDecimal mayPayTotal = cashBalance.add(presentBalance).add(creditPoint);
+        if (total.compareTo(mayPayTotal) > 0) {
+            throw new RuntimeException(String.format("you have no enough balance to pay this product. your pay money can not greater than %d.please go to recharge", mayPayTotal.toString()));
         }
-    }
 
+        OrderVO orderVo = new OrderVO();
+        String orderUuid = Platform.getUuid();
+        orderVo.setUuid(orderUuid);
+        orderVo.setAccountUuid(msg.getAccountUuid());
+        orderVo.setProductName(msg.getProductName());
+        orderVo.setOrderState(msg.getOrderState());
+        orderVo.setProductType(msg.getProductType());
+        orderVo.setOrderType(msg.getOrderType());
+        orderVo.setProductEffectTimeEnd(msg.getProductEffectTimeEnd());
+        orderVo.setProductEffectTimeStart(msg.getProductEffectTimeStart());
+        orderVo.setProductChargeModel(msg.getProductChargeModel());
+        Timestamp currentTimeStamp = dbf.getCurrentSqlTime();
+        orderVo.setPayTime(currentTimeStamp);
+        orderVo.setProductDiscount(msg.getProductDiscount());
+        orderVo.setProductDescription(msg.getProductDescription());
 
-    private void handle(APIUpdateAccountBalanceMsg msg) {
-        AccountBalanceVO vo = updateAccountBalance(msg);
-        AccountBalanceInventory abi = AccountBalanceInventory.valueOf(vo);
-        APIUpdateAccountBalanceEvent evt = new APIUpdateAccountBalanceEvent(msg.getId());
-        evt.setInventory(abi);
+        if (abvo.getPresentBalance().compareTo(BigDecimal.ZERO) > 0) {
+            if (abvo.getPresentBalance().compareTo(total) > 0) {
+                abvo.setPresentBalance(abvo.getPresentBalance().subtract(total));
+                dbf.updateAndRefresh(abvo);
+                orderVo.setOrderPayPresent(total);
+                orderVo.setOrderPayCash(BigDecimal.ZERO);
+            } else {
+                BigDecimal payPresent = abvo.getPresentBalance();
+                BigDecimal payCash = total.subtract(payPresent);
+                abvo.setCashBalance(abvo.getCashBalance().subtract(payCash));
+                abvo.setPresentBalance(BigDecimal.ZERO);
+                dbf.updateAndRefresh(abvo);
+                orderVo.setOrderPayPresent(payPresent);
+                orderVo.setOrderPayCash(payCash);
+            }
+        } else {
+            abvo.setCashBalance(abvo.getCashBalance().subtract(total));
+            dbf.updateAndRefresh(abvo);
+            orderVo.setOrderPayPresent(BigDecimal.ZERO);
+            orderVo.setOrderPayCash(total);
+        }
+
+        dbf.persistAndRefresh(orderVo);
+        OrderInventory inventory = OrderInventory.valueOf(orderVo);
+        APICreateOrderEvent evt = new APICreateOrderEvent(msg.getId());
+        evt.setInventory(inventory);
         bus.publish(evt);
 
     }
 
-    @Transactional
-    public AccountBalanceVO updateAccountBalance(APIUpdateAccountBalanceMsg msg){
-        AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
 
+    private void handle(APIUpdateAccountBalanceMsg msg) {
+        AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         if (msg.getCashBalance() != null) {
             vo.setCashBalance(msg.getCashBalance());
         }
@@ -195,18 +161,17 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         if (msg.getCreditPoint() != null) {
             vo.setCreditPoint(msg.getCreditPoint());
         }
+        vo = dbf.updateAndRefresh(vo);
+        AccountBalanceInventory abi = AccountBalanceInventory.valueOf(vo);
+        APIUpdateAccountBalanceEvent evt = new APIUpdateAccountBalanceEvent(msg.getId());
+        evt.setInventory(abi);
+        bus.publish(evt);
 
-        return dbf.updateAndRefresh(vo);
     }
-
 
     private void handle(APIGetAccountBalanceMsg msg) {
         AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        AccountBalanceInventory inventory = new AccountBalanceInventory();
-        if (vo != null) {
-            inventory = AccountBalanceInventory.valueOf(vo);
-        }
-
+        AccountBalanceInventory inventory = AccountBalanceInventory.valueOf(vo);
         APIGetAccountBalanceReply reply = new APIGetAccountBalanceReply();
         reply.setInventory(inventory);
         bus.reply(msg, reply);
@@ -254,9 +219,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void validate(APIGetAccountBalanceMsg msg) {
-        if (StringUtils.isEmpty(msg.getAccountUuid())) {
-            throw new ApiMessageInterceptionException(Platform.argerr("%s must be not null", "uuid"));
-        }
+
     }
 
 }
