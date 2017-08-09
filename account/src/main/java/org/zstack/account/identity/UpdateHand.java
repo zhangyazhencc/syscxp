@@ -12,7 +12,7 @@ import java.sql.Timestamp;
 /**
  * Created by wangwg on 2017/8/8.
  */
-public class AccountHand {
+public class UpdateHand {
     @Autowired
     private CloudBus bus;
 
@@ -129,5 +129,67 @@ public class AccountHand {
         bus.reply(msg, reply);
     }
 
+    public void handle(APIChangeAccountEmailMsg msg) {
+        APIChangeResultReply reply = new APIChangeResultReply();
 
+        String sql = "update AccountVO set email = :newmail where uuid = :uuid and name = :name";
+        Query q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
+        q.setParameter("uuid", msg.getAccountUuid());
+        q.setParameter("newmail", msg.getNewEmail());
+        q.setParameter("name", msg.getAccountName());
+
+        int result = q.executeUpdate();
+        if(result > 0 ){
+            reply.setSuccess(true);
+            reply.setMessage("success");
+        }else{
+            reply.setSuccess(false);
+            reply.setMessage("bad uuid or AccountName");
+        }
+        bus.reply(msg, reply);
+    }
+
+
+    public void handle(APIChangeUserEmailMsg msg) {
+        APIChangeResultReply reply = new APIChangeResultReply();
+
+        String sql = "update UserVO set email = :newmail where accountUuid = :uuid and name = :name";
+        Query q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
+        q.setParameter("uuid", msg.getAccountUuid());
+        q.setParameter("newmail", msg.getNewEmail());
+        q.setParameter("name", msg.getUserName());
+
+        int result = q.executeUpdate();
+        if(result > 0 ){
+            reply.setSuccess(true);
+            reply.setMessage("success");
+        }else{
+            reply.setSuccess(false);
+            reply.setMessage("bad uuid or AccountName");
+        }
+        bus.reply(msg, reply);
+    }
+
+
+    public void handle(APIChangeIndustryMsg msg) {
+
+        APIChangeResultReply reply = new APIChangeResultReply();
+
+        String sql = "update AccountVO set industry = :newindustry where uuid = :uuid and name = :name";
+        Query q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
+        q.setParameter("uuid", msg.getAccountUuid());
+        q.setParameter("newindustry", msg.getNewIndustry());
+        q.setParameter("name", msg.getAccountName());
+
+        int result = q.executeUpdate();
+        if(result > 0 ){
+            reply.setSuccess(true);
+            reply.setMessage("success");
+        }else{
+            reply.setSuccess(false);
+            reply.setMessage("bad uuid or AccountName");
+        }
+        bus.reply(msg, reply);
+
+    }
 }

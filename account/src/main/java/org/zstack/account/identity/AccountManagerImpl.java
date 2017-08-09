@@ -54,7 +54,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     @Autowired
     private IdentiyInterceptor identiyInterceptor;
 
-    private AccountHand accounthand = new AccountHand();
+    private UpdateHand updatehand = new UpdateHand();
 
     @Override
     @MessageSafe
@@ -114,23 +114,23 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         } else if (msg instanceof APICheckApiPermissionMsg) {
             handle((APICheckApiPermissionMsg) msg);
         } else if(msg instanceof APIProvingSessionMsg){
-            accounthand.handle((APIProvingSessionMsg) msg);
+            updatehand.handle((APIProvingSessionMsg) msg);
         }else if(msg instanceof APIChangeUserPWDMsg){
-            accounthand.handle((APIChangeUserPWDMsg) msg);
+            updatehand.handle((APIChangeUserPWDMsg) msg);
         }else if(msg instanceof APIChangeAccountPWDMsg){
-            accounthand.handle((APIChangeAccountPWDMsg) msg);
+            updatehand.handle((APIChangeAccountPWDMsg) msg);
         }else if(msg instanceof APIChangeUserPhoneMsg){
-            accounthand.handle((APIChangeUserPhoneMsg) msg);
+            updatehand.handle((APIChangeUserPhoneMsg) msg);
         }else if(msg instanceof APIChangeAccountPhoneMsg){
-            accounthand.handle((APIChangeAccountPhoneMsg) msg);
+            updatehand.handle((APIChangeAccountPhoneMsg) msg);
+        }else if(msg instanceof APIChangeAccountEmailMsg){
+            updatehand.handle((APIChangeAccountEmailMsg) msg);
+        }else if(msg instanceof APIChangeUserEmailMsg){
+            updatehand.handle((APIChangeUserEmailMsg) msg);
+        }else if(msg instanceof APIChangeIndustryMsg){
+            updatehand.handle((APIChangeIndustryMsg) msg);
         }
-        /*
-        else if(msg instanceof APIChangeAccountemailMsg){
-            accounthand.handle((APIChangeAccountemailMsg) msg);
-        }else if(msg instanceof APIChangeUseremailMsg){
-            accounthand.handle((APIChangeUseremailMsg) msg);
-        }
-        */
+
 
         else{
             bus.dealWithUnknownMessage(msg);
