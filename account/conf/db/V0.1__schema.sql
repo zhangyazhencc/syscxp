@@ -57,6 +57,7 @@ CREATE TABLE  `AccountVO` (
     `industry` varchar(128) DEFAULT NULL COMMENT '行业',
     `type` varchar(128) NOT NULL COMMENT 'account type',
     `status` varchar(128) NOT NULL COMMENT '状态',
+    `description` varchar(255),
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
     `createDate` timestamp,
     PRIMARY KEY  (`uuid`)

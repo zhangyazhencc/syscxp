@@ -27,24 +27,45 @@ public class AccountVO {
     private String password;
 
     @Column
-    private Timestamp createDate;
-    
+    private String phone;
+
     @Column
-    private Timestamp lastOpDate;
-    
-	@Column
-	@Enumerated(EnumType.STRING)
-	private AccountType type;
+    private String email;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private AccountStatus trueName;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private AccountStatus company;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private AccountStatus department;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private AccountStatus industry;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private AccountStatus description;
 
     @Column
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
 
     @Column
-    private String phone;
+    @Enumerated(EnumType.STRING)
+    private AccountType type;
 
     @Column
-    private String email;
+    private Timestamp createDate;
+    
+    @Column
+    private Timestamp lastOpDate;
+
 
     @PreUpdate
     private void preUpdate() {
@@ -121,5 +142,45 @@ public class AccountVO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public AccountStatus getTrueName() {
+        return trueName;
+    }
+
+    public AccountStatus getCompany() {
+        return company;
+    }
+
+    public AccountStatus getDepartment() {
+        return department;
+    }
+
+    public AccountStatus getIndustry() {
+        return industry;
+    }
+
+    public AccountStatus getDescription() {
+        return description;
+    }
+
+    public void setTrueName(AccountStatus trueName) {
+        this.trueName = trueName;
+    }
+
+    public void setCompany(AccountStatus company) {
+        this.company = company;
+    }
+
+    public void setDepartment(AccountStatus department) {
+        this.department = department;
+    }
+
+    public void setIndustry(AccountStatus industry) {
+        this.industry = industry;
+    }
+
+    public void setDescription(AccountStatus description) {
+        this.description = description;
     }
 }
