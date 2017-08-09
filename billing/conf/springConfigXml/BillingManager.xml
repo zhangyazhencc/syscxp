@@ -21,6 +21,7 @@
         <property name="resourceTypeForAccountRef">
             <list>
                 <value>org.zstack.billing.header.identity.AccountBalanceVO</value>
+                <value>org.zstack.billing.header.identity.OrderVO</value>
             </list>
         </property>
     </bean>
