@@ -44,7 +44,7 @@ CREATE TABLE  `JobQueueEntryVO` (
     PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---主账号基本信息表
+
 CREATE TABLE  `AccountVO` (
     `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
     `name` varchar(128) NOT NULL UNIQUE COMMENT '账户名称',
@@ -53,7 +53,6 @@ CREATE TABLE  `AccountVO` (
     `phone` varchar(32) NOT NULL UNIQUE COMMENT '手机号',
     `trueName` varchar(128) DEFAULT NULL COMMENT '姓名',
     `company` varchar(128) DEFAULT NULL COMMENT '公司',
-    `department` varchar(128) DEFAULT NULL COMMENT '部门',
     `industry` varchar(128) DEFAULT NULL COMMENT '行业',
     `type` varchar(128) NOT NULL COMMENT 'account type',
     `status` varchar(128) NOT NULL COMMENT '状态',
@@ -63,18 +62,15 @@ CREATE TABLE  `AccountVO` (
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---代理商主账号关系表
 CREATE TABLE  `ProxyAccountRefVO` (
   `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
-	`proxyUuid` varchar(32) NOT NULL COMMENT '代理商（包括系统管理员）UUID',
-  `accountUuid` varchar(32) NOT NULL COMMENT '由代理商（包括系统管理员）创建的主账号',
+	`accountUuid` varchar(32) NOT NULL COMMENT '代理商（包括系统管理员）UUID',
+  `customerAcccountUuid` varchar(32) NOT NULL COMMENT '由代理商（包括系统管理员）创建的主账号',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
---主账号安全信息表
 CREATE TABLE  `AccountApiSecurityVO` (
     `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
     `accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '所属账户UUID',
@@ -115,8 +111,6 @@ CREATE TABLE `PolicyVO` (
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---用户角色关系表
---用户被删除或者角色被删除，这条关联关系也被删除
 CREATE TABLE `UserPolicyRefVO` (
   `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
 	`userUuid` varchar(32) NOT NULL COMMENT '用户UUID',
@@ -126,14 +120,28 @@ CREATE TABLE `UserPolicyRefVO` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---Session表
---用户被删除，这条session记录也被删除
 CREATE TABLE  `SessionVO` (
     `uuid` varchar(32) NOT NULL UNIQUE,
     `accountUuid` varchar(32) NOT NULL,
     `userUuid` varchar(32) DEFAULT NULL,
     `type` varchar(128) NOT NULL COMMENT 'account type',
     `expiredDate` timestamp NOT NULL,
+    `createDate` timestamp,
+    PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+CREATE TABLE  `LogVO` (
+    `uuid` varchar(32) NOT NULL UNIQUE,
+    `accountUuid` varchar(32) NOT NULL,
+    `userUuid` varchar(32) DEFAULT NULL,
+    `category` varchar(128) NOT NULL COMMENT 'category',
+    `resourceType` varchar(32) DEFAULT NULL,
+    `resourceUuid` varchar(32) DEFAULT NULL,
+    `action` varchar(32) DEFAULT NULL,
+    `state` varchar(32) DEFAULT NULL,
+    `description` varchar(255) DEFAULT NULL,
+    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
     `createDate` timestamp,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
