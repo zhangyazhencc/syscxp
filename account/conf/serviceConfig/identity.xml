@@ -8,7 +8,7 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateAccountMsg</name>
+        <name>org.zstack.account.header.identity.updatemsg.APIUpdateAccountMsg</name>
     </message>
 
     <message>
@@ -36,7 +36,7 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateUserMsg</name>
+        <name>org.zstack.account.header.identity.updatemsg.APIUpdateUserMsg</name>
     </message>
 
     <message>

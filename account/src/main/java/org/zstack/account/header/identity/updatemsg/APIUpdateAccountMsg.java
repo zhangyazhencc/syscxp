@@ -1,19 +1,17 @@
-package org.zstack.account.header.identity;
+package org.zstack.account.header.identity.updatemsg;
 
-import org.springframework.http.HttpMethod;
+import org.zstack.account.header.identity.AccountConstant;
+import org.zstack.account.header.identity.AccountMessage;
+import org.zstack.account.header.identity.AccountVO;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
-import org.zstack.header.rest.RestRequest;
 
-/**
- * Created by frank on 7/10/2015.
- */
-@Action(category = AccountConstant.ACTION_CATEGORY)
-public class APIUpdateUserMsg extends APIMessage implements AccountMessage {
-    @APIParam(resourceType = UserVO.class, checkAccount = true, operationTarget = true, required = false)
+@Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
+public class APIUpdateAccountMsg extends APIMessage implements AccountMessage {
+    @APIParam(resourceType = AccountVO.class, required = false, checkAccount = true, operationTarget = true)
     private String uuid;
     @APIParam(maxLength = 255, required = false)
     private String password;
@@ -21,14 +19,6 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage {
     private String name;
     @APIParam(maxLength = 2048, required = false)
     private String description;
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
 
     public String getPassword() {
         return password;
@@ -40,7 +30,15 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage {
 
     @Override
     public String getAccountUuid() {
-        return getSession().getAccountUuid();
+        return this.getSession().getAccountUuid();
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getName() {
@@ -58,11 +56,12 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage {
     public void setDescription(String description) {
         this.description = description;
     }
- 
-    public static APIUpdateUserMsg __example__() {
-        APIUpdateUserMsg msg = new APIUpdateUserMsg();
-        msg.setName("new");
+
+    public static APIUpdateAccountMsg __example__() {
+        APIUpdateAccountMsg msg = new APIUpdateAccountMsg();
         msg.setUuid(uuid());
+        msg.setName("updatename");
+        msg.setPassword("updatepassword");
         return msg;
     }
 
@@ -72,7 +71,7 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Updating").resource(uuid, UserVO.class.getSimpleName())
+                ntfy("Updating").resource(uuid, AccountVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };

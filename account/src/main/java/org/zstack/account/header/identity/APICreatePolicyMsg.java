@@ -1,6 +1,6 @@
 package org.zstack.account.header.identity;
 
-import org.springframework.http.HttpMethod;
+import org.zstack.account.header.identity.updatemsg.APIUpdateUserMsg;
 import org.zstack.header.identity.Action;
 import org.zstack.header.identity.PolicyStatement;
 import org.zstack.header.identity.StatementEffect;
@@ -9,7 +9,6 @@ import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
-import org.zstack.header.rest.RestRequest;
 
 import java.util.List;
 

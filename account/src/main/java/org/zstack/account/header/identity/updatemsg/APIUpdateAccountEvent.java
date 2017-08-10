@@ -1,5 +1,6 @@
-package org.zstack.account.header.identity;
+package org.zstack.account.header.identity.updatemsg;
 
+import org.zstack.account.header.identity.AccountInventory;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.rest.RestResponse;
