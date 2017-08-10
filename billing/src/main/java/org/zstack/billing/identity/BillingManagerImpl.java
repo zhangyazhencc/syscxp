@@ -25,6 +25,7 @@ import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.exception.CloudRuntimeException;
+import org.zstack.header.identity.IdentityErrors;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.utils.Utils;
@@ -117,7 +118,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         BigDecimal creditPoint = abvo.getCreditPoint();
         BigDecimal mayPayTotal = cashBalance.add(presentBalance).add(creditPoint);
         if (total.compareTo(mayPayTotal) > 0) {
-            throw new RuntimeException(String.format("you have no enough balance to pay this product. your pay money can not greater than %d.please go to recharge", mayPayTotal.toString()));
+            throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE,String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
         }
 
         OrderVO orderVo = new OrderVO();
