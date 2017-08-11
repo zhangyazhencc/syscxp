@@ -484,9 +484,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIChangeUserPWDMsg msg) {
-        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhone()))) {
+        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhoneOrEmail()))) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match",
-                    msg.getUuid(), msg.getPhone()));
+                    msg.getUuid(), msg.getPhoneOrEmail()));
         }
     }
 
@@ -498,9 +498,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIChangeAccountPWDMsg msg) {
-        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhone()))) {
+        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhoneOrEmail()))) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match",
-                    msg.getUuid(), msg.getPhone()));
+                    msg.getUuid(), msg.getPhoneOrEmail()));
         }
     }
 

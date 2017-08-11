@@ -11,7 +11,7 @@ public class APIChangeAccountPWDMsg extends APIMessage {
     private String uuid;
 
     @APIParam
-    private String phone;
+    private String phoneOrEmail;
 
     @APIParam
     private String code;
@@ -29,8 +29,8 @@ public class APIChangeAccountPWDMsg extends APIMessage {
         return uuid;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getPhoneOrEmail() {
+        return phoneOrEmail;
     }
 
     public String getCode() {
@@ -53,8 +53,8 @@ public class APIChangeAccountPWDMsg extends APIMessage {
         this.uuid = uuid;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setPhoneOrEmail(String phoneOrEmail) {
+        this.phoneOrEmail = phoneOrEmail;
     }
 
     public void setCode(String code) {

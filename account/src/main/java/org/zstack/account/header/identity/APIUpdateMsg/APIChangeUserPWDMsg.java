@@ -11,7 +11,7 @@ public class APIChangeUserPWDMsg extends APISessionMessage {
     private String uuid;
 
     @APIParam
-    private String phone;
+    private String phoneOrEmail;
 
     @APIParam
     private String code;
@@ -29,8 +29,8 @@ public class APIChangeUserPWDMsg extends APISessionMessage {
         return uuid;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getPhoneOrEmail() {
+        return phoneOrEmail;
     }
 
     public String getCode() {
@@ -52,6 +52,7 @@ public class APIChangeUserPWDMsg extends APISessionMessage {
     public void setUuid(String uuid) {
         this.uuid = uuid;
     }
+
     public void setOldpassword(String oldpassword) {
         this.oldpassword = oldpassword;
     }
@@ -60,8 +61,8 @@ public class APIChangeUserPWDMsg extends APISessionMessage {
         this.newpassword = newpassword;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setPhoneOrEmail(String phoneOrEmail) {
+        this.phoneOrEmail = phoneOrEmail;
     }
 
     public void setCode(String code) {
