@@ -5,7 +5,7 @@ import org.zstack.header.identity.AccountType;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
 import org.zstack.header.vo.Index;
-
+import org.zstack.header.identity.UserGrade;
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -33,27 +33,23 @@ public class AccountVO {
     private String email;
 
     @Column
-    private String grade;
+    @Enumerated(EnumType.STRING)
+    private UserGrade grade;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private AccountStatus trueName;
+    private String trueName;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private AccountStatus company;
+    private String company;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private AccountStatus department;
+    private String department;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private AccountStatus industry;
+    private String industry;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private AccountStatus description;
+    private String description;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -147,51 +143,51 @@ public class AccountVO {
         this.email = email;
     }
 
-    public AccountStatus getTrueName() {
+    public String getTrueName() {
         return trueName;
     }
 
-    public AccountStatus getCompany() {
+    public String getCompany() {
         return company;
     }
 
-    public AccountStatus getDepartment() {
+    public String getDepartment() {
         return department;
     }
 
-    public AccountStatus getIndustry() {
+    public String getIndustry() {
         return industry;
     }
 
-    public AccountStatus getDescription() {
+    public String getDescription() {
         return description;
     }
 
-    public void setTrueName(AccountStatus trueName) {
+    public void setTrueName(String trueName) {
         this.trueName = trueName;
     }
 
-    public void setCompany(AccountStatus company) {
+    public void setCompany(String company) {
         this.company = company;
     }
 
-    public void setDepartment(AccountStatus department) {
+    public void setDepartment(String department) {
         this.department = department;
     }
 
-    public void setIndustry(AccountStatus industry) {
+    public void setIndustry(String industry) {
         this.industry = industry;
     }
 
-    public void setDescription(AccountStatus description) {
+    public void setDescription(String description) {
         this.description = description;
     }
 
-    public String getGrade() {
+    public UserGrade getGrade() {
         return grade;
     }
 
-    public void setGrade(String grade) {
+    public void setGrade(UserGrade grade) {
         this.grade = grade;
     }
 }

@@ -1,5 +1,6 @@
 package org.zstack.account.header.identity.VO;
 
+import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountType;
 
 import javax.persistence.metamodel.SingularAttribute;
@@ -18,7 +19,7 @@ public class AccountVO_ {
     public static volatile SingularAttribute<AccountVO, String> department;
     public static volatile SingularAttribute<AccountVO, String> industry;
     public static volatile SingularAttribute<AccountVO, String> grade;
-    public static volatile SingularAttribute<AccountVO, String> status;
+    public static volatile SingularAttribute<AccountVO, AccountStatus> status;
     public static volatile SingularAttribute<AccountVO, String> description;
     public static volatile SingularAttribute<AccountVO, AccountType> type;
     public static volatile SingularAttribute<AccountVO, Timestamp> createDate;

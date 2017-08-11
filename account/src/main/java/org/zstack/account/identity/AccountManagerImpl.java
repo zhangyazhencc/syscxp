@@ -143,6 +143,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             updatehand.handle((APIChangeIndustryMsg) msg);
         }else if(msg instanceof APIUpdateAccountMsg){
             updatehand.handle((APIUpdateAccountMsg) msg);
+        }else if(msg instanceof APIUpdateUserMsg){
+            updatehand.handle((APIUpdateUserMsg) msg);
         }
 
 
@@ -484,6 +486,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIChangeAccountPhoneMsg) msg);
         } else if (msg instanceof APIChangeAccountEmailMsg) {
             validate((APIChangeAccountEmailMsg) msg);
+        } else if (msg instanceof APIUpdateUserMsg) {
+            validate((APIUpdateUserMsg) msg);
         }
 
         setServiceId(msg);
@@ -557,6 +561,15 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         q.add(AccountVO_.name, Op.EQ, msg.getName());
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("unable to create an account. An account already called %s", msg.getName()));
+        }
+    }
+
+    private void validate(APIUpdateUserMsg msg) {
+        UserVO user = dbf.findByUuid(msg.getTargetUuid(), UserVO.class);
+        if (!AccountConstant.INITIAL_SYSTEM_ADMIN_UUID.equals(msg.getUuid()) &&
+                !user.getAccountUuid().equals(msg.getUuid())) {
+            throw new OperationFailureException(argerr("the user[uuid:%s] does not belong to the" +
+                    " account[uuid:%s]", user.getUuid(),user.getAccountUuid()));
         }
     }
 

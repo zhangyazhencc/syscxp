@@ -2,11 +2,16 @@ package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zstack.account.header.identity.AccountInventory;
+import org.zstack.account.header.identity.UserInventory;
 import org.zstack.account.header.identity.VO.AccountVO;
 import org.zstack.account.header.identity.APIUpdateMsg.*;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.account.header.identity.VO.*;
+import org.zstack.header.identity.AccountStatus;
+import org.zstack.header.identity.AccountType;
+import org.zstack.header.identity.UserGrade;
+
 import javax.persistence.Query;
 
 /**
@@ -206,20 +211,48 @@ public class UpdateHand {
         if (msg.getPassword() != null) {
             account.setPassword(msg.getPassword());
         }
-        if (msg.getPassword() != null) {
-            account.setPassword(msg.getPassword());
+        if (msg.getCompany() != null) {
+            account.setCompany(msg.getCompany());
         }
-        if (msg.getPassword() != null) {
-            account.setPassword(msg.getPassword());
+        if (msg.getDepartment() != null) {
+            account.setDepartment(msg.getDepartment());
         }
-        if (msg.getPassword() != null) {
-            account.setPassword(msg.getPassword());
+        if (msg.getDescription() != null) {
+            account.setDescription(msg.getDescription());
         }
-        if (msg.getPassword() != null) {
-            account.setPassword(msg.getPassword());
+        if (msg.getEmail() != null) {
+            account.setEmail(msg.getEmail());
         }
-        if (msg.getPassword() != null) {
-            account.setPassword(msg.getPassword());
+        if (msg.getGrade() != null) {
+            if(msg.getGrade().equals(UserGrade.Normal)){
+                account.setGrade(UserGrade.Normal);
+            }else if(msg.getGrade().equals(UserGrade.Middling)){
+                account.setGrade(UserGrade.Middling);
+            }else if(msg.getGrade().equals(UserGrade.Important)){
+                account.setGrade(UserGrade.Important);
+            }
+        }
+        if (msg.getIndustry() != null) {
+            account.setIndustry(msg.getIndustry());
+        }
+        if (msg.getPhone() != null) {
+            account.setPhone(msg.getPhone());
+        }
+        if (msg.getStatus() != null) {
+            account.setStatus(msg.getStatus().equals(AccountStatus.Available)
+                    ?AccountStatus.Available:AccountStatus.Disabled);
+        }
+        if (msg.getTrueName() != null) {
+            account.setTrueName(msg.getTrueName());
+        }
+        if (msg.getType() != null) {
+            if(msg.getType().equals(AccountType.Normal)){
+                account.setType(AccountType.Normal);
+            }else if(msg.getType().equals(AccountType.Proxy)){
+                account.setType(AccountType.Proxy);
+            }else if(msg.getType().equals(AccountType.SystemAdmin)){
+                account.setType(AccountType.SystemAdmin);
+            }
         }
 
         account = dbf.updateAndRefresh(account);
@@ -228,4 +261,51 @@ public class UpdateHand {
         evt.setObject(account);
         bus.publish(evt);
     }
+
+
+    public void handle(APIUpdateUserMsg msg) {
+        UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
+
+        boolean update = false;
+        if (msg.getName() != null) {
+            user.setName(msg.getName());
+            update = true;
+        }
+        if (msg.getDescription() != null) {
+            user.setDescription(msg.getDescription());
+            update = true;
+        }
+        if (msg.getPassword() != null) {
+            user.setPassword(msg.getPassword());
+            update = true;
+        }
+        if (msg.getDepartment() != null) {
+            user.setPassword(msg.getPassword());
+            update = true;
+        }
+        if (msg.getEmail() != null) {
+            user.setEmail(msg.getEmail());
+            update = true;
+        }
+        if (msg.getPhone() != null) {
+            user.setPhone(msg.getPhone());
+            update = true;
+        }
+        if (msg.getStatus() != null) {
+            user.setStatus(msg.getStatus().equals(AccountStatus.Available)
+                    ?AccountStatus.Available:AccountStatus.Disabled);
+            update = true;
+        }
+        if (msg.getTrueName() != null) {
+            user.setTrueName(msg.getTrueName());
+            update = true;
+        }
+        if (update) {
+            user = dbf.updateAndRefresh(user);
+        }
+        APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
+        evt.setInventory(UserInventory.valueOf(user));
+        bus.publish(evt);
+    }
+
 }

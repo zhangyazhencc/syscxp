@@ -1,5 +1,6 @@
 package org.zstack.account.header.identity.VO;
 
+import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.vo.ForeignKey;
 import org.zstack.header.vo.ForeignKey.ReferenceOption;
 
@@ -36,7 +37,8 @@ public class UserVO {
     private String department;
 
     @Column
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private AccountStatus status;
 
     @Column
     private String description;
@@ -124,7 +126,7 @@ public class UserVO {
         return department;
     }
 
-    public String getStatus() {
+    public AccountStatus getStatus() {
         return status;
     }
 
@@ -144,7 +146,7 @@ public class UserVO {
         this.department = department;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(AccountStatus status) {
         this.status = status;
     }
 }
