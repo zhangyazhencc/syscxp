@@ -4,11 +4,11 @@
     <interceptor>AccountManager</interceptor>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreateAccountMsg</name>
+        <name>org.zstack.account.header.identity.APICreateMsg.APICreateAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.updatemsg.APIUpdateAccountMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdateMsg.APIUpdateAccountMsg</name>
     </message>
 
     <message>
@@ -32,15 +32,15 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreateUserMsg</name>
+        <name>org.zstack.account.header.identity.APICreateMsg.APICreateUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.updatemsg.APIUpdateUserMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdateMsg.APIUpdateUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIDeleteUserMsg</name>
+        <name>org.zstack.account.header.identity.APIDeleteMsg.APIDeleteUserMsg</name>
     </message>
 
     <message>
@@ -65,7 +65,7 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.updatemsg.APIChangeUserPWDMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdateMsg.APIChangeUserPWDMsg</name>
     </message>
 
 

@@ -7,7 +7,7 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 import org.zstack.header.rest.RestRequest;
-
+import org.zstack.account.header.identity.VO.UserVO;
 @Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
 public class APIAttachPolicyToUserMsg extends APIMessage implements AccountMessage {
     @APIParam(checkAccount = true, operationTarget = true)

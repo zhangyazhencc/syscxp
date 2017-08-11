@@ -6,6 +6,7 @@ import org.zstack.header.query.ExpandedQuery;
 import org.zstack.header.query.ExpandedQueryAlias;
 import org.zstack.header.query.ExpandedQueryAliases;
 import org.zstack.header.search.Inventory;
+import org.zstack.account.header.identity.VO.UserVO;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;

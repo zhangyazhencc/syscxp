@@ -21,6 +21,7 @@ import org.zstack.header.message.APIParam;
 import org.zstack.utils.*;
 import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.logging.CLogger;
+import org.zstack.account.header.identity.VO.*;
 
 import javax.persistence.Query;
 import javax.persistence.Tuple;

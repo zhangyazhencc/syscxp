@@ -8,6 +8,7 @@ import org.zstack.header.query.ExpandedQueryAlias;
 import org.zstack.header.query.ExpandedQueryAliases;
 import org.zstack.header.search.Inventory;
 import org.zstack.utils.gson.JSONObjectUtil;
+import org.zstack.account.header.identity.VO.PolicyVO;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;

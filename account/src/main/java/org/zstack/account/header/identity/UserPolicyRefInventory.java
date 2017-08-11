@@ -3,6 +3,7 @@ package org.zstack.account.header.identity;
 import org.zstack.header.query.ExpandedQueries;
 import org.zstack.header.query.ExpandedQuery;
 import org.zstack.header.search.Inventory;
+import org.zstack.account.header.identity.VO.UserPolicyRefVO;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;

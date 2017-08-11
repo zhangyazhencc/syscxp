@@ -1,14 +1,12 @@
 package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.zstack.account.header.identity.*;
-import org.zstack.account.header.identity.updatemsg.*;
+import org.zstack.account.header.identity.VO.AccountVO;
+import org.zstack.account.header.identity.APIUpdateMsg.*;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
-import org.zstack.header.identity.SessionInventory;
-
+import org.zstack.account.header.identity.VO.*;
 import javax.persistence.Query;
-import java.sql.Timestamp;
 
 /**
  * Created by wangwg on 2017/8/8.

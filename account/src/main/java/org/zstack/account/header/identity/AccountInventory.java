@@ -1,6 +1,6 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.configuration.PythonClassInventory;
+import org.zstack.account.header.identity.VO.AccountVO;
 import org.zstack.header.query.ExpandedQueries;
 import org.zstack.header.query.ExpandedQuery;
 import org.zstack.header.search.Inventory;

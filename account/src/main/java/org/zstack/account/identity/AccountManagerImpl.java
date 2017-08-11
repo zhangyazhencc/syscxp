@@ -2,7 +2,12 @@ package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.zstack.account.header.identity.updatemsg.*;
+import org.zstack.account.header.identity.APICreateMsg.APICreateAccountEvent;
+import org.zstack.account.header.identity.APICreateMsg.APICreateAccountMsg;
+import org.zstack.account.header.identity.APICreateMsg.APICreateUserMsg;
+import org.zstack.account.header.identity.VO.AccountVO;
+import org.zstack.account.header.identity.VO.AccountVO_;
+import org.zstack.account.header.identity.APIUpdateMsg.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.MessageSafe;
@@ -23,6 +28,7 @@ import org.zstack.header.managementnode.PrepareDbInitialValueExtensionPoint;
 import org.zstack.header.message.*;
 import org.zstack.utils.*;
 import org.zstack.utils.logging.CLogger;
+import org.zstack.account.header.identity.VO.*;
 
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;

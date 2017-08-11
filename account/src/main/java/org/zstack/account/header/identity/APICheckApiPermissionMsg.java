@@ -5,6 +5,7 @@ import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;
 import org.zstack.header.rest.RestRequest;
+import org.zstack.account.header.identity.VO.UserVO;
 
 import java.util.List;
 
