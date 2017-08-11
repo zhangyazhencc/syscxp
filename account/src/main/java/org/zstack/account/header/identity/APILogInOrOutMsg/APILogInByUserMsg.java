@@ -1,4 +1,4 @@
-package org.zstack.account.header.identity;
+package org.zstack.account.header.identity.APILogInOrOutMsg;
 
 import org.zstack.header.identity.APISessionMessage;
 import org.zstack.header.identity.SuppressCredentialCheck;

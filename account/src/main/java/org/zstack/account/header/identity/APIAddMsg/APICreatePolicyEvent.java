@@ -1,10 +1,8 @@
-package org.zstack.account.header.identity.APICreateMsg;
+package org.zstack.account.header.identity.APIAddMsg;
 
 import org.zstack.account.header.identity.PolicyInventory;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.rest.RestResponse;
-
-import static org.zstack.utils.CollectionDSL.list;
 
 @RestResponse(allTo = "inventory")
 public class APICreatePolicyEvent extends APIEvent {

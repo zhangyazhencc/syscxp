@@ -1,6 +1,5 @@
-package org.zstack.account.header.identity.APICreateMsg;
+package org.zstack.account.header.identity.APIAddMsg;
 
-import org.zstack.header.message.APICreateMessage;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 

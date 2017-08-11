@@ -33,6 +33,9 @@ public class AccountVO {
     private String email;
 
     @Column
+    private String grade;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private AccountStatus trueName;
 
@@ -182,5 +185,13 @@ public class AccountVO {
 
     public void setDescription(AccountStatus description) {
         this.description = description;
+    }
+
+    public String getGrade() {
+        return grade;
+    }
+
+    public void setGrade(String grade) {
+        this.grade = grade;
     }
 }

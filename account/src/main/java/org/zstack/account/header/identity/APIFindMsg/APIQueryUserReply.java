@@ -1,5 +1,6 @@
-package org.zstack.account.header.identity;
+package org.zstack.account.header.identity.APIFindMsg;
 
+import org.zstack.account.header.identity.UserInventory;
 import org.zstack.header.query.APIQueryReply;
 import org.zstack.header.rest.RestResponse;
 

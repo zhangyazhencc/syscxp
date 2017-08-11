@@ -1,4 +1,4 @@
-package org.zstack.account.header.identity;
+package org.zstack.account.header.identity.APIAddMsg;
 
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.rest.RestResponse;

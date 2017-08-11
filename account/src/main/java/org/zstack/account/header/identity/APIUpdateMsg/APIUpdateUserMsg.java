@@ -13,7 +13,7 @@ import org.zstack.account.header.identity.VO.UserVO;
  * Created by frank on 7/10/2015.
  */
 @Action(category = AccountConstant.ACTION_CATEGORY)
-public class APIUpdateUserMsg extends APIMessage implements AccountMessage {
+public class APIUpdateUserMsg extends APIMessage {
     @APIParam(resourceType = UserVO.class, checkAccount = true, operationTarget = true, required = false)
     private String uuid;
     @APIParam(maxLength = 255, required = false)
@@ -37,11 +37,6 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage {
 
     public void setPassword(String password) {
         this.password = password;
-    }
-
-    @Override
-    public String getAccountUuid() {
-        return getSession().getAccountUuid();
     }
 
     public String getName() {

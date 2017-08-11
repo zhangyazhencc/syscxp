@@ -1,6 +1,7 @@
 package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.zstack.account.header.identity.AccountInventory;
 import org.zstack.account.header.identity.VO.AccountVO;
 import org.zstack.account.header.identity.APIUpdateMsg.*;
 import org.zstack.core.cloudbus.CloudBus;
@@ -196,6 +197,35 @@ public class UpdateHand {
             evt.setSuccess(false);
             evt.setMessage("bad uuid or AccountName");
         }
+        bus.publish(evt);
+    }
+
+    public  void handle(APIUpdateAccountMsg msg) {
+        AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
+
+        if (msg.getPassword() != null) {
+            account.setPassword(msg.getPassword());
+        }
+        if (msg.getPassword() != null) {
+            account.setPassword(msg.getPassword());
+        }
+        if (msg.getPassword() != null) {
+            account.setPassword(msg.getPassword());
+        }
+        if (msg.getPassword() != null) {
+            account.setPassword(msg.getPassword());
+        }
+        if (msg.getPassword() != null) {
+            account.setPassword(msg.getPassword());
+        }
+        if (msg.getPassword() != null) {
+            account.setPassword(msg.getPassword());
+        }
+
+        account = dbf.updateAndRefresh(account);
+
+        APIChangeResultEvent evt = new APIChangeResultEvent(msg.getId());
+        evt.setObject(account);
         bus.publish(evt);
     }
 }

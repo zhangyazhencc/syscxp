@@ -1,12 +1,12 @@
-package org.zstack.account.header.identity;
+package org.zstack.account.header.identity.APIAddMsg;
 
-import org.springframework.http.HttpMethod;
+import org.zstack.account.header.identity.AccountConstant;
+import org.zstack.account.header.identity.AccountMessage;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
-import org.zstack.header.rest.RestRequest;
 import org.zstack.account.header.identity.VO.UserVO;
 @Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
 public class APIAttachPolicyToUserMsg extends APIMessage implements AccountMessage {

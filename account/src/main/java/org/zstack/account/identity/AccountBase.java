@@ -4,19 +4,13 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.zstack.account.header.identity.APICreateMsg.APICreatePolicyEvent;
-import org.zstack.account.header.identity.APICreateMsg.APICreatePolicyMsg;
-import org.zstack.account.header.identity.APICreateMsg.APICreateUserEvent;
-import org.zstack.account.header.identity.APICreateMsg.APICreateUserMsg;
+import org.zstack.account.header.identity.APIAddMsg.*;
 import org.zstack.account.header.identity.APIDeleteMsg.APIDeletePolicyEvent;
 import org.zstack.account.header.identity.APIDeleteMsg.APIDeletePolicyMsg;
 import org.zstack.account.header.identity.APIDeleteMsg.APIDeleteUserEvent;
 import org.zstack.account.header.identity.APIDeleteMsg.APIDeleteUserMsg;
+import org.zstack.account.header.identity.APIUpdateMsg.*;
 import org.zstack.account.header.identity.VO.AccountVO;
-import org.zstack.account.header.identity.APIUpdateMsg.APIUpdateAccountEvent;
-import org.zstack.account.header.identity.APIUpdateMsg.APIUpdateAccountMsg;
-import org.zstack.account.header.identity.APIUpdateMsg.APIUpdateUserEvent;
-import org.zstack.account.header.identity.APIUpdateMsg.APIUpdateUserMsg;
 import org.zstack.core.Platform;
 import org.zstack.core.cascade.CascadeFacade;
 import org.zstack.core.cloudbus.CloudBus;
@@ -80,9 +74,7 @@ public class AccountBase extends AbstractAccount {
 
     private void handle(APIUpdateAccountMsg msg) {
         AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
-        if (msg.getName() != null) {
-            account.setName(msg.getName());
-        }
+
         if (msg.getPassword() != null) {
             account.setPassword(msg.getPassword());
         }
@@ -122,10 +114,10 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIUpdateUserMsg msg) {
         UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
 
-        if (!AccountConstant.INITIAL_SYSTEM_ADMIN_UUID.equals(msg.getAccountUuid()) && !user.getAccountUuid().equals(msg.getAccountUuid())) {
-            throw new OperationFailureException(argerr("the user[uuid:%s] does not belong to the" +
-                    " account[uuid:%s]", user.getUuid(), msg.getAccountUuid()));
-        }
+//        if (!AccountConstant.INITIAL_SYSTEM_ADMIN_UUID.equals(msg.getAccountUuid()) && !user.getAccountUuid().equals(msg.getAccountUuid())) {
+//            throw new OperationFailureException(argerr("the user[uuid:%s] does not belong to the" +
+//                    " account[uuid:%s]", user.getUuid(), msg.getAccountUuid()));
+//        }
 
         boolean update = false;
         if (msg.getName() != null) {

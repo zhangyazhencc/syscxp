@@ -1,4 +1,4 @@
-package org.zstack.account.header.identity.APICreateMsg;
+package org.zstack.account.header.identity.APIAddMsg;
 
 import org.zstack.account.header.identity.AccountInventory;
 import org.zstack.header.message.APIEvent;

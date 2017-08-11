@@ -7,12 +7,12 @@ import org.zstack.header.message.APIEvent;
  *
  * Created by wangwg on 2017/8/8.
  */
-public class APIChangeResultEvent extends APIEvent  {
+public class APIChangeResultEvent<T> extends APIEvent  {
     private boolean success;
 
     private String message;
 
-    private Object object;
+    private T object;
 
     public APIChangeResultEvent(String apiId) {
         super(apiId);
@@ -40,11 +40,11 @@ public class APIChangeResultEvent extends APIEvent  {
         this.message = message;
     }
 
-    public Object getObject() {
+    public T getObject() {
         return object;
     }
 
-    public void setObject(Object object) {
+    public void setObject(T object) {
         this.object = object;
     }
 }

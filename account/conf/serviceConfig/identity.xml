@@ -4,7 +4,7 @@
     <interceptor>AccountManager</interceptor>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreateMsg.APICreateAccountMsg</name>
+        <name>org.zstack.account.header.identity.APIAddMsg.APICreateAccountMsg</name>
     </message>
 
     <message>
@@ -12,19 +12,19 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APILogInByAccountMsg</name>
+        <name>org.zstack.account.header.identity.APILogInOrOutMsg.APILogInByAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APILogInByUserMsg</name>
+        <name>org.zstack.account.header.identity.APILogInOrOutMsg.APILogInByUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APILogOutMsg</name>
+        <name>org.zstack.account.header.identity.APILogInOrOutMsg.APILogOutMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIValidateSessionMsg</name>
+        <name>org.zstack.account.header.identity.APIFindMsg.APIValidateSessionMsg</name>
     </message>
 
     <message>
@@ -32,7 +32,7 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreateMsg.APICreateUserMsg</name>
+        <name>org.zstack.account.header.identity.APIAddMsg.APICreateUserMsg</name>
     </message>
 
     <message>
@@ -44,24 +44,25 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIQueryUserMsg</name>
+        <name>org.zstack.account.header.identity.APIFindMsg.APIQueryUserMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIProvingSessionMsg</name>
+        <name>org.zstack.account.header.identity.APIFindMsg.APIQueryAccountMsg</name>
+        <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APICheckApiPermissionMsg</name>
+        <name>org.zstack.account.header.identity.APIFindMsg.APICheckApiPermissionMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIListAccountMsg</name>
+        <name>org.zstack.account.header.identity.APIFindMsg.APIListAllAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIListUserMsg</name>
+        <name>org.zstack.account.header.identity.APIFindMsg.APIListAllUserMsg</name>
     </message>
 
     <message>

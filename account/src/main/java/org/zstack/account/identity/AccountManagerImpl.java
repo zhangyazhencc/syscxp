@@ -2,9 +2,14 @@ package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.zstack.account.header.identity.APICreateMsg.APICreateAccountEvent;
-import org.zstack.account.header.identity.APICreateMsg.APICreateAccountMsg;
-import org.zstack.account.header.identity.APICreateMsg.APICreateUserMsg;
+import org.zstack.account.header.identity.APIAddMsg.APICreateAccountEvent;
+import org.zstack.account.header.identity.APIAddMsg.APICreateAccountMsg;
+import org.zstack.account.header.identity.APIAddMsg.APICreateUserMsg;
+import org.zstack.account.header.identity.APIFindMsg.APICheckApiPermissionMsg;
+import org.zstack.account.header.identity.APIFindMsg.APICheckApiPermissionReply;
+import org.zstack.account.header.identity.APIFindMsg.APIValidateSessionMsg;
+import org.zstack.account.header.identity.APIFindMsg.APIValidateSessionReply;
+import org.zstack.account.header.identity.APILogInOrOutMsg.*;
 import org.zstack.account.header.identity.VO.AccountVO;
 import org.zstack.account.header.identity.VO.AccountVO_;
 import org.zstack.account.header.identity.APIUpdateMsg.*;
@@ -36,6 +41,8 @@ import java.sql.Timestamp;
 import java.util.*;
 
 import org.zstack.header.identity.*;
+import org.zstack.account.header.identity.APIFindMsg.*;
+
 import org.zstack.account.header.identity.*;
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
@@ -104,10 +111,10 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateAccountMsg) {
             handle((APICreateAccountMsg) msg);
-        } else if (msg instanceof APIListAccountMsg) {
-            handle((APIListAccountMsg) msg);
-        } else if (msg instanceof APIListUserMsg) {
-            handle((APIListUserMsg) msg);
+        } else if (msg instanceof APIListAllAccountMsg) {
+            handle((APIListAllAccountMsg) msg);
+        } else if (msg instanceof APIListAllUsersMsg) {
+            handle((APIListAllUsersMsg) msg);
         } else if (msg instanceof APILogInByAccountMsg) {
             handle((APILogInByAccountMsg) msg);
         } else if (msg instanceof APILogInByUserMsg) {
@@ -134,6 +141,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             updatehand.handle((APIChangeUserEmailMsg) msg);
         }else if(msg instanceof APIChangeIndustryMsg){
             updatehand.handle((APIChangeIndustryMsg) msg);
+        }else if(msg instanceof APIUpdateAccountMsg){
+            updatehand.handle((APIUpdateAccountMsg) msg);
         }
 
 
@@ -345,19 +354,33 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         bus.reply(msg, reply);
     }
 
-    private void handle(APIListUserMsg msg) {
-        List<UserVO> vos = dl.listByApiMessage(msg, UserVO.class);
-        List<UserInventory> invs = UserInventory.valueOf(vos);
-        APIListUserReply reply = new APIListUserReply();
-        reply.setInventories(invs);
+    private void handle(APIListAllUsersMsg msg) {
+        APIListResultReply reply = new APIListResultReply();
+        List<UserVO> vos = dl.listAll( msg.getOffset(), msg.getLength(), UserVO.class);
+        if(vos != null){
+            reply.setSuccess(true);
+            reply.setMessage("success");
+            reply.setList(vos);
+        }else{
+            reply.setSuccess(true);
+            reply.setMessage("no users");
+        }
+
         bus.reply(msg, reply);
     }
 
-    private void handle(APIListAccountMsg msg) {
-        List<AccountVO> vos = dl.listByApiMessage(msg, AccountVO.class);
-        List<AccountInventory> invs = AccountInventory.valueOf(vos);
-        APIListAccountReply reply = new APIListAccountReply();
-        reply.setInventories(invs);
+    private void handle(APIListAllAccountMsg msg) {
+        List<AccountVO> accountlist = dl.listAll(msg.getOffset(), msg.getLength(), AccountVO.class);
+        APIListResultReply reply = new APIListResultReply();
+        if(accountlist != null){
+            reply.setSuccess(true);
+            reply.setMessage("success");
+            reply.setList(accountlist);
+        }else{
+            reply.setSuccess(true);
+            reply.setMessage("no account");
+        }
+
         bus.reply(msg, reply);
     }
 
@@ -478,43 +501,43 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void validate(APIChangeUserPhoneMsg msg) {
         if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhone()))) {
-            throw new ApiMessageInterceptionException(argerr("Validation code does not match",
-                    msg.getUuid(), msg.getPhone()));
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getUuid()));
         }
     }
 
     private void validate(APIChangeUserPWDMsg msg) {
         if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhoneOrEmail()))) {
-            throw new ApiMessageInterceptionException(argerr("Validation code does not match",
-                    msg.getUuid(), msg.getPhoneOrEmail()));
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getUuid()));
         }
     }
 
     private void validate(APIChangeUserEmailMsg msg) {
         if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getEmail()))) {
-            throw new ApiMessageInterceptionException(argerr("Validation code does not match",
-                    msg.getUuid(), msg.getEmail()));
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getUuid()));
         }
     }
 
     private void validate(APIChangeAccountPWDMsg msg) {
         if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhoneOrEmail()))) {
-            throw new ApiMessageInterceptionException(argerr("Validation code does not match",
-                    msg.getUuid(), msg.getPhoneOrEmail()));
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getUuid()));
         }
     }
 
     private void validate(APIChangeAccountPhoneMsg msg) {
         if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhone()))) {
-            throw new ApiMessageInterceptionException(argerr("Validation code does not match",
-                    msg.getUuid(), msg.getPhone()));
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getUuid()));
         }
     }
 
     private void validate(APIChangeAccountEmailMsg msg) {
         if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getEmail()))) {
-            throw new ApiMessageInterceptionException(argerr("Validation code does not match",
-                    msg.getUuid(), msg.getEmail()));
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getUuid()));
         }
     }
 
@@ -539,26 +562,10 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
 
     private void validate(APIUpdateAccountMsg msg) {
-        AccountVO a = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
-        if (msg.getUuid() == null) {
-            msg.setUuid(msg.getSession().getAccountUuid());
-        }
-
-
-        if (a.getType() == AccountType.SystemAdmin) {
-            if (msg.getName() != null && msg.getUuid() == null ) {
-                throw new OperationFailureException(operr(
-                        "the name of admin account cannot be updated"
-                ));
-            }
-
-            return;
-        }
-
         AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
-        if (!account.getUuid().equals(a.getUuid())) {
+        if (!account.getType().equals(AccountType.SystemAdmin)) {
             throw new OperationFailureException(operr("account[uuid: %s, name: %s] is a normal account, it cannot reset the password of another account[uuid: %s]",
-                    account.getUuid(), account.getName(), msg.getUuid()));
+                    account.getUuid(), account.getName(), msg.getTargetUuid()));
         }
     }
 

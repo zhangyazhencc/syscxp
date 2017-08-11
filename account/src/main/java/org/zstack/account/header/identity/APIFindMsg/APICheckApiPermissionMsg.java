@@ -1,10 +1,9 @@
-package org.zstack.account.header.identity;
+package org.zstack.account.header.identity.APIFindMsg;
 
-import org.springframework.http.HttpMethod;
+import org.zstack.account.header.identity.AccountConstant;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;
-import org.zstack.header.rest.RestRequest;
 import org.zstack.account.header.identity.VO.UserVO;
 
 import java.util.List;

@@ -55,6 +55,7 @@ CREATE TABLE  `AccountVO` (
     `company` varchar(128) DEFAULT NULL COMMENT '公司',
     `industry` varchar(128) DEFAULT NULL COMMENT '行业',
     `type` varchar(128) NOT NULL COMMENT 'account type',
+    `grade` varchar(128) NOT NULL COMMENT '账户等级',
     `status` varchar(128) NOT NULL COMMENT '状态',
     `description` varchar(255),
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
