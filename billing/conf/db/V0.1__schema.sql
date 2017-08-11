@@ -97,7 +97,7 @@ CREATE TABLE `OrderVO` (
   `productType` varchar(50) DEFAULT NULL COMMENT '产品类型',
   `productDescription` varchar(500) DEFAULT NULL COMMENT '产品说明，json格式',
   `productChargeModel` varchar(50) DEFAULT NULL COMMENT '计费方式--按月，按年',
-  `duration` int unsigned DEFAULT NOT NULL,
+  `duration` int unsigned DEFAULT 0 NOT NULL,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -176,7 +176,7 @@ CREATE TABLE `RenewVO` (
   `productName` varchar(100) NOT NULL COMMENT '产品名称',
   `productType` varchar(50) DEFAULT NULL COMMENT '产品类型',
   `productChargeModel` varchar(50) DEFAULT NULL COMMENT '计费方式--按月，按年',
-  `duration` int unsigned DEFAULT NOT NULL,
+  `duration` int unsigned NOT NULL DEFAULT 0,
   `expiredDate` timestamp NOT NULL,
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
   `createDate` timestamp NOT NULL DEFAULT current_timestamp(),
