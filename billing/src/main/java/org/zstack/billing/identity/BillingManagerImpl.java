@@ -85,7 +85,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void handle(APIGetExpenseGrossMonthListMsg msg) {
-        String sql = "select DATE_FORMAT(payTime,'%Y-%m') mon,sum(orderPayPresent)+sum(orderPayCash) as payTotal from OrderVO where accountUuid = :accountUuid and orderState = 'PAID' and payTime between :dateStart and :dateEnd group by mon order by mon asc";
+        String sql = "select DATE_FORMAT(payTime,'%Y-%m') mon,sum(payPresent)+sum(payCash) as payTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and payTime between :dateStart and :dateEnd group by mon order by mon asc";
         Query q =  dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("accountUuid",msg.getAccountUuid());
         q.setParameter("dateStart", msg.getDateStart());
@@ -98,7 +98,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void handle(APICreateOrderMsg msg) {
-        switch (msg.getOrderState()) {
+        switch (msg.getState()) {
             case PAID:
                 createOrder(msg);
                 break;
@@ -112,7 +112,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     @Transactional
     public void createOrder(APICreateOrderMsg msg) {
         AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        BigDecimal total = msg.getTotal().multiply(msg.getProductDiscount()).divide(new BigDecimal(100));
+        BigDecimal total = msg.getPrice();
         BigDecimal cashBalance = abvo.getCashBalance();
         BigDecimal presentBalance = abvo.getPresentBalance();
         BigDecimal creditPoint = abvo.getCreditPoint();
@@ -126,9 +126,9 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         orderVo.setUuid(orderUuid);
         orderVo.setAccountUuid(msg.getAccountUuid());
         orderVo.setProductName(msg.getProductName());
-        orderVo.setOrderState(msg.getOrderState());
+        orderVo.setState(msg.getState());
         orderVo.setProductType(msg.getProductType());
-        orderVo.setOrderType(msg.getOrderType());
+        orderVo.setType(msg.getType());
         orderVo.setProductEffectTimeEnd(msg.getProductEffectTimeEnd());
         orderVo.setProductEffectTimeStart(msg.getProductEffectTimeStart());
         orderVo.setProductChargeModel(msg.getProductChargeModel());
@@ -136,30 +136,35 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         orderVo.setPayTime(currentTimeStamp);
         orderVo.setProductDiscount(msg.getProductDiscount());
         orderVo.setProductDescription(msg.getProductDescription());
+        orderVo.setOriginalPrice(msg.getOriginalPrice());
+        orderVo.setProductUuid(msg.getProductUuid());
+        orderVo.setPrice(msg.getPrice());
+        orderVo.setDuration(msg.getDuration());
 
         if (abvo.getPresentBalance().compareTo(BigDecimal.ZERO) > 0) {
             if (abvo.getPresentBalance().compareTo(total) > 0) {
                 abvo.setPresentBalance(abvo.getPresentBalance().subtract(total));
                 dbf.updateAndRefresh(abvo);
-                orderVo.setOrderPayPresent(total);
-                orderVo.setOrderPayCash(BigDecimal.ZERO);
+                orderVo.setPayPresent(total);
+                orderVo.setPayCash(BigDecimal.ZERO);
             } else {
                 BigDecimal payPresent = abvo.getPresentBalance();
                 BigDecimal payCash = total.subtract(payPresent);
                 abvo.setCashBalance(abvo.getCashBalance().subtract(payCash));
                 abvo.setPresentBalance(BigDecimal.ZERO);
                 dbf.updateAndRefresh(abvo);
-                orderVo.setOrderPayPresent(payPresent);
-                orderVo.setOrderPayCash(payCash);
+                orderVo.setPayPresent(payPresent);
+                orderVo.setPayCash(payCash);
             }
         } else {
             abvo.setCashBalance(abvo.getCashBalance().subtract(total));
             dbf.updateAndRefresh(abvo);
-            orderVo.setOrderPayPresent(BigDecimal.ZERO);
-            orderVo.setOrderPayCash(total);
+            orderVo.setPayPresent(BigDecimal.ZERO);
+            orderVo.setPayCash(total);
         }
 
         dbf.persistAndRefresh(orderVo);
+
         OrderInventory inventory = OrderInventory.valueOf(orderVo);
         APICreateOrderEvent evt = new APICreateOrderEvent(msg.getId());
         evt.setInventory(inventory);

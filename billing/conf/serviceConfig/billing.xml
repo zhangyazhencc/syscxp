@@ -15,5 +15,9 @@
     <message>
         <name>org.zstack.billing.header.identity.APIGetExpenseGrossMonthListMsg</name>
     </message>
+    <message>
+        <name>org.zstack.billing.header.identity.APIQueryOrderMsg</name>
+        <serviceId>query</serviceId>
+    </message>
 
 </service>
