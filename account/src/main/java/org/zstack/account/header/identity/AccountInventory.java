@@ -1,6 +1,6 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.account.header.identity.VO.AccountVO;
+import org.zstack.account.header.AccountVO;
 import org.zstack.header.query.ExpandedQueries;
 import org.zstack.header.query.ExpandedQuery;
 import org.zstack.header.search.Inventory;

@@ -4,13 +4,12 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.zstack.account.header.identity.APIAddMsg.*;
-import org.zstack.account.header.identity.APIDeleteMsg.APIDeletePolicyEvent;
-import org.zstack.account.header.identity.APIDeleteMsg.APIDeletePolicyMsg;
-import org.zstack.account.header.identity.APIDeleteMsg.APIDeleteUserEvent;
-import org.zstack.account.header.identity.APIDeleteMsg.APIDeleteUserMsg;
-import org.zstack.account.header.identity.APIUpdateMsg.*;
-import org.zstack.account.header.identity.VO.AccountVO;
+import org.zstack.account.header.*;
+import org.zstack.account.header.APIDeletePolicyEvent;
+import org.zstack.account.header.APIDeletePolicyMsg;
+import org.zstack.account.header.APIDeleteUserEvent;
+import org.zstack.account.header.APIDeleteUserMsg;
+import org.zstack.account.header.AccountVO;
 import org.zstack.core.Platform;
 import org.zstack.core.cascade.CascadeFacade;
 import org.zstack.core.cloudbus.CloudBus;
@@ -20,9 +19,7 @@ import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.*;
 import org.zstack.core.db.SimpleQuery.Op;
 import org.zstack.core.errorcode.ErrorFacade;
-import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.account.header.identity.*;
-import org.zstack.account.header.identity.VO.*;
 
 import org.zstack.header.identity.AbstractAccount;
 import org.zstack.account.header.identity.AfterCreateUserExtensionPoint;
@@ -34,8 +31,6 @@ import org.zstack.utils.Utils;
 import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
-
-import static org.zstack.core.Platform.argerr;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class AccountBase extends AbstractAccount {
