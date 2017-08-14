@@ -7,9 +7,6 @@ import java.sql.Timestamp;
 
 public class APIGetExpenseGrossMonthListMsg extends APISyncCallMessage {
 
-    @APIParam(nonempty = true)
-    private String accountUuid;
-
     @APIParam
     private Timestamp dateStart;
 
@@ -32,11 +29,4 @@ public class APIGetExpenseGrossMonthListMsg extends APISyncCallMessage {
         this.dateEnd = dateEnd;
     }
 
-    public String getAccountUuid() {
-        return accountUuid;
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
 }

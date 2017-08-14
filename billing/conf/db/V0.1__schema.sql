@@ -171,7 +171,7 @@ DROP TABLE IF EXISTS `RenewVO`;
 CREATE TABLE `RenewVO` (
   `uuid` varchar(32) NOT NULL COMMENT '主键',
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账号主键',
-  `isRenewAuto` tinyint(2) unsigned DEFAULT NULL COMMENT '是否自动续费，1，自动，2关闭',
+  `isRenewAuto` tinyint(2) unsigned DEFAULT 0 COMMENT '是否自动续费，1，自动，2关闭',
   `productUuid` varchar(32) NOT NULL COMMENT '产品ID',
   `productName` varchar(100) NOT NULL COMMENT '产品名称',
   `productType` varchar(50) DEFAULT NULL COMMENT '产品类型',
@@ -180,7 +180,8 @@ CREATE TABLE `RenewVO` (
   `expiredDate` timestamp NOT NULL,
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
   `createDate` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`uuid`)
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `UNI_ACCOUNT_PRODUCT_ID` (`accountUuid`,`productUuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `RenewVO` */

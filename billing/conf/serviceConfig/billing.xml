@@ -16,7 +16,34 @@
         <name>org.zstack.billing.header.identity.APIGetExpenseGrossMonthListMsg</name>
     </message>
     <message>
+        <name>org.zstack.billing.header.identity.APIUpdateRenewMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.billing.header.identity.order.APIUpdateOrderStateMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.billing.header.identity.receipt.APIGetValuebleReceiptMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.billing.header.identity.receipt.APICreateReceiptPostAddressMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.billing.header.identity.receipt.APIUpdateReceiptPostAddressMsg</name>
+    </message>
+    <message>
         <name>org.zstack.billing.header.identity.APIQueryOrderMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+    <message>
+        <name>org.zstack.billing.header.identity.renew.APIQueryRenewMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+    <message>
+        <name>org.zstack.billing.header.identity.balance.APIQueryDealDetailMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+    <message>
+        <name>org.zstack.billing.header.identity.receipt.APIQueryReceiptPostAddressMsg</name>
         <serviceId>query</serviceId>
     </message>
 

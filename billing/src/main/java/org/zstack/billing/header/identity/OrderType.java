@@ -5,7 +5,8 @@ public enum OrderType {
     UPGRADE,
     DOWNGRADE,
     RENEW,
-    SLA_COMPENSATION
+    SLA_COMPENSATION,
+    UN_SUBCRIBE
 
 
 }
