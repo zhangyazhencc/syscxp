@@ -76,7 +76,7 @@ public class CreateHand {
         uservo.setTrueName(msg.getTrueName());
         dbf.persistAndRefresh(uservo);
 
-        APICreateUserEvent evt = new APICreateUserEvent(msg.getId());
+        APICreateResultEvent evt = new APICreateResultEvent(msg.getId());
         evt.setObject(uservo);
         bus.publish(evt);
     }
