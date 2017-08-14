@@ -6,6 +6,7 @@ import org.zstack.account.header.identity.UserInventory;
 import org.zstack.account.header.AccountVO;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
+import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.AccountGrade;
@@ -28,27 +29,14 @@ public class UpdateHand {
 
 
     public void handle(APIChangeUserPWDMsg msg) {
+
         APIChangeResultEvent evt = new APIChangeResultEvent(msg.getId());
-
-        if(msg.isIsupdate()){
-            String sql = "update UserVO set password= :newpassword where uuid = :uuid and password = :oldpassword";
-            Query q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
-            q.setParameter("uuid", msg.getUuid());
-            q.setParameter("newpassword", msg.getNewpassword());
-            q.setParameter("oldpassword", msg.getOldpassword());
-
-            int result = q.executeUpdate();
-            if(result > 0 ){
-                evt.setSuccess(true);
-                evt.setMessage("success");
-                evt.setObject(dbf.findByUuid(msg.getUuid(),UserVO.class));
-            }else{
-                evt.setSuccess(false);
-                evt.setMessage("bad old passwords or username");
-            }
+        UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
+        if (user.getPassword().equals(msg.getOldpassword())){
+            user.setPassword(msg.getNewpassword());
+            dbf.update(user);
         }else{
-            evt.setSuccess(true);
-            evt.setMessage("Validation code is correct");
+            throw new CloudRuntimeException("bad old passwords or username");
         }
 
         bus.publish(evt);

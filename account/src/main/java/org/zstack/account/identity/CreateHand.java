@@ -28,36 +28,26 @@ public class CreateHand {
     private PluginRegistry pluginRgty;
 
     public void handle(APICreateAccountMsg msg) {
-        final AccountInventory inv = new SQLBatchWithReturn<AccountInventory>() {
-            @Override
-            protected AccountInventory scripts() {
-                AccountVO vo = new AccountVO();
+        AccountVO vo = new AccountVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setName(msg.getName());
+        vo.setPassword(msg.getPassword());
+        vo.setCompany(msg.getCompany());
+        vo.setDescription(msg.getDescription());
+        vo.setEmail(msg.getEmail());
+        vo.setIndustry(msg.getIndustry());
+        vo.setPhone(msg.getPhone());
+        vo.setTrueName(msg.getTrueName());
+        vo.setStatus(msg.getStatus());
+        vo.setType(msg.getType() != null ? AccountType.valueOf(msg.getType()) : AccountType.Normal);
+        vo.setGrade( msg.getGrade());
 
-                vo.setUuid(Platform.getUuid());
-                vo.setName(msg.getName());
-                vo.setPassword(msg.getPassword());
-                vo.setCompany(msg.getCompany());
-                vo.setDescription(msg.getDescription());
-                vo.setEmail(msg.getEmail());
-                vo.setIndustry(msg.getIndustry());
-                vo.setPhone(msg.getPhone());
-                vo.setTrueName(msg.getTrueName());
-                vo.setStatus(msg.getStatus());
-                vo.setType(msg.getType() != null ? AccountType.valueOf(msg.getType()) : AccountType.Normal);
-                vo.setGrade( msg.getGrade());
-                persist(vo);
-                reload(vo);
-
-                return AccountInventory.valueOf(vo);
-            }
-        }.execute();
-
-
-        CollectionUtils.safeForEach(pluginRgty.getExtensionList(AfterCreateAccountExtensionPoint.class),
-                arg -> arg.afterCreateAccount(inv));
+        dbf.persistAndRefresh(vo);
+//        CollectionUtils.safeForEach(pluginRgty.getExtensionList(AfterCreateAccountExtensionPoint.class),
+//                arg -> arg.afterCreateAccount(AccountInventory.valueOf(vo)));
 
         APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
-        evt.setInventory(inv);
+        evt.setInventory(AccountInventory.valueOf(vo));
         bus.publish(evt);
     }
 
