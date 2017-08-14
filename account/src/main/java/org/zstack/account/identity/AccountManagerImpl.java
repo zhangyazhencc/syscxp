@@ -106,6 +106,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateAccountMsg) {
             createHand.handle((APICreateAccountMsg) msg);
+        } else if (msg instanceof APICreateUserMsg) {
+            createHand.handle((APICreateUserMsg) msg);
         } else if (msg instanceof APIListAllAccountMsg) {
             handle((APIListAllAccountMsg) msg);
         } else if (msg instanceof APIListAllUsersMsg) {
