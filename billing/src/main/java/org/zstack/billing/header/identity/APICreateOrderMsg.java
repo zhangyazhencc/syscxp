@@ -7,8 +7,6 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 public class APICreateOrderMsg extends APIMessage {
-    @APIParam(nonempty = true)
-    private String accountUuid;
 
     @APIParam(nonempty = true)
     private OrderType type;
@@ -49,12 +47,26 @@ public class APICreateOrderMsg extends APIMessage {
     @APIParam(nonempty = true)
     private int duration;
 
-    public String getAccountUuid() {
-        return accountUuid;
+    @APIParam(required= false)
+    private BigDecimal reChargePresentBalance;
+
+    @APIParam(required= false)
+    private BigDecimal reChargeCashBalance;
+
+    public BigDecimal getReChargePresentBalance() {
+        return reChargePresentBalance;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+    public void setReChargePresentBalance(BigDecimal reChargePresentBalance) {
+        this.reChargePresentBalance = reChargePresentBalance;
+    }
+
+    public BigDecimal getReChargeCashBalance() {
+        return reChargeCashBalance;
+    }
+
+    public void setReChargeCashBalance(BigDecimal reChargeCashBalance) {
+        this.reChargeCashBalance = reChargeCashBalance;
     }
 
     public OrderType getType() {
