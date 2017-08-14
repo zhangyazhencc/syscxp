@@ -744,12 +744,12 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
             String type = evt.getType().toString();
             try {
                 synchronized (listeners) {
-                    List<EventListenerWrapper> lst = listeners.get(type);
+                    List<EventListenerWrapper> lst = listeners.get(evt.getClass().getName());
                     if (lst == null) {
                         lst = new CopyOnWriteArrayList<EventListenerWrapper>();
-                        listeners.put(type, lst);
+                        listeners.put(evt.getClass().getName(), lst);
                         eventChan.queueBind(queueName, BusExchange.BROADCAST.toString(), type);
-                        logger.debug(String.format("[listening event]: %s", type));
+                        logger.debug(String.format("[listening event]: %s %s", type, evt.getClass().getName()));
                     }
 
                     if (!lst.contains(l)) {
@@ -765,16 +765,16 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
             String type = evt.getType().toString();
             try {
                 synchronized (listeners) {
-                    List<EventListenerWrapper> lst = listeners.get(type);
+                    List<EventListenerWrapper> lst = listeners.get(evt.getClass().getName());
                     if (lst == null) {
                         return;
                     }
 
                     lst.remove(l);
                     if (lst.isEmpty()) {
-                        listeners.remove(type);
+                        listeners.remove(evt.getClass().getName());
                         eventChan.queueUnbind(queueName, BusExchange.BROADCAST.toString(), type);
-                        logger.debug(String.format("[unlistening event]: %s", type));
+                        logger.debug(String.format("[unlistening event]: %s %s", type, evt.getClass().getName()));
                     }
                 }
             } catch (IOException e) {
@@ -793,7 +793,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
         private void handle(Event evt) {
             String type = evt.getType().toString();
-            List<EventListenerWrapper> lst = listeners.get(type);
+            List<EventListenerWrapper> lst = listeners.get(evt.getClass().getName());
             if (lst == null) {
                 return;
             }
