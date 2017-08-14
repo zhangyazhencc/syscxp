@@ -35,6 +35,14 @@
         </zstack:plugin>
     </bean>
 
+    <bean id="LogManager" class="org.zstack.account.log.LogManagerImpl">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.header.Component"/>
+            <zstack:extension interface="org.zstack.header.Service"/>
+            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
+        </zstack:plugin>
+    </bean>
+
     <bean id="AccountSubQueryExtension" class="org.zstack.account.identity.AccountSubQueryExtension">
         <zstack:plugin>
             <zstack:extension interface="org.zstack.query.MysqlQuerySubQueryExtension"/>
