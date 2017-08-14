@@ -1,6 +1,9 @@
 package org.zstack.account.log;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
+import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.zstack.account.header.log.OperLogVO;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
@@ -23,7 +26,9 @@ import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
 import javax.persistence.EntityManagerFactory;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class LogManagerImpl extends AbstractService implements LogManager, CloudBusEventListener, ApiMessageInterceptor {
@@ -49,10 +54,37 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
     @Autowired
     private EntityManagerFactory entityManagerFactory;
 
+    private Set<String> basePkgNames;
+
     private Map<String, SessionInventory> sessions = new ConcurrentHashMap<>();
 
     void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
-        bus.subscribeEvent(this, new APIEvent());
+        Set<APIEvent> boundEvents = new HashSet<APIEvent>(100);
+        ClassPathScanningCandidateComponentProvider scanner = new ClassPathScanningCandidateComponentProvider(true);
+        scanner.resetFilters(false);
+        scanner.addIncludeFilter(new AssignableTypeFilter(APIEvent.class));
+        for (String pkg : getBasePkgNames()) {
+            for (BeanDefinition bd : scanner.findCandidateComponents(pkg)) {
+                Class<?> clazz = Class.forName(bd.getBeanClassName());
+                if (clazz == APIEvent.class) {
+                    continue;
+                }
+                APIEvent evt = (APIEvent) clazz.newInstance();
+                boundEvents.add(evt);
+            }
+        }
+
+        for (APIEvent e : boundEvents) {
+            bus.subscribeEvent(this, e);
+        }
+    }
+
+    public Set<String> getBasePkgNames() {
+        if (basePkgNames == null) {
+            basePkgNames = new HashSet<String>();
+            basePkgNames.add("org.zstack");
+        }
+        return basePkgNames;
     }
 
     @Override
