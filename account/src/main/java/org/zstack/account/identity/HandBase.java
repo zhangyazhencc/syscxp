@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.zstack.account.header.*;
 import org.zstack.account.header.UserInventory;
 import org.zstack.account.header.AccountVO;
+import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.header.exception.CloudRuntimeException;
@@ -17,7 +18,7 @@ import javax.persistence.Query;
  * Created by wangwg on 2017/8/8.
  * modify by wangwg on 2017/8/14
  */
-public class UpdateHand {
+public class HandBase {
 
     @Autowired
     private CloudBus bus;
@@ -228,4 +229,49 @@ public class UpdateHand {
         bus.publish(evt);
     }
 
+
+    public void handle(APICreateAccountMsg msg) {
+
+        AccountVO vo = new AccountVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setName(msg.getName());
+        vo.setPassword(msg.getPassword());
+        vo.setCompany(msg.getCompany());
+        vo.setDescription(msg.getDescription());
+        vo.setEmail(msg.getEmail());
+        vo.setIndustry(msg.getIndustry());
+        vo.setPhone(msg.getPhone());
+        vo.setTrueName(msg.getTrueName());
+        vo.setStatus(msg.getStatus());
+        vo.setType(msg.getType() != null ? AccountType.valueOf(msg.getType()) : AccountType.Normal);
+        vo.setGrade( msg.getGrade());
+
+        dbf.persistAndRefresh(vo);
+//        CollectionUtils.safeForEach(pluginRgty.getExtensionList(AfterCreateAccountExtensionPoint.class),
+//                arg -> arg.afterCreateAccount(AccountInventory.valueOf(vo)));
+
+        APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
+        evt.setInventory(AccountInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    public void handle(APICreateUserMsg msg) {
+
+        UserVO uservo = new UserVO();
+        uservo.setUuid(Platform.getUuid());
+        uservo.setAccountUuid(msg.getAccountUuid());
+        uservo.setDepartment(msg.getDepartment());
+        uservo.setDescription(msg.getDescription());
+        uservo.setEmail(msg.getEmail());
+        uservo.setName(msg.getName());
+        uservo.setPassword(msg.getPassword());
+        uservo.setPhone(msg.getPhone());
+        uservo.setStatus(msg.getStatus() != null ? AccountStatus.valueOf(msg.getStatus()) : AccountStatus.Available);
+        uservo.setTrueName(msg.getTrueName());
+        dbf.persistAndRefresh(uservo);
+
+        APICreateUserEvent evt = new APICreateUserEvent(msg.getId());
+        evt.setInventory(UserInventory.valueOf(uservo));
+        bus.publish(evt);
+    }
 }
