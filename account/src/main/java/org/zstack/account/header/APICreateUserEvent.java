@@ -5,8 +5,8 @@ import org.zstack.header.message.APIEvent;
 import org.zstack.header.rest.RestResponse;
 
 @RestResponse(allTo = "inventory")
-public class APICreateUserEvent extends APIEvent {
-    private UserInventory inventory;
+public class APICreateUserEvent<T> extends APIEvent {
+    private T Object;
 
     public APICreateUserEvent(String apiId) {
         super(apiId);
@@ -16,24 +16,11 @@ public class APICreateUserEvent extends APIEvent {
         super(null);
     }
 
-    public UserInventory getInventory() {
-        return inventory;
+    public T getObject() {
+        return Object;
     }
 
-    public void setInventory(UserInventory inventory) {
-        this.inventory = inventory;
+    public void setObject(T object) {
+        Object = object;
     }
- 
-    public static APICreateUserEvent __example__() {
-        APICreateUserEvent event = new APICreateUserEvent();
-
-        UserInventory inventory = new UserInventory();
-        inventory.setName("testuser");
-        inventory.setUuid(uuid());
-        inventory.setAccountUuid(uuid());
-
-        event.setInventory(inventory);
-        return event;
-    }
-
 }

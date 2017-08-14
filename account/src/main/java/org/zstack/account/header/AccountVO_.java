@@ -16,7 +16,6 @@ public class AccountVO_ {
     public static volatile SingularAttribute<AccountVO, String> phone;
     public static volatile SingularAttribute<AccountVO, String> trueName;
     public static volatile SingularAttribute<AccountVO, String> company;
-    public static volatile SingularAttribute<AccountVO, String> department;
     public static volatile SingularAttribute<AccountVO, String> industry;
     public static volatile SingularAttribute<AccountVO, String> grade;
     public static volatile SingularAttribute<AccountVO, AccountStatus> status;

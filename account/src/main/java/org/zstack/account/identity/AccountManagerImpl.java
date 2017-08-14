@@ -63,6 +63,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private IdentiyInterceptor identiyInterceptor;
 
     private UpdateHand updatehand = new UpdateHand();
+    private CreateHand createHand = new CreateHand();
 
     @Override
     @MessageSafe
@@ -104,7 +105,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateAccountMsg) {
-            handle((APICreateAccountMsg) msg);
+            createHand.handle((APICreateAccountMsg) msg);
         } else if (msg instanceof APIListAllAccountMsg) {
             handle((APIListAllAccountMsg) msg);
         } else if (msg instanceof APIListAllUsersMsg) {
@@ -378,33 +379,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
         bus.reply(msg, reply);
-    }
-
-    private void handle(APICreateAccountMsg msg) {
-        final AccountInventory inv = new SQLBatchWithReturn<AccountInventory>() {
-            @Override
-            protected AccountInventory scripts() {
-                AccountVO vo = new AccountVO();
-
-                vo.setUuid(Platform.getUuid());
-
-                vo.setName(msg.getName());
-                vo.setPassword(msg.getPassword());
-                vo.setType(msg.getType() != null ? AccountType.valueOf(msg.getType()) : AccountType.Normal);
-                persist(vo);
-                reload(vo);
-
-                return AccountInventory.valueOf(vo);
-            }
-        }.execute();
-
-
-        CollectionUtils.safeForEach(pluginRgty.getExtensionList(AfterCreateAccountExtensionPoint.class),
-                arg -> arg.afterCreateAccount(inv));
-
-        APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
-        evt.setInventory(inv);
-        bus.publish(evt);
     }
 
     @Override

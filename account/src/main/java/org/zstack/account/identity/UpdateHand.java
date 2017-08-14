@@ -8,7 +8,7 @@ import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountType;
-import org.zstack.header.identity.UserGrade;
+import org.zstack.header.identity.AccountGrade;
 
 import javax.persistence.Query;
 
@@ -212,9 +212,7 @@ public class UpdateHand {
         if (msg.getCompany() != null) {
             account.setCompany(msg.getCompany());
         }
-        if (msg.getDepartment() != null) {
-            account.setDepartment(msg.getDepartment());
-        }
+
         if (msg.getDescription() != null) {
             account.setDescription(msg.getDescription());
         }
@@ -222,12 +220,12 @@ public class UpdateHand {
             account.setEmail(msg.getEmail());
         }
         if (msg.getGrade() != null) {
-            if(msg.getGrade().equals(UserGrade.Normal)){
-                account.setGrade(UserGrade.Normal);
-            }else if(msg.getGrade().equals(UserGrade.Middling)){
-                account.setGrade(UserGrade.Middling);
-            }else if(msg.getGrade().equals(UserGrade.Important)){
-                account.setGrade(UserGrade.Important);
+            if(msg.getGrade().equals(AccountGrade.Normal)){
+                account.setGrade(AccountGrade.Normal);
+            }else if(msg.getGrade().equals(AccountGrade.Middling)){
+                account.setGrade(AccountGrade.Middling);
+            }else if(msg.getGrade().equals(AccountGrade.Important)){
+                account.setGrade(AccountGrade.Important);
             }
         }
         if (msg.getIndustry() != null) {
