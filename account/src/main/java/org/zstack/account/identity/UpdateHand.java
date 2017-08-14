@@ -2,7 +2,7 @@ package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zstack.account.header.*;
-import org.zstack.account.header.identity.UserInventory;
+import org.zstack.account.header.UserInventory;
 import org.zstack.account.header.AccountVO;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
@@ -15,6 +15,7 @@ import javax.persistence.Query;
 
 /**
  * Created by wangwg on 2017/8/8.
+ * modify by wangwg on 2017/8/14
  */
 public class UpdateHand {
 
@@ -24,122 +25,75 @@ public class UpdateHand {
     @Autowired
     private DatabaseFacade dbf;
 
-    @Autowired
-    private IdentiyInterceptor identiyInterceptor;
-
-
     public void handle(APIChangeUserPWDMsg msg) {
 
-        APIChangeResultEvent evt = new APIChangeResultEvent(msg.getId());
-        UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
-        if (user.getPassword().equals(msg.getOldpassword())){
-            user.setPassword(msg.getNewpassword());
-            dbf.update(user);
-        }else{
-            throw new CloudRuntimeException("bad old passwords or username");
+        APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
+        evt.setSuccess(true);
+
+        if(msg.isIsupdate()){
+            UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
+            if (user.getPassword().equals(msg.getOldpassword())){
+                user.setPassword(msg.getNewpassword());
+                evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
+            }else{
+                throw new CloudRuntimeException("bad old passwords");
+            }
         }
 
         bus.publish(evt);
     }
 
     public void handle(APIChangeAccountPWDMsg msg) {
-        APIChangeResultEvent evt = new APIChangeResultEvent(msg.getId());
-
+        APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
+        evt.setSuccess(true);
         if(msg.isIsupdate()){
-            String sql = "update AccountVO set password= :newpassword where uuid = :uuid and password = :oldpassword";
-            Query q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
-            q.setParameter("uuid", msg.getUuid());
-            q.setParameter("newpassword", msg.getNewpassword());
-            q.setParameter("oldpassword", msg.getOldpassword());
-
-            if(q.executeUpdate() > 0 ){
-                evt.setSuccess(true);
-                evt.setMessage("success");
-                evt.setObject(dbf.findByUuid(msg.getUuid(),AccountVO.class));
+            AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
+            if (account.getPassword().equals(msg.getOldpassword())){
+                account.setPassword(msg.getNewpassword());
+                evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
             }else{
-                evt.setMessage("bad old passwords or accountname");
-                evt.setSuccess(false);
+                throw new CloudRuntimeException("bad old passwords");
             }
-        }else{
-            evt.setSuccess(true);
-            evt.setMessage("Validation code is correct");
         }
 
         bus.publish(evt);
     }
 
     public void handle(APIChangeAccountPhoneMsg msg) {
-        APIChangeResultEvent evt = new APIChangeResultEvent(msg.getId());
-        if(msg.isIsupdate()){
-            String sql = "update AccountVO set phone= :newphone where uuid = :uuid ";
-            Query q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
-            q.setParameter("uuid", msg.getUuid());
-            q.setParameter("newphone", msg.getPhone());
-            int result = q.executeUpdate();
+        APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
+        evt.setSuccess(true);
 
-            if(result > 0 ){
-                evt.setMessage("success");
-                evt.setSuccess(true);
-                evt.setObject(dbf.findByUuid(msg.getUuid(),AccountVO.class));
-            }else{
-                evt.setSuccess(false);
-                evt.setMessage("bad uuid or accountname");
-            }
-        }else{
-            evt.setSuccess(true);
-            evt.setMessage("Validation code is correct");
+        if(msg.isIsupdate()){
+            AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
+            account.setPhone(msg.getPhone());
+            evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
         }
 
         bus.publish(evt);
     }
 
     public void handle(APIChangeUserPhoneMsg msg) {
-        APIChangeResultEvent evt = new APIChangeResultEvent(msg.getId());
+        APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
+        evt.setSuccess(true);
 
-        if(msg.isIsupdate()){
-            String sql = "update UserVO set phone = :newphone where uuid = :uuid";
-            Query q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
-            q.setParameter("uuid", msg.getUuid());
-            q.setParameter("newphone", msg.getPhone());
-
-            int result = q.executeUpdate();
-            if(result > 0){
-                evt.setSuccess(true);
-                evt.setMessage("the phone has been modified");
-                evt.setObject(dbf.findByUuid(msg.getUuid(),UserVO.class));
-            }else{
-                evt.setSuccess(false);
-                evt.setMessage("bad uuid or username");
-            }
-        }else{
-            evt.setSuccess(true);
-            evt.setMessage("Validation code is correct");
+        if(msg.isIsupdate()) {
+            UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
+            user.setPhone(msg.getPhone());
+            evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
         }
 
         bus.publish(evt);
     }
 
     public void handle(APIChangeAccountEmailMsg msg) {
-        APIChangeResultEvent evt = new APIChangeResultEvent(msg.getId());
+
+        APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
+        evt.setSuccess(true);
 
         if(msg.isIsupdate()){
-            String sql = "update AccountVO set email = :newmail where uuid = :uuid";
-            Query q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
-            q.setParameter("uuid", msg.getUuid());
-            q.setParameter("newmail", msg.getEmail());
-
-            int result = q.executeUpdate();
-            if(result > 0){
-                evt.setSuccess(true);
-                evt.setMessage("success");
-                evt.setObject(dbf.findByUuid(msg.getUuid(),AccountVO.class));
-            }else{
-                evt.setSuccess(false);
-                evt.setMessage("bad uuid or AccountName");
-            }
-        }else{
-            evt.setSuccess(true);
-            evt.setMessage("Validation code is correct");
+            AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
+            account.setEmail(msg.getEmail());
+            evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
         }
 
         bus.publish(evt);
@@ -147,25 +101,13 @@ public class UpdateHand {
 
 
     public void handle(APIChangeUserEmailMsg msg) {
-        APIChangeResultEvent evt = new APIChangeResultEvent(msg.getId());
-        if(msg.isIsupdate()){
-            String sql = "update UserVO set email = :newmail where uuid = :uuid";
-            Query q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
-            q.setParameter("uuid", msg.getUuid());
-            q.setParameter("newmail", msg.getEmail());
+        APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
+        evt.setSuccess(true);
 
-            int result = q.executeUpdate();
-            if(result > 0 ){
-                evt.setSuccess(true);
-                evt.setMessage("success");
-                evt.setObject(dbf.findByUuid(msg.getUuid(),UserVO.class));
-            }else{
-                evt.setSuccess(false);
-                evt.setMessage("bad uuid or AccountName");
-            }
-        }else{
-            evt.setSuccess(true);
-            evt.setMessage("Validation code is correct");
+        if(msg.isIsupdate()) {
+            UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
+            user.setEmail(msg.getEmail());
+            evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
         }
 
         bus.publish(evt);
@@ -174,20 +116,13 @@ public class UpdateHand {
 
     public void handle(APIChangeIndustryMsg msg) {
 
-        APIChangeResultEvent evt = new APIChangeResultEvent(msg.getId());
+        APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
+        evt.setSuccess(true);
+        AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
+        account.setIndustry(msg.getNewIndustry());
+        evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
 
-        String sql = "update AccountVO set industry = :newindustry where uuid = :uuid ";
-        Query q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
-        q.setParameter("uuid", msg.getUuid());
-        q.setParameter("newindustry", msg.getNewIndustry());
 
-        if(q.executeUpdate() > 0 ){
-            evt.setSuccess(true);
-            evt.setMessage("success");
-        }else{
-            evt.setSuccess(false);
-            evt.setMessage("bad uuid or AccountName");
-        }
         bus.publish(evt);
     }
 
@@ -241,9 +176,10 @@ public class UpdateHand {
 
         account = dbf.updateAndRefresh(account);
 
-        APIChangeResultEvent evt = new APIChangeResultEvent(msg.getId());
-        evt.setObject(account);
+        APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
+        evt.setInventory(AccountInventory.valueOf(account));
         bus.publish(evt);
+
     }
 
 

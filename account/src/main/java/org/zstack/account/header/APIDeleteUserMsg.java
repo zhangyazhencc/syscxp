@@ -1,7 +1,5 @@
 package org.zstack.account.header;
 
-import org.zstack.account.header.identity.AccountConstant;
-import org.zstack.account.header.identity.AccountMessage;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIDeleteMessage;
 import org.zstack.header.message.APIEvent;

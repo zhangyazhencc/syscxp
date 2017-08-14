@@ -2,16 +2,13 @@ package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zstack.account.header.*;
-import org.zstack.account.header.identity.AccountInventory;
-import org.zstack.account.header.identity.AfterCreateAccountExtensionPoint;
+import org.zstack.account.header.AccountInventory;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.DatabaseFacade;
-import org.zstack.core.db.SQLBatchWithReturn;
 import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountType;
-import org.zstack.utils.CollectionUtils;
 
 /**
  * Created by wangwg on 2017/8/14.
@@ -28,6 +25,7 @@ public class CreateHand {
     private PluginRegistry pluginRgty;
 
     public void handle(APICreateAccountMsg msg) {
+
         AccountVO vo = new AccountVO();
         vo.setUuid(Platform.getUuid());
         vo.setName(msg.getName());
@@ -66,8 +64,8 @@ public class CreateHand {
         uservo.setTrueName(msg.getTrueName());
         dbf.persistAndRefresh(uservo);
 
-        APICreateResultEvent evt = new APICreateResultEvent(msg.getId());
-        evt.setObject(uservo);
+        APICreateUserEvent evt = new APICreateUserEvent(msg.getId());
+        evt.setInventory(UserInventory.valueOf(uservo));
         bus.publish(evt);
     }
 

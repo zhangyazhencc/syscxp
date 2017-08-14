@@ -1,13 +1,11 @@
 package org.zstack.account.header;
 
-import org.zstack.account.header.identity.UserInventory;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.rest.RestResponse;
 
 /**
- * Created by frank on 7/10/2015.
+ * Created by wangwg on 2017/08/14.
  */
-@RestResponse(allTo = "inventory")
 public class APIUpdateUserEvent extends APIEvent {
     private UserInventory inventory;
 

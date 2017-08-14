@@ -1,13 +1,8 @@
 package org.zstack.account.header;
 
-import org.zstack.account.header.identity.AccountConstant;
-import org.zstack.account.header.identity.AccountMessage;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APICreateMessage;
 import org.zstack.header.message.APIParam;
-
-import javax.persistence.metamodel.SingularAttribute;
-import java.sql.Timestamp;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
 public class APICreateUserMsg extends APICreateMessage implements AccountMessage {

@@ -1,13 +1,9 @@
-package org.zstack.account.header.identity;
+package org.zstack.account.header;
 
-import org.zstack.account.header.AccountVO;
-import org.zstack.header.identity.AccountStatus;
-import org.zstack.header.identity.AccountType;
 import org.zstack.header.query.ExpandedQueries;
 import org.zstack.header.query.ExpandedQuery;
 import org.zstack.header.search.Inventory;
 
-import javax.persistence.metamodel.SingularAttribute;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;

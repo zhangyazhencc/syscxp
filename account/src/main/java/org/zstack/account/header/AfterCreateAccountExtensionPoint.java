@@ -1,4 +1,4 @@
-package org.zstack.account.header.identity;
+package org.zstack.account.header;
 
 /**
  * Created by frank on 2/26/2016.

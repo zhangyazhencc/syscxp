@@ -1,6 +1,5 @@
 package org.zstack.account.header;
 
-import org.zstack.account.header.identity.AccountInventory;
 import org.zstack.header.message.APIEvent;
 
 public class APICreateAccountEvent extends APIEvent {

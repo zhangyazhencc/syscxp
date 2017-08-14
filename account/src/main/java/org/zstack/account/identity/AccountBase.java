@@ -19,10 +19,9 @@ import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.*;
 import org.zstack.core.db.SimpleQuery.Op;
 import org.zstack.core.errorcode.ErrorFacade;
-import org.zstack.account.header.identity.*;
 
 import org.zstack.header.identity.AbstractAccount;
-import org.zstack.account.header.identity.AfterCreateUserExtensionPoint;
+import org.zstack.account.header.AfterCreateUserExtensionPoint;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.utils.CollectionUtils;
