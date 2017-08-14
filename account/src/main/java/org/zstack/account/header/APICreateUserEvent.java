@@ -23,7 +23,7 @@ public class APICreateUserEvent extends APIEvent {
     public void setInventory(UserInventory inventory) {
         this.inventory = inventory;
     }
- 
+
     public static APICreateUserEvent __example__() {
         APICreateUserEvent event = new APICreateUserEvent();
 

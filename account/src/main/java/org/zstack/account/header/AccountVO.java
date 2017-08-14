@@ -5,7 +5,7 @@ import org.zstack.header.identity.AccountType;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
 import org.zstack.header.vo.Index;
-import org.zstack.header.identity.UserGrade;
+import org.zstack.header.identity.AccountGrade;
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -34,16 +34,13 @@ public class AccountVO {
 
     @Column
     @Enumerated(EnumType.STRING)
-    private UserGrade grade;
+    private AccountGrade grade;
 
     @Column
     private String trueName;
 
     @Column
     private String company;
-
-    @Column
-    private String department;
 
     @Column
     private String industry;
@@ -151,10 +148,6 @@ public class AccountVO {
         return company;
     }
 
-    public String getDepartment() {
-        return department;
-    }
-
     public String getIndustry() {
         return industry;
     }
@@ -171,10 +164,6 @@ public class AccountVO {
         this.company = company;
     }
 
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-
     public void setIndustry(String industry) {
         this.industry = industry;
     }
@@ -183,11 +172,11 @@ public class AccountVO {
         this.description = description;
     }
 
-    public UserGrade getGrade() {
+    public AccountGrade getGrade() {
         return grade;
     }
 
-    public void setGrade(UserGrade grade) {
+    public void setGrade(AccountGrade grade) {
         this.grade = grade;
     }
 }

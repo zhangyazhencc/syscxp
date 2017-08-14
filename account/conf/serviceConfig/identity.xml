@@ -62,7 +62,7 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIFindMsg.APIListAllUserMsg</name>
+        <name>org.zstack.account.header.APIListAllUserMsg</name>
     </message>
 
     <message>

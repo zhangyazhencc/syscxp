@@ -8,7 +8,6 @@ import org.zstack.header.message.APIEvent;
  * Created by wangwg on 2017/8/8.
  */
 public class APIChangeResultEvent<T> extends APIEvent  {
-    private boolean success;
 
     private String message;
 

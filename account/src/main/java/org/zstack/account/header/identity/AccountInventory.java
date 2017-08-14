@@ -1,10 +1,13 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.account.header.AccountVO;
+import org.zstack.header.identity.AccountStatus;
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.query.ExpandedQueries;
 import org.zstack.header.query.ExpandedQuery;
 import org.zstack.header.search.Inventory;
 
+import javax.persistence.metamodel.SingularAttribute;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -20,7 +23,16 @@ import java.util.List;
 public class AccountInventory {
     private String uuid;
     private String name;
+    private String email;
+    private String phone;
+    private String trueName;
+    private String company;
+    private String industry;
+    private String grade;
+    private String status;
+    private String description;
     private String type;
+
     private Timestamp createDate;
     private Timestamp lastOpDate;
     
@@ -28,6 +40,13 @@ public class AccountInventory {
         AccountInventory inv = new AccountInventory();
         inv.setUuid(vo.getUuid());
         inv.setName(vo.getName());
+        inv.setName(vo.getTrueName());
+        inv.setName(vo.getCompany());
+        inv.setName(vo.getDescription());
+        inv.setName(vo.getEmail());
+        inv.setName(vo.getPhone());
+        inv.setName(vo.getGrade().toString());
+        inv.setName(vo.getIndustry());
         inv.setType(vo.getType().toString());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -80,5 +99,69 @@ public class AccountInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public String getTrueName() {
+        return trueName;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public String getIndustry() {
+        return industry;
+    }
+
+    public String getGrade() {
+        return grade;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void setTrueName(String trueName) {
+        this.trueName = trueName;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
+    }
+
+    public void setIndustry(String industry) {
+        this.industry = industry;
+    }
+
+    public void setGrade(String grade) {
+        this.grade = grade;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
