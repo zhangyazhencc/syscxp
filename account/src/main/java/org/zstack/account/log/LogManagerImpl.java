@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
 import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.zstack.account.header.identity.AccountConstant;
 import org.zstack.account.header.log.OperLogVO;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
@@ -107,7 +108,7 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
 
     @Override
     public String getId() {
-        return null;
+        return bus.makeLocalServiceId(LogConstant.SERVICE_ID);
     }
 
     @Override
