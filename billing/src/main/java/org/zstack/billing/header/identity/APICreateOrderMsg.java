@@ -11,10 +11,10 @@ public class APICreateOrderMsg extends APIMessage {
     private String accountUuid;
 
     @APIParam(nonempty = true)
-    private OrderType orderType;
+    private OrderType type;
 
     @APIParam(nonempty = true)
-    private OrderState orderState;
+    private OrderState state;
 
     @APIParam(nonempty = true)
     private Timestamp productEffectTimeStart;
@@ -37,16 +37,17 @@ public class APICreateOrderMsg extends APIMessage {
     @APIParam(nonempty = true)
     private String productDescription;
 
-    @APIParam(nonempty = true,numberRange={0,})
-    private BigDecimal total;
+    @APIParam(nonempty = true)
+    private BigDecimal price;
 
-    public BigDecimal getTotal() {
-        return total;
-    }
+    @APIParam(nonempty = true)
+    private BigDecimal originalPrice;
 
-    public void setTotal(BigDecimal total) {
-        this.total = total;
-    }
+    @APIParam(nonempty = true)
+    private String productUuid;
+
+    @APIParam(nonempty = true)
+    private int duration;
 
     public String getAccountUuid() {
         return accountUuid;
@@ -56,20 +57,20 @@ public class APICreateOrderMsg extends APIMessage {
         this.accountUuid = accountUuid;
     }
 
-    public OrderType getOrderType() {
-        return orderType;
+    public OrderType getType() {
+        return type;
     }
 
-    public void setOrderType(OrderType orderType) {
-        this.orderType = orderType;
+    public void setType(OrderType type) {
+        this.type = type;
     }
 
-    public OrderState getOrderState() {
-        return orderState;
+    public OrderState getState() {
+        return state;
     }
 
-    public void setOrderState(OrderState orderState) {
-        this.orderState = orderState;
+    public void setState(OrderState state) {
+        this.state = state;
     }
 
     public Timestamp getProductEffectTimeStart() {
@@ -126,5 +127,37 @@ public class APICreateOrderMsg extends APIMessage {
 
     public void setProductDescription(String productDescription) {
         this.productDescription = productDescription;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public BigDecimal getOriginalPrice() {
+        return originalPrice;
+    }
+
+    public void setOriginalPrice(BigDecimal originalPrice) {
+        this.originalPrice = originalPrice;
+    }
+
+    public String getProductUuid() {
+        return productUuid;
+    }
+
+    public void setProductUuid(String productUuid) {
+        this.productUuid = productUuid;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 }

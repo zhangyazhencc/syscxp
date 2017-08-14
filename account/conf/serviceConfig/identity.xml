@@ -4,11 +4,11 @@
     <interceptor>AccountManager</interceptor>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreateAccountMsg</name>
+        <name>org.zstack.account.header.APICreateAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateAccountMsg</name>
+        <name>org.zstack.account.header.APIUpdateAccountMsg</name>
     </message>
 
     <message>
@@ -32,24 +32,25 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreateUserMsg</name>
+        <name>org.zstack.account.header.APICreateUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateUserMsg</name>
+        <name>org.zstack.account.header.APIUpdateUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIDeleteUserMsg</name>
+        <name>org.zstack.account.header.APIDeleteUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIQueryUserMsg</name>
+        <name>org.zstack.account.header.APIQueryUserMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIProvingSessionMsg</name>
+        <name>org.zstack.account.header.APIQueryAccountMsg</name>
+        <serviceId>query</serviceId>
     </message>
 
     <message>
@@ -57,15 +58,15 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIListAccountMsg</name>
+        <name>org.zstack.account.header.APIListAllAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIListUserMsg</name>
+        <name>org.zstack.account.header.identity.APIFindMsg.APIListAllUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.updatemsg.APIChangeUserPWDMsg</name>
+        <name>org.zstack.account.header.APIChangeUserPWDMsg</name>
     </message>
 
 

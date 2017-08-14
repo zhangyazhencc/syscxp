@@ -4,6 +4,12 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.zstack.account.header.*;
+import org.zstack.account.header.APIDeletePolicyEvent;
+import org.zstack.account.header.APIDeletePolicyMsg;
+import org.zstack.account.header.APIDeleteUserEvent;
+import org.zstack.account.header.APIDeleteUserMsg;
+import org.zstack.account.header.AccountVO;
 import org.zstack.core.Platform;
 import org.zstack.core.cascade.CascadeFacade;
 import org.zstack.core.cloudbus.CloudBus;
@@ -13,7 +19,6 @@ import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.*;
 import org.zstack.core.db.SimpleQuery.Op;
 import org.zstack.core.errorcode.ErrorFacade;
-import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.account.header.identity.*;
 
 import org.zstack.header.identity.AbstractAccount;
@@ -26,8 +31,6 @@ import org.zstack.utils.Utils;
 import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
-
-import static org.zstack.core.Platform.argerr;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class AccountBase extends AbstractAccount {
@@ -66,9 +69,7 @@ public class AccountBase extends AbstractAccount {
 
     private void handle(APIUpdateAccountMsg msg) {
         AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
-        if (msg.getName() != null) {
-            account.setName(msg.getName());
-        }
+
         if (msg.getPassword() != null) {
             account.setPassword(msg.getPassword());
         }
@@ -108,10 +109,10 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIUpdateUserMsg msg) {
         UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
 
-        if (!AccountConstant.INITIAL_SYSTEM_ADMIN_UUID.equals(msg.getAccountUuid()) && !user.getAccountUuid().equals(msg.getAccountUuid())) {
-            throw new OperationFailureException(argerr("the user[uuid:%s] does not belong to the" +
-                    " account[uuid:%s]", user.getUuid(), msg.getAccountUuid()));
-        }
+//        if (!AccountConstant.INITIAL_SYSTEM_ADMIN_UUID.equals(msg.getAccountUuid()) && !user.getAccountUuid().equals(msg.getAccountUuid())) {
+//            throw new OperationFailureException(argerr("the user[uuid:%s] does not belong to the" +
+//                    " account[uuid:%s]", user.getUuid(), msg.getAccountUuid()));
+//        }
 
         boolean update = false;
         if (msg.getName() != null) {

@@ -13,15 +13,15 @@ public class OrderInventory {
 
     private String uuid;
 
-    private OrderType orderType;
+    private OrderType type;
 
     private Timestamp payTime;
 
-    private OrderState orderState;
+    private OrderState state;
 
-    private BigDecimal orderPayPresent;
+    private BigDecimal payPresent;
 
-    private BigDecimal orderPayCash;
+    private BigDecimal payCash;
 
     private String accountUuid;
 
@@ -43,14 +43,23 @@ public class OrderInventory {
 
     private String productDescription;
 
+    private String productUuid;
+
+    private BigDecimal price;
+
+    private BigDecimal originalPrice;
+
+    private int duration;
+
+
     public static OrderInventory valueOf(OrderVO vo) {
         OrderInventory inv = new OrderInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
-        inv.setOrderPayCash(vo.getOrderPayCash());
-        inv.setOrderPayPresent(vo.getOrderPayPresent());
-        inv.setOrderState(vo.getOrderState());
-        inv.setOrderType(vo.getOrderType());
+        inv.setPayCash(vo.getPayCash());
+        inv.setPayPresent(vo.getPayPresent());
+        inv.setState(vo.getState());
+        inv.setType(vo.getType());
         inv.setPayTime(vo.getPayTime());
         inv.setProductChargeModel(vo.getProductChargeModel());
         inv.setProductDescription(vo.getProductDescription());
@@ -61,6 +70,10 @@ public class OrderInventory {
         inv.setProductType(vo.getProductType());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        inv.setPrice(vo.getPrice());
+        inv.setOriginalPrice(vo.getOriginalPrice());
+        inv.setProductUuid(vo.getProductUuid());
+        inv.setDuration(vo.getDuration());
         return inv;
     }
 
@@ -72,7 +85,6 @@ public class OrderInventory {
         return lst;
     }
 
-
     public String getUuid() {
         return uuid;
     }
@@ -81,12 +93,12 @@ public class OrderInventory {
         this.uuid = uuid;
     }
 
-    public OrderType getOrderType() {
-        return orderType;
+    public OrderType getType() {
+        return type;
     }
 
-    public void setOrderType(OrderType orderType) {
-        this.orderType = orderType;
+    public void setType(OrderType type) {
+        this.type = type;
     }
 
     public Timestamp getPayTime() {
@@ -97,28 +109,28 @@ public class OrderInventory {
         this.payTime = payTime;
     }
 
-    public OrderState getOrderState() {
-        return orderState;
+    public OrderState getState() {
+        return state;
     }
 
-    public void setOrderState(OrderState orderState) {
-        this.orderState = orderState;
+    public void setState(OrderState state) {
+        this.state = state;
     }
 
-    public BigDecimal getOrderPayPresent() {
-        return orderPayPresent;
+    public BigDecimal getPayPresent() {
+        return payPresent;
     }
 
-    public void setOrderPayPresent(BigDecimal orderPayPresent) {
-        this.orderPayPresent = orderPayPresent;
+    public void setPayPresent(BigDecimal payPresent) {
+        this.payPresent = payPresent;
     }
 
-    public BigDecimal getOrderPayCash() {
-        return orderPayCash;
+    public BigDecimal getPayCash() {
+        return payCash;
     }
 
-    public void setOrderPayCash(BigDecimal orderPayCash) {
-        this.orderPayCash = orderPayCash;
+    public void setPayCash(BigDecimal payCash) {
+        this.payCash = payCash;
     }
 
     public String getAccountUuid() {
@@ -199,5 +211,37 @@ public class OrderInventory {
 
     public void setProductDescription(String productDescription) {
         this.productDescription = productDescription;
+    }
+
+    public String getProductUuid() {
+        return productUuid;
+    }
+
+    public void setProductUuid(String productUuid) {
+        this.productUuid = productUuid;
+    }
+
+    public BigDecimal getPrice() {
+        return price;
+    }
+
+    public void setPrice(BigDecimal price) {
+        this.price = price;
+    }
+
+    public BigDecimal getOriginalPrice() {
+        return originalPrice;
+    }
+
+    public void setOriginalPrice(BigDecimal originalPrice) {
+        this.originalPrice = originalPrice;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 }

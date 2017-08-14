@@ -1,7 +1,6 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.message.APIReply;
-import org.zstack.header.rest.RestResponse;
 
 /**
  * Created with IntelliJ IDEA.
