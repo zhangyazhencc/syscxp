@@ -2,17 +2,13 @@ package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.zstack.account.header.identity.APIAddMsg.APICreateAccountEvent;
-import org.zstack.account.header.identity.APIAddMsg.APICreateAccountMsg;
-import org.zstack.account.header.identity.APIAddMsg.APICreateUserMsg;
-import org.zstack.account.header.identity.APIFindMsg.APICheckApiPermissionMsg;
-import org.zstack.account.header.identity.APIFindMsg.APICheckApiPermissionReply;
-import org.zstack.account.header.identity.APIFindMsg.APIValidateSessionMsg;
-import org.zstack.account.header.identity.APIFindMsg.APIValidateSessionReply;
-import org.zstack.account.header.identity.APILogInOrOutMsg.*;
-import org.zstack.account.header.identity.VO.AccountVO;
-import org.zstack.account.header.identity.VO.AccountVO_;
-import org.zstack.account.header.identity.APIUpdateMsg.*;
+import org.zstack.account.header.*;
+import org.zstack.account.header.identity.APICheckApiPermissionMsg;
+import org.zstack.account.header.identity.APICheckApiPermissionReply;
+import org.zstack.account.header.identity.APIValidateSessionMsg;
+import org.zstack.account.header.identity.APIValidateSessionReply;
+import org.zstack.account.header.AccountVO;
+import org.zstack.account.header.AccountVO_;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.MessageSafe;
@@ -33,7 +29,6 @@ import org.zstack.header.managementnode.PrepareDbInitialValueExtensionPoint;
 import org.zstack.header.message.*;
 import org.zstack.utils.*;
 import org.zstack.utils.logging.CLogger;
-import org.zstack.account.header.identity.VO.*;
 
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
@@ -41,7 +36,6 @@ import java.sql.Timestamp;
 import java.util.*;
 
 import org.zstack.header.identity.*;
-import org.zstack.account.header.identity.APIFindMsg.*;
 
 import org.zstack.account.header.identity.*;
 import static org.zstack.core.Platform.argerr;

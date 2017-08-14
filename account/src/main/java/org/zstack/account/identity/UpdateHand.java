@@ -1,13 +1,11 @@
 package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.zstack.account.header.identity.AccountInventory;
+import org.zstack.account.header.*;
 import org.zstack.account.header.identity.UserInventory;
-import org.zstack.account.header.identity.VO.AccountVO;
-import org.zstack.account.header.identity.APIUpdateMsg.*;
+import org.zstack.account.header.AccountVO;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
-import org.zstack.account.header.identity.VO.*;
 import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.UserGrade;

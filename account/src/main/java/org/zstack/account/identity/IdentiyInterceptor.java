@@ -3,6 +3,7 @@ package org.zstack.account.identity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.transaction.annotation.Transactional;
+import org.zstack.account.header.*;
 import org.zstack.account.header.identity.*;
 import org.zstack.core.Platform;
 import org.zstack.core.componentloader.PluginRegistry;
@@ -21,7 +22,6 @@ import org.zstack.header.message.APIParam;
 import org.zstack.utils.*;
 import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.logging.CLogger;
-import org.zstack.account.header.identity.VO.*;
 
 import javax.persistence.Query;
 import javax.persistence.Tuple;

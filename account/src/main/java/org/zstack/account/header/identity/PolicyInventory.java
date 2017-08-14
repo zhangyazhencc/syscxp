@@ -1,14 +1,11 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.StatementEffect;
 import org.zstack.header.identity.PolicyStatement;
 import org.zstack.header.query.ExpandedQueries;
 import org.zstack.header.query.ExpandedQuery;
-import org.zstack.header.query.ExpandedQueryAlias;
-import org.zstack.header.query.ExpandedQueryAliases;
 import org.zstack.header.search.Inventory;
 import org.zstack.utils.gson.JSONObjectUtil;
-import org.zstack.account.header.identity.VO.PolicyVO;
+import org.zstack.account.header.PolicyVO;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
