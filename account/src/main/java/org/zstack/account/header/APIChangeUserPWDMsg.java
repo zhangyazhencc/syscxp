@@ -1,12 +1,12 @@
 package org.zstack.account.header;
 
-import org.zstack.header.identity.APISessionMessage;
+import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 /**
  * Created by wangwg on 2017/8/8.
  */
-public class APIChangeUserPWDMsg extends APISessionMessage {
+public class APIChangeUserPWDMsg extends APIMessage {
     @APIParam
     private String uuid;
 

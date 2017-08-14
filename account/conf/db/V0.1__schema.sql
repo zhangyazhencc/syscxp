@@ -108,8 +108,8 @@ CREATE TABLE `PolicyVO` (
 	`accountUuid` varchar(32) NOT NULL COMMENT '所属账户UUID',
 	`policyStatement` text NOT NULL COMMENT '策略JSON字符串',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-    `createDate` timestamp,
-    PRIMARY KEY  (`uuid`)
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `UserPolicyRefVO` (

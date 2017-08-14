@@ -1,5 +1,6 @@
 package org.zstack.account.identity;
 
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zstack.account.header.*;
 import org.zstack.account.header.UserInventory;
@@ -7,12 +8,18 @@ import org.zstack.account.header.AccountVO;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
+import org.zstack.core.db.SimpleQuery;
+import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.AccountGrade;
+import org.zstack.utils.ExceptionDSL;
+import org.zstack.utils.gson.JSONObjectUtil;
 
 import javax.persistence.Query;
+
+import static org.zstack.core.Platform.operr;
 
 /**
  * Created by wangwg on 2017/8/8.
@@ -274,4 +281,63 @@ public class HandBase {
         evt.setInventory(UserInventory.valueOf(uservo));
         bus.publish(evt);
     }
+
+    public void handle(APICreatePolicyMsg msg) {
+
+        PolicyVO pvo = new PolicyVO();
+        pvo.setAccountUuid(Platform.getUuid());
+        pvo.setName(msg.getName());
+        pvo.setAccountUuid(msg.getAccountUuid());
+        pvo.setDescription(msg.getDescription());
+        pvo.setPolicyStatement(JSONObjectUtil.toJsonString(msg.getStatements()));
+
+        APICreatePolicyEvent evt = new APICreatePolicyEvent(msg.getId());
+        evt.setSuccess(true);
+        evt.setInventory(PolicyInventory.valueOf(pvo));
+        bus.publish(evt);
+    }
+
+    public void handle(APIDetachPolicyFromUserMsg msg) {
+        SimpleQuery<UserPolicyRefVO> q = dbf.createQuery(UserPolicyRefVO.class);
+        q.add(UserPolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
+        q.add(UserPolicyRefVO_.userUuid, SimpleQuery.Op.EQ, msg.getUserUuid());
+        UserPolicyRefVO ref = q.find();
+        if (ref != null) {
+            dbf.remove(ref);
+        }else{
+            throw new OperationFailureException(operr("noting to be found"));
+        }
+
+        APIDetachPolicyFromUserEvent  evt= new APIDetachPolicyFromUserEvent(msg.getId());
+        evt.setSuccess(true);
+        bus.publish(evt);
+    }
+
+    public void handle(APIDeletePolicyMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(), PolicyVO.class);
+        APIDeletePolicyEvent evt = new APIDeletePolicyEvent(msg.getId());
+        evt.setSuccess(true);
+        bus.publish(evt);
+    }
+
+    public void handle(APIAttachPolicyToUserMsg msg) {
+        APIAttachPolicyToUserEvent evt = new APIAttachPolicyToUserEvent(msg.getId());
+        evt.setSuccess(true);
+
+        UserPolicyRefVO upvo = new UserPolicyRefVO();
+        upvo.setPolicyUuid(msg.getPolicyUuid());
+        upvo.setUserUuid(msg.getUserUuid());
+
+        try {
+            evt.setUpv(dbf.persistAndRefresh(upvo));
+        } catch (Throwable t) {
+            if (!ExceptionDSL.isCausedBy(t, ConstraintViolationException.class)) {
+                throw t;
+            }
+        }
+
+        bus.publish(evt);
+    }
+
+
 }
