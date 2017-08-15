@@ -1,5 +1,6 @@
-package org.zstack.billing.header.identity;
+package org.zstack.billing.header.identity.sla;
 
+import org.zstack.billing.header.identity.ProductType;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
 
@@ -11,7 +12,7 @@ import java.sql.Timestamp;
 @Inheritance(strategy = InheritanceType.JOINED)
 @TriggerIndex
 @SqlTrigger
-public class RenewVO {
+public class SLACompensateVO {
 
     @Id
     @Column
@@ -21,25 +22,31 @@ public class RenewVO {
     private String accountUuid;
 
     @Column
-    private boolean isRenewAuto;
-
-    @Column
     private String productUuid;
-
-    @Column
-    private String productName;
 
     @Column
     private ProductType productType;
 
     @Column
-    private ProductChargeModel productChargeModel;
+    private String productName;
+
+    @Column
+    private String reason;
+
+    @Column
+    private String description;
 
     @Column
     private int duration;
 
     @Column
-    private Timestamp expiredDate;
+    private Timestamp timeStart;
+
+    @Column
+    private Timestamp timeEnd;
+
+    @Column
+    private SLAState state;
 
     @Column
     private Timestamp createDate;
@@ -63,28 +70,12 @@ public class RenewVO {
         this.accountUuid = accountUuid;
     }
 
-    public boolean isRenewAuto() {
-        return isRenewAuto;
-    }
-
-    public void setRenewAuto(boolean renewAuto) {
-        isRenewAuto = renewAuto;
-    }
-
     public String getProductUuid() {
         return productUuid;
     }
 
     public void setProductUuid(String productUuid) {
         this.productUuid = productUuid;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public void setProductName(String productName) {
-        this.productName = productName;
     }
 
     public ProductType getProductType() {
@@ -95,12 +86,28 @@ public class RenewVO {
         this.productType = productType;
     }
 
-    public ProductChargeModel getProductChargeModel() {
-        return productChargeModel;
+    public String getProductName() {
+        return productName;
     }
 
-    public void setProductChargeModel(ProductChargeModel productChargeModel) {
-        this.productChargeModel = productChargeModel;
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
+
+    public String getReason() {
+        return reason;
+    }
+
+    public void setReason(String reason) {
+        this.reason = reason;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public int getDuration() {
@@ -111,12 +118,28 @@ public class RenewVO {
         this.duration = duration;
     }
 
-    public Timestamp getExpiredDate() {
-        return expiredDate;
+    public Timestamp getTimeStart() {
+        return timeStart;
     }
 
-    public void setExpiredDate(Timestamp expiredDate) {
-        this.expiredDate = expiredDate;
+    public void setTimeStart(Timestamp timeStart) {
+        this.timeStart = timeStart;
+    }
+
+    public Timestamp getTimeEnd() {
+        return timeEnd;
+    }
+
+    public void setTimeEnd(Timestamp timeEnd) {
+        this.timeEnd = timeEnd;
+    }
+
+    public SLAState getState() {
+        return state;
+    }
+
+    public void setState(SLAState state) {
+        this.state = state;
     }
 
     public Timestamp getCreateDate() {
