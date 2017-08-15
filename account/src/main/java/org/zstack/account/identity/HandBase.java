@@ -17,8 +17,6 @@ import org.zstack.header.identity.AccountGrade;
 import org.zstack.utils.ExceptionDSL;
 import org.zstack.utils.gson.JSONObjectUtil;
 
-import javax.persistence.Query;
-
 import static org.zstack.core.Platform.operr;
 
 /**
@@ -33,7 +31,7 @@ public class HandBase {
     @Autowired
     private DatabaseFacade dbf;
 
-    public void handle(APIChangeUserPWDMsg msg) {
+    public void handle(APIUpdateUserPWDMsg msg) {
 
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
         evt.setSuccess(true);
@@ -51,7 +49,7 @@ public class HandBase {
         bus.publish(evt);
     }
 
-    public void handle(APIChangeAccountPWDMsg msg) {
+    public void handle(APIUpdateAccountPWDMsg msg) {
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
         evt.setSuccess(true);
         if(msg.isIsupdate()){
@@ -67,7 +65,7 @@ public class HandBase {
         bus.publish(evt);
     }
 
-    public void handle(APIChangeAccountPhoneMsg msg) {
+    public void handle(APIUpdateAccountPhoneMsg msg) {
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
         evt.setSuccess(true);
 
@@ -80,7 +78,7 @@ public class HandBase {
         bus.publish(evt);
     }
 
-    public void handle(APIChangeUserPhoneMsg msg) {
+    public void handle(APIUpdateUserPhoneMsg msg) {
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
         evt.setSuccess(true);
 
@@ -93,7 +91,7 @@ public class HandBase {
         bus.publish(evt);
     }
 
-    public void handle(APIChangeAccountEmailMsg msg) {
+    public void handle(APIUpdateAccountEmailMsg msg) {
 
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
         evt.setSuccess(true);
@@ -108,7 +106,7 @@ public class HandBase {
     }
 
 
-    public void handle(APIChangeUserEmailMsg msg) {
+    public void handle(APIUpdateUserEmailMsg msg) {
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
         evt.setSuccess(true);
 
@@ -122,7 +120,7 @@ public class HandBase {
     }
 
 
-    public void handle(APIChangeIndustryMsg msg) {
+    public void handle(APIUpdateIndustryMsg msg) {
 
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
         evt.setSuccess(true);

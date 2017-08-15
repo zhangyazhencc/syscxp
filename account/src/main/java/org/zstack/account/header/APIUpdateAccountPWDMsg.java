@@ -6,12 +6,12 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by wangwg on 2017/8/8.
  */
-public class APIChangeAccountPhoneMsg extends APIMessage {
+public class APIUpdateAccountPWDMsg extends APIMessage {
     @APIParam
     private String uuid;
 
     @APIParam
-    private String phone;
+    private String phoneOrEmail;
 
     @APIParam
     private String code;
@@ -19,12 +19,18 @@ public class APIChangeAccountPhoneMsg extends APIMessage {
     @APIParam
     private boolean isupdate;
 
+    @APIParam
+    private String oldpassword;
+
+    @APIParam(maxLength = 2048)
+    private String newpassword;
+
     public String getUuid() {
         return uuid;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getPhoneOrEmail() {
+        return phoneOrEmail;
     }
 
     public String getCode() {
@@ -35,12 +41,20 @@ public class APIChangeAccountPhoneMsg extends APIMessage {
         return isupdate;
     }
 
+    public String getOldpassword() {
+        return oldpassword;
+    }
+
+    public String getNewpassword() {
+        return newpassword;
+    }
+
     public void setUuid(String uuid) {
         this.uuid = uuid;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public void setPhoneOrEmail(String phoneOrEmail) {
+        this.phoneOrEmail = phoneOrEmail;
     }
 
     public void setCode(String code) {
@@ -50,4 +64,13 @@ public class APIChangeAccountPhoneMsg extends APIMessage {
     public void setIsupdate(boolean isupdate) {
         this.isupdate = isupdate;
     }
+
+    public void setOldpassword(String oldpassword) {
+        this.oldpassword = oldpassword;
+    }
+
+    public void setNewpassword(String newpassword) {
+        this.newpassword = newpassword;
+    }
+
 }

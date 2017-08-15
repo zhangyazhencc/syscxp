@@ -6,7 +6,7 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by wangwg on 2017/8/9.
  */
-public class APIChangeIndustryMsg extends APIMessage {
+public class APIUpdateIndustryMsg extends APIMessage {
     @APIParam
     private String uuid;
 

@@ -4,27 +4,27 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 /**
- * Created by wangwg on 2017/8/9.
+ * Created by wangwg on 2017/8/8.
  */
-public class APIChangeUserEmailMsg extends APIMessage {
+public class APIUpdateUserPhoneMsg extends APIMessage {
     @APIParam
     private String uuid;
 
-    @APIParam
-    private String email;
+    @APIParam(maxLength = 2048)
+    private String phone;
 
-    @APIParam
+    @APIParam(maxLength = 2048)
     private String code;
 
-    @APIParam
+    @APIParam(maxLength = 2048)
     private boolean isupdate;
 
     public String getUuid() {
         return uuid;
     }
 
-    public String getEmail() {
-        return email;
+    public String getPhone() {
+        return phone;
     }
 
     public String getCode() {
@@ -39,8 +39,8 @@ public class APIChangeUserEmailMsg extends APIMessage {
         this.uuid = uuid;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     public void setCode(String code) {

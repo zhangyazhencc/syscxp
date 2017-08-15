@@ -66,9 +66,27 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.APIChangeUserPWDMsg</name>
+        <name>org.zstack.account.header.APIUpdateUserPWDMsg</name>
     </message>
 
+    <message>
+        <name>org.zstack.account.header.APIUpdateAccountPWDMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.APIUpdateAccountPhoneMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.APIUpdateUserPhoneMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.APIUpdateAccountEmailMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.APIUpdateUserEmailMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.APIUpdateIndustryMsg</name>
+    </message>
 
     <message>
         <name>org.zstack.account.header.APIAttachPolicyToUserMsg</name>

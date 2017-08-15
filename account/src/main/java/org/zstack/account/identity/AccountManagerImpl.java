@@ -123,20 +123,20 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIGetSessionPolicyMsg) msg);
         } else if (msg instanceof APICheckApiPermissionMsg) {
             handle((APICheckApiPermissionMsg) msg);
-        }else if(msg instanceof APIChangeUserPWDMsg){
-            handbase.handle((APIChangeUserPWDMsg) msg);
-        }else if(msg instanceof APIChangeAccountPWDMsg){
-            handbase.handle((APIChangeAccountPWDMsg) msg);
-        }else if(msg instanceof APIChangeUserPhoneMsg){
-            handbase.handle((APIChangeUserPhoneMsg) msg);
-        }else if(msg instanceof APIChangeAccountPhoneMsg){
-            handbase.handle((APIChangeAccountPhoneMsg) msg);
-        }else if(msg instanceof APIChangeAccountEmailMsg){
-            handbase.handle((APIChangeAccountEmailMsg) msg);
-        }else if(msg instanceof APIChangeUserEmailMsg){
-            handbase.handle((APIChangeUserEmailMsg) msg);
-        }else if(msg instanceof APIChangeIndustryMsg){
-            handbase.handle((APIChangeIndustryMsg) msg);
+        }else if(msg instanceof APIUpdateUserPWDMsg){
+            handbase.handle((APIUpdateUserPWDMsg) msg);
+        }else if(msg instanceof APIUpdateAccountPWDMsg){
+            handbase.handle((APIUpdateAccountPWDMsg) msg);
+        }else if(msg instanceof APIUpdateUserPhoneMsg){
+            handbase.handle((APIUpdateUserPhoneMsg) msg);
+        }else if(msg instanceof APIUpdateAccountPhoneMsg){
+            handbase.handle((APIUpdateAccountPhoneMsg) msg);
+        }else if(msg instanceof APIUpdateAccountEmailMsg){
+            handbase.handle((APIUpdateAccountEmailMsg) msg);
+        }else if(msg instanceof APIUpdateUserEmailMsg){
+            handbase.handle((APIUpdateUserEmailMsg) msg);
+        }else if(msg instanceof APIUpdateIndustryMsg){
+            handbase.handle((APIUpdateIndustryMsg) msg);
         }else if(msg instanceof APIUpdateAccountMsg){
             handbase.handle((APIUpdateAccountMsg) msg);
         }else if(msg instanceof APIUpdateUserMsg){
@@ -448,18 +448,18 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APICreateUserMsg) msg);
         } else if (msg instanceof APILogInByUserMsg) {
             validate((APILogInByUserMsg) msg);
-        } else if (msg instanceof APIChangeUserPhoneMsg) {
-            validate((APIChangeUserPhoneMsg) msg);
-        } else if (msg instanceof APIChangeUserPWDMsg) {
-            validate((APIChangeUserPWDMsg) msg);
-        } else if (msg instanceof APIChangeUserEmailMsg) {
-            validate((APIChangeUserEmailMsg) msg);
-        } else if (msg instanceof APIChangeAccountPWDMsg) {
-            validate((APIChangeAccountPWDMsg) msg);
-        } else if (msg instanceof APIChangeAccountPhoneMsg) {
-            validate((APIChangeAccountPhoneMsg) msg);
-        } else if (msg instanceof APIChangeAccountEmailMsg) {
-            validate((APIChangeAccountEmailMsg) msg);
+        } else if (msg instanceof APIUpdateUserPhoneMsg) {
+            validate((APIUpdateUserPhoneMsg) msg);
+        } else if (msg instanceof APIUpdateUserPWDMsg) {
+            validate((APIUpdateUserPWDMsg) msg);
+        } else if (msg instanceof APIUpdateUserEmailMsg) {
+            validate((APIUpdateUserEmailMsg) msg);
+        } else if (msg instanceof APIUpdateAccountPWDMsg) {
+            validate((APIUpdateAccountPWDMsg) msg);
+        } else if (msg instanceof APIUpdateAccountPhoneMsg) {
+            validate((APIUpdateAccountPhoneMsg) msg);
+        } else if (msg instanceof APIUpdateAccountEmailMsg) {
+            validate((APIUpdateAccountEmailMsg) msg);
         } else if (msg instanceof APIUpdateUserMsg) {
             validate((APIUpdateUserMsg) msg);
         }
@@ -477,42 +477,42 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
     }
 
-    private void validate(APIChangeUserPhoneMsg msg) {
+    private void validate(APIUpdateUserPhoneMsg msg) {
         if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhone()))) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getUuid()));
         }
     }
 
-    private void validate(APIChangeUserPWDMsg msg) {
+    private void validate(APIUpdateUserPWDMsg msg) {
         if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhoneOrEmail()))) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getUuid()));
         }
     }
 
-    private void validate(APIChangeUserEmailMsg msg) {
+    private void validate(APIUpdateUserEmailMsg msg) {
         if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getEmail()))) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getUuid()));
         }
     }
 
-    private void validate(APIChangeAccountPWDMsg msg) {
+    private void validate(APIUpdateAccountPWDMsg msg) {
         if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhoneOrEmail()))) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getUuid()));
         }
     }
 
-    private void validate(APIChangeAccountPhoneMsg msg) {
+    private void validate(APIUpdateAccountPhoneMsg msg) {
         if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhone()))) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getUuid()));
         }
     }
 
-    private void validate(APIChangeAccountEmailMsg msg) {
+    private void validate(APIUpdateAccountEmailMsg msg) {
         if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getEmail()))) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getUuid()));
