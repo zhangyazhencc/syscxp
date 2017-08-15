@@ -104,4 +104,11 @@
         <name>org.zstack.account.header.APIDetachPolicyFromUserMsg</name>
     </message>
 
+    <message>
+        <name>org.zstack.account.header.APICreateAuthorityMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.APIUpdateAuthorityMsg</name>
+    </message>
+
 </service>
