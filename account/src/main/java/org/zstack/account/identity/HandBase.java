@@ -17,6 +17,7 @@ import org.zstack.header.identity.AccountGrade;
 import org.zstack.utils.ExceptionDSL;
 import org.zstack.utils.gson.JSONObjectUtil;
 
+import static org.zstack.core.Platform.getGlobalProperty;
 import static org.zstack.core.Platform.operr;
 
 /**
@@ -251,7 +252,7 @@ public class HandBase {
         vo.setType(msg.getType() != null ? AccountType.valueOf(msg.getType()) : AccountType.Normal);
         vo.setGrade( msg.getGrade());
 
-        dbf.persistAndRefresh(vo);
+        vo = dbf.persistAndRefresh(vo);
 //        CollectionUtils.safeForEach(pluginRgty.getExtensionList(AfterCreateAccountExtensionPoint.class),
 //                arg -> arg.afterCreateAccount(AccountInventory.valueOf(vo)));
 
@@ -289,9 +290,10 @@ public class HandBase {
         pvo.setDescription(msg.getDescription());
         pvo.setPolicyStatement(JSONObjectUtil.toJsonString(msg.getStatements()));
 
+
         APICreatePolicyEvent evt = new APICreatePolicyEvent(msg.getId());
         evt.setSuccess(true);
-        evt.setInventory(PolicyInventory.valueOf(pvo));
+        evt.setInventory(PolicyInventory.valueOf(dbf.persistAndRefresh(pvo)));
         bus.publish(evt);
     }
 
@@ -337,5 +339,48 @@ public class HandBase {
         bus.publish(evt);
     }
 
+    public void handle(APICreateAuthorityMsg msg) {
+
+        AuthorityVO auth = new AuthorityVO();
+        auth.setUuid(Platform.getUuid());
+        auth.setAuthority(msg.getAuthority());
+        auth.setName(msg.getName());
+        auth.setDescription(msg.getDescription());
+
+        APICreateAuthorityEvent evt = new APICreateAuthorityEvent(msg.getId());
+        evt.setSuccess(true);
+        evt.setInventory(AuthorityInventory.valueOf(dbf.persistAndRefresh(auth)));
+        bus.publish(evt);
+    }
+
+    public void handle(APIUpdateAuthorityMsg msg) {
+
+        AuthorityVO auth = dbf.findByUuid(msg.getUuid(), AuthorityVO.class);
+
+        boolean update = false;
+        if (msg.getName() != null) {
+            auth.setName(msg.getName());
+            update = true;
+        }
+        if (msg.getDescription() != null) {
+            auth.setDescription(msg.getDescription());
+            update = true;
+        }
+        if (msg.getAuthority() != null) {
+            auth.setAuthority(msg.getAuthority());
+            update = true;
+        }
+
+        if (update) {
+            auth = dbf.updateAndRefresh(auth);
+        }
+
+
+        APICreateAuthorityEvent evt = new APICreateAuthorityEvent(msg.getId());
+        evt.setSuccess(true);
+        evt.setInventory(AuthorityInventory.valueOf(auth));
+        bus.publish(evt);
+
+    }
 
 }
