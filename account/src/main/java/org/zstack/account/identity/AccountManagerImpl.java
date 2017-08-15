@@ -142,10 +142,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             updatehand.handle((APIUpdateAccountMsg) msg);
         }else if(msg instanceof APIUpdateUserMsg){
             updatehand.handle((APIUpdateUserMsg) msg);
-        }
-
-
-        else{
+        }else{
             bus.dealWithUnknownMessage(msg);
         }
     }
