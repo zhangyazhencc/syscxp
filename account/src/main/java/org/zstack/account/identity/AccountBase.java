@@ -84,25 +84,25 @@ public class AccountBase extends AbstractAccount {
     }
 
     private void handleApiMessage(APIMessage msg) {
-        if (msg instanceof APIUpdateAccountMsg) {
-            handle((APIUpdateAccountMsg) msg);
-        } else if (msg instanceof APICreateUserMsg) {
-            handle((APICreateUserMsg) msg);
-        } else if (msg instanceof APIUpdateUserMsg) {
-            handle((APIUpdateUserMsg) msg);
-        } else if (msg instanceof APIDeleteUserMsg) {
-            handle((APIDeleteUserMsg) msg);
-        } else if (msg instanceof APICreatePolicyMsg) {
-            handle((APICreatePolicyMsg) msg);
-        } else if (msg instanceof APIDeletePolicyMsg) {
-            handle((APIDeletePolicyMsg) msg);
-        } else if (msg instanceof APIAttachPolicyToUserMsg) {
-            handle((APIAttachPolicyToUserMsg) msg);
-        } else if (msg instanceof APIDetachPolicyFromUserMsg) {
-            handle((APIDetachPolicyFromUserMsg) msg);
-        } else {
-            bus.dealWithUnknownMessage(msg);
-        }
+//        if (msg instanceof APIUpdateAccountMsg) {
+//            handle((APIUpdateAccountMsg) msg);
+//        } else if (msg instanceof APICreateUserMsg) {
+//            handle((APICreateUserMsg) msg);
+//        } else if (msg instanceof APIUpdateUserMsg) {
+//            handle((APIUpdateUserMsg) msg);
+//        } else if (msg instanceof APIDeleteUserMsg) {
+//            handle((APIDeleteUserMsg) msg);
+//        } else if (msg instanceof APICreatePolicyMsg) {
+//            handle((APICreatePolicyMsg) msg);
+//        } else if (msg instanceof APIDeletePolicyMsg) {
+//            handle((APIDeletePolicyMsg) msg);
+//        } else if (msg instanceof APIAttachPolicyToUserMsg) {
+//            handle((APIAttachPolicyToUserMsg) msg);
+//        } else if (msg instanceof APIDetachPolicyFromUserMsg) {
+//            handle((APIDetachPolicyFromUserMsg) msg);
+//        } else {
+//            bus.dealWithUnknownMessage(msg);
+//        }
     }
 
     private void handle(APIUpdateUserMsg msg) {

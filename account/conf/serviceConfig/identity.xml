@@ -70,5 +70,20 @@
     </message>
 
 
+    <message>
+        <name>org.zstack.account.header.APIAttachPolicyToUserMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.APIDeletePolicyMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.APICreatePolicyMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.APIDetachPolicyFromUserMsg</name>
+    </message>
 
 </service>
