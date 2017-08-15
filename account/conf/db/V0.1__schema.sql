@@ -146,3 +146,21 @@ CREATE TABLE  `LogVO` (
     `createDate` timestamp,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `SmsVO` (
+  `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
+  `ip` varchar(20) DEFAULT NULL,
+  `phone` varchar(1300) DEFAULT NULL,
+  `templateId` varchar(20) DEFAULT NULL,
+  `appId` varchar(255) DEFAULT NULL,
+  `data` varchar(255) DEFAULT NULL,
+  `statusCode` varchar(20) DEFAULT NULL,
+  `statusMsg` varchar(255) DEFAULT NULL,
+  `dateCreated` varchar(20) DEFAULT NULL,
+  `smsMessagesId` varchar(255) DEFAULT NULL,
+  `msgEntrance` int(10) DEFAULT NULL,
+  `createDay` date DEFAULT NULL,
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
