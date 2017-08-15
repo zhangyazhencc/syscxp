@@ -66,9 +66,10 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
-        if (msg instanceof AccountMessage) {
-            passThrough((AccountMessage) msg);
-        } else if (msg instanceof APIMessage) {
+//        if (msg instanceof AccountMessage) {
+//            passThrough((AccountMessage) msg);
+//        } else
+        if (msg instanceof APIMessage) {
             handleApiMessage((APIMessage) msg);
         } else {
             handleLocalMessage(msg);
