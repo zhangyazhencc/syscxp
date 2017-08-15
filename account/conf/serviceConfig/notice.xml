@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://zstack.org/schema/zstack">
+    <id>notice</id>
+    <interceptor>NoticeManager</interceptor>
+
+    <message>
+        <name>org.zstack.account.header.log.APIQueryNoticeMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.log.APIUpdateNoticeMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.log.APICreateNoticeMsg</name>
+    </message>
+
+
+</service>
