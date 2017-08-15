@@ -26,7 +26,7 @@ import java.sql.Timestamp;
 
 import static org.zstack.core.Platform.argerr;
 
-public class NoticeManagerImpl extends AbstractService implements LogManager, CloudBusEventListener, ApiMessageInterceptor {
+public class NoticeManagerImpl extends AbstractService implements NoticeManager, CloudBusEventListener, ApiMessageInterceptor {
     private static final CLogger logger = Utils.getLogger(LogManagerImpl.class);
 
     @Autowired
