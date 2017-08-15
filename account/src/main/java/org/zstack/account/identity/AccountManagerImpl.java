@@ -153,6 +153,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handbase.handle((APIUpdateAuthorityMsg) msg);
         }else if(msg instanceof APICreateAuthorityMsg){
             handbase.handle((APICreateAuthorityMsg) msg);
+        }else if(msg instanceof APIDeleteAuthorityMsg){
+            handbase.handle((APIDeleteAuthorityMsg) msg);
         }
 
         else{

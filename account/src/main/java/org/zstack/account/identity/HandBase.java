@@ -383,4 +383,11 @@ public class HandBase {
 
     }
 
+    public void handle(APIDeleteAuthorityMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(), AuthorityVO.class);
+        APICreateAuthorityEvent evt = new APICreateAuthorityEvent(msg.getId());
+        evt.setSuccess(true);
+        bus.publish(evt);
+    }
+
 }
