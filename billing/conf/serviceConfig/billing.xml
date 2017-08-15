@@ -6,44 +6,93 @@
     <message>
         <name>org.zstack.billing.header.identity.APIGetAccountBalanceMsg</name>
     </message>
+
     <message>
         <name>org.zstack.billing.header.identity.APIUpdateAccountBalanceMsg</name>
     </message>
+
     <message>
         <name>org.zstack.billing.header.identity.APICreateOrderMsg</name>
     </message>
+
     <message>
         <name>org.zstack.billing.header.identity.APIGetExpenseGrossMonthListMsg</name>
     </message>
     <message>
         <name>org.zstack.billing.header.identity.APIUpdateRenewMsg</name>
     </message>
+
     <message>
         <name>org.zstack.billing.header.identity.order.APIUpdateOrderStateMsg</name>
     </message>
+
     <message>
         <name>org.zstack.billing.header.identity.receipt.APIGetValuebleReceiptMsg</name>
     </message>
+
     <message>
         <name>org.zstack.billing.header.identity.receipt.APICreateReceiptPostAddressMsg</name>
     </message>
+
     <message>
         <name>org.zstack.billing.header.identity.receipt.APIUpdateReceiptPostAddressMsg</name>
     </message>
     <message>
+        <name>org.zstack.billing.header.identity.receipt.APIDeleteReceiptPostAddressMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.identity.receipt.APICreateReceiptInfoMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.identity.receipt.APIUpdateReceiptInfoMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.identity.receipt.APIDeleteReceiptInfoMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.identity.sla.APICreateSLACompensateMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.identity.sla.APIUpdateSLACompensateMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.billing.header.identity.APIQueryOrderMsg</name>
         <serviceId>query</serviceId>
     </message>
+
     <message>
         <name>org.zstack.billing.header.identity.renew.APIQueryRenewMsg</name>
         <serviceId>query</serviceId>
     </message>
+
     <message>
         <name>org.zstack.billing.header.identity.balance.APIQueryDealDetailMsg</name>
         <serviceId>query</serviceId>
     </message>
+
     <message>
         <name>org.zstack.billing.header.identity.receipt.APIQueryReceiptPostAddressMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.identity.receipt.APIQueryReceiptInfoMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.identity.receipt.APIQueryReceiptMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.identity.sla.APIQuerySLACompensateMsg</name>
         <serviceId>query</serviceId>
     </message>
 

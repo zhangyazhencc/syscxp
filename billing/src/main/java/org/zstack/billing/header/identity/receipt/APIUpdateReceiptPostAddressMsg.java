@@ -17,6 +17,17 @@ public class APIUpdateReceiptPostAddressMsg extends APIMessage {
     @APIParam(required = false)
     private String address;
 
+    @APIParam(required = false)
+    private boolean isDefault;
+
+    public boolean isDefault() {
+        return isDefault;
+    }
+
+    public void setDefault(boolean aDefault) {
+        isDefault = aDefault;
+    }
+
     public String getUuid() {
         return uuid;
     }
