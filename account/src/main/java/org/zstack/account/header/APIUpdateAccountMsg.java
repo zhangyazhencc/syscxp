@@ -1,6 +1,5 @@
 package org.zstack.account.header;
 
-import org.zstack.account.header.identity.AccountConstant;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;

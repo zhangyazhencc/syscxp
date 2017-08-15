@@ -108,8 +108,8 @@ CREATE TABLE `PolicyVO` (
 	`accountUuid` varchar(32) NOT NULL COMMENT '所属账户UUID',
 	`policyStatement` text NOT NULL COMMENT '策略JSON字符串',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-    `createDate` timestamp,
-    PRIMARY KEY  (`uuid`)
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `UserPolicyRefVO` (
@@ -132,16 +132,39 @@ CREATE TABLE  `SessionVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-CREATE TABLE  `LogVO` (
+CREATE TABLE  `OperLogVO` (
     `uuid` varchar(32) NOT NULL UNIQUE,
-    `accountUuid` varchar(32) NOT NULL,
-    `userUuid` varchar(32) DEFAULT NULL,
-    `category` varchar(128) NOT NULL COMMENT 'category',
-    `resourceType` varchar(32) DEFAULT NULL,
-    `resourceUuid` varchar(32) DEFAULT NULL,
-    `action` varchar(32) DEFAULT NULL,
-    `state` varchar(32) DEFAULT NULL,
-    `description` varchar(255) DEFAULT NULL,
+    `accountUuid` varchar(32) NOT NULL COMMENT '账户UUID',
+    `userUuid` varchar(32) DEFAULT NULL COMMENT '用户UUID',
+    `category` varchar(128) NOT NULL COMMENT '分类',
+    `resourceType` varchar(128) DEFAULT NULL COMMENT '资源类型',
+    `resourceUuid` varchar(32) DEFAULT NULL COMMENT '资源UUID',
+    `action` varchar(32) DEFAULT NULL COMMENT '动作',
+    `state` varchar(32) DEFAULT NULL COMMENT '状态',
+    `description` varchar(255) DEFAULT NULL COMMENT '描述',
+    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+    `createDate` timestamp,
+    PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  `NoticeVO` (
+    `uuid` varchar(32) NOT NULL UNIQUE,
+    `title` varchar(255) NOT NULL COMMENT '标题',
+    `link` varchar(255) DEFAULT NULL COMMENT '链接',
+    `status` varchar(32) DEFAULT NULL COMMENT '状态',
+    `startTime` timestamp NULL DEFAULT NULL COMMENT '开始时间',
+    `endTime` timestamp NULL DEFAULT NULL COMMENT '结束时间',
+    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+    `createDate` timestamp,
+    PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  `AlarmContactVO` (
+    `uuid` varchar(32) NOT NULL UNIQUE,
+    `name` varchar(32) NOT NULL COMMENT '姓名',
+    `phone` varchar(32) NOT NULL COMMENT '手机号',
+    `email` varchar(32) NOT NULL COMMENT '邮箱',
+    `accountUuid` varchar(32) NOT NULL COMMENT '账户UUID',
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
     `createDate` timestamp,
     PRIMARY KEY  (`uuid`)

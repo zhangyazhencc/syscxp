@@ -1,7 +1,5 @@
 package org.zstack.account.header;
 
-import org.zstack.account.header.identity.AccountConstant;
-import org.zstack.account.header.identity.AccountMessage;
 import org.zstack.header.identity.Action;
 import org.zstack.header.identity.PolicyStatement;
 import org.zstack.header.identity.StatementEffect;
@@ -11,16 +9,23 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
+import javax.persistence.metamodel.SingularAttribute;
+import java.sql.Timestamp;
 import java.util.List;
 
 import static org.zstack.utils.CollectionDSL.list;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
-public class APICreatePolicyMsg extends APICreateMessage implements AccountMessage {
+public class APICreatePolicyMsg extends  APIMessage {
     @APIParam(maxLength = 255)
     private String name;
+
+    @APIParam(maxLength = 255)
+    public String accountUuid;
+
     @APIParam(maxLength = 2048, required = false)
     private String description;
+
     @APIParam(nonempty = true)
     private List<PolicyStatement> statements;
 
@@ -32,9 +37,12 @@ public class APICreatePolicyMsg extends APICreateMessage implements AccountMessa
         this.statements = statements;
     }
 
-    @Override
     public String getAccountUuid() {
         return this.getSession().getAccountUuid();
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 
     public String getName() {

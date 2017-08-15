@@ -9,7 +9,6 @@ import org.zstack.account.header.identity.APIValidateSessionMsg;
 import org.zstack.account.header.identity.APIValidateSessionReply;
 import org.zstack.account.header.AccountVO;
 import org.zstack.account.header.AccountVO_;
-import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.MessageSafe;
 import org.zstack.core.componentloader.PluginRegistry;
@@ -62,8 +61,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     @Autowired
     private IdentiyInterceptor identiyInterceptor;
 
-    private UpdateHand updatehand = new UpdateHand();
-    private CreateHand createHand = new CreateHand();
+    private HandBase handbase = new HandBase();
 
     @Override
     @MessageSafe
@@ -105,9 +103,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateAccountMsg) {
-            createHand.handle((APICreateAccountMsg) msg);
+            handbase.handle((APICreateAccountMsg) msg);
         } else if (msg instanceof APICreateUserMsg) {
-            createHand.handle((APICreateUserMsg) msg);
+            handbase.handle((APICreateUserMsg) msg);
         } else if (msg instanceof APIListAllAccountMsg) {
             handle((APIListAllAccountMsg) msg);
         } else if (msg instanceof APIListAllUsersMsg) {
@@ -125,23 +123,31 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         } else if (msg instanceof APICheckApiPermissionMsg) {
             handle((APICheckApiPermissionMsg) msg);
         }else if(msg instanceof APIChangeUserPWDMsg){
-            updatehand.handle((APIChangeUserPWDMsg) msg);
+            handbase.handle((APIChangeUserPWDMsg) msg);
         }else if(msg instanceof APIChangeAccountPWDMsg){
-            updatehand.handle((APIChangeAccountPWDMsg) msg);
+            handbase.handle((APIChangeAccountPWDMsg) msg);
         }else if(msg instanceof APIChangeUserPhoneMsg){
-            updatehand.handle((APIChangeUserPhoneMsg) msg);
+            handbase.handle((APIChangeUserPhoneMsg) msg);
         }else if(msg instanceof APIChangeAccountPhoneMsg){
-            updatehand.handle((APIChangeAccountPhoneMsg) msg);
+            handbase.handle((APIChangeAccountPhoneMsg) msg);
         }else if(msg instanceof APIChangeAccountEmailMsg){
-            updatehand.handle((APIChangeAccountEmailMsg) msg);
+            handbase.handle((APIChangeAccountEmailMsg) msg);
         }else if(msg instanceof APIChangeUserEmailMsg){
-            updatehand.handle((APIChangeUserEmailMsg) msg);
+            handbase.handle((APIChangeUserEmailMsg) msg);
         }else if(msg instanceof APIChangeIndustryMsg){
-            updatehand.handle((APIChangeIndustryMsg) msg);
+            handbase.handle((APIChangeIndustryMsg) msg);
         }else if(msg instanceof APIUpdateAccountMsg){
-            updatehand.handle((APIUpdateAccountMsg) msg);
+            handbase.handle((APIUpdateAccountMsg) msg);
         }else if(msg instanceof APIUpdateUserMsg){
-            updatehand.handle((APIUpdateUserMsg) msg);
+            handbase.handle((APIUpdateUserMsg) msg);
+        }else if(msg instanceof APICreatePolicyMsg){
+            handbase.handle((APICreatePolicyMsg) msg);
+        }else if(msg instanceof APIDetachPolicyFromUserMsg){
+            handbase.handle((APIDetachPolicyFromUserMsg) msg);
+        }else if(msg instanceof APIDeletePolicyMsg){
+            handbase.handle((APIDeletePolicyMsg) msg);
+        }else if(msg instanceof APIAttachPolicyToUserMsg){
+            handbase.handle((APIAttachPolicyToUserMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }

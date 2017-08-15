@@ -1,6 +1,5 @@
 package org.zstack.account.header;
 
-import org.zstack.account.header.identity.UserInventory;
 import org.zstack.header.query.APIQueryReply;
 import org.zstack.header.rest.RestResponse;
 

@@ -1,4 +1,4 @@
-package org.zstack.account.header.identity;
+package org.zstack.account.header;
 
 import org.zstack.header.configuration.PythonClass;
 import org.zstack.header.rest.SDK;
