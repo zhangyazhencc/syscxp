@@ -6,6 +6,7 @@ import org.zstack.header.search.TriggerIndex;
 import javax.persistence.*;
 import java.sql.Timestamp;
 
+@Entity
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @TriggerIndex

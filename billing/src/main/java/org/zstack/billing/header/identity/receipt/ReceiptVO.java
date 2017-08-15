@@ -9,6 +9,7 @@ import javax.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
+@Entity
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @TriggerIndex
