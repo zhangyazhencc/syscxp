@@ -209,6 +209,22 @@ CREATE TABLE `SLACompensateVO` (
 
 /*Data for the table `SLACompensateVO` */
 
+DROP TABLE IF EXISTS `ProductPriceUnitVO`;
+
+CREATE TABLE `ProductPriceUnitVO` (
+    `uuid` varchar(32) NOT NULL,
+    `productType` varchar(50) DEFAULT NULL COMMENT '产品类型',
+    `category` varchar(50) DEFAULT NULL COMMENT '分类',
+    `config` varchar(128) DEFAULT NULL COMMENT '配置',
+    `priceUnit` int DEFAULT NULL COMMENT '单价',
+    `comment` varchar(500) DEFAULT NULL COMMENT '备注',
+     `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
+    `createDate` timestamp NOT NULL DEFAULT current_timestamp(),
+    PRIMARY KEY (`uuid`),
+    UNIQUE KEY `NewIndex1` (`productType`,`category`,`config`)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+
+
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
 /*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
 
@@ -256,6 +272,7 @@ CREATE TABLE  `syscxp_billing`.`JobQueueEntryVO` (
     `errText` text DEFAULT NULL,
     PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 
 
