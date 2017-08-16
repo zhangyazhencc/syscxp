@@ -1,9 +1,6 @@
 package org.zstack.account.log;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.BeanDefinition;
-import org.springframework.context.annotation.ClassPathScanningCandidateComponentProvider;
-import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.zstack.account.header.log.OperLogVO;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
@@ -12,7 +9,6 @@ import org.zstack.core.cloudbus.EventFacade;
 import org.zstack.core.cloudbus.MessageSafe;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.DatabaseFacade;
-import org.zstack.core.notification.NotificationManager;
 import org.zstack.core.thread.AsyncThread;
 import org.zstack.core.thread.Task;
 import org.zstack.core.thread.ThreadFacade;
@@ -20,13 +16,15 @@ import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.GlobalApiMessageInterceptor;
 import org.zstack.header.core.ExceptionSafe;
-import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.message.*;
 import org.zstack.header.notification.ApiNotification;
+import org.zstack.header.notification.ApiNotificationFactory;
+import org.zstack.header.notification.ApiNotificationFactoryExtensionPoint;
 import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.BlockingQueue;
@@ -48,7 +46,7 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
     @Autowired
     private EventFacade evtf;
 
-    private Map<String, SessionInventory> sessions = new ConcurrentHashMap<>();
+    private Map<Class, ApiNotificationFactory> apiNotificationFactories = new HashMap<>();
 
     private BlockingQueue<OperLogBuilder> operLogsQueue = new LinkedBlockingQueue<>();
     private OperLogBuilder quitToken = new OperLogBuilder();
@@ -56,9 +54,51 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
 
     private class ApiOperLogSender implements BeforeDeliveryMessageInterceptor, BeforePublishEventInterceptor {
 
+        class Bundle{
+            APIMessage message;
+            ApiNotification notification;
+        }
 
-        ConcurrentHashMap<String, APIMessage> apiMessages = new ConcurrentHashMap<>();
+        ConcurrentHashMap<String, LogManagerImpl.ApiOperLogSender.Bundle> apiMessages = new ConcurrentHashMap<>();
+        Map<Class, Method> notificationMethods = new ConcurrentHashMap<>();
 
+        public ApiOperLogSender() {
+            Set<Method> methods = Platform.getReflections().getMethodsReturn(ApiNotification.class);
+            for (Method m : methods) {
+                notificationMethods.put(m.getDeclaringClass(), m);
+            }
+        }
+
+        private ApiNotification getApiNotification(APIMessage msg) throws InvocationTargetException, IllegalAccessException {
+            Method m = notificationMethods.get(msg.getClass());
+            if (m == null) {
+                Class clz = msg.getClass().getSuperclass();
+                while (clz != Object.class) {
+                    m = notificationMethods.get(clz);
+                    if (m != null) {
+                        break;
+                    }
+                    clz = clz.getSuperclass();
+                }
+
+                if (m != null) {
+                    notificationMethods.put(msg.getClass(), m);
+                }
+            }
+
+            ApiNotification notification = null;
+
+            if (m != null) {
+                notification = (ApiNotification) m.invoke(msg);
+            } else {
+                ApiNotificationFactory factory = apiNotificationFactories.get(msg.getClass());
+                if (factory != null) {
+                    notification = factory.createApiNotification(msg);
+                }
+            }
+
+            return notification;
+        }
 
         @Override
         public int orderOfBeforeDeliveryMessageInterceptor() {
@@ -80,22 +120,21 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
             }
 
             try {
-                OperLogVO operLogVO = getOperLog((APIMessage) msg);
+                ApiNotification notification = getApiNotification((APIMessage) msg);
 
-                apiMessages.put(msg.getId(), (APIMessage) msg);
+                if (notification == null) {
+                    logger.warn(String.format("API message[%s] does not have an API notification method or the method returns null",
+                            msg.getClass()));
+                    return;
+                }
 
+                Bundle b = new Bundle();
+                b.message = (APIMessage) msg;
+                b.notification = notification;
+                apiMessages.put(msg.getId(), b);
             } catch (Throwable t) {
                 logger.warn(String.format("unhandled exception %s", t.getMessage()), t);
             }
-        }
-
-        private OperLogVO getOperLog(APIMessage msg) {
-            OperLogVO operLogVO = new OperLogVO();
-
-
-
-
-            return operLogVO;
         }
 
         @Override
@@ -111,25 +150,37 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
             }
 
             APIEvent aevt = (APIEvent) evt;
-            APIMessage msg = apiMessages.get(aevt.getApiId());
-            if (msg == null) return;
+            Bundle b = apiMessages.get(aevt.getApiId());
+            if (b == null) return;
             apiMessages.remove(aevt.getApiId());
+            b.notification.after((APIEvent) evt);
 
+            List<OperLogBuilder> lst = new ArrayList<>();
+            for (ApiNotification.Inner inner : b.notification.getInners()) {
 
+                String action;
+                if (aevt.getClass().getSimpleName().toUpperCase().contains(LogConstant.CREATE_ACTION)){
+                    action = LogConstant.CREATE_ACTION;
+                } else if (aevt.getClass().getSimpleName().toUpperCase().contains(LogConstant.DELETE_ACTION)){
+                    action = LogConstant.DELETE_ACTION;
+                } else {
+                    action = LogConstant.UPDATE_ACTION;
+                }
 
-            OperLogBuilder builder = new OperLogBuilder();
-            builder.account(msg.getSession().getAccountUuid())
-                .user(msg.getSession().getUserUuid())
-                .resource("reaourceuuid", aevt.getClass().getName())
-                .category("")
-                .action("")
-                .state(aevt.isSuccess())
-                .description("desc");
-
-
-            send(builder);
+                lst.add(new OperLogBuilder()
+                        .account(b.message.getSession().getAccountUuid())
+                        .user(b.message.getSession().getUserUuid())
+                        .resource(inner.getResourceUuid(), inner.getResourceType())
+                        .category(aevt.getType().toString())
+                        .action(action)
+                        .state(aevt.isSuccess())
+                        .description(inner.getContent()));
+            }
+            send(lst);
         }
+
     }
+
 
     @Override
     @MessageSafe
@@ -148,6 +199,7 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
     private void handleApiMessage(APIMessage msg) {
 
     }
+    private ApiOperLogSender apiOperLogSender = new ApiOperLogSender();
 
     public void send(List<OperLogBuilder> builders) {
         for (OperLogBuilder builder : builders) {
@@ -170,6 +222,12 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
 
     @Override
     public boolean start() {
+        bus.installBeforeDeliveryMessageInterceptor(apiOperLogSender);
+        bus.installBeforePublishEventInterceptor(apiOperLogSender);
+
+        for (ApiNotificationFactoryExtensionPoint ext : pluginRgty.getExtensionList(ApiNotificationFactoryExtensionPoint.class)) {
+            apiNotificationFactories.putAll(ext.apiNotificationFactory());
+        }
 
         thdf.submit(new Task<Void>() {
             @Override
@@ -180,7 +238,7 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
 
             @Override
             public String getName() {
-                return "notification-thread";
+                return "log-thread";
             }
         });
         return true;
@@ -223,12 +281,12 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
 
     @Override
     public boolean stop() {
+        operLogsQueue.offer(quitToken);
         return true;
     }
 
     @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        sessions.put(msg.getId(), msg.getSession());
         return msg;
     }
 
