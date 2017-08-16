@@ -12,7 +12,7 @@ public class IdentityGlobalConfig {
 
     @GlobalConfigValidation(numberGreaterThan = 0)
     public static GlobalConfig MAX_CONCURRENT_SESSION = new GlobalConfig(CATEGORY, "session.maxConcurrent");
-    @GlobalConfigValidation(numberGreaterThan = 0,numberLessThan = 31536000)
+    @GlobalConfigValidation(numberGreaterThan = 0, numberLessThan = 7200)
     public static GlobalConfig SESSION_TIMEOUT = new GlobalConfig(CATEGORY, "session.timeout");
 
     public static int SESSION_CLEANUP_INTERVAL = 3600;

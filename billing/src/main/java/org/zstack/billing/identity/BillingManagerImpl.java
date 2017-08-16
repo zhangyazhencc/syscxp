@@ -284,7 +284,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void handle(APIGetValuebleReceiptMsg msg) {
-        String currentAccountUuid = msg.getSession().getUuid();
+        String currentAccountUuid = msg.getSession().getAccountUuid();
         BigDecimal consumeCash = getConsumeCashByAccountUuid(currentAccountUuid);
         BigDecimal hadReceiptCash = getHadReceiptCashByAccountUuid(currentAccountUuid);
         AccountBalanceVO  vo =  dbf.findByUuid(currentAccountUuid, AccountBalanceVO.class);
@@ -566,7 +566,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void handle(APIGetAccountBalanceMsg msg) {
-        AccountBalanceVO vo = dbf.findByUuid(msg.getSession().getUuid(), AccountBalanceVO.class);
+        AccountBalanceVO vo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
         AccountBalanceInventory inventory = AccountBalanceInventory.valueOf(vo);
         APIGetAccountBalanceReply reply = new APIGetAccountBalanceReply();
         reply.setInventory(inventory);

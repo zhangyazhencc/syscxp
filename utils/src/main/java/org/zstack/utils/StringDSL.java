@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -126,5 +127,16 @@ public class StringDSL {
 
     public static boolean isApiId(String apiId) {
         return apiId != null && apiId.matches("[0-9a-f]{8}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{4}[0-9a-f]{12}");
+    }
+
+    public static String getRandomNumbersString(int length) {
+        String str = "0123456789";
+        Random random = new Random();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length; ++i) {
+            int number = random.nextInt(10);// [0,10)
+            sb.append(str.charAt(number));
+        }
+        return sb.toString();
     }
 }

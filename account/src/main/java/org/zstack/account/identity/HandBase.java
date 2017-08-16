@@ -2,9 +2,7 @@ package org.zstack.account.identity;
 
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.zstack.account.header.*;
-import org.zstack.account.header.UserInventory;
-import org.zstack.account.header.AccountVO;
+import org.zstack.account.header.identity.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
@@ -35,7 +33,6 @@ public class HandBase {
     public void handle(APIUpdateUserPWDMsg msg) {
 
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
-        evt.setSuccess(true);
 
         if(msg.isIsupdate()){
             UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
@@ -249,12 +246,10 @@ public class HandBase {
         vo.setPhone(msg.getPhone());
         vo.setTrueName(msg.getTrueName());
         vo.setStatus(msg.getStatus());
-        vo.setType(msg.getType() != null ? AccountType.valueOf(msg.getType()) : AccountType.Normal);
+        vo.setType(AccountType.Normal);
         vo.setGrade( msg.getGrade());
 
         vo = dbf.persistAndRefresh(vo);
-//        CollectionUtils.safeForEach(pluginRgty.getExtensionList(AfterCreateAccountExtensionPoint.class),
-//                arg -> arg.afterCreateAccount(AccountInventory.valueOf(vo)));
 
         APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
         evt.setInventory(AccountInventory.valueOf(vo));
@@ -341,7 +336,7 @@ public class HandBase {
 
     public void handle(APICreateAuthorityMsg msg) {
 
-        AuthorityVO auth = new AuthorityVO();
+        PermissionVO auth = new PermissionVO();
         auth.setUuid(Platform.getUuid());
         auth.setAuthority(msg.getAuthority());
         auth.setName(msg.getName());
@@ -355,7 +350,7 @@ public class HandBase {
 
     public void handle(APIUpdateAuthorityMsg msg) {
 
-        AuthorityVO auth = dbf.findByUuid(msg.getUuid(), AuthorityVO.class);
+        PermissionVO auth = dbf.findByUuid(msg.getUuid(), PermissionVO.class);
 
         boolean update = false;
         if (msg.getName() != null) {
@@ -383,8 +378,8 @@ public class HandBase {
 
     }
 
-    public void handle(APIDeleteAuthorityMsg msg) {
-        dbf.removeByPrimaryKey(msg.getUuid(), AuthorityVO.class);
+    public void handle(APIDeletePermissionMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(), PermissionVO.class);
         APICreateAuthorityEvent evt = new APICreateAuthorityEvent(msg.getId());
         evt.setSuccess(true);
         bus.publish(evt);

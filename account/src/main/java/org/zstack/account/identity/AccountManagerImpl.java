@@ -2,13 +2,10 @@ package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.zstack.account.header.*;
 import org.zstack.account.header.identity.APICheckApiPermissionMsg;
 import org.zstack.account.header.identity.APICheckApiPermissionReply;
 import org.zstack.account.header.identity.APIValidateSessionMsg;
 import org.zstack.account.header.identity.APIValidateSessionReply;
-import org.zstack.account.header.AccountVO;
-import org.zstack.account.header.AccountVO_;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.MessageSafe;
 import org.zstack.core.componentloader.PluginRegistry;
@@ -107,10 +104,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handbase.handle((APICreateAccountMsg) msg);
         } else if (msg instanceof APICreateUserMsg) {
             handbase.handle((APICreateUserMsg) msg);
-        } else if (msg instanceof APIListAllAccountMsg) {
-            handle((APIListAllAccountMsg) msg);
-        } else if (msg instanceof APIListAllUsersMsg) {
-            handle((APIListAllUsersMsg) msg);
         } else if (msg instanceof APILogInByAccountMsg) {
             handle((APILogInByAccountMsg) msg);
         } else if (msg instanceof APILogInByUserMsg) {
@@ -153,8 +146,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handbase.handle((APIUpdateAuthorityMsg) msg);
         }else if(msg instanceof APICreateAuthorityMsg){
             handbase.handle((APICreateAuthorityMsg) msg);
-        }else if(msg instanceof APIDeleteAuthorityMsg){
-            handbase.handle((APIDeleteAuthorityMsg) msg);
+        }else if(msg instanceof APIDeletePermissionMsg){
+            handbase.handle((APIDeletePermissionMsg) msg);
         }
 
         else{
@@ -365,35 +358,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         bus.reply(msg, reply);
     }
 
-    private void handle(APIListAllUsersMsg msg) {
-        APIListResultReply reply = new APIListResultReply();
-        List<UserVO> vos = dl.listAll( msg.getOffset(), msg.getLength(), UserVO.class);
-        if(vos != null){
-            reply.setSuccess(true);
-            reply.setMessage("success");
-            reply.setList(vos);
-        }else{
-            reply.setSuccess(true);
-            reply.setMessage("no users");
-        }
-
-        bus.reply(msg, reply);
-    }
-
-    private void handle(APIListAllAccountMsg msg) {
-        List<AccountVO> accountlist = dl.listAll(msg.getOffset(), msg.getLength(), AccountVO.class);
-        APIListResultReply reply = new APIListResultReply();
-        if(accountlist != null){
-            reply.setSuccess(true);
-            reply.setMessage("success");
-            reply.setList(accountlist);
-        }else{
-            reply.setSuccess(true);
-            reply.setMessage("no account");
-        }
-
-        bus.reply(msg, reply);
-    }
 
     @Override
     public String getId() {

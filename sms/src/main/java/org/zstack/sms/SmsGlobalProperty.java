@@ -29,4 +29,10 @@ public class SmsGlobalProperty {
 
     @GlobalProperty(name = "smsTotalLimitPerDayIP", defaultValue = "50")
     public static String TOTAL_LIMIT_PER_DAY_IP;
+
+    @GlobalProperty(name = "smsVerificationCodeAppid", defaultValue = "aaf98f89499d24b50149cc2f108319f4")
+    public static String SMS_VERIFICATION_CODE_APPID;
+
+    @GlobalProperty(name = "smsVerificationCodeTemplateId", defaultValue = "8082")
+    public static String SMS_VERIFICATION_CODE_TEMPLATEID;
 }

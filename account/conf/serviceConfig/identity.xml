@@ -4,11 +4,11 @@
     <interceptor>AccountManager</interceptor>
 
     <message>
-        <name>org.zstack.account.header.APICreateAccountMsg</name>
+        <name>org.zstack.account.header.identity.APICreateAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.APIUpdateAccountMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdateAccountMsg</name>
     </message>
 
     <message>
@@ -32,31 +32,31 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.APICreateUserMsg</name>
+        <name>org.zstack.account.header.identity.APICreateUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.APIUpdateUserMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdateUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.APIDeleteUserMsg</name>
+        <name>org.zstack.account.header.identity.APIDeleteUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.APIQueryUserMsg</name>
+        <name>org.zstack.account.header.identity.APIQueryUserMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.APIQueryAccountMsg</name>
+        <name>org.zstack.account.header.identity.APIQueryAccountMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.APIQueryPolicyMsg</name>
+        <name>org.zstack.account.header.identity.APIQueryPolicyMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.APIQueryAuthorityMsg</name>
+        <name>org.zstack.account.header.identity.APIQueryAuthorityMsg</name>
         <serviceId>query</serviceId>
     </message>
 
@@ -65,60 +65,60 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.APIListAllAccountMsg</name>
+        <name>org.zstack.account.header.identity.APIListAllAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.APIListAllUsersMsg</name>
+        <name>org.zstack.account.header.identity.APIListAllUsersMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.APIUpdateUserPWDMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdateUserPWDMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.APIUpdateAccountPWDMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdateAccountPWDMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.APIUpdateAccountPhoneMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdateAccountPhoneMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.APIUpdateUserPhoneMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdateUserPhoneMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.APIUpdateAccountEmailMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdateAccountEmailMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.APIUpdateUserEmailMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdateUserEmailMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.APIUpdateIndustryMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.account.header.APIAttachPolicyToUserMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdateIndustryMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.APIDeletePolicyMsg</name>
+        <name>org.zstack.account.header.identity.APIAttachPolicyToUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.APICreatePolicyMsg</name>
+        <name>org.zstack.account.header.identity.APIDeletePolicyMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.APIDetachPolicyFromUserMsg</name>
+        <name>org.zstack.account.header.identity.APICreatePolicyMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.APICreateAuthorityMsg</name>
+        <name>org.zstack.account.header.identity.APIDetachPolicyFromUserMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.identity.APICreateAuthorityMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.APIUpdateAuthorityMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdateAuthorityMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.APIDeleteAuthorityMsg</name>
+        <name>org.zstack.account.header.identity.APIDeletePermissionMsg</name>
     </message>
 
 </service>

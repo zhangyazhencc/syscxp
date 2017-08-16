@@ -128,7 +128,6 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         final int interval = IdentityGlobalProperty.SESSION_CLEANUP_INTERVAL;
         expiredSessionCollector = thdf.submitPeriodicTask(new PeriodicTask() {
 
-            @Transactional
             private List<String> deleteExpiredSessions() {
                 List<String> uuids = new ArrayList<String>();
                 Timestamp curr = getCurrentSqlDate();
@@ -291,7 +290,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                     return;
                 }
 
-                List<Tuple> ts = SQL.New(" select uuid, accountUuid from :resourceType where uuid in (:resourceUuids) ", Tuple.class).param("resourceType", af.param.resourceType().getSimpleName()).param("resourceUuids", resourceUuids).list();
+                List<Tuple> ts = SQL.New("select uuid, accountUuid from :resourceType where uuid in (:resourceUuids) ", Tuple.class).param("resourceType", af.param.resourceType().getSimpleName()).param("resourceUuids", resourceUuids).list();
                 for (Tuple t : ts) {
                     String resourceUuid = t.get(0, String.class);
                     String resourceOwnerAccountUuid = t.get(1, String.class);

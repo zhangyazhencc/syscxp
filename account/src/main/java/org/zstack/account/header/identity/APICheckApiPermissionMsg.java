@@ -1,10 +1,8 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.account.header.AccountConstant;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;
-import org.zstack.account.header.UserVO;
 
 import java.util.List;
 

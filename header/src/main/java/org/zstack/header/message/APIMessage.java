@@ -11,11 +11,21 @@ public abstract class APIMessage extends NeedReplyMessage {
     @APINoSee
     private SessionInventory session;
 
+    private String ip;
+
     public SessionInventory getSession() {
         return session;
     }
 
     public void setSession(SessionInventory session) {
         this.session = session;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
     }
 }
