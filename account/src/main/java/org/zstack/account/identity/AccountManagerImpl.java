@@ -38,6 +38,7 @@ import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
 /**
  * Created by zxhread on 17/8/3.
+ * modify by wangwg on 2017/08/16
  */
 public class AccountManagerImpl extends AbstractService implements AccountManager, PrepareDbInitialValueExtensionPoint,
         ApiMessageInterceptor {
@@ -58,15 +59,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     @Autowired
     private IdentiyInterceptor identiyInterceptor;
 
-    private HandBase handbase = new HandBase();
-
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
-//        if (msg instanceof AccountMessage) {
-//            passThrough((AccountMessage) msg);
-//        } else
-        if (msg instanceof APIMessage) {
+        if (msg instanceof AccountMessage) {
+            passThrough((AccountMessage) msg);
+        } else if (msg instanceof APIMessage) {
             handleApiMessage((APIMessage) msg);
         } else {
             handleLocalMessage(msg);
@@ -100,11 +98,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void handleApiMessage(APIMessage msg) {
-        if (msg instanceof APICreateAccountMsg) {
-            handbase.handle((APICreateAccountMsg) msg);
-        } else if (msg instanceof APICreateUserMsg) {
-            handbase.handle((APICreateUserMsg) msg);
-        } else if (msg instanceof APILogInByAccountMsg) {
+        if (msg instanceof APILogInByAccountMsg) {
             handle((APILogInByAccountMsg) msg);
         } else if (msg instanceof APILogInByUserMsg) {
             handle((APILogInByUserMsg) msg);
@@ -116,41 +110,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIGetSessionPolicyMsg) msg);
         } else if (msg instanceof APICheckApiPermissionMsg) {
             handle((APICheckApiPermissionMsg) msg);
-        }else if(msg instanceof APIUpdateUserPWDMsg){
-            handbase.handle((APIUpdateUserPWDMsg) msg);
-        }else if(msg instanceof APIUpdateAccountPWDMsg){
-            handbase.handle((APIUpdateAccountPWDMsg) msg);
-        }else if(msg instanceof APIUpdateUserPhoneMsg){
-            handbase.handle((APIUpdateUserPhoneMsg) msg);
-        }else if(msg instanceof APIUpdateAccountPhoneMsg){
-            handbase.handle((APIUpdateAccountPhoneMsg) msg);
-        }else if(msg instanceof APIUpdateAccountEmailMsg){
-            handbase.handle((APIUpdateAccountEmailMsg) msg);
-        }else if(msg instanceof APIUpdateUserEmailMsg){
-            handbase.handle((APIUpdateUserEmailMsg) msg);
-        }else if(msg instanceof APIUpdateIndustryMsg){
-            handbase.handle((APIUpdateIndustryMsg) msg);
-        }else if(msg instanceof APIUpdateAccountMsg){
-            handbase.handle((APIUpdateAccountMsg) msg);
-        }else if(msg instanceof APIUpdateUserMsg){
-            handbase.handle((APIUpdateUserMsg) msg);
-        }else if(msg instanceof APICreatePolicyMsg){
-            handbase.handle((APICreatePolicyMsg) msg);
-        }else if(msg instanceof APIDetachPolicyFromUserMsg){
-            handbase.handle((APIDetachPolicyFromUserMsg) msg);
-        }else if(msg instanceof APIDeletePolicyMsg){
-            handbase.handle((APIDeletePolicyMsg) msg);
-        }else if(msg instanceof APIAttachPolicyToUserMsg){
-            handbase.handle((APIAttachPolicyToUserMsg) msg);
-        }else if(msg instanceof APIUpdateAuthorityMsg){
-            handbase.handle((APIUpdateAuthorityMsg) msg);
-        }else if(msg instanceof APICreateAuthorityMsg){
-            handbase.handle((APICreateAuthorityMsg) msg);
-        }else if(msg instanceof APIDeletePermissionMsg){
-            handbase.handle((APIDeletePermissionMsg) msg);
-        }
-
-        else{
+        } else{
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -450,44 +410,44 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateUserPhoneMsg msg) {
-        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhone()))) {
+        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getSession().getUuid()+"code"))) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-                    msg.getUuid()));
+                    msg.getSession().getAccountUuid()));
         }
     }
 
     private void validate(APIUpdateUserPWDMsg msg) {
-        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhoneOrEmail()))) {
+        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getSession().getUuid()+"code"))) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-                    msg.getUuid()));
+                    msg.getSession().getAccountUuid()));
         }
     }
 
     private void validate(APIUpdateUserEmailMsg msg) {
-        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getEmail()))) {
+        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getSession().getUuid()+"code"))) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-                    msg.getUuid()));
+                    msg.getSession().getAccountUuid()));
         }
     }
 
     private void validate(APIUpdateAccountPWDMsg msg) {
-        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhoneOrEmail()))) {
+        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getSession().getUuid()+"code"))) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-                    msg.getUuid()));
+                    msg.getSession().getAccountUuid()));
         }
     }
 
     private void validate(APIUpdateAccountPhoneMsg msg) {
-        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getPhone()))) {
+        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getSession().getUuid()+"code"))) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-                    msg.getUuid()));
+                    msg.getSession().getAccountUuid()));
         }
     }
 
     private void validate(APIUpdateAccountEmailMsg msg) {
-        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getEmail()))) {
+        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getSession().getUuid()+"code"))) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-                    msg.getUuid()));
+                    msg.getSession().getAccountUuid()));
         }
     }
 

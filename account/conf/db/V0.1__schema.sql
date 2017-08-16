@@ -188,11 +188,27 @@ CREATE TABLE `SmsVO` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `AuthorityVO` (
+CREATE TABLE `PermissionVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`name` varchar(128) NOT NULL UNIQUE COMMENT '权限名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '权限描述',
-	`authority` text NOT NULL COMMENT '权限字符串',
+	`permission` text NOT NULL COMMENT '权限字符串',
+	`type` varchar(32) DEFAULT NULL COMMENT '权限类型',
+	`sortId` varchar(32) DEFAULT NULL COMMENT '排序ID',
+	`visible` varchar(32) DEFAULT NULL COMMENT '是否前端可见',
+	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `AccountExtraInfoVO` (
+	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+	`accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '账户uuid',
+	`grade` varchar(32) DEFAULT NULL COMMENT '客户等级',
+	`companyNature` varchar(32) DEFAULT NULL COMMENT '公司性质',
+	`salesman` varchar(32) DEFAULT NULL COMMENT '业务员',
+	`contacts` varchar(32) DEFAULT NULL COMMENT '联系人',
+	`contactNumber` varchar(32) DEFAULT NULL COMMENT '联系电话',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`uuid`)

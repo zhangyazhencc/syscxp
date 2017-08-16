@@ -1,5 +1,8 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.header.identity.PermissionType;
+import org.zstack.header.identity.PermissionVisible;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -18,10 +21,21 @@ public class PermissionVO {
     private String name;
 
     @Column
+    private String permission;
+
+    @Column
     private String description;
 
     @Column
-    private String permission;
+    private int sortId;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private PermissionType type;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private PermissionVisible visible;
 
     @Column
     private Timestamp createDate;

@@ -6,48 +6,32 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by wangwg on 2017/8/8.
  */
-public class APIUpdateUserPhoneMsg extends APIMessage {
-    @APIParam
-    private String uuid;
+public class APIUpdateUserPhoneMsg extends APIMessage implements AccountMessage{
 
-    @APIParam(maxLength = 2048)
-    private String phone;
+    @APIParam(maxLength = 32)
+    private String newPhone;
 
-    @APIParam(maxLength = 2048)
+    @APIParam(maxLength = 36)
     private String code;
 
-    @APIParam(maxLength = 2048)
-    private boolean isupdate;
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public String getPhone() {
-        return phone;
+    public String getNewPhone() {
+        return newPhone;
     }
 
     public String getCode() {
         return code;
     }
 
-    public boolean isIsupdate() {
-        return isupdate;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
     public void setCode(String code) {
         this.code = code;
     }
 
-    public void setIsupdate(boolean isupdate) {
-        this.isupdate = isupdate;
+    public void setNewPhone(String newPhone) {
+        this.newPhone = newPhone;
+    }
+
+    @Override
+    public String getAccountUuid() {
+        return this.getSession().getAccountUuid();
     }
 }

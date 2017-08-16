@@ -1,5 +1,6 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.header.identity.AccountIndustry;
 import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.search.SqlTrigger;
@@ -33,17 +34,13 @@ public class AccountVO {
     private String email;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private AccountGrade grade;
-
-    @Column
     private String trueName;
 
     @Column
     private String company;
 
     @Column
-    private String industry;
+    private AccountIndustry industry;
 
     @Column
     private String description;
@@ -62,82 +59,29 @@ public class AccountVO {
     @Column
     private Timestamp lastOpDate;
 
-
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
-    }
-
-    public AccountStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(AccountStatus status) {
-        this.status = status;
     }
 
     public String getUuid() {
         return uuid;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public AccountType getType() {
-        return type;
-    }
-
-    public void setType(AccountType type) {
-        this.type = type;
-    }
-
-    public Timestamp getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Timestamp createDate) {
-        this.createDate = createDate;
-    }
-
-    public Timestamp getLastOpDate() {
-        return lastOpDate;
-    }
-
-    public void setLastOpDate(Timestamp lastOpDate) {
-        this.lastOpDate = lastOpDate;
-    }
-
     public String getPhone() {
         return phone;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
     public String getEmail() {
         return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
     }
 
     public String getTrueName() {
@@ -148,12 +92,48 @@ public class AccountVO {
         return company;
     }
 
-    public String getIndustry() {
+    public AccountIndustry getIndustry() {
         return industry;
     }
 
     public String getDescription() {
         return description;
+    }
+
+    public AccountStatus getStatus() {
+        return status;
+    }
+
+    public AccountType getType() {
+        return type;
+    }
+
+    public Timestamp getCreateDate() {
+        return createDate;
+    }
+
+    public Timestamp getLastOpDate() {
+        return lastOpDate;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public void setTrueName(String trueName) {
@@ -164,7 +144,7 @@ public class AccountVO {
         this.company = company;
     }
 
-    public void setIndustry(String industry) {
+    public void setIndustry(AccountIndustry industry) {
         this.industry = industry;
     }
 
@@ -172,11 +152,19 @@ public class AccountVO {
         this.description = description;
     }
 
-    public AccountGrade getGrade() {
-        return grade;
+    public void setStatus(AccountStatus status) {
+        this.status = status;
     }
 
-    public void setGrade(AccountGrade grade) {
-        this.grade = grade;
+    public void setType(AccountType type) {
+        this.type = type;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
+    }
+
+    public void setLastOpDate(Timestamp lastOpDate) {
+        this.lastOpDate = lastOpDate;
     }
 }

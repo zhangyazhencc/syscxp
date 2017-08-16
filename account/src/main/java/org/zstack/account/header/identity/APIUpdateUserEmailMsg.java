@@ -6,48 +6,32 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by wangwg on 2017/8/9.
  */
-public class APIUpdateUserEmailMsg extends APIMessage {
-    @APIParam
-    private String uuid;
+public class APIUpdateUserEmailMsg extends APIMessage implements AccountMessage{
 
     @APIParam
-    private String email;
+    private String newEmail;
 
     @APIParam
     private String code;
 
-    @APIParam
-    private boolean isupdate;
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public String getEmail() {
-        return email;
+    public String getNewEmail() {
+        return newEmail;
     }
 
     public String getCode() {
         return code;
     }
 
-    public boolean isIsupdate() {
-        return isupdate;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
+    public void setNewEmail(String newEmail) {
+        this.newEmail = newEmail;
     }
 
     public void setCode(String code) {
         this.code = code;
     }
 
-    public void setIsupdate(boolean isupdate) {
-        this.isupdate = isupdate;
+    @Override
+    public String getAccountUuid() {
+        return this.getSession().getAccountUuid();
     }
 }

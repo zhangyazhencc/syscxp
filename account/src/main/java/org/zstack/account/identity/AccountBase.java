@@ -12,18 +12,22 @@ import org.zstack.core.cloudbus.EventFacade;
 import org.zstack.core.cloudbus.MessageSafe;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.*;
-import org.zstack.core.db.SimpleQuery.Op;
 import org.zstack.core.errorcode.ErrorFacade;
 
+import org.zstack.header.errorcode.OperationFailureException;
+import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.AbstractAccount;
+import org.zstack.header.identity.AccountGrade;
+import org.zstack.header.identity.AccountStatus;
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
-import org.zstack.utils.CollectionUtils;
 import org.zstack.utils.ExceptionDSL;
 import org.zstack.utils.Utils;
-import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
+
+import static org.zstack.core.Platform.operr;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class AccountBase extends AbstractAccount {
@@ -60,187 +64,375 @@ public class AccountBase extends AbstractAccount {
         }
     }
 
-    private void handle(APIUpdateAccountMsg msg) {
-        AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
-
-        if (msg.getPassword() != null) {
-            account.setPassword(msg.getPassword());
-        }
-        account = dbf.updateAndRefresh(account);
-
-        APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
-        evt.setInventory(AccountInventory.valueOf(account));
-        bus.publish(evt);
-    }
-
     private void handleLocalMessage(Message msg) {
         bus.dealWithUnknownMessage(msg);
     }
 
     private void handleApiMessage(APIMessage msg) {
-//        if (msg instanceof APIUpdateAccountMsg) {
-//            handle((APIUpdateAccountMsg) msg);
-//        } else if (msg instanceof APICreateUserMsg) {
-//            handle((APICreateUserMsg) msg);
-//        } else if (msg instanceof APIUpdateUserMsg) {
-//            handle((APIUpdateUserMsg) msg);
-//        } else if (msg instanceof APIDeleteUserMsg) {
-//            handle((APIDeleteUserMsg) msg);
-//        } else if (msg instanceof APICreatePolicyMsg) {
-//            handle((APICreatePolicyMsg) msg);
-//        } else if (msg instanceof APIDeletePolicyMsg) {
-//            handle((APIDeletePolicyMsg) msg);
-//        } else if (msg instanceof APIAttachPolicyToUserMsg) {
-//            handle((APIAttachPolicyToUserMsg) msg);
-//        } else if (msg instanceof APIDetachPolicyFromUserMsg) {
-//            handle((APIDetachPolicyFromUserMsg) msg);
-//        } else {
-//            bus.dealWithUnknownMessage(msg);
-//        }
+        if (msg instanceof APICreateAccountMsg) {
+            handle((APICreateAccountMsg) msg);
+        } else if (msg instanceof APICreateUserMsg) {
+            handle((APICreateUserMsg) msg);
+        }else if(msg instanceof APIUpdateUserPWDMsg){
+            handle((APIUpdateUserPWDMsg) msg);
+        }else if(msg instanceof APIUpdateAccountPWDMsg){
+            handle((APIUpdateAccountPWDMsg) msg);
+        }else if(msg instanceof APIUpdateUserPhoneMsg){
+            handle((APIUpdateUserPhoneMsg) msg);
+        }else if(msg instanceof APIUpdateAccountPhoneMsg){
+            handle((APIUpdateAccountPhoneMsg) msg);
+        }else if(msg instanceof APIUpdateAccountEmailMsg){
+            handle((APIUpdateAccountEmailMsg) msg);
+        }else if(msg instanceof APIUpdateUserEmailMsg){
+            handle((APIUpdateUserEmailMsg) msg);
+        }else if(msg instanceof APIUpdateAccountMsg){
+            handle((APIUpdateAccountMsg) msg);
+        }else if(msg instanceof APIUpdateUserMsg){
+            handle((APIUpdateUserMsg) msg);
+        }else if(msg instanceof APICreatePolicyMsg){
+            handle((APICreatePolicyMsg) msg);
+        }else if(msg instanceof APIDetachPolicyFromUserMsg){
+            handle((APIDetachPolicyFromUserMsg) msg);
+        }else if(msg instanceof APIDeletePolicyMsg){
+            handle((APIDeletePolicyMsg) msg);
+        }else if(msg instanceof APIAttachPolicyToUserMsg){
+            handle((APIAttachPolicyToUserMsg) msg);
+        }else if(msg instanceof APIUpdatePermisstionMsg){
+            handle((APIUpdatePermisstionMsg) msg);
+        }else if(msg instanceof APICreateAuthorityMsg){
+            handle((APICreateAuthorityMsg) msg);
+        }else if(msg instanceof APIDeletePermissionMsg){
+            handle((APIDeletePermissionMsg) msg);
+        }
+        else {
+            bus.dealWithUnknownMessage(msg);
+        }
     }
 
-    private void handle(APIUpdateUserMsg msg) {
-        UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
-
-//        if (!AccountConstant.INITIAL_SYSTEM_ADMIN_UUID.equals(msg.getAccountUuid()) && !user.getAccountUuid().equals(msg.getAccountUuid())) {
-//            throw new OperationFailureException(argerr("the user[uuid:%s] does not belong to the" +
-//                    " account[uuid:%s]", user.getUuid(), msg.getAccountUuid()));
-//        }
-
-        boolean update = false;
-        if (msg.getName() != null) {
-            user.setName(msg.getName());
-            update = true;
-        }
-        if (msg.getDescription() != null) {
-            user.setDescription(msg.getDescription());
-            update = true;
-        }
-        if (msg.getPassword() != null) {
-            user.setPassword(msg.getPassword());
-            update = true;
-        }
-        if (update) {
-            user = dbf.updateAndRefresh(user);
-        }
+    private void handle(APIUpdateUserPWDMsg msg) {
 
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
-        evt.setInventory(UserInventory.valueOf(user));
-        bus.publish(evt);
-    }
-
-    private void handle(APIDetachPolicyFromUserMsg msg) {
-        SimpleQuery<UserPolicyRefVO> q = dbf.createQuery(UserPolicyRefVO.class);
-        q.add(UserPolicyRefVO_.policyUuid, Op.EQ, msg.getPolicyUuid());
-        q.add(UserPolicyRefVO_.userUuid, Op.EQ, msg.getUserUuid());
-        UserPolicyRefVO ref = q.find();
-        if (ref != null) {
-            dbf.remove(ref);
+        UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
+        if (user.getPassword().equals(msg.getOldpassword())){
+            user.setPassword(msg.getNewpassword());
+            evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
+        }else{
+            throw new CloudRuntimeException("bad old passwords");
         }
 
-        bus.publish(new APIDetachPolicyFromUserEvent(msg.getId()));
-    }
-
-    private void handle(APIDeletePolicyMsg msg) {
-        dbf.removeByPrimaryKey(msg.getUuid(), PolicyVO.class);
-        APIDeletePolicyEvent evt = new APIDeletePolicyEvent(msg.getId());
         bus.publish(evt);
     }
 
-    private void handle(APIDeleteUserMsg msg) {
-        UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
-        if (user != null) {
-//            UserInventory inv = UserInventory.valueOf(user);
-//            UserDeletedData d = new UserDeletedData();
-//            d.setInventory(inv);
-//            d.setUserUuid(inv.getUuid());
-//            evtf.fire(IdentityCanonicalEvents.USER_DELETED_PATH, d);
+    private void handle(APIUpdateAccountPWDMsg msg) {
+        APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
 
-            dbf.remove(user);
+        AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
+        if (account.getPassword().equals(msg.getOldpassword())){
+            account.setPassword(msg.getNewpassword());
+            evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
+        }else {
+            throw new CloudRuntimeException("bad old passwords");
         }
 
-        APIDeleteUserEvent evt = new APIDeleteUserEvent(msg.getId());
         bus.publish(evt);
     }
 
-    private void handle(APIAttachPolicyToUserMsg msg) {
-        UserPolicyRefVO upvo = new UserPolicyRefVO();
-        upvo.setPolicyUuid(msg.getPolicyUuid());
-        upvo.setUserUuid(msg.getUserUuid());
-        try {
-            dbf.persist(upvo);
-        } catch (Throwable t) {
-            if (!ExceptionDSL.isCausedBy(t, ConstraintViolationException.class)) {
-                throw t;
-            }
+    private void handle(APIUpdateAccountPhoneMsg msg) {
+        APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
 
-            // the policy is already attached
-        }
+        AccountVO account = dbf.findByUuid(msg.getSession().getUuid(), AccountVO.class);
+        account.setPhone(msg.getNewphone());
+        evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
 
-        APIAttachPolicyToUserEvent evt = new APIAttachPolicyToUserEvent(msg.getId());
         bus.publish(evt);
     }
 
-    private void handle(APICreatePolicyMsg msg) {
-        PolicyVO pvo = new PolicyVO();
-//        if (msg.getResourceUuid() != null) {
-//            pvo.setUuid(msg.getResourceUuid());
-//        } else {
-//            pvo.setUuid(Platform.getUuid());
+    private void handle(APIUpdateUserPhoneMsg msg) {
+        APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
+
+        UserVO user = dbf.findByUuid(msg.getSession().getUuid(), UserVO.class);
+        user.setPhone(msg.getNewPhone());
+        evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
+
+        bus.publish(evt);
+    }
+
+    private void handle(APIUpdateAccountEmailMsg msg) {
+
+        APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
+
+        AccountVO account = dbf.findByUuid(msg.getSession().getUuid(), AccountVO.class);
+        account.setEmail(msg.getEmail());
+        evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
+
+        bus.publish(evt);
+    }
+
+
+    private void handle(APIUpdateUserEmailMsg msg) {
+        APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
+
+        UserVO user = dbf.findByUuid(msg.getSession().getUuid(), UserVO.class);
+        user.setEmail(msg.getNewEmail());
+        evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
+
+        bus.publish(evt);
+    }
+
+
+    private  void handle(APIUpdateAccountMsg msg) {
+//        AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
+//
+//        if (msg.getPassword() != null) {
+//            account.setPassword(msg.getPassword());
 //        }
-        pvo.setAccountUuid(vo.getUuid());
-        pvo.setName(msg.getName());
-        pvo.setPolicyStatement(JSONObjectUtil.toJsonString(msg.getStatements()));
+//        if (msg.getCompany() != null) {
+//            account.setCompany(msg.getCompany());
+//        }
+//
+//        if (msg.getDescription() != null) {
+//            account.setDescription(msg.getDescription());
+//        }
+//        if (msg.getEmail() != null) {
+//            account.setEmail(msg.getEmail());
+//        }
+//        if (msg.getGrade() != null) {
+//            if(msg.getGrade().equals(AccountGrade.Normal)){
+//                account.setGrade(AccountGrade.Normal);
+//            }else if(msg.getGrade().equals(AccountGrade.Middling)){
+//                account.setGrade(AccountGrade.Middling);
+//            }else if(msg.getGrade().equals(AccountGrade.Important)){
+//                account.setGrade(AccountGrade.Important);
+//            }
+//        }
+//        if (msg.getIndustry() != null) {
+//            account.setIndustry(msg.getIndustry());
+//        }
+//        if (msg.getPhone() != null) {
+//            account.setPhone(msg.getPhone());
+//        }
+//        if (msg.getStatus() != null) {
+//            account.setStatus(msg.getStatus().equals(AccountStatus.Available)
+//                    ?AccountStatus.Available:AccountStatus.Disabled);
+//        }
+//        if (msg.getTrueName() != null) {
+//            account.setTrueName(msg.getTrueName());
+//        }
+//        if (msg.getType() != null) {
+//            if(msg.getType().equals(AccountType.Normal)){
+//                account.setType(AccountType.Normal);
+//            }else if(msg.getType().equals(AccountType.Proxy)){
+//                account.setType(AccountType.Proxy);
+//            }else if(msg.getType().equals(AccountType.SystemAdmin)){
+//                account.setType(AccountType.SystemAdmin);
+//            }
+//        }
+//
+//        account = dbf.updateAndRefresh(account);
+//
+//        APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
+//        evt.setInventory(AccountInventory.valueOf(account));
+//        bus.publish(evt);
 
-        PolicyVO finalPvo = pvo;
-        pvo = new SQLBatchWithReturn<PolicyVO>() {
-            @Override
-            protected PolicyVO scripts() {
-                persist(finalPvo);
-                reload(finalPvo);
-                return finalPvo;
-            }
-        }.execute();
+    }
 
-        PolicyInventory pinv = PolicyInventory.valueOf(pvo);
-        APICreatePolicyEvent evt = new APICreatePolicyEvent(msg.getId());
-        evt.setInventory(pinv);
-        bus.publish(evt);
+
+    private void handle(APIUpdateUserMsg msg) {
+//        UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
+//
+//        boolean update = false;
+//        if (msg.getName() != null) {
+//            user.setName(msg.getName());
+//            update = true;
+//        }
+//        if (msg.getDescription() != null) {
+//            user.setDescription(msg.getDescription());
+//            update = true;
+//        }
+//        if (msg.getPassword() != null) {
+//            user.setPassword(msg.getPassword());
+//            update = true;
+//        }
+//        if (msg.getDepartment() != null) {
+//            user.setPassword(msg.getPassword());
+//            update = true;
+//        }
+//        if (msg.getEmail() != null) {
+//            user.setEmail(msg.getEmail());
+//            update = true;
+//        }
+//        if (msg.getPhone() != null) {
+//            user.setPhone(msg.getPhone());
+//            update = true;
+//        }
+//        if (msg.getStatus() != null) {
+//            user.setStatus(msg.getStatus().equals(AccountStatus.Available)
+//                    ?AccountStatus.Available:AccountStatus.Disabled);
+//            update = true;
+//        }
+//        if (msg.getTrueName() != null) {
+//            user.setTrueName(msg.getTrueName());
+//            update = true;
+//        }
+//        if (update) {
+//            user = dbf.updateAndRefresh(user);
+//        }
+//        APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
+//        evt.setInventory(UserInventory.valueOf(user));
+//        bus.publish(evt);
+    }
+
+
+    private void handle(APICreateAccountMsg msg) {
+
+//        AccountVO vo = new AccountVO();
+//        vo.setUuid(Platform.getUuid());
+//        vo.setName(msg.getName());
+//        vo.setPassword(msg.getPassword());
+//        vo.setCompany(msg.getCompany());
+//        vo.setDescription(msg.getDescription());
+//        vo.setEmail(msg.getEmail());
+//        vo.setIndustry(msg.getIndustry());
+//        vo.setPhone(msg.getPhone());
+//        vo.setTrueName(msg.getTrueName());
+//        vo.setStatus(msg.getStatus());
+//        vo.setType(AccountType.Normal);
+//        vo.setGrade( msg.getGrade());
+//
+//        vo = dbf.persistAndRefresh(vo);
+//
+//        APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
+//        evt.setInventory(AccountInventory.valueOf(vo));
+//        bus.publish(evt);
     }
 
     private void handle(APICreateUserMsg msg) {
-        APICreateUserEvent evt = new APICreateUserEvent(msg.getId());
 
-        UserVO uvo = new SQLBatchWithReturn<UserVO>() {
-            @Override
-            protected UserVO scripts() {
-                UserVO uvo = new UserVO();
-                if (msg.getResourceUuid() != null) {
-                    uvo.setUuid(msg.getResourceUuid());
-                } else {
-                    uvo.setUuid(Platform.getUuid());
-                }
-                uvo.setAccountUuid(vo.getUuid());
-                uvo.setName(msg.getName());
-                uvo.setPassword(msg.getPassword());
-                uvo.setDescription(msg.getDescription());
-                persist(uvo);
-                reload(uvo);
-
-                return uvo;
-            }
-        }.execute();
-
-        final UserInventory inv = UserInventory.valueOf(uvo);
-
-        CollectionUtils.safeForEach(pluginRgty.getExtensionList(AfterCreateUserExtensionPoint.class), new ForEachFunction<AfterCreateUserExtensionPoint>() {
-            @Override
-            public void run(AfterCreateUserExtensionPoint arg) {
-                arg.afterCreateUser(inv);
-            }
-        });
-
-        evt.setInventory(inv);
-        bus.publish(evt);
+//        UserVO uservo = new UserVO();
+//        uservo.setUuid(Platform.getUuid());
+//        uservo.setAccountUuid(msg.getAccountUuid());
+//        uservo.setDepartment(msg.getDepartment());
+//        uservo.setDescription(msg.getDescription());
+//        uservo.setEmail(msg.getEmail());
+//        uservo.setName(msg.getName());
+//        uservo.setPassword(msg.getPassword());
+//        uservo.setPhone(msg.getPhone());
+//        uservo.setStatus(msg.getStatus() != null ? AccountStatus.valueOf(msg.getStatus()) : AccountStatus.Available);
+//        uservo.setTrueName(msg.getTrueName());
+//        dbf.persistAndRefresh(uservo);
+//
+//        APICreateUserEvent evt = new APICreateUserEvent(msg.getId());
+//        evt.setInventory(UserInventory.valueOf(uservo));
+//        bus.publish(evt);
     }
+
+    private void handle(APICreatePolicyMsg msg) {
+
+//        PolicyVO pvo = new PolicyVO();
+//        pvo.setAccountUuid(Platform.getUuid());
+//        pvo.setName(msg.getName());
+//        pvo.setAccountUuid(msg.getAccountUuid());
+//        pvo.setDescription(msg.getDescription());
+//        pvo.setPolicyStatement(JSONObjectUtil.toJsonString(msg.getStatements()));
+//
+//
+//        APICreatePolicyEvent evt = new APICreatePolicyEvent(msg.getId());
+//        evt.setSuccess(true);
+//        evt.setInventory(PolicyInventory.valueOf(dbf.persistAndRefresh(pvo)));
+//        bus.publish(evt);
+    }
+
+    private void handle(APIDetachPolicyFromUserMsg msg) {
+//        SimpleQuery<UserPolicyRefVO> q = dbf.createQuery(UserPolicyRefVO.class);
+//        q.add(UserPolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
+//        q.add(UserPolicyRefVO_.userUuid, SimpleQuery.Op.EQ, msg.getUserUuid());
+//        UserPolicyRefVO ref = q.find();
+//        if (ref != null) {
+//            dbf.remove(ref);
+//        }else{
+//            throw new OperationFailureException(operr("noting to be found"));
+//        }
+//
+//        APIDetachPolicyFromUserEvent  evt= new APIDetachPolicyFromUserEvent(msg.getId());
+//        evt.setSuccess(true);
+//        bus.publish(evt);
+    }
+
+    private void handle(APIDeletePolicyMsg msg) {
+//        dbf.removeByPrimaryKey(msg.getUuid(), PolicyVO.class);
+//        APIDeletePolicyEvent evt = new APIDeletePolicyEvent(msg.getId());
+//        evt.setSuccess(true);
+//        bus.publish(evt);
+    }
+
+    private void handle(APIAttachPolicyToUserMsg msg) {
+//        APIAttachPolicyToUserEvent evt = new APIAttachPolicyToUserEvent(msg.getId());
+//        evt.setSuccess(true);
+//
+//        UserPolicyRefVO upvo = new UserPolicyRefVO();
+//        upvo.setPolicyUuid(msg.getPolicyUuid());
+//        upvo.setUserUuid(msg.getUserUuid());
+//
+//        try {
+//            evt.setUpv(dbf.persistAndRefresh(upvo));
+//        } catch (Throwable t) {
+//            if (!ExceptionDSL.isCausedBy(t, ConstraintViolationException.class)) {
+//                throw t;
+//            }
+//        }
+//
+//        bus.publish(evt);
+    }
+
+    private void handle(APICreateAuthorityMsg msg) {
+
+//        PermissionVO auth = new PermissionVO();
+//        auth.setUuid(Platform.getUuid());
+//        auth.setAuthority(msg.getAuthority());
+//        auth.setName(msg.getName());
+//        auth.setDescription(msg.getDescription());
+//
+//        APICreateAuthorityEvent evt = new APICreateAuthorityEvent(msg.getId());
+//        evt.setSuccess(true);
+//        evt.setInventory(AuthorityInventory.valueOf(dbf.persistAndRefresh(auth)));
+//        bus.publish(evt);
+    }
+
+    private void handle(APIUpdatePermisstionMsg msg) {
+
+//        PermissionVO auth = dbf.findByUuid(msg.getUuid(), PermissionVO.class);
+//
+//        boolean update = false;
+//        if (msg.getName() != null) {
+//            auth.setName(msg.getName());
+//            update = true;
+//        }
+//        if (msg.getDescription() != null) {
+//            auth.setDescription(msg.getDescription());
+//            update = true;
+//        }
+//        if (msg.getAuthority() != null) {
+//            auth.setAuthority(msg.getAuthority());
+//            update = true;
+//        }
+//
+//        if (update) {
+//            auth = dbf.updateAndRefresh(auth);
+//        }
+//
+//
+//        APICreateAuthorityEvent evt = new APICreateAuthorityEvent(msg.getId());
+//        evt.setSuccess(true);
+//        evt.setInventory(AuthorityInventory.valueOf(auth));
+//        bus.publish(evt);
+
+    }
+
+    private void handle(APIDeletePermissionMsg msg) {
+//        dbf.removeByPrimaryKey(msg.getUuid(), PermissionVO.class);
+//        APICreateAuthorityEvent evt = new APICreateAuthorityEvent(msg.getId());
+//        evt.setSuccess(true);
+//        bus.publish(evt);
+    }
+
 }
