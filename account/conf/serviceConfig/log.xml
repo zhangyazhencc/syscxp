@@ -4,7 +4,7 @@
     <interceptor>LogManager</interceptor>
 
     <message>
-        <name>org.zstack.account.header.log.APIQueryOperLogReply</name>
+        <name>org.zstack.account.header.log.APIQueryOperLogMsg</name>
         <serviceId>query</serviceId>
     </message>
 
