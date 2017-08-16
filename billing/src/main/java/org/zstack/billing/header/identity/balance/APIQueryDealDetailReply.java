@@ -6,9 +6,9 @@ import java.util.List;
 
 public class APIQueryDealDetailReply extends APIQueryReply {
 
-        private List<DealDetailInventory> inventories;
+    private List<DealDetailInventory> inventories;
 
-        public List<DealDetailInventory> getInventories() {
+    public List<DealDetailInventory> getInventories() {
         return inventories;
     }
 

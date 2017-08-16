@@ -47,9 +47,16 @@
         <name>org.zstack.account.header.APIQueryUserMsg</name>
         <serviceId>query</serviceId>
     </message>
-
     <message>
         <name>org.zstack.account.header.APIQueryAccountMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+    <message>
+        <name>org.zstack.account.header.APIQueryPolicyMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+    <message>
+        <name>org.zstack.account.header.APIQueryAuthorityMsg</name>
         <serviceId>query</serviceId>
     </message>
 
@@ -109,6 +116,9 @@
     </message>
     <message>
         <name>org.zstack.account.header.APIUpdateAuthorityMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.APIDeleteAuthorityMsg</name>
     </message>
 
 </service>

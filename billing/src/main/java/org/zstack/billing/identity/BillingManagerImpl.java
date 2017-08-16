@@ -15,6 +15,7 @@ import org.zstack.billing.header.identity.balance.DealDetailVO;
 import org.zstack.billing.header.identity.order.APIUpdateOrderStateEvent;
 import org.zstack.billing.header.identity.order.APIUpdateOrderStateMsg;
 import org.zstack.billing.header.identity.receipt.*;
+import org.zstack.billing.header.identity.sla.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.EventFacade;
@@ -94,9 +95,155 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APICreateReceiptPostAddressMsg) msg);
         }else if (msg instanceof APIUpdateReceiptPostAddressMsg) {
             handle((APIUpdateReceiptPostAddressMsg) msg);
+        } else if (msg instanceof APIDeleteReceiptPostAddressMsg) {
+            handle((APIDeleteReceiptPostAddressMsg) msg);
+        } else if (msg instanceof APICreateReceiptInfoMsg) {
+            handle((APICreateReceiptInfoMsg) msg);
+        } else if (msg instanceof APIUpdateReceiptInfoMsg) {
+            handle((APIUpdateReceiptInfoMsg) msg);
+        }  else if (msg instanceof APIDeleteReceiptInfoMsg) {
+            handle((APIDeleteReceiptInfoMsg) msg);
+        } else if (msg instanceof APICreateSLACompensateMsg) {
+            handle((APICreateSLACompensateMsg) msg);
+        }else if (msg instanceof APIUpdateSLACompensateMsg) {
+            handle((APIUpdateSLACompensateMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIUpdateSLACompensateMsg msg) {
+        SLACompensateVO vo = dbf.findByUuid(msg.getUuid(), SLACompensateVO.class);
+        if(msg.getAccountUuid()!=null){
+            vo.setAccountUuid(msg.getAccountUuid());
+        }
+        if(msg.getDescription()!=null){
+            vo.setDescription(msg.getDescription());
+        }
+        if(msg.getDuration()!=null){
+            vo.setDuration(msg.getDuration());
+        }
+        if(msg.getProductName()!=null){
+            vo.setProductName(msg.getProductName());
+        }
+        if(msg.getProductType()!=null){
+            vo.setProductType(msg.getProductType());
+        }
+        if(msg.getReason()!=null){
+            vo.setReason(msg.getReason());
+        }
+        if(msg.getTimeStart()!=null){
+            vo.setTimeStart(msg.getTimeStart());
+        }
+        if(msg.getTimeEnd()!=null){
+            vo.setTimeEnd(msg.getTimeEnd());
+        }
+        if(msg.getProductUuid()!=null){
+            vo.setProductUuid(msg.getProductUuid());
+        }
+        if(msg.getState()!=null){
+            vo.setState(msg.getState());
+        }
+
+        dbf.updateAndRefresh(vo);
+        SLACompensateInventory ri = SLACompensateInventory.valueOf(vo);
+        APIUpdateSLACompensateEvent evt = new APIUpdateSLACompensateEvent(msg.getId());
+        evt.setInventory(ri);
+        bus.publish(evt);
+
+    }
+
+    private void handle(APICreateSLACompensateMsg msg) {
+        SLACompensateVO vo = new SLACompensateVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setAccountUuid(msg.getAccountUuid());
+        vo.setDescription(msg.getDescription());
+        vo.setDuration(msg.getDuration());
+        vo.setProductUuid(msg.getProductUuid());
+        vo.setProductName(msg.getProductName());
+        vo.setProductType(msg.getProductType());
+        vo.setReason(msg.getReason());
+        vo.setState(SLAState.NOT_APPLY);
+
+        dbf.persistAndRefresh(vo);
+        SLACompensateInventory ri = SLACompensateInventory.valueOf(vo);
+        APICreateSLACompensateEvent evt = new APICreateSLACompensateEvent(msg.getId());
+        evt.setInventory(ri);
+        bus.publish(evt);
+    }
+
+    private void handle(APIDeleteReceiptInfoMsg msg) {
+        String uuid = msg.getUuid();
+        ReceiptInfoVO vo = dbf.findByUuid(msg.getUuid(),ReceiptInfoVO.class);
+        if(vo != null){
+            dbf.removeByPrimaryKey(uuid,ReceiptInfoVO.class);
+        }
+        ReceiptInfoInventory ri = ReceiptInfoInventory.valueOf(vo);
+        APIDeleteReceiptInfoEvent evt = new APIDeleteReceiptInfoEvent(msg.getId());
+        evt.setInventory(ri);
+        bus.publish(evt);
+    }
+
+    private void handle(APIUpdateReceiptInfoMsg msg) {
+        ReceiptInfoVO vo = dbf.findByUuid(msg.getUuid(),ReceiptInfoVO.class);
+        if(msg.getAddress()!=null){
+            vo.setAddress(msg.getAddress());
+        }
+        if(msg.getBankAccountNumber()!=null){
+            vo.setBankAccountNumber(msg.getBankAccountNumber());
+        }
+        if(msg.getBankName()!=null){
+            vo.setBankName(msg.getBankName());
+        }
+        if(msg.getIdentifyNumber()!=null){
+            vo.setIdentifyNumber(msg.getIdentifyNumber());
+        }
+        if(msg.getTelephone()!=null){
+            vo.setTelephone(msg.getTelephone());
+        }
+        if(msg.getTitle()!=null){
+            vo.setTitle(msg.getTitle());
+        }
+        if(msg.getType()!=null){
+            vo.setType(msg.getType());
+        }
+        dbf.updateAndRefresh(vo);
+        ReceiptInfoInventory ri = ReceiptInfoInventory.valueOf(vo);
+        APIUpdateReceiptInfoEvent evt = new APIUpdateReceiptInfoEvent(msg.getId());
+        evt.setInventory(ri);
+        bus.publish(evt);
+
+    }
+
+    private void handle(APICreateReceiptInfoMsg msg) {
+        ReceiptInfoVO vo = new ReceiptInfoVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setAccountUuid(msg.getSession().getUuid());
+        vo.setAddress(msg.getAddress());
+        vo.setBankAccountNumber(msg.getBankAccountNumber());
+        vo.setBankName(msg.getBankName());
+        vo.setIdentifyNumber(msg.getIdentifyNumber());
+        vo.setTitle(msg.getTitle());
+        vo.setType(msg.getType());
+        vo.setTelephone(msg.getTelephone());
+        dbf.persistAndRefresh(vo);
+
+        ReceiptInfoInventory ri = ReceiptInfoInventory.valueOf(vo);
+        APICreateReceiptInfoEvent evt = new APICreateReceiptInfoEvent(msg.getId());
+        evt.setInventory(ri);
+        bus.publish(evt);
+    }
+
+    private void handle(APIDeleteReceiptPostAddressMsg msg) {
+        String uuid = msg.getUuid();
+        ReceiptPostAddressVO vo = dbf.findByUuid(msg.getUuid(),ReceiptPostAddressVO.class);
+        if(vo != null){
+            dbf.removeByPrimaryKey(uuid,ReceiptPostAddressVO.class);
+        }
+        ReceiptPostAddressInventory ri = ReceiptPostAddressInventory.valueOf(vo);
+        APIDeleteReceiptPostAddressEvent evt = new APIDeleteReceiptPostAddressEvent(msg.getId());
+        evt.setInventory(ri);
+        bus.publish(evt);
     }
 
     private void handle(APIUpdateReceiptPostAddressMsg msg) {
@@ -110,6 +257,9 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         if(msg.getAddress()!=null){
             vo.setAddress(msg.getAddress());
         }
+        if(vo.isDefault()!= msg.isDefault()){
+            vo.setDefault(msg.isDefault());
+        }
         dbf.updateAndRefresh(vo);
         ReceiptPostAddressInventory ri = ReceiptPostAddressInventory.valueOf(vo);
         APIUpdateReceiptPostAddressEvent evt = new APIUpdateReceiptPostAddressEvent(msg.getId());
@@ -119,6 +269,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     private void handle(APICreateReceiptPostAddressMsg msg) {
         ReceiptPostAddressVO vo = new ReceiptPostAddressVO();
+        vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(msg.getSession().getUuid());
         vo.setAddress(msg.getAddress());
         vo.setName(msg.getName());

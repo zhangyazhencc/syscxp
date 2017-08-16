@@ -2,6 +2,8 @@ package org.zstack.billing.header.identity.receipt;
 
 import org.zstack.billing.header.identity.ReceiptState;
 import org.zstack.billing.header.identity.ReceiptType;
+import org.zstack.header.query.ExpandedQueries;
+import org.zstack.header.query.ExpandedQuery;
 import org.zstack.header.search.Inventory;
 
 import java.math.BigDecimal;
@@ -11,6 +13,12 @@ import java.util.Collection;
 import java.util.List;
 
 @Inventory(mappingVOClass = ReceiptVO.class)
+@ExpandedQueries({
+        @ExpandedQuery(expandedField = "receiptInfoUuid", inventoryClass = ReceiptInfoInventory.class,
+                foreignKey = "receiptInfoUuid", expandedInventoryKey = "uuid"),
+        @ExpandedQuery(expandedField = "receiptAddressUuid", inventoryClass = ReceiptPostAddressInventory.class,
+                foreignKey = "receiptAddressUuid", expandedInventoryKey = "uuid")
+})
 public class ReceiptInventory {
 
     private String uuid;
