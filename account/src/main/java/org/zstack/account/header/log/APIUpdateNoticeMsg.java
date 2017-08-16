@@ -1,7 +1,9 @@
 package org.zstack.account.header.log;
 
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.notification.ApiNotification;
 
 import java.sql.Timestamp;
 
@@ -55,5 +57,18 @@ public class APIUpdateNoticeMsg extends APIMessage {
 
     public void setEndTime(Timestamp endTime) {
         this.endTime = endTime;
+    }
+
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy(String.format("Update Notice[uuid: %s]", uuid))
+                        .resource(uuid, NoticeVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

@@ -135,7 +135,7 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
 
     @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        if (!(msg instanceof APICreateNoticeMsg)) {
+        if (msg instanceof APICreateNoticeMsg) {
             validate((APICreateNoticeMsg) msg);
         } else if (msg instanceof APIUpdateNoticeMsg) {
             validate((APIUpdateNoticeMsg) msg);
@@ -145,9 +145,9 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
     }
 
     private void validate(APIUpdateNoticeMsg msg) {
-        if (dbf.isExist(msg.getUuid(), NoticeVO.class)) {
+        if (!dbf.isExist(msg.getUuid(), NoticeVO.class)) {
             throw new ApiMessageInterceptionException(argerr(
-                    "The Notice[uuid:%S] does not exist."
+                    "The Notice[uuid:%S] does not exist.", msg.getUuid()
             ));
         }
 
