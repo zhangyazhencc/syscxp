@@ -21,7 +21,7 @@ public class PermissionVO {
     private String description;
 
     @Column
-    private String permission;
+    private String policy;
 
     @Column
     private Timestamp createDate;
@@ -46,8 +46,8 @@ public class PermissionVO {
         return description;
     }
 
-    public String getPermission() {
-        return permission;
+    public String getPolicy() {
+        return policy;
     }
 
     public Timestamp getCreateDate() {
@@ -70,8 +70,8 @@ public class PermissionVO {
         this.description = description;
     }
 
-    public void setPermission(String permission) {
-        this.permission = permission;
+    public void setPolicy(String policy) {
+        this.policy = policy;
     }
 
     public void setCreateDate(Timestamp createDate) {

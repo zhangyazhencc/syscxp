@@ -35,7 +35,7 @@ import static org.zstack.core.Platform.argerr;
 /**
  * Created by zxhread on 17/8/14.
  */
-public class SmsServiceImpl extends AbstractService implements ApiMessageInterceptor {
+public class SmsServiceImpl extends AbstractService implements SmsService, ApiMessageInterceptor {
 
     private static final CLogger logger = Utils.getLogger(SmsServiceImpl.class);
 
@@ -45,6 +45,7 @@ public class SmsServiceImpl extends AbstractService implements ApiMessageInterce
     private DatabaseFacade dbf;
     @Autowired
     private ThreadFacade thdf;
+
 
     class VerificationCode {
         String code;
@@ -68,10 +69,44 @@ public class SmsServiceImpl extends AbstractService implements ApiMessageInterce
             handle((APISendSmsMsg) msg);
         }else if (msg instanceof APIGetVerificationCodeMsg) {
             handle((APIGetVerificationCodeMsg) msg);
+        }else if (msg instanceof APIValidateVerificationCodeMsg) {
+            handle((APIValidateVerificationCodeMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
 
+    }
+
+    @Override
+    public boolean ValidateVerificationCode(String phone, String code) {
+        VerificationCode verificationCode = sessions.get(phone);
+        if (verificationCode == null){
+            return false;
+        }else{
+            Timestamp curr = new Timestamp(System.currentTimeMillis());
+            if (curr.before(verificationCode.expiredDate) && code.equals(verificationCode.code)) {
+                return true;
+            }else{
+                return false;
+            }
+        }
+    }
+
+    private void  handle(APIValidateVerificationCodeMsg msg){
+        VerificationCode verificationCode = sessions.get(msg.getPhone());
+        APIValidateVerificationCodeReply reply = new APIValidateVerificationCodeReply();
+        if (verificationCode == null){
+            reply.setValid(false);
+        }else{
+            Timestamp curr = new Timestamp(System.currentTimeMillis());
+            if (curr.before(verificationCode.expiredDate) && msg.getCode().equals(verificationCode.code)) {
+                reply.setValid(true);
+            }else{
+                reply.setValid(false);
+            }
+        }
+
+        bus.reply(msg, reply);
     }
 
     private void  handle(APIGetVerificationCodeMsg msg){
@@ -80,14 +115,17 @@ public class SmsServiceImpl extends AbstractService implements ApiMessageInterce
                 , new String[]{code, "10"});
 
         VerificationCode verificationCode = sessions.get(msg.getPhone());
+        long expiredTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60 * 10);   // 10 minute
         if (verificationCode == null){
-            long expiredTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60 * 10);   // 10 minute
             VerificationCode vcode = new VerificationCode();
             vcode.code = code;
             vcode.expiredDate = new Timestamp(expiredTime);
-
             sessions.put(msg.getPhone(), vcode);
+        }else{
+            verificationCode.code = code;
+            verificationCode.expiredDate = new Timestamp(expiredTime);
         }
+
         APIGetVerificationCodeReply reply = new APIGetVerificationCodeReply();
         bus.reply(msg, reply);
     }
@@ -144,12 +182,14 @@ public class SmsServiceImpl extends AbstractService implements ApiMessageInterce
             throw new CloudRuntimeException(e);
         }
     }
+
     public void destroy() {
         logger.debug("sms service destroy.");
         if (expiredSessionCollector != null) {
             expiredSessionCollector.cancel(true);
         }
     }
+
     private void startExpiredSessionCollector() {
         logger.debug("start sms session expired session collector");
         expiredSessionCollector = thdf.submitPeriodicTask(new PeriodicTask() {

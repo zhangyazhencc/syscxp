@@ -5,7 +5,7 @@ import org.zstack.header.rest.RestResponse;
 
 @RestResponse(allTo = "inventory")
 public class APICreateAuthorityEvent extends APIEvent {
-    private AuthorityInventory inventory;
+    private PermissionInventory inventory;
 
     public APICreateAuthorityEvent(String apiId) {
         super(apiId);
@@ -15,11 +15,11 @@ public class APICreateAuthorityEvent extends APIEvent {
         super(null);
     }
 
-    public AuthorityInventory getInventory() {
+    public PermissionInventory getInventory() {
         return inventory;
     }
 
-    public void setInventory(AuthorityInventory inventory) {
+    public void setInventory(PermissionInventory inventory) {
         this.inventory = inventory;
     }
 

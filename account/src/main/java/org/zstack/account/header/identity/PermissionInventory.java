@@ -9,26 +9,26 @@ import java.util.List;
 
 @Inventory(mappingVOClass = PermissionVO.class)
 
-public class AuthorityInventory {
+public class PermissionInventory {
 
     private String uuid;
     private String name;
-    private String authority;
+    private String policy;
     private String description;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    public static AuthorityInventory valueOf(PermissionVO vo) {
-        AuthorityInventory inv = new AuthorityInventory();
+    public static PermissionInventory valueOf(PermissionVO vo) {
+        PermissionInventory inv = new PermissionInventory();
         inv.setName(vo.getName());
         inv.setUuid(vo.getUuid());
-        inv.setAuthority(vo.getAuthority());
+        inv.setPolicy(vo.getPolicy());
         inv.setDescription(vo.getDescription());
         return inv;
     }
 
-    public static List<AuthorityInventory> valueOf(Collection<PermissionVO> vos) {
-        List<AuthorityInventory> invs = new ArrayList<AuthorityInventory>();
+    public static List<PermissionInventory> valueOf(Collection<PermissionVO> vos) {
+        List<PermissionInventory> invs = new ArrayList<PermissionInventory>();
         for (PermissionVO vo : vos) {
             invs.add(valueOf(vo));
         }
@@ -43,8 +43,8 @@ public class AuthorityInventory {
         return name;
     }
 
-    public String getAuthority() {
-        return authority;
+    public String getPolicy() {
+        return policy;
     }
 
     public String getDescription() {
@@ -67,8 +67,8 @@ public class AuthorityInventory {
         this.name = name;
     }
 
-    public void setAuthority(String authority) {
-        this.authority = authority;
+    public void setPolicy(String policy) {
+        this.policy = policy;
     }
 
     public void setDescription(String description) {

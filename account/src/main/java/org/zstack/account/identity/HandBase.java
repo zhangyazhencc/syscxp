@@ -338,13 +338,13 @@ public class HandBase {
 
         PermissionVO auth = new PermissionVO();
         auth.setUuid(Platform.getUuid());
-        auth.setAuthority(msg.getAuthority());
+        auth.setPolicy(msg.getAuthority());
         auth.setName(msg.getName());
         auth.setDescription(msg.getDescription());
 
         APICreateAuthorityEvent evt = new APICreateAuthorityEvent(msg.getId());
         evt.setSuccess(true);
-        evt.setInventory(AuthorityInventory.valueOf(dbf.persistAndRefresh(auth)));
+        evt.setInventory(PermissionInventory.valueOf(dbf.persistAndRefresh(auth)));
         bus.publish(evt);
     }
 
@@ -362,7 +362,7 @@ public class HandBase {
             update = true;
         }
         if (msg.getAuthority() != null) {
-            auth.setAuthority(msg.getAuthority());
+            auth.setPolicy(msg.getAuthority());
             update = true;
         }
 
@@ -373,7 +373,7 @@ public class HandBase {
 
         APICreateAuthorityEvent evt = new APICreateAuthorityEvent(msg.getId());
         evt.setSuccess(true);
-        evt.setInventory(AuthorityInventory.valueOf(auth));
+        evt.setInventory(PermissionInventory.valueOf(auth));
         bus.publish(evt);
 
     }
