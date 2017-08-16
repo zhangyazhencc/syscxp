@@ -49,10 +49,11 @@ public class RESTApiController {
         }
     }
 
-    private String handleByMessageType(String body) {
+    private String handleByMessageType(String body, String ip) {
         APIMessage amsg = null;
         try {
             amsg = (APIMessage) RESTApiDecoder.loads(body);
+            amsg.setIp(ip);
         } catch (Throwable t) {
             return t.getMessage();
         }
@@ -71,7 +72,7 @@ public class RESTApiController {
     public void post(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpEntity<String> entity = restf.httpServletRequestToHttpEntity(request);
         try {
-            String ret = handleByMessageType(entity.getBody());
+            String ret = handleByMessageType(entity.getBody(), getRemortIP(request));
             response.setStatus(HttpStatus.SC_OK);
             response.setCharacterEncoding("UTF-8");
             PrintWriter writer = response.getWriter();
@@ -84,5 +85,12 @@ public class RESTApiController {
             logger.debug(sb.toString(), t);
             response.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR, sb.toString());
         }
+    }
+
+    private String getRemortIP(HttpServletRequest request) {
+        if (request.getHeader("x-forwarded-for") == null) {
+            return request.getRemoteAddr();
+        }
+        return request.getHeader("x-forwarded-for");
     }
 }

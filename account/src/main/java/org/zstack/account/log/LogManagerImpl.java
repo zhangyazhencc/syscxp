@@ -115,10 +115,6 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
                 return;
             }
 
-            if (msg.getServiceId().endsWith(Platform.getManagementServerId())) {
-                return;
-            }
-
             try {
                 ApiNotification notification = getApiNotification((APIMessage) msg);
 

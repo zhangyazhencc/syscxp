@@ -70,27 +70,36 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
 
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateNoticeMsg) {
-            hanle((APICreateNoticeMsg)msg);
+            hanle((APICreateNoticeMsg) msg);
         } else if (msg instanceof APIUpdateNoticeMsg) {
-            hanle((APIUpdateNoticeMsg)msg);
-        } else{
+            hanle((APIUpdateNoticeMsg) msg);
+        } else if (msg instanceof APIDeleteNoticeMsg) {
+            hanle((APIDeleteNoticeMsg) msg);
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void hanle(APIDeleteNoticeMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(), NoticeVO.class);
+
+        APIDeleteNoticeEvent evt = new APIDeleteNoticeEvent(msg.getId());
+        bus.publish(evt);
     }
 
     private void hanle(APIUpdateNoticeMsg msg) {
         NoticeVO noticeVO = dbf.findByUuid(msg.getUuid(), NoticeVO.class);
 
-        if (msg.getTitle()!=null){
+        if (msg.getTitle() != null) {
             noticeVO.setTitle(msg.getTitle());
         }
-        if (msg.getLink()!=null){
+        if (msg.getLink() != null) {
             noticeVO.setLink(msg.getLink());
         }
-        if (msg.getStartTime()!=null){
+        if (msg.getStartTime() != null) {
             noticeVO.setStartTime(msg.getStartTime());
         }
-        if (msg.getEndTime()!=null){
+        if (msg.getEndTime() != null) {
             noticeVO.setEndTime(msg.getEndTime());
         }
 
@@ -101,6 +110,7 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
 
 
     }
+
     private void hanle(APICreateNoticeMsg msg) {
         NoticeVO noticeVO = new NoticeVO();
         noticeVO.setUuid(Platform.getUuid());
@@ -151,16 +161,16 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
             ));
         }
 
-        checkStartAndEndTime(msg.getStartTime(),(msg.getEndTime()));
+        checkStartAndEndTime(msg.getStartTime(), (msg.getEndTime()));
     }
 
-    private void checkStartAndEndTime(Timestamp start, Timestamp end){
-        if (start.after(end)){
+    private void checkStartAndEndTime(Timestamp start, Timestamp end) {
+        if (start.after(end)) {
             throw new ApiMessageInterceptionException(argerr(
                     "The Start time must be earlier than end time ."
             ));
         }
-        if (dbf.getCurrentSqlTime().after(end)){
+        if (dbf.getCurrentSqlTime().after(end)) {
             throw new ApiMessageInterceptionException(argerr(
                     "The end time must be later than the current time  ."
             ));
@@ -169,7 +179,7 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
 
     private void validate(APICreateNoticeMsg msg) {
 
-        checkStartAndEndTime(msg.getStartTime(),(msg.getEndTime()));
+        checkStartAndEndTime(msg.getStartTime(), (msg.getEndTime()));
     }
 
 }

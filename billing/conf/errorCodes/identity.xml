@@ -13,7 +13,7 @@
 
     <code>
         <id>1002</id>
-        <description>The user doesn't have permission to perform the operation</description>
+        <description>The user doesn't have policy to perform the operation</description>
     </code>
 
     <code>

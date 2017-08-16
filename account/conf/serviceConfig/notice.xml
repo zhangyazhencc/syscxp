@@ -16,5 +16,9 @@
         <name>org.zstack.account.header.log.APICreateNoticeMsg</name>
     </message>
 
+    <message>
+        <name>org.zstack.account.header.log.APIDeleteNoticeMsg</name>
+    </message>
+
 
 </service>

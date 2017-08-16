@@ -27,6 +27,7 @@ public class PermissionVO {
     private String description;
 
     @Column
+<<<<<<< HEAD
     private int sortId;
 
     @Column
@@ -36,6 +37,9 @@ public class PermissionVO {
     @Column
     @Enumerated(EnumType.STRING)
     private PermissionVisible visible;
+=======
+    private String policy;
+>>>>>>> 4993a761587240fd1e76817a47f0a28c5c180319
 
     @Column
     private Timestamp createDate;
@@ -60,8 +64,8 @@ public class PermissionVO {
         return description;
     }
 
-    public String getPermission() {
-        return permission;
+    public String getPolicy() {
+        return policy;
     }
 
     public Timestamp getCreateDate() {
@@ -84,8 +88,8 @@ public class PermissionVO {
         this.description = description;
     }
 
-    public void setPermission(String permission) {
-        this.permission = permission;
+    public void setPolicy(String policy) {
+        this.policy = policy;
     }
 
     public void setCreateDate(Timestamp createDate) {
