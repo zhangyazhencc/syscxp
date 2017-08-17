@@ -110,9 +110,9 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
     }
 
     private void  handle(APIGetVerificationCodeMsg msg){
-        String code = StringDSL.getRandomNumbersString(4);
+        String code = StringDSL.getRandomNumbersString(6);
         SmsVO sms = sendMsg(msg.getPhone(), SmsGlobalProperty.SMS_VERIFICATION_CODE_APPID, SmsGlobalProperty.SMS_VERIFICATION_CODE_TEMPLATEID
-                , new String[]{code, "10"});
+                , new String[]{code, "10"}, msg.getIp());
 
         VerificationCode verificationCode = sessions.get(msg.getPhone());
         long expiredTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60 * 10);   // 10 minute
@@ -132,7 +132,7 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
 
     private void handle(APISendSmsMsg msg){
 
-        SmsVO sms = sendMsg(msg.getPhone(), SmsGlobalProperty.SMS_YUNTONGXUN_APPID, msg.getTemplateId(), msg.getData().toArray(new String[msg.getData().size()]));
+        SmsVO sms = sendMsg(msg.getPhone(), SmsGlobalProperty.SMS_YUNTONGXUN_APPID, msg.getTemplateId(), msg.getData().toArray(new String[msg.getData().size()]), msg.getIp());
 
         APISendSmsEvent evt = new APISendSmsEvent(msg.getId());
         evt.setInventory(SmsInventory.valueOf(sms));
@@ -140,10 +140,10 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         bus.publish(evt);
     }
 
-    private SmsVO sendMsg(String phone, String appId, String templateId, String[] datas){
+    private SmsVO sendMsg(String phone, String appId, String templateId, String[] datas, String ip){
         //初始化短信接口平台
         CCPRestSDK restAPI = new CCPRestSDK();
-        restAPI.init(SmsGlobalProperty.SMS_YUNTONGXUN_SERVER_URL, SmsGlobalProperty.SMS_YUNTONGXUN_PORT);// 初始化服务器地址和端口，格式如下，服务器地址不需要写https://
+        restAPI.init(SmsGlobalProperty.SMS_YUNTONGXUN_SERVER, SmsGlobalProperty.SMS_YUNTONGXUN_PORT);// 初始化服务器地址和端口，格式如下，服务器地址不需要写https://
         restAPI.setAccount(SmsGlobalProperty.SMS_YUNTONGXUN_ACCOUNT_SID, SmsGlobalProperty.SMS_YUNTONGXUN_ACCOUNT_TOKEN);// 初始化主帐号和主帐号TOKEN
         restAPI.setAppId(appId);// 初始化应用ID
 
@@ -158,6 +158,12 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
 
         Date createDay = new Date();								//该系统时间为短信请求日期
         sms.setCreateDay(createDay);
+        sms.setIp(ip);
+        sms.setPhone(phone);
+        sms.setAppId(appId);
+        sms.setTemplateId(templateId);
+        sms.setData(datas.toString());
+
         //通过返回结果处理
         if("000000".equals(result.get("statusCode"))){	//正常返回
 
@@ -168,7 +174,9 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
             sms.setDateCreated(data2.get("dateCreated").toString());        //短信发送成功后的创建日期
             sms.setSmsMessagesId(data2.get("smsMessageSid").toString());  //短信发送成功后的唯一标识码
         }
-        sms.setStatusMsg(result.get("statusMsg").toString());
+        if (result.get("statusMsg") != null) {
+            sms.setStatusMsg(result.get("statusMsg").toString());
+        }
 
         dbf.persistAndRefresh(sms);
 
@@ -236,12 +244,16 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
 
     private void validate(APIGetVerificationCodeMsg msg) {
 
-        SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");	//设置日期格式
-        String createDay = df.format(new Date());					// new Date()为获取当前系统时间
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        Date zero = calendar.getTime();
 
         SimpleQuery<SmsVO> q = dbf.createQuery(SmsVO.class);
         q.add(SmsVO_.phone, SimpleQuery.Op.EQ, msg.getPhone());
-        q.add(SmsVO_.createDate, SimpleQuery.Op.GTE, createDay);
+        q.add(SmsVO_.createDay, SimpleQuery.Op.GTE, zero);
         long total = q.count();
         if (total > Long.valueOf(SmsGlobalProperty.TOTAL_LIMIT_PER_DAY_PHONE).longValue()){
             throw new ApiMessageInterceptionException(argerr("same phone not send more than %s messages per day : %s",
@@ -251,7 +263,7 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         if (msg.getId() != null ) {
             q = dbf.createQuery(SmsVO.class);
             q.add(SmsVO_.ip, SimpleQuery.Op.EQ, msg.getIp());
-            q.add(SmsVO_.createDate, SimpleQuery.Op.GTE, createDay);
+            q.add(SmsVO_.createDay, SimpleQuery.Op.GTE, zero);
             total = q.count();
 
             if (total > Long.valueOf(SmsGlobalProperty.TOTAL_LIMIT_PER_DAY_IP).longValue()) {

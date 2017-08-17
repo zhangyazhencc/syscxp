@@ -20,6 +20,9 @@ public class SmsVO {
     private String accountUuid;
 
     @Column
+    private String userUuid;
+
+    @Column
     private String ip;
 
     @Column
@@ -72,6 +75,14 @@ public class SmsVO {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public String getUserUuid() {
+        return userUuid;
+    }
+
+    public void setUserUuid(String userUuid) {
+        this.userUuid = userUuid;
     }
 
     public String getIp() {

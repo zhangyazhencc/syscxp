@@ -65,14 +65,6 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIListAllAccountMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.account.header.identity.APIListAllUsersMsg</name>
-    </message>
-
-    <message>
         <name>org.zstack.account.header.identity.APIUpdateUserPWDMsg</name>
     </message>
 

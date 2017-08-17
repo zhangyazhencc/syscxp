@@ -83,7 +83,6 @@ CREATE TABLE  `AccountApiSecurityVO` (
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---用户信息表
 CREATE TABLE  `UserVO` (
     `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
     `accountUuid` varchar(32) NOT NULL COMMENT '所属账户UUID',
@@ -100,7 +99,6 @@ CREATE TABLE  `UserVO` (
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---角色策略表
 CREATE TABLE `PolicyVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`name` varchar(128) NOT NULL UNIQUE COMMENT '角色名称',
@@ -172,6 +170,8 @@ CREATE TABLE  `AlarmContactVO` (
 
 CREATE TABLE `SmsVO` (
   `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
+  `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户UUID',
+  `userUuid` varchar(32) DEFAULT NULL COMMENT '用户UUID',
   `ip` varchar(20) DEFAULT NULL,
   `phone` varchar(1300) DEFAULT NULL,
   `templateId` varchar(20) DEFAULT NULL,

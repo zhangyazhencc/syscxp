@@ -9,6 +9,7 @@ import java.util.Date;
 public class SmsVO_ {
     public static volatile SingularAttribute<SmsVO, Long> id;
     public static volatile SingularAttribute<SmsVO, String> accountUuid;
+    public static volatile SingularAttribute<SmsVO, String> userUuid;
     public static volatile SingularAttribute<SmsVO, String> ip;
     public static volatile SingularAttribute<SmsVO, String> phone;
     public static volatile SingularAttribute<SmsVO, String> appId;
