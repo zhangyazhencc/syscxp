@@ -481,11 +481,15 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
 
     private void validate(APIUpdateAccountMsg msg) {
-        AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
-        if (!account.getType().equals(AccountType.SystemAdmin)) {
+        AccountVO account = dbf.findByUuid(msg.getSession().getUuid(), AccountVO.class);
+        if (!account.getType().equals(AccountType.SystemAdmin) &&
+                !msg.getSession().getUuid().equals(msg.getTargetUuid())) {
             throw new OperationFailureException(operr("account[uuid: %s, name: %s] is a normal account, it cannot reset the password of another account[uuid: %s]",
                     account.getUuid(), account.getName(), msg.getTargetUuid()));
         }
+
+
+
     }
 
     private void setServiceId(APIMessage msg) {

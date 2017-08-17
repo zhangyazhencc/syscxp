@@ -1,6 +1,5 @@
 package org.zstack.account.identity;
 
-import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -14,7 +13,6 @@ import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.*;
 import org.zstack.core.errorcode.ErrorFacade;
 
-import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.AbstractAccount;
 import org.zstack.header.identity.AccountGrade;
@@ -22,12 +20,8 @@ import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
-import org.zstack.utils.ExceptionDSL;
 import org.zstack.utils.Utils;
-import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
-
-import static org.zstack.core.Platform.operr;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class AccountBase extends AbstractAccount {
@@ -99,8 +93,8 @@ public class AccountBase extends AbstractAccount {
             handle((APIAttachPolicyToUserMsg) msg);
         }else if(msg instanceof APIUpdatePermisstionMsg){
             handle((APIUpdatePermisstionMsg) msg);
-        }else if(msg instanceof APICreateAuthorityMsg){
-            handle((APICreateAuthorityMsg) msg);
+        }else if(msg instanceof APICreatePermisstionMsg){
+            handle((APICreatePermisstionMsg) msg);
         }else if(msg instanceof APIDeletePermissionMsg){
             handle((APIDeletePermissionMsg) msg);
         }
@@ -181,58 +175,74 @@ public class AccountBase extends AbstractAccount {
 
 
     private  void handle(APIUpdateAccountMsg msg) {
-//        AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
-//
-//        if (msg.getPassword() != null) {
-//            account.setPassword(msg.getPassword());
-//        }
-//        if (msg.getCompany() != null) {
-//            account.setCompany(msg.getCompany());
-//        }
-//
-//        if (msg.getDescription() != null) {
-//            account.setDescription(msg.getDescription());
-//        }
-//        if (msg.getEmail() != null) {
-//            account.setEmail(msg.getEmail());
-//        }
-//        if (msg.getGrade() != null) {
-//            if(msg.getGrade().equals(AccountGrade.Normal)){
-//                account.setGrade(AccountGrade.Normal);
-//            }else if(msg.getGrade().equals(AccountGrade.Middling)){
-//                account.setGrade(AccountGrade.Middling);
-//            }else if(msg.getGrade().equals(AccountGrade.Important)){
-//                account.setGrade(AccountGrade.Important);
-//            }
-//        }
-//        if (msg.getIndustry() != null) {
-//            account.setIndustry(msg.getIndustry());
-//        }
-//        if (msg.getPhone() != null) {
-//            account.setPhone(msg.getPhone());
-//        }
-//        if (msg.getStatus() != null) {
-//            account.setStatus(msg.getStatus().equals(AccountStatus.Available)
-//                    ?AccountStatus.Available:AccountStatus.Disabled);
-//        }
-//        if (msg.getTrueName() != null) {
-//            account.setTrueName(msg.getTrueName());
-//        }
-//        if (msg.getType() != null) {
-//            if(msg.getType().equals(AccountType.Normal)){
-//                account.setType(AccountType.Normal);
-//            }else if(msg.getType().equals(AccountType.Proxy)){
-//                account.setType(AccountType.Proxy);
-//            }else if(msg.getType().equals(AccountType.SystemAdmin)){
-//                account.setType(AccountType.SystemAdmin);
-//            }
-//        }
-//
-//        account = dbf.updateAndRefresh(account);
-//
-//        APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
-//        evt.setInventory(AccountInventory.valueOf(account));
-//        bus.publish(evt);
+        AccountVO account = dbf.findByUuid(msg.getTargetUuid(), AccountVO.class);
+        AccountExtraInfoVO aeivo = dbf.findByUuid(msg.getTargetUuid(), AccountExtraInfoVO.class);
+
+        if (msg.getCompany() != null) {
+            account.setCompany(msg.getCompany());
+        }
+
+        if (msg.getDescription() != null) {
+            account.setDescription(msg.getDescription());
+        }
+        if (msg.getEmail() != null) {
+            account.setEmail(msg.getEmail());
+        }
+
+        if (msg.getPhone() != null) {
+            account.setPhone(msg.getPhone());
+        }
+        if (msg.getStatus() != null) {
+            account.setStatus(msg.getStatus().equals(AccountStatus.Available)
+                    ?AccountStatus.Available:AccountStatus.Disabled);
+        }
+        if (msg.getTrueName() != null) {
+            account.setTrueName(msg.getTrueName());
+        }
+
+        if (msg.getType() != null) {
+            if(msg.getType().equals(AccountType.Normal)){
+                account.setType(AccountType.Normal);
+            }else if(msg.getType().equals(AccountType.Proxy)){
+                account.setType(AccountType.Proxy);
+            }else if(msg.getType().equals(AccountType.SystemAdmin)){
+                account.setType(AccountType.SystemAdmin);
+            }
+        }
+
+        if (msg.getIndustry() != null) {
+            account.setIndustry(msg.getIndustry());
+        }
+
+        if (msg.getGrade() != null) {
+            if(msg.getGrade().equals(AccountGrade.Normal)){
+                aeivo.setGrade(AccountGrade.Normal);
+            }else if(msg.getGrade().equals(AccountGrade.Middling)){
+                aeivo.setGrade(AccountGrade.Middling);
+            }else if(msg.getGrade().equals(AccountGrade.Important)){
+                aeivo.setGrade(AccountGrade.Important);
+            }
+        }
+
+        if (msg.getCompanyNature() != null) {
+            aeivo.setCompanyNature(msg.getCompanyNature());
+        }
+        if (msg.getContacts() != null) {
+            aeivo.setContacts(msg.getContacts());
+        }
+        if (msg.getContactNumber() != null) {
+            aeivo.setContactNumber(msg.getContactNumber());
+        }
+        if (msg.getSalesman() != null) {
+            aeivo.setSalesman(msg.getSalesman());
+        }
+
+        account = dbf.updateAndRefresh(account);
+        aeivo = dbf.updateAndRefresh(aeivo);
+
+        APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
+        evt.setInventory(AccountInventory.valueOf(account,aeivo));
+        bus.publish(evt);
 
     }
 
@@ -285,25 +295,45 @@ public class AccountBase extends AbstractAccount {
 
     private void handle(APICreateAccountMsg msg) {
 
-//        AccountVO vo = new AccountVO();
-//        vo.setUuid(Platform.getUuid());
-//        vo.setName(msg.getName());
-//        vo.setPassword(msg.getPassword());
-//        vo.setCompany(msg.getCompany());
-//        vo.setDescription(msg.getDescription());
-//        vo.setEmail(msg.getEmail());
-//        vo.setIndustry(msg.getIndustry());
-//        vo.setPhone(msg.getPhone());
-//        vo.setTrueName(msg.getTrueName());
-//        vo.setStatus(msg.getStatus());
-//        vo.setType(AccountType.Normal);
-//        vo.setGrade( msg.getGrade());
-//
-//        vo = dbf.persistAndRefresh(vo);
-//
-//        APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
-//        evt.setInventory(AccountInventory.valueOf(vo));
-//        bus.publish(evt);
+        AccountVO vo = new AccountVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setName(msg.getName());
+        vo.setPassword(msg.getPassword());
+        vo.setCompany(msg.getCompany());
+        vo.setDescription(msg.getDescription());
+        vo.setEmail(msg.getEmail());
+        vo.setIndustry(msg.getIndustry());
+        vo.setPhone(msg.getPhone());
+        vo.setTrueName(msg.getTrueName());
+        vo.setStatus(msg.getStatus());
+        vo.setType(AccountType.Normal);
+
+        AccountExtraInfoVO aeivo = new AccountExtraInfoVO();
+        aeivo.setUuid(Platform.getUuid());
+        aeivo.setAccountUuid(vo.getUuid());
+        if(msg.getCompanyNature() != null){
+            aeivo.setCompanyNature(msg.getCompanyNature());
+        }
+        if(msg.getGrade() != null){
+            aeivo.setGrade(msg.getGrade());
+        }
+        if(msg.getContacts() != null){
+            aeivo.setContacts(msg.getContacts());
+        }
+        if(msg.getContactNumber() != null){
+            aeivo.setContactNumber(msg.getContactNumber());
+        }
+        if(msg.getSalesman() != null){
+            aeivo.setSalesman(msg.getSalesman());
+        }
+
+        vo = dbf.persistAndRefresh(vo);
+        aeivo = dbf.persistAndRefresh(aeivo);
+
+        APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
+        evt.setInventory(AccountInventory.valueOf(vo, aeivo));
+        bus.publish(evt);
     }
 
     private void handle(APICreateUserMsg msg) {
@@ -384,7 +414,7 @@ public class AccountBase extends AbstractAccount {
 //        bus.publish(evt);
     }
 
-    private void handle(APICreateAuthorityMsg msg) {
+    private void handle(APICreatePermisstionMsg msg) {
 
 //        PermissionVO auth = new PermissionVO();
 //        auth.setUuid(Platform.getUuid());
@@ -392,7 +422,7 @@ public class AccountBase extends AbstractAccount {
 //        auth.setName(msg.getName());
 //        auth.setDescription(msg.getDescription());
 //
-//        APICreateAuthorityEvent evt = new APICreateAuthorityEvent(msg.getId());
+//        APICreatePermisstionEvent evt = new APICreatePermisstionEvent(msg.getId());
 //        evt.setSuccess(true);
 //        evt.setInventory(AuthorityInventory.valueOf(dbf.persistAndRefresh(auth)));
 //        bus.publish(evt);
@@ -421,7 +451,7 @@ public class AccountBase extends AbstractAccount {
 //        }
 //
 //
-//        APICreateAuthorityEvent evt = new APICreateAuthorityEvent(msg.getId());
+//        APICreatePermisstionEvent evt = new APICreatePermisstionEvent(msg.getId());
 //        evt.setSuccess(true);
 //        evt.setInventory(AuthorityInventory.valueOf(auth));
 //        bus.publish(evt);
@@ -430,7 +460,7 @@ public class AccountBase extends AbstractAccount {
 
     private void handle(APIDeletePermissionMsg msg) {
 //        dbf.removeByPrimaryKey(msg.getUuid(), PermissionVO.class);
-//        APICreateAuthorityEvent evt = new APICreateAuthorityEvent(msg.getId());
+//        APICreatePermisstionEvent evt = new APICreatePermisstionEvent(msg.getId());
 //        evt.setSuccess(true);
 //        bus.publish(evt);
     }

@@ -34,7 +34,7 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
     private String description;
 
     @APIParam(maxLength = 255, required = false)
-    private CompanyNature companyNature;
+    private CompanyNature companyNature ;
     @APIParam(maxLength = 255, required = false)
     private String salesman;
     @APIParam(maxLength = 255, required = false)
@@ -166,4 +166,6 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
     public void setContactNumber(String contactNumber) {
         this.contactNumber = contactNumber;
     }
+
+
 }
