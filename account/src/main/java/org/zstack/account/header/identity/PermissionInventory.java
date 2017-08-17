@@ -22,7 +22,7 @@ public class PermissionInventory {
         PermissionInventory inv = new PermissionInventory();
         inv.setName(vo.getName());
         inv.setUuid(vo.getUuid());
-        inv.setPolicy(vo.getPolicy());
+//        inv.setPolicy(vo.getPolicy());
         inv.setDescription(vo.getDescription());
         return inv;
     }

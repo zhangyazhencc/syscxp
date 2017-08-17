@@ -157,6 +157,18 @@ CREATE TABLE  `NoticeVO` (
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE  `AlarmContactVO` (
+  `uuid` varchar(32) NOT NULL UNIQUE,
+  `name` varchar(32) NOT NULL COMMENT '姓名',
+  `phone` varchar(32) NOT NULL COMMENT '手机号',
+  `email` varchar(255) DEFAULT NULL COMMENT '邮箱',
+  `accountUuid` varchar(32) NOT NULL COMMENT '账户UUID',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 CREATE TABLE  `NotificationVO` (
     `uuid` VARCHAR(32) NOT NULL UNIQUE,
     `name` VARCHAR(255) DEFAULT NULL,

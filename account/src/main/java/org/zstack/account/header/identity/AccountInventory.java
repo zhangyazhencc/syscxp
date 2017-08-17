@@ -76,13 +76,13 @@ public class AccountInventory {
         return inv;
     }
 
-//    public static List<AccountInventory> valueOf(Collection<AccountVO> vos) {
-//        List<AccountInventory> lst = new ArrayList<AccountInventory>(vos.size());
-//        for (AccountVO vo : vos) {
-//            lst.add(AccountInventory.valueOf(vo));
-//        }
-//        return lst;
-//    }
+    public static List<AccountInventory> valueOf(Collection<AccountVO> vos) {
+        List<AccountInventory> lst = new ArrayList<AccountInventory>(vos.size());
+        for (AccountVO vo : vos) {
+            lst.add(AccountInventory.valueOf(vo));
+        }
+        return lst;
+    }
 
     public String getType() {
         return type;
