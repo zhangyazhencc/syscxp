@@ -1,6 +1,6 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.Action;
+import org.zstack.header.identity.*;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
@@ -9,50 +9,38 @@ import org.zstack.header.notification.ApiNotification;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
 public class APIUpdateAccountMsg extends APIMessage {
-    @APIParam(resourceType = AccountVO.class, required = true, checkAccount = true, operationTarget = true)
-    private String uuid;
 
     @APIParam(resourceType = AccountVO.class, required = true, checkAccount = true, operationTarget = true)
     private String targetUuid;
 
-    @APIParam(maxLength = 255, required = false)
-    private String password;
-    @APIParam(maxLength = 255, required = false)
+    @APIParam(maxLength = 36, required = false)
     private String email ;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 32, required = false)
     private String phone;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 128, required = false)
     private String trueName;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 128, required = false)
     private String company;
-    @APIParam(maxLength = 2048, required = false)
-    private String department;
-    @APIParam(maxLength = 2048, required = false)
-    private String industry;
-    @APIParam(maxLength = 2048, required = false)
-    private String grade;
-    @APIParam(maxLength = 2048, required = false)
-    private String status;
-    @APIParam(maxLength = 2048, required = false)
-    private String description;
-    @APIParam(maxLength = 2048, required = false)
+
+    @APIParam(maxLength = 128, required = false)
+    private AccountIndustry industry;
+    @APIParam(maxLength = 32, required = false)
+    private AccountGrade grade;
+    @APIParam(maxLength = 128, required = false)
+    private AccountStatus status;
+    @APIParam(validValues = {"SystemAdmin", "Normal", "Proxy"}, required = false)
     private String type;
+    @APIParam(maxLength = 255, required = false)
+    private String description;
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
+    @APIParam(maxLength = 255, required = false)
+    private CompanyNature companyNature ;
+    @APIParam(maxLength = 255, required = false)
+    private String salesman;
+    @APIParam(maxLength = 255, required = false)
+    private String contacts;
+    @APIParam(maxLength = 255, required = false)
+    private String contactNumber;
 
     public String getDescription() {
         return description;
@@ -78,22 +66,6 @@ public class APIUpdateAccountMsg extends APIMessage {
         return company;
     }
 
-    public String getDepartment() {
-        return department;
-    }
-
-    public String getIndustry() {
-        return industry;
-    }
-
-    public String getGrade() {
-        return grade;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
     public String getType() {
         return type;
     }
@@ -114,22 +86,6 @@ public class APIUpdateAccountMsg extends APIMessage {
         this.company = company;
     }
 
-    public void setDepartment(String department) {
-        this.department = department;
-    }
-
-    public void setIndustry(String industry) {
-        this.industry = industry;
-    }
-
-    public void setGrade(String grade) {
-        this.grade = grade;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public void setType(String type) {
         this.type = type;
     }
@@ -142,17 +98,74 @@ public class APIUpdateAccountMsg extends APIMessage {
         this.targetUuid = targetUuid;
     }
 
+    public AccountIndustry getIndustry() {
+        return industry;
+    }
+
+    public AccountGrade getGrade() {
+        return grade;
+    }
+
+    public AccountStatus getStatus() {
+        return status;
+    }
+
+    public CompanyNature getCompanyNature() {
+        return companyNature;
+    }
+
+    public String getSalesman() {
+        return salesman;
+    }
+
+    public String getContacts() {
+        return contacts;
+    }
+
+    public String getContactNumber() {
+        return contactNumber;
+    }
+
+    public void setIndustry(AccountIndustry industry) {
+        this.industry = industry;
+    }
+
+    public void setGrade(AccountGrade grade) {
+        this.grade = grade;
+    }
+
+    public void setStatus(AccountStatus status) {
+        this.status = status;
+    }
+
+    public void setCompanyNature(CompanyNature companyNature) {
+        this.companyNature = companyNature;
+    }
+
+    public void setSalesman(String salesman) {
+        this.salesman = salesman;
+    }
+
+    public void setContacts(String contacts) {
+        this.contacts = contacts;
+    }
+
+    public void setContactNumber(String contactNumber) {
+        this.contactNumber = contactNumber;
+    }
+
     public ApiNotification __notification__() {
         APIMessage that = this;
 
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Updating").resource(uuid, AccountVO.class.getSimpleName())
+                ntfy("Updating").resource(targetUuid, AccountVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };
     }
+
 
 
 }

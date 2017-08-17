@@ -2,9 +2,6 @@ package org.zstack.billing.header.identity.receipt;
 
 
 
-import org.zstack.billing.header.identity.ReceiptState;
-import org.zstack.billing.header.identity.ReceiptType;
-
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 import java.math.BigDecimal;

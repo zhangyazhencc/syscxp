@@ -12,7 +12,7 @@ import org.zstack.header.notification.ApiNotification;
  * Created by wangwg on 2017/08/15.
  */
 @Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
-public class APIDeletePermissionMsg extends APIDeleteMessage {
+public class APIDeletePermissionMsg extends APIDeleteMessage implements AccountMessage{
     @APIParam(resourceType = PermissionVO.class, checkAccount = true, operationTarget = true, successIfResourceNotExisting = true)
     private String uuid;
 
@@ -40,5 +40,10 @@ public class APIDeletePermissionMsg extends APIDeleteMessage {
                         .messageAndEvent(that, evt).done();
             }
         };
+    }
+
+    @Override
+    public String getAccountUuid() {
+        return this.getSession().getAccountUuid();
     }
 }

@@ -1,6 +1,5 @@
 package org.zstack.billing.header.identity.receipt;
 
-import org.zstack.billing.header.identity.ReceiptType;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 

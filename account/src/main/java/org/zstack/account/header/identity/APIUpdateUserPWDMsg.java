@@ -6,39 +6,25 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by wangwg on 2017/8/8.
  */
-public class APIUpdateUserPWDMsg extends APIMessage {
-    @APIParam
-    private String uuid;
 
-    @APIParam
-    private String phoneOrEmail;
+public class APIUpdateUserPWDMsg extends APIMessage implements AccountMessage{
 
-    @APIParam
+    @APIParam(maxLength = 32)
     private String code;
 
-    @APIParam
-    private boolean isupdate;
-
-    @APIParam
+    @APIParam(maxLength = 128)
     private String oldpassword;
 
-    @APIParam(maxLength = 2048)
+    @APIParam(maxLength = 128)
     private String newpassword;
 
-    public String getUuid() {
-        return uuid;
-    }
-
-    public String getPhoneOrEmail() {
-        return phoneOrEmail;
+    @Override
+    public String getAccountUuid() {
+        return this.getSession().getAccountUuid();
     }
 
     public String getCode() {
         return code;
-    }
-
-    public boolean isIsupdate() {
-        return isupdate;
     }
 
     public String getOldpassword() {
@@ -49,8 +35,8 @@ public class APIUpdateUserPWDMsg extends APIMessage {
         return newpassword;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public void setOldpassword(String oldpassword) {
@@ -59,17 +45,5 @@ public class APIUpdateUserPWDMsg extends APIMessage {
 
     public void setNewpassword(String newpassword) {
         this.newpassword = newpassword;
-    }
-
-    public void setPhoneOrEmail(String phoneOrEmail) {
-        this.phoneOrEmail = phoneOrEmail;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
-    }
-
-    public void setIsupdate(boolean isupdate) {
-        this.isupdate = isupdate;
     }
 }

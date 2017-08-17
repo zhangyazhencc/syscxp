@@ -11,43 +11,29 @@ import org.zstack.header.notification.ApiNotification;
  * Created by frank on 7/10/2015.
  */
 @Action(category = AccountConstant.ACTION_CATEGORY)
-public class APIUpdateUserMsg extends APIMessage {
-    @APIParam(resourceType = UserVO.class, checkAccount = true, operationTarget = true, required = false)
-    private String uuid;
+public class APIUpdateUserMsg extends APIMessage implements AccountMessage{
+
     @APIParam(resourceType = UserVO.class, checkAccount = true, operationTarget = true, required = false)
     private String targetUuid;
-    @APIParam(maxLength = 255, required = false)
-    private String password;
-    @APIParam(maxLength = 255, required = false)
+
+    @APIParam(maxLength = 128, required = false)
     private String name;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 36, required = false)
     private String email;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 32, required = false)
     private String phone;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 128, required = false)
     private String trueName;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 128, required = false)
     private String department;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 36, required = false)
     private AccountStatus status;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 255, required = false)
     private String description;
 
-    public String getUuid() {
-        return uuid;
-    }
+    @APIParam(maxLength = 255, required = false)
+    private String PolicyUuid;
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
 
     public String getName() {
         return name;
@@ -113,11 +99,12 @@ public class APIUpdateUserMsg extends APIMessage {
         this.status = status;
     }
 
-    public static APIUpdateUserMsg __example__() {
-        APIUpdateUserMsg msg = new APIUpdateUserMsg();
-        msg.setName("new");
-        msg.setUuid(uuid());
-        return msg;
+    public String getPolicyUuid() {
+        return PolicyUuid;
+    }
+
+    public void setPolicyUuid(String policyUuid) {
+        PolicyUuid = policyUuid;
     }
 
     public ApiNotification __notification__() {
@@ -126,10 +113,14 @@ public class APIUpdateUserMsg extends APIMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Updating").resource(uuid, UserVO.class.getSimpleName())
+                ntfy("Updating").resource(targetUuid, UserVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };
     }
 
+    @Override
+    public String getAccountUuid() {
+        return this.getAccountUuid();
+    }
 }

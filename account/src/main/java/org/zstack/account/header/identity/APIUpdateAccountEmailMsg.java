@@ -6,22 +6,12 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by wangwg on 2017/8/9.
  */
-public class APIUpdateAccountEmailMsg extends APIMessage {
-    @APIParam
-    private String uuid;
-
+public class APIUpdateAccountEmailMsg extends APIMessage implements AccountMessage{
     @APIParam
     private String email;
 
     @APIParam
     private String code;
-
-    @APIParam
-    private boolean isupdate;
-
-    public String getUuid() {
-        return uuid;
-    }
 
     public String getEmail() {
         return email;
@@ -29,14 +19,6 @@ public class APIUpdateAccountEmailMsg extends APIMessage {
 
     public String getCode() {
         return code;
-    }
-
-    public boolean isIsupdate() {
-        return isupdate;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
     }
 
     public void setEmail(String email) {
@@ -47,7 +29,8 @@ public class APIUpdateAccountEmailMsg extends APIMessage {
         this.code = code;
     }
 
-    public void setIsupdate(boolean isupdate) {
-        this.isupdate = isupdate;
+    @Override
+    public String getAccountUuid() {
+        return this.getSession().getAccountUuid();
     }
 }

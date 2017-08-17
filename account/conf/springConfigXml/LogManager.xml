@@ -28,5 +28,12 @@
         </zstack:plugin>
     </bean>
 
+    <bean id="NotificationManager" class="org.zstack.core.notification.NotificationManager">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.header.Component"/>
+            <zstack:extension interface="org.zstack.header.Service"/>
+        </zstack:plugin>
+    </bean>
+
 </beans>
 

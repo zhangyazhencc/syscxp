@@ -83,9 +83,6 @@
     <message>
         <name>org.zstack.account.header.identity.APIUpdateUserEmailMsg</name>
     </message>
-    <message>
-        <name>org.zstack.account.header.identity.APIUpdateIndustryMsg</name>
-    </message>
 
     <message>
         <name>org.zstack.account.header.identity.APIAttachPolicyToUserMsg</name>
@@ -104,10 +101,10 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreateAuthorityMsg</name>
+        <name>org.zstack.account.header.identity.APICreatePermissionMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateAuthorityMsg</name>
+        <name>org.zstack.account.header.identity.ADIUpdatePermissionMsg</name>
     </message>
     <message>
         <name>org.zstack.account.header.identity.APIDeletePermissionMsg</name>

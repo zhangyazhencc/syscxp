@@ -54,7 +54,7 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
 
     private class ApiOperLogSender implements BeforeDeliveryMessageInterceptor, BeforePublishEventInterceptor {
 
-        class Bundle{
+        class Bundle {
             APIMessage message;
             ApiNotification notification;
         }
@@ -149,18 +149,16 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
             Bundle b = apiMessages.get(aevt.getApiId());
             if (b == null) return;
             apiMessages.remove(aevt.getApiId());
-            b.notification.after((APIEvent) evt);
+            b.notification.after(aevt);
 
             List<OperLogBuilder> lst = new ArrayList<>();
             for (ApiNotification.Inner inner : b.notification.getInners()) {
 
-                String action;
-                if (aevt.getClass().getSimpleName().toUpperCase().contains(LogConstant.CREATE_ACTION)){
+                String action = LogConstant.UPDATE_ACTION;
+                if (b.message.getClass().getSimpleName().toUpperCase().contains(LogConstant.CREATE_ACTION)) {
                     action = LogConstant.CREATE_ACTION;
-                } else if (aevt.getClass().getSimpleName().toUpperCase().contains(LogConstant.DELETE_ACTION)){
+                } else if (b.message.getClass().getSimpleName().toUpperCase().contains(LogConstant.DELETE_ACTION)) {
                     action = LogConstant.DELETE_ACTION;
-                } else {
-                    action = LogConstant.UPDATE_ACTION;
                 }
 
                 lst.add(new OperLogBuilder()
@@ -195,6 +193,7 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
     private void handleApiMessage(APIMessage msg) {
 
     }
+
     private ApiOperLogSender apiOperLogSender = new ApiOperLogSender();
 
     public void send(List<OperLogBuilder> builders) {
@@ -247,8 +246,8 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
             lst.add(operLogsQueue.take());
             operLogsQueue.drainTo(lst);
 
-            try{
-                for(OperLogBuilder builder:lst){
+            try {
+                for (OperLogBuilder builder : lst) {
                     if (builder == quitToken) {
                         exitQueue = true;
                         continue;
@@ -266,7 +265,7 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
 
                     dbf.persistAndRefresh(operLogVO);
                 }
-            }catch (Throwable t) {
+            } catch (Throwable t) {
                 logger.warn(String.format("failed to persists operlogs:\n %s", JSONObjectUtil.toJsonString(lst)), t);
             }
 

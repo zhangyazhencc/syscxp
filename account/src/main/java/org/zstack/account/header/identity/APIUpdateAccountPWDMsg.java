@@ -6,12 +6,7 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by wangwg on 2017/8/8.
  */
-public class APIUpdateAccountPWDMsg extends APIMessage {
-    @APIParam
-    private String uuid;
-
-    @APIParam
-    private String phoneOrEmail;
+public class APIUpdateAccountPWDMsg extends APIMessage implements AccountMessage {
 
     @APIParam
     private String code;
@@ -25,13 +20,6 @@ public class APIUpdateAccountPWDMsg extends APIMessage {
     @APIParam(maxLength = 2048)
     private String newpassword;
 
-    public String getUuid() {
-        return uuid;
-    }
-
-    public String getPhoneOrEmail() {
-        return phoneOrEmail;
-    }
 
     public String getCode() {
         return code;
@@ -47,14 +35,6 @@ public class APIUpdateAccountPWDMsg extends APIMessage {
 
     public String getNewpassword() {
         return newpassword;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public void setPhoneOrEmail(String phoneOrEmail) {
-        this.phoneOrEmail = phoneOrEmail;
     }
 
     public void setCode(String code) {
@@ -73,4 +53,9 @@ public class APIUpdateAccountPWDMsg extends APIMessage {
         this.newpassword = newpassword;
     }
 
+
+    @Override
+    public String getAccountUuid() {
+        return this.getSession().getAccountUuid();
+    }
 }

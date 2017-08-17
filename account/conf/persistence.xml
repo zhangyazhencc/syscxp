@@ -14,10 +14,12 @@
         <class>org.zstack.account.header.identity.PolicyVO</class>
         <class>org.zstack.account.header.identity.UserPolicyRefVO</class>
         <class>org.zstack.account.header.identity.SessionVO</class>
+        <class>org.zstack.account.header.identity.AccountExtraInfoVO</class>
+        <class>org.zstack.account.header.identity.PermissionVO</class>
 
         <class>org.zstack.account.header.log.OperLogVO</class>
         <class>org.zstack.account.header.log.NoticeVO</class>
-
         <class>org.zstack.sms.header.SmsVO</class>
+        <class>org.zstack.core.notification.NotificationVO</class>
     </persistence-unit>
 </persistence>

@@ -20,13 +20,13 @@
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>org.zstack.billing.header.identity.AccountBalanceVO</value>
-                <value>org.zstack.billing.header.identity.OrderVO</value>
+                <value>org.zstack.billing.header.identity.balance.AccountBalanceVO</value>
+                <value>org.zstack.billing.header.identity.order.OrderVO</value>
             </list>
         </property>
     </bean>
 
-    <bean id="BillingManager" class="org.zstack.billing.identity.BillingManagerImpl">
+    <bean id="BillingManager" class="org.zstack.billing.manage.BillingManagerImpl">
         <zstack:plugin>
             <zstack:extension interface="org.zstack.header.Component"/>
             <zstack:extension interface="org.zstack.header.Service"/>

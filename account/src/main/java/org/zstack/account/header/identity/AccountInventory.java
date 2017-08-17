@@ -24,38 +24,65 @@ public class AccountInventory {
     private String trueName;
     private String company;
     private String industry;
-    private String grade;
     private String status;
     private String description;
     private String type;
 
+    private String grade;
+    private String companyNature;
+    private String salesman;
+    private String contacts;
+    private String contactNumber;
+
     private Timestamp createDate;
     private Timestamp lastOpDate;
     
+    public static AccountInventory valueOf(AccountVO vo,AccountExtraInfoVO aeivo) {
+        AccountInventory inv = new AccountInventory();
+        inv.setUuid(vo.getUuid());
+        inv.setName(vo.getName());
+        inv.setTrueName(vo.getTrueName());
+        inv.setCompany(vo.getCompany());
+        inv.setDescription(vo.getDescription());
+        inv.setEmail(vo.getEmail());
+        inv.setPhone(vo.getPhone());
+        inv.setIndustry(vo.getIndustry().toString());
+        inv.setType(vo.getType().toString());
+
+        inv.setGrade(aeivo.getGrade().toString());
+        inv.setCompanyNature(aeivo.getCompanyNature().toString());
+        inv.setSalesman(aeivo.getSalesman());
+        inv.setContacts(aeivo.getContacts());
+        inv.setContactNumber(aeivo.getContactNumber());
+
+        inv.setCreateDate(vo.getCreateDate());
+        inv.setLastOpDate(vo.getLastOpDate());
+        return inv;
+    }
+
     public static AccountInventory valueOf(AccountVO vo) {
         AccountInventory inv = new AccountInventory();
         inv.setUuid(vo.getUuid());
         inv.setName(vo.getName());
-        inv.setName(vo.getTrueName());
-        inv.setName(vo.getCompany());
-        inv.setName(vo.getDescription());
-        inv.setName(vo.getEmail());
-        inv.setName(vo.getPhone());
-        inv.setName(vo.getGrade().toString());
-        inv.setName(vo.getIndustry());
+        inv.setTrueName(vo.getTrueName());
+        inv.setCompany(vo.getCompany());
+        inv.setDescription(vo.getDescription());
+        inv.setEmail(vo.getEmail());
+        inv.setPhone(vo.getPhone());
+        inv.setIndustry(vo.getIndustry().toString());
         inv.setType(vo.getType().toString());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
     }
-    
-    public static List<AccountInventory> valueOf(Collection<AccountVO> vos) {
-        List<AccountInventory> lst = new ArrayList<AccountInventory>(vos.size());
-        for (AccountVO vo : vos) {
-            lst.add(AccountInventory.valueOf(vo));
-        }
-        return lst;
-    }
+
+//    public static List<AccountInventory> valueOf(Collection<AccountVO> vos) {
+//        List<AccountInventory> lst = new ArrayList<AccountInventory>(vos.size());
+//        for (AccountVO vo : vos) {
+//            lst.add(AccountInventory.valueOf(vo));
+//        }
+//        return lst;
+//    }
 
     public String getType() {
         return type;
@@ -159,5 +186,37 @@ public class AccountInventory {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getCompanyNature() {
+        return companyNature;
+    }
+
+    public String getSalesman() {
+        return salesman;
+    }
+
+    public String getContacts() {
+        return contacts;
+    }
+
+    public String getContactNumber() {
+        return contactNumber;
+    }
+
+    public void setCompanyNature(String companyNature) {
+        this.companyNature = companyNature;
+    }
+
+    public void setSalesman(String salesman) {
+        this.salesman = salesman;
+    }
+
+    public void setContacts(String contacts) {
+        this.contacts = contacts;
+    }
+
+    public void setContactNumber(String contactNumber) {
+        this.contactNumber = contactNumber;
     }
 }

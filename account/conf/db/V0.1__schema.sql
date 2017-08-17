@@ -55,11 +55,10 @@ CREATE TABLE  `AccountVO` (
     `company` varchar(128) DEFAULT NULL COMMENT '公司',
     `industry` varchar(128) DEFAULT NULL COMMENT '行业',
     `type` varchar(128) NOT NULL COMMENT 'account type',
-    `grade` varchar(128) NOT NULL COMMENT '账户等级',
     `status` varchar(128) NOT NULL COMMENT '状态',
     `description` varchar(255),
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-    `createDate` timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `createDate` timestamp ,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -68,7 +67,7 @@ CREATE TABLE  `ProxyAccountRefVO` (
 	`accountUuid` varchar(32) NOT NULL COMMENT '代理商（包括系统管理员）UUID',
   `customerAcccountUuid` varchar(32) NOT NULL COMMENT '由代理商（包括系统管理员）创建的主账号',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createDate` timestamp ,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -79,7 +78,7 @@ CREATE TABLE  `AccountApiSecurityVO` (
     `privateKey` varchar(128) DEFAULT NULL COMMENT 'API密钥-私钥',
     `allowIp` text DEFAULT NULL COMMENT '允许访问IP的集合',
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-    `createDate` timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `createDate` timestamp ,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -95,9 +94,10 @@ CREATE TABLE  `UserVO` (
     `status` varchar(128) NOT NULL COMMENT '状态',
     `description` varchar(255),
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-    `createDate` timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `createDate` timestamp ,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 CREATE TABLE `PolicyVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
@@ -106,7 +106,7 @@ CREATE TABLE `PolicyVO` (
 	`accountUuid` varchar(32) NOT NULL COMMENT '所属账户UUID',
 	`policyStatement` text NOT NULL COMMENT '策略JSON字符串',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createDate` timestamp ,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -115,7 +115,7 @@ CREATE TABLE `UserPolicyRefVO` (
 	`userUuid` varchar(32) NOT NULL COMMENT '用户UUID',
 	`policyUuid` varchar(32) NOT NULL COMMENT '角色UUID',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createDate` timestamp,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -125,7 +125,7 @@ CREATE TABLE  `SessionVO` (
     `userUuid` varchar(32) DEFAULT NULL,
     `type` varchar(128) NOT NULL COMMENT 'account type',
     `expiredDate` timestamp NOT NULL,
-    `createDate` timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `createDate` timestamp,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -157,14 +157,21 @@ CREATE TABLE  `NoticeVO` (
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `AlarmContactVO` (
-    `uuid` varchar(32) NOT NULL UNIQUE,
-    `name` varchar(32) NOT NULL COMMENT '姓名',
-    `phone` varchar(32) NOT NULL COMMENT '手机号',
-    `email` varchar(32) NOT NULL COMMENT '邮箱',
-    `accountUuid` varchar(32) NOT NULL COMMENT '账户UUID',
-    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-    `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE  `NotificationVO` (
+    `uuid` VARCHAR(32) NOT NULL UNIQUE,
+    `name` VARCHAR(255) DEFAULT NULL,
+    `content` VARCHAR(255) DEFAULT NULL,
+    `arguments` VARCHAR(255) DEFAULT NULL,
+    `sender` VARCHAR(32) NOT NULL,
+    `status` VARCHAR(32) DEFAULT NULL,
+    `resourceUuid` VARCHAR(32) DEFAULT NULL,
+    `resourceType` VARCHAR(32) NOT NULL,
+    `type` VARCHAR(32) DEFAULT NULL,
+    `time` BIGINT UNSIGNED,
+    `opaque` VARCHAR(255) DEFAULT NULL,
+    `lastOpDate` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+    `createDate` TIMESTAMP,
+    `dateTime` TIMESTAMP,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -192,8 +199,25 @@ CREATE TABLE `PermissionVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`name` varchar(128) NOT NULL UNIQUE COMMENT '权限名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '权限描述',
+	`permission` text NOT NULL COMMENT '权限字符串',
+	`type` varchar(32) DEFAULT NULL COMMENT '权限类型',
+	`sortId` varchar(32) DEFAULT NULL COMMENT '排序ID',
+	`visible` varchar(32) DEFAULT NULL COMMENT '是否前端可见',
+	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp ,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `AccountExtraInfoVO` (
+	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+	`accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '账户uuid',
+	`grade` varchar(32) DEFAULT NULL COMMENT '客户等级',
+	`companyNature` varchar(32) DEFAULT NULL COMMENT '公司性质',
+	`salesman` varchar(32) DEFAULT NULL COMMENT '业务员',
+	`contacts` varchar(32) DEFAULT NULL COMMENT '联系人',
+	`contactNumber` varchar(32) DEFAULT NULL COMMENT '联系电话',
 	`policy` text NOT NULL COMMENT '权限字符串',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createDate` timestamp ,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

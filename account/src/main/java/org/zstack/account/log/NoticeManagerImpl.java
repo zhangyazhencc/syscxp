@@ -35,19 +35,6 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
     private DatabaseFacade dbf;
     @Autowired
     private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
-    private ThreadFacade thdf;
-    @Autowired
-    private PluginRegistry pluginRgty;
-    @Autowired
-    private EventFacade evtf;
-    @Autowired
-    private GlobalConfigFacade gcf;
-
-    @Autowired
-    private EntityManagerFactory entityManagerFactory;
 
 
     @Override
@@ -89,25 +76,30 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
 
     private void hanle(APIUpdateNoticeMsg msg) {
         NoticeVO noticeVO = dbf.findByUuid(msg.getUuid(), NoticeVO.class);
-
+        boolean update = false;
         if (msg.getTitle() != null) {
             noticeVO.setTitle(msg.getTitle());
+            update = true;
         }
         if (msg.getLink() != null) {
             noticeVO.setLink(msg.getLink());
+            update = true;
         }
         if (msg.getStartTime() != null) {
             noticeVO.setStartTime(msg.getStartTime());
+            update = true;
         }
         if (msg.getEndTime() != null) {
             noticeVO.setEndTime(msg.getEndTime());
+            update = true;
         }
+        if (update)
+            dbf.updateAndRefresh(noticeVO);
 
         APIUpdateNoticeEvent evt = new APIUpdateNoticeEvent(msg.getId());
         NoticeInventory inv = NoticeInventory.valueOf(noticeVO);
         evt.setInventory(inv);
         bus.publish(evt);
-
 
     }
 
@@ -170,16 +162,11 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
                     "The Start time must be earlier than end time ."
             ));
         }
-        if (dbf.getCurrentSqlTime().after(end)) {
-            throw new ApiMessageInterceptionException(argerr(
-                    "The end time must be later than the current time  ."
-            ));
-        }
     }
 
     private void validate(APICreateNoticeMsg msg) {
 
-        checkStartAndEndTime(msg.getStartTime(), (msg.getEndTime()));
+        checkStartAndEndTime(msg.getStartTime(), msg.getEndTime());
     }
 
 }

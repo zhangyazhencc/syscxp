@@ -1,6 +1,5 @@
 package org.zstack.billing.header.identity.order;
 
-import org.zstack.billing.header.identity.OrderInventory;
 import org.zstack.header.message.APIEvent;
 
 public class APIUpdateOrderStateEvent extends APIEvent{
