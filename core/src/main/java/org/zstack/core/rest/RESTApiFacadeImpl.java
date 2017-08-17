@@ -46,9 +46,9 @@ public class RESTApiFacadeImpl implements RESTApiFacade, CloudBusEventListener, 
         for (String pkg : getBasePkgNames()) {
             for (BeanDefinition bd : scanner.findCandidateComponents(pkg)) {
                 Class<?> clazz = Class.forName(bd.getBeanClassName());
-                if (clazz == APIEvent.class) {
-                    continue;
-                }
+//                if (clazz == APIEvent.class) {
+//                    continue;
+//                }
                 APIEvent evt = (APIEvent) clazz.newInstance();
                 boundEvents.add(evt);
             }

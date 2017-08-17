@@ -792,7 +792,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
 
         private void handle(Event evt) {
-            String type = evt.getType().toString();
+            //String type = evt.getType().toString();
             List<EventListenerWrapper> lst = listeners.get(evt.getClass().getName());
             if (lst == null) {
                 return;
