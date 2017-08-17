@@ -17,6 +17,8 @@ public class AlarmContactInventory {
 
     private String email;
 
+    private String channel;
+
     private String accountUuid;
 
     private Timestamp lastOpDate;
@@ -30,6 +32,7 @@ public class AlarmContactInventory {
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
         inv.setName(vo.getName());
+        inv.setChannel(vo.getChannel());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
@@ -43,6 +46,13 @@ public class AlarmContactInventory {
         return lst;
     }
 
+    public String getChannel() {
+        return channel;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
 
     public String getUuid() {
         return uuid;

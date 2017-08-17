@@ -10,6 +10,7 @@ public class AlarmContactVO_ {
     public static volatile SingularAttribute<OperLogVO, String> name;
     public static volatile SingularAttribute<OperLogVO, String> phone;
     public static volatile SingularAttribute<OperLogVO, String> email;
+    public static volatile SingularAttribute<OperLogVO, String> channel;
     public static volatile SingularAttribute<OperLogVO, String> accountUuid;
     public static volatile SingularAttribute<OperLogVO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<OperLogVO, Timestamp> createDate;

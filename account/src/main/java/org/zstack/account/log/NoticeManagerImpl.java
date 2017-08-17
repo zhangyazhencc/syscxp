@@ -62,9 +62,65 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
             hanle((APIUpdateNoticeMsg) msg);
         } else if (msg instanceof APIDeleteNoticeMsg) {
             hanle((APIDeleteNoticeMsg) msg);
+        } else if (msg instanceof APICreateAlarmContactMsg) {
+            hanle((APICreateAlarmContactMsg) msg);
+        } else if (msg instanceof APIUpdateAlarmContactMsg) {
+            hanle((APIUpdateAlarmContactMsg) msg);
+        } else if (msg instanceof APIDeleteAlarmContactMsg) {
+            hanle((APIDeleteAlarmContactMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void hanle(APICreateAlarmContactMsg msg) {
+        AlarmContactVO vo = new AlarmContactVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setName(msg.getName());
+        vo.setPhone(msg.getPhone());
+        vo.setEmail(msg.getEmail());
+        vo.setChannel(msg.getChannel());
+        vo.setAccountUuid(msg.getAccountUuid());
+
+        AlarmContactVO alvo = dbf.persistAndRefresh(vo);
+        AlarmContactInventory inv = AlarmContactInventory.valueOf(alvo);
+        APICreateAlarmContactEvent evt = new APICreateAlarmContactEvent(msg.getId());
+        evt.setInventory(inv);
+        bus.publish(evt);
+
+    }
+    private void hanle(APIUpdateAlarmContactMsg msg) {
+        AlarmContactVO vo = dbf.findByUuid(msg.getUuid(), AlarmContactVO.class);
+        boolean update = false;
+        if (msg.getName()!=null){
+            vo.setName(msg.getName());
+            update = true;
+        }
+        if (msg.getPhone()!=null){
+            vo.setPhone(msg.getPhone());
+            update = true;
+        }
+        if (msg.getEmail()!=null){
+            vo.setEmail(msg.getEmail());
+            update = true;
+        }
+        if (msg.getChannel()!=null){
+            vo.setChannel(msg.getChannel());
+            update = true;
+        }
+        if (update)
+            vo = dbf.updateAndRefresh(vo);
+        APIUpdateAlarmContactEvent evt = new APIUpdateAlarmContactEvent(msg.getId());
+        AlarmContactInventory inv = AlarmContactInventory.valueOf(vo);
+        evt.setInventory(inv);
+        bus.publish(evt);
+
+    }
+    private void hanle(APIDeleteAlarmContactMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(),AlarmContactVO.class);
+
+        APIDeleteAlarmContactEvent evt = new APIDeleteAlarmContactEvent(msg.getId());
+        bus.publish(evt);
     }
 
     private void hanle(APIDeleteNoticeMsg msg) {
@@ -75,29 +131,29 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
     }
 
     private void hanle(APIUpdateNoticeMsg msg) {
-        NoticeVO noticeVO = dbf.findByUuid(msg.getUuid(), NoticeVO.class);
+        NoticeVO nvo = dbf.findByUuid(msg.getUuid(), NoticeVO.class);
         boolean update = false;
         if (msg.getTitle() != null) {
-            noticeVO.setTitle(msg.getTitle());
+            nvo.setTitle(msg.getTitle());
             update = true;
         }
         if (msg.getLink() != null) {
-            noticeVO.setLink(msg.getLink());
+            nvo.setLink(msg.getLink());
             update = true;
         }
         if (msg.getStartTime() != null) {
-            noticeVO.setStartTime(msg.getStartTime());
+            nvo.setStartTime(msg.getStartTime());
             update = true;
         }
         if (msg.getEndTime() != null) {
-            noticeVO.setEndTime(msg.getEndTime());
+            nvo.setEndTime(msg.getEndTime());
             update = true;
         }
         if (update)
-            dbf.updateAndRefresh(noticeVO);
+            nvo = dbf.updateAndRefresh(nvo);
 
         APIUpdateNoticeEvent evt = new APIUpdateNoticeEvent(msg.getId());
-        NoticeInventory inv = NoticeInventory.valueOf(noticeVO);
+        NoticeInventory inv = NoticeInventory.valueOf(nvo);
         evt.setInventory(inv);
         bus.publish(evt);
 
@@ -141,9 +197,24 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
             validate((APICreateNoticeMsg) msg);
         } else if (msg instanceof APIUpdateNoticeMsg) {
             validate((APIUpdateNoticeMsg) msg);
+        } else if (msg instanceof APICreateAlarmContactMsg) {
+            validate((APICreateAlarmContactMsg) msg);
+        } else if (msg instanceof APIUpdateAlarmContactMsg) {
+            validate((APIUpdateAlarmContactMsg) msg);
         }
 
         return msg;
+    }
+
+    private void validate(APIUpdateAlarmContactMsg msg) {
+        if (!dbf.isExist(msg.getUuid(), AlarmContactVO.class)){
+            throw new ApiMessageInterceptionException(argerr(
+                    "The AlarmContact[uuid:%S] does not exist.", msg.getUuid()
+            ));
+        }
+    }
+
+    private void validate(APICreateAlarmContactMsg msg) {
     }
 
     private void validate(APIUpdateNoticeMsg msg) {
