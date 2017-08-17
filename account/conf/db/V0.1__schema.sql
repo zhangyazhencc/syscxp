@@ -83,7 +83,7 @@ CREATE TABLE  `AccountApiSecurityVO` (
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---用户信息表
+-- 用户信息表
 CREATE TABLE  `UserVO` (
     `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
     `accountUuid` varchar(32) NOT NULL COMMENT '所属账户UUID',
@@ -100,7 +100,7 @@ CREATE TABLE  `UserVO` (
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
---角色策略表
+-- 角色策略表
 CREATE TABLE `PolicyVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`name` varchar(128) NOT NULL UNIQUE COMMENT '角色名称',
@@ -159,14 +159,21 @@ CREATE TABLE  `NoticeVO` (
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `AlarmContactVO` (
-    `uuid` varchar(32) NOT NULL UNIQUE,
-    `name` varchar(32) NOT NULL COMMENT '姓名',
-    `phone` varchar(32) NOT NULL COMMENT '手机号',
-    `email` varchar(32) NOT NULL COMMENT '邮箱',
-    `accountUuid` varchar(32) NOT NULL COMMENT '账户UUID',
-    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-    `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+CREATE TABLE  `NotificationVO` (
+    `uuid` VARCHAR(32) NOT NULL UNIQUE,
+    `name` VARCHAR(255) DEFAULT NULL,
+    `content` VARCHAR(255) DEFAULT NULL,
+    `arguments` VARCHAR(255) DEFAULT NULL,
+    `sender` VARCHAR(32) NOT NULL,
+    `status` VARCHAR(32) DEFAULT NULL,
+    `resourceUuid` VARCHAR(32) DEFAULT NULL,
+    `resourceType` VARCHAR(32) NOT NULL,
+    `type` VARCHAR(32) DEFAULT NULL,
+    `time` BIGINT UNSIGNED,
+    `opaque` VARCHAR(255) DEFAULT NULL,
+    `lastOpDate` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+    `createDate` TIMESTAMP,
+    `dateTime` TIMESTAMP,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -192,7 +199,6 @@ CREATE TABLE `PermissionVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`name` varchar(128) NOT NULL UNIQUE COMMENT '权限名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '权限描述',
-<<<<<<< HEAD
 	`permission` text NOT NULL COMMENT '权限字符串',
 	`type` varchar(32) DEFAULT NULL COMMENT '权限类型',
 	`sortId` varchar(32) DEFAULT NULL COMMENT '排序ID',
@@ -210,9 +216,7 @@ CREATE TABLE `AccountExtraInfoVO` (
 	`salesman` varchar(32) DEFAULT NULL COMMENT '业务员',
 	`contacts` varchar(32) DEFAULT NULL COMMENT '联系人',
 	`contactNumber` varchar(32) DEFAULT NULL COMMENT '联系电话',
-=======
 	`policy` text NOT NULL COMMENT '权限字符串',
->>>>>>> 4993a761587240fd1e76817a47f0a28c5c180319
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`uuid`)
