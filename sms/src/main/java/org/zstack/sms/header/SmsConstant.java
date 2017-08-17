@@ -6,6 +6,4 @@ import org.zstack.header.configuration.PythonClass;
 public interface SmsConstant {
     String SERVICE_ID = "sms";
 
-    String Identifying_Code_templateId = "8082";
-
 }
