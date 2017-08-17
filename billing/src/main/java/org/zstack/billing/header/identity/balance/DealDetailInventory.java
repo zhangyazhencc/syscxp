@@ -1,9 +1,6 @@
 package org.zstack.billing.header.identity.balance;
 
 
-import org.zstack.billing.header.identity.DealState;
-import org.zstack.billing.header.identity.DealType;
-import org.zstack.billing.header.identity.DealWay;
 import org.zstack.header.search.Inventory;
 
 import java.math.BigDecimal;

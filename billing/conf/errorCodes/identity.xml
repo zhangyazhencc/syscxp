@@ -29,6 +29,10 @@
         <id>2000</id>id>
         <description>Insufficient Balance</description>>
     </code>
+    <code>
+        <id>2001</id>id>
+        <description>not permit update</description>>
+    </code>
 
 </error>
 

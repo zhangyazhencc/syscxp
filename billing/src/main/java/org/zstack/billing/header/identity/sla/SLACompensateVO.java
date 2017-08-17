@@ -1,6 +1,6 @@
 package org.zstack.billing.header.identity.sla;
 
-import org.zstack.billing.header.identity.ProductType;
+import org.zstack.billing.header.identity.balance.ProductType;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
 

@@ -4,22 +4,22 @@
     <interceptor>BillingManager</interceptor>
 
     <message>
-        <name>org.zstack.billing.header.identity.APIGetAccountBalanceMsg</name>
+        <name>org.zstack.billing.header.identity.balance.APIGetAccountBalanceMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.identity.APIUpdateAccountBalanceMsg</name>
+        <name>org.zstack.billing.header.identity.balance.APIUpdateAccountBalanceMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.identity.APICreateOrderMsg</name>
+        <name>org.zstack.billing.header.identity.order.APICreateOrderMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.identity.APIGetExpenseGrossMonthListMsg</name>
+        <name>org.zstack.billing.header.identity.balance.APIGetExpenseGrossMonthListMsg</name>
     </message>
     <message>
-        <name>org.zstack.billing.header.identity.APIUpdateRenewMsg</name>
+        <name>org.zstack.billing.header.identity.renew.APIUpdateRenewMsg</name>
     </message>
 
     <message>
@@ -62,7 +62,7 @@
     </message>
 
     <message>
-        <name>org.zstack.billing.header.identity.APIQueryOrderMsg</name>
+        <name>org.zstack.billing.header.identity.order.APIQueryOrderMsg</name>
         <serviceId>query</serviceId>
     </message>
 

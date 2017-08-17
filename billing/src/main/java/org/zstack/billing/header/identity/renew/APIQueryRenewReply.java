@@ -1,7 +1,5 @@
 package org.zstack.billing.header.identity.renew;
 
-import org.zstack.billing.header.identity.OrderInventory;
-import org.zstack.billing.header.identity.RenewInventory;
 import org.zstack.header.query.APIQueryReply;
 
 import java.util.List;
