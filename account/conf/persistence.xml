@@ -19,5 +19,6 @@
 
         <class>org.zstack.account.header.log.OperLogVO</class>
         <class>org.zstack.account.header.log.NoticeVO</class>
+        <class>org.zstack.core.notification.NotificationVO</class>
     </persistence-unit>
 </persistence>
