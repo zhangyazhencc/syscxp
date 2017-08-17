@@ -101,10 +101,10 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreatePermisstionMsg</name>
+        <name>org.zstack.account.header.identity.APICreatePermissionMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIUpdatePermisstionMsg</name>
+        <name>org.zstack.account.header.identity.ADIUpdatePermissionMsg</name>
     </message>
     <message>
         <name>org.zstack.account.header.identity.APIDeletePermissionMsg</name>

@@ -97,10 +97,10 @@ public class AccountBase extends AbstractAccount {
             handle((APIDeletePolicyMsg) msg);
         }else if(msg instanceof APIAttachPolicyToUserMsg){
             handle((APIAttachPolicyToUserMsg) msg);
-        }else if(msg instanceof APIUpdatePermisstionMsg){
-            handle((APIUpdatePermisstionMsg) msg);
-        }else if(msg instanceof APICreatePermisstionMsg){
-            handle((APICreatePermisstionMsg) msg);
+        }else if(msg instanceof ADIUpdatePermissionMsg){
+            handle((ADIUpdatePermissionMsg) msg);
+        }else if(msg instanceof APICreatePermissionMsg){
+            handle((APICreatePermissionMsg) msg);
         }else if(msg instanceof APIDeletePermissionMsg){
             handle((APIDeletePermissionMsg) msg);
         }
@@ -443,7 +443,7 @@ public class AccountBase extends AbstractAccount {
         bus.publish(evt);
     }
 
-    private void handle(APICreatePermisstionMsg msg) {
+    private void handle(APICreatePermissionMsg msg) {
 
         PermissionVO auth = new PermissionVO();
         auth.setUuid(Platform.getUuid());
@@ -451,13 +451,13 @@ public class AccountBase extends AbstractAccount {
         auth.setName(msg.getName());
         auth.setDescription(msg.getDescription());
 
-        APICreatePermisstionEvent evt = new APICreatePermisstionEvent(msg.getId());
+        APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
         evt.setSuccess(true);
         evt.setInventory(PermissionInventory.valueOf(dbf.persistAndRefresh(auth)));
         bus.publish(evt);
     }
 
-    private void handle(APIUpdatePermisstionMsg msg) {
+    private void handle(ADIUpdatePermissionMsg msg) {
 
         PermissionVO auth = dbf.findByUuid(msg.getUuid(), PermissionVO.class);
 
@@ -480,7 +480,7 @@ public class AccountBase extends AbstractAccount {
         }
 
 
-        APICreatePermisstionEvent evt = new APICreatePermisstionEvent(msg.getId());
+        APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
         evt.setSuccess(true);
         evt.setInventory(PermissionInventory.valueOf(auth));
         bus.publish(evt);
@@ -489,7 +489,7 @@ public class AccountBase extends AbstractAccount {
 
     private void handle(APIDeletePermissionMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), PermissionVO.class);
-        APICreatePermisstionEvent evt = new APICreatePermisstionEvent(msg.getId());
+        APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
         evt.setSuccess(true);
         bus.publish(evt);
     }
