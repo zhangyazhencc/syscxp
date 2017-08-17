@@ -7,24 +7,28 @@ import org.zstack.header.message.APIParam;
 @Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
 public class APICreateUserMsg extends APICreateMessage implements AccountMessage {
 
-    @APIParam(maxLength = 255)
+    @APIParam(maxLength = 128)
     private String name;
-    @APIParam(maxLength = 255)
+    @APIParam(maxLength = 128)
     private String password;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 32, required = false)
     private String accountUuid;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 36, required = false)
     private String email;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 32, required = false)
     private String phone;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 128, required = false)
     private String trueName;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 128, required = false)
     private String department;
     @APIParam(validValues = {"Available", "Disabled"}, required = false)
     private String status;
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 255, required = false)
     private String description;
+
+    @APIParam(maxLength = 255, required = false)
+    private String policyUuid;
+
 
     public String getDescription() {
         return description;
@@ -97,5 +101,13 @@ public class APICreateUserMsg extends APICreateMessage implements AccountMessage
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getPolicyUuid() {
+        return policyUuid;
+    }
+
+    public void setPolicyUuid(String policyUuid) {
+        this.policyUuid = policyUuid;
     }
 }

@@ -13,7 +13,7 @@ import java.util.List;
 import static org.zstack.utils.CollectionDSL.list;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
-public class APICreatePolicyMsg extends  APIMessage {
+public class APICreatePolicyMsg extends  APIMessage implements AccountMessage{
     @APIParam(maxLength = 255)
     private String name;
 

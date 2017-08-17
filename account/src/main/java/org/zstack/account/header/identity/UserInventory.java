@@ -34,6 +34,8 @@ public class UserInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
+    private String policyUuid;
+
     public static UserInventory valueOf(UserVO vo) {
         UserInventory inv = new UserInventory();
         inv.setUuid(vo.getUuid());
@@ -47,6 +49,27 @@ public class UserInventory {
         inv.setTrueName(vo.getTrueName());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setDescription(vo.getDescription());
+        return inv;
+    }
+
+    public static UserInventory valueOf(UserVO vo,UserPolicyRefVO uprfvo) {
+        UserInventory inv = new UserInventory();
+        inv.setUuid(vo.getUuid());
+        inv.setAccountUuid(vo.getAccountUuid());
+        inv.setCreateDate(vo.getCreateDate());
+        inv.setName(vo.getName());
+        inv.setDepartment(vo.getDepartment());
+        inv.setEmail(vo.getEmail());
+        inv.setPhone(vo.getPhone());
+        inv.setStatus(vo.getStatus().toString());
+        inv.setTrueName(vo.getTrueName());
+        inv.setLastOpDate(vo.getLastOpDate());
+        inv.setDescription(vo.getDescription());
+
+        if(inv.getPolicyUuid() != null){
+            inv.setPolicyUuid(uprfvo.getPolicyUuid());
+        }
+
         return inv;
     }
 
@@ -144,5 +167,13 @@ public class UserInventory {
 
     public void setDepartment(String department) {
         this.department = department;
+    }
+
+    public String getPolicyUuid() {
+        return policyUuid;
+    }
+
+    public void setPolicyUuid(String policyUuid) {
+        this.policyUuid = policyUuid;
     }
 }

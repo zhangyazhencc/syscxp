@@ -394,6 +394,10 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIUpdateAccountEmailMsg) msg);
         } else if (msg instanceof APIUpdateUserMsg) {
             validate((APIUpdateUserMsg) msg);
+        } else if (msg instanceof APIDetachPolicyFromUserMsg) {
+            validate((APIDetachPolicyFromUserMsg) msg);
+        } else if (msg instanceof APIAttachPolicyToUserMsg) {
+            validate((APIAttachPolicyToUserMsg) msg);
         }
 
         setServiceId(msg);
@@ -472,8 +476,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void validate(APIUpdateUserMsg msg) {
         UserVO user = dbf.findByUuid(msg.getTargetUuid(), UserVO.class);
-        if (!AccountConstant.INITIAL_SYSTEM_ADMIN_UUID.equals(msg.getUuid()) &&
-                !user.getAccountUuid().equals(msg.getUuid())) {
+        if (!AccountConstant.INITIAL_SYSTEM_ADMIN_UUID.equals(msg.getAccountUuid()) &&
+                !user.getAccountUuid().equals(msg.getAccountUuid())) {
             throw new OperationFailureException(argerr("the user[uuid:%s] does not belong to the" +
                     " account[uuid:%s]", user.getUuid(),user.getAccountUuid()));
         }
@@ -481,15 +485,34 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
 
     private void validate(APIUpdateAccountMsg msg) {
-        AccountVO account = dbf.findByUuid(msg.getSession().getUuid(), AccountVO.class);
+        AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
         if (!account.getType().equals(AccountType.SystemAdmin) &&
-                !msg.getSession().getUuid().equals(msg.getTargetUuid())) {
+                !msg.getSession().getAccountUuid().equals(msg.getTargetUuid())) {
             throw new OperationFailureException(operr("account[uuid: %s, name: %s] is a normal account, it cannot reset the password of another account[uuid: %s]",
                     account.getUuid(), account.getName(), msg.getTargetUuid()));
         }
+    }
 
+    private void validate(APIDetachPolicyFromUserMsg msg) {
+        SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
+        q.add(UserVO_.uuid, Op.EQ, msg.getUserUuid());
+        UserVO user = q.find();
+        if (!msg.getSession().getType().equals(AccountType.SystemAdmin) &&
+                !msg.getSession().getAccountUuid().equals(user.getAccountUuid())) {
+            throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot set the policy of the other user[uuid: %s]",
+                    msg.getAccountUuid(), msg.getUserUuid()));
+        }
+    }
 
-
+    private void validate(APIAttachPolicyToUserMsg msg) {
+        SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
+        q.add(UserVO_.uuid, Op.EQ, msg.getUserUuid());
+        UserVO user = q.find();
+        if (!msg.getSession().getType().equals(AccountType.SystemAdmin) &&
+                !msg.getSession().getAccountUuid().equals(user.getAccountUuid())) {
+            throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot set the policy of the other user[uuid: %s]",
+                    msg.getAccountUuid(), msg.getUserUuid()));
+        }
     }
 
     private void setServiceId(APIMessage msg) {
