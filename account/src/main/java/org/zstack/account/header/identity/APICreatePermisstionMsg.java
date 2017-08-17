@@ -5,7 +5,7 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
-public class APICreateAuthorityMsg extends  APIMessage {
+public class APICreatePermisstionMsg extends  APIMessage {
     @APIParam(maxLength = 255)
     private String name;
 
