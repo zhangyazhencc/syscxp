@@ -26,6 +26,7 @@ import org.zstack.header.message.*;
 import org.zstack.utils.*;
 import org.zstack.utils.logging.CLogger;
 
+import org.zstack.sms.SmsService;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
@@ -58,6 +59,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private PluginRegistry pluginRgty;
     @Autowired
     private IdentiyInterceptor identiyInterceptor;
+
+    @Autowired
+    private SmsService smsService;
 
     @Override
     @MessageSafe
@@ -354,7 +358,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 vo.setEmail(AccountConstant.INITIAL_SYSTEM_ADMIN_EMAIL);
                 vo.setType(AccountType.SystemAdmin);
                 vo.setStatus(AccountStatus.Available);
-                vo.setGrade(AccountGrade.Important);
+//                vo.setGrade(AccountGrade.Important);
 
                 dbf.persist(vo);
                 logger.debug(String.format("Created initial system admin account[name:%s]", AccountConstant.INITIAL_SYSTEM_ADMIN_NAME));
@@ -415,45 +419,45 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateUserPhoneMsg msg) {
-        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getSession().getUuid()+"code"))) {
+        if (!smsService.ValidateVerificationCode(msg.getPhone(),msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
     }
 
     private void validate(APIUpdateUserPWDMsg msg) {
-        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getSession().getUuid()+"code"))) {
+        if (!smsService.ValidateVerificationCode(msg.getPhone(),msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
     }
 
     private void validate(APIUpdateUserEmailMsg msg) {
-        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getSession().getUuid()+"code"))) {
-            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-                    msg.getSession().getAccountUuid()));
-        }
+//        if () {
+//            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+//                    msg.getSession().getAccountUuid()));
+//        }
     }
 
     private void validate(APIUpdateAccountPWDMsg msg) {
-        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getSession().getUuid()+"code"))) {
+        if (!smsService.ValidateVerificationCode(msg.getPhone(),msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
     }
 
     private void validate(APIUpdateAccountPhoneMsg msg) {
-        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getSession().getUuid()+"code"))) {
+        if (!smsService.ValidateVerificationCode(msg.getPhone(),msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
     }
 
     private void validate(APIUpdateAccountEmailMsg msg) {
-        if (!msg.getCode().equals(identiyInterceptor.getSessions().get(msg.getSession().getUuid()+"code"))) {
-            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-                    msg.getSession().getAccountUuid()));
-        }
+//        if () {
+//            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+//                    msg.getSession().getAccountUuid()));
+//        }
     }
 
 

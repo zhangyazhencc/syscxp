@@ -9,10 +9,10 @@ import org.zstack.header.message.APIParam;
 public class APIUpdateAccountPWDMsg extends APIMessage implements AccountMessage {
 
     @APIParam
-    private String code;
+    private String phone;
 
     @APIParam
-    private boolean isupdate;
+    private String code;
 
     @APIParam
     private String oldpassword;
@@ -20,13 +20,8 @@ public class APIUpdateAccountPWDMsg extends APIMessage implements AccountMessage
     @APIParam(maxLength = 2048)
     private String newpassword;
 
-
     public String getCode() {
         return code;
-    }
-
-    public boolean isIsupdate() {
-        return isupdate;
     }
 
     public String getOldpassword() {
@@ -41,10 +36,6 @@ public class APIUpdateAccountPWDMsg extends APIMessage implements AccountMessage
         this.code = code;
     }
 
-    public void setIsupdate(boolean isupdate) {
-        this.isupdate = isupdate;
-    }
-
     public void setOldpassword(String oldpassword) {
         this.oldpassword = oldpassword;
     }
@@ -53,6 +44,13 @@ public class APIUpdateAccountPWDMsg extends APIMessage implements AccountMessage
         this.newpassword = newpassword;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
     @Override
     public String getAccountUuid() {
