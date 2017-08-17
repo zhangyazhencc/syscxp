@@ -12,21 +12,13 @@ public class APIUpdateAccountPWDMsg extends APIMessage implements AccountMessage
     private String code;
 
     @APIParam
-    private boolean isupdate;
-
-    @APIParam
     private String oldpassword;
 
     @APIParam(maxLength = 2048)
     private String newpassword;
 
-
     public String getCode() {
         return code;
-    }
-
-    public boolean isIsupdate() {
-        return isupdate;
     }
 
     public String getOldpassword() {
@@ -39,10 +31,6 @@ public class APIUpdateAccountPWDMsg extends APIMessage implements AccountMessage
 
     public void setCode(String code) {
         this.code = code;
-    }
-
-    public void setIsupdate(boolean isupdate) {
-        this.isupdate = isupdate;
     }
 
     public void setOldpassword(String oldpassword) {
