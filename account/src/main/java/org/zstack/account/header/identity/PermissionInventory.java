@@ -13,7 +13,7 @@ public class PermissionInventory {
 
     private String uuid;
     private String name;
-    private String policy;
+    private String permission;
     private String description;
     private Timestamp createDate;
     private Timestamp lastOpDate;
@@ -22,7 +22,7 @@ public class PermissionInventory {
         PermissionInventory inv = new PermissionInventory();
         inv.setName(vo.getName());
         inv.setUuid(vo.getUuid());
-        inv.setPolicy(vo.getPolicy());
+        inv.setPermission(vo.getPermission());
         inv.setDescription(vo.getDescription());
         return inv;
     }
@@ -41,10 +41,6 @@ public class PermissionInventory {
 
     public String getName() {
         return name;
-    }
-
-    public String getPolicy() {
-        return policy;
     }
 
     public String getDescription() {
@@ -67,8 +63,12 @@ public class PermissionInventory {
         this.name = name;
     }
 
-    public void setPolicy(String policy) {
-        this.policy = policy;
+    public String getPermission() {
+        return permission;
+    }
+
+    public void setPermission(String permission) {
+        this.permission = permission;
     }
 
     public void setDescription(String description) {

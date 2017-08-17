@@ -26,6 +26,7 @@ import org.zstack.header.message.*;
 import org.zstack.utils.*;
 import org.zstack.utils.logging.CLogger;
 
+import org.zstack.sms.SmsService;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
@@ -58,6 +59,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private PluginRegistry pluginRgty;
     @Autowired
     private IdentiyInterceptor identiyInterceptor;
+
+    @Autowired
+    private SmsService smsService;
 
     @Override
     @MessageSafe
