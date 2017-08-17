@@ -14,7 +14,7 @@ public class APIUpdatePermisstionMsg extends  APIMessage {
     private String name;
 
     @APIParam(maxLength = 255)
-    public String authority;
+    public String permisstion;
 
     @APIParam(maxLength = 2048, required = false)
     private String description;
@@ -23,8 +23,8 @@ public class APIUpdatePermisstionMsg extends  APIMessage {
         return name;
     }
 
-    public String getAuthority() {
-        return authority;
+    public String getPermisstion() {
+        return permisstion;
     }
 
     public String getDescription() {
@@ -35,8 +35,8 @@ public class APIUpdatePermisstionMsg extends  APIMessage {
         this.name = name;
     }
 
-    public void setAuthority(String authority) {
-        this.authority = authority;
+    public void setPermisstion(String permisstion) {
+        this.permisstion = permisstion;
     }
 
     public void setDescription(String description) {

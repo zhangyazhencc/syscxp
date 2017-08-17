@@ -472,8 +472,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void validate(APIUpdateUserMsg msg) {
         UserVO user = dbf.findByUuid(msg.getTargetUuid(), UserVO.class);
-        if (!AccountConstant.INITIAL_SYSTEM_ADMIN_UUID.equals(msg.getUuid()) &&
-                !user.getAccountUuid().equals(msg.getUuid())) {
+        if (!AccountConstant.INITIAL_SYSTEM_ADMIN_UUID.equals(msg.getAccountUuid()) &&
+                !user.getAccountUuid().equals(msg.getAccountUuid())) {
             throw new OperationFailureException(argerr("the user[uuid:%s] does not belong to the" +
                     " account[uuid:%s]", user.getUuid(),user.getAccountUuid()));
         }
