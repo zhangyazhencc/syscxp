@@ -213,12 +213,13 @@ DROP TABLE IF EXISTS `ProductPriceUnitVO`;
 
 CREATE TABLE `ProductPriceUnitVO` (
     `uuid` varchar(32) NOT NULL,
+    `productName` varchar(50) DEFAULT NULL COMMENT '产品-价格名称',
     `productType` varchar(50) DEFAULT NULL COMMENT '产品类型',
     `category` varchar(50) DEFAULT NULL COMMENT '分类',
     `config` varchar(128) DEFAULT NULL COMMENT '配置',
     `priceUnit` int DEFAULT NULL COMMENT '单价',
     `comment` varchar(500) DEFAULT NULL COMMENT '备注',
-     `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
+    `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
     `createDate` timestamp NOT NULL DEFAULT current_timestamp(),
     PRIMARY KEY (`uuid`),
     UNIQUE KEY `NewIndex1` (`productType`,`category`,`config`)

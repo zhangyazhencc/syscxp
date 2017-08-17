@@ -1,7 +1,7 @@
 package org.zstack.billing.header.identity.sla;
 
 
-import org.zstack.billing.header.identity.ProductType;
+import org.zstack.billing.header.identity.balance.ProductType;
 import org.zstack.header.search.Inventory;
 
 import java.sql.Timestamp;

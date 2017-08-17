@@ -1,10 +1,9 @@
 package org.zstack.billing.header.identity.sla;
 
-import org.zstack.billing.header.identity.ProductType;
+import org.zstack.billing.header.identity.balance.ProductType;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @StaticMetamodel(SLACompensateVO.class)
