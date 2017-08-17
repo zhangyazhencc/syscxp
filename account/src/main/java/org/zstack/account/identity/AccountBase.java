@@ -4,6 +4,7 @@ import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.transaction.annotation.Transactional;
 import org.zstack.account.header.identity.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cascade.CascadeFacade;
@@ -179,7 +180,7 @@ public class AccountBase extends AbstractAccount {
         bus.publish(evt);
     }
 
-
+    @Transactional
     private  void handle(APIUpdateAccountMsg msg) {
         AccountVO account = dbf.findByUuid(msg.getTargetUuid(), AccountVO.class);
         AccountExtraInfoVO aeivo = dbf.findByUuid(msg.getTargetUuid(), AccountExtraInfoVO.class);
@@ -252,7 +253,7 @@ public class AccountBase extends AbstractAccount {
 
     }
 
-
+    @Transactional
     private void handle(APIUpdateUserMsg msg) {
         UserVO user = dbf.findByUuid(msg.getTargetUuid(), UserVO.class);
 
@@ -314,7 +315,7 @@ public class AccountBase extends AbstractAccount {
         bus.publish(evt);
     }
 
-
+    @Transactional
     private void handle(APICreateAccountMsg msg) {
 
         AccountVO vo = new AccountVO();
@@ -353,11 +354,22 @@ public class AccountBase extends AbstractAccount {
         vo = dbf.persistAndRefresh(vo);
         aeivo = dbf.persistAndRefresh(aeivo);
 
+        if(msg.getSession().getType().equals(AccountType.Proxy)||
+                msg.getSession().getType().equals(AccountType.SystemAdmin)){
+
+            ProxyAccountRefVO  prevo = new ProxyAccountRefVO();
+            prevo.setAccountUuid(msg.getAccountUuid());
+            prevo.setCustomerAcccountUuid(vo.getUuid());
+
+            dbf.persistAndRefresh(prevo);
+        }
+
         APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
         evt.setInventory(AccountInventory.valueOf(vo, aeivo));
         bus.publish(evt);
     }
 
+    @Transactional
     private void handle(APICreateUserMsg msg) {
 
         UserVO uservo = new UserVO();
@@ -478,7 +490,6 @@ public class AccountBase extends AbstractAccount {
         if (update) {
             auth = dbf.updateAndRefresh(auth);
         }
-
 
         APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
         evt.setSuccess(true);
