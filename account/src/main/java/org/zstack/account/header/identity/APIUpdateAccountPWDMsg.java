@@ -9,6 +9,9 @@ import org.zstack.header.message.APIParam;
 public class APIUpdateAccountPWDMsg extends APIMessage implements AccountMessage {
 
     @APIParam
+    private String phone;
+
+    @APIParam
     private String code;
 
     @APIParam
@@ -41,6 +44,13 @@ public class APIUpdateAccountPWDMsg extends APIMessage implements AccountMessage
         this.newpassword = newpassword;
     }
 
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
     @Override
     public String getAccountUuid() {

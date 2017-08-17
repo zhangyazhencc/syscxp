@@ -7,6 +7,10 @@ import org.zstack.header.message.APIParam;
  * Created by wangwg on 2017/8/8.
  */
 public class APIUpdateAccountPhoneMsg extends APIMessage implements AccountMessage{
+
+    @APIParam
+    private String phone;
+
     @APIParam
     private String newphone;
 
@@ -27,6 +31,14 @@ public class APIUpdateAccountPhoneMsg extends APIMessage implements AccountMessa
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     @Override

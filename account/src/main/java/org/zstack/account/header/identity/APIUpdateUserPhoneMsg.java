@@ -8,7 +8,10 @@ import org.zstack.header.message.APIParam;
  */
 public class APIUpdateUserPhoneMsg extends APIMessage implements AccountMessage{
 
-    @APIParam(maxLength = 32)
+    @APIParam(maxLength = 36)
+    private String phone;
+
+    @APIParam(maxLength = 36)
     private String newPhone;
 
     @APIParam(maxLength = 36)
@@ -28,6 +31,14 @@ public class APIUpdateUserPhoneMsg extends APIMessage implements AccountMessage{
 
     public void setNewPhone(String newPhone) {
         this.newPhone = newPhone;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
     @Override
