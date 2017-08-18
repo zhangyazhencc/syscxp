@@ -15,16 +15,24 @@ import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.*;
 import org.zstack.core.errorcode.ErrorFacade;
 
+import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.*;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
+import org.zstack.sms.SmsService;
 import org.zstack.utils.ExceptionDSL;
 import org.zstack.utils.Utils;
+
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
+import java.util.Random;
+import java.util.UUID;
+
+import static java.util.UUID.randomUUID;
+import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
@@ -48,6 +56,8 @@ public class AccountBase extends AbstractAccount {
 
     private AccountVO vo;
 
+    @Autowired
+    private SmsService smsService;
     public AccountBase(AccountVO vo) {
         this.vo = vo;
     }
@@ -101,10 +111,57 @@ public class AccountBase extends AbstractAccount {
             handle((APICreatePermissionMsg) msg);
         }else if(msg instanceof APIDeletePermissionMsg){
             handle((APIDeletePermissionMsg) msg);
+        }else if(msg instanceof APIAccountPhoneAuthenticationMsg){
+            handle((APIAccountPhoneAuthenticationMsg) msg);
+        }else if(msg instanceof APIUserPhoneAuthenticationMsg){
+            handle((APIUserPhoneAuthenticationMsg) msg);
         }
+
         else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    public String getRandomString(int length) {
+        String base = "ABCDEFGFHJKMOPQRSTUVWXYZabcdefghjkmnopqrstuvwxy023456789";
+        Random random = new Random();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length; i++) {
+            int number = random.nextInt(base.length());
+            sb.append(base.charAt(number));
+        }
+        return sb.toString();
+    }
+
+
+    private void handle(APIAccountPhoneAuthenticationMsg msg) {
+
+        APIAccountPhoneAuthenticationEvent evt = new APIAccountPhoneAuthenticationEvent(msg.getId());
+        AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
+        if (!smsService.validateVerificationCode(account.getPhone(),msg.getCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getSession().getAccountUuid()));
+        }
+
+        evt.setPhone(account.getPhone());
+        account.setPhoneStatus(AccountAuthentication.YES);
+        dbf.updateAndRefresh(account);
+
+        bus.publish(evt);
+    }
+
+    private void handle(APIUserPhoneAuthenticationMsg msg) {
+
+        APIUserPhoneAuthenticationEvent evt = new APIUserPhoneAuthenticationEvent(msg.getId());
+        UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
+        if (!smsService.validateVerificationCode(user.getPhone(),msg.getCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getSession().getAccountUuid()));
+        }
+        evt.setPhone(user.getPhone());
+        user.setPhoneStatus(AccountAuthentication.YES);
+        dbf.updateAndRefresh(user);
+        bus.publish(evt);
     }
 
     private void handle(APIUpdateUserPWDMsg msg) {
@@ -138,7 +195,7 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIUpdateAccountPhoneMsg msg) {
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
 
-        AccountVO account = dbf.findByUuid(msg.getSession().getUuid(), AccountVO.class);
+        AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
         account.setPhone(msg.getNewphone());
         evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
 
@@ -148,7 +205,7 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIUpdateUserPhoneMsg msg) {
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
 
-        UserVO user = dbf.findByUuid(msg.getSession().getUuid(), UserVO.class);
+        UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
         user.setPhone(msg.getNewPhone());
         evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
 
@@ -159,7 +216,7 @@ public class AccountBase extends AbstractAccount {
 
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
 
-        AccountVO account = dbf.findByUuid(msg.getSession().getUuid(), AccountVO.class);
+        AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
         account.setEmail(msg.getEmail());
         evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
 
@@ -170,7 +227,7 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIUpdateUserEmailMsg msg) {
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
 
-        UserVO user = dbf.findByUuid(msg.getSession().getUuid(), UserVO.class);
+        UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
         user.setEmail(msg.getNewEmail());
         evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
 
@@ -353,6 +410,13 @@ public class AccountBase extends AbstractAccount {
 
         vo = dbf.persistAndRefresh(vo);
         aeivo = dbf.persistAndRefresh(aeivo);
+
+        AccountApiSecurityVO api = new AccountApiSecurityVO();
+        api.setUuid(Platform.getUuid());
+        api.setAccountUuid(vo.getUuid());
+        api.setPrivateKey(getRandomString(36));
+        api.setPublicKey(getRandomString(36));
+        dbf.persistAndRefresh(api);
 
         if(msg.getSession().getType().equals(AccountType.Proxy)||
                 msg.getSession().getType().equals(AccountType.SystemAdmin)){

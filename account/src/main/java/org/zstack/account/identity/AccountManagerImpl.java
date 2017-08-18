@@ -360,7 +360,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 vo.setEmailStatus(AccountAuthentication.YES);
                 vo.setType(AccountType.SystemAdmin);
                 vo.setStatus(AccountStatus.Available);
-//                vo.setGrade(AccountGrade.Important);
 
                 dbf.persist(vo);
                 logger.debug(String.format("Created initial system admin account[name:%s]", AccountConstant.INITIAL_SYSTEM_ADMIN_NAME));
@@ -411,6 +410,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
         return msg;
     }
+
 
     private void validate(APILogInByUserMsg msg) {
         if (msg.getAccountName() == null && msg.getAccountUuid() == null) {
