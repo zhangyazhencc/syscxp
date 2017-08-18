@@ -358,7 +358,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 vo.setEmail(AccountConstant.INITIAL_SYSTEM_ADMIN_EMAIL);
                 vo.setType(AccountType.SystemAdmin);
                 vo.setStatus(AccountStatus.Available);
-//                vo.setGrade(AccountGrade.Important);
 
                 dbf.persist(vo);
                 logger.debug(String.format("Created initial system admin account[name:%s]", AccountConstant.INITIAL_SYSTEM_ADMIN_NAME));

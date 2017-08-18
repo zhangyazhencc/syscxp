@@ -117,12 +117,10 @@ public class AccountBase extends AbstractAccount {
             handle((APIUserPhoneAuthenticationMsg) msg);
         }
 
-
         else {
             bus.dealWithUnknownMessage(msg);
         }
     }
-
 
     public String getRandomString(int length) {
         String base = "ABCDEFGFHJKMOPQRSTUVWXYZabcdefghjkmnopqrstuvwxy023456789";
@@ -140,7 +138,7 @@ public class AccountBase extends AbstractAccount {
 
         APIAccountPhoneAuthenticationEvent evt = new APIAccountPhoneAuthenticationEvent(msg.getId());
         AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
-        if (!smsService.ValidateVerificationCode(account.getPhone(),msg.getCode())) {
+        if (!smsService.validateVerificationCode(account.getPhone(),msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
@@ -156,7 +154,7 @@ public class AccountBase extends AbstractAccount {
 
         APIUserPhoneAuthenticationEvent evt = new APIUserPhoneAuthenticationEvent(msg.getId());
         UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
-        if (!smsService.ValidateVerificationCode(user.getPhone(),msg.getCode())) {
+        if (!smsService.validateVerificationCode(user.getPhone(),msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
@@ -418,7 +416,6 @@ public class AccountBase extends AbstractAccount {
         api.setAccountUuid(vo.getUuid());
         api.setPrivateKey(getRandomString(36));
         api.setPublicKey(getRandomString(36));
-
         dbf.persistAndRefresh(api);
 
         if(msg.getSession().getType().equals(AccountType.Proxy)||
