@@ -104,7 +104,7 @@
         <name>org.zstack.account.header.identity.APICreatePermissionMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.ADIUpdatePermissionMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdatePermissionMsg</name>
     </message>
     <message>
         <name>org.zstack.account.header.identity.APIDeletePermissionMsg</name>
