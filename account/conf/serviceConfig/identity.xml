@@ -63,6 +63,10 @@
         <name>org.zstack.account.header.identity.APIQueryAccountApiSecurityMsg</name>
         <serviceId>query</serviceId>
     </message>
+    <message>
+        <name>org.zstack.account.header.identity.APIQueryAccountExtraInfoMsg</name>
+        <serviceId>query</serviceId>
+    </message>
 
     <message>
         <name>org.zstack.account.header.identity.APICheckApiPermissionMsg</name>
