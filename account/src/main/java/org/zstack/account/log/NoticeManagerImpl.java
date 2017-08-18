@@ -89,22 +89,23 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
         bus.publish(evt);
 
     }
+
     private void hanle(APIUpdateAlarmContactMsg msg) {
         AlarmContactVO vo = dbf.findByUuid(msg.getUuid(), AlarmContactVO.class);
         boolean update = false;
-        if (msg.getName()!=null){
+        if (msg.getName() != null) {
             vo.setName(msg.getName());
             update = true;
         }
-        if (msg.getPhone()!=null){
+        if (msg.getPhone() != null) {
             vo.setPhone(msg.getPhone());
             update = true;
         }
-        if (msg.getEmail()!=null){
+        if (msg.getEmail() != null) {
             vo.setEmail(msg.getEmail());
             update = true;
         }
-        if (msg.getChannel()!=null){
+        if (msg.getChannel() != null) {
             vo.setChannel(msg.getChannel());
             update = true;
         }
@@ -116,8 +117,9 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
         bus.publish(evt);
 
     }
+
     private void hanle(APIDeleteAlarmContactMsg msg) {
-        dbf.removeByPrimaryKey(msg.getUuid(),AlarmContactVO.class);
+        dbf.removeByPrimaryKey(msg.getUuid(), AlarmContactVO.class);
 
         APIDeleteAlarmContactEvent evt = new APIDeleteAlarmContactEvent(msg.getId());
         bus.publish(evt);
@@ -149,6 +151,10 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
             nvo.setEndTime(msg.getEndTime());
             update = true;
         }
+        if (msg.getStatus() != null) {
+            nvo.setStatus(NoticeStatus.valueOf(msg.getStatus()));
+            update = true;
+        }
         if (update)
             nvo = dbf.updateAndRefresh(nvo);
 
@@ -166,7 +172,7 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
         noticeVO.setLink(msg.getLink());
         noticeVO.setStartTime(msg.getStartTime());
         noticeVO.setEndTime(msg.getEndTime());
-        noticeVO.setStatus(NoticeStatus.NORMAL);
+        noticeVO.setStatus(NoticeStatus.INVALID);
 
         NoticeVO nvo = dbf.persistAndRefresh(noticeVO);
 
@@ -207,7 +213,7 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
     }
 
     private void validate(APIUpdateAlarmContactMsg msg) {
-        if (!dbf.isExist(msg.getUuid(), AlarmContactVO.class)){
+        if (!dbf.isExist(msg.getUuid(), AlarmContactVO.class)) {
             throw new ApiMessageInterceptionException(argerr(
                     "The AlarmContact[uuid:%S] does not exist.", msg.getUuid()
             ));
@@ -231,6 +237,11 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
         if (start.after(end)) {
             throw new ApiMessageInterceptionException(argerr(
                     "The Start time must be earlier than end time ."
+            ));
+        }
+        if (dbf.getCurrentSqlTime().after(end)) {
+            throw new ApiMessageInterceptionException(argerr(
+                    "The end time must be later than the current time ."
             ));
         }
     }

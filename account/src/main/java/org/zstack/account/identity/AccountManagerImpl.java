@@ -355,7 +355,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 vo.setName(AccountConstant.INITIAL_SYSTEM_ADMIN_NAME);
                 vo.setPassword(AccountConstant.INITIAL_SYSTEM_ADMIN_PASSWORD);
                 vo.setPhone(AccountConstant.INITIAL_SYSTEM_ADMIN_PHONE);
+                vo.setPhoneStatus(AccountAuthentication.YES);
                 vo.setEmail(AccountConstant.INITIAL_SYSTEM_ADMIN_EMAIL);
+                vo.setEmailStatus(AccountAuthentication.YES);
                 vo.setType(AccountType.SystemAdmin);
                 vo.setStatus(AccountStatus.Available);
 //                vo.setGrade(AccountGrade.Important);

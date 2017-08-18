@@ -18,6 +18,16 @@ public class APIUpdateNoticeMsg extends APIMessage {
     private Timestamp startTime;
     @APIParam(required = false)
     private Timestamp endTime;
+    @APIParam(required = false)
+    private String status;
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
 
     public String getUuid() {
         return uuid;

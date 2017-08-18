@@ -143,7 +143,7 @@ CREATE TABLE  `OperLogVO` (
     `state` varchar(32) DEFAULT NULL COMMENT '状态',
     `description` varchar(255) DEFAULT NULL COMMENT '描述',
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-    `createDate` timestamp  NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `createDate` timestamp,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -155,7 +155,7 @@ CREATE TABLE  `NoticeVO` (
     `startTime` timestamp NULL DEFAULT NULL COMMENT '开始时间',
     `endTime` timestamp NULL DEFAULT NULL COMMENT '结束时间',
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-    `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    `createDate` timestamp,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
