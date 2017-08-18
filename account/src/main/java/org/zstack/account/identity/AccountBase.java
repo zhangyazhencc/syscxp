@@ -288,12 +288,6 @@ public class AccountBase extends AbstractAccount {
         if (msg.getCompanyNature() != null) {
             aeivo.setCompanyNature(msg.getCompanyNature());
         }
-        if (msg.getContacts() != null) {
-            aeivo.setContacts(msg.getContacts());
-        }
-        if (msg.getContactNumber() != null) {
-            aeivo.setContactNumber(msg.getContactNumber());
-        }
         if (msg.getSalesman() != null) {
             aeivo.setSalesman(msg.getSalesman());
         }
@@ -388,7 +382,6 @@ public class AccountBase extends AbstractAccount {
         vo.setPhoneStatus(AccountAuthentication.NO);
         vo.setEmailStatus(AccountAuthentication.NO);
 
-
         AccountExtraInfoVO aeivo = new AccountExtraInfoVO();
         aeivo.setUuid(Platform.getUuid());
         aeivo.setAccountUuid(vo.getUuid());
@@ -398,12 +391,7 @@ public class AccountBase extends AbstractAccount {
         if(msg.getGrade() != null){
             aeivo.setGrade(msg.getGrade());
         }
-        if(msg.getContacts() != null){
-            aeivo.setContacts(msg.getContacts());
-        }
-        if(msg.getContactNumber() != null){
-            aeivo.setContactNumber(msg.getContactNumber());
-        }
+
         if(msg.getSalesman() != null){
             aeivo.setSalesman(msg.getSalesman());
         }

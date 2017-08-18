@@ -1,9 +1,8 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.AccountGrade;
-import org.zstack.header.identity.AccountStatus;
-import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.CompanyNature;
+import org.zstack.header.identity.NoticeWay;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
 import org.zstack.header.vo.Index;
@@ -12,7 +11,7 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 
 /**
- * Created by wangwg on 2017/8/16.
+ * Created by wangwg on 2017/8/18.
  */
 
 @Entity
@@ -20,25 +19,29 @@ import java.sql.Timestamp;
 @Inheritance(strategy=InheritanceType.JOINED)
 @TriggerIndex
 @SqlTrigger
-public class AccountExtraInfoVO {
+public class AccountContactsVO {
     @Id
     @Column
     private String uuid;
     
     @Column
-    @Index
     private String accountUuid;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private AccountGrade grade;
+    private String contacts;
+
+    @Column
+    private String phone;
+
+    @Column
+    private String email;
+
+    @Column
+    private String description;
 
     @Column
     @Enumerated(EnumType.STRING)
-    private CompanyNature companyNature;
-
-    @Column
-    private String salesman;
+    private NoticeWay noticeWay;
 
     @Column
     private Timestamp createDate;
@@ -59,16 +62,24 @@ public class AccountExtraInfoVO {
         return accountUuid;
     }
 
-    public AccountGrade getGrade() {
-        return grade;
+    public String getContacts() {
+        return contacts;
     }
 
-    public CompanyNature getCompanyNature() {
-        return companyNature;
+    public String getPhone() {
+        return phone;
     }
 
-    public String getSalesman() {
-        return salesman;
+    public String getEmail() {
+        return email;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public NoticeWay getNoticeWay() {
+        return noticeWay;
     }
 
     public Timestamp getCreateDate() {
@@ -87,16 +98,24 @@ public class AccountExtraInfoVO {
         this.accountUuid = accountUuid;
     }
 
-    public void setGrade(AccountGrade grade) {
-        this.grade = grade;
+    public void setContacts(String contacts) {
+        this.contacts = contacts;
     }
 
-    public void setCompanyNature(CompanyNature companyNature) {
-        this.companyNature = companyNature;
+    public void setPhone(String phone) {
+        this.phone = phone;
     }
 
-    public void setSalesman(String salesman) {
-        this.salesman = salesman;
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setNoticeWay(NoticeWay noticeWay) {
+        this.noticeWay = noticeWay;
     }
 
     public void setCreateDate(Timestamp createDate) {
