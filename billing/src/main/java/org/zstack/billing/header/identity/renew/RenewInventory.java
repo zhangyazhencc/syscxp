@@ -34,6 +34,7 @@ public class RenewInventory {
 
     private Timestamp lastOpDate;
 
+    private String productUnitPriceUuid;
 
     public static RenewInventory valueOf(RenewVO vo) {
         RenewInventory inv = new RenewInventory();
@@ -46,6 +47,7 @@ public class RenewInventory {
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setProductUuid(vo.getProductUuid());
         inv.setDuration(vo.getDuration());
+        inv.setProductUnitPriceUuid(vo.getProductUnitPriceUuid());
         return inv;
     }
 
@@ -55,6 +57,14 @@ public class RenewInventory {
             lst.add(RenewInventory.valueOf(vo));
         }
         return lst;
+    }
+
+    public String getProductUnitPriceUuid() {
+        return productUnitPriceUuid;
+    }
+
+    public void setProductUnitPriceUuid(String productUnitPriceUuid) {
+        this.productUnitPriceUuid = productUnitPriceUuid;
     }
 
     public String getUuid() {

@@ -2,7 +2,6 @@ package org.zstack.sms;
 
 import com.cloopen.rest.sdk.CCPRestSDK;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.SimpleQuery;
@@ -12,19 +11,15 @@ import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.exception.CloudRuntimeException;
-import org.zstack.header.identity.IdentityErrors;
-import org.zstack.header.identity.SessionPolicyInventory;
+import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.message.APIMessage;
-import org.zstack.header.message.APIParam;
 import org.zstack.header.message.Message;
 import org.zstack.sms.header.*;
 import org.zstack.utils.StringDSL;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
-import java.lang.reflect.Field;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
@@ -74,11 +69,10 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         }else{
             bus.dealWithUnknownMessage(msg);
         }
-
     }
 
     @Override
-    public boolean ValidateVerificationCode(String phone, String code) {
+    public boolean validateVerificationCode(String phone, String code) {
         VerificationCode verificationCode = sessions.get(phone);
         if (verificationCode == null){
             return false;
@@ -93,25 +87,15 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
     }
 
     private void  handle(APIValidateVerificationCodeMsg msg){
-        VerificationCode verificationCode = sessions.get(msg.getPhone());
         APIValidateVerificationCodeReply reply = new APIValidateVerificationCodeReply();
-        if (verificationCode == null){
-            reply.setValid(false);
-        }else{
-            Timestamp curr = new Timestamp(System.currentTimeMillis());
-            if (curr.before(verificationCode.expiredDate) && msg.getCode().equals(verificationCode.code)) {
-                reply.setValid(true);
-            }else{
-                reply.setValid(false);
-            }
-        }
+        reply.setValid(validateVerificationCode(msg.getPhone(), msg.getCode()));
 
         bus.reply(msg, reply);
     }
 
     private void  handle(APIGetVerificationCodeMsg msg){
         String code = StringDSL.getRandomNumbersString(6);
-        SmsVO sms = sendMsg(msg.getPhone(), SmsGlobalProperty.SMS_VERIFICATION_CODE_APPID, SmsGlobalProperty.SMS_VERIFICATION_CODE_TEMPLATEID
+        SmsVO sms = sendMsg(msg.getSession(), msg.getPhone(), SmsGlobalProperty.SMS_VERIFICATION_CODE_APPID, SmsGlobalProperty.SMS_VERIFICATION_CODE_TEMPLATEID
                 , new String[]{code, "10"}, msg.getIp());
 
         VerificationCode verificationCode = sessions.get(msg.getPhone());
@@ -132,7 +116,7 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
 
     private void handle(APISendSmsMsg msg){
 
-        SmsVO sms = sendMsg(msg.getPhone(), SmsGlobalProperty.SMS_YUNTONGXUN_APPID, msg.getTemplateId(), msg.getData().toArray(new String[msg.getData().size()]), msg.getIp());
+        SmsVO sms = sendMsg(msg.getSession(), msg.getPhone(), SmsGlobalProperty.SMS_YUNTONGXUN_APPID, msg.getTemplateId(), msg.getData().toArray(new String[msg.getData().size()]), msg.getIp());
 
         APISendSmsEvent evt = new APISendSmsEvent(msg.getId());
         evt.setInventory(SmsInventory.valueOf(sms));
@@ -140,7 +124,7 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         bus.publish(evt);
     }
 
-    private SmsVO sendMsg(String phone, String appId, String templateId, String[] datas, String ip){
+    private SmsVO sendMsg(SessionInventory session, String phone, String appId, String templateId, String[] datas, String ip){
         //初始化短信接口平台
         CCPRestSDK restAPI = new CCPRestSDK();
         restAPI.init(SmsGlobalProperty.SMS_YUNTONGXUN_SERVER, SmsGlobalProperty.SMS_YUNTONGXUN_PORT);// 初始化服务器地址和端口，格式如下，服务器地址不需要写https://
@@ -155,9 +139,11 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
 
         SmsVO sms = new SmsVO();
         sms.setStatusCode(result.get("statusCode").toString()); //返回状态码
+        if (session != null){
+            sms.setAccountUuid(session.getAccountUuid());
+            sms.setUserUuid(session.getUserUuid());
+        }
 
-        Date createDay = new Date();								//该系统时间为短信请求日期
-        sms.setCreateDay(createDay);
         sms.setIp(ip);
         sms.setPhone(phone);
         sms.setAppId(appId);
@@ -171,7 +157,7 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
             ArrayList TemplateSMS = (ArrayList)data.get("TemplateSMS");
             HashMap<String,Object> data2 = (HashMap<String, Object>) TemplateSMS.get(0);
 
-            sms.setDateCreated(data2.get("dateCreated").toString());        //短信发送成功后的创建日期
+            sms.setDateCreated(data2.get("dateCreated").toString());      //短信发送成功后的创建日期
             sms.setSmsMessagesId(data2.get("smsMessageSid").toString());  //短信发送成功后的唯一标识码
         }
         if (result.get("statusMsg") != null) {
@@ -249,11 +235,11 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         calendar.set(Calendar.HOUR_OF_DAY, 0);
         calendar.set(Calendar.MINUTE, 0);
         calendar.set(Calendar.SECOND, 0);
-        Date zero = calendar.getTime();
+        Timestamp zero = new Timestamp(calendar.getTimeInMillis());
 
         SimpleQuery<SmsVO> q = dbf.createQuery(SmsVO.class);
         q.add(SmsVO_.phone, SimpleQuery.Op.EQ, msg.getPhone());
-        q.add(SmsVO_.createDay, SimpleQuery.Op.GTE, zero);
+        q.add(SmsVO_.createDate, SimpleQuery.Op.GTE, zero);
         long total = q.count();
         if (total > Long.valueOf(SmsGlobalProperty.TOTAL_LIMIT_PER_DAY_PHONE).longValue()){
             throw new ApiMessageInterceptionException(argerr("same phone not send more than %s messages per day : %s",
@@ -263,7 +249,7 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         if (msg.getId() != null ) {
             q = dbf.createQuery(SmsVO.class);
             q.add(SmsVO_.ip, SimpleQuery.Op.EQ, msg.getIp());
-            q.add(SmsVO_.createDay, SimpleQuery.Op.GTE, zero);
+            q.add(SmsVO_.createDate, SimpleQuery.Op.GTE, zero);
             total = q.count();
 
             if (total > Long.valueOf(SmsGlobalProperty.TOTAL_LIMIT_PER_DAY_IP).longValue()) {

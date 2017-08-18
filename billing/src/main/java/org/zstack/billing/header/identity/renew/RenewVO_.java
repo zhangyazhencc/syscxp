@@ -21,4 +21,6 @@ public class RenewVO_ {
     public static volatile SingularAttribute<RenewVO, Timestamp> expiredDate;
     public static volatile SingularAttribute<RenewVO, Timestamp> createDate;
     public static volatile SingularAttribute<RenewVO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<RenewVO, String> productUnitPriceUuid;
+
 }

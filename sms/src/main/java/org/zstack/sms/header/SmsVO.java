@@ -53,9 +53,6 @@ public class SmsVO {
     private String msgEntrance;
 
     @Column
-    private Date createDay;
-
-    @Column
     private Timestamp createDate;
 
     @Column
@@ -163,14 +160,6 @@ public class SmsVO {
 
     public void setMsgEntrance(String msgEntrance) {
         this.msgEntrance = msgEntrance;
-    }
-
-    public Date getCreateDay() {
-        return createDay;
-    }
-
-    public void setCreateDay(Date createDay) {
-        this.createDay = createDay;
     }
 
     public Timestamp getCreateDate() {

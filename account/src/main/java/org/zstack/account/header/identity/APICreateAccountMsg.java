@@ -1,6 +1,5 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.AccountIndustry;
 import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountGrade;
 import org.zstack.header.identity.CompanyNature;
@@ -23,7 +22,7 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
     private String company;
 
     @APIParam(maxLength = 128, required = false)
-    private AccountIndustry industry;
+    private String industry;
     @APIParam(maxLength = 32, required = false)
     private AccountGrade grade;
     @APIParam(maxLength = 128, required = false)
@@ -71,7 +70,7 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
         return company;
     }
 
-    public AccountIndustry getIndustry() {
+    public String getIndustry() {
         return industry;
     }
 
@@ -131,7 +130,7 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
         this.company = company;
     }
 
-    public void setIndustry(AccountIndustry industry) {
+    public void setIndustry(String industry) {
         this.industry = industry;
     }
 

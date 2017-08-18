@@ -17,10 +17,7 @@ import org.zstack.core.errorcode.ErrorFacade;
 
 import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.exception.CloudRuntimeException;
-import org.zstack.header.identity.AbstractAccount;
-import org.zstack.header.identity.AccountGrade;
-import org.zstack.header.identity.AccountStatus;
-import org.zstack.header.identity.AccountType;
+import org.zstack.header.identity.*;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.utils.ExceptionDSL;
@@ -98,8 +95,8 @@ public class AccountBase extends AbstractAccount {
             handle((APIDeletePolicyMsg) msg);
         }else if(msg instanceof APIAttachPolicyToUserMsg){
             handle((APIAttachPolicyToUserMsg) msg);
-        }else if(msg instanceof ADIUpdatePermissionMsg){
-            handle((ADIUpdatePermissionMsg) msg);
+        }else if(msg instanceof APIUpdatePermissionMsg){
+            handle((APIUpdatePermissionMsg) msg);
         }else if(msg instanceof APICreatePermissionMsg){
             handle((APICreatePermissionMsg) msg);
         }else if(msg instanceof APIDeletePermissionMsg){
@@ -331,6 +328,9 @@ public class AccountBase extends AbstractAccount {
         vo.setTrueName(msg.getTrueName());
         vo.setStatus(msg.getStatus());
         vo.setType(AccountType.Normal);
+        vo.setPhoneStatus(AccountAuthentication.NO);
+        vo.setEmailStatus(AccountAuthentication.NO);
+
 
         AccountExtraInfoVO aeivo = new AccountExtraInfoVO();
         aeivo.setUuid(Platform.getUuid());
@@ -384,6 +384,10 @@ public class AccountBase extends AbstractAccount {
         uservo.setPhone(msg.getPhone());
         uservo.setStatus(msg.getStatus() != null ? AccountStatus.valueOf(msg.getStatus()) : AccountStatus.Available);
         uservo.setTrueName(msg.getTrueName());
+
+        uservo.setEmailStatus(AccountAuthentication.NO);
+        uservo.setPhoneStatus(AccountAuthentication.NO);
+
         uservo = dbf.persistAndRefresh(uservo);
 
         UserPolicyRefVO uprv = new UserPolicyRefVO();
@@ -469,7 +473,7 @@ public class AccountBase extends AbstractAccount {
         bus.publish(evt);
     }
 
-    private void handle(ADIUpdatePermissionMsg msg) {
+    private void handle(APIUpdatePermissionMsg msg) {
 
         PermissionVO auth = dbf.findByUuid(msg.getUuid(), PermissionVO.class);
 

@@ -1,6 +1,7 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.AccountIndustry;
+
+import org.zstack.header.identity.AccountAuthentication;
 import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.search.SqlTrigger;
@@ -16,10 +17,11 @@ import java.sql.Timestamp;
 @TriggerIndex
 @SqlTrigger
 public class AccountVO {
+
     @Id
     @Column
     private String uuid;
-    
+
     @Column
     @Index
     private String name;
@@ -34,13 +36,19 @@ public class AccountVO {
     private String email;
 
     @Column
+    private AccountAuthentication phoneStatus;
+
+    @Column
+    private AccountAuthentication emailStatus;
+
+    @Column
     private String trueName;
 
     @Column
     private String company;
 
     @Column
-    private AccountIndustry industry;
+    private String industry;
 
     @Column
     private String description;
@@ -55,7 +63,7 @@ public class AccountVO {
 
     @Column
     private Timestamp createDate;
-    
+
     @Column
     private Timestamp lastOpDate;
 
@@ -92,7 +100,7 @@ public class AccountVO {
         return company;
     }
 
-    public AccountIndustry getIndustry() {
+    public String getIndustry() {
         return industry;
     }
 
@@ -144,7 +152,7 @@ public class AccountVO {
         this.company = company;
     }
 
-    public void setIndustry(AccountIndustry industry) {
+    public void setIndustry(String industry) {
         this.industry = industry;
     }
 
@@ -166,5 +174,21 @@ public class AccountVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public AccountAuthentication getPhoneStatus() {
+        return phoneStatus;
+    }
+
+    public AccountAuthentication getEmailStatus() {
+        return emailStatus;
+    }
+
+    public void setPhoneStatus(AccountAuthentication phoneStatus) {
+        this.phoneStatus = phoneStatus;
+    }
+
+    public void setEmailStatus(AccountAuthentication emailStatus) {
+        this.emailStatus = emailStatus;
     }
 }

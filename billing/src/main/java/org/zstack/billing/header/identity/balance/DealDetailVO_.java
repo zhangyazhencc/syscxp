@@ -21,4 +21,5 @@ public class DealDetailVO_ {
     public static volatile SingularAttribute<RenewVO, BigDecimal> balance;
     public static volatile SingularAttribute<RenewVO, Timestamp> createDate;
     public static volatile SingularAttribute<RenewVO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<RenewVO, String> orderUuid;
 }

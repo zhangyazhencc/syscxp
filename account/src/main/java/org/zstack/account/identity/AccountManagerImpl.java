@@ -419,14 +419,14 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateUserPhoneMsg msg) {
-        if (!smsService.ValidateVerificationCode(msg.getPhone(),msg.getCode())) {
+        if (!smsService.validateVerificationCode(msg.getPhone(),msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
     }
 
     private void validate(APIUpdateUserPWDMsg msg) {
-        if (!smsService.ValidateVerificationCode(msg.getPhone(),msg.getCode())) {
+        if (!smsService.validateVerificationCode(msg.getPhone(),msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
@@ -440,14 +440,14 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateAccountPWDMsg msg) {
-        if (!smsService.ValidateVerificationCode(msg.getPhone(),msg.getCode())) {
+        if (!smsService.validateVerificationCode(msg.getPhone(),msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
     }
 
     private void validate(APIUpdateAccountPhoneMsg msg) {
-        if (!smsService.ValidateVerificationCode(msg.getPhone(),msg.getCode())) {
+        if (!smsService.validateVerificationCode(msg.getPhone(),msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }

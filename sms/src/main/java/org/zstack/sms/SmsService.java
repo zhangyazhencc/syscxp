@@ -5,5 +5,5 @@ package org.zstack.sms;
  */
 public interface SmsService {
 
-    boolean ValidateVerificationCode(String phone, String code);
+    boolean validateVerificationCode(String phone, String code);
 }

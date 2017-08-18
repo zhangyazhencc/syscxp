@@ -23,7 +23,7 @@ public class APIUpdateAccountMsg extends APIMessage {
     private String company;
 
     @APIParam(maxLength = 128, required = false)
-    private AccountIndustry industry;
+    private String industry;
     @APIParam(maxLength = 32, required = false)
     private AccountGrade grade;
     @APIParam(maxLength = 128, required = false)
@@ -98,7 +98,7 @@ public class APIUpdateAccountMsg extends APIMessage {
         this.targetUuid = targetUuid;
     }
 
-    public AccountIndustry getIndustry() {
+    public String getIndustry() {
         return industry;
     }
 
@@ -126,7 +126,7 @@ public class APIUpdateAccountMsg extends APIMessage {
         return contactNumber;
     }
 
-    public void setIndustry(AccountIndustry industry) {
+    public void setIndustry(String industry) {
         this.industry = industry;
     }
 

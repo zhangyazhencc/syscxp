@@ -5,7 +5,7 @@ import org.zstack.header.message.APIParam;
 
 public class APIUpdateReceiptPostAddressMsg extends APIMessage {
 
-    @APIParam(nonempty = true)
+    @APIParam(nonempty = true,resourceType = ReceiptPostAddressVO.class, checkAccount = true)
     private String uuid;
 
     @APIParam(required = false)

@@ -5,7 +5,7 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
-public class ADIUpdatePermissionMsg extends  APIMessage implements AccountMessage{
+public class APIUpdatePermissionMsg extends  APIMessage implements AccountMessage{
 
     @APIParam(maxLength = 255)
     private String uuid;
