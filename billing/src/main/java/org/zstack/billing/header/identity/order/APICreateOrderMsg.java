@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 
 public class APICreateOrderMsg extends APIMessage {
 
-    @APIParam(nonempty = true)
+    @APIParam(nonempty = true,validValues = {"BUY","UPGRADE","DOWNGRADE","RENEW","SLA_COMPENSATION","UN_SUBCRIBE"})
     private OrderType type;
 
     @APIParam(nonempty = true)
@@ -49,14 +49,19 @@ public class APICreateOrderMsg extends APIMessage {
     @APIParam(nonempty = true)
     private int duration;
 
-    @APIParam(required= false)
-    private BigDecimal reChargePresentBalance;
-
-    @APIParam(required= false)
-    private BigDecimal reChargeCashBalance;
-
     @APIParam(nonempty = true)
     private String priceUnitUuid;
+
+    @APIParam(required = false, resourceType = OrderVO.class, checkAccount = true)
+    private String oldOrderUuid;
+
+    public String getOldOrderUuid() {
+        return oldOrderUuid;
+    }
+
+    public void setOldOrderUuid(String oldOrderUuid) {
+        this.oldOrderUuid = oldOrderUuid;
+    }
 
     public String getPriceUnitUuid() {
         return priceUnitUuid;
@@ -64,22 +69,6 @@ public class APICreateOrderMsg extends APIMessage {
 
     public void setPriceUnitUuid(String priceUnitUuid) {
         this.priceUnitUuid = priceUnitUuid;
-    }
-
-    public BigDecimal getReChargePresentBalance() {
-        return reChargePresentBalance;
-    }
-
-    public void setReChargePresentBalance(BigDecimal reChargePresentBalance) {
-        this.reChargePresentBalance = reChargePresentBalance;
-    }
-
-    public BigDecimal getReChargeCashBalance() {
-        return reChargeCashBalance;
-    }
-
-    public void setReChargeCashBalance(BigDecimal reChargeCashBalance) {
-        this.reChargeCashBalance = reChargeCashBalance;
     }
 
     public OrderType getType() {

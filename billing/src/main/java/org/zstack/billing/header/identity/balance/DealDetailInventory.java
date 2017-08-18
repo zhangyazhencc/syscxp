@@ -23,6 +23,7 @@ public class DealDetailInventory {
     private String accountUuid;
     private Timestamp createDate;
     private Timestamp lastOpDate;
+    private String orderUuid;
 
     public static DealDetailInventory valueOf(DealDetailVO vo) {
         DealDetailInventory inv = new DealDetailInventory();
@@ -37,6 +38,7 @@ public class DealDetailInventory {
         inv.setIncome(vo.getIncome());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        inv.setOrderUuid(vo.getOrderUuid());
 
         return inv;
     }
@@ -135,5 +137,12 @@ public class DealDetailInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+    public String getOrderUuid() {
+        return orderUuid;
+    }
+
+    public void setOrderUuid(String orderUuid) {
+        this.orderUuid = orderUuid;
     }
 }

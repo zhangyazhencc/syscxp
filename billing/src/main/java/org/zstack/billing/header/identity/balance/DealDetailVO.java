@@ -48,6 +48,17 @@ public class DealDetailVO {
     @Column
     private Timestamp lastOpDate;
 
+    @Column
+    private String orderUuid;
+
+    public String getOrderUuid() {
+        return orderUuid;
+    }
+
+    public void setOrderUuid(String orderUuid) {
+        this.orderUuid = orderUuid;
+    }
+
     public String getUuid() {
         return uuid;
     }

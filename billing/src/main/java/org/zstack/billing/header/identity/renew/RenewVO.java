@@ -49,6 +49,17 @@ public class RenewVO {
     @Column
     private Timestamp lastOpDate;
 
+    @Column
+    private String productUnitPriceUuid;
+
+    public String getProductUnitPriceUuid() {
+        return productUnitPriceUuid;
+    }
+
+    public void setProductUnitPriceUuid(String productUnitPriceUuid) {
+        this.productUnitPriceUuid = productUnitPriceUuid;
+    }
+
     public String getUuid() {
         return uuid;
     }
