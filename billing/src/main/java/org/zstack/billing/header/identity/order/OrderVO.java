@@ -80,6 +80,17 @@ public class OrderVO {
     @Column
     private int duration;
 
+    @Column
+    private String productUnitPriceUuid;
+
+    public String getProductUnitPriceUuid() {
+        return productUnitPriceUuid;
+    }
+
+    public void setProductUnitPriceUuid(String productUnitPriceUuid) {
+        this.productUnitPriceUuid = productUnitPriceUuid;
+    }
+
     public String getUuid() {
         return uuid;
     }
