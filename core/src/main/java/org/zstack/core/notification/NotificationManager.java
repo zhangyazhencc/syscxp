@@ -167,10 +167,10 @@ public class NotificationManager extends AbstractService {
                 return;
             }
 
-//            if (!msg.getServiceId().endsWith(Platform.getManagementServerId())) {
-//                // a message to api portal
-//                return;
-//            }
+            if (!msg.getServiceId().endsWith(Platform.getManagementServerId())) {
+                // a message to api portal
+                return;
+            }
 
             try {
                 ApiNotification notification = getApiNotification((APIMessage) msg);

@@ -6,16 +6,16 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
-public class APICreateAlarmContactMsg extends APICreateMessage {
+public class APIUpdateAlarmContactMsg extends APICreateMessage {
     @APIParam(maxLength = 32)
-    private String accountUuid;
-    @APIParam(maxLength = 32)
+    private String uuid;
+    @APIParam(maxLength = 32, required = false)
     private String name;
-    @APIParam(maxLength = 32)
+    @APIParam(maxLength = 32, required = false)
     private String phone;
-    @APIParam(maxLength = 255)
+    @APIParam(maxLength = 255, required = false)
     private String email;
-    @APIParam(maxLength = 32)
+    @APIParam(maxLength = 32, required = false)
     private String channel;
 
     public String getName() {
@@ -50,13 +50,12 @@ public class APICreateAlarmContactMsg extends APICreateMessage {
         this.channel = channel;
     }
 
-    public String getAccountUuid() {
-
-        return accountUuid;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public ApiNotification __notification__() {
@@ -65,15 +64,9 @@ public class APICreateAlarmContactMsg extends APICreateMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                if (evt.isSuccess()) {
-                    ntfy(String.format("Create AlarmContact[uuid: %s]", ((APICreateAlarmContactEvent) evt).getInventory().getUuid()))
-                            .resource(((APICreateAlarmContactEvent) evt).getInventory().getUuid(), AlarmContactVO.class.getSimpleName())
-                            .messageAndEvent(that, evt).done();
-                } else {
-                    ntfy("Create AlarmContact fail")
-                            .resource(null, AlarmContactVO.class.getSimpleName())
-                            .messageAndEvent(that, evt).done();
-                }
+                ntfy(String.format("update AlarmContact[uuid: %s]", uuid))
+                        .resource(uuid, AlarmContactVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
             }
         };
     }

@@ -92,4 +92,12 @@ public class AlarmContactVO {
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
     }
+
+    public String getChannel() {
+        return channel;
+    }
+
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
 }
