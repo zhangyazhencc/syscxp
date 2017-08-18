@@ -2,7 +2,6 @@ package org.zstack.billing.manage;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
@@ -38,7 +37,6 @@ import org.zstack.utils.logging.CLogger;
 
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
-import javax.persistence.criteria.Order;
 
 public class BillingManagerImpl extends AbstractService implements BillingManager, ApiMessageInterceptor {
 
