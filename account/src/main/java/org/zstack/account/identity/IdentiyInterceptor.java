@@ -286,6 +286,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         void validate(APIMessage msg) {
             this.msg = msg;
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
+                suppressCredentialCheck();
                 return;
             } else {
                 action = actions.get(msg.getClass());
@@ -472,6 +473,15 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             TypedQuery<PolicyVO> q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
             q.setParameter("uuid", session.getUserUuid());
             return PolicyInventory.valueOf(q.getResultList());
+        }
+
+        private void suppressCredentialCheck(){
+            if (msg.getSession() != null && msg.getSession().getUuid() != null) {
+                SessionInventory session = sessions.get(msg.getSession().getUuid());
+                if (session != null) {
+                    msg.setSession(session);
+                }
+            }
         }
 
         private void sessionCheck() {

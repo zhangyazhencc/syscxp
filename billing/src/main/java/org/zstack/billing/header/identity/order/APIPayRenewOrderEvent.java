@@ -2,13 +2,14 @@ package org.zstack.billing.header.identity.order;
 
 import org.zstack.header.message.APIEvent;
 
-public class APIUpdateOrderStateEvent extends APIEvent{
+@Deprecated
+public class APIPayRenewOrderEvent extends APIEvent{
 
     private OrderInventory inventory;
 
-    public APIUpdateOrderStateEvent(String apiId) {super(apiId);}
+    public APIPayRenewOrderEvent(String apiId) {super(apiId);}
 
-    public APIUpdateOrderStateEvent(){}
+    public APIPayRenewOrderEvent(){}
 
     public OrderInventory getInventory() {
         return inventory;

@@ -20,7 +20,6 @@ public class SmsVO_ {
     public static volatile SingularAttribute<SmsVO, String> dateCreated;
     public static volatile SingularAttribute<SmsVO, String> smsMessagesId;
     public static volatile SingularAttribute<SmsVO, String> msgEntrance;
-    public static volatile SingularAttribute<SmsVO, Date> createDay;
     public static volatile SingularAttribute<SmsVO, Timestamp> createDate;
     public static volatile SingularAttribute<SmsVO, Timestamp> lastOpDate;
 }
