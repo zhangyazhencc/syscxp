@@ -110,4 +110,12 @@
         <name>org.zstack.account.header.identity.APIDeletePermissionMsg</name>
     </message>
 
+    <message>
+        <name>org.zstack.account.header.identity.APIAccountPhoneAuthenticationMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.identity.APIUserPhoneAuthenticationMsg</name>
+    </message>
+
 </service>

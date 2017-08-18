@@ -410,6 +410,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         return msg;
     }
 
+
     private void validate(APILogInByUserMsg msg) {
         if (msg.getAccountName() == null && msg.getAccountUuid() == null) {
             throw new ApiMessageInterceptionException(argerr(
