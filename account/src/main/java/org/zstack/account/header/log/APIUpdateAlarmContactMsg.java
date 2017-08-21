@@ -6,8 +6,10 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
+import java.util.List;
+
 public class APIUpdateAlarmContactMsg extends APICreateMessage {
-    @APIParam(maxLength = 32)
+    @APIParam(resourceType = AlarmContactVO.class, emptyString = false)
     private String uuid;
     @APIParam(maxLength = 32, required = false)
     private String name;
@@ -16,7 +18,7 @@ public class APIUpdateAlarmContactMsg extends APICreateMessage {
     @APIParam(maxLength = 255, required = false)
     private String email;
     @APIParam(maxLength = 32, required = false)
-    private String channel;
+    private List<AlarmChannel> channel;
 
     public String getName() {
         return name;
@@ -42,11 +44,11 @@ public class APIUpdateAlarmContactMsg extends APICreateMessage {
         this.email = email;
     }
 
-    public String getChannel() {
+    public List<AlarmChannel> getChannel() {
         return channel;
     }
 
-    public void setChannel(String channel) {
+    public void setChannel(List<AlarmChannel> channel) {
         this.channel = channel;
     }
 

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.billing.header.identity.balance.*;
+import org.zstack.billing.header.identity.bill.*;
 import org.zstack.billing.header.identity.order.*;
 import org.zstack.billing.header.identity.receipt.*;
 import org.zstack.billing.header.identity.renew.*;
@@ -107,9 +108,38 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIUpdateSLACompensateMsg) msg);
         } else if (msg instanceof APIDeleteCanceledOrderMsg) {
             handle((APIDeleteCanceledOrderMsg) msg);
+        }else if (msg instanceof APIGetBillMsg) {
+            handle((APIGetBillMsg) msg);
+        }else if (msg instanceof APIGetMonetaryGroupByProductTypeMsg) {
+            handle((APIGetMonetaryGroupByProductTypeMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetMonetaryGroupByProductTypeMsg msg) {
+        String accountUuid = msg.getSession().getAccountUuid();
+        String sql = "select count(*) as categoryCount, sum(payPresent) as payPresentTotal,sum(payCash) as payCashTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and payTime BETWEEN :dateStart and  :dateEnd  group by productType ";
+        Query q =  dbf.getEntityManager().createNativeQuery(sql);
+        q.setParameter("accountUuid",accountUuid);
+        q.setParameter("dateStart", msg.getDateStart());
+        q.setParameter("dateEnd", msg.getDateEnd());
+        List<Object[]> objs  = q.getResultList();
+        List<Monetary> bills = objs.stream().map(Monetary::new).collect(Collectors.toList());
+
+        APIGetMonetaryGroupByProductTypeReply reply = new APIGetMonetaryGroupByProductTypeReply();
+        reply.setInventory(bills);
+        bus.reply(msg, reply);
+
+    }
+
+    private void handle(APIGetBillMsg msg) {
+        BillVO vo = dbf.findByUuid(msg.getUuid(), BillVO.class);
+        BillInventory inventory = BillInventory.valueOf(vo);
+        APIGetBillReply reply = new APIGetBillReply();
+        reply.setInventory(inventory);
+        bus.reply(msg, reply);
+
     }
 
     private void handle(APIDeleteCanceledOrderMsg msg) {
@@ -225,15 +255,14 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             vo.setDefault(msg.isDefault());
             SimpleQuery<ReceiptInfoVO> q = dbf.createQuery(ReceiptInfoVO.class);
             q.add(ReceiptInfoVO_.accountUuid, Op.EQ, vo.getAccountUuid());
-            List<String> ids = q.list();
-            for(String id : ids){
-                if(id.equals(msg.getUuid())){
+            List<ReceiptInfoVO> ids = q.list();
+            for(ReceiptInfoVO riVO : ids){
+                if(riVO.getUuid().equals(msg.getUuid())){
                     continue;
                 }
-                ReceiptInfoVO v = dbf.findByUuid(id,ReceiptInfoVO.class);
-                if(v.isDefault()){
-                    v.setDefault(false);
-                    dbf.updateAndRefresh(v);
+                if(riVO.isDefault()){
+                    riVO.setDefault(false);
+                    dbf.updateAndRefresh(riVO);
                 }
             }
 

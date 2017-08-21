@@ -1,10 +1,15 @@
 package org.zstack.tunnel.header.identity.node;
 
 import org.zstack.header.search.Inventory;
-import org.zstack.tunnel.header.identity.node.NodeVO;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
+/**
+ * Created by DCY on 2017-08-21
+ */
 @Inventory(mappingVOClass = NodeVO.class)
 public class NodeInventory {
 
@@ -17,10 +22,11 @@ public class NodeInventory {
     private String telephone;
     private String province;
     private String city;
+    private String address;
     private double longtitude;
     private double latitude;
-    private String property;
-    private String status;
+    private NodeProperty property;
+    private NodeStatus status;
     private Integer deleted;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -36,6 +42,7 @@ public class NodeInventory {
         inv.setTelephone(vo.getTelephone());
         inv.setProvince(vo.getProvince());
         inv.setCity(vo.getCity());
+        inv.setAddress(vo.getAddress());
         inv.setLatitude(vo.getLatitude());
         inv.setLongtitude(vo.getLongtitude());
         inv.setProperty(vo.getProperty());
@@ -44,6 +51,14 @@ public class NodeInventory {
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
+    }
+
+    public static List<NodeInventory> valueOf(Collection<NodeVO> vos) {
+        List<NodeInventory> lst = new ArrayList<NodeInventory>(vos.size());
+        for (NodeVO vo : vos) {
+            lst.add(NodeInventory.valueOf(vo));
+        }
+        return lst;
     }
 
     public String getUuid() {
@@ -118,6 +133,14 @@ public class NodeInventory {
         this.city = city;
     }
 
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
     public double getLongtitude() {
         return longtitude;
     }
@@ -134,19 +157,19 @@ public class NodeInventory {
         this.latitude = latitude;
     }
 
-    public String getProperty() {
+    public NodeProperty getProperty() {
         return property;
     }
 
-    public void setProperty(String property) {
+    public void setProperty(NodeProperty property) {
         this.property = property;
     }
 
-    public String getStatus() {
+    public NodeStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(NodeStatus status) {
         this.status = status;
     }
 

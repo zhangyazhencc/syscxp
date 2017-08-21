@@ -4,9 +4,9 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
+import org.springframework.transaction.annotation.Transactional;
 import org.zstack.billing.header.identity.balance.AccountBalanceVO;
 import org.zstack.billing.header.identity.balance.DealWay;
-import org.zstack.billing.header.identity.balance.ExpenseGross;
 import org.zstack.core.Platform;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.utils.Utils;
@@ -15,17 +15,14 @@ import org.zstack.utils.logging.CLogger;
 import javax.persistence.Query;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class BillJob extends QuartzJobBean {
 
     private DatabaseFacade databaseFacade;
+
+    private ThreadLocal<DatabaseFacade> connThreadLocal = new ThreadLocal<DatabaseFacade>();
 
     private static final CLogger logger = Utils.getLogger(BillJob.class);
 
@@ -76,6 +73,7 @@ public class BillJob extends QuartzJobBean {
                 vo.setTimeStart(startTime);
                 vo.setTimeEnd(endTime);
                 caculateBalance(bill, vo);
+
                 AccountBalanceVO abVO = databaseFacade.findByUuid(accountUuid,AccountBalanceVO.class);
                 BigDecimal balance = abVO.getCashBalance();
                 if(balance.compareTo(BigDecimal.ZERO)<0){
@@ -86,6 +84,7 @@ public class BillJob extends QuartzJobBean {
                     vo.setCashBalance(balance);
                 }
                 databaseFacade.persistAndRefresh(vo);
+
                 //todo here send message to user
 
             }
@@ -108,6 +107,11 @@ public class BillJob extends QuartzJobBean {
     }
 
     public void setDatabaseFacade(DatabaseFacade databaseFacade) {
-        this.databaseFacade = databaseFacade;
+        if(connThreadLocal.get()==null){
+            connThreadLocal.set(databaseFacade);
+            this.databaseFacade = databaseFacade;
+        } else {
+            this.databaseFacade = connThreadLocal.get();
+        }
     }
 }

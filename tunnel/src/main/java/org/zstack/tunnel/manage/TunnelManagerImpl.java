@@ -15,7 +15,11 @@ import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
+import org.zstack.tunnel.header.identity.node.ApiCreateNodeMsg;
 
+/**
+ * Created by DCY on 2017-08-21
+ */
 public class TunnelManagerImpl  extends AbstractService implements TunnelManager,ApiMessageInterceptor {
 
 
@@ -49,10 +53,18 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     private void handleLocalMessage(Message msg) {
-
+        bus.dealWithUnknownMessage(msg);
     }
 
     private void handleApiMessage(APIMessage msg) {
+        if(msg instanceof ApiCreateNodeMsg){
+            handle((ApiCreateNodeMsg) msg);
+        } else {
+            bus.dealWithUnknownMessage(msg);
+        }
+    }
+
+    private void handle(ApiCreateNodeMsg msg){
 
     }
 

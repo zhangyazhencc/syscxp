@@ -66,6 +66,10 @@
     </message>
 
     <message>
+        <name>org.zstack.billing.header.identity.bill.APIGetBillMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.billing.header.identity.order.APIQueryOrderMsg</name>
         <serviceId>query</serviceId>
     </message>
@@ -97,6 +101,11 @@
 
     <message>
         <name>org.zstack.billing.header.identity.sla.APIQuerySLACompensateMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.identity.bill.APIQueryBillMsg</name>
         <serviceId>query</serviceId>
     </message>
 

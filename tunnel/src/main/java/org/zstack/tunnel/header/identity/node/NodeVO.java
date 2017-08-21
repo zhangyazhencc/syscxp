@@ -2,11 +2,12 @@ package org.zstack.tunnel.header.identity.node;
 
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
-import org.zstack.header.vo.Index;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-
+/**
+ * Created by DCY on 2017-08-21
+ */
 @Entity
 @Table
 @Inheritance(strategy= InheritanceType.JOINED)
@@ -52,10 +53,12 @@ public class NodeVO {
     private double latitude;
 
     @Column
-    private String property;
+    @Enumerated(EnumType.STRING)
+    private NodeProperty property;
 
     @Column
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private NodeStatus status;
 
     @Column
     private Integer deleted;
@@ -138,9 +141,13 @@ public class NodeVO {
         this.city = city;
     }
 
-    public String getAddress() { return address; }
+    public String getAddress() {
+        return address;
+    }
 
-    public void setAddress(String address) { this.address = address; }
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
     public double getLongtitude() {
         return longtitude;
@@ -158,19 +165,19 @@ public class NodeVO {
         this.latitude = latitude;
     }
 
-    public String getProperty() {
+    public NodeProperty getProperty() {
         return property;
     }
 
-    public void setProperty(String property) {
+    public void setProperty(NodeProperty property) {
         this.property = property;
     }
 
-    public String getStatus() {
+    public NodeStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(NodeStatus status) {
         this.status = status;
     }
 
@@ -197,5 +204,4 @@ public class NodeVO {
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
     }
-
 }
