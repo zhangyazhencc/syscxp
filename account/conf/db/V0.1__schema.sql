@@ -216,7 +216,7 @@ CREATE TABLE `PermissionVO` (
 	`description` varchar(255) DEFAULT NULL COMMENT '权限描述',
 	`permission` text NOT NULL COMMENT '权限字符串',
 	`type` varchar(32) DEFAULT NULL COMMENT '权限类型',
-	`sortId` varchar(32) DEFAULT NULL COMMENT '排序ID',
+	`sortId` varchar(11) DEFAULT NULL COMMENT '排序ID',
 	`visible` varchar(32) DEFAULT NULL COMMENT '是否前端可见',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
@@ -226,9 +226,9 @@ CREATE TABLE `PermissionVO` (
 CREATE TABLE `AccountExtraInfoVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '账户uuid',
-	`grade` varchar(32) DEFAULT NULL COMMENT '客户等级',
-	`companyNature` varchar(32) DEFAULT NULL COMMENT '公司性质',
-	`salesman` varchar(32) DEFAULT NULL COMMENT '业务员',
+	`grade` varchar(36) DEFAULT NULL COMMENT '客户等级',
+	`companyNature` varchar(36) DEFAULT NULL COMMENT '公司性质',
+	`salesman` varchar(128) DEFAULT NULL COMMENT '业务员',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
   PRIMARY KEY  (`uuid`)
