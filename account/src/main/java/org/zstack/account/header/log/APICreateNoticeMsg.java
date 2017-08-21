@@ -9,13 +9,13 @@ import org.zstack.header.notification.ApiNotification;
 import java.sql.Timestamp;
 
 public class APICreateNoticeMsg extends APICreateMessage {
-    @APIParam(maxLength = 255)
+    @APIParam(maxLength = 255, emptyString = false)
     private String title;
-    @APIParam(maxLength = 255)
+    @APIParam(maxLength = 255, emptyString = false)
     private String link;
-    @APIParam(nonempty = true)
+    @APIParam
     private Timestamp startTime;
-    @APIParam(nonempty = true)
+    @APIParam
     private Timestamp endTime;
 
     public String getTitle() {

@@ -1,17 +1,15 @@
 package org.zstack.account.log;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.zstack.account.header.identity.AccountVO;
+import org.zstack.account.header.identity.AccountVO_;
 import org.zstack.account.header.log.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.CloudBusEventListener;
-import org.zstack.core.cloudbus.EventFacade;
-import org.zstack.core.componentloader.PluginRegistry;
-import org.zstack.core.config.GlobalConfigFacade;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.DbEntityLister;
-import org.zstack.core.errorcode.ErrorFacade;
-import org.zstack.core.thread.ThreadFacade;
+import org.zstack.core.db.SimpleQuery;
 import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
@@ -21,7 +19,6 @@ import org.zstack.header.message.Message;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
-import javax.persistence.EntityManagerFactory;
 import java.sql.Timestamp;
 
 import static org.zstack.core.Platform.argerr;
@@ -80,7 +77,8 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
         vo.setPhone(msg.getPhone());
         vo.setEmail(msg.getEmail());
         vo.setChannel(msg.getChannel());
-        vo.setAccountUuid(msg.getAccountUuid());
+        vo.setAccountName(msg.getAccountName());
+        vo.setCompany(msg.getCompany());
 
         AlarmContactVO alvo = dbf.persistAndRefresh(vo);
         AlarmContactInventory inv = AlarmContactInventory.valueOf(alvo);
@@ -213,16 +211,18 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
     }
 
     private void validate(APIUpdateAlarmContactMsg msg) {
-        if (!dbf.isExist(msg.getUuid(), AlarmContactVO.class)) {
-            throw new ApiMessageInterceptionException(argerr(
-                    "The AlarmContact[uuid:%S] does not exist.", msg.getUuid()
-            ));
-        }
     }
 
     private void validate(APICreateAlarmContactMsg msg) {
+        SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
+        q.add(AccountVO_.name, SimpleQuery.Op.EQ, msg.getAccountName());
+        AccountVO account = q.find();
+        if (account == null) {
+            throw new ApiMessageInterceptionException(argerr(
+                    "The Account[name:%S] does not exist.", msg.getAccountName()
+            ));
+        }
     }
-
     private void validate(APIUpdateNoticeMsg msg) {
         if (!dbf.isExist(msg.getUuid(), NoticeVO.class)) {
             throw new ApiMessageInterceptionException(argerr(

@@ -11,7 +11,7 @@ import static org.zstack.utils.CollectionDSL.list;
  * Created by wangwg on 2017/08/15.
  */
 @RestResponse(allTo = "inventories")
-public class APIQueryAuthorityReply extends APIQueryReply {
+public class APIQueryPermissionReply extends APIQueryReply {
     private List<PermissionInventory> inventories;
 
     public List<PermissionInventory> getInventories() {
@@ -22,8 +22,8 @@ public class APIQueryAuthorityReply extends APIQueryReply {
         this.inventories = inventories;
     }
  
-    public static APIQueryAuthorityReply __example__() {
-        APIQueryAuthorityReply reply = new APIQueryAuthorityReply();
+    public static APIQueryPermissionReply __example__() {
+        APIQueryPermissionReply reply = new APIQueryPermissionReply();
         PermissionInventory inventory = new PermissionInventory();
         inventory.setName("testuser");
         inventory.setUuid(uuid());
