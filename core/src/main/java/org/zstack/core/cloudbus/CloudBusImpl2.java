@@ -187,12 +187,12 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                                     Envelope e = envelopes.get(msg.getId());
                                     if (e == null) {
                                         retry(msg);
-                                        logger.warn(String.format("unable to deliver the message; the destination service[%s] is dead; please use rabbitmqctl to check if the queue is existing and if there is any consumers on that queue; message dump:\n%s",
+                                        logger.warn(String.format("unable to deliver the message; the destination manage[%s] is dead; please use rabbitmqctl to check if the queue is existing and if there is any consumers on that queue; message dump:\n%s",
                                                 msg.getServiceId(), wire.dumpMessage(msg)));
                                     } else {
                                         MessageReply reply = new MessageReply();
                                         reply.setError(errf.instantiateErrorCode(SysErrors.UNDELIVERABLE_ERROR,
-                                                String.format("unable to deliver the message; the destination service[%s] is dead; please use rabbitmqctl to check if the queue is existing and if any consumers on that queue", msg.getServiceId())));
+                                                String.format("unable to deliver the message; the destination manage[%s] is dead; please use rabbitmqctl to check if the queue is existing and if any consumers on that queue", msg.getServiceId())));
                                         e.ack(reply);
                                     }
                                 } else {
@@ -312,10 +312,10 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
                     String err = null;
                     if (msg instanceof MessageReply) {
-                        err = String.format("No route found for the reply[%s], the service[id:%s] waiting for this reply may have been quit. %s",
+                        err = String.format("No route found for the reply[%s], the manage[id:%s] waiting for this reply may have been quit. %s",
                                 msg.getClass().getName(), msg.getServiceId(), wire.dumpMessage(msg));
                     } else {
-                        err = String.format("No route found for the message[%s], the service[id:%s] may not be running. Checking Spring xml to make sure you have loaded it. Message dump:\n %s",
+                        err = String.format("No route found for the message[%s], the manage[id:%s] may not be running. Checking Spring xml to make sure you have loaded it. Message dump:\n %s",
                                 msg.getClass().getName(), msg.getServiceId(), wire.dumpMessage(msg));
                     }
                     logger.warn(err);
@@ -324,11 +324,11 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
                 private void handleDeadLetter(Message msg) {
                     if (msg instanceof MessageReply || msg instanceof APIEvent) {
-                        String err = String.format("the message reply or API event becomes a dead letter; the possible reason is the service it replied to has been dead, and the reply expired after TTL[%s secs]; reply dump:\n%s",
+                        String err = String.format("the message reply or API event becomes a dead letter; the possible reason is the manage it replied to has been dead, and the reply expired after TTL[%s secs]; reply dump:\n%s",
                                 CloudBusGlobalProperty.MESSAGE_TTL, wire.dumpMessage(msg));
                         logger.warn(err);
                     } else {
-                        String err = String.format("the message becomes a dead letter; the possible reason is the service[%s] it sends to has been dead", msg.getServiceId());
+                        String err = String.format("the message becomes a dead letter; the possible reason is the manage[%s] it sends to has been dead", msg.getServiceId());
                         logger.warn(String.format("%s; message dump:%s", err, wire.dumpMessage(msg)));
                         replyErrorByMessageType(msg, errf.instantiateErrorCode(SysErrors.NO_ROUTE_ERROR, err));
                     }
@@ -898,14 +898,14 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
             String[] pairs = servId.split("\\.");
             if (pairs.length < 2) {
-                // don't track services not using management node id in service id
+                // don't track services not using management node id in manage id
                 return;
             }
             pairs[pairs.length-1] = "*";
             String bindingKey = makeMessageQueueName(StringUtils.join(pairs, "."));
 
             bindingKeys.add(bindingKey);
-            logger.debug(String.format("message tracker binds to key[%s], tracking service[%s]", bindingKey, pairs[0]));
+            logger.debug(String.format("message tracker binds to key[%s], tracking manage[%s]", bindingKey, pairs[0]));
             try {
                 Channel chan = channelPool.acquire();
                 try {
@@ -1285,7 +1285,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
     private void send(Message msg, Boolean noNeedReply) {
         if (msg.getServiceId() == null) {
-            throw new IllegalArgumentException(String.format("service id cannot be null: %s", msg.getClass().getName()));
+            throw new IllegalArgumentException(String.format("manage id cannot be null: %s", msg.getClass().getName()));
         }
 
         basicProperty(msg);
@@ -1658,7 +1658,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
     @Override
     public void route(Message msg) {
         if (msg.getServiceId() == null) {
-            throw new IllegalArgumentException(String.format("service id cannot be null: %s", msg.getClass().getName()));
+            throw new IllegalArgumentException(String.format("manage id cannot be null: %s", msg.getClass().getName()));
         }
 
         if (msg instanceof NeedReplyMessage) {
@@ -2113,7 +2113,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
         endpoints.put(serv.getId(), e);
         activeService(serv);
 
-        logger.debug(String.format("registered service[%s]", serv.getId()));
+        logger.debug(String.format("registered manage[%s]", serv.getId()));
 
         tracker.trackService(serv.getId());
         if (alias != null) {
@@ -2127,7 +2127,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
     public void unregisterService(Service serv) {
         EndPoint e = endpoints.get(serv.getId());
         if (e == null) {
-            logger.warn(String.format("cannot find endpoint for service[%s]", serv.getId()));
+            logger.warn(String.format("cannot find endpoint for manage[%s]", serv.getId()));
             return;
         }
 
@@ -2166,7 +2166,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
     @Override
     public void dealWithUnknownMessage(Message msg) {
-        String details = String.format("No service deals with message: %s", wire.dumpMessage(msg));
+        String details = String.format("No manage deals with message: %s", wire.dumpMessage(msg));
         if (msg instanceof APISyncCallMessage) {
             APIReply reply = new APIReply();
             reply.setError(errf.instantiateErrorCode(SysErrors.UNKNOWN_MESSAGE_ERROR, details));
@@ -2442,7 +2442,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
         prepareStatistics();
 
         for (Service serv : services) {
-            assert serv.getId() != null : String.format("service id can not be null[%s]", serv.getClass().getName());
+            assert serv.getId() != null : String.format("manage id can not be null[%s]", serv.getClass().getName());
             registerService(serv);
         }
 
@@ -2478,7 +2478,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
                 @Override
                 public void run() {
                     unregisterService(serv);
-                    logger.debug(String.format("unregistered service[%s]", serv.getId()));
+                    logger.debug(String.format("unregistered manage[%s]", serv.getId()));
                 }
             });
         }

@@ -87,7 +87,7 @@ public class SaltFacadeImpl extends AbstractService implements SaltFacade {
 
             File dstMasterConf = new File(PathUtil.join(SaltConstant.SALT_CONF_HOME, SaltConstant.MASTER_CONF_NAME));
             if (deployFile(srcMasterConf, dstMasterConf)) {
-                ShellUtils.run("service salt-master restart");
+                ShellUtils.run("manage salt-master restart");
             }
         } finally {
             srcMasterConf.delete();
