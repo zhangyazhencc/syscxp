@@ -19,7 +19,7 @@
         <property name="name" value="bill_trigger"/>
         <property name="group" value="bill_trigger_group"/>
         <property name="jobDetail" ref="billJob"/>
-        <property name="cronExpression" value="0/1 * * * * ?" />
+        <property name="cronExpression" value="0 0 8 1 * ?" />
     </bean>
 
     <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
@@ -29,5 +29,7 @@
             </list>
         </property>
     </bean>
+
+    <bean class="org.zstack.billing.header.identity.renew.RenewAutoInit"></bean>
 
 </beans>
