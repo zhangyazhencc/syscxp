@@ -121,9 +121,9 @@ public class SaltSetupMinionJob implements Job {
                     ssh.command("rm -f /etc/salt/pki/minion/minion_master.pub");
                 }
                 ret = ssh.scp(tmpt.getAbsolutePath(), minionConfPath)
-                        .command("manage salt-minion restart").run();
+                        .command("service salt-minion restart").run();
             } else {
-                ret = ssh.command("manage salt-minion status | grep -- 'running' || manage salt-minion start").run();
+                ret = ssh.command("service salt-minion status | grep -- 'running' || service salt-minion start").run();
             }
             ret.raiseExceptionIfFailed();
 

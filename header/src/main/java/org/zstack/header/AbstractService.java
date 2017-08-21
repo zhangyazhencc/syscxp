@@ -8,7 +8,7 @@ public abstract class AbstractService implements Service {
     @Override
     public int getSyncLevel() {
         // NOTE: think twice if you want to change this value to 1.
-        // sync delivery will cause deadlock if a manage sends message in its message handler
+        // sync delivery will cause deadlock if a service sends message in its message handler
         // to itself
         return 0;
     }

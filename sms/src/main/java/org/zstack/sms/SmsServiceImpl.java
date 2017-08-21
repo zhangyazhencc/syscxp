@@ -178,7 +178,7 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
     }
 
     public void destroy() {
-        logger.debug("sms manage destroy.");
+        logger.debug("sms service destroy.");
         if (expiredSessionCollector != null) {
             expiredSessionCollector.cancel(true);
         }

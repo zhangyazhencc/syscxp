@@ -14,13 +14,13 @@ import static org.zstack.utils.CollectionDSL.list;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
 public class APICreatePolicyMsg extends  APIMessage implements AccountMessage{
-    @APIParam(maxLength = 255)
+    @APIParam(maxLength = 128)
     private String name;
 
-    @APIParam(maxLength = 255)
+    @APIParam(maxLength = 32)
     public String accountUuid;
 
-    @APIParam(maxLength = 2048, required = false)
+    @APIParam(maxLength = 255, required = false)
     private String description;
 
     @APIParam(nonempty = true)
