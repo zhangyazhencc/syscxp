@@ -5,6 +5,7 @@ import org.zstack.header.search.TriggerIndex;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
 @Table
@@ -26,10 +27,14 @@ public class AlarmContactVO {
     private String email;
 
     @Column
-    private String channel;
+    @Convert(converter = ChannelAttributeConverter.class)
+    private List<AlarmChannel> channel;
 
     @Column
-    private String accountUuid;
+    private String accountName;
+
+    @Column
+    private String company;
 
     @Column
     private Timestamp lastOpDate;
@@ -69,12 +74,20 @@ public class AlarmContactVO {
         this.email = email;
     }
 
-    public String getAccountUuid() {
-        return accountUuid;
+    public String getAccountName() {
+        return accountName;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     public Timestamp getLastOpDate() {
@@ -91,5 +104,13 @@ public class AlarmContactVO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public List<AlarmChannel> getChannel() {
+        return channel;
+    }
+
+    public void setChannel(List<AlarmChannel> channel) {
+        this.channel = channel;
     }
 }

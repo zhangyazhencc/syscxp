@@ -10,12 +10,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Inventory(mappingVOClass = AccountVO.class)
-@ExpandedQueries({
-        @ExpandedQuery(expandedField = "user", inventoryClass = UserInventory.class,
-                foreignKey = "uuid", expandedInventoryKey = "accountUuid"),
-        @ExpandedQuery(expandedField = "policy", inventoryClass = PolicyInventory.class,
-                foreignKey = "uuid", expandedInventoryKey = "accountUuid"),
-})
+
 public class AccountInventory {
     private String uuid;
     private String name;
@@ -31,8 +26,6 @@ public class AccountInventory {
     private String grade;
     private String companyNature;
     private String salesman;
-    private String contacts;
-    private String contactNumber;
 
     private Timestamp createDate;
     private Timestamp lastOpDate;
@@ -52,8 +45,6 @@ public class AccountInventory {
         inv.setGrade(aeivo.getGrade().toString());
         inv.setCompanyNature(aeivo.getCompanyNature().toString());
         inv.setSalesman(aeivo.getSalesman());
-        inv.setContacts(aeivo.getContacts());
-        inv.setContactNumber(aeivo.getContactNumber());
 
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -195,28 +186,11 @@ public class AccountInventory {
     public String getSalesman() {
         return salesman;
     }
-
-    public String getContacts() {
-        return contacts;
-    }
-
-    public String getContactNumber() {
-        return contactNumber;
-    }
-
     public void setCompanyNature(String companyNature) {
         this.companyNature = companyNature;
     }
 
     public void setSalesman(String salesman) {
         this.salesman = salesman;
-    }
-
-    public void setContacts(String contacts) {
-        this.contacts = contacts;
-    }
-
-    public void setContactNumber(String contactNumber) {
-        this.contactNumber = contactNumber;
     }
 }

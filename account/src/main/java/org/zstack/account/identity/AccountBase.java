@@ -115,6 +115,12 @@ public class AccountBase extends AbstractAccount {
             handle((APIAccountPhoneAuthenticationMsg) msg);
         }else if(msg instanceof APIUserPhoneAuthenticationMsg){
             handle((APIUserPhoneAuthenticationMsg) msg);
+        }else if(msg instanceof APIUpdateAccountContactsMsg){
+            handle((APIUpdateAccountContactsMsg) msg);
+        }else if(msg instanceof APICreateAccountContactsMsg){
+            handle((APICreateAccountContactsMsg) msg);
+        }else if(msg instanceof APIDeleteAccountContactsMsg){
+            handle((APIDeleteAccountContactsMsg) msg);
         }
 
         else {
@@ -122,17 +128,64 @@ public class AccountBase extends AbstractAccount {
         }
     }
 
-    public String getRandomString(int length) {
-        String base = "ABCDEFGFHJKMOPQRSTUVWXYZabcdefghjkmnopqrstuvwxy023456789";
-        Random random = new Random();
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < length; i++) {
-            int number = random.nextInt(base.length());
-            sb.append(base.charAt(number));
-        }
-        return sb.toString();
+    private void handle(APICreateAccountContactsMsg msg) {
+
+        AccountContactsVO acvo = new AccountContactsVO();
+        acvo.setUuid(Platform.getUuid());
+        acvo.setContacts(msg.getContacts());
+        acvo.setPhone(msg.getPhone());
+        acvo.setEmail(msg.getPhone());
+        acvo.setNoticeWay(msg.getNoticeWay());
+
+        APICreateAccountContactsEvent evt = new APICreateAccountContactsEvent(msg.getId());
+        evt.setInventory(AccountContactsInventory.valueOf(dbf.persistAndRefresh(acvo)));
+        bus.publish(evt);
     }
 
+    private void handle(APIDeleteAccountContactsMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(), AccountContactsVO.class);
+        APIDeletePolicyEvent evt = new APIDeletePolicyEvent(msg.getId());
+
+        bus.publish(evt);
+    }
+
+    private void handle(APIUpdateAccountContactsMsg msg) {
+        APIUpdateAccountContactsEvent evt = new APIUpdateAccountContactsEvent(msg.getId());
+        AccountContactsVO cont = dbf.findByUuid(msg.getTargetUuid(), AccountContactsVO.class);
+
+        SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
+        q.add(ProxyAccountRefVO_.customerAcccountUuid, SimpleQuery.Op.EQ, msg.getTargetUuid());
+        ProxyAccountRefVO acvo = q.find();
+
+        if (!msg.getSession().getType().equals(AccountType.SystemAdmin)&&
+                !cont.getAccountUuid().equals(msg.getAccountUuid())&&
+                    (acvo == null || !msg.getAccountUuid().equals(acvo.getAccountUuid()))
+                ) {
+            throw new OperationFailureException(operr("account[uuid: %s] is a normal account, " +
+                            "it cannot update the infomation of another account[uuid: %s]",
+                    msg.getAccountUuid(), msg.getTargetUuid()));
+        }
+
+        if(msg.getContacts() != null){
+            cont.setContacts(msg.getContacts());
+        }
+        if(msg.getDescription() != null){
+            cont.setDescription(msg.getDescription());
+        }
+        if(msg.getEmail() != null){
+            cont.setEmail(msg.getEmail());
+        }
+        if(msg.getPhone() != null){
+            cont.setPhone(msg.getPhone());
+        }
+        if(msg.getNoticeWay() != null){
+            cont.setNoticeWay(msg.getNoticeWay());
+        }
+
+        evt.setInventory(AccountContactsInventory.valueOf(dbf.updateAndRefresh(cont)));
+
+        bus.publish(evt);
+    }
 
     private void handle(APIAccountPhoneAuthenticationMsg msg) {
 
@@ -288,12 +341,6 @@ public class AccountBase extends AbstractAccount {
         if (msg.getCompanyNature() != null) {
             aeivo.setCompanyNature(msg.getCompanyNature());
         }
-        if (msg.getContacts() != null) {
-            aeivo.setContacts(msg.getContacts());
-        }
-        if (msg.getContactNumber() != null) {
-            aeivo.setContactNumber(msg.getContactNumber());
-        }
         if (msg.getSalesman() != null) {
             aeivo.setSalesman(msg.getSalesman());
         }
@@ -388,7 +435,6 @@ public class AccountBase extends AbstractAccount {
         vo.setPhoneStatus(AccountAuthentication.NO);
         vo.setEmailStatus(AccountAuthentication.NO);
 
-
         AccountExtraInfoVO aeivo = new AccountExtraInfoVO();
         aeivo.setUuid(Platform.getUuid());
         aeivo.setAccountUuid(vo.getUuid());
@@ -398,12 +444,7 @@ public class AccountBase extends AbstractAccount {
         if(msg.getGrade() != null){
             aeivo.setGrade(msg.getGrade());
         }
-        if(msg.getContacts() != null){
-            aeivo.setContacts(msg.getContacts());
-        }
-        if(msg.getContactNumber() != null){
-            aeivo.setContactNumber(msg.getContactNumber());
-        }
+
         if(msg.getSalesman() != null){
             aeivo.setSalesman(msg.getSalesman());
         }
@@ -476,7 +517,7 @@ public class AccountBase extends AbstractAccount {
         pvo.setPolicyStatement(JSONObjectUtil.toJsonString(msg.getStatements()));
 
         APICreatePolicyEvent evt = new APICreatePolicyEvent(msg.getId());
-        evt.setSuccess(true);
+
         evt.setInventory(PolicyInventory.valueOf(dbf.persistAndRefresh(pvo)));
         bus.publish(evt);
     }
@@ -493,20 +534,19 @@ public class AccountBase extends AbstractAccount {
         }
 
         APIDetachPolicyFromUserEvent  evt= new APIDetachPolicyFromUserEvent(msg.getId());
-        evt.setSuccess(true);
+
         bus.publish(evt);
     }
 
     private void handle(APIDeletePolicyMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), PolicyVO.class);
         APIDeletePolicyEvent evt = new APIDeletePolicyEvent(msg.getId());
-        evt.setSuccess(true);
+
         bus.publish(evt);
     }
 
     private void handle(APIAttachPolicyToUserMsg msg) {
         APIAttachPolicyToUserEvent evt = new APIAttachPolicyToUserEvent(msg.getId());
-        evt.setSuccess(true);
 
         UserPolicyRefVO upvo = new UserPolicyRefVO();
         upvo.setPolicyUuid(msg.getPolicyUuid());
@@ -532,7 +572,7 @@ public class AccountBase extends AbstractAccount {
         auth.setDescription(msg.getDescription());
 
         APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
-        evt.setSuccess(true);
+
         evt.setInventory(PermissionInventory.valueOf(dbf.persistAndRefresh(auth)));
         bus.publish(evt);
     }
@@ -560,7 +600,7 @@ public class AccountBase extends AbstractAccount {
         }
 
         APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
-        evt.setSuccess(true);
+
         evt.setInventory(PermissionInventory.valueOf(auth));
         bus.publish(evt);
 
@@ -569,8 +609,19 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIDeletePermissionMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), PermissionVO.class);
         APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
-        evt.setSuccess(true);
+
         bus.publish(evt);
+    }
+
+    public String getRandomString(int length) {
+        String base = "ABCDEFGFHJKMOPQRSTUVWXYZabcdefghjkmnopqrstuvwxy023456789";
+        Random random = new Random();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length; i++) {
+            int number = random.nextInt(base.length());
+            sb.append(base.charAt(number));
+        }
+        return sb.toString();
     }
 
 }

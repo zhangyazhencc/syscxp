@@ -17,7 +17,11 @@ public class AlarmContactInventory {
 
     private String email;
 
-    private String accountUuid;
+    private List<AlarmChannel> channel;
+
+    private String accountName;
+
+    private String company;
 
     private Timestamp lastOpDate;
 
@@ -26,10 +30,12 @@ public class AlarmContactInventory {
     public static AlarmContactInventory valueOf(AlarmContactVO vo) {
         AlarmContactInventory inv = new AlarmContactInventory();
         inv.setUuid(vo.getUuid());
-        inv.setAccountUuid(vo.getAccountUuid());
+        inv.setAccountName(vo.getAccountName());
+        inv.setCompany(vo.getCompany());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
         inv.setName(vo.getName());
+        inv.setChannel(vo.getChannel());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
@@ -43,6 +49,13 @@ public class AlarmContactInventory {
         return lst;
     }
 
+    public List<AlarmChannel> getChannel() {
+        return channel;
+    }
+
+    public void setChannel(List<AlarmChannel> channel) {
+        this.channel = channel;
+    }
 
     public String getUuid() {
         return uuid;
@@ -76,12 +89,20 @@ public class AlarmContactInventory {
         this.email = email;
     }
 
-    public String getAccountUuid() {
-        return accountUuid;
+    public String getAccountName() {
+        return accountName;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     public Timestamp getLastOpDate() {

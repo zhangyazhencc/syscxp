@@ -56,11 +56,19 @@
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIQueryAuthorityMsg</name>
+        <name>org.zstack.account.header.identity.APIQueryPermissionMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
         <name>org.zstack.account.header.identity.APIQueryAccountApiSecurityMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+    <message>
+        <name>org.zstack.account.header.identity.APIQueryAccountExtraInfoMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+    <message>
+        <name>org.zstack.account.header.identity.APIQueryAccountContactsMsg</name>
         <serviceId>query</serviceId>
     </message>
 
@@ -121,5 +129,17 @@
     <message>
         <name>org.zstack.account.header.identity.APIUserPhoneAuthenticationMsg</name>
     </message>
+
+    <message>
+        <name>org.zstack.account.header.identity.APIUpdateAccountContactsMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.identity.APICreateAccountContactsMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.identity.APIDeleteAccountContactsMsg</name>
+    </message>
+
 
 </service>

@@ -74,7 +74,7 @@ public class ApiMessageProcessorImpl implements ApiMessageProcessor {
             ApiMessageDescriptor desc = e.getValue();
             sb.append("\n-------------------------------------------");
             sb.append(String.format("\nname: %s", desc.getName()));
-            sb.append(String.format("\nconfigured service id: %s", desc.getServiceId()));
+            sb.append(String.format("\nconfigured manage id: %s", desc.getServiceId()));
             sb.append(String.format("\nconfig path: %s", desc.getConfigPath()));
             List<String> inc = new ArrayList<String>();
             for (ApiMessageInterceptor ic : desc.getInterceptors()) {

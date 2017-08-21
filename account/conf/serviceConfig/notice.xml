@@ -21,4 +21,21 @@
     </message>
 
 
+    <message>
+        <name>org.zstack.account.header.log.APIQueryAlarmContactMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.log.APIUpdateAlarmContactMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.log.APICreateAlarmContactMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.log.APIDeleteAlarmContactMsg</name>
+    </message>
+
 </service>

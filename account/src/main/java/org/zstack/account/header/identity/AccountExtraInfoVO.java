@@ -41,12 +41,6 @@ public class AccountExtraInfoVO {
     private String salesman;
 
     @Column
-    private String contacts;
-
-    @Column
-    private String contactNumber;
-
-    @Column
     private Timestamp createDate;
     
     @Column
@@ -77,14 +71,6 @@ public class AccountExtraInfoVO {
         return salesman;
     }
 
-    public String getContacts() {
-        return contacts;
-    }
-
-    public String getContactNumber() {
-        return contactNumber;
-    }
-
     public Timestamp getCreateDate() {
         return createDate;
     }
@@ -111,14 +97,6 @@ public class AccountExtraInfoVO {
 
     public void setSalesman(String salesman) {
         this.salesman = salesman;
-    }
-
-    public void setContacts(String contacts) {
-        this.contacts = contacts;
-    }
-
-    public void setContactNumber(String contactNumber) {
-        this.contactNumber = contactNumber;
     }
 
     public void setCreateDate(Timestamp createDate) {

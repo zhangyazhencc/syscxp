@@ -23,8 +23,6 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
 
     @APIParam(maxLength = 128, required = false)
     private String industry;
-    @APIParam(maxLength = 32, required = false)
-    private AccountGrade grade;
     @APIParam(maxLength = 128, required = false)
     private AccountStatus status;
     @APIParam(validValues = {"SystemAdmin", "Normal", "Proxy"}, required = false)
@@ -32,14 +30,12 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
     @APIParam(maxLength = 255, required = false)
     private String description;
 
+    @APIParam(maxLength = 32, required = false)
+    private AccountGrade grade;
     @APIParam(maxLength = 255, required = false)
     private CompanyNature companyNature ;
     @APIParam(maxLength = 255, required = false)
     private String salesman;
-    @APIParam(maxLength = 255, required = false)
-    private String contacts;
-    @APIParam(maxLength = 255, required = false)
-    private String contactNumber;
 
     @Override
     public String getAccountUuid() {
@@ -98,14 +94,6 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
         return salesman;
     }
 
-    public String getContacts() {
-        return contacts;
-    }
-
-    public String getContactNumber() {
-        return contactNumber;
-    }
-
     public void setName(String name) {
         this.name = name;
     }
@@ -157,14 +145,5 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
     public void setSalesman(String salesman) {
         this.salesman = salesman;
     }
-
-    public void setContacts(String contacts) {
-        this.contacts = contacts;
-    }
-
-    public void setContactNumber(String contactNumber) {
-        this.contactNumber = contactNumber;
-    }
-
 
 }
