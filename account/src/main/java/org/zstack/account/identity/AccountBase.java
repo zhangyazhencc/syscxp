@@ -117,11 +117,36 @@ public class AccountBase extends AbstractAccount {
             handle((APIUserPhoneAuthenticationMsg) msg);
         }else if(msg instanceof APIUpdateAccountContactsMsg){
             handle((APIUpdateAccountContactsMsg) msg);
+        }else if(msg instanceof APICreateAccountContactsMsg){
+            handle((APICreateAccountContactsMsg) msg);
+        }else if(msg instanceof APIDeleteAccountContactsMsg){
+            handle((APIDeleteAccountContactsMsg) msg);
         }
 
         else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APICreateAccountContactsMsg msg) {
+
+        AccountContactsVO acvo = new AccountContactsVO();
+        acvo.setUuid(Platform.getUuid());
+        acvo.setContacts(msg.getContacts());
+        acvo.setPhone(msg.getPhone());
+        acvo.setEmail(msg.getPhone());
+        acvo.setNoticeWay(msg.getNoticeWay());
+
+        APICreateAccountContactsEvent evt = new APICreateAccountContactsEvent(msg.getId());
+        evt.setInventory(AccountContactsInventory.valueOf(dbf.persistAndRefresh(acvo)));
+        bus.publish(evt);
+    }
+
+    private void handle(APIDeleteAccountContactsMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(), AccountContactsVO.class);
+        APIDeletePolicyEvent evt = new APIDeletePolicyEvent(msg.getId());
+
+        bus.publish(evt);
     }
 
     private void handle(APIUpdateAccountContactsMsg msg) {
@@ -492,7 +517,7 @@ public class AccountBase extends AbstractAccount {
         pvo.setPolicyStatement(JSONObjectUtil.toJsonString(msg.getStatements()));
 
         APICreatePolicyEvent evt = new APICreatePolicyEvent(msg.getId());
-        evt.setSuccess(true);
+
         evt.setInventory(PolicyInventory.valueOf(dbf.persistAndRefresh(pvo)));
         bus.publish(evt);
     }
@@ -509,20 +534,19 @@ public class AccountBase extends AbstractAccount {
         }
 
         APIDetachPolicyFromUserEvent  evt= new APIDetachPolicyFromUserEvent(msg.getId());
-        evt.setSuccess(true);
+
         bus.publish(evt);
     }
 
     private void handle(APIDeletePolicyMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), PolicyVO.class);
         APIDeletePolicyEvent evt = new APIDeletePolicyEvent(msg.getId());
-        evt.setSuccess(true);
+
         bus.publish(evt);
     }
 
     private void handle(APIAttachPolicyToUserMsg msg) {
         APIAttachPolicyToUserEvent evt = new APIAttachPolicyToUserEvent(msg.getId());
-        evt.setSuccess(true);
 
         UserPolicyRefVO upvo = new UserPolicyRefVO();
         upvo.setPolicyUuid(msg.getPolicyUuid());
@@ -548,7 +572,7 @@ public class AccountBase extends AbstractAccount {
         auth.setDescription(msg.getDescription());
 
         APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
-        evt.setSuccess(true);
+
         evt.setInventory(PermissionInventory.valueOf(dbf.persistAndRefresh(auth)));
         bus.publish(evt);
     }
@@ -576,7 +600,7 @@ public class AccountBase extends AbstractAccount {
         }
 
         APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
-        evt.setSuccess(true);
+
         evt.setInventory(PermissionInventory.valueOf(auth));
         bus.publish(evt);
 
@@ -585,7 +609,7 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIDeletePermissionMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), PermissionVO.class);
         APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
-        evt.setSuccess(true);
+
         bus.publish(evt);
     }
 

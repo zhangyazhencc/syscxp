@@ -404,6 +404,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIDetachPolicyFromUserMsg) msg);
         } else if (msg instanceof APIAttachPolicyToUserMsg) {
             validate((APIAttachPolicyToUserMsg) msg);
+        } else if (msg instanceof APIDeleteAccountContactsMsg) {
+            validate((APIDeleteAccountContactsMsg) msg);
         }
 
         setServiceId(msg);
@@ -411,6 +413,13 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         return msg;
     }
 
+    private void validate(APIDeleteAccountContactsMsg msg) {
+
+        if (!msg.getSession().getType().equals(AccountType.SystemAdmin)) {
+            throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot set the policy of the other user[uuid: %s]",
+                    msg.getAccountUuid(), msg.getUuid()));
+        }
+    }
 
     private void validate(APILogInByUserMsg msg) {
         if (msg.getAccountName() == null && msg.getAccountUuid() == null) {

@@ -72,7 +72,6 @@
         <serviceId>query</serviceId>
     </message>
 
-
     <message>
         <name>org.zstack.account.header.identity.APICheckApiPermissionMsg</name>
     </message>
@@ -134,5 +133,13 @@
     <message>
         <name>org.zstack.account.header.identity.APIUpdateAccountContactsMsg</name>
     </message>
+
+    <message>
+        <name>org.zstack.account.header.identity.APICreateAccountContactsMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.identity.APIDeleteAccountContactsMsg</name>
+    </message>
+
 
 </service>
