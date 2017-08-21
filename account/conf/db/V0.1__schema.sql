@@ -60,7 +60,7 @@ CREATE TABLE  `AccountVO` (
     `status` varchar(128) NOT NULL COMMENT '状态',
     `description` varchar(255),
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-    `createDate` timestamp ,
+    `createDate` timestamp,
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
