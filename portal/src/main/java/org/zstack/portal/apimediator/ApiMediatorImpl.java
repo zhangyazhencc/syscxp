@@ -54,7 +54,7 @@ public class ApiMediatorImpl extends AbstractService implements ApiMediator, Glo
         ApiMessageDescriptor desc = processor.getApiMessageDescriptor(msg);
         if (desc == null) {
             Map message = map(e(msg.getClass().getName(), msg));
-            String err = String.format("no service configuration file declares message: %s", JSONObjectUtil.toJsonString(message));
+            String err = String.format("no manage configuration file declares message: %s", JSONObjectUtil.toJsonString(message));
             logger.warn(err);
             bus.replyErrorByMessageType(msg, errf.instantiateErrorCode(PortalErrors.NO_SERVICE_FOR_MESSAGE, err));
             return;
@@ -77,7 +77,7 @@ public class ApiMediatorImpl extends AbstractService implements ApiMediator, Glo
         }
 
         if (msg.getServiceId() == null) {
-            String err = String.format("No service id found for API message[%s], message dump: %s", msg.getMessageName(), JSONObjectUtil.toJsonString(msg));
+            String err = String.format("No manage id found for API message[%s], message dump: %s", msg.getMessageName(), JSONObjectUtil.toJsonString(msg));
             logger.warn(err);
             bus.replyErrorByMessageType(msg, errf.stringToInternalError(err));
             return;

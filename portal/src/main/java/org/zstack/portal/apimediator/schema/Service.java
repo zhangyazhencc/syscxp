@@ -61,7 +61,7 @@ import java.util.List;
     "interceptor",
     "message"
 })
-@XmlRootElement(name = "service")
+@XmlRootElement(name = "manage")
 public class Service {
 
     protected String id;
