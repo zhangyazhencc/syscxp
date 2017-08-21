@@ -5,10 +5,10 @@ import org.zstack.header.query.APIQueryMessage;
 import org.zstack.header.query.AutoQuery;
 
 /**
- * Created by wangwg on 2017/08/15.
+ * Created by wangwg on 2017/08/21.
  */
-@AutoQuery(replyClass = APIQueryAuthorityReply.class, inventoryClass = PermissionInventory.class)
+@AutoQuery(replyClass = APIQueryAccountContactsReply.class, inventoryClass = AccountContactsInventory.class)
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"read"})
-public class APIQueryAuthorityMsg extends APIQueryMessage {
+public class APIQueryAccountContactsMsg extends APIQueryMessage {
 
 }

@@ -115,6 +115,8 @@ public class AccountBase extends AbstractAccount {
             handle((APIAccountPhoneAuthenticationMsg) msg);
         }else if(msg instanceof APIUserPhoneAuthenticationMsg){
             handle((APIUserPhoneAuthenticationMsg) msg);
+        }else if(msg instanceof APIUpdateAccountContactsMsg){
+            handle((APIUpdateAccountContactsMsg) msg);
         }
 
         else {
@@ -122,17 +124,43 @@ public class AccountBase extends AbstractAccount {
         }
     }
 
-    public String getRandomString(int length) {
-        String base = "ABCDEFGFHJKMOPQRSTUVWXYZabcdefghjkmnopqrstuvwxy023456789";
-        Random random = new Random();
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < length; i++) {
-            int number = random.nextInt(base.length());
-            sb.append(base.charAt(number));
-        }
-        return sb.toString();
-    }
+    private void handle(APIUpdateAccountContactsMsg msg) {
+        APIUpdateAccountContactsEvent evt = new APIUpdateAccountContactsEvent(msg.getId());
+        AccountContactsVO cont = dbf.findByUuid(msg.getTargetUuid(), AccountContactsVO.class);
 
+        SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
+        q.add(ProxyAccountRefVO_.customerAcccountUuid, SimpleQuery.Op.EQ, msg.getTargetUuid());
+        ProxyAccountRefVO acvo = q.find();
+
+        if (!msg.getSession().getType().equals(AccountType.SystemAdmin)&&
+                !cont.getAccountUuid().equals(msg.getAccountUuid())&&
+                    (acvo == null || !msg.getAccountUuid().equals(acvo.getAccountUuid()))
+                ) {
+            throw new OperationFailureException(operr("account[uuid: %s] is a normal account, " +
+                            "it cannot update the infomation of another account[uuid: %s]",
+                    msg.getAccountUuid(), msg.getTargetUuid()));
+        }
+
+        if(msg.getContacts() != null){
+            cont.setContacts(msg.getContacts());
+        }
+        if(msg.getDescription() != null){
+            cont.setDescription(msg.getDescription());
+        }
+        if(msg.getEmail() != null){
+            cont.setEmail(msg.getEmail());
+        }
+        if(msg.getPhone() != null){
+            cont.setPhone(msg.getPhone());
+        }
+        if(msg.getNoticeWay() != null){
+            cont.setNoticeWay(msg.getNoticeWay());
+        }
+
+        evt.setInventory(AccountContactsInventory.valueOf(dbf.updateAndRefresh(cont)));
+
+        bus.publish(evt);
+    }
 
     private void handle(APIAccountPhoneAuthenticationMsg msg) {
 
@@ -559,6 +587,17 @@ public class AccountBase extends AbstractAccount {
         APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
         evt.setSuccess(true);
         bus.publish(evt);
+    }
+
+    public String getRandomString(int length) {
+        String base = "ABCDEFGFHJKMOPQRSTUVWXYZabcdefghjkmnopqrstuvwxy023456789";
+        Random random = new Random();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length; i++) {
+            int number = random.nextInt(base.length());
+            sb.append(base.charAt(number));
+        }
+        return sb.toString();
     }
 
 }
