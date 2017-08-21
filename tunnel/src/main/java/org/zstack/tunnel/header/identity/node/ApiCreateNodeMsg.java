@@ -4,27 +4,34 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 /**
- * Created by ycy on 8/7/17.
+ * Created by DCY on 8/21/17.
  */
 
 
 public class ApiCreateNodeMsg extends APIMessage {
 
-    @APIParam(maxLength = 255)
+    @APIParam(nonempty = true,maxLength = 255)
     private String name;
-    @APIParam(maxLength = 128)
+    @APIParam(nonempty = true,maxLength = 128)
     private String code;
-    @APIParam(validValues = {"close", "open","available"}, required = false)
-    private String status;
-    @APIParam(maxLength = 255, required = false)
-    private String description;
-    private String property;
-    private String contact;
-    private String telephone;
-    private String province;
-    private String city;
+    @APIParam(nonempty = true)
     private double longtitude;
+    @APIParam(nonempty = true)
     private double latitude;
+    @APIParam(nonempty = true,validValues = {"CLOUD", "ACCESSIN","IDC","VPN","ECP","EXCHANGE"})
+    private NodeProperty property;
+    @APIParam(nonempty = true,maxLength = 128)
+    private String province;
+    @APIParam(nonempty = true,maxLength = 128)
+    private String city;
+    @APIParam(nonempty = true,maxLength = 256)
+    private String address;
+    @APIParam(nonempty = true,maxLength = 128)
+    private String contact;
+    @APIParam(nonempty = true,maxLength = 32)
+    private String telephone;
+    @APIParam(nonempty = true,validValues = {"CLOSE", "OPEN","AVAILABLE"})
+    private NodeStatus status;
 
     public String getName() {
         return name;
@@ -42,44 +49,28 @@ public class ApiCreateNodeMsg extends APIMessage {
         this.code = code;
     }
 
-    public String getStatus() {
-        return status;
+    public double getLongtitude() {
+        return longtitude;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setLongtitude(double longtitude) {
+        this.longtitude = longtitude;
     }
 
-    public String getDescription() {
-        return description;
+    public double getLatitude() {
+        return latitude;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
     }
 
-    public String getProperty() {
+    public NodeProperty getProperty() {
         return property;
     }
 
-    public void setProperty(String property) {
+    public void setProperty(NodeProperty property) {
         this.property = property;
-    }
-
-    public String getContact() {
-        return contact;
-    }
-
-    public void setContact(String contact) {
-        this.contact = contact;
-    }
-
-    public String getTelephone() {
-        return telephone;
-    }
-
-    public void setTelephone(String telephone) {
-        this.telephone = telephone;
     }
 
     public String getProvince() {
@@ -98,19 +89,35 @@ public class ApiCreateNodeMsg extends APIMessage {
         this.city = city;
     }
 
-    public double getLongtitude() {
-        return longtitude;
+    public String getAddress() {
+        return address;
     }
 
-    public void setLongtitude(double longtitude) {
-        this.longtitude = longtitude;
+    public void setAddress(String address) {
+        this.address = address;
     }
 
-    public double getLatitude() {
-        return latitude;
+    public String getContact() {
+        return contact;
     }
 
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
+    public void setContact(String contact) {
+        this.contact = contact;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
+    public NodeStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(NodeStatus status) {
+        this.status = status;
     }
 }

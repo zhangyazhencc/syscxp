@@ -4,7 +4,7 @@
     <interceptor>TunnelManager</interceptor>
 
     <message>
-        <name>org.zstack.tunnel.header.message.APICreateNodeMsg</name>
+        <name>org.zstack.tunnel.header.identity.node.APICreateNodeMsg</name>
     </message>
 
 </service>
