@@ -1,4 +1,4 @@
-package org.zstack.tunnel.header.message;
+package org.zstack.tunnel.header.identity.node;
 
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;

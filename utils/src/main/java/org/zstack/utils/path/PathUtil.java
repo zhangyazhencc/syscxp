@@ -151,7 +151,7 @@ public class PathUtil {
             scanFolder(ret, folder.getAbsolutePath());
             return ret;
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Unable to locate service portal configure files"), e);
+            throw new RuntimeException(String.format("Unable to locate manage portal configure files"), e);
         }
     }
 
@@ -170,7 +170,7 @@ public class PathUtil {
             }
             return ret;
         } catch (Exception e) {
-            throw new RuntimeException(String.format("Unable to locate service portal configure files"), e);
+            throw new RuntimeException(String.format("Unable to locate manage portal configure files"), e);
         }
     }
 }
