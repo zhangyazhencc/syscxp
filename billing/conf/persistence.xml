@@ -11,6 +11,7 @@
 
         <class>org.zstack.billing.header.identity.balance.AccountBalanceVO</class>
         <class>org.zstack.billing.header.identity.order.OrderVO</class>
+        <class>org.zstack.billing.header.identity.bill.BillVO</class>
 
     </persistence-unit>
 </persistence>
