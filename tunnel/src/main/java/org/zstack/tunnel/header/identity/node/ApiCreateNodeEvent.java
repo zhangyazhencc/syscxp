@@ -8,17 +8,17 @@ import org.zstack.header.rest.RestResponse;
  */
 @RestResponse(allTo = "inventory")
 public class ApiCreateNodeEvent extends APIEvent {
-    private NodeInventory nodeInventory;
+    private NodeInventory inventory;
 
     public ApiCreateNodeEvent(){}
 
     public ApiCreateNodeEvent(String apiId){super(apiId);}
 
-    public NodeInventory getNodeInventory() {
-        return nodeInventory;
+    public NodeInventory getInventory() {
+        return inventory;
     }
 
-    public void setNodeInventory(NodeInventory nodeInventory) {
-        this.nodeInventory = nodeInventory;
+    public void setInventory(NodeInventory inventory) {
+        this.inventory = inventory;
     }
 }
