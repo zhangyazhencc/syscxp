@@ -8,7 +8,7 @@ import org.zstack.header.notification.ApiNotification;
 import java.sql.Timestamp;
 
 public class APIUpdateNoticeMsg extends APIMessage {
-    @APIParam(resourceType = NoticeVO.class, nonempty = true)
+    @APIParam(resourceType = NoticeVO.class, emptyString = false)
     private String uuid;
     @APIParam(maxLength = 255, required = false)
     private String title;

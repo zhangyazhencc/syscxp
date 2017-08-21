@@ -6,17 +6,21 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
+import java.util.List;
+
 public class APICreateAlarmContactMsg extends APICreateMessage {
-    @APIParam(maxLength = 32)
-    private String accountUuid;
-    @APIParam(maxLength = 32)
+    @APIParam(maxLength = 32, emptyString = false)
+    private String accountName;
+    @APIParam(maxLength = 128, emptyString = false)
+    private String company;
+    @APIParam(maxLength = 32, emptyString = false)
     private String name;
-    @APIParam(maxLength = 32)
+    @APIParam(maxLength = 32, emptyString = false)
     private String phone;
-    @APIParam(maxLength = 255)
+    @APIParam(maxLength = 255, emptyString = false)
     private String email;
-    @APIParam(maxLength = 32)
-    private String channel;
+    @APIParam(maxLength = 32, nonempty = true)
+    private List<AlarmChannel> channel;
 
     public String getName() {
         return name;
@@ -42,21 +46,28 @@ public class APICreateAlarmContactMsg extends APICreateMessage {
         this.email = email;
     }
 
-    public String getChannel() {
+    public List<AlarmChannel> getChannel() {
         return channel;
     }
 
-    public void setChannel(String channel) {
+    public void setChannel(List<AlarmChannel> channel) {
         this.channel = channel;
     }
 
-    public String getAccountUuid() {
-
-        return accountUuid;
+    public String getAccountName() {
+        return accountName;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
+    }
+
+    public String getCompany() {
+        return company;
+    }
+
+    public void setCompany(String company) {
+        this.company = company;
     }
 
     public ApiNotification __notification__() {
