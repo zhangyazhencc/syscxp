@@ -1,7 +1,7 @@
 package org.zstack.tunnel.header.identity.node;
 
 import org.zstack.header.search.Inventory;
-import org.zstack.tunnel.header.identity.vo.NodeVO;
+import org.zstack.tunnel.header.identity.node.NodeVO;
 
 import java.sql.Timestamp;
 
