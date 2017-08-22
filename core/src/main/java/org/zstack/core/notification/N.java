@@ -9,6 +9,8 @@ import org.zstack.utils.DebugUtils;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
+import java.util.Map;
+
 /**
  * Created by xing5 on 2017/5/8.
  */
@@ -76,7 +78,7 @@ public class N {
         logger.error(String.format(fmt, args));
     }
 
-    public N opaque(Object o) {
+    public N opaque(Map o) {
         builder.opaque(o);
         return this;
     }

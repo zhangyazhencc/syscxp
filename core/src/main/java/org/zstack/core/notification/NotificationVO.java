@@ -1,9 +1,13 @@
 package org.zstack.core.notification;
 
+import org.zstack.core.db.converter.ListAttributeConverter;
+import org.zstack.core.db.converter.MapAttributeConverter;
 import org.zstack.header.vo.BaseResource;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by xing5 on 2017/3/15.
@@ -16,13 +20,24 @@ public class NotificationVO {
     @Column
     private String uuid;
     @Column
+    private String accountUuid;
+    @Column
+    private String userUuid;
+    @Column
     private String name;
+    @Column
+    private String category;
     @Column
     private String content;
     @Column
-    private String arguments;
+    @Convert(converter = ListAttributeConverter.class)
+    private List arguments;
     @Column
     private String sender;
+    @Column
+    private String action;
+    @Column
+    private Boolean success;
     @Column
     @Enumerated(EnumType.STRING)
     private NotificationStatus status;
@@ -36,7 +51,8 @@ public class NotificationVO {
     @Column
     private long time;
     @Column
-    private String opaque;
+    @Convert(converter = MapAttributeConverter.class)
+    private Map opaque;
     @Column
     private Timestamp createDate;
     @Column
@@ -51,11 +67,59 @@ public class NotificationVO {
         dateTime = new Timestamp(System.currentTimeMillis());
     }
 
-    public String getOpaque() {
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
+
+    public String getUserUuid() {
+        return userUuid;
+    }
+
+    public void setUserUuid(String userUuid) {
+        this.userUuid = userUuid;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public Timestamp getDateTime() {
+        return dateTime;
+    }
+
+    public void setDateTime(Timestamp dateTime) {
+        this.dateTime = dateTime;
+    }
+
+    public Map getOpaque() {
         return opaque;
     }
 
-    public void setOpaque(String opaque) {
+    public void setOpaque(Map opaque) {
         this.opaque = opaque;
     }
 
@@ -67,11 +131,11 @@ public class NotificationVO {
         this.time = time;
     }
 
-    public String getArguments() {
+    public List getArguments() {
         return arguments;
     }
 
-    public void setArguments(String arguments) {
+    public void setArguments(List arguments) {
         this.arguments = arguments;
     }
 

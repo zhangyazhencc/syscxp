@@ -1,11 +1,11 @@
-package org.zstack.account.header.log;
+package org.zstack.core.db.converter;
 
 import org.zstack.utils.gson.JSONObjectUtil;
 
 import javax.persistence.AttributeConverter;
 import java.util.List;
 
-public class ChannelAttributeConverter implements AttributeConverter<List, String> {
+public class ListAttributeConverter implements AttributeConverter<List, String> {
     @Override
     public String convertToDatabaseColumn(List attribute) {
         return JSONObjectUtil.toJsonString(attribute);

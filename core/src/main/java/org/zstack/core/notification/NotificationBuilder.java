@@ -5,19 +5,35 @@ import org.zstack.core.Platform;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by xing5 on 2017/3/15.
  */
 public class NotificationBuilder {
     String notificationName;
+    String category;
+    String action;
+    Boolean success;
     String content;
     String sender = NotificationConstant.SYSTEM_SENDER;
     String resourceUuid;
     String resourceType;
-    Object opaque;
+    Map opaque;
     List arguments = new ArrayList();
     NotificationType type = NotificationType.Info;
+
+
+    public NotificationBuilder category(String category) {
+        this.category = category;
+        return this;
+    }
+
+    public NotificationBuilder action(String action, boolean success) {
+        this.action = action;
+        this.success = success;
+        return this;
+    }
 
     public NotificationBuilder name(String name) {
         notificationName = name;
@@ -30,7 +46,7 @@ public class NotificationBuilder {
     }
 
 
-    public NotificationBuilder arguments(Object...args) {
+    public NotificationBuilder arguments(Object... args) {
         if (args != null) {
             Collections.addAll(arguments, args);
         }
@@ -43,7 +59,7 @@ public class NotificationBuilder {
         return this;
     }
 
-    public NotificationBuilder opaque(Object opaque) {
+    public NotificationBuilder opaque(Map opaque) {
         this.opaque = opaque;
         return this;
     }
