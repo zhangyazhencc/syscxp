@@ -76,15 +76,14 @@ public class APICreateAlarmContactMsg extends APICreateMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
+                String uuid = null;
                 if (evt.isSuccess()) {
-                    ntfy(String.format("Create AlarmContact[uuid: %s]", ((APICreateAlarmContactEvent) evt).getInventory().getUuid()))
-                            .resource(((APICreateAlarmContactEvent) evt).getInventory().getUuid(), AlarmContactVO.class.getSimpleName())
-                            .messageAndEvent(that, evt).done();
-                } else {
-                    ntfy("Create AlarmContact fail")
-                            .resource(null, AlarmContactVO.class.getSimpleName())
-                            .messageAndEvent(that, evt).done();
+                    uuid = ((APICreateAlarmContactEvent) evt).getInventory().getUuid();
                 }
+
+                ntfy("新建告警联系人")
+                        .resource(uuid, AlarmContactVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
             }
         };
     }

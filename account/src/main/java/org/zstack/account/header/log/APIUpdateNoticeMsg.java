@@ -75,7 +75,7 @@ public class APIUpdateNoticeMsg extends APIMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy(String.format("Update Notice[uuid: %s]", uuid))
+                ntfy("修改公告")
                         .resource(uuid, NoticeVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }

@@ -37,7 +37,8 @@ public class OperLogVO {
     private String resourceType;
 
     @Column
-    private String state;
+    @Enumerated(EnumType.STRING)
+    private OperStatus status;
 
     @Column
     private String description;
@@ -104,12 +105,12 @@ public class OperLogVO {
         this.resourceType = resourceType;
     }
 
-    public String getState() {
-        return state;
+    public OperStatus getStatus() {
+        return status;
     }
 
-    public void setState(String state) {
-        this.state = state;
+    public void setStatus(OperStatus status) {
+        this.status = status;
     }
 
     public String getDescription() {

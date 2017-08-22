@@ -56,15 +56,13 @@ public class APICreateNoticeMsg extends APICreateMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
+                String uuid = null;
                 if (evt.isSuccess()) {
-                    ntfy(String.format("Create Notice[uuid: %s]", ((APICreateNoticeEvent) evt).getInventory().getUuid()))
-                            .resource(((APICreateNoticeEvent) evt).getInventory().getUuid(), NoticeVO.class.getSimpleName())
-                            .messageAndEvent(that, evt).done();
-                } else {
-                    ntfy("Create Notice fail")
-                            .resource(null, NoticeVO.class.getSimpleName())
-                            .messageAndEvent(that, evt).done();
+                    uuid = ((APICreateNoticeEvent) evt).getInventory().getUuid();
                 }
+                ntfy("新建公告", title, link, startTime, endTime)
+                        .resource(uuid, NoticeVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
             }
         };
     }

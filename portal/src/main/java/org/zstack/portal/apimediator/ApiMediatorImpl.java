@@ -42,8 +42,6 @@ public class ApiMediatorImpl extends AbstractService implements ApiMediator, Glo
     private ErrorFacade errf;
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private ApiMediatorConstant apiMediatorConstant;
 
     private ApiMessageProcessor processor;
 
@@ -184,7 +182,7 @@ public class ApiMediatorImpl extends AbstractService implements ApiMediator, Glo
 
     @Override
     public String getId() {
-        return apiMediatorConstant.getApiMediatorServiceId();
+        return ApiMediatorConstant.SERVICE_ID;
     }
 
     @Override

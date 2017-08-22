@@ -15,6 +15,7 @@
     <bean id="TimeoutManager" class="org.zstack.core.timeout.ApiTimeoutManagerImpl" />
 
     <bean id="CloudBus" class = "org.zstack.core.cloudbus.CloudBusImpl2" depends-on="ThreadFacade,ThreadAspectj">
+		<property name="busProjectId" value="billing" />
     	<zstack:plugin>
 			<zstack:extension interface="org.zstack.header.managementnode.ManagementNodeChangeListener" order="9999"/>
 		</zstack:plugin>
