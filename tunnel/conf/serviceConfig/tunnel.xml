@@ -3,8 +3,18 @@
     <id>tunnel</id>
     <interceptor>TunnelManager</interceptor>
 
+    <!--NODE-->
     <message>
         <name>org.zstack.tunnel.header.identity.node.APICreateNodeMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.identity.node.ApiUpdateNodeMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.identity.node.ApiQueryNodeMsg</name>
+        <serviceId>query</serviceId>
     </message>
 
 </service>
