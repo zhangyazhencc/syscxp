@@ -165,7 +165,7 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
                         .account(b.message.getSession().getAccountUuid())
                         .user(b.message.getSession().getUserUuid())
                         .resource(inner.getResourceUuid(), inner.getResourceType())
-                        .category(aevt.getType().toString())
+                        .category(b.message.getServiceId())
                         .action(action)
                         .state(aevt.isSuccess())
                         .description(inner.getContent()));
@@ -260,7 +260,7 @@ public class LogManagerImpl extends AbstractService implements LogManager, Cloud
                     operLogVO.setResourceType(builder.resourceType);
                     operLogVO.setAction(builder.action);
                     operLogVO.setCategory(builder.category);
-                    operLogVO.setState(builder.state);
+                    operLogVO.setStatus(builder.status);
                     operLogVO.setDescription(builder.description);
 
                     dbf.persistAndRefresh(operLogVO);

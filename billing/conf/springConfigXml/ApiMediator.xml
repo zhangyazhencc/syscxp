@@ -12,10 +12,6 @@
     http://zstack.org/schema/zstack/plugin.xsd"
     default-init-method="init" default-destroy-method="destroy">
 
-    <bean id="ApiMediatorConstant" class="org.zstack.header.apimediator.ApiMediatorConstant">
-        <property name="apiMediatorServiceId" value="billing.api.portal" />
-    </bean>
-
     <bean id="ApiMediator" class="org.zstack.portal.apimediator.ApiMediatorImpl">
         <zstack:plugin>
             <zstack:extension interface="org.zstack.header.apimediator.GlobalApiMessageInterceptor" />

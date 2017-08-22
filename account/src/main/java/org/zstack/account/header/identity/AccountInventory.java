@@ -39,11 +39,19 @@ public class AccountInventory {
         inv.setDescription(vo.getDescription());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
-        inv.setIndustry(vo.getIndustry().toString());
-        inv.setType(vo.getType().toString());
+        if(vo.getIndustry() != null){
+            inv.setIndustry(vo.getIndustry().toString());
+        }
+        if(vo.getType() != null){
+            inv.setType(vo.getType().toString());
+        }
+        if(aeivo.getGrade() != null){
+            inv.setGrade(aeivo.getGrade().toString());
+        }
+        if(aeivo.getCompanyNature() != null){
+            inv.setCompanyNature(aeivo.getCompanyNature().toString());
+        }
 
-        inv.setGrade(aeivo.getGrade().toString());
-        inv.setCompanyNature(aeivo.getCompanyNature().toString());
         inv.setSalesman(aeivo.getSalesman());
 
         inv.setCreateDate(vo.getCreateDate());
@@ -60,7 +68,9 @@ public class AccountInventory {
         inv.setDescription(vo.getDescription());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
-        inv.setIndustry(vo.getIndustry().toString());
+        if(vo.getIndustry()==null){
+            inv.setIndustry(vo.getIndustry().toString());
+        }
         inv.setType(vo.getType().toString());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());

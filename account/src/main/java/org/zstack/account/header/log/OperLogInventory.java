@@ -16,7 +16,7 @@ public class OperLogInventory {
     private String action;
     private String resourceUuid;
     private String resourceType;
-    private String state;
+    private String status;
     private String description;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -30,7 +30,7 @@ public class OperLogInventory {
         inv.setAction(vo.getAction());
         inv.setResourceUuid(vo.getResourceUuid());
         inv.setResourceType(vo.getResourceType());
-        inv.setState(vo.getState());
+        inv.setStatus(vo.getStatus().toString());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
@@ -100,12 +100,12 @@ public class OperLogInventory {
         this.resourceType = resourceType;
     }
 
-    public String getState() {
-        return state;
+    public String getStatus() {
+        return status;
     }
 
-    public void setState(String stateus) {
-        this.state = state;
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public String getDescription() {

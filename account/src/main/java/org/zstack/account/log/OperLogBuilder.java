@@ -1,5 +1,6 @@
 package org.zstack.account.log;
 
+import org.zstack.account.header.log.OperStatus;
 import org.zstack.core.Platform;
 
 public class OperLogBuilder {
@@ -9,7 +10,7 @@ public class OperLogBuilder {
     String action;
     String resourceUuid;
     String resourceType;
-    String state;
+    OperStatus status;
     String description;
 
     public OperLogBuilder account(String accountUuid) {
@@ -39,7 +40,7 @@ public class OperLogBuilder {
     }
 
     public OperLogBuilder state(boolean state) {
-        this.state = state ? "sucess" : "fail";
+        this.status = state ? OperStatus.SUCESS : OperStatus.FAIL;
         return this;
     }
 
