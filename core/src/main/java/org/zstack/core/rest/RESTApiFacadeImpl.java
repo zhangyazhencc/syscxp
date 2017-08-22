@@ -35,8 +35,6 @@ public class RESTApiFacadeImpl implements RESTApiFacade, CloudBusEventListener, 
 
     @Autowired
     private CloudBus bus;
-    @Autowired
-    private ApiMediatorConstant apiMediatorConstant;
 
     void init() throws ClassNotFoundException, InstantiationException, IllegalAccessException {
         Set<APIEvent> boundEvents = new HashSet<APIEvent>(100);
@@ -95,7 +93,7 @@ public class RESTApiFacadeImpl implements RESTApiFacade, CloudBusEventListener, 
         rsp.setCreatedDate(vo.getCreateDate());
         rsp.setState(vo.getState().toString());
         rsp.setUuid(vo.getUuid());
-        msg.setServiceId(apiMediatorConstant.getApiMediatorServiceId());
+        msg.setServiceId(ApiMediatorConstant.SERVICE_ID);
         bus.send(msg);
         return rsp;
     }
@@ -104,7 +102,7 @@ public class RESTApiFacadeImpl implements RESTApiFacade, CloudBusEventListener, 
     public RestAPIResponse call(APIMessage msg) {
         RestAPIResponse rsp = new RestAPIResponse();
         rsp.setCreatedDate(new Date());
-        msg.setServiceId(apiMediatorConstant.getApiMediatorServiceId());
+        msg.setServiceId(ApiMediatorConstant.SERVICE_ID);
         MessageReply reply = bus.call(msg);
         rsp.setFinishedDate(new Date());
         rsp.setState(RestAPIState.Done.toString());
