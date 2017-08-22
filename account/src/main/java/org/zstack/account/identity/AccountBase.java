@@ -30,7 +30,7 @@ import org.zstack.utils.logging.CLogger;
 
 import java.util.Random;
 import java.util.UUID;
-
+import org.apache.commons.codec.digest.DigestUtils;
 import static java.util.UUID.randomUUID;
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
@@ -121,12 +121,29 @@ public class AccountBase extends AbstractAccount {
             handle((APICreateAccountContactsMsg) msg);
         }else if(msg instanceof APIDeleteAccountContactsMsg){
             handle((APIDeleteAccountContactsMsg) msg);
+        }else if(msg instanceof APIResetAccountPWDMsg){
+            handle((APIResetAccountPWDMsg) msg);
         }
 
         else {
             bus.dealWithUnknownMessage(msg);
         }
     }
+
+    private void handle(APIResetAccountPWDMsg msg) {
+
+        APIResetAccountPWDEvent evt = new APIResetAccountPWDEvent(msg.getId());
+        AccountVO cont = dbf.findByUuid(msg.getTargetUuid(), AccountVO.class);
+
+        String pwd = getRandomString(8);
+
+        cont.setPassword(DigestUtils.sha512Hex(pwd));
+        dbf.updateAndRefresh(cont);
+
+        evt.setPassword(pwd);
+        bus.publish(evt);
+    }
+
 
     private void handle(APICreateAccountContactsMsg msg) {
 
@@ -290,7 +307,6 @@ public class AccountBase extends AbstractAccount {
     @Transactional
     private  void handle(APIUpdateAccountMsg msg) {
         AccountVO account = dbf.findByUuid(msg.getTargetUuid(), AccountVO.class);
-        AccountExtraInfoVO aeivo = dbf.findByUuid(msg.getTargetUuid(), AccountExtraInfoVO.class);
 
         if (msg.getCompany() != null) {
             account.setCompany(msg.getCompany());
@@ -328,6 +344,13 @@ public class AccountBase extends AbstractAccount {
             account.setIndustry(msg.getIndustry());
         }
 
+        account = dbf.updateAndRefresh(account);
+
+        AccountExtraInfoVO aeivo = dbf.findByUuid(msg.getTargetUuid(), AccountExtraInfoVO.class);
+        if(aeivo == null){
+            aeivo = new AccountExtraInfoVO();
+        }
+        boolean done = false;
         if (msg.getGrade() != null) {
             if(msg.getGrade().equals(AccountGrade.Normal)){
                 aeivo.setGrade(AccountGrade.Normal);
@@ -335,18 +358,29 @@ public class AccountBase extends AbstractAccount {
                 aeivo.setGrade(AccountGrade.Middling);
             }else if(msg.getGrade().equals(AccountGrade.Important)){
                 aeivo.setGrade(AccountGrade.Important);
+            }else{
+                throw new OperationFailureException(operr("Parameter is not legal(grade)"));
             }
+            done = true;
         }
-
         if (msg.getCompanyNature() != null) {
             aeivo.setCompanyNature(msg.getCompanyNature());
+            done = true;
         }
         if (msg.getSalesman() != null) {
             aeivo.setSalesman(msg.getSalesman());
+            done = true;
         }
+        if(done){
+            if(aeivo.getUuid() != null){
+                aeivo = dbf.updateAndRefresh(aeivo);
+            }else{
+                aeivo.setUuid(Platform.getUuid());
+                aeivo.setAccountUuid(account.getUuid());
+                aeivo = dbf.persistAndRefresh(aeivo);
+            }
 
-        account = dbf.updateAndRefresh(account);
-        aeivo = dbf.updateAndRefresh(aeivo);
+        }
 
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
         evt.setInventory(AccountInventory.valueOf(account,aeivo));
@@ -419,42 +453,43 @@ public class AccountBase extends AbstractAccount {
     @Transactional
     private void handle(APICreateAccountMsg msg) {
 
-        AccountVO vo = new AccountVO();
+        AccountVO accountvo = new AccountVO();
 
-        vo.setUuid(Platform.getUuid());
-        vo.setName(msg.getName());
-        vo.setPassword(msg.getPassword());
-        vo.setCompany(msg.getCompany());
-        vo.setDescription(msg.getDescription());
-        vo.setEmail(msg.getEmail());
-        vo.setIndustry(msg.getIndustry());
-        vo.setPhone(msg.getPhone());
-        vo.setTrueName(msg.getTrueName());
-        vo.setStatus(msg.getStatus());
-        vo.setType(AccountType.Normal);
-        vo.setPhoneStatus(AccountAuthentication.NO);
-        vo.setEmailStatus(AccountAuthentication.NO);
+        accountvo.setUuid(Platform.getUuid());
+        accountvo.setName(msg.getName());
+        accountvo.setPassword(msg.getPassword());
+        accountvo.setCompany(msg.getCompany());
+        accountvo.setDescription(msg.getDescription());
+        accountvo.setEmail(msg.getEmail());
+        accountvo.setIndustry(msg.getIndustry());
+        accountvo.setPhone(msg.getPhone());
+        accountvo.setTrueName(msg.getTrueName());
+        accountvo.setStatus(msg.getStatus());
+        accountvo.setType(AccountType.Normal);
+        accountvo.setPhoneStatus(AccountAuthentication.NO);
+        accountvo.setEmailStatus(AccountAuthentication.NO);
+
+        accountvo = dbf.persistAndRefresh(accountvo);
+
 
         AccountExtraInfoVO aeivo = new AccountExtraInfoVO();
         aeivo.setUuid(Platform.getUuid());
-        aeivo.setAccountUuid(vo.getUuid());
+        aeivo.setAccountUuid(accountvo.getUuid());
         if(msg.getCompanyNature() != null){
             aeivo.setCompanyNature(msg.getCompanyNature());
         }
         if(msg.getGrade() != null){
             aeivo.setGrade(msg.getGrade());
         }
-
         if(msg.getSalesman() != null){
             aeivo.setSalesman(msg.getSalesman());
         }
 
-        vo = dbf.persistAndRefresh(vo);
         aeivo = dbf.persistAndRefresh(aeivo);
 
         AccountApiSecurityVO api = new AccountApiSecurityVO();
         api.setUuid(Platform.getUuid());
-        api.setAccountUuid(vo.getUuid());
+        api.setAccountUuid(accountvo.getUuid());
         api.setPrivateKey(getRandomString(36));
         api.setPublicKey(getRandomString(36));
         dbf.persistAndRefresh(api);
@@ -464,13 +499,13 @@ public class AccountBase extends AbstractAccount {
 
             ProxyAccountRefVO  prevo = new ProxyAccountRefVO();
             prevo.setAccountUuid(msg.getAccountUuid());
-            prevo.setCustomerAcccountUuid(vo.getUuid());
+            prevo.setCustomerAcccountUuid(accountvo.getUuid());
 
             dbf.persistAndRefresh(prevo);
         }
 
         APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
-        evt.setInventory(AccountInventory.valueOf(vo, aeivo));
+        evt.setInventory(AccountInventory.valueOf(accountvo, aeivo));
         bus.publish(evt);
     }
 

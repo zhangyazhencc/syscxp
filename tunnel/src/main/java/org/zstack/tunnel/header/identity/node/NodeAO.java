@@ -1,63 +1,64 @@
 package org.zstack.tunnel.header.identity.node;
 
-import org.zstack.header.search.Inventory;
-
+import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
- * Created by DCY on 2017-08-21
+ * Created by DCY on 2017-08-22
  */
-@Inventory(mappingVOClass = NodeVO.class)
-public class NodeInventory {
+@MappedSuperclass
+public class NodeAO {
 
+    @Id
+    @Column
     private String uuid;
+
+    @Column
     private String name;
+
+    @Column
     private String code;
+
+    @Column
     private String extensionInfoUuid;
+
+    @Column
     private String description;
+
+    @Column
     private String contact;
+
+    @Column
     private String telephone;
+
+    @Column
     private String province;
+
+    @Column
     private String city;
+
+    @Column
     private String address;
+
+    @Column
     private double longtitude;
+
+    @Column
     private double latitude;
+
+    @Column
+    @Enumerated(EnumType.STRING)
     private NodeProperty property;
+
+    @Column
+    @Enumerated(EnumType.STRING)
     private NodeStatus status;
+
+    @Column
     private Timestamp lastOpDate;
+
+    @Column
     private Timestamp createDate;
-
-    public static NodeInventory valueOf(NodeVO vo){
-        NodeInventory inv = new NodeInventory();
-        inv.setUuid(vo.getUuid());
-        inv.setName(vo.getName());
-        inv.setCode(vo.getCode());
-        inv.setExtensionInfoUuid(vo.getExtensionInfoUuid());
-        inv.setDescription(vo.getDescription());
-        inv.setContact(vo.getContact());
-        inv.setTelephone(vo.getTelephone());
-        inv.setProvince(vo.getProvince());
-        inv.setCity(vo.getCity());
-        inv.setAddress(vo.getAddress());
-        inv.setLatitude(vo.getLatitude());
-        inv.setLongtitude(vo.getLongtitude());
-        inv.setProperty(vo.getProperty());
-        inv.setStatus(vo.getStatus());
-        inv.setLastOpDate(vo.getLastOpDate());
-        inv.setCreateDate(vo.getCreateDate());
-        return inv;
-    }
-
-    public static List<NodeInventory> valueOf(Collection<NodeVO> vos) {
-        List<NodeInventory> lst = new ArrayList<NodeInventory>(vos.size());
-        for (NodeVO vo : vos) {
-            lst.add(NodeInventory.valueOf(vo));
-        }
-        return lst;
-    }
 
     public String getUuid() {
         return uuid;

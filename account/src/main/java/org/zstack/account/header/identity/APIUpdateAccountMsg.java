@@ -8,7 +8,7 @@ import org.zstack.header.notification.ApiNotification;
 
 
 @Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
-public class APIUpdateAccountMsg extends APIMessage {
+public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
 
     @APIParam(resourceType = AccountVO.class, required = true, checkAccount = true, operationTarget = true)
     private String targetUuid;
@@ -167,5 +167,8 @@ public class APIUpdateAccountMsg extends APIMessage {
     }
 
 
-
+    @Override
+    public String getAccountUuid() {
+        return this.getSession().getAccountUuid();
+    }
 }

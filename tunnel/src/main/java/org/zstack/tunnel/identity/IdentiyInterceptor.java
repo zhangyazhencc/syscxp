@@ -60,6 +60,9 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor ,ApiMessa
     @Autowired
     private RESTFacade restf;
 
+    private List<String> resourceTypeForAccountRef;
+    private List<Class> resourceTypes;
+
     private Map<String, SessionPolicyInventory> sessions = new ConcurrentHashMap<>();
 
 
@@ -80,9 +83,22 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor ,ApiMessa
     private Map<Class, MessageAction> actions = new HashMap<>();
     private Future<Void> expiredSessionCollector;
 
+    public Map<String, SessionPolicyInventory> getSessions() {
+        return sessions;
+    }
+
+    public void checkApiMessagePermission(APIMessage msg) {
+        new Auth().check(msg);
+    }
+
+    public boolean isAdmin(SessionPolicyInventory session) {
+        return session.isAdminAccountSession();
+    }
+
     public void init() {
         logger.debug("IdentiyInterceptor init.");
         try {
+            buildResourceTypes();
             buildActions();
             startExpiredSessionCollector();
         } catch (Exception e) {
@@ -94,6 +110,15 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor ,ApiMessa
         logger.debug("IdentiyInterceptor destroy.");
         if (expiredSessionCollector != null) {
             expiredSessionCollector.cancel(true);
+        }
+    }
+
+    private void buildResourceTypes() throws ClassNotFoundException {
+        resourceTypes = new ArrayList<>();
+        for (String resrouceTypeName : resourceTypeForAccountRef) {
+            Class<?> rs = Class.forName(resrouceTypeName);
+            resourceTypes.add(rs);
+            logger.debug(String.format("build resource type %s", resrouceTypeName));
         }
     }
 
@@ -465,6 +490,14 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor ,ApiMessa
         new Auth().validate(msg);
 
         return msg;
+    }
+
+    public boolean isResourceHavingAccountReference(Class entityClass) {
+        return resourceTypes.contains(entityClass);
+    }
+
+    public void setResourceTypeForAccountRef(List<String> resourceTypeForAccountRef) {
+        this.resourceTypeForAccountRef = resourceTypeForAccountRef;
     }
 
 }

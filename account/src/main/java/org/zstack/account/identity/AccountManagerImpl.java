@@ -406,12 +406,29 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIAttachPolicyToUserMsg) msg);
         } else if (msg instanceof APIDeleteAccountContactsMsg) {
             validate((APIDeleteAccountContactsMsg) msg);
+        } else if (msg instanceof APIResetAccountPWDMsg) {
+            validate((APIResetAccountPWDMsg) msg);
         }
+
 
         setServiceId(msg);
 
         return msg;
     }
+
+    private void validate(APIResetAccountPWDMsg msg) {
+        SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
+        q.add(ProxyAccountRefVO_.accountUuid, Op.EQ, msg.getAccountUuid());
+        q.add(ProxyAccountRefVO_.customerAcccountUuid, Op.EQ, msg.getTargetUuid());
+
+        if(!q.isExists()){
+            throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot reset the paddword of the other account[uuid: %s]",
+                    msg.getAccountUuid(), msg.getTargetUuid()));
+        }
+
+
+    }
+
 
     private void validate(APIDeleteAccountContactsMsg msg) {
 

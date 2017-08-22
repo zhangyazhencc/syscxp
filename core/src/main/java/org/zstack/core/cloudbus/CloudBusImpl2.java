@@ -62,6 +62,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
     private Connection conn;
     private BusQueue outboundQueue;
     private ChannelPool channelPool;
+    private String busProjectId = "";
 
     @Autowired
     private ResourceDestinationMaker destMaker;
@@ -128,11 +129,11 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
     }
 
     private String makeMessageQueueName(String queueName) {
-        return String.format("syscxp.message.%s", queueName);
+        return String.format("syscxp.%s.message.%s", busProjectId, queueName);
     }
 
     private String makeEventQueueName(String queueName) {
-        return String.format("syscxp.event.%s", queueName);
+        return String.format("syscxp.%s.event.%s", busProjectId, queueName);
     }
 
     @Override
@@ -264,8 +265,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
     private class NoRouteEndPoint extends AbstractConsumer {
         Channel nrouteChan;
-        //String nrouteName = makeMessageQueueName("NoRouteEndPoint");
-        String nrouteName = makeMessageQueueName(makeLocalServiceId("NoRouteEndPoint"));
+        private final String nrouteName = makeMessageQueueName(makeLocalServiceId("NoRouteEndPoint"));
         public void construct() {
             try {
                 nrouteChan = conn.createChannel();
@@ -337,7 +337,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
         }
     }
 
-    private NoRouteEndPoint noRouteEndPoint = new NoRouteEndPoint();
+    private NoRouteEndPoint noRouteEndPoint;
 
     private Consumer consumer = new AbstractConsumer() {
         @AsyncThread
@@ -719,7 +719,8 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
     private class EventMaid extends AbstractConsumer {
         Map<String, List<EventListenerWrapper>> listeners = new ConcurrentHashMap<String, List<EventListenerWrapper>>();
         Channel eventChan;
-        String queueName = makeEventQueueName(String.format("eventMaid.%s", Platform.getUuid()));
+
+        private final String queueName = makeEventQueueName(String.format("eventMaid.%s", Platform.getManagementServerId()));
 
         public void construct() {
             try {
@@ -829,7 +830,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
         }
     }
 
-    private EventMaid maid = new EventMaid();
+    private EventMaid maid;
 
     private abstract class Envelope {
         long startTime;
@@ -882,7 +883,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
     private class MessageTracker extends AbstractConsumer {
         private Map<String, MessageTrackerEnvelope> messages = new ConcurrentHashMap<String, MessageTrackerEnvelope>();
         private List<String> bindingKeys = new ArrayList<String>();
-        private final String name = makeLocalServiceId("MessageTracker");
+        private final String name = makeMessageQueueName(makeLocalServiceId("MessageTracker"));
         private Map<String, Class> metaDataClassCache = new HashMap<String, Class>();
 
         {
@@ -1164,6 +1165,9 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
     void init() {
         trackerClose = CloudBusGlobalProperty.CLOSE_TRACKER;
         serverIps = CloudBusGlobalProperty.SERVER_IPS;
+
+        noRouteEndPoint = new NoRouteEndPoint();
+        maid = new EventMaid();
         tracker = new MessageTracker();
 
         ConnectionFactory connFactory = new ConnectionFactory();
@@ -2584,5 +2588,13 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
         ret.put("x-dead-letter-routing-key", DEAD_LETTER);
         ret.put("x-expires", TimeUnit.MINUTES.toMillis(5));
         return ret;
+    }
+
+    public String getBusProjectId() {
+        return busProjectId;
+    }
+
+    public void setBusProjectId(String busProjectId) {
+        this.busProjectId = busProjectId;
     }
 }
