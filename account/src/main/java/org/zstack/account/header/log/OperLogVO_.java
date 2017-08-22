@@ -14,7 +14,7 @@ public class OperLogVO_ {
     public static volatile SingularAttribute<OperLogVO, String> action;
     public static volatile SingularAttribute<OperLogVO, String> resourceUuid;
     public static volatile SingularAttribute<OperLogVO, String> resourceType;
-    public static volatile SingularAttribute<OperLogVO, String> state;
+    public static volatile SingularAttribute<OperLogVO, OperStatus> status;
     public static volatile SingularAttribute<OperLogVO, String> description;
     public static volatile SingularAttribute<OperLogVO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<OperLogVO, Timestamp> createDate;
