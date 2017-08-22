@@ -47,7 +47,7 @@ CREATE TABLE  `syscxp_tunnel`.`JobQueueEntryVO` (
 #########################################################################################
 
 ## 节点
-CREATE TABLE  `NodeVO` (
+CREATE TABLE  `NodeEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `name` varchar(255) NOT NULL UNIQUE COMMENT '节点名称',
   `code` varchar(128) NOT NULL COMMENT '节点编号',
@@ -67,6 +67,9 @@ CREATE TABLE  `NodeVO` (
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE VIEW `NodeVO` AS SELECT uuid, name, code, description, contact, telephone, province, city, address, longtitude, latitude, property, status, extensionInfoUuid, lastOpDate, createDate
+                        FROM `NodeEO` WHERE deleted = 0;
 
 ## 连接点
 CREATE TABLE  `EndpointVO` (
