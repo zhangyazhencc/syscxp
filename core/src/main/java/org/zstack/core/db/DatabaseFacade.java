@@ -7,11 +7,12 @@ import javax.persistence.EntityManager;
 import javax.persistence.Query;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.sql.DataSource;
+import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.Collection;
 import java.util.List;
 
-public interface DatabaseFacade {
+public interface DatabaseFacade extends Serializable {
     EntityManager getEntityManager();
     
     <T> T findById(long id, Class<T> entityClass);
