@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Created by DCY on 2017-08-21
  */
-public class ApiUpdateNodeMsg extends APIMessage {
+public class APIUpdateNodeMsg extends APIMessage {
 
     @APIParam(nonempty = true,resourceType = NodeVO.class)
     private String targetUuid;

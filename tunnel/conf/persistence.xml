@@ -9,12 +9,7 @@
         <class>org.zstack.core.job.JobQueueVO</class>
         <class>org.zstack.core.job.JobQueueEntryVO</class>
 
-        <class>org.zstack.account.header.identity.AccountVO</class>
-        <class>org.zstack.account.header.identity.UserVO</class>
-        <class>org.zstack.account.header.identity.PolicyVO</class>
-        <class>org.zstack.account.header.identity.UserPolicyRefVO</class>
-        <class>org.zstack.account.header.identity.SessionVO</class>
-        <class>org.zstack.account.header.identity.SessionVO</class>
+        <class>org.zstack.tunnel.header.identity.node.NodeVO</class>
 
     </persistence-unit>
 </persistence>
