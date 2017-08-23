@@ -20,7 +20,7 @@ public class NotificationInventory {
     private String name;
     private String content;
     private String category;
-    private String action;
+    private String remoteIp;
     private Boolean success;
     private List arguments;
     private String sender;
@@ -39,7 +39,7 @@ public class NotificationInventory {
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setUserUuid(vo.getUserUuid());
-        inv.setAction(vo.getAction());
+        inv.setRemoteIp(vo.getRemoteIp());
         inv.setCategory(vo.getCategory());
         inv.setSuccess(vo.isSuccess());
         inv.setName(vo.getName());
@@ -92,12 +92,12 @@ public class NotificationInventory {
         this.category = category;
     }
 
-    public String getAction() {
-        return action;
+    public String getRemoteIp() {
+        return remoteIp;
     }
 
-    public void setAction(String action) {
-        this.action = action;
+    public void setRemoteIp(String remoteIp) {
+        this.remoteIp = remoteIp;
     }
 
     public Boolean getSuccess() {

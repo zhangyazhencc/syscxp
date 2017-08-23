@@ -140,18 +140,11 @@ public class NotificationManager extends AbstractService {
                     opaque.put("error", aevt.getError());
                 }
 
-                String action = NotificationConstant.UPDATE_ACTION;
-                if (b.message.getClass().getSimpleName().toUpperCase().contains(NotificationConstant.CREATE_ACTION)) {
-                    action = NotificationConstant.CREATE_ACTION;
-                } else if (b.message.getClass().getSimpleName().toUpperCase().contains(NotificationConstant.DELETE_ACTION)) {
-                    action = NotificationConstant.DELETE_ACTION;
-                }
-
                 lst.add(new NotificationBuilder()
                         .content(inner.getContent())
                         .arguments(inner.getArguments())
                         .category(aevt.getType().toString())
-                        .action(action, aevt.isSuccess())
+                        .action(b.message.getIp(), aevt.isSuccess())
                         .name(NotificationConstant.API_SENDER)
                         .sender(NotificationConstant.API_SENDER)
                         .resource(inner.getResourceUuid(), inner.getResourceType())
@@ -282,7 +275,7 @@ public class NotificationManager extends AbstractService {
                         msg.setName(builder.notificationName);
                         msg.setCategory(builder.category);
                         msg.setSuccess(builder.success);
-                        msg.setAction(builder.action);
+                        msg.setRemoteIp(builder.remoteIp);
                         msg.setArguments(builder.arguments);
                         msg.setContent(builder.content);
                         msg.setResourceType(builder.resourceType);
@@ -301,7 +294,7 @@ public class NotificationManager extends AbstractService {
                         vo.setUserUuid(session.getUserUuid());
                         vo.setCategory(builder.category);
                         vo.setSuccess(builder.success);
-                        vo.setAction(builder.action);
+                        vo.setRemoteIp(builder.remoteIp);
                         vo.setArguments(builder.arguments);
                         vo.setContent(builder.content);
                         vo.setResourceType(builder.resourceType);
@@ -352,7 +345,7 @@ public class NotificationManager extends AbstractService {
         vo.setUserUuid(msg.getSession().getUserUuid());
         vo.setCategory(msg.getCategory());
         vo.setSuccess(msg.getSuccess());
-        vo.setAction(msg.getAction());
+        vo.setRemoteIp(msg.getRemoteIp());
         vo.setArguments(msg.getArguments());
         vo.setContent(msg.getContent());
         vo.setResourceType(msg.getResourceType());
@@ -364,6 +357,11 @@ public class NotificationManager extends AbstractService {
         vo.setOpaque(msg.getOpaque());
 
         vo = dbf.persistAndRefresh(vo);
+
+        APICreateNotificationsEvent evt = new APICreateNotificationsEvent(msg.getId());
+        NotificationInventory inv = NotificationInventory.valueOf(vo);
+        evt.setInventory(inv);
+        bus.publish(evt);
     }
 
     private void handleApiMessage(APIMessage msg) {
