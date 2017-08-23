@@ -98,7 +98,10 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor ,ApiMessa
     public void init() {
         logger.debug("IdentiyInterceptor init.");
         try {
-            buildResourceTypes();
+            if(resourceTypeForAccountRef != null){
+                buildResourceTypes();
+            }
+
             buildActions();
             startExpiredSessionCollector();
         } catch (Exception e) {
