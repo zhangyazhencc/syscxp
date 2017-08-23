@@ -1,7 +1,6 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.configuration.PythonClass;
-import org.zstack.header.rest.SDK;
 
 @PythonClass
 public interface AccountConstant {

@@ -5,7 +5,6 @@ import org.zstack.header.rest.RestResponse;
 
 import java.util.List;
 
-import static org.zstack.utils.CollectionDSL.list;
 
 /**
  * Created by wangwg on 2017/08/21.

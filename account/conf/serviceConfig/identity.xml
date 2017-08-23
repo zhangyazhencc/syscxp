@@ -140,8 +140,18 @@
     <message>
         <name>org.zstack.account.header.identity.APIDeleteAccountContactsMsg</name>
     </message>
+
     <message>
         <name>org.zstack.account.header.identity.APIResetAccountPWDMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.identity.APIResetAccountApiSecurityMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.identity.APIUpdateApiAllowIPMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.identity.APIGetAccountApiKeyMsg</name>
     </message>
 
 

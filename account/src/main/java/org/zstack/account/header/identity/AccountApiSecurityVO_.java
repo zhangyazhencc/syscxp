@@ -1,8 +1,5 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.AccountGrade;
-import org.zstack.header.identity.CompanyNature;
-
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 import java.sql.Timestamp;

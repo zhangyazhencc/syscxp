@@ -4,7 +4,6 @@ import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountGrade;
 import org.zstack.header.identity.CompanyNature;
 import org.zstack.header.message.APICreateMessage;
-import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 public class APICreateAccountMsg  extends APICreateMessage implements AccountMessage{
