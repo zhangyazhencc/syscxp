@@ -3,6 +3,7 @@ package org.zstack.billing.manage;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -537,6 +538,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     @Transactional
     public void createOrder(APICreateOrderMsg msg) {
+        Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         String priceUnitUuid =  msg.getPriceUnitUuid();
         ProductPriceUnitVO productPriceUnitVO = dbf.findByUuid(priceUnitUuid,ProductPriceUnitVO.class);
         if(productPriceUnitVO == null){
@@ -600,15 +602,32 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         orderVo.setUuid( Platform.getUuid());
         orderVo.setAccountUuid(msg.getSession().getUuid());
         orderVo.setProductName(msg.getProductName());
-        orderVo.setState(msg.getState());
+        orderVo.setState(OrderState.PAID);
         orderVo.setProductType(msg.getProductType());
         orderVo.setType(msg.getType());
-        orderVo.setProductEffectTimeEnd(msg.getProductEffectTimeEnd());
-        orderVo.setProductEffectTimeStart(msg.getProductEffectTimeStart());
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentTimestamp);
+        switch (msg.getProductChargeModel()){
+            case BY_DAY:
+                calendar.add(Calendar.DATE,msg.getDuration());
+                orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
+                break;
+
+            case BY_YEAR:
+                calendar.add(Calendar.YEAR,msg.getDuration());
+                orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
+                break;
+
+            case BY_MONTH:
+                calendar.add(Calendar.MONTH,msg.getDuration());
+                orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
+                break;
+        }
+        orderVo.setProductEffectTimeStart(currentTimestamp);
         orderVo.setProductChargeModel(msg.getProductChargeModel());//todo this value would be got from account
         Timestamp currentTimeStamp = dbf.getCurrentSqlTime();
         orderVo.setPayTime(currentTimeStamp);
-        orderVo.setProductDiscount(msg.getProductDiscount());
+        orderVo.setProductDiscount(BigDecimal.valueOf(productDisCharge));
         orderVo.setProductDescription(msg.getProductDescription());
         orderVo.setOriginalPrice(originalPrice);
         orderVo.setProductUuid(msg.getProductUuid());

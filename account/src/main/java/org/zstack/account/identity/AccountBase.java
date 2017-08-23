@@ -195,6 +195,7 @@ public class AccountBase extends AbstractAccount {
 
         AccountContactsVO acvo = new AccountContactsVO();
         acvo.setUuid(Platform.getUuid());
+        acvo.setAccountUuid(msg.getTargetUuid());
         acvo.setContacts(msg.getContacts());
         acvo.setPhone(msg.getPhone());
         acvo.setEmail(msg.getPhone());
