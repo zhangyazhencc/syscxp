@@ -3,24 +3,26 @@ package org.zstack.tunnel.header.identity.node;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
+import java.util.List;
+
 /**
  * Created by DCY on 2017-08-21
  */
 public class ApiUpdateNodeMsg extends APIMessage {
 
-    @APIParam(nonempty = true,resourceType = NodeVO.class, checkAccount = true, operationTarget = true)
+    @APIParam(nonempty = true,resourceType = NodeVO.class)
     private String targetUuid;
 
-    @APIParam(nonempty = true,maxLength = 255)
+    @APIParam(required = false,maxLength = 255)
     private String name;
 
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(required = false,maxLength = 128)
     private String code;
 
-    @APIParam(nonempty = true,validValues = {"CLOUD", "ACCESSIN","IDC","VPN","ECP","EXCHANGE"})
-    private NodeProperty property;
+    @APIParam(required = false)
+    private List<NodeProperty> property;
 
-    @APIParam(nonempty = true,validValues = {"CLOSE", "OPEN","AVAILABLE"})
+    @APIParam(required = false,validValues = {"CLOSE", "OPEN","AVAILABLE"})
     private NodeStatus status;
 
     public String getTargetUuid() {
@@ -47,11 +49,11 @@ public class ApiUpdateNodeMsg extends APIMessage {
         this.code = code;
     }
 
-    public NodeProperty getProperty() {
+    public List<NodeProperty> getProperty() {
         return property;
     }
 
-    public void setProperty(NodeProperty property) {
+    public void setProperty(List<NodeProperty> property) {
         this.property = property;
     }
 

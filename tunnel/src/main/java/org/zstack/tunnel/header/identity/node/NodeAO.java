@@ -1,7 +1,10 @@
 package org.zstack.tunnel.header.identity.node;
 
+import org.zstack.core.db.converter.ListAttributeConverter;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * Created by DCY on 2017-08-22
@@ -47,8 +50,8 @@ public class NodeAO {
     private double latitude;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private NodeProperty property;
+    @Convert(converter = ListAttributeConverter.class)
+    private List<NodeProperty> property;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -156,11 +159,11 @@ public class NodeAO {
         this.latitude = latitude;
     }
 
-    public NodeProperty getProperty() {
+    public List<NodeProperty> getProperty() {
         return property;
     }
 
-    public void setProperty(NodeProperty property) {
+    public void setProperty(List<NodeProperty> property) {
         this.property = property;
     }
 

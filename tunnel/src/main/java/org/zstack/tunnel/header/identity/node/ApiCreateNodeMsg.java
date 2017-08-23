@@ -3,6 +3,8 @@ package org.zstack.tunnel.header.identity.node;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
+import java.util.List;
+
 /**
  * Created by DCY on 8/21/17.
  */
@@ -18,8 +20,8 @@ public class ApiCreateNodeMsg extends APIMessage {
     private double longtitude;
     @APIParam(nonempty = true)
     private double latitude;
-    @APIParam(nonempty = true,validValues = {"CLOUD", "ACCESSIN","IDC","VPN","ECP","EXCHANGE"})
-    private NodeProperty property;
+    @APIParam(nonempty = true)
+    private List<NodeProperty> property;
     @APIParam(nonempty = true,maxLength = 128)
     private String province;
     @APIParam(nonempty = true,maxLength = 128)
@@ -65,11 +67,11 @@ public class ApiCreateNodeMsg extends APIMessage {
         this.latitude = latitude;
     }
 
-    public NodeProperty getProperty() {
+    public List<NodeProperty> getProperty() {
         return property;
     }
 
-    public void setProperty(NodeProperty property) {
+    public void setProperty(List<NodeProperty> property) {
         this.property = property;
     }
 

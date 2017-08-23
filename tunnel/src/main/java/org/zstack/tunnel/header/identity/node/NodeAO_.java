@@ -3,6 +3,7 @@ package org.zstack.tunnel.header.identity.node;
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * Created by DCY on 2017-08-22
@@ -21,7 +22,7 @@ public class NodeAO_ {
     public static volatile SingularAttribute<NodeVO, String> address;
     public static volatile SingularAttribute<NodeVO, Double> longtitude;
     public static volatile SingularAttribute<NodeVO, Double> latitude;
-    public static volatile SingularAttribute<NodeVO, NodeProperty> property;
+    public static volatile SingularAttribute<NodeVO, List<NodeProperty>> property;
     public static volatile SingularAttribute<NodeVO, NodeStatus> status;
     public static volatile SingularAttribute<NodeVO, Timestamp> createDate;
     public static volatile SingularAttribute<NodeVO, Timestamp> lastOpDate;

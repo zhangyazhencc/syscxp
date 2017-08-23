@@ -25,7 +25,7 @@ public class NodeInventory {
     private String address;
     private double longtitude;
     private double latitude;
-    private NodeProperty property;
+    private List<NodeProperty> property;
     private NodeStatus status;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -155,11 +155,11 @@ public class NodeInventory {
         this.latitude = latitude;
     }
 
-    public NodeProperty getProperty() {
+    public List<NodeProperty> getProperty() {
         return property;
     }
 
-    public void setProperty(NodeProperty property) {
+    public void setProperty(List<NodeProperty> property) {
         this.property = property;
     }
 
