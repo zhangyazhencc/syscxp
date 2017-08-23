@@ -9,7 +9,7 @@ import org.zstack.header.message.APIParam;
 public class APICreateAccountContactsMsg extends  APIMessage implements  AccountMessage {
 
     @APIParam(maxLength = 32)
-    private String accountUuid;
+    private String targetUuid;
     @APIParam(maxLength = 128)
     public String contacts;
     @APIParam(maxLength = 36)
@@ -40,10 +40,6 @@ public class APICreateAccountContactsMsg extends  APIMessage implements  Account
         return noticeWay;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
-
     public void setContacts(String contacts) {
         this.contacts = contacts;
     }
@@ -58,5 +54,13 @@ public class APICreateAccountContactsMsg extends  APIMessage implements  Account
 
     public void setNoticeWay(NoticeWay noticeWay) {
         this.noticeWay = noticeWay;
+    }
+
+    public String getTargetUuid() {
+        return targetUuid;
+    }
+
+    public void setTargetUuid(String targetUuid) {
+        this.targetUuid = targetUuid;
     }
 }
