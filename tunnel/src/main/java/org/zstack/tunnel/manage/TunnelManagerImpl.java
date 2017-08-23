@@ -167,6 +167,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     private void validate(ApiUpdateNodeMsg msg){
+        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
+        q.add(NodeVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("node %s is not exist ",msg.getTargetUuid()));
+        }
 /*        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
         q.add(NodeVO_.name, Op.EQ, msg.getName());
         SimpleQuery<NodeVO> q2 = dbf.createQuery(NodeVO.class);
