@@ -24,7 +24,7 @@ public class APIDeleteAlarmContactMsg extends APIDeleteMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("删除告警联系人", getDeclaredFieldAndValues())
+                ntfy("Delete AlarmContactVO")
                         .resource(uuid, AlarmContactVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }

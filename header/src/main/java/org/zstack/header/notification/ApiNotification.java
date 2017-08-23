@@ -17,7 +17,7 @@ public abstract class ApiNotification {
 
     public class Inner {
         String content;
-        Map arguments;
+        Object[] arguments;
         String resourceUuid;
         String resourceType;
         APIMessage message;
@@ -37,7 +37,7 @@ public abstract class ApiNotification {
             return content;
         }
 
-        public Map getArguments() {
+        public Object[] getArguments() {
             return arguments;
         }
 
@@ -57,7 +57,8 @@ public abstract class ApiNotification {
             return context;
         }
 
-        public Inner(String content, Map arguments) {
+
+        public Inner(String content, Object[] arguments) {
             this.content = content;
             this.arguments = arguments;
         }
@@ -86,11 +87,12 @@ public abstract class ApiNotification {
         }
     }
 
-    protected Inner ntfy(String content, Map args) {
+    protected Inner ntfy(String content, Object... args) {
         return new Inner(content, args);
     }
 
     public abstract void after(APIEvent evt);
+
     public void before() {
     }
 

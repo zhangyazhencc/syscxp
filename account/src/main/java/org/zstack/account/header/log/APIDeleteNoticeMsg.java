@@ -24,7 +24,7 @@ public class APIDeleteNoticeMsg extends APIDeleteMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("删除公告", getDeclaredFieldAndValues())
+                ntfy("Delete NoticeVO")
                         .resource(uuid, NoticeVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }

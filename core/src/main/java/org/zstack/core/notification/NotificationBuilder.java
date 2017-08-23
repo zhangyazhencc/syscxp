@@ -2,10 +2,7 @@ package org.zstack.core.notification;
 
 import org.zstack.core.Platform;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by xing5 on 2017/3/15.
@@ -21,6 +18,7 @@ public class NotificationBuilder {
     String resourceType;
     Map opaque;
     List arguments = new ArrayList();
+    Map msgfields = new HashMap();
     NotificationType type = NotificationType.Info;
 
 
@@ -45,6 +43,10 @@ public class NotificationBuilder {
         return this;
     }
 
+    public NotificationBuilder msgfields(Map msgfields){
+        this.msgfields = msgfields;
+        return this;
+    }
 
     public NotificationBuilder arguments(Object... args) {
         if (args != null) {

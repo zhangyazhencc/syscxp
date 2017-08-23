@@ -81,7 +81,7 @@ public class APICreateAlarmContactMsg extends APICreateMessage {
                     uuid = ((APICreateAlarmContactEvent) evt).getInventory().getUuid();
                 }
 
-                ntfy("新建告警联系人", getDeclaredFieldAndValues())
+                ntfy("Create AlarmContactVO")
                         .resource(uuid, AlarmContactVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }

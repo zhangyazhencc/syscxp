@@ -1,10 +1,8 @@
 package org.zstack.core.notification;
 
-import org.zstack.header.message.APICreateMessage;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
-import java.util.List;
 import java.util.Map;
 
 
@@ -16,7 +14,7 @@ public class APICreateNotificationMsg extends APIMessage {
     @APIParam
     private String content;
     @APIParam
-    private List arguments;
+    private Map msgfields;
     @APIParam
     private String sender;
     @APIParam
@@ -64,12 +62,12 @@ public class APICreateNotificationMsg extends APIMessage {
         this.content = content;
     }
 
-    public List getArguments() {
-        return arguments;
+    public Map getMsgfields() {
+        return msgfields;
     }
 
-    public void setArguments(List arguments) {
-        this.arguments = arguments;
+    public void setMsgfields(Map msgfields) {
+        this.msgfields = msgfields;
     }
 
     public String getSender() {

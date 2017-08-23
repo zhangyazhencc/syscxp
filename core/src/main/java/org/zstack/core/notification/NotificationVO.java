@@ -31,13 +31,13 @@ public class NotificationVO {
     private String content;
     @Column
     @Convert(converter = MapAttributeConverter.class)
-    private Map arguments;
+    private Map msgfields;
     @Column
     private String sender;
     @Column
     private String remoteIp;
     @Column
-    private Boolean success;
+    private boolean success;
     @Column
     @Enumerated(EnumType.STRING)
     private NotificationStatus status;
@@ -99,11 +99,11 @@ public class NotificationVO {
         this.remoteIp = remoteIp;
     }
 
-    public Boolean isSuccess() {
+    public boolean isSuccess() {
         return success;
     }
 
-    public void setSuccess(Boolean success) {
+    public void setSuccess(boolean success) {
         this.success = success;
     }
 
@@ -131,12 +131,12 @@ public class NotificationVO {
         this.time = time;
     }
 
-    public Map getArguments() {
-        return arguments;
+    public Map getMsgfields() {
+        return msgfields;
     }
 
-    public void setArguments(Map arguments) {
-        this.arguments = arguments;
+    public void setMsgfields(Map msgfields) {
+        this.msgfields = msgfields;
     }
 
     public String getUuid() {

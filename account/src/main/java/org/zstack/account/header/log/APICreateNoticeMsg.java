@@ -60,7 +60,7 @@ public class APICreateNoticeMsg extends APICreateMessage {
                 if (evt.isSuccess()) {
                     uuid = ((APICreateNoticeEvent) evt).getInventory().getUuid();
                 }
-                ntfy("新建公告", getDeclaredFieldAndValues())
+                ntfy("Create NoticeVO")
                         .resource(uuid, NoticeVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }

@@ -22,7 +22,7 @@ public class NotificationInventory {
     private String category;
     private String remoteIp;
     private Boolean success;
-    private Map arguments;
+    private Map msgfields;
     private String sender;
     private String status;
     private String resourceUuid;
@@ -44,7 +44,7 @@ public class NotificationInventory {
         inv.setSuccess(vo.isSuccess());
         inv.setName(vo.getName());
         inv.setContent(vo.getContent());
-        inv.setArguments(vo.getArguments());
+        inv.setMsgfields(vo.getMsgfields());
         inv.setSender(vo.getSender());
         inv.setStatus(vo.getStatus().toString());
         inv.setResourceUuid(vo.getResourceUuid());
@@ -132,12 +132,12 @@ public class NotificationInventory {
         this.content = content;
     }
 
-    public Map getArguments() {
-        return arguments;
+    public Map getMsgfields() {
+        return msgfields;
     }
 
-    public void setArguments(Map arguments) {
-        this.arguments = arguments;
+    public void setMsgfields(Map msgfields) {
+        this.msgfields = msgfields;
     }
 
     public String getSender() {

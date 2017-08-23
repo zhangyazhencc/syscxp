@@ -66,7 +66,7 @@ public class APIUpdateAlarmContactMsg extends APICreateMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("修改告警联系人", getDeclaredFieldAndValues())
+                ntfy("Update AlarmContactVO")
                         .resource(uuid, AlarmContactVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
