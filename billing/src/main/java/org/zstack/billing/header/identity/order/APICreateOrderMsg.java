@@ -10,46 +10,28 @@ import java.sql.Timestamp;
 
 public class APICreateOrderMsg extends APIMessage {
 
-    @APIParam(nonempty = true,validValues = {"BUY","UPGRADE","DOWNGRADE","RENEW","SLA_COMPENSATION","UN_SUBCRIBE"})
+    @APIParam(emptyString = true,validValues = {"BUY","UPGRADE","DOWNGRADE","RENEW","SLA_COMPENSATION","UN_SUBCRIBE"})
     private OrderType type;
 
-    @APIParam(nonempty = true)
-    private OrderState state;
-
-    @APIParam(nonempty = true)
-    private Timestamp productEffectTimeStart;
-
-    @APIParam(nonempty = true)
-    private Timestamp productEffectTimeEnd;
-
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = true)
     private String productName;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = true)
     private ProductType productType;
 
-    @APIParam(nonempty = true,numberRange={0,100})
-    private BigDecimal productDiscount;
-
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = true)
     private ProductChargeModel productChargeModel;
 
-    @APIParam(nonempty = true)
+    @APIParam
     private String productDescription;
 
-    @APIParam(nonempty = true)
-    private BigDecimal price;
-
-    @APIParam(nonempty = true)
-    private BigDecimal originalPrice;
-
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = true)
     private String productUuid;
 
-    @APIParam(nonempty = true)
+    @APIParam(numberRange = {0,Integer.MAX_VALUE})
     private int duration;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = true)
     private String priceUnitUuid;
 
     @APIParam(required = false, resourceType = OrderVO.class, checkAccount = true)
@@ -79,30 +61,6 @@ public class APICreateOrderMsg extends APIMessage {
         this.type = type;
     }
 
-    public OrderState getState() {
-        return state;
-    }
-
-    public void setState(OrderState state) {
-        this.state = state;
-    }
-
-    public Timestamp getProductEffectTimeStart() {
-        return productEffectTimeStart;
-    }
-
-    public void setProductEffectTimeStart(Timestamp productEffectTimeStart) {
-        this.productEffectTimeStart = productEffectTimeStart;
-    }
-
-    public Timestamp getProductEffectTimeEnd() {
-        return productEffectTimeEnd;
-    }
-
-    public void setProductEffectTimeEnd(Timestamp productEffectTimeEnd) {
-        this.productEffectTimeEnd = productEffectTimeEnd;
-    }
-
     public String getProductName() {
         return productName;
     }
@@ -119,14 +77,6 @@ public class APICreateOrderMsg extends APIMessage {
         this.productType = productType;
     }
 
-    public BigDecimal getProductDiscount() {
-        return productDiscount;
-    }
-
-    public void setProductDiscount(BigDecimal productDiscount) {
-        this.productDiscount = productDiscount;
-    }
-
     public ProductChargeModel getProductChargeModel() {
         return productChargeModel;
     }
@@ -141,22 +91,6 @@ public class APICreateOrderMsg extends APIMessage {
 
     public void setProductDescription(String productDescription) {
         this.productDescription = productDescription;
-    }
-
-    public BigDecimal getPrice() {
-        return price;
-    }
-
-    public void setPrice(BigDecimal price) {
-        this.price = price;
-    }
-
-    public BigDecimal getOriginalPrice() {
-        return originalPrice;
-    }
-
-    public void setOriginalPrice(BigDecimal originalPrice) {
-        this.originalPrice = originalPrice;
     }
 
     public String getProductUuid() {

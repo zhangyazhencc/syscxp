@@ -1,13 +1,14 @@
 package org.zstack.core.notification;
 
 import org.zstack.header.message.APICreateMessage;
+import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 import java.util.List;
 import java.util.Map;
 
 
-public class APICreateNotificationMsg extends APICreateMessage {
+public class APICreateNotificationMsg extends APIMessage {
     @APIParam
     private String name;
     @APIParam
@@ -19,7 +20,7 @@ public class APICreateNotificationMsg extends APICreateMessage {
     @APIParam
     private String sender;
     @APIParam
-    private String action;
+    private String remoteIp;
     @APIParam
     private Boolean success;
     @APIParam
@@ -79,12 +80,12 @@ public class APICreateNotificationMsg extends APICreateMessage {
         this.sender = sender;
     }
 
-    public String getAction() {
-        return action;
+    public String getRemoteIp() {
+        return remoteIp;
     }
 
-    public void setAction(String action) {
-        this.action = action;
+    public void setRemoteIp(String remoteIp) {
+        this.remoteIp = remoteIp;
     }
 
     public Boolean getSuccess() {
@@ -95,12 +96,10 @@ public class APICreateNotificationMsg extends APICreateMessage {
         this.success = success;
     }
 
-    @Override
     public String getResourceUuid() {
         return resourceUuid;
     }
 
-    @Override
     public void setResourceUuid(String resourceUuid) {
         this.resourceUuid = resourceUuid;
     }

@@ -7,12 +7,12 @@ import org.zstack.header.rest.RestResponse;
  * Created by DCY on 2017-08-21
  */
 @RestResponse(allTo = "inventory")
-public class ApiCreateNodeEvent extends APIEvent {
+public class APICreateNodeEvent extends APIEvent {
     private NodeInventory inventory;
 
-    public ApiCreateNodeEvent(){}
+    public APICreateNodeEvent(){}
 
-    public ApiCreateNodeEvent(String apiId){super(apiId);}
+    public APICreateNodeEvent(String apiId){super(apiId);}
 
     public NodeInventory getInventory() {
         return inventory;

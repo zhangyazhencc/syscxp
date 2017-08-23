@@ -14,7 +14,7 @@ public class NotificationVO_ {
     public static volatile SingularAttribute<NotificationVO, String> userUuid;
     public static volatile SingularAttribute<NotificationVO, String> name;
     public static volatile SingularAttribute<NotificationVO, String> sender;
-    public static volatile SingularAttribute<NotificationVO, String> action;
+    public static volatile SingularAttribute<NotificationVO, String> remoteIp;
     public static volatile SingularAttribute<NotificationVO, String> category;
     public static volatile SingularAttribute<NotificationVO, Boolean> success;
     public static volatile SingularAttribute<NotificationVO, Long> time;

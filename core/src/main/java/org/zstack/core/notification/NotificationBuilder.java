@@ -13,7 +13,7 @@ import java.util.Map;
 public class NotificationBuilder {
     String notificationName;
     String category;
-    String action;
+    String remoteIp;
     Boolean success;
     String content;
     String sender = NotificationConstant.SYSTEM_SENDER;
@@ -29,8 +29,8 @@ public class NotificationBuilder {
         return this;
     }
 
-    public NotificationBuilder action(String action, boolean success) {
-        this.action = action;
+    public NotificationBuilder action(String remoteIp, boolean success) {
+        this.remoteIp = remoteIp;
         this.success = success;
         return this;
     }
