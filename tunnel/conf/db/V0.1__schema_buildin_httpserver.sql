@@ -1,6 +1,6 @@
-use syscxp_account_rest;
+use syscxp_tunnel_rest;
 
-CREATE TABLE  `syscxp_account_rest`.`RestAPIVO` (
+CREATE TABLE  `syscxp_tunnel_rest`.`RestAPIVO` (
     `uuid` varchar(32) NOT NULL UNIQUE,
     `apiMessageName` varchar(255) DEFAULT NULL,
     `state` varchar(255) NOT NULL,
