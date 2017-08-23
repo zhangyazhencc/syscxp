@@ -30,7 +30,7 @@ import org.zstack.utils.logging.CLogger;
 
 import java.util.Random;
 import java.util.UUID;
-
+import org.apache.commons.codec.digest.DigestUtils;
 import static java.util.UUID.randomUUID;
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
@@ -121,12 +121,29 @@ public class AccountBase extends AbstractAccount {
             handle((APICreateAccountContactsMsg) msg);
         }else if(msg instanceof APIDeleteAccountContactsMsg){
             handle((APIDeleteAccountContactsMsg) msg);
+        }else if(msg instanceof APIResetAccountPWDMsg){
+            handle((APIResetAccountPWDMsg) msg);
         }
 
         else {
             bus.dealWithUnknownMessage(msg);
         }
     }
+
+    private void handle(APIResetAccountPWDMsg msg) {
+
+        APIResetAccountPWDEvent evt = new APIResetAccountPWDEvent(msg.getId());
+        AccountVO cont = dbf.findByUuid(msg.getTargetUuid(), AccountVO.class);
+
+        String pwd = getRandomString(8);
+
+        cont.setPassword(DigestUtils.sha512Hex(pwd));
+        dbf.updateAndRefresh(cont);
+
+        evt.setPassword(pwd);
+        bus.publish(evt);
+    }
+
 
     private void handle(APICreateAccountContactsMsg msg) {
 

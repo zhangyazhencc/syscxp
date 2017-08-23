@@ -10,8 +10,13 @@ import java.sql.Timestamp;
 @StaticMetamodel(NotificationVO.class)
 public class NotificationVO_ {
     public static volatile SingularAttribute<NotificationVO, String> uuid;
+    public static volatile SingularAttribute<NotificationVO, String> accountUuid;
+    public static volatile SingularAttribute<NotificationVO, String> userUuid;
     public static volatile SingularAttribute<NotificationVO, String> name;
     public static volatile SingularAttribute<NotificationVO, String> sender;
+    public static volatile SingularAttribute<NotificationVO, String> action;
+    public static volatile SingularAttribute<NotificationVO, String> category;
+    public static volatile SingularAttribute<NotificationVO, Boolean> success;
     public static volatile SingularAttribute<NotificationVO, Long> time;
     public static volatile SingularAttribute<NotificationVO, String> content;
     public static volatile SingularAttribute<NotificationVO, NotificationStatus> status;

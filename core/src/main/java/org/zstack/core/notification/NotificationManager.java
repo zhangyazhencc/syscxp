@@ -7,18 +7,16 @@ import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.MessageSafe;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.config.GlobalConfigException;
-import org.zstack.core.config.GlobalConfigFacade;
 import org.zstack.core.config.GlobalConfigValidatorExtensionPoint;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.SQL;
-import org.zstack.core.db.SQLBatch;
-import org.zstack.core.db.SQLBatchWithReturn;
 import org.zstack.core.thread.AsyncThread;
 import org.zstack.core.thread.Task;
 import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.AbstractService;
 import org.zstack.header.core.ExceptionSafe;
 import org.zstack.header.errorcode.OperationFailureException;
+import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.message.*;
 import org.zstack.header.notification.ApiNotification;
 import org.zstack.header.notification.ApiNotificationFactory;
@@ -136,13 +134,24 @@ public class NotificationManager extends AbstractService {
                 Map opaque = new HashMap();
                 opaque.put("session", b.message.getSession());
                 opaque.put("success", aevt.isSuccess());
+
+//                opaque.put("vo", dbf.findByUuid(inner.getResourceUuid(), inner.getResourceType()));
                 if (!aevt.isSuccess()) {
                     opaque.put("error", aevt.getError());
+                }
+
+                String action = NotificationConstant.UPDATE_ACTION;
+                if (b.message.getClass().getSimpleName().toUpperCase().contains(NotificationConstant.CREATE_ACTION)) {
+                    action = NotificationConstant.CREATE_ACTION;
+                } else if (b.message.getClass().getSimpleName().toUpperCase().contains(NotificationConstant.DELETE_ACTION)) {
+                    action = NotificationConstant.DELETE_ACTION;
                 }
 
                 lst.add(new NotificationBuilder()
                         .content(inner.getContent())
                         .arguments(inner.getArguments())
+                        .category(aevt.getType().toString())
+                        .action(action, aevt.isSuccess())
                         .name(NotificationConstant.API_SENDER)
                         .sender(NotificationConstant.API_SENDER)
                         .resource(inner.getResourceUuid(), inner.getResourceType())
@@ -167,7 +176,7 @@ public class NotificationManager extends AbstractService {
                 return;
             }
 
-            if (!msg.getServiceId().endsWith(Platform.getManagementServerId())) {
+            if (msg.getServiceId().endsWith(Platform.getManagementServerId())) {
                 // a message to api portal
                 return;
             }
@@ -257,45 +266,56 @@ public class NotificationManager extends AbstractService {
             notificationsQueue.drainTo(lst);
 
             try {
-                List<NotificationInventory> invs = new SQLBatchWithReturn<List<NotificationInventory>>() {
-                    @Override
-                    protected List<NotificationInventory> scripts() {
-                        List<NotificationInventory> invs = new ArrayList<>();
-
-                        for (NotificationBuilder builder : lst) {
-                            if (builder == quitToken) {
-                                exitQueue = true;
-                                continue;
-                            }
-
-                            NotificationVO vo = new NotificationVO();
-                            vo.setName(builder.notificationName);
-                            vo.setArguments(JSONObjectUtil.toJsonString(builder.arguments));
-                            vo.setContent(builder.content);
-                            vo.setResourceType(builder.resourceType);
-                            vo.setResourceUuid(builder.resourceUuid);
-                            vo.setSender(builder.sender);
-                            vo.setStatus(NotificationStatus.Unread);
-                            vo.setType(builder.type);
-                            vo.setUuid(Platform.getUuid());
-                            vo.setTime(System.currentTimeMillis());
-                            if (builder.opaque != null) {
-                                vo.setOpaque(JSONObjectUtil.toJsonString(builder.opaque));
-                            }
-
-                            dbf.getEntityManager().persist(vo);
-
-                            invs.add(NotificationInventory.valueOf(vo));
-                        }
-
-                        return invs;
+                for (NotificationBuilder builder : lst) {
+                    if (builder == quitToken) {
+                        exitQueue = true;
+                        continue;
                     }
-                }.execute();
+
+                    SessionInventory session = (SessionInventory) builder.opaque.get("session");
 
 
-                if (NotificationGlobalConfig.WEBHOOK_URL.value() != null && !NotificationGlobalConfig.WEBHOOK_URL.value().equals("null")) {
-                    callWebhook(invs);
+                    if (NotificationGlobalConfig.WEBHOOK_URL.value() != null && !NotificationGlobalConfig.WEBHOOK_URL.value().equals("null")) {
+
+                        APICreateNotificationMsg msg = new APICreateNotificationMsg();
+                        msg.setSession(session);
+                        msg.setName(builder.notificationName);
+                        msg.setCategory(builder.category);
+                        msg.setSuccess(builder.success);
+                        msg.setAction(builder.action);
+                        msg.setArguments(builder.arguments);
+                        msg.setContent(builder.content);
+                        msg.setResourceType(builder.resourceType);
+                        msg.setResourceUuid(builder.resourceUuid);
+                        msg.setSender(builder.sender);
+                        msg.setType(builder.type);
+                        msg.setOpaque(builder.opaque);
+
+                        callWebhook(JSONObjectUtil.toJsonString(msg));
+
+                    } else {
+                        NotificationVO vo = new NotificationVO();
+                        vo.setUuid(Platform.getUuid());
+                        vo.setName(builder.notificationName);
+                        vo.setAccountUuid(session.getAccountUuid());
+                        vo.setUserUuid(session.getUserUuid());
+                        vo.setCategory(builder.category);
+                        vo.setSuccess(builder.success);
+                        vo.setAction(builder.action);
+                        vo.setArguments(builder.arguments);
+                        vo.setContent(builder.content);
+                        vo.setResourceType(builder.resourceType);
+                        vo.setResourceUuid(builder.resourceUuid);
+                        vo.setSender(builder.sender);
+                        vo.setStatus(NotificationStatus.Unread);
+                        vo.setType(builder.type);
+                        vo.setTime(System.currentTimeMillis());
+                        vo.setOpaque(builder.opaque);
+
+                        vo = dbf.persistAndRefresh(vo);
+                    }
                 }
+
             } catch (Throwable t) {
                 logger.warn(String.format("failed to persists notifications:\n %s", JSONObjectUtil.toJsonString(lst)), t);
             }
@@ -303,7 +323,7 @@ public class NotificationManager extends AbstractService {
     }
 
     @AsyncThread
-    private void callWebhook(List<NotificationInventory> lst) {
+    private void callWebhook(Object lst) {
         restf.getRESTTemplate().postForEntity(NotificationGlobalConfig.WEBHOOK_URL.value(), JSONObjectUtil.toJsonString(lst), String.class);
     }
 
@@ -324,11 +344,35 @@ public class NotificationManager extends AbstractService {
         }
     }
 
+    private void hanle(APICreateNotificationMsg msg) {
+        NotificationVO vo = new NotificationVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setName(msg.getName());
+        vo.setAccountUuid(msg.getSession().getAccountUuid());
+        vo.setUserUuid(msg.getSession().getUserUuid());
+        vo.setCategory(msg.getCategory());
+        vo.setSuccess(msg.getSuccess());
+        vo.setAction(msg.getAction());
+        vo.setArguments(msg.getArguments());
+        vo.setContent(msg.getContent());
+        vo.setResourceType(msg.getResourceType());
+        vo.setResourceUuid(msg.getResourceUuid());
+        vo.setSender(msg.getSender());
+        vo.setStatus(NotificationStatus.Unread);
+        vo.setType(msg.getType());
+        vo.setTime(System.currentTimeMillis());
+        vo.setOpaque(msg.getOpaque());
+
+        vo = dbf.persistAndRefresh(vo);
+    }
+
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APIUpdateNotificationsStatusMsg) {
             handle((APIUpdateNotificationsStatusMsg) msg);
         } else if (msg instanceof APIDeleteNotificationsMsg) {
             handle((APIDeleteNotificationsMsg) msg);
+        } else if (msg instanceof APICreateNotificationMsg) {
+            hanle((APICreateNotificationMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }

@@ -18,7 +18,6 @@
         <class>org.zstack.account.header.identity.PermissionVO</class>
         <class>org.zstack.account.header.identity.AccountContactsVO</class>
 
-        <class>org.zstack.account.header.log.OperLogVO</class>
         <class>org.zstack.account.header.log.NoticeVO</class>
         <class>org.zstack.sms.header.SmsVO</class>
         <class>org.zstack.account.header.log.AlarmContactVO</class>

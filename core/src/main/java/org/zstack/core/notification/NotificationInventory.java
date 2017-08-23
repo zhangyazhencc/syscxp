@@ -2,13 +2,12 @@ package org.zstack.core.notification;
 
 import org.zstack.header.message.NoJsonSchema;
 import org.zstack.header.search.Inventory;
-import org.zstack.utils.gson.JSONObjectUtil;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by xing5 on 2017/3/18.
@@ -16,9 +15,14 @@ import java.util.List;
 @Inventory(mappingVOClass = NotificationVO.class)
 public class NotificationInventory {
     private String uuid;
+    private String accountUuid;
+    private String userUuid;
     private String name;
     private String content;
-    private String arguments;
+    private String category;
+    private String action;
+    private Boolean success;
+    private List arguments;
     private String sender;
     private String status;
     private String resourceUuid;
@@ -26,13 +30,18 @@ public class NotificationInventory {
     private String type;
     private Long time;
     @NoJsonSchema
-    private Object opaque;
+    private Map opaque;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
     public static NotificationInventory valueOf(NotificationVO vo) {
         NotificationInventory inv = new NotificationInventory();
         inv.setUuid(vo.getUuid());
+        inv.setAccountUuid(vo.getAccountUuid());
+        inv.setUserUuid(vo.getUserUuid());
+        inv.setAction(vo.getAction());
+        inv.setCategory(vo.getCategory());
+        inv.setSuccess(vo.isSuccess());
         inv.setName(vo.getName());
         inv.setContent(vo.getContent());
         inv.setArguments(vo.getArguments());
@@ -43,7 +52,7 @@ public class NotificationInventory {
         inv.setType(vo.getType().toString());
         inv.setTime(vo.getTime());
         if (vo.getOpaque() != null) {
-            inv.setOpaque(JSONObjectUtil.toObject(vo.getOpaque(), LinkedHashMap.class));
+            inv.setOpaque(vo.getOpaque());
         }
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -59,6 +68,45 @@ public class NotificationInventory {
         return invs;
     }
 
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
+
+    public String getUserUuid() {
+        return userUuid;
+    }
+
+    public void setUserUuid(String userUuid) {
+        this.userUuid = userUuid;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
+    public String getAction() {
+        return action;
+    }
+
+    public void setAction(String action) {
+        this.action = action;
+    }
+
+    public Boolean getSuccess() {
+        return success;
+    }
+
+    public void setSuccess(Boolean success) {
+        this.success = success;
+    }
 
     public String getUuid() {
         return uuid;
@@ -84,11 +132,11 @@ public class NotificationInventory {
         this.content = content;
     }
 
-    public String getArguments() {
+    public List getArguments() {
         return arguments;
     }
 
-    public void setArguments(String arguments) {
+    public void setArguments(List arguments) {
         this.arguments = arguments;
     }
 
@@ -140,11 +188,11 @@ public class NotificationInventory {
         this.time = time;
     }
 
-    public Object getOpaque() {
+    public Map getOpaque() {
         return opaque;
     }
 
-    public void setOpaque(Object opaque) {
+    public void setOpaque(Map opaque) {
         this.opaque = opaque;
     }
 

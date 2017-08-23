@@ -1,5 +1,6 @@
 package org.zstack.account.header.log;
 
+import org.zstack.core.db.converter.ListAttributeConverter;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
 
@@ -27,7 +28,7 @@ public class AlarmContactVO {
     private String email;
 
     @Column
-    @Convert(converter = ChannelAttributeConverter.class)
+    @Convert(converter = ListAttributeConverter.class)
     private List<AlarmChannel> channel;
 
     @Column

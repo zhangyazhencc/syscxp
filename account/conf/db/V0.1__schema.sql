@@ -131,22 +131,6 @@ CREATE TABLE  `SessionVO` (
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
-CREATE TABLE  `OperLogVO` (
-    `uuid` varchar(32) NOT NULL UNIQUE,
-    `accountUuid` varchar(32) NOT NULL COMMENT '账户UUID',
-    `userUuid` varchar(32) DEFAULT NULL COMMENT '用户UUID',
-    `category` varchar(128) DEFAULT NULL COMMENT '服务分类',
-    `resourceType` varchar(128) DEFAULT NULL COMMENT '资源类型',
-    `resourceUuid` varchar(32) DEFAULT NULL COMMENT '资源UUID',
-    `action` varchar(32) NOT NULL NULL COMMENT '动作',
-    `status` varchar(32) NOT NULL COMMENT '状态',
-    `description` varchar(255) DEFAULT NULL COMMENT '描述',
-    `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-    `createDate` timestamp,
-    PRIMARY KEY  (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE  `NoticeVO` (
     `uuid` varchar(32) NOT NULL UNIQUE,
     `title` varchar(255) NOT NULL COMMENT '标题',
@@ -175,10 +159,15 @@ CREATE TABLE  `AlarmContactVO` (
 
 CREATE TABLE  `NotificationVO` (
     `uuid` VARCHAR(32) NOT NULL UNIQUE,
+    `accountUuid` VARCHAR(32) NOT NULL,
+    `userUuid` VARCHAR(32) NOT NULL,
     `name` VARCHAR(255) DEFAULT NULL,
-    `content` VARCHAR(255) DEFAULT NULL,
+	`category` VARCHAR(32) DEFAULT NULL,
+    `content` VARCHAR(128) DEFAULT NULL,
     `arguments` TEXT DEFAULT NULL,
     `sender` VARCHAR(32) NOT NULL,
+	`action` VARCHAR(10) NOT NULL COMMENT '操作类型',
+	`success` BOOLEAN DEFAULT FALSE COMMENT '操作状态',
     `status` VARCHAR(32) DEFAULT NULL,
     `resourceUuid` VARCHAR(32) DEFAULT NULL,
     `resourceType` VARCHAR(32) NOT NULL,

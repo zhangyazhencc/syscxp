@@ -23,8 +23,8 @@ import java.sql.Timestamp;
 
 import static org.zstack.core.Platform.argerr;
 
-public class NoticeManagerImpl extends AbstractService implements NoticeManager, CloudBusEventListener, ApiMessageInterceptor {
-    private static final CLogger logger = Utils.getLogger(LogManagerImpl.class);
+public class NoticeManagerImpl extends AbstractService implements NoticeManager, ApiMessageInterceptor {
+    private static final CLogger logger = Utils.getLogger(NoticeManagerImpl.class);
 
     @Autowired
     private CloudBus bus;
@@ -32,12 +32,6 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
     private DatabaseFacade dbf;
     @Autowired
     private DbEntityLister dl;
-
-
-    @Override
-    public boolean handleEvent(Event e) {
-        return false;
-    }
 
     @Override
     public void handleMessage(Message msg) {

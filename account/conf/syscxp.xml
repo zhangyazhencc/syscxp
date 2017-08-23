@@ -49,7 +49,7 @@
     <import resource="springConfigXml/RESTFacade.xml"/>
     <import resource="springConfigXml/ThreadFacade.xml"/>
     <import resource="springConfigXml/validation.xml"/>
-    <import resource="springConfigXml/LogManager.xml"/>
+    <import resource="springConfigXml/NotificationManager.xml"/>
     <import resource="springConfigXml/Sms.xml"/>
 
 </beans>
