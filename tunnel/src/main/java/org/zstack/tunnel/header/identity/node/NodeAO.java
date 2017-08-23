@@ -47,8 +47,7 @@ public class NodeAO {
     private double latitude;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private NodeProperty property;
+    private String property;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -156,11 +155,11 @@ public class NodeAO {
         this.latitude = latitude;
     }
 
-    public NodeProperty getProperty() {
+    public String getProperty() {
         return property;
     }
 
-    public void setProperty(NodeProperty property) {
+    public void setProperty(String property) {
         this.property = property;
     }
 

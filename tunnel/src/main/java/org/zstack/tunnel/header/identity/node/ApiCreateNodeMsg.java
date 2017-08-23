@@ -18,8 +18,8 @@ public class ApiCreateNodeMsg extends APIMessage {
     private double longtitude;
     @APIParam(nonempty = true)
     private double latitude;
-    @APIParam(nonempty = true,validValues = {"CLOUD", "ACCESSIN","IDC","VPN","ECP","EXCHANGE"})
-    private NodeProperty property;
+    @APIParam(nonempty = true)
+    private String property;
     @APIParam(nonempty = true,maxLength = 128)
     private String province;
     @APIParam(nonempty = true,maxLength = 128)
@@ -65,11 +65,11 @@ public class ApiCreateNodeMsg extends APIMessage {
         this.latitude = latitude;
     }
 
-    public NodeProperty getProperty() {
+    public String getProperty() {
         return property;
     }
 
-    public void setProperty(NodeProperty property) {
+    public void setProperty(String property) {
         this.property = property;
     }
 

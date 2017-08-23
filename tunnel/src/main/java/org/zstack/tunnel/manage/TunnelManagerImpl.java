@@ -84,7 +84,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setName(msg.getName());
         vo.setLongtitude(msg.getLongtitude());
         vo.setLatitude(msg.getLatitude());
+
         vo.setProperty(msg.getProperty());
+
         vo.setProvince(msg.getProvince());
         vo.setCity(msg.getCity());
         vo.setAddress(msg.getAddress());
