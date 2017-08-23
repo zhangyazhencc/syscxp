@@ -35,7 +35,7 @@ public class NotificationVO {
     @Column
     private String sender;
     @Column
-    private String action;
+    private String remoteIp;
     @Column
     private Boolean success;
     @Column
@@ -91,19 +91,19 @@ public class NotificationVO {
         this.userUuid = userUuid;
     }
 
-    public String getAction() {
-        return action;
+    public String getRemoteIp() {
+        return remoteIp;
     }
 
-    public void setAction(String action) {
-        this.action = action;
+    public void setRemoteIp(String remoteIp) {
+        this.remoteIp = remoteIp;
     }
 
-    public boolean isSuccess() {
+    public Boolean isSuccess() {
         return success;
     }
 
-    public void setSuccess(boolean success) {
+    public void setSuccess(Boolean success) {
         this.success = success;
     }
 
