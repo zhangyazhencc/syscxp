@@ -10,7 +10,7 @@ import java.util.List;
  */
 
 
-public class ApiCreateNodeMsg extends APIMessage {
+public class APICreateNodeMsg extends APIMessage {
 
     @APIParam(nonempty = true,maxLength = 255)
     private String name;

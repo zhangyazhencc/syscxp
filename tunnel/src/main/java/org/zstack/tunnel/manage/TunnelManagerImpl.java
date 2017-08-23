@@ -1,7 +1,6 @@
 package org.zstack.tunnel.manage;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.EventFacade;
@@ -11,7 +10,6 @@ import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.DbEntityLister;
 import org.zstack.core.db.SimpleQuery;
-import org.zstack.core.db.*;
 import org.zstack.core.db.SimpleQuery.Op;
 import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.core.thread.ThreadFacade;
@@ -67,16 +65,16 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     private void handleApiMessage(APIMessage msg) {
-        if(msg instanceof ApiCreateNodeMsg){
-            handle((ApiCreateNodeMsg) msg);
-        }else if(msg instanceof ApiUpdateNodeMsg){
-            handle((ApiUpdateNodeMsg) msg);
+        if(msg instanceof APICreateNodeMsg){
+            handle((APICreateNodeMsg) msg);
+        }else if(msg instanceof APIUpdateNodeMsg){
+            handle((APIUpdateNodeMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(ApiCreateNodeMsg msg){
+    private void handle(APICreateNodeMsg msg){
         NodeVO vo = new NodeVO();
 
         vo.setUuid(Platform.getUuid());
@@ -96,12 +94,12 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         vo = dbf.persistAndRefresh(vo);
 
-        ApiCreateNodeEvent evt = new ApiCreateNodeEvent(msg.getId());
+        APICreateNodeEvent evt = new APICreateNodeEvent(msg.getId());
         evt.setInventory(NodeInventory.valueOf(vo));
         bus.publish(evt);
     }
 
-    private void handle(ApiUpdateNodeMsg msg){
+    private void handle(APIUpdateNodeMsg msg){
         NodeVO vo = dbf.findByUuid(msg.getTargetUuid(),NodeVO.class);
         boolean update = false;
         if(msg.getName() != null){
@@ -124,7 +122,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if (update)
             vo = dbf.updateAndRefresh(vo);
 
-        ApiUpdateNodeEvent evt = new ApiUpdateNodeEvent(msg.getId());
+        APIUpdateNodeEvent evt = new APIUpdateNodeEvent(msg.getId());
         evt.setInventory(NodeInventory.valueOf(vo));
         bus.publish(evt);
     }
@@ -146,15 +144,15 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        if(msg instanceof ApiCreateNodeMsg){
-            validate((ApiCreateNodeMsg) msg);
-        }else if(msg instanceof ApiUpdateNodeMsg){
-            validate((ApiUpdateNodeMsg) msg);
+        if(msg instanceof APICreateNodeMsg){
+            validate((APICreateNodeMsg) msg);
+        }else if(msg instanceof APIUpdateNodeMsg){
+            validate((APIUpdateNodeMsg) msg);
         }
         return msg;
     }
 
-    private void validate(ApiCreateNodeMsg msg){
+    private void validate(APICreateNodeMsg msg){
 /*        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
         q.add(NodeVO_.name, Op.EQ, msg.getName());
         SimpleQuery<NodeVO> q2 = dbf.createQuery(NodeVO.class);
@@ -166,7 +164,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }*/
     }
 
-    private void validate(ApiUpdateNodeMsg msg){
+    private void validate(APIUpdateNodeMsg msg){
         SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
         q.add(NodeVO_.uuid, Op.EQ, msg.getTargetUuid());
         if (!q.isExists()) {

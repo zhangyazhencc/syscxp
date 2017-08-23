@@ -7,7 +7,7 @@ import java.util.List;
 /**
  * Created by DCY on 2017-08-21
  */
-public class ApiQueryNodeReply extends APIQueryReply {
+public class APIQueryNodeReply extends APIQueryReply {
     private List<NodeInventory> inventories;
 
     public List<NodeInventory> getInventories() {
