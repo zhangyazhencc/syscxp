@@ -6,7 +6,6 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
-import java.lang.reflect.Field;
 import java.util.List;
 
 public class APICreateAlarmContactMsg extends APICreateMessage {
@@ -74,13 +73,6 @@ public class APICreateAlarmContactMsg extends APICreateMessage {
     public ApiNotification __notification__() {
         APIMessage that = this;
 
-        Field[] fields = this.getClass().getDeclaredFields();
-
-        for (Field field: fields) {
-            field.getName();
-        }
-
-
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
@@ -89,7 +81,7 @@ public class APICreateAlarmContactMsg extends APICreateMessage {
                     uuid = ((APICreateAlarmContactEvent) evt).getInventory().getUuid();
                 }
 
-                ntfy("新建告警联系人",name,phone,email,channel)
+                ntfy("新建告警联系人", getDeclaredFieldAndValues())
                         .resource(uuid, AlarmContactVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }

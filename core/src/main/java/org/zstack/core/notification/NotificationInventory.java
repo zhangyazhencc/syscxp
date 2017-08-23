@@ -22,7 +22,7 @@ public class NotificationInventory {
     private String category;
     private String remoteIp;
     private Boolean success;
-    private List arguments;
+    private Map arguments;
     private String sender;
     private String status;
     private String resourceUuid;
@@ -132,11 +132,11 @@ public class NotificationInventory {
         this.content = content;
     }
 
-    public List getArguments() {
+    public Map getArguments() {
         return arguments;
     }
 
-    public void setArguments(List arguments) {
+    public void setArguments(Map arguments) {
         this.arguments = arguments;
     }
 

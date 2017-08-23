@@ -6,7 +6,7 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
-public class APIDeleteNoticeMsg extends APIDeleteMessage{
+public class APIDeleteNoticeMsg extends APIDeleteMessage {
     @APIParam()
     private String uuid;
 
@@ -24,7 +24,8 @@ public class APIDeleteNoticeMsg extends APIDeleteMessage{
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("删除公告").resource(uuid, NoticeVO.class.getSimpleName())
+                ntfy("删除公告", getDeclaredFieldAndValues())
+                        .resource(uuid, NoticeVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };

@@ -30,8 +30,8 @@ public class NotificationVO {
     @Column
     private String content;
     @Column
-    @Convert(converter = ListAttributeConverter.class)
-    private List arguments;
+    @Convert(converter = MapAttributeConverter.class)
+    private Map arguments;
     @Column
     private String sender;
     @Column
@@ -131,11 +131,11 @@ public class NotificationVO {
         this.time = time;
     }
 
-    public List getArguments() {
+    public Map getArguments() {
         return arguments;
     }
 
-    public void setArguments(List arguments) {
+    public void setArguments(Map arguments) {
         this.arguments = arguments;
     }
 

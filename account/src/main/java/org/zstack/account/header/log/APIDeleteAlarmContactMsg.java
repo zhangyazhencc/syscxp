@@ -6,7 +6,7 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
-public class APIDeleteAlarmContactMsg extends APIDeleteMessage{
+public class APIDeleteAlarmContactMsg extends APIDeleteMessage {
     @APIParam()
     private String uuid;
 
@@ -24,7 +24,8 @@ public class APIDeleteAlarmContactMsg extends APIDeleteMessage{
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("删除告警联系人").resource(uuid, AlarmContactVO.class.getSimpleName())
+                ntfy("删除告警联系人", getDeclaredFieldAndValues())
+                        .resource(uuid, AlarmContactVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };
