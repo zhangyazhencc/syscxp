@@ -24,14 +24,12 @@ public class BillJob extends QuartzJobBean {
 
     private DatabaseFacade databaseFacade;
     private ThreadLocal<DatabaseFacade> connThreadLocal = new ThreadLocal<DatabaseFacade>();
-    private static final String uuid = Platform.getUuid();
-
     private static final CLogger logger = Utils.getLogger(BillJob.class);
 
     @Transactional
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
 
-        GLock lock = new GLock(String.format("id-%s",uuid), 120);
+        GLock lock = new GLock(String.format("id-%s","createBill"), 120);
         lock.lock();
         try {
             Timestamp currentTimestamp = databaseFacade.getCurrentSqlTime();
