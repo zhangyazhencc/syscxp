@@ -25,13 +25,10 @@ public class RenewJob extends QuartzJobBean {
 
     private static final CLogger logger = Utils.getLogger(RenewJob.class);
 
-    private static final String uuid = Platform.getUuid();
-
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
 
-        GLock lock = new GLock(String.format("id-%s", uuid), 120);
-        logger.info(uuid);
+        GLock lock = new GLock(String.format("id-%s", "createRenew"), 120);
         lock.lock();
         try {
             Timestamp currentTimestamp = databaseFacade.getCurrentSqlTime();
