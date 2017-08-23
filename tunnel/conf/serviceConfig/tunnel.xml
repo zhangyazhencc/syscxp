@@ -9,11 +9,11 @@
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.identity.node.ApiUpdateNodeMsg</name>
+        <name>org.zstack.tunnel.header.identity.node.APIUpdateNodeMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.identity.node.ApiQueryNodeMsg</name>
+        <name>org.zstack.tunnel.header.identity.node.APIQueryNodeMsg</name>
         <serviceId>query</serviceId>
     </message>
 
