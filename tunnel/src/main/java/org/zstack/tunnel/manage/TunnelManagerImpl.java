@@ -103,13 +103,26 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     private void handle(ApiUpdateNodeMsg msg){
         NodeVO vo = dbf.findByUuid(msg.getTargetUuid(),NodeVO.class);
+        boolean update = false;
+        if(msg.getName() != null){
+            vo.setName(msg.getName());
+            update = true;
+        }
+        if(msg.getCode() != null){
+            vo.setCode(msg.getCode());
+            update = true;
+        }
+        if(msg.getProperty() != null){
+            vo.setProperty(msg.getProperty());
+            update = true;
+        }
+        if(msg.getStatus() != null){
+            vo.setStatus(msg.getStatus());
+            update = true;
+        }
 
-        vo.setName(msg.getName());
-        vo.setCode(msg.getCode());
-        vo.setProperty(msg.getProperty());
-        vo.setStatus(msg.getStatus());
-
-        vo = dbf.updateAndRefresh(vo);
+        if (update)
+            vo = dbf.updateAndRefresh(vo);
 
         ApiUpdateNodeEvent evt = new ApiUpdateNodeEvent(msg.getId());
         evt.setInventory(NodeInventory.valueOf(vo));
@@ -142,7 +155,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     private void validate(ApiCreateNodeMsg msg){
-        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
+/*        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
         q.add(NodeVO_.name, Op.EQ, msg.getName());
         SimpleQuery<NodeVO> q2 = dbf.createQuery(NodeVO.class);
         q2.add(NodeVO_.code, Op.EQ, msg.getCode());
@@ -150,11 +163,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             throw new ApiMessageInterceptionException(argerr("unable to create a node. A node name called %s is already ",msg.getName()));
         }else if(q2.isExists()){
             throw new ApiMessageInterceptionException(argerr("unable to create a node. A node code called %s is already ",msg.getCode()));
-        }
+        }*/
     }
 
     private void validate(ApiUpdateNodeMsg msg){
-        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
+/*        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
         q.add(NodeVO_.name, Op.EQ, msg.getName());
         SimpleQuery<NodeVO> q2 = dbf.createQuery(NodeVO.class);
         q2.add(NodeVO_.code, Op.EQ, msg.getCode());
@@ -166,6 +179,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             throw new ApiMessageInterceptionException(argerr("unable to update a node. A node name called %s is already ",msg.getName()));
         }else if(!msg.getCode().equals(oldCode) && q2.isExists()){
             throw new ApiMessageInterceptionException(argerr("unable to update a node. A node code called %s is already ",msg.getCode()));
-        }
+        }*/
     }
 }
