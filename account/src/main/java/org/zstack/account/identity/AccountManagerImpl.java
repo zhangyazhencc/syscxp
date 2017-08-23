@@ -408,6 +408,10 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIDeleteAccountContactsMsg) msg);
         } else if (msg instanceof APIResetAccountPWDMsg) {
             validate((APIResetAccountPWDMsg) msg);
+        }else if (msg instanceof APIResetAccountApiSecurityMsg) {
+            validate((APIResetAccountApiSecurityMsg) msg);
+        }else if (msg instanceof APIGetAccountApiKeyMsg) {
+            validate((APIGetAccountApiKeyMsg) msg);
         }
 
 
@@ -426,6 +430,23 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                     msg.getAccountUuid(), msg.getTargetUuid()));
         }
 
+
+    }
+
+    private void validate(APIResetAccountApiSecurityMsg msg) {
+
+        if (!smsService.validateVerificationCode(msg.getPhone(),msg.getCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getAccountUuid()));
+        }
+
+    }
+    private void validate(APIGetAccountApiKeyMsg msg) {
+
+        if (!smsService.validateVerificationCode(msg.getPhone(),msg.getCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getAccountUuid()));
+        }
 
     }
 

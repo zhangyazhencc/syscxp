@@ -123,6 +123,12 @@ public class AccountBase extends AbstractAccount {
             handle((APIDeleteAccountContactsMsg) msg);
         }else if(msg instanceof APIResetAccountPWDMsg){
             handle((APIResetAccountPWDMsg) msg);
+        }else if(msg instanceof APIResetAccountApiSecurityMsg){
+            handle((APIResetAccountApiSecurityMsg) msg);
+        }else if(msg instanceof APIUpdateApiAllowIPMsg){
+            handle((APIUpdateApiAllowIPMsg) msg);
+        }else if(msg instanceof APIGetAccountApiKeyMsg){
+            handle((APIGetAccountApiKeyMsg) msg);
         }
 
         else {
@@ -141,6 +147,46 @@ public class AccountBase extends AbstractAccount {
         dbf.updateAndRefresh(cont);
 
         evt.setPassword(pwd);
+        bus.publish(evt);
+    }
+
+    private void handle(APIUpdateApiAllowIPMsg msg) {
+
+        APIUpdateApiAllowIPEvent evt = new APIUpdateApiAllowIPEvent(msg.getId());
+        SimpleQuery<AccountApiSecurityVO> q = dbf.createQuery(AccountApiSecurityVO.class);
+        q.add(AccountApiSecurityVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        AccountApiSecurityVO api = q.find();
+        api.setAllowIp(msg.getAllowIP());
+
+        evt.setInventory(AccountApiSecurityInventory.valueOf(dbf.updateAndRefresh(api)));
+        bus.publish(evt);
+    }
+
+    private void handle(APIGetAccountApiKeyMsg msg) {
+
+        SimpleQuery<AccountApiSecurityVO> q = dbf.createQuery(AccountApiSecurityVO.class);
+        q.add(AccountApiSecurityVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        AccountApiSecurityVO api = q.find();
+
+        APIGetAccountApiKeyReply reply = new APIGetAccountApiKeyReply();
+        reply.setInventory(AccountApiSecurityInventory.valueOf(api));
+        bus.reply(msg,reply);
+    }
+
+    private void handle(APIResetAccountApiSecurityMsg msg) {
+
+        APIResetAccountApiSecurityEvent evt = new APIResetAccountApiSecurityEvent(msg.getId());
+
+        SimpleQuery<AccountApiSecurityVO> q = dbf.createQuery(AccountApiSecurityVO.class);
+        q.add(AccountApiSecurityVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        AccountApiSecurityVO api = q.find();
+
+        api.setPublicKey(getRandomString(36));
+        api.setPrivateKey(getRandomString(36));
+
+        dbf.updateAndRefresh(api);
+
+        evt.setInventory(AccountApiSecurityInventory.valueOf(api));
         bus.publish(evt);
     }
 
@@ -634,7 +680,7 @@ public class AccountBase extends AbstractAccount {
             auth = dbf.updateAndRefresh(auth);
         }
 
-        APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
+        APIUpdatePermisstionEvent evt = new APIUpdatePermisstionEvent(msg.getId());
 
         evt.setInventory(PermissionInventory.valueOf(auth));
         bus.publish(evt);

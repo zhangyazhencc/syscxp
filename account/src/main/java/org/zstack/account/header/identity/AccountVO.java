@@ -7,7 +7,6 @@ import org.zstack.header.identity.AccountType;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
 import org.zstack.header.vo.Index;
-import org.zstack.header.identity.AccountGrade;
 import javax.persistence.*;
 import java.sql.Timestamp;
 

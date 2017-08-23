@@ -4,8 +4,6 @@ import org.zstack.header.message.APIEvent;
 import org.zstack.header.rest.RestResponse;
 
 @RestResponse(allTo = "inventory")
-
-
 public class APIUpdatePermisstionEvent extends APIEvent {
     private PermissionInventory inventory;
 
