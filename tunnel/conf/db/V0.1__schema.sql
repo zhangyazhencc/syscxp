@@ -50,7 +50,7 @@ CREATE TABLE  `syscxp_tunnel`.`JobQueueEntryVO` (
 CREATE TABLE  `NodeEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `name` varchar(255) NOT NULL UNIQUE COMMENT '节点名称',
-  `code` varchar(128) NOT NULL COMMENT '节点编号',
+  `code` varchar(128) NOT NULL UNIQUE COMMENT '节点编号',
   `description` varchar(255) NOT NULL COMMENT '节点描述',
   `contact` varchar(128) NOT NULL COMMENT '联系人',
   `telephone` varchar(32) NOT NULL COMMENT '联系人电话',
