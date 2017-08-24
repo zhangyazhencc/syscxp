@@ -150,7 +150,7 @@ CREATE TABLE `ReceiptVO` (
   `total` decimal(12,4) DEFAULT NULL COMMENT '开票金额',
   `type` varchar(50) DEFAULT NULL COMMENT '类型',
   `title` varchar(200) DEFAULT NULL COMMENT '抬头',
-  `applyTime` timestamp NULL DEFAULT NULL COMMENT '申请时间',
+  `applyTime` timestamp COMMENT '申请时间',
   `state` varchar(50) DEFAULT NULL COMMENT '状态',
   `receiptInfoUuid` varchar(32) DEFAULT NULL COMMENT '发票开票信息id',
   `receiptAddressUuid` varchar(32) DEFAULT NULL COMMENT '发票邮寄地址',
@@ -177,7 +177,6 @@ CREATE TABLE `RenewVO` (
   `productType` varchar(50) DEFAULT NULL COMMENT '产品类型',
   `productChargeModel` varchar(50) DEFAULT NULL COMMENT '计费方式--按月，按年',
   `duration` int unsigned NOT NULL DEFAULT 0,
-  `expiredDate` timestamp NOT NULL,
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
   `createDate` timestamp ,
   PRIMARY KEY (`uuid`),
@@ -223,7 +222,7 @@ CREATE TABLE `ProductPriceUnitVO` (
     `createDate` timestamp ,
     PRIMARY KEY (`uuid`),
     UNIQUE KEY `NewIndex1` (`productType`,`category`,`config`)
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
