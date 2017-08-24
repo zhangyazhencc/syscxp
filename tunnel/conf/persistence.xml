@@ -10,7 +10,9 @@
         <class>org.zstack.core.job.JobQueueEntryVO</class>
 
         <class>org.zstack.tunnel.header.node.NodeVO</class>
+        <class>org.zstack.tunnel.header.node.NodeEO</class>
         <class>org.zstack.tunnel.header.endpoint.EndpointVO</class>
+        <class>org.zstack.tunnel.header.endpoint.EndpointEO</class>
 
     </persistence-unit>
 </persistence>

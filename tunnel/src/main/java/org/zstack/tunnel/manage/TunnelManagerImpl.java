@@ -18,6 +18,7 @@ import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
+import org.zstack.tunnel.header.endpoint.*;
 import org.zstack.tunnel.header.node.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
@@ -69,6 +70,10 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             handle((APICreateNodeMsg) msg);
         }else if(msg instanceof APIUpdateNodeMsg){
             handle((APIUpdateNodeMsg) msg);
+        }else if(msg instanceof APICreateEndpointMsg){
+            handle((APICreateEndpointMsg) msg);
+        }else if(msg instanceof APIUpdateEndpointMsg){
+            handle((APIUpdateEndpointMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -82,9 +87,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setName(msg.getName());
         vo.setLongtitude(msg.getLongtitude());
         vo.setLatitude(msg.getLatitude());
-
         vo.setProperty(msg.getProperty());
-
         vo.setProvince(msg.getProvince());
         vo.setCity(msg.getCity());
         vo.setAddress(msg.getAddress());
@@ -127,6 +130,41 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         bus.publish(evt);
     }
 
+    private void handle(APICreateEndpointMsg msg){
+        EndpointVO vo = new EndpointVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setNodeUuid(msg.getNodeUuid());
+        vo.setName(msg.getName());
+        vo.setCode(msg.getCode());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateEndpointEvent evt = new APICreateEndpointEvent(msg.getId());
+        evt.setInventory(EndpointInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIUpdateEndpointMsg msg){
+        EndpointVO vo = dbf.findByUuid(msg.getTargetUuid(),EndpointVO.class);
+        boolean update = false;
+        if(msg.getName() != null){
+            vo.setName(msg.getName());
+            update = true;
+        }
+        if(msg.getCode() != null){
+            vo.setCode(msg.getCode());
+            update = true;
+        }
+
+        if (update)
+            vo = dbf.updateAndRefresh(vo);
+
+        APIUpdateEndpointEvent evt = new APIUpdateEndpointEvent(msg.getId());
+        evt.setInventory(EndpointInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
     @Override
     public boolean start() {
         return true;
@@ -148,20 +186,16 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             validate((APICreateNodeMsg) msg);
         }else if(msg instanceof APIUpdateNodeMsg){
             validate((APIUpdateNodeMsg) msg);
+        }else if(msg instanceof APICreateEndpointMsg){
+            validate((APICreateEndpointMsg) msg);
+        }else if(msg instanceof APIUpdateEndpointMsg){
+            validate((APIUpdateEndpointMsg) msg);
         }
         return msg;
     }
 
     private void validate(APICreateNodeMsg msg){
-/*        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
-        q.add(NodeVO_.name, Op.EQ, msg.getName());
-        SimpleQuery<NodeVO> q2 = dbf.createQuery(NodeVO.class);
-        q2.add(NodeVO_.code, Op.EQ, msg.getCode());
-        if (q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("unable to create a node. A node name called %s is already ",msg.getName()));
-        }else if(q2.isExists()){
-            throw new ApiMessageInterceptionException(argerr("unable to create a node. A node code called %s is already ",msg.getCode()));
-        }*/
+
     }
 
     private void validate(APIUpdateNodeMsg msg){
@@ -170,18 +204,22 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if (!q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("node %s is not exist ",msg.getTargetUuid()));
         }
-/*        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
-        q.add(NodeVO_.name, Op.EQ, msg.getName());
-        SimpleQuery<NodeVO> q2 = dbf.createQuery(NodeVO.class);
-        q2.add(NodeVO_.code, Op.EQ, msg.getCode());
 
-        NodeVO vo = dbf.findByUuid(msg.getTargetUuid(),NodeVO.class);
-        String oldName = vo.getName();
-        String oldCode = vo.getCode();
-        if (!msg.getName().equals(oldName) && q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("unable to update a node. A node name called %s is already ",msg.getName()));
-        }else if(!msg.getCode().equals(oldCode) && q2.isExists()){
-            throw new ApiMessageInterceptionException(argerr("unable to update a node. A node code called %s is already ",msg.getCode()));
-        }*/
+    }
+
+    private void validate(APICreateEndpointMsg msg){
+        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
+        q.add(NodeVO_.uuid, Op.EQ, msg.getNodeUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("node %s is not exist ",msg.getNodeUuid()));
+        }
+    }
+
+    private void validate(APIUpdateEndpointMsg msg){
+        SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
+        q.add(EndpointVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("endpoint %s is not exist ",msg.getTargetUuid()));
+        }
     }
 }
