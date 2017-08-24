@@ -11,8 +11,6 @@ public class APICreateUserMsg extends APICreateMessage implements AccountMessage
     private String name;
     @APIParam(maxLength = 128)
     private String password;
-    @APIParam(maxLength = 32, required = false)
-    private String accountUuid;
     @APIParam(maxLength = 36, required = false)
     private String email;
     @APIParam(maxLength = 32, required = false)
@@ -28,7 +26,6 @@ public class APICreateUserMsg extends APICreateMessage implements AccountMessage
 
     @APIParam(maxLength = 255, required = false)
     private String policyUuid;
-
 
     public String getDescription() {
         return description;
@@ -79,10 +76,6 @@ public class APICreateUserMsg extends APICreateMessage implements AccountMessage
         return status;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
-
     public void setEmail(String email) {
         this.email = email;
     }
@@ -110,4 +103,5 @@ public class APICreateUserMsg extends APICreateMessage implements AccountMessage
     public void setPolicyUuid(String policyUuid) {
         this.policyUuid = policyUuid;
     }
+
 }

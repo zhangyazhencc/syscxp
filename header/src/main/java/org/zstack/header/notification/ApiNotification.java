@@ -57,6 +57,7 @@ public abstract class ApiNotification {
             return context;
         }
 
+
         public Inner(String content, Object[] arguments) {
             this.content = content;
             this.arguments = arguments;
@@ -86,11 +87,12 @@ public abstract class ApiNotification {
         }
     }
 
-    protected Inner ntfy(String content, Object...args) {
+    protected Inner ntfy(String content, Object... args) {
         return new Inner(content, args);
     }
 
     public abstract void after(APIEvent evt);
+
     public void before() {
     }
 

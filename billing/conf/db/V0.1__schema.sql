@@ -25,7 +25,7 @@ CREATE TABLE `AccountBalanceVO` (
   `creditPoint` decimal(12,4) NOT NULL DEFAULT 0.0000 COMMENT '信用额度',
   `cashBalance` decimal(12,4) NOT NULL DEFAULT 0.0000 COMMENT '现金余额',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
-  `createDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `createDate` timestamp  ,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -46,7 +46,7 @@ CREATE TABLE `BillVO` (
   `billDate` timestamp NULL DEFAULT NULL COMMENT '账单日',
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户uuid',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
-  `createDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `createDate` timestamp ,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -67,7 +67,7 @@ CREATE TABLE `DealDetailVO` (
   `balance` decimal(12,4) DEFAULT NULL COMMENT '余额',
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '用户id',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
-  `createDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `createDate` timestamp ,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -91,7 +91,7 @@ CREATE TABLE `OrderVO` (
   `productEffectTimeStart` timestamp NULL DEFAULT NULL COMMENT '产品使用开始时间',
   `productEffectTimeEnd` datetime DEFAULT NULL COMMENT '产品使用结束时间',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
-  `createDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `createDate` timestamp ,
   `productUuid` varchar(32) NOT NULL COMMENT '产品ID',
   `productName` varchar(100) NOT NULL COMMENT '产品名称',
   `productType` varchar(50) DEFAULT NULL COMMENT '产品类型',
@@ -118,7 +118,7 @@ CREATE TABLE `ReceiptInfoVO` (
   `address` varchar(300) DEFAULT NULL COMMENT '注册场地地址',
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账号id',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
-  `createDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `createDate` timestamp ,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -135,7 +135,7 @@ CREATE TABLE `ReceiptPostAddressVO` (
   `telephone` varchar(30) DEFAULT NULL COMMENT '电话号码',
   `address` varchar(500) DEFAULT NULL COMMENT '详细地址',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
-  `createDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `createDate` timestamp ,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -150,13 +150,13 @@ CREATE TABLE `ReceiptVO` (
   `total` decimal(12,4) DEFAULT NULL COMMENT '开票金额',
   `type` varchar(50) DEFAULT NULL COMMENT '类型',
   `title` varchar(200) DEFAULT NULL COMMENT '抬头',
-  `applyTime` timestamp NULL DEFAULT NULL COMMENT '申请时间',
+  `applyTime` timestamp COMMENT '申请时间',
   `state` varchar(50) DEFAULT NULL COMMENT '状态',
   `receiptInfoUuid` varchar(32) DEFAULT NULL COMMENT '发票开票信息id',
   `receiptAddressUuid` varchar(32) DEFAULT NULL COMMENT '发票邮寄地址',
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户id',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
-  `createDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `createDate` timestamp ,
   `receiptNumber` varchar(128) DEFAULT NULL COMMENT '发票号码',
   `comment` varchar(255) DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`uuid`)
@@ -177,9 +177,8 @@ CREATE TABLE `RenewVO` (
   `productType` varchar(50) DEFAULT NULL COMMENT '产品类型',
   `productChargeModel` varchar(50) DEFAULT NULL COMMENT '计费方式--按月，按年',
   `duration` int unsigned NOT NULL DEFAULT 0,
-  `expiredDate` timestamp NOT NULL,
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
-  `createDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `createDate` timestamp ,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `UNI_ACCOUNT_PRODUCT_ID` (`accountUuid`,`productUuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -203,7 +202,7 @@ CREATE TABLE `SLACompensateVO` (
   `timeEnd` timestamp NULL DEFAULT NULL COMMENT '赔偿终止时间',
   `state` varchar(50) DEFAULT NULL COMMENT '状态',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
-  `createDate` timestamp NOT NULL DEFAULT current_timestamp(),
+  `createDate` timestamp ,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -220,10 +219,10 @@ CREATE TABLE `ProductPriceUnitVO` (
     `priceUnit` int DEFAULT NULL COMMENT '单价',
     `comment` varchar(500) DEFAULT NULL COMMENT '备注',
     `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
-    `createDate` timestamp NOT NULL DEFAULT current_timestamp(),
+    `createDate` timestamp ,
     PRIMARY KEY (`uuid`),
     UNIQUE KEY `NewIndex1` (`productType`,`category`,`config`)
-  ) ENGINE=InnoDB DEFAULT CHARSET=utf8
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
