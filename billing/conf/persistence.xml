@@ -13,6 +13,6 @@
         <class>org.zstack.billing.header.identity.order.OrderVO</class>
         <class>org.zstack.billing.header.identity.bill.BillVO</class>
         <class>org.zstack.billing.header.identity.renew.RenewVO</class>
-
+        <class>org.zstack.billing.header.identity.receipt.ReceiptPostAddressVO</class>
     </persistence-unit>
 </persistence>
