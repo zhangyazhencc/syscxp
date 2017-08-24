@@ -1,4 +1,4 @@
-package org.zstack.tunnel.header.identity.node;
+package org.zstack.tunnel.header.node;
 
 /**
  * Created by DCY on 2017-08-21

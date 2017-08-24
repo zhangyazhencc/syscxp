@@ -18,7 +18,7 @@ import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
-import org.zstack.tunnel.header.identity.node.*;
+import org.zstack.tunnel.header.node.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 

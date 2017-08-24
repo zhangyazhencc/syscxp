@@ -1,4 +1,4 @@
-package org.zstack.tunnel.header.identity.node;
+package org.zstack.tunnel.header.node;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

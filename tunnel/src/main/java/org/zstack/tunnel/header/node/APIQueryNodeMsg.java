@@ -1,4 +1,4 @@
-package org.zstack.tunnel.header.identity.node;
+package org.zstack.tunnel.header.node;
 
 import org.zstack.header.query.APIQueryMessage;
 import org.zstack.header.query.AutoQuery;

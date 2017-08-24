@@ -1,11 +1,9 @@
-package org.zstack.tunnel.header.identity.node;
+package org.zstack.tunnel.header.node;
 
-import org.zstack.header.search.SqlTrigger;
-import org.zstack.header.search.TriggerIndex;
 import org.zstack.header.vo.EO;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
+
 /**
  * Created by DCY on 2017-08-21
  */
