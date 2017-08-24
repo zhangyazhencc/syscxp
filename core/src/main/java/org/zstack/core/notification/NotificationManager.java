@@ -277,6 +277,8 @@ public class NotificationManager extends AbstractService {
 
                         APICreateNotificationMsg msg = new APICreateNotificationMsg();
                         msg.setSession(session);
+                        msg.setAccountUuid(session.getAccountUuid());
+                        msg.setUserUuid(session.getUserUuid());
                         msg.setName(builder.notificationName);
                         msg.setCategory(builder.category);
                         msg.setSuccess(builder.success);
@@ -321,8 +323,8 @@ public class NotificationManager extends AbstractService {
     }
 
     @AsyncThread
-    private void callWebhook(Message lst) {
-        restf.asyncJsonPost(NotificationGlobalConfig.WEBHOOK_URL.value(), RESTApiDecoder.dump(lst), new AsyncRESTCallback(lst) {
+    private void callWebhook(Message msg) {
+        restf.asyncJsonPost(NotificationGlobalConfig.WEBHOOK_URL.value(), RESTApiDecoder.dump(msg), new AsyncRESTCallback(msg) {
 
             @Override
             public void fail(ErrorCode err) {
@@ -357,8 +359,8 @@ public class NotificationManager extends AbstractService {
         NotificationVO vo = new NotificationVO();
         vo.setUuid(Platform.getUuid());
         vo.setName(msg.getName());
-        vo.setAccountUuid(msg.getSession().getAccountUuid());
-        vo.setUserUuid(msg.getSession().getUserUuid());
+        vo.setAccountUuid(msg.getAccountUuid());
+        vo.setUserUuid(msg.getUserUuid());
         vo.setCategory(msg.getCategory());
         vo.setSuccess(msg.getSuccess());
         vo.setRemoteIp(msg.getRemoteIp());
