@@ -11,8 +11,12 @@
 
         <class>org.zstack.tunnel.header.node.NodeVO</class>
         <class>org.zstack.tunnel.header.node.NodeEO</class>
+
         <class>org.zstack.tunnel.header.endpoint.EndpointVO</class>
         <class>org.zstack.tunnel.header.endpoint.EndpointEO</class>
+
+        <class>org.zstack.tunnel.header.switchs.SwitchVO</class>
+        <class>org.zstack.tunnel.header.switchs.SwitchEO</class>
 
     </persistence-unit>
 </persistence>
