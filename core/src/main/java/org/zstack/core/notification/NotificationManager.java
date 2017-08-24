@@ -284,7 +284,7 @@ public class NotificationManager extends AbstractService {
                         msg.setType(builder.type);
                         msg.setOpaque(builder.opaque);
 
-                        callWebhook(JSONObjectUtil.toJsonString(msg));
+                        callWebhook(msg);
 
                     } else {
                         NotificationVO vo = new NotificationVO();
