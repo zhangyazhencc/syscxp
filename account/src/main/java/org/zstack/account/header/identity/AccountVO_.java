@@ -1,7 +1,7 @@
 package org.zstack.account.header.identity;
 
 
-import org.zstack.header.identity.AccountAuthentication;
+import org.zstack.header.identity.ValidateStatus;
 import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountType;
 
@@ -15,9 +15,9 @@ public class AccountVO_ {
     public static volatile SingularAttribute<AccountVO, String> name;
     public static volatile SingularAttribute<AccountVO, String> password;
     public static volatile SingularAttribute<AccountVO, String> email;
-    public static volatile SingularAttribute<AccountVO, AccountAuthentication> emailStatus;
+    public static volatile SingularAttribute<AccountVO, ValidateStatus> emailStatus;
     public static volatile SingularAttribute<AccountVO, String> phone;
-    public static volatile SingularAttribute<AccountVO, AccountAuthentication> phonestatus;
+    public static volatile SingularAttribute<AccountVO, ValidateStatus> phonestatus;
     public static volatile SingularAttribute<AccountVO, String> trueName;
     public static volatile SingularAttribute<AccountVO, String> company;
     public static volatile SingularAttribute<AccountVO, String> industry;

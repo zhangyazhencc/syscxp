@@ -1,6 +1,5 @@
 package org.zstack.account.identity;
 
-import groovy.ui.SystemOutputInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.account.header.identity.APICheckApiPermissionMsg;
@@ -355,9 +354,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 vo.setName(AccountConstant.INITIAL_SYSTEM_ADMIN_NAME);
                 vo.setPassword(AccountConstant.INITIAL_SYSTEM_ADMIN_PASSWORD);
                 vo.setPhone(AccountConstant.INITIAL_SYSTEM_ADMIN_PHONE);
-                vo.setPhoneStatus(AccountAuthentication.YES);
+                vo.setPhoneStatus(ValidateStatus.Validated);
                 vo.setEmail(AccountConstant.INITIAL_SYSTEM_ADMIN_EMAIL);
-                vo.setEmailStatus(AccountAuthentication.YES);
+                vo.setEmailStatus(ValidateStatus.Validated);
                 vo.setType(AccountType.SystemAdmin);
                 vo.setStatus(AccountStatus.Available);
 

@@ -1,7 +1,7 @@
 package org.zstack.account.header.identity;
 
 
-import org.zstack.header.identity.AccountAuthentication;
+import org.zstack.header.identity.ValidateStatus;
 import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.search.SqlTrigger;
@@ -35,10 +35,12 @@ public class AccountVO {
     private String email;
 
     @Column
-    private AccountAuthentication phoneStatus;
+    @Enumerated(EnumType.STRING)
+    private ValidateStatus phoneStatus;
 
     @Column
-    private AccountAuthentication emailStatus;
+    @Enumerated(EnumType.STRING)
+    private ValidateStatus emailStatus;
 
     @Column
     private String trueName;
@@ -175,19 +177,19 @@ public class AccountVO {
         this.lastOpDate = lastOpDate;
     }
 
-    public AccountAuthentication getPhoneStatus() {
+    public ValidateStatus getPhoneStatus() {
         return phoneStatus;
     }
 
-    public AccountAuthentication getEmailStatus() {
+    public ValidateStatus getEmailStatus() {
         return emailStatus;
     }
 
-    public void setPhoneStatus(AccountAuthentication phoneStatus) {
+    public void setPhoneStatus(ValidateStatus phoneStatus) {
         this.phoneStatus = phoneStatus;
     }
 
-    public void setEmailStatus(AccountAuthentication emailStatus) {
+    public void setEmailStatus(ValidateStatus emailStatus) {
         this.emailStatus = emailStatus;
     }
 }

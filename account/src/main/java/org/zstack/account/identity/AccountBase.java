@@ -29,9 +29,9 @@ import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
 import java.util.Random;
-import java.util.UUID;
+
 import org.apache.commons.codec.digest.DigestUtils;
-import static java.util.UUID.randomUUID;
+
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
 
@@ -255,13 +255,13 @@ public class AccountBase extends AbstractAccount {
 
         APIAccountPhoneAuthenticationEvent evt = new APIAccountPhoneAuthenticationEvent(msg.getId());
         AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
-        if (!smsService.validateVerificationCode(account.getPhone(),msg.getCode())) {
+        if (!smsService.validateVerificationCode(account.getPhone(), msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
 
         evt.setPhone(account.getPhone());
-        account.setPhoneStatus(AccountAuthentication.YES);
+        account.setPhoneStatus(ValidateStatus.Validated);
         dbf.updateAndRefresh(account);
 
         bus.publish(evt);
@@ -276,7 +276,7 @@ public class AccountBase extends AbstractAccount {
                     msg.getSession().getAccountUuid()));
         }
         evt.setPhone(user.getPhone());
-        user.setPhoneStatus(AccountAuthentication.YES);
+        user.setPhoneStatus(ValidateStatus.Validated);
         dbf.updateAndRefresh(user);
         bus.publish(evt);
     }
@@ -513,8 +513,8 @@ public class AccountBase extends AbstractAccount {
         accountvo.setTrueName(msg.getTrueName());
         accountvo.setStatus(msg.getStatus());
         accountvo.setType(AccountType.Normal);
-        accountvo.setPhoneStatus(AccountAuthentication.NO);
-        accountvo.setEmailStatus(AccountAuthentication.NO);
+        accountvo.setPhoneStatus(ValidateStatus.Unvalidated);
+        accountvo.setEmailStatus(ValidateStatus.Unvalidated);
 
         accountvo = dbf.persistAndRefresh(accountvo);
 
@@ -572,8 +572,8 @@ public class AccountBase extends AbstractAccount {
         uservo.setStatus(msg.getStatus() != null ? AccountStatus.valueOf(msg.getStatus()) : AccountStatus.Available);
         uservo.setTrueName(msg.getTrueName());
 
-        uservo.setEmailStatus(AccountAuthentication.NO);
-        uservo.setPhoneStatus(AccountAuthentication.NO);
+        uservo.setEmailStatus(ValidateStatus.Unvalidated);
+        uservo.setPhoneStatus(ValidateStatus.Unvalidated);
 
         uservo = dbf.persistAndRefresh(uservo);
 

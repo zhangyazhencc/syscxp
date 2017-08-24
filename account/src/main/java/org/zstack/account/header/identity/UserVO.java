@@ -1,6 +1,6 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.AccountAuthentication;
+import org.zstack.header.identity.ValidateStatus;
 import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.vo.ForeignKey;
 import org.zstack.header.vo.ForeignKey.ReferenceOption;
@@ -32,10 +32,10 @@ public class UserVO {
     private String phone;
 
     @Column
-    private AccountAuthentication emailStatus;
+    private ValidateStatus emailStatus;
 
     @Column
-    private AccountAuthentication phoneStatus;
+    private ValidateStatus phoneStatus;
 
     @Column
     private String trueName;
@@ -157,19 +157,19 @@ public class UserVO {
         this.status = status;
     }
 
-    public AccountAuthentication getEmailStatus() {
+    public ValidateStatus getEmailStatus() {
         return emailStatus;
     }
 
-    public AccountAuthentication getPhoneStatus() {
+    public ValidateStatus getPhoneStatus() {
         return phoneStatus;
     }
 
-    public void setEmailStatus(AccountAuthentication emailStatus) {
+    public void setEmailStatus(ValidateStatus emailStatus) {
         this.emailStatus = emailStatus;
     }
 
-    public void setPhoneStatus(AccountAuthentication phoneStatus) {
+    public void setPhoneStatus(ValidateStatus phoneStatus) {
         this.phoneStatus = phoneStatus;
     }
 }
