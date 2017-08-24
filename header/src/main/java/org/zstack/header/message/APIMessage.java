@@ -2,6 +2,11 @@ package org.zstack.header.message;
 
 import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.rest.APINoSee;
+import org.zstack.utils.FieldUtils;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class APIMessage extends NeedReplyMessage {
     /**
@@ -27,5 +32,17 @@ public abstract class APIMessage extends NeedReplyMessage {
 
     public void setIp(String ip) {
         this.ip = ip;
+    }
+
+
+    public Map<String, Object> getDeclaredFieldAndValues() {
+        Field[] fields = this.getClass().getDeclaredFields();
+        Map<String, Object> msgFields = new HashMap<>();
+
+        for (Field field: fields) {
+            Object value = FieldUtils.getFieldValue(field.getName(), this);
+            msgFields.put(field.getName(), value);
+        }
+        return msgFields;
     }
 }

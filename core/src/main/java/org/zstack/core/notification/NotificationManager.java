@@ -142,10 +142,10 @@ public class NotificationManager extends AbstractService {
 
                 lst.add(new NotificationBuilder()
                         .content(inner.getContent())
-                        .arguments(inner.getArguments())
+                        .msgfields(b.message.getDeclaredFieldAndValues())
                         .category(aevt.getType().toString())
                         .action(b.message.getIp(), aevt.isSuccess())
-                        .name(NotificationConstant.API_SENDER)
+                        .name(b.message.getClass().getSimpleName())
                         .sender(NotificationConstant.API_SENDER)
                         .resource(inner.getResourceUuid(), inner.getResourceType())
                         .opaque(opaque));
@@ -169,7 +169,7 @@ public class NotificationManager extends AbstractService {
                 return;
             }
 
-            if (msg.getServiceId().endsWith(Platform.getManagementServerId())) {
+            if (!msg.getServiceId().endsWith(Platform.getManagementServerId())) {
                 // a message to api portal
                 return;
             }
@@ -276,7 +276,7 @@ public class NotificationManager extends AbstractService {
                         msg.setCategory(builder.category);
                         msg.setSuccess(builder.success);
                         msg.setRemoteIp(builder.remoteIp);
-                        msg.setArguments(builder.arguments);
+                        msg.setMsgfields(builder.msgfields);
                         msg.setContent(builder.content);
                         msg.setResourceType(builder.resourceType);
                         msg.setResourceUuid(builder.resourceUuid);
@@ -284,7 +284,7 @@ public class NotificationManager extends AbstractService {
                         msg.setType(builder.type);
                         msg.setOpaque(builder.opaque);
 
-                        callWebhook(JSONObjectUtil.toJsonString(msg));
+                        callWebhook(msg);
 
                     } else {
                         NotificationVO vo = new NotificationVO();
@@ -295,7 +295,7 @@ public class NotificationManager extends AbstractService {
                         vo.setCategory(builder.category);
                         vo.setSuccess(builder.success);
                         vo.setRemoteIp(builder.remoteIp);
-                        vo.setArguments(builder.arguments);
+                        vo.setMsgfields(builder.msgfields);
                         vo.setContent(builder.content);
                         vo.setResourceType(builder.resourceType);
                         vo.setResourceUuid(builder.resourceUuid);
@@ -346,7 +346,7 @@ public class NotificationManager extends AbstractService {
         vo.setCategory(msg.getCategory());
         vo.setSuccess(msg.getSuccess());
         vo.setRemoteIp(msg.getRemoteIp());
-        vo.setArguments(msg.getArguments());
+        vo.setMsgfields(msg.getMsgfields());
         vo.setContent(msg.getContent());
         vo.setResourceType(msg.getResourceType());
         vo.setResourceUuid(msg.getResourceUuid());
