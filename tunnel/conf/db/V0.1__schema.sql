@@ -47,10 +47,10 @@ CREATE TABLE  `syscxp_tunnel`.`JobQueueEntryVO` (
 #########################################################################################
 
 ## 节点
-CREATE TABLE  `NodeEO` (
+CREATE TABLE  `syscxp_tunnel`.`NodeEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `name` varchar(255) NOT NULL UNIQUE COMMENT '节点名称',
-  `code` varchar(128) NOT NULL UNIQUE COMMENT '节点编号',
+  `name` varchar(255) NOT NULL  COMMENT '节点名称',
+  `code` varchar(128) NOT NULL  COMMENT '节点编号',
   `description` varchar(255) DEFAULT NULL COMMENT '节点描述',
   `contact` varchar(128) NOT NULL COMMENT '联系人',
   `telephone` varchar(32) NOT NULL COMMENT '联系人电话',
@@ -68,15 +68,15 @@ CREATE TABLE  `NodeEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `NodeVO` AS SELECT uuid, name, code, description, contact, telephone, province, city, address, longtitude, latitude, property, status, extensionInfoUuid, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`NodeVO` AS SELECT uuid, name, code, description, contact, telephone, province, city, address, longtitude, latitude, property, status, extensionInfoUuid, lastOpDate, createDate
                         FROM `NodeEO` WHERE deleted = 0;
 
 ## 连接点
-CREATE TABLE  `EndpointEO` (
+CREATE TABLE  `syscxp_tunnel`.`EndpointEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `nodeUuid` varchar(32) NOT NULL COMMENT '节点id',
-  `name` varchar(255) NOT NULL UNIQUE COMMENT '连接点名称',
-  `code` varchar(128) NOT NULL UNIQUE COMMENT '连接点编号',
+  `name` varchar(255) NOT NULL  COMMENT '连接点名称',
+  `code` varchar(128) NOT NULL  COMMENT '连接点编号',
   `enabled` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT '是否启用',
   `openToCustomers` TINYINT(1)  NOT NULL DEFAULT '0' COMMENT '是否对外开放',
   `description` varchar(255)  DEFAULT NULL COMMENT '描述',
@@ -86,30 +86,25 @@ CREATE TABLE  `EndpointEO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `EndpointVO` AS SELECT uuid, nodeUuid, name, code, enabled, openToCustomers, description, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`EndpointVO` AS SELECT uuid, nodeUuid, name, code, enabled, openToCustomers, description, lastOpDate, createDate
                             FROM `EndpointEO` WHERE deleted = 0;
 
 ##交换机
-CREATE TABLE  `SwitchVO` (
+CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `endpointUuid` varchar(32) DEFAULT NULL COMMENT '连接点UUID',
   `code` varchar(128) DEFAULT NULL COMMENT '交换机编号',
   `name` varchar(128) DEFAULT NULL COMMENT '交换机名称',
   `brand` varchar(128) DEFAULT NULL COMMENT '交换机品牌',
   `switchModelUuid` varchar(32) DEFAULT NULL COMMENT '交换机型号UUID',
-  #`model` varchar(32) DEFAULT NULL COMMENT '交换机型号',
-  #`subModel` varchar(32) DEFAULT NULL COMMENT '交换机子型号',
   `upperType` varchar(32) DEFAULT NULL COMMENT '上联类型：物理专线/互联网',
   `enabled` TINYINT(1) DEFAULT NULL COMMENT '是否启用',
   `owner` varchar(128) DEFAULT NULL COMMENT '交换机属主',
   `rack` varchar(32) DEFAULT NULL COMMENT '交换机位置',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
-  #`vlanBegin` INT(11) DEFAULT NULL COMMENT '起始VLAN',
-  #`vlanEnd` INT(11) DEFAULT NULL COMMENT '结束VLAN',
   `mIP` varchar(128) DEFAULT NULL COMMENT '管理IP',
   `username` varchar(128) DEFAULT NULL COMMENT '用户名',
   `password` varchar(128) DEFAULT NULL COMMENT '密码',
-  #`vxlanSupport` TINYINT(1) DEFAULT NULL ,
   `status` varchar(16) DEFAULT NULL COMMENT '状态',
   `isPrivate` varchar(16) DEFAULT NULL COMMENT '专用还是公用',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
