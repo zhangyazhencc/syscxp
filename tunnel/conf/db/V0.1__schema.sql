@@ -92,29 +92,32 @@ CREATE VIEW `syscxp_tunnel`.`EndpointVO` AS SELECT uuid, nodeUuid, name, code, e
 ##交换机
 CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `endpointUuid` varchar(32) DEFAULT NULL COMMENT '连接点UUID',
-  `code` varchar(128) DEFAULT NULL COMMENT '交换机编号',
-  `name` varchar(128) DEFAULT NULL COMMENT '交换机名称',
-  `brand` varchar(128) DEFAULT NULL COMMENT '交换机品牌',
-  `switchModelUuid` varchar(32) DEFAULT NULL COMMENT '交换机型号UUID',
-  `upperType` varchar(32) DEFAULT NULL COMMENT '上联类型：物理专线/互联网',
-  `enabled` TINYINT(1) DEFAULT NULL COMMENT '是否启用',
-  `owner` varchar(128) DEFAULT NULL COMMENT '交换机属主',
-  `rack` varchar(32) DEFAULT NULL COMMENT '交换机位置',
+  `endpointUuid` varchar(32) NOT NULL COMMENT '连接点UUID',
+  `code` varchar(128) NOT NULL COMMENT '交换机编号',
+  `name` varchar(128) NOT NULL COMMENT '交换机名称',
+  `brand` varchar(128) NOT NULL COMMENT '交换机品牌',
+  `switchModelUuid` varchar(32) NOT NULL COMMENT '交换机型号UUID',
+  `upperType` varchar(32) NOT NULL COMMENT '上联类型：物理专线/互联网',
+  `enabled` TINYINT(1) NOT NULL DEFAULT '1' COMMENT '是否启用',
+  `owner` varchar(128) NOT NULL COMMENT '交换机属主',
+  `rack` varchar(32) NOT NULL COMMENT '交换机位置',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
-  `mIP` varchar(128) DEFAULT NULL COMMENT '管理IP',
-  `username` varchar(128) DEFAULT NULL COMMENT '用户名',
-  `password` varchar(128) DEFAULT NULL COMMENT '密码',
-  `status` varchar(16) DEFAULT NULL COMMENT '状态',
-  `isPrivate` varchar(16) DEFAULT NULL COMMENT '专用还是公用',
+  `mIP` varchar(128) NOT NULL COMMENT '管理IP',
+  `username` varchar(128) NOT NULL COMMENT '用户名',
+  `password` varchar(128) NOT NULL COMMENT '密码',
+  `status` varchar(16) NOT NULL DEFAULT 'NORMAL' COMMENT '状态',
+  `isPrivate` TINYINT(1) NOT NULL COMMENT '1:专用 0:公用',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, endpointUuid, name, code, brand, switchModelUuid, upperType, enabled, owner, rack, description, mIP, username, password, status, isPrivate, lastOpDate, createDate
+                                            FROM `SwitchEO` WHERE deleted = 0;
+
 ##交换机型号
-CREATE TABLE `SwitchModelVO` (
+CREATE TABLE `syscxp_tunnel`.`SwitchModelVO` (
   `uuid` VARCHAR(32) NOT NULL COMMENT 'UUID',
   `model` VARCHAR(128) DEFAULT NULL COMMENT '交换机型号',
   `subModel` VARCHAR(128) DEFAULT NULL COMMENT '交换机子型号',
@@ -125,7 +128,7 @@ CREATE TABLE `SwitchModelVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##交换机端口
-CREATE TABLE  `SwitchPortVO` (
+CREATE TABLE  `syscxp_tunnel`.`SwitchPortVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `switchUuid` varchar(32) DEFAULT NULL COMMENT '交换机UUID',
   `portNum` INT(11) DEFAULT NULL COMMENT '该交换机端口编号：1口，2口...',
@@ -142,7 +145,7 @@ CREATE TABLE  `SwitchPortVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##交换机VLAN
-CREATE TABLE  `SwitchVlanVO` (
+CREATE TABLE  `syscxp_tunnel`.`SwitchVlanVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `switchUuid` varchar(32) DEFAULT NULL COMMENT '交换机UUID',
   `startVlan` INT(11) DEFAULT NULL COMMENT '起始VLAN',
@@ -153,7 +156,7 @@ CREATE TABLE  `SwitchVlanVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##通道
-CREATE TABLE `TunnelVO` (
+CREATE TABLE `syscxp_tunnel`.`TunnelVO` (
   `uuid` VARCHAR(32) NOT NULL,
   #`networkTypeUuid` VARCHAR(32) DEFAULT NULL,
   #`projectUuid` varchar(32) DEFAULT NULL,
@@ -180,7 +183,7 @@ CREATE TABLE `TunnelVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ## 通道端口
-CREATE TABLE `TunnelRefSwitchVO` (
+CREATE TABLE `syscxp_tunnel`.`TunnelRefSwitchVO` (
   `uuid` VARCHAR(32) NOT NULL ,
   `tunnelUuid` VARCHAR(32) DEFAULT NULL,
   `groupUuid` VARCHAR(32) DEFAULT NULL,
@@ -196,7 +199,7 @@ CREATE TABLE `TunnelRefSwitchVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ## 通道关联
-CREATE TABLE `TunnelConnectionVO` (
+CREATE TABLE `syscxp_tunnel`.`TunnelConnectionVO` (
   `uuid` VARCHAR(32) NOT NULL ,
   `tunnelUuid` VARCHAR(32) DEFAULT NULL,
   `tunnelRefSwitchUuidA` VARCHAR(32) DEFAULT NULL,
@@ -209,7 +212,7 @@ CREATE TABLE `TunnelConnectionVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##速度测试
-CREATE TABLE `SpeedRecordsVO` (
+CREATE TABLE `syscxp_tunnel`.`SpeedRecordsVO` (
   `uuid` VARCHAR(32) NOT NULL,
   `tunnelConnectionUuid` VARCHAR(32) DEFAULT NULL,
   `protocol` varchar(32) DEFAULT NULL,
@@ -227,7 +230,7 @@ CREATE TABLE `SpeedRecordsVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##通道监控
-CREATE TABLE `TunnelMonitorVO` (
+CREATE TABLE `syscxp_tunnel`.`TunnelMonitorVO` (
   `uuid` VARCHAR(32) NOT NULL,
   `tunnelConnectionUuid` VARCHAR(32) DEFAULT NULL,
   `monitorAIp` varchar(64) DEFAULT NULL,
@@ -240,7 +243,7 @@ CREATE TABLE `TunnelMonitorVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##监控机
-CREATE TABLE  `HostVO` (
+CREATE TABLE  `syscxp_tunnel`.`HostVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `name` varchar(128) DEFAULT NULL COMMENT '监控机名称',
   `code` varchar(128) DEFAULT NULL COMMENT '监控机编号',
@@ -256,7 +259,7 @@ CREATE TABLE  `HostVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##监控机交换机监控
-CREATE TABLE `HostSwitchMonitorVO` (
+CREATE TABLE `syscxp_tunnel`.`HostSwitchMonitorVO` (
   `uuid` VARCHAR(32) NOT NULL COMMENT 'UUID',
   `hostUuid` VARCHAR(32) DEFAULT NULL COMMENT '监控机UUID',
   `switchUuid` VARCHAR(32) DEFAULT NULL COMMENT '交换机UUID',
