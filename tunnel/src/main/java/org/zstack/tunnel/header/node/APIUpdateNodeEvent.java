@@ -1,4 +1,4 @@
-package org.zstack.tunnel.header.identity.node;
+package org.zstack.tunnel.header.node;
 
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.rest.RestResponse;
@@ -7,12 +7,15 @@ import org.zstack.header.rest.RestResponse;
  * Created by DCY on 2017-08-21
  */
 @RestResponse(allTo = "inventory")
-public class APICreateNodeEvent extends APIEvent {
+public class APIUpdateNodeEvent extends APIEvent {
+
     private NodeInventory inventory;
 
-    public APICreateNodeEvent(){}
+    public APIUpdateNodeEvent(String apiId) {
+        super(apiId);
+    }
 
-    public APICreateNodeEvent(String apiId){super(apiId);}
+    public APIUpdateNodeEvent() {}
 
     public NodeInventory getInventory() {
         return inventory;

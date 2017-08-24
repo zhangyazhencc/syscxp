@@ -72,21 +72,22 @@ CREATE VIEW `NodeVO` AS SELECT uuid, name, code, description, contact, telephone
                         FROM `NodeEO` WHERE deleted = 0;
 
 ## 连接点
-CREATE TABLE  `EndpointVO` (
+CREATE TABLE  `EndpointEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `nodeUuid` varchar(32) DEFAULT NULL COMMENT '节点id',
+  `nodeUuid` varchar(32) NOT NULL COMMENT '节点id',
   `name` varchar(255) NOT NULL UNIQUE COMMENT '连接点名称',
-  `code` varchar(128) NOT NULL COMMENT '连接点编号',
-  `enabled` varchar(32)  DEFAULT NULL COMMENT '是否启用',
-  `openToCustomers` varchar(32) DEFAULT 'false' COMMENT '是否对外开放',
-  `status` varchar(32) DEFAULT NULL COMMENT '通道状态',
-  ##`subType` varchar(64) DEFAULT NULL,
-  `description` varchar(4000)  DEFAULT NULL COMMENT '描述',
+  `code` varchar(128) NOT NULL UNIQUE COMMENT '连接点编号',
+  `enabled` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT '是否启用',
+  `openToCustomers` TINYINT(1)  NOT NULL DEFAULT '0' COMMENT '是否对外开放',
+  `description` varchar(255)  DEFAULT NULL COMMENT '描述',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE VIEW `EndpointVO` AS SELECT uuid, nodeUuid, name, code, enabled, openToCustomers, description, lastOpDate, createDate
+                            FROM `EndpointEO` WHERE deleted = 0;
 
 ##交换机
 CREATE TABLE  `SwitchVO` (

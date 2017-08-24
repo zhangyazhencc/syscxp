@@ -5,15 +5,29 @@
 
     <!--NODE-->
     <message>
-        <name>org.zstack.tunnel.header.identity.node.APICreateNodeMsg</name>
+        <name>org.zstack.tunnel.header.node.APICreateNodeMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.identity.node.APIUpdateNodeMsg</name>
+        <name>org.zstack.tunnel.header.node.APIUpdateNodeMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.identity.node.APIQueryNodeMsg</name>
+        <name>org.zstack.tunnel.header.node.APIQueryNodeMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <!--ENDPOINT-->
+    <message>
+        <name>org.zstack.tunnel.header.endpoint.APICreateEndpointMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.endpoint.APIUpdateEndpointMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.endpoint.APIQueryEndpointMsg</name>
         <serviceId>query</serviceId>
     </message>
 

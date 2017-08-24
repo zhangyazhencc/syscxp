@@ -1,8 +1,7 @@
-package org.zstack.tunnel.header.identity.node;
+package org.zstack.tunnel.header.node;
 
-import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
-import java.sql.Timestamp;
+
 /**
  * Created by DCY on 2017-08-21
  */
