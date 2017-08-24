@@ -74,6 +74,14 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             handle((APICreateEndpointMsg) msg);
         }else if(msg instanceof APIUpdateEndpointMsg){
             handle((APIUpdateEndpointMsg) msg);
+        }else if(msg instanceof APIDisableEndpointMsg){
+            handle((APIDisableEndpointMsg) msg);
+        }else if(msg instanceof APIEnableEndpointMsg){
+            handle((APIEnableEndpointMsg) msg);
+        }else if(msg instanceof APICloseEndpointMsg){
+            handle((APICloseEndpointMsg) msg);
+        }else if(msg instanceof APIOpenEndpointMsg){
+            handle((APIOpenEndpointMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -165,6 +173,38 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         bus.publish(evt);
     }
 
+    private void handle(APIDisableEndpointMsg msg){
+        EndpointVO vo = dbf.findByUuid(msg.getTargetUuid(),EndpointVO.class);
+        vo.setEnabled(0);
+        APIDisableEndpointEvent evt = new APIDisableEndpointEvent(msg.getId());
+        evt.setInventory(EndpointInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIEnableEndpointMsg msg){
+        EndpointVO vo = dbf.findByUuid(msg.getTargetUuid(),EndpointVO.class);
+        vo.setEnabled(1);
+        APIEnableEndpointEvent evt = new APIEnableEndpointEvent(msg.getId());
+        evt.setInventory(EndpointInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APICloseEndpointMsg msg){
+        EndpointVO vo = dbf.findByUuid(msg.getTargetUuid(),EndpointVO.class);
+        vo.setOpenToCustomers(0);
+        APICloseEndpointEvent evt = new APICloseEndpointEvent(msg.getId());
+        evt.setInventory(EndpointInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIOpenEndpointMsg msg){
+        EndpointVO vo = dbf.findByUuid(msg.getTargetUuid(),EndpointVO.class);
+        vo.setOpenToCustomers(1);
+        APIOpenEndpointEvent evt = new APIOpenEndpointEvent(msg.getId());
+        evt.setInventory(EndpointInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
     @Override
     public boolean start() {
         return true;
@@ -190,15 +230,50 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             validate((APICreateEndpointMsg) msg);
         }else if(msg instanceof APIUpdateEndpointMsg){
             validate((APIUpdateEndpointMsg) msg);
+        }else if(msg instanceof APIDisableEndpointMsg){
+            validate((APIDisableEndpointMsg) msg);
+        }else if(msg instanceof APIEnableEndpointMsg){
+            validate((APIEnableEndpointMsg) msg);
+        }else if(msg instanceof APICloseEndpointMsg){
+            validate((APICloseEndpointMsg) msg);
+        }else if(msg instanceof APIOpenEndpointMsg){
+            validate((APIOpenEndpointMsg) msg);
         }
         return msg;
     }
 
     private void validate(APICreateNodeMsg msg){
-
+        //判断code，name是否已经存在
+        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
+        SimpleQuery<NodeVO> q2 = dbf.createQuery(NodeVO.class);
+        q.add(NodeVO_.code, Op.EQ, msg.getCode());
+        q2.add(NodeVO_.name, Op.EQ, msg.getName());
+        if(q.isExists()){
+            throw new ApiMessageInterceptionException(argerr("node's code %s is already exist ",msg.getCode()));
+        }else if(q2.isExists()){
+            throw new ApiMessageInterceptionException(argerr("node's name %s is already exist ",msg.getName()));
+        }
     }
 
     private void validate(APIUpdateNodeMsg msg){
+        //判断code，name是否已经存在
+        if(msg.getCode() != null){
+            SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
+            q.add(NodeVO_.code, Op.EQ, msg.getCode());
+            q.add(NodeVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
+            if(q.isExists()){
+                throw new ApiMessageInterceptionException(argerr("node's code %s is already exist ",msg.getCode()));
+            }
+        }
+        if(msg.getName() != null){
+            SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
+            q.add(NodeVO_.name, Op.EQ, msg.getName());
+            q.add(NodeVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
+            if(q.isExists()){
+                throw new ApiMessageInterceptionException(argerr("node's name %s is already exist ",msg.getName()));
+            }
+        }
+        //判断所修改的节点是否存在
         SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
         q.add(NodeVO_.uuid, Op.EQ, msg.getTargetUuid());
         if (!q.isExists()) {
@@ -208,14 +283,79 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     private void validate(APICreateEndpointMsg msg){
-        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
-        q.add(NodeVO_.uuid, Op.EQ, msg.getNodeUuid());
-        if (!q.isExists()) {
+        //判断code，name是否已经存在
+        SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
+        SimpleQuery<EndpointVO> q2 = dbf.createQuery(EndpointVO.class);
+        q.add(EndpointVO_.code, Op.EQ, msg.getCode());
+        q2.add(EndpointVO_.name, Op.EQ, msg.getName());
+        if(q.isExists()){
+            throw new ApiMessageInterceptionException(argerr("endpoint's code %s is already exist ",msg.getCode()));
+        }else if(q2.isExists()){
+            throw new ApiMessageInterceptionException(argerr("endpoint's name %s is already exist ",msg.getName()));
+        }
+        //判断连接点所属节点是否存在
+        SimpleQuery<NodeVO> q3 = dbf.createQuery(NodeVO.class);
+        q3.add(NodeVO_.uuid, Op.EQ, msg.getNodeUuid());
+        if (!q3.isExists()) {
             throw new ApiMessageInterceptionException(argerr("node %s is not exist ",msg.getNodeUuid()));
         }
     }
 
     private void validate(APIUpdateEndpointMsg msg){
+        //判断code，name是否已经存在
+        if(msg.getCode() != null){
+            SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
+            q.add(EndpointVO_.code, Op.EQ, msg.getCode());
+            q.add(EndpointVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
+            if(q.isExists()){
+                throw new ApiMessageInterceptionException(argerr("endpoint's code %s is already exist ",msg.getCode()));
+            }
+        }
+        if(msg.getName() != null){
+            SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
+            q.add(EndpointVO_.name, Op.EQ, msg.getName());
+            q.add(EndpointVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
+            if(q.isExists()){
+                throw new ApiMessageInterceptionException(argerr("endpoint's name %s is already exist ",msg.getName()));
+            }
+        }
+        //判断所修改的连接点是否存在
+        SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
+        q.add(EndpointVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("endpoint %s is not exist ",msg.getTargetUuid()));
+        }
+    }
+
+    private void validate(APIDisableEndpointMsg msg){
+        //判断所操作的连接点是否存在
+        SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
+        q.add(EndpointVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("endpoint %s is not exist ",msg.getTargetUuid()));
+        }
+    }
+
+    private void validate(APIEnableEndpointMsg msg){
+        //判断所操作的连接点是否存在
+        SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
+        q.add(EndpointVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("endpoint %s is not exist ",msg.getTargetUuid()));
+        }
+    }
+
+    private void validate(APICloseEndpointMsg msg){
+        //判断所操作的连接点是否存在
+        SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
+        q.add(EndpointVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("endpoint %s is not exist ",msg.getTargetUuid()));
+        }
+    }
+
+    private void validate(APIOpenEndpointMsg msg){
+        //判断所操作的连接点是否存在
         SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
         q.add(EndpointVO_.uuid, Op.EQ, msg.getTargetUuid());
         if (!q.isExists()) {

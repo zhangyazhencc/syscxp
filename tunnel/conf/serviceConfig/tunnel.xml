@@ -27,6 +27,22 @@
     </message>
 
     <message>
+        <name>org.zstack.tunnel.header.endpoint.APIDisableEndpointMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.endpoint.APIEnableEndpointMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.endpoint.APICloseEndpointMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.endpoint.APIOpenEndpointMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.tunnel.header.endpoint.APIQueryEndpointMsg</name>
         <serviceId>query</serviceId>
     </message>
