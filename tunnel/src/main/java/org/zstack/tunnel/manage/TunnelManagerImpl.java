@@ -516,7 +516,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             throw new ApiMessageInterceptionException(argerr("endpoint %s is not exist ",msg.getEndpointUuid()));
         }
         //判断交换机所选的交换机型号是否存在
-
+        SimpleQuery<SwitchModelVO> q4 = dbf.createQuery(SwitchModelVO.class);
+        q4.add(SwitchModelVO_.uuid, Op.EQ, msg.getSwitchModelUuid());
+        if (!q4.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("switchModel %s is not exist ",msg.getSwitchModelUuid()));
+        }
     }
 
     private void validate(APIUpdateSwitchMsg msg){
@@ -544,6 +548,13 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             }
         }
         //判断所修改的交换机型号是否存在
+        if(msg.getSwitchModelUuid() != null){
+            SimpleQuery<SwitchModelVO> q4 = dbf.createQuery(SwitchModelVO.class);
+            q4.add(SwitchModelVO_.uuid, Op.EQ, msg.getSwitchModelUuid());
+            if (!q4.isExists()) {
+                throw new ApiMessageInterceptionException(argerr("switchModel %s is not exist ",msg.getSwitchModelUuid()));
+            }
+        }
 
 
     }

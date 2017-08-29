@@ -17,6 +17,9 @@
 
         <class>org.zstack.tunnel.header.switchs.SwitchVO</class>
         <class>org.zstack.tunnel.header.switchs.SwitchEO</class>
+        <class>org.zstack.tunnel.header.switchs.SwitchPortVO</class>
+        <class>org.zstack.tunnel.header.switchs.SwitchModelVO</class>
+        <class>org.zstack.tunnel.header.switchs.SwitchVlanVO</class>
 
     </persistence-unit>
 </persistence>
