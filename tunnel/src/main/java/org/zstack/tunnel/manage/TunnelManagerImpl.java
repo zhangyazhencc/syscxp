@@ -20,6 +20,7 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.tunnel.header.endpoint.*;
 import org.zstack.tunnel.header.node.*;
+import org.zstack.tunnel.header.switchs.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
@@ -66,11 +67,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     private void handleApiMessage(APIMessage msg) {
-        if(msg instanceof APICreateNodeMsg){
+        if(msg instanceof APICreateNodeMsg){                //---------handleApiMessage-NODE----------------------------
             handle((APICreateNodeMsg) msg);
         }else if(msg instanceof APIUpdateNodeMsg){
             handle((APIUpdateNodeMsg) msg);
-        }else if(msg instanceof APICreateEndpointMsg){
+        }else if(msg instanceof APICreateEndpointMsg){      //---------handleApiMessage-ENDPOINT------------------------
             handle((APICreateEndpointMsg) msg);
         }else if(msg instanceof APIUpdateEndpointMsg){
             handle((APIUpdateEndpointMsg) msg);
@@ -82,11 +83,22 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             handle((APICloseEndpointMsg) msg);
         }else if(msg instanceof APIOpenEndpointMsg){
             handle((APIOpenEndpointMsg) msg);
+        }else if(msg instanceof APICreateSwitchMsg){        //---------handleApiMessage-SWITCH--------------------------
+            handle((APICreateSwitchMsg) msg);
+        }else if(msg instanceof APIUpdateSwitchMsg){
+            handle((APIUpdateSwitchMsg) msg);
+        }else if(msg instanceof APIEnableSwitchMsg){
+            handle((APIEnableSwitchMsg) msg);
+        }else if(msg instanceof APIDisableSwitchMsg){
+            handle((APIDisableSwitchMsg) msg);
+        }else if(msg instanceof APIPrivateSwitchMsg){
+            handle((APIPrivateSwitchMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
+    //-----------------------------------------------------HANDLE-NODE--------------------------------------------------
     private void handle(APICreateNodeMsg msg){
         NodeVO vo = new NodeVO();
 
@@ -138,6 +150,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         bus.publish(evt);
     }
 
+    //-----------------------------------------------------HANDLE-ENDPOINT----------------------------------------------
     private void handle(APICreateEndpointMsg msg){
         EndpointVO vo = new EndpointVO();
 
@@ -205,6 +218,115 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         bus.publish(evt);
     }
 
+    //-----------------------------------------------------HANDLE-SWITCH------------------------------------------------
+    private void handle(APICreateSwitchMsg msg){
+        SwitchVO vo = new SwitchVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setEndpointUuid(msg.getEndpointUuid());
+        vo.setCode(msg.getCode());
+        vo.setName(msg.getName());
+        vo.setBrand(msg.getBrand());
+        vo.setSwitchModelUuid(msg.getSwitchModelUuid());
+        vo.setUpperType(msg.getUpperType());
+        vo.setOwner(msg.getOwner());
+        vo.setRack(msg.getRack());
+        vo.setmIP(msg.getmIP());
+        vo.setUsername(msg.getUsername());
+        vo.setPassword(msg.getPassword());
+        vo.setIsPrivate(msg.getIsPrivate());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateSwitchEvent evt = new APICreateSwitchEvent(msg.getId());
+        evt.setInventory(SwitchInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIUpdateSwitchMsg msg){
+        SwitchVO vo = dbf.findByUuid(msg.getTargetUuid(),SwitchVO.class);
+        boolean update = false;
+        if(msg.getName() != null){
+            vo.setName(msg.getName());
+            update = true;
+        }
+        if(msg.getCode() != null){
+            vo.setCode(msg.getCode());
+            update = true;
+        }
+        if(msg.getBrand() != null){
+            vo.setBrand(msg.getBrand());
+            update = true;
+        }
+        if(msg.getUpperType() != null){
+            vo.setUpperType(msg.getUpperType());
+            update = true;
+        }
+        if(msg.getSwitchModelUuid() != null){
+            vo.setSwitchModelUuid(msg.getSwitchModelUuid());
+            update = true;
+        }
+        if(msg.getRack() != null){
+            vo.setRack(msg.getRack());
+            update = true;
+        }
+        if(msg.getmIP() != null){
+            vo.setmIP(msg.getmIP());
+            update = true;
+        }
+        if(msg.getUsername() != null){
+            vo.setUsername(msg.getUsername());
+            update = true;
+        }
+        if(msg.getPassword() != null){
+            vo.setPassword(msg.getPassword());
+            update = true;
+        }
+        if(msg.getOwner() != null){
+            vo.setOwner(msg.getOwner());
+            update = true;
+        }
+
+        if (update)
+            vo = dbf.updateAndRefresh(vo);
+
+        APIUpdateSwitchEvent evt = new APIUpdateSwitchEvent(msg.getId());
+        evt.setInventory(SwitchInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIEnableSwitchMsg msg){
+        SwitchVO vo = dbf.findByUuid(msg.getTargetUuid(),SwitchVO.class);
+        vo.setEnabled(1);
+        APIEnableSwitchEvent evt = new APIEnableSwitchEvent(msg.getId());
+        evt.setInventory(SwitchInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIDisableSwitchMsg msg){
+        SwitchVO vo = dbf.findByUuid(msg.getTargetUuid(),SwitchVO.class);
+        vo.setEnabled(0);
+        APIDisableSwitchEvent evt = new APIDisableSwitchEvent(msg.getId());
+        evt.setInventory(SwitchInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIPrivateSwitchMsg msg){
+        SwitchVO vo = dbf.findByUuid(msg.getTargetUuid(),SwitchVO.class);
+        boolean update = false;
+
+        if(msg.getIsPrivate() != null){
+            vo.setIsPrivate(msg.getIsPrivate());
+            update = true;
+        }
+
+        if (update)
+            vo = dbf.updateAndRefresh(vo);
+
+        APIPrivateSwitchEvent evt = new APIPrivateSwitchEvent(msg.getId());
+        evt.setInventory(SwitchInventory.valueOf(vo));
+        bus.publish(evt);
+    }
     @Override
     public boolean start() {
         return true;
@@ -222,11 +344,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        if(msg instanceof APICreateNodeMsg){
+        if(msg instanceof APICreateNodeMsg){                //---------intercept-NODE-----------------------------------
             validate((APICreateNodeMsg) msg);
         }else if(msg instanceof APIUpdateNodeMsg){
             validate((APIUpdateNodeMsg) msg);
-        }else if(msg instanceof APICreateEndpointMsg){
+        }else if(msg instanceof APICreateEndpointMsg){      //---------intercept-ENDPOINT-------------------------------
             validate((APICreateEndpointMsg) msg);
         }else if(msg instanceof APIUpdateEndpointMsg){
             validate((APIUpdateEndpointMsg) msg);
@@ -238,10 +360,21 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             validate((APICloseEndpointMsg) msg);
         }else if(msg instanceof APIOpenEndpointMsg){
             validate((APIOpenEndpointMsg) msg);
+        }else if(msg instanceof APICreateSwitchMsg){        //---------intercept-SWITCH---------------------------------
+            validate((APICreateSwitchMsg) msg);
+        }else if(msg instanceof APIUpdateSwitchMsg){
+            validate((APIUpdateSwitchMsg) msg);
+        }else if(msg instanceof APIEnableSwitchMsg){
+            validate((APIEnableSwitchMsg) msg);
+        }else if(msg instanceof APIDisableSwitchMsg){
+            validate((APIDisableSwitchMsg) msg);
+        }else if(msg instanceof APIPrivateSwitchMsg){
+            validate((APIPrivateSwitchMsg) msg);
         }
         return msg;
     }
 
+    //-----------------------------------------------------VALIDATE-NODE------------------------------------------------
     private void validate(APICreateNodeMsg msg){
         //判断code，name是否已经存在
         SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
@@ -256,32 +389,32 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     private void validate(APIUpdateNodeMsg msg){
-        //判断code，name是否已经存在
-        if(msg.getCode() != null){
-            SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
-            q.add(NodeVO_.code, Op.EQ, msg.getCode());
-            q.add(NodeVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
-            if(q.isExists()){
-                throw new ApiMessageInterceptionException(argerr("node's code %s is already exist ",msg.getCode()));
-            }
-        }
-        if(msg.getName() != null){
-            SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
-            q.add(NodeVO_.name, Op.EQ, msg.getName());
-            q.add(NodeVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
-            if(q.isExists()){
-                throw new ApiMessageInterceptionException(argerr("node's name %s is already exist ",msg.getName()));
-            }
-        }
         //判断所修改的节点是否存在
         SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
         q.add(NodeVO_.uuid, Op.EQ, msg.getTargetUuid());
         if (!q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("node %s is not exist ",msg.getTargetUuid()));
         }
-
+        //判断code，name是否已经存在
+        if(msg.getCode() != null){
+            SimpleQuery<NodeVO> q2 = dbf.createQuery(NodeVO.class);
+            q2.add(NodeVO_.code, Op.EQ, msg.getCode());
+            q2.add(NodeVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
+            if(q2.isExists()){
+                throw new ApiMessageInterceptionException(argerr("node's code %s is already exist ",msg.getCode()));
+            }
+        }
+        if(msg.getName() != null){
+            SimpleQuery<NodeVO> q3 = dbf.createQuery(NodeVO.class);
+            q3.add(NodeVO_.name, Op.EQ, msg.getName());
+            q3.add(NodeVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
+            if(q3.isExists()){
+                throw new ApiMessageInterceptionException(argerr("node's name %s is already exist ",msg.getName()));
+            }
+        }
     }
 
+    //-----------------------------------------------------VALIDATE-ENDPOINT--------------------------------------------
     private void validate(APICreateEndpointMsg msg){
         //判断code，name是否已经存在
         SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
@@ -302,29 +435,30 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     private void validate(APIUpdateEndpointMsg msg){
-        //判断code，name是否已经存在
-        if(msg.getCode() != null){
-            SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
-            q.add(EndpointVO_.code, Op.EQ, msg.getCode());
-            q.add(EndpointVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
-            if(q.isExists()){
-                throw new ApiMessageInterceptionException(argerr("endpoint's code %s is already exist ",msg.getCode()));
-            }
-        }
-        if(msg.getName() != null){
-            SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
-            q.add(EndpointVO_.name, Op.EQ, msg.getName());
-            q.add(EndpointVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
-            if(q.isExists()){
-                throw new ApiMessageInterceptionException(argerr("endpoint's name %s is already exist ",msg.getName()));
-            }
-        }
         //判断所修改的连接点是否存在
         SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
         q.add(EndpointVO_.uuid, Op.EQ, msg.getTargetUuid());
         if (!q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("endpoint %s is not exist ",msg.getTargetUuid()));
         }
+        //判断code，name是否已经存在
+        if(msg.getCode() != null){
+            SimpleQuery<EndpointVO> q2 = dbf.createQuery(EndpointVO.class);
+            q2.add(EndpointVO_.code, Op.EQ, msg.getCode());
+            q2.add(EndpointVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
+            if(q2.isExists()){
+                throw new ApiMessageInterceptionException(argerr("endpoint's code %s is already exist ",msg.getCode()));
+            }
+        }
+        if(msg.getName() != null){
+            SimpleQuery<EndpointVO> q3 = dbf.createQuery(EndpointVO.class);
+            q3.add(EndpointVO_.name, Op.EQ, msg.getName());
+            q3.add(EndpointVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
+            if(q3.isExists()){
+                throw new ApiMessageInterceptionException(argerr("endpoint's name %s is already exist ",msg.getName()));
+            }
+        }
+
     }
 
     private void validate(APIDisableEndpointMsg msg){
@@ -360,6 +494,84 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         q.add(EndpointVO_.uuid, Op.EQ, msg.getTargetUuid());
         if (!q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("endpoint %s is not exist ",msg.getTargetUuid()));
+        }
+    }
+
+    //-----------------------------------------------------VALIDATE-SWITCH----------------------------------------------
+    private void validate(APICreateSwitchMsg msg){
+        //判断code，name是否已经存在
+        SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
+        SimpleQuery<SwitchVO> q2 = dbf.createQuery(SwitchVO.class);
+        q.add(SwitchVO_.code, Op.EQ, msg.getCode());
+        q2.add(SwitchVO_.name, Op.EQ, msg.getName());
+        if(q.isExists()){
+            throw new ApiMessageInterceptionException(argerr("switch's code %s is already exist ",msg.getCode()));
+        }else if(q2.isExists()){
+            throw new ApiMessageInterceptionException(argerr("switch's name %s is already exist ",msg.getName()));
+        }
+        //判断交换机所属连接点是否存在
+        SimpleQuery<EndpointVO> q3 = dbf.createQuery(EndpointVO.class);
+        q3.add(EndpointVO_.uuid, Op.EQ, msg.getEndpointUuid());
+        if (!q3.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("endpoint %s is not exist ",msg.getEndpointUuid()));
+        }
+        //判断交换机所选的交换机型号是否存在
+
+    }
+
+    private void validate(APIUpdateSwitchMsg msg){
+        //判断所修改的交换机是否存在
+        SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
+        q.add(SwitchVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getTargetUuid()));
+        }
+        //判断code，name是否已经存在
+        if(msg.getCode() != null){
+            SimpleQuery<SwitchVO> q2 = dbf.createQuery(SwitchVO.class);
+            q2.add(SwitchVO_.code, Op.EQ, msg.getCode());
+            q2.add(SwitchVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
+            if(q2.isExists()){
+                throw new ApiMessageInterceptionException(argerr("switch's code %s is already exist ",msg.getCode()));
+            }
+        }
+        if(msg.getName() != null){
+            SimpleQuery<SwitchVO> q3 = dbf.createQuery(SwitchVO.class);
+            q3.add(SwitchVO_.name, Op.EQ, msg.getName());
+            q3.add(SwitchVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
+            if(q3.isExists()){
+                throw new ApiMessageInterceptionException(argerr("switch's name %s is already exist ",msg.getName()));
+            }
+        }
+        //判断所修改的交换机型号是否存在
+
+
+    }
+
+    private void validate(APIEnableSwitchMsg msg){
+        //判断所操作的交换机是否存在
+        SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
+        q.add(SwitchVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getTargetUuid()));
+        }
+    }
+
+    private void validate(APIDisableSwitchMsg msg){
+        //判断所操作的交换机是否存在
+        SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
+        q.add(SwitchVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getTargetUuid()));
+        }
+    }
+
+    private void validate(APIPrivateSwitchMsg msg){
+        //判断所操作的交换机是否存在
+        SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
+        q.add(SwitchVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getTargetUuid()));
         }
     }
 }
