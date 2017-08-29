@@ -592,7 +592,7 @@ public class AccountBase extends AbstractAccount {
     private void handle(APICreatePolicyMsg msg) {
 
         PolicyVO pvo = new PolicyVO();
-        pvo.setAccountUuid(Platform.getUuid());
+        pvo.setUuid(Platform.getUuid());
         pvo.setName(msg.getName());
         pvo.setAccountUuid(msg.getAccountUuid());
         pvo.setDescription(msg.getDescription());
