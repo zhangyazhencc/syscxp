@@ -24,7 +24,7 @@ public class APICreateNotificationMsg extends APIMessage {
     private String remoteIp;
     @APIParam
     private Boolean success;
-    @APIParam
+    @APIParam(required = false)
     private String resourceUuid;
     @APIParam
     private String resourceType;
@@ -33,9 +33,9 @@ public class APICreateNotificationMsg extends APIMessage {
     @APIParam
     private Map opaque;
 
-    @APIParam
+    @APIParam(required = false)
     private String accountUuid;
-    @APIParam
+    @APIParam(required = false)
     private String userUuid;
 
     public String getAccountUuid() {
