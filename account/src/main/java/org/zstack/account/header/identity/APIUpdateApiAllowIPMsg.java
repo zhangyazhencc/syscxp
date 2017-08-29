@@ -15,7 +15,7 @@ public class APIUpdateApiAllowIPMsg extends APIMessage implements AccountMessage
 
     @Override
     public String getAccountUuid() {
-        return this.getAccountUuid();
+        return this.getSession().getAccountUuid();
     }
 
     public String getAllowIP() {

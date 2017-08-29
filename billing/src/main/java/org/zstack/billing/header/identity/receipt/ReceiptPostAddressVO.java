@@ -2,6 +2,7 @@ package org.zstack.billing.header.identity.receipt;
 
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
+import org.zstack.header.vo.ForeignKey;
 
 import javax.persistence.*;
 import java.sql.Timestamp;

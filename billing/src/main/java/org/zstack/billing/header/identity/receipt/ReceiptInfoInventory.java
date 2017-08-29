@@ -1,6 +1,8 @@
 package org.zstack.billing.header.identity.receipt;
 
 
+import org.zstack.header.query.ExpandedQueries;
+import org.zstack.header.query.ExpandedQuery;
 import org.zstack.header.search.Inventory;
 
 import java.sql.Timestamp;
@@ -9,6 +11,7 @@ import java.util.Collection;
 import java.util.List;
 
 @Inventory(mappingVOClass = ReceiptInfoVO.class)
+
 public class ReceiptInfoInventory {
     private String uuid;
 

@@ -424,8 +424,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         q.add(ProxyAccountRefVO_.accountUuid, Op.EQ, msg.getAccountUuid());
         q.add(ProxyAccountRefVO_.customerAcccountUuid, Op.EQ, msg.getTargetUuid());
 
-        if(!q.isExists()){
-            throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot reset the paddword of the other account[uuid: %s]",
+        if(!msg.getSession().getType().equals(AccountType.SystemAdmin)&&
+                !q.isExists()){
+            throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot reset the password of the other account[uuid: %s]",
                     msg.getAccountUuid(), msg.getTargetUuid()));
         }
 

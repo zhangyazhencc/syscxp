@@ -119,6 +119,7 @@ CREATE TABLE `ReceiptInfoVO` (
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账号id',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
   `createDate` timestamp ,
+  `commet` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

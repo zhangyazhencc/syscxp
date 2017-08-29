@@ -11,20 +11,31 @@ public class APICreateReceiptInfoMsg extends APIMessage {
     @APIParam(nonempty = true)
     private String title;
 
-    @APIParam(nonempty = true)
+    @APIParam(required = false)
     private String bankName;
 
-    @APIParam(nonempty = true)
+    @APIParam(required = false)
     private String bankAccountNumber;
 
-    @APIParam(nonempty = true)
+    @APIParam(required = false)
     private String telephone;
 
-    @APIParam(nonempty = true)
+    @APIParam(required = false)
     private String identifyNumber;
 
-    @APIParam(nonempty = true)
+    @APIParam(required = false)
     private String address;
+
+    @APIParam(required = false)
+    private String comment;
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
 
     public ReceiptType getType() {
         return type;
