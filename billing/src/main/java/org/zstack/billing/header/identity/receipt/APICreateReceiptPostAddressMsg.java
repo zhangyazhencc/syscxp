@@ -1,7 +1,9 @@
 package org.zstack.billing.header.identity.receipt;
 
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.notification.ApiNotification;
 
 public class APICreateReceiptPostAddressMsg extends APIMessage {
 
@@ -36,5 +38,22 @@ public class APICreateReceiptPostAddressMsg extends APIMessage {
 
     public void setAddress(String address) {
         this.address = address;
+    }
+
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateReceiptPostAddressEvent) evt).getInventory().getUuid();
+                }
+                ntfy("Create ReceiptPostAddressVO")
+                        .resource(uuid, ReceiptPostAddressVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

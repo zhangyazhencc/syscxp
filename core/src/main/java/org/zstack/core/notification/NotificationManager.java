@@ -140,7 +140,6 @@ public class NotificationManager extends AbstractService {
                 opaque.put("session", b.message.getSession());
                 opaque.put("success", aevt.isSuccess());
 
-//                opaque.put("vo", dbf.findByUuid(inner.getResourceUuid(), inner.getResourceType()));
                 if (!aevt.isSuccess()) {
                     opaque.put("error", aevt.getError());
                 }
@@ -174,10 +173,10 @@ public class NotificationManager extends AbstractService {
                 return;
             }
 
-            if (!msg.getServiceId().endsWith(Platform.getManagementServerId())) {
-                // a message to api portal
-                return;
-            }
+//            if (!msg.getServiceId().endsWith(Platform.getManagementServerId())) {
+//                // a message to api portal
+//                return;
+//            }
 
             try {
                 ApiNotification notification = getApiNotification((APIMessage) msg);
