@@ -3,6 +3,7 @@ package org.zstack.billing.header.identity.receipt;
 
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
+import org.zstack.header.vo.ForeignKey;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -11,17 +12,19 @@ import java.sql.Timestamp;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @TriggerIndex
-@SqlTrigger
+@SqlTrigger(foreignVOClass = ReceiptVO.class, foreignVOJoinColumn = "uuid")
 public class ReceiptInfoVO {
 
     @Id
     @Column
+    @ForeignKey(parentEntityClass = ReceiptVO.class)
     private String uuid;
 
     @Column
     private String accountUuid;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private ReceiptType type;
 
     @Column
@@ -46,10 +49,21 @@ public class ReceiptInfoVO {
     private boolean isDefault;
 
     @Column
+    private String comment;
+
+    @Column
     private Timestamp createDate;
 
     @Column
     private Timestamp lastOpDate;
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
 
     public String getUuid() {
         return uuid;

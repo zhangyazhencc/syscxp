@@ -22,15 +22,10 @@ public class ReceiptVO {
     private BigDecimal total;
 
     @Column
-    private ReceiptType type;
-
-    @Column
-    private String title;
-
-    @Column
     private Timestamp applyTime;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private ReceiptState state;
 
     @Column
@@ -43,16 +38,14 @@ public class ReceiptVO {
     private String accountUuid;
 
     @Column
-    private String receiptNumber;
-
-    @Column
-    private String comment;
-
-    @Column
     private Timestamp createDate;
 
     @Column
     private Timestamp lastOpDate;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name="receiptInfoUuid", insertable = false, updatable = false)
+    private ReceiptInfoVO receiptInfoVO;
 
     public String getUuid() {
         return uuid;
@@ -68,22 +61,6 @@ public class ReceiptVO {
 
     public void setTotal(BigDecimal total) {
         this.total = total;
-    }
-
-    public ReceiptType getType() {
-        return type;
-    }
-
-    public void setType(ReceiptType type) {
-        this.type = type;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public Timestamp getApplyTime() {
@@ -126,22 +103,6 @@ public class ReceiptVO {
         this.accountUuid = accountUuid;
     }
 
-    public String getReceiptNumber() {
-        return receiptNumber;
-    }
-
-    public void setReceiptNumber(String receiptNumber) {
-        this.receiptNumber = receiptNumber;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
     public Timestamp getCreateDate() {
         return createDate;
     }
@@ -156,5 +117,13 @@ public class ReceiptVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public ReceiptInfoVO getReceiptInfoVO() {
+        return receiptInfoVO;
+    }
+
+    public void setReceiptInfoVO(ReceiptInfoVO receiptInfoVO) {
+        this.receiptInfoVO = receiptInfoVO;
     }
 }

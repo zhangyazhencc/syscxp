@@ -32,6 +32,9 @@
     <code>
         <id>2001</id>id>
         <description>not permit update</description>>
+    </code> <code>
+        <id>2002</id>id>
+        <description>not valid value</description>>
     </code>
 
 </error>

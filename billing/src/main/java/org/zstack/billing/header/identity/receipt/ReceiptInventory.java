@@ -12,20 +12,15 @@ import java.util.List;
 
 @Inventory(mappingVOClass = ReceiptVO.class)
 @ExpandedQueries({
-        @ExpandedQuery(expandedField = "receiptInfoUuid", inventoryClass = ReceiptInfoInventory.class,
+        @ExpandedQuery(expandedField = "receiptInfo", inventoryClass = ReceiptInfoInventory.class,
                 foreignKey = "receiptInfoUuid", expandedInventoryKey = "uuid"),
-        @ExpandedQuery(expandedField = "receiptAddressUuid", inventoryClass = ReceiptPostAddressInventory.class,
-                foreignKey = "receiptAddressUuid", expandedInventoryKey = "uuid")
 })
+
 public class ReceiptInventory {
 
     private String uuid;
 
     private BigDecimal total;
-
-    private ReceiptType type;
-
-    private String title;
 
     private Timestamp applyTime;
 
@@ -37,29 +32,24 @@ public class ReceiptInventory {
 
     private String accountUuid;
 
-    private String receiptNumber;
-
-    private String comment;
-
     private Timestamp createDate;
 
     private Timestamp lastOpDate;
+
+    private ReceiptInfoVO receiptInfoVO;
 
     public static ReceiptInventory valueOf(ReceiptVO vo) {
         ReceiptInventory inv = new ReceiptInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setState(vo.getState());
-        inv.setType(vo.getType());
         inv.setApplyTime(vo.getApplyTime());
-        inv.setComment(vo.getComment());
         inv.setReceiptAddressUuid(vo.getReceiptAddressUuid());
         inv.setReceiptInfoUuid(vo.getReceiptInfoUuid());
-        inv.setReceiptNumber(vo.getReceiptNumber());
-        inv.setTitle(vo.getTitle());
         inv.setTotal(vo.getTotal());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        inv.setReceiptInfoVO(vo.getReceiptInfoVO());
 
         return inv;
     }
@@ -86,22 +76,6 @@ public class ReceiptInventory {
 
     public void setTotal(BigDecimal total) {
         this.total = total;
-    }
-
-    public ReceiptType getType() {
-        return type;
-    }
-
-    public void setType(ReceiptType type) {
-        this.type = type;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
     }
 
     public Timestamp getApplyTime() {
@@ -144,22 +118,6 @@ public class ReceiptInventory {
         this.accountUuid = accountUuid;
     }
 
-    public String getReceiptNumber() {
-        return receiptNumber;
-    }
-
-    public void setReceiptNumber(String receiptNumber) {
-        this.receiptNumber = receiptNumber;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
     public Timestamp getCreateDate() {
         return createDate;
     }
@@ -174,5 +132,13 @@ public class ReceiptInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public ReceiptInfoVO getReceiptInfoVO() {
+        return receiptInfoVO;
+    }
+
+    public void setReceiptInfoVO(ReceiptInfoVO receiptInfoVO) {
+        this.receiptInfoVO = receiptInfoVO;
     }
 }

@@ -4,7 +4,7 @@
         <category>notification</category>
         <name>webhook.url</name>
 	<description>The webhook where the management node sends notifications</description>
-        <defaultValue>null</defaultValue>
+        <defaultValue>http://192.168.211.165:8080/api</defaultValue>
         <type>java.lang.String</type>
     </config>
 </globalConfig>

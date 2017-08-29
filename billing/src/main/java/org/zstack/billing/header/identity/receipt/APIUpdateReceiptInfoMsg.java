@@ -20,7 +20,7 @@ public class APIUpdateReceiptInfoMsg extends APIMessage {
     @APIParam(required = false)
     private String bankAccountNumber;
 
-    @APIParam(nonempty = true)
+    @APIParam(required = false)
     private String telephone;
 
     @APIParam(required = false)

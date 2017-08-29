@@ -21,4 +21,5 @@ public class ReceiptInfoVO_ {
     public static volatile SingularAttribute<ReceiptInfoVO, Boolean> isDefault;
     public static volatile SingularAttribute<ReceiptInfoVO, Timestamp> createDate;
     public static volatile SingularAttribute<ReceiptInfoVO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<ReceiptInfoVO, String> comment;
 }
