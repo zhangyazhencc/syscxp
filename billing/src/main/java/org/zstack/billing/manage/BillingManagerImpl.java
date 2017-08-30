@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import com.sun.org.apache.regexp.internal.RE;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -115,9 +116,24 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIGetMonetaryGroupByProductTypeMsg) msg);
         }else if (msg instanceof APICreateReceiptMsg) {
             handle((APICreateReceiptMsg) msg);
+        }else if (msg instanceof APIConfirmReceiptMsg) {
+            handle((APIConfirmReceiptMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIConfirmReceiptMsg msg) {
+        String receiptUuid = msg.getReceiptUuid();
+        ReceiptVO vo = dbf.findByUuid(receiptUuid, ReceiptVO.class);
+        if(vo.getState().equals(ReceiptState.UNDONE)){
+            vo.setState(ReceiptState.DONE);
+        }
+        dbf.updateAndRefresh(vo);
+        ReceiptInventory inventory = ReceiptInventory.valueOf(vo);
+        APIConfirmReceiptEvent evt = new APIConfirmReceiptEvent(msg.getId());
+        evt.setInventory(inventory);
+        bus.publish(evt);
     }
 
     private void handle(APICreateReceiptMsg msg) {
@@ -142,8 +158,11 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         receiptVO.setApplyTime(currentTimestamp);
         receiptVO.setState(ReceiptState.UNDONE);
         receiptVO.setTotal(total);
-        receiptVO.setReceiptAddressUuid(msg.getReceiptAddressUuid());
-        receiptVO.setReceiptInfoUuid(msg.getReceiptInfoUuid());
+        ReceiptPostAddressVO receiptPostAddressVO = dbf.findByUuid(msg.getReceiptAddressUuid(),ReceiptPostAddressVO.class);
+        receiptVO.setReceiptPostAddressVO(receiptPostAddressVO);
+        String receiptInfoUuid = msg.getReceiptInfoUuid();
+        ReceiptInfoVO receiptInfoVO = dbf.findByUuid(receiptInfoUuid,ReceiptInfoVO.class);
+        receiptVO.setReceiptInfoVO(receiptInfoVO);
         dbf.persistAndRefresh(receiptVO);
         ReceiptInventory inventory = ReceiptInventory.valueOf(receiptVO);
         APICreateReceiptEvent evt = new APICreateReceiptEvent(msg.getId());

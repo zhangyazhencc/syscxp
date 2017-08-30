@@ -74,6 +74,10 @@
     </message>
 
     <message>
+        <name>org.zstack.billing.header.identity.receipt.APIConfirmReceiptMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.billing.header.identity.order.APIQueryOrderMsg</name>
         <serviceId>query</serviceId>
     </message>
