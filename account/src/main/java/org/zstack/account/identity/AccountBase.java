@@ -511,7 +511,7 @@ public class AccountBase extends AbstractAccount {
         accountvo.setIndustry(msg.getIndustry());
         accountvo.setPhone(msg.getPhone());
         accountvo.setTrueName(msg.getTrueName());
-        accountvo.setStatus(msg.getStatus());
+        accountvo.setStatus(AccountStatus.Available);
         accountvo.setType(AccountType.Normal);
         accountvo.setPhoneStatus(ValidateStatus.Unvalidated);
         accountvo.setEmailStatus(ValidateStatus.Unvalidated);
@@ -569,7 +569,7 @@ public class AccountBase extends AbstractAccount {
         uservo.setName(msg.getName());
         uservo.setPassword(msg.getPassword());
         uservo.setPhone(msg.getPhone());
-        uservo.setStatus(msg.getStatus() != null ? AccountStatus.valueOf(msg.getStatus()) : AccountStatus.Available);
+        uservo.setStatus(AccountStatus.Available);
         uservo.setTrueName(msg.getTrueName());
 
         uservo.setEmailStatus(ValidateStatus.Unvalidated);

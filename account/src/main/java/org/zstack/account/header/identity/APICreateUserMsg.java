@@ -11,16 +11,16 @@ public class APICreateUserMsg extends APICreateMessage implements AccountMessage
     private String name;
     @APIParam(maxLength = 128)
     private String password;
-    @APIParam(maxLength = 36, required = false)
+    @APIParam(maxLength = 36)
     private String email;
-    @APIParam(maxLength = 32, required = false)
+    @APIParam(maxLength = 32)
     private String phone;
-    @APIParam(maxLength = 128, required = false)
+    @APIParam(maxLength = 128)
     private String trueName;
     @APIParam(maxLength = 128, required = false)
     private String department;
-    @APIParam(validValues = {"Available", "Disabled"}, required = false)
-    private String status;
+//    @APIParam(validValues = {"Available", "Disabled"}, required = false)
+//    private String status;
     @APIParam(maxLength = 255, required = false)
     private String description;
 
@@ -72,9 +72,9 @@ public class APICreateUserMsg extends APICreateMessage implements AccountMessage
         return department;
     }
 
-    public String getStatus() {
-        return status;
-    }
+//    public String getStatus() {
+//        return status;
+//    }
 
     public void setEmail(String email) {
         this.email = email;
@@ -92,9 +92,9 @@ public class APICreateUserMsg extends APICreateMessage implements AccountMessage
         this.department = department;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
-    }
+//    public void setStatus(String status) {
+//        this.status = status;
+//    }
 
     public String getPolicyUuid() {
         return policyUuid;
