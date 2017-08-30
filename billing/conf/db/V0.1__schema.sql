@@ -120,6 +120,7 @@ CREATE TABLE `ReceiptInfoVO` (
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
   `createDate` timestamp ,
   `commet` varchar(500) DEFAULT NULL,
+   `isDefault` tinyint(1) unsigned NOT NULL DEFAULT 0,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -137,6 +138,7 @@ CREATE TABLE `ReceiptPostAddressVO` (
   `address` varchar(500) DEFAULT NULL COMMENT '详细地址',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
   `createDate` timestamp ,
+   `isDefault` tinyint(1) unsigned DEFAULT 0,  
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -149,8 +151,6 @@ DROP TABLE IF EXISTS `ReceiptVO`;
 CREATE TABLE `ReceiptVO` (
   `uuid` varchar(32) NOT NULL COMMENT '主键',
   `total` decimal(12,4) DEFAULT NULL COMMENT '开票金额',
-  `type` varchar(50) DEFAULT NULL COMMENT '类型',
-  `title` varchar(200) DEFAULT NULL COMMENT '抬头',
   `applyTime` timestamp COMMENT '申请时间',
   `state` varchar(50) DEFAULT NULL COMMENT '状态',
   `receiptInfoUuid` varchar(32) DEFAULT NULL COMMENT '发票开票信息id',
@@ -158,7 +158,6 @@ CREATE TABLE `ReceiptVO` (
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户id',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp(),
   `createDate` timestamp ,
-  `receiptNumber` varchar(128) DEFAULT NULL COMMENT '发票号码',
   `comment` varchar(255) DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
