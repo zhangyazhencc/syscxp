@@ -38,6 +38,12 @@ public class AccountExtraInfoVO {
     private CompanyNature companyNature;
 
     @Column
+    private String specialLine;
+
+    @Column
+    private String internetCloud;
+
+    @Column
     private String salesman;
 
     @Column
@@ -105,5 +111,21 @@ public class AccountExtraInfoVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getSpecialLine() {
+        return specialLine;
+    }
+
+    public String getInternetCloud() {
+        return internetCloud;
+    }
+
+    public void setSpecialLine(String specialLine) {
+        this.specialLine = specialLine;
+    }
+
+    public void setInternetCloud(String internetCloud) {
+        this.internetCloud = internetCloud;
     }
 }

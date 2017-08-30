@@ -220,6 +220,8 @@ CREATE TABLE `AccountExtraInfoVO` (
 	`grade` varchar(36) DEFAULT NULL COMMENT '客户等级',
 	`companyNature` varchar(36) DEFAULT NULL COMMENT '公司性质',
 	`salesman` varchar(128) DEFAULT NULL COMMENT '业务员',
+	`specialLine` varchar(36) DEFAULT NULL COMMENT '云专线折扣',
+	`internetCloud` varchar(36) DEFAULT NULL COMMENT '互联云折扣',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
   PRIMARY KEY  (`uuid`)
