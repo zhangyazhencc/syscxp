@@ -93,6 +93,14 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             handle((APIDisableSwitchMsg) msg);
         }else if(msg instanceof APIPrivateSwitchMsg){
             handle((APIPrivateSwitchMsg) msg);
+        }else if(msg instanceof APICreateSwitchPortMsg){
+            handle((APICreateSwitchPortMsg) msg);
+        }else if(msg instanceof APIDisableSwitchPortMsg){
+            handle((APIDisableSwitchPortMsg) msg);
+        }else if(msg instanceof APIEnableSwitchPortMsg){
+            handle((APIEnableSwitchPortMsg) msg);
+        }else if(msg instanceof APICreateSwitchVlanMsg){
+            handle((APICreateSwitchVlanMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -327,6 +335,55 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         evt.setInventory(SwitchInventory.valueOf(vo));
         bus.publish(evt);
     }
+
+    private void handle(APICreateSwitchPortMsg msg){
+        SwitchPortVO vo = new SwitchPortVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setSwitchUuid(msg.getSwitchUuid());
+        vo.setPortName(msg.getPortName());
+        vo.setLabel(msg.getLabel());
+        vo.setAutoAlloc(msg.getAutoAlloc());
+        vo.setReuse(msg.getReuse());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateSwitchPortEvent evt = new APICreateSwitchPortEvent(msg.getId());
+        evt.setInventory(SwitchPortInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIDisableSwitchPortMsg msg){
+        SwitchPortVO vo = dbf.findByUuid(msg.getTargetUuid(),SwitchPortVO.class);
+        vo.setEnabled(0);
+        APIDisableSwitchPortEvent evt = new APIDisableSwitchPortEvent(msg.getId());
+        evt.setInventory(SwitchPortInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIEnableSwitchPortMsg msg){
+        SwitchPortVO vo = dbf.findByUuid(msg.getTargetUuid(),SwitchPortVO.class);
+        vo.setEnabled(1);
+        APIEnableSwitchPortEvent evt = new APIEnableSwitchPortEvent(msg.getId());
+        evt.setInventory(SwitchPortInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APICreateSwitchVlanMsg msg){
+        SwitchVlanVO vo = new SwitchVlanVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setSwitchUuid(msg.getSwitchUuid());
+        vo.setStartVlan(msg.getStartVlan());
+        vo.setEndVlan(msg.getEndVlan());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateSwitchVlanEvent evt = new APICreateSwitchVlanEvent(msg.getId());
+        evt.setInventory(SwitchVlanInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
     @Override
     public boolean start() {
         return true;
@@ -370,6 +427,14 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             validate((APIDisableSwitchMsg) msg);
         }else if(msg instanceof APIPrivateSwitchMsg){
             validate((APIPrivateSwitchMsg) msg);
+        }else if(msg instanceof APICreateSwitchPortMsg){
+            validate((APICreateSwitchPortMsg) msg);
+        }else if(msg instanceof APIDisableSwitchPortMsg){
+            validate((APIDisableSwitchPortMsg) msg);
+        }else if(msg instanceof APIEnableSwitchPortMsg){
+            validate((APIEnableSwitchPortMsg) msg);
+        }else if(msg instanceof APICreateSwitchVlanMsg){
+            validate((APICreateSwitchVlanMsg) msg);
         }
         return msg;
     }
@@ -584,5 +649,45 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if (!q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getTargetUuid()));
         }
+    }
+
+    private void validate(APICreateSwitchPortMsg msg){
+        //判断端口所在的交换机UUID是否存在
+        SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
+        q.add(SwitchVO_.uuid, Op.EQ, msg.getSwitchUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getSwitchUuid()));
+        }
+        //端口其他验证。。。。
+
+    }
+
+    private void validate(APIDisableSwitchPortMsg msg){
+        //判断所操作的交换机端口是否存在
+        SimpleQuery<SwitchPortVO> q = dbf.createQuery(SwitchPortVO.class);
+        q.add(SwitchPortVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("switchPort %s is not exist ",msg.getTargetUuid()));
+        }
+    }
+
+    private void validate(APIEnableSwitchPortMsg msg){
+        //判断所操作的交换机端口是否存在
+        SimpleQuery<SwitchPortVO> q = dbf.createQuery(SwitchPortVO.class);
+        q.add(SwitchPortVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("switchPort %s is not exist ",msg.getTargetUuid()));
+        }
+    }
+
+    private void validate(APICreateSwitchVlanMsg msg){
+        //判断VLAN所在的交换机UUID是否存在
+        SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
+        q.add(SwitchVO_.uuid, Op.EQ, msg.getSwitchUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getSwitchUuid()));
+        }
+        //VLAN验证。。。。
+
     }
 }

@@ -69,6 +69,22 @@
     </message>
 
     <message>
+        <name>org.zstack.tunnel.header.switchs.APICreateSwitchPortMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIDisableSwitchPortMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIEnableSwitchPortMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APICreateSwitchVlanMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.tunnel.header.switchs.APIQuerySwitchMsg</name>
         <serviceId>query</serviceId>
     </message>
