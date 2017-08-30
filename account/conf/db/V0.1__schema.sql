@@ -90,6 +90,8 @@ CREATE TABLE  `UserVO` (
     `name` varchar(128) NOT NULL UNIQUE COMMENT '用户名称',
     `password` varchar(128) NOT NULL COMMENT '用户密码',
     `email` varchar(36) NOT NULL UNIQUE COMMENT '邮箱',
+    `emailStatus` varchar(36) NOT NULL COMMENT '邮箱是否认证',
+    `phoneStatus` varchar(36) NOT NULL COMMENT '手机是否认证',
     `phone` varchar(11) NOT NULL UNIQUE COMMENT '手机号',
     `trueName` varchar(128) NOT NULL COMMENT '姓名',
     `department` varchar(128) DEFAULT NULL COMMENT '部门',
