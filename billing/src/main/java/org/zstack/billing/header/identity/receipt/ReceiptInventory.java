@@ -11,10 +11,12 @@ import java.util.Collection;
 import java.util.List;
 
 @Inventory(mappingVOClass = ReceiptVO.class)
-@ExpandedQueries({
-        @ExpandedQuery(expandedField = "receiptInfo", inventoryClass = ReceiptInfoInventory.class,
-                foreignKey = "receiptInfoUuid", expandedInventoryKey = "uuid"),
-})
+//@ExpandedQueries({
+//        @ExpandedQuery(expandedField = "receiptInfo", inventoryClass = ReceiptInfoInventory.class,
+//                foreignKey = "receiptInfoUuid", expandedInventoryKey = "uuid"),
+//        @ExpandedQuery(expandedField = "receiptPostAddress", inventoryClass = ReceiptPostAddressInventory.class,
+//                foreignKey = "receiptAddressUuid", expandedInventoryKey = "uuid")
+//})
 
 public class ReceiptInventory {
 
@@ -26,9 +28,7 @@ public class ReceiptInventory {
 
     private ReceiptState state;
 
-    private String receiptInfoUuid;
-
-    private String receiptAddressUuid;
+    private ReceiptPostAddressVO receiptPostAddressVO;
 
     private String accountUuid;
 
@@ -44,8 +44,8 @@ public class ReceiptInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setState(vo.getState());
         inv.setApplyTime(vo.getApplyTime());
-        inv.setReceiptAddressUuid(vo.getReceiptAddressUuid());
-        inv.setReceiptInfoUuid(vo.getReceiptInfoUuid());
+        inv.setReceiptPostAddressVO(vo.getReceiptPostAddressVO());
+        inv.setReceiptInfoVO(vo.getReceiptInfoVO());
         inv.setTotal(vo.getTotal());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -94,20 +94,12 @@ public class ReceiptInventory {
         this.state = state;
     }
 
-    public String getReceiptInfoUuid() {
-        return receiptInfoUuid;
+    public ReceiptPostAddressVO getReceiptPostAddressVO() {
+        return receiptPostAddressVO;
     }
 
-    public void setReceiptInfoUuid(String receiptInfoUuid) {
-        this.receiptInfoUuid = receiptInfoUuid;
-    }
-
-    public String getReceiptAddressUuid() {
-        return receiptAddressUuid;
-    }
-
-    public void setReceiptAddressUuid(String receiptAddressUuid) {
-        this.receiptAddressUuid = receiptAddressUuid;
+    public void setReceiptPostAddressVO(ReceiptPostAddressVO receiptPostAddressVO) {
+        this.receiptPostAddressVO = receiptPostAddressVO;
     }
 
     public String getAccountUuid() {

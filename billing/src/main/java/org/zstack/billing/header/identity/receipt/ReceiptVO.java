@@ -29,12 +29,6 @@ public class ReceiptVO {
     private ReceiptState state;
 
     @Column
-    private String receiptInfoUuid;
-
-    @Column
-    private String receiptAddressUuid;
-
-    @Column
     private String accountUuid;
 
     @Column
@@ -44,8 +38,12 @@ public class ReceiptVO {
     private Timestamp lastOpDate;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="receiptInfoUuid", insertable = false, updatable = false)
+    @JoinColumn(name="receiptInfoUuid")
     private ReceiptInfoVO receiptInfoVO;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name="receiptAddressUuid")
+    private ReceiptPostAddressVO receiptPostAddressVO;
 
     public String getUuid() {
         return uuid;
@@ -79,22 +77,6 @@ public class ReceiptVO {
         this.state = state;
     }
 
-    public String getReceiptInfoUuid() {
-        return receiptInfoUuid;
-    }
-
-    public void setReceiptInfoUuid(String receiptInfoUuid) {
-        this.receiptInfoUuid = receiptInfoUuid;
-    }
-
-    public String getReceiptAddressUuid() {
-        return receiptAddressUuid;
-    }
-
-    public void setReceiptAddressUuid(String receiptAddressUuid) {
-        this.receiptAddressUuid = receiptAddressUuid;
-    }
-
     public String getAccountUuid() {
         return accountUuid;
     }
@@ -125,5 +107,13 @@ public class ReceiptVO {
 
     public void setReceiptInfoVO(ReceiptInfoVO receiptInfoVO) {
         this.receiptInfoVO = receiptInfoVO;
+    }
+
+    public ReceiptPostAddressVO getReceiptPostAddressVO() {
+        return receiptPostAddressVO;
+    }
+
+    public void setReceiptPostAddressVO(ReceiptPostAddressVO receiptPostAddressVO) {
+        this.receiptPostAddressVO = receiptPostAddressVO;
     }
 }
