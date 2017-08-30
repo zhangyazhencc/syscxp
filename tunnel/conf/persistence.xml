@@ -21,5 +21,10 @@
         <class>org.zstack.tunnel.header.switchs.SwitchModelVO</class>
         <class>org.zstack.tunnel.header.switchs.SwitchVlanVO</class>
 
+        <class>org.zstack.tunnel.header.host.HostVO</class>
+        <class>org.zstack.tunnel.header.host.HostEO</class>
+        <class>org.zstack.tunnel.header.host.HostSwitchMonitorVO</class>
+        <class>org.zstack.tunnel.header.host.HostSwitchMonitorEO</class>
+
     </persistence-unit>
 </persistence>

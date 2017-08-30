@@ -89,4 +89,31 @@
         <serviceId>query</serviceId>
     </message>
 
+    <!--HOST-->
+    <message>
+        <name>org.zstack.tunnel.header.host.APICreateHostMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.host.APIUpdateHostMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.host.APICreateHostSwitchMonitorMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.host.APIUpdateHostSwitchMonitorMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.host.APIQueryHostMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.host.APIQueryHostSwitchMonitorMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
 </service>

@@ -176,7 +176,6 @@ CREATE TABLE `syscxp_tunnel`.`TunnelVO` (
 CREATE TABLE `syscxp_tunnel`.`TunnelRefSwitchVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `tunnelUuid` VARCHAR(32) DEFAULT NULL,
-  `groupUuid` VARCHAR(32) DEFAULT NULL,
   `endpointUuid` VARCHAR(32) DEFAULT NULL,
   `switchUuid` VARCHAR(32) DEFAULT NULL,
   `switchPortUuid` VARCHAR(32) DEFAULT NULL,
