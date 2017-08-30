@@ -22,10 +22,8 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
 
     @APIParam(maxLength = 128, required = false)
     private String industry;
-    @APIParam(maxLength = 128, required = false)
-    private AccountStatus status;
-    @APIParam(validValues = {"SystemAdmin", "Normal", "Proxy"}, required = false)
-    private String type;
+//    @APIParam(validValues = {"SystemAdmin", "Normal", "Proxy"}, required = false)
+//    private String type;
     @APIParam(maxLength = 255, required = false)
     private String description;
 
@@ -73,13 +71,9 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
         return grade;
     }
 
-    public AccountStatus getStatus() {
-        return status;
-    }
-
-    public String getType() {
-        return type;
-    }
+//    public String getType() {
+//        return type;
+//    }
 
     public String getDescription() {
         return description;
@@ -125,13 +119,9 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
         this.grade = grade;
     }
 
-    public void setStatus(AccountStatus status) {
-        this.status = status;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
+//    public void setType(String type) {
+//        this.type = type;
+//    }
 
     public void setDescription(String description) {
         this.description = description;

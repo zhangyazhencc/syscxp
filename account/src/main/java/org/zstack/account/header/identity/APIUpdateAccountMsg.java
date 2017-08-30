@@ -33,6 +33,11 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
     @APIParam(maxLength = 255, required = false)
     private String description;
 
+    @APIParam(maxLength = 36, required = false)
+    private String specialLine;
+    @APIParam(maxLength = 36, required = false)
+    private String internetCloud;
+
     @APIParam(maxLength = 255, required = false)
     private CompanyNature companyNature ;
     @APIParam(maxLength = 255, required = false)
@@ -152,6 +157,22 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
 
     public void setContactNumber(String contactNumber) {
         this.contactNumber = contactNumber;
+    }
+
+    public String getSpecialLine() {
+        return specialLine;
+    }
+
+    public String getInternetCloud() {
+        return internetCloud;
+    }
+
+    public void setSpecialLine(String specialLine) {
+        this.specialLine = specialLine;
+    }
+
+    public void setInternetCloud(String internetCloud) {
+        this.internetCloud = internetCloud;
     }
 
     public ApiNotification __notification__() {

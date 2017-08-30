@@ -24,6 +24,9 @@ public class AccountInventory {
     private String grade;
     private String companyNature;
     private String salesman;
+    private String specialLine;
+    private String internetCloud;
+
 
     private Timestamp createDate;
     private Timestamp lastOpDate;
@@ -51,6 +54,8 @@ public class AccountInventory {
         }
 
         inv.setSalesman(aeivo.getSalesman());
+        inv.setSpecialLine(aeivo.getSpecialLine());
+        inv.setInternetCloud(aeivo.getInternetCloud());
 
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -200,5 +205,21 @@ public class AccountInventory {
 
     public void setSalesman(String salesman) {
         this.salesman = salesman;
+    }
+
+    public String getSpecialLine() {
+        return specialLine;
+    }
+
+    public String getInternetCloud() {
+        return internetCloud;
+    }
+
+    public void setSpecialLine(String specialLine) {
+        this.specialLine = specialLine;
+    }
+
+    public void setInternetCloud(String internetCloud) {
+        this.internetCloud = internetCloud;
     }
 }

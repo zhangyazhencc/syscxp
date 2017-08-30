@@ -355,26 +355,32 @@ public class AccountBase extends AbstractAccount {
     private  void handle(APIUpdateAccountMsg msg) {
         AccountVO account = dbf.findByUuid(msg.getTargetUuid(), AccountVO.class);
 
+        boolean accountis = false;
         if (msg.getCompany() != null) {
             account.setCompany(msg.getCompany());
+            accountis = true;
         }
-
         if (msg.getDescription() != null) {
             account.setDescription(msg.getDescription());
+            accountis = true;
         }
         if (msg.getEmail() != null) {
             account.setEmail(msg.getEmail());
+            accountis = true;
         }
 
         if (msg.getPhone() != null) {
             account.setPhone(msg.getPhone());
+            accountis = true;
         }
         if (msg.getStatus() != null) {
             account.setStatus(msg.getStatus().equals(AccountStatus.Available)
                     ?AccountStatus.Available:AccountStatus.Disabled);
+            accountis = true;
         }
         if (msg.getTrueName() != null) {
             account.setTrueName(msg.getTrueName());
+            accountis = true;
         }
 
         if (msg.getType() != null) {
@@ -385,13 +391,18 @@ public class AccountBase extends AbstractAccount {
             }else if(msg.getType().equals(AccountType.SystemAdmin)){
                 account.setType(AccountType.SystemAdmin);
             }
+            accountis = true;
         }
 
         if (msg.getIndustry() != null) {
             account.setIndustry(msg.getIndustry());
+            accountis = true;
         }
 
-        account = dbf.updateAndRefresh(account);
+        if(accountis){
+            account = dbf.updateAndRefresh(account);
+        }
+
 
         AccountExtraInfoVO aeivo = dbf.findByUuid(msg.getTargetUuid(), AccountExtraInfoVO.class);
         if(aeivo == null){
@@ -418,6 +429,15 @@ public class AccountBase extends AbstractAccount {
             aeivo.setSalesman(msg.getSalesman());
             done = true;
         }
+        if (msg.getInternetCloud() != null) {
+            aeivo.setInternetCloud(msg.getInternetCloud());
+            done = true;
+        }
+        if (msg.getSpecialLine() != null) {
+            aeivo.setSpecialLine(msg.getSpecialLine());
+            done = true;
+        }
+
         if(done){
             if(aeivo.getUuid() != null){
                 aeivo = dbf.updateAndRefresh(aeivo);
@@ -426,7 +446,6 @@ public class AccountBase extends AbstractAccount {
                 aeivo.setAccountUuid(account.getUuid());
                 aeivo = dbf.persistAndRefresh(aeivo);
             }
-
         }
 
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
@@ -511,7 +530,7 @@ public class AccountBase extends AbstractAccount {
         accountvo.setIndustry(msg.getIndustry());
         accountvo.setPhone(msg.getPhone());
         accountvo.setTrueName(msg.getTrueName());
-        accountvo.setStatus(msg.getStatus());
+        accountvo.setStatus(AccountStatus.Available);
         accountvo.setType(AccountType.Normal);
         accountvo.setPhoneStatus(ValidateStatus.Unvalidated);
         accountvo.setEmailStatus(ValidateStatus.Unvalidated);
@@ -569,7 +588,7 @@ public class AccountBase extends AbstractAccount {
         uservo.setName(msg.getName());
         uservo.setPassword(msg.getPassword());
         uservo.setPhone(msg.getPhone());
-        uservo.setStatus(msg.getStatus() != null ? AccountStatus.valueOf(msg.getStatus()) : AccountStatus.Available);
+        uservo.setStatus(AccountStatus.Available);
         uservo.setTrueName(msg.getTrueName());
 
         uservo.setEmailStatus(ValidateStatus.Unvalidated);
