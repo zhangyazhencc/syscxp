@@ -3,18 +3,19 @@ package org.zstack.account.log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zstack.account.header.identity.AccountVO;
 import org.zstack.account.header.identity.AccountVO_;
+import org.zstack.account.header.identity.SessionVO;
+import org.zstack.account.header.identity.SessionVO_;
 import org.zstack.account.header.log.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
-import org.zstack.core.cloudbus.CloudBusEventListener;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.DbEntityLister;
 import org.zstack.core.db.SimpleQuery;
+import org.zstack.core.notification.APICreateNotificationMsg;
 import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
-import org.zstack.header.message.Event;
 import org.zstack.header.message.Message;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
@@ -199,9 +200,22 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
             validate((APICreateAlarmContactMsg) msg);
         } else if (msg instanceof APIUpdateAlarmContactMsg) {
             validate((APIUpdateAlarmContactMsg) msg);
+        } else if (msg instanceof APICreateNotificationMsg) {
+            validate((APICreateNotificationMsg) msg);
         }
 
         return msg;
+    }
+
+    private void validate(APICreateNotificationMsg msg) {
+        SimpleQuery<SessionVO> query = dbf.createQuery(SessionVO.class);
+        query.add(SessionVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        query.add(SessionVO_.userUuid, SimpleQuery.Op.EQ, msg.getUserUuid());
+        if (!query.isExists()){
+            throw new ApiMessageInterceptionException(argerr(
+                    "The Session[accountUuid:%S,userUuid:%S] does not exist.", msg.getAccountUuid(), msg.getUserUuid()
+            ));
+        }
     }
 
     private void validate(APIUpdateAlarmContactMsg msg) {

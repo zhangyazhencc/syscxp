@@ -1,6 +1,6 @@
 package org.zstack.account.header.log;
 
-import org.zstack.account.header.identity.AccountConstant;
+import org.zstack.account.log.NoticeConstant;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APICreateMessage;
 import org.zstack.header.message.APIEvent;
@@ -10,7 +10,7 @@ import org.zstack.header.notification.ApiNotification;
 
 import java.util.List;
 
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"alarm_contact"}, accountOnly = true)
+@Action(category = NoticeConstant.ACTION_CATEGORY, names = {"alarm_contact"}, accountOnly = true)
 public class APICreateAlarmContactMsg extends APICreateMessage {
     @APIParam(maxLength = 32, emptyString = false)
     private String accountName;

@@ -1,6 +1,6 @@
 package org.zstack.account.header.log;
 
-import org.zstack.account.header.identity.AccountConstant;
+import org.zstack.account.log.NoticeConstant;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APICreateMessage;
 import org.zstack.header.message.APIEvent;
@@ -9,7 +9,7 @@ import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
 import java.sql.Timestamp;
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"notice"}, adminOnly = true)
+@Action(category = NoticeConstant.ACTION_CATEGORY, names = {"notice"}, adminOnly = true)
 public class APICreateNoticeMsg extends APICreateMessage {
     @APIParam(maxLength = 255, emptyString = false)
     private String title;

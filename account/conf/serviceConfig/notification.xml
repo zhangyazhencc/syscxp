@@ -4,6 +4,7 @@
 
     <message>
         <name>org.zstack.core.notification.APICreateNotificationMsg</name>
+        <interceptor>NoticeManager</interceptor>
     </message>
 
     <message>
