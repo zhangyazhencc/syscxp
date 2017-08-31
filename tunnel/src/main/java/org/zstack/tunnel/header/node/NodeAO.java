@@ -50,8 +50,7 @@ public class NodeAO {
     private double latitude;
 
     @Column
-    @Convert(converter = ListAttributeConverter.class)
-    private List<NodeProperty> property;
+    private String property;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -159,11 +158,11 @@ public class NodeAO {
         this.latitude = latitude;
     }
 
-    public List<NodeProperty> getProperty() {
+    public String getProperty() {
         return property;
     }
 
-    public void setProperty(List<NodeProperty> property) {
+    public void setProperty(String property) {
         this.property = property;
     }
 

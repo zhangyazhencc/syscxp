@@ -19,8 +19,8 @@ public class APIUpdateNodeMsg extends APIMessage {
     @APIParam(required = false,maxLength = 128)
     private String code;
 
-    @APIParam(required = false)
-    private List<NodeProperty> property;
+    @APIParam(required = false,maxLength = 128)
+    private String property;
 
     @APIParam(required = false,validValues = {"CLOSE", "OPEN","AVAILABLE"})
     private NodeStatus status;
@@ -49,11 +49,11 @@ public class APIUpdateNodeMsg extends APIMessage {
         this.code = code;
     }
 
-    public List<NodeProperty> getProperty() {
+    public String getProperty() {
         return property;
     }
 
-    public void setProperty(List<NodeProperty> property) {
+    public void setProperty(String property) {
         this.property = property;
     }
 

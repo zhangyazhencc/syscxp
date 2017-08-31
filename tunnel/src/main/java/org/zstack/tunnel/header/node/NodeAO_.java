@@ -22,7 +22,7 @@ public class NodeAO_ {
     public static volatile SingularAttribute<NodeVO, String> address;
     public static volatile SingularAttribute<NodeVO, Double> longtitude;
     public static volatile SingularAttribute<NodeVO, Double> latitude;
-    public static volatile SingularAttribute<NodeVO, List<NodeProperty>> property;
+    public static volatile SingularAttribute<NodeVO, String> property;
     public static volatile SingularAttribute<NodeVO, NodeStatus> status;
     public static volatile SingularAttribute<NodeVO, Timestamp> createDate;
     public static volatile SingularAttribute<NodeVO, Timestamp> lastOpDate;
