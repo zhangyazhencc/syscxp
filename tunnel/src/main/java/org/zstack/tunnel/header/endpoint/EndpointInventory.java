@@ -15,6 +15,7 @@ import java.util.List;
 @Inventory(mappingVOClass = EndpointVO.class)
 public class EndpointInventory {
     private String uuid;
+    private String nodeUuid;
     private NodeVO nodeVO;
     private String name;
     private String code;
@@ -28,6 +29,7 @@ public class EndpointInventory {
     public static EndpointInventory valueOf(EndpointVO vo){
         EndpointInventory inv = new EndpointInventory();
         inv.setUuid(vo.getUuid());
+        inv.setNodeUuid(vo.getNodeUuid());
         inv.setNodeVO(vo.getNodeVO());
         inv.setName(vo.getName());
         inv.setCode(vo.getCode());
@@ -54,6 +56,14 @@ public class EndpointInventory {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 
     public NodeVO getNodeVO() {
