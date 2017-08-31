@@ -8,13 +8,13 @@ import org.zstack.header.message.APIParam;
  */
 public class APICreateEndpointMsg extends APIMessage {
 
-    @APIParam(nonempty = true,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32)
     private String nodeUuid;
 
-    @APIParam(nonempty = true,maxLength = 255)
+    @APIParam(emptyString = false,maxLength = 255)
     private String name;
 
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String code;
 
     public String getNodeUuid() {

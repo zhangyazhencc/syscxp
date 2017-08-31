@@ -16,4 +16,12 @@ public class EndpointVO extends EndpointAO {
     @ManyToOne(fetch= FetchType.EAGER)
     @JoinColumn(name="nodeUuid", insertable=false, updatable=false)
     private NodeVO nodeVO;
+
+    public NodeVO getNodeVO() {
+        return nodeVO;
+    }
+
+    public void setNodeVO(NodeVO nodeVO) {
+        this.nodeVO = nodeVO;
+    }
 }

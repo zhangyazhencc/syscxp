@@ -2,7 +2,7 @@ package org.zstack.tunnel.header.endpoint;
 
 import org.zstack.header.vo.*;
 import org.zstack.header.vo.ForeignKey;
-import org.zstack.tunnel.header.node.NodeVO;
+import org.zstack.tunnel.header.node.NodeEO;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -18,7 +18,7 @@ public class EndpointAO {
     private String uuid;
 
     @Column
-    @ForeignKey(parentEntityClass = NodeVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
+    @ForeignKey(parentEntityClass = NodeEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String nodeUuid;
 
     @Column

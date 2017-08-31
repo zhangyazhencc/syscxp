@@ -26,6 +26,7 @@ import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
 import static org.zstack.core.Platform.argerr;
+import static org.zstack.tunnel.header.endpoint.EndpointStatus.NORMAL;
 
 /**
  * Created by DCY on 2017-08-21
@@ -172,11 +173,14 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         EndpointVO vo = new EndpointVO();
 
         vo.setUuid(Platform.getUuid());
-        NodeVO nodeVO = dbf.findByUuid(msg.getNodeUuid(),NodeVO.class);
-        vo.setNodeVO(nodeVO);
-        //vo.setNodeUuid(msg.getNodeUuid());
+        //NodeVO nodeVO = dbf.findByUuid(msg.getNodeUuid(),NodeVO.class);
+        //vo.setNodeVO(nodeVO);
+        vo.setNodeUuid(msg.getNodeUuid());
         vo.setName(msg.getName());
         vo.setCode(msg.getCode());
+        vo.setEnabled(1);
+        vo.setOpenToCustomers(0);
+        vo.setStatus(NORMAL);
 
         vo = dbf.persistAndRefresh(vo);
 

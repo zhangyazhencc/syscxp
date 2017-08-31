@@ -7,7 +7,7 @@ import org.zstack.header.message.APIParam;
  * Created by DCY on 2017-08-23
  */
 public class APIUpdateEndpointMsg extends APIMessage {
-    @APIParam(nonempty = true,resourceType = EndpointVO.class)
+    @APIParam(emptyString = false,resourceType = EndpointVO.class)
     private String targetUuid;
 
     @APIParam(required = false,maxLength = 255)
