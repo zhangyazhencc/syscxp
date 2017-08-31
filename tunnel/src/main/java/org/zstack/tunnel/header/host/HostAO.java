@@ -1,23 +1,17 @@
-package org.zstack.tunnel.header.endpoint;
-
-import org.zstack.tunnel.header.node.NodeVO;
+package org.zstack.tunnel.header.host;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
 
 /**
- * Created by DCY on 2017-08-23
+ * Created by DCY on 2017-08-30
  */
 @MappedSuperclass
-public class EndpointAO {
+public class HostAO {
 
     @Id
     @Column
     private String uuid;
-
-    @ManyToOne()
-    @JoinColumn(name = "nodeUuid")
-    private NodeVO nodeVO;
 
     @Column
     private String name;
@@ -26,17 +20,20 @@ public class EndpointAO {
     private String code;
 
     @Column
-    private Integer enabled;
+    private String ip;
 
     @Column
-    private Integer openToCustomers;
+    private String username;
 
     @Column
-    private String description;
+    private String password;
 
     @Column
     @Enumerated(EnumType.STRING)
-    private EndpointStatus status;
+    private HostState state;
+
+    @Column
+    private String status;
 
     @Column
     private Timestamp lastOpDate;
@@ -50,14 +47,6 @@ public class EndpointAO {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public NodeVO getNodeVO() {
-        return nodeVO;
-    }
-
-    public void setNodeVO(NodeVO nodeVO) {
-        this.nodeVO = nodeVO;
     }
 
     public String getName() {
@@ -76,29 +65,44 @@ public class EndpointAO {
         this.code = code;
     }
 
-    public Integer getEnabled() {
-        return enabled;
+    public String getIp() {
+        return ip;
     }
 
-    public void setEnabled(Integer enabled) {
-        this.enabled = enabled;
+    public void setIp(String ip) {
+        this.ip = ip;
     }
 
-    public Integer getOpenToCustomers() {
-        return openToCustomers;
+    public String getUsername() {
+        return username;
     }
 
-    public void setOpenToCustomers(Integer openToCustomers) {
-        this.openToCustomers = openToCustomers;
+    public void setUsername(String username) {
+        this.username = username;
     }
 
-
-    public String getDescription() {
-        return description;
+    public String getPassword() {
+        return password;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public HostState getState() {
+        return state;
+    }
+
+    public void setState(HostState state) {
+        this.state = state;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 
     public Timestamp getLastOpDate() {
@@ -115,13 +119,5 @@ public class EndpointAO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
-    }
-
-    public EndpointStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(EndpointStatus status) {
-        this.status = status;
     }
 }

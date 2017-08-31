@@ -164,7 +164,7 @@ CREATE TABLE `syscxp_tunnel`.`TunnelVO` (
   `distance` decimal(10,2) DEFAULT NULL,
   `state` varchar(32) DEFAULT NULL,
   `status` varchar(32) DEFAULT NULL,
-  `priExclusive` varchar(32) DEFAULT 'false',
+  `priExclusive` varchar(32) DEFAULT 'false' COMMENT '是否优先独占',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0',
   `expiredDate` timestamp NULL DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
@@ -176,7 +176,6 @@ CREATE TABLE `syscxp_tunnel`.`TunnelVO` (
 CREATE TABLE `syscxp_tunnel`.`TunnelRefSwitchVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `tunnelUuid` VARCHAR(32) DEFAULT NULL,
-  `groupUuid` VARCHAR(32) DEFAULT NULL,
   `endpointUuid` VARCHAR(32) DEFAULT NULL,
   `switchUuid` VARCHAR(32) DEFAULT NULL,
   `switchPortUuid` VARCHAR(32) DEFAULT NULL,

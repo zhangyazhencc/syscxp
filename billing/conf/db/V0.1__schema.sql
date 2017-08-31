@@ -151,7 +151,7 @@ DROP TABLE IF EXISTS `ReceiptVO`;
 CREATE TABLE `ReceiptVO` (
   `uuid` varchar(32) NOT NULL COMMENT '主键',
   `total` decimal(12,4) DEFAULT NULL COMMENT '开票金额',
-  `applyTime` timestamp COMMENT '申请时间',
+  `applyTime` timestamp NULL DEFAULT NULL COMMENT '申请时间',
   `state` varchar(50) DEFAULT NULL COMMENT '状态',
   `receiptInfoUuid` varchar(32) DEFAULT NULL COMMENT '发票开票信息id',
   `receiptAddressUuid` varchar(32) DEFAULT NULL COMMENT '发票邮寄地址',

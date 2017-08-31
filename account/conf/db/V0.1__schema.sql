@@ -90,6 +90,8 @@ CREATE TABLE  `UserVO` (
     `name` varchar(128) NOT NULL UNIQUE COMMENT '用户名称',
     `password` varchar(128) NOT NULL COMMENT '用户密码',
     `email` varchar(36) NOT NULL UNIQUE COMMENT '邮箱',
+    `emailStatus` varchar(36) NOT NULL COMMENT '邮箱是否认证',
+    `phoneStatus` varchar(36) NOT NULL COMMENT '手机是否认证',
     `phone` varchar(11) NOT NULL UNIQUE COMMENT '手机号',
     `trueName` varchar(128) NOT NULL COMMENT '姓名',
     `department` varchar(128) DEFAULT NULL COMMENT '部门',
@@ -218,6 +220,8 @@ CREATE TABLE `AccountExtraInfoVO` (
 	`grade` varchar(36) DEFAULT NULL COMMENT '客户等级',
 	`companyNature` varchar(36) DEFAULT NULL COMMENT '公司性质',
 	`salesman` varchar(128) DEFAULT NULL COMMENT '业务员',
+	`specialLine` varchar(36) DEFAULT NULL COMMENT '云专线折扣',
+	`internetCloud` varchar(36) DEFAULT NULL COMMENT '互联云折扣',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
   PRIMARY KEY  (`uuid`)

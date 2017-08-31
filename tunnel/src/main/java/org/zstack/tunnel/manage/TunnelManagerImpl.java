@@ -19,6 +19,7 @@ import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.tunnel.header.endpoint.*;
+import org.zstack.tunnel.header.host.*;
 import org.zstack.tunnel.header.node.*;
 import org.zstack.tunnel.header.switchs.*;
 import org.zstack.utils.Utils;
@@ -93,6 +94,22 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             handle((APIDisableSwitchMsg) msg);
         }else if(msg instanceof APIPrivateSwitchMsg){
             handle((APIPrivateSwitchMsg) msg);
+        }else if(msg instanceof APICreateSwitchPortMsg){
+            handle((APICreateSwitchPortMsg) msg);
+        }else if(msg instanceof APIDisableSwitchPortMsg){
+            handle((APIDisableSwitchPortMsg) msg);
+        }else if(msg instanceof APIEnableSwitchPortMsg){
+            handle((APIEnableSwitchPortMsg) msg);
+        }else if(msg instanceof APICreateSwitchVlanMsg){
+            handle((APICreateSwitchVlanMsg) msg);
+        }else if(msg instanceof APICreateHostMsg){            //---------handleApiMessage-HOST--------------------------
+            handle((APICreateHostMsg) msg);
+        }else if(msg instanceof APIUpdateHostMsg){
+            handle((APIUpdateHostMsg) msg);
+        }else if(msg instanceof APICreateHostSwitchMonitorMsg){
+            handle((APICreateHostSwitchMonitorMsg) msg);
+        }else if(msg instanceof APIUpdateHostSwitchMonitorMsg){
+            handle((APIUpdateHostSwitchMonitorMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -155,7 +172,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         EndpointVO vo = new EndpointVO();
 
         vo.setUuid(Platform.getUuid());
-        vo.setNodeUuid(msg.getNodeUuid());
+        NodeVO nodeVO = dbf.findByUuid(msg.getNodeUuid(),NodeVO.class);
+        vo.setNodeVO(nodeVO);
+        //vo.setNodeUuid(msg.getNodeUuid());
         vo.setName(msg.getName());
         vo.setCode(msg.getCode());
 
@@ -327,6 +346,140 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         evt.setInventory(SwitchInventory.valueOf(vo));
         bus.publish(evt);
     }
+
+    private void handle(APICreateSwitchPortMsg msg){
+        SwitchPortVO vo = new SwitchPortVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setSwitchUuid(msg.getSwitchUuid());
+        vo.setPortName(msg.getPortName());
+        vo.setLabel(msg.getLabel());
+        vo.setAutoAlloc(msg.getAutoAlloc());
+        vo.setReuse(msg.getReuse());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateSwitchPortEvent evt = new APICreateSwitchPortEvent(msg.getId());
+        evt.setInventory(SwitchPortInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIDisableSwitchPortMsg msg){
+        SwitchPortVO vo = dbf.findByUuid(msg.getTargetUuid(),SwitchPortVO.class);
+        vo.setEnabled(0);
+        APIDisableSwitchPortEvent evt = new APIDisableSwitchPortEvent(msg.getId());
+        evt.setInventory(SwitchPortInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIEnableSwitchPortMsg msg){
+        SwitchPortVO vo = dbf.findByUuid(msg.getTargetUuid(),SwitchPortVO.class);
+        vo.setEnabled(1);
+        APIEnableSwitchPortEvent evt = new APIEnableSwitchPortEvent(msg.getId());
+        evt.setInventory(SwitchPortInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APICreateSwitchVlanMsg msg){
+        SwitchVlanVO vo = new SwitchVlanVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setSwitchUuid(msg.getSwitchUuid());
+        vo.setStartVlan(msg.getStartVlan());
+        vo.setEndVlan(msg.getEndVlan());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateSwitchVlanEvent evt = new APICreateSwitchVlanEvent(msg.getId());
+        evt.setInventory(SwitchVlanInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    //-----------------------------------------------------HANDLE-HOST--------------------------------------------------
+    private void handle(APICreateHostMsg msg){
+        HostVO vo = new HostVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setCode(msg.getCode());
+        vo.setName(msg.getName());
+        vo.setIp(msg.getIp());
+        vo.setUsername(msg.getUsername());
+        vo.setPassword(msg.getPassword());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateHostEvent evt = new APICreateHostEvent(msg.getId());
+        evt.setInventory(HostInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIUpdateHostMsg msg){
+        HostVO vo = dbf.findByUuid(msg.getTargetUuid(),HostVO.class);
+        boolean update = false;
+        if(msg.getName() != null){
+            vo.setName(msg.getName());
+            update = true;
+        }
+        if(msg.getCode() != null){
+            vo.setCode(msg.getCode());
+            update = true;
+        }
+        if(msg.getIp() != null){
+            vo.setIp(msg.getIp());
+            update = true;
+        }
+        if(msg.getUsername() != null){
+            vo.setUsername(msg.getUsername());
+            update = true;
+        }
+        if(msg.getPassword() != null){
+            vo.setPassword(msg.getPassword());
+            update = true;
+        }
+
+        if (update)
+            vo = dbf.updateAndRefresh(vo);
+
+        APIUpdateHostEvent evt = new APIUpdateHostEvent(msg.getId());
+        evt.setInventory(HostInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APICreateHostSwitchMonitorMsg msg){
+        HostSwitchMonitorVO vo = new HostSwitchMonitorVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setHostUuid(msg.getHostUuid());
+        vo.setSwitchUuid(msg.getSwitchUuid());
+        vo.setInterfaceName(msg.getInterfaceName());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateHostSwitchMonitorEvent evt = new APICreateHostSwitchMonitorEvent(msg.getId());
+        evt.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIUpdateHostSwitchMonitorMsg msg){
+        HostSwitchMonitorVO vo = dbf.findByUuid(msg.getTargetUuid(),HostSwitchMonitorVO.class);
+        boolean update = false;
+        if(msg.getInterfaceName() != null){
+            vo.setInterfaceName(msg.getInterfaceName());
+            update = true;
+        }
+        if(msg.getSwitchUuid() != null){
+            vo.setSwitchUuid(msg.getSwitchUuid());
+            update = true;
+        }
+
+        if (update)
+            vo = dbf.updateAndRefresh(vo);
+
+        APIUpdateHostSwitchMonitorEvent evt = new APIUpdateHostSwitchMonitorEvent(msg.getId());
+        evt.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
     @Override
     public boolean start() {
         return true;
@@ -370,6 +523,22 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             validate((APIDisableSwitchMsg) msg);
         }else if(msg instanceof APIPrivateSwitchMsg){
             validate((APIPrivateSwitchMsg) msg);
+        }else if(msg instanceof APICreateSwitchPortMsg){
+            validate((APICreateSwitchPortMsg) msg);
+        }else if(msg instanceof APIDisableSwitchPortMsg){
+            validate((APIDisableSwitchPortMsg) msg);
+        }else if(msg instanceof APIEnableSwitchPortMsg){
+            validate((APIEnableSwitchPortMsg) msg);
+        }else if(msg instanceof APICreateSwitchVlanMsg){
+            validate((APICreateSwitchVlanMsg) msg);
+        }else if(msg instanceof APICreateHostMsg){    //---------intercept-HOST-----------------------------------
+            validate((APICreateHostMsg) msg);
+        }else if(msg instanceof APIUpdateHostMsg){
+            validate((APIUpdateHostMsg) msg);
+        }else if(msg instanceof APICreateHostSwitchMonitorMsg){
+            validate((APICreateHostSwitchMonitorMsg) msg);
+        }else if(msg instanceof APIUpdateHostSwitchMonitorMsg){
+            validate((APIUpdateHostSwitchMonitorMsg) msg);
         }
         return msg;
     }
@@ -584,5 +753,125 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if (!q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getTargetUuid()));
         }
+    }
+
+    private void validate(APICreateSwitchPortMsg msg){
+        //判断端口所在的交换机UUID是否存在
+        SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
+        q.add(SwitchVO_.uuid, Op.EQ, msg.getSwitchUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getSwitchUuid()));
+        }
+        //端口其他验证。。。。
+
+    }
+
+    private void validate(APIDisableSwitchPortMsg msg){
+        //判断所操作的交换机端口是否存在
+        SimpleQuery<SwitchPortVO> q = dbf.createQuery(SwitchPortVO.class);
+        q.add(SwitchPortVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("switchPort %s is not exist ",msg.getTargetUuid()));
+        }
+    }
+
+    private void validate(APIEnableSwitchPortMsg msg){
+        //判断所操作的交换机端口是否存在
+        SimpleQuery<SwitchPortVO> q = dbf.createQuery(SwitchPortVO.class);
+        q.add(SwitchPortVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("switchPort %s is not exist ",msg.getTargetUuid()));
+        }
+    }
+
+    private void validate(APICreateSwitchVlanMsg msg){
+        //判断VLAN所在的交换机UUID是否存在
+        SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
+        q.add(SwitchVO_.uuid, Op.EQ, msg.getSwitchUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getSwitchUuid()));
+        }
+        //VLAN验证。。。。
+
+    }
+
+    //-----------------------------------------------------VALIDATE-HOST------------------------------------------------
+    private void validate(APICreateHostMsg msg){
+        //判断code，name是否已经存在
+        SimpleQuery<HostVO> q = dbf.createQuery(HostVO.class);
+        SimpleQuery<HostVO> q2 = dbf.createQuery(HostVO.class);
+        q.add(HostVO_.code, Op.EQ, msg.getCode());
+        q2.add(HostVO_.name, Op.EQ, msg.getName());
+        if(q.isExists()){
+            throw new ApiMessageInterceptionException(argerr("host's code %s is already exist ",msg.getCode()));
+        }else if(q2.isExists()){
+            throw new ApiMessageInterceptionException(argerr("host's name %s is already exist ",msg.getName()));
+        }
+    }
+
+    private void validate(APIUpdateHostMsg msg){
+        //判断所修改的监控机是否存在
+        SimpleQuery<HostVO> q = dbf.createQuery(HostVO.class);
+        q.add(HostVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("host %s is not exist ",msg.getTargetUuid()));
+        }
+        //判断code，name是否已经存在
+        if(msg.getCode() != null){
+            SimpleQuery<HostVO> q2 = dbf.createQuery(HostVO.class);
+            q2.add(HostVO_.code, Op.EQ, msg.getCode());
+            q2.add(HostVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
+            if(q2.isExists()){
+                throw new ApiMessageInterceptionException(argerr("host's code %s is already exist ",msg.getCode()));
+            }
+        }
+        if(msg.getName() != null){
+            SimpleQuery<HostVO> q3 = dbf.createQuery(HostVO.class);
+            q3.add(HostVO_.name, Op.EQ, msg.getName());
+            q3.add(HostVO_.uuid, Op.NOT_EQ, msg.getTargetUuid());
+            if(q3.isExists()){
+                throw new ApiMessageInterceptionException(argerr("host's name %s is already exist ",msg.getName()));
+            }
+        }
+    }
+
+    private void validate(APICreateHostSwitchMonitorMsg msg){
+
+        //判断所属监控机是否存在
+        SimpleQuery<HostVO> q = dbf.createQuery(HostVO.class);
+        q.add(HostVO_.uuid, Op.EQ, msg.getHostUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("host %s is not exist ",msg.getHostUuid()));
+        }
+        //判断所选择的交换机是否存在
+        SimpleQuery<SwitchVO> q2 = dbf.createQuery(SwitchVO.class);
+        q2.add(SwitchVO_.uuid, Op.EQ, msg.getSwitchUuid());
+        if (!q2.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getSwitchUuid()));
+        }
+    }
+
+    private void validate(APIUpdateHostSwitchMonitorMsg msg){
+        //判断所修改的监控机交换机是否存在
+        SimpleQuery<HostSwitchMonitorVO> q = dbf.createQuery(HostSwitchMonitorVO.class);
+        q.add(HostSwitchMonitorVO_.uuid, Op.EQ, msg.getTargetUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("HostSwitchMonitor %s is not exist ",msg.getTargetUuid()));
+        }
+        //判断所属监控机是否存在
+        SimpleQuery<HostVO> q2 = dbf.createQuery(HostVO.class);
+        q2.add(HostVO_.uuid, Op.EQ, msg.getHostUuid());
+        if (!q2.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("host %s is not exist ",msg.getHostUuid()));
+        }
+        //判断所选择的交换机是否存在
+        if(msg.getSwitchUuid() != null){
+            SimpleQuery<SwitchVO> q3 = dbf.createQuery(SwitchVO.class);
+            q3.add(SwitchVO_.uuid, Op.EQ, msg.getSwitchUuid());
+            if (!q3.isExists()) {
+                throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getSwitchUuid()));
+            }
+        }
+
     }
 }

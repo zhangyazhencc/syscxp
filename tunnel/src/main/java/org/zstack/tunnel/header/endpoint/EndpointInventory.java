@@ -5,6 +5,7 @@ package org.zstack.tunnel.header.endpoint;
  */
 
 import org.zstack.header.search.Inventory;
+import org.zstack.tunnel.header.node.NodeVO;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -14,7 +15,7 @@ import java.util.List;
 @Inventory(mappingVOClass = EndpointVO.class)
 public class EndpointInventory {
     private String uuid;
-    private String nodeUuid;
+    private NodeVO nodeVO;
     private String name;
     private String code;
     private Integer enabled;
@@ -27,7 +28,7 @@ public class EndpointInventory {
     public static EndpointInventory valueOf(EndpointVO vo){
         EndpointInventory inv = new EndpointInventory();
         inv.setUuid(vo.getUuid());
-        inv.setNodeUuid(vo.getNodeUuid());
+        inv.setNodeVO(vo.getNodeVO());
         inv.setName(vo.getName());
         inv.setCode(vo.getCode());
         inv.setEnabled(vo.getEnabled());
@@ -55,12 +56,12 @@ public class EndpointInventory {
         this.uuid = uuid;
     }
 
-    public String getNodeUuid() {
-        return nodeUuid;
+    public NodeVO getNodeVO() {
+        return nodeVO;
     }
 
-    public void setNodeUuid(String nodeUuid) {
-        this.nodeUuid = nodeUuid;
+    public void setNodeVO(NodeVO nodeVO) {
+        this.nodeVO = nodeVO;
     }
 
     public String getName() {
