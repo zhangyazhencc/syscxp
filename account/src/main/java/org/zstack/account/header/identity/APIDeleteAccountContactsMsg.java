@@ -11,7 +11,7 @@ import org.zstack.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/08/21.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY, names = {"account_contact"})
 public class APIDeleteAccountContactsMsg extends APIDeleteMessage implements AccountMessage{
     @APIParam(resourceType = PermissionVO.class, checkAccount = true, operationTarget = true, successIfResourceNotExisting = true)
     private String uuid;

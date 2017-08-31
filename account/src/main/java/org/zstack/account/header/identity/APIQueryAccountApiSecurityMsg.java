@@ -8,6 +8,6 @@ import org.zstack.header.query.AutoQuery;
  * Created by wangwg on 2017/08/18.
  */
 @AutoQuery(replyClass = APIQueryAccountApiSecurityReply.class, inventoryClass = AccountApiSecurityInventory.class)
-@Action(category = AccountConstant.ACTION_CATEGORY, supportOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY, names = {"read"})
 public class APIQueryAccountApiSecurityMsg extends APIQueryMessage {
 }

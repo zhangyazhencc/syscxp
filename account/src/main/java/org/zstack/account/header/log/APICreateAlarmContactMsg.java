@@ -10,7 +10,7 @@ import org.zstack.header.notification.ApiNotification;
 
 import java.util.List;
 
-@Action(category = NoticeConstant.ACTION_CATEGORY, names = {"alarm_contact"}, accountOnly = true)
+@Action(category = NoticeConstant.ACTION_CATEGORY, names = {"alarm_contact"}, adminOnly = true)
 public class APICreateAlarmContactMsg extends APICreateMessage {
     @APIParam(maxLength = 32, emptyString = false)
     private String accountName;

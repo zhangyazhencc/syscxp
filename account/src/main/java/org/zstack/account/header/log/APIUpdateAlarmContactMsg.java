@@ -9,7 +9,7 @@ import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
 import java.util.List;
-@Action(category = NoticeConstant.ACTION_CATEGORY, names = {"alarm_contact"}, accountOnly = true)
+@Action(category = NoticeConstant.ACTION_CATEGORY, names = {"alarm_contact"}, adminOnly = true)
 public class APIUpdateAlarmContactMsg extends APICreateMessage {
     @APIParam(resourceType = AlarmContactVO.class, emptyString = false)
     private String uuid;

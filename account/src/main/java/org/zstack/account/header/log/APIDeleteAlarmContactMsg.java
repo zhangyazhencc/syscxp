@@ -7,7 +7,7 @@ import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
-@Action(category = NoticeConstant.ACTION_CATEGORY, names = {"alarm_contact"}, accountOnly = true)
+@Action(category = NoticeConstant.ACTION_CATEGORY, names = {"alarm_contact"}, adminOnly = true)
 public class APIDeleteAlarmContactMsg extends APIDeleteMessage {
     @APIParam()
     private String uuid;

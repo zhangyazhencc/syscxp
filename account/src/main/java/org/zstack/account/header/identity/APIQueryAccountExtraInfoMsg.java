@@ -8,7 +8,7 @@ import org.zstack.header.query.AutoQuery;
  * Created by wangwg on 2017/08/18.
  */
 @AutoQuery(replyClass = APIQueryAccountExtraInfoReply.class, inventoryClass = AccountExtraInfoInventory.class)
-@Action(category = AccountConstant.ACTION_CATEGORY, supportOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY, names = {"read"})
 public class APIQueryAccountExtraInfoMsg extends APIQueryMessage {
 
 }

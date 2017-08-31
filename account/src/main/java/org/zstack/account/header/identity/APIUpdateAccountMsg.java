@@ -7,7 +7,7 @@ import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
 
-@Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY, names = {"account"})
 public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
 
     @APIParam(resourceType = AccountVO.class, required = true, checkAccount = true, operationTarget = true)
