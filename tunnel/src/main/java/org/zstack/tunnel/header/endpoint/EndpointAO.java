@@ -1,5 +1,7 @@
 package org.zstack.tunnel.header.endpoint;
 
+import org.zstack.tunnel.header.node.NodeVO;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -13,8 +15,9 @@ public class EndpointAO {
     @Column
     private String uuid;
 
-    @Column
-    private String nodeUuid;
+    @ManyToOne()
+    @JoinColumn(name = "nodeUuid")
+    private NodeVO nodeVO;
 
     @Column
     private String name;
@@ -49,12 +52,12 @@ public class EndpointAO {
         this.uuid = uuid;
     }
 
-    public String getNodeUuid() {
-        return nodeUuid;
+    public NodeVO getNodeVO() {
+        return nodeVO;
     }
 
-    public void setNodeUuid(String nodeUuid) {
-        this.nodeUuid = nodeUuid;
+    public void setNodeVO(NodeVO nodeVO) {
+        this.nodeVO = nodeVO;
     }
 
     public String getName() {

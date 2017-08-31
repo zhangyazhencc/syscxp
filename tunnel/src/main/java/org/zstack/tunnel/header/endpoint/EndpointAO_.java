@@ -1,5 +1,7 @@
 package org.zstack.tunnel.header.endpoint;
 
+
+
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 import java.sql.Timestamp;
