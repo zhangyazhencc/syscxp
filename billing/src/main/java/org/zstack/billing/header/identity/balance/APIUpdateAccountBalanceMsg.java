@@ -1,10 +1,13 @@
 package org.zstack.billing.header.identity.balance;
 
+import org.zstack.billing.manage.BillingConstant;
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 import java.math.BigDecimal;
 
+@Action(category = BillingConstant.ACTION_CATEGORY, names = {"recharge"})
 public class APIUpdateAccountBalanceMsg extends APIMessage {
     @APIParam(required = false)
     private String accountUuid;

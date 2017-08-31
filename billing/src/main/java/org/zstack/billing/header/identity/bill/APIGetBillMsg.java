@@ -1,8 +1,11 @@
 package org.zstack.billing.header.identity.bill;
 
+import org.zstack.billing.manage.BillingConstant;
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;
 
+@Action(category = BillingConstant.ACTION_CATEGORY, names = {"read", "bill"})
 public class APIGetBillMsg extends APISyncCallMessage{
 
     @APIParam(nonempty = false, resourceType = BillVO.class,checkAccount = true)

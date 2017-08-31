@@ -1,8 +1,11 @@
 package org.zstack.billing.header.identity.renew;
 
+import org.zstack.billing.manage.BillingConstant;
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
+@Action(category = BillingConstant.ACTION_CATEGORY, names = {"renew"}, accountOnly = true)
 public class APIUpdateRenewMsg extends APIMessage {
 
     @APIParam(nonempty = true)

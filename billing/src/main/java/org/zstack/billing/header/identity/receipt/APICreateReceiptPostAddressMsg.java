@@ -1,10 +1,12 @@
 package org.zstack.billing.header.identity.receipt;
 
+import org.zstack.billing.manage.BillingConstant;
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
-
+@Action(category = BillingConstant.ACTION_CATEGORY, names = {"receipt"})
 public class APICreateReceiptPostAddressMsg extends APIMessage {
 
     @APIParam(nonempty = false)

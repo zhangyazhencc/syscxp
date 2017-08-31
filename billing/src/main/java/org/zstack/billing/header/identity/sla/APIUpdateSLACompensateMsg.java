@@ -1,11 +1,13 @@
 package org.zstack.billing.header.identity.sla;
 
 import org.zstack.billing.header.identity.balance.ProductType;
+import org.zstack.billing.manage.BillingConstant;
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 import java.sql.Timestamp;
-
+@Action(category = BillingConstant.ACTION_CATEGORY, names = {"sla"})
 public class APIUpdateSLACompensateMsg extends APIMessage {
     @APIParam(nonempty = true)
     private String uuid;
