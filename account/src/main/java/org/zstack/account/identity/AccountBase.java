@@ -668,12 +668,12 @@ public class AccountBase extends AbstractAccount {
 
         PermissionVO auth = new PermissionVO();
         auth.setUuid(Platform.getUuid());
-        auth.setPermission(msg.getPermisstion());
+        auth.setPermission(msg.getPermission());
         auth.setName(msg.getName());
         auth.setDescription(msg.getDescription());
         auth.setSortId(msg.getSortId());
         auth.setType(msg.getType());
-        auth.setVisible(msg.getVisible());
+        auth.setLevel(AccountType.valueOf(msg.getLevel()));
 
         APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
 

@@ -1,5 +1,6 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.PermissionType;
 import org.zstack.header.identity.PermissionVisible;
 
@@ -35,7 +36,7 @@ public class PermissionVO {
 
     @Column
     @Enumerated(EnumType.STRING)
-    private PermissionVisible visible;
+    private AccountType level;
 
     @Column
     private Timestamp createDate;
@@ -100,8 +101,12 @@ public class PermissionVO {
         return type;
     }
 
-    public PermissionVisible getVisible() {
-        return visible;
+    public AccountType getLevel() {
+        return level;
+    }
+
+    public void setLevel(AccountType level) {
+        this.level = level;
     }
 
     public void setPermission(String permission) {
@@ -114,9 +119,5 @@ public class PermissionVO {
 
     public void setType(PermissionType type) {
         this.type = type;
-    }
-
-    public void setVisible(PermissionVisible visible) {
-        this.visible = visible;
     }
 }

@@ -1,6 +1,7 @@
 package org.zstack.account.log;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.zstack.account.header.identity.AccountVO;
 import org.zstack.account.header.identity.AccountVO_;
 import org.zstack.account.header.identity.SessionVO;
@@ -230,6 +231,11 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
                     "The Account[name:%S] does not exist.", msg.getAccountName()
             ));
         }
+        if (StringUtils.isEmpty(msg.getPhone()) && StringUtils.isEmpty(msg.getEmail())){
+            throw new ApiMessageInterceptionException(argerr(
+                    "The phone or email must be not null at least."
+            ));
+        }
     }
     private void validate(APIUpdateNoticeMsg msg) {
         if (!dbf.isExist(msg.getUuid(), NoticeVO.class)) {
@@ -238,7 +244,7 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
             ));
         }
 
-        checkStartAndEndTime(msg.getStartTime(), (msg.getEndTime()));
+        checkStartAndEndTime(msg.getStartTime(), msg.getEndTime());
     }
 
     private void checkStartAndEndTime(Timestamp start, Timestamp end) {

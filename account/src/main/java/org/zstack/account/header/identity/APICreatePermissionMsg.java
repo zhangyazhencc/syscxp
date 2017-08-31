@@ -1,5 +1,6 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.Action;
 import org.zstack.header.identity.PermissionType;
 import org.zstack.header.identity.PermissionVisible;
@@ -12,18 +13,18 @@ public class APICreatePermissionMsg extends  APIMessage implements  AccountMessa
     private String name;
 
     @APIParam(maxLength = 255)
-    public String permisstion;
+    public String permission;
 
     @APIParam(maxLength = 255, required = false)
     private String description;
 
-    @APIParam(maxLength = 36, required = false)
+    @APIParam(maxLength = 36)
     private PermissionType type;
 
-    @APIParam(maxLength = 36, required = false)
-    private PermissionVisible visible;
+    @APIParam(numberRange = {0, 2})
+    private int level;
 
-    @APIParam(maxLength = 36, required = false)
+    @APIParam(maxLength = 36)
     private int sortId;
 
 
@@ -32,8 +33,8 @@ public class APICreatePermissionMsg extends  APIMessage implements  AccountMessa
         return name;
     }
 
-    public String getPermisstion() {
-        return permisstion;
+    public String getPermission() {
+        return permission;
     }
 
     public String getDescription() {
@@ -44,8 +45,8 @@ public class APICreatePermissionMsg extends  APIMessage implements  AccountMessa
         this.name = name;
     }
 
-    public void setPermisstion(String permisstion) {
-        this.permisstion = permisstion;
+    public void setPermission(String permission) {
+        this.permission = permission;
     }
 
     public void setDescription(String description) {
@@ -56,16 +57,16 @@ public class APICreatePermissionMsg extends  APIMessage implements  AccountMessa
         return type;
     }
 
-    public PermissionVisible getVisible() {
-        return visible;
-    }
-
     public void setType(PermissionType type) {
         this.type = type;
     }
 
-    public void setVisible(PermissionVisible visible) {
-        this.visible = visible;
+    public int getLevel() {
+        return level;
+    }
+
+    public void setLevel(int level) {
+        this.level = level;
     }
 
     public int getSortId() {

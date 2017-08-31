@@ -173,7 +173,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         vo.setUuid(Platform.getUuid());
         NodeVO nodeVO = dbf.findByUuid(msg.getNodeUuid(),NodeVO.class);
-        vo.setNodeVO(nodeVO);
+//        vo.setNodeVO(nodeVO);
         //vo.setNodeUuid(msg.getNodeUuid());
         vo.setName(msg.getName());
         vo.setCode(msg.getCode());
