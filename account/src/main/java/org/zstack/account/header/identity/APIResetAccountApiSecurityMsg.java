@@ -8,10 +8,10 @@ import org.zstack.header.message.APIParam;
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"api_key"}, accountOnly = true)
 public class APIResetAccountApiSecurityMsg extends APIMessage implements AccountMessage{
 
-    @APIParam
+    @APIParam(emptyString = false, required = true, validRegexValues = "^1[3,4,5,7,8]\\d{9}$")
     String phone;
 
-    @APIParam
+    @APIParam(emptyString = false, maxLength = 6)
     String code;
 
     @Override

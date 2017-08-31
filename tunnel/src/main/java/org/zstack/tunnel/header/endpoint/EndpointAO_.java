@@ -11,14 +11,14 @@ import java.sql.Timestamp;
  */
 @StaticMetamodel(EndpointAO.class)
 public class EndpointAO_ {
-    public static volatile SingularAttribute<EndpointVO, String> uuid;
-    public static volatile SingularAttribute<EndpointVO, String> nodeUuid;
-    public static volatile SingularAttribute<EndpointVO, String> name;
-    public static volatile SingularAttribute<EndpointVO, String> code;
-    public static volatile SingularAttribute<EndpointVO, Integer> enabled;
-    public static volatile SingularAttribute<EndpointVO, Integer> openToCustomers;
-    public static volatile SingularAttribute<EndpointVO, String> description;
-    public static volatile SingularAttribute<EndpointVO, EndpointStatus> status;
-    public static volatile SingularAttribute<EndpointVO, Timestamp> lastOpDate;
-    public static volatile SingularAttribute<EndpointVO, Timestamp> createDate;
+    public static volatile SingularAttribute<EndpointAO, String> uuid;
+    public static volatile SingularAttribute<EndpointAO, String> nodeUuid;
+    public static volatile SingularAttribute<EndpointAO, String> name;
+    public static volatile SingularAttribute<EndpointAO, String> code;
+    public static volatile SingularAttribute<EndpointAO, Integer> enabled;
+    public static volatile SingularAttribute<EndpointAO, Integer> openToCustomers;
+    public static volatile SingularAttribute<EndpointAO, String> description;
+    public static volatile SingularAttribute<EndpointAO, EndpointStatus> status;
+    public static volatile SingularAttribute<EndpointAO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<EndpointAO, Timestamp> createDate;
 }

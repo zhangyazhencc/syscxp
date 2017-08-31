@@ -17,9 +17,6 @@ public class APICreatePolicyMsg extends  APIMessage implements AccountMessage{
     @APIParam(maxLength = 128)
     private String name;
 
-    @APIParam(maxLength = 32)
-    public String accountUuid;
-
     @APIParam(maxLength = 255, required = false)
     private String description;
 

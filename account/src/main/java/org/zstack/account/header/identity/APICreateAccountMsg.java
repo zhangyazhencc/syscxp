@@ -1,11 +1,10 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.AccountStatus;
-import org.zstack.header.identity.AccountGrade;
-import org.zstack.header.identity.CompanyNature;
+import org.zstack.header.identity.*;
 import org.zstack.header.message.APICreateMessage;
 import org.zstack.header.message.APIParam;
 
+@Action(category = AccountConstant.ACTION_CATEGORY, proxyOnly= true, names = {"createAccount"})
 public class APICreateAccountMsg  extends APICreateMessage implements AccountMessage{
     @APIParam(maxLength = 128)
     private String name;

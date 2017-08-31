@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)
 public @interface Action {
     boolean adminOnly() default false;      //只SystemAdmin
-    boolean supportOnly() default false;    //只运维帐户，包括SystemAdmin
+    boolean proxyOnly() default false;    //只运维帐户，包括SystemAdmin
     boolean accountOnly() default false;    //只帐户
 
     String category();

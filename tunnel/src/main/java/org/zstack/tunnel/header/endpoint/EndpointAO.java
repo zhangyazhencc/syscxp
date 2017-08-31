@@ -1,5 +1,7 @@
 package org.zstack.tunnel.header.endpoint;
 
+import org.zstack.header.vo.*;
+import org.zstack.header.vo.ForeignKey;
 import org.zstack.tunnel.header.node.NodeVO;
 
 import javax.persistence.*;
@@ -15,9 +17,9 @@ public class EndpointAO {
     @Column
     private String uuid;
 
-    @ManyToOne()
-    @JoinColumn(name = "nodeUuid")
-    private NodeVO nodeVO;
+    @Column
+    @ForeignKey(parentEntityClass = NodeVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
+    private String nodeUuid;
 
     @Column
     private String name;
@@ -52,12 +54,12 @@ public class EndpointAO {
         this.uuid = uuid;
     }
 
-    public NodeVO getNodeVO() {
-        return nodeVO;
+    public String getNodeUuid() {
+        return nodeUuid;
     }
 
-    public void setNodeVO(NodeVO nodeVO) {
-        this.nodeVO = nodeVO;
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 
     public String getName() {

@@ -10,10 +10,10 @@ import org.zstack.header.message.APISyncCallMessage;
 @SuppressCredentialCheck
 public class APIValidateVerificationCodeMsg extends APISyncCallMessage {
 
-    @APIParam(nonempty = true, required = true, validRegexValues = "^1[3,4,5,7,8]\\d{9}$")
+    @APIParam(emptyString = false, required = true, validRegexValues = "^1[3,4,5,7,8]\\d{9}$")
     private String phone;
 
-    @APIParam(nonempty = true, maxLength = 6)
+    @APIParam(emptyString = false, maxLength = 6)
     private String code;
 
     public String getPhone() {
