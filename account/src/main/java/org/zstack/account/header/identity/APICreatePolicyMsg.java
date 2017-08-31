@@ -35,10 +35,6 @@ public class APICreatePolicyMsg extends  APIMessage implements AccountMessage{
         return this.getSession().getAccountUuid();
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
-
     public String getName() {
         return name;
     }

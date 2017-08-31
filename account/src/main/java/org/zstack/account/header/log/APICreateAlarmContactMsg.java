@@ -12,15 +12,15 @@ import java.util.List;
 
 @Action(category = NoticeConstant.ACTION_CATEGORY, names = {"alarm_contact"}, adminOnly = true)
 public class APICreateAlarmContactMsg extends APICreateMessage {
-    @APIParam(maxLength = 32, emptyString = false)
+    @APIParam(maxLength = 32, required = false)
     private String accountName;
-    @APIParam(maxLength = 128, emptyString = false)
+    @APIParam(maxLength = 128, required = false)
     private String company;
     @APIParam(maxLength = 32, emptyString = false)
     private String name;
-    @APIParam(maxLength = 32, emptyString = false)
+    @APIParam(maxLength = 32, required = false)
     private String phone;
-    @APIParam(maxLength = 255, emptyString = false)
+    @APIParam(maxLength = 255, required = false)
     private String email;
     @APIParam(maxLength = 32, nonempty = true)
     private List<AlarmChannel> channel;
