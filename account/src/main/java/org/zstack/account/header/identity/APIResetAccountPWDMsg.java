@@ -4,7 +4,7 @@ import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
-@Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY, names = {"acount_pwd"}, accountOnly = true)
 public class APIResetAccountPWDMsg extends  APIMessage implements  AccountMessage {
 
     @APIParam(maxLength = 32)

@@ -354,7 +354,7 @@ public class NotificationManager extends AbstractService {
         }
     }
 
-    private void hanle(APICreateNotificationMsg msg) {
+    private void handle(APICreateNotificationMsg msg) {
         NotificationVO vo = new NotificationVO();
         vo.setUuid(Platform.getUuid());
         vo.setName(msg.getName());
@@ -387,7 +387,7 @@ public class NotificationManager extends AbstractService {
         } else if (msg instanceof APIDeleteNotificationsMsg) {
             handle((APIDeleteNotificationsMsg) msg);
         } else if (msg instanceof APICreateNotificationMsg) {
-            hanle((APICreateNotificationMsg) msg);
+            handle((APICreateNotificationMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }

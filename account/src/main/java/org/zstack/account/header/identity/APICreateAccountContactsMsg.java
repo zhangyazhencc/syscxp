@@ -5,7 +5,7 @@ import org.zstack.header.identity.NoticeWay;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
-@Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY, names = {"account_contact"})
 public class APICreateAccountContactsMsg extends  APIMessage implements  AccountMessage {
 
     @APIParam(maxLength = 32)

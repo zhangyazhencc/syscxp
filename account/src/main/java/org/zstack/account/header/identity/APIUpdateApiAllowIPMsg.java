@@ -7,7 +7,7 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by wangwg on 2017/08/23.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY)
+@Action(category = AccountConstant.ACTION_CATEGORY, names = {"allow_ip"}, accountOnly = true)
 public class APIUpdateApiAllowIPMsg extends APIMessage implements AccountMessage{
 
     @APIParam

@@ -10,7 +10,7 @@ import org.zstack.header.notification.ApiNotification;
 /**
  * Created by frank on 7/10/2015.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY)
+@Action(category = AccountConstant.ACTION_CATEGORY, names = {"user_update"})
 public class APIUpdateUserMsg extends APIMessage implements AccountMessage{
 
     @APIParam(resourceType = UserVO.class, checkAccount = true, operationTarget = true, required = false)

@@ -1,12 +1,13 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 /**
  * Created by wangwg on 2017/8/8.
  */
-
+@Action(category = AccountConstant.ACTION_CATEGORY, names = {"user_update"})
 public class APIUpdateUserPWDMsg extends APIMessage implements AccountMessage{
 
     @APIParam(maxLength = 36)
