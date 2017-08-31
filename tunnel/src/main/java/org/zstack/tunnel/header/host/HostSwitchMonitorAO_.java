@@ -9,10 +9,10 @@ import java.sql.Timestamp;
  */
 @StaticMetamodel(HostSwitchMonitorAO.class)
 public class HostSwitchMonitorAO_ {
-    public static volatile SingularAttribute<HostSwitchMonitorVO, String> uuid;
-    public static volatile SingularAttribute<HostSwitchMonitorVO, String> hostUuid;
-    public static volatile SingularAttribute<HostSwitchMonitorVO, String> switchUuid;
-    public static volatile SingularAttribute<HostSwitchMonitorVO, String> interfaceName;
-    public static volatile SingularAttribute<HostSwitchMonitorVO, Timestamp> createDate;
-    public static volatile SingularAttribute<HostSwitchMonitorVO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<HostSwitchMonitorAO, String> uuid;
+    public static volatile SingularAttribute<HostSwitchMonitorAO, String> hostUuid;
+    public static volatile SingularAttribute<HostSwitchMonitorAO, String> switchUuid;
+    public static volatile SingularAttribute<HostSwitchMonitorAO, String> interfaceName;
+    public static volatile SingularAttribute<HostSwitchMonitorAO, Timestamp> createDate;
+    public static volatile SingularAttribute<HostSwitchMonitorAO, Timestamp> lastOpDate;
 }

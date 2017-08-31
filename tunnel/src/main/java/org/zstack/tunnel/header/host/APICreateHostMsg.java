@@ -8,19 +8,19 @@ import org.zstack.header.message.APIParam;
  */
 public class APICreateHostMsg extends APIMessage {
 
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String name;
 
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String code;
 
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String ip;
 
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String username;
 
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String password;
 
     public String getName() {
@@ -39,12 +39,10 @@ public class APICreateHostMsg extends APIMessage {
         this.code = code;
     }
 
-    @Override
     public String getIp() {
         return ip;
     }
 
-    @Override
     public void setIp(String ip) {
         this.ip = ip;
     }

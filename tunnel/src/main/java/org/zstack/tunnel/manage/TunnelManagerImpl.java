@@ -173,14 +173,12 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         EndpointVO vo = new EndpointVO();
 
         vo.setUuid(Platform.getUuid());
-        //NodeVO nodeVO = dbf.findByUuid(msg.getNodeUuid(),NodeVO.class);
-        //vo.setNodeVO(nodeVO);
         vo.setNodeUuid(msg.getNodeUuid());
         vo.setName(msg.getName());
         vo.setCode(msg.getCode());
         vo.setEnabled(1);
         vo.setOpenToCustomers(0);
-        vo.setStatus(NORMAL);
+        vo.setStatus(EndpointStatus.NORMAL);
 
         vo = dbf.persistAndRefresh(vo);
 
@@ -257,6 +255,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setmIP(msg.getmIP());
         vo.setUsername(msg.getUsername());
         vo.setPassword(msg.getPassword());
+        vo.setStatus(SwitchStatus.NORMAL);
         vo.setIsPrivate(msg.getIsPrivate());
 
         vo = dbf.persistAndRefresh(vo);
@@ -359,6 +358,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setPortName(msg.getPortName());
         vo.setLabel(msg.getLabel());
         vo.setAutoAlloc(msg.getAutoAlloc());
+        vo.setEnabled(1);
         vo.setReuse(msg.getReuse());
 
         vo = dbf.persistAndRefresh(vo);
@@ -409,6 +409,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setIp(msg.getIp());
         vo.setUsername(msg.getUsername());
         vo.setPassword(msg.getPassword());
+        vo.setState(HostState.UNDEPLOYED);
 
         vo = dbf.persistAndRefresh(vo);
 

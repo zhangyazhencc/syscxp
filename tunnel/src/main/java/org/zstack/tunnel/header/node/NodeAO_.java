@@ -10,20 +10,20 @@ import java.util.List;
  */
 @StaticMetamodel(NodeAO.class)
 public class NodeAO_ {
-    public static volatile SingularAttribute<NodeVO, String> uuid;
-    public static volatile SingularAttribute<NodeVO, String> name;
-    public static volatile SingularAttribute<NodeVO, String> code;
-    public static volatile SingularAttribute<NodeVO, String> extensionInfoUuid;
-    public static volatile SingularAttribute<NodeVO, String> description;
-    public static volatile SingularAttribute<NodeVO, String> contact;
-    public static volatile SingularAttribute<NodeVO, String> telephone;
-    public static volatile SingularAttribute<NodeVO, String> province;
-    public static volatile SingularAttribute<NodeVO, String> city;
-    public static volatile SingularAttribute<NodeVO, String> address;
-    public static volatile SingularAttribute<NodeVO, Double> longtitude;
-    public static volatile SingularAttribute<NodeVO, Double> latitude;
-    public static volatile SingularAttribute<NodeVO, String> property;
-    public static volatile SingularAttribute<NodeVO, NodeStatus> status;
-    public static volatile SingularAttribute<NodeVO, Timestamp> createDate;
-    public static volatile SingularAttribute<NodeVO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<NodeAO, String> uuid;
+    public static volatile SingularAttribute<NodeAO, String> name;
+    public static volatile SingularAttribute<NodeAO, String> code;
+    public static volatile SingularAttribute<NodeAO, String> extensionInfoUuid;
+    public static volatile SingularAttribute<NodeAO, String> description;
+    public static volatile SingularAttribute<NodeAO, String> contact;
+    public static volatile SingularAttribute<NodeAO, String> telephone;
+    public static volatile SingularAttribute<NodeAO, String> province;
+    public static volatile SingularAttribute<NodeAO, String> city;
+    public static volatile SingularAttribute<NodeAO, String> address;
+    public static volatile SingularAttribute<NodeAO, Double> longtitude;
+    public static volatile SingularAttribute<NodeAO, Double> latitude;
+    public static volatile SingularAttribute<NodeAO, String> property;
+    public static volatile SingularAttribute<NodeAO, NodeStatus> status;
+    public static volatile SingularAttribute<NodeAO, Timestamp> createDate;
+    public static volatile SingularAttribute<NodeAO, Timestamp> lastOpDate;
 }

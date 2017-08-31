@@ -1,6 +1,6 @@
 package org.zstack.tunnel.header.endpoint;
 
-import org.zstack.header.vo.*;
+
 import org.zstack.header.vo.ForeignKey;
 import org.zstack.tunnel.header.node.NodeEO;
 

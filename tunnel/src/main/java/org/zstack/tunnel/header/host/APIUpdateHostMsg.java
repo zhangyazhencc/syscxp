@@ -8,7 +8,7 @@ import org.zstack.header.message.APIParam;
  */
 public class APIUpdateHostMsg extends APIMessage {
 
-    @APIParam(nonempty = true,resourceType = HostVO.class)
+    @APIParam(emptyString = false,resourceType = HostVO.class)
     private String targetUuid;
 
     @APIParam(required = false,maxLength = 128)
@@ -50,12 +50,10 @@ public class APIUpdateHostMsg extends APIMessage {
         this.code = code;
     }
 
-    @Override
     public String getIp() {
         return ip;
     }
 
-    @Override
     public void setIp(String ip) {
         this.ip = ip;
     }

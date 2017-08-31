@@ -8,13 +8,13 @@ import org.zstack.header.message.APIParam;
  */
 public class APICreateSwitchVlanMsg extends APIMessage {
 
-    @APIParam(nonempty = true,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32)
     private String switchUuid;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private Integer startVlan;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private Integer endVlan;
 
     public String getSwitchUuid() {

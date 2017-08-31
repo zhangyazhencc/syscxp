@@ -7,7 +7,7 @@ import org.zstack.header.message.APIParam;
  * Created by DCY on 2017-08-29
  */
 public class APIEnableSwitchMsg extends APIMessage {
-    @APIParam(nonempty = true,resourceType = SwitchVO.class)
+    @APIParam(emptyString = false,resourceType = SwitchVO.class)
     private String targetUuid;
 
     public String getTargetUuid() {

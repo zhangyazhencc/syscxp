@@ -8,13 +8,13 @@ import org.zstack.header.message.APIParam;
  */
 public class APICreateHostSwitchMonitorMsg extends APIMessage {
 
-    @APIParam(nonempty = true,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32)
     private String hostUuid;
 
-    @APIParam(nonempty = true,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32)
     private String switchUuid;
 
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String interfaceName;
 
     public String getHostUuid() {

@@ -10,7 +10,7 @@ import java.util.List;
  */
 public class APIUpdateNodeMsg extends APIMessage {
 
-    @APIParam(nonempty = true,resourceType = NodeVO.class)
+    @APIParam(emptyString = false,resourceType = NodeVO.class)
     private String targetUuid;
 
     @APIParam(required = false,maxLength = 255)

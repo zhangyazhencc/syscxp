@@ -12,27 +12,27 @@ import java.util.List;
 
 public class APICreateNodeMsg extends APIMessage {
 
-    @APIParam(nonempty = true,maxLength = 255)
+    @APIParam(emptyString = false,maxLength = 255)
     private String name;
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String code;
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private double longtitude;
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private double latitude;
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String property;
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String province;
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String city;
-    @APIParam(nonempty = true,maxLength = 256)
+    @APIParam(emptyString = false,maxLength = 256)
     private String address;
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String contact;
-    @APIParam(nonempty = true,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32)
     private String telephone;
-    @APIParam(nonempty = true,validValues = {"CLOSE", "OPEN","AVAILABLE"})
+    @APIParam(emptyString = false,validValues = {"CLOSE", "OPEN","AVAILABLE"})
     private NodeStatus status;
 
     public String getName() {

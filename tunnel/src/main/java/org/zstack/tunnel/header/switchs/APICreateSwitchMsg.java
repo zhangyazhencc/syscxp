@@ -8,29 +8,29 @@ import org.zstack.header.message.APIParam;
  */
 public class APICreateSwitchMsg extends APIMessage {
 
-    @APIParam(nonempty = true,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32)
     private String endpointUuid;
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String code;
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String name;
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String brand;
-    @APIParam(nonempty = true,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32)
     private String switchModelUuid;
-    @APIParam(nonempty = true,validValues = {"FABRIC", "INTERNET"})
+    @APIParam(emptyString = false,validValues = {"FABRIC", "INTERNET"})
     private SwitchUpperType upperType;
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String owner;
-    @APIParam(nonempty = true,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32)
     private String rack;
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String mIP;
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String username;
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String password;
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private Integer isPrivate;
 
     public String getEndpointUuid() {

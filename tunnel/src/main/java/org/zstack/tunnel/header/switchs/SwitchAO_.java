@@ -9,22 +9,22 @@ import java.sql.Timestamp;
  */
 @StaticMetamodel(SwitchAO.class)
 public class SwitchAO_ {
-    public static volatile SingularAttribute<SwitchVO, String> uuid;
-    public static volatile SingularAttribute<SwitchVO, String> endpointUuid;
-    public static volatile SingularAttribute<SwitchVO, String> code;
-    public static volatile SingularAttribute<SwitchVO, String> name;
-    public static volatile SingularAttribute<SwitchVO, String> brand;
-    public static volatile SingularAttribute<SwitchVO, String> switchModelUuid;
-    public static volatile SingularAttribute<SwitchVO, SwitchUpperType> upperType;
-    public static volatile SingularAttribute<SwitchVO, Integer> enabled;
-    public static volatile SingularAttribute<SwitchVO, String> owner;
-    public static volatile SingularAttribute<SwitchVO, String> rack;
-    public static volatile SingularAttribute<SwitchVO, String> description;
-    public static volatile SingularAttribute<SwitchVO, String> mIP;
-    public static volatile SingularAttribute<SwitchVO, String> username;
-    public static volatile SingularAttribute<SwitchVO, String> password;
-    public static volatile SingularAttribute<SwitchVO, SwitchStatus> status;
-    public static volatile SingularAttribute<SwitchVO, Integer> isPrivate;
-    public static volatile SingularAttribute<SwitchVO, Timestamp> lastOpDate;
-    public static volatile SingularAttribute<SwitchVO, Timestamp> createDate;
+    public static volatile SingularAttribute<SwitchAO, String> uuid;
+    public static volatile SingularAttribute<SwitchAO, String> endpointUuid;
+    public static volatile SingularAttribute<SwitchAO, String> code;
+    public static volatile SingularAttribute<SwitchAO, String> name;
+    public static volatile SingularAttribute<SwitchAO, String> brand;
+    public static volatile SingularAttribute<SwitchAO, String> switchModelUuid;
+    public static volatile SingularAttribute<SwitchAO, SwitchUpperType> upperType;
+    public static volatile SingularAttribute<SwitchAO, Integer> enabled;
+    public static volatile SingularAttribute<SwitchAO, String> owner;
+    public static volatile SingularAttribute<SwitchAO, String> rack;
+    public static volatile SingularAttribute<SwitchAO, String> description;
+    public static volatile SingularAttribute<SwitchAO, String> mIP;
+    public static volatile SingularAttribute<SwitchAO, String> username;
+    public static volatile SingularAttribute<SwitchAO, String> password;
+    public static volatile SingularAttribute<SwitchAO, SwitchStatus> status;
+    public static volatile SingularAttribute<SwitchAO, Integer> isPrivate;
+    public static volatile SingularAttribute<SwitchAO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<SwitchAO, Timestamp> createDate;
 }

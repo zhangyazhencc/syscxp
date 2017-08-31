@@ -8,19 +8,19 @@ import org.zstack.header.message.APIParam;
  */
 public class APICreateSwitchPortMsg extends APIMessage {
 
-    @APIParam(nonempty = true,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32)
     private String switchUuid;
 
-    @APIParam(nonempty = true,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String portName;
 
-    @APIParam(nonempty = true,validValues = {"ACCESSIN", "MONITOR","ECP","VPN"})
+    @APIParam(emptyString = false,validValues = {"ACCESSIN", "MONITOR","ECP","VPN"})
     private SwitchPortLabel label;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private Integer reuse;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private Integer autoAlloc;
 
     public String getSwitchUuid() {

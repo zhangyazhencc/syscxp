@@ -8,7 +8,7 @@ import org.zstack.header.message.APIParam;
  */
 public class APIUpdateSwitchMsg extends APIMessage {
 
-    @APIParam(nonempty = true,resourceType = SwitchVO.class)
+    @APIParam(emptyString = false,resourceType = SwitchVO.class)
     private String targetUuid;
 
     @APIParam(required = false,maxLength = 128)

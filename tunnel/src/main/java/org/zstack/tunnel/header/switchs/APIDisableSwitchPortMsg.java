@@ -7,7 +7,7 @@ import org.zstack.header.message.APIParam;
  * Created by DCY on 2017-08-30
  */
 public class APIDisableSwitchPortMsg extends APIMessage {
-    @APIParam(nonempty = true,resourceType = SwitchPortVO.class)
+    @APIParam(emptyString = false,resourceType = SwitchPortVO.class)
     private String targetUuid;
 
     public String getTargetUuid() {

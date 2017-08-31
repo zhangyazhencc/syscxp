@@ -8,10 +8,10 @@ import org.zstack.header.message.APIParam;
  */
 public class APIUpdateHostSwitchMonitorMsg extends APIMessage {
 
-    @APIParam(nonempty = true,resourceType = HostSwitchMonitorVO.class)
+    @APIParam(emptyString = false,resourceType = HostSwitchMonitorVO.class)
     private String targetUuid;
 
-    @APIParam(nonempty = true,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32)
     private String hostUuid;
 
     @APIParam(required = false,maxLength = 32)
