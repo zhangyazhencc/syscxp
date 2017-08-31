@@ -28,7 +28,7 @@ public class EndpointInventory {
     public static EndpointInventory valueOf(EndpointVO vo){
         EndpointInventory inv = new EndpointInventory();
         inv.setUuid(vo.getUuid());
-//        inv.setNodeVO(vo.getNodeVO());
+        inv.setNodeVO(vo.getNodeVO());
         inv.setName(vo.getName());
         inv.setCode(vo.getCode());
         inv.setEnabled(vo.getEnabled());
