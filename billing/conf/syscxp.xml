@@ -23,6 +23,7 @@
         <property name="locations">
             <list>
                 <value>classpath:syscxp.properties</value>
+                <value>classpath:alipay-config.properties</value>
             </list>
         </property>
         <property name="ignoreUnresolvablePlaceholders" value="true"/>
@@ -33,6 +34,7 @@
         <property name="defaultEncoding" value="UTF-8"></property>
     </bean>
 
+    <import resource="springConfigXml/NotificationManager.xml"/>
     <import resource="springConfigXml/BillingJob.xml"/>
     <import resource="springConfigXml/BillingManager.xml"/>
     <import resource="springConfigXml/ApiMediator.xml"/>
