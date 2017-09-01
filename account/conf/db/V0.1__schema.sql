@@ -218,7 +218,6 @@ CREATE TABLE `AccountExtraInfoVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '账户uuid',
 	`grade` varchar(36) DEFAULT NULL COMMENT '客户等级',
-	`companyNature` varchar(36) DEFAULT NULL COMMENT '公司性质',
 	`salesman` varchar(128) DEFAULT NULL COMMENT '业务员',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
