@@ -4,8 +4,8 @@ import org.apache.commons.lang.StringUtils;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.zstack.billing.header.identity.balance.AccountBalanceVO;
-import org.zstack.billing.header.identity.balance.AccountBalanceVO_;
+import org.zstack.billing.header.balance.AccountBalanceVO;
+import org.zstack.billing.header.balance.AccountBalanceVO_;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.SQL;
