@@ -11,7 +11,7 @@ public class APICreateAccountContactsMsg extends  APIMessage implements  Account
     @APIParam(maxLength = 32)
     private String targetUuid;
     @APIParam(maxLength = 128)
-    public String contacts;
+    public String name;
     @APIParam(maxLength = 36)
     public String phone;
     @APIParam(maxLength = 36)
@@ -22,10 +22,6 @@ public class APICreateAccountContactsMsg extends  APIMessage implements  Account
     @Override
     public String getAccountUuid() {
         return this.getSession().getAccountUuid();
-    }
-
-    public String getContacts() {
-        return contacts;
     }
 
     public String getPhone() {
@@ -40,8 +36,12 @@ public class APICreateAccountContactsMsg extends  APIMessage implements  Account
         return noticeWay;
     }
 
-    public void setContacts(String contacts) {
-        this.contacts = contacts;
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setPhone(String phone) {

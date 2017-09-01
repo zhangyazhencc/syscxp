@@ -12,16 +12,16 @@ public class APIUpdateAccountContactsMsg extends  APIMessage implements AccountM
     private String targetUuid;
 
     @APIParam(maxLength = 128,required = false)
-    private String contacts;
+    private String name;
 
     @APIParam(maxLength = 36,required = false)
-    public String email;
+    private String email;
 
     @APIParam(maxLength = 36,required = false)
-    public String phone;
+    private String phone;
 
     @APIParam(maxLength = 36,required = false)
-    public NoticeWay noticeWay;
+    private NoticeWay noticeWay;
 
     @APIParam(maxLength = 255, required = false)
     private String description;
@@ -35,8 +35,8 @@ public class APIUpdateAccountContactsMsg extends  APIMessage implements AccountM
         return targetUuid;
     }
 
-    public String getContacts() {
-        return contacts;
+    public String getName() {
+        return name;
     }
 
     public String getEmail() {
@@ -59,8 +59,8 @@ public class APIUpdateAccountContactsMsg extends  APIMessage implements AccountM
         this.targetUuid = targetUuid;
     }
 
-    public void setContacts(String contacts) {
-        this.contacts = contacts;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setEmail(String email) {

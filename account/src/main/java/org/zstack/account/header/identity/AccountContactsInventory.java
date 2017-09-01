@@ -12,7 +12,7 @@ import java.util.List;
 public class AccountContactsInventory {
     private String uuid;
     private String accountUuid;
-    private String contacts;
+    private String name;
     private String email;
     private String phone;
     private String noticeWay;
@@ -24,7 +24,7 @@ public class AccountContactsInventory {
         AccountContactsInventory inv = new AccountContactsInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
-        inv.setContacts(vo.getContacts());
+        inv.setName(vo.getName());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
         inv.setNoticeWay(vo.getNoticeWay().toString());
@@ -50,8 +50,8 @@ public class AccountContactsInventory {
         return accountUuid;
     }
 
-    public String getContacts() {
-        return contacts;
+    public String getName() {
+        return name;
     }
 
     public String getEmail() {
@@ -86,8 +86,8 @@ public class AccountContactsInventory {
         this.accountUuid = accountUuid;
     }
 
-    public void setContacts(String contacts) {
-        this.contacts = contacts;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setEmail(String email) {

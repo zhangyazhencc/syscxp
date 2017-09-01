@@ -5,5 +5,6 @@ package org.zstack.header.identity;
  */
 public enum NoticeWay {
     phone,
-    email
+    email,
+    all
 }

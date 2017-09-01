@@ -1,9 +1,6 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.AccountGrade;
-import org.zstack.header.identity.AccountStatus;
-import org.zstack.header.identity.AccountType;
-import org.zstack.header.identity.CompanyNature;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
 import org.zstack.header.vo.Index;
@@ -34,16 +31,6 @@ public class AccountExtraInfoVO {
     private AccountGrade grade;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private CompanyNature companyNature;
-
-    @Column
-    private String specialLine;
-
-    @Column
-    private String internetCloud;
-
-    @Column
     private String salesman;
 
     @Column
@@ -67,10 +54,6 @@ public class AccountExtraInfoVO {
 
     public AccountGrade getGrade() {
         return grade;
-    }
-
-    public CompanyNature getCompanyNature() {
-        return companyNature;
     }
 
     public String getSalesman() {
@@ -97,10 +80,6 @@ public class AccountExtraInfoVO {
         this.grade = grade;
     }
 
-    public void setCompanyNature(CompanyNature companyNature) {
-        this.companyNature = companyNature;
-    }
-
     public void setSalesman(String salesman) {
         this.salesman = salesman;
     }
@@ -113,19 +92,4 @@ public class AccountExtraInfoVO {
         this.lastOpDate = lastOpDate;
     }
 
-    public String getSpecialLine() {
-        return specialLine;
-    }
-
-    public String getInternetCloud() {
-        return internetCloud;
-    }
-
-    public void setSpecialLine(String specialLine) {
-        this.specialLine = specialLine;
-    }
-
-    public void setInternetCloud(String internetCloud) {
-        this.internetCloud = internetCloud;
-    }
 }

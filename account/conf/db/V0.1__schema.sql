@@ -218,10 +218,7 @@ CREATE TABLE `AccountExtraInfoVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '账户uuid',
 	`grade` varchar(36) DEFAULT NULL COMMENT '客户等级',
-	`companyNature` varchar(36) DEFAULT NULL COMMENT '公司性质',
 	`salesman` varchar(128) DEFAULT NULL COMMENT '业务员',
-	`specialLine` varchar(36) DEFAULT NULL COMMENT '云专线折扣',
-	`internetCloud` varchar(36) DEFAULT NULL COMMENT '互联云折扣',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
   PRIMARY KEY  (`uuid`)
@@ -230,7 +227,7 @@ CREATE TABLE `AccountExtraInfoVO` (
 CREATE TABLE `AccountContactsVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '账户uuid',
-	`contacts` varchar(128) DEFAULT NULL COMMENT '联系人',
+	`name` varchar(128) DEFAULT NULL COMMENT '联系人',
 	`phone` varchar(36) DEFAULT NULL COMMENT '联系电话',
 	`email` varchar(36) DEFAULT NULL COMMENT '邮箱',
 	`description` varchar(255) DEFAULT NULL COMMENT '备注',
