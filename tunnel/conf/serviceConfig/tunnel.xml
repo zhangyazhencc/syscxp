@@ -89,6 +89,16 @@
         <serviceId>query</serviceId>
     </message>
 
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIQuerySwitchPortMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIQuerySwitchVlanMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
     <!--HOST-->
     <message>
         <name>org.zstack.tunnel.header.host.APICreateHostMsg</name>

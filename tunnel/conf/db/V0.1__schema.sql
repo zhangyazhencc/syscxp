@@ -254,7 +254,7 @@ CREATE VIEW `syscxp_tunnel`.`HostVO` AS SELECT uuid, name, code, ip, username, p
 CREATE TABLE `syscxp_tunnel`.`HostSwitchMonitorEO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `hostUuid` VARCHAR(32) NOT NULL COMMENT '监控机UUID',
-  `switchUuid` VARCHAR(32) NOT NULL COMMENT '交换机UUID',
+  `switchPortUuid` VARCHAR(32) NOT NULL COMMENT '交换机UUID',
   `interfaceName` varchar(128)  NOT NULL COMMENT '接口名称',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',

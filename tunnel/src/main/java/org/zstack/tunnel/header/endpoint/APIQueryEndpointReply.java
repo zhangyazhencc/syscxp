@@ -8,13 +8,13 @@ import java.util.List;
  * Created by DCY on 2017-08-23
  */
 public class APIQueryEndpointReply extends APIQueryReply {
-    private List<EndpointInventory> inventories;
+    private List<EndpointNodeInventory> inventories;
 
-    public List<EndpointInventory> getInventories() {
+    public List<EndpointNodeInventory> getInventories() {
         return inventories;
     }
 
-    public void setInventories(List<EndpointInventory> inventories) {
+    public void setInventories(List<EndpointNodeInventory> inventories) {
         this.inventories = inventories;
     }
 }

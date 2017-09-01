@@ -1,9 +1,9 @@
 package org.zstack.tunnel.header.switchs;
 
 import org.zstack.header.vo.EO;
+import org.zstack.tunnel.header.endpoint.EndpointVO;
 
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 /**
  * Created by DCY on 2017-08-24
@@ -12,4 +12,28 @@ import javax.persistence.Table;
 @Table
 @EO(EOClazz = SwitchEO.class)
 public class SwitchVO extends SwitchAO {
+
+    @ManyToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name="endpointUuid", insertable=false, updatable=false)
+    private EndpointVO endpoint;
+
+    @OneToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name="switchModelUuid", insertable=false, updatable=false)
+    private SwitchModelVO switchModel;
+
+    public EndpointVO getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(EndpointVO endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    public SwitchModelVO getSwitchModel() {
+        return switchModel;
+    }
+
+    public void setSwitchModel(SwitchModelVO switchModel) {
+        this.switchModel = switchModel;
+    }
 }

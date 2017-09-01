@@ -1,75 +1,70 @@
 package org.zstack.tunnel.header.switchs;
 
-import org.zstack.header.vo.ForeignKey;
-import org.zstack.tunnel.header.endpoint.EndpointEO;
+import org.zstack.header.search.Inventory;
 
-import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
- * Created by DCY on 2017-08-24
+ * Created by DCY on 2017-09-01
  */
-@MappedSuperclass
-public class SwitchAO {
-
-    @Id
-    @Column
+@Inventory(mappingVOClass = SwitchVO.class)
+public class SwitchSwitchModelInventory {
     private String uuid;
-
-    @Column
-    @ForeignKey(parentEntityClass = EndpointEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String endpointUuid;
-
-    @Column
     private String code;
-
-    @Column
     private String name;
-
-    @Column
     private String brand;
-
-    @Column
-    @ForeignKey(parentEntityClass = SwitchModelVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String switchModelUuid;
-
-    @Column
-    @Enumerated(EnumType.STRING)
+    private SwitchModelInventory switchModel;
     private SwitchUpperType upperType;
-
-    @Column
     private Integer enabled;
-
-    @Column
     private String owner;
-
-    @Column
     private String rack;
-
-    @Column
     private String description;
-
-    @Column
     private String mIP;
-
-    @Column
     private String username;
-
-    @Column
     private String password;
-
-    @Column
-    @Enumerated(EnumType.STRING)
     private SwitchStatus status;
-
-    @Column
     private Integer isPrivate;
-
-    @Column
     private Timestamp lastOpDate;
-
-    @Column
     private Timestamp createDate;
+
+    public static SwitchSwitchModelInventory valueOf(SwitchVO vo){
+        SwitchSwitchModelInventory inv = new SwitchSwitchModelInventory();
+
+        inv.setUuid(vo.getUuid());
+        inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setCode(vo.getCode());
+        inv.setName(vo.getName());
+        inv.setBrand(vo.getBrand());
+        inv.setSwitchModelUuid(vo.getSwitchModelUuid());
+        inv.setSwitchModel(SwitchModelInventory.valueOf(vo.getSwitchModel()));
+        inv.setUpperType(vo.getUpperType());
+        inv.setEnabled(vo.getEnabled());
+        inv.setOwner(vo.getOwner());
+        inv.setRack(vo.getRack());
+        inv.setDescription(vo.getDescription());
+        inv.setmIP(vo.getmIP());
+        inv.setUsername(vo.getUsername());
+        inv.setPassword(vo.getPassword());
+        inv.setStatus(vo.getStatus());
+        inv.setIsPrivate(vo.getIsPrivate());
+        inv.setLastOpDate(vo.getLastOpDate());
+        inv.setCreateDate(vo.getCreateDate());
+
+        return inv;
+    }
+
+    public static List<SwitchSwitchModelInventory> valueOf(Collection<SwitchVO> vos) {
+        List<SwitchSwitchModelInventory> lst = new ArrayList<SwitchSwitchModelInventory>(vos.size());
+        for (SwitchVO vo : vos) {
+            lst.add(SwitchSwitchModelInventory.valueOf(vo));
+        }
+        return lst;
+    }
 
     public String getUuid() {
         return uuid;
@@ -117,6 +112,14 @@ public class SwitchAO {
 
     public void setSwitchModelUuid(String switchModelUuid) {
         this.switchModelUuid = switchModelUuid;
+    }
+
+    public SwitchModelInventory getSwitchModel() {
+        return switchModel;
+    }
+
+    public void setSwitchModel(SwitchModelInventory switchModel) {
+        this.switchModel = switchModel;
     }
 
     public SwitchUpperType getUpperType() {
