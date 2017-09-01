@@ -418,6 +418,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIGetAccountApiKeyMsg) msg);
         } else if (msg instanceof APIQueryPermissionMsg) {
             validate((APIQueryPermissionMsg) msg);
+        } else if (msg instanceof APIRegisterAccountMsg) {
+            validate((APIRegisterAccountMsg) msg);
         }
 
 
@@ -426,9 +428,19 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         return msg;
     }
 
+    private void validate(APIRegisterAccountMsg msg) {
+
+        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getAccountUuid()));
+        }
+
+    }
+
     private void validate(APIQueryPermissionMsg msg) {
         msg.addQueryCondition(PermissionVO_.level.toString(), QueryOp.LT_AND_EQ, msg.getSession().getType().value().toString());
     }
+
 
     private void validate(APIResetAccountPWDMsg msg) {
         SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
