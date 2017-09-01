@@ -1,22 +1,21 @@
 package org.zstack.tunnel.header.endpoint;
 
-/**
- * Created by DCY on 2017-08-23
- */
-
 import org.zstack.header.search.Inventory;
 import org.zstack.tunnel.header.node.NodeInventory;
-import org.zstack.tunnel.header.node.NodeVO;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Created by DCY on 2017-09-01
+ */
 @Inventory(mappingVOClass = EndpointVO.class)
-public class EndpointInventory {
+public class EndpointNodeInventory {
     private String uuid;
     private String nodeUuid;
+    private NodeInventory node;
     private String name;
     private String code;
     private Integer enabled;
@@ -26,10 +25,11 @@ public class EndpointInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    public static EndpointInventory valueOf(EndpointVO vo){
-        EndpointInventory inv = new EndpointInventory();
+    public static EndpointNodeInventory valueOf(EndpointVO vo){
+        EndpointNodeInventory inv = new EndpointNodeInventory();
         inv.setUuid(vo.getUuid());
         inv.setNodeUuid(vo.getNodeUuid());
+        inv.setNode(NodeInventory.valueOf(vo.getNodeVO()));
         inv.setName(vo.getName());
         inv.setCode(vo.getCode());
         inv.setEnabled(vo.getEnabled());
@@ -41,10 +41,10 @@ public class EndpointInventory {
         return inv;
     }
 
-    public static List<EndpointInventory> valueOf(Collection<EndpointVO> vos) {
-        List<EndpointInventory> lst = new ArrayList<EndpointInventory>(vos.size());
+    public static List<EndpointNodeInventory> valueOf(Collection<EndpointVO> vos) {
+        List<EndpointNodeInventory> lst = new ArrayList<EndpointNodeInventory>(vos.size());
         for (EndpointVO vo : vos) {
-            lst.add(EndpointInventory.valueOf(vo));
+            lst.add(EndpointNodeInventory.valueOf(vo));
         }
         return lst;
     }
@@ -63,6 +63,14 @@ public class EndpointInventory {
 
     public void setNodeUuid(String nodeUuid) {
         this.nodeUuid = nodeUuid;
+    }
+
+    public NodeInventory getNode() {
+        return node;
+    }
+
+    public void setNode(NodeInventory node) {
+        this.node = node;
     }
 
     public String getName() {

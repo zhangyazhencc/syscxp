@@ -6,6 +6,6 @@ import org.zstack.header.query.AutoQuery;
 /**
  * Created by DCY on 2017-08-23
  */
-@AutoQuery(replyClass = APIQueryEndpointReply.class, inventoryClass = EndpointInventory.class)
+@AutoQuery(replyClass = APIQueryEndpointReply.class, inventoryClass = EndpointNodeInventory.class)
 public class APIQueryEndpointMsg extends APIQueryMessage {
 }
