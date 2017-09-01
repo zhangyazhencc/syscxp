@@ -411,6 +411,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIResetAccountApiSecurityMsg) msg);
         }else if (msg instanceof APIGetAccountApiKeyMsg) {
             validate((APIGetAccountApiKeyMsg) msg);
+        }else if (msg instanceof APIGetAccountApiKeyMsg) {
+            validate((APIGetAccountApiKeyMsg) msg);
         }
 
 

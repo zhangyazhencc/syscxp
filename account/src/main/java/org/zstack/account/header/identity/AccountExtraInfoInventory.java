@@ -14,10 +14,7 @@ public class AccountExtraInfoInventory {
     private String uuid;
     private String accountUuid;
     private String grade;
-    private String companyNature;
     private String salesman;
-    private String specialLine;
-    private String internetCloud;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
@@ -25,11 +22,8 @@ public class AccountExtraInfoInventory {
         AccountExtraInfoInventory inv = new AccountExtraInfoInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
-        inv.setCompanyNature(vo.getCompanyNature().toString());
         inv.setGrade(vo.getGrade().toString());
         inv.setSalesman(vo.getSalesman());
-        inv.setSpecialLine(vo.getSpecialLine());
-        inv.setInternetCloud(vo.getInternetCloud());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
@@ -54,10 +48,6 @@ public class AccountExtraInfoInventory {
 
     public String getGrade() {
         return grade;
-    }
-
-    public String getCompanyNature() {
-        return companyNature;
     }
 
     public String getSalesman() {
@@ -92,27 +82,8 @@ public class AccountExtraInfoInventory {
         this.grade = grade;
     }
 
-    public void setCompanyNature(String companyNature) {
-        this.companyNature = companyNature;
-    }
-
     public void setSalesman(String salesman) {
         this.salesman = salesman;
     }
 
-    public String getSpecialLine() {
-        return specialLine;
-    }
-
-    public String getInternetCloud() {
-        return internetCloud;
-    }
-
-    public void setSpecialLine(String specialLine) {
-        this.specialLine = specialLine;
-    }
-
-    public void setInternetCloud(String internetCloud) {
-        this.internetCloud = internetCloud;
-    }
 }

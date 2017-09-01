@@ -1,7 +1,5 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.AccountGrade;
-import org.zstack.header.identity.CompanyNature;
 import org.zstack.header.identity.NoticeWay;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
@@ -28,7 +26,7 @@ public class AccountContactsVO {
     private String accountUuid;
 
     @Column
-    private String contacts;
+    private String name;
 
     @Column
     private String phone;
@@ -62,8 +60,8 @@ public class AccountContactsVO {
         return accountUuid;
     }
 
-    public String getContacts() {
-        return contacts;
+    public String getName() {
+        return name;
     }
 
     public String getPhone() {
@@ -98,8 +96,8 @@ public class AccountContactsVO {
         this.accountUuid = accountUuid;
     }
 
-    public void setContacts(String contacts) {
-        this.contacts = contacts;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setPhone(String phone) {

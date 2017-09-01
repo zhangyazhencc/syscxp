@@ -1,35 +1,33 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.*;
+import org.zstack.header.identity.AccountGrade;
+import org.zstack.header.identity.Action;
+import org.zstack.header.identity.SuppressCredentialCheck;
 import org.zstack.header.message.APICreateMessage;
 import org.zstack.header.message.APIParam;
 
-@Action(category = AccountConstant.ACTION_CATEGORY, proxyOnly= true, names = {"createAccount"})
-public class APICreateAccountMsg  extends APICreateMessage implements AccountMessage{
+@SuppressCredentialCheck
+public class APIRegisterAccountMsg extends APICreateMessage implements AccountMessage{
     @APIParam(maxLength = 128)
     private String name;
     @APIParam(maxLength = 128)
     private String password;
     @APIParam(maxLength = 36)
     private String email;
-    @APIParam(maxLength = 32)
+    @APIParam(validRegexValues = "^1[3,4,5,7,8]\\d{9}$")
     private String phone;
-    @APIParam(maxLength = 128)
-    private String trueName;
+
+    @APIParam(maxLength = 32)
+    private String code;
+
     @APIParam(maxLength = 128)
     private String company;
 
     @APIParam(maxLength = 128, required = false)
     private String industry;
-    @APIParam(validValues = {"Normal", "Proxy"}, required = false)
-    private String type;
+
     @APIParam(maxLength = 255, required = false)
     private String description;
-
-    @APIParam(maxLength = 32, required = false)
-    private AccountGrade grade;
-    @APIParam(maxLength = 255, required = false)
-    private String salesman;
 
     @Override
     public String getAccountUuid() {
@@ -52,10 +50,6 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
         return phone;
     }
 
-    public String getTrueName() {
-        return trueName;
-    }
-
     public String getCompany() {
         return company;
     }
@@ -64,20 +58,8 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
         return industry;
     }
 
-    public AccountGrade getGrade() {
-        return grade;
-    }
-
-    public String getType() {
-        return type;
-    }
-
     public String getDescription() {
         return description;
-    }
-
-    public String getSalesman() {
-        return salesman;
     }
 
     public void setName(String name) {
@@ -96,10 +78,6 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
         this.phone = phone;
     }
 
-    public void setTrueName(String trueName) {
-        this.trueName = trueName;
-    }
-
     public void setCompany(String company) {
         this.company = company;
     }
@@ -108,20 +86,15 @@ public class APICreateAccountMsg  extends APICreateMessage implements AccountMes
         this.industry = industry;
     }
 
-    public void setGrade(AccountGrade grade) {
-        this.grade = grade;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public void setDescription(String description) {
         this.description = description;
     }
 
-    public void setSalesman(String salesman) {
-        this.salesman = salesman;
+    public String getCode() {
+        return code;
     }
 
+    public void setCode(String code) {
+        this.code = code;
+    }
 }

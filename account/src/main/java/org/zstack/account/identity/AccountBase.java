@@ -129,6 +129,8 @@ public class AccountBase extends AbstractAccount {
             handle((APIUpdateApiAllowIPMsg) msg);
         }else if(msg instanceof APIGetAccountApiKeyMsg){
             handle((APIGetAccountApiKeyMsg) msg);
+        }else if(msg instanceof APIRegisterAccountMsg){
+            handle((APIRegisterAccountMsg) msg);
         }
 
         else {
@@ -421,20 +423,9 @@ public class AccountBase extends AbstractAccount {
             }
             done = true;
         }
-        if (msg.getCompanyNature() != null) {
-            aeivo.setCompanyNature(msg.getCompanyNature());
-            done = true;
-        }
+
         if (msg.getSalesman() != null) {
             aeivo.setSalesman(msg.getSalesman());
-            done = true;
-        }
-        if (msg.getInternetCloud() != null) {
-            aeivo.setInternetCloud(msg.getInternetCloud());
-            done = true;
-        }
-        if (msg.getSpecialLine() != null) {
-            aeivo.setSpecialLine(msg.getSpecialLine());
             done = true;
         }
 
@@ -531,7 +522,12 @@ public class AccountBase extends AbstractAccount {
         accountvo.setPhone(msg.getPhone());
         accountvo.setTrueName(msg.getTrueName());
         accountvo.setStatus(AccountStatus.Available);
-        accountvo.setType(AccountType.Normal);
+        if(msg.getType() != null){
+            accountvo.setType(msg.getType().equals("Proxy")?AccountType.Proxy:AccountType.Normal);
+        }else{
+            accountvo.setType(AccountType.Normal);
+        }
+
         accountvo.setPhoneStatus(ValidateStatus.Unvalidated);
         accountvo.setEmailStatus(ValidateStatus.Unvalidated);
 
@@ -541,9 +537,7 @@ public class AccountBase extends AbstractAccount {
         AccountExtraInfoVO aeivo = new AccountExtraInfoVO();
         aeivo.setUuid(Platform.getUuid());
         aeivo.setAccountUuid(accountvo.getUuid());
-        if(msg.getCompanyNature() != null){
-            aeivo.setCompanyNature(msg.getCompanyNature());
-        }
+
         if(msg.getGrade() != null){
             aeivo.setGrade(msg.getGrade());
         }
@@ -574,6 +568,45 @@ public class AccountBase extends AbstractAccount {
         evt.setInventory(AccountInventory.valueOf(accountvo, aeivo));
         bus.publish(evt);
     }
+
+    @Transactional
+    private void handle(APIRegisterAccountMsg msg) {
+
+        AccountVO accountvo = new AccountVO();
+
+        accountvo.setUuid(Platform.getUuid());
+        accountvo.setName(msg.getName());
+        accountvo.setPassword(msg.getPassword());
+        accountvo.setCompany(msg.getCompany());
+        accountvo.setDescription(msg.getDescription());
+        accountvo.setEmail(msg.getEmail());
+        accountvo.setIndustry(msg.getIndustry());
+        accountvo.setPhone(msg.getPhone());
+        accountvo.setStatus(AccountStatus.Available);
+        accountvo.setType(AccountType.Normal);
+        accountvo.setPhoneStatus(ValidateStatus.Validated);
+        accountvo.setEmailStatus(ValidateStatus.Unvalidated);
+
+        accountvo = dbf.persistAndRefresh(accountvo);
+
+        AccountExtraInfoVO aeivo = new AccountExtraInfoVO();
+        aeivo.setUuid(Platform.getUuid());
+        aeivo.setAccountUuid(accountvo.getUuid());
+
+        aeivo = dbf.persistAndRefresh(aeivo);
+
+        AccountApiSecurityVO api = new AccountApiSecurityVO();
+        api.setUuid(Platform.getUuid());
+        api.setAccountUuid(accountvo.getUuid());
+        api.setPrivateKey(getRandomString(36));
+        api.setPublicKey(getRandomString(36));
+        dbf.persistAndRefresh(api);
+
+        APIRegisterAccountEvent evt = new APIRegisterAccountEvent(msg.getId());
+        evt.setInventory(AccountInventory.valueOf(accountvo));
+        bus.publish(evt);
+    }
+
 
     @Transactional
     private void handle(APICreateUserMsg msg) {

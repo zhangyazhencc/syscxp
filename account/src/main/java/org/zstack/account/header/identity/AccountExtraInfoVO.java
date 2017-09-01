@@ -1,9 +1,6 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.AccountGrade;
-import org.zstack.header.identity.AccountStatus;
-import org.zstack.header.identity.AccountType;
-import org.zstack.header.identity.CompanyNature;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
 import org.zstack.header.vo.Index;
@@ -32,10 +29,6 @@ public class AccountExtraInfoVO {
     @Column
     @Enumerated(EnumType.STRING)
     private AccountGrade grade;
-
-    @Column
-    @Enumerated(EnumType.STRING)
-    private CompanyNature companyNature;
 
     @Column
     private String specialLine;
@@ -69,10 +62,6 @@ public class AccountExtraInfoVO {
         return grade;
     }
 
-    public CompanyNature getCompanyNature() {
-        return companyNature;
-    }
-
     public String getSalesman() {
         return salesman;
     }
@@ -95,10 +84,6 @@ public class AccountExtraInfoVO {
 
     public void setGrade(AccountGrade grade) {
         this.grade = grade;
-    }
-
-    public void setCompanyNature(CompanyNature companyNature) {
-        this.companyNature = companyNature;
     }
 
     public void setSalesman(String salesman) {

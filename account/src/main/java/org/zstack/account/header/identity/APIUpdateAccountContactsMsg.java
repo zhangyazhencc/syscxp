@@ -15,13 +15,13 @@ public class APIUpdateAccountContactsMsg extends  APIMessage implements AccountM
     private String contacts;
 
     @APIParam(maxLength = 36,required = false)
-    public String email;
+    private String email;
 
     @APIParam(maxLength = 36,required = false)
-    public String phone;
+    private String phone;
 
     @APIParam(maxLength = 36,required = false)
-    public NoticeWay noticeWay;
+    private NoticeWay noticeWay;
 
     @APIParam(maxLength = 255, required = false)
     private String description;

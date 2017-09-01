@@ -28,18 +28,11 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
     private AccountGrade grade;
     @APIParam(maxLength = 128, required = false)
     private AccountStatus status;
-    @APIParam(validValues = {"SystemAdmin", "Normal", "Proxy"}, required = false)
+    @APIParam(validValues = {"Normal", "Proxy"}, required = false)
     private String type;
     @APIParam(maxLength = 255, required = false)
     private String description;
 
-    @APIParam(maxLength = 36, required = false)
-    private String specialLine;
-    @APIParam(maxLength = 36, required = false)
-    private String internetCloud;
-
-    @APIParam(maxLength = 255, required = false)
-    private CompanyNature companyNature ;
     @APIParam(maxLength = 255, required = false)
     private String salesman;
     @APIParam(maxLength = 255, required = false)
@@ -115,10 +108,6 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
         return status;
     }
 
-    public CompanyNature getCompanyNature() {
-        return companyNature;
-    }
-
     public String getSalesman() {
         return salesman;
     }
@@ -143,10 +132,6 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
         this.status = status;
     }
 
-    public void setCompanyNature(CompanyNature companyNature) {
-        this.companyNature = companyNature;
-    }
-
     public void setSalesman(String salesman) {
         this.salesman = salesman;
     }
@@ -157,22 +142,6 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
 
     public void setContactNumber(String contactNumber) {
         this.contactNumber = contactNumber;
-    }
-
-    public String getSpecialLine() {
-        return specialLine;
-    }
-
-    public String getInternetCloud() {
-        return internetCloud;
-    }
-
-    public void setSpecialLine(String specialLine) {
-        this.specialLine = specialLine;
-    }
-
-    public void setInternetCloud(String internetCloud) {
-        this.internetCloud = internetCloud;
     }
 
     public ApiNotification __notification__() {
