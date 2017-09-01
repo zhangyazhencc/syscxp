@@ -15,7 +15,7 @@ public class HostSwitchMonitorInventory {
 
     private String uuid;
     private String hostUuid;
-    private String switchUuid;
+    private String switchPortUuid;
     private String interfaceName;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -24,7 +24,7 @@ public class HostSwitchMonitorInventory {
         HostSwitchMonitorInventory inv = new HostSwitchMonitorInventory();
         inv.setUuid(vo.getUuid());
         inv.setHostUuid(vo.getHostUuid());
-        inv.setSwitchUuid(vo.getSwitchUuid());
+        inv.setSwitchPortUuid(vo.getSwitchPortUuid());
         inv.setInterfaceName(vo.getInterfaceName());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -55,12 +55,12 @@ public class HostSwitchMonitorInventory {
         this.hostUuid = hostUuid;
     }
 
-    public String getSwitchUuid() {
-        return switchUuid;
+    public String getSwitchPortUuid() {
+        return switchPortUuid;
     }
 
-    public void setSwitchUuid(String switchUuid) {
-        this.switchUuid = switchUuid;
+    public void setSwitchPortUuid(String switchPortUuid) {
+        this.switchPortUuid = switchPortUuid;
     }
 
     public String getInterfaceName() {

@@ -1,5 +1,8 @@
 package org.zstack.tunnel.header.host;
 
+import org.zstack.header.vo.ForeignKey;
+import org.zstack.tunnel.header.switchs.SwitchPortVO;
+
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
@@ -16,10 +19,12 @@ public class HostSwitchMonitorAO {
     private String uuid;
 
     @Column
+    @ForeignKey(parentEntityClass = HostEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String hostUuid;
 
     @Column
-    private String switchUuid;
+    @ForeignKey(parentEntityClass = SwitchPortVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
+    private String switchPortUuid;
 
     @Column
     private String interfaceName;
@@ -46,12 +51,12 @@ public class HostSwitchMonitorAO {
         this.hostUuid = hostUuid;
     }
 
-    public String getSwitchUuid() {
-        return switchUuid;
+    public String getSwitchPortUuid() {
+        return switchPortUuid;
     }
 
-    public void setSwitchUuid(String switchUuid) {
-        this.switchUuid = switchUuid;
+    public void setSwitchPortUuid(String switchPortUuid) {
+        this.switchPortUuid = switchPortUuid;
     }
 
     public String getInterfaceName() {

@@ -1,5 +1,7 @@
 package org.zstack.tunnel.header.switchs;
 
+import org.zstack.header.vo.ForeignKey;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -16,7 +18,12 @@ public class SwitchPortVO {
     private String uuid;
 
     @Column
+    @ForeignKey(parentEntityClass = SwitchEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String switchUuid;
+
+    @ManyToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name="switchUuid", insertable=false, updatable=false)
+    private SwitchVO switchs;
 
     @Column
     private Integer portNum;
@@ -121,5 +128,13 @@ public class SwitchPortVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public SwitchVO getSwitchs() {
+        return switchs;
+    }
+
+    public void setSwitchs(SwitchVO switchs) {
+        this.switchs = switchs;
     }
 }

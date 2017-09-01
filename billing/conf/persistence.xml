@@ -9,10 +9,14 @@
         <class>org.zstack.core.job.JobQueueVO</class>
         <class>org.zstack.core.job.JobQueueEntryVO</class>
 
-        <class>org.zstack.billing.header.identity.balance.AccountBalanceVO</class>
-        <class>org.zstack.billing.header.identity.order.OrderVO</class>
-        <class>org.zstack.billing.header.identity.bill.BillVO</class>
-        <class>org.zstack.billing.header.identity.renew.RenewVO</class>
-        <class>org.zstack.billing.header.identity.receipt.ReceiptPostAddressVO</class>
+        <class>org.zstack.billing.header.balance.AccountBalanceVO</class>
+        <class>org.zstack.billing.header.order.OrderVO</class>
+        <class>org.zstack.billing.header.bill.BillVO</class>
+        <class>org.zstack.billing.header.renew.RenewVO</class>
+        <class>org.zstack.billing.header.receipt.ReceiptPostAddressVO</class>
+        <class>org.zstack.billing.header.receipt.ReceiptVO</class>
+        <class>org.zstack.billing.header.receipt.ReceiptInfoVO</class>
+        <class>org.zstack.billing.header.balance.DealDetailVO</class>
+        <class>org.zstack.billing.header.sla.SLACompensateVO</class>
     </persistence-unit>
 </persistence>

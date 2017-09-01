@@ -1,5 +1,8 @@
 package org.zstack.tunnel.header.switchs;
 
+import org.zstack.header.vo.ForeignKey;
+import org.zstack.tunnel.header.endpoint.EndpointEO;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -14,6 +17,7 @@ public class SwitchAO {
     private String uuid;
 
     @Column
+    @ForeignKey(parentEntityClass = EndpointEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String endpointUuid;
 
     @Column
@@ -26,6 +30,7 @@ public class SwitchAO {
     private String brand;
 
     @Column
+    @ForeignKey(parentEntityClass = SwitchModelVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String switchModelUuid;
 
     @Column

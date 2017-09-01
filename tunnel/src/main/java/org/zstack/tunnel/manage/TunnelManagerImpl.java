@@ -455,7 +455,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         vo.setUuid(Platform.getUuid());
         vo.setHostUuid(msg.getHostUuid());
-        vo.setSwitchUuid(msg.getSwitchUuid());
+        vo.setSwitchPortUuid(msg.getSwitchPortUuid());
         vo.setInterfaceName(msg.getInterfaceName());
 
         vo = dbf.persistAndRefresh(vo);
@@ -472,8 +472,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             vo.setInterfaceName(msg.getInterfaceName());
             update = true;
         }
-        if(msg.getSwitchUuid() != null){
-            vo.setSwitchUuid(msg.getSwitchUuid());
+        if(msg.getSwitchPortUuid() != null){
+            vo.setSwitchPortUuid(msg.getSwitchPortUuid());
             update = true;
         }
 
@@ -848,11 +848,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if (!q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("host %s is not exist ",msg.getHostUuid()));
         }
-        //判断所选择的交换机是否存在
-        SimpleQuery<SwitchVO> q2 = dbf.createQuery(SwitchVO.class);
-        q2.add(SwitchVO_.uuid, Op.EQ, msg.getSwitchUuid());
+        //判断所选择的交换机端口是否存在
+        SimpleQuery<SwitchPortVO> q2 = dbf.createQuery(SwitchPortVO.class);
+        q2.add(SwitchPortVO_.uuid, Op.EQ, msg.getSwitchPortUuid());
         if (!q2.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getSwitchUuid()));
+            throw new ApiMessageInterceptionException(argerr("switchPort %s is not exist ",msg.getSwitchPortUuid()));
         }
     }
 
@@ -869,12 +869,12 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if (!q2.isExists()) {
             throw new ApiMessageInterceptionException(argerr("host %s is not exist ",msg.getHostUuid()));
         }
-        //判断所选择的交换机是否存在
-        if(msg.getSwitchUuid() != null){
-            SimpleQuery<SwitchVO> q3 = dbf.createQuery(SwitchVO.class);
-            q3.add(SwitchVO_.uuid, Op.EQ, msg.getSwitchUuid());
+        //判断所选择的交换机端口是否存在
+        if(msg.getSwitchPortUuid() != null){
+            SimpleQuery<SwitchPortVO> q3 = dbf.createQuery(SwitchPortVO.class);
+            q3.add(SwitchPortVO_.uuid, Op.EQ, msg.getSwitchPortUuid());
             if (!q3.isExists()) {
-                throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getSwitchUuid()));
+                throw new ApiMessageInterceptionException(argerr("switchPort %s is not exist ",msg.getSwitchPortUuid()));
             }
         }
 
