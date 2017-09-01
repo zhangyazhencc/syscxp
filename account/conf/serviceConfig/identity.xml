@@ -154,5 +154,9 @@
         <name>org.zstack.account.header.identity.APIGetAccountApiKeyMsg</name>
     </message>
 
+    <message>
+        <name>org.zstack.account.header.identity.APIRegisterAccountMsg</name>
+    </message>
+
 
 </service>
