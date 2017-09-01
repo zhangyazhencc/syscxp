@@ -430,10 +430,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void validate(APIRegisterAccountMsg msg) {
 
-        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
-            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-                    msg.getAccountUuid()));
-        }
+        //测试中，去除验证
+//        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+//            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+//                    msg.getAccountUuid()));
+//        }
 
     }
 
