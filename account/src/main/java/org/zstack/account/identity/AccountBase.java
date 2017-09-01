@@ -198,7 +198,7 @@ public class AccountBase extends AbstractAccount {
         AccountContactsVO acvo = new AccountContactsVO();
         acvo.setUuid(Platform.getUuid());
         acvo.setAccountUuid(msg.getTargetUuid());
-        acvo.setContacts(msg.getContacts());
+        acvo.setName(msg.getName());
         acvo.setPhone(msg.getPhone());
         acvo.setEmail(msg.getPhone());
         acvo.setNoticeWay(msg.getNoticeWay());
@@ -232,8 +232,8 @@ public class AccountBase extends AbstractAccount {
                     msg.getAccountUuid(), msg.getTargetUuid()));
         }
 
-        if(msg.getContacts() != null){
-            cont.setContacts(msg.getContacts());
+        if(msg.getName() != null){
+            cont.setName(msg.getName());
         }
         if(msg.getDescription() != null){
             cont.setDescription(msg.getDescription());

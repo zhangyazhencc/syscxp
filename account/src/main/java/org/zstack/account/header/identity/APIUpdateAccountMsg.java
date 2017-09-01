@@ -35,10 +35,7 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
 
     @APIParam(maxLength = 255, required = false)
     private String salesman;
-    @APIParam(maxLength = 255, required = false)
-    private String contacts;
-    @APIParam(maxLength = 255, required = false)
-    private String contactNumber;
+
 
     public String getDescription() {
         return description;
@@ -112,14 +109,6 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
         return salesman;
     }
 
-    public String getContacts() {
-        return contacts;
-    }
-
-    public String getContactNumber() {
-        return contactNumber;
-    }
-
     public void setIndustry(String industry) {
         this.industry = industry;
     }
@@ -134,14 +123,6 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
 
     public void setSalesman(String salesman) {
         this.salesman = salesman;
-    }
-
-    public void setContacts(String contacts) {
-        this.contacts = contacts;
-    }
-
-    public void setContactNumber(String contactNumber) {
-        this.contactNumber = contactNumber;
     }
 
     public ApiNotification __notification__() {

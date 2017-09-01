@@ -24,10 +24,6 @@ public class APICreateAccountContactsMsg extends  APIMessage implements  Account
         return this.getSession().getAccountUuid();
     }
 
-    public String getContacts() {
-        return name;
-    }
-
     public String getPhone() {
         return phone;
     }
@@ -40,8 +36,12 @@ public class APICreateAccountContactsMsg extends  APIMessage implements  Account
         return noticeWay;
     }
 
-    public void setContacts(String contacts) {
-        this.name = contacts;
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public void setPhone(String phone) {
