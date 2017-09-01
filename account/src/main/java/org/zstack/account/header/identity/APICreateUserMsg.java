@@ -2,10 +2,11 @@ package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APICreateMessage;
+import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
-public class APICreateUserMsg extends APICreateMessage implements AccountMessage {
+public class APICreateUserMsg extends APIMessage implements AccountMessage {
 
     @APIParam(maxLength = 128)
     private String name;

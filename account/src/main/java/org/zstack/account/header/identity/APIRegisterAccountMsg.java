@@ -1,11 +1,11 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.SuppressCredentialCheck;
-import org.zstack.header.message.APICreateMessage;
+import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 @SuppressCredentialCheck
-public class APIRegisterAccountMsg extends APICreateMessage implements AccountMessage{
+public class APIRegisterAccountMsg extends APIMessage implements AccountMessage{
     @APIParam(maxLength = 128)
     private String name;
     @APIParam(maxLength = 128)
