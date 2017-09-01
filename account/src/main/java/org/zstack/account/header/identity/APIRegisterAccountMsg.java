@@ -5,7 +5,7 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 @SuppressCredentialCheck
-public class APIRegisterAccountMsg extends APIMessage implements AccountMessage{
+public class APIRegisterAccountMsg extends APIMessage {
     @APIParam(maxLength = 128)
     private String name;
     @APIParam(maxLength = 128)
@@ -26,11 +26,6 @@ public class APIRegisterAccountMsg extends APIMessage implements AccountMessage{
 
     @APIParam(maxLength = 255, required = false)
     private String description;
-
-    @Override
-    public String getAccountUuid() {
-        return null;
-    }
 
     public String getName() {
         return name;
