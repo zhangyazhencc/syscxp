@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.zstack.account.header.identity.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cascade.CascadeFacade;
@@ -704,7 +705,7 @@ public class AccountBase extends AbstractAccount {
         auth.setName(msg.getName());
         auth.setSortId(msg.getSortId());
         auth.setType(msg.getType());
-        auth.setLevel(AccountType.valueOf(msg.getLevel()));
+        auth.setLevel(msg.getLevel());
 
         APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
 
@@ -717,23 +718,23 @@ public class AccountBase extends AbstractAccount {
         PermissionVO auth = dbf.findByUuid(msg.getUuid(), PermissionVO.class);
 
         boolean update = false;
-        if (msg.getName() != null) {
+        if (!StringUtils.isEmpty(msg.getName())) {
             auth.setName(msg.getName());
             update = true;
         }
-        if (msg.getLevel() != null) {
-            auth.setLevel(AccountType.valueOf(msg.getLevel()));
+        if (!StringUtils.isEmpty(msg.getLevel())) {
+            auth.setLevel(msg.getLevel());
             update = true;
         }
-        if (msg.getPermisstion() != null) {
-            auth.setPermission(msg.getPermisstion());
+        if (!StringUtils.isEmpty(msg.getPermission())) {
+            auth.setPermission(msg.getPermission());
             update = true;
         }
-        if (msg.getType() != null) {
+        if (!StringUtils.isEmpty(msg.getType())) {
             auth.setType(msg.getType());
             update = true;
         }
-        if (msg.getSortId() != null) {
+        if (!StringUtils.isEmpty(msg.getSortId())) {
             auth.setSortId(msg.getSortId());
             update = true;
         }

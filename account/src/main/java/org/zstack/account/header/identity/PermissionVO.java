@@ -34,7 +34,7 @@ public class PermissionVO {
     private PermissionType type;
 
     @Column
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private AccountType level;
 
     @Column
