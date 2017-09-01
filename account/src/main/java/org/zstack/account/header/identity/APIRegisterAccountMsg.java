@@ -1,7 +1,5 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.AccountGrade;
-import org.zstack.header.identity.Action;
 import org.zstack.header.identity.SuppressCredentialCheck;
 import org.zstack.header.message.APICreateMessage;
 import org.zstack.header.message.APIParam;
@@ -31,7 +29,7 @@ public class APIRegisterAccountMsg extends APICreateMessage implements AccountMe
 
     @Override
     public String getAccountUuid() {
-        return this.getSession().getAccountUuid();
+        return null;
     }
 
     public String getName() {
