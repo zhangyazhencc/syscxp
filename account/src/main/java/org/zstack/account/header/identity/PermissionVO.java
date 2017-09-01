@@ -2,7 +2,6 @@ package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.PermissionType;
-import org.zstack.header.identity.PermissionVisible;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -35,7 +34,7 @@ public class PermissionVO {
     private PermissionType type;
 
     @Column
-    @Enumerated(EnumType.STRING)
+    @Enumerated(EnumType.ORDINAL)
     private AccountType level;
 
     @Column

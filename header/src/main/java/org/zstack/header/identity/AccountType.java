@@ -6,13 +6,13 @@ public enum AccountType {
     Proxy(1),
     Normal(2);
 
-    private int value;
+    private Integer value;
 
-    private AccountType(int value){
+    private AccountType(Integer value){
         this.value = value;
     }
 
-    public static AccountType valueOf(int value) {
+    public static AccountType valueOf(Integer value) {
         switch (value) {
             case 0:
                 return SystemAdmin;
@@ -25,7 +25,7 @@ public enum AccountType {
         }
     }
 
-    public int value() {
+    public Integer value() {
         return this.value;
     }
 }

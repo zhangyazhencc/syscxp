@@ -1,9 +1,7 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.Action;
 import org.zstack.header.identity.PermissionType;
-import org.zstack.header.identity.PermissionVisible;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
@@ -15,18 +13,14 @@ public class APICreatePermissionMsg extends  APIMessage implements  AccountMessa
     @APIParam(maxLength = 255)
     public String permission;
 
-    @APIParam(maxLength = 255, required = false)
-    private String description;
-
     @APIParam(maxLength = 36)
     private PermissionType type;
 
     @APIParam(numberRange = {0, 2})
-    private int level;
+    private Integer level;
 
     @APIParam(maxLength = 36)
-    private int sortId;
-
+    private Integer sortId;
 
 
     public String getName() {
@@ -37,9 +31,6 @@ public class APICreatePermissionMsg extends  APIMessage implements  AccountMessa
         return permission;
     }
 
-    public String getDescription() {
-        return description;
-    }
 
     public void setName(String name) {
         this.name = name;
@@ -49,9 +40,6 @@ public class APICreatePermissionMsg extends  APIMessage implements  AccountMessa
         this.permission = permission;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
 
     public PermissionType getType() {
         return type;
@@ -61,19 +49,19 @@ public class APICreatePermissionMsg extends  APIMessage implements  AccountMessa
         this.type = type;
     }
 
-    public int getLevel() {
+    public Integer getLevel() {
         return level;
     }
 
-    public void setLevel(int level) {
+    public void setLevel(Integer level) {
         this.level = level;
     }
 
-    public int getSortId() {
+    public Integer getSortId() {
         return sortId;
     }
 
-    public void setSortId(int sortId) {
+    public void setSortId(Integer sortId) {
         this.sortId = sortId;
     }
 
