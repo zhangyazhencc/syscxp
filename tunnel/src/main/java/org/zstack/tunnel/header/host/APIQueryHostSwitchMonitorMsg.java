@@ -6,6 +6,6 @@ import org.zstack.header.query.AutoQuery;
 /**
  * Created by DCY on 2017-08-30
  */
-@AutoQuery(replyClass = APIQueryHostSwitchMonitorReply.class, inventoryClass = HostSwitchMonitorInventory.class)
+@AutoQuery(replyClass = APIQueryHostSwitchMonitorReply.class, inventoryClass = HostSwitchPortInventory.class)
 public class APIQueryHostSwitchMonitorMsg extends APIQueryMessage {
 }

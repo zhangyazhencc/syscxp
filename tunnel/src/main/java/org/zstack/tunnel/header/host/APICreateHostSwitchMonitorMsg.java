@@ -12,7 +12,7 @@ public class APICreateHostSwitchMonitorMsg extends APIMessage {
     private String hostUuid;
 
     @APIParam(emptyString = false,maxLength = 32)
-    private String switchUuid;
+    private String switchPortUuid;
 
     @APIParam(emptyString = false,maxLength = 128)
     private String interfaceName;
@@ -25,12 +25,12 @@ public class APICreateHostSwitchMonitorMsg extends APIMessage {
         this.hostUuid = hostUuid;
     }
 
-    public String getSwitchUuid() {
-        return switchUuid;
+    public String getSwitchPortUuid() {
+        return switchPortUuid;
     }
 
-    public void setSwitchUuid(String switchUuid) {
-        this.switchUuid = switchUuid;
+    public void setSwitchPortUuid(String switchPortUuid) {
+        this.switchPortUuid = switchPortUuid;
     }
 
     public String getInterfaceName() {

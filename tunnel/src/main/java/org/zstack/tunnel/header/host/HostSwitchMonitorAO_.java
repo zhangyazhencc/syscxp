@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 public class HostSwitchMonitorAO_ {
     public static volatile SingularAttribute<HostSwitchMonitorAO, String> uuid;
     public static volatile SingularAttribute<HostSwitchMonitorAO, String> hostUuid;
-    public static volatile SingularAttribute<HostSwitchMonitorAO, String> switchUuid;
+    public static volatile SingularAttribute<HostSwitchMonitorAO, String> switchPortUuid;
     public static volatile SingularAttribute<HostSwitchMonitorAO, String> interfaceName;
     public static volatile SingularAttribute<HostSwitchMonitorAO, Timestamp> createDate;
     public static volatile SingularAttribute<HostSwitchMonitorAO, Timestamp> lastOpDate;

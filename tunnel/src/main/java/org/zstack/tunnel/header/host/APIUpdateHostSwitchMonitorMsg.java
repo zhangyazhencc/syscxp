@@ -15,7 +15,7 @@ public class APIUpdateHostSwitchMonitorMsg extends APIMessage {
     private String hostUuid;
 
     @APIParam(required = false,maxLength = 32)
-    private String switchUuid;
+    private String switchPortUuid;
 
     @APIParam(required = false,maxLength = 128)
     private String interfaceName;
@@ -36,12 +36,12 @@ public class APIUpdateHostSwitchMonitorMsg extends APIMessage {
         this.hostUuid = hostUuid;
     }
 
-    public String getSwitchUuid() {
-        return switchUuid;
+    public String getSwitchPortUuid() {
+        return switchPortUuid;
     }
 
-    public void setSwitchUuid(String switchUuid) {
-        this.switchUuid = switchUuid;
+    public void setSwitchPortUuid(String switchPortUuid) {
+        this.switchPortUuid = switchPortUuid;
     }
 
     public String getInterfaceName() {

@@ -1,54 +1,64 @@
 package org.zstack.tunnel.header.switchs;
 
-import org.zstack.header.vo.ForeignKey;
+import org.zstack.header.search.Inventory;
 
-import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
- * Created by DCY on 2017-08-29
+ * Created by DCY on 2017-09-01
  */
-@Entity
-@Table
-@Inheritance(strategy = InheritanceType.JOINED)
-public class SwitchPortVO {
-
-    @Id
-    @Column
+@Inventory(mappingVOClass = SwitchPortVO.class)
+public class SwitchPortSwitchSwitchModelInventory {
     private String uuid;
 
-    @Column
-    @ForeignKey(parentEntityClass = SwitchEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String switchUuid;
 
-    @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="switchUuid", insertable=false, updatable=false)
-    private SwitchVO switchs;
+    private SwitchSwitchModelInventory switchSwitchModel;
 
-    @Column
     private Integer portNum;
 
-    @Column
     private String portName;
 
-    @Column
-    @Enumerated(EnumType.STRING)
     private SwitchPortLabel label;
 
-    @Column
     private Integer reuse;
 
-    @Column
     private Integer autoAlloc;
 
-    @Column
     private Integer enabled;
 
-    @Column
     private Timestamp createDate;
 
-    @Column
     private Timestamp lastOpDate;
+
+    public static SwitchPortSwitchSwitchModelInventory valueOf(SwitchPortVO vo){
+        SwitchPortSwitchSwitchModelInventory inv = new SwitchPortSwitchSwitchModelInventory();
+
+        inv.setUuid(vo.getUuid());
+        inv.setSwitchUuid(vo.getSwitchUuid());
+        inv.setSwitchSwitchModel(SwitchSwitchModelInventory.valueOf(vo.getSwitchs()));
+        inv.setPortNum(vo.getPortNum());
+        inv.setPortName(vo.getPortName());
+        inv.setLabel(vo.getLabel());
+        inv.setReuse(vo.getReuse());
+        inv.setAutoAlloc(vo.getAutoAlloc());
+        inv.setEnabled(vo.getEnabled());
+        inv.setLastOpDate(vo.getLastOpDate());
+        inv.setCreateDate(vo.getCreateDate());
+
+        return inv;
+    }
+
+    public static List<SwitchPortSwitchSwitchModelInventory> valueOf(Collection<SwitchPortVO> vos) {
+        List<SwitchPortSwitchSwitchModelInventory> lst = new ArrayList<SwitchPortSwitchSwitchModelInventory>(vos.size());
+        for (SwitchPortVO vo : vos) {
+            lst.add(SwitchPortSwitchSwitchModelInventory.valueOf(vo));
+        }
+        return lst;
+    }
 
     public String getUuid() {
         return uuid;
@@ -64,6 +74,14 @@ public class SwitchPortVO {
 
     public void setSwitchUuid(String switchUuid) {
         this.switchUuid = switchUuid;
+    }
+
+    public SwitchSwitchModelInventory getSwitchSwitchModel() {
+        return switchSwitchModel;
+    }
+
+    public void setSwitchSwitchModel(SwitchSwitchModelInventory switchSwitchModel) {
+        this.switchSwitchModel = switchSwitchModel;
     }
 
     public Integer getPortNum() {
@@ -128,13 +146,5 @@ public class SwitchPortVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
-    }
-
-    public SwitchVO getSwitchs() {
-        return switchs;
-    }
-
-    public void setSwitchs(SwitchVO switchs) {
-        this.switchs = switchs;
     }
 }
