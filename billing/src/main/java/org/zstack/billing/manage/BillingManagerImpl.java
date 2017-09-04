@@ -129,9 +129,22 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIVerifyReturnMsg) msg);
         }else if (msg instanceof APIVerifyNotifyMsg) {
             handle((APIVerifyNotifyMsg) msg);
+        } else if (msg instanceof APIAllotDischargeMsg) {
+            handle((APIAllotDischargeMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIAllotDischargeMsg msg) {
+        String uuid = msg.getUuid();
+        AccountDischargeVO accountDischargeVO = dbf.findByUuid(uuid,AccountDischargeVO.class);
+        accountDischargeVO.setDisCharge(msg.getDischarge());
+        dbf.updateAndRefresh(accountDischargeVO);
+        AccountDischargeInventory inventory = AccountDischargeInventory.valueOf(accountDischargeVO);
+        APIAllotDischargeEvent evt = new APIAllotDischargeEvent(msg.getId());
+        evt.setInventory(inventory);
+        bus.publish(evt);
     }
 
     private void handle(APIVerifyNotifyMsg msg) {

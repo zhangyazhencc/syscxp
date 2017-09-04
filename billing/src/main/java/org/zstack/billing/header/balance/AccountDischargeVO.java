@@ -22,9 +22,11 @@ public class AccountDischargeVO {
     private String accountUuid;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private ProductType productType;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private Category category;
 
     @Column
@@ -65,7 +67,7 @@ public class AccountDischargeVO {
     }
 
     public void setDisCharge(int disCharge) {
-        this.disCharge = disCharge;
+        this.disCharge = Math.abs(disCharge);
     }
 
     public Timestamp getCreateDate() {
