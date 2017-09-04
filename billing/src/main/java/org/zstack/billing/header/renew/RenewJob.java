@@ -5,13 +5,11 @@ import org.quartz.JobExecutionException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.zstack.billing.header.balance.AccountBalanceVO;
 import org.zstack.billing.header.balance.ProductChargeModel;
-import org.zstack.billing.header.order.APICreateOrderMsg;
-import org.zstack.billing.header.order.OrderType;
-import org.zstack.billing.header.order.ProductPriceUnit;
-import org.zstack.billing.header.order.ProductPriceUnitVO;
+import org.zstack.billing.header.order.*;
 import org.zstack.billing.manage.BillingErrors;
 import org.zstack.billing.manage.BillingManagerImpl;
 import org.zstack.billing.manage.BillingServiceException;
+import org.zstack.core.Platform;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.GLock;
 import org.zstack.core.db.SimpleQuery;
@@ -21,6 +19,7 @@ import org.zstack.utils.logging.CLogger;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.List;
 
 public class RenewJob extends QuartzJobBean {
@@ -64,26 +63,55 @@ public class RenewJob extends QuartzJobBean {
                     if (total.compareTo(mayPayTotal) > 0) {
                         throw new IllegalArgumentException("have enough money");
                     }
+                    OrderVO orderVo = new OrderVO();
                     if (abvo.getPresentBalance().compareTo(BigDecimal.ZERO) > 0) {
                         if (abvo.getPresentBalance().compareTo(total) > 0) {
+                            BigDecimal presentNow = abvo.getPresentBalance().subtract(total);
+                            abvo.setPresentBalance(presentNow);
                             orderVo.setPayPresent(total);
                             orderVo.setPayCash(BigDecimal.ZERO);
 
                         } else {
                             BigDecimal payPresent = abvo.getPresentBalance();
                             BigDecimal payCash = total.subtract(payPresent);
+                            BigDecimal remainCash = abvo.getCashBalance().subtract(payCash);
+                            abvo.setCashBalance(remainCash);
+                            abvo.setPresentBalance(BigDecimal.ZERO);
                             orderVo.setPayPresent(payPresent);
                             orderVo.setPayCash(payCash);
                         }
 
                     } else {
                         BigDecimal remainCashBalance = abvo.getCashBalance().subtract(total);
+                        abvo.setCashBalance(remainCashBalance);
                         orderVo.setPayPresent(BigDecimal.ZERO);
                         orderVo.setPayCash(total);
                     }
                     //todo generate product from tunel
+                    orderVo.setUuid(Platform.getUuid());
+                    orderVo.setAccountUuid(r.getAccountUuid());
+                    orderVo.setProductName(r.getProductName());
+                    orderVo.setState(OrderState.PAID);
+                    orderVo.setProductType(r.getProductType());
+                    orderVo.setType(OrderType.RENEW);
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTime(currentTimestamp);
+                    calendar.add(Calendar.MONTH, duration.intValue());
+                    orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
+                    orderVo.setProductEffectTimeStart(currentTimestamp);
 
+                    orderVo.setProductChargeModel(r.getProductChargeModel());//todo this value would be got from account
+                    orderVo.setPayTime(currentTimestamp);
+                    orderVo.setProductDiscount(BigDecimal.valueOf(productDisCharge));
+                    orderVo.setProductDescription("");//todo from tunnel
+                    orderVo.setOriginalPrice(originalPrice);
+                    orderVo.setProductUuid(r.getProductUuid());
+                    orderVo.setPrice(total);
+                    orderVo.setDuration(r.getDuration());
 
+                    databaseFacade.updateAndRefresh(abvo);
+                    databaseFacade.persistAndRefresh(orderVo);
+                    //callback tunnel to modify effictive time
 
                 }
             }
