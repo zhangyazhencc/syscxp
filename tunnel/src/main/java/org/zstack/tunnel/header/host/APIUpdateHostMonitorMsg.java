@@ -6,16 +6,27 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by DCY on 2017-08-30
  */
-public class APICreateHostSwitchMonitorMsg extends APIMessage {
+public class APIUpdateHostMonitorMsg extends APIMessage {
+
+    @APIParam(emptyString = false,resourceType = HostMonitorVO.class)
+    private String targetUuid;
 
     @APIParam(emptyString = false,maxLength = 32)
     private String hostUuid;
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(required = false,maxLength = 32)
     private String switchPortUuid;
 
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(required = false,maxLength = 128)
     private String interfaceName;
+
+    public String getTargetUuid() {
+        return targetUuid;
+    }
+
+    public void setTargetUuid(String targetUuid) {
+        this.targetUuid = targetUuid;
+    }
 
     public String getHostUuid() {
         return hostUuid;

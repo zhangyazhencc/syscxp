@@ -9,7 +9,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table
-public class HostSwitchMonitorEO extends HostSwitchMonitorAO{
+public class HostMonitorEO extends HostMonitorAO {
     @Column
     private Integer deleted;
 

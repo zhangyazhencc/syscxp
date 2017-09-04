@@ -26,7 +26,6 @@ import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
 import static org.zstack.core.Platform.argerr;
-import static org.zstack.tunnel.header.endpoint.EndpointStatus.NORMAL;
 
 /**
  * Created by DCY on 2017-08-21
@@ -107,10 +106,10 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             handle((APICreateHostMsg) msg);
         }else if(msg instanceof APIUpdateHostMsg){
             handle((APIUpdateHostMsg) msg);
-        }else if(msg instanceof APICreateHostSwitchMonitorMsg){
-            handle((APICreateHostSwitchMonitorMsg) msg);
-        }else if(msg instanceof APIUpdateHostSwitchMonitorMsg){
-            handle((APIUpdateHostSwitchMonitorMsg) msg);
+        }else if(msg instanceof APICreateHostMonitorMsg){
+            handle((APICreateHostMonitorMsg) msg);
+        }else if(msg instanceof APIUpdateHostMonitorMsg){
+            handle((APIUpdateHostMonitorMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -356,7 +355,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setUuid(Platform.getUuid());
         vo.setSwitchUuid(msg.getSwitchUuid());
         vo.setPortName(msg.getPortName());
+        vo.setPortType(msg.getPortType());
         vo.setLabel(msg.getLabel());
+        vo.setIsExclusive(msg.getIsExclusive());
         vo.setAutoAlloc(msg.getAutoAlloc());
         vo.setEnabled(1);
         vo.setReuse(msg.getReuse());
@@ -450,8 +451,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         bus.publish(evt);
     }
 
-    private void handle(APICreateHostSwitchMonitorMsg msg){
-        HostSwitchMonitorVO vo = new HostSwitchMonitorVO();
+    private void handle(APICreateHostMonitorMsg msg){
+        HostMonitorVO vo = new HostMonitorVO();
 
         vo.setUuid(Platform.getUuid());
         vo.setHostUuid(msg.getHostUuid());
@@ -460,13 +461,13 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         vo = dbf.persistAndRefresh(vo);
 
-        APICreateHostSwitchMonitorEvent evt = new APICreateHostSwitchMonitorEvent(msg.getId());
-        evt.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+        APICreateHostMonitorEvent evt = new APICreateHostMonitorEvent(msg.getId());
+        evt.setInventory(HostMonitorInventory.valueOf(vo));
         bus.publish(evt);
     }
 
-    private void handle(APIUpdateHostSwitchMonitorMsg msg){
-        HostSwitchMonitorVO vo = dbf.findByUuid(msg.getTargetUuid(),HostSwitchMonitorVO.class);
+    private void handle(APIUpdateHostMonitorMsg msg){
+        HostMonitorVO vo = dbf.findByUuid(msg.getTargetUuid(),HostMonitorVO.class);
         boolean update = false;
         if(msg.getInterfaceName() != null){
             vo.setInterfaceName(msg.getInterfaceName());
@@ -480,8 +481,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if (update)
             vo = dbf.updateAndRefresh(vo);
 
-        APIUpdateHostSwitchMonitorEvent evt = new APIUpdateHostSwitchMonitorEvent(msg.getId());
-        evt.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+        APIUpdateHostMonitorEvent evt = new APIUpdateHostMonitorEvent(msg.getId());
+        evt.setInventory(HostMonitorInventory.valueOf(vo));
         bus.publish(evt);
     }
 
@@ -540,10 +541,10 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             validate((APICreateHostMsg) msg);
         }else if(msg instanceof APIUpdateHostMsg){
             validate((APIUpdateHostMsg) msg);
-        }else if(msg instanceof APICreateHostSwitchMonitorMsg){
-            validate((APICreateHostSwitchMonitorMsg) msg);
-        }else if(msg instanceof APIUpdateHostSwitchMonitorMsg){
-            validate((APIUpdateHostSwitchMonitorMsg) msg);
+        }else if(msg instanceof APICreateHostMonitorMsg){
+            validate((APICreateHostMonitorMsg) msg);
+        }else if(msg instanceof APIUpdateHostMonitorMsg){
+            validate((APIUpdateHostMonitorMsg) msg);
         }
         return msg;
     }
@@ -840,7 +841,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
     }
 
-    private void validate(APICreateHostSwitchMonitorMsg msg){
+    private void validate(APICreateHostMonitorMsg msg){
 
         //判断所属监控机是否存在
         SimpleQuery<HostVO> q = dbf.createQuery(HostVO.class);
@@ -856,10 +857,10 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
     }
 
-    private void validate(APIUpdateHostSwitchMonitorMsg msg){
+    private void validate(APIUpdateHostMonitorMsg msg){
         //判断所修改的监控机交换机是否存在
-        SimpleQuery<HostSwitchMonitorVO> q = dbf.createQuery(HostSwitchMonitorVO.class);
-        q.add(HostSwitchMonitorVO_.uuid, Op.EQ, msg.getTargetUuid());
+        SimpleQuery<HostMonitorVO> q = dbf.createQuery(HostMonitorVO.class);
+        q.add(HostMonitorVO_.uuid, Op.EQ, msg.getTargetUuid());
         if (!q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("HostSwitchMonitor %s is not exist ",msg.getTargetUuid()));
         }

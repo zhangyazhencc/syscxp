@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by DCY on 2017-09-01
  */
-@Inventory(mappingVOClass = HostSwitchMonitorVO.class)
+@Inventory(mappingVOClass = HostMonitorVO.class)
 public class HostSwitchPortInventory {
 
     private String uuid;
@@ -23,7 +23,7 @@ public class HostSwitchPortInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    public static HostSwitchPortInventory valueOf(HostSwitchMonitorVO vo){
+    public static HostSwitchPortInventory valueOf(HostMonitorVO vo){
         HostSwitchPortInventory inv = new HostSwitchPortInventory();
         inv.setUuid(vo.getUuid());
         inv.setHostUuid(vo.getHostUuid());
@@ -36,9 +36,9 @@ public class HostSwitchPortInventory {
         return inv;
     }
 
-    public static List<HostSwitchPortInventory> valueOf(Collection<HostSwitchMonitorVO> vos) {
+    public static List<HostSwitchPortInventory> valueOf(Collection<HostMonitorVO> vos) {
         List<HostSwitchPortInventory> lst = new ArrayList<HostSwitchPortInventory>(vos.size());
-        for (HostSwitchMonitorVO vo : vos) {
+        for (HostMonitorVO vo : vos) {
             lst.add(HostSwitchPortInventory.valueOf(vo));
         }
         return lst;
