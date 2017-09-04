@@ -895,23 +895,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             if (total.compareTo(mayPayTotal) > 0) {
                 throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
             }
-            if (abvo.getPresentBalance().compareTo(BigDecimal.ZERO) > 0) {
-                if (abvo.getPresentBalance().compareTo(total) > 0) {
-                    orderVo.setPayPresent(total);
-                    orderVo.setPayCash(BigDecimal.ZERO);
-
-                } else {
-                    BigDecimal payPresent = abvo.getPresentBalance();
-                    BigDecimal payCash = total.subtract(payPresent);
-                    orderVo.setPayPresent(payPresent);
-                    orderVo.setPayCash(payCash);
-                }
-
-            } else {
-                BigDecimal remainCashBalance = abvo.getCashBalance().subtract(total);
-                orderVo.setPayPresent(BigDecimal.ZERO);
-                orderVo.setPayCash(total);
-            }
+            payMethod(msg, orderVo, abvo, total, currentTimestamp);
             //todo generate product from tunel
 
         }
