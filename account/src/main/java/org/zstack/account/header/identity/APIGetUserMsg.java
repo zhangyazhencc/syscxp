@@ -1,9 +1,9 @@
 package org.zstack.account.header.identity;
 
 
-import org.zstack.header.message.APIMessage;
+import org.zstack.header.message.APISyncCallMessage;
 
-public class APIGetUserMsg extends  APIMessage implements  AccountMessage {
+public class APIGetUserMsg extends APISyncCallMessage implements  AccountMessage {
 
     @Override
     public String getAccountUuid() {
