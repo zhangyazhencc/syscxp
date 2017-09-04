@@ -180,9 +180,9 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIGetAccountMsg msg) {
         APIGetAccountReply reply = new APIGetAccountReply();
 
-        SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
-        q.add(AccountVO_.uuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-        AccountVO account = q.find();
+//        SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
+//        q.add(AccountVO_.uuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        AccountVO account = dbf.findByUuid(msg.getAccountUuid(),AccountVO.class);
 
         reply.setInventory(AccountInventory.valueOf(account));
         bus.reply(msg, reply);
@@ -191,12 +191,11 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIGetUserMsg msg) {
         APIGetUserReply reply = new APIGetUserReply();
 
-        SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
-        q.add(UserVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-        q.add(UserVO_.uuid, SimpleQuery.Op.EQ, msg.getSession().getUuid());
-
-        UserVO user = q.find();
-
+//        SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
+//        q.add(UserVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+//        q.add(UserVO_.uuid, SimpleQuery.Op.EQ, msg.getSession().getUuid());
+//        UserVO user = q.find();
+        UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(),UserVO.class);
         reply.setInventory(UserInventory.valueOf(user));
         bus.reply(msg, reply);
     }
