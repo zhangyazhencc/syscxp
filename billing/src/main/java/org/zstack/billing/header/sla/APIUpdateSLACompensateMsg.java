@@ -1,42 +1,43 @@
 package org.zstack.billing.header.sla;
 
+import org.zstack.billing.header.balance.ProductType;
 import org.zstack.billing.manage.BillingConstant;
 import org.zstack.header.identity.Action;
-import org.zstack.billing.header.balance.ProductType;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 import java.sql.Timestamp;
+
 @Action(category = BillingConstant.ACTION_CATEGORY, names = {"sla"})
 public class APIUpdateSLACompensateMsg extends APIMessage {
-    @APIParam(nonempty = true)
+    @APIParam(emptyString =false)
     private String uuid;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString =false)
     private String accountUuid;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString =false)
     private String productUuid;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString =false)
     private ProductType productType;
 
-    @APIParam(nonempty = true,required = false)
+    @APIParam(emptyString =false,required = false)
     private String productName;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString =false)
     private String reason;
 
-    @APIParam(nonempty = true,required = false)
+    @APIParam(emptyString =false,required = false)
     private String description;
 
-    @APIParam(nonempty = true)
+    @APIParam()
     private Integer duration;
 
-    @APIParam(nonempty = true)
+    @APIParam()
     private Timestamp timeStart;
 
-    @APIParam(nonempty = true)
+    @APIParam()
     private Timestamp timeEnd;
 
     @APIParam(required = false)

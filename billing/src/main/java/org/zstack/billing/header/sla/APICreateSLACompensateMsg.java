@@ -1,8 +1,8 @@
 package org.zstack.billing.header.sla;
 
+import org.zstack.billing.header.balance.ProductType;
 import org.zstack.billing.manage.BillingConstant;
 import org.zstack.header.identity.Action;
-import org.zstack.billing.header.balance.ProductType;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
