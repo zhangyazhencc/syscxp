@@ -122,11 +122,20 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APICheckApiPermissionMsg) msg);
         } else if(msg instanceof APIRegisterAccountMsg){
             handle((APIRegisterAccountMsg) msg);
+        } else if(msg instanceof APIAccountPWDBackMsg){
+            handle((APIAccountPWDBackMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
+    private void handle(APIAccountPWDBackMsg msg) {
+        APIAccountPWDBackEvent evt = new APIAccountPWDBackEvent(msg.getId());
+
+
+
+        bus.publish(evt);
+    }
 
     @Transactional
     private void handle(APIRegisterAccountMsg msg) {
@@ -248,6 +257,19 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
         reply.setValidSession(valid);
+
+        if(valid){
+            if(msg.getSession().getAccountUuid().equals(msg.getSession().getUserUuid())){
+                reply.setAccountInventory(AccountInventory.valueOf(
+                        dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class)
+                ));
+            }else{
+                reply.setUserInventory(UserInventory.valueOf(
+                        dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class)
+                ));
+            }
+        }
+
         bus.reply(msg, reply);
     }
 

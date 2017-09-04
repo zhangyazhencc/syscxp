@@ -5,6 +5,6 @@ import javax.persistence.metamodel.StaticMetamodel;
 /**
  * Created by DCY on 2017-08-30
  */
-@StaticMetamodel(HostSwitchMonitorVO.class)
-public class HostSwitchMonitorVO_ extends HostSwitchMonitorAO_{
+@StaticMetamodel(HostMonitorVO.class)
+public class HostMonitorVO_ extends HostMonitorAO_ {
 }

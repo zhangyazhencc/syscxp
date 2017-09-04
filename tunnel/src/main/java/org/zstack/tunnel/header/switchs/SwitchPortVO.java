@@ -33,7 +33,14 @@ public class SwitchPortVO {
 
     @Column
     @Enumerated(EnumType.STRING)
+    private SwitchPortType portType;
+
+    @Column
+    @Enumerated(EnumType.STRING)
     private SwitchPortLabel label;
+
+    @Column
+    private Integer isExclusive;
 
     @Column
     private Integer reuse;
@@ -136,5 +143,21 @@ public class SwitchPortVO {
 
     public void setSwitchs(SwitchVO switchs) {
         this.switchs = switchs;
+    }
+
+    public SwitchPortType getPortType() {
+        return portType;
+    }
+
+    public void setPortType(SwitchPortType portType) {
+        this.portType = portType;
+    }
+
+    public Integer getIsExclusive() {
+        return isExclusive;
+    }
+
+    public void setIsExclusive(Integer isExclusive) {
+        this.isExclusive = isExclusive;
     }
 }

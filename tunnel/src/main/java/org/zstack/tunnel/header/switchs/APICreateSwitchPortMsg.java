@@ -14,8 +14,14 @@ public class APICreateSwitchPortMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 128)
     private String portName;
 
-    @APIParam(emptyString = false,validValues = {"ACCESSIN", "MONITOR","ECP","VPN"})
+    @APIParam(emptyString = false,validValues = {"RJ45", "SFP_1G","SFG_10G"})
+    private SwitchPortType portType;
+
+    @APIParam(emptyString = false,validValues = {"ACCESSIN", "MONITOR","ECP","VPN","CLOUD"})
     private SwitchPortLabel label;
+
+    @APIParam(emptyString = false)
+    private Integer isExclusive;
 
     @APIParam(emptyString = false)
     private Integer reuse;
@@ -61,5 +67,21 @@ public class APICreateSwitchPortMsg extends APIMessage {
 
     public void setAutoAlloc(Integer autoAlloc) {
         this.autoAlloc = autoAlloc;
+    }
+
+    public SwitchPortType getPortType() {
+        return portType;
+    }
+
+    public void setPortType(SwitchPortType portType) {
+        this.portType = portType;
+    }
+
+    public Integer getIsExclusive() {
+        return isExclusive;
+    }
+
+    public void setIsExclusive(Integer isExclusive) {
+        this.isExclusive = isExclusive;
     }
 }

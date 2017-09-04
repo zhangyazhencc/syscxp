@@ -158,5 +158,17 @@
         <name>org.zstack.account.header.identity.APIRegisterAccountMsg</name>
     </message>
 
+    <message>
+        <name>org.zstack.account.header.identity.APIGetAccountMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.identity.APIGetUserMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.identity.APIAccountPWDBackMsg</name>
+    </message>
+
 
 </service>
