@@ -27,6 +27,8 @@ public class SessionInventory implements Serializable {
         return this.type == AccountType.SystemAdmin && isUserSession();
     }
 
+    public boolean isProxySession(){return this.type==AccountType.Proxy;}
+
     public String getUuid() {
         return uuid;
     }

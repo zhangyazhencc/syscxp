@@ -11,7 +11,7 @@ import org.zstack.header.notification.ApiNotification;
 import java.util.List;
 @Action(category = NoticeConstant.ACTION_CATEGORY, names = {"alarm_contact"}, adminOnly = true)
 public class APIUpdateAlarmContactMsg extends APICreateMessage {
-    @APIParam(resourceType = AlarmContactVO.class, emptyString = false)
+    @APIParam(resourceType = AlarmContactVO.class,checkAccount = true, emptyString = false)
     private String uuid;
     @APIParam(maxLength = 32, required = false)
     private String name;

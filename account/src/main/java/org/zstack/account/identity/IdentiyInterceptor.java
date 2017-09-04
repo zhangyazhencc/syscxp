@@ -1,5 +1,6 @@
 package org.zstack.account.identity;
 
+import org.hibernate.jpa.internal.metamodel.SingularAttributeImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.transaction.annotation.Transactional;
@@ -63,6 +64,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
 
     class MessageAction {
         boolean adminOnly;
+        boolean proxyOnly;
         List<String> actions;
         String category;
         boolean accountOnly;
@@ -192,6 +194,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                 logger.debug(String.format("API message[%s] doesn't have annotation @Action, assume it's an admin only API", clz));
                 MessageAction ma = new MessageAction();
                 ma.adminOnly = true;
+                ma.proxyOnly = true;
                 ma.accountOnly = true;
                 ma.accountControl = false;
                 actions.put(clz, ma);
@@ -201,6 +204,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             MessageAction ma = new MessageAction();
             ma.accountOnly = a.accountOnly();
             ma.adminOnly = a.adminOnly();
+            ma.proxyOnly = a.proxyOnly();
             ma.category = a.category();
             ma.actions = new ArrayList<String>();
             ma.accountControl = a.accountControl();
@@ -333,10 +337,9 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                 if (resourceUuids.isEmpty()) {
                     return;
                 }
-
-                List<Tuple> ts = SQL.New(
-                        "select uuid, accountUuid from :resourceType where uuid in (:resourceUuids) ", Tuple.class)
-                        .param("resourceType", af.param.resourceType().getSimpleName())
+                String sql = String.format("select uuid, accountUuid from %s where uuid in (:resourceUuids) ",
+                        af.param.resourceType().getSimpleName());
+                List<Tuple> ts = SQL.New(sql, Tuple.class)
                         .param("resourceUuids", resourceUuids)
                         .list();
                 for (Tuple t : ts) {
@@ -387,7 +390,11 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                     throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
                             String.format("API[%s] is admin only", msg.getClass().getSimpleName())));
                 }
-
+                if (action.proxyOnly && !session.isProxySession()){
+                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
+                            String.format("API[%s] can only be called by an proxy", msg.getClass().getSimpleName())
+                    ));
+                }
                 if (action.accountOnly && !session.isAccountSession()) {
                     throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
                             String.format("API[%s] can only be called by an account, the current session is a user session[user uuid:%s]",
@@ -468,7 +475,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         }
 
         @Transactional(readOnly = true)
-        private List<PolicyInventory> getUserPolicys() {
+        public List<PolicyInventory> getUserPolicys() {
             String sql = "select p from PolicyVO p, UserPolicyRefVO ref where ref.userUuid = :uuid and ref.policyUuid = p.uuid";
             TypedQuery<PolicyVO> q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
             q.setParameter("uuid", session.getUserUuid());
