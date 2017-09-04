@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.zstack.account.header.identity.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cascade.CascadeFacade;
@@ -130,8 +131,6 @@ public class AccountBase extends AbstractAccount {
             handle((APIUpdateApiAllowIPMsg) msg);
         } else if (msg instanceof APIGetAccountApiKeyMsg) {
             handle((APIGetAccountApiKeyMsg) msg);
-        }else if(msg instanceof APIRegisterAccountMsg){
-            handle((APIRegisterAccountMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -569,45 +568,6 @@ public class AccountBase extends AbstractAccount {
     }
 
     @Transactional
-    private void handle(APIRegisterAccountMsg msg) {
-
-        AccountVO accountvo = new AccountVO();
-
-        accountvo.setUuid(Platform.getUuid());
-        accountvo.setName(msg.getName());
-        accountvo.setPassword(msg.getPassword());
-        accountvo.setCompany(msg.getCompany());
-        accountvo.setDescription(msg.getDescription());
-        accountvo.setEmail(msg.getEmail());
-        accountvo.setIndustry(msg.getIndustry());
-        accountvo.setPhone(msg.getPhone());
-        accountvo.setStatus(AccountStatus.Available);
-        accountvo.setType(AccountType.Normal);
-        accountvo.setPhoneStatus(ValidateStatus.Validated);
-        accountvo.setEmailStatus(ValidateStatus.Unvalidated);
-
-        accountvo = dbf.persistAndRefresh(accountvo);
-
-        AccountExtraInfoVO aeivo = new AccountExtraInfoVO();
-        aeivo.setUuid(Platform.getUuid());
-        aeivo.setAccountUuid(accountvo.getUuid());
-
-        aeivo = dbf.persistAndRefresh(aeivo);
-
-        AccountApiSecurityVO api = new AccountApiSecurityVO();
-        api.setUuid(Platform.getUuid());
-        api.setAccountUuid(accountvo.getUuid());
-        api.setPrivateKey(getRandomString(36));
-        api.setPublicKey(getRandomString(36));
-        dbf.persistAndRefresh(api);
-
-        APIRegisterAccountEvent evt = new APIRegisterAccountEvent(msg.getId());
-        evt.setInventory(AccountInventory.valueOf(accountvo));
-        bus.publish(evt);
-    }
-
-
-    @Transactional
     private void handle(APICreateUserMsg msg) {
 
         UserVO uservo = new UserVO();
@@ -704,7 +664,7 @@ public class AccountBase extends AbstractAccount {
         auth.setName(msg.getName());
         auth.setSortId(msg.getSortId());
         auth.setType(msg.getType());
-        auth.setLevel(AccountType.valueOf(msg.getLevel()));
+        auth.setLevel(msg.getLevel());
 
         APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
 
@@ -717,23 +677,23 @@ public class AccountBase extends AbstractAccount {
         PermissionVO auth = dbf.findByUuid(msg.getUuid(), PermissionVO.class);
 
         boolean update = false;
-        if (msg.getName() != null) {
+        if (!StringUtils.isEmpty(msg.getName())) {
             auth.setName(msg.getName());
             update = true;
         }
-        if (msg.getLevel() != null) {
-            auth.setLevel(AccountType.valueOf(msg.getLevel()));
+        if (!StringUtils.isEmpty(msg.getLevel())) {
+            auth.setLevel(msg.getLevel());
             update = true;
         }
-        if (msg.getPermisstion() != null) {
-            auth.setPermission(msg.getPermisstion());
+        if (!StringUtils.isEmpty(msg.getPermission())) {
+            auth.setPermission(msg.getPermission());
             update = true;
         }
-        if (msg.getType() != null) {
+        if (!StringUtils.isEmpty(msg.getType())) {
             auth.setType(msg.getType());
             update = true;
         }
-        if (msg.getSortId() != null) {
+        if (!StringUtils.isEmpty(msg.getSortId())) {
             auth.setSortId(msg.getSortId());
             update = true;
         }

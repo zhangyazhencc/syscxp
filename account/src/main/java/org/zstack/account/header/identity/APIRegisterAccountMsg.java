@@ -1,13 +1,11 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.AccountGrade;
-import org.zstack.header.identity.Action;
 import org.zstack.header.identity.SuppressCredentialCheck;
-import org.zstack.header.message.APICreateMessage;
+import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 @SuppressCredentialCheck
-public class APIRegisterAccountMsg extends APICreateMessage implements AccountMessage{
+public class APIRegisterAccountMsg extends APIMessage {
     @APIParam(maxLength = 128)
     private String name;
     @APIParam(maxLength = 128)
@@ -28,11 +26,6 @@ public class APIRegisterAccountMsg extends APICreateMessage implements AccountMe
 
     @APIParam(maxLength = 255, required = false)
     private String description;
-
-    @Override
-    public String getAccountUuid() {
-        return this.getSession().getAccountUuid();
-    }
 
     public String getName() {
         return name;

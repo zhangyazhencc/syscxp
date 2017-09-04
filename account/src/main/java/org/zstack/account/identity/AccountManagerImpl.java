@@ -6,6 +6,7 @@ import org.zstack.account.header.identity.APICheckApiPermissionMsg;
 import org.zstack.account.header.identity.APICheckApiPermissionReply;
 import org.zstack.account.header.identity.APIValidateSessionMsg;
 import org.zstack.account.header.identity.APIValidateSessionReply;
+import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.MessageSafe;
 import org.zstack.core.componentloader.PluginRegistry;
@@ -119,10 +120,52 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIGetSessionPolicyMsg) msg);
         } else if (msg instanceof APICheckApiPermissionMsg) {
             handle((APICheckApiPermissionMsg) msg);
+        } else if(msg instanceof APIRegisterAccountMsg){
+            handle((APIRegisterAccountMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
+
+
+    @Transactional
+    private void handle(APIRegisterAccountMsg msg) {
+
+        AccountVO accountvo = new AccountVO();
+
+        accountvo.setUuid(Platform.getUuid());
+        accountvo.setName(msg.getName());
+        accountvo.setPassword(msg.getPassword());
+        accountvo.setCompany(msg.getCompany());
+        accountvo.setDescription(msg.getDescription());
+        accountvo.setEmail(msg.getEmail());
+        accountvo.setIndustry(msg.getIndustry());
+        accountvo.setPhone(msg.getPhone());
+        accountvo.setStatus(AccountStatus.Available);
+        accountvo.setType(AccountType.Normal);
+        accountvo.setPhoneStatus(ValidateStatus.Validated);
+        accountvo.setEmailStatus(ValidateStatus.Unvalidated);
+
+        accountvo = dbf.persistAndRefresh(accountvo);
+
+        AccountExtraInfoVO aeivo = new AccountExtraInfoVO();
+        aeivo.setUuid(Platform.getUuid());
+        aeivo.setAccountUuid(accountvo.getUuid());
+
+        aeivo = dbf.persistAndRefresh(aeivo);
+
+        AccountApiSecurityVO api = new AccountApiSecurityVO();
+        api.setUuid(Platform.getUuid());
+        api.setAccountUuid(accountvo.getUuid());
+        api.setPrivateKey(getRandomString(36));
+        api.setPublicKey(getRandomString(36));
+        dbf.persistAndRefresh(api);
+
+        APIRegisterAccountEvent evt = new APIRegisterAccountEvent(msg.getId());
+        evt.setInventory(AccountInventory.valueOf(accountvo));
+        bus.publish(evt);
+    }
+
 
     private void handle(APICheckApiPermissionMsg msg) {
         if (msg.getUserUuid() != null) {
@@ -430,15 +473,19 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void validate(APIRegisterAccountMsg msg) {
 
-        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
-            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-                    msg.getAccountUuid()));
-        }
+        //测试中，去除验证
+//        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+//            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+//                    msg.getAccountUuid()));
+//        }
 
     }
 
     private void validate(APIQueryPermissionMsg msg) {
-        msg.addQueryCondition(PermissionVO_.level.toString(), QueryOp.LT_AND_EQ, msg.getSession().getType().value().toString());
+        if (msg.getSession().getType().equals(AccountType.Proxy))
+            msg.addQueryCondition(PermissionVO_.level.toString(), QueryOp.IN, "Proxy", "Normal");
+        if (msg.getSession().getType().equals(AccountType.Normal))
+            msg.addQueryCondition(PermissionVO_.level.toString(), QueryOp.IN, "Normal");
     }
 
 
@@ -600,4 +647,14 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
     }
 
+    private String getRandomString(int length) {
+        Random random = new Random();
+        String base = "ABCDEFGFHJKMOPQRSTUVWXYZabcdefghjkmnopqrstuvwxy023456789";
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < length; i++) {
+            int number = random.nextInt(base.length());
+            sb.append(base.charAt(number));
+        }
+        return sb.toString();
+    }
 }

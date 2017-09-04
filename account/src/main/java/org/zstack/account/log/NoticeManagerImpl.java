@@ -87,19 +87,19 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
     private void hanle(APIUpdateAlarmContactMsg msg) {
         AlarmContactVO vo = dbf.findByUuid(msg.getUuid(), AlarmContactVO.class);
         boolean update = false;
-        if (msg.getName() != null) {
+        if (!StringUtils.isEmpty(msg.getName())) {
             vo.setName(msg.getName());
             update = true;
         }
-        if (msg.getPhone() != null) {
+        if (!StringUtils.isEmpty(msg.getPhone())) {
             vo.setPhone(msg.getPhone());
             update = true;
         }
-        if (msg.getEmail() != null) {
+        if (!StringUtils.isEmpty(msg.getEmail())) {
             vo.setEmail(msg.getEmail());
             update = true;
         }
-        if (msg.getChannel() != null) {
+        if (!StringUtils.isEmpty(msg.getChannel())) {
             vo.setChannel(msg.getChannel());
             update = true;
         }
@@ -129,23 +129,23 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
     private void hanle(APIUpdateNoticeMsg msg) {
         NoticeVO nvo = dbf.findByUuid(msg.getUuid(), NoticeVO.class);
         boolean update = false;
-        if (msg.getTitle() != null) {
+        if (!StringUtils.isEmpty(msg.getTitle())) {
             nvo.setTitle(msg.getTitle());
             update = true;
         }
-        if (msg.getLink() != null) {
+        if (!StringUtils.isEmpty(msg.getLink())) {
             nvo.setLink(msg.getLink());
             update = true;
         }
-        if (msg.getStartTime() != null) {
+        if (!StringUtils.isEmpty(msg.getStartTime())) {
             nvo.setStartTime(msg.getStartTime());
             update = true;
         }
-        if (msg.getEndTime() != null) {
+        if (!StringUtils.isEmpty(msg.getEndTime())) {
             nvo.setEndTime(msg.getEndTime());
             update = true;
         }
-        if (msg.getStatus() != null) {
+        if (!StringUtils.isEmpty(msg.getStatus())) {
             nvo.setStatus(NoticeStatus.valueOf(msg.getStatus()));
             update = true;
         }

@@ -1,9 +1,12 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.Action;
 import org.zstack.header.identity.PermissionType;
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.notification.ApiNotification;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"permission"}, adminOnly = true)
 public class APIUpdatePermissionMsg extends APIMessage implements AccountMessage {
@@ -15,15 +18,15 @@ public class APIUpdatePermissionMsg extends APIMessage implements AccountMessage
     private String name;
 
     @APIParam(maxLength = 255, required = false)
-    public String permisstion;
+    public String permission;
 
-    @APIParam(maxLength = 36)
+    @APIParam(maxLength = 36, required = false)
     private PermissionType type;
 
-    @APIParam(numberRange = {0, 2})
-    private Integer level;
+    @APIParam(required = false)
+    private AccountType level;
 
-    @APIParam(maxLength = 36)
+    @APIParam(maxLength = 36, required = false)
     private Integer sortId;
 
     public PermissionType getType() {
@@ -34,11 +37,11 @@ public class APIUpdatePermissionMsg extends APIMessage implements AccountMessage
         this.type = type;
     }
 
-    public Integer getLevel() {
+    public AccountType getLevel() {
         return level;
     }
 
-    public void setLevel(Integer level) {
+    public void setLevel(AccountType level) {
         this.level = level;
     }
 
@@ -54,8 +57,8 @@ public class APIUpdatePermissionMsg extends APIMessage implements AccountMessage
         return name;
     }
 
-    public String getPermisstion() {
-        return permisstion;
+    public String getPermission() {
+        return permission;
     }
 
 
@@ -63,8 +66,8 @@ public class APIUpdatePermissionMsg extends APIMessage implements AccountMessage
         this.name = name;
     }
 
-    public void setPermisstion(String permisstion) {
-        this.permisstion = permisstion;
+    public void setPermission(String permisstion) {
+        this.permission = permission;
     }
 
 
@@ -79,5 +82,18 @@ public class APIUpdatePermissionMsg extends APIMessage implements AccountMessage
     @Override
     public String getAccountUuid() {
         return this.getSession().getAccountUuid();
+    }
+
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update PermissionVO")
+                        .resource(uuid, PermissionVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

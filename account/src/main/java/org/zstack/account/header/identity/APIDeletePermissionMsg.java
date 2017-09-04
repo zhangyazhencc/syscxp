@@ -36,7 +36,7 @@ public class APIDeletePermissionMsg extends APIDeleteMessage implements AccountM
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Deleting").resource(uuid, PermissionVO.class.getSimpleName())
+                ntfy("Deleting PermissionVO").resource(uuid, PermissionVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };
