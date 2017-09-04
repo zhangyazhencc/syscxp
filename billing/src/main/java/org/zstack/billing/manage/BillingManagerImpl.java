@@ -662,7 +662,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 orderVo.setPayCash(BigDecimal.ZERO);
                 DealDetailVO dealDetailVO = new DealDetailVO();
                 dealDetailVO.setUuid(Platform.getUuid());
-                dealDetailVO.setAccountUuid(msg.getSession().getUuid());
+                dealDetailVO.setAccountUuid(msg.getSession().getAccountUuid());
                 dealDetailVO.setDealWay(DealWay.BALANCE_BILL);
                 dealDetailVO.setIncome(BigDecimal.ZERO);
                 dealDetailVO.setExpend(total.negate());
@@ -683,7 +683,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
                 DealDetailVO dealDetailVO = new DealDetailVO();
                 dealDetailVO.setUuid(Platform.getUuid());
-                dealDetailVO.setAccountUuid(msg.getSession().getUuid());
+                dealDetailVO.setAccountUuid(msg.getSession().getAccountUuid());
                 dealDetailVO.setDealWay(DealWay.BALANCE_BILL);
                 dealDetailVO.setIncome(BigDecimal.ZERO);
                 dealDetailVO.setExpend(payPresent.negate());
@@ -698,7 +698,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
                 DealDetailVO dVO = new DealDetailVO();
                 dVO.setUuid(Platform.getUuid());
-                dVO.setAccountUuid(msg.getSession().getUuid());
+                dVO.setAccountUuid(msg.getSession().getAccountUuid());
                 dVO.setDealWay(DealWay.CASH_BILL);
                 dVO.setIncome(BigDecimal.ZERO);
                 dVO.setExpend(payCash.negate());
@@ -717,7 +717,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
             DealDetailVO dVO = new DealDetailVO();
             dVO.setUuid(Platform.getUuid());
-            dVO.setAccountUuid(msg.getSession().getUuid());
+            dVO.setAccountUuid(msg.getSession().getAccountUuid());
             dVO.setDealWay(DealWay.CASH_BILL);
             dVO.setIncome(BigDecimal.ZERO);
             dVO.setExpend(total.negate());
@@ -833,7 +833,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             abvo.setCashBalance(remainCash);
             DealDetailVO dVO = new DealDetailVO();
             dVO.setUuid(Platform.getUuid());
-            dVO.setAccountUuid(msg.getSession().getUuid());
+            dVO.setAccountUuid(msg.getSession().getAccountUuid());
             dVO.setDealWay(DealWay.CASH_BILL);
             dVO.setIncome(downCash);
             dVO.setExpend(BigDecimal.ZERO);
@@ -865,7 +865,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             abvo.setCashBalance(remainCash);
             DealDetailVO dVO = new DealDetailVO();
             dVO.setUuid(Platform.getUuid());
-            dVO.setAccountUuid(msg.getSession().getUuid());
+            dVO.setAccountUuid(msg.getSession().getAccountUuid());
             dVO.setDealWay(DealWay.CASH_BILL);
             dVO.setIncome(reCash);
             dVO.setExpend(BigDecimal.ZERO);
@@ -888,6 +888,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         } else if(msg.getType().equals(OrderType.SLA_COMPENSATION)){
             orderVo.setPayCash(BigDecimal.ZERO);
             orderVo.setPayPresent(BigDecimal.ZERO);
+            
         } else if(msg.getType().equals(OrderType.RENEW)){
             originalPrice = BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(duration);
             total = originalPrice.multiply(BigDecimal.valueOf(productDisCharge).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));
@@ -911,12 +912,12 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 orderVo.setPayPresent(BigDecimal.ZERO);
                 orderVo.setPayCash(total);
             }
-            //todo modify product
+            //todo generate product from tunel
 
         }
 
         orderVo.setUuid(Platform.getUuid());
-        orderVo.setAccountUuid(msg.getSession().getUuid());
+        orderVo.setAccountUuid(msg.getSession().getAccountUuid());
         orderVo.setProductName(msg.getProductName());
         orderVo.setState(OrderState.PAID);
         orderVo.setProductType(msg.getProductType());
