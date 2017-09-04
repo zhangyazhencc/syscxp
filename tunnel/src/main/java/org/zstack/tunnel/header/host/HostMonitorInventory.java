@@ -10,8 +10,8 @@ import java.util.List;
 /**
  * Created by DCY on 2017-08-30
  */
-@Inventory(mappingVOClass = HostSwitchMonitorVO.class)
-public class HostSwitchMonitorInventory {
+@Inventory(mappingVOClass = HostMonitorVO.class)
+public class HostMonitorInventory {
 
     private String uuid;
     private String hostUuid;
@@ -20,8 +20,8 @@ public class HostSwitchMonitorInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    public static HostSwitchMonitorInventory valueOf(HostSwitchMonitorVO vo){
-        HostSwitchMonitorInventory inv = new HostSwitchMonitorInventory();
+    public static HostMonitorInventory valueOf(HostMonitorVO vo){
+        HostMonitorInventory inv = new HostMonitorInventory();
         inv.setUuid(vo.getUuid());
         inv.setHostUuid(vo.getHostUuid());
         inv.setSwitchPortUuid(vo.getSwitchPortUuid());
@@ -31,10 +31,10 @@ public class HostSwitchMonitorInventory {
         return inv;
     }
 
-    public static List<HostSwitchMonitorInventory> valueOf(Collection<HostSwitchMonitorVO> vos) {
-        List<HostSwitchMonitorInventory> lst = new ArrayList<HostSwitchMonitorInventory>(vos.size());
-        for (HostSwitchMonitorVO vo : vos) {
-            lst.add(HostSwitchMonitorInventory.valueOf(vo));
+    public static List<HostMonitorInventory> valueOf(Collection<HostMonitorVO> vos) {
+        List<HostMonitorInventory> lst = new ArrayList<HostMonitorInventory>(vos.size());
+        for (HostMonitorVO vo : vos) {
+            lst.add(HostMonitorInventory.valueOf(vo));
         }
         return lst;
     }

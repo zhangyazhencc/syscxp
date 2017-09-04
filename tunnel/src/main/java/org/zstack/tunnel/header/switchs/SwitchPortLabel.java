@@ -7,5 +7,6 @@ public enum SwitchPortLabel {
     ACCESSIN,
     MONITOR,
     ECP,
-    VPN
+    VPN,
+    CLOUD
 }

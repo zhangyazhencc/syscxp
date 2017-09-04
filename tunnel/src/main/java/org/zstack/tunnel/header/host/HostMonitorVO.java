@@ -10,8 +10,8 @@ import javax.persistence.*;
  */
 @Entity
 @Table
-@EO(EOClazz = HostSwitchMonitorEO.class)
-public class HostSwitchMonitorVO extends HostSwitchMonitorAO{
+@EO(EOClazz = HostMonitorEO.class)
+public class HostMonitorVO extends HostMonitorAO {
 
     @ManyToOne(fetch= FetchType.EAGER)
     @JoinColumn(name="hostUuid", insertable=false, updatable=false)
