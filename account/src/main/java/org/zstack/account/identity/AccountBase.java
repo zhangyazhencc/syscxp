@@ -180,8 +180,6 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIGetAccountMsg msg) {
         APIGetAccountReply reply = new APIGetAccountReply();
 
-//        SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
-//        q.add(AccountVO_.uuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         AccountVO account = dbf.findByUuid(msg.getAccountUuid(),AccountVO.class);
 
         reply.setInventory(AccountInventory.valueOf(account));
