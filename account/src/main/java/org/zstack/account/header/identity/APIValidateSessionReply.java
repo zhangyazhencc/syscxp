@@ -1,5 +1,6 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.message.APIReply;
 
 /**
@@ -11,6 +12,8 @@ import org.zstack.header.message.APIReply;
 public class APIValidateSessionReply extends APIReply {
     private boolean validSession;
 
+    private SessionInventory inventory;
+
     public boolean isValidSession() {
         return validSession;
     }
@@ -18,7 +21,15 @@ public class APIValidateSessionReply extends APIReply {
     public void setValidSession(boolean validSession) {
         this.validSession = validSession;
     }
- 
+
+    public SessionInventory getInventory() {
+        return inventory;
+    }
+
+    public void setInventory(SessionInventory inventory) {
+        this.inventory = inventory;
+    }
+
     public static APIValidateSessionReply __example__() {
         APIValidateSessionReply reply = new APIValidateSessionReply();
         reply.setValidSession(true);
