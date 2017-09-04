@@ -28,6 +28,9 @@ public class UserInventory {
     private String email;
     private String status;
     private String phone;
+    private String emailStatus;
+    private String phoneStatus;
+
     private String trueName;
     private String department;
     private String description;
@@ -45,6 +48,8 @@ public class UserInventory {
         inv.setDepartment(vo.getDepartment());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
+        inv.setPhoneStatus(vo.getPhoneStatus().toString());
+        inv.setEmailStatus(vo.getEmailStatus().toString());
         inv.setStatus(vo.getStatus().toString());
         inv.setTrueName(vo.getTrueName());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -61,6 +66,8 @@ public class UserInventory {
         inv.setDepartment(vo.getDepartment());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
+        inv.setPhoneStatus(vo.getPhoneStatus().toString());
+        inv.setEmailStatus(vo.getEmailStatus().toString());
         inv.setStatus(vo.getStatus().toString());
         inv.setTrueName(vo.getTrueName());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -79,6 +86,22 @@ public class UserInventory {
             invs.add(UserInventory.valueOf(vo));
         }
         return invs;
+    }
+
+    public String getEmailStatus() {
+        return emailStatus;
+    }
+
+    public String getPhoneStatus() {
+        return phoneStatus;
+    }
+
+    public void setEmailStatus(String emailStatus) {
+        this.emailStatus = emailStatus;
+    }
+
+    public void setPhoneStatus(String phoneStatus) {
+        this.phoneStatus = phoneStatus;
     }
 
     public String getDescription() {

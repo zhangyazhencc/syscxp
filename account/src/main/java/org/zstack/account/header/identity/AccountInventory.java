@@ -12,8 +12,12 @@ import java.util.List;
 public class AccountInventory {
     private String uuid;
     private String name;
+    private String emailStatus;
+    private String phoneStatus;
+
     private String email;
     private String phone;
+
     private String trueName;
     private String company;
     private String industry;
@@ -46,6 +50,9 @@ public class AccountInventory {
             inv.setGrade(aeivo.getGrade().toString());
         }
 
+        inv.setEmailStatus(vo.getEmailStatus().toString());
+        inv.setPhoneStatus(vo.getPhoneStatus().toString());
+
         inv.setSalesman(aeivo.getSalesman());
 
         inv.setCreateDate(vo.getCreateDate());
@@ -62,6 +69,10 @@ public class AccountInventory {
         inv.setDescription(vo.getDescription());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
+
+        inv.setEmailStatus(vo.getEmailStatus().toString());
+        inv.setPhoneStatus(vo.getPhoneStatus().toString());
+
         if(vo.getIndustry() !=null){
             inv.setIndustry(vo.getIndustry().toString());
         }
@@ -79,6 +90,22 @@ public class AccountInventory {
             lst.add(AccountInventory.valueOf(vo));
         }
         return lst;
+    }
+
+    public String getEmailStatus() {
+        return emailStatus;
+    }
+
+    public String getPhoneStatus() {
+        return phoneStatus;
+    }
+
+    public void setEmailStatus(String emailStatus) {
+        this.emailStatus = emailStatus;
+    }
+
+    public void setPhoneStatus(String phoneStatus) {
+        this.phoneStatus = phoneStatus;
     }
 
     public String getType() {

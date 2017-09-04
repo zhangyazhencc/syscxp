@@ -284,14 +284,19 @@ public class AccountBase extends AbstractAccount {
 
         APIAccountPhoneAuthenticationEvent evt = new APIAccountPhoneAuthenticationEvent(msg.getId());
         AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
-        if (!smsService.validateVerificationCode(account.getPhone(), msg.getCode())) {
+
+        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
+        }else{
+            evt.setPhone(msg.getPhone());
+
+            account.setPhone(msg.getPhone());
+            account.setPhoneStatus(ValidateStatus.Validated);
+            dbf.updateAndRefresh(account);
         }
 
-        evt.setPhone(account.getPhone());
-        account.setPhoneStatus(ValidateStatus.Validated);
-        dbf.updateAndRefresh(account);
+
 
         bus.publish(evt);
     }
@@ -300,13 +305,18 @@ public class AccountBase extends AbstractAccount {
 
         APIUserPhoneAuthenticationEvent evt = new APIUserPhoneAuthenticationEvent(msg.getId());
         UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
-        if (!smsService.validateVerificationCode(user.getPhone(), msg.getCode())) {
+
+        if (smsService.validateVerificationCode(user.getPhone(), msg.getCode())) {
+            evt.setPhone(msg.getPhone());
+
+            user.setPhone(msg.getPhone());
+            user.setPhoneStatus(ValidateStatus.Validated);
+            dbf.updateAndRefresh(user);
+        }else{
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
-        evt.setPhone(user.getPhone());
-        user.setPhoneStatus(ValidateStatus.Validated);
-        dbf.updateAndRefresh(user);
+
         bus.publish(evt);
     }
 
@@ -352,7 +362,7 @@ public class AccountBase extends AbstractAccount {
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
 
         UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
-        user.setPhone(msg.getNewPhone());
+        user.setPhone(msg.getNewphone());
         evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
 
         bus.publish(evt);

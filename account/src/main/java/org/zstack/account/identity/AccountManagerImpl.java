@@ -590,7 +590,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateUserPhoneMsg msg) {
-        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+        if (!smsService.validateVerificationCode(msg.getOldphone(), msg.getOldcode())
+                ||!smsService.validateVerificationCode(msg.getNewphone(), msg.getNewcode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
@@ -618,7 +619,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateAccountPhoneMsg msg) {
-        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+        if (!smsService.validateVerificationCode(msg.getOldphone(), msg.getOldcode())||
+                !smsService.validateVerificationCode(msg.getNewphone(), msg.getNewcode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }

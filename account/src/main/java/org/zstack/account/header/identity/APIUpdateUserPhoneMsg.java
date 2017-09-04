@@ -10,37 +10,48 @@ import org.zstack.header.message.APIParam;
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"user_update"})
 public class APIUpdateUserPhoneMsg extends APIMessage implements AccountMessage{
 
-    @APIParam(maxLength = 36)
-    private String phone;
+    @APIParam
+    private String oldphone;
 
-    @APIParam(maxLength = 36)
-    private String newPhone;
+    @APIParam
+    private String oldcode;
 
-    @APIParam(maxLength = 36)
-    private String code;
+    @APIParam
+    private String newphone;
 
-    public String getNewPhone() {
-        return newPhone;
+    @APIParam
+    private String newcode;
+
+    public void setOldphone(String oldphone) {
+        this.oldphone = oldphone;
     }
 
-    public String getCode() {
-        return code;
+    public void setOldcode(String oldcode) {
+        this.oldcode = oldcode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setNewphone(String newphone) {
+        this.newphone = newphone;
     }
 
-    public void setNewPhone(String newPhone) {
-        this.newPhone = newPhone;
+    public void setNewcode(String newcode) {
+        this.newcode = newcode;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getOldphone() {
+        return oldphone;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public String getOldcode() {
+        return oldcode;
+    }
+
+    public String getNewphone() {
+        return newphone;
+    }
+
+    public String getNewcode() {
+        return newcode;
     }
 
     @Override

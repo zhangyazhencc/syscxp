@@ -11,36 +11,48 @@ import org.zstack.header.message.APIParam;
 public class APIUpdateAccountPhoneMsg extends APIMessage implements AccountMessage{
 
     @APIParam
-    private String phone;
+    private String oldphone;
+
+    @APIParam
+    private String oldcode;
 
     @APIParam
     private String newphone;
 
     @APIParam
-    private String code;
+    private String newcode;
 
-    public String getNewphone() {
-        return newphone;
+    public void setOldphone(String oldphone) {
+        this.oldphone = oldphone;
     }
 
-    public String getCode() {
-        return code;
+    public void setOldcode(String oldcode) {
+        this.oldcode = oldcode;
     }
 
     public void setNewphone(String newphone) {
         this.newphone = newphone;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setNewcode(String newcode) {
+        this.newcode = newcode;
     }
 
-    public String getPhone() {
-        return phone;
+    public String getOldphone() {
+
+        return oldphone;
     }
 
-    public void setPhone(String phone) {
-        this.phone = phone;
+    public String getOldcode() {
+        return oldcode;
+    }
+
+    public String getNewphone() {
+        return newphone;
+    }
+
+    public String getNewcode() {
+        return newcode;
     }
 
     @Override

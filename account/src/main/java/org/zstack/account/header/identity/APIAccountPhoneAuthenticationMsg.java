@@ -11,7 +11,18 @@ import org.zstack.header.message.APIParam;
 public class APIAccountPhoneAuthenticationMsg extends APIMessage implements AccountMessage {
 
     @APIParam
+    private String phone;
+
+    @APIParam
     private String code;
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
 
     public String getCode() {
         return code;
