@@ -1,12 +1,8 @@
 package org.zstack.billing.header.sla;
 
-<<<<<<< HEAD:billing/src/main/java/org/zstack/billing/header/identity/sla/APIUpdateSLACompensateMsg.java
-import org.zstack.billing.header.identity.balance.ProductType;
 import org.zstack.billing.manage.BillingConstant;
 import org.zstack.header.identity.Action;
-=======
 import org.zstack.billing.header.balance.ProductType;
->>>>>>> zlcao-dev:billing/src/main/java/org/zstack/billing/header/sla/APIUpdateSLACompensateMsg.java
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
