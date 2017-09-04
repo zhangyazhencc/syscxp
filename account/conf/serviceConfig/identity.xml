@@ -170,5 +170,9 @@
         <name>org.zstack.account.header.identity.APIAccountPWDBackMsg</name>
     </message>
 
+    <message>
+        <name>org.zstack.account.header.identity.APIUserPWDBackMsg</name>
+    </message>
+
 
 </service>

@@ -124,6 +124,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIRegisterAccountMsg) msg);
         } else if(msg instanceof APIAccountPWDBackMsg){
             handle((APIAccountPWDBackMsg) msg);
+        } else if(msg instanceof APIUserPWDBackMsg){
+            handle((APIUserPWDBackMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -132,7 +134,34 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void handle(APIAccountPWDBackMsg msg) {
         APIAccountPWDBackEvent evt = new APIAccountPWDBackEvent(msg.getId());
 
+        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]" ));
+        }else{
 
+            SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
+            q.add(AccountVO_.phone, Op.EQ, msg.getPhone());
+            AccountVO account = q.find();
+            account.setPassword(msg.getNewpassword());
+            evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
+        }
+
+        bus.publish(evt);
+    }
+
+    private void handle(APIUserPWDBackMsg msg) {
+        APIUserPWDBackEvent evt = new APIUserPWDBackEvent(msg.getId());
+
+        if (smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+            SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
+            q.add(UserVO_.phone, Op.EQ, msg.getPhone());
+            UserVO user = q.find();
+
+            user.setPassword(msg.getNewpassword());
+            evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
+
+        }else{
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]" ));
+        }
 
         bus.publish(evt);
     }
