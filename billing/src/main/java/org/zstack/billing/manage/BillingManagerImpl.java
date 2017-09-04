@@ -771,7 +771,16 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             throw new IllegalArgumentException("product config is invalid");
         }
 
-        int productDisCharge = 100;//todo This value would get from account
+        SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
+        qDischarge.add(AccountDischargeVO_.category, Op.EQ, productPriceUnit.getCategory());
+        qDischarge.add(AccountDischargeVO_.productType, Op.EQ, productPriceUnit.getProductType());
+        qDischarge.add(AccountDischargeVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
+        AccountDischargeVO accountDischargeVO = qDischarge.find();
+        int productDisCharge = 100;
+        if(accountDischargeVO != null){
+            productDisCharge = accountDischargeVO.getDisCharge()==0?100:accountDischargeVO.getDisCharge();
+        }
+
         BigDecimal duration = BigDecimal.valueOf(msg.getDuration());
 
         if (msg.getProductChargeModel().equals(ProductChargeModel.BY_YEAR)) {

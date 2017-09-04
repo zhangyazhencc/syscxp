@@ -1,0 +1,94 @@
+package org.zstack.billing.header.balance;
+
+import org.zstack.billing.header.order.Category;
+import org.zstack.header.search.SqlTrigger;
+import org.zstack.header.search.TriggerIndex;
+
+import javax.persistence.*;
+import java.sql.Timestamp;
+
+@Entity
+@Table
+@Inheritance(strategy = InheritanceType.JOINED)
+@TriggerIndex
+@SqlTrigger
+public class AccountDischargeVO {
+
+    @Id
+    @Column
+    private String uuid;
+
+    @Column
+    private String accountUuid;
+
+    @Column
+    private ProductType productType;
+
+    @Column
+    private Category category;
+
+    @Column
+    private int disCharge;
+
+    @Column
+    private Timestamp createDate;
+
+    @Column
+    private Timestamp lastOpDate;
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
+
+    public ProductType getProductType() {
+        return productType;
+    }
+
+    public void setProductType(ProductType productType) {
+        this.productType = productType;
+    }
+
+    public int getDisCharge() {
+        return disCharge;
+    }
+
+    public void setDisCharge(int disCharge) {
+        this.disCharge = disCharge;
+    }
+
+    public Timestamp getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
+    }
+
+    public Timestamp getLastOpDate() {
+        return lastOpDate;
+    }
+
+    public void setLastOpDate(Timestamp lastOpDate) {
+        this.lastOpDate = lastOpDate;
+    }
+
+    public Category getCategory() {
+        return category;
+    }
+
+    public void setCategory(Category category) {
+        this.category = category;
+    }
+}
