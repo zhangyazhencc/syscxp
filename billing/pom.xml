@@ -11,6 +11,7 @@
     </parent>
 
     <artifactId>billing</artifactId>
+    <packaging>war</packaging>
 
     <dependencies>
         <dependency>
@@ -33,6 +34,11 @@
             <artifactId>search</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.zstack</groupId>
+            <artifactId>portal</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -42,6 +48,12 @@
     </dependencies>
 
     <build>
+        <finalName>bling</finalName>
+        <resources>
+            <resource>
+                <directory>conf</directory>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -51,6 +63,9 @@
                     <source>${project.java.version}</source>
                     <target>${project.java.version}</target>
                     <debug>true</debug>
+                    <compilerArguments>
+                        <extdirs>${project.basedir}/src/main/webapp/WEB-INF/lib</extdirs>
+                    </compilerArguments>
                 </configuration>
             </plugin>
             <plugin>
@@ -84,6 +99,43 @@
                             <artifactId>header</artifactId>
                         </aspectLibrary>
                     </aspectLibraries>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2.2</version>
+                <configuration>
+                    <descriptors>
+                        <descriptor>assembly.xml</descriptor>
+                    </descriptors>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.3</version>
+                <configuration>
+                    <packagingExcludes>
+                        WEB-INF/lib/maven*.jar,
+                        WEB-INF/lib/plexus*.jar,
+                        WEB-INF/lib/cvsclient*.jar,
+                        WEB-INF/lib/classworlds*.jar,
+                        WEB-INF/lib/junit*.jar,
+                        WEB-INF/lib/regexp*.jar,
+                        WEB-INF/lib/jtidy*.jar,
+                        WEB-INF/lib/servlet-api*.jar,
+                        WEB-INF/lib/c3p0-0.9.1.1.jar,
+                        WEB-INF/lib/reflections-0.9.8.jar,
+                    </packagingExcludes>
+                    <webResources>
+                        <resource>
+                            <directory>.</directory>
+                            <targetPath>META-INF/</targetPath>
+                            <includes>
+                                <include>context.xml</include>
+                            </includes>
+                        </resource>
+                    </webResources>
                 </configuration>
             </plugin>
         </plugins>

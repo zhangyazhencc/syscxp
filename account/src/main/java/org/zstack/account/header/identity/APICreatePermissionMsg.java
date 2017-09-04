@@ -1,9 +1,12 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.Action;
 import org.zstack.header.identity.PermissionType;
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.notification.ApiNotification;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"permission"}, adminOnly = true)
 public class APICreatePermissionMsg extends  APIMessage implements  AccountMessage {
@@ -16,8 +19,8 @@ public class APICreatePermissionMsg extends  APIMessage implements  AccountMessa
     @APIParam(maxLength = 36)
     private PermissionType type;
 
-    @APIParam(numberRange = {0, 2})
-    private Integer level;
+    @APIParam
+    private AccountType level;
 
     @APIParam(maxLength = 36)
     private Integer sortId;
@@ -49,11 +52,11 @@ public class APICreatePermissionMsg extends  APIMessage implements  AccountMessa
         this.type = type;
     }
 
-    public Integer getLevel() {
+    public AccountType getLevel() {
         return level;
     }
 
-    public void setLevel(Integer level) {
+    public void setLevel(AccountType level) {
         this.level = level;
     }
 
@@ -68,5 +71,23 @@ public class APICreatePermissionMsg extends  APIMessage implements  AccountMessa
     @Override
     public String getAccountUuid() {
         return this.getSession().getAccountUuid();
+    }
+
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreatePermissionEvent) evt).getInventory().getUuid();
+                }
+
+                ntfy("Create PermissionVO")
+                        .resource(uuid, PermissionVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

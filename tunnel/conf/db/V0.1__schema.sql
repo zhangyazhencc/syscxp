@@ -262,6 +262,6 @@ CREATE TABLE `syscxp_tunnel`.`HostSwitchMonitorEO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`HostSwitchMonitorVO` AS SELECT uuid, hostUuid, switchUuid, interfaceName, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`HostSwitchMonitorVO` AS SELECT uuid, hostUuid, switchPortUuid, interfaceName, lastOpDate, createDate
                                           FROM `HostSwitchMonitorEO` WHERE deleted = 0;
 
