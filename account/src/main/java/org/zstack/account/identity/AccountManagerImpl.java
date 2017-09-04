@@ -189,6 +189,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         AccountExtraInfoVO aeivo = new AccountExtraInfoVO();
         aeivo.setUuid(Platform.getUuid());
         aeivo.setAccountUuid(accountvo.getUuid());
+        aeivo.setCreateWay("register");
 
         aeivo = dbf.persistAndRefresh(aeivo);
 

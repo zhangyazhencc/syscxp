@@ -580,7 +580,7 @@ public class AccountBase extends AbstractAccount {
         if (msg.getSalesman() != null) {
             aeivo.setSalesman(msg.getSalesman());
         }
-
+        aeivo.setCreateWay(msg.getSession().getType().toString());
         aeivo = dbf.persistAndRefresh(aeivo);
 
         AccountApiSecurityVO api = new AccountApiSecurityVO();

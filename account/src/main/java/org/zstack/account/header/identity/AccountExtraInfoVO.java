@@ -34,6 +34,9 @@ public class AccountExtraInfoVO {
     private String salesman;
 
     @Column
+    private String createWay;
+
+    @Column
     private Timestamp createDate;
     
     @Column
@@ -92,4 +95,12 @@ public class AccountExtraInfoVO {
         this.lastOpDate = lastOpDate;
     }
 
+    public void setCreateWay(String createWay) {
+        this.createWay = createWay;
+    }
+
+    public String getCreateWay() {
+
+        return createWay;
+    }
 }

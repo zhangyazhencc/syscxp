@@ -27,6 +27,8 @@ public class AccountInventory {
 
     private String grade;
     private String salesman;
+    private String createWay;
+
 
     private Timestamp createDate;
     private Timestamp lastOpDate;
@@ -54,7 +56,7 @@ public class AccountInventory {
         inv.setPhoneStatus(vo.getPhoneStatus().toString());
 
         inv.setSalesman(aeivo.getSalesman());
-
+        inv.setCreateWay(aeivo.getCreateWay());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
@@ -90,6 +92,14 @@ public class AccountInventory {
             lst.add(AccountInventory.valueOf(vo));
         }
         return lst;
+    }
+
+    public String getCreateWay() {
+        return createWay;
+    }
+
+    public void setCreateWay(String createWay) {
+        this.createWay = createWay;
     }
 
     public String getEmailStatus() {
