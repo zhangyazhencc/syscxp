@@ -130,6 +130,10 @@ public class AccountBase extends AbstractAccount {
             handle((APIUpdateApiAllowIPMsg) msg);
         } else if (msg instanceof APIGetAccountApiKeyMsg) {
             handle((APIGetAccountApiKeyMsg) msg);
+        } else if (msg instanceof APIGetAccountMsg) {
+            handle((APIGetAccountMsg) msg);
+        } else if (msg instanceof APIGetUserMsg) {
+            handle((APIGetUserMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -169,6 +173,30 @@ public class AccountBase extends AbstractAccount {
 
         APIGetAccountApiKeyReply reply = new APIGetAccountApiKeyReply();
         reply.setInventory(AccountApiSecurityInventory.valueOf(api));
+        bus.reply(msg, reply);
+    }
+
+    private void handle(APIGetAccountMsg msg) {
+        APIGetAccountReply reply = new APIGetAccountReply();
+
+        SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
+        q.add(AccountVO_.uuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        AccountVO account = q.find();
+
+        reply.setInventory(AccountInventory.valueOf(account));
+        bus.reply(msg, reply);
+    }
+
+    private void handle(APIGetUserMsg msg) {
+        APIGetUserReply reply = new APIGetUserReply();
+
+        SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
+        q.add(UserVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        q.add(UserVO_.uuid, SimpleQuery.Op.EQ, msg.getSession().getUuid());
+
+        UserVO user = q.find();
+
+        reply.setInventory(UserInventory.valueOf(user));
         bus.reply(msg, reply);
     }
 
