@@ -109,11 +109,11 @@
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.host.APICreateHostSwitchMonitorMsg</name>
+        <name>org.zstack.tunnel.header.host.APICreateHostMonitorMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.host.APIUpdateHostSwitchMonitorMsg</name>
+        <name>org.zstack.tunnel.header.host.APIUpdateHostMonitorMsg</name>
     </message>
 
     <message>
@@ -122,7 +122,7 @@
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.host.APIQueryHostSwitchMonitorMsg</name>
+        <name>org.zstack.tunnel.header.host.APIQueryHostMonitorMsg</name>
         <serviceId>query</serviceId>
     </message>
 

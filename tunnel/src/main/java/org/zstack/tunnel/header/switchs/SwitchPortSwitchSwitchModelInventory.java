@@ -22,7 +22,11 @@ public class SwitchPortSwitchSwitchModelInventory {
 
     private String portName;
 
+    private SwitchPortType portType;
+
     private SwitchPortLabel label;
+
+    private Integer isExclusive;
 
     private Integer reuse;
 
@@ -42,7 +46,9 @@ public class SwitchPortSwitchSwitchModelInventory {
         inv.setSwitchSwitchModel(SwitchSwitchModelInventory.valueOf(vo.getSwitchs()));
         inv.setPortNum(vo.getPortNum());
         inv.setPortName(vo.getPortName());
+        inv.setPortType(vo.getPortType());
         inv.setLabel(vo.getLabel());
+        inv.setIsExclusive(vo.getIsExclusive());
         inv.setReuse(vo.getReuse());
         inv.setAutoAlloc(vo.getAutoAlloc());
         inv.setEnabled(vo.getEnabled());
@@ -146,5 +152,21 @@ public class SwitchPortSwitchSwitchModelInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public SwitchPortType getPortType() {
+        return portType;
+    }
+
+    public void setPortType(SwitchPortType portType) {
+        this.portType = portType;
+    }
+
+    public Integer getIsExclusive() {
+        return isExclusive;
+    }
+
+    public void setIsExclusive(Integer isExclusive) {
+        this.isExclusive = isExclusive;
     }
 }

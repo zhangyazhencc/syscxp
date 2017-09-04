@@ -23,8 +23,8 @@
 
         <class>org.zstack.tunnel.header.host.HostVO</class>
         <class>org.zstack.tunnel.header.host.HostEO</class>
-        <class>org.zstack.tunnel.header.host.HostSwitchMonitorVO</class>
-        <class>org.zstack.tunnel.header.host.HostSwitchMonitorEO</class>
+        <class>org.zstack.tunnel.header.host.HostMonitorVO</class>
+        <class>org.zstack.tunnel.header.host.HostMonitorEO</class>
 
     </persistence-unit>
 </persistence>

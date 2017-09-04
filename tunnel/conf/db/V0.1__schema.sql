@@ -134,7 +134,9 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchPortVO` (
   `switchUuid` varchar(32) NOT NULL COMMENT '交换机UUID',
   `portNum` INT(11) DEFAULT NULL COMMENT '该交换机端口编号：1口，2口...',
   `portName` varchar(128) NOT NULL COMMENT '端口名称',
-  `label` varchar(128) NOT NULL COMMENT '端口用途：接入/监控',
+  `portType` varchar(128) NOT NULL COMMENT '端口类型：光口，电口',
+  `label` varchar(128) NOT NULL COMMENT '端口用途：接入/监控/云',
+  `isExclusive` TINYINT(1) NOT NULL COMMENT '如果是CLOUD端口，是否独享',
   `reuse` TINYINT(1) NOT NULL COMMENT '是否复用',
   `autoAlloc` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否自动分配',
   `enabled` TINYINT(1) NOT NULL DEFAULT '1' COMMENT '是否启用',
@@ -250,8 +252,8 @@ CREATE TABLE  `syscxp_tunnel`.`HostEO` (
 CREATE VIEW `syscxp_tunnel`.`HostVO` AS SELECT uuid, name, code, ip, username, password, state, status, lastOpDate, createDate
                                                      FROM `HostEO` WHERE deleted = 0;
 
-##监控机交换机监控
-CREATE TABLE `syscxp_tunnel`.`HostSwitchMonitorEO` (
+##监控机监控
+CREATE TABLE `syscxp_tunnel`.`HostMonitorEO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `hostUuid` VARCHAR(32) NOT NULL COMMENT '监控机UUID',
   `switchPortUuid` VARCHAR(32) NOT NULL COMMENT '交换机UUID',
@@ -262,6 +264,6 @@ CREATE TABLE `syscxp_tunnel`.`HostSwitchMonitorEO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`HostSwitchMonitorVO` AS SELECT uuid, hostUuid, switchPortUuid, interfaceName, lastOpDate, createDate
-                                          FROM `HostSwitchMonitorEO` WHERE deleted = 0;
+CREATE VIEW `syscxp_tunnel`.`HostMonitorVO` AS SELECT uuid, hostUuid, switchPortUuid, interfaceName, lastOpDate, createDate
+                                          FROM `HostMonitorEO` WHERE deleted = 0;
 

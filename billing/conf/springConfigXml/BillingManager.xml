@@ -35,5 +35,11 @@
 
     </bean>
 
+    <bean id="BillingSubQueryExtension" class="org.zstack.billing.manage.BillingSubQueryExtension">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.query.MysqlQuerySubQueryExtension"/>
+        </zstack:plugin>
+    </bean>
+
 </beans>
 

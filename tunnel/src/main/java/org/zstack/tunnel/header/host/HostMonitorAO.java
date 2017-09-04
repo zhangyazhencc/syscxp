@@ -12,7 +12,7 @@ import java.sql.Timestamp;
  * Created by DCY on 2017-08-30
  */
 @MappedSuperclass
-public class HostSwitchMonitorAO {
+public class HostMonitorAO {
 
     @Id
     @Column
