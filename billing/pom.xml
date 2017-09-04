@@ -39,6 +39,11 @@
             <artifactId>servlet-api</artifactId>
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>org.alibaba</groupId>
+            <artifactId>alipay-skd</artifactId>
+            <version>1.0</version>
+        </dependency>
     </dependencies>
 
     <build>
