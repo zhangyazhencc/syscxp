@@ -179,8 +179,8 @@ public class AccountBase extends AbstractAccount {
 
     private void handle(APIGetAccountMsg msg) {
         APIGetAccountReply reply = new APIGetAccountReply();
-
         AccountVO account = dbf.findByUuid(msg.getAccountUuid(),AccountVO.class);
+
 
         reply.setInventory(AccountInventory.valueOf(account));
         bus.reply(msg, reply);
