@@ -10,10 +10,10 @@ import java.sql.Timestamp;
 @Action(category = BillingConstant.ACTION_CATEGORY, names = {"read", "bill"})
 public class APIGetMonetaryGroupByProductTypeMsg extends APISyncCallMessage{
 
-    @APIParam(nonempty = false)
+    @APIParam(emptyString = false)
     private Timestamp dateStart;
 
-    @APIParam(nonempty = false)
+    @APIParam(emptyString = false)
     private Timestamp dateEnd;
 
     public Timestamp getDateStart() {

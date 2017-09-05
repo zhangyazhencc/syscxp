@@ -8,10 +8,10 @@ import org.zstack.header.message.APIParam;
 @Action(category = BillingConstant.ACTION_CATEGORY, names = {"renew"}, accountOnly = true)
 public class APIUpdateRenewMsg extends APIMessage {
 
-    @APIParam(nonempty = true)
+    @APIParam()
     private boolean isRenewAuto;
 
-    @APIParam(nonempty = true, resourceType = RenewVO.class, checkAccount = true)
+    @APIParam(emptyString = false, resourceType = RenewVO.class, checkAccount = true)
     private String uuid;
 
     public boolean isRenewAuto() {
