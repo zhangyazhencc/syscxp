@@ -182,11 +182,13 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 String trade_status = param.get("trade_status");
                 SimpleQuery<DealDetailVO> q = dbf.createQuery(DealDetailVO.class);
                 q.add(DealDetailVO_.outTradeNO, Op.EQ, out_trade_no);
-                q.add(DealDetailVO_.state,Op.EQ,DealState.SUCCESS.toString());
+                q.add(DealDetailVO_.state,Op.EQ,DealState.SUCCESS);
                 DealDetailVO dealDetailVO = q.find();
 
-                if (dealDetailVO == null || dealDetailVO.getIncome().compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(IdentityGlobalProperty.SELLER_ID) || !app_id.equals(IdentityGlobalProperty.APP_ID)) {
+                if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 ||!seller_id.equals(IdentityGlobalProperty.SELLER_ID) || !app_id.equals(IdentityGlobalProperty.APP_ID)) {
                     reply.setInventory(false);
+                    bus.reply(msg, reply);
+                    return;
                 }
 
                 if(trade_status.equals("TRADE_FINISHED")){
@@ -194,7 +196,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                     //如果没有做过处理，根据订单号（out_trade_no）在商户网站的订单系统中查到该笔订单的详细，并执行商户的业务程序
                     //如果有做过处理，不执行商户的业务程序
                     if(dealDetailVO.getState().equals(DealState.FAILURE)) {
-                        AccountBalanceVO vo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+                        AccountBalanceVO vo = dbf.findByUuid(dealDetailVO.getAccountUuid(), AccountBalanceVO.class);
                         BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
                         vo.setCashBalance(balance);
                         dbf.updateAndRefresh(vo);
@@ -203,6 +205,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                         dealDetailVO.setState(DealState.SUCCESS);
                         dealDetailVO.setFinishTime(dbf.getCurrentSqlTime());
                         dealDetailVO.setTradeNO(trade_no);
+                        dealDetailVO.setOutTradeNO(out_trade_no);
                         dbf.updateAndRefresh(dealDetailVO);
                     }
 
@@ -222,6 +225,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                         dealDetailVO.setState(DealState.SUCCESS);
                         dealDetailVO.setFinishTime(dbf.getCurrentSqlTime());
                         dealDetailVO.setTradeNO(trade_no);
+                        dealDetailVO.setOutTradeNO(out_trade_no);
                         dbf.updateAndRefresh(dealDetailVO);
                     }
 
