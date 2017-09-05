@@ -1,8 +1,10 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.Action;
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.notification.ApiNotification;
 
 /**
  * Created by wangwg on 2017/8/18.
@@ -35,5 +37,17 @@ public class APIUserPhoneAuthenticationMsg extends APIMessage implements Account
     @Override
     public String getAccountUuid() {
         return this.getSession().getAccountUuid();
+    }
+
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Phone Authentication").resource(that.getSession().getUserUuid(), UserVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

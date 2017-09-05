@@ -2,8 +2,10 @@ package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.Action;
 import org.zstack.header.identity.NoticeWay;
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.notification.ApiNotification;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"account_contact"})
 public class APIUpdateAccountContactsMsg extends  APIMessage implements AccountMessage{
@@ -78,4 +80,17 @@ public class APIUpdateAccountContactsMsg extends  APIMessage implements AccountM
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update account contact").resource(getAccountUuid(), AccountContactsVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
+            }
+        };
+    }
+
 }

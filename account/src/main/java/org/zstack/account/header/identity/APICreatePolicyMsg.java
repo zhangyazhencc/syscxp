@@ -71,10 +71,12 @@ public class APICreatePolicyMsg extends  APIMessage implements AccountMessage{
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
+                String uuid = null;
                 if (evt.isSuccess()) {
-                    ntfy("Creating").resource(((APICreatePolicyEvent)evt).getInventory().getUuid(), PolicyVO.class.getSimpleName())
-                        .messageAndEvent(that, evt).done();
+                    uuid = ((APICreatePolicyEvent)evt).getInventory().getUuid();
                 }
+                ntfy("Creating").resource(uuid, PolicyVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
             }
         };
     }

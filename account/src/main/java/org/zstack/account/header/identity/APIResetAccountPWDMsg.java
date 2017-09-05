@@ -1,8 +1,10 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.Action;
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.notification.ApiNotification;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"acount"}, proxyOnly = true)
 public class APIResetAccountPWDMsg extends  APIMessage implements  AccountMessage {
@@ -21,5 +23,17 @@ public class APIResetAccountPWDMsg extends  APIMessage implements  AccountMessag
 
     public void setTargetUuid(String targetUuid) {
         this.targetUuid = targetUuid;
+    }
+
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Reset account password").resource(targetUuid, AccountVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

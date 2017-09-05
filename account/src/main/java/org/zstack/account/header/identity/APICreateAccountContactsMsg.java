@@ -2,8 +2,10 @@ package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.Action;
 import org.zstack.header.identity.NoticeWay;
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.notification.ApiNotification;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"account_contact"})
 public class APICreateAccountContactsMsg extends  APIMessage implements  AccountMessage {
@@ -63,4 +65,22 @@ public class APICreateAccountContactsMsg extends  APIMessage implements  Account
     public void setTargetUuid(String targetUuid) {
         this.targetUuid = targetUuid;
     }
+
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateAccountContactsEvent) evt).getInventory().getUuid();
+                }
+                ntfy("Create Account")
+                        .resource(uuid, AccountContactsVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
+            }
+        };
+    }
+
 }
