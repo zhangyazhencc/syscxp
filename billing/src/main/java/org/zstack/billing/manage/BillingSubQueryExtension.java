@@ -1,7 +1,12 @@
 package org.zstack.billing.manage;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.zstack.billing.header.balance.APIQueryDealDetailMsg;
+import org.zstack.billing.header.bill.APIQueryBillMsg;
+import org.zstack.billing.header.order.APIQueryOrderMsg;
+import org.zstack.billing.header.order.APIQueryOrderReply;
 import org.zstack.billing.identity.IdentiyInterceptor;
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.query.APIQueryMessage;
 import org.zstack.query.AbstractMysqlQuerySubQueryExtension;
 import org.zstack.query.QueryUtils;
@@ -16,6 +21,32 @@ public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
     public String makeSubquery(APIQueryMessage msg, Class inventoryClass) {
         if (msg.getSession().isAdminAccountSession() || msg.getSession().isAdminUserSession()) {
             return null;
+        }
+        if(msg.getSession().getType().equals(AccountType.Proxy)){
+            if(msg instanceof APIQueryBillMsg){
+                boolean selfSelect = ((APIQueryBillMsg) msg).isSelfSelect();
+                if(selfSelect){
+                    return String.format("%s.accountUuid = '%s'", inventoryClass.getSimpleName().toLowerCase(), msg.getSession().getAccountUuid());
+                } else{
+                    return null;
+                }
+
+            } else if(msg instanceof APIQueryDealDetailMsg){
+                boolean selfSelect = ((APIQueryDealDetailMsg) msg).isSelfSelect();
+                if(selfSelect){
+                    return String.format("%s.accountUuid = '%s'", inventoryClass.getSimpleName().toLowerCase(), msg.getSession().getAccountUuid());
+                } else{
+                    return null;
+                }
+            }else if(msg instanceof APIQueryOrderMsg){
+                boolean selfSelect = ((APIQueryOrderMsg) msg).isSelfSelect();
+                if(selfSelect){
+                    return String.format("%s.accountUuid = '%s'", inventoryClass.getSimpleName().toLowerCase(), msg.getSession().getAccountUuid());
+                } else{
+                    return null;
+                }
+            }
+
         }
 
         Class entityClass = QueryUtils.getEntityClassFromInventoryClass(inventoryClass);
