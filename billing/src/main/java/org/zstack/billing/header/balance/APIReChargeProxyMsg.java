@@ -1,10 +1,13 @@
 package org.zstack.billing.header.balance;
 
+import org.zstack.billing.manage.BillingConstant;
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 import java.math.BigDecimal;
 
+@Action(category = BillingConstant.ACTION_CATEGORY, names = {"recharge"}, proxyOnly = true)
 public class APIReChargeProxyMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = AccountBalanceVO.class)
     private String accountUuid;

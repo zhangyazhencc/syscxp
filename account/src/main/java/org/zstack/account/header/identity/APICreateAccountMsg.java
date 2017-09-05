@@ -5,7 +5,7 @@ import org.zstack.header.message.APICreateMessage;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
-@Action(category = AccountConstant.ACTION_CATEGORY, proxyOnly= true, names = {"createAccount"})
+@Action(category = AccountConstant.ACTION_CATEGORY, proxyOnly= true, names = {"account"})
 public class APICreateAccountMsg  extends APIMessage implements AccountMessage{
     @APIParam(maxLength = 128)
     private String name;

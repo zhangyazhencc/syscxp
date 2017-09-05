@@ -7,7 +7,7 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by wangwg on 2017/8/18.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"user_update"})
+@Action(category = AccountConstant.ACTION_CATEGORY, names = {"user"})
 public class APIUserPhoneAuthenticationMsg extends APIMessage implements AccountMessage {
 
     @APIParam

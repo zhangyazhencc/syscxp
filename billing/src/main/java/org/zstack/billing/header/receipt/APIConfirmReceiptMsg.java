@@ -1,8 +1,11 @@
 package org.zstack.billing.header.receipt;
 
+import org.zstack.billing.manage.BillingConstant;
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
+@Action(category = BillingConstant.ACTION_CATEGORY, names = {"receipt"}, proxyOnly = true)
 public class APIConfirmReceiptMsg  extends APIMessage{
 
     @APIParam(emptyString = false)
