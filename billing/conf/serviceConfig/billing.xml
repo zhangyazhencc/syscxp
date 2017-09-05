@@ -88,8 +88,13 @@
     <message>
         <name>org.zstack.header.alipay.APIVerifyNotifyMsg</name>
     </message>
+
     <message>
         <name>org.zstack.billing.header.balance.APIAllotDischargeMsg</name>
+    </message>
+
+   <message>
+        <name>org.zstack.billing.header.sla.APIDeleteSLACompensateMsg</name>
     </message>
 
     <message>

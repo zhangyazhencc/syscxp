@@ -25,6 +25,7 @@ public class DealDetailInventory {
     private Timestamp lastOpDate;
     private String outTradeNO;
     private String tradeNO;
+    private String opAccountUuid;
 
     public static DealDetailInventory valueOf(DealDetailVO vo) {
         DealDetailInventory inv = new DealDetailInventory();
@@ -41,6 +42,7 @@ public class DealDetailInventory {
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setTradeNO(vo.getTradeNO());
         inv.setOutTradeNO(vo.getOutTradeNO());
+        inv.setOpAccountUuid(vo.getOpAccountUuid());
 
         return inv;
     }
@@ -155,5 +157,13 @@ public class DealDetailInventory {
 
     public void setTradeNO(String tradeNO) {
         this.tradeNO = tradeNO;
+    }
+
+    public String getOpAccountUuid() {
+        return opAccountUuid;
+    }
+
+    public void setOpAccountUuid(String opAccountUuid) {
+        this.opAccountUuid = opAccountUuid;
     }
 }
