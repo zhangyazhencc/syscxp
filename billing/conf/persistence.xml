@@ -18,5 +18,6 @@
         <class>org.zstack.billing.header.receipt.ReceiptInfoVO</class>
         <class>org.zstack.billing.header.balance.DealDetailVO</class>
         <class>org.zstack.billing.header.sla.SLACompensateVO</class>
+        <class>org.zstack.billing.header.balance.AccountDischargeVO</class>
     </persistence-unit>
 </persistence>
