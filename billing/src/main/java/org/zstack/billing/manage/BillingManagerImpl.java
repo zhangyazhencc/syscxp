@@ -965,7 +965,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
         orderVo.setProductEffectTimeStart(currentTimestamp);
 
-        orderVo.setProductChargeModel(msg.getProductChargeModel());//todo this value would be got from account
+        orderVo.setProductChargeModel(msg.getProductChargeModel());
         orderVo.setPayTime(currentTimestamp);
         orderVo.setProductDiscount(BigDecimal.valueOf(productDisCharge));
         orderVo.setProductDescription(msg.getProductDescription());
