@@ -244,10 +244,12 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             q.add(DealDetailVO_.outTradeNO, Op.EQ, out_trade_no);
             DealDetailVO dealDetailVO = q.find();
 
-            if (dealDetailVO == null || dealDetailVO.getIncome().compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(IdentityGlobalProperty.SELLER_ID) || !app_id.equals(IdentityGlobalProperty.APP_ID)) {
+            if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 ||!seller_id.equals(IdentityGlobalProperty.SELLER_ID) || !app_id.equals(IdentityGlobalProperty.APP_ID)) {
                 reply.setInventory(false);
+                bus.reply(msg, reply);
+                return;
             } else {
-                AccountBalanceVO vo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+                AccountBalanceVO vo = dbf.findByUuid(dealDetailVO.getAccountUuid(), AccountBalanceVO.class);
                 BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
                 vo.setCashBalance(balance);
                 dbf.updateAndRefresh(vo);
@@ -265,7 +267,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void handle(APIRechargeMsg msg) {
-        BigDecimal total = msg.getTotal();
+        BigDecimal total = msg.getTotal().setScale(2,BigDecimal.ROUND_HALF_UP);
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         String accountUuid = msg.getSession().getAccountUuid();
         int hash = accountUuid.hashCode();

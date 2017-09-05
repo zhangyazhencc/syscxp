@@ -43,7 +43,7 @@ public class IdentityGlobalProperty {
     @GlobalProperty(name = "log_path")
     public static String LOG_PATH;
 
-    @GlobalProperty(name = " seller_id")
+    @GlobalProperty(name = "seller_id")
     public static String SELLER_ID;
 
 
