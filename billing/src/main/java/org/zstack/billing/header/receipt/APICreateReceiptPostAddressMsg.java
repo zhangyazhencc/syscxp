@@ -9,13 +9,13 @@ import org.zstack.header.notification.ApiNotification;
 @Action(category = BillingConstant.ACTION_CATEGORY, names = {"receipt"})
 public class APICreateReceiptPostAddressMsg extends APIMessage {
 
-    @APIParam(nonempty = false)
+    @APIParam(emptyString = false)
     private String name;
 
-    @APIParam(nonempty = false)
+    @APIParam(emptyString = false)
     private String telephone;
 
-    @APIParam(nonempty = false)
+    @APIParam(emptyString = false)
     private String address;
 
     public String getName() {

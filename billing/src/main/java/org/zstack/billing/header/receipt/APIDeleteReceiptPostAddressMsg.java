@@ -9,7 +9,7 @@ import org.zstack.header.notification.ApiNotification;
 @Action(category = BillingConstant.ACTION_CATEGORY, names = {"receipt"})
 public class APIDeleteReceiptPostAddressMsg extends APIMessage {
 
-    @APIParam(nonempty = true,resourceType = ReceiptPostAddressVO.class, checkAccount = true)
+    @APIParam(emptyString = false,resourceType = ReceiptPostAddressVO.class, checkAccount = true)
     private String uuid;
 
     public String getUuid() {
