@@ -22,31 +22,23 @@ public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
         if (msg.getSession().isAdminAccountSession() || msg.getSession().isAdminUserSession()) {
             return null;
         }
-        if(msg.getSession().getType().equals(AccountType.Proxy)){
-            if(msg instanceof APIQueryBillMsg){
-                boolean selfSelect = ((APIQueryBillMsg) msg).isSelfSelect();
-                if(selfSelect){
-                    return String.format("%s.accountUuid = '%s'", inventoryClass.getSimpleName().toLowerCase(), msg.getSession().getAccountUuid());
-                } else{
+        if (msg.getSession().getType().equals(AccountType.Proxy)) {
+            if (msg instanceof APIQueryBillMsg) {
+                if (!((APIQueryBillMsg) msg).isSelfSelect()) {
                     return null;
                 }
 
-            } else if(msg instanceof APIQueryDealDetailMsg){
-                boolean selfSelect = ((APIQueryDealDetailMsg) msg).isSelfSelect();
-                if(selfSelect){
-                    return String.format("%s.accountUuid = '%s'", inventoryClass.getSimpleName().toLowerCase(), msg.getSession().getAccountUuid());
-                } else{
+            } else if (msg instanceof APIQueryDealDetailMsg) {
+                if (!((APIQueryDealDetailMsg) msg).isSelfSelect()) {
                     return null;
                 }
-            }else if(msg instanceof APIQueryOrderMsg){
-                boolean selfSelect = ((APIQueryOrderMsg) msg).isSelfSelect();
-                if(selfSelect){
-                    return String.format("%s.accountUuid = '%s'", inventoryClass.getSimpleName().toLowerCase(), msg.getSession().getAccountUuid());
-                } else{
+
+            } else if (msg instanceof APIQueryOrderMsg) {
+                if (!((APIQueryOrderMsg) msg).isSelfSelect()) {
                     return null;
                 }
+
             }
-
         }
 
         Class entityClass = QueryUtils.getEntityClassFromInventoryClass(inventoryClass);
