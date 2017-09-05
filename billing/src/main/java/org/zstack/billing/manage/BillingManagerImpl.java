@@ -195,7 +195,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                     //判断该笔订单是否在商户网站中已经做过处理
                     //如果没有做过处理，根据订单号（out_trade_no）在商户网站的订单系统中查到该笔订单的详细，并执行商户的业务程序
                     //如果有做过处理，不执行商户的业务程序
-                    if(dealDetailVO.getState().equals(DealState.FAILURE)) {
+                    if(dealDetailVO.getState().equals(DealState.FAILURE) && dealDetailVO.getOutTradeNO().equals(out_trade_no)) {
                         AccountBalanceVO vo = dbf.findByUuid(dealDetailVO.getAccountUuid(), AccountBalanceVO.class);
                         BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
                         vo.setCashBalance(balance);
@@ -267,7 +267,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 reply.setInventory(false);
                 bus.reply(msg, reply);
                 return;
-            } else {
+            } else if(dealDetailVO.getOutTradeNO().equals(out_trade_no)) {
                 AccountBalanceVO vo = dbf.findByUuid(dealDetailVO.getAccountUuid(), AccountBalanceVO.class);
                 BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
                 vo.setCashBalance(balance);
