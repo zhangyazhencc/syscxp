@@ -7,7 +7,7 @@ import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
-@Action(category = BillingConstant.ACTION_CATEGORY, names = {"order"}, accountOnly = true)
+@Action(category = BillingConstant.ACTION_CATEGORY, names = {"order"}, accountOnly = false)
 public class APICreateOrderMsg extends APIMessage {
 
     @APIParam(emptyString = false)
@@ -33,6 +33,8 @@ public class APICreateOrderMsg extends APIMessage {
 
     @APIParam(emptyString = false)
     private  ProductPriceUnit productPriceUnit;
+
+    private productUuids;
 
     @APIParam(required = false, resourceType = OrderVO.class, checkAccount = true)
     private String oldOrderUuid;

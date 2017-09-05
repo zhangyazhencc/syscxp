@@ -85,8 +85,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APIGetAccountBalanceMsg) {
             handle((APIGetAccountBalanceMsg) msg);
-        } else if (msg instanceof APIReChargeProxyMsg) {
-            handle((APIReChargeProxyMsg) msg);
+        } else if (msg instanceof APIUpdateAccountBalanceMsg) {
+            handle((APIUpdateAccountBalanceMsg) msg);
         } else if (msg instanceof APICreateOrderMsg) {
             handle((APICreateOrderMsg) msg);
         } else if (msg instanceof APIGetExpenseGrossMonthListMsg) {
@@ -121,16 +121,16 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIGetMonetaryGroupByProductTypeMsg) msg);
         } else if (msg instanceof APICreateReceiptMsg) {
             handle((APICreateReceiptMsg) msg);
-        } else if (msg instanceof APIConfirmReceiptMsg) {
-            handle((APIConfirmReceiptMsg) msg);
+        } else if (msg instanceof APIUpdateReceiptMsg) {
+            handle((APIUpdateReceiptMsg) msg);
         } else if (msg instanceof APIRechargeMsg) {
             handle((APIRechargeMsg) msg);
         } else if (msg instanceof APIVerifyReturnMsg) {
             handle((APIVerifyReturnMsg) msg);
         }else if (msg instanceof APIVerifyNotifyMsg) {
             handle((APIVerifyNotifyMsg) msg);
-        } else if (msg instanceof APIAllotDischargeMsg) {
-            handle((APIAllotDischargeMsg) msg);
+        } else if (msg instanceof APIUpdateAccountDischargeMsg) {
+            handle((APIUpdateAccountDischargeMsg) msg);
         } else if (msg instanceof APIDeleteSLACompensateMsg) {
             handle((APIDeleteSLACompensateMsg) msg);
         } else {
@@ -151,13 +151,13 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     }
 
-    private void handle(APIAllotDischargeMsg msg) {
+    private void handle(APIUpdateAccountDischargeMsg msg) {
         String uuid = msg.getUuid();
         AccountDischargeVO accountDischargeVO = dbf.findByUuid(uuid,AccountDischargeVO.class);
         accountDischargeVO.setDisCharge(msg.getDischarge());
         dbf.updateAndRefresh(accountDischargeVO);
         AccountDischargeInventory inventory = AccountDischargeInventory.valueOf(accountDischargeVO);
-        APIAllotDischargeEvent evt = new APIAllotDischargeEvent(msg.getId());
+        APIUpdateAccountDischargeEvent evt = new APIUpdateAccountDischargeEvent(msg.getId());
         evt.setInventory(inventory);
         bus.publish(evt);
     }
@@ -336,8 +336,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     }
 
-    private void handle(APIConfirmReceiptMsg msg) {
-        String receiptUuid = msg.getReceiptUuid();
+    private void handle(APIUpdateReceiptMsg msg) {
+        String receiptUuid = msg.getUuid();
         ReceiptState state = msg.getState();
         ReceiptVO vo = dbf.findByUuid(receiptUuid, ReceiptVO.class);
         vo.setState(msg.getState());
@@ -346,7 +346,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         }
         dbf.updateAndRefresh(vo);
         ReceiptInventory inventory = ReceiptInventory.valueOf(vo);
-        APIConfirmReceiptEvent evt = new APIConfirmReceiptEvent(msg.getId());
+        APIUpdateReceiptEvent evt = new APIUpdateReceiptEvent(msg.getId());
         evt.setInventory(inventory);
         bus.publish(evt);
     }
@@ -776,10 +776,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void handle(APIUpdateRenewMsg msg) {
-        boolean isRenewAuto = msg.isRenewAuto();
-        String uuid = msg.getUuid();
-        RenewVO vo = dbf.findByUuid(uuid, RenewVO.class);
-        if (vo.isRenewAuto() != isRenewAuto) {
+        RenewVO vo = dbf.findByUuid(msg.getUuid(), RenewVO.class);
+        if (vo.isRenewAuto() != msg.isRenewAuto()) {
             vo.setRenewAuto(msg.isRenewAuto());
         }
         dbf.updateAndRefresh(vo);
@@ -1018,7 +1016,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
 
-    private void handle(APIReChargeProxyMsg msg) {
+    private void handle(APIUpdateAccountBalanceMsg msg) {
         AccountBalanceVO vo = dbf.findByUuid( msg.getAccountUuid(), AccountBalanceVO.class);
 
         if(msg.getPresent()!=null){
@@ -1034,8 +1032,9 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setType(DealType.RECHARGE);
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(vo.getCashBalance());
-            dVO.setOutTradeNO("proxy-recharge");
+            dVO.setOutTradeNO("proxy-recharge");xvxzcv
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
+            dbf.persist(dVO);
         }else if(msg.getCash()!=null){
             vo.setCashBalance(vo.getCashBalance().add(msg.getCash()));
             DealDetailVO dealDetailVO = new DealDetailVO();
@@ -1049,14 +1048,15 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setType(DealType.RECHARGE);
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(vo.getCashBalance());
-            dVO.setOutTradeNO("proxy-recharge");
+            dVO.setOutTradeNO("proxy-recharge");xcvzv
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
+            dbf.persist(dVO);
         }else if(msg.getCredit()!=null){
             vo.setCreditPoint(msg.getCredit());
         }
         vo = dbf.updateAndRefresh(vo);
         AccountBalanceInventory abi = AccountBalanceInventory.valueOf(vo);
-        APIReChargeProxyEvent evt = new APIReChargeProxyEvent(msg.getId());
+        APIUpdateAccountBalanceEvent evt = new APIUpdateAccountBalanceEvent(msg.getId());
         evt.setInventory(abi);
         bus.publish(evt);
 

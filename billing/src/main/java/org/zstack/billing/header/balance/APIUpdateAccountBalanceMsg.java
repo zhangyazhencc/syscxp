@@ -8,7 +8,7 @@ import org.zstack.header.message.APIParam;
 import java.math.BigDecimal;
 
 @Action(category = BillingConstant.ACTION_CATEGORY, names = {"recharge"}, proxyOnly = true)
-public class APIReChargeProxyMsg extends APIMessage {
+public class APIUpdateAccountBalanceMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = AccountBalanceVO.class)
     private String accountUuid;
 
