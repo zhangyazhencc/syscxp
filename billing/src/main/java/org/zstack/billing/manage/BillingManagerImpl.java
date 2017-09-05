@@ -131,9 +131,24 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIVerifyNotifyMsg) msg);
         } else if (msg instanceof APIAllotDischargeMsg) {
             handle((APIAllotDischargeMsg) msg);
+        } else if (msg instanceof APIDeleteSLACompensateMsg) {
+            handle((APIDeleteSLACompensateMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIDeleteSLACompensateMsg msg) {
+        String uuid = msg.getUuid();
+        SLACompensateVO slaCompensateVO = dbf.findByUuid(uuid,SLACompensateVO.class);
+        if(slaCompensateVO!=null){
+            dbf.remove(slaCompensateVO);
+        }
+        SLACompensateInventory inventory = SLACompensateInventory.valueOf(slaCompensateVO);
+        APIDeleteSLACompensateEvent event = new APIDeleteSLACompensateEvent();
+        event.setInventory(inventory);
+        bus.publish(event);
+
     }
 
     private void handle(APIAllotDischargeMsg msg) {
@@ -167,11 +182,13 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 String trade_status = param.get("trade_status");
                 SimpleQuery<DealDetailVO> q = dbf.createQuery(DealDetailVO.class);
                 q.add(DealDetailVO_.outTradeNO, Op.EQ, out_trade_no);
-                q.add(DealDetailVO_.state,Op.EQ,DealState.SUCCESS.toString());
+                q.add(DealDetailVO_.state,Op.EQ,DealState.SUCCESS);
                 DealDetailVO dealDetailVO = q.find();
 
-                if (dealDetailVO == null || dealDetailVO.getIncome().compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(IdentityGlobalProperty.SELLER_ID) || !app_id.equals(IdentityGlobalProperty.APP_ID)) {
+                if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 ||!seller_id.equals(IdentityGlobalProperty.SELLER_ID) || !app_id.equals(IdentityGlobalProperty.APP_ID)) {
                     reply.setInventory(false);
+                    bus.reply(msg, reply);
+                    return;
                 }
 
                 if(trade_status.equals("TRADE_FINISHED")){
@@ -179,7 +196,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                     //如果没有做过处理，根据订单号（out_trade_no）在商户网站的订单系统中查到该笔订单的详细，并执行商户的业务程序
                     //如果有做过处理，不执行商户的业务程序
                     if(dealDetailVO.getState().equals(DealState.FAILURE)) {
-                        AccountBalanceVO vo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+                        AccountBalanceVO vo = dbf.findByUuid(dealDetailVO.getAccountUuid(), AccountBalanceVO.class);
                         BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
                         vo.setCashBalance(balance);
                         dbf.updateAndRefresh(vo);
@@ -188,6 +205,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                         dealDetailVO.setState(DealState.SUCCESS);
                         dealDetailVO.setFinishTime(dbf.getCurrentSqlTime());
                         dealDetailVO.setTradeNO(trade_no);
+                        dealDetailVO.setOutTradeNO(out_trade_no);
                         dbf.updateAndRefresh(dealDetailVO);
                     }
 
@@ -207,6 +225,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                         dealDetailVO.setState(DealState.SUCCESS);
                         dealDetailVO.setFinishTime(dbf.getCurrentSqlTime());
                         dealDetailVO.setTradeNO(trade_no);
+                        dealDetailVO.setOutTradeNO(out_trade_no);
                         dbf.updateAndRefresh(dealDetailVO);
                     }
 
@@ -244,10 +263,12 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             q.add(DealDetailVO_.outTradeNO, Op.EQ, out_trade_no);
             DealDetailVO dealDetailVO = q.find();
 
-            if (dealDetailVO == null || dealDetailVO.getIncome().compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(IdentityGlobalProperty.SELLER_ID) || !app_id.equals(IdentityGlobalProperty.APP_ID)) {
+            if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 ||!seller_id.equals(IdentityGlobalProperty.SELLER_ID) || !app_id.equals(IdentityGlobalProperty.APP_ID)) {
                 reply.setInventory(false);
+                bus.reply(msg, reply);
+                return;
             } else {
-                AccountBalanceVO vo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+                AccountBalanceVO vo = dbf.findByUuid(dealDetailVO.getAccountUuid(), AccountBalanceVO.class);
                 BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
                 vo.setCashBalance(balance);
                 dbf.updateAndRefresh(vo);
@@ -265,9 +286,16 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void handle(APIRechargeMsg msg) {
-        BigDecimal total = msg.getTotal();
-        Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         String accountUuid = msg.getSession().getAccountUuid();
+        if(!StringUtils.isEmpty(msg.getAccountUuid())){
+            if(!dbf.isExist(msg.getAccountUuid(),AccountBalanceVO.class)){
+                throw new IllegalArgumentException("could not find the account,please check it");
+            }
+            accountUuid = msg.getAccountUuid();
+        }
+        BigDecimal total = msg.getTotal().setScale(2,BigDecimal.ROUND_HALF_UP);
+        Timestamp currentTimestamp = dbf.getCurrentSqlTime();
+
         int hash = accountUuid.hashCode();
         if (hash < 0) {
             hash = ~hash;
@@ -278,10 +306,11 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         vo.setOutTradeNO(outTradeNO);
         vo.setState(DealState.FAILURE);
         vo.setType(DealType.RECHARGE);
-        vo.setDealWay(DealWay.BALANCE_BILL);
+        vo.setDealWay(DealWay.CASH_BILL);
         vo.setIncome(total);
         vo.setFinishTime(currentTimestamp);
         vo.setAccountUuid(accountUuid);
+        vo.setOpAccountUuid(msg.getSession().getAccountUuid());
         dbf.persistAndRefresh(vo);
         AlipayClient alipayClient = new DefaultAlipayClient(IdentityGlobalProperty.GATEWAYURL, IdentityGlobalProperty.APP_ID, IdentityGlobalProperty.MERCHANT_PRIVATE_KEY, "json", IdentityGlobalProperty.CHARSET, IdentityGlobalProperty.ALIPAY_PUBLIC_KEY, IdentityGlobalProperty.SIGN_TYPE);
         AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();
@@ -676,7 +705,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 DealDetailVO dealDetailVO = new DealDetailVO();
                 dealDetailVO.setUuid(Platform.getUuid());
                 dealDetailVO.setAccountUuid(msg.getSession().getAccountUuid());
-                dealDetailVO.setDealWay(DealWay.BALANCE_BILL);
+                dealDetailVO.setDealWay(DealWay.PRESENT_BILL);
                 dealDetailVO.setIncome(BigDecimal.ZERO);
                 dealDetailVO.setExpend(total.negate());
                 dealDetailVO.setFinishTime(currentTimeStamp);
@@ -684,6 +713,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 dealDetailVO.setState(DealState.SUCCESS);
                 dealDetailVO.setBalance(presentNow);
                 dealDetailVO.setOutTradeNO(orderVo.getUuid());
+                dealDetailVO.setOpAccountUuid(msg.getSession().getAccountUuid());
                 dbf.persistAndRefresh(dealDetailVO);
 
             } else {
@@ -697,7 +727,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 DealDetailVO dealDetailVO = new DealDetailVO();
                 dealDetailVO.setUuid(Platform.getUuid());
                 dealDetailVO.setAccountUuid(msg.getSession().getAccountUuid());
-                dealDetailVO.setDealWay(DealWay.BALANCE_BILL);
+                dealDetailVO.setDealWay(DealWay.PRESENT_BILL);
                 dealDetailVO.setIncome(BigDecimal.ZERO);
                 dealDetailVO.setExpend(payPresent.negate());
                 dealDetailVO.setFinishTime(currentTimeStamp);
@@ -705,6 +735,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 dealDetailVO.setState(DealState.SUCCESS);
                 dealDetailVO.setBalance(BigDecimal.ZERO);
                 dealDetailVO.setOutTradeNO(orderVo.getUuid());
+                dealDetailVO.setOpAccountUuid(msg.getSession().getAccountUuid());
                 dbf.persistAndRefresh(dealDetailVO);
 
                 orderVo.setPayCash(payCash);
@@ -720,6 +751,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 dVO.setState(DealState.SUCCESS);
                 dVO.setBalance(remainCash);
                 dVO.setOutTradeNO(orderVo.getUuid());
+                dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
                 dbf.persistAndRefresh(dVO);
             }
         } else {
@@ -738,6 +770,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setType(DealType.DEDUCTION);
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(remainCashBalance);
+            dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
             dbf.persistAndRefresh(dVO);
         }
     }
@@ -864,6 +897,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(remainCash);
             dVO.setOutTradeNO(orderVo.getUuid());
+            dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
             dbf.persistAndRefresh(dVO);
 
         } else if(msg.getType().equals(OrderType.UN_SUBCRIBE)){
@@ -896,6 +930,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(remainCash);
             dVO.setOutTradeNO(orderVo.getUuid());
+            dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
             dbf.persistAndRefresh(dVO);
         } else if(msg.getType().equals(OrderType.BUY)){
             originalPrice = BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(duration);
@@ -934,7 +969,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
         orderVo.setProductEffectTimeStart(currentTimestamp);
 
-        orderVo.setProductChargeModel(msg.getProductChargeModel());//todo this value would be got from account
+        orderVo.setProductChargeModel(msg.getProductChargeModel());
         orderVo.setPayTime(currentTimestamp);
         orderVo.setProductDiscount(BigDecimal.valueOf(productDisCharge));
         orderVo.setProductDescription(msg.getProductDescription());
@@ -988,8 +1023,34 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
         if(msg.getPresent()!=null){
             vo.setPresentBalance(vo.getPresentBalance().add(msg.getPresent()));
+            DealDetailVO dealDetailVO = new DealDetailVO();
+            DealDetailVO dVO = new DealDetailVO();
+            dVO.setUuid(Platform.getUuid());
+            dVO.setAccountUuid(msg.getAccountUuid());
+            dVO.setDealWay(DealWay.PRESENT_BILL);
+            dVO.setIncome(msg.getPresent());
+            dVO.setExpend(BigDecimal.ZERO);
+            dVO.setFinishTime(dbf.getCurrentSqlTime());
+            dVO.setType(DealType.RECHARGE);
+            dVO.setState(DealState.SUCCESS);
+            dVO.setBalance(vo.getCashBalance());
+            dVO.setOutTradeNO("proxy-recharge");
+            dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
         }else if(msg.getCash()!=null){
             vo.setCashBalance(vo.getCashBalance().add(msg.getCash()));
+            DealDetailVO dealDetailVO = new DealDetailVO();
+            DealDetailVO dVO = new DealDetailVO();
+            dVO.setUuid(Platform.getUuid());
+            dVO.setAccountUuid(msg.getAccountUuid());
+            dVO.setDealWay(DealWay.CASH_BILL);
+            dVO.setIncome(msg.getCash());
+            dVO.setExpend(BigDecimal.ZERO);
+            dVO.setFinishTime(dbf.getCurrentSqlTime());
+            dVO.setType(DealType.RECHARGE);
+            dVO.setState(DealState.SUCCESS);
+            dVO.setBalance(vo.getCashBalance());
+            dVO.setOutTradeNO("proxy-recharge");
+            dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
         }else if(msg.getCredit()!=null){
             vo.setCreditPoint(msg.getCredit());
         }

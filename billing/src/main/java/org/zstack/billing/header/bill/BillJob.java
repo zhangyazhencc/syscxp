@@ -118,7 +118,7 @@ public class BillJob extends QuartzJobBean {
     }
 
     private void caculateBalance(BillStatistics bill, BillVO bVO) {
-        if (bill.getDealWay().equals(DealWay.BALANCE_BILL)) {
+        if (bill.getDealWay().equals(DealWay.PRESENT_BILL)) {
             bVO.setTotalPayPresent(bill.getExpend());
             bVO.setTotalIncomePresent(bill.getIncome());
         } else if (bill.getDealWay().equals(DealWay.CASH_BILL)) {

@@ -12,6 +12,7 @@ public class DealDetailVO_ {
 
     public static volatile SingularAttribute<RenewVO, String> uuid;
     public static volatile SingularAttribute<RenewVO, String> accountUuid;
+    public static volatile SingularAttribute<RenewVO, String> opAccountUuid;
     public static volatile SingularAttribute<RenewVO, DealType> type;
     public static volatile SingularAttribute<RenewVO, BigDecimal> expend;
     public static volatile SingularAttribute<RenewVO, BigDecimal> income;
