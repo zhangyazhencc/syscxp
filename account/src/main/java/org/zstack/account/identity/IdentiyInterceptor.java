@@ -499,17 +499,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             }
         }
         private void innerCredentialCheck(){
-            if (!(msg instanceof InnerAPIMessage)){
-                return;
-            }
-            InnerAPIMessage msg = (InnerAPIMessage)(this.msg);
-            try {
-                String str = new EncryptUtil().md5Digest(msg.getSignature());
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (UnsupportedEncodingException e) {
-                e.printStackTrace();
-            }
+
         }
 
         private void sessionCheck() {
