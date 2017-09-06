@@ -297,10 +297,10 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
                 suppressCredentialCheck();
                 return;
-            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)){
+            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)) {
                 innerCredentialCheck();
                 return;
-            }else {
+            } else {
                 action = actions.get(msg.getClass());
 
                 sessionCheck();
@@ -398,7 +398,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                     throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
                             String.format("API[%s] is admin only", msg.getClass().getSimpleName())));
                 }
-                if (action.proxyOnly && !session.isProxySession()){
+                if (action.proxyOnly && !session.isProxySession()) {
                     throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
                             String.format("API[%s] can only be called by an proxy", msg.getClass().getSimpleName())
                     ));
@@ -490,7 +490,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             return PolicyInventory.valueOf(q.getResultList());
         }
 
-        private void suppressCredentialCheck(){
+        private void suppressCredentialCheck() {
             if (msg.getSession() != null && msg.getSession().getUuid() != null) {
                 SessionInventory session = sessions.get(msg.getSession().getUuid());
                 if (session != null) {
@@ -498,7 +498,18 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                 }
             }
         }
-        private void innerCredentialCheck(){
+
+        private void innerCredentialCheck() {
+            if (msg instanceof InnerAPIMessage) {
+                InnerAPIMessage msg = (InnerAPIMessage) (this.msg);
+                try {
+                    String str = new EncryptUtil().md5Digest(msg.getSignature());
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
 
         }
 
@@ -543,7 +554,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         return msg;
     }
 
-    public void check(APIMessage msg){
+    public void check(APIMessage msg) {
         new Auth().check(msg);
     }
 
