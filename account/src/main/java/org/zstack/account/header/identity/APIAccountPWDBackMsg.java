@@ -1,13 +1,14 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.Action;
+import org.zstack.header.identity.SuppressCredentialCheck;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 /**
  * Created by wangwg on 2017/9/4.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY,  accountOnly = true)
+@SuppressCredentialCheck
 public class APIAccountPWDBackMsg extends APIMessage  {
 
     @APIParam

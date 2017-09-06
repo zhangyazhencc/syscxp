@@ -1,12 +1,15 @@
 package org.zstack.billing.header.receipt;
 
+import org.zstack.billing.manage.BillingConstant;
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
-public class APIConfirmReceiptMsg  extends APIMessage{
+@Action(category = BillingConstant.ACTION_CATEGORY, names = {"receipt"}, proxyOnly = true)
+public class APIUpdateReceiptMsg extends APIMessage{
 
     @APIParam(emptyString = false)
-    private String receiptUuid;
+    private String uuid;
 
     @APIParam(emptyString = false,required = false)
     private String reason;
@@ -14,12 +17,12 @@ public class APIConfirmReceiptMsg  extends APIMessage{
     @APIParam(emptyString = false,required = false)
     private ReceiptState state;
 
-    public String getReceiptUuid() {
-        return receiptUuid;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setReceiptUuid(String receiptUuid) {
-        this.receiptUuid = receiptUuid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getReason() {

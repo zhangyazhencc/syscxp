@@ -56,6 +56,9 @@ public class DealDetailVO {
     @Column
     private String tradeNO;
 
+    @Column
+    private String opAccountUuid;
+
     public String getOutTradeNO() {
         return outTradeNO;
     }
@@ -158,5 +161,13 @@ public class DealDetailVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getOpAccountUuid() {
+        return opAccountUuid;
+    }
+
+    public void setOpAccountUuid(String opAccountUuid) {
+        this.opAccountUuid = opAccountUuid;
     }
 }

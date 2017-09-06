@@ -1,10 +1,12 @@
 package org.zstack.header.alipay;
 
+import org.zstack.header.identity.SuppressCredentialCheck;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;
 
 import java.util.Map;
 
+@SuppressCredentialCheck
 public class APIVerifyReturnMsg  extends APISyncCallMessage {
 
     @APIParam
