@@ -20,12 +20,16 @@ public class APICreateUserMsg extends APIMessage implements AccountMessage {
     private String phone;
     @APIParam(maxLength = 128)
     private String trueName;
+
     @APIParam(maxLength = 128, required = false)
     private String department;
     @APIParam(maxLength = 255, required = false)
     private String description;
     @APIParam(maxLength = 255, required = false)
     private String policyUuid;
+
+    @APIParam(maxLength = 32, required = false)
+    private UserType userType;
 
     public String getDescription() {
         return description;
@@ -72,10 +76,6 @@ public class APICreateUserMsg extends APIMessage implements AccountMessage {
         return department;
     }
 
-//    public String getStatus() {
-//        return status;
-//    }
-
     public void setEmail(String email) {
         this.email = email;
     }
@@ -91,10 +91,6 @@ public class APICreateUserMsg extends APIMessage implements AccountMessage {
     public void setDepartment(String department) {
         this.department = department;
     }
-
-//    public void setStatus(String status) {
-//        this.status = status;
-//    }
 
     public String getPolicyUuid() {
         return policyUuid;
@@ -120,4 +116,11 @@ public class APICreateUserMsg extends APIMessage implements AccountMessage {
         };
     }
 
+    public void setUserType(UserType userType) {
+        this.userType = userType;
+    }
+
+    public UserType getUserType() {
+        return userType;
+    }
 }

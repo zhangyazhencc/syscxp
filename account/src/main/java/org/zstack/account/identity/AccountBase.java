@@ -546,6 +546,11 @@ public class AccountBase extends AbstractAccount {
             update = true;
         }
 
+        if(msg.getSession().isAdminAccountSession() && msg.getUserType() != null){
+            user.setUserType(msg.getUserType());
+            update = true;
+        }
+
         if (update) {
             user = dbf.updateAndRefresh(user);
         }
@@ -653,6 +658,12 @@ public class AccountBase extends AbstractAccount {
 
         uservo.setEmailStatus(ValidateStatus.Unvalidated);
         uservo.setPhoneStatus(ValidateStatus.Unvalidated);
+
+        if(msg.getSession().isAdminAccountSession() && msg.getUserType() != null){
+            uservo.setUserType(msg.getUserType());
+        }else{
+            uservo.setUserType(UserType.normal);
+        }
 
         uservo = dbf.persistAndRefresh(uservo);
 

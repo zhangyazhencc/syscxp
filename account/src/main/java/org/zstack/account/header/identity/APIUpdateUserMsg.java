@@ -34,6 +34,9 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage{
     @APIParam(maxLength = 255, required = false)
     private String PolicyUuid;
 
+    @APIParam(maxLength = 32, required = false)
+    private UserType userType;
+
 
     public String getName() {
         return name;
@@ -117,6 +120,14 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage{
                         .messageAndEvent(that, evt).done();
             }
         };
+    }
+
+    public UserType getUserType() {
+        return userType;
+    }
+
+    public void setUserType(UserType userType) {
+        this.userType = userType;
     }
 
     @Override
