@@ -26,24 +26,6 @@ public class UserInventory {
 
     private Set<PolicyVO> policy;
 
-//    public static UserInventory valueOf(UserVO vo) {
-//        UserInventory inv = new UserInventory();
-//        inv.setUuid(vo.getUuid());
-//        inv.setAccountUuid(vo.getAccountUuid());
-//        inv.setCreateDate(vo.getCreateDate());
-//        inv.setName(vo.getName());
-//        inv.setDepartment(vo.getDepartment());
-//        inv.setEmail(vo.getEmail());
-//        inv.setPhone(vo.getPhone());
-//        inv.setPhoneStatus(vo.getPhoneStatus().toString());
-//        inv.setEmailStatus(vo.getEmailStatus().toString());
-//        inv.setStatus(vo.getStatus().toString());
-//        inv.setTrueName(vo.getTrueName());
-//        inv.setLastOpDate(vo.getLastOpDate());
-//        inv.setDescription(vo.getDescription());
-//        return inv;
-//    }
-
     public static UserInventory valueOf(UserVO vo) {
         UserInventory inv = new UserInventory();
         inv.setUuid(vo.getUuid());

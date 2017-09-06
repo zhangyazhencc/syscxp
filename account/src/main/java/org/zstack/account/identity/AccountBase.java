@@ -38,9 +38,7 @@ import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
 
 
-import java.util.Properties;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
+import java.util.Set;
 
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
@@ -518,7 +516,7 @@ public class AccountBase extends AbstractAccount {
 
     @Transactional
     private void handle(APIUpdateUserMsg msg) {
-        UserVO user = dbf.findByUuid(msg.getTargetUuid(), UserVO.class);
+        UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
 
         boolean update = false;
 
@@ -557,19 +555,24 @@ public class AccountBase extends AbstractAccount {
             user = dbf.updateAndRefresh(user);
         }
 
-        UserPolicyRefVO uprvo = null;
+
         if (msg.getPolicyUuid() != null) {
             SimpleQuery<UserPolicyRefVO> q = dbf.createQuery(UserPolicyRefVO.class);
-            q.add(UserPolicyRefVO_.userUuid, SimpleQuery.Op.EQ, msg.getTargetUuid());
-            uprvo = q.find();
-            user.setPolicy(new HashSet<PolicyVO>().add(dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class)));
+            q.add(UserPolicyRefVO_.userUuid, SimpleQuery.Op.EQ, msg.getUuid());
+            UserPolicyRefVO uprvo = q.find();
+
+            Set<PolicyVO> policy = new HashSet<PolicyVO>();
+            policy.add(dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class));
+            user.setPolicy(policy);
+
             if (uprvo != null) {
                 uprvo.setPolicyUuid(msg.getPolicyUuid());
-                uprvo = dbf.updateAndRefresh(uprvo);
+                dbf.update(uprvo);
             } else {
+                uprvo = new UserPolicyRefVO();
                 uprvo.setPolicyUuid(msg.getPolicyUuid());
-                uprvo.setUserUuid(msg.getTargetUuid());
-                uprvo = dbf.persistAndRefresh(uprvo);
+                uprvo.setUserUuid(msg.getUuid());
+                dbf.persist(uprvo);
             }
         }
 
@@ -664,11 +667,13 @@ public class AccountBase extends AbstractAccount {
         if (msg.getPolicyUuid() != null) {
             uprv.setUserUuid(uservo.getUuid());
             uprv.setPolicyUuid(msg.getPolicyUuid());
-            dbf.persistAndRefresh(uprv);
+            dbf.persist(uprv);
+
+            uservo
         }
 
         APICreateUserEvent evt = new APICreateUserEvent(msg.getId());
-        evt.setInventory(UserInventory.valueOf(uservo, uprv));
+        evt.setInventory(UserInventory.valueOf(uservo));
         bus.publish(evt);
     }
 

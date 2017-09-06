@@ -20,11 +20,8 @@ public class APICreateUserMsg extends APIMessage implements AccountMessage {
     private String trueName;
     @APIParam(maxLength = 128, required = false)
     private String department;
-//    @APIParam(validValues = {"Available", "Disabled"}, required = false)
-//    private String status;
     @APIParam(maxLength = 255, required = false)
     private String description;
-
     @APIParam(maxLength = 255, required = false)
     private String policyUuid;
 

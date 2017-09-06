@@ -24,7 +24,6 @@ import org.zstack.header.identity.StatementEffect;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.managementnode.PrepareDbInitialValueExtensionPoint;
 import org.zstack.header.message.*;
-import org.zstack.header.query.QueryCondition;
 import org.zstack.header.query.QueryOp;
 import org.zstack.utils.*;
 import org.zstack.utils.logging.CLogger;
@@ -664,7 +663,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateUserMsg msg) {
-        UserVO user = dbf.findByUuid(msg.getTargetUuid(), UserVO.class);
+        UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
         if (!AccountConstant.INITIAL_SYSTEM_ADMIN_UUID.equals(msg.getAccountUuid()) &&
                 !user.getAccountUuid().equals(msg.getAccountUuid())) {
             throw new OperationFailureException(argerr("the user[uuid:%s] does not belong to the" +
