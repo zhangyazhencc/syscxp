@@ -102,4 +102,15 @@ public class AccountExtraInfoVO {
 
         return createWay;
     }
+
+    @ManyToOne(optional = false)
+    private AccountVO accountVOS;
+
+    public AccountVO getAccountVOS() {
+        return accountVOS;
+    }
+
+    public void setAccountVOS(AccountVO accountVOS) {
+        this.accountVOS = accountVOS;
+    }
 }
