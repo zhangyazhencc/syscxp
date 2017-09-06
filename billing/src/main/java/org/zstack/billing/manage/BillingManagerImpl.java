@@ -37,6 +37,7 @@ import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.exception.CloudRuntimeException;
+import org.zstack.header.identity.Account;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.utils.Utils;
@@ -127,9 +128,46 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIUpdateAccountDischargeMsg) msg);
         } else if (msg instanceof APIDeleteSLACompensateMsg) {
             handle((APIDeleteSLACompensateMsg) msg);
+        }else if (msg instanceof APIGetProductPriceMsg) {
+            handle((APIGetProductPriceMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetProductPriceMsg msg) {
+        List<ProductPriceUnit> units = msg.getUnits();
+        List<ProductPriceUnitInventory> productPriceUnits = new ArrayList<>();
+        AccountBalanceVO accountBalanceVO = dbf.findByUuid(msg.getSession().getAccountUuid(),AccountBalanceVO.class);
+        for(ProductPriceUnit unit:units){
+            SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
+            q.add(ProductPriceUnitVO_.category, Op.EQ, unit.getCategory());
+            q.add(ProductPriceUnitVO_.productType, Op.EQ, unit.getProductType());
+            q.add(ProductPriceUnitVO_.config, Op.EQ, unit.getConfig());
+            ProductPriceUnitVO productPriceUnitVO = q.find();
+            if(productPriceUnitVO == null){
+                throw new IllegalArgumentException("please check the argurment");
+            }
+            ProductPriceUnitInventory inventory = ProductPriceUnitInventory.valueOf(productPriceUnitVO);
+            SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
+            qDischarge.add(AccountDischargeVO_.category, Op.EQ, unit.getCategory());
+            qDischarge.add(AccountDischargeVO_.productType, Op.EQ, unit.getProductType());
+            qDischarge.add(AccountDischargeVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
+            AccountDischargeVO accountDischargeVO = qDischarge.find();
+            int discharge = 100;
+            if(accountDischargeVO != null){
+                discharge = accountDischargeVO.getDisCharge()==0?100:accountDischargeVO.getDisCharge();
+            }
+            inventory.setDischarge(discharge);
+            productPriceUnits.add(inventory);
+        }
+        AccountBalanceInventory accountBalanceInventory = AccountBalanceInventory.valueOf(accountBalanceVO);
+        ProductPriceInventory productPriceInventory = new ProductPriceInventory();
+        productPriceInventory.setAccountBalanceInventory(accountBalanceInventory);
+        productPriceInventory.setProductPriceInventories(productPriceUnits);
+        APIGetProductPriceReply reply = new APIGetProductPriceReply();
+        reply.setInventory(productPriceInventory);
+        bus.reply(msg,reply);
     }
 
     private void handle(APIDeleteSLACompensateMsg msg) {
