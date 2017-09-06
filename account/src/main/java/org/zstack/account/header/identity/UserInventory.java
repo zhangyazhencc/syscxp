@@ -1,13 +1,15 @@
 package org.zstack.account.header.identity;
 
 
+import org.zstack.header.search.Inventory;
+
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-
+@Inventory(mappingVOClass = UserVO.class)
 public class UserInventory {
     private String uuid;
     private String accountUuid;

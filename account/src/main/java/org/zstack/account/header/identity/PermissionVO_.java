@@ -15,7 +15,7 @@ public class PermissionVO_ {
     public static volatile SingularAttribute<PermissionVO, String> permission;
     public static volatile SingularAttribute<PermissionVO, PermissionType> type;
     public static volatile SingularAttribute<PermissionVO, Integer> sortId;
-    public static volatile SingularAttribute<PermissionVO, AccountType> level;
+    public static volatile SingularAttribute<PermissionVO, AccountType> accountType;
     public static volatile SingularAttribute<PermissionVO, String> description;
     public static volatile SingularAttribute<PermissionVO, Timestamp> createDate;
     public static volatile SingularAttribute<PermissionVO, Timestamp> lastOpDate;

@@ -1,5 +1,6 @@
 package org.zstack.account.identity;
 
+import com.cloopen.rest.sdk.utils.EncryptUtil;
 import org.hibernate.jpa.internal.metamodel.SingularAttributeImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -20,6 +21,8 @@ import org.zstack.header.identity.*;
 
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.message.InnerAPIMessage;
+import org.zstack.header.message.Message;
 import org.zstack.utils.*;
 import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.logging.CLogger;
@@ -27,7 +30,9 @@ import org.zstack.utils.logging.CLogger;
 import javax.persistence.Query;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -292,7 +297,10 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
                 suppressCredentialCheck();
                 return;
-            } else {
+            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)){
+                innerCredentialCheck();
+                return;
+            }else {
                 action = actions.get(msg.getClass());
 
                 sessionCheck();
@@ -488,6 +496,19 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                 if (session != null) {
                     msg.setSession(session);
                 }
+            }
+        }
+        private void innerCredentialCheck(){
+            if (!(msg instanceof InnerAPIMessage)){
+                return;
+            }
+            InnerAPIMessage msg = (InnerAPIMessage)(this.msg);
+            try {
+                String str = new EncryptUtil().md5Digest(msg.getSignature());
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (UnsupportedEncodingException e) {
+                e.printStackTrace();
             }
         }
 

@@ -534,9 +534,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void validate(APIQueryPermissionMsg msg) {
         if (msg.getSession().getType().equals(AccountType.Proxy))
-            msg.addQueryCondition(PermissionVO_.level.getName(), QueryOp.IN, "Proxy", "Normal");
+            msg.addQueryCondition(PermissionVO_.accountType.getName(), QueryOp.IN, "Proxy", "Normal");
         if (msg.getSession().getType().equals(AccountType.Normal))
-            msg.addQueryCondition(PermissionVO_.level.getName(), QueryOp.IN, "Normal");
+            msg.addQueryCondition(PermissionVO_.accountType.getName(), QueryOp.IN, "Normal");
     }
 
     private void validate(APIQueryAccountMsg msg) {

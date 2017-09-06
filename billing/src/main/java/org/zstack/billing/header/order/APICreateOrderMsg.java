@@ -34,8 +34,6 @@ public class APICreateOrderMsg extends APIMessage {
     @APIParam(emptyString = false)
     private  ProductPriceUnit productPriceUnit;
 
-    private productUuids;
-
     @APIParam(required = false, resourceType = OrderVO.class, checkAccount = true)
     private String oldOrderUuid;
 
