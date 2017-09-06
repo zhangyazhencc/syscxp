@@ -209,12 +209,10 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
     }
 
     private void validate(APICreateNotificationMsg msg) {
-        SimpleQuery<SessionVO> query = dbf.createQuery(SessionVO.class);
-        query.add(SessionVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-        query.add(SessionVO_.userUuid, SimpleQuery.Op.EQ, msg.getUserUuid());
-        if (!query.isExists()){
+        SessionVO svo = dbf.findByUuid(msg.getSession().getUuid(), SessionVO.class);
+        if (svo == null) {
             throw new ApiMessageInterceptionException(argerr(
-                    "The Session[accountUuid:%S,userUuid:%S] does not exist.", msg.getAccountUuid(), msg.getUserUuid()
+                    "The Session[sessionUuid: %s] expired.", msg.getSession()
             ));
         }
     }
