@@ -9,7 +9,7 @@ import org.zstack.header.message.APIParam;
 public class APIUpdateAccountContactsMsg extends  APIMessage implements AccountMessage{
 
     @APIParam(maxLength = 32)
-    private String targetUuid;
+    private String uuid;
 
     @APIParam(maxLength = 128,required = false)
     private String name;
@@ -31,8 +31,8 @@ public class APIUpdateAccountContactsMsg extends  APIMessage implements AccountM
         return this.getSession().getAccountUuid();
     }
 
-    public String getTargetUuid() {
-        return targetUuid;
+    public String getUuid() {
+        return uuid;
     }
 
     public String getName() {
@@ -55,8 +55,8 @@ public class APIUpdateAccountContactsMsg extends  APIMessage implements AccountM
         return description;
     }
 
-    public void setTargetUuid(String targetUuid) {
-        this.targetUuid = targetUuid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public void setName(String name) {

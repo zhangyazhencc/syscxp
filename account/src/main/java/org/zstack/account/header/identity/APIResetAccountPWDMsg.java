@@ -4,11 +4,10 @@ import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"acount"}, proxyOnly = true)
 public class APIResetAccountPWDMsg extends  APIMessage implements  AccountMessage {
 
     @APIParam(maxLength = 32)
-    private String targetUuid;
+    private String uuid;
 
     @Override
     public String getAccountUuid() {
@@ -16,10 +15,11 @@ public class APIResetAccountPWDMsg extends  APIMessage implements  AccountMessag
     }
 
     public String getTargetUuid() {
-        return targetUuid;
+        return uuid;
     }
 
     public void setTargetUuid(String targetUuid) {
-        this.targetUuid = targetUuid;
+        this.uuid = targetUuid;
     }
 }
+

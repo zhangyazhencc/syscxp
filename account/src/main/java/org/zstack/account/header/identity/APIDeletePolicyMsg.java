@@ -12,7 +12,7 @@ import org.zstack.header.notification.ApiNotification;
  */
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"user_policy"}, accountOnly = true)
 public class APIDeletePolicyMsg extends APIDeleteMessage implements AccountMessage {
-    @APIParam(checkAccount = true, operationTarget = true)
+    @APIParam(resourceType = PolicyVO.class, checkAccount = true, operationTarget = true)
     private String uuid;
 
     @Override

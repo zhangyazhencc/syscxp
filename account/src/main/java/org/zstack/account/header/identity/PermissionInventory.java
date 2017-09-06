@@ -27,7 +27,7 @@ public class PermissionInventory {
         inv.setName(vo.getName());
         inv.setUuid(vo.getUuid());
         inv.setType(vo.getType());
-        inv.setLevel(vo.getLevel());
+        inv.setLevel(vo.getType());
         inv.setPermission(vo.getPermission());
         inv.setDescription(vo.getDescription());
         return inv;

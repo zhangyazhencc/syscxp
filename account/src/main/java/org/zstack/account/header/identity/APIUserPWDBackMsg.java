@@ -11,6 +11,7 @@ import org.zstack.header.message.APIParam;
 @SuppressCredentialCheck
 public class APIUserPWDBackMsg extends APIMessage  {
 
+
     @APIParam
     private String phone;
 
