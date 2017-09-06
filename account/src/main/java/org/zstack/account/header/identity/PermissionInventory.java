@@ -18,7 +18,7 @@ public class PermissionInventory {
     private String permission;
     private String description;
     private PermissionType type;
-    private AccountType level;
+    private AccountType accountType;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
@@ -27,7 +27,7 @@ public class PermissionInventory {
         inv.setName(vo.getName());
         inv.setUuid(vo.getUuid());
         inv.setType(vo.getType());
-        inv.setLevel(vo.getLevel());
+        inv.setAccountType(vo.getAccountType());
         inv.setPermission(vo.getPermission());
         inv.setDescription(vo.getDescription());
         return inv;
@@ -49,12 +49,12 @@ public class PermissionInventory {
         this.type = type;
     }
 
-    public AccountType getLevel() {
-        return level;
+    public AccountType getAccountType() {
+        return accountType;
     }
 
-    public void setLevel(AccountType level) {
-        this.level = level;
+    public void setAccountType(AccountType level) {
+        this.accountType = level;
     }
 
     public String getUuid() {

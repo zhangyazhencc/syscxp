@@ -1,8 +1,10 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.Action;
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.notification.ApiNotification;
 
 
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"api_key"}, accountOnly = true)
@@ -34,4 +36,17 @@ public class APIResetAccountApiSecurityMsg extends APIMessage implements Account
     public void setPhone(String phone) {
         this.phone = phone;
     }
+
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Reset api_key").resource(getAccountUuid(), AccountVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
+            }
+        };
+    }
+
 }

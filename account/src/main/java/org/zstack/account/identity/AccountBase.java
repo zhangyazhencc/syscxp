@@ -37,9 +37,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
 
-
 import java.util.Set;
-
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class AccountBase extends AbstractAccount {
@@ -224,10 +222,6 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIGetUserMsg msg) {
         APIGetUserReply reply = new APIGetUserReply();
 
-//        SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
-//        q.add(UserVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-//        q.add(UserVO_.uuid, SimpleQuery.Op.EQ, msg.getSession().getUuid());
-//        UserVO user = q.find();
         UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(),UserVO.class);
         reply.setInventory(UserInventory.valueOf(user));
         bus.reply(msg, reply);
@@ -255,7 +249,7 @@ public class AccountBase extends AbstractAccount {
 
         AccountContactsVO acvo = new AccountContactsVO();
         acvo.setUuid(Platform.getUuid());
-        acvo.setAccountUuid(msg.getTargetUuid());
+        acvo.setAccountUuid(msg.getAccountUuid());
         acvo.setName(msg.getName());
         acvo.setPhone(msg.getPhone());
         acvo.setEmail(msg.getPhone());
@@ -275,10 +269,10 @@ public class AccountBase extends AbstractAccount {
 
     private void handle(APIUpdateAccountContactsMsg msg) {
         APIUpdateAccountContactsEvent evt = new APIUpdateAccountContactsEvent(msg.getId());
-        AccountContactsVO cont = dbf.findByUuid(msg.getTargetUuid(), AccountContactsVO.class);
+        AccountContactsVO cont = dbf.findByUuid(msg.getUuid(), AccountContactsVO.class);
 
         SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
-        q.add(ProxyAccountRefVO_.customerAcccountUuid, SimpleQuery.Op.EQ, msg.getTargetUuid());
+        q.add(ProxyAccountRefVO_.customerAcccountUuid, SimpleQuery.Op.EQ, msg.getUuid());
         ProxyAccountRefVO acvo = q.find();
 
         if (!msg.getSession().getType().equals(AccountType.SystemAdmin) &&
@@ -287,7 +281,7 @@ public class AccountBase extends AbstractAccount {
                 ) {
             throw new OperationFailureException(operr("account[uuid: %s] is a normal account, " +
                             "it cannot update the infomation of another account[uuid: %s]",
-                    msg.getAccountUuid(), msg.getTargetUuid()));
+                    msg.getAccountUuid(), msg.getUuid()));
         }
 
 
@@ -321,14 +315,14 @@ public class AccountBase extends AbstractAccount {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }else{
-            evt.setPhone(msg.getPhone());
+            if (account.getPhoneStatus() == ValidateStatus.Unvalidated) {
+                evt.setPhone(msg.getPhone());
 
-            account.setPhone(msg.getPhone());
-            account.setPhoneStatus(ValidateStatus.Validated);
-            dbf.updateAndRefresh(account);
+                account.setPhone(msg.getPhone());
+                account.setPhoneStatus(ValidateStatus.Validated);
+                dbf.updateAndRefresh(account);
+            }
         }
-
-
 
         bus.publish(evt);
     }
@@ -338,7 +332,8 @@ public class AccountBase extends AbstractAccount {
         APIUserPhoneAuthenticationEvent evt = new APIUserPhoneAuthenticationEvent(msg.getId());
         UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
 
-        if (smsService.validateVerificationCode(user.getPhone(), msg.getCode())) {
+        if (user.getPhoneStatus() == ValidateStatus.Unvalidated && smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+
             evt.setPhone(msg.getPhone());
 
             user.setPhone(msg.getPhone());
@@ -424,7 +419,7 @@ public class AccountBase extends AbstractAccount {
 
     @Transactional
     private void handle(APIUpdateAccountMsg msg) {
-        AccountVO account = dbf.findByUuid(msg.getTargetUuid(), AccountVO.class);
+        AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
 
         boolean accountis = false;
         if (msg.getCompany() != null) {
@@ -475,7 +470,7 @@ public class AccountBase extends AbstractAccount {
         }
 
 
-        AccountExtraInfoVO aeivo = dbf.findByUuid(msg.getTargetUuid(), AccountExtraInfoVO.class);
+        AccountExtraInfoVO aeivo = dbf.findByUuid(msg.getUuid(), AccountExtraInfoVO.class);
         if (aeivo == null) {
             aeivo = new AccountExtraInfoVO();
         }
@@ -561,7 +556,7 @@ public class AccountBase extends AbstractAccount {
             q.add(UserPolicyRefVO_.userUuid, SimpleQuery.Op.EQ, msg.getUuid());
             UserPolicyRefVO uprvo = q.find();
 
-            Set<PolicyVO> policy = new HashSet<PolicyVO>();
+            Set<PolicyVO> policy = new HashSet<>();
             policy.add(dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class));
             user.setPolicy(policy);
 
@@ -614,8 +609,8 @@ public class AccountBase extends AbstractAccount {
         if(msg.getGrade() != null){
             aeivo.setGrade(msg.getGrade());
         }
-        if (msg.getSalesman() != null) {
-            aeivo.setSalesman(msg.getSalesman());
+        if (msg.getUserUuid() != null) {
+            aeivo.setSalesman(msg.getUserUuid());
         }
         aeivo.setCreateWay(msg.getSession().getType().toString());
         aeivo = dbf.persistAndRefresh(aeivo);
@@ -625,17 +620,15 @@ public class AccountBase extends AbstractAccount {
         api.setAccountUuid(accountvo.getUuid());
         api.setPrivateKey(getRandomString(36));
         api.setPublicKey(getRandomString(36));
-        dbf.persistAndRefresh(api);
+        dbf.persist(api);
 
-//        if (msg.getSession().getType().equals(AccountType.Proxy) ||
-//                msg.getSession().getType().equals(AccountType.SystemAdmin)) {
-
+        if (msg.getSession().isProxySession()) {
             ProxyAccountRefVO prevo = new ProxyAccountRefVO();
             prevo.setAccountUuid(msg.getAccountUuid());
             prevo.setCustomerAcccountUuid(accountvo.getUuid());
 
-            dbf.persistAndRefresh(prevo);
-//        }
+            dbf.persist(prevo);
+        }
 
         APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
         evt.setInventory(AccountInventory.valueOf(accountvo, aeivo));
@@ -669,7 +662,10 @@ public class AccountBase extends AbstractAccount {
             uprv.setPolicyUuid(msg.getPolicyUuid());
             dbf.persist(uprv);
 
-            uservo
+            Set<PolicyVO> policy = new HashSet<>();
+            policy.add(dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class));
+            uservo.setPolicy(policy);
+
         }
 
         APICreateUserEvent evt = new APICreateUserEvent(msg.getId());
@@ -741,7 +737,7 @@ public class AccountBase extends AbstractAccount {
         auth.setName(msg.getName());
         auth.setSortId(msg.getSortId());
         auth.setType(msg.getType());
-        auth.setLevel(msg.getLevel());
+        auth.setAccountType(msg.getAccountType());
 
         APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
 
@@ -758,8 +754,8 @@ public class AccountBase extends AbstractAccount {
             auth.setName(msg.getName());
             update = true;
         }
-        if (!StringUtils.isEmpty(msg.getLevel())) {
-            auth.setLevel(msg.getLevel());
+        if (!StringUtils.isEmpty(msg.getAccountType())) {
+            auth.setAccountType(msg.getAccountType());
             update = true;
         }
         if (!StringUtils.isEmpty(msg.getPermission())) {

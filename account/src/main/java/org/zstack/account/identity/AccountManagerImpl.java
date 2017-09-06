@@ -502,8 +502,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIDetachPolicyFromUserMsg) msg);
         } else if (msg instanceof APIAttachPolicyToUserMsg) {
             validate((APIAttachPolicyToUserMsg) msg);
-        } else if (msg instanceof APIDeleteAccountContactsMsg) {
-            validate((APIDeleteAccountContactsMsg) msg);
         } else if (msg instanceof APIResetAccountPWDMsg) {
             validate((APIResetAccountPWDMsg) msg);
         } else if (msg instanceof APIResetAccountApiSecurityMsg) {
@@ -580,15 +578,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                     msg.getAccountUuid()));
         }
 
-    }
-
-
-    private void validate(APIDeleteAccountContactsMsg msg) {
-
-        if (!msg.getSession().getType().equals(AccountType.SystemAdmin)) {
-            throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot set the policy of the other user[uuid: %s]",
-                    msg.getAccountUuid(), msg.getUuid()));
-        }
     }
 
     private void validate(APILogInByUserMsg msg) {
@@ -675,9 +664,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void validate(APIUpdateAccountMsg msg) {
         AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
         if (!account.getType().equals(AccountType.SystemAdmin) &&
-                !msg.getSession().getAccountUuid().equals(msg.getTargetUuid())) {
+                !msg.getSession().getAccountUuid().equals(msg.getUuid())) {
             throw new OperationFailureException(operr("account[uuid: %s, name: %s] is a normal account, it cannot reset the password of another account[uuid: %s]",
-                    account.getUuid(), account.getName(), msg.getTargetUuid()));
+                    account.getUuid(), account.getName(), msg.getUuid()));
         }
     }
 

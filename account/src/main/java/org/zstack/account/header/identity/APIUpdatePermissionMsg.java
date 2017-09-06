@@ -24,7 +24,7 @@ public class APIUpdatePermissionMsg extends APIMessage implements AccountMessage
     private PermissionType type;
 
     @APIParam(required = false)
-    private AccountType level;
+    private AccountType accountType;
 
     @APIParam(maxLength = 36, required = false)
     private Integer sortId;
@@ -37,12 +37,12 @@ public class APIUpdatePermissionMsg extends APIMessage implements AccountMessage
         this.type = type;
     }
 
-    public AccountType getLevel() {
-        return level;
+    public AccountType getAccountType() {
+        return accountType;
     }
 
-    public void setLevel(AccountType level) {
-        this.level = level;
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType;
     }
 
     public Integer getSortId() {
