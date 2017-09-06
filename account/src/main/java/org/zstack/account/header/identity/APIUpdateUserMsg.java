@@ -10,11 +10,11 @@ import org.zstack.header.notification.ApiNotification;
 /**
  * Created by frank on 7/10/2015.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"user_update"})
+@Action(category = AccountConstant.ACTION_CATEGORY, names = {"user"})
 public class APIUpdateUserMsg extends APIMessage implements AccountMessage{
 
     @APIParam(resourceType = UserVO.class, checkAccount = true, operationTarget = true, required = false)
-    private String targetUuid;
+    private String uuid;
 
     @APIParam(maxLength = 128, required = false)
     private String name;
@@ -34,6 +34,9 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage{
     @APIParam(maxLength = 255, required = false)
     private String PolicyUuid;
 
+    @APIParam(maxLength = 32, required = false)
+    private UserType userType;
+
 
     public String getName() {
         return name;
@@ -51,8 +54,8 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage{
         this.description = description;
     }
 
-    public String getTargetUuid() {
-        return targetUuid;
+    public String getUuid() {
+        return uuid;
     }
 
     public String getEmail() {
@@ -75,8 +78,8 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage{
         return status;
     }
 
-    public void setTargetUuid(String targetUuid) {
-        this.targetUuid = targetUuid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public void setEmail(String email) {
@@ -113,10 +116,18 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage{
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Updating").resource(targetUuid, UserVO.class.getSimpleName())
+                ntfy("Updating").resource(uuid, UserVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };
+    }
+
+    public UserType getUserType() {
+        return userType;
+    }
+
+    public void setUserType(UserType userType) {
+        this.userType = userType;
     }
 
     @Override

@@ -2,10 +2,12 @@ package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APICreateMessage;
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.notification.ApiNotification;
 
-@Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY,names = {"user"}, accountOnly = true)
 public class APICreateUserMsg extends APIMessage implements AccountMessage {
 
     @APIParam(maxLength = 128)
@@ -18,15 +20,16 @@ public class APICreateUserMsg extends APIMessage implements AccountMessage {
     private String phone;
     @APIParam(maxLength = 128)
     private String trueName;
+
     @APIParam(maxLength = 128, required = false)
     private String department;
-//    @APIParam(validValues = {"Available", "Disabled"}, required = false)
-//    private String status;
     @APIParam(maxLength = 255, required = false)
     private String description;
-
     @APIParam(maxLength = 255, required = false)
     private String policyUuid;
+
+    @APIParam(maxLength = 32, required = false)
+    private UserType userType;
 
     public String getDescription() {
         return description;
@@ -73,10 +76,6 @@ public class APICreateUserMsg extends APIMessage implements AccountMessage {
         return department;
     }
 
-//    public String getStatus() {
-//        return status;
-//    }
-
     public void setEmail(String email) {
         this.email = email;
     }
@@ -93,10 +92,6 @@ public class APICreateUserMsg extends APIMessage implements AccountMessage {
         this.department = department;
     }
 
-//    public void setStatus(String status) {
-//        this.status = status;
-//    }
-
     public String getPolicyUuid() {
         return policyUuid;
     }
@@ -105,4 +100,27 @@ public class APICreateUserMsg extends APIMessage implements AccountMessage {
         this.policyUuid = policyUuid;
     }
 
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateUserEvent)evt).getInventory().getUuid();
+                }
+                ntfy("Creating").resource(uuid, UserVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
+            }
+        };
+    }
+
+    public void setUserType(UserType userType) {
+        this.userType = userType;
+    }
+
+    public UserType getUserType() {
+        return userType;
+    }
 }

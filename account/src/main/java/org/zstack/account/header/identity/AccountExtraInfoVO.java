@@ -1,6 +1,5 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.AccountGrade;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
 import org.zstack.header.vo.Index;
@@ -32,6 +31,9 @@ public class AccountExtraInfoVO {
 
     @Column
     private String salesman;
+
+    @Column
+    private String createWay;
 
     @Column
     private Timestamp createDate;
@@ -90,6 +92,15 @@ public class AccountExtraInfoVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public void setCreateWay(String createWay) {
+        this.createWay = createWay;
+    }
+
+    public String getCreateWay() {
+
+        return createWay;
     }
 
 }

@@ -10,11 +10,11 @@ import java.sql.Timestamp;
 
 @StaticMetamodel(AccountApiSecurityVO.class)
 public class AccountApiSecurityVO_ {
-    public static volatile SingularAttribute<AccountExtraInfoVO, String> uuid;
-    public static volatile SingularAttribute<AccountExtraInfoVO, String> accountUuid;
-    public static volatile SingularAttribute<AccountExtraInfoVO, String> publicKey;
-    public static volatile SingularAttribute<AccountExtraInfoVO, String> privateKey;
-    public static volatile SingularAttribute<AccountExtraInfoVO, String> allowIp;
-    public static volatile SingularAttribute<AccountExtraInfoVO, Timestamp> createDate;
-    public static volatile SingularAttribute<AccountExtraInfoVO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<AccountApiSecurityVO, String> uuid;
+    public static volatile SingularAttribute<AccountApiSecurityVO, String> accountUuid;
+    public static volatile SingularAttribute<AccountApiSecurityVO, String> publicKey;
+    public static volatile SingularAttribute<AccountApiSecurityVO, String> privateKey;
+    public static volatile SingularAttribute<AccountApiSecurityVO, String> allowIp;
+    public static volatile SingularAttribute<AccountApiSecurityVO, Timestamp> createDate;
+    public static volatile SingularAttribute<AccountApiSecurityVO, Timestamp> lastOpDate;
 }

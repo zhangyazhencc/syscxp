@@ -7,10 +7,10 @@ import org.zstack.header.message.APIParam;
 @Action(category = BillingConstant.ACTION_CATEGORY, names = {"receipt"})
 public class APICreateReceiptInfoMsg extends APIMessage {
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private ReceiptType type;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private String title;
 
     @APIParam(required = false)

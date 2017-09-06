@@ -5,6 +5,6 @@ package org.zstack.header.identity;
  */
 public enum PermissionType {
     notice,
-    account,
+    identity,
     billing
 }

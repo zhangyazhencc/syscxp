@@ -1,15 +1,16 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.Action;
-import org.zstack.header.identity.NoticeWay;
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.notification.ApiNotification;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"account_contact"})
 public class APIUpdateAccountContactsMsg extends  APIMessage implements AccountMessage{
 
     @APIParam(maxLength = 32)
-    private String targetUuid;
+    private String uuid;
 
     @APIParam(maxLength = 128,required = false)
     private String name;
@@ -31,8 +32,8 @@ public class APIUpdateAccountContactsMsg extends  APIMessage implements AccountM
         return this.getSession().getAccountUuid();
     }
 
-    public String getTargetUuid() {
-        return targetUuid;
+    public String getUuid() {
+        return uuid;
     }
 
     public String getName() {
@@ -55,8 +56,8 @@ public class APIUpdateAccountContactsMsg extends  APIMessage implements AccountM
         return description;
     }
 
-    public void setTargetUuid(String targetUuid) {
-        this.targetUuid = targetUuid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public void setName(String name) {
@@ -78,4 +79,17 @@ public class APIUpdateAccountContactsMsg extends  APIMessage implements AccountM
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update account contact").resource(getAccountUuid(), AccountContactsVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
+            }
+        };
+    }
+
 }

@@ -11,7 +11,7 @@ import org.zstack.header.notification.ApiNotification;
 public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
 
     @APIParam(resourceType = AccountVO.class, required = true, checkAccount = true, operationTarget = true)
-    private String targetUuid;
+    private String uuid;
 
     @APIParam(maxLength = 36, required = false)
     private String email ;
@@ -85,12 +85,12 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
         this.type = type;
     }
 
-    public String getTargetUuid() {
-        return targetUuid;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setTargetUuid(String targetUuid) {
-        this.targetUuid = targetUuid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getIndustry() {
@@ -131,7 +131,7 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Updating").resource(targetUuid, AccountVO.class.getSimpleName())
+                ntfy("Updating").resource(uuid, AccountVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };

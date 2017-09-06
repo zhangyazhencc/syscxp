@@ -1,5 +1,7 @@
 package org.zstack.account.identity;
 
+import com.cloopen.rest.sdk.utils.EncryptUtil;
+import org.hibernate.jpa.internal.metamodel.SingularAttributeImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +21,8 @@ import org.zstack.header.identity.*;
 
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.message.InnerAPIMessage;
+import org.zstack.header.message.Message;
 import org.zstack.utils.*;
 import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.logging.CLogger;
@@ -26,7 +30,9 @@ import org.zstack.utils.logging.CLogger;
 import javax.persistence.Query;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -63,6 +69,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
 
     class MessageAction {
         boolean adminOnly;
+        boolean proxyOnly;
         List<String> actions;
         String category;
         boolean accountOnly;
@@ -192,6 +199,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                 logger.debug(String.format("API message[%s] doesn't have annotation @Action, assume it's an admin only API", clz));
                 MessageAction ma = new MessageAction();
                 ma.adminOnly = true;
+                ma.proxyOnly = true;
                 ma.accountOnly = true;
                 ma.accountControl = false;
                 actions.put(clz, ma);
@@ -201,6 +209,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             MessageAction ma = new MessageAction();
             ma.accountOnly = a.accountOnly();
             ma.adminOnly = a.adminOnly();
+            ma.proxyOnly = a.proxyOnly();
             ma.category = a.category();
             ma.actions = new ArrayList<String>();
             ma.accountControl = a.accountControl();
@@ -288,6 +297,9 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
                 suppressCredentialCheck();
                 return;
+            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)) {
+                innerCredentialCheck();
+                return;
             } else {
                 action = actions.get(msg.getClass());
 
@@ -333,10 +345,9 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                 if (resourceUuids.isEmpty()) {
                     return;
                 }
-
-                List<Tuple> ts = SQL.New(
-                        "select uuid, accountUuid from :resourceType where uuid in (:resourceUuids) ", Tuple.class)
-                        .param("resourceType", af.param.resourceType().getSimpleName())
+                String sql = String.format("select uuid, accountUuid from %s where uuid in (:resourceUuids) ",
+                        af.param.resourceType().getSimpleName());
+                List<Tuple> ts = SQL.New(sql, Tuple.class)
                         .param("resourceUuids", resourceUuids)
                         .list();
                 for (Tuple t : ts) {
@@ -387,7 +398,11 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                     throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
                             String.format("API[%s] is admin only", msg.getClass().getSimpleName())));
                 }
-
+                if (action.proxyOnly && !session.isProxySession()) {
+                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
+                            String.format("API[%s] can only be called by an proxy", msg.getClass().getSimpleName())
+                    ));
+                }
                 if (action.accountOnly && !session.isAccountSession()) {
                     throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
                             String.format("API[%s] can only be called by an account, the current session is a user session[user uuid:%s]",
@@ -468,20 +483,34 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         }
 
         @Transactional(readOnly = true)
-        private List<PolicyInventory> getUserPolicys() {
+        public List<PolicyInventory> getUserPolicys() {
             String sql = "select p from PolicyVO p, UserPolicyRefVO ref where ref.userUuid = :uuid and ref.policyUuid = p.uuid";
             TypedQuery<PolicyVO> q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
             q.setParameter("uuid", session.getUserUuid());
             return PolicyInventory.valueOf(q.getResultList());
         }
 
-        private void suppressCredentialCheck(){
+        private void suppressCredentialCheck() {
             if (msg.getSession() != null && msg.getSession().getUuid() != null) {
                 SessionInventory session = sessions.get(msg.getSession().getUuid());
                 if (session != null) {
                     msg.setSession(session);
                 }
             }
+        }
+
+        private void innerCredentialCheck() {
+            if (msg instanceof InnerAPIMessage) {
+                InnerAPIMessage msg = (InnerAPIMessage) (this.msg);
+                try {
+                    String str = new EncryptUtil().md5Digest(msg.getSignature());
+                } catch (NoSuchAlgorithmException e) {
+                    e.printStackTrace();
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
 
         private void sessionCheck() {
@@ -525,7 +554,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         return msg;
     }
 
-    public void check(APIMessage msg){
+    public void check(APIMessage msg) {
         new Auth().check(msg);
     }
 

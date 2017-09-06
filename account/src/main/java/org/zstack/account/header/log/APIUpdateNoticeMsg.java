@@ -8,9 +8,9 @@ import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
 import java.sql.Timestamp;
-@Action(category = NoticeConstant.ACTION_CATEGORY, names = {"notice"}, adminOnly = true)
+@Action(category = NoticeConstant.ACTION_CATEGORY, names = {"notice"})
 public class APIUpdateNoticeMsg extends APIMessage {
-    @APIParam(resourceType = NoticeVO.class, emptyString = false)
+    @APIParam(resourceType = NoticeVO.class,checkAccount = true, emptyString = false)
     private String uuid;
     @APIParam(maxLength = 255, required = false)
     private String title;

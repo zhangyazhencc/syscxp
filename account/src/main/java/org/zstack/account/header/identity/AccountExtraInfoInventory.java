@@ -15,6 +15,7 @@ public class AccountExtraInfoInventory {
     private String accountUuid;
     private String grade;
     private String salesman;
+    private String createWay;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
@@ -24,6 +25,7 @@ public class AccountExtraInfoInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setGrade(vo.getGrade().toString());
         inv.setSalesman(vo.getSalesman());
+        inv.setCreateWay(vo.getCreateWay());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
@@ -36,6 +38,15 @@ public class AccountExtraInfoInventory {
         }
 
         return invs;
+    }
+
+    public void setCreateWay(String createWay) {
+        this.createWay = createWay;
+    }
+
+    public String getCreateWay() {
+
+        return createWay;
     }
 
     public String getUuid() {

@@ -1,26 +1,15 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.query.ExpandedQueries;
-import org.zstack.header.query.ExpandedQuery;
-import org.zstack.header.query.ExpandedQueryAlias;
-import org.zstack.header.query.ExpandedQueryAliases;
+
 import org.zstack.header.search.Inventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Inventory(mappingVOClass = UserVO.class)
-@ExpandedQueries({
-        @ExpandedQuery(expandedField = "account", inventoryClass = AccountInventory.class,
-                foreignKey = "accountUuid", expandedInventoryKey = "uuid"),
-        @ExpandedQuery(expandedField = "policyRef", inventoryClass = UserPolicyRefInventory.class,
-                foreignKey = "uuid", expandedInventoryKey = "userUuid", hidden = true)
-})
-@ExpandedQueryAliases({
-        @ExpandedQueryAlias(alias = "policy", expandedField = "policyRef.policy")
-})
 public class UserInventory {
     private String uuid;
     private String accountUuid;
@@ -28,13 +17,16 @@ public class UserInventory {
     private String email;
     private String status;
     private String phone;
+    private String emailStatus;
+    private String phoneStatus;
+
     private String trueName;
     private String department;
     private String description;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    private String policyUuid;
+    private Set<PolicyVO> policy;
 
     public static UserInventory valueOf(UserVO vo) {
         UserInventory inv = new UserInventory();
@@ -45,29 +37,15 @@ public class UserInventory {
         inv.setDepartment(vo.getDepartment());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
-        inv.setStatus(vo.getStatus().toString());
-        inv.setTrueName(vo.getTrueName());
-        inv.setLastOpDate(vo.getLastOpDate());
-        inv.setDescription(vo.getDescription());
-        return inv;
-    }
-
-    public static UserInventory valueOf(UserVO vo,UserPolicyRefVO uprfvo) {
-        UserInventory inv = new UserInventory();
-        inv.setUuid(vo.getUuid());
-        inv.setAccountUuid(vo.getAccountUuid());
-        inv.setCreateDate(vo.getCreateDate());
-        inv.setName(vo.getName());
-        inv.setDepartment(vo.getDepartment());
-        inv.setEmail(vo.getEmail());
-        inv.setPhone(vo.getPhone());
+        inv.setPhoneStatus(vo.getPhoneStatus().toString());
+        inv.setEmailStatus(vo.getEmailStatus().toString());
         inv.setStatus(vo.getStatus().toString());
         inv.setTrueName(vo.getTrueName());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setDescription(vo.getDescription());
 
-        if(inv.getPolicyUuid() != null){
-            inv.setPolicyUuid(uprfvo.getPolicyUuid());
+        if(vo.getPolicy() != null){
+            inv.setPolicy(vo.getPolicy());
         }
 
         return inv;
@@ -79,6 +57,22 @@ public class UserInventory {
             invs.add(UserInventory.valueOf(vo));
         }
         return invs;
+    }
+
+    public String getEmailStatus() {
+        return emailStatus;
+    }
+
+    public String getPhoneStatus() {
+        return phoneStatus;
+    }
+
+    public void setEmailStatus(String emailStatus) {
+        this.emailStatus = emailStatus;
+    }
+
+    public void setPhoneStatus(String phoneStatus) {
+        this.phoneStatus = phoneStatus;
     }
 
     public String getDescription() {
@@ -169,11 +163,11 @@ public class UserInventory {
         this.department = department;
     }
 
-    public String getPolicyUuid() {
-        return policyUuid;
+    public Set<PolicyVO> getPolicy() {
+        return policy;
     }
 
-    public void setPolicyUuid(String policyUuid) {
-        this.policyUuid = policyUuid;
+    public void setPolicy(Set<PolicyVO> policy) {
+        this.policy = policy;
     }
 }

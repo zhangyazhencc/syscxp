@@ -11,7 +11,7 @@ import org.zstack.header.notification.ApiNotification;
 /**
  * Created by frank on 7/9/2015.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY, names = {"user"}, accountOnly = true)
 public class APIDeleteUserMsg extends APIDeleteMessage implements AccountMessage {
     @APIParam(resourceType = UserVO.class, checkAccount = true, operationTarget = true, successIfResourceNotExisting = true)
     private String uuid;
@@ -29,7 +29,7 @@ public class APIDeleteUserMsg extends APIDeleteMessage implements AccountMessage
     public void setUuid(String uuid) {
         this.uuid = uuid;
     }
- 
+
     public static APIDeleteUserMsg __example__() {
         APIDeleteUserMsg msg = new APIDeleteUserMsg();
         msg.setUuid(uuid());

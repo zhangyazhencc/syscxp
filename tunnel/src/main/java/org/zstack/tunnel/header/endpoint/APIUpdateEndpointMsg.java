@@ -1,11 +1,15 @@
 package org.zstack.tunnel.header.endpoint;
 
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.manage.TunnelConstant;
 
 /**
  * Created by DCY on 2017-08-23
  */
+
+@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"endpoint"}, adminOnly = true)
 public class APIUpdateEndpointMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
     private String uuid;

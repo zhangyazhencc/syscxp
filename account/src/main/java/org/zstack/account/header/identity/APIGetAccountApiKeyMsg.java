@@ -3,9 +3,10 @@ package org.zstack.account.header.identity;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.message.APISyncCallMessage;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"api_key"}, accountOnly = true)
-public class APIGetAccountApiKeyMsg extends  APIMessage implements  AccountMessage {
+public class APIGetAccountApiKeyMsg extends APISyncCallMessage implements  AccountMessage {
 
     @APIParam(maxLength = 32)
     private String phone;

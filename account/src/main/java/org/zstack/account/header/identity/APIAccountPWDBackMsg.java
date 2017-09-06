@@ -1,13 +1,16 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.Action;
+import org.zstack.header.identity.SuppressCredentialCheck;
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.notification.ApiNotification;
 
 /**
  * Created by wangwg on 2017/9/4.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY,  accountOnly = true)
+@SuppressCredentialCheck
 public class APIAccountPWDBackMsg extends APIMessage  {
 
     @APIParam
@@ -42,5 +45,19 @@ public class APIAccountPWDBackMsg extends APIMessage  {
     public void setPhone(String phone) {
         this.phone = phone;
     }
+
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update password ")
+                        .resource(phone, AccountVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
+            }
+        };
+    }
+
 
 }

@@ -11,7 +11,7 @@ import org.zstack.core.config.GlobalConfigValidation;
 @GlobalPropertyDefinition
 public class IdentityGlobalProperty {
 
-    @GlobalProperty(name = "accountServerUrl", defaultValue = "http:// 192.168.211.165:8080/api")
+    @GlobalProperty(name = "accountServerUrl", defaultValue = "http:// 192.168.211.108:8080/api")
     public static String ACCOUNT_SERVER_URL;
 
     @GlobalProperty(name = "app_id")
@@ -43,7 +43,7 @@ public class IdentityGlobalProperty {
     @GlobalProperty(name = "log_path")
     public static String LOG_PATH;
 
-    @GlobalProperty(name = " seller_id")
+    @GlobalProperty(name = "seller_id")
     public static String SELLER_ID;
 
 

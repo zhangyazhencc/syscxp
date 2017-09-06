@@ -96,6 +96,7 @@ CREATE TABLE  `UserVO` (
     `trueName` varchar(128) NOT NULL COMMENT '姓名',
     `department` varchar(128) DEFAULT NULL COMMENT '部门',
     `status` varchar(128) NOT NULL COMMENT '状态',
+    `userType` varchar(36) NOT NULL COMMENT '用户类型（业务员，普通用户）',
     `description` varchar(255),
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
     `createDate` timestamp ,
@@ -219,6 +220,7 @@ CREATE TABLE `AccountExtraInfoVO` (
 	`accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '账户uuid',
 	`grade` varchar(36) DEFAULT NULL COMMENT '客户等级',
 	`salesman` varchar(128) DEFAULT NULL COMMENT '业务员',
+  `createWay` varchar(36) NOT NULL COMMENT '注册渠道',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
   PRIMARY KEY  (`uuid`)

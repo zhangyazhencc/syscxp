@@ -24,7 +24,6 @@ import org.zstack.header.identity.StatementEffect;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.managementnode.PrepareDbInitialValueExtensionPoint;
 import org.zstack.header.message.*;
-import org.zstack.header.query.QueryCondition;
 import org.zstack.header.query.QueryOp;
 import org.zstack.utils.*;
 import org.zstack.utils.logging.CLogger;
@@ -124,6 +123,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIRegisterAccountMsg) msg);
         } else if(msg instanceof APIAccountPWDBackMsg){
             handle((APIAccountPWDBackMsg) msg);
+        } else if(msg instanceof APIUserPWDBackMsg){
+            handle((APIUserPWDBackMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -132,7 +133,34 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void handle(APIAccountPWDBackMsg msg) {
         APIAccountPWDBackEvent evt = new APIAccountPWDBackEvent(msg.getId());
 
+        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]" ));
+        }else{
 
+            SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
+            q.add(AccountVO_.phone, Op.EQ, msg.getPhone());
+            AccountVO account = q.find();
+            account.setPassword(msg.getNewpassword());
+            evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
+        }
+
+        bus.publish(evt);
+    }
+
+    private void handle(APIUserPWDBackMsg msg) {
+        APIUserPWDBackEvent evt = new APIUserPWDBackEvent(msg.getId());
+
+        if (smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+            SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
+            q.add(UserVO_.phone, Op.EQ, msg.getPhone());
+            UserVO user = q.find();
+
+            user.setPassword(msg.getNewpassword());
+            evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
+
+        }else{
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]" ));
+        }
 
         bus.publish(evt);
     }
@@ -160,6 +188,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         AccountExtraInfoVO aeivo = new AccountExtraInfoVO();
         aeivo.setUuid(Platform.getUuid());
         aeivo.setAccountUuid(accountvo.getUuid());
+        aeivo.setCreateWay("register");
 
         aeivo = dbf.persistAndRefresh(aeivo);
 
@@ -473,8 +502,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIDetachPolicyFromUserMsg) msg);
         } else if (msg instanceof APIAttachPolicyToUserMsg) {
             validate((APIAttachPolicyToUserMsg) msg);
-        } else if (msg instanceof APIDeleteAccountContactsMsg) {
-            validate((APIDeleteAccountContactsMsg) msg);
         } else if (msg instanceof APIResetAccountPWDMsg) {
             validate((APIResetAccountPWDMsg) msg);
         } else if (msg instanceof APIResetAccountApiSecurityMsg) {
@@ -485,6 +512,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIQueryPermissionMsg) msg);
         } else if (msg instanceof APIRegisterAccountMsg) {
             validate((APIRegisterAccountMsg) msg);
+        } else if (msg instanceof APIQueryAccountMsg) {
+            validate((APIQueryAccountMsg) msg);
         }
 
 
@@ -505,9 +534,17 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void validate(APIQueryPermissionMsg msg) {
         if (msg.getSession().getType().equals(AccountType.Proxy))
-            msg.addQueryCondition(PermissionVO_.level.toString(), QueryOp.IN, "Proxy", "Normal");
+            msg.addQueryCondition(PermissionVO_.accountType.getName(), QueryOp.IN, "Proxy", "Normal");
         if (msg.getSession().getType().equals(AccountType.Normal))
-            msg.addQueryCondition(PermissionVO_.level.toString(), QueryOp.IN, "Normal");
+            msg.addQueryCondition(PermissionVO_.accountType.getName(), QueryOp.IN, "Normal");
+    }
+
+    private void validate(APIQueryAccountMsg msg) {
+
+        if(msg.getSession().getType().equals(AccountType.Proxy)){
+            msg.addField("left join AccountExtraInfoVO ae where ae.accountUuid = uuid group by ");
+
+        }
     }
 
 
@@ -543,15 +580,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     }
 
-
-    private void validate(APIDeleteAccountContactsMsg msg) {
-
-        if (!msg.getSession().getType().equals(AccountType.SystemAdmin)) {
-            throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot set the policy of the other user[uuid: %s]",
-                    msg.getAccountUuid(), msg.getUuid()));
-        }
-    }
-
     private void validate(APILogInByUserMsg msg) {
         if (msg.getAccountName() == null && msg.getAccountUuid() == null) {
             throw new ApiMessageInterceptionException(argerr(
@@ -561,7 +589,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateUserPhoneMsg msg) {
-        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+        if (!smsService.validateVerificationCode(msg.getOldphone(), msg.getOldcode())
+                ||!smsService.validateVerificationCode(msg.getNewphone(), msg.getNewcode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
@@ -589,7 +618,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateAccountPhoneMsg msg) {
-        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+        if (!smsService.validateVerificationCode(msg.getOldphone(), msg.getOldcode())||
+                !smsService.validateVerificationCode(msg.getNewphone(), msg.getNewcode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
@@ -622,7 +652,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateUserMsg msg) {
-        UserVO user = dbf.findByUuid(msg.getTargetUuid(), UserVO.class);
+        UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
         if (!AccountConstant.INITIAL_SYSTEM_ADMIN_UUID.equals(msg.getAccountUuid()) &&
                 !user.getAccountUuid().equals(msg.getAccountUuid())) {
             throw new OperationFailureException(argerr("the user[uuid:%s] does not belong to the" +
@@ -634,9 +664,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void validate(APIUpdateAccountMsg msg) {
         AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
         if (!account.getType().equals(AccountType.SystemAdmin) &&
-                !msg.getSession().getAccountUuid().equals(msg.getTargetUuid())) {
+                !msg.getSession().getAccountUuid().equals(msg.getUuid())) {
             throw new OperationFailureException(operr("account[uuid: %s, name: %s] is a normal account, it cannot reset the password of another account[uuid: %s]",
-                    account.getUuid(), account.getName(), msg.getTargetUuid()));
+                    account.getUuid(), account.getName(), msg.getUuid()));
         }
     }
 

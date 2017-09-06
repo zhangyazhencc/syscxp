@@ -6,6 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.billing.header.balance.AccountBalanceVO;
 import org.zstack.billing.header.balance.AccountBalanceVO_;
+import org.zstack.billing.header.balance.AccountDischargeVO;
+import org.zstack.billing.header.balance.AccountDischargeVO_;
+import org.zstack.billing.header.order.ProductPriceUnitVO;
+import org.zstack.billing.header.order.ProductPriceUnitVO_;
+import org.zstack.core.Platform;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.SQL;
@@ -290,7 +295,11 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                     return;
                 }
 
-                List<Tuple> ts = SQL.New("select uuid, accountUuid from :resourceType where uuid in (:resourceUuids) ", Tuple.class).param("resourceType", af.param.resourceType().getSimpleName()).param("resourceUuids", resourceUuids).list();
+                String sql = String.format("select uuid, accountUuid from %s where uuid in (:resourceUuids) ",
+                        af.param.resourceType().getSimpleName());
+                List<Tuple> ts = SQL.New(sql, Tuple.class)
+                        .param("resourceUuids", resourceUuids)
+                        .list();
                 for (Tuple t : ts) {
                     String resourceUuid = t.get(0, String.class);
                     String resourceOwnerAccountUuid = t.get(1, String.class);
@@ -433,6 +442,23 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                         vo.setPresentBalance(new BigDecimal("0"));
                         vo.setCreditPoint(new BigDecimal("0"));
                         dbf.persist(vo);
+                    }
+                }
+                List<ProductPriceUnitVO> ppu = dbf.listAll(ProductPriceUnitVO.class);
+                for(ProductPriceUnitVO productPriceUnitVO : ppu){
+                    SimpleQuery<AccountDischargeVO> query = dbf.createQuery(AccountDischargeVO.class);
+                    query.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
+                    query.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductType());
+                    query.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategory());
+                    AccountDischargeVO accountDischargeVO = query.find();
+                    if(accountDischargeVO == null){
+                        accountDischargeVO = new AccountDischargeVO();
+                        accountDischargeVO.setUuid(Platform.getUuid());
+                        accountDischargeVO.setAccountUuid(accountUuid);
+                        accountDischargeVO.setCategory(productPriceUnitVO.getCategory());
+                        accountDischargeVO.setProductType(productPriceUnitVO.getProductType());
+                        accountDischargeVO.setDisCharge(100);
+                        dbf.persistAndRefresh(accountDischargeVO);
                     }
                 }
 

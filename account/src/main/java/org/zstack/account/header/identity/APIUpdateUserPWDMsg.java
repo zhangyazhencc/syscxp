@@ -1,13 +1,15 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.Action;
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.notification.ApiNotification;
 
 /**
  * Created by wangwg on 2017/8/8.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"user_update"})
+@Action(category = AccountConstant.ACTION_CATEGORY, names = {"user"})
 public class APIUpdateUserPWDMsg extends APIMessage implements AccountMessage{
 
     @APIParam(maxLength = 36)
@@ -57,5 +59,17 @@ public class APIUpdateUserPWDMsg extends APIMessage implements AccountMessage{
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update user password").resource(that.getSession().getUserUuid(), UserVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

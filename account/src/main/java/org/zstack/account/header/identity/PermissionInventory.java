@@ -1,5 +1,7 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.header.identity.AccountType;
+import org.zstack.header.identity.PermissionType;
 import org.zstack.header.search.Inventory;
 
 import java.sql.Timestamp;
@@ -15,6 +17,8 @@ public class PermissionInventory {
     private String name;
     private String permission;
     private String description;
+    private PermissionType type;
+    private AccountType accountType;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
@@ -22,6 +26,8 @@ public class PermissionInventory {
         PermissionInventory inv = new PermissionInventory();
         inv.setName(vo.getName());
         inv.setUuid(vo.getUuid());
+        inv.setType(vo.getType());
+        inv.setAccountType(vo.getAccountType());
         inv.setPermission(vo.getPermission());
         inv.setDescription(vo.getDescription());
         return inv;
@@ -33,6 +39,22 @@ public class PermissionInventory {
             invs.add(valueOf(vo));
         }
         return invs;
+    }
+
+    public PermissionType getType() {
+        return type;
+    }
+
+    public void setType(PermissionType type) {
+        this.type = type;
+    }
+
+    public AccountType getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(AccountType level) {
+        this.accountType = level;
     }
 
     public String getUuid() {

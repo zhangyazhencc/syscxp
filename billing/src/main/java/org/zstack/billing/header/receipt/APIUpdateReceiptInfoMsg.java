@@ -7,7 +7,7 @@ import org.zstack.header.message.APIParam;
 @Action(category = BillingConstant.ACTION_CATEGORY, names = {"receipt"})
 public class APIUpdateReceiptInfoMsg extends APIMessage {
 
-    @APIParam(nonempty = true,resourceType = ReceiptInfoVO.class, checkAccount = true)
+    @APIParam(emptyString = false,resourceType = ReceiptInfoVO.class, checkAccount = true)
     private String uuid;
 
     @APIParam(required = false)

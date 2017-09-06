@@ -1,7 +1,5 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.*;
-
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 import java.sql.Timestamp;
@@ -16,6 +14,7 @@ public class AccountExtraInfoVO_ {
     public static volatile SingularAttribute<AccountExtraInfoVO, String> accountUuid;
     public static volatile SingularAttribute<AccountExtraInfoVO, AccountGrade> grade;
     public static volatile SingularAttribute<AccountExtraInfoVO, String> salesman;
+    public static volatile SingularAttribute<AccountExtraInfoVO, String> createWay;
     public static volatile SingularAttribute<AccountExtraInfoVO, Timestamp> createDate;
     public static volatile SingularAttribute<AccountExtraInfoVO, Timestamp> lastOpDate;
 }

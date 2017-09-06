@@ -6,11 +6,11 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
-@Action(category = AccountConstant.ACTION_CATEGORY, accountOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY,names = {"policy"}, accountOnly = true)
 public class APIAttachPolicyToUserMsg extends APIMessage implements AccountMessage {
-    @APIParam(checkAccount = true, operationTarget = true)
+    @APIParam(resourceType = UserVO.class, checkAccount = true, operationTarget = true)
     private String userUuid;
-    @APIParam(checkAccount = true, operationTarget = true)
+    @APIParam(resourceType = PolicyVO.class, checkAccount = true, operationTarget = true)
     private String policyUuid;
 
     @Override
@@ -33,7 +33,7 @@ public class APIAttachPolicyToUserMsg extends APIMessage implements AccountMessa
     public void setPolicyUuid(String policyUuid) {
         this.policyUuid = policyUuid;
     }
- 
+
     public static APIAttachPolicyToUserMsg __example__() {
         APIAttachPolicyToUserMsg msg = new APIAttachPolicyToUserMsg();
 

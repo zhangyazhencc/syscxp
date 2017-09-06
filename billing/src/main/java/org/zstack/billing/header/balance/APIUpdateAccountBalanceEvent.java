@@ -4,13 +4,13 @@ import org.zstack.header.message.APIEvent;
 import org.zstack.header.rest.RestResponse;
 
 @RestResponse(allTo = "inventory")
-public class APIReChargeProxyEvent  extends APIEvent {
+public class APIUpdateAccountBalanceEvent extends APIEvent {
 
     private AccountBalanceInventory inventory;
 
-    public APIReChargeProxyEvent(String apiId) {super(apiId);}
+    public APIUpdateAccountBalanceEvent(String apiId) {super(apiId);}
 
-    public APIReChargeProxyEvent(){}
+    public APIUpdateAccountBalanceEvent(){}
 
     public AccountBalanceInventory getInventory() {
         return inventory;

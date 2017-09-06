@@ -10,31 +10,31 @@ import java.sql.Timestamp;
 @Action(category = BillingConstant.ACTION_CATEGORY, names = {"sla"})
 public class APICreateSLACompensateMsg extends APIMessage {
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private String accountUuid;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private String productUuid;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private ProductType productType;
 
-    @APIParam(nonempty = true,required = false)
+    @APIParam(emptyString = false,required = false)
     private String productName;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private String reason;
 
-    @APIParam(nonempty = true,required = false)
+    @APIParam(emptyString = false,required = false)
     private String description;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private int duration;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private Timestamp timeStart;
 
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private Timestamp timeEnd;
 
     public String getAccountUuid() {

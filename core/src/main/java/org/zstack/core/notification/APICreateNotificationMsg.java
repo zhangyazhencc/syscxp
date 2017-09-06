@@ -1,10 +1,12 @@
 package org.zstack.core.notification;
 
+import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.identity.SuppressCredentialCheck;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.NeedJsonSchema;
 import org.zstack.header.message.NoJsonSchema;
+import org.zstack.header.rest.APINoSee;
 
 import java.util.Map;
 
@@ -33,25 +35,17 @@ public class APICreateNotificationMsg extends APIMessage {
     @APIParam
     private Map opaque;
 
-    @APIParam(required = false)
-    private String accountUuid;
-    @APIParam(required = false)
-    private String userUuid;
+    @APIParam
+    private SessionInventory session;
 
-    public String getAccountUuid() {
-        return accountUuid;
+    @Override
+    public SessionInventory getSession() {
+        return session;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
-
-    public String getUserUuid() {
-        return userUuid;
-    }
-
-    public void setUserUuid(String userUuid) {
-        this.userUuid = userUuid;
+    @Override
+    public void setSession(SessionInventory session) {
+        this.session = session;
     }
 
     public Map getOpaque() {

@@ -35,7 +35,7 @@ public class PermissionVO {
 
     @Column
     @Enumerated(EnumType.STRING)
-    private AccountType level;
+    private AccountType accountType;
 
     @Column
     private Timestamp createDate;
@@ -96,18 +96,6 @@ public class PermissionVO {
         return sortId;
     }
 
-    public PermissionType getType() {
-        return type;
-    }
-
-    public AccountType getLevel() {
-        return level;
-    }
-
-    public void setLevel(AccountType level) {
-        this.level = level;
-    }
-
     public void setPermission(String permission) {
         this.permission = permission;
     }
@@ -116,7 +104,19 @@ public class PermissionVO {
         this.sortId = sortId;
     }
 
+    public PermissionType getType() {
+        return type;
+    }
+
     public void setType(PermissionType type) {
         this.type = type;
+    }
+
+    public AccountType getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType;
     }
 }

@@ -6,14 +6,19 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Inventory(mappingVOClass = AccountVO.class)
 
 public class AccountInventory {
     private String uuid;
     private String name;
+    private String emailStatus;
+    private String phoneStatus;
+
     private String email;
     private String phone;
+
     private String trueName;
     private String company;
     private String industry;
@@ -23,10 +28,14 @@ public class AccountInventory {
 
     private String grade;
     private String salesman;
+    private String createWay;
 
     private Timestamp createDate;
     private Timestamp lastOpDate;
-    
+
+    private Set<AccountExtraInfoVO> accountEx;
+
+
     public static AccountInventory valueOf(AccountVO vo,AccountExtraInfoVO aeivo) {
         AccountInventory inv = new AccountInventory();
         inv.setUuid(vo.getUuid());
@@ -36,6 +45,7 @@ public class AccountInventory {
         inv.setDescription(vo.getDescription());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
+
         if(vo.getIndustry() != null){
             inv.setIndustry(vo.getIndustry().toString());
         }
@@ -46,8 +56,11 @@ public class AccountInventory {
             inv.setGrade(aeivo.getGrade().toString());
         }
 
-        inv.setSalesman(aeivo.getSalesman());
+        inv.setEmailStatus(vo.getEmailStatus().toString());
+        inv.setPhoneStatus(vo.getPhoneStatus().toString());
 
+        inv.setSalesman(aeivo.getSalesman());
+        inv.setCreateWay(aeivo.getCreateWay());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
@@ -62,6 +75,13 @@ public class AccountInventory {
         inv.setDescription(vo.getDescription());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
+        if(vo.getAccountEx() != null){
+            inv.setAccountEx(vo.getAccountEx());
+        }
+
+        inv.setEmailStatus(vo.getEmailStatus().toString());
+        inv.setPhoneStatus(vo.getPhoneStatus().toString());
+
         if(vo.getIndustry() !=null){
             inv.setIndustry(vo.getIndustry().toString());
         }
@@ -79,6 +99,30 @@ public class AccountInventory {
             lst.add(AccountInventory.valueOf(vo));
         }
         return lst;
+    }
+
+    public String getCreateWay() {
+        return createWay;
+    }
+
+    public void setCreateWay(String createWay) {
+        this.createWay = createWay;
+    }
+
+    public String getEmailStatus() {
+        return emailStatus;
+    }
+
+    public String getPhoneStatus() {
+        return phoneStatus;
+    }
+
+    public void setEmailStatus(String emailStatus) {
+        this.emailStatus = emailStatus;
+    }
+
+    public void setPhoneStatus(String phoneStatus) {
+        this.phoneStatus = phoneStatus;
     }
 
     public String getType() {
@@ -193,4 +237,11 @@ public class AccountInventory {
         this.salesman = salesman;
     }
 
+    public Set<AccountExtraInfoVO> getAccountEx() {
+        return accountEx;
+    }
+
+    public void setAccountEx(Set<AccountExtraInfoVO> accountEx) {
+        this.accountEx = accountEx;
+    }
 }
