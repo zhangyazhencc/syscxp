@@ -27,6 +27,7 @@ import org.zstack.header.notification.ApiNotificationFactory;
 import org.zstack.header.notification.ApiNotificationFactoryExtensionPoint;
 import org.zstack.header.rest.AsyncRESTCallback;
 import org.zstack.header.rest.RESTFacade;
+import org.zstack.utils.ObjectUtils;
 import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
@@ -276,8 +277,6 @@ public class NotificationManager extends AbstractService {
 
                         APICreateNotificationMsg msg = new APICreateNotificationMsg();
                         msg.setSession(session);
-                        msg.setAccountUuid(session.getAccountUuid());
-                        msg.setUserUuid(session.getUserUuid());
                         msg.setName(builder.notificationName);
                         msg.setCategory(builder.category);
                         msg.setSuccess(builder.success);
@@ -358,8 +357,8 @@ public class NotificationManager extends AbstractService {
         NotificationVO vo = new NotificationVO();
         vo.setUuid(Platform.getUuid());
         vo.setName(msg.getName());
-        vo.setAccountUuid(msg.getAccountUuid());
-        vo.setUserUuid(msg.getUserUuid());
+        vo.setAccountUuid(msg.getSession().getAccountUuid());
+        vo.setUserUuid(msg.getSession().getUserUuid());
         vo.setCategory(msg.getCategory());
         vo.setSuccess(msg.getSuccess());
         vo.setRemoteIp(msg.getRemoteIp());

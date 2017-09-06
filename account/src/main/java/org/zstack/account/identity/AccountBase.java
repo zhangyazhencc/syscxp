@@ -37,6 +37,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
 
+import java.util.Set;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class AccountBase extends AbstractAccount {
@@ -549,19 +550,24 @@ public class AccountBase extends AbstractAccount {
             user = dbf.updateAndRefresh(user);
         }
 
-        UserPolicyRefVO uprvo = null;
+
         if (msg.getPolicyUuid() != null) {
             SimpleQuery<UserPolicyRefVO> q = dbf.createQuery(UserPolicyRefVO.class);
             q.add(UserPolicyRefVO_.userUuid, SimpleQuery.Op.EQ, msg.getUuid());
-            uprvo = q.find();
-            user.setPolicy(new HashSet<PolicyVO>().add(dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class)));
+            UserPolicyRefVO uprvo = q.find();
+
+            Set<PolicyVO> policy = new HashSet<>();
+            policy.add(dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class));
+            user.setPolicy(policy);
+
             if (uprvo != null) {
                 uprvo.setPolicyUuid(msg.getPolicyUuid());
-                uprvo = dbf.updateAndRefresh(uprvo);
+                dbf.update(uprvo);
             } else {
+                uprvo = new UserPolicyRefVO();
                 uprvo.setPolicyUuid(msg.getPolicyUuid());
                 uprvo.setUserUuid(msg.getUuid());
-                uprvo = dbf.persistAndRefresh(uprvo);
+                dbf.persist(uprvo);
             }
         }
 
@@ -654,11 +660,16 @@ public class AccountBase extends AbstractAccount {
         if (msg.getPolicyUuid() != null) {
             uprv.setUserUuid(uservo.getUuid());
             uprv.setPolicyUuid(msg.getPolicyUuid());
-            dbf.persistAndRefresh(uprv);
+            dbf.persist(uprv);
+
+            Set<PolicyVO> policy = new HashSet<>();
+            policy.add(dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class));
+            uservo.setPolicy(policy);
+
         }
 
         APICreateUserEvent evt = new APICreateUserEvent(msg.getId());
-        evt.setInventory(UserInventory.valueOf(uservo, uprv));
+        evt.setInventory(UserInventory.valueOf(uservo));
         bus.publish(evt);
     }
 

@@ -2,8 +2,10 @@ package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APICreateMessage;
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.notification.ApiNotification;
 
 @Action(category = AccountConstant.ACTION_CATEGORY,names = {"user"}, accountOnly = true)
 public class APICreateUserMsg extends APIMessage implements AccountMessage {
@@ -20,11 +22,8 @@ public class APICreateUserMsg extends APIMessage implements AccountMessage {
     private String trueName;
     @APIParam(maxLength = 128, required = false)
     private String department;
-//    @APIParam(validValues = {"Available", "Disabled"}, required = false)
-//    private String status;
     @APIParam(maxLength = 255, required = false)
     private String description;
-
     @APIParam(maxLength = 255, required = false)
     private String policyUuid;
 
@@ -103,6 +102,22 @@ public class APICreateUserMsg extends APIMessage implements AccountMessage {
 
     public void setPolicyUuid(String policyUuid) {
         this.policyUuid = policyUuid;
+    }
+
+    public ApiNotification __notification__() {
+        APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateUserEvent)evt).getInventory().getUuid();
+                }
+                ntfy("Creating").resource(uuid, UserVO.class.getSimpleName())
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 
 }
