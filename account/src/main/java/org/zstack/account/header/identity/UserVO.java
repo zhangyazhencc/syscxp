@@ -7,6 +7,7 @@ import org.zstack.header.vo.ForeignKey.ReferenceOption;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Set;
 
 @Entity
 @Table
@@ -46,6 +47,15 @@ public class UserVO {
     @Column
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
+
+    @ManyToMany(cascade=CascadeType.ALL)
+    @JoinTable(
+            name="UserPolicyRefVO",
+            joinColumns=@JoinColumn(name="userUuid"),
+            inverseJoinColumns=@JoinColumn(name="policyUuid")
+    )
+    private Set<PolicyVO> policy;
+
 
     @Column
     private String description;
@@ -171,5 +181,13 @@ public class UserVO {
 
     public void setPhoneStatus(ValidateStatus phoneStatus) {
         this.phoneStatus = phoneStatus;
+    }
+
+    public Set<PolicyVO> getPolicy() {
+        return policy;
+    }
+
+    public void setPolicy(Set<PolicyVO> policy) {
+        this.policy = policy;
     }
 }

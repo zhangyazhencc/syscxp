@@ -515,6 +515,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIQueryPermissionMsg) msg);
         } else if (msg instanceof APIRegisterAccountMsg) {
             validate((APIRegisterAccountMsg) msg);
+        } else if (msg instanceof APIQueryAccountMsg) {
+            validate((APIQueryAccountMsg) msg);
         }
 
 
@@ -538,6 +540,14 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             msg.addQueryCondition(PermissionVO_.level.getName(), QueryOp.IN, "Proxy", "Normal");
         if (msg.getSession().getType().equals(AccountType.Normal))
             msg.addQueryCondition(PermissionVO_.level.getName(), QueryOp.IN, "Normal");
+    }
+
+    private void validate(APIQueryAccountMsg msg) {
+
+        if(msg.getSession().getType().equals(AccountType.Proxy)){
+            msg.addField("left join AccountExtraInfoVO ae where ae.accountUuid = uuid group by ");
+
+        }
     }
 
 
