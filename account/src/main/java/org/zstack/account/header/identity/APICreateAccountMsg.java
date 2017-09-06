@@ -32,7 +32,7 @@ public class APICreateAccountMsg  extends APIMessage implements AccountMessage{
     @APIParam(maxLength = 32, required = false)
     private AccountGrade grade;
     @APIParam(maxLength = 255, required = false)
-    private String salesman;
+    private String userUuid;
 
     @Override
     public String getAccountUuid() {
@@ -79,8 +79,8 @@ public class APICreateAccountMsg  extends APIMessage implements AccountMessage{
         return description;
     }
 
-    public String getSalesman() {
-        return salesman;
+    public String getUserUuid() {
+        return userUuid;
     }
 
     public void setName(String name) {
@@ -123,8 +123,8 @@ public class APICreateAccountMsg  extends APIMessage implements AccountMessage{
         this.description = description;
     }
 
-    public void setSalesman(String salesman) {
-        this.salesman = salesman;
+    public void setUserUuid(String userUuid) {
+        this.userUuid = userUuid;
     }
 
     public ApiNotification __notification__() {

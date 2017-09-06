@@ -7,11 +7,11 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"account_contact"})
+@Action(adminOnly = true, category = AccountConstant.ACTION_CATEGORY, names = {"account_contact"})
 public class APICreateAccountContactsMsg extends  APIMessage implements  AccountMessage {
 
     @APIParam(maxLength = 32)
-    private String targetUuid;
+    private String accountUuid;
     @APIParam(maxLength = 128)
     public String name;
     @APIParam(maxLength = 36)
@@ -20,11 +20,6 @@ public class APICreateAccountContactsMsg extends  APIMessage implements  Account
     public String email;
     @APIParam(maxLength = 36)
     public NoticeWay noticeWay;
-
-    @Override
-    public String getAccountUuid() {
-        return this.getSession().getAccountUuid();
-    }
 
     public String getPhone() {
         return phone;
@@ -58,12 +53,12 @@ public class APICreateAccountContactsMsg extends  APIMessage implements  Account
         this.noticeWay = noticeWay;
     }
 
-    public String getTargetUuid() {
-        return targetUuid;
+    public String getAccountUuid() {
+        return accountUuid;
     }
 
-    public void setTargetUuid(String targetUuid) {
-        this.targetUuid = targetUuid;
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 
     public ApiNotification __notification__() {

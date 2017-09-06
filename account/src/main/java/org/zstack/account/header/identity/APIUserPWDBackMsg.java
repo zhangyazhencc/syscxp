@@ -13,6 +13,7 @@ import org.zstack.header.notification.ApiNotification;
 @SuppressCredentialCheck
 public class APIUserPWDBackMsg extends APIMessage  {
 
+
     @APIParam
     private String phone;
 
