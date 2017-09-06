@@ -16,17 +16,11 @@ public class SwitchSwitchModelInventory {
     private String endpointUuid;
     private String code;
     private String name;
-    private String brand;
-    private String switchModelUuid;
-    private SwitchModelInventory switchModel;
+    private String switchAttributionUuid;
+    private SwitchAttributionInventory switchAttribution;
     private SwitchUpperType upperType;
     private Integer enabled;
-    private String owner;
-    private String rack;
     private String description;
-    private String mIP;
-    private String username;
-    private String password;
     private SwitchStatus status;
     private Integer isPrivate;
     private Timestamp lastOpDate;
@@ -39,17 +33,11 @@ public class SwitchSwitchModelInventory {
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
-        inv.setBrand(vo.getBrand());
-        inv.setSwitchModelUuid(vo.getSwitchModelUuid());
-        inv.setSwitchModel(SwitchModelInventory.valueOf(vo.getSwitchModel()));
+        inv.setSwitchAttributionUuid(vo.getSwitchAttributionUuid());
+        inv.setSwitchAttribution(SwitchAttributionInventory.valueOf(vo.getSwitchAttribution()));
         inv.setUpperType(vo.getUpperType());
         inv.setEnabled(vo.getEnabled());
-        inv.setOwner(vo.getOwner());
-        inv.setRack(vo.getRack());
         inv.setDescription(vo.getDescription());
-        inv.setmIP(vo.getmIP());
-        inv.setUsername(vo.getUsername());
-        inv.setPassword(vo.getPassword());
         inv.setStatus(vo.getStatus());
         inv.setIsPrivate(vo.getIsPrivate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -98,28 +86,12 @@ public class SwitchSwitchModelInventory {
         this.name = name;
     }
 
-    public String getBrand() {
-        return brand;
+    public String getSwitchAttributionUuid() {
+        return switchAttributionUuid;
     }
 
-    public void setBrand(String brand) {
-        this.brand = brand;
-    }
-
-    public String getSwitchModelUuid() {
-        return switchModelUuid;
-    }
-
-    public void setSwitchModelUuid(String switchModelUuid) {
-        this.switchModelUuid = switchModelUuid;
-    }
-
-    public SwitchModelInventory getSwitchModel() {
-        return switchModel;
-    }
-
-    public void setSwitchModel(SwitchModelInventory switchModel) {
-        this.switchModel = switchModel;
+    public void setSwitchAttributionUuid(String switchAttributionUuid) {
+        this.switchAttributionUuid = switchAttributionUuid;
     }
 
     public SwitchUpperType getUpperType() {
@@ -138,52 +110,12 @@ public class SwitchSwitchModelInventory {
         this.enabled = enabled;
     }
 
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
-    }
-
-    public String getRack() {
-        return rack;
-    }
-
-    public void setRack(String rack) {
-        this.rack = rack;
-    }
-
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getmIP() {
-        return mIP;
-    }
-
-    public void setmIP(String mIP) {
-        this.mIP = mIP;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public SwitchStatus getStatus() {
@@ -216,5 +148,13 @@ public class SwitchSwitchModelInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public SwitchAttributionInventory getSwitchAttribution() {
+        return switchAttribution;
+    }
+
+    public void setSwitchAttribution(SwitchAttributionInventory switchAttribution) {
+        this.switchAttribution = switchAttribution;
     }
 }

@@ -26,8 +26,6 @@ public class APICreateSwitchPortMsg extends APIMessage {
     @APIParam(emptyString = false)
     private Integer reuse;
 
-    @APIParam(emptyString = false)
-    private Integer autoAlloc;
 
     public String getSwitchUuid() {
         return switchUuid;
@@ -59,14 +57,6 @@ public class APICreateSwitchPortMsg extends APIMessage {
 
     public void setReuse(Integer reuse) {
         this.reuse = reuse;
-    }
-
-    public Integer getAutoAlloc() {
-        return autoAlloc;
-    }
-
-    public void setAutoAlloc(Integer autoAlloc) {
-        this.autoAlloc = autoAlloc;
     }
 
     public SwitchPortType getPortType() {

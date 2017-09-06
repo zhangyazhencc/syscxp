@@ -5,7 +5,7 @@ import javax.persistence.metamodel.StaticMetamodel;
 import java.sql.Timestamp;
 
 /**
- * Created by DCY on 2017-08-29
+ * Created by DCY on 2017-09-06
  */
 @StaticMetamodel(SwitchModelVO.class)
 public class SwitchModelVO_ {

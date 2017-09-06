@@ -30,8 +30,6 @@ public class SwitchPortSwitchSwitchModelInventory {
 
     private Integer reuse;
 
-    private Integer autoAlloc;
-
     private Integer enabled;
 
     private Timestamp createDate;
@@ -50,7 +48,6 @@ public class SwitchPortSwitchSwitchModelInventory {
         inv.setLabel(vo.getLabel());
         inv.setIsExclusive(vo.getIsExclusive());
         inv.setReuse(vo.getReuse());
-        inv.setAutoAlloc(vo.getAutoAlloc());
         inv.setEnabled(vo.getEnabled());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -120,14 +117,6 @@ public class SwitchPortSwitchSwitchModelInventory {
 
     public void setReuse(Integer reuse) {
         this.reuse = reuse;
-    }
-
-    public Integer getAutoAlloc() {
-        return autoAlloc;
-    }
-
-    public void setAutoAlloc(Integer autoAlloc) {
-        this.autoAlloc = autoAlloc;
     }
 
     public Integer getEnabled() {

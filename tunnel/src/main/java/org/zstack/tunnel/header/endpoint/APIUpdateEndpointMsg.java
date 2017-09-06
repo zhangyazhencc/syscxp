@@ -8,7 +8,7 @@ import org.zstack.header.message.APIParam;
  */
 public class APIUpdateEndpointMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
-    private String targetUuid;
+    private String uuid;
 
     @APIParam(required = false,maxLength = 255)
     private String name;
@@ -16,12 +16,34 @@ public class APIUpdateEndpointMsg extends APIMessage {
     @APIParam(required = false,maxLength = 128)
     private String code;
 
-    public String getTargetUuid() {
-        return targetUuid;
+    @APIParam(required = false)
+    private Integer enabled;
+
+    @APIParam(required = false)
+    private Integer openToCustomers;
+
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setTargetUuid(String targetUuid) {
-        this.targetUuid = targetUuid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public Integer getEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(Integer enabled) {
+        this.enabled = enabled;
+    }
+
+    public Integer getOpenToCustomers() {
+        return openToCustomers;
+    }
+
+    public void setOpenToCustomers(Integer openToCustomers) {
+        this.openToCustomers = openToCustomers;
     }
 
     public String getName() {

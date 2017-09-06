@@ -18,8 +18,8 @@ public class SwitchVO extends SwitchAO {
     private EndpointVO endpoint;
 
     @OneToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="switchModelUuid", insertable=false, updatable=false)
-    private SwitchModelVO switchModel;
+    @JoinColumn(name="switchAttributionUuid", insertable=false, updatable=false)
+    private SwitchAttributionVO switchAttribution;
 
     public EndpointVO getEndpoint() {
         return endpoint;
@@ -29,11 +29,11 @@ public class SwitchVO extends SwitchAO {
         this.endpoint = endpoint;
     }
 
-    public SwitchModelVO getSwitchModel() {
-        return switchModel;
+    public SwitchAttributionVO getSwitchAttribution() {
+        return switchAttribution;
     }
 
-    public void setSwitchModel(SwitchModelVO switchModel) {
-        this.switchModel = switchModel;
+    public void setSwitchAttribution(SwitchAttributionVO switchAttribution) {
+        this.switchAttribution = switchAttribution;
     }
 }

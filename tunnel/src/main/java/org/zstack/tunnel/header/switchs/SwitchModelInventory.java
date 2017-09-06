@@ -8,21 +8,16 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by DCY on 2017-08-29
+ * Created by DCY on 2017-09-06
  */
 @Inventory(mappingVOClass = SwitchModelVO.class)
 public class SwitchModelInventory {
 
     private String uuid;
-
     private String model;
-
     private String subModel;
-
     private Integer mpls;
-
     private Timestamp createDate;
-
     private Timestamp lastOpDate;
 
     public static SwitchModelInventory valueOf(SwitchModelVO vo){
