@@ -1,9 +1,7 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.NoticeWay;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
-import org.zstack.header.vo.Index;
 
 import javax.persistence.*;
 import java.sql.Timestamp;

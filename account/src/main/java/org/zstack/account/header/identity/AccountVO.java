@@ -1,6 +1,7 @@
 package org.zstack.account.header.identity;
 
 
+
 import org.zstack.header.identity.ValidateStatus;
 import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.identity.AccountType;
@@ -9,6 +10,7 @@ import org.zstack.header.search.TriggerIndex;
 import org.zstack.header.vo.Index;
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Set;
 
 @Entity
 @Table
@@ -61,6 +63,10 @@ public class AccountVO {
     @Column
     @Enumerated(EnumType.STRING)
     private AccountType type;
+
+    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @JoinColumn(name = "accountUuid")
+    private Set<AccountExtraInfoVO> accountEx;
 
     @Column
     private Timestamp createDate;

@@ -54,8 +54,11 @@ public class UserVO {
             joinColumns=@JoinColumn(name="userUuid"),
             inverseJoinColumns=@JoinColumn(name="policyUuid")
     )
+
     private Set<PolicyVO> policy;
 
+    @Column
+    private  UserType userType;
 
     @Column
     private String description;
@@ -189,5 +192,13 @@ public class UserVO {
 
     public void setPolicy(Set<PolicyVO> policy) {
         this.policy = policy;
+    }
+
+    public UserType getUserType() {
+        return userType;
+    }
+
+    public void setUserType(UserType userType) {
+        this.userType = userType;
     }
 }
