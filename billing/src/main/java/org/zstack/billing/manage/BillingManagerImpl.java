@@ -117,8 +117,6 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIDeleteCanceledOrderMsg) msg);
         } else if (msg instanceof APIGetBillMsg) {
             handle((APIGetBillMsg) msg);
-        } else if (msg instanceof APIGetMonetaryGroupByProductTypeMsg) {
-            handle((APIGetMonetaryGroupByProductTypeMsg) msg);
         } else if (msg instanceof APICreateReceiptMsg) {
             handle((APICreateReceiptMsg) msg);
         } else if (msg instanceof APIUpdateReceiptMsg) {
@@ -385,25 +383,37 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         bus.publish(evt);
     }
 
-    private void handle(APIGetMonetaryGroupByProductTypeMsg msg) {
+    private void handle(APIGetBillMsg msg) {
+        BillVO vo = dbf.findByUuid(msg.getUuid(), BillVO.class);
+
+        Timestamp billTimestamp = vo.getBillDate();
+        Calendar calendar1 = Calendar.getInstance();
+        calendar1.setTime(billTimestamp);
+        calendar1.set(Calendar.HOUR_OF_DAY, 0);
+        calendar1.set(Calendar.MINUTE, 0);
+        calendar1.set(Calendar.SECOND, 0);
+        calendar1.set(Calendar.MILLISECOND, 0);
+        calendar1.add(Calendar.MONTH, -1);
+        calendar1.set(Calendar.DAY_OF_MONTH, 1);
+        calendar1.set(calendar1.get(Calendar.YEAR), calendar1.get(Calendar.MONTH), calendar1.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+        Timestamp startTime = new Timestamp(calendar1.getTime().getTime());
+        Calendar calendar2 = Calendar.getInstance();
+        calendar2.set(Calendar.DAY_OF_MONTH, 0);
+        calendar2.set(Calendar.HOUR_OF_DAY, 23);
+        calendar2.set(Calendar.MINUTE, 59);
+        calendar2.set(Calendar.SECOND, 59);
+        calendar2.set(Calendar.MILLISECOND, 999);
+        Timestamp endTime = new Timestamp(calendar2.getTime().getTime());
         String accountUuid = msg.getSession().getAccountUuid();
         String sql = "select count(*) as categoryCount, sum(payPresent) as payPresentTotal,sum(payCash) as payCashTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and payTime BETWEEN :dateStart and  :dateEnd  group by productType ";
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("accountUuid", accountUuid);
-        q.setParameter("dateStart", msg.getDateStart());
-        q.setParameter("dateEnd", msg.getDateEnd());
+        q.setParameter("dateStart", startTime);
+        q.setParameter("dateEnd", endTime);
         List<Object[]> objs = q.getResultList();
         List<Monetary> bills = objs.stream().map(Monetary::new).collect(Collectors.toList());
-
-        APIGetMonetaryGroupByProductTypeReply reply = new APIGetMonetaryGroupByProductTypeReply();
-        reply.setInventory(bills);
-        bus.reply(msg, reply);
-
-    }
-
-    private void handle(APIGetBillMsg msg) {
-        BillVO vo = dbf.findByUuid(msg.getUuid(), BillVO.class);
         BillInventory inventory = BillInventory.valueOf(vo);
+        inventory.setBills(bills);
         APIGetBillReply reply = new APIGetBillReply();
         reply.setInventory(inventory);
         bus.reply(msg, reply);
@@ -1018,7 +1028,13 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     private void handle(APIUpdateAccountBalanceMsg msg) {
         AccountBalanceVO vo = dbf.findByUuid( msg.getAccountUuid(), AccountBalanceVO.class);
+        Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
+        int hash = msg.getAccountUuid().hashCode();
+        if (hash < 0) {
+            hash = ~hash;
+        }
+        String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
         if(msg.getPresent()!=null){
             vo.setPresentBalance(vo.getPresentBalance().add(msg.getPresent()));
             DealDetailVO dealDetailVO = new DealDetailVO();
@@ -1032,7 +1048,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setType(DealType.RECHARGE);
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(vo.getCashBalance());
-            dVO.setOutTradeNO("proxy-recharge");xvxzcv
+            dVO.setOutTradeNO(outTradeNO);
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
             dbf.persist(dVO);
         }else if(msg.getCash()!=null){
@@ -1048,7 +1064,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setType(DealType.RECHARGE);
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(vo.getCashBalance());
-            dVO.setOutTradeNO("proxy-recharge");xcvzv
+            dVO.setOutTradeNO(outTradeNO);
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
             dbf.persist(dVO);
         }else if(msg.getCredit()!=null){
