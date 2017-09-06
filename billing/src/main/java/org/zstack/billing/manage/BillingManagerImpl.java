@@ -93,9 +93,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIGetExpenseGrossMonthListMsg) msg);
         } else if (msg instanceof APIUpdateRenewMsg) {
             handle((APIUpdateRenewMsg) msg);
-        } else if (msg instanceof APIPayRenewOrderMsg) {
-            handle((APIPayRenewOrderMsg) msg);
-        } else if (msg instanceof APIGetValuebleReceiptMsg) {
+        }  else if (msg instanceof APIGetValuebleReceiptMsg) {
             handle((APIGetValuebleReceiptMsg) msg);
         } else if (msg instanceof APICreateReceiptPostAddressMsg) {
             handle((APICreateReceiptPostAddressMsg) msg);
@@ -113,8 +111,6 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APICreateSLACompensateMsg) msg);
         } else if (msg instanceof APIUpdateSLACompensateMsg) {
             handle((APIUpdateSLACompensateMsg) msg);
-        } else if (msg instanceof APIDeleteCanceledOrderMsg) {
-            handle((APIDeleteCanceledOrderMsg) msg);
         } else if (msg instanceof APIGetBillMsg) {
             handle((APIGetBillMsg) msg);
         } else if (msg instanceof APICreateReceiptMsg) {
@@ -420,20 +416,6 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     }
 
-    private void handle(APIDeleteCanceledOrderMsg msg) {
-        String orderUuid = msg.getUuid();
-        OrderVO vo = dbf.findByUuid(orderUuid, OrderVO.class);
-        if (vo == null || !vo.getState().equals(OrderState.CANCELED)) {
-            throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.NOT_PERMIT_UPDATE, String.format("if order not this state, can not be deleted")));
-        }
-        dbf.remove(vo);
-        OrderInventory ri = OrderInventory.valueOf(vo);
-        APIDeleteCanceledOrderEvent evt = new APIDeleteCanceledOrderEvent(msg.getId());
-        evt.setInventory(ri);
-        bus.publish(evt);
-
-    }
-
     private void handle(APIUpdateSLACompensateMsg msg) {
         SLACompensateVO vo = dbf.findByUuid(msg.getUuid(), SLACompensateVO.class);
         if (msg.getAccountUuid() != null) {
@@ -677,31 +659,6 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         BigDecimal consumeCash = vq.getSingleResult();
         consumeCash = consumeCash == null ? BigDecimal.ZERO : consumeCash;
         return consumeCash;
-    }
-
-    @Transactional
-    private void handle(APIPayRenewOrderMsg msg) {
-        String orderUuid = msg.getOrderUuid();
-        OrderVO orderVo = dbf.findByUuid(orderUuid, OrderVO.class);
-        AccountBalanceVO abvo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
-        if (!orderVo.getState().equals(OrderState.NOTPAID)) {
-            throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.NOT_PERMIT_UPDATE, String.format("if order not this state, can not be updated")));
-        }
-        BigDecimal total = orderVo.getPayCash();
-        Timestamp currentTimeStamp = dbf.getCurrentSqlTime();
-
-        if (msg.getConfirm().equals(Confirm.OK)) {
-            payMethod(msg, orderVo, abvo, total, currentTimeStamp);
-            orderVo.setState(OrderState.PAID);
-        } else if (msg.getConfirm().equals(Confirm.CANCEL)) {
-            orderVo.setState(OrderState.CANCELED);
-        }
-
-        dbf.updateAndRefresh(orderVo);
-        OrderInventory oi = OrderInventory.valueOf(orderVo);
-        APIPayRenewOrderEvent evt = new APIPayRenewOrderEvent(msg.getId());
-        evt.setInventory(oi);
-        bus.publish(evt);
     }
 
     @Transactional(propagation = Propagation.REQUIRED)

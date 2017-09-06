@@ -23,10 +23,6 @@
     </message>
 
     <message>
-        <name>org.zstack.billing.header.order.APIPayRenewOrderMsg</name>
-    </message>
-
-    <message>
         <name>org.zstack.billing.header.receipt.APIGetValuebleReceiptMsg</name>
     </message>
 
@@ -59,10 +55,6 @@
 
     <message>
         <name>org.zstack.billing.header.sla.APIUpdateSLACompensateMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.billing.header.order.APIDeleteCanceledOrderMsg</name>
     </message>
 
     <message>
