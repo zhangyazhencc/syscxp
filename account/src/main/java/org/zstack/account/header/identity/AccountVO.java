@@ -64,7 +64,7 @@ public class AccountVO {
     @Enumerated(EnumType.STRING)
     private AccountType type;
 
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER )
     @JoinColumn(name = "accountUuid")
     private Set<AccountExtraInfoVO> accountEx;
 
