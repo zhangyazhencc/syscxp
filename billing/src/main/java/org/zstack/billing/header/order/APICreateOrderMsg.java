@@ -30,7 +30,7 @@ public class APICreateOrderMsg extends APIMessage {
     @APIParam(required = false)
     private String productUuid;
 
-    @APIParam(numberRange = {0,Integer.MAX_VALUE})
+    @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private int duration;
 
     @APIParam(emptyString = false)

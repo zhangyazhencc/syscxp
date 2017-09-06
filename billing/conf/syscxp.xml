@@ -23,7 +23,6 @@
         <property name="locations">
             <list>
                 <value>classpath:syscxp.properties</value>
-                <value>classpath:alipay-config.properties</value>
             </list>
         </property>
         <property name="ignoreUnresolvablePlaceholders" value="true"/>
