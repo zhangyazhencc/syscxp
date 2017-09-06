@@ -94,7 +94,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIGetExpenseGrossMonthListMsg) msg);
         } else if (msg instanceof APIUpdateRenewMsg) {
             handle((APIUpdateRenewMsg) msg);
-        }  else if (msg instanceof APIGetValuebleReceiptMsg) {
+        } else if (msg instanceof APIGetValuebleReceiptMsg) {
             handle((APIGetValuebleReceiptMsg) msg);
         } else if (msg instanceof APICreateReceiptPostAddressMsg) {
             handle((APICreateReceiptPostAddressMsg) msg);
@@ -122,13 +122,13 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIRechargeMsg) msg);
         } else if (msg instanceof APIVerifyReturnMsg) {
             handle((APIVerifyReturnMsg) msg);
-        }else if (msg instanceof APIVerifyNotifyMsg) {
+        } else if (msg instanceof APIVerifyNotifyMsg) {
             handle((APIVerifyNotifyMsg) msg);
         } else if (msg instanceof APIUpdateAccountDischargeMsg) {
             handle((APIUpdateAccountDischargeMsg) msg);
         } else if (msg instanceof APIDeleteSLACompensateMsg) {
             handle((APIDeleteSLACompensateMsg) msg);
-        }else if (msg instanceof APIGetProductPriceMsg) {
+        } else if (msg instanceof APIGetProductPriceMsg) {
             handle((APIGetProductPriceMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
@@ -138,14 +138,14 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     private void handle(APIGetProductPriceMsg msg) {
         List<ProductPriceUnit> units = msg.getUnits();
         List<ProductPriceUnitInventory> productPriceUnits = new ArrayList<>();
-        AccountBalanceVO accountBalanceVO = dbf.findByUuid(msg.getSession().getAccountUuid(),AccountBalanceVO.class);
-        for(ProductPriceUnit unit:units){
+        AccountBalanceVO accountBalanceVO = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+        for (ProductPriceUnit unit : units) {
             SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
             q.add(ProductPriceUnitVO_.category, Op.EQ, unit.getCategory());
             q.add(ProductPriceUnitVO_.productType, Op.EQ, unit.getProductType());
             q.add(ProductPriceUnitVO_.config, Op.EQ, unit.getConfig());
             ProductPriceUnitVO productPriceUnitVO = q.find();
-            if(productPriceUnitVO == null){
+            if (productPriceUnitVO == null) {
                 throw new IllegalArgumentException("please check the argurment");
             }
             ProductPriceUnitInventory inventory = ProductPriceUnitInventory.valueOf(productPriceUnitVO);
@@ -155,8 +155,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             qDischarge.add(AccountDischargeVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
             AccountDischargeVO accountDischargeVO = qDischarge.find();
             int discharge = 100;
-            if(accountDischargeVO != null){
-                discharge = accountDischargeVO.getDisCharge()==0?100:accountDischargeVO.getDisCharge();
+            if (accountDischargeVO != null) {
+                discharge = accountDischargeVO.getDisCharge() == 0 ? 100 : accountDischargeVO.getDisCharge();
             }
             inventory.setDischarge(discharge);
             productPriceUnits.add(inventory);
@@ -167,13 +167,13 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         productPriceInventory.setProductPriceInventories(productPriceUnits);
         APIGetProductPriceReply reply = new APIGetProductPriceReply();
         reply.setInventory(productPriceInventory);
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
     }
 
     private void handle(APIDeleteSLACompensateMsg msg) {
         String uuid = msg.getUuid();
-        SLACompensateVO slaCompensateVO = dbf.findByUuid(uuid,SLACompensateVO.class);
-        if(slaCompensateVO!=null){
+        SLACompensateVO slaCompensateVO = dbf.findByUuid(uuid, SLACompensateVO.class);
+        if (slaCompensateVO != null) {
             dbf.remove(slaCompensateVO);
         }
         SLACompensateInventory inventory = SLACompensateInventory.valueOf(slaCompensateVO);
@@ -185,7 +185,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     private void handle(APIUpdateAccountDischargeMsg msg) {
         String uuid = msg.getUuid();
-        AccountDischargeVO accountDischargeVO = dbf.findByUuid(uuid,AccountDischargeVO.class);
+        AccountDischargeVO accountDischargeVO = dbf.findByUuid(uuid, AccountDischargeVO.class);
         accountDischargeVO.setDisCharge(msg.getDischarge());
         dbf.updateAndRefresh(accountDischargeVO);
         AccountDischargeInventory inventory = AccountDischargeInventory.valueOf(accountDischargeVO);
@@ -195,81 +195,81 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void handle(APIVerifyNotifyMsg msg) {
-            Map<String, String> param = msg.getParam();
-            APIVerifyNotifyReply reply = new APIVerifyNotifyReply();
-            boolean signVerified = false;
-            try {
-                signVerified = AlipaySignature.rsaCheckV1(param, IdentityGlobalProperty.ALIPAY_PUBLIC_KEY, IdentityGlobalProperty.CHARSET, IdentityGlobalProperty.SIGN_TYPE); //调用SDK验证签名
-            } catch (AlipayApiException e) {
-                logger.error(e.getErrMsg());
+        Map<String, String> param = msg.getParam();
+        APIVerifyNotifyReply reply = new APIVerifyNotifyReply();
+        boolean signVerified = false;
+        try {
+            signVerified = AlipaySignature.rsaCheckV1(param, IdentityGlobalProperty.ALIPAY_PUBLIC_KEY, IdentityGlobalProperty.CHARSET, IdentityGlobalProperty.SIGN_TYPE); //调用SDK验证签名
+        } catch (AlipayApiException e) {
+            logger.error(e.getErrMsg());
+            reply.setInventory(false);
+        }
+        if (signVerified) {
+
+            String out_trade_no = param.get("out_trade_no");
+            String trade_no = param.get("trade_no");
+            String total_amount = param.get("total_amount");
+            String seller_id = param.get("seller_id");
+            String app_id = param.get("app_id");
+            String trade_status = param.get("trade_status");
+            SimpleQuery<DealDetailVO> q = dbf.createQuery(DealDetailVO.class);
+            q.add(DealDetailVO_.outTradeNO, Op.EQ, out_trade_no);
+            q.add(DealDetailVO_.state, Op.EQ, DealState.SUCCESS);
+            DealDetailVO dealDetailVO = q.find();
+
+            if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(IdentityGlobalProperty.SELLER_ID) || !app_id.equals(IdentityGlobalProperty.APP_ID)) {
                 reply.setInventory(false);
+                bus.reply(msg, reply);
+                return;
             }
-            if (signVerified) {
 
-                String out_trade_no = param.get("out_trade_no");
-                String trade_no = param.get("trade_no");
-                String total_amount = param.get("total_amount");
-                String seller_id = param.get("seller_id");
-                String app_id = param.get("app_id");
-                String trade_status = param.get("trade_status");
-                SimpleQuery<DealDetailVO> q = dbf.createQuery(DealDetailVO.class);
-                q.add(DealDetailVO_.outTradeNO, Op.EQ, out_trade_no);
-                q.add(DealDetailVO_.state,Op.EQ,DealState.SUCCESS);
-                DealDetailVO dealDetailVO = q.find();
+            if (trade_status.equals("TRADE_FINISHED")) {
+                //判断该笔订单是否在商户网站中已经做过处理
+                //如果没有做过处理，根据订单号（out_trade_no）在商户网站的订单系统中查到该笔订单的详细，并执行商户的业务程序
+                //如果有做过处理，不执行商户的业务程序
+                if (dealDetailVO.getState().equals(DealState.FAILURE) && dealDetailVO.getOutTradeNO().equals(out_trade_no)) {
+                    AccountBalanceVO vo = dbf.findByUuid(dealDetailVO.getAccountUuid(), AccountBalanceVO.class);
+                    BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
+                    vo.setCashBalance(balance);
+                    dbf.updateAndRefresh(vo);
 
-                if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 ||!seller_id.equals(IdentityGlobalProperty.SELLER_ID) || !app_id.equals(IdentityGlobalProperty.APP_ID)) {
-                    reply.setInventory(false);
-                    bus.reply(msg, reply);
-                    return;
+                    dealDetailVO.setBalance(balance);
+                    dealDetailVO.setState(DealState.SUCCESS);
+                    dealDetailVO.setFinishTime(dbf.getCurrentSqlTime());
+                    dealDetailVO.setTradeNO(trade_no);
+                    dealDetailVO.setOutTradeNO(out_trade_no);
+                    dbf.updateAndRefresh(dealDetailVO);
                 }
 
-                if(trade_status.equals("TRADE_FINISHED")){
-                    //判断该笔订单是否在商户网站中已经做过处理
-                    //如果没有做过处理，根据订单号（out_trade_no）在商户网站的订单系统中查到该笔订单的详细，并执行商户的业务程序
-                    //如果有做过处理，不执行商户的业务程序
-                    if(dealDetailVO.getState().equals(DealState.FAILURE) && dealDetailVO.getOutTradeNO().equals(out_trade_no)) {
-                        AccountBalanceVO vo = dbf.findByUuid(dealDetailVO.getAccountUuid(), AccountBalanceVO.class);
-                        BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
-                        vo.setCashBalance(balance);
-                        dbf.updateAndRefresh(vo);
+                //注意：
+                //退款日期超过可退款期限后（如三个月可退款），支付宝系统发送该交易状态通知
+            } else if (trade_status.equals("TRADE_SUCCESS")) {
+                //判断该笔订单是否在商户网站中已经做过处理
+                //如果没有做过处理，根据订单号（out_trade_no）在商户网站的订单系统中查到该笔订单的详细，并执行商户的业务程序
+                //如果有做过处理，不执行商户的业务程序
+                if (dealDetailVO.getState().equals(DealState.FAILURE)) {
+                    AccountBalanceVO vo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+                    BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
+                    vo.setCashBalance(balance);
+                    dbf.updateAndRefresh(vo);
 
-                        dealDetailVO.setBalance(balance);
-                        dealDetailVO.setState(DealState.SUCCESS);
-                        dealDetailVO.setFinishTime(dbf.getCurrentSqlTime());
-                        dealDetailVO.setTradeNO(trade_no);
-                        dealDetailVO.setOutTradeNO(out_trade_no);
-                        dbf.updateAndRefresh(dealDetailVO);
-                    }
-
-                    //注意：
-                    //退款日期超过可退款期限后（如三个月可退款），支付宝系统发送该交易状态通知
-                }else if (trade_status.equals("TRADE_SUCCESS")){
-                    //判断该笔订单是否在商户网站中已经做过处理
-                    //如果没有做过处理，根据订单号（out_trade_no）在商户网站的订单系统中查到该笔订单的详细，并执行商户的业务程序
-                    //如果有做过处理，不执行商户的业务程序
-                    if(dealDetailVO.getState().equals(DealState.FAILURE)) {
-                        AccountBalanceVO vo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
-                        BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
-                        vo.setCashBalance(balance);
-                        dbf.updateAndRefresh(vo);
-
-                        dealDetailVO.setBalance(balance);
-                        dealDetailVO.setState(DealState.SUCCESS);
-                        dealDetailVO.setFinishTime(dbf.getCurrentSqlTime());
-                        dealDetailVO.setTradeNO(trade_no);
-                        dealDetailVO.setOutTradeNO(out_trade_no);
-                        dbf.updateAndRefresh(dealDetailVO);
-                    }
-
-                    //注意：
-                    //付款完成后，支付宝系统发送该交易状态通知
+                    dealDetailVO.setBalance(balance);
+                    dealDetailVO.setState(DealState.SUCCESS);
+                    dealDetailVO.setFinishTime(dbf.getCurrentSqlTime());
+                    dealDetailVO.setTradeNO(trade_no);
+                    dealDetailVO.setOutTradeNO(out_trade_no);
+                    dbf.updateAndRefresh(dealDetailVO);
                 }
 
-
+                //注意：
+                //付款完成后，支付宝系统发送该交易状态通知
             }
-            reply.setInventory(signVerified);
 
-            bus.reply(msg, reply);
+
+        }
+        reply.setInventory(signVerified);
+
+        bus.reply(msg, reply);
 
     }
 
@@ -295,11 +295,11 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             q.add(DealDetailVO_.outTradeNO, Op.EQ, out_trade_no);
             DealDetailVO dealDetailVO = q.find();
 
-            if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 ||!seller_id.equals(IdentityGlobalProperty.SELLER_ID) || !app_id.equals(IdentityGlobalProperty.APP_ID)) {
+            if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(IdentityGlobalProperty.SELLER_ID) || !app_id.equals(IdentityGlobalProperty.APP_ID)) {
                 reply.setInventory(false);
                 bus.reply(msg, reply);
                 return;
-            } else if(dealDetailVO.getOutTradeNO().equals(out_trade_no)) {
+            } else if (dealDetailVO.getOutTradeNO().equals(out_trade_no)) {
                 AccountBalanceVO vo = dbf.findByUuid(dealDetailVO.getAccountUuid(), AccountBalanceVO.class);
                 BigDecimal balance = vo.getCashBalance().add(new BigDecimal(total_amount));
                 vo.setCashBalance(balance);
@@ -319,13 +319,13 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     private void handle(APIRechargeMsg msg) {
         String accountUuid = msg.getSession().getAccountUuid();
-        if(!StringUtils.isEmpty(msg.getAccountUuid())){
-            if(!dbf.isExist(msg.getAccountUuid(),AccountBalanceVO.class)){
+        if (!StringUtils.isEmpty(msg.getAccountUuid())) {
+            if (!dbf.isExist(msg.getAccountUuid(), AccountBalanceVO.class)) {
                 throw new IllegalArgumentException("could not find the account,please check it");
             }
             accountUuid = msg.getAccountUuid();
         }
-        BigDecimal total = msg.getTotal().setScale(2,BigDecimal.ROUND_HALF_UP);
+        BigDecimal total = msg.getTotal().setScale(2, BigDecimal.ROUND_HALF_UP);
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
         int hash = accountUuid.hashCode();
@@ -807,7 +807,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     @Transactional
-    private void handle(APICreateOrderMsg msg){
+    private void handle(APICreateOrderMsg msg) {
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         ProductPriceUnit productPriceUnit = msg.getProductPriceUnit();
 
@@ -816,7 +816,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         q.add(ProductPriceUnitVO_.productType, Op.EQ, productPriceUnit.getProductType());
         q.add(ProductPriceUnitVO_.config, Op.EQ, productPriceUnit.getConfig());
         ProductPriceUnitVO productPriceUnitVO = q.find();
-        if(productPriceUnitVO == null){
+        if (productPriceUnitVO == null) {
             throw new IllegalArgumentException("product config is invalid");
         }
 
@@ -826,8 +826,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         qDischarge.add(AccountDischargeVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
         AccountDischargeVO accountDischargeVO = qDischarge.find();
         int productDisCharge = 100;
-        if(accountDischargeVO != null){
-            productDisCharge = accountDischargeVO.getDisCharge()==0?100:accountDischargeVO.getDisCharge();
+        if (accountDischargeVO != null) {
+            productDisCharge = accountDischargeVO.getDisCharge() == 0 ? 100 : accountDischargeVO.getDisCharge();
         }
 
         BigDecimal duration = BigDecimal.valueOf(msg.getDuration());
@@ -849,14 +849,14 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
         OrderVO orderVo = new OrderVO();
 
-        if(msg.getType().equals(OrderType.UPGRADE)){
+        if (msg.getType().equals(OrderType.UPGRADE)) {
             OrderVO oldOrderVO = dbf.findByUuid(msg.getOldOrderUuid(), OrderVO.class);
             BigDecimal oldPayPreset = oldOrderVO.getPayPresent();
             BigDecimal oldPayCash = oldOrderVO.getPayCash();
             Timestamp startTime = oldOrderVO.getProductEffectTimeStart();//todo this would get from product
             Timestamp endTime = oldOrderVO.getProductEffectTimeEnd();//todo this would get from product
             long useDays = (currentTimestamp.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
-            long needPayDays = (endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24)+1 ;
+            long needPayDays = (endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24) + 1;
             long days = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
             BigDecimal avgOldPriceByDay = oldPayCash.add(oldPayPreset).divide(BigDecimal.valueOf(days), 4, RoundingMode.HALF_EVEN);
             BigDecimal usedMoney = avgOldPriceByDay.multiply(BigDecimal.valueOf(useDays));
@@ -869,14 +869,14 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             }
             payMethod(msg, orderVo, abvo, total, currentTimestamp);
             //todo modify product config
-        } else if(msg.getType().equals(OrderType.DOWNGRADE)){
+        } else if (msg.getType().equals(OrderType.DOWNGRADE)) {
             OrderVO oldOrderVO = dbf.findByUuid(msg.getOldOrderUuid(), OrderVO.class);
             BigDecimal oldPayPreset = oldOrderVO.getPayPresent();
             BigDecimal oldPayCash = oldOrderVO.getPayCash();
             Timestamp startTime = oldOrderVO.getProductEffectTimeStart();//todo this would get from product
             Timestamp endTime = oldOrderVO.getProductEffectTimeEnd();//todo this would get from product
             long useDays = (currentTimestamp.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
-            long needPayDays = (endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24)+1 ;
+            long needPayDays = (endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24) + 1;
             long days = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
             BigDecimal avgOldPriceByDay = oldPayCash.add(oldPayPreset).divide(BigDecimal.valueOf(days), 4, RoundingMode.HALF_EVEN);
             BigDecimal usedMoney = avgOldPriceByDay.multiply(BigDecimal.valueOf(useDays));
@@ -903,14 +903,14 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
             dbf.persistAndRefresh(dVO);
 
-        } else if(msg.getType().equals(OrderType.UN_SUBCRIBE)){
+        } else if (msg.getType().equals(OrderType.UN_SUBCRIBE)) {
             OrderVO oldOrderVO = dbf.findByUuid(msg.getOldOrderUuid(), OrderVO.class);
             BigDecimal oldPayPreset = oldOrderVO.getPayPresent();
             BigDecimal oldPayCash = oldOrderVO.getPayCash();
             Timestamp startTime = oldOrderVO.getProductEffectTimeStart();//todo this would get from product
             Timestamp endTime = oldOrderVO.getProductEffectTimeEnd();//todo this would get from product
             long useDays = (currentTimestamp.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
-            long needPayDays = (endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24)+1 ;
+            long needPayDays = (endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24) + 1;
             long days = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
             BigDecimal avgOldPriceByDay = oldPayCash.add(oldPayPreset).divide(BigDecimal.valueOf(days), 4, RoundingMode.HALF_EVEN);
             BigDecimal usedMoney = avgOldPriceByDay.multiply(BigDecimal.valueOf(useDays));
@@ -935,7 +935,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setOutTradeNO(orderVo.getUuid());
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
             dbf.persistAndRefresh(dVO);
-        } else if(msg.getType().equals(OrderType.BUY)){
+        } else if (msg.getType().equals(OrderType.BUY)) {
             originalPrice = BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(duration);
             total = originalPrice.multiply(BigDecimal.valueOf(productDisCharge).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));
 
@@ -945,11 +945,11 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             payMethod(msg, orderVo, abvo, total, currentTimestamp);
             //todo create product and order set productUuid
 
-        } else if(msg.getType().equals(OrderType.SLA_COMPENSATION)){
+        } else if (msg.getType().equals(OrderType.SLA_COMPENSATION)) {
             orderVo.setPayCash(BigDecimal.ZERO);
             orderVo.setPayPresent(BigDecimal.ZERO);
-            
-        } else if(msg.getType().equals(OrderType.RENEW)){
+
+        } else if (msg.getType().equals(OrderType.RENEW)) {
             originalPrice = BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(duration);
             total = originalPrice.multiply(BigDecimal.valueOf(productDisCharge).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));
             if (total.compareTo(mayPayTotal) > 0) {
@@ -1022,7 +1022,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
 
     private void handle(APIUpdateAccountBalanceMsg msg) {
-        AccountBalanceVO vo = dbf.findByUuid( msg.getAccountUuid(), AccountBalanceVO.class);
+        AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
         int hash = msg.getAccountUuid().hashCode();
@@ -1030,7 +1030,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             hash = ~hash;
         }
         String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
-        if(msg.getPresent()!=null){
+        if (msg.getPresent() != null) {
             vo.setPresentBalance(vo.getPresentBalance().add(msg.getPresent()));
             DealDetailVO dealDetailVO = new DealDetailVO();
             DealDetailVO dVO = new DealDetailVO();
@@ -1046,7 +1046,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setOutTradeNO(outTradeNO);
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
             dbf.persist(dVO);
-        }else if(msg.getCash()!=null){
+        } else if (msg.getCash() != null) {
             vo.setCashBalance(vo.getCashBalance().add(msg.getCash()));
             DealDetailVO dealDetailVO = new DealDetailVO();
             DealDetailVO dVO = new DealDetailVO();
@@ -1062,7 +1062,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setOutTradeNO(outTradeNO);
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
             dbf.persist(dVO);
-        }else if(msg.getCredit()!=null){
+        } else if (msg.getCredit() != null) {
             vo.setCreditPoint(msg.getCredit());
         }
         vo = dbf.updateAndRefresh(vo);
