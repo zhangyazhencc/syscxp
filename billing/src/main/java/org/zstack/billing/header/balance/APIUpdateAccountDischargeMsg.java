@@ -6,7 +6,7 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 @Action(category = BillingConstant.ACTION_CATEGORY, names = {"recharge"}, proxyOnly = true)
-public class APIAllotDischargeMsg extends APIMessage{
+public class APIUpdateAccountDischargeMsg extends APIMessage{
 
     @APIParam(emptyString = false, resourceType = AccountDischargeVO.class)
     private String uuid;

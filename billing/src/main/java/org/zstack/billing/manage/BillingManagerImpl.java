@@ -85,17 +85,15 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APIGetAccountBalanceMsg) {
             handle((APIGetAccountBalanceMsg) msg);
-        } else if (msg instanceof APIReChargeProxyMsg) {
-            handle((APIReChargeProxyMsg) msg);
+        } else if (msg instanceof APIUpdateAccountBalanceMsg) {
+            handle((APIUpdateAccountBalanceMsg) msg);
         } else if (msg instanceof APICreateOrderMsg) {
             handle((APICreateOrderMsg) msg);
         } else if (msg instanceof APIGetExpenseGrossMonthListMsg) {
             handle((APIGetExpenseGrossMonthListMsg) msg);
         } else if (msg instanceof APIUpdateRenewMsg) {
             handle((APIUpdateRenewMsg) msg);
-        } else if (msg instanceof APIPayRenewOrderMsg) {
-            handle((APIPayRenewOrderMsg) msg);
-        } else if (msg instanceof APIGetValuebleReceiptMsg) {
+        }  else if (msg instanceof APIGetValuebleReceiptMsg) {
             handle((APIGetValuebleReceiptMsg) msg);
         } else if (msg instanceof APICreateReceiptPostAddressMsg) {
             handle((APICreateReceiptPostAddressMsg) msg);
@@ -113,24 +111,20 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APICreateSLACompensateMsg) msg);
         } else if (msg instanceof APIUpdateSLACompensateMsg) {
             handle((APIUpdateSLACompensateMsg) msg);
-        } else if (msg instanceof APIDeleteCanceledOrderMsg) {
-            handle((APIDeleteCanceledOrderMsg) msg);
         } else if (msg instanceof APIGetBillMsg) {
             handle((APIGetBillMsg) msg);
-        } else if (msg instanceof APIGetMonetaryGroupByProductTypeMsg) {
-            handle((APIGetMonetaryGroupByProductTypeMsg) msg);
         } else if (msg instanceof APICreateReceiptMsg) {
             handle((APICreateReceiptMsg) msg);
-        } else if (msg instanceof APIConfirmReceiptMsg) {
-            handle((APIConfirmReceiptMsg) msg);
+        } else if (msg instanceof APIUpdateReceiptMsg) {
+            handle((APIUpdateReceiptMsg) msg);
         } else if (msg instanceof APIRechargeMsg) {
             handle((APIRechargeMsg) msg);
         } else if (msg instanceof APIVerifyReturnMsg) {
             handle((APIVerifyReturnMsg) msg);
         }else if (msg instanceof APIVerifyNotifyMsg) {
             handle((APIVerifyNotifyMsg) msg);
-        } else if (msg instanceof APIAllotDischargeMsg) {
-            handle((APIAllotDischargeMsg) msg);
+        } else if (msg instanceof APIUpdateAccountDischargeMsg) {
+            handle((APIUpdateAccountDischargeMsg) msg);
         } else if (msg instanceof APIDeleteSLACompensateMsg) {
             handle((APIDeleteSLACompensateMsg) msg);
         } else {
@@ -151,13 +145,13 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     }
 
-    private void handle(APIAllotDischargeMsg msg) {
+    private void handle(APIUpdateAccountDischargeMsg msg) {
         String uuid = msg.getUuid();
         AccountDischargeVO accountDischargeVO = dbf.findByUuid(uuid,AccountDischargeVO.class);
         accountDischargeVO.setDisCharge(msg.getDischarge());
         dbf.updateAndRefresh(accountDischargeVO);
         AccountDischargeInventory inventory = AccountDischargeInventory.valueOf(accountDischargeVO);
-        APIAllotDischargeEvent evt = new APIAllotDischargeEvent(msg.getId());
+        APIUpdateAccountDischargeEvent evt = new APIUpdateAccountDischargeEvent(msg.getId());
         evt.setInventory(inventory);
         bus.publish(evt);
     }
@@ -336,8 +330,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     }
 
-    private void handle(APIConfirmReceiptMsg msg) {
-        String receiptUuid = msg.getReceiptUuid();
+    private void handle(APIUpdateReceiptMsg msg) {
+        String receiptUuid = msg.getUuid();
         ReceiptState state = msg.getState();
         ReceiptVO vo = dbf.findByUuid(receiptUuid, ReceiptVO.class);
         vo.setState(msg.getState());
@@ -346,7 +340,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         }
         dbf.updateAndRefresh(vo);
         ReceiptInventory inventory = ReceiptInventory.valueOf(vo);
-        APIConfirmReceiptEvent evt = new APIConfirmReceiptEvent(msg.getId());
+        APIUpdateReceiptEvent evt = new APIUpdateReceiptEvent(msg.getId());
         evt.setInventory(inventory);
         bus.publish(evt);
     }
@@ -385,42 +379,40 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         bus.publish(evt);
     }
 
-    private void handle(APIGetMonetaryGroupByProductTypeMsg msg) {
+    private void handle(APIGetBillMsg msg) {
+        BillVO vo = dbf.findByUuid(msg.getUuid(), BillVO.class);
+
+        Timestamp billTimestamp = vo.getBillDate();
+        Calendar calendar1 = Calendar.getInstance();
+        calendar1.setTime(billTimestamp);
+        calendar1.set(Calendar.HOUR_OF_DAY, 0);
+        calendar1.set(Calendar.MINUTE, 0);
+        calendar1.set(Calendar.SECOND, 0);
+        calendar1.set(Calendar.MILLISECOND, 0);
+        calendar1.add(Calendar.MONTH, -1);
+        calendar1.set(Calendar.DAY_OF_MONTH, 1);
+        calendar1.set(calendar1.get(Calendar.YEAR), calendar1.get(Calendar.MONTH), calendar1.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
+        Timestamp startTime = new Timestamp(calendar1.getTime().getTime());
+        Calendar calendar2 = Calendar.getInstance();
+        calendar2.set(Calendar.DAY_OF_MONTH, 0);
+        calendar2.set(Calendar.HOUR_OF_DAY, 23);
+        calendar2.set(Calendar.MINUTE, 59);
+        calendar2.set(Calendar.SECOND, 59);
+        calendar2.set(Calendar.MILLISECOND, 999);
+        Timestamp endTime = new Timestamp(calendar2.getTime().getTime());
         String accountUuid = msg.getSession().getAccountUuid();
         String sql = "select count(*) as categoryCount, sum(payPresent) as payPresentTotal,sum(payCash) as payCashTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and payTime BETWEEN :dateStart and  :dateEnd  group by productType ";
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("accountUuid", accountUuid);
-        q.setParameter("dateStart", msg.getDateStart());
-        q.setParameter("dateEnd", msg.getDateEnd());
+        q.setParameter("dateStart", startTime);
+        q.setParameter("dateEnd", endTime);
         List<Object[]> objs = q.getResultList();
         List<Monetary> bills = objs.stream().map(Monetary::new).collect(Collectors.toList());
-
-        APIGetMonetaryGroupByProductTypeReply reply = new APIGetMonetaryGroupByProductTypeReply();
-        reply.setInventory(bills);
-        bus.reply(msg, reply);
-
-    }
-
-    private void handle(APIGetBillMsg msg) {
-        BillVO vo = dbf.findByUuid(msg.getUuid(), BillVO.class);
         BillInventory inventory = BillInventory.valueOf(vo);
+        inventory.setBills(bills);
         APIGetBillReply reply = new APIGetBillReply();
         reply.setInventory(inventory);
         bus.reply(msg, reply);
-
-    }
-
-    private void handle(APIDeleteCanceledOrderMsg msg) {
-        String orderUuid = msg.getUuid();
-        OrderVO vo = dbf.findByUuid(orderUuid, OrderVO.class);
-        if (vo == null || !vo.getState().equals(OrderState.CANCELED)) {
-            throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.NOT_PERMIT_UPDATE, String.format("if order not this state, can not be deleted")));
-        }
-        dbf.remove(vo);
-        OrderInventory ri = OrderInventory.valueOf(vo);
-        APIDeleteCanceledOrderEvent evt = new APIDeleteCanceledOrderEvent(msg.getId());
-        evt.setInventory(ri);
-        bus.publish(evt);
 
     }
 
@@ -669,31 +661,6 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         return consumeCash;
     }
 
-    @Transactional
-    private void handle(APIPayRenewOrderMsg msg) {
-        String orderUuid = msg.getOrderUuid();
-        OrderVO orderVo = dbf.findByUuid(orderUuid, OrderVO.class);
-        AccountBalanceVO abvo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
-        if (!orderVo.getState().equals(OrderState.NOTPAID)) {
-            throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.NOT_PERMIT_UPDATE, String.format("if order not this state, can not be updated")));
-        }
-        BigDecimal total = orderVo.getPayCash();
-        Timestamp currentTimeStamp = dbf.getCurrentSqlTime();
-
-        if (msg.getConfirm().equals(Confirm.OK)) {
-            payMethod(msg, orderVo, abvo, total, currentTimeStamp);
-            orderVo.setState(OrderState.PAID);
-        } else if (msg.getConfirm().equals(Confirm.CANCEL)) {
-            orderVo.setState(OrderState.CANCELED);
-        }
-
-        dbf.updateAndRefresh(orderVo);
-        OrderInventory oi = OrderInventory.valueOf(orderVo);
-        APIPayRenewOrderEvent evt = new APIPayRenewOrderEvent(msg.getId());
-        evt.setInventory(oi);
-        bus.publish(evt);
-    }
-
     @Transactional(propagation = Propagation.REQUIRED)
     void payMethod(APIMessage msg, OrderVO orderVo, AccountBalanceVO abvo, BigDecimal total, Timestamp currentTimeStamp) {
         if (abvo.getPresentBalance().compareTo(BigDecimal.ZERO) > 0) {
@@ -776,10 +743,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void handle(APIUpdateRenewMsg msg) {
-        boolean isRenewAuto = msg.isRenewAuto();
-        String uuid = msg.getUuid();
-        RenewVO vo = dbf.findByUuid(uuid, RenewVO.class);
-        if (vo.isRenewAuto() != isRenewAuto) {
+        RenewVO vo = dbf.findByUuid(msg.getUuid(), RenewVO.class);
+        if (vo.isRenewAuto() != msg.isRenewAuto()) {
             vo.setRenewAuto(msg.isRenewAuto());
         }
         dbf.updateAndRefresh(vo);
@@ -1018,9 +983,15 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
 
-    private void handle(APIReChargeProxyMsg msg) {
+    private void handle(APIUpdateAccountBalanceMsg msg) {
         AccountBalanceVO vo = dbf.findByUuid( msg.getAccountUuid(), AccountBalanceVO.class);
+        Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
+        int hash = msg.getAccountUuid().hashCode();
+        if (hash < 0) {
+            hash = ~hash;
+        }
+        String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
         if(msg.getPresent()!=null){
             vo.setPresentBalance(vo.getPresentBalance().add(msg.getPresent()));
             DealDetailVO dealDetailVO = new DealDetailVO();
@@ -1034,8 +1005,9 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setType(DealType.RECHARGE);
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(vo.getCashBalance());
-            dVO.setOutTradeNO("proxy-recharge");
+            dVO.setOutTradeNO(outTradeNO);
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
+            dbf.persist(dVO);
         }else if(msg.getCash()!=null){
             vo.setCashBalance(vo.getCashBalance().add(msg.getCash()));
             DealDetailVO dealDetailVO = new DealDetailVO();
@@ -1049,14 +1021,15 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setType(DealType.RECHARGE);
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(vo.getCashBalance());
-            dVO.setOutTradeNO("proxy-recharge");
+            dVO.setOutTradeNO(outTradeNO);
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
+            dbf.persist(dVO);
         }else if(msg.getCredit()!=null){
             vo.setCreditPoint(msg.getCredit());
         }
         vo = dbf.updateAndRefresh(vo);
         AccountBalanceInventory abi = AccountBalanceInventory.valueOf(vo);
-        APIReChargeProxyEvent evt = new APIReChargeProxyEvent(msg.getId());
+        APIUpdateAccountBalanceEvent evt = new APIUpdateAccountBalanceEvent(msg.getId());
         evt.setInventory(abi);
         bus.publish(evt);
 

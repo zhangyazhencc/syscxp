@@ -23,21 +23,10 @@ public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
             return null;
         }
         if (msg.getSession().getType().equals(AccountType.Proxy)) {
-            if (msg instanceof APIQueryBillMsg) {
-                if (!((APIQueryBillMsg) msg).isSelfSelect()) {
+            if (msg instanceof APIQueryExpendMessage) {
+                if (!((APIQueryExpendMessage) msg).isSelfSelect()) {
                     return null;
                 }
-
-            } else if (msg instanceof APIQueryDealDetailMsg) {
-                if (!((APIQueryDealDetailMsg) msg).isSelfSelect()) {
-                    return null;
-                }
-
-            } else if (msg instanceof APIQueryOrderMsg) {
-                if (!((APIQueryOrderMsg) msg).isSelfSelect()) {
-                    return null;
-                }
-
             }
         }
 

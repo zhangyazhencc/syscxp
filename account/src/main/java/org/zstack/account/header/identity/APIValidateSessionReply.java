@@ -1,6 +1,5 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.message.APIReply;
 
 /**

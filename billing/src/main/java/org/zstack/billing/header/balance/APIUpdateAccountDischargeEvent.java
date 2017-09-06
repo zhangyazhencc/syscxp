@@ -4,13 +4,13 @@ import org.zstack.header.message.APIEvent;
 import org.zstack.header.rest.RestResponse;
 
 @RestResponse(allTo = "inventory")
-public class APIAllotDischargeEvent  extends APIEvent {
+public class APIUpdateAccountDischargeEvent extends APIEvent {
 
     private AccountDischargeInventory inventory;
 
-    public APIAllotDischargeEvent(String apiId) {super(apiId);}
+    public APIUpdateAccountDischargeEvent(String apiId) {super(apiId);}
 
-    public APIAllotDischargeEvent(){}
+    public APIUpdateAccountDischargeEvent(){}
 
     public AccountDischargeInventory getInventory() {
         return inventory;
