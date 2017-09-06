@@ -6,6 +6,7 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Inventory(mappingVOClass = AccountVO.class)
 
@@ -29,10 +30,12 @@ public class AccountInventory {
     private String salesman;
     private String createWay;
 
-
     private Timestamp createDate;
     private Timestamp lastOpDate;
-    
+
+    private Set<AccountExtraInfoVO> accountEx;
+
+
     public static AccountInventory valueOf(AccountVO vo,AccountExtraInfoVO aeivo) {
         AccountInventory inv = new AccountInventory();
         inv.setUuid(vo.getUuid());
@@ -42,6 +45,7 @@ public class AccountInventory {
         inv.setDescription(vo.getDescription());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
+
         if(vo.getIndustry() != null){
             inv.setIndustry(vo.getIndustry().toString());
         }
@@ -71,6 +75,9 @@ public class AccountInventory {
         inv.setDescription(vo.getDescription());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
+        if(vo.getAccountEx() != null){
+            inv.setAccountEx(vo.getAccountEx());
+        }
 
         inv.setEmailStatus(vo.getEmailStatus().toString());
         inv.setPhoneStatus(vo.getPhoneStatus().toString());
@@ -230,4 +237,11 @@ public class AccountInventory {
         this.salesman = salesman;
     }
 
+    public Set<AccountExtraInfoVO> getAccountEx() {
+        return accountEx;
+    }
+
+    public void setAccountEx(Set<AccountExtraInfoVO> accountEx) {
+        this.accountEx = accountEx;
+    }
 }

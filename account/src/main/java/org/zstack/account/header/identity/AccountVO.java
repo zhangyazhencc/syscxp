@@ -198,4 +198,12 @@ public class AccountVO {
     public void setEmailStatus(ValidateStatus emailStatus) {
         this.emailStatus = emailStatus;
     }
+
+    public Set<AccountExtraInfoVO> getAccountEx() {
+        return accountEx;
+    }
+
+    public void setAccountEx(Set<AccountExtraInfoVO> accountEx) {
+        this.accountEx = accountEx;
+    }
 }
