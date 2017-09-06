@@ -50,23 +50,23 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
 
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateNoticeMsg) {
-            hanle((APICreateNoticeMsg) msg);
+            handle((APICreateNoticeMsg) msg);
         } else if (msg instanceof APIUpdateNoticeMsg) {
-            hanle((APIUpdateNoticeMsg) msg);
+            handle((APIUpdateNoticeMsg) msg);
         } else if (msg instanceof APIDeleteNoticeMsg) {
-            hanle((APIDeleteNoticeMsg) msg);
+            handle((APIDeleteNoticeMsg) msg);
         } else if (msg instanceof APICreateAlarmContactMsg) {
-            hanle((APICreateAlarmContactMsg) msg);
+            handle((APICreateAlarmContactMsg) msg);
         } else if (msg instanceof APIUpdateAlarmContactMsg) {
-            hanle((APIUpdateAlarmContactMsg) msg);
+            handle((APIUpdateAlarmContactMsg) msg);
         } else if (msg instanceof APIDeleteAlarmContactMsg) {
-            hanle((APIDeleteAlarmContactMsg) msg);
+            handle((APIDeleteAlarmContactMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void hanle(APICreateAlarmContactMsg msg) {
+    private void handle(APICreateAlarmContactMsg msg) {
         AlarmContactVO vo = new AlarmContactVO();
         vo.setUuid(Platform.getUuid());
         vo.setName(msg.getName());
@@ -84,7 +84,7 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
 
     }
 
-    private void hanle(APIUpdateAlarmContactMsg msg) {
+    private void handle(APIUpdateAlarmContactMsg msg) {
         AlarmContactVO vo = dbf.findByUuid(msg.getUuid(), AlarmContactVO.class);
         boolean update = false;
         if (!StringUtils.isEmpty(msg.getName())) {
@@ -112,21 +112,21 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
 
     }
 
-    private void hanle(APIDeleteAlarmContactMsg msg) {
+    private void handle(APIDeleteAlarmContactMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), AlarmContactVO.class);
 
         APIDeleteAlarmContactEvent evt = new APIDeleteAlarmContactEvent(msg.getId());
         bus.publish(evt);
     }
 
-    private void hanle(APIDeleteNoticeMsg msg) {
+    private void handle(APIDeleteNoticeMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), NoticeVO.class);
 
         APIDeleteNoticeEvent evt = new APIDeleteNoticeEvent(msg.getId());
         bus.publish(evt);
     }
 
-    private void hanle(APIUpdateNoticeMsg msg) {
+    private void handle(APIUpdateNoticeMsg msg) {
         NoticeVO nvo = dbf.findByUuid(msg.getUuid(), NoticeVO.class);
         boolean update = false;
         if (!StringUtils.isEmpty(msg.getTitle())) {
@@ -159,7 +159,7 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
 
     }
 
-    private void hanle(APICreateNoticeMsg msg) {
+    private void handle(APICreateNoticeMsg msg) {
         NoticeVO noticeVO = new NoticeVO();
         noticeVO.setUuid(Platform.getUuid());
         noticeVO.setTitle(msg.getTitle());
