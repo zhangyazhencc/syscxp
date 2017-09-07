@@ -33,9 +33,11 @@ public class UserVO {
     private String phone;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private ValidateStatus emailStatus;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private ValidateStatus phoneStatus;
 
     @Column
@@ -48,16 +50,16 @@ public class UserVO {
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
 
-    @ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY,targetEntity=PolicyVO.class)
+    @ManyToMany(cascade=CascadeType.ALL,fetch = FetchType.EAGER)
     @JoinTable(
             name="UserPolicyRefVO",
-            joinColumns=@JoinColumn(name="userUuid",referencedColumnName="uuid"),
-            inverseJoinColumns=@JoinColumn(name="policyUuid",referencedColumnName="uuid")
+            joinColumns=@JoinColumn(name="userUuid"),
+            inverseJoinColumns=@JoinColumn(name="policyUuid")
     )
-
     private Set<PolicyVO> policy;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private  UserType userType;
 
     @Column
