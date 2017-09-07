@@ -59,7 +59,7 @@ public class AccountInventory {
         inv.setEmailStatus(vo.getEmailStatus().toString());
         inv.setPhoneStatus(vo.getPhoneStatus().toString());
 
-        inv.setSalesman(aeivo.getSalesman());
+        inv.setSalesman(aeivo.getUserUuid());
         inv.setCreateWay(aeivo.getCreateWay());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
