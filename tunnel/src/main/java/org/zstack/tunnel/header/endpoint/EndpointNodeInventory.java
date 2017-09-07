@@ -18,6 +18,7 @@ public class EndpointNodeInventory {
     private NodeInventory node;
     private String name;
     private String code;
+    private EndpointType endpointType;
     private Integer enabled;
     private Integer openToCustomers;
     private String description;
@@ -32,6 +33,7 @@ public class EndpointNodeInventory {
         inv.setNode(NodeInventory.valueOf(vo.getNodeVO()));
         inv.setName(vo.getName());
         inv.setCode(vo.getCode());
+        inv.setEndpointType(vo.getEndpointType());
         inv.setEnabled(vo.getEnabled());
         inv.setOpenToCustomers(vo.getOpenToCustomers());
         inv.setDescription(vo.getDescription());
@@ -135,5 +137,13 @@ public class EndpointNodeInventory {
 
     public void setStatus(EndpointStatus status) {
         this.status = status;
+    }
+
+    public EndpointType getEndpointType() {
+        return endpointType;
+    }
+
+    public void setEndpointType(EndpointType endpointType) {
+        this.endpointType = endpointType;
     }
 }

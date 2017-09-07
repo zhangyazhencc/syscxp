@@ -16,6 +16,8 @@ public class APICreateNodeMsg extends APIMessage {
     private String name;
     @APIParam(emptyString = false,maxLength = 128)
     private String code;
+    @APIParam(required = false,maxLength = 255)
+    private String description;
     @APIParam(emptyString = false)
     private double longtitude;
     @APIParam(emptyString = false)
@@ -34,6 +36,8 @@ public class APICreateNodeMsg extends APIMessage {
     private String telephone;
     @APIParam(emptyString = false,validValues = {"CLOSE", "OPEN","AVAILABLE"})
     private NodeStatus status;
+    @APIParam(required = false,maxLength = 32)
+    private String extensionInfoUuid;
 
     public String getName() {
         return name;
@@ -121,5 +125,21 @@ public class APICreateNodeMsg extends APIMessage {
 
     public void setStatus(NodeStatus status) {
         this.status = status;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getExtensionInfoUuid() {
+        return extensionInfoUuid;
+    }
+
+    public void setExtensionInfoUuid(String extensionInfoUuid) {
+        this.extensionInfoUuid = extensionInfoUuid;
     }
 }

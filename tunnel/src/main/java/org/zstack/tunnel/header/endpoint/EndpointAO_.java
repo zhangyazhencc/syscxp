@@ -15,6 +15,7 @@ public class EndpointAO_ {
     public static volatile SingularAttribute<EndpointAO, String> nodeUuid;
     public static volatile SingularAttribute<EndpointAO, String> name;
     public static volatile SingularAttribute<EndpointAO, String> code;
+    public static volatile SingularAttribute<EndpointAO, EndpointType> endpointType;
     public static volatile SingularAttribute<EndpointAO, Integer> enabled;
     public static volatile SingularAttribute<EndpointAO, Integer> openToCustomers;
     public static volatile SingularAttribute<EndpointAO, String> description;

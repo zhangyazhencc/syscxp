@@ -12,7 +12,7 @@ import org.zstack.tunnel.manage.TunnelConstant;
 public class APIUpdateHostMonitorMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = HostMonitorVO.class)
-    private String targetUuid;
+    private String uuid;
 
     @APIParam(emptyString = false,maxLength = 32)
     private String hostUuid;
@@ -23,12 +23,12 @@ public class APIUpdateHostMonitorMsg extends APIMessage {
     @APIParam(required = false,maxLength = 128)
     private String interfaceName;
 
-    public String getTargetUuid() {
-        return targetUuid;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setTargetUuid(String targetUuid) {
-        this.targetUuid = targetUuid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getHostUuid() {

@@ -9,7 +9,7 @@ import org.zstack.header.message.APIParam;
 public class APIUpdateHostMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = HostVO.class)
-    private String targetUuid;
+    private String uuid;
 
     @APIParam(required = false,maxLength = 128)
     private String name;
@@ -26,12 +26,12 @@ public class APIUpdateHostMsg extends APIMessage {
     @APIParam(required = false,maxLength = 128)
     private String password;
 
-    public String getTargetUuid() {
-        return targetUuid;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setTargetUuid(String targetUuid) {
-        this.targetUuid = targetUuid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getName() {

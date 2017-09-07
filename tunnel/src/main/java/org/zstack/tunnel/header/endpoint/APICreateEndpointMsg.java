@@ -21,6 +21,12 @@ public class APICreateEndpointMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 128)
     private String code;
 
+    @APIParam(emptyString = false,validValues = {"CLOUD", "ACCESSIN"})
+    private EndpointType endpointType;
+
+    @APIParam(required = false,maxLength = 255)
+    private String description;
+
     public String getNodeUuid() {
         return nodeUuid;
     }
@@ -43,5 +49,21 @@ public class APICreateEndpointMsg extends APIMessage {
 
     public void setCode(String code) {
         this.code = code;
+    }
+
+    public EndpointType getEndpointType() {
+        return endpointType;
+    }
+
+    public void setEndpointType(EndpointType endpointType) {
+        this.endpointType = endpointType;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

@@ -46,9 +46,6 @@ public class SwitchPortVO {
     private Integer reuse;
 
     @Column
-    private Integer autoAlloc;
-
-    @Column
     private Integer enabled;
 
     @Column
@@ -103,14 +100,6 @@ public class SwitchPortVO {
 
     public void setReuse(Integer reuse) {
         this.reuse = reuse;
-    }
-
-    public Integer getAutoAlloc() {
-        return autoAlloc;
-    }
-
-    public void setAutoAlloc(Integer autoAlloc) {
-        this.autoAlloc = autoAlloc;
     }
 
     public Integer getEnabled() {

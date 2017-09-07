@@ -27,27 +27,23 @@
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.endpoint.APIDisableEndpointMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.tunnel.header.endpoint.APIEnableEndpointMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.tunnel.header.endpoint.APICloseEndpointMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.tunnel.header.endpoint.APIOpenEndpointMsg</name>
-    </message>
-
-    <message>
         <name>org.zstack.tunnel.header.endpoint.APIQueryEndpointMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <!--SWITCH-->
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APICreateSwitchModelMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APICreateSwitchAttributionMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIUpdateSwitchAttributionMsg</name>
+    </message>
+
     <message>
         <name>org.zstack.tunnel.header.switchs.APICreateSwitchMsg</name>
     </message>
@@ -57,31 +53,21 @@
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.switchs.APIEnableSwitchMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.tunnel.header.switchs.APIDisableSwitchMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.tunnel.header.switchs.APIPrivateSwitchMsg</name>
-    </message>
-
-    <message>
         <name>org.zstack.tunnel.header.switchs.APICreateSwitchPortMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.switchs.APIDisableSwitchPortMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.tunnel.header.switchs.APIEnableSwitchPortMsg</name>
-    </message>
-
-    <message>
         <name>org.zstack.tunnel.header.switchs.APICreateSwitchVlanMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIQuerySwitchAttributionMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIQuerySwitchModelMsg</name>
+        <serviceId>query</serviceId>
     </message>
 
     <message>
