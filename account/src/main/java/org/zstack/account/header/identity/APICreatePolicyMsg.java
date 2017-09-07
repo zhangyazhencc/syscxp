@@ -21,14 +21,14 @@ public class APICreatePolicyMsg extends  APIMessage implements AccountMessage{
     private String description;
 
     @APIParam(nonempty = true)
-    private List<PolicyStatement> statements;
+    private List<String> PermissionUuids;
 
-    public List<PolicyStatement> getStatements() {
-        return statements;
+    public List<String> getPermissionUuids() {
+        return PermissionUuids;
     }
 
-    public void setStatements(List<PolicyStatement> statements) {
-        this.statements = statements;
+    public void setPermissionUuids(List<String> permissionUuids) {
+        PermissionUuids = permissionUuids;
     }
 
     @Override
@@ -52,18 +52,6 @@ public class APICreatePolicyMsg extends  APIMessage implements AccountMessage{
         this.description = description;
     }
  
-    public static APICreatePolicyMsg __example__() {
-        APICreatePolicyMsg msg = new APICreatePolicyMsg();
-
-        msg.setName("USER-RESET-PASSWORD");
-
-        PolicyStatement s = new PolicyStatement();
-        s.setEffect(StatementEffect.Allow);
-        s.addAction(String.format("%s:%s", AccountConstant.ACTION_CATEGORY, APIUpdateUserMsg.class.getSimpleName()));
-        msg.setStatements(list(s));
-
-        return msg;
-    }
 
     public ApiNotification __notification__() {
         APIMessage that = this;
