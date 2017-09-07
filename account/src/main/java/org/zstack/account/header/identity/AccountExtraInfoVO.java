@@ -102,4 +102,5 @@ public class AccountExtraInfoVO {
 
         return createWay;
     }
+
 }

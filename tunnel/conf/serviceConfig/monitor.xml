@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://zstack.org/schema/zstack">
+    <id>monitor</id>
+    <interceptor>MonitorManager</interceptor>
+
+    <!--HOST-->
+    <message>
+        <name>org.zstack.tunnel.header.host.APICreateHostMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.host.APIUpdateHostMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.host.APICreateHostMonitorMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.host.APIUpdateHostMonitorMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.host.APIQueryHostMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.host.APIQueryHostMonitorMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+</service>

@@ -48,11 +48,11 @@ public class UserVO {
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
 
-    @ManyToMany(cascade=CascadeType.ALL)
+    @ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.LAZY,targetEntity=PolicyVO.class)
     @JoinTable(
             name="UserPolicyRefVO",
-            joinColumns=@JoinColumn(name="userUuid"),
-            inverseJoinColumns=@JoinColumn(name="policyUuid")
+            joinColumns=@JoinColumn(name="userUuid",referencedColumnName="uuid"),
+            inverseJoinColumns=@JoinColumn(name="policyUuid",referencedColumnName="uuid")
     )
 
     private Set<PolicyVO> policy;

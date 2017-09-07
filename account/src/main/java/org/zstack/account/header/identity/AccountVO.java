@@ -64,7 +64,7 @@ public class AccountVO {
     @Enumerated(EnumType.STRING)
     private AccountType type;
 
-    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.LAZY)
+    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER )
     @JoinColumn(name = "accountUuid")
     private Set<AccountExtraInfoVO> accountEx;
 
@@ -197,5 +197,13 @@ public class AccountVO {
 
     public void setEmailStatus(ValidateStatus emailStatus) {
         this.emailStatus = emailStatus;
+    }
+
+    public Set<AccountExtraInfoVO> getAccountEx() {
+        return accountEx;
+    }
+
+    public void setAccountEx(Set<AccountExtraInfoVO> accountEx) {
+        this.accountEx = accountEx;
     }
 }

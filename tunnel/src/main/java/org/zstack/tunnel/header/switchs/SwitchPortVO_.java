@@ -17,7 +17,6 @@ public class SwitchPortVO_ {
     public static volatile SingularAttribute<SwitchPortVO, SwitchPortLabel> label;
     public static volatile SingularAttribute<SwitchPortVO, Integer> isExclusive;
     public static volatile SingularAttribute<SwitchPortVO, Integer> reuse;
-    public static volatile SingularAttribute<SwitchPortVO, Integer> autoAlloc;
     public static volatile SingularAttribute<SwitchPortVO, Integer> enabled;
     public static volatile SingularAttribute<SwitchPortVO, Timestamp> createDate;
     public static volatile SingularAttribute<SwitchPortVO, Timestamp> lastOpDate;

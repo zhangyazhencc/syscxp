@@ -9,44 +9,30 @@ import org.zstack.header.message.APIParam;
 public class APIUpdateSwitchMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = SwitchVO.class)
-    private String targetUuid;
-
+    private String uuid;
     @APIParam(required = false,maxLength = 128)
     private String code;
-
     @APIParam(required = false,maxLength = 128)
     private String name;
-
-    @APIParam(required = false,maxLength = 128)
-    private String brand;
-
+    @APIParam(required = false,maxLength = 32)
+    private String switchAttributionUuid;
     @APIParam(required = false,validValues = {"FABRIC", "INTERNET"})
     private SwitchUpperType upperType;
+    @APIParam(required = false)
+    private Integer enabled;
+    @APIParam(required = false,validValues = {"NORMAL", "UNUSUAL"})
+    private SwitchStatus status;
+    @APIParam(required = false)
+    private Integer isPrivate;
+    @APIParam(required = false,maxLength = 255)
+    private String description;
 
-    @APIParam(required = false,maxLength = 32)
-    private String switchModelUuid;
-
-    @APIParam(required = false,maxLength = 32)
-    private String rack;
-
-    @APIParam(required = false,maxLength = 128)
-    private String mIP;
-
-    @APIParam(required = false,maxLength = 128)
-    private String username;
-
-    @APIParam(required = false,maxLength = 128)
-    private String password;
-
-    @APIParam(required = false,maxLength = 128)
-    private String owner;
-
-    public String getTargetUuid() {
-        return targetUuid;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setTargetUuid(String targetUuid) {
-        this.targetUuid = targetUuid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getCode() {
@@ -65,12 +51,12 @@ public class APIUpdateSwitchMsg extends APIMessage {
         this.name = name;
     }
 
-    public String getBrand() {
-        return brand;
+    public String getSwitchAttributionUuid() {
+        return switchAttributionUuid;
     }
 
-    public void setBrand(String brand) {
-        this.brand = brand;
+    public void setSwitchAttributionUuid(String switchAttributionUuid) {
+        this.switchAttributionUuid = switchAttributionUuid;
     }
 
     public SwitchUpperType getUpperType() {
@@ -81,51 +67,35 @@ public class APIUpdateSwitchMsg extends APIMessage {
         this.upperType = upperType;
     }
 
-    public String getSwitchModelUuid() {
-        return switchModelUuid;
+    public Integer getEnabled() {
+        return enabled;
     }
 
-    public void setSwitchModelUuid(String switchModelUuid) {
-        this.switchModelUuid = switchModelUuid;
+    public void setEnabled(Integer enabled) {
+        this.enabled = enabled;
     }
 
-    public String getRack() {
-        return rack;
+    public SwitchStatus getStatus() {
+        return status;
     }
 
-    public void setRack(String rack) {
-        this.rack = rack;
+    public void setStatus(SwitchStatus status) {
+        this.status = status;
     }
 
-    public String getmIP() {
-        return mIP;
+    public Integer getIsPrivate() {
+        return isPrivate;
     }
 
-    public void setmIP(String mIP) {
-        this.mIP = mIP;
+    public void setIsPrivate(Integer isPrivate) {
+        this.isPrivate = isPrivate;
     }
 
-    public String getUsername() {
-        return username;
+    public String getDescription() {
+        return description;
     }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public String getOwner() {
-        return owner;
-    }
-
-    public void setOwner(String owner) {
-        this.owner = owner;
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

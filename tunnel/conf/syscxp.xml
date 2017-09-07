@@ -49,5 +49,9 @@
     <import resource="springConfigXml/ThreadFacade.xml"/>
     <import resource="springConfigXml/validation.xml"/>
     <import resource="springConfigXml/TunnelManager.xml"/>
+    <import resource="springConfigXml/NodeManager.xml"/>
+    <import resource="springConfigXml/SwitchManager.xml"/>
+    <import resource="springConfigXml/MonitorManager.xml"/>
+
 
 </beans>

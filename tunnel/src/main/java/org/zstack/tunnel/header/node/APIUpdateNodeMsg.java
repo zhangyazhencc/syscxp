@@ -3,15 +3,13 @@ package org.zstack.tunnel.header.node;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
-import java.util.List;
-
 /**
  * Created by DCY on 2017-08-21
  */
 public class APIUpdateNodeMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = NodeVO.class)
-    private String targetUuid;
+    private String uuid;
 
     @APIParam(required = false,maxLength = 255)
     private String name;
@@ -25,12 +23,12 @@ public class APIUpdateNodeMsg extends APIMessage {
     @APIParam(required = false,validValues = {"CLOSE", "OPEN","AVAILABLE"})
     private NodeStatus status;
 
-    public String getTargetUuid() {
-        return targetUuid;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setTargetUuid(String targetUuid) {
-        this.targetUuid = targetUuid;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getName() {

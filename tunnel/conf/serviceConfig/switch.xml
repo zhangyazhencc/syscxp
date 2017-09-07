@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://zstack.org/schema/zstack">
+    <id>switch</id>
+    <interceptor>SwitchManager</interceptor>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APICreateSwitchModelMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APICreateSwitchAttributionMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIUpdateSwitchAttributionMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APICreateSwitchMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIUpdateSwitchMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APICreateSwitchPortMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APICreateSwitchVlanMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIQuerySwitchAttributionMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIQuerySwitchModelMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIQuerySwitchMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIQuerySwitchPortMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIQuerySwitchVlanMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+
+</service>

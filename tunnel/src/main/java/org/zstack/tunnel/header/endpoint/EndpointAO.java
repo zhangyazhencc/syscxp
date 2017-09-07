@@ -28,6 +28,10 @@ public class EndpointAO {
     private String code;
 
     @Column
+    @Enumerated(EnumType.STRING)
+    private EndpointType endpointType;
+
+    @Column
     private Integer enabled;
 
     @Column
@@ -125,5 +129,13 @@ public class EndpointAO {
 
     public void setStatus(EndpointStatus status) {
         this.status = status;
+    }
+
+    public EndpointType getEndpointType() {
+        return endpointType;
+    }
+
+    public void setEndpointType(EndpointType endpointType) {
+        this.endpointType = endpointType;
     }
 }
