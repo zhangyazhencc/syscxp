@@ -209,12 +209,6 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
     }
 
     private void validate(APICreateNotificationMsg msg) {
-        SessionVO svo = dbf.findByUuid(msg.getSession().getUuid(), SessionVO.class);
-        if (svo == null) {
-            throw new ApiMessageInterceptionException(argerr(
-                    "The Session[sessionUuid: %s] expired.", msg.getSession()
-            ));
-        }
     }
 
     private void validate(APIUpdateAlarmContactMsg msg) {
