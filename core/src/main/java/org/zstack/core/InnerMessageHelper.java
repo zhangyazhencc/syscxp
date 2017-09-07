@@ -26,8 +26,7 @@ public class InnerMessageHelper {
             return false;
         String signature = message.getSignature();
         message.setSignature(null);
-        String new_md5 = getMD5(message);
-        return signature.equals(new_md5) && !isExpirate(message);
+        return signature.equals(getMD5(message)) && !isExpirate(message);
     }
 
     public static Boolean isExpirate(InnerAPIMessage message) {

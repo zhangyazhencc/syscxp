@@ -494,12 +494,12 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
 
         private void innerCredentialCheck() {
             if (msg instanceof InnerAPIMessage) {
-                InnerAPIMessage message = (InnerAPIMessage) msg;
-                if (!InnerMessageHelper.validSignature(message)){
-                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
-                            String.format("The parameters of the message[%s] are inconsistent ", msg.getMessageName())
-                    ));
+                if (InnerMessageHelper.validSignature((InnerAPIMessage) msg)){
+                   return;
                 }
+                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
+                        String.format("The parameters of the message[%s] are inconsistent ", msg.getMessageName())
+                ));
             }
             throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
                     String.format("The type of the message[%s] is illegal ", msg.getMessageName())
