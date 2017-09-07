@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 @StaticMetamodel(SwitchAttributionAO.class)
 public class SwitchAttributionAO_ {
     public static volatile SingularAttribute<SwitchAttributionAO, String> uuid;
+    public static volatile SingularAttribute<SwitchAttributionAO, String> nodeUuid;
     public static volatile SingularAttribute<SwitchAttributionAO, String> switchModelUuid;
     public static volatile SingularAttribute<SwitchAttributionAO, String> code;
     public static volatile SingularAttribute<SwitchAttributionAO, String> name;

@@ -1,6 +1,7 @@
 package org.zstack.tunnel.header.switchs;
 
 import org.zstack.header.search.Inventory;
+import org.zstack.tunnel.header.node.NodeInventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -14,6 +15,8 @@ import java.util.List;
 public class SwitchAttributionInventory {
 
     private String uuid;
+    private String nodeUuid;
+    private NodeInventory node;
     private String switchModelUuid;
     private SwitchModelInventory switchModel;
     private String code;
@@ -32,6 +35,8 @@ public class SwitchAttributionInventory {
         SwitchAttributionInventory inv = new SwitchAttributionInventory();
 
         inv.setUuid(vo.getUuid());
+        inv.setNodeUuid(vo.getNodeUuid());
+        inv.setNode(NodeInventory.valueOf(vo.getNode()));
         inv.setSwitchModelUuid(vo.getSwitchModelUuid());
         inv.setSwitchModel(SwitchModelInventory.valueOf(vo.getSwitchModel()));
         inv.setCode(vo.getCode());
@@ -167,5 +172,21 @@ public class SwitchAttributionInventory {
 
     public void setSwitchModel(SwitchModelInventory switchModel) {
         this.switchModel = switchModel;
+    }
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
+    }
+
+    public NodeInventory getNode() {
+        return node;
+    }
+
+    public void setNode(NodeInventory node) {
+        this.node = node;
     }
 }
