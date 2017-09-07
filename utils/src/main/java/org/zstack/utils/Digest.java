@@ -7,7 +7,7 @@ import java.io.FileInputStream;
  * Created by frank on 3/3/2016.
  */
 public class Digest {
-    public static String getMD5(String filePath) {
+    public static String getMD5ByFile(String filePath) {
         try {
             FileInputStream fis = new FileInputStream(new File(filePath));
             String md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(fis);
@@ -17,4 +17,14 @@ public class Digest {
             throw new RuntimeException(e);
         }
     }
+
+    public static String getMD5(String str) {
+        try {
+            String md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(str);
+            return md5;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
 }
