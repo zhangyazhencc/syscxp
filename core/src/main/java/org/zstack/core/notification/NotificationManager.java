@@ -16,10 +16,10 @@ import org.zstack.core.thread.AsyncThread;
 import org.zstack.core.thread.Task;
 import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.AbstractService;
-import org.zstack.header.core.AsyncBackup;
 import org.zstack.header.core.ExceptionSafe;
 import org.zstack.header.errorcode.ErrorCode;
 import org.zstack.header.errorcode.OperationFailureException;
+import org.zstack.core.InnerMessageHelper;
 import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.message.*;
 import org.zstack.header.notification.ApiNotification;
@@ -27,7 +27,6 @@ import org.zstack.header.notification.ApiNotificationFactory;
 import org.zstack.header.notification.ApiNotificationFactoryExtensionPoint;
 import org.zstack.header.rest.AsyncRESTCallback;
 import org.zstack.header.rest.RESTFacade;
-import org.zstack.utils.ObjectUtils;
 import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
@@ -277,6 +276,8 @@ public class NotificationManager extends AbstractService {
 
                         APICreateNotificationMsg msg = new APICreateNotificationMsg();
                         msg.setSession(session);
+                        msg.setAccountUuid(session.getAccountUuid());
+                        msg.setUserUuid(session.getUserUuid());
                         msg.setName(builder.notificationName);
                         msg.setCategory(builder.category);
                         msg.setSuccess(builder.success);
@@ -288,6 +289,8 @@ public class NotificationManager extends AbstractService {
                         msg.setSender(builder.sender);
                         msg.setType(builder.type);
                         msg.setOpaque(builder.opaque);
+
+                        InnerMessageHelper.setMD5(msg);
 
                         callWebhook(msg);
 
@@ -310,7 +313,7 @@ public class NotificationManager extends AbstractService {
                         vo.setTime(System.currentTimeMillis());
                         vo.setOpaque(builder.opaque);
 
-                        vo = dbf.persistAndRefresh(vo);
+                        dbf.persistAndRefresh(vo);
                     }
                 }
 
@@ -321,7 +324,8 @@ public class NotificationManager extends AbstractService {
     }
 
     @AsyncThread
-    private void callWebhook(Message msg) {
+    private void callWebhook(InnerAPIMessage msg) {
+
         restf.asyncJsonPost(NotificationGlobalConfig.WEBHOOK_URL.value(), RESTApiDecoder.dump(msg), new AsyncRESTCallback(msg) {
 
             @Override
@@ -357,8 +361,8 @@ public class NotificationManager extends AbstractService {
         NotificationVO vo = new NotificationVO();
         vo.setUuid(Platform.getUuid());
         vo.setName(msg.getName());
-        vo.setAccountUuid(msg.getSession().getAccountUuid());
-        vo.setUserUuid(msg.getSession().getUserUuid());
+        vo.setAccountUuid(msg.getAccountUuid());
+        vo.setUserUuid(msg.getUserUuid());
         vo.setCategory(msg.getCategory());
         vo.setSuccess(msg.getSuccess());
         vo.setRemoteIp(msg.getRemoteIp());

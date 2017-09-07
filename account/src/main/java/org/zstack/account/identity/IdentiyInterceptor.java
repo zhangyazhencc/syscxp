@@ -1,11 +1,10 @@
 package org.zstack.account.identity;
 
-import com.cloopen.rest.sdk.utils.EncryptUtil;
-import org.hibernate.jpa.internal.metamodel.SingularAttributeImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.account.header.identity.*;
+import org.zstack.core.InnerMessageHelper;
 import org.zstack.core.Platform;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.*;
@@ -22,17 +21,15 @@ import org.zstack.header.identity.*;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.InnerAPIMessage;
-import org.zstack.header.message.Message;
 import org.zstack.utils.*;
 import org.zstack.utils.function.ForEachFunction;
+import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
 import javax.persistence.Query;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
-import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -437,10 +434,6 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                 return;
             }
 
-            throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED,
-                    String.format("user[name: %s, uuid: %s] has no policy set for this operation, API[%s] is denied by default. You may either create policies for this user" +
-                            " or add the user into a group with polices set", username, session.getUserUuid(), msg.getClass().getSimpleName())
-            ));
         }
 
         class Decision {
@@ -501,16 +494,16 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
 
         private void innerCredentialCheck() {
             if (msg instanceof InnerAPIMessage) {
-                InnerAPIMessage msg = (InnerAPIMessage) (this.msg);
-                try {
-                    String str = new EncryptUtil().md5Digest(msg.getSignature());
-                } catch (NoSuchAlgorithmException e) {
-                    e.printStackTrace();
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+                InnerAPIMessage message = (InnerAPIMessage) msg;
+                if (!InnerMessageHelper.validSignature(message)){
+                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
+                            String.format("The parameters of the message[%s] are inconsistent ", msg.getMessageName())
+                    ));
                 }
             }
-
+            throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
+                    String.format("The type of the message[%s] is illegal ", msg.getMessageName())
+            ));
         }
 
         private void sessionCheck() {
