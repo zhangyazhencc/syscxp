@@ -19,7 +19,7 @@ import org.zstack.header.AbstractService;
 import org.zstack.header.core.ExceptionSafe;
 import org.zstack.header.errorcode.ErrorCode;
 import org.zstack.header.errorcode.OperationFailureException;
-import org.zstack.core.InnerMessageHelper;
+import org.zstack.core.identity.InnerMessageHelper;
 import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.message.*;
 import org.zstack.header.notification.ApiNotification;
