@@ -19,6 +19,7 @@ public class UserVO_ {
     public static volatile SingularAttribute<UserVO, String> trueName;
     public static volatile SingularAttribute<UserVO, String> department;
     public static volatile SingularAttribute<UserVO, String> status;
+    public static volatile SingularAttribute<UserVO, UserType> userType;
     public static volatile SingularAttribute<UserVO, Timestamp> createDate;
     public static volatile SingularAttribute<UserVO, String> description;
     public static volatile SingularAttribute<UserVO, Timestamp> lastOpDate;

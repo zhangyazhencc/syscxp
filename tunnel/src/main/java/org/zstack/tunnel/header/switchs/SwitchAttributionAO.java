@@ -1,6 +1,7 @@
 package org.zstack.tunnel.header.switchs;
 
 import org.zstack.header.vo.ForeignKey;
+import org.zstack.tunnel.header.node.NodeEO;
 
 import javax.persistence.Column;
 import javax.persistence.Id;
@@ -15,6 +16,10 @@ public class SwitchAttributionAO {
     @Id
     @Column
     private String uuid;
+
+    @Column
+    @ForeignKey(parentEntityClass = NodeEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
+    private String nodeUuid;
 
     @Column
     @ForeignKey(parentEntityClass = SwitchModelVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
@@ -155,5 +160,13 @@ public class SwitchAttributionAO {
 
     public void setSwitchModelUuid(String switchModelUuid) {
         this.switchModelUuid = switchModelUuid;
+    }
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 }

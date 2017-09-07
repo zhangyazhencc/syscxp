@@ -105,6 +105,7 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchModelVO` (
 ##交换机归属(物理交换机)
 CREATE TABLE  `syscxp_tunnel`.`SwitchAttributionEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `nodeUuid` varchar(32) NOT NULL COMMENT '节点',
   `switchModelUuid` varchar(32) NOT NULL COMMENT '交换机型号',
   `code` varchar(128) NOT NULL COMMENT '交换机编号',
   `name` varchar(128) NOT NULL COMMENT '交换机名称',
