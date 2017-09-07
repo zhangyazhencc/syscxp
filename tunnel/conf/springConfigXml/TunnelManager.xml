@@ -18,6 +18,12 @@
             <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
         </zstack:plugin>
 
+        <property name="resourceTypeForAccountRef">
+            <list>
+                <value>org.zstack.tunnel.header.tunnel.NetWorkVO</value>
+            </list>
+        </property>
+
     </bean>
 
     <bean id="TunnelManager" class="org.zstack.tunnel.manage.TunnelManagerImpl">
@@ -25,6 +31,12 @@
             <zstack:extension interface="org.zstack.header.Component"/>
             <zstack:extension interface="org.zstack.header.Service"/>
             <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
+        </zstack:plugin>
+    </bean>
+
+    <bean id="TunnelSubQueryExtension" class="org.zstack.tunnel.manage.TunnelSubQueryExtension">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.query.MysqlQuerySubQueryExtension"/>
         </zstack:plugin>
     </bean>
 
