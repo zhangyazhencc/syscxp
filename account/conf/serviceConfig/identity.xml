@@ -174,5 +174,8 @@
         <name>org.zstack.account.header.identity.APIUserPWDBackMsg</name>
     </message>
 
+    <message>
+        <name>org.zstack.account.header.identity.APIResetUserPWDMsg</name>
+    </message>
 
 </service>

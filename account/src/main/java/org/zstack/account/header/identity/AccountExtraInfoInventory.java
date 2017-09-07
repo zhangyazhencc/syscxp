@@ -24,7 +24,7 @@ public class AccountExtraInfoInventory {
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setGrade(vo.getGrade().toString());
-        inv.setSalesman(vo.getSalesman());
+        inv.setSalesman(vo.getUserUuid());
         inv.setCreateWay(vo.getCreateWay());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());

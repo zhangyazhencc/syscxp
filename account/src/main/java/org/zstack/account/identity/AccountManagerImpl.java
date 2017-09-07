@@ -551,12 +551,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void validate(APIResetAccountPWDMsg msg) {
         SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
         q.add(ProxyAccountRefVO_.accountUuid, Op.EQ, msg.getAccountUuid());
-        q.add(ProxyAccountRefVO_.customerAcccountUuid, Op.EQ, msg.getTargetUuid());
+        q.add(ProxyAccountRefVO_.customerAcccountUuid, Op.EQ, msg.getUuid());
 
         if (!msg.getSession().getType().equals(AccountType.SystemAdmin) &&
                 !q.isExists()) {
             throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot reset the password of the other account[uuid: %s]",
-                    msg.getAccountUuid(), msg.getTargetUuid()));
+                    msg.getAccountUuid(), msg.getUuid()));
         }
 
 
@@ -589,6 +589,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateUserPhoneMsg msg) {
+        if(!msg.getOldphone().equals(dbf.findByUuid(msg.getSession().getUserUuid(),
+                UserVO.class).getPhone())){
+            throw new ApiMessageInterceptionException(argerr("wrong oldphone"));
+        }
+
         if (!smsService.validateVerificationCode(msg.getOldphone(), msg.getOldcode())
                 ||!smsService.validateVerificationCode(msg.getNewphone(), msg.getNewcode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
@@ -597,6 +602,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateUserPWDMsg msg) {
+        if(!msg.getPhone().equals(dbf.findByUuid(msg.getSession().getUserUuid(),
+                UserVO.class).getPhone())){
+            throw new ApiMessageInterceptionException(argerr("wrong oldphone"));
+        }
+
         if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
@@ -611,6 +621,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateAccountPWDMsg msg) {
+        if(!msg.getPhone().equals(dbf.findByUuid(msg.getAccountUuid(),
+                AccountVO.class).getPhone())){
+            throw new ApiMessageInterceptionException(argerr("wrong oldphone"));
+        }
+
         if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
@@ -618,6 +633,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateAccountPhoneMsg msg) {
+        if(!msg.getOldphone().equals(dbf.findByUuid(msg.getSession().getAccountUuid(),
+                AccountVO.class).getPhone())){
+            throw new ApiMessageInterceptionException(argerr("wrong oldphone"));
+        }
+
         if (!smsService.validateVerificationCode(msg.getOldphone(), msg.getOldcode())||
                 !smsService.validateVerificationCode(msg.getNewphone(), msg.getNewcode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",

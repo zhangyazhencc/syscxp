@@ -29,15 +29,12 @@ import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
-import java.util.HashSet;
-import java.util.Random;
+import java.util.*;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
-
-import java.util.Set;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class AccountBase extends AbstractAccount {
@@ -138,12 +135,16 @@ public class AccountBase extends AbstractAccount {
             handle((APIGetAccountMsg) msg);
         } else if (msg instanceof APIGetUserMsg) {
             handle((APIGetUserMsg) msg);
+        } else if (msg instanceof APIDeleteUserMsg) {
+            handle((APIDeleteUserMsg) msg);
+        } else if (msg instanceof APIResetUserPWDMsg) {
+            handle((APIResetUserPWDMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-/*
+    /*
     private void handle(APIMailCodeSendMsg msg) {
 
         JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
@@ -176,12 +177,31 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIResetAccountPWDMsg msg) {
 
         APIResetAccountPWDEvent evt = new APIResetAccountPWDEvent(msg.getId());
-        AccountVO cont = dbf.findByUuid(msg.getTargetUuid(), AccountVO.class);
+        AccountVO cont = dbf.findByUuid(msg.getUuid(), AccountVO.class);
 
         String pwd = getRandomString(8);
 
         cont.setPassword(DigestUtils.sha512Hex(pwd));
         dbf.updateAndRefresh(cont);
+
+        evt.setPassword(pwd);
+        bus.publish(evt);
+    }
+
+    private void handle(APIResetUserPWDMsg msg) {
+
+        APIResetUserPWDEvent evt = new APIResetUserPWDEvent(msg.getId());
+        UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
+        if (!msg.getSession().getType().equals(AccountType.SystemAdmin) &&
+                !msg.getAccountUuid().equals(user.getAccountUuid())) {
+            throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot reset the password of other user [uuid: %s]",
+                    msg.getAccountUuid(), msg.getUuid()));
+        }
+
+        String pwd = getRandomString(8);
+
+        user.setPassword(DigestUtils.sha512Hex(pwd));
+        dbf.updateAndRefresh(user);
 
         evt.setPassword(pwd);
         bus.publish(evt);
@@ -264,6 +284,13 @@ public class AccountBase extends AbstractAccount {
         dbf.removeByPrimaryKey(msg.getUuid(), AccountContactsVO.class);
         APIDeletePolicyEvent evt = new APIDeletePolicyEvent(msg.getId());
 
+        bus.publish(evt);
+    }
+
+    private void handle(APIDeleteUserMsg msg) {
+        APIDeleteUserEvent evt = new APIDeleteUserEvent(msg.getId());
+
+        dbf.removeByPrimaryKey(msg.getUuid(), UserVO.class);
         bus.publish(evt);
     }
 
@@ -432,11 +459,13 @@ public class AccountBase extends AbstractAccount {
         }
         if (msg.getEmail() != null) {
             account.setEmail(msg.getEmail());
+            account.setEmailStatus(ValidateStatus.Unvalidated);
             accountis = true;
         }
 
         if (msg.getPhone() != null) {
             account.setPhone(msg.getPhone());
+            account.setPhoneStatus(ValidateStatus.Unvalidated);
             accountis = true;
         }
         if (msg.getStatus() != null) {
@@ -489,7 +518,7 @@ public class AccountBase extends AbstractAccount {
         }
 
         if (msg.getSalesman() != null) {
-            aeivo.setSalesman(msg.getSalesman());
+            aeivo.setUserUuid(msg.getSalesman());
             done = true;
         }
 
@@ -530,10 +559,12 @@ public class AccountBase extends AbstractAccount {
         }
         if (msg.getEmail() != null) {
             user.setEmail(msg.getEmail());
+            user.setEmailStatus(ValidateStatus.Unvalidated);
             update = true;
         }
         if (msg.getPhone() != null) {
             user.setPhone(msg.getPhone());
+            user.setPhoneStatus(ValidateStatus.Unvalidated);
             update = true;
         }
         if (msg.getStatus() != null) {
@@ -615,7 +646,7 @@ public class AccountBase extends AbstractAccount {
             aeivo.setGrade(msg.getGrade());
         }
         if (msg.getUserUuid() != null) {
-            aeivo.setSalesman(msg.getUserUuid());
+            aeivo.setUserUuid(msg.getUserUuid());
         }
         aeivo.setCreateWay(msg.getSession().getType().toString());
         aeivo = dbf.persistAndRefresh(aeivo);
@@ -691,7 +722,19 @@ public class AccountBase extends AbstractAccount {
         pvo.setName(msg.getName());
         pvo.setAccountUuid(msg.getAccountUuid());
         pvo.setDescription(msg.getDescription());
-        pvo.setPolicyStatement(JSONObjectUtil.toJsonString(msg.getStatements()));
+
+        List<PolicyStatement> list = new ArrayList<>();
+        PolicyStatement  ps = new PolicyStatement();
+        ps.setEffect(StatementEffect.Allow);
+        List<String> actions = new ArrayList<>();
+        List uuids = msg.getPermissionUuids();
+        for(int i=0;i<uuids.size();i++){
+            actions.add(dbf.findByUuid(uuids.get(i).toString(),PermissionVO.class).getPermission());
+        }
+
+        ps.setActions(actions);
+        list.add(ps);
+        pvo.setPolicyStatement(JSONObjectUtil.toJsonString(list));
 
         APICreatePolicyEvent evt = new APICreatePolicyEvent(msg.getId());
 

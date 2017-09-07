@@ -6,24 +6,25 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"acount"}, adminOnly = true)
-public class APIResetAccountPWDMsg extends  APIMessage implements  AccountMessage {
+@Action(category = AccountConstant.ACTION_CATEGORY,  accountOnly = true)
+public class APIResetUserPWDMsg extends  APIMessage implements  AccountMessage {
 
     @APIParam(maxLength = 32)
     private String uuid;
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
     @Override
     public String getAccountUuid() {
         return this.getSession().getAccountUuid();
     }
 
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setTargetUuid(String targetUuid) {
-        this.uuid = targetUuid;
-    }
 
     public ApiNotification __notification__() {
         APIMessage that = this;

@@ -2,9 +2,11 @@ package org.zstack.account.header.identity;
 
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
+import org.zstack.header.vo.*;
 import org.zstack.header.vo.Index;
 
 import javax.persistence.*;
+import javax.persistence.ForeignKey;
 import java.sql.Timestamp;
 
 /**
@@ -30,7 +32,8 @@ public class AccountExtraInfoVO {
     private AccountGrade grade;
 
     @Column
-    private String salesman;
+    @org.zstack.header.vo.ForeignKey(parentEntityClass = UserVO.class, parentKey = "uuid", onDeleteAction = org.zstack.header.vo.ForeignKey.ReferenceOption.CASCADE)
+    private String userUuid;
 
     @Column
     private String createWay;
@@ -58,8 +61,8 @@ public class AccountExtraInfoVO {
         return grade;
     }
 
-    public String getSalesman() {
-        return salesman;
+    public String getUserUuid() {
+        return userUuid;
     }
 
     public Timestamp getCreateDate() {
@@ -82,8 +85,8 @@ public class AccountExtraInfoVO {
         this.grade = grade;
     }
 
-    public void setSalesman(String salesman) {
-        this.salesman = salesman;
+    public void setUserUuid(String salesman) {
+        this.userUuid = salesman;
     }
 
     public void setCreateDate(Timestamp createDate) {

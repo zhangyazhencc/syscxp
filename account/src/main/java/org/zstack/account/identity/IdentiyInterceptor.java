@@ -23,7 +23,6 @@ import org.zstack.header.message.APIParam;
 import org.zstack.header.message.InnerAPIMessage;
 import org.zstack.utils.*;
 import org.zstack.utils.function.ForEachFunction;
-import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
 import javax.persistence.Query;
