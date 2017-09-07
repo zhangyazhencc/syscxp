@@ -9,6 +9,8 @@ import org.zstack.header.message.APIParam;
 public class APICreateSwitchAttributionMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32)
+    private String nodeUuid;
+    @APIParam(emptyString = false,maxLength = 32)
     private String switchModelUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String code;
@@ -107,5 +109,13 @@ public class APICreateSwitchAttributionMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 }

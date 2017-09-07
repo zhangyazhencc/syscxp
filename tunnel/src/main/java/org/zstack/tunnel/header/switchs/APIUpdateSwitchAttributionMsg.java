@@ -11,6 +11,8 @@ public class APIUpdateSwitchAttributionMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = SwitchAttributionVO.class)
     private String uuid;
     @APIParam(required = false,maxLength = 32)
+    private String nodeUuid;
+    @APIParam(required = false,maxLength = 32)
     private String switchModelUuid;
     @APIParam(required = false,maxLength = 128)
     private String code;
@@ -117,5 +119,13 @@ public class APIUpdateSwitchAttributionMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 }

@@ -19,6 +19,8 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.tunnel.header.endpoint.EndpointVO;
 import org.zstack.tunnel.header.endpoint.EndpointVO_;
+import org.zstack.tunnel.header.node.NodeVO;
+import org.zstack.tunnel.header.node.NodeVO_;
 import org.zstack.tunnel.header.switchs.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
@@ -108,6 +110,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         SwitchAttributionVO vo = new SwitchAttributionVO();
 
         vo.setUuid(Platform.getUuid());
+        vo.setNodeUuid(msg.getNodeUuid());
         vo.setSwitchModelUuid(msg.getSwitchModelUuid());
         vo.setCode(msg.getCode());
         vo.setName(msg.getName());
@@ -134,6 +137,10 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         SwitchAttributionVO vo = dbf.findByUuid(msg.getUuid(),SwitchAttributionVO.class);
         boolean update = false;
 
+        if(msg.getNodeUuid() != null){
+            vo.setNodeUuid(msg.getNodeUuid());
+            update = true;
+        }
         if(msg.getSwitchModelUuid() != null){
             vo.setSwitchModelUuid(msg.getSwitchModelUuid());
             update = true;
@@ -337,10 +344,16 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         if(q.isExists()){
             throw new ApiMessageInterceptionException(argerr("switchAttribution's code %s is already exist ",msg.getCode()));
         }
-        //判断交换机所属型号是否存在
-        SimpleQuery<SwitchModelVO> q2 = dbf.createQuery(SwitchModelVO.class);
-        q2.add(SwitchModelVO_.uuid, SimpleQuery.Op.EQ, msg.getSwitchModelUuid());
+        //判断交换机所属节点是否存在
+        SimpleQuery<NodeVO> q2 = dbf.createQuery(NodeVO.class);
+        q2.add(NodeVO_.uuid, SimpleQuery.Op.EQ, msg.getNodeUuid());
         if (!q2.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("node %s is not exist ",msg.getNodeUuid()));
+        }
+        //判断交换机所属型号是否存在
+        SimpleQuery<SwitchModelVO> q3 = dbf.createQuery(SwitchModelVO.class);
+        q3.add(SwitchModelVO_.uuid, SimpleQuery.Op.EQ, msg.getSwitchModelUuid());
+        if (!q3.isExists()) {
             throw new ApiMessageInterceptionException(argerr("switchModel %s is not exist ",msg.getSwitchModelUuid()));
         }
     }
@@ -361,11 +374,19 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
                 throw new ApiMessageInterceptionException(argerr("switchAttribution's code %s is already exist ",msg.getCode()));
             }
         }
+        //判断交换机所属节点是否存在
+        if(msg.getNodeUuid() != null){
+            SimpleQuery<NodeVO> q3 = dbf.createQuery(NodeVO.class);
+            q3.add(NodeVO_.uuid, SimpleQuery.Op.EQ, msg.getNodeUuid());
+            if (!q3.isExists()) {
+                throw new ApiMessageInterceptionException(argerr("node %s is not exist ",msg.getNodeUuid()));
+            }
+        }
         //判断交换机所属型号是否存在
         if(msg.getSwitchModelUuid() != null){
-            SimpleQuery<SwitchModelVO> q3 = dbf.createQuery(SwitchModelVO.class);
-            q3.add(SwitchModelVO_.uuid, SimpleQuery.Op.EQ, msg.getSwitchModelUuid());
-            if (!q3.isExists()) {
+            SimpleQuery<SwitchModelVO> q4 = dbf.createQuery(SwitchModelVO.class);
+            q4.add(SwitchModelVO_.uuid, SimpleQuery.Op.EQ, msg.getSwitchModelUuid());
+            if (!q4.isExists()) {
                 throw new ApiMessageInterceptionException(argerr("switchModel %s is not exist ",msg.getSwitchModelUuid()));
             }
         }
