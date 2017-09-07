@@ -27,7 +27,7 @@ public class AccountInventory {
     private String type;
 
     private String grade;
-    private String salesman;
+    private String userUuid;
     private String createWay;
 
     private Timestamp createDate;
@@ -59,7 +59,7 @@ public class AccountInventory {
         inv.setEmailStatus(vo.getEmailStatus().toString());
         inv.setPhoneStatus(vo.getPhoneStatus().toString());
 
-        inv.setSalesman(aeivo.getUserUuid());
+        inv.setUserUuid(aeivo.getUserUuid());
         inv.setCreateWay(aeivo.getCreateWay());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -88,6 +88,7 @@ public class AccountInventory {
         if(vo.getType() != null){
             inv.setType(vo.getType().toString());
         }
+
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
@@ -229,12 +230,12 @@ public class AccountInventory {
         this.description = description;
     }
 
-    public String getSalesman() {
-        return salesman;
+    public String getUserUuid() {
+        return userUuid;
     }
 
-    public void setSalesman(String salesman) {
-        this.salesman = salesman;
+    public void setUserUuid(String userUuid) {
+        this.userUuid = userUuid;
     }
 
     public Set<AccountExtraInfoVO> getAccountEx() {
