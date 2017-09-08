@@ -197,7 +197,6 @@ CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `bandwidth` int(11) NOT NULL COMMENT '带宽',
   `isExclusive` TINYINT(1) NOT NULL COMMENT '如果是CLOUD端口，是否独享',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
-  `enabled` TINYINT(1) NOT NULL DEFAULT '1' COMMENT '是否启用：根据交换机端口',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `expiredDate` timestamp NOT NULL COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',

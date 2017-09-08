@@ -12,7 +12,7 @@ import java.util.List;
  * Created by DCY on 2017-09-01
  */
 @Inventory(mappingVOClass = EndpointVO.class)
-public class EndpointNodeInventory {
+public class EndpointToNodeInventory {
     private String uuid;
     private String nodeUuid;
     private NodeInventory node;
@@ -26,8 +26,8 @@ public class EndpointNodeInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    public static EndpointNodeInventory valueOf(EndpointVO vo){
-        EndpointNodeInventory inv = new EndpointNodeInventory();
+    public static EndpointToNodeInventory valueOf(EndpointVO vo){
+        EndpointToNodeInventory inv = new EndpointToNodeInventory();
         inv.setUuid(vo.getUuid());
         inv.setNodeUuid(vo.getNodeUuid());
         inv.setNode(NodeInventory.valueOf(vo.getNodeVO()));
@@ -43,10 +43,10 @@ public class EndpointNodeInventory {
         return inv;
     }
 
-    public static List<EndpointNodeInventory> valueOf(Collection<EndpointVO> vos) {
-        List<EndpointNodeInventory> lst = new ArrayList<EndpointNodeInventory>(vos.size());
+    public static List<EndpointToNodeInventory> valueOf(Collection<EndpointVO> vos) {
+        List<EndpointToNodeInventory> lst = new ArrayList<EndpointToNodeInventory>(vos.size());
         for (EndpointVO vo : vos) {
-            lst.add(EndpointNodeInventory.valueOf(vo));
+            lst.add(EndpointToNodeInventory.valueOf(vo));
         }
         return lst;
     }

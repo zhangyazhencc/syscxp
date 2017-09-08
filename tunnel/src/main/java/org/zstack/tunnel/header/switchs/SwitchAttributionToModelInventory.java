@@ -11,10 +11,12 @@ import java.util.List;
  * Created by DCY on 2017-09-08
  */
 @Inventory(mappingVOClass = SwitchAttributionVO.class)
-public class SwitchAttributionInventory {
+public class SwitchAttributionToModelInventory {
+
     private String uuid;
     private String nodeUuid;
     private String switchModelUuid;
+    private SwitchModelInventory switchModel;
     private String code;
     private String name;
     private String brand;
@@ -27,12 +29,13 @@ public class SwitchAttributionInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    public static SwitchAttributionInventory valueOf(SwitchAttributionVO vo){
-        SwitchAttributionInventory inv = new SwitchAttributionInventory();
+    public static SwitchAttributionToModelInventory valueOf(SwitchAttributionVO vo){
+        SwitchAttributionToModelInventory inv = new SwitchAttributionToModelInventory();
 
         inv.setUuid(vo.getUuid());
         inv.setNodeUuid(vo.getNodeUuid());
         inv.setSwitchModelUuid(vo.getSwitchModelUuid());
+        inv.setSwitchModel(SwitchModelInventory.valueOf(vo.getSwitchModel()));
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
         inv.setBrand(vo.getBrand());
@@ -48,10 +51,10 @@ public class SwitchAttributionInventory {
         return inv;
     }
 
-    public static List<SwitchAttributionInventory> valueOf(Collection<SwitchAttributionVO> vos) {
-        List<SwitchAttributionInventory> lst = new ArrayList<SwitchAttributionInventory>(vos.size());
+    public static List<SwitchAttributionToModelInventory> valueOf(Collection<SwitchAttributionVO> vos) {
+        List<SwitchAttributionToModelInventory> lst = new ArrayList<SwitchAttributionToModelInventory>(vos.size());
         for (SwitchAttributionVO vo : vos) {
-            lst.add(SwitchAttributionInventory.valueOf(vo));
+            lst.add(SwitchAttributionToModelInventory.valueOf(vo));
         }
         return lst;
     }
@@ -78,6 +81,14 @@ public class SwitchAttributionInventory {
 
     public void setSwitchModelUuid(String switchModelUuid) {
         this.switchModelUuid = switchModelUuid;
+    }
+
+    public SwitchModelInventory getSwitchModel() {
+        return switchModel;
+    }
+
+    public void setSwitchModel(SwitchModelInventory switchModel) {
+        this.switchModel = switchModel;
     }
 
     public String getCode() {

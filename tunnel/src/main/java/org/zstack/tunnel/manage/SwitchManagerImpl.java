@@ -25,8 +25,6 @@ import org.zstack.tunnel.header.switchs.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
-import javax.persistence.TypedQuery;
-
 import static org.zstack.core.Platform.argerr;
 
 /**

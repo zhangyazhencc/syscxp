@@ -11,13 +11,13 @@ import java.util.List;
  * Created by DCY on 2017-09-01
  */
 @Inventory(mappingVOClass = SwitchVlanVO.class)
-public class SwitchVlanSwitchSwitchModelInventory {
+public class SwitchVlanToModelInventory {
 
     private String uuid;
 
     private String switchUuid;
 
-    private SwitchSwitchModelInventory switchSwitchModel;
+    private SwitchToModelInventory switchs;
 
     private Integer startVlan;
 
@@ -27,12 +27,12 @@ public class SwitchVlanSwitchSwitchModelInventory {
 
     private Timestamp lastOpDate;
 
-    public static SwitchVlanSwitchSwitchModelInventory valueOf(SwitchVlanVO vo){
-        SwitchVlanSwitchSwitchModelInventory inv = new SwitchVlanSwitchSwitchModelInventory();
+    public static SwitchVlanToModelInventory valueOf(SwitchVlanVO vo){
+        SwitchVlanToModelInventory inv = new SwitchVlanToModelInventory();
 
         inv.setUuid(vo.getUuid());
         inv.setSwitchUuid(vo.getSwitchUuid());
-        inv.setSwitchSwitchModel(SwitchSwitchModelInventory.valueOf(vo.getSwitchs()));
+        inv.setSwitchs(SwitchToModelInventory.valueOf(vo.getSwitchs()));
         inv.setStartVlan(vo.getStartVlan());
         inv.setEndVlan(vo.getEndVlan());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -41,10 +41,10 @@ public class SwitchVlanSwitchSwitchModelInventory {
         return inv;
     }
 
-    public static List<SwitchVlanSwitchSwitchModelInventory> valueOf(Collection<SwitchVlanVO> vos) {
-        List<SwitchVlanSwitchSwitchModelInventory> lst = new ArrayList<SwitchVlanSwitchSwitchModelInventory>(vos.size());
+    public static List<SwitchVlanToModelInventory> valueOf(Collection<SwitchVlanVO> vos) {
+        List<SwitchVlanToModelInventory> lst = new ArrayList<SwitchVlanToModelInventory>(vos.size());
         for (SwitchVlanVO vo : vos) {
-            lst.add(SwitchVlanSwitchSwitchModelInventory.valueOf(vo));
+            lst.add(SwitchVlanToModelInventory.valueOf(vo));
         }
         return lst;
     }
@@ -65,12 +65,12 @@ public class SwitchVlanSwitchSwitchModelInventory {
         this.switchUuid = switchUuid;
     }
 
-    public SwitchSwitchModelInventory getSwitchSwitchModel() {
-        return switchSwitchModel;
+    public SwitchToModelInventory getSwitchs() {
+        return switchs;
     }
 
-    public void setSwitchSwitchModel(SwitchSwitchModelInventory switchSwitchModel) {
-        this.switchSwitchModel = switchSwitchModel;
+    public void setSwitchs(SwitchToModelInventory switchs) {
+        this.switchs = switchs;
     }
 
     public Integer getStartVlan() {
