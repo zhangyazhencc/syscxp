@@ -330,11 +330,22 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
 
     private void validate(APICreateSwitchModelMsg msg){
         //判断model是否已经存在
-        SimpleQuery<SwitchModelVO> q = dbf.createQuery(SwitchModelVO.class);
-        q.add(SwitchModelVO_.model, SimpleQuery.Op.EQ, msg.getModel());
-        if(q.isExists()){
-            throw new ApiMessageInterceptionException(argerr("switchModel %s is already exist ",msg.getModel()));
+        if(msg.getSubModel() == null){
+            SimpleQuery<SwitchModelVO> q = dbf.createQuery(SwitchModelVO.class);
+            q.add(SwitchModelVO_.model, SimpleQuery.Op.EQ, msg.getModel());
+            q.add(SwitchModelVO_.subModel, SimpleQuery.Op.NULL);
+            if(q.isExists()){
+                throw new ApiMessageInterceptionException(argerr("switchModel %s is already exist ",msg.getModel()));
+            }
+        }else{
+            SimpleQuery<SwitchModelVO> q = dbf.createQuery(SwitchModelVO.class);
+            q.add(SwitchModelVO_.model, SimpleQuery.Op.EQ, msg.getModel());
+            q.add(SwitchModelVO_.subModel, SimpleQuery.Op.EQ, msg.getSubModel());
+            if(q.isExists()){
+                throw new ApiMessageInterceptionException(argerr("switchModel %s is already exist ",msg.getModel()));
+            }
         }
+
     }
 
     private void validate(APICreateSwitchAttributionMsg msg){
@@ -441,7 +452,8 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         if (!q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getSwitchUuid()));
         }
-        //端口其他验证。。。。
+        //端口名称在一个物理交换机下是否存在
+
 
     }
 
@@ -453,7 +465,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         if (!q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getSwitchUuid()));
         }
-        //VLAN验证。。。。
+        //VLAN最小0，最大4096，同一个逻辑交换机下的VLAN不能重叠
 
     }
 }

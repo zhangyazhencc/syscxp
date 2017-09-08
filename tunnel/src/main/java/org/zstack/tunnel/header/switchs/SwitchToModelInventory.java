@@ -8,16 +8,16 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by DCY on 2017-09-01
+ * Created by DCY on 2017-09-08
  */
 @Inventory(mappingVOClass = SwitchVO.class)
-public class SwitchSwitchModelInventory {
+public class SwitchToModelInventory {
     private String uuid;
     private String endpointUuid;
     private String code;
     private String name;
     private String switchAttributionUuid;
-    private SwitchAttributionInventory switchAttribution;
+    private SwitchAttributionToModelInventory switchAttribution;
     private SwitchUpperType upperType;
     private Integer enabled;
     private String description;
@@ -26,15 +26,15 @@ public class SwitchSwitchModelInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    public static SwitchSwitchModelInventory valueOf(SwitchVO vo){
-        SwitchSwitchModelInventory inv = new SwitchSwitchModelInventory();
+    public static SwitchToModelInventory valueOf(SwitchVO vo){
+        SwitchToModelInventory inv = new SwitchToModelInventory();
 
         inv.setUuid(vo.getUuid());
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
         inv.setSwitchAttributionUuid(vo.getSwitchAttributionUuid());
-        inv.setSwitchAttribution(SwitchAttributionInventory.valueOf(vo.getSwitchAttribution()));
+        inv.setSwitchAttribution(SwitchAttributionToModelInventory.valueOf(vo.getSwitchAttribution()));
         inv.setUpperType(vo.getUpperType());
         inv.setEnabled(vo.getEnabled());
         inv.setDescription(vo.getDescription());
@@ -46,10 +46,10 @@ public class SwitchSwitchModelInventory {
         return inv;
     }
 
-    public static List<SwitchSwitchModelInventory> valueOf(Collection<SwitchVO> vos) {
-        List<SwitchSwitchModelInventory> lst = new ArrayList<SwitchSwitchModelInventory>(vos.size());
+    public static List<SwitchToModelInventory> valueOf(Collection<SwitchVO> vos) {
+        List<SwitchToModelInventory> lst = new ArrayList<SwitchToModelInventory>(vos.size());
         for (SwitchVO vo : vos) {
-            lst.add(SwitchSwitchModelInventory.valueOf(vo));
+            lst.add(SwitchToModelInventory.valueOf(vo));
         }
         return lst;
     }
@@ -92,6 +92,14 @@ public class SwitchSwitchModelInventory {
 
     public void setSwitchAttributionUuid(String switchAttributionUuid) {
         this.switchAttributionUuid = switchAttributionUuid;
+    }
+
+    public SwitchAttributionToModelInventory getSwitchAttribution() {
+        return switchAttribution;
+    }
+
+    public void setSwitchAttribution(SwitchAttributionToModelInventory switchAttribution) {
+        this.switchAttribution = switchAttribution;
     }
 
     public SwitchUpperType getUpperType() {
@@ -148,13 +156,5 @@ public class SwitchSwitchModelInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
-    }
-
-    public SwitchAttributionInventory getSwitchAttribution() {
-        return switchAttribution;
-    }
-
-    public void setSwitchAttribution(SwitchAttributionInventory switchAttribution) {
-        this.switchAttribution = switchAttribution;
     }
 }

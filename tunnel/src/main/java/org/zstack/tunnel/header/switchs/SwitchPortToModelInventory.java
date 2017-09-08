@@ -11,12 +11,12 @@ import java.util.List;
  * Created by DCY on 2017-09-01
  */
 @Inventory(mappingVOClass = SwitchPortVO.class)
-public class SwitchPortSwitchSwitchModelInventory {
+public class SwitchPortToModelInventory {
     private String uuid;
 
     private String switchUuid;
 
-    private SwitchSwitchModelInventory switchSwitchModel;
+    private SwitchToModelInventory switchs;
 
     private Integer portNum;
 
@@ -36,12 +36,12 @@ public class SwitchPortSwitchSwitchModelInventory {
 
     private Timestamp lastOpDate;
 
-    public static SwitchPortSwitchSwitchModelInventory valueOf(SwitchPortVO vo){
-        SwitchPortSwitchSwitchModelInventory inv = new SwitchPortSwitchSwitchModelInventory();
+    public static SwitchPortToModelInventory valueOf(SwitchPortVO vo){
+        SwitchPortToModelInventory inv = new SwitchPortToModelInventory();
 
         inv.setUuid(vo.getUuid());
         inv.setSwitchUuid(vo.getSwitchUuid());
-        inv.setSwitchSwitchModel(SwitchSwitchModelInventory.valueOf(vo.getSwitchs()));
+        inv.setSwitchs(SwitchToModelInventory.valueOf(vo.getSwitchs()));
         inv.setPortNum(vo.getPortNum());
         inv.setPortName(vo.getPortName());
         inv.setPortType(vo.getPortType());
@@ -55,10 +55,10 @@ public class SwitchPortSwitchSwitchModelInventory {
         return inv;
     }
 
-    public static List<SwitchPortSwitchSwitchModelInventory> valueOf(Collection<SwitchPortVO> vos) {
-        List<SwitchPortSwitchSwitchModelInventory> lst = new ArrayList<SwitchPortSwitchSwitchModelInventory>(vos.size());
+    public static List<SwitchPortToModelInventory> valueOf(Collection<SwitchPortVO> vos) {
+        List<SwitchPortToModelInventory> lst = new ArrayList<SwitchPortToModelInventory>(vos.size());
         for (SwitchPortVO vo : vos) {
-            lst.add(SwitchPortSwitchSwitchModelInventory.valueOf(vo));
+            lst.add(SwitchPortToModelInventory.valueOf(vo));
         }
         return lst;
     }
@@ -79,12 +79,12 @@ public class SwitchPortSwitchSwitchModelInventory {
         this.switchUuid = switchUuid;
     }
 
-    public SwitchSwitchModelInventory getSwitchSwitchModel() {
-        return switchSwitchModel;
+    public SwitchToModelInventory getSwitchs() {
+        return switchs;
     }
 
-    public void setSwitchSwitchModel(SwitchSwitchModelInventory switchSwitchModel) {
-        this.switchSwitchModel = switchSwitchModel;
+    public void setSwitchs(SwitchToModelInventory switchs) {
+        this.switchs = switchs;
     }
 
     public Integer getPortNum() {

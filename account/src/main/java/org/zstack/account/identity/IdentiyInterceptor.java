@@ -4,12 +4,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.account.header.identity.*;
-import org.zstack.core.InnerMessageHelper;
 import org.zstack.core.Platform;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.*;
 import org.zstack.core.db.SimpleQuery.Op;
 import org.zstack.core.errorcode.ErrorFacade;
+import org.zstack.core.identity.InnerMessageHelper;
 import org.zstack.core.thread.PeriodicTask;
 import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
@@ -549,9 +549,6 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         return msg;
     }
 
-    public void check(APIMessage msg) {
-        new Auth().check(msg);
-    }
 
     public boolean isResourceHavingAccountReference(Class entityClass) {
         return resourceTypes.contains(entityClass);

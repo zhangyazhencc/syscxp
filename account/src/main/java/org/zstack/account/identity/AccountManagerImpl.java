@@ -55,13 +55,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     @Autowired
     private DatabaseFacade dbf;
     @Autowired
-    private DbEntityLister dl;
-    @Autowired
     private ErrorFacade errf;
-    @Autowired
-    private ThreadFacade thdf;
-    @Autowired
-    private PluginRegistry pluginRgty;
     @Autowired
     private IdentiyInterceptor identiyInterceptor;
 
@@ -86,7 +80,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     @Override
     public void checkApiMessagePermission(APIMessage msg) {
-        identiyInterceptor.check(msg);
+        identiyInterceptor.checkApiMessagePermission(msg);
     }
 
     @Override
@@ -244,7 +238,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 api.setSession(session);
 
                 try {
-                    identiyInterceptor.check(api);
+                    identiyInterceptor.checkApiMessagePermission(api);
                     ret.put(apiName, StatementEffect.Allow.toString());
                 } catch (ApiMessageInterceptionException e) {
                     logger.debug(e.getMessage());
@@ -328,15 +322,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
         if (valid) {
-            SessionPolicyInventory sp = new SessionPolicyInventory();
-            sp.setUuid(s.getUuid());
-            sp.setAccountUuid(s.getAccountUuid());
-            sp.setUserUuid(s.getUserUuid());
-            sp.setType(s.getType());
-            sp.setCreateDate(s.getCreateDate());
-            sp.setExpiredDate(s.getExpiredDate());
+            SessionPolicyInventory sp = SessionPolicyInventory.valueOf(s);
 
-            if (s.isUserSession() || s.isAdminUserSession()) {
+            if (s.isUserSession()) {
                 List<SessionPolicyInventory.SessionPolicy> policys = new ArrayList<SessionPolicyInventory.SessionPolicy>();
                 List<PolicyInventory> userPolicys = getUserPolicys(sp.getUserUuid());
                 for (PolicyInventory pi : userPolicys) {
