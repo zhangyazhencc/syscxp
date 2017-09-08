@@ -13,6 +13,7 @@
         <class>org.zstack.billing.header.order.OrderVO</class>
         <class>org.zstack.billing.header.bill.BillVO</class>
         <class>org.zstack.billing.header.renew.RenewVO</class>
+        <class>org.zstack.billing.header.renew.PriceRefRenewVO</class>
         <class>org.zstack.billing.header.receipt.ReceiptPostAddressVO</class>
         <class>org.zstack.billing.header.receipt.ReceiptVO</class>
         <class>org.zstack.billing.header.receipt.ReceiptInfoVO</class>
