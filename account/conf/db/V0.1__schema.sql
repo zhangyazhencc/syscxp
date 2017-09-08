@@ -209,7 +209,7 @@ CREATE TABLE `PermissionVO` (
 	`permission` text NOT NULL COMMENT '权限字符串',
 	`type` varchar(32) DEFAULT NULL COMMENT '权限类型',
 	`sortId` varchar(11) DEFAULT NULL COMMENT '排序ID',
-	`visible` varchar(32) DEFAULT NULL COMMENT '是否前端可见',
+	`accountType` varchar(32) DEFAULT NULL COMMENT '',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
   PRIMARY KEY  (`uuid`)
@@ -219,7 +219,7 @@ CREATE TABLE `AccountExtraInfoVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '账户uuid',
 	`grade` varchar(36) DEFAULT NULL COMMENT '客户等级',
-	`salesman` varchar(128) DEFAULT NULL COMMENT '业务员',
+	`userUuid` varchar(36) DEFAULT NULL COMMENT '业务员uuid',
   `createWay` varchar(36) NOT NULL COMMENT '注册渠道',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
@@ -237,4 +237,13 @@ CREATE TABLE `AccountContactsVO` (
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
   PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  `PolicyPermissionRefVO` (
+  `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
+	`policyUuid` varchar(32) NOT NULL COMMENT '角色UUID',
+  `permissionUuid` varchar(32) NOT NULL COMMENT '权限uuid',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp ,
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

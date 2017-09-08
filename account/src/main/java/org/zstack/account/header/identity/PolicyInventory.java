@@ -13,21 +13,17 @@ import java.util.List;
 
 @Inventory(mappingVOClass = PolicyVO.class)
 
-@ExpandedQueries({
-        @ExpandedQuery(expandedField = "account", inventoryClass = AccountInventory.class,
-                foreignKey = "accountUuid", expandedInventoryKey = "uuid"),
-        @ExpandedQuery(expandedField = "userRef", inventoryClass = UserPolicyRefInventory.class,
-                foreignKey = "uuid", expandedInventoryKey = "policyUuid", hidden = true)
-})
-
 public class PolicyInventory {
 
     public static PolicyInventory valueOf(PolicyVO vo) {
         PolicyInventory inv = new PolicyInventory();
         inv.setName(vo.getName());
         inv.setUuid(vo.getUuid());
+        inv.setDescription(vo.getDescription());
         inv.setStatements(JSONObjectUtil.toCollection(vo.getPolicyStatement(), ArrayList.class, PolicyStatement.class));
         inv.setAccountUuid(vo.getAccountUuid());
+        inv.setCreateDate(vo.getCreateDate());
+        inv.setLastOpDate(vo.getLastOpDate());
         return inv;
     }
 

@@ -1,16 +1,12 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.Action;
-import org.zstack.header.identity.PolicyStatement;
-import org.zstack.header.identity.StatementEffect;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
 import java.util.List;
-
-import static org.zstack.utils.CollectionDSL.list;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"user_policy"}, accountOnly = true)
 public class APICreatePolicyMsg extends  APIMessage implements AccountMessage{
@@ -21,14 +17,14 @@ public class APICreatePolicyMsg extends  APIMessage implements AccountMessage{
     private String description;
 
     @APIParam(nonempty = true)
-    private List<String> PermissionUuids;
+    private List<String> permissionUuids;
 
     public List<String> getPermissionUuids() {
-        return PermissionUuids;
+        return permissionUuids;
     }
 
     public void setPermissionUuids(List<String> permissionUuids) {
-        PermissionUuids = permissionUuids;
+        this.permissionUuids = permissionUuids;
     }
 
     @Override
