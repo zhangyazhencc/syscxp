@@ -204,7 +204,7 @@ CREATE TABLE `SmsVO` (
 
 CREATE TABLE `PermissionVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-	`name` varchar(128) NOT NULL UNIQUE COMMENT '权限名称',
+	`name` varchar(128) NOT NULL COMMENT '权限名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '权限描述',
 	`permission` text NOT NULL COMMENT '权限字符串',
 	`type` varchar(32) DEFAULT NULL COMMENT '权限类型',

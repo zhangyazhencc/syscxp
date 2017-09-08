@@ -8,13 +8,13 @@ import java.util.List;
  * Created by DCY on 2017-09-01
  */
 public class APIQuerySwitchVlanReply extends APIQueryReply {
-    private List<SwitchVlanSwitchSwitchModelInventory> inventories;
+    private List<SwitchVlanToModelInventory> inventories;
 
-    public List<SwitchVlanSwitchSwitchModelInventory> getInventories() {
+    public List<SwitchVlanToModelInventory> getInventories() {
         return inventories;
     }
 
-    public void setInventories(List<SwitchVlanSwitchSwitchModelInventory> inventories) {
+    public void setInventories(List<SwitchVlanToModelInventory> inventories) {
         this.inventories = inventories;
     }
 }

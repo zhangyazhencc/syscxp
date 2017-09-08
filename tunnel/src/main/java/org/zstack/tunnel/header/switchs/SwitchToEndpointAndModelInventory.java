@@ -2,7 +2,6 @@ package org.zstack.tunnel.header.switchs;
 
 import org.zstack.header.search.Inventory;
 import org.zstack.tunnel.header.endpoint.EndpointInventory;
-import org.zstack.tunnel.header.endpoint.EndpointVO;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -13,14 +12,14 @@ import java.util.List;
  * Created by DCY on 2017-09-01
  */
 @Inventory(mappingVOClass = SwitchVO.class)
-public class SwitchEndpointSwitchModelInventory {
+public class SwitchToEndpointAndModelInventory {
     private String uuid;
     private String endpointUuid;
     private EndpointInventory endpoint;
     private String code;
     private String name;
     private String switchAttributionUuid;
-    private SwitchAttributionInventory switchAttribution;
+    private SwitchAttributionToModelInventory switchAttribution;
     private SwitchUpperType upperType;
     private Integer enabled;
     private String description;
@@ -29,8 +28,8 @@ public class SwitchEndpointSwitchModelInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    public static SwitchEndpointSwitchModelInventory valueOf(SwitchVO vo){
-        SwitchEndpointSwitchModelInventory inv = new SwitchEndpointSwitchModelInventory();
+    public static SwitchToEndpointAndModelInventory valueOf(SwitchVO vo){
+        SwitchToEndpointAndModelInventory inv = new SwitchToEndpointAndModelInventory();
 
         inv.setUuid(vo.getUuid());
         inv.setEndpointUuid(vo.getEndpointUuid());
@@ -38,7 +37,7 @@ public class SwitchEndpointSwitchModelInventory {
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
         inv.setSwitchAttributionUuid(vo.getSwitchAttributionUuid());
-        inv.setSwitchAttribution(SwitchAttributionInventory.valueOf(vo.getSwitchAttribution()));
+        inv.setSwitchAttribution(SwitchAttributionToModelInventory.valueOf(vo.getSwitchAttribution()));
         inv.setUpperType(vo.getUpperType());
         inv.setEnabled(vo.getEnabled());
         inv.setDescription(vo.getDescription());
@@ -50,10 +49,10 @@ public class SwitchEndpointSwitchModelInventory {
         return inv;
     }
 
-    public static List<SwitchEndpointSwitchModelInventory> valueOf(Collection<SwitchVO> vos) {
-        List<SwitchEndpointSwitchModelInventory> lst = new ArrayList<SwitchEndpointSwitchModelInventory>(vos.size());
+    public static List<SwitchToEndpointAndModelInventory> valueOf(Collection<SwitchVO> vos) {
+        List<SwitchToEndpointAndModelInventory> lst = new ArrayList<SwitchToEndpointAndModelInventory>(vos.size());
         for (SwitchVO vo : vos) {
-            lst.add(SwitchEndpointSwitchModelInventory.valueOf(vo));
+            lst.add(SwitchToEndpointAndModelInventory.valueOf(vo));
         }
         return lst;
     }
@@ -106,11 +105,11 @@ public class SwitchEndpointSwitchModelInventory {
         this.switchAttributionUuid = switchAttributionUuid;
     }
 
-    public SwitchAttributionInventory getSwitchAttribution() {
+    public SwitchAttributionToModelInventory getSwitchAttribution() {
         return switchAttribution;
     }
 
-    public void setSwitchAttribution(SwitchAttributionInventory switchAttribution) {
+    public void setSwitchAttribution(SwitchAttributionToModelInventory switchAttribution) {
         this.switchAttribution = switchAttribution;
     }
 
