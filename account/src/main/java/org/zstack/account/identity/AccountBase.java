@@ -699,7 +699,7 @@ public class AccountBase extends AbstractAccount {
         uservo = dbf.persistAndRefresh(uservo);
 
         UserPolicyRefVO uprv = new UserPolicyRefVO();
-        if (msg.getPolicyUuid() != null) {
+        if (msg.getPolicyUuid() != null && dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class) != null) {
             uprv.setUserUuid(uservo.getUuid());
             uprv.setPolicyUuid(msg.getPolicyUuid());
             dbf.persist(uprv);

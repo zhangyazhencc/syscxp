@@ -1,11 +1,8 @@
 package org.zstack.billing.manage;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.zstack.billing.header.balance.APIQueryDealDetailMsg;
-import org.zstack.billing.header.bill.APIQueryBillMsg;
-import org.zstack.billing.header.order.APIQueryOrderMsg;
-import org.zstack.billing.header.order.APIQueryOrderReply;
-import org.zstack.billing.identity.IdentiyInterceptor;
+import org.springframework.util.StringUtils;
+import org.zstack.billing.identity.IdentityInterceptor;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.query.APIQueryMessage;
 import org.zstack.query.AbstractMysqlQuerySubQueryExtension;
@@ -15,7 +12,7 @@ import org.zstack.query.QueryUtils;
  */
 public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtension {
     @Autowired
-    private IdentiyInterceptor identiyInterceptor;
+    private IdentityInterceptor identityInterceptor;
 
     @Override
     public String makeSubquery(APIQueryMessage msg, Class inventoryClass) {
@@ -24,14 +21,14 @@ public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
         }
         if (msg.getSession().getType().equals(AccountType.Proxy)) {
             if (msg instanceof APIQueryExpendMessage) {
-                if (!((APIQueryExpendMessage) msg).isSelfSelect()) {
-                    return null;
-                }
+               if(!StringUtils.isEmpty(((APIQueryExpendMessage) msg).getAccountUuid())){
+                   return String.format("%s.accountUuid = '%s'", inventoryClass.getSimpleName().toLowerCase(), ((APIQueryExpendMessage) msg).getAccountUuid());
+               }
             }
         }
 
         Class entityClass = QueryUtils.getEntityClassFromInventoryClass(inventoryClass);
-        if (!identiyInterceptor.isResourceHavingAccountReference(entityClass)) {
+        if (!identityInterceptor.isResourceHavingAccountReference(entityClass)) {
             return null;
         }
 

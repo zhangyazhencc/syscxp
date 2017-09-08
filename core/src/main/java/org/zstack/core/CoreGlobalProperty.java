@@ -45,4 +45,9 @@ public class CoreGlobalProperty {
     public static String INNER_MESSAGE_MD5_KEY;
     @GlobalProperty(name = "innerMessageExpire", defaultValue = "600")
     public static long INNER_MESSAGE_EXPIRE;
+
+    public static int SESSION_CLEANUP_INTERVAL = 3600;
+
+    @GlobalProperty(name = "accountServerUrl", defaultValue = "http:// 192.168.211.108:8080/api")
+    public static String ACCOUNT_SERVER_URL;
 }

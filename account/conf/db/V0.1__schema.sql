@@ -109,7 +109,6 @@ CREATE TABLE `PolicyVO` (
 	`name` varchar(128) NOT NULL UNIQUE COMMENT '角色名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '角色描述',
 	`accountUuid` varchar(32) NOT NULL COMMENT '所属账户UUID',
-	`policyStatement` text NOT NULL COMMENT '策略JSON字符串',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
   PRIMARY KEY  (`uuid`)
@@ -204,7 +203,7 @@ CREATE TABLE `SmsVO` (
 
 CREATE TABLE `PermissionVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-	`name` varchar(128) NOT NULL UNIQUE COMMENT '权限名称',
+	`name` varchar(128) NOT NULL COMMENT '权限名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '权限描述',
 	`permission` text NOT NULL COMMENT '权限字符串',
 	`type` varchar(32) DEFAULT NULL COMMENT '权限类型',

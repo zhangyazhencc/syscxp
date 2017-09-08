@@ -3,6 +3,9 @@ package org.zstack.billing.header.order;
 import org.zstack.billing.header.balance.ProductType;
 
 public class ProductPriceUnit {
+
+    private String uuid;
+
     private ProductType productType;
 
     private Category category;

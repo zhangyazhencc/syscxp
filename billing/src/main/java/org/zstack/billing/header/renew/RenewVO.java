@@ -6,6 +6,7 @@ import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Entity
@@ -38,26 +39,31 @@ public class RenewVO {
     private ProductChargeModel productChargeModel;
 
     @Column
-    private int duration;
-
-    @Column
-    private Timestamp expiredDate;
-
-    @Column
     private Timestamp createDate;
 
     @Column
     private Timestamp lastOpDate;
 
     @Column
-    private String productUnitPriceUuid;
+    private String productDescription;
 
-    public String getProductUnitPriceUuid() {
-        return productUnitPriceUuid;
+    @Column
+    private BigDecimal pricePerDay;
+
+    public BigDecimal getPricePerDay() {
+        return pricePerDay;
     }
 
-    public void setProductUnitPriceUuid(String productUnitPriceUuid) {
-        this.productUnitPriceUuid = productUnitPriceUuid;
+    public void setPricePerDay(BigDecimal pricePerDay) {
+        this.pricePerDay = pricePerDay;
+    }
+
+    public String getProductDescription() {
+        return productDescription;
+    }
+
+    public void setProductDescription(String productDescription) {
+        this.productDescription = productDescription;
     }
 
     public String getUuid() {
@@ -114,22 +120,6 @@ public class RenewVO {
 
     public void setProductChargeModel(ProductChargeModel productChargeModel) {
         this.productChargeModel = productChargeModel;
-    }
-
-    public int getDuration() {
-        return duration;
-    }
-
-    public void setDuration(int duration) {
-        this.duration = duration;
-    }
-
-    public Timestamp getExpiredDate() {
-        return expiredDate;
-    }
-
-    public void setExpiredDate(Timestamp expiredDate) {
-        this.expiredDate = expiredDate;
     }
 
     public Timestamp getCreateDate() {

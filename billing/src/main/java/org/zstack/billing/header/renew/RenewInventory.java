@@ -4,6 +4,7 @@ import org.zstack.billing.header.balance.ProductChargeModel;
 import org.zstack.billing.header.balance.ProductType;
 import org.zstack.header.search.Inventory;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -28,13 +29,12 @@ public class RenewInventory {
 
     private int duration;
 
-    private Timestamp expiredDate;
-
     private Timestamp createDate;
 
     private Timestamp lastOpDate;
 
-    private String productUnitPriceUuid;
+    private BigDecimal pricePerDay;
+
 
     public static RenewInventory valueOf(RenewVO vo) {
         RenewInventory inv = new RenewInventory();
@@ -46,8 +46,8 @@ public class RenewInventory {
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setProductUuid(vo.getProductUuid());
-        inv.setDuration(vo.getDuration());
-        inv.setProductUnitPriceUuid(vo.getProductUnitPriceUuid());
+        inv.setPricePerDay(vo.getPricePerDay());
+        inv.setProductDescription(vo.getProductDescription());
         return inv;
     }
 
@@ -57,14 +57,6 @@ public class RenewInventory {
             lst.add(RenewInventory.valueOf(vo));
         }
         return lst;
-    }
-
-    public String getProductUnitPriceUuid() {
-        return productUnitPriceUuid;
-    }
-
-    public void setProductUnitPriceUuid(String productUnitPriceUuid) {
-        this.productUnitPriceUuid = productUnitPriceUuid;
     }
 
     public String getUuid() {
@@ -131,12 +123,12 @@ public class RenewInventory {
         this.duration = duration;
     }
 
-    public Timestamp getExpiredDate() {
-        return expiredDate;
+    public BigDecimal getPricePerDay() {
+        return pricePerDay;
     }
 
-    public void setExpiredDate(Timestamp expiredDate) {
-        this.expiredDate = expiredDate;
+    public void setPricePerDay(BigDecimal pricePerDay) {
+        this.pricePerDay = pricePerDay;
     }
 
     public Timestamp getCreateDate() {

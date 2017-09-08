@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 public class PolicyVO_ {
     public static volatile SingularAttribute<PolicyVO, String> uuid;
     public static volatile SingularAttribute<PolicyVO, String> name;
-    public static volatile SingularAttribute<PolicyVO, String> policyStatement;
+
     public static volatile SingularAttribute<PolicyVO, Timestamp> createDate;
     public static volatile SingularAttribute<PolicyVO, String> accountUuid;
     public static volatile SingularAttribute<PolicyVO, String> description;

@@ -1,42 +1,28 @@
-package org.zstack.billing.identity;
-
-import org.apache.commons.lang.StringUtils;
+package org.zstack.core.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.zstack.billing.header.balance.AccountBalanceVO;
-import org.zstack.billing.header.balance.AccountBalanceVO_;
-import org.zstack.billing.header.balance.AccountDischargeVO;
-import org.zstack.billing.header.balance.AccountDischargeVO_;
-import org.zstack.billing.header.order.ProductPriceUnitVO;
-import org.zstack.billing.header.order.ProductPriceUnitVO_;
-import org.zstack.core.Platform;
+import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.SQL;
-import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
-import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.core.thread.PeriodicTask;
 import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
-import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.apimediator.GlobalApiMessageInterceptor;
 import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.*;
+import org.zstack.header.identity.SessionPolicyInventory.SessionPolicy;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
-import org.zstack.header.rest.RESTFacade;
-import org.zstack.header.rest.RestAPIState;
+import org.zstack.header.message.InnerAPIMessage;
 import org.zstack.utils.*;
 import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.logging.CLogger;
-import org.zstack.header.rest.RestAPIResponse;
 
-import javax.persistence.Query;
 import javax.persistence.Tuple;
 import java.lang.reflect.Field;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -45,13 +31,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.zstack.header.identity.SessionPolicyInventory.SessionPolicy;
-
 /**
  * Created by zxhread on 17/8/3.
  */
-public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessageInterceptor {
-    private static final CLogger logger = Utils.getLogger(IdentiyInterceptor.class);
+public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInterceptor {
+    private static final CLogger logger = Utils.getLogger(AbstractIdentityInterceptor.class);
 
     @Autowired
     private DatabaseFacade dbf;
@@ -61,9 +45,6 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
     private ThreadFacade thdf;
     @Autowired
     private PluginRegistry pluginRgty;
-    @Autowired
-    private RESTFacade restf;
-    ;
 
     private List<String> resourceTypeForAccountRef;
     private List<Class> resourceTypes;
@@ -93,9 +74,18 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         return sessions;
     }
 
+    public DatabaseFacade getDbf(){
+        return this.dbf;
+    }
+
     public void checkApiMessagePermission(APIMessage msg) {
         new Auth().check(msg);
     }
+
+    public void validate(APIMessage msg) {
+        new Auth().validate(msg);
+    }
+
 
     public boolean isAdmin(SessionPolicyInventory session) {
         return session.isAdminAccountSession();
@@ -130,7 +120,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
 
     private void startExpiredSessionCollector() {
         logger.debug("startExpiredSessionCollector");
-        final int interval = IdentityGlobalProperty.SESSION_CLEANUP_INTERVAL;
+        final int interval = CoreGlobalProperty.SESSION_CLEANUP_INTERVAL;
         expiredSessionCollector = thdf.submitPeriodicTask(new PeriodicTask() {
 
             private List<String> deleteExpiredSessions() {
@@ -234,8 +224,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
 
     @Transactional(readOnly = true)
     Timestamp getCurrentSqlDate() {
-        Query query = dbf.getEntityManager().createNativeQuery("select current_timestamp()");
-        return (Timestamp) query.getSingleResult();
+        return dbf.getCurrentSqlTime();
     }
 
     class Auth {
@@ -247,7 +236,6 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         void validate(APIMessage msg) {
             this.msg = msg;
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
-                return;
             } else {
                 action = actions.get(msg.getClass());
 
@@ -263,7 +251,9 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         void check(APIMessage msg) {
             this.msg = msg;
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
-                return;
+                suppressCredentialCheck();
+            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)){
+                innerCredentialCheck();
             } else {
                 DebugUtils.Assert(msg.getSession() != null, "session cannot be null");
 
@@ -274,6 +264,7 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             }
 
         }
+
 
         private void accountFieldCheck() throws IllegalAccessException {
             for (AccountCheckField af : action.accountCheckFields) {
@@ -403,6 +394,28 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             return null;
         }
 
+        private void suppressCredentialCheck() {
+            if (msg.getSession() != null && msg.getSession().getUuid() != null) {
+                SessionInventory session = sessions.get(msg.getSession().getUuid());
+                if (session != null) {
+                    msg.setSession(session);
+                }
+            }
+        }
+
+        private void innerCredentialCheck() {
+            if (msg instanceof InnerAPIMessage) {
+                if (InnerMessageHelper.validSignature((InnerAPIMessage) msg)){
+                    return;
+                }
+                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
+                        String.format("The parameters of the message[%s] are inconsistent ", msg.getMessageName())
+                ));
+            }
+            throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
+                    String.format("The type of the message[%s] is illegal ", msg.getMessageName())
+            ));
+        }
 
         private void sessionCheck() {
             if (msg.getSession() == null) {
@@ -413,67 +426,26 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
                 throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION, "session uuid is null"));
             }
 
-            SessionPolicyInventory session = sessions.get(msg.getSession().getUuid());
+            session = sessions.get(msg.getSession().getUuid());
             if (session == null) {
-                APIGetSessionPolicyMsg aMsg = new APIGetSessionPolicyMsg();
-                aMsg.setSessionUuid(msg.getSession().getUuid());
-                String gstr = RESTApiDecoder.dump(aMsg);
-                RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
-                if (rsp.getState().equals(RestAPIState.Done.toString())) {
-                    APIGetSessionPolicyReply replay = (APIGetSessionPolicyReply) RESTApiDecoder.loads(rsp.getResult());
-                    if (replay.isValidSession()) {
-                        session = replay.getSessionPolicyInventory();
-                    }
-
-                }
-                if (session == null) {
+                session = getSessionInventory(msg.getSession().getUuid());
+                sessions.put(session.getUuid(), session);
+            } else {
+                Timestamp curr = getCurrentSqlDate();
+                if (curr.after(session.getExpiredDate())) {
+                    logger.debug(String.format("session expired[%s < %s] for account[uuid:%s, session id:%s]", curr, session.getExpiredDate(), session.getAccountUuid(), session.getUuid()));
+                    logOutSession(session.getUuid());
                     throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION, "Session expired"));
                 }
-                sessions.put(session.getUuid(), session);
-                String accountUuid = session.getAccountUuid();
-                if (!StringUtils.isEmpty(accountUuid)) {
-                    SimpleQuery<AccountBalanceVO> q = dbf.createQuery(AccountBalanceVO.class);
-                    q.add(AccountBalanceVO_.uuid, SimpleQuery.Op.EQ, accountUuid);
-                    AccountBalanceVO a = q.find();
-                    if (a == null) {
-                        AccountBalanceVO vo = new AccountBalanceVO();
-                        vo.setUuid(accountUuid);
-                        vo.setCashBalance(new BigDecimal("0"));
-                        vo.setPresentBalance(new BigDecimal("0"));
-                        vo.setCreditPoint(new BigDecimal("0"));
-                        dbf.persist(vo);
-                    }
-                }
-                List<ProductPriceUnitVO> ppu = dbf.listAll(ProductPriceUnitVO.class);
-                for(ProductPriceUnitVO productPriceUnitVO : ppu){
-                    SimpleQuery<AccountDischargeVO> query = dbf.createQuery(AccountDischargeVO.class);
-                    query.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
-                    query.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductType());
-                    query.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategory());
-                    AccountDischargeVO accountDischargeVO = query.find();
-                    if(accountDischargeVO == null){
-                        accountDischargeVO = new AccountDischargeVO();
-                        accountDischargeVO.setUuid(Platform.getUuid());
-                        accountDischargeVO.setAccountUuid(accountUuid);
-                        accountDischargeVO.setCategory(productPriceUnitVO.getCategory());
-                        accountDischargeVO.setProductType(productPriceUnitVO.getProductType());
-                        accountDischargeVO.setDisCharge(100);
-                        dbf.persistAndRefresh(accountDischargeVO);
-                    }
-                }
-
             }
 
-            Timestamp curr = getCurrentSqlDate();
-            if (curr.after(session.getExpiredDate())) {
-                logger.debug(String.format("session expired[%s < %s] for account[uuid:%s, session id:%s]", curr, session.getExpiredDate(), session.getAccountUuid(), session.getUuid()));
-                logOutSession(session.getUuid());
-                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION, "Session expired"));
-            }
-
-            this.session = session;
+            afterSessionCHeck(session.getAccountUuid());
         }
     }
+
+    public abstract SessionPolicyInventory getSessionInventory(String sessionUuid);
+
+    public abstract void afterSessionCHeck(String accountUuid);
 
     public void logOutSession(String sessionUuid) {
         SessionPolicyInventory session = sessions.get(sessionUuid);
@@ -497,9 +469,9 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
         new Auth().validate(msg);
 
-
         return msg;
     }
+
 
     public boolean isResourceHavingAccountReference(Class entityClass) {
         return resourceTypes.contains(entityClass);
