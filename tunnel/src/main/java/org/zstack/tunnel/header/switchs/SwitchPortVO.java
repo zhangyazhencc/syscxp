@@ -36,14 +36,7 @@ public class SwitchPortVO {
     private SwitchPortType portType;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private SwitchPortLabel label;
-
-    @Column
     private Integer isExclusive;
-
-    @Column
-    private Integer reuse;
 
     @Column
     private Integer enabled;
@@ -84,22 +77,6 @@ public class SwitchPortVO {
 
     public void setPortName(String portName) {
         this.portName = portName;
-    }
-
-    public SwitchPortLabel getLabel() {
-        return label;
-    }
-
-    public void setLabel(SwitchPortLabel label) {
-        this.label = label;
-    }
-
-    public Integer getReuse() {
-        return reuse;
-    }
-
-    public void setReuse(Integer reuse) {
-        this.reuse = reuse;
     }
 
     public Integer getEnabled() {

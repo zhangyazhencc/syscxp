@@ -6,9 +6,9 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by DCY on 2017-09-06
  */
-public class APIUpdateSwitchAttributionMsg extends APIMessage {
+public class APIUpdatePhysicalSwitchMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = SwitchAttributionVO.class)
+    @APIParam(emptyString = false,resourceType = PhysicalSwitchVO.class)
     private String uuid;
     @APIParam(required = false,maxLength = 32)
     private String nodeUuid;

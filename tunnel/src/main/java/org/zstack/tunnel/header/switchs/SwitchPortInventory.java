@@ -22,11 +22,7 @@ public class SwitchPortInventory {
 
     private SwitchPortType portType;
 
-    private SwitchPortLabel label;
-
     private Integer isExclusive;
-
-    private Integer reuse;
 
     private Integer enabled;
 
@@ -42,9 +38,7 @@ public class SwitchPortInventory {
         inv.setPortNum(vo.getPortNum());
         inv.setPortName(vo.getPortName());
         inv.setPortType(vo.getPortType());
-        inv.setLabel(vo.getLabel());
         inv.setIsExclusive(vo.getIsExclusive());
-        inv.setReuse(vo.getReuse());
         inv.setEnabled(vo.getEnabled());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -90,22 +84,6 @@ public class SwitchPortInventory {
 
     public void setPortName(String portName) {
         this.portName = portName;
-    }
-
-    public SwitchPortLabel getLabel() {
-        return label;
-    }
-
-    public void setLabel(SwitchPortLabel label) {
-        this.label = label;
-    }
-
-    public Integer getReuse() {
-        return reuse;
-    }
-
-    public void setReuse(Integer reuse) {
-        this.reuse = reuse;
     }
 
     public Integer getEnabled() {

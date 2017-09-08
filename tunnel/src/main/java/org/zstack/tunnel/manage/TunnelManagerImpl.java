@@ -92,7 +92,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             vo.setVsi(msg.getVsi());
         }
         vo.setName(msg.getName());
-        vo.setMonitorIp(msg.getMonitorIp());
+        vo.setMonitorCidr(msg.getMonitorCidr());
         if(msg.getDescription() != null){
             vo.setDescription(msg.getDescription());
         }else{

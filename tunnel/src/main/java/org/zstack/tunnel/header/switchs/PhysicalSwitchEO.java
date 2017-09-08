@@ -9,7 +9,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table
-public class SwitchAttributionEO extends SwitchAttributionAO {
+public class PhysicalSwitchEO extends PhysicalSwitchAO {
     @Column
     private Integer deleted;
 

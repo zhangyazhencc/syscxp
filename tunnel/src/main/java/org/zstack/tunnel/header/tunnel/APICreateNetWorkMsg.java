@@ -15,7 +15,7 @@ public class APICreateNetWorkMsg extends APIMessage {
     @APIParam(required = false)
     private Integer vsi;
     @APIParam(emptyString = false,maxLength = 32)
-    private String monitorIp;
+    private String monitorCidr;
     @APIParam(required = false,maxLength = 255)
     private String description;
 
@@ -35,12 +35,12 @@ public class APICreateNetWorkMsg extends APIMessage {
         this.name = name;
     }
 
-    public String getMonitorIp() {
-        return monitorIp;
+    public String getMonitorCidr() {
+        return monitorCidr;
     }
 
-    public void setMonitorIp(String monitorIp) {
-        this.monitorIp = monitorIp;
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
     }
 
     public String getDescription() {

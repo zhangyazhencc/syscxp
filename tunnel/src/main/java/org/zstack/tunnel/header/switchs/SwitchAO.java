@@ -27,7 +27,7 @@ public class SwitchAO {
     private String name;
 
     @Column
-    @ForeignKey(parentEntityClass = SwitchAttributionEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
+    @ForeignKey(parentEntityClass = PhysicalSwitchEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String switchAttributionUuid;
 
     @Column

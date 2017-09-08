@@ -10,8 +10,8 @@ import java.util.List;
 /**
  * Created by DCY on 2017-09-08
  */
-@Inventory(mappingVOClass = SwitchAttributionVO.class)
-public class SwitchAttributionToModelInventory {
+@Inventory(mappingVOClass = PhysicalSwitchVO.class)
+public class PhysicalSwitchToModelInventory {
 
     private String uuid;
     private String nodeUuid;
@@ -29,8 +29,8 @@ public class SwitchAttributionToModelInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    public static SwitchAttributionToModelInventory valueOf(SwitchAttributionVO vo){
-        SwitchAttributionToModelInventory inv = new SwitchAttributionToModelInventory();
+    public static PhysicalSwitchToModelInventory valueOf(PhysicalSwitchVO vo){
+        PhysicalSwitchToModelInventory inv = new PhysicalSwitchToModelInventory();
 
         inv.setUuid(vo.getUuid());
         inv.setNodeUuid(vo.getNodeUuid());
@@ -51,10 +51,10 @@ public class SwitchAttributionToModelInventory {
         return inv;
     }
 
-    public static List<SwitchAttributionToModelInventory> valueOf(Collection<SwitchAttributionVO> vos) {
-        List<SwitchAttributionToModelInventory> lst = new ArrayList<SwitchAttributionToModelInventory>(vos.size());
-        for (SwitchAttributionVO vo : vos) {
-            lst.add(SwitchAttributionToModelInventory.valueOf(vo));
+    public static List<PhysicalSwitchToModelInventory> valueOf(Collection<PhysicalSwitchVO> vos) {
+        List<PhysicalSwitchToModelInventory> lst = new ArrayList<PhysicalSwitchToModelInventory>(vos.size());
+        for (PhysicalSwitchVO vo : vos) {
+            lst.add(PhysicalSwitchToModelInventory.valueOf(vo));
         }
         return lst;
     }

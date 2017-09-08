@@ -70,10 +70,10 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
     private void handleApiMessage(APIMessage msg) {
         if(msg instanceof APICreateSwitchModelMsg){
             handle((APICreateSwitchModelMsg) msg);
-        }else if(msg instanceof APICreateSwitchAttributionMsg){
-            handle((APICreateSwitchAttributionMsg) msg);
-        }else if(msg instanceof APIUpdateSwitchAttributionMsg){
-            handle((APIUpdateSwitchAttributionMsg) msg);
+        }else if(msg instanceof APICreatePhysicalSwitchMsg){
+            handle((APICreatePhysicalSwitchMsg) msg);
+        }else if(msg instanceof APIUpdatePhysicalSwitchMsg){
+            handle((APIUpdatePhysicalSwitchMsg) msg);
         }else if(msg instanceof APICreateSwitchMsg){
             handle((APICreateSwitchMsg) msg);
         }else if(msg instanceof APIUpdateSwitchMsg){
@@ -106,8 +106,8 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         bus.publish(evt);
     }
 
-    private void handle(APICreateSwitchAttributionMsg msg){
-        SwitchAttributionVO vo = new SwitchAttributionVO();
+    private void handle(APICreatePhysicalSwitchMsg msg){
+        PhysicalSwitchVO vo = new PhysicalSwitchVO();
 
         vo.setUuid(Platform.getUuid());
         vo.setNodeUuid(msg.getNodeUuid());
@@ -128,13 +128,13 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
 
         vo = dbf.persistAndRefresh(vo);
 
-        APICreateSwitchAttributionEvent evt = new APICreateSwitchAttributionEvent(msg.getId());
-        evt.setInventory(SwitchAttributionInventory.valueOf(vo));
+        APICreatePhysicalSwitchEvent evt = new APICreatePhysicalSwitchEvent(msg.getId());
+        evt.setInventory(PhysicalSwitchInventory.valueOf(vo));
         bus.publish(evt);
     }
 
-    private void handle(APIUpdateSwitchAttributionMsg msg){
-        SwitchAttributionVO vo = dbf.findByUuid(msg.getUuid(),SwitchAttributionVO.class);
+    private void handle(APIUpdatePhysicalSwitchMsg msg){
+        PhysicalSwitchVO vo = dbf.findByUuid(msg.getUuid(),PhysicalSwitchVO.class);
         boolean update = false;
 
         if(msg.getNodeUuid() != null){
@@ -185,8 +185,8 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         if (update)
             vo = dbf.updateAndRefresh(vo);
 
-        APIUpdateSwitchAttributionEvent evt = new APIUpdateSwitchAttributionEvent(msg.getId());
-        evt.setInventory(SwitchAttributionInventory.valueOf(vo));
+        APIUpdatePhysicalSwitchEvent evt = new APIUpdatePhysicalSwitchEvent(msg.getId());
+        evt.setInventory(PhysicalSwitchInventory.valueOf(vo));
         bus.publish(evt);
     }
 
@@ -266,10 +266,8 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         vo.setPortNum(null);
         vo.setPortName(msg.getPortName());
         vo.setPortType(msg.getPortType());
-        vo.setLabel(msg.getLabel());
         vo.setIsExclusive(msg.getIsExclusive());
         vo.setEnabled(1);
-        vo.setReuse(msg.getReuse());
 
         vo = dbf.persistAndRefresh(vo);
 
@@ -312,10 +310,10 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
         if(msg instanceof APICreateSwitchModelMsg){
             validate((APICreateSwitchModelMsg) msg);
-        }else if(msg instanceof APICreateSwitchAttributionMsg){
-            validate((APICreateSwitchAttributionMsg) msg);
-        }else if(msg instanceof APIUpdateSwitchAttributionMsg){
-            validate((APIUpdateSwitchAttributionMsg) msg);
+        }else if(msg instanceof APICreatePhysicalSwitchMsg){
+            validate((APICreatePhysicalSwitchMsg) msg);
+        }else if(msg instanceof APIUpdatePhysicalSwitchMsg){
+            validate((APIUpdatePhysicalSwitchMsg) msg);
         }else if(msg instanceof APICreateSwitchMsg){
             validate((APICreateSwitchMsg) msg);
         }else if(msg instanceof APIUpdateSwitchMsg){
@@ -348,10 +346,10 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
 
     }
 
-    private void validate(APICreateSwitchAttributionMsg msg){
+    private void validate(APICreatePhysicalSwitchMsg msg){
         //判断code是否已经存在
-        SimpleQuery<SwitchAttributionVO> q = dbf.createQuery(SwitchAttributionVO.class);
-        q.add(SwitchAttributionVO_.code, SimpleQuery.Op.EQ, msg.getCode());
+        SimpleQuery<PhysicalSwitchVO> q = dbf.createQuery(PhysicalSwitchVO.class);
+        q.add(PhysicalSwitchVO_.code, SimpleQuery.Op.EQ, msg.getCode());
         if(q.isExists()){
             throw new ApiMessageInterceptionException(argerr("switchAttribution's code %s is already exist ",msg.getCode()));
         }
@@ -369,18 +367,18 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         }
     }
 
-    private void validate(APIUpdateSwitchAttributionMsg msg){
+    private void validate(APIUpdatePhysicalSwitchMsg msg){
         //判断所修改的交换机是否存在
-        SimpleQuery<SwitchAttributionVO> q = dbf.createQuery(SwitchAttributionVO.class);
-        q.add(SwitchAttributionVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
+        SimpleQuery<PhysicalSwitchVO> q = dbf.createQuery(PhysicalSwitchVO.class);
+        q.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
         if (!q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("switchAttribution %s is not exist ",msg.getUuid()));
         }
         //判断code是否已经存在
         if(msg.getCode() != null){
-            SimpleQuery<SwitchAttributionVO> q2 = dbf.createQuery(SwitchAttributionVO.class);
-            q2.add(SwitchAttributionVO_.code, SimpleQuery.Op.EQ, msg.getCode());
-            q2.add(SwitchAttributionVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
+            SimpleQuery<PhysicalSwitchVO> q2 = dbf.createQuery(PhysicalSwitchVO.class);
+            q2.add(PhysicalSwitchVO_.code, SimpleQuery.Op.EQ, msg.getCode());
+            q2.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
             if(q2.isExists()){
                 throw new ApiMessageInterceptionException(argerr("switchAttribution's code %s is already exist ",msg.getCode()));
             }
@@ -417,8 +415,8 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             throw new ApiMessageInterceptionException(argerr("endpoint %s is not exist ",msg.getEndpointUuid()));
         }
         //判断交换机所属物理交换机是否存在
-        SimpleQuery<SwitchAttributionVO> q3 = dbf.createQuery(SwitchAttributionVO.class);
-        q3.add(SwitchAttributionVO_.uuid, SimpleQuery.Op.EQ, msg.getSwitchAttributionUuid());
+        SimpleQuery<PhysicalSwitchVO> q3 = dbf.createQuery(PhysicalSwitchVO.class);
+        q3.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.EQ, msg.getSwitchAttributionUuid());
         if (!q3.isExists()) {
             throw new ApiMessageInterceptionException(argerr("switchAttribution %s is not exist ",msg.getSwitchAttributionUuid()));
         }

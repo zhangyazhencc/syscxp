@@ -8,11 +8,11 @@
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.switchs.APICreateSwitchAttributionMsg</name>
+        <name>org.zstack.tunnel.header.switchs.APICreatePhysicalSwitchMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.switchs.APIUpdateSwitchAttributionMsg</name>
+        <name>org.zstack.tunnel.header.switchs.APIUpdatePhysicalSwitchMsg</name>
     </message>
 
     <message>
@@ -32,7 +32,7 @@
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.switchs.APIQuerySwitchAttributionMsg</name>
+        <name>org.zstack.tunnel.header.switchs.APIQueryPhysicalSwitchMsg</name>
         <serviceId>query</serviceId>
     </message>
 

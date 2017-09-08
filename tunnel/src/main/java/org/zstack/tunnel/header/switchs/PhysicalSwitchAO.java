@@ -1,35 +1,70 @@
 package org.zstack.tunnel.header.switchs;
 
-import org.zstack.header.message.APIMessage;
-import org.zstack.header.message.APIParam;
+import org.zstack.header.vo.ForeignKey;
+import org.zstack.tunnel.header.node.NodeEO;
+
+import javax.persistence.Column;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
+import java.sql.Timestamp;
 
 /**
  * Created by DCY on 2017-09-06
  */
-public class APICreateSwitchAttributionMsg extends APIMessage {
+@MappedSuperclass
+public class PhysicalSwitchAO {
+    @Id
+    @Column
+    private String uuid;
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @Column
+    @ForeignKey(parentEntityClass = NodeEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String nodeUuid;
-    @APIParam(emptyString = false,maxLength = 32)
+
+    @Column
+    @ForeignKey(parentEntityClass = SwitchModelVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String switchModelUuid;
-    @APIParam(emptyString = false,maxLength = 128)
+
+    @Column
     private String code;
-    @APIParam(emptyString = false,maxLength = 128)
+
+    @Column
     private String name;
-    @APIParam(emptyString = false,maxLength = 128)
+
+    @Column
     private String brand;
-    @APIParam(emptyString = false,maxLength = 128)
+
+    @Column
     private String owner;
-    @APIParam(emptyString = false,maxLength = 32)
+
+    @Column
     private String rack;
-    @APIParam(emptyString = false,maxLength = 128)
-    private String mIP;
-    @APIParam(emptyString = false,maxLength = 128)
-    private String username;
-    @APIParam(emptyString = false,maxLength = 128)
-    private String password;
-    @APIParam(required = false,maxLength = 255)
+
+    @Column
     private String description;
+
+    @Column
+    private String mIP;
+
+    @Column
+    private String username;
+
+    @Column
+    private String password;
+
+    @Column
+    private Timestamp createDate;
+
+    @Column
+    private Timestamp lastOpDate;
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
     public String getCode() {
         return code;
@@ -71,6 +106,14 @@ public class APICreateSwitchAttributionMsg extends APIMessage {
         this.rack = rack;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public String getmIP() {
         return mIP;
     }
@@ -95,20 +138,28 @@ public class APICreateSwitchAttributionMsg extends APIMessage {
         this.password = password;
     }
 
+    public Timestamp getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
+    }
+
+    public Timestamp getLastOpDate() {
+        return lastOpDate;
+    }
+
+    public void setLastOpDate(Timestamp lastOpDate) {
+        this.lastOpDate = lastOpDate;
+    }
+
     public String getSwitchModelUuid() {
         return switchModelUuid;
     }
 
     public void setSwitchModelUuid(String switchModelUuid) {
         this.switchModelUuid = switchModelUuid;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getNodeUuid() {

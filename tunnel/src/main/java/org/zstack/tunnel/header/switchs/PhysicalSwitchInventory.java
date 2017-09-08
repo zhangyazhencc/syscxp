@@ -10,8 +10,8 @@ import java.util.List;
 /**
  * Created by DCY on 2017-09-08
  */
-@Inventory(mappingVOClass = SwitchAttributionVO.class)
-public class SwitchAttributionInventory {
+@Inventory(mappingVOClass = PhysicalSwitchVO.class)
+public class PhysicalSwitchInventory {
     private String uuid;
     private String nodeUuid;
     private String switchModelUuid;
@@ -27,8 +27,8 @@ public class SwitchAttributionInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    public static SwitchAttributionInventory valueOf(SwitchAttributionVO vo){
-        SwitchAttributionInventory inv = new SwitchAttributionInventory();
+    public static PhysicalSwitchInventory valueOf(PhysicalSwitchVO vo){
+        PhysicalSwitchInventory inv = new PhysicalSwitchInventory();
 
         inv.setUuid(vo.getUuid());
         inv.setNodeUuid(vo.getNodeUuid());
@@ -48,10 +48,10 @@ public class SwitchAttributionInventory {
         return inv;
     }
 
-    public static List<SwitchAttributionInventory> valueOf(Collection<SwitchAttributionVO> vos) {
-        List<SwitchAttributionInventory> lst = new ArrayList<SwitchAttributionInventory>(vos.size());
-        for (SwitchAttributionVO vo : vos) {
-            lst.add(SwitchAttributionInventory.valueOf(vo));
+    public static List<PhysicalSwitchInventory> valueOf(Collection<PhysicalSwitchVO> vos) {
+        List<PhysicalSwitchInventory> lst = new ArrayList<PhysicalSwitchInventory>(vos.size());
+        for (PhysicalSwitchVO vo : vos) {
+            lst.add(PhysicalSwitchInventory.valueOf(vo));
         }
         return lst;
     }

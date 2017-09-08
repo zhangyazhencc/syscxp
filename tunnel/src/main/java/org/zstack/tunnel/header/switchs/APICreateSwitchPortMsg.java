@@ -17,14 +17,8 @@ public class APICreateSwitchPortMsg extends APIMessage {
     @APIParam(emptyString = false,validValues = {"RJ45", "SFP_1G","SFG_10G"})
     private SwitchPortType portType;
 
-    @APIParam(emptyString = false,validValues = {"ACCESSIN", "MONITOR","ECP","VPN","CLOUD"})
-    private SwitchPortLabel label;
-
     @APIParam(emptyString = false)
     private Integer isExclusive;
-
-    @APIParam(emptyString = false)
-    private Integer reuse;
 
 
     public String getSwitchUuid() {
@@ -41,22 +35,6 @@ public class APICreateSwitchPortMsg extends APIMessage {
 
     public void setPortName(String portName) {
         this.portName = portName;
-    }
-
-    public SwitchPortLabel getLabel() {
-        return label;
-    }
-
-    public void setLabel(SwitchPortLabel label) {
-        this.label = label;
-    }
-
-    public Integer getReuse() {
-        return reuse;
-    }
-
-    public void setReuse(Integer reuse) {
-        this.reuse = reuse;
     }
 
     public SwitchPortType getPortType() {

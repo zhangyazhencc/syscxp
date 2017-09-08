@@ -1,70 +1,35 @@
 package org.zstack.tunnel.header.switchs;
 
-import org.zstack.header.vo.ForeignKey;
-import org.zstack.tunnel.header.node.NodeEO;
-
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import java.sql.Timestamp;
+import org.zstack.header.message.APIMessage;
+import org.zstack.header.message.APIParam;
 
 /**
  * Created by DCY on 2017-09-06
  */
-@MappedSuperclass
-public class SwitchAttributionAO {
-    @Id
-    @Column
-    private String uuid;
+public class APICreatePhysicalSwitchMsg extends APIMessage {
 
-    @Column
-    @ForeignKey(parentEntityClass = NodeEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
+    @APIParam(emptyString = false,maxLength = 32)
     private String nodeUuid;
-
-    @Column
-    @ForeignKey(parentEntityClass = SwitchModelVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
+    @APIParam(emptyString = false,maxLength = 32)
     private String switchModelUuid;
-
-    @Column
+    @APIParam(emptyString = false,maxLength = 128)
     private String code;
-
-    @Column
+    @APIParam(emptyString = false,maxLength = 128)
     private String name;
-
-    @Column
+    @APIParam(emptyString = false,maxLength = 128)
     private String brand;
-
-    @Column
+    @APIParam(emptyString = false,maxLength = 128)
     private String owner;
-
-    @Column
+    @APIParam(emptyString = false,maxLength = 32)
     private String rack;
-
-    @Column
-    private String description;
-
-    @Column
+    @APIParam(emptyString = false,maxLength = 128)
     private String mIP;
-
-    @Column
+    @APIParam(emptyString = false,maxLength = 128)
     private String username;
-
-    @Column
+    @APIParam(emptyString = false,maxLength = 128)
     private String password;
-
-    @Column
-    private Timestamp createDate;
-
-    @Column
-    private Timestamp lastOpDate;
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
+    @APIParam(required = false,maxLength = 255)
+    private String description;
 
     public String getCode() {
         return code;
@@ -106,14 +71,6 @@ public class SwitchAttributionAO {
         this.rack = rack;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public String getmIP() {
         return mIP;
     }
@@ -138,28 +95,20 @@ public class SwitchAttributionAO {
         this.password = password;
     }
 
-    public Timestamp getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Timestamp createDate) {
-        this.createDate = createDate;
-    }
-
-    public Timestamp getLastOpDate() {
-        return lastOpDate;
-    }
-
-    public void setLastOpDate(Timestamp lastOpDate) {
-        this.lastOpDate = lastOpDate;
-    }
-
     public String getSwitchModelUuid() {
         return switchModelUuid;
     }
 
     public void setSwitchModelUuid(String switchModelUuid) {
         this.switchModelUuid = switchModelUuid;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getNodeUuid() {
