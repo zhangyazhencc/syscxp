@@ -27,27 +27,14 @@ public class APICreateOrderMsg extends APIMessage {
     @APIParam
     private String productDescription;
 
-    @APIParam(required = false)
+    @APIParam(emptyString = false)
     private String productUuid;
 
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private int duration;
 
-    @APIParam(emptyString = false)
-    private  ProductPriceUnit productPriceUnit;
-
-    private List<String> productUuids;
-
-    @APIParam(required = false, resourceType = OrderVO.class, checkAccount = true)
-    private String oldOrderUuid;
-
-    public String getOldOrderUuid() {
-        return oldOrderUuid;
-    }
-
-    public void setOldOrderUuid(String oldOrderUuid) {
-        this.oldOrderUuid = oldOrderUuid;
-    }
+    @APIParam(nonempty = true)
+    private  List<String> productPriceUnitUuids;
 
     public OrderType getType() {
         return type;
@@ -105,19 +92,11 @@ public class APICreateOrderMsg extends APIMessage {
         this.duration = duration;
     }
 
-    public ProductPriceUnit getProductPriceUnit() {
-        return productPriceUnit;
+    public List<String> getProductPriceUnitUuids() {
+        return productPriceUnitUuids;
     }
 
-    public void setProductPriceUnit(ProductPriceUnit productPriceUnit) {
-        this.productPriceUnit = productPriceUnit;
-    }
-
-    public List<String> getProductUuids() {
-        return productUuids;
-    }
-
-    public void setProductUuids(List<String> productUuids) {
-        this.productUuids = productUuids;
+    public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
+        this.productPriceUnitUuids = productPriceUnitUuids;
     }
 }

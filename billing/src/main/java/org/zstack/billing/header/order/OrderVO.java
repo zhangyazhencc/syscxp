@@ -59,9 +59,6 @@ public class OrderVO {
     private ProductType productType;
 
     @Column
-    private BigDecimal productDiscount;
-
-    @Column
     @Enumerated(EnumType.STRING)
     private ProductChargeModel productChargeModel;
 
@@ -79,17 +76,6 @@ public class OrderVO {
 
     @Column
     private int duration;
-
-    @Column
-    private String productUnitPriceUuid;
-
-    public String getProductUnitPriceUuid() {
-        return productUnitPriceUuid;
-    }
-
-    public void setProductUnitPriceUuid(String productUnitPriceUuid) {
-        this.productUnitPriceUuid = productUnitPriceUuid;
-    }
 
     public String getUuid() {
         return uuid;
@@ -193,14 +179,6 @@ public class OrderVO {
 
     public void setProductType(ProductType productType) {
         this.productType = productType;
-    }
-
-    public BigDecimal getProductDiscount() {
-        return productDiscount;
-    }
-
-    public void setProductDiscount(BigDecimal productDiscount) {
-        this.productDiscount = productDiscount;
     }
 
     public ProductChargeModel getProductChargeModel() {

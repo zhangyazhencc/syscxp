@@ -39,8 +39,6 @@ public class OrderInventory {
 
     private ProductType productType;
 
-    private BigDecimal productDiscount;
-
     private ProductChargeModel productChargeModel;
 
     private String productDescription;
@@ -53,8 +51,6 @@ public class OrderInventory {
 
     private int duration;
 
-    private String productUnitPriceUuid;
-
     public static OrderInventory valueOf(OrderVO vo) {
         OrderInventory inv = new OrderInventory();
         inv.setUuid(vo.getUuid());
@@ -66,7 +62,6 @@ public class OrderInventory {
         inv.setPayTime(vo.getPayTime());
         inv.setProductChargeModel(vo.getProductChargeModel());
         inv.setProductDescription(vo.getProductDescription());
-        inv.setProductDiscount(vo.getProductDiscount());
         inv.setProductEffectTimeEnd(vo.getProductEffectTimeEnd());
         inv.setProductEffectTimeStart(vo.getProductEffectTimeStart());
         inv.setProductName(vo.getProductName());
@@ -77,7 +72,6 @@ public class OrderInventory {
         inv.setOriginalPrice(vo.getOriginalPrice());
         inv.setProductUuid(vo.getProductUuid());
         inv.setDuration(vo.getDuration());
-        inv.setProductUnitPriceUuid(vo.getProductUnitPriceUuid());
         return inv;
     }
 
@@ -89,13 +83,6 @@ public class OrderInventory {
         return lst;
     }
 
-    public String getProductUnitPriceUuid() {
-        return productUnitPriceUuid;
-    }
-
-    public void setProductUnitPriceUuid(String productUnitPriceUuid) {
-        this.productUnitPriceUuid = productUnitPriceUuid;
-    }
 
     public String getUuid() {
         return uuid;
@@ -201,14 +188,6 @@ public class OrderInventory {
         this.productType = productType;
     }
 
-    public BigDecimal getProductDiscount() {
-        return productDiscount;
-    }
-
-    public void setProductDiscount(BigDecimal productDiscount) {
-        this.productDiscount = productDiscount;
-    }
-
     public ProductChargeModel getProductChargeModel() {
         return productChargeModel;
     }
@@ -256,4 +235,5 @@ public class OrderInventory {
     public void setDuration(int duration) {
         this.duration = duration;
     }
+
 }
