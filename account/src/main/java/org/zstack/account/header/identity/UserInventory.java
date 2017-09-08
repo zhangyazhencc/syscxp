@@ -33,22 +33,25 @@ public class UserInventory {
         UserInventory inv = new UserInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
-        inv.setCreateDate(vo.getCreateDate());
         inv.setName(vo.getName());
         inv.setDepartment(vo.getDepartment());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
+
         inv.setUserType(vo.getUserType().toString());
+
         inv.setPhoneStatus(vo.getPhoneStatus().toString());
         inv.setEmailStatus(vo.getEmailStatus().toString());
         inv.setStatus(vo.getStatus().toString());
         inv.setTrueName(vo.getTrueName());
-        inv.setLastOpDate(vo.getLastOpDate());
         inv.setDescription(vo.getDescription());
 
         if(vo.getPolicy() != null){
             inv.setPolicy(vo.getPolicy());
         }
+
+        inv.setCreateDate(vo.getCreateDate());
+        inv.setLastOpDate(vo.getLastOpDate());
 
         return inv;
     }
@@ -180,4 +183,5 @@ public class UserInventory {
     public void setUserType(String userType) {
         this.userType = userType;
     }
+
 }

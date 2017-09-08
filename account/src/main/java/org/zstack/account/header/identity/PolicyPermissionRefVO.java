@@ -38,8 +38,6 @@ public class PolicyPermissionRefVO {
         return id;
     }
 
-
-
     public Timestamp getCreateDate() {
         return createDate;
     }
@@ -52,13 +50,27 @@ public class PolicyPermissionRefVO {
         this.id = id;
     }
 
-
-
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
     }
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public void setPolicyUuid(String policyUuid) {
+        this.policyUuid = policyUuid;
+    }
+
+    public void setPermissionUuid(String permissionUuid) {
+        this.permissionUuid = permissionUuid;
+    }
+
+    public String getPolicyUuid() {
+        return policyUuid;
+    }
+
+    public String getPermissionUuid() {
+        return permissionUuid;
     }
 }

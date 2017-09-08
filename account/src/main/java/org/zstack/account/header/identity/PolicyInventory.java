@@ -10,17 +10,27 @@ import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 @Inventory(mappingVOClass = PolicyVO.class)
 
 public class PolicyInventory {
+
+    private String name;
+    private String uuid;
+    private String accountUuid;
+    private String description;
+    private Timestamp createDate;
+    private Timestamp lastOpDate;
+
+    private Set<PermissionVO> permissions;
 
     public static PolicyInventory valueOf(PolicyVO vo) {
         PolicyInventory inv = new PolicyInventory();
         inv.setName(vo.getName());
         inv.setUuid(vo.getUuid());
         inv.setDescription(vo.getDescription());
-        inv.setStatements(JSONObjectUtil.toCollection(vo.getPolicyStatement(), ArrayList.class, PolicyStatement.class));
+        inv.setPermissions(vo.getPermissions());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -35,13 +45,7 @@ public class PolicyInventory {
         return invs;
     }
 
-    private List<PolicyStatement> statements;
-    private String name;
-    private String uuid;
-    private String accountUuid;
-    private String description;
-    private Timestamp createDate;
-    private Timestamp lastOpDate;
+
 
     public String getAccountUuid() {
         return accountUuid;
@@ -49,30 +53,6 @@ public class PolicyInventory {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
-    }
-
-    public void addStatement(PolicyStatement s) {
-        if (statements == null) {
-            statements = new ArrayList<PolicyStatement>();
-        }
-
-        statements.add(s);
-    }
-
-    public void addStatement(List<PolicyStatement> s) {
-        if (statements == null) {
-            statements = new ArrayList<PolicyStatement>();
-        }
-
-        statements.addAll(s);
-    }
-
-    public List<PolicyStatement> getStatements() {
-        return statements;
-    }
-
-    public void setStatements(List<PolicyStatement> statements) {
-        this.statements = statements;
     }
 
     public String getName() {
@@ -113,5 +93,13 @@ public class PolicyInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public Set<PermissionVO> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(Set<PermissionVO> permissions) {
+        this.permissions = permissions;
     }
 }

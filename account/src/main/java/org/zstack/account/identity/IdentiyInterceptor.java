@@ -480,6 +480,9 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
             TypedQuery<PolicyVO> q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
             q.setParameter("uuid", session.getUserUuid());
             return PolicyInventory.valueOf(q.getResultList());
+
+
+
         }
 
         private void suppressCredentialCheck() {

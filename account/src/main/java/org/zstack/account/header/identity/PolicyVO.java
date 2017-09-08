@@ -23,8 +23,13 @@ public class PolicyVO {
     @Column
     private String description;
 
-    @Column
-    private String policyStatement;
+    @ManyToMany(cascade=CascadeType.ALL,fetch = FetchType.EAGER)
+    @JoinTable(
+            name="PolicyPermissionRefVO",
+            joinColumns=@JoinColumn(name="policyUuid"),
+            inverseJoinColumns=@JoinColumn(name="permissionUuid")
+    )
+    private Set<PermissionVO> permissions;
 
     @Column
     private Timestamp createDate;
@@ -61,14 +66,6 @@ public class PolicyVO {
         this.name = name;
     }
 
-    public String getPolicyStatement() {
-        return policyStatement;
-    }
-
-    public void setPolicyStatement(String policyStatement) {
-        this.policyStatement = policyStatement;
-    }
-
     public String getAccountUuid() {
         return accountUuid;
     }
@@ -91,5 +88,13 @@ public class PolicyVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public Set<PermissionVO> getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(Set<PermissionVO> permissions) {
+        this.permissions = permissions;
     }
 }
