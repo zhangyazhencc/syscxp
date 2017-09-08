@@ -5,15 +5,13 @@ import org.zstack.header.query.APIQueryMessage;
 
 public class APIQueryExpendMessage extends APIQueryMessage {
 
-    @APIParam
-    private boolean selfSelect;
+    private String  accountUuid;
 
-    public boolean isSelfSelect() {
-        return selfSelect;
+    public String getAccountUuid() {
+        return accountUuid;
     }
 
-    public void setSelfSelect(boolean selfSelect) {
-        this.selfSelect = selfSelect;
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
-
 }

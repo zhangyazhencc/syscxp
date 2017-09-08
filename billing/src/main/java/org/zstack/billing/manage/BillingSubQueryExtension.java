@@ -1,6 +1,7 @@
 package org.zstack.billing.manage;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.zstack.billing.identity.IdentityInterceptor;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.query.APIQueryMessage;
@@ -20,9 +21,9 @@ public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
         }
         if (msg.getSession().getType().equals(AccountType.Proxy)) {
             if (msg instanceof APIQueryExpendMessage) {
-                if (!((APIQueryExpendMessage) msg).isSelfSelect()) {
-                    return null;
-                }
+               if(!StringUtils.isEmpty(((APIQueryExpendMessage) msg).getAccountUuid())){
+                   return String.format("%s.accountUuid = '%s'", inventoryClass.getSimpleName().toLowerCase(), ((APIQueryExpendMessage) msg).getAccountUuid());
+               }
             }
         }
 
