@@ -8,13 +8,13 @@ import java.util.List;
  * Created by DCY on 2017-09-06
  */
 public class APIQuerySwitchAttributionReply extends APIQueryReply {
-    private List<SwitchAttributionInventory> inventories;
+    private List<SwitchAttributionToNodeAndModelInventory> inventories;
 
-    public List<SwitchAttributionInventory> getInventories() {
+    public List<SwitchAttributionToNodeAndModelInventory> getInventories() {
         return inventories;
     }
 
-    public void setInventories(List<SwitchAttributionInventory> inventories) {
+    public void setInventories(List<SwitchAttributionToNodeAndModelInventory> inventories) {
         this.inventories = inventories;
     }
 }
