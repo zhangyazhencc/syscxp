@@ -29,15 +29,12 @@ import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
-import java.util.HashSet;
-import java.util.Random;
+import java.util.*;
 
 import org.apache.commons.codec.digest.DigestUtils;
 
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
-
-import java.util.Set;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class AccountBase extends AbstractAccount {
@@ -725,7 +722,19 @@ public class AccountBase extends AbstractAccount {
         pvo.setName(msg.getName());
         pvo.setAccountUuid(msg.getAccountUuid());
         pvo.setDescription(msg.getDescription());
-        pvo.setPolicyStatement(JSONObjectUtil.toJsonString(msg.getStatements()));
+
+        List<PolicyStatement> list = new ArrayList<>();
+        PolicyStatement  ps = new PolicyStatement();
+        ps.setEffect(StatementEffect.Allow);
+        List<String> actions = new ArrayList<>();
+        List uuids = msg.getPermissionUuids();
+        for(int i=0;i<uuids.size();i++){
+            actions.add(dbf.findByUuid(uuids.get(i).toString(),PermissionVO.class).getPermission());
+        }
+
+        ps.setActions(actions);
+        list.add(ps);
+        pvo.setPolicyStatement(JSONObjectUtil.toJsonString(list));
 
         APICreatePolicyEvent evt = new APICreatePolicyEvent(msg.getId());
 

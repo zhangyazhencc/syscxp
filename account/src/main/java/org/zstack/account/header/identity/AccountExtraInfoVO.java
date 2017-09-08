@@ -32,7 +32,6 @@ public class AccountExtraInfoVO {
     private AccountGrade grade;
 
     @Column
-    @org.zstack.header.vo.ForeignKey(parentEntityClass = UserVO.class, parentKey = "uuid", onDeleteAction = org.zstack.header.vo.ForeignKey.ReferenceOption.CASCADE)
     private String userUuid;
 
     @Column

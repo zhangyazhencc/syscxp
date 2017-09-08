@@ -1,16 +1,12 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.identity.Action;
-import org.zstack.header.identity.PolicyStatement;
-import org.zstack.header.identity.StatementEffect;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
 import java.util.List;
-
-import static org.zstack.utils.CollectionDSL.list;
 
 @Action(category = AccountConstant.ACTION_CATEGORY, names = {"user_policy"}, accountOnly = true)
 public class APICreatePolicyMsg extends  APIMessage implements AccountMessage{
@@ -21,14 +17,14 @@ public class APICreatePolicyMsg extends  APIMessage implements AccountMessage{
     private String description;
 
     @APIParam(nonempty = true)
-    private List<PolicyStatement> statements;
+    private List<String> permissionUuids;
 
-    public List<PolicyStatement> getStatements() {
-        return statements;
+    public List<String> getPermissionUuids() {
+        return permissionUuids;
     }
 
-    public void setStatements(List<PolicyStatement> statements) {
-        this.statements = statements;
+    public void setPermissionUuids(List<String> permissionUuids) {
+        this.permissionUuids = permissionUuids;
     }
 
     @Override
@@ -52,18 +48,6 @@ public class APICreatePolicyMsg extends  APIMessage implements AccountMessage{
         this.description = description;
     }
  
-    public static APICreatePolicyMsg __example__() {
-        APICreatePolicyMsg msg = new APICreatePolicyMsg();
-
-        msg.setName("USER-RESET-PASSWORD");
-
-        PolicyStatement s = new PolicyStatement();
-        s.setEffect(StatementEffect.Allow);
-        s.addAction(String.format("%s:%s", AccountConstant.ACTION_CATEGORY, APIUpdateUserMsg.class.getSimpleName()));
-        msg.setStatements(list(s));
-
-        return msg;
-    }
 
     public ApiNotification __notification__() {
         APIMessage that = this;

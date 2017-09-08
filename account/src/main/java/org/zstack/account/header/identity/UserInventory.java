@@ -20,6 +20,7 @@ public class UserInventory {
     private String emailStatus;
     private String phoneStatus;
 
+    private String userType;
     private String trueName;
     private String department;
     private String description;
@@ -37,6 +38,7 @@ public class UserInventory {
         inv.setDepartment(vo.getDepartment());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
+        inv.setUserType(vo.getUserType().toString());
         inv.setPhoneStatus(vo.getPhoneStatus().toString());
         inv.setEmailStatus(vo.getEmailStatus().toString());
         inv.setStatus(vo.getStatus().toString());
@@ -169,5 +171,13 @@ public class UserInventory {
 
     public void setPolicy(Set<PolicyVO> policy) {
         this.policy = policy;
+    }
+
+    public String getUserType() {
+        return userType;
+    }
+
+    public void setUserType(String userType) {
+        this.userType = userType;
     }
 }
