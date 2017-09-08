@@ -2,6 +2,7 @@ package org.zstack.tunnel.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.zstack.core.InnerMessageHelper;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.SQL;
@@ -17,6 +18,7 @@ import org.zstack.header.identity.*;
 import org.zstack.header.identity.SessionPolicyInventory.SessionPolicy;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.message.InnerAPIMessage;
 import org.zstack.header.rest.RESTFacade;
 import org.zstack.header.rest.RestAPIResponse;
 import org.zstack.header.rest.RestAPIState;
@@ -239,6 +241,10 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor ,ApiMessa
         void validate(APIMessage msg) {
             this.msg = msg;
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
+                suppressCredentialCheck();
+                return;
+            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)) {
+                innerCredentialCheck();
                 return;
             } else {
                 action = actions.get(msg.getClass());
@@ -415,6 +421,28 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor ,ApiMessa
             return null;
         }
 
+        private void suppressCredentialCheck() {
+            if (msg.getSession() != null && msg.getSession().getUuid() != null) {
+                SessionInventory session = sessions.get(msg.getSession().getUuid());
+                if (session != null) {
+                    msg.setSession(session);
+                }
+            }
+        }
+
+        private void innerCredentialCheck() {
+            if (msg instanceof InnerAPIMessage) {
+                if (InnerMessageHelper.validSignature((InnerAPIMessage) msg)){
+                    return;
+                }
+                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
+                        String.format("The parameters of the message[%s] are inconsistent ", msg.getMessageName())
+                ));
+            }
+            throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
+                    String.format("The type of the message[%s] is illegal ", msg.getMessageName())
+            ));
+        }
 
         private void sessionCheck() {
             if (msg.getSession() == null) {
