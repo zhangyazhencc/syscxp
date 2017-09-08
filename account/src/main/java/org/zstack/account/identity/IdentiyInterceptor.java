@@ -546,9 +546,6 @@ public class IdentiyInterceptor implements GlobalApiMessageInterceptor, ApiMessa
         return msg;
     }
 
-    public void check(APIMessage msg) {
-        new Auth().check(msg);
-    }
 
     public boolean isResourceHavingAccountReference(Class entityClass) {
         return resourceTypes.contains(entityClass);
