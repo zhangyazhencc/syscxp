@@ -324,7 +324,7 @@ public class NotificationManager extends AbstractService {
     }
 
     @AsyncThread
-    private void callWebhook(InnerAPIMessage msg) {
+    private void callWebhook(APIMessage msg) {
 
         restf.asyncJsonPost(NotificationGlobalConfig.WEBHOOK_URL.value(), RESTApiDecoder.dump(msg), new AsyncRESTCallback(msg) {
 
