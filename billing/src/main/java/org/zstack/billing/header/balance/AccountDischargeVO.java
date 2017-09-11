@@ -82,6 +82,11 @@ public class AccountDischargeVO {
         return lastOpDate;
     }
 
+    @PreUpdate
+    void preUpdate() {
+        lastOpDate = null;
+    }
+
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
     }
