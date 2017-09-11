@@ -9,11 +9,9 @@ import org.zstack.account.header.identity.APIValidateSessionReply;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.MessageSafe;
-import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.*;
 import org.zstack.core.db.SimpleQuery.Op;
 import org.zstack.core.errorcode.ErrorFacade;
-import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
@@ -162,39 +160,36 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     @Transactional
     private void handle(APIRegisterAccountMsg msg) {
 
-        AccountVO accountvo = new AccountVO();
+        AccountVO accountVO = new AccountVO();
+        accountVO.setUuid(Platform.getUuid());
+        accountVO.setName(msg.getName());
+        accountVO.setPassword(msg.getPassword());
+        accountVO.setCompany(msg.getCompany());
+        accountVO.setDescription(msg.getDescription());
+        accountVO.setEmail(msg.getEmail());
+        accountVO.setIndustry(msg.getIndustry());
+        accountVO.setPhone(msg.getPhone());
+        accountVO.setStatus(AccountStatus.Available);
+        accountVO.setType(AccountType.Normal);
+        accountVO.setPhoneStatus(ValidateStatus.Validated);
+        accountVO.setEmailStatus(ValidateStatus.Unvalidated);
 
-        accountvo.setUuid(Platform.getUuid());
-        accountvo.setName(msg.getName());
-        accountvo.setPassword(msg.getPassword());
-        accountvo.setCompany(msg.getCompany());
-        accountvo.setDescription(msg.getDescription());
-        accountvo.setEmail(msg.getEmail());
-        accountvo.setIndustry(msg.getIndustry());
-        accountvo.setPhone(msg.getPhone());
-        accountvo.setStatus(AccountStatus.Available);
-        accountvo.setType(AccountType.Normal);
-        accountvo.setPhoneStatus(ValidateStatus.Validated);
-        accountvo.setEmailStatus(ValidateStatus.Unvalidated);
+        AccountExtraInfoVO ext = new AccountExtraInfoVO();
+        ext.setUuid(accountVO.getUuid());
+        ext.setCreateWay("register");
+        accountVO.setAccountExtraInfo(ext);
 
-        accountvo = dbf.persistAndRefresh(accountvo);
-
-        AccountExtraInfoVO aeivo = new AccountExtraInfoVO();
-        aeivo.setUuid(Platform.getUuid());
-        aeivo.setAccountUuid(accountvo.getUuid());
-        aeivo.setCreateWay("register");
-
-        aeivo = dbf.persistAndRefresh(aeivo);
+        accountVO = dbf.persistAndRefresh(accountVO);
 
         AccountApiSecurityVO api = new AccountApiSecurityVO();
         api.setUuid(Platform.getUuid());
-        api.setAccountUuid(accountvo.getUuid());
+        api.setAccountUuid(accountVO.getUuid());
         api.setPrivateKey(getRandomString(36));
         api.setPublicKey(getRandomString(36));
         dbf.persistAndRefresh(api);
 
         APIRegisterAccountEvent evt = new APIRegisterAccountEvent(msg.getId());
-        evt.setInventory(AccountInventory.valueOf(accountvo));
+        evt.setInventory(AccountInventory.valueOf(accountVO));
         bus.publish(evt);
     }
 
@@ -260,7 +255,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void handle(APIValidateSessionMsg msg) {
         APIValidateSessionReply reply = new APIValidateSessionReply();
 
-        SessionInventory s = identiyInterceptor.getSessions().get(msg.getSessionUuid());
+        SessionInventory s = identiyInterceptor.getSession(msg.getSessionUuid());
         Timestamp current = dbf.getCurrentSqlTime();
         boolean valid = true;
 
@@ -300,7 +295,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void handle(APIGetSessionPolicyMsg msg) {
         APIGetSessionPolicyReply reply = new APIGetSessionPolicyReply();
 
-        SessionInventory s = identiyInterceptor.getSessions().get(msg.getSessionUuid());
+        SessionInventory s = identiyInterceptor.getSession(msg.getSessionUuid());
         Timestamp current = dbf.getCurrentSqlTime();
         boolean valid = true;
 
@@ -318,26 +313,14 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 valid = false;
             } else {
                 s = session.toSessionInventory();
+                if (s.isUserSession()) {
+                    s.setPolicyStatements(identiyInterceptor.getUserPolicyStatements(s.getUserUuid()));
+                }
             }
         }
 
         if (valid) {
-            SessionPolicyInventory sp = SessionPolicyInventory.valueOf(s);
-
-            if (s.isUserSession()) {
-                List<SessionPolicyInventory.SessionPolicy> policys = new ArrayList<SessionPolicyInventory.SessionPolicy>();
-                List<PolicyInventory> userPolicys = getUserPolicys(sp.getUserUuid());
-                for (PolicyInventory pi : userPolicys) {
-                    SessionPolicyInventory.SessionPolicy p = new SessionPolicyInventory.SessionPolicy();
-                    p.setUuid(pi.getUuid());
-                    p.setName(pi.getName());
-                    p.setStatements(pi.getStatements());
-                    policys.add(p);
-                }
-                sp.setStatements(policys);
-            }
-
-            reply.setSessionPolicyInventory(sp);
+            reply.setSessionInventory(s);
         }
 
         reply.setValidSession(valid);
@@ -388,7 +371,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             return;
         }
 
-        reply.setInventory(identiyInterceptor.getSession(user.getAccountUuid(), account.getType(), user.getUuid()));
+        reply.setInventory(identiyInterceptor.initSession(account, user));
         bus.reply(msg, reply);
     }
 
@@ -404,7 +387,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             return;
         }
 
-        reply.setInventory(identiyInterceptor.getSession(vo.getUuid(), vo.getType(), vo.getUuid()));
+        reply.setInventory(identiyInterceptor.initSession(vo, null));
         bus.reply(msg, reply);
     }
 
@@ -446,6 +429,10 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 vo.setEmailStatus(ValidateStatus.Validated);
                 vo.setType(AccountType.SystemAdmin);
                 vo.setStatus(AccountStatus.Available);
+
+                AccountExtraInfoVO ext = new AccountExtraInfoVO();
+                ext.setUuid(vo.getUuid());
+                vo.setAccountExtraInfo(ext);
 
                 dbf.persist(vo);
                 logger.debug(String.format("Created initial system admin account[name:%s]", AccountConstant.INITIAL_SYSTEM_ADMIN_NAME));
@@ -604,7 +591,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void validate(APIUpdateUserEmailMsg msg) {
 //        if () {
 //            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-//                    msg.getSession().getAccountUuid()));
+//                    msg.initSession().getAccountUuid()));
 //        }
     }
 
@@ -636,7 +623,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void validate(APIUpdateAccountEmailMsg msg) {
 //        if () {
 //            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-//                    msg.getSession().getAccountUuid()));
+//                    msg.initSession().getAccountUuid()));
 //        }
     }
 
@@ -652,10 +639,16 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APICreateAccountMsg msg) {
+        if (msg.getSession().getType() != AccountType.SystemAdmin
+                && msg.getSession().getType() != AccountType.Proxy){
+            throw new ApiMessageInterceptionException(argerr("unable to create a account. account[uuid:%s] is not admin or proxy",
+                    msg.getSession().getAccountUuid()));
+        }
+
         SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
         q.add(AccountVO_.name, Op.EQ, msg.getName());
         if (q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("unable to create an account. An account already called %s", msg.getName()));
+            throw new ApiMessageInterceptionException(argerr("unable to create an account. A account already called %s", msg.getName()));
         }
     }
 

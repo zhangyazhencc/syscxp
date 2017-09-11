@@ -13,7 +13,6 @@ import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.GlobalApiMessageInterceptor;
 import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.*;
-import org.zstack.header.identity.SessionPolicyInventory.SessionPolicy;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.InnerAPIMessage;
@@ -38,18 +37,18 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
     private static final CLogger logger = Utils.getLogger(AbstractIdentityInterceptor.class);
 
     @Autowired
-    private DatabaseFacade dbf;
+    protected DatabaseFacade dbf;
     @Autowired
-    private ErrorFacade errf;
+    protected ErrorFacade errf;
     @Autowired
-    private ThreadFacade thdf;
+    protected ThreadFacade thdf;
     @Autowired
-    private PluginRegistry pluginRgty;
+    protected PluginRegistry pluginRgty;
 
     private List<String> resourceTypeForAccountRef;
     private List<Class> resourceTypes;
 
-    private Map<String, SessionPolicyInventory> sessions = new ConcurrentHashMap<>();
+    protected Map<String, SessionInventory> sessions = new ConcurrentHashMap<>();
 
 
     class AccountCheckField {
@@ -69,25 +68,11 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
     private Map<Class, MessageAction> actions = new HashMap<>();
     private Future<Void> expiredSessionCollector;
 
-
-    public Map<String, SessionPolicyInventory> getSessions() {
-        return sessions;
-    }
-
-    public DatabaseFacade getDbf(){
-        return this.dbf;
-    }
-
     public void checkApiMessagePermission(APIMessage msg) {
         new Auth().check(msg);
     }
 
-    public void validate(APIMessage msg) {
-        new Auth().validate(msg);
-    }
-
-
-    public boolean isAdmin(SessionPolicyInventory session) {
+    public boolean isAdmin(SessionInventory session) {
         return session.isAdminAccountSession();
     }
 
@@ -118,6 +103,8 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         }
     }
 
+    protected abstract void removeExpiredSession(List<String> sessionUuids);
+
     private void startExpiredSessionCollector() {
         logger.debug("startExpiredSessionCollector");
         final int interval = CoreGlobalProperty.SESSION_CLEANUP_INTERVAL;
@@ -126,13 +113,15 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
             private List<String> deleteExpiredSessions() {
                 List<String> uuids = new ArrayList<String>();
                 Timestamp curr = getCurrentSqlDate();
-                for (Map.Entry<String, SessionPolicyInventory> entry : sessions.entrySet()) {
-                    SessionPolicyInventory sp = entry.getValue();
+                for (Map.Entry<String, SessionInventory> entry : sessions.entrySet()) {
+                    SessionInventory sp = entry.getValue();
                     if (curr.after(sp.getExpiredDate())) {
                         uuids.add(sp.getUuid());
                     }
-
                 }
+
+                removeExpiredSession(uuids);
+
                 return uuids;
             }
 
@@ -223,13 +212,13 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
     }
 
     @Transactional(readOnly = true)
-    Timestamp getCurrentSqlDate() {
+    public Timestamp getCurrentSqlDate() {
         return dbf.getCurrentSqlTime();
     }
 
     class Auth {
         APIMessage msg;
-        SessionPolicyInventory session;
+        SessionInventory session;
         MessageAction action;
         String username;
 
@@ -257,7 +246,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
             } else {
                 DebugUtils.Assert(msg.getSession() != null, "session cannot be null");
 
-                session = SessionPolicyInventory.valueOf(msg.getSession());
+                session = msg.getSession();
 
                 action = actions.get(msg.getClass());
                 policyCheck();
@@ -309,9 +298,9 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
             String policyCategory = userPolicy ? "user policy" : "group policy";
 
             if (d.effect == StatementEffect.Allow) {
-                logger.debug(String.format("API[name: %s, action: %s] is approved by a %s[name: %s, uuid: %s]," + " statement[action: %s]", msg.getClass().getSimpleName(), d.action, policyCategory, d.policy.getName(), d.policy.getUuid(), d.actionRule));
+                logger.debug(String.format("API[name: %s, action: %s] is approved by a %s[name: %s, uuid: %s]," + " statement[action: %s]", msg.getClass().getSimpleName(), d.action, policyCategory, d.statement.getName(), d.statement.getUuid(), d.actionRule));
             } else {
-                logger.debug(String.format("API[name: %s, action: %s] is denied by a %s[name: %s, uuid: %s]," + " statement[action: %s]", msg.getClass().getSimpleName(), d.action, policyCategory, d.policy.getName(), d.policy.getUuid(), d.actionRule));
+                logger.debug(String.format("API[name: %s, action: %s] is denied by a %s[name: %s, uuid: %s]," + " statement[action: %s]", msg.getClass().getSimpleName(), d.action, policyCategory, d.statement.getName(), d.statement.getUuid(), d.actionRule));
 
                 throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.PERMISSION_DENIED, String.format("%s denied. user[name: %s, uuid: %s] is denied to execute API[%s]", policyCategory, username, session.getUuid(), msg.getClass().getSimpleName())));
             }
@@ -347,7 +336,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                 }
             }
 
-            List<SessionPolicy> userPolicys = session.getSessionPolicys();
+            List<PolicyStatement> userPolicys = session.getPolicyStatements();
             Decision d = decide(userPolicys);
             if (d != null) {
                 useDecision(d, true);
@@ -358,34 +347,30 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         }
 
         class Decision {
-            SessionPolicy policy;
             String action;
             PolicyStatement statement;
             String actionRule;
             StatementEffect effect;
         }
 
-        private Decision decide(List<SessionPolicy> userPolicys) {
+        private Decision decide(List<PolicyStatement> userPolicys) {
             for (String a : action.actions) {
-                for (SessionPolicy p : userPolicys) {
-                    for (PolicyStatement s : p.getStatements()) {
-                        for (String ac : s.getActions()) {
-                            Pattern pattern = Pattern.compile(ac);
-                            Matcher m = pattern.matcher(a);
-                            boolean ret = m.matches();
-                            if (ret) {
-                                Decision d = new Decision();
-                                d.policy = p;
-                                d.action = a;
-                                d.statement = s;
-                                d.actionRule = ac;
-                                d.effect = s.getEffect();
-                                return d;
-                            }
+                for (PolicyStatement s : userPolicys) {
+                    for (String ac : s.getActions()) {
+                        Pattern pattern = Pattern.compile(ac);
+                        Matcher m = pattern.matcher(a);
+                        boolean ret = m.matches();
+                        if (ret) {
+                            Decision d = new Decision();
+                            d.action = a;
+                            d.statement = s;
+                            d.actionRule = ac;
+                            d.effect = s.getEffect();
+                            return d;
+                        }
 
-                            if (logger.isTraceEnabled()) {
-                                logger.trace(String.format("API[name: %s, action: %s] is not matched by policy[name: %s, uuid: %s" + ", statement[action: %s, effect: %s]", msg.getClass().getSimpleName(), a, p.getName(), p.getUuid(), ac, s.getEffect()));
-                            }
+                        if (logger.isTraceEnabled()) {
+                            logger.trace(String.format("API[name: %s, action: %s] is not matched by policy[name: %s, uuid: %s" + ", statement[action: %s, effect: %s]", msg.getClass().getSimpleName(), a, s.getName(), s.getUuid(), ac, s.getEffect()));
                         }
                     }
                 }
@@ -430,37 +415,41 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
             if (session == null) {
                 session = getSessionInventory(msg.getSession().getUuid());
                 sessions.put(session.getUuid(), session);
-            } else {
-                Timestamp curr = getCurrentSqlDate();
-                if (curr.after(session.getExpiredDate())) {
-                    logger.debug(String.format("session expired[%s < %s] for account[uuid:%s, session id:%s]", curr, session.getExpiredDate(), session.getAccountUuid(), session.getUuid()));
-                    logOutSession(session.getUuid());
-                    throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION, "Session expired"));
-                }
             }
 
-            afterSessionCHeck(session.getAccountUuid());
+            Timestamp curr = getCurrentSqlDate();
+            if (curr.after(session.getExpiredDate())) {
+                logger.debug(String.format("session expired[%s < %s] for account[uuid:%s]", curr,
+                        session.getExpiredDate(), session.getAccountUuid()));
+                logOutSession(session.getUuid());
+                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION, "Session expired"));
+            }
         }
     }
 
-    public abstract SessionPolicyInventory getSessionInventory(String sessionUuid);
+    protected abstract SessionInventory getSessionInventory(String sessionUuid);
 
-    public abstract void afterSessionCHeck(String accountUuid);
+    protected abstract SessionInventory logOutSessionRemove(String sessionUuid);
 
     public void logOutSession(String sessionUuid) {
-        SessionPolicyInventory session = sessions.get(sessionUuid);
+
+        SessionInventory session = sessions.get(sessionUuid);
+        if (session == null) {
+            session = logOutSessionRemove(sessionUuid);
+        }
 
         if (session == null) {
             return;
         }
 
-        final SessionPolicyInventory finalSession = session;
-        CollectionUtils.safeForEach(pluginRgty.getExtensionList(SessionLogoutExtensionPoint.class), new ForEachFunction<SessionLogoutExtensionPoint>() {
-            @Override
-            public void run(SessionLogoutExtensionPoint ext) {
-                ext.sessionLogout(finalSession);
-            }
-        });
+        final SessionInventory finalSession = session;
+        CollectionUtils.safeForEach(pluginRgty.getExtensionList(SessionLogoutExtensionPoint.class),
+                new ForEachFunction<SessionLogoutExtensionPoint>() {
+                    @Override
+                    public void run(SessionLogoutExtensionPoint ext) {
+                        ext.sessionLogout(finalSession);
+                    }
+                });
 
         sessions.remove(sessionUuid);
     }
@@ -481,4 +470,11 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         this.resourceTypeForAccountRef = resourceTypeForAccountRef;
     }
 
+    public Map<String, SessionInventory> getSessions() {
+        return sessions;
+    }
+
+    public SessionInventory getSession(String sessionUuid) {
+        return sessions.get(sessionUuid);
+    }
 }

@@ -216,7 +216,6 @@ CREATE TABLE `PermissionVO` (
 
 CREATE TABLE `AccountExtraInfoVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-	`accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '账户uuid',
 	`grade` varchar(36) DEFAULT NULL COMMENT '客户等级',
 	`userUuid` varchar(36) DEFAULT NULL COMMENT '业务员uuid',
   `createWay` varchar(36) NOT NULL COMMENT '注册渠道',

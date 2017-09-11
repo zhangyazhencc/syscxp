@@ -50,7 +50,7 @@ public class UserVO {
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
 
-    @ManyToMany(cascade=CascadeType.ALL,fetch = FetchType.EAGER)
+    @ManyToMany(cascade=CascadeType.ALL,fetch = FetchType.LAZY)
     @JoinTable(
             name="UserPolicyRefVO",
             joinColumns=@JoinColumn(name="userUuid"),

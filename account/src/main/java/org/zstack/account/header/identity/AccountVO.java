@@ -64,9 +64,9 @@ public class AccountVO {
     @Enumerated(EnumType.STRING)
     private AccountType type;
 
-    @OneToMany(cascade = CascadeType.ALL,fetch = FetchType.EAGER )
-    @JoinColumn(name = "accountUuid")
-    private Set<AccountExtraInfoVO> accountEx;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "uuid")
+    private  AccountExtraInfoVO accountExtraInfo;
 
     @Column
     private Timestamp createDate;
@@ -199,11 +199,11 @@ public class AccountVO {
         this.emailStatus = emailStatus;
     }
 
-    public Set<AccountExtraInfoVO> getAccountEx() {
-        return accountEx;
+    public AccountExtraInfoVO getAccountExtraInfo() {
+        return accountExtraInfo;
     }
 
-    public void setAccountEx(Set<AccountExtraInfoVO> accountEx) {
-        this.accountEx = accountEx;
+    public void setAccountExtraInfo(AccountExtraInfoVO accountExtraInfo) {
+        this.accountExtraInfo = accountExtraInfo;
     }
 }

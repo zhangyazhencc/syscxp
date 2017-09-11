@@ -7,7 +7,7 @@ public class APIGetSessionPolicyReply extends APIReply {
 
     private boolean validSession;
 
-    private SessionPolicyInventory sessionPolicyInventory;
+    private SessionInventory sessionInventory;
 
     public boolean isValidSession() {
         return validSession;
@@ -17,16 +17,11 @@ public class APIGetSessionPolicyReply extends APIReply {
         this.validSession = validSession;
     }
 
-    public SessionPolicyInventory getSessionPolicyInventory() {
-        return sessionPolicyInventory;
+    public SessionInventory getSessionInventory() {
+        return sessionInventory;
     }
 
-    public void setSessionPolicyInventory(SessionPolicyInventory sessionPolicyInventory) {
-        this.sessionPolicyInventory = sessionPolicyInventory;
-    }
-
-    @Override
-    public String toString() {
-        return "APIGetSessionPolicyReply{" + "validSession=" + validSession + ", sessionPolicyInventory=" + sessionPolicyInventory + '}';
+    public void setSessionInventory(SessionInventory sessionInventory) {
+        this.sessionInventory = sessionInventory;
     }
 }
