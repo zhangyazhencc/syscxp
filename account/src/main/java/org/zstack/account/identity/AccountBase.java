@@ -610,6 +610,14 @@ public class AccountBase extends AbstractAccount {
             dbf.persist(prevo);
         }
 
+        AccountApiSecurityVO api = new AccountApiSecurityVO();
+        api.setUuid(Platform.getUuid());
+        api.setAccountUuid(accountVO.getUuid());
+        api.setPrivateKey(getRandomString(36));
+        api.setPublicKey(getRandomString(36));
+        dbf.persist(api);
+
+
         APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
         evt.setInventory(AccountInventory.valueOf(accountVO));
         bus.publish(evt);
@@ -649,15 +657,7 @@ public class AccountBase extends AbstractAccount {
             uservo.setPolicySet(policySet);
         }
 
-
         uservo = dbf.persistAndRefresh(uservo);
-
-//        AccountApiSecurityVO api = new AccountApiSecurityVO();
-//        api.setUuid(Platform.getUuid());
-//        api.setAccountUuid(accountVO.getUuid());
-//        api.setPrivateKey(getRandomString(36));
-//        api.setPublicKey(getRandomString(36));
-//        dbf.persist(api);
 
         APICreateUserEvent evt = new APICreateUserEvent(msg.getId());
         evt.setInventory(UserInventory.valueOf(uservo));
