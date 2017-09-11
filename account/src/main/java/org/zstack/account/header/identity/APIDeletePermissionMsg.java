@@ -11,7 +11,7 @@ import org.zstack.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/08/15.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"permission"}, adminOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"delete"}, adminOnly = true)
 public class APIDeletePermissionMsg extends APIDeleteMessage implements AccountMessage{
     @APIParam(resourceType = PermissionVO.class, checkAccount = true, operationTarget = true, successIfResourceNotExisting = true)
     private String uuid;

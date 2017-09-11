@@ -6,7 +6,7 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
-@Action(adminOnly = true, category = AccountConstant.ACTION_CATEGORY, names = {"account_contact"})
+@Action(adminOnly = true, category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
 public class APICreateAccountContactsMsg extends  APIMessage implements  AccountMessage {
 
     @APIParam(maxLength = 32)

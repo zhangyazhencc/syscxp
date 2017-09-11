@@ -8,7 +8,7 @@ import org.zstack.tunnel.manage.TunnelConstant;
 /**
  * Created by DCY on 2017-08-30
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"host"}, adminOnly = true)
+@Action(category = TunnelConstant.ACTION_CATEGORY_HOST, names = {"update"}, adminOnly = true)
 public class APIUpdateHostMonitorMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = HostMonitorVO.class)

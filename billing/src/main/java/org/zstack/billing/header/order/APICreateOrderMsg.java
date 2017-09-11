@@ -9,7 +9,7 @@ import org.zstack.header.message.APIParam;
 
 import java.util.List;
 
-@Action(category = BillingConstant.ACTION_CATEGORY, names = {"order"}, accountOnly = false)
+@Action(category = BillingConstant.ACTION_CATEGORY_ORDER, names = {"create"})
 public class APICreateOrderMsg extends APIMessage {
 
     @APIParam(emptyString = false)

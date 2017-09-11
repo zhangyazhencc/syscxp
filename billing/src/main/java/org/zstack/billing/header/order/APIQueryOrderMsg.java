@@ -7,7 +7,7 @@ import org.zstack.header.message.APIParam;
 import org.zstack.header.query.APIQueryMessage;
 import org.zstack.header.query.AutoQuery;
 
-@Action(category = BillingConstant.ACTION_CATEGORY, names = {"read", "order"})
+@Action(category = BillingConstant.ACTION_CATEGORY_ORDER, names = {"read"})
 @AutoQuery(replyClass = APIQueryOrderReply.class, inventoryClass = OrderInventory.class)
 public class APIQueryOrderMsg extends APIQueryExpendMessage {
 

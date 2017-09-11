@@ -13,6 +13,8 @@ import org.zstack.header.notification.ApiNotification;
 @SuppressCredentialCheck
 public class APIUserPWDBackMsg extends APIMessage  {
 
+    @APIParam
+    private String accountName;
 
     @APIParam
     private String phone;
@@ -45,6 +47,15 @@ public class APIUserPWDBackMsg extends APIMessage  {
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+
+    public String getAccountName() {
+        return accountName;
+    }
+
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
     }
 
     public ApiNotification __notification__() {

@@ -5,7 +5,7 @@ import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
-@Action(category = BillingConstant.ACTION_CATEGORY, names = {"receipt"}, proxyOnly = true)
+@Action(category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"update"})
 public class APIUpdateReceiptMsg extends APIMessage{
 
     @APIParam(emptyString = false)

@@ -5,7 +5,7 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;
 
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"api_key"}, accountOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
 public class APIGetAccountApiKeyMsg extends APISyncCallMessage implements  AccountMessage {
 
     @APIParam(maxLength = 32)

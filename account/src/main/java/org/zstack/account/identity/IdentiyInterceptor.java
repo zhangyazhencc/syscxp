@@ -45,6 +45,7 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
         long expiredTime = getCurrentSqlDate().getTime() + TimeUnit.SECONDS.toMillis(sessionTimeout);
         svo.setExpiredDate(new Timestamp(expiredTime));
         svo = dbf.persistAndRefresh(svo);
+
         SessionInventory session = svo.toSessionInventory();
 
         if (session.isUserSession()) {
@@ -61,7 +62,7 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
         List<PolicyStatement> policyStatements = new ArrayList<>();
         UserVO user = dbf.findByUuid(userUuid, UserVO.class);
 
-        for (PolicyVO policy : user.getPolicy()) {
+        for (PolicyVO policy : user.getPolicySet()) {
             for (PermissionVO permission : policy.getPermissionSet()) {
                 PolicyStatement p = JSONObjectUtil.toObject(permission.getPermission(), PolicyStatement.class);
                 p.setUuid(permission.getUuid());

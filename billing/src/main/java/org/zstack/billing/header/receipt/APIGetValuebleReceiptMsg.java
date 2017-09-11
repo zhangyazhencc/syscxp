@@ -4,7 +4,7 @@ import org.zstack.billing.manage.BillingConstant;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APISyncCallMessage;
 
-@Action(category = BillingConstant.ACTION_CATEGORY, names = {"read", "receipt"})
+@Action(category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"read"})
 public class APIGetValuebleReceiptMsg extends APISyncCallMessage {
 
 
