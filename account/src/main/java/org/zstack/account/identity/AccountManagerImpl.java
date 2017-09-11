@@ -470,6 +470,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 AccountExtraInfoVO ext = new AccountExtraInfoVO();
                 ext.setUuid(vo.getUuid());
                 ext.setGrade(AccountGrade.Normal);
+                ext.setCreateWay(AccountType.SystemAdmin.toString());
                 vo.setAccountExtraInfo(ext);
 
                 dbf.persist(vo);
