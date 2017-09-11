@@ -591,7 +591,7 @@ public class AccountBase extends AbstractAccount {
 
         AccountExtraInfoVO ext = new AccountExtraInfoVO();
         ext.setUuid(accountVO.getUuid());
-        ext.setCreateWay("register");
+        ext.setCreateWay(msg.getSession().getType().toString());
         if(msg.getGrade() != null){
             ext.setGrade(msg.getGrade());
         }else{
@@ -599,8 +599,6 @@ public class AccountBase extends AbstractAccount {
         }
 
         ext.setUserUuid(msg.getUserUuid());
-
-        ext.setCreateWay(msg.getSession().getType().toString());
 
         accountVO.setAccountExtraInfo(ext);
 
