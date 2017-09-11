@@ -15,10 +15,10 @@ public class APIVerifyRepetitionMsg extends APIMessage {
     private String accountName;
 
     @APIParam(maxLength = 128, required = false)
-    private String AccountEmail;
+    private String accountEmail;
 
     @APIParam(maxLength = 32, required = false)
-    private String AccountPhone;
+    private String accountPhone;
 
     @APIParam(maxLength = 128, required = false)
     private String userName;
@@ -32,19 +32,19 @@ public class APIVerifyRepetitionMsg extends APIMessage {
     }
 
     public String getAccountEmail() {
-        return AccountEmail;
+        return accountEmail;
     }
 
     public void setAccountEmail(String accountEmail) {
-        AccountEmail = accountEmail;
+        this.accountEmail = accountEmail;
     }
 
     public String getAccountPhone() {
-        return AccountPhone;
+        return accountPhone;
     }
 
     public void setAccountPhone(String accountPhone) {
-        AccountPhone = accountPhone;
+        this.accountPhone = accountPhone;
     }
 
     public String getUserName() {

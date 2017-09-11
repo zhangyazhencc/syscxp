@@ -8,8 +8,8 @@ import org.zstack.header.message.APIReply;
 public class APIVerifyRepetitionReply extends APIReply {
 
     private boolean accountName;
-    private boolean AccountEmail;
-    private boolean AccountPhone;
+    private boolean accountEmail;
+    private boolean accountPhone;
     private boolean userName;
 
     public boolean isAccountName() {
@@ -21,19 +21,19 @@ public class APIVerifyRepetitionReply extends APIReply {
     }
 
     public boolean isAccountEmail() {
-        return AccountEmail;
+        return accountEmail;
     }
 
     public void setAccountEmail(boolean accountEmail) {
-        AccountEmail = accountEmail;
+        this.accountEmail = accountEmail;
     }
 
     public boolean isAccountPhone() {
-        return AccountPhone;
+        return accountPhone;
     }
 
     public void setAccountPhone(boolean accountPhone) {
-        AccountPhone = accountPhone;
+        this.accountPhone = accountPhone;
     }
 
     public boolean isUserName() {
