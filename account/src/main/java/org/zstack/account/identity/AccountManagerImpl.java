@@ -42,7 +42,6 @@ import static org.zstack.core.Platform.operr;
 
 /**
  * Created by zxhread on 17/8/3.
- * modify by wangwg on 2017/08/16
  */
 public class AccountManagerImpl extends AbstractService implements AccountManager, PrepareDbInitialValueExtensionPoint,
         ApiMessageInterceptor {
@@ -117,9 +116,46 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIAccountPWDBackMsg) msg);
         } else if(msg instanceof APIUserPWDBackMsg){
             handle((APIUserPWDBackMsg) msg);
+        } else if(msg instanceof APIVerifyRepetitionMsg){
+            handle((APIVerifyRepetitionMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIVerifyRepetitionMsg msg) {
+        APIVerifyRepetitionReply reply = new APIVerifyRepetitionReply();
+
+        if(msg.getAccountName() != null){
+            SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
+            q.add(AccountVO_.name, Op.EQ, msg.getAccountName());
+            if(q.isExists()){
+                reply.setAccountName(false);
+            }
+        }
+
+        if(msg.getAccountEmail() != null){
+            SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
+            q.add(AccountVO_.email, Op.EQ, msg.getAccountEmail());
+            if(q.isExists()){
+                reply.setAccountEmail(false);
+            }
+        }
+        if(msg.getAccountPhone() != null){
+            SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
+            q.add(AccountVO_.phone, Op.EQ, msg.getAccountPhone());
+            if(q.isExists()){
+                reply.setAccountPhone(false);
+            }
+        }
+        if(msg.getUserName() != null){
+            SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
+            q.add(UserVO_.email, Op.EQ, msg.getUserName());
+            if(q.isExists()){
+                reply.setUserName(false);
+            }
+        }
+        bus.reply(msg, reply);
     }
 
     private void handle(APIAccountPWDBackMsg msg) {
