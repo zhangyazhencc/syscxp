@@ -28,6 +28,7 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
 
         APIGetSessionPolicyMsg aMsg = new APIGetSessionPolicyMsg();
         aMsg.setSessionUuid(sessionUuid);
+        InnerMessageHelper.setMD5(aMsg);
         String gstr = RESTApiDecoder.dump(aMsg);
         RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
         SessionInventory session = null;
