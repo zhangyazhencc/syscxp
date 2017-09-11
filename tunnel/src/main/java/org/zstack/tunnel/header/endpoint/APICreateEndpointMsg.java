@@ -3,13 +3,14 @@ package org.zstack.tunnel.header.endpoint;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.manage.NodeConstant;
 import org.zstack.tunnel.manage.TunnelConstant;
 
 /**
  * Created by DCY on 2017-08-23
  */
 
-@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"endpoint"}, adminOnly = true)
+@Action(category = NodeConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreateEndpointMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32)

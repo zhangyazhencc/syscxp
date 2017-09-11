@@ -1,11 +1,15 @@
 package org.zstack.tunnel.header.node;
 
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.manage.NodeConstant;
 
 /**
  * Created by DCY on 2017-08-21
  */
+@Action(category = NodeConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
+
 public class APIUpdateNodeMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = NodeVO.class)

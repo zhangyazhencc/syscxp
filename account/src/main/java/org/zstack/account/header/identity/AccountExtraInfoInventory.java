@@ -12,26 +12,26 @@ import java.util.List;
 public class AccountExtraInfoInventory {
 
     private String uuid;
-    private String accountUuid;
     private String grade;
     private String salesman;
     private String createWay;
+    private String userUuid;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    public AccountExtraInfoInventory valueOf(AccountExtraInfoVO vo) {
+    public static AccountExtraInfoInventory valueOf(AccountExtraInfoVO vo) {
         AccountExtraInfoInventory inv = new AccountExtraInfoInventory();
         inv.setUuid(vo.getUuid());
-        inv.setAccountUuid(vo.getAccountUuid());
         inv.setGrade(vo.getGrade().toString());
         inv.setSalesman(vo.getUserUuid());
+        inv.setUserUuid(vo.getUserUuid());
         inv.setCreateWay(vo.getCreateWay());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
     }
 
-    public List<AccountExtraInfoInventory> valueOf(Collection<AccountExtraInfoVO> vos) {
+    public static List<AccountExtraInfoInventory> valueOf(Collection<AccountExtraInfoVO> vos) {
         List<AccountExtraInfoInventory> invs = new ArrayList<AccountExtraInfoInventory>();
         for (AccountExtraInfoVO vo : vos) {
             invs.add(valueOf(vo));
@@ -51,10 +51,6 @@ public class AccountExtraInfoInventory {
 
     public String getUuid() {
         return uuid;
-    }
-
-    public String getAccountUuid() {
-        return accountUuid;
     }
 
     public String getGrade() {
@@ -85,10 +81,6 @@ public class AccountExtraInfoInventory {
         this.uuid = uuid;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
-
     public void setGrade(String grade) {
         this.grade = grade;
     }
@@ -97,4 +89,11 @@ public class AccountExtraInfoInventory {
         this.salesman = salesman;
     }
 
+    public String getUserUuid() {
+        return userUuid;
+    }
+
+    public void setUserUuid(String userUuid) {
+        this.userUuid = userUuid;
+    }
 }

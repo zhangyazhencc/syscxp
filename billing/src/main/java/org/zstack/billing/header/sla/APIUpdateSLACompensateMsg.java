@@ -8,7 +8,7 @@ import org.zstack.header.message.APIParam;
 
 import java.sql.Timestamp;
 
-@Action(category = BillingConstant.ACTION_CATEGORY, names = {"sla"})
+@Action(category = BillingConstant.ACTION_CATEGORY_SLA, names = {"update"})
 public class APIUpdateSLACompensateMsg extends APIMessage {
     @APIParam(emptyString =false)
     private String uuid;

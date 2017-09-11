@@ -8,7 +8,7 @@ import org.zstack.header.message.APIParam;
  * Time: 9:38 PM
  * To change this template use File | Settings | File Templates.
  */
-@SuppressCredentialCheck
+@InnerCredentialCheck
 public class APIGetSessionPolicyMsg extends APISessionMessage {
     @APIParam(nonempty = true)
     private String sessionUuid;

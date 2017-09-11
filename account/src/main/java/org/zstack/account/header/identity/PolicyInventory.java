@@ -23,14 +23,14 @@ public class PolicyInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    private Set<PermissionVO> permissions;
+    private List<PermissionInventory> permissions;
 
     public static PolicyInventory valueOf(PolicyVO vo) {
         PolicyInventory inv = new PolicyInventory();
         inv.setName(vo.getName());
         inv.setUuid(vo.getUuid());
         inv.setDescription(vo.getDescription());
-        inv.setPermissions(vo.getPermissions());
+        inv.setPermissions(PermissionInventory.valueOf(vo.getPermissions()));
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -95,11 +95,11 @@ public class PolicyInventory {
         this.lastOpDate = lastOpDate;
     }
 
-    public Set<PermissionVO> getPermissions() {
+    public List<PermissionInventory> getPermissions() {
         return permissions;
     }
 
-    public void setPermissions(Set<PermissionVO> permissions) {
+    public void setPermissions(List<PermissionInventory> permissions) {
         this.permissions = permissions;
     }
 }

@@ -11,7 +11,7 @@ import static org.zstack.utils.CollectionDSL.list;
 /**
  * Created by xing5 on 2016/3/10.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"read"})
+@Action(category = AccountConstant.ACTION_CATEGORY_USER, names = {"read"})
 public class APICheckApiPermissionMsg extends APISyncCallMessage {
     @APIParam(required = false, resourceType = UserVO.class)
     private String userUuid;

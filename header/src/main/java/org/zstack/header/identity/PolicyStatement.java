@@ -8,6 +8,8 @@ import java.util.List;
  */
 public class PolicyStatement {
 
+    private String uuid;
+    private String name;
     private StatementEffect effect;
     private List<String> actions;
 
@@ -32,5 +34,21 @@ public class PolicyStatement {
             actions = new ArrayList<String>();
         }
         actions.add(a);
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

@@ -1,11 +1,14 @@
 package org.zstack.tunnel.header.host;
 
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.manage.TunnelConstant;
 
 /**
  * Created by DCY on 2017-08-30
  */
+@Action(category = TunnelConstant.ACTION_CATEGORY_HOST, names = {"update"}, adminOnly = true)
 public class APIUpdateHostMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = HostVO.class)

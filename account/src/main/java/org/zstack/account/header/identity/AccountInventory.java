@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 
 @Inventory(mappingVOClass = AccountVO.class)
-
 public class AccountInventory {
     private String uuid;
     private String name;
@@ -33,10 +32,10 @@ public class AccountInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    private Set<AccountExtraInfoVO> accountEx;
+    private AccountExtraInfoInventory extraInfo;
 
 
-    public static AccountInventory valueOf(AccountVO vo,AccountExtraInfoVO aeivo) {
+    public static AccountInventory valueOf(AccountVO vo, AccountExtraInfoVO aeivo) {
         AccountInventory inv = new AccountInventory();
         inv.setUuid(vo.getUuid());
         inv.setName(vo.getName());
@@ -75,9 +74,7 @@ public class AccountInventory {
         inv.setDescription(vo.getDescription());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
-        if(vo.getAccountEx() != null){
-            inv.setAccountEx(vo.getAccountEx());
-        }
+        inv.setExtraInfo(AccountExtraInfoInventory.valueOf(vo.getAccountExtraInfo()));
 
         inv.setEmailStatus(vo.getEmailStatus().toString());
         inv.setPhoneStatus(vo.getPhoneStatus().toString());
@@ -238,11 +235,11 @@ public class AccountInventory {
         this.userUuid = userUuid;
     }
 
-    public Set<AccountExtraInfoVO> getAccountEx() {
-        return accountEx;
+    public AccountExtraInfoInventory getExtraInfo() {
+        return extraInfo;
     }
 
-    public void setAccountEx(Set<AccountExtraInfoVO> accountEx) {
-        this.accountEx = accountEx;
+    public void setExtraInfo(AccountExtraInfoInventory extraInfo) {
+        this.extraInfo = extraInfo;
     }
 }

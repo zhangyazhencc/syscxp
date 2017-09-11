@@ -6,7 +6,7 @@ import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
-@Action(category = BillingConstant.ACTION_CATEGORY, names = {"receipt"})
+@Action(category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"create"})
 public class APICreateReceiptPostAddressMsg extends APIMessage {
 
     @APIParam(emptyString = false)

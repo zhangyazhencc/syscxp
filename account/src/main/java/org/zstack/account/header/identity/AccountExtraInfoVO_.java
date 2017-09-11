@@ -11,7 +11,6 @@ import java.sql.Timestamp;
 @StaticMetamodel(AccountExtraInfoVO.class)
 public class AccountExtraInfoVO_ {
     public static volatile SingularAttribute<AccountExtraInfoVO, String> uuid;
-    public static volatile SingularAttribute<AccountExtraInfoVO, String> accountUuid;
     public static volatile SingularAttribute<AccountExtraInfoVO, AccountGrade> grade;
     public static volatile SingularAttribute<AccountExtraInfoVO, String> userUuid;
     public static volatile SingularAttribute<AccountExtraInfoVO, String> createWay;

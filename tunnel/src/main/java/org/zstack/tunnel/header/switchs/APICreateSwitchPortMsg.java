@@ -1,11 +1,15 @@
 package org.zstack.tunnel.header.switchs;
 
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.manage.SwitchConstant;
 
 /**
  * Created by DCY on 2017-08-30
  */
+@Action(category = SwitchConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
+
 public class APICreateSwitchPortMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32)
