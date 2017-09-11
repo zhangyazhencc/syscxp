@@ -1,7 +1,6 @@
 package org.zstack.header.identity;
 
 import org.zstack.header.message.APIParam;
-import org.zstack.header.message.InnerAPIMessage;
 
 /**
  * Created with IntelliJ IDEA.
@@ -10,7 +9,7 @@ import org.zstack.header.message.InnerAPIMessage;
  * To change this template use File | Settings | File Templates.
  */
 @InnerCredentialCheck
-public class APIGetSessionPolicyMsg extends InnerAPIMessage {
+public class APIGetSessionPolicyMsg extends APISessionMessage {
     @APIParam(nonempty = true)
     private String sessionUuid;
 
