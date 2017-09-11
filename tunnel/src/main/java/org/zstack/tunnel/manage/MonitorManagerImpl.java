@@ -1,5 +1,6 @@
 package org.zstack.tunnel.manage;
 
+import com.sun.xml.internal.bind.v2.TODO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
@@ -18,6 +19,9 @@ import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.tunnel.header.host.*;
+import org.zstack.tunnel.header.monitor.*;
+import org.zstack.tunnel.header.node.NodeVO;
+import org.zstack.tunnel.header.node.NodeVO_;
 import org.zstack.tunnel.header.switchs.SwitchPortVO;
 import org.zstack.tunnel.header.switchs.SwitchPortVO_;
 import org.zstack.utils.Utils;
@@ -74,7 +78,11 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
             handle((APICreateHostMonitorMsg) msg);
         }else if(msg instanceof APIUpdateHostMonitorMsg){
             handle((APIUpdateHostMonitorMsg) msg);
-        } else {
+        } else if(msg instanceof APICreateHostSwitchMonitorMsg){
+            handle((APICreateHostSwitchMonitorMsg) msg);
+        } else if(msg instanceof APIUpdateHostSwitchMonitorMsg){
+            handle((APIUpdateHostSwitchMonitorMsg) msg);
+        } else{
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -83,6 +91,7 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
         HostVO vo = new HostVO();
 
         vo.setUuid(Platform.getUuid());
+        vo.setNodeUuid(msg.getNodeUuid());
         vo.setCode(msg.getCode());
         vo.setName(msg.getName());
         vo.setIp(msg.getIp());
@@ -100,6 +109,11 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
     private void handle(APIUpdateHostMsg msg){
         HostVO vo = dbf.findByUuid(msg.getUuid(),HostVO.class);
         boolean update = false;
+
+        if(msg.getNodeUuid() != null){
+            vo.setNodeUuid(msg.getNodeUuid());
+            update = true;
+        }
         if(msg.getName() != null){
             vo.setName(msg.getName());
             update = true;
@@ -164,6 +178,54 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
         bus.publish(evt);
     }
 
+    private void handle(APICreateHostSwitchMonitorMsg msg){
+        HostSwitchMonitorVO vo = new HostSwitchMonitorVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setHostUuid(msg.getHostUuid());
+        vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
+        vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
+        vo.setInterfaceName(msg.getInterfaceName());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateHostSwitchMonitorEvent event = new APICreateHostSwitchMonitorEvent(msg.getId());
+        event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+        bus.publish(event);
+    }
+
+    private void handle(APIUpdateHostSwitchMonitorMsg msg) {
+        HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(),HostSwitchMonitorVO.class);
+        if(vo != null){
+            boolean update = false;
+            if(msg.getHostUuid() != null){
+                vo.setHostUuid(msg.getHostUuid());
+                update = true;
+            }
+            if(msg.getPhysicalSwitchUuid() != null){
+                vo.setHostUuid(msg.getHostUuid());
+                update = true;
+            }
+            if(msg.getPhysicalSwitchPortName() != null){
+                vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
+                update = true;
+            }
+            if(msg.getInterfaceName() != null){
+                vo.setInterfaceName(msg.getInterfaceName());
+                update = true;
+            }
+
+            if(update){
+                vo = dbf.updateAndRefresh(vo);
+
+                APIUpdateHostSwitchMonitorEvent event = new APIUpdateHostSwitchMonitorEvent(msg.getId());
+                event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+                bus.publish(event);
+            }
+        }else
+            throw new IllegalArgumentException("UUID not exist!");
+    }
+
     @Override
     public boolean start() {
         return true;
@@ -189,6 +251,10 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
             validate((APICreateHostMonitorMsg) msg);
         }else if(msg instanceof APIUpdateHostMonitorMsg){
             validate((APIUpdateHostMonitorMsg) msg);
+        }else if(msg instanceof APICreateHostSwitchMonitorMsg){
+            validate((APICreateHostSwitchMonitorMsg) msg);
+        }else if(msg instanceof APIUpdateHostSwitchMonitorMsg){
+            validate((APICreateHostSwitchMonitorMsg) msg);
         }
         return msg;
     }
@@ -219,7 +285,14 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
                 throw new ApiMessageInterceptionException(argerr("host's code %s is already exist ",msg.getCode()));
             }
         }
-
+        //判断交换机所属节点是否存在
+        if(msg.getNodeUuid() != null){
+            SimpleQuery<NodeVO> q3 = dbf.createQuery(NodeVO.class);
+            q3.add(NodeVO_.uuid, SimpleQuery.Op.EQ, msg.getNodeUuid());
+            if (!q3.isExists()) {
+                throw new ApiMessageInterceptionException(argerr("node %s is not exist ",msg.getNodeUuid()));
+            }
+        }
     }
 
     private void validate(APICreateHostMonitorMsg msg){
@@ -261,4 +334,20 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
         }
 
     }
+
+    private void validate(APICreateHostSwitchMonitorMsg msg){
+        // check hostUuid
+        checkHostExist(msg.getHostUuid());
+        // check physicalSwitchUuid
+        // TODO: sunxuelong 2017/9/11  check physicalSwitchUuid;
+    }
+
+    public void checkHostExist(String hostUuid){
+        SimpleQuery<HostVO> q = dbf.createQuery(HostVO.class);
+        q.add(HostVO_.uuid, SimpleQuery.Op.EQ, hostUuid);
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("host %s is not exist ",hostUuid));
+        }
+    }
+
 }
