@@ -464,7 +464,6 @@ public class AccountBase extends AbstractAccount {
                 account.setStatus(msg.getStatus());
                 update = true;
             }
-
             if (msg.getType() != null) {
                 account.setType(AccountType.valueOf(msg.getType()));
                 update = true;
@@ -472,6 +471,11 @@ public class AccountBase extends AbstractAccount {
 
             if (msg.getGrade() != null) {
                 account.getAccountExtraInfo().setGrade(msg.getGrade());
+                update = true;
+            }
+
+            if (msg.getUserUuid() != null) {
+                account.getAccountExtraInfo().setUserUuid(msg.getUserUuid());
                 update = true;
             }
         }

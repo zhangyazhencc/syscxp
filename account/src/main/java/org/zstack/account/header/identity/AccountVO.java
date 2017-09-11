@@ -64,7 +64,11 @@ public class AccountVO {
     @Enumerated(EnumType.STRING)
     private AccountType type;
 
+<<<<<<< HEAD
+    @OneToOne(cascade = CascadeType.ALL,fetch = FetchType.EAGER)
+=======
     @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
+>>>>>>> 8933423200bae10951b34e92ba9e8179fb695b84
     @JoinColumn(name = "uuid")
     private  AccountExtraInfoVO accountExtraInfo;
 

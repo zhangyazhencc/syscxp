@@ -17,6 +17,7 @@ public class InterfaceAO_ {
     public static volatile SingularAttribute<InterfaceAO, String> bandwidth;
     public static volatile SingularAttribute<InterfaceAO, String> isExclusive;
     public static volatile SingularAttribute<InterfaceAO, String> description;
+    public static volatile SingularAttribute<InterfaceAO, Integer> months;
     public static volatile SingularAttribute<InterfaceAO, String> expiredDate;
     public static volatile SingularAttribute<InterfaceAO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<InterfaceAO, Timestamp> createDate;

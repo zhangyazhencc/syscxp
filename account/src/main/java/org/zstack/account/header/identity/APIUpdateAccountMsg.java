@@ -21,11 +21,15 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
     private String trueName;
     @APIParam(maxLength = 128, required = false)
     private String company;
-
     @APIParam(maxLength = 128, required = false)
     private String industry;
+
     @APIParam(maxLength = 32, required = false)
     private AccountGrade grade;
+    @APIParam(maxLength = 36, required = false)
+    private String userUuid;
+
+
     @APIParam(maxLength = 128, required = false)
     private AccountStatus status;
     @APIParam(validValues = {"Normal", "Proxy"}, required = false)
@@ -33,8 +37,7 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
     @APIParam(maxLength = 255, required = false)
     private String description;
 
-    @APIParam(maxLength = 36, required = false)
-    private String userUuid;
+
 
 
     public String getDescription() {
