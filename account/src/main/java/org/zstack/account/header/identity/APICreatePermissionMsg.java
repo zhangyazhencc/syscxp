@@ -8,7 +8,7 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"create"}, adminOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, adminOnly = true)
 public class APICreatePermissionMsg extends  APIMessage implements  AccountMessage {
     @APIParam(maxLength = 128)
     private String name;

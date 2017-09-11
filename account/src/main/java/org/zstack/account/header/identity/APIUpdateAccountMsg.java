@@ -7,10 +7,10 @@ import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
 
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"})
+@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, accountOnly = true)
 public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
 
-    @APIParam(resourceType = AccountVO.class, required = true, checkAccount = true, operationTarget = true)
+    @APIParam(required = true)
     private String uuid;
 
     @APIParam(maxLength = 36, required = false)
@@ -21,11 +21,15 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
     private String trueName;
     @APIParam(maxLength = 128, required = false)
     private String company;
-
     @APIParam(maxLength = 128, required = false)
     private String industry;
+
     @APIParam(maxLength = 32, required = false)
     private AccountGrade grade;
+    @APIParam(maxLength = 36, required = false)
+    private String userUuid;
+
+
     @APIParam(maxLength = 128, required = false)
     private AccountStatus status;
     @APIParam(validValues = {"Normal", "Proxy"}, required = false)
@@ -33,8 +37,7 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
     @APIParam(maxLength = 255, required = false)
     private String description;
 
-    @APIParam(maxLength = 255, required = false)
-    private String salesman;
+
 
 
     public String getDescription() {
@@ -105,10 +108,6 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
         return status;
     }
 
-    public String getSalesman() {
-        return salesman;
-    }
-
     public void setIndustry(String industry) {
         this.industry = industry;
     }
@@ -121,8 +120,12 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
         this.status = status;
     }
 
-    public void setSalesman(String salesman) {
-        this.salesman = salesman;
+    public String getUserUuid() {
+        return userUuid;
+    }
+
+    public void setUserUuid(String userUuid) {
+        this.userUuid = userUuid;
     }
 
     public ApiNotification __notification__() {

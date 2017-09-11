@@ -3,18 +3,13 @@ package org.zstack.account.identity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.transaction.annotation.Transactional;
-import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.Platform;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.core.identity.AbstractIdentityInterceptor;
-import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.identity.*;
-import org.zstack.header.rest.RESTFacade;
 import org.zstack.account.header.identity.*;
-import org.zstack.utils.CollectionUtils;
-import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.gson.JSONObjectUtil;
 
 import javax.persistence.Query;
@@ -50,6 +45,7 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
         long expiredTime = getCurrentSqlDate().getTime() + TimeUnit.SECONDS.toMillis(sessionTimeout);
         svo.setExpiredDate(new Timestamp(expiredTime));
         svo = dbf.persistAndRefresh(svo);
+
         SessionInventory session = svo.toSessionInventory();
 
         if (session.isUserSession()) {
@@ -66,8 +62,8 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
         List<PolicyStatement> policyStatements = new ArrayList<>();
         UserVO user = dbf.findByUuid(userUuid, UserVO.class);
 
-        for (PolicyVO policy : user.getPolicy()) {
-            for (PermissionVO permission : policy.getPermissions()) {
+        for (PolicyVO policy : user.getPolicySet()) {
+            for (PermissionVO permission : policy.getPermissionSet()) {
                 PolicyStatement p = JSONObjectUtil.toObject(permission.getPermission(), PolicyStatement.class);
                 p.setUuid(permission.getUuid());
                 p.setName(permission.getName());
@@ -79,7 +75,8 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
     }
 
     @Override
-    protected void removeExpiredSession(List<String> sessionUuids){
+    @Transactional
+    public void removeExpiredSession(List<String> sessionUuids){
         String dsql = "delete from SessionVO s where CURRENT_TIMESTAMP  >= s.expiredDate";
         Query dq = dbf.getEntityManager().createQuery(dsql);
         dq.executeUpdate();

@@ -15,7 +15,6 @@ import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.*;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
-import org.zstack.header.message.InnerAPIMessage;
 import org.zstack.utils.*;
 import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.logging.CLogger;
@@ -103,7 +102,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         }
     }
 
-    protected abstract void removeExpiredSession(List<String> sessionUuids);
+    public abstract void removeExpiredSession(List<String> sessionUuids);
 
     private void startExpiredSessionCollector() {
         logger.debug("startExpiredSessionCollector");
@@ -225,6 +224,9 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         void validate(APIMessage msg) {
             this.msg = msg;
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
+                suppressCredentialCheck();
+            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)) {
+                innerCredentialCheck();
             } else {
                 action = actions.get(msg.getClass());
 
@@ -241,7 +243,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
             this.msg = msg;
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
                 suppressCredentialCheck();
-            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)){
+            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)) {
                 innerCredentialCheck();
             } else {
                 DebugUtils.Assert(msg.getSession() != null, "session cannot be null");
@@ -389,16 +391,11 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         }
 
         private void innerCredentialCheck() {
-            if (msg instanceof InnerAPIMessage) {
-                if (InnerMessageHelper.validSignature((InnerAPIMessage) msg)){
-                    return;
-                }
-                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
-                        String.format("The parameters of the message[%s] are inconsistent ", msg.getMessageName())
-                ));
+            if (InnerMessageHelper.validSignature(msg)) {
+                return;
             }
             throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
-                    String.format("The type of the message[%s] is illegal ", msg.getMessageName())
+                    String.format("The parameters of the message[%s] are inconsistent ", msg.getMessageName())
             ));
         }
 

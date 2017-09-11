@@ -127,4 +127,9 @@ public class ReceiptVO {
     public void setCommet(String commet) {
         this.commet = commet;
     }
+
+    @PreUpdate
+    void preUpdate() {
+        lastOpDate = null;
+    }
 }

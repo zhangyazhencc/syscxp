@@ -27,7 +27,7 @@ public class UserInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    private Set<PolicyVO> policy;
+    private List<PolicyInventory> policys;
 
     public static UserInventory valueOf(UserVO vo) {
         UserInventory inv = new UserInventory();
@@ -46,9 +46,7 @@ public class UserInventory {
         inv.setTrueName(vo.getTrueName());
         inv.setDescription(vo.getDescription());
 
-        if(vo.getPolicy() != null){
-            inv.setPolicy(vo.getPolicy());
-        }
+        inv.setPolicys(PolicyInventory.valueOf(vo.getPolicySet()));
 
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -168,12 +166,12 @@ public class UserInventory {
         this.department = department;
     }
 
-    public Set<PolicyVO> getPolicy() {
-        return policy;
+    public List<PolicyInventory> getPolicys() {
+        return policys;
     }
 
-    public void setPolicy(Set<PolicyVO> policy) {
-        this.policy = policy;
+    public void setPolicys(List<PolicyInventory> policys) {
+        this.policys = policys;
     }
 
     public String getUserType() {

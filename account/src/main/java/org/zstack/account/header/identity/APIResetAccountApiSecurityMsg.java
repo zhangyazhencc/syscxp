@@ -7,7 +7,7 @@ import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
 
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"}, accountOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
 public class APIResetAccountApiSecurityMsg extends APIMessage implements AccountMessage{
 
     @APIParam(emptyString = false, required = true, validRegexValues = "^1[3,4,5,7,8]\\d{9}$")

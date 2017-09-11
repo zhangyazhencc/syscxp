@@ -45,4 +45,14 @@ public abstract class APIMessage extends NeedReplyMessage {
         }
         return msgFields;
     }
+
+    private String signature;
+
+    public String getSignature() {
+        return signature;
+    }
+
+    public void setSignature(String signature) {
+        this.signature = signature;
+    }
 }
