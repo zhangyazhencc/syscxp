@@ -2,6 +2,8 @@ package org.zstack.tunnel.header.tunnel;
 
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.header.endpoint.EndpointType;
+import org.zstack.tunnel.header.switchs.SwitchPortType;
 
 /**
  * Created by DCY on 2017-09-08
@@ -16,8 +18,14 @@ public class APICreateInterfaceNassMsg extends APIMessage {
     private Integer bandwidth;
     @APIParam(emptyString = false)
     private Integer isExclusive;
+    @APIParam(emptyString = false,validValues = {"CLOUD", "ACCESSIN"})
+    private EndpointType endpointType;
+    @APIParam(required = false,validValues = {"RJ45", "SFP_1G","SFG_10G"})
+    private SwitchPortType portType;
     @APIParam(required = false,maxLength = 255)
     private String description;
+    @APIParam(emptyString = false)
+    private Integer months;
 
     public String getName() {
         return name;
@@ -57,5 +65,29 @@ public class APICreateInterfaceNassMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public SwitchPortType getPortType() {
+        return portType;
+    }
+
+    public void setPortType(SwitchPortType portType) {
+        this.portType = portType;
+    }
+
+    public EndpointType getEndpointType() {
+        return endpointType;
+    }
+
+    public void setEndpointType(EndpointType endpointType) {
+        this.endpointType = endpointType;
+    }
+
+    public Integer getMonths() {
+        return months;
+    }
+
+    public void setMonths(Integer months) {
+        this.months = months;
     }
 }

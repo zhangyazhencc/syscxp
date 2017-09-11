@@ -124,13 +124,13 @@ CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, switchModelUuid, name, code, brand, owner, rack, description, mIP, username, password, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, switchModelUuid, name, code, brand, owner, type, rack, description, mIP, localIP, username, password, lastOpDate, createDate
                                           FROM `PhysicalSwitchEO` WHERE deleted = 0;
 
 ##交换机(虚拟交换机)
 CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `switchAttributionUuid` varchar(32) NOT NULL COMMENT '所属物理交换机',
+  `physicalSwitchUuid` varchar(32) NOT NULL COMMENT '所属物理交换机',
   `endpointUuid` varchar(32) NOT NULL COMMENT '连接点UUID',
   `code` varchar(128) NOT NULL COMMENT '交换机编号',
   `name` varchar(128) NOT NULL COMMENT '交换机名称',
@@ -145,7 +145,7 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, switchAttributionUuid, endpointUuid, name, code, upperType, enabled, description, status, isPrivate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, physicalSwitchUuid, endpointUuid, name, code, upperType, enabled, description, status, isPrivate, lastOpDate, createDate
                                             FROM `SwitchEO` WHERE deleted = 0;
 
 
@@ -203,7 +203,7 @@ CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, name, switchPortUuid, endpointUuid, bandwidth, isExclusive, description, enabled, expiredDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, name, switchPortUuid, endpointUuid, bandwidth, isExclusive, description, expiredDate, lastOpDate, createDate
                                           FROM `InterfaceEO` WHERE deleted = 0;
 
 ##云专线

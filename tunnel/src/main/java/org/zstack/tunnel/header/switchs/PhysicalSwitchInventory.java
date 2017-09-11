@@ -19,9 +19,11 @@ public class PhysicalSwitchInventory {
     private String name;
     private String brand;
     private String owner;
+    private PhysicalSwitchType type;
     private String rack;
     private String description;
     private String mIP;
+    private String localIP;
     private String username;
     private String password;
     private Timestamp createDate;
@@ -37,9 +39,11 @@ public class PhysicalSwitchInventory {
         inv.setName(vo.getName());
         inv.setBrand(vo.getBrand());
         inv.setOwner(vo.getOwner());
+        inv.setType(vo.getType());
         inv.setRack(vo.getRack());
         inv.setDescription(vo.getDescription());
         inv.setmIP(vo.getmIP());
+        inv.setLocalIP(vo.getLocalIP());
         inv.setUsername(vo.getUsername());
         inv.setPassword(vo.getPassword());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -166,5 +170,21 @@ public class PhysicalSwitchInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public PhysicalSwitchType getType() {
+        return type;
+    }
+
+    public void setType(PhysicalSwitchType type) {
+        this.type = type;
+    }
+
+    public String getLocalIP() {
+        return localIP;
+    }
+
+    public void setLocalIP(String localIP) {
+        this.localIP = localIP;
     }
 }

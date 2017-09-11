@@ -16,8 +16,8 @@ public class SwitchToModelInventory {
     private String endpointUuid;
     private String code;
     private String name;
-    private String switchAttributionUuid;
-    private PhysicalSwitchToModelInventory switchAttribution;
+    private String physicalSwitchUuid;
+    private PhysicalSwitchToModelInventory physicalSwitch;
     private SwitchUpperType upperType;
     private Integer enabled;
     private String description;
@@ -33,8 +33,8 @@ public class SwitchToModelInventory {
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
-        inv.setSwitchAttributionUuid(vo.getSwitchAttributionUuid());
-        inv.setSwitchAttribution(PhysicalSwitchToModelInventory.valueOf(vo.getSwitchAttribution()));
+        inv.setPhysicalSwitchUuid(vo.getPhysicalSwitchUuid());
+        inv.setPhysicalSwitch(PhysicalSwitchToModelInventory.valueOf(vo.getPhysicalSwitch()));
         inv.setUpperType(vo.getUpperType());
         inv.setEnabled(vo.getEnabled());
         inv.setDescription(vo.getDescription());
@@ -86,20 +86,20 @@ public class SwitchToModelInventory {
         this.name = name;
     }
 
-    public String getSwitchAttributionUuid() {
-        return switchAttributionUuid;
+    public String getPhysicalSwitchUuid() {
+        return physicalSwitchUuid;
     }
 
-    public void setSwitchAttributionUuid(String switchAttributionUuid) {
-        this.switchAttributionUuid = switchAttributionUuid;
+    public void setPhysicalSwitchUuid(String physicalSwitchUuid) {
+        this.physicalSwitchUuid = physicalSwitchUuid;
     }
 
-    public PhysicalSwitchToModelInventory getSwitchAttribution() {
-        return switchAttribution;
+    public PhysicalSwitchToModelInventory getPhysicalSwitch() {
+        return physicalSwitch;
     }
 
-    public void setSwitchAttribution(PhysicalSwitchToModelInventory switchAttribution) {
-        this.switchAttribution = switchAttribution;
+    public void setPhysicalSwitch(PhysicalSwitchToModelInventory physicalSwitch) {
+        this.physicalSwitch = physicalSwitch;
     }
 
     public SwitchUpperType getUpperType() {
