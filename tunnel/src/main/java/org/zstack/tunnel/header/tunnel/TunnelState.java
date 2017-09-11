@@ -5,5 +5,6 @@ package org.zstack.tunnel.header.tunnel;
  */
 public enum TunnelState {
     OPENED,
-    CLOSED
+    CLOSED,
+    UNPAID
 }

@@ -519,15 +519,25 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         if(msg.getStartVlan() > msg.getEndVlan()){
             throw new ApiMessageInterceptionException(argerr("endvlan must more than startvlan"));
         }
-        String sql1 = "select count(*) from PhysicalSwitchVO a,SwitchVO b,SwitchVlanVO c where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid and c.switchUuid = '"+msg.getSwitchUuid()+"' and c.startVlan <= "+msg.getStartVlan()+" and c.endVlan >= "+msg.getStartVlan();
-        String sql2 = "select count(*) from PhysicalSwitchVO a,SwitchVO b,SwitchVlanVO c where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid and c.switchUuid = '"+msg.getSwitchUuid()+"' and c.startVlan > "+msg.getEndVlan();
-        TypedQuery<Integer> vq1 = dbf.getEntityManager().createQuery(sql1, Integer.class);
-        Integer count1 = vq1.getSingleResult();
-        TypedQuery<Integer> vq2 = dbf.getEntityManager().createQuery(sql2, Integer.class);
-        Integer count2 = vq2.getSingleResult();
-        if(count1 == 0 && count2 >0){
+        //String sql1 = "select count(*) from PhysicalSwitchVO a,SwitchVO b,SwitchVlanVO c where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid and c.switchUuid = '"+msg.getSwitchUuid()+"' and c.startVlan <= "+msg.getStartVlan()+" and c.endVlan >= "+msg.getStartVlan();
+        //String sql2 = "select count(*) from PhysicalSwitchVO a,SwitchVO b,SwitchVlanVO c where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid and c.switchUuid = '"+msg.getSwitchUuid()+"' and c.startVlan > "+msg.getEndVlan();
+        //TypedQuery<Integer> vq1 = dbf.getEntityManager().createQuery(sql1, Integer.class);
+        //Integer count1 = vq1.getSingleResult();
+        //TypedQuery<Integer> vq2 = dbf.getEntityManager().createQuery(sql2, Integer.class);
+        //Integer count2 = vq2.getSingleResult();
+        //if(count1 == 0 && count2 >0){
+        //    throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+        //}
+        String sql = "select count(*) from PhysicalSwitchVO a,SwitchVO b,SwitchVlanVO c " +
+                "where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid and c.switchUuid = '"+msg.getSwitchUuid()+"' " +
+                "and ((c.startVlan between "+msg.getStartVlan()+" and "+msg.getEndVlan()+") " +
+                "or (c.endVlan between "+msg.getStartVlan()+" and "+msg.getEndVlan()+") " +
+                "or ("+msg.getStartVlan()+" between c.startVlan and c.endVlan) " +
+                "or ("+msg.getEndVlan()+" between c.startVlan and c.endVlan))";
+        TypedQuery<Integer> vq = dbf.getEntityManager().createQuery(sql, Integer.class);
+        Integer count = vq.getSingleResult();
+        if(count > 0){
             throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
         }
-
     }
 }
