@@ -600,14 +600,14 @@ public class AccountBase extends AbstractAccount {
 
         accountVO.setAccountExtraInfo(ext);
 
-        accountVO = dbf.persistAndRefresh(accountVO);
+        dbf.getEntityManager().persist(accountVO);
 
         if (msg.getSession().isProxySession()) {
             ProxyAccountRefVO prevo = new ProxyAccountRefVO();
             prevo.setAccountUuid(msg.getAccountUuid());
             prevo.setCustomerAcccountUuid(accountVO.getUuid());
 
-            dbf.persist(prevo);
+            dbf.getEntityManager().persist(prevo);
         }
 
         AccountApiSecurityVO api = new AccountApiSecurityVO();
@@ -615,8 +615,7 @@ public class AccountBase extends AbstractAccount {
         api.setAccountUuid(accountVO.getUuid());
         api.setPrivateKey(getRandomString(36));
         api.setPublicKey(getRandomString(36));
-        dbf.persist(api);
-
+        dbf.getEntityManager().persist(api);
 
         APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
         evt.setInventory(AccountInventory.valueOf(accountVO));

@@ -473,14 +473,14 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 ext.setCreateWay("init");
                 vo.setAccountExtraInfo(ext);
 
-                dbf.persist(vo);
+                dbf.getEntityManager().persist(vo);
 
                 AccountApiSecurityVO api = new AccountApiSecurityVO();
                 api.setUuid(Platform.getUuid());
                 api.setAccountUuid(vo.getUuid());
                 api.setPrivateKey(getRandomString(36));
                 api.setPublicKey(getRandomString(36));
-                dbf.persist(api);
+                dbf.getEntityManager().persist(api);
 
                 logger.debug(String.format("Created initial system admin account[name:%s]", AccountConstant.INITIAL_SYSTEM_ADMIN_NAME));
 
