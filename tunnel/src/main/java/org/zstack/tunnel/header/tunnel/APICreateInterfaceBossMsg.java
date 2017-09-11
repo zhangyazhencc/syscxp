@@ -1,61 +1,31 @@
 package org.zstack.tunnel.header.tunnel;
 
-import org.zstack.header.vo.ForeignKey;
-import org.zstack.tunnel.header.switchs.SwitchPortVO;
-
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import java.sql.Timestamp;
+import org.zstack.header.message.APIMessage;
+import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.header.endpoint.EndpointType;
+import org.zstack.tunnel.header.switchs.SwitchPortType;
 
 /**
- * Created by DCY on 2017-09-08
+ * Created by DCY on 2017-09-11
  */
-@MappedSuperclass
-public class InterfaceAO {
+public class APICreateInterfaceBossMsg extends APIMessage {
 
-    @Id
-    @Column
-    private String uuid;
-
-    @Column
+    @APIParam(emptyString = false,maxLength = 32)
     private String accountUuid;
-
-    @Column
+    @APIParam(emptyString = false,maxLength = 128)
     private String name;
-
-    @Column
-    @ForeignKey(parentEntityClass = SwitchPortVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
+    @APIParam(emptyString = false,maxLength = 32)
     private String switchPortUuid;
-
-    @Column
+    @APIParam(emptyString = false,maxLength = 32)
     private String endpointUuid;
-
-    @Column
+    @APIParam(emptyString = false)
     private Integer bandwidth;
-
-    @Column
+    @APIParam(emptyString = false)
     private Integer isExclusive;
-
-    @Column
+    @APIParam(required = false,maxLength = 255)
     private String description;
-
-    @Column
-    private Timestamp expiredDate;
-
-    @Column
-    private Timestamp lastOpDate;
-
-    @Column
-    private Timestamp createDate;
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
+    @APIParam(emptyString = false)
+    private Integer months;
 
     public String getAccountUuid() {
         return accountUuid;
@@ -113,27 +83,11 @@ public class InterfaceAO {
         this.description = description;
     }
 
-    public Timestamp getExpiredDate() {
-        return expiredDate;
+    public Integer getMonths() {
+        return months;
     }
 
-    public void setExpiredDate(Timestamp expiredDate) {
-        this.expiredDate = expiredDate;
-    }
-
-    public Timestamp getLastOpDate() {
-        return lastOpDate;
-    }
-
-    public void setLastOpDate(Timestamp lastOpDate) {
-        this.lastOpDate = lastOpDate;
-    }
-
-    public Timestamp getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Timestamp createDate) {
-        this.createDate = createDate;
+    public void setMonths(Integer months) {
+        this.months = months;
     }
 }

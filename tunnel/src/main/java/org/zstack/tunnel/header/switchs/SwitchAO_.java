@@ -13,7 +13,7 @@ public class SwitchAO_ {
     public static volatile SingularAttribute<SwitchAO, String> endpointUuid;
     public static volatile SingularAttribute<SwitchAO, String> code;
     public static volatile SingularAttribute<SwitchAO, String> name;
-    public static volatile SingularAttribute<SwitchAO, String> switchAttributionUuid;
+    public static volatile SingularAttribute<SwitchAO, String> physicalSwitchUuid;
     public static volatile SingularAttribute<SwitchAO, SwitchUpperType> upperType;
     public static volatile SingularAttribute<SwitchAO, Integer> enabled;
     public static volatile SingularAttribute<SwitchAO, String> description;

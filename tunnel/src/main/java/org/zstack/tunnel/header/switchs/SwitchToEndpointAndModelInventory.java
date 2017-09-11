@@ -36,8 +36,8 @@ public class SwitchToEndpointAndModelInventory {
         inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpoint()));
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
-        inv.setSwitchAttributionUuid(vo.getSwitchAttributionUuid());
-        inv.setSwitchAttribution(PhysicalSwitchToModelInventory.valueOf(vo.getSwitchAttribution()));
+        inv.setSwitchAttributionUuid(vo.getPhysicalSwitchUuid());
+        inv.setSwitchAttribution(PhysicalSwitchToModelInventory.valueOf(vo.getPhysicalSwitch()));
         inv.setUpperType(vo.getUpperType());
         inv.setEnabled(vo.getEnabled());
         inv.setDescription(vo.getDescription());

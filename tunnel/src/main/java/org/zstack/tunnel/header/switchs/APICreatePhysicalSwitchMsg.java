@@ -23,10 +23,14 @@ public class APICreatePhysicalSwitchMsg extends APIMessage {
     private String brand;
     @APIParam(emptyString = false,maxLength = 128)
     private String owner;
+    @APIParam(emptyString = false,validValues = {"JOIN", "TRANSPORT"})
+    private PhysicalSwitchType type;
     @APIParam(emptyString = false,maxLength = 32)
     private String rack;
     @APIParam(emptyString = false,maxLength = 128)
     private String mIP;
+    @APIParam(emptyString = false,maxLength = 128)
+    private String localIP;
     @APIParam(emptyString = false,maxLength = 128)
     private String username;
     @APIParam(emptyString = false,maxLength = 128)
@@ -120,5 +124,21 @@ public class APICreatePhysicalSwitchMsg extends APIMessage {
 
     public void setNodeUuid(String nodeUuid) {
         this.nodeUuid = nodeUuid;
+    }
+
+    public PhysicalSwitchType getType() {
+        return type;
+    }
+
+    public void setType(PhysicalSwitchType type) {
+        this.type = type;
+    }
+
+    public String getLocalIP() {
+        return localIP;
+    }
+
+    public void setLocalIP(String localIP) {
+        this.localIP = localIP;
     }
 }

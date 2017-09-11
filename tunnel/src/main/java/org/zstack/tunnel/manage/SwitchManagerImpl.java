@@ -25,6 +25,8 @@ import org.zstack.tunnel.header.switchs.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
+import javax.persistence.TypedQuery;
+
 import static org.zstack.core.Platform.argerr;
 
 /**
@@ -116,8 +118,10 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         vo.setName(msg.getName());
         vo.setBrand(msg.getBrand());
         vo.setOwner(msg.getOwner());
+        vo.setType(msg.getType());
         vo.setRack(msg.getRack());
         vo.setmIP(msg.getmIP());
+        vo.setLocalIP(msg.getLocalIP());
         vo.setUsername(msg.getUsername());
         vo.setPassword(msg.getPassword());
         if(msg.getDescription() != null){
@@ -161,12 +165,20 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             vo.setOwner(msg.getOwner());
             update = true;
         }
+        if(msg.getType() != null){
+            vo.setType(msg.getType());
+            update = true;
+        }
         if(msg.getRack() != null){
             vo.setRack(msg.getRack());
             update = true;
         }
         if(msg.getmIP() != null){
             vo.setmIP(msg.getmIP());
+            update = true;
+        }
+        if(msg.getLocalIP() != null){
+            vo.setLocalIP(msg.getLocalIP());
             update = true;
         }
         if(msg.getUsername() != null){
@@ -197,7 +209,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         vo.setEndpointUuid(msg.getEndpointUuid());
         vo.setCode(msg.getCode());
         vo.setName(msg.getName());
-        vo.setSwitchAttributionUuid(msg.getSwitchAttributionUuid());
+        vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
         vo.setUpperType(msg.getUpperType());
         vo.setStatus(SwitchStatus.NORMAL);
         vo.setIsPrivate(msg.getIsPrivate());
@@ -226,8 +238,8 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             vo.setCode(msg.getCode());
             update = true;
         }
-        if(msg.getSwitchAttributionUuid() != null){
-            vo.setSwitchAttributionUuid(msg.getSwitchAttributionUuid());
+        if(msg.getPhysicalSwitchUuid() != null){
+            vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
             update = true;
         }
         if(msg.getUpperType() != null){
@@ -365,6 +377,18 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         if (!q3.isExists()) {
             throw new ApiMessageInterceptionException(argerr("switchModel %s is not exist ",msg.getSwitchModelUuid()));
         }
+        //判断mIP和LocalIp唯一性
+        SimpleQuery<PhysicalSwitchVO> q4 = dbf.createQuery(PhysicalSwitchVO.class);
+        q4.add(PhysicalSwitchVO_.mIP, SimpleQuery.Op.EQ, msg.getmIP());
+        if(q4.isExists()){
+            throw new ApiMessageInterceptionException(argerr("switchAttribution's mip %s is already exist ",msg.getmIP()));
+        }
+        SimpleQuery<PhysicalSwitchVO> q5 = dbf.createQuery(PhysicalSwitchVO.class);
+        q5.add(PhysicalSwitchVO_.localIP, SimpleQuery.Op.EQ, msg.getLocalIP());
+        if(q5.isExists()){
+            throw new ApiMessageInterceptionException(argerr("switchAttribution's localIp %s is already exist ",msg.getLocalIP()));
+        }
+
     }
 
     private void validate(APIUpdatePhysicalSwitchMsg msg){
@@ -399,6 +423,24 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
                 throw new ApiMessageInterceptionException(argerr("switchModel %s is not exist ",msg.getSwitchModelUuid()));
             }
         }
+        //判断mIP和LocalIp唯一性
+        if(msg.getmIP() != null){
+            SimpleQuery<PhysicalSwitchVO> q5 = dbf.createQuery(PhysicalSwitchVO.class);
+            q5.add(PhysicalSwitchVO_.mIP, SimpleQuery.Op.EQ, msg.getmIP());
+            q5.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
+            if(q5.isExists()){
+                throw new ApiMessageInterceptionException(argerr("switchAttribution's mip %s is already exist ",msg.getmIP()));
+            }
+        }
+        if(msg.getLocalIP() != null){
+            SimpleQuery<PhysicalSwitchVO> q6 = dbf.createQuery(PhysicalSwitchVO.class);
+            q6.add(PhysicalSwitchVO_.localIP, SimpleQuery.Op.EQ, msg.getLocalIP());
+            q6.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
+            if(q6.isExists()){
+                throw new ApiMessageInterceptionException(argerr("switchAttribution's localIp %s is already exist ",msg.getLocalIP()));
+            }
+        }
+
     }
 
     private void validate(APICreateSwitchMsg msg){
@@ -416,9 +458,9 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         }
         //判断交换机所属物理交换机是否存在
         SimpleQuery<PhysicalSwitchVO> q3 = dbf.createQuery(PhysicalSwitchVO.class);
-        q3.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.EQ, msg.getSwitchAttributionUuid());
+        q3.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.EQ, msg.getPhysicalSwitchUuid());
         if (!q3.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("switchAttribution %s is not exist ",msg.getSwitchAttributionUuid()));
+            throw new ApiMessageInterceptionException(argerr("physicalSwitch %s is not exist ",msg.getPhysicalSwitchUuid()));
         }
 
     }
@@ -451,8 +493,12 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getSwitchUuid()));
         }
         //端口名称在一个物理交换机下是否存在
-
-
+        String sql = "select count(*) from PhysicalSwitchVO a,SwitchVO b,SwitchPortVO c where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid and c.portName = '"+msg.getPortName()+"' and b.uuid = '"+msg.getSwitchUuid()+"'";
+        TypedQuery<Integer> vq = dbf.getEntityManager().createQuery(sql, Integer.class);
+        Integer count = vq.getSingleResult();
+        if(count>0){
+            throw new ApiMessageInterceptionException(argerr("portName %s is already exist ",msg.getPortName()));
+        }
     }
 
 
@@ -463,7 +509,25 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         if (!q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getSwitchUuid()));
         }
-        //VLAN最小0，最大4096，同一个逻辑交换机下的VLAN不能重叠
+        //VLAN最小0，最大4096，同一个物理交换机下的VLAN不能重叠
+        if(msg.getStartVlan() < 0){
+            throw new ApiMessageInterceptionException(argerr("startVlan Minimum is 0"));
+        }
+        if(msg.getEndVlan() > 4096){
+            throw new ApiMessageInterceptionException(argerr("startVlan maximum  is 4096"));
+        }
+        if(msg.getStartVlan() > msg.getEndVlan()){
+            throw new ApiMessageInterceptionException(argerr("endvlan must more than startvlan"));
+        }
+        String sql1 = "select count(*) from PhysicalSwitchVO a,SwitchVO b,SwitchVlanVO c where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid and c.switchUuid = '"+msg.getSwitchUuid()+"' and c.startVlan <= "+msg.getStartVlan()+" and c.endVlan >= "+msg.getStartVlan();
+        String sql2 = "select count(*) from PhysicalSwitchVO a,SwitchVO b,SwitchVlanVO c where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid and c.switchUuid = '"+msg.getSwitchUuid()+"' and c.startVlan > "+msg.getEndVlan();
+        TypedQuery<Integer> vq1 = dbf.getEntityManager().createQuery(sql1, Integer.class);
+        Integer count1 = vq1.getSingleResult();
+        TypedQuery<Integer> vq2 = dbf.getEntityManager().createQuery(sql2, Integer.class);
+        Integer count2 = vq2.getSingleResult();
+        if(count1 == 0 && count2 >0){
+            throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+        }
 
     }
 }

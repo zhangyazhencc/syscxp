@@ -17,7 +17,7 @@ public class SwitchInventory {
     private String endpointUuid;
     private String code;
     private String name;
-    private String switchAttributionUuid;
+    private String physicalSwitchUuid;
     private SwitchUpperType upperType;
     private Integer enabled;
     private String description;
@@ -33,7 +33,7 @@ public class SwitchInventory {
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
-        inv.setSwitchAttributionUuid(vo.getSwitchAttributionUuid());
+        inv.setPhysicalSwitchUuid(vo.getPhysicalSwitchUuid());
         inv.setUpperType(vo.getUpperType());
         inv.setEnabled(vo.getEnabled());
         inv.setDescription(vo.getDescription());
@@ -85,12 +85,12 @@ public class SwitchInventory {
         this.name = name;
     }
 
-    public String getSwitchAttributionUuid() {
-        return switchAttributionUuid;
+    public String getPhysicalSwitchUuid() {
+        return physicalSwitchUuid;
     }
 
-    public void setSwitchAttributionUuid(String switchAttributionUuid) {
-        this.switchAttributionUuid = switchAttributionUuid;
+    public void setPhysicalSwitchUuid(String physicalSwitchUuid) {
+        this.physicalSwitchUuid = physicalSwitchUuid;
     }
 
     public SwitchUpperType getUpperType() {

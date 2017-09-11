@@ -18,8 +18,8 @@ public class SwitchVO extends SwitchAO {
     private EndpointVO endpoint;
 
     @OneToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="switchAttributionUuid", insertable=false, updatable=false)
-    private PhysicalSwitchVO switchAttribution;
+    @JoinColumn(name="physicalSwitchUuid", insertable=false, updatable=false)
+    private PhysicalSwitchVO physicalSwitch;
 
     public EndpointVO getEndpoint() {
         return endpoint;
@@ -29,11 +29,11 @@ public class SwitchVO extends SwitchAO {
         this.endpoint = endpoint;
     }
 
-    public PhysicalSwitchVO getSwitchAttribution() {
-        return switchAttribution;
+    public PhysicalSwitchVO getPhysicalSwitch() {
+        return physicalSwitch;
     }
 
-    public void setSwitchAttribution(PhysicalSwitchVO switchAttribution) {
-        this.switchAttribution = switchAttribution;
+    public void setPhysicalSwitch(PhysicalSwitchVO physicalSwitch) {
+        this.physicalSwitch = physicalSwitch;
     }
 }
