@@ -84,8 +84,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             handle((APICreateInterfaceNassMsg) msg);
         }else if(msg instanceof APICreateInterfaceBossMsg){
             handle((APICreateInterfaceBossMsg) msg);
-        }else if(msg instanceof APICreateTunnelNassMsg){
-            handle((APICreateTunnelNassMsg) msg);
+        }else if(msg instanceof APICreateTunnelMsg){
+            handle((APICreateTunnelMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -249,7 +249,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         bus.publish(evt);
     }
 
-    private void handle(APICreateTunnelNassMsg msg){
+    private void handle(APICreateTunnelMsg msg){
         TunnelVO vo = new TunnelVO();
 
         vo.setUuid(Platform.getUuid());

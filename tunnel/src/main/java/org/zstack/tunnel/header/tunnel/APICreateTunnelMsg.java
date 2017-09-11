@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Created by DCY on 2017-09-11
  */
-public class APICreateTunnelNassMsg extends APIMessage {
+public class APICreateTunnelMsg extends APIMessage {
 
     @APIParam(resourceType = NetWorkVO.class, checkAccount = true)
     private String netWorkUuid;
