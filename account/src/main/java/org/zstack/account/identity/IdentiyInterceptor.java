@@ -3,18 +3,13 @@ package org.zstack.account.identity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.transaction.annotation.Transactional;
-import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.Platform;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.core.identity.AbstractIdentityInterceptor;
-import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.identity.*;
-import org.zstack.header.rest.RESTFacade;
 import org.zstack.account.header.identity.*;
-import org.zstack.utils.CollectionUtils;
-import org.zstack.utils.function.ForEachFunction;
 import org.zstack.utils.gson.JSONObjectUtil;
 
 import javax.persistence.Query;
@@ -67,7 +62,7 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
         UserVO user = dbf.findByUuid(userUuid, UserVO.class);
 
         for (PolicyVO policy : user.getPolicy()) {
-            for (PermissionVO permission : policy.getPermissions()) {
+            for (PermissionVO permission : policy.getPermissionSet()) {
                 PolicyStatement p = JSONObjectUtil.toObject(permission.getPermission(), PolicyStatement.class);
                 p.setUuid(permission.getUuid());
                 p.setName(permission.getName());

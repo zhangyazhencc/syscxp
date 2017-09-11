@@ -56,7 +56,7 @@ public class UserVO {
             joinColumns=@JoinColumn(name="userUuid"),
             inverseJoinColumns=@JoinColumn(name="policyUuid")
     )
-    private Set<PolicyVO> policy;
+    private Set<PolicyVO> policySet;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -188,12 +188,12 @@ public class UserVO {
         this.phoneStatus = phoneStatus;
     }
 
-    public Set<PolicyVO> getPolicy() {
-        return policy;
+    public Set<PolicyVO> getPolicySet() {
+        return policySet;
     }
 
-    public void setPolicy(Set<PolicyVO> policy) {
-        this.policy = policy;
+    public void setPolicySet(Set<PolicyVO> policySet) {
+        this.policySet = policySet;
     }
 
     public UserType getUserType() {

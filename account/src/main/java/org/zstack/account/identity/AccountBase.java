@@ -26,7 +26,6 @@ import org.zstack.sms.SmsService;
 import org.zstack.utils.ExceptionDSL;
 import org.zstack.utils.Utils;
 
-import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
 import java.util.*;
@@ -179,7 +178,7 @@ public class AccountBase extends AbstractAccount {
         APIResetAccountPWDEvent evt = new APIResetAccountPWDEvent(msg.getId());
         AccountVO cont = dbf.findByUuid(msg.getUuid(), AccountVO.class);
 
-        String pwd = getRandomString(8);
+        String pwd = getRandomString(12);
 
         cont.setPassword(DigestUtils.sha512Hex(pwd));
         dbf.updateAndRefresh(cont);
@@ -714,7 +713,7 @@ public class AccountBase extends AbstractAccount {
             }
         }
 
-        pvo.setPermissions(permissionSet);
+        pvo.setPermissionSet(permissionSet);
 
         APICreatePolicyEvent evt = new APICreatePolicyEvent(msg.getId());
 

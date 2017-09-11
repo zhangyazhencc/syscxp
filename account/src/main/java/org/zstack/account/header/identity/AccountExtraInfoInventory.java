@@ -13,7 +13,6 @@ public class AccountExtraInfoInventory {
 
     private String uuid;
     private String grade;
-    private String salesman;
     private String createWay;
     private String userUuid;
     private Timestamp createDate;
@@ -23,7 +22,6 @@ public class AccountExtraInfoInventory {
         AccountExtraInfoInventory inv = new AccountExtraInfoInventory();
         inv.setUuid(vo.getUuid());
         inv.setGrade(vo.getGrade().toString());
-        inv.setSalesman(vo.getUserUuid());
         inv.setUserUuid(vo.getUserUuid());
         inv.setCreateWay(vo.getCreateWay());
         inv.setCreateDate(vo.getCreateDate());
@@ -57,10 +55,6 @@ public class AccountExtraInfoInventory {
         return grade;
     }
 
-    public String getSalesman() {
-        return salesman;
-    }
-
     public Timestamp getCreateDate() {
         return createDate;
     }
@@ -83,10 +77,6 @@ public class AccountExtraInfoInventory {
 
     public void setGrade(String grade) {
         this.grade = grade;
-    }
-
-    public void setSalesman(String salesman) {
-        this.salesman = salesman;
     }
 
     public String getUserUuid() {

@@ -528,13 +528,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         q.add(ProxyAccountRefVO_.accountUuid, Op.EQ, msg.getAccountUuid());
         q.add(ProxyAccountRefVO_.customerAcccountUuid, Op.EQ, msg.getUuid());
 
-        if (!msg.getSession().getType().equals(AccountType.SystemAdmin) &&
-                !q.isExists()) {
+        if (msg.getSession().getType() == AccountType.SystemAdmin || q.isExists()) {
+        }else{
             throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot reset the password of the other account[uuid: %s]",
                     msg.getAccountUuid(), msg.getUuid()));
         }
-
-
     }
 
     private void validate(APIResetAccountApiSecurityMsg msg) {

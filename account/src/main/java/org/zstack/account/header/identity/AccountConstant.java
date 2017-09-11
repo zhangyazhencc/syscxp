@@ -20,7 +20,8 @@ public interface AccountConstant {
     int RESOURCE_PERMISSION_READ = 1;
     int RESOURCE_PERMISSION_WRITE = 2;
 
-    String ACTION_CATEGORY = "identity";
+    String ACTION_CATEGORY = "account";
+    String USER_CATEGORY = "user";
 
     enum RoleDecision {
         EXPLICIT_DENY,
