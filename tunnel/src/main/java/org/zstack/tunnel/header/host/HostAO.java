@@ -14,6 +14,9 @@ public class HostAO {
     private String uuid;
 
     @Column
+    private String nodeUuid;
+
+    @Column
     private String name;
 
     @Column
@@ -47,6 +50,14 @@ public class HostAO {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 
     public String getName() {

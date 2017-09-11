@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 @StaticMetamodel(HostAO.class)
 public class HostAO_ {
     public static volatile SingularAttribute<HostAO, String> uuid;
+    public static volatile SingularAttribute<HostAO, String> nodeUuid;
     public static volatile SingularAttribute<HostAO, String> name;
     public static volatile SingularAttribute<HostAO, String> code;
     public static volatile SingularAttribute<HostAO, String> ip;

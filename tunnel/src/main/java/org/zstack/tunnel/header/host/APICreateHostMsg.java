@@ -11,6 +11,8 @@ import org.zstack.tunnel.manage.TunnelConstant;
 
 @Action(category = TunnelConstant.ACTION_CATEGORY_HOST, names = {"create"}, adminOnly = true)
 public class APICreateHostMsg extends APIMessage {
+    @APIParam(emptyString = false,maxLength = 32)
+    private String nodeUuid;
 
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
@@ -26,6 +28,14 @@ public class APICreateHostMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 128)
     private String password;
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
+    }
 
     public String getName() {
         return name;

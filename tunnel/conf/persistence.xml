@@ -28,6 +28,9 @@
         <class>org.zstack.tunnel.header.host.HostMonitorVO</class>
         <class>org.zstack.tunnel.header.host.HostMonitorEO</class>
 
+        <class>org.zstack.tunnel.header.monitor.HostSwitchMonitorVO</class>
+        <class>org.zstack.tunnel.header.monitor.HostSwitchMonitorEO</class>
+
         <class>org.zstack.tunnel.header.tunnel.NetWorkVO</class>
 
     </persistence-unit>

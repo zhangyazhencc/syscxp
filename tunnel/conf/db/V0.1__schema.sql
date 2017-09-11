@@ -8,6 +8,26 @@ SELECT uuid, nodeUuid, name, code, ip, username, password, state, status, lastOp
   FROM `HostEO`
  WHERE deleted = 0;
 
+CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`HostSwitchMonitorVO` (
+  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+  `hostUuid` varchar(32) NOT NULL COMMENT '主机UUID(HostEO.uuid)',
+  `physicalSwitchUuid` VARCHAR(32) NOT NULL COMMENT '物理交换机UUID(PhysicalSwitchVO.uuid)',
+  `physicalSwitchPortName` VARCHAR(128) NOT NULL COMMENT '物理交换机端口名称',
+  `interfaceName` VARCHAR(128) NOT NULL COMMENT '网卡名称',
+  `deleted` INT(11) NOT NULL DEFAULT '0',
+  `lastOpDate` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp COMMENT '最后一次操作时间',
+  `createDate` TIMESTAMP NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
+  PRIMARY KEY (`uuid`)
+  )
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COMMENT '监控主机与交换机接口映射';
+
+create view syscxp_tunnel.HostSwitchMonitorVO as
+select uuid,hostUuid,physicalSwitchUuid,physicalSwitchPortName,interfaceName,lastOpDate,createDate
+  from syscxp_tunnel.HostSwitchMonitorEO
+ where deleted = 0;
+
 
 #######################################################################################################
 
