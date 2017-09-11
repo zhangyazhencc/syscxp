@@ -1,5 +1,16 @@
 use syscxp_tunnel;
 
+/*20170911 sunxuelong*/
+alter table syscxp_tunnel.HostEO add nodeUuid varchar(32) comment '节点ID(NodeEO.uuid)' after uuid;
+
+CREATE OR REPLACE VIEW `syscxp_tunnel`.`HostVO` AS
+SELECT uuid, nodeUuid, name, code, ip, username, password, state, status, lastOpDate, createDate
+  FROM `HostEO`
+ WHERE deleted = 0;
+
+
+#######################################################################################################
+
 CREATE TABLE  `syscxp_tunnel`.`ManagementNodeVO` (
   `uuid` varchar(32) NOT NULL UNIQUE,
   `hostName` varchar(255) DEFAULT NULL,
