@@ -9,7 +9,7 @@ import org.zstack.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/08/23.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"account"}, accountOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"}, accountOnly = true)
 public class APIUpdateApiAllowIPMsg extends APIMessage implements AccountMessage{
 
     @APIParam

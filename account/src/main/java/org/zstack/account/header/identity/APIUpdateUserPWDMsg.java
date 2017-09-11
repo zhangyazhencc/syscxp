@@ -9,7 +9,7 @@ import org.zstack.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/8/8.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"user"})
+@Action(category = AccountConstant.ACTION_CATEGORY_USER, names = {"update"})
 public class APIUpdateUserPWDMsg extends APIMessage implements AccountMessage{
 
     @APIParam(maxLength = 36)

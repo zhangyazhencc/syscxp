@@ -1,7 +1,11 @@
 package org.zstack.billing.header.sla;
 
+import org.zstack.billing.manage.BillingConstant;
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+
+@Action(category = BillingConstant.ACTION_CATEGORY_SLA, names = {"delete"})
 
 public class APIDeleteSLACompensateMsg extends APIMessage {
 

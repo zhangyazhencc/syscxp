@@ -1,7 +1,9 @@
 package org.zstack.tunnel.header.node;
 
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.manage.NodeConstant;
 
 import java.util.List;
 
@@ -9,6 +11,7 @@ import java.util.List;
  * Created by DCY on 8/21/17.
  */
 
+@Action(category = NodeConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 
 public class APICreateNodeMsg extends APIMessage {
 

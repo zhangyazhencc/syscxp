@@ -5,7 +5,7 @@ import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
-@Action(category = BillingConstant.ACTION_CATEGORY, names = {"renew"}, accountOnly = true)
+@Action(category = BillingConstant.ACTION_CATEGORY_RENEW, names = {"update"})
 public class APIUpdateRenewMsg extends APIMessage {
 
     @APIParam()

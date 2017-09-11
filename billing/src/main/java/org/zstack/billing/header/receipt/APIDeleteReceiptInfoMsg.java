@@ -4,7 +4,7 @@ import org.zstack.billing.manage.BillingConstant;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
-@Action(category = BillingConstant.ACTION_CATEGORY, names = {"receipt"})
+@Action(category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"delete"})
 public class APIDeleteReceiptInfoMsg  extends APIMessage {
 
     @APIParam(emptyString = false, resourceType = ReceiptInfoVO.class, checkAccount = true)
