@@ -9,7 +9,7 @@ import org.zstack.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/8/18.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"account"})
+@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, accountOnly = true)
 public class APIAccountPhoneAuthenticationMsg extends APIMessage implements AccountMessage {
 
     @APIParam

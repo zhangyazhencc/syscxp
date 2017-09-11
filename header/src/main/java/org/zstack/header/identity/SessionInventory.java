@@ -2,6 +2,7 @@ package org.zstack.header.identity;
 
 import java.io.Serializable;
 import java.sql.Timestamp;
+import java.util.List;
 
 public class SessionInventory implements Serializable {
     private String uuid;
@@ -10,6 +11,16 @@ public class SessionInventory implements Serializable {
     private Timestamp expiredDate;
     private Timestamp createDate;
     private AccountType type;
+
+    private List<PolicyStatement> policyStatements;
+
+    public List<PolicyStatement> getPolicyStatements() {
+        return policyStatements;
+    }
+
+    public void setPolicyStatements(List<PolicyStatement> policyStatements) {
+        this.policyStatements = policyStatements;
+    }
 
     public boolean isAccountSession() {
         return accountUuid.equals(userUuid);

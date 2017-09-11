@@ -7,7 +7,7 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 import java.sql.Timestamp;
-@Action(category = BillingConstant.ACTION_CATEGORY, names = {"sla"})
+@Action(category = BillingConstant.ACTION_CATEGORY_SLA, names = {"create"})
 public class APICreateSLACompensateMsg extends APIMessage {
 
     @APIParam(emptyString = false)

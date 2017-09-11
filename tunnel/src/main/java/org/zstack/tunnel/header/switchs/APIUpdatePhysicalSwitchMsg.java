@@ -1,14 +1,19 @@
 package org.zstack.tunnel.header.switchs;
 
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.manage.SwitchConstant;
 
 /**
  * Created by DCY on 2017-09-06
  */
-public class APIUpdateSwitchAttributionMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = SwitchAttributionVO.class)
+@Action(category = SwitchConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
+
+public class APIUpdatePhysicalSwitchMsg extends APIMessage {
+
+    @APIParam(emptyString = false,resourceType = PhysicalSwitchVO.class)
     private String uuid;
     @APIParam(required = false,maxLength = 32)
     private String nodeUuid;
@@ -22,10 +27,14 @@ public class APIUpdateSwitchAttributionMsg extends APIMessage {
     private String brand;
     @APIParam(required = false,maxLength = 128)
     private String owner;
+    @APIParam(required = false,validValues = {"JOIN", "TRANSPORT"})
+    private PhysicalSwitchType type;
     @APIParam(required = false,maxLength = 32)
     private String rack;
     @APIParam(required = false,maxLength = 128)
     private String mIP;
+    @APIParam(required = false,maxLength = 128)
+    private String localIP;
     @APIParam(required = false,maxLength = 128)
     private String username;
     @APIParam(required = false,maxLength = 128)
@@ -127,5 +136,21 @@ public class APIUpdateSwitchAttributionMsg extends APIMessage {
 
     public void setNodeUuid(String nodeUuid) {
         this.nodeUuid = nodeUuid;
+    }
+
+    public String getLocalIP() {
+        return localIP;
+    }
+
+    public void setLocalIP(String localIP) {
+        this.localIP = localIP;
+    }
+
+    public PhysicalSwitchType getType() {
+        return type;
+    }
+
+    public void setType(PhysicalSwitchType type) {
+        this.type = type;
     }
 }

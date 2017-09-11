@@ -114,7 +114,7 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchModelVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##交换机归属(物理交换机)
-CREATE TABLE  `syscxp_tunnel`.`SwitchAttributionEO` (
+CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `nodeUuid` varchar(32) NOT NULL COMMENT '节点',
   `switchModelUuid` varchar(32) NOT NULL COMMENT '交换机型号',
@@ -122,9 +122,11 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchAttributionEO` (
   `name` varchar(128) NOT NULL COMMENT '交换机名称',
   `brand` varchar(128) NOT NULL COMMENT '交换机品牌',
   `owner` varchar(128) NOT NULL COMMENT '交换机属主',
+  `type` varchar(32) NOT NULL COMMENT '交换机类型：接入还是输出',
   `rack` varchar(32) NOT NULL COMMENT '交换机位置',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `mIP` varchar(128) NOT NULL COMMENT '管理IP',
+  `localIP` varchar(128) NOT NULL COMMENT '本地IP',
   `username` varchar(128) NOT NULL COMMENT '用户名',
   `password` varchar(128) NOT NULL COMMENT '密码',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
@@ -133,13 +135,13 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchAttributionEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`SwitchAttributionVO` AS SELECT uuid, switchModelUuid, name, code, brand, owner, rack, description, mIP, username, password, lastOpDate, createDate
-                                          FROM `SwitchAttributionEO` WHERE deleted = 0;
+CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, switchModelUuid, name, code, brand, owner, type, rack, description, mIP, localIP, username, password, lastOpDate, createDate
+                                          FROM `PhysicalSwitchEO` WHERE deleted = 0;
 
 ##交换机(虚拟交换机)
 CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `switchAttributionUuid` varchar(32) NOT NULL COMMENT '所属物理交换机',
+  `physicalSwitchUuid` varchar(32) NOT NULL COMMENT '所属物理交换机',
   `endpointUuid` varchar(32) NOT NULL COMMENT '连接点UUID',
   `code` varchar(128) NOT NULL COMMENT '交换机编号',
   `name` varchar(128) NOT NULL COMMENT '交换机名称',
@@ -154,7 +156,7 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, switchAttributionUuid, endpointUuid, name, code, upperType, enabled, description, status, isPrivate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, physicalSwitchUuid, endpointUuid, name, code, upperType, enabled, description, status, isPrivate, lastOpDate, createDate
                                             FROM `SwitchEO` WHERE deleted = 0;
 
 
@@ -165,9 +167,7 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchPortVO` (
   `portNum` INT(11) DEFAULT NULL COMMENT '该交换机端口编号：1口，2口...',
   `portName` varchar(128) NOT NULL COMMENT '端口名称',
   `portType` varchar(128) NOT NULL COMMENT '端口类型：光口，电口',
-  `label` varchar(128) NOT NULL COMMENT '端口用途：接入/监控/云',
   `isExclusive` TINYINT(1) NOT NULL COMMENT '如果是CLOUD端口，是否独享',
-  `reuse` TINYINT(1) NOT NULL COMMENT '是否复用',
   `enabled` TINYINT(1) NOT NULL DEFAULT '1' COMMENT '是否启用',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
@@ -191,7 +191,7 @@ CREATE TABLE  `syscxp_tunnel`.`NetWorkVO` (
   `accountUuid` varchar(32) NOT NULL COMMENT '所属账户',
   `name` varchar(128) NOT NULL COMMENT '网络名称',
   `vsi` INT(11) NOT NULL COMMENT 'VSI',
-  `monitorIp` varchar(32) NOT NULL COMMENT '监控网段',
+  `monitorCidr` varchar(32) NOT NULL COMMENT '监控网段',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
@@ -214,7 +214,7 @@ CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, name, switchPortUuid, endpointUuid, bandwidth, isExclusive, description, enabled, expiredDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, name, switchPortUuid, endpointUuid, bandwidth, isExclusive, description, expiredDate, lastOpDate, createDate
                                           FROM `InterfaceEO` WHERE deleted = 0;
 
 ##云专线

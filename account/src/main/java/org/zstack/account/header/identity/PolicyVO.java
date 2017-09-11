@@ -23,13 +23,13 @@ public class PolicyVO {
     @Column
     private String description;
 
-    @ManyToMany(cascade=CascadeType.ALL,fetch = FetchType.EAGER)
+    @ManyToMany(cascade=CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinTable(
             name="PolicyPermissionRefVO",
             joinColumns=@JoinColumn(name="policyUuid"),
             inverseJoinColumns=@JoinColumn(name="permissionUuid")
     )
-    private Set<PermissionVO> permissions;
+    private Set<PermissionVO> permissionSet;
 
     @Column
     private Timestamp createDate;
@@ -90,11 +90,11 @@ public class PolicyVO {
         this.lastOpDate = lastOpDate;
     }
 
-    public Set<PermissionVO> getPermissions() {
-        return permissions;
+    public Set<PermissionVO> getPermissionSet() {
+        return permissionSet;
     }
 
-    public void setPermissions(Set<PermissionVO> permissions) {
-        this.permissions = permissions;
+    public void setPermissionSet(Set<PermissionVO> permissionSet) {
+        this.permissionSet = permissionSet;
     }
 }

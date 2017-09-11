@@ -1,4 +1,4 @@
-package org.zstack.billing.identity;
+package org.zstack.billing.manage;
 
 import org.zstack.core.GlobalProperty;
 import org.zstack.core.GlobalPropertyDefinition;
@@ -9,10 +9,7 @@ import org.zstack.core.config.GlobalConfigValidation;
 /**
  */
 @GlobalPropertyDefinition
-public class IdentityGlobalProperty {
-
-    @GlobalProperty(name = "accountServerUrl", defaultValue = "http:// 192.168.211.108:8080/api")
-    public static String ACCOUNT_SERVER_URL;
+public class AlipayGlobalProperty {
 
     @GlobalProperty(name = "app_id")
     public static String APP_ID;
@@ -45,9 +42,6 @@ public class IdentityGlobalProperty {
 
     @GlobalProperty(name = "seller_id")
     public static String SELLER_ID;
-
-
-    public static int SESSION_CLEANUP_INTERVAL = 3600;
 
 }
 

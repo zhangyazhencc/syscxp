@@ -25,7 +25,7 @@ public class NetWorkVO {
     private Integer vsi;
 
     @Column
-    private String monitorIp;
+    private String monitorCidr;
 
     @Column
     private String description;
@@ -68,12 +68,12 @@ public class NetWorkVO {
         this.vsi = vsi;
     }
 
-    public String getMonitorIp() {
-        return monitorIp;
+    public String getMonitorCidr() {
+        return monitorCidr;
     }
 
-    public void setMonitorIp(String monitorIp) {
-        this.monitorIp = monitorIp;
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
     }
 
     public String getDescription() {

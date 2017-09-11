@@ -3,16 +3,14 @@ package org.zstack.tunnel.header.switchs;
 import org.zstack.header.vo.ForeignKey;
 import org.zstack.tunnel.header.node.NodeEO;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
 /**
  * Created by DCY on 2017-09-06
  */
 @MappedSuperclass
-public class SwitchAttributionAO {
+public class PhysicalSwitchAO {
     @Id
     @Column
     private String uuid;
@@ -38,6 +36,10 @@ public class SwitchAttributionAO {
     private String owner;
 
     @Column
+    @Enumerated(EnumType.STRING)
+    private PhysicalSwitchType type;
+
+    @Column
     private String rack;
 
     @Column
@@ -45,6 +47,9 @@ public class SwitchAttributionAO {
 
     @Column
     private String mIP;
+
+    @Column
+    private String localIP;
 
     @Column
     private String username;
@@ -168,5 +173,21 @@ public class SwitchAttributionAO {
 
     public void setNodeUuid(String nodeUuid) {
         this.nodeUuid = nodeUuid;
+    }
+
+    public PhysicalSwitchType getType() {
+        return type;
+    }
+
+    public void setType(PhysicalSwitchType type) {
+        this.type = type;
+    }
+
+    public String getLocalIP() {
+        return localIP;
+    }
+
+    public void setLocalIP(String localIP) {
+        this.localIP = localIP;
     }
 }

@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Set;
 
 @Inventory(mappingVOClass = AccountVO.class)
-
 public class AccountInventory {
     private String uuid;
     private String name;
@@ -26,45 +25,10 @@ public class AccountInventory {
     private String description;
     private String type;
 
-    private String grade;
-    private String userUuid;
-    private String createWay;
-
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    private Set<AccountExtraInfoVO> accountEx;
-
-
-    public static AccountInventory valueOf(AccountVO vo,AccountExtraInfoVO aeivo) {
-        AccountInventory inv = new AccountInventory();
-        inv.setUuid(vo.getUuid());
-        inv.setName(vo.getName());
-        inv.setTrueName(vo.getTrueName());
-        inv.setCompany(vo.getCompany());
-        inv.setDescription(vo.getDescription());
-        inv.setEmail(vo.getEmail());
-        inv.setPhone(vo.getPhone());
-
-        if(vo.getIndustry() != null){
-            inv.setIndustry(vo.getIndustry().toString());
-        }
-        if(vo.getType() != null){
-            inv.setType(vo.getType().toString());
-        }
-        if(aeivo.getGrade() != null){
-            inv.setGrade(aeivo.getGrade().toString());
-        }
-
-        inv.setEmailStatus(vo.getEmailStatus().toString());
-        inv.setPhoneStatus(vo.getPhoneStatus().toString());
-
-        inv.setUserUuid(aeivo.getUserUuid());
-        inv.setCreateWay(aeivo.getCreateWay());
-        inv.setCreateDate(vo.getCreateDate());
-        inv.setLastOpDate(vo.getLastOpDate());
-        return inv;
-    }
+    private AccountExtraInfoInventory extraInfo;
 
     public static AccountInventory valueOf(AccountVO vo) {
         AccountInventory inv = new AccountInventory();
@@ -75,22 +39,20 @@ public class AccountInventory {
         inv.setDescription(vo.getDescription());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
-        if(vo.getAccountEx() != null){
-            inv.setAccountEx(vo.getAccountEx());
-        }
-
         inv.setEmailStatus(vo.getEmailStatus().toString());
         inv.setPhoneStatus(vo.getPhoneStatus().toString());
+
+        inv.setType(vo.getType().toString());
 
         if(vo.getIndustry() !=null){
             inv.setIndustry(vo.getIndustry().toString());
         }
-        if(vo.getType() != null){
-            inv.setType(vo.getType().toString());
-        }
 
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+
+        inv.setExtraInfo(AccountExtraInfoInventory.valueOf(vo.getAccountExtraInfo()));
+
         return inv;
     }
 
@@ -102,13 +64,6 @@ public class AccountInventory {
         return lst;
     }
 
-    public String getCreateWay() {
-        return createWay;
-    }
-
-    public void setCreateWay(String createWay) {
-        this.createWay = createWay;
-    }
 
     public String getEmailStatus() {
         return emailStatus;
@@ -186,10 +141,6 @@ public class AccountInventory {
         return industry;
     }
 
-    public String getGrade() {
-        return grade;
-    }
-
     public String getStatus() {
         return status;
     }
@@ -218,10 +169,6 @@ public class AccountInventory {
         this.industry = industry;
     }
 
-    public void setGrade(String grade) {
-        this.grade = grade;
-    }
-
     public void setStatus(String status) {
         this.status = status;
     }
@@ -230,19 +177,11 @@ public class AccountInventory {
         this.description = description;
     }
 
-    public String getUserUuid() {
-        return userUuid;
+    public AccountExtraInfoInventory getExtraInfo() {
+        return extraInfo;
     }
 
-    public void setUserUuid(String userUuid) {
-        this.userUuid = userUuid;
-    }
-
-    public Set<AccountExtraInfoVO> getAccountEx() {
-        return accountEx;
-    }
-
-    public void setAccountEx(Set<AccountExtraInfoVO> accountEx) {
-        this.accountEx = accountEx;
+    public void setExtraInfo(AccountExtraInfoInventory extraInfo) {
+        this.extraInfo = extraInfo;
     }
 }

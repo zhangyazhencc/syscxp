@@ -6,7 +6,7 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
-@Action(category = AccountConstant.ACTION_CATEGORY,  accountOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY_USER)
 public class APIResetUserPWDMsg extends  APIMessage implements  AccountMessage {
 
     @APIParam(maxLength = 32)

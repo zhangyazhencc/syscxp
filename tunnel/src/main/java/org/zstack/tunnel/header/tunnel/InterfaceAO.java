@@ -1,8 +1,6 @@
 package org.zstack.tunnel.header.tunnel;
 
 import org.zstack.header.vo.ForeignKey;
-import org.zstack.tunnel.header.endpoint.EndpointEO;
-import org.zstack.tunnel.header.endpoint.EndpointVO;
 import org.zstack.tunnel.header.switchs.SwitchPortVO;
 
 import javax.persistence.Column;

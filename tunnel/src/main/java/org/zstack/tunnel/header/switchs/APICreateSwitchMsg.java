@@ -1,11 +1,15 @@
 package org.zstack.tunnel.header.switchs;
 
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.manage.SwitchConstant;
 
 /**
  * Created by DCY on 2017-08-29
  */
+@Action(category = SwitchConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
+
 public class APICreateSwitchMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32)
@@ -15,7 +19,7 @@ public class APICreateSwitchMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
     @APIParam(emptyString = false,maxLength = 32)
-    private String switchAttributionUuid;
+    private String physicalSwitchUuid;
     @APIParam(emptyString = false,validValues = {"FABRIC", "INTERNET"})
     private SwitchUpperType upperType;
     @APIParam(emptyString = false)
@@ -47,12 +51,12 @@ public class APICreateSwitchMsg extends APIMessage {
         this.name = name;
     }
 
-    public String getSwitchAttributionUuid() {
-        return switchAttributionUuid;
+    public String getPhysicalSwitchUuid() {
+        return physicalSwitchUuid;
     }
 
-    public void setSwitchAttributionUuid(String switchAttributionUuid) {
-        this.switchAttributionUuid = switchAttributionUuid;
+    public void setPhysicalSwitchUuid(String physicalSwitchUuid) {
+        this.physicalSwitchUuid = physicalSwitchUuid;
     }
 
     public SwitchUpperType getUpperType() {

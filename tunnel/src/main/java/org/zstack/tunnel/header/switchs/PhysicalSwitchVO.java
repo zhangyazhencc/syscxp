@@ -4,15 +4,14 @@ import org.zstack.header.vo.EO;
 import org.zstack.tunnel.header.node.NodeVO;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 
 /**
  * Created by DCY on 2017-09-05
  */
 @Entity
 @Table
-@EO(EOClazz = SwitchAttributionEO.class)
-public class SwitchAttributionVO extends SwitchAttributionAO{
+@EO(EOClazz = PhysicalSwitchEO.class)
+public class PhysicalSwitchVO extends PhysicalSwitchAO {
 
     @ManyToOne(fetch= FetchType.EAGER)
     @JoinColumn(name="nodeUuid", insertable=false, updatable=false)

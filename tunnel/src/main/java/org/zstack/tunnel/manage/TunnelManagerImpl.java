@@ -17,11 +17,21 @@ import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
+import org.zstack.tunnel.header.endpoint.EndpointType;
 import org.zstack.tunnel.header.tunnel.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
+import javax.persistence.Query;
 import javax.persistence.TypedQuery;
+
+import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+import java.util.Random;
 
 import static org.zstack.core.Platform.argerr;
 
@@ -70,6 +80,10 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             handle((APICreateNetWorkMsg) msg);
         }else if(msg instanceof APIUpdateNetWorkMsg){
             handle((APIUpdateNetWorkMsg) msg);
+        }else if(msg instanceof APICreateInterfaceNassMsg){
+            handle((APICreateInterfaceNassMsg) msg);
+        }else if(msg instanceof APICreateInterfaceBossMsg){
+            handle((APICreateInterfaceBossMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -92,7 +106,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             vo.setVsi(msg.getVsi());
         }
         vo.setName(msg.getName());
-        vo.setMonitorIp(msg.getMonitorIp());
+        vo.setMonitorCidr(msg.getMonitorCidr());
         if(msg.getDescription() != null){
             vo.setDescription(msg.getDescription());
         }else{
@@ -126,6 +140,111 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         bus.publish(evt);
     }
 
+    private void handle(APICreateInterfaceNassMsg msg){
+        InterfaceVO vo = new InterfaceVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setAccountUuid(msg.getSession().getAccountUuid());
+        vo.setName(msg.getName());
+        vo.setEndpointUuid(msg.getEndpointUuid());
+        EndpointType endpointType = msg.getEndpointType();
+        vo.setIsExclusive(msg.getIsExclusive());
+
+        String portUuid = null;
+
+        if(endpointType.equals(EndpointType.CLOUD) && msg.getIsExclusive() ==0){  //云共享
+            String sql = "select c.uuid from EndpointVO a,SwitchVO b,SwitchPortVO c " +
+                    "where a.uuid = b.endpointUuid and b.uuid = c.switchUuid " +
+                    "and a.uuid = '"+msg.getEndpointUuid()+"' and a.enabled = 1 and a.status = 'NORMAL' and a.openToCustomers = 1 " +
+                    "and b.enabled = 1 and b.status = 'NORMAL' " +
+                    "and c.isExclusive = 0 and c.enabled = 1";
+            Query vq = dbf.getEntityManager().createNativeQuery(sql);
+            List<String> portList = vq.getResultList();
+            Random r = new Random();
+            portUuid = portList.get(r.nextInt(portList.size()));
+
+        }else if(endpointType.equals(EndpointType.CLOUD) && msg.getIsExclusive() ==1){ //云独享
+            String sql = "select c.uuid from EndpointVO a, SwitchVO b,SwitchPortVO c " +
+                    "where a.uuid = b.endpointUuid and b.uuid = c.switchUuid " +
+                    "and a.uuid = '"+msg.getEndpointUuid()+"' and a.enabled = 1 and a.status = 'NORMAL' and a.openToCustomers = 1 " +
+                    "and b.enabled = 1 and b.status = 'NORMAL' " +
+                    "and c.isExclusive = 1 and c.enabled = 1 and c.portType = '"+msg.getPortType().toString()+"' " +
+                    "and c.uuid not in (select switchPortUuid from InterfaceVO)";
+            Query vq = dbf.getEntityManager().createNativeQuery(sql);
+            List<String> portList = vq.getResultList();
+            Random r = new Random();
+            portUuid = portList.get(r.nextInt(portList.size()));
+
+        }else if(endpointType.equals(EndpointType.ACCESSIN) && msg.getIsExclusive() ==1){ //接入独享
+            String sql = "select c.uuid from EndpointVO a,SwitchVO b,SwitchPortVO c " +
+                    "where a.uuid = b.endpointUuid and b.uuid = c.switchUuid " +
+                    "and a.uuid = '"+msg.getEndpointUuid()+"' and a.enabled = 1 and a.status = 'NORMAL' and a.openToCustomers = 1 " +
+                    "and b.enabled = 1 and b.status = 'NORMAL' " +
+                    "and c.isExclusive = 1 and c.enabled = 1 and c.portType = '"+msg.getPortType().toString()+"' " +
+                    "and c.uuid not in (select switchPortUuid from InterfaceVO)";
+            Query vq = dbf.getEntityManager().createNativeQuery(sql);
+            List<String> portList = vq.getResultList();
+            Random r = new Random();
+            portUuid = portList.get(r.nextInt(portList.size()));
+        }
+        vo.setSwitchPortUuid(portUuid);
+        vo.setBandwidth(msg.getBandwidth());
+
+        Calendar cal = Calendar.getInstance();
+        Date date = new Date();
+        DateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        cal.setTime(date);
+        cal.add(Calendar.MONTH, msg.getMonths());
+        date = cal.getTime();
+        String time=format.format(date);
+        vo.setExpiredDate(new Timestamp(date.getTime()).valueOf(time));
+
+        if(msg.getDescription() != null){
+            vo.setDescription(msg.getDescription());
+        }else{
+            vo.setDescription(null);
+        }
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateInterfaceNassEvent evt = new APICreateInterfaceNassEvent(msg.getId());
+        evt.setInventory(InterfaceInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APICreateInterfaceBossMsg msg){
+        InterfaceVO vo = new InterfaceVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setAccountUuid(msg.getAccountUuid());
+        vo.setName(msg.getName());
+        vo.setEndpointUuid(msg.getEndpointUuid());
+        vo.setIsExclusive(msg.getIsExclusive());
+        vo.setSwitchPortUuid(msg.getSwitchPortUuid());
+        vo.setBandwidth(msg.getBandwidth());
+
+        Calendar cal = Calendar.getInstance();
+        Date date = new Date();
+        DateFormat format=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        cal.setTime(date);
+        cal.add(Calendar.MONTH, msg.getMonths());
+        date = cal.getTime();
+        String time=format.format(date);
+        vo.setExpiredDate(new Timestamp(date.getTime()).valueOf(time));
+
+        if(msg.getDescription() != null){
+            vo.setDescription(msg.getDescription());
+        }else{
+            vo.setDescription(null);
+        }
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateInterfaceBossEvent evt = new APICreateInterfaceBossEvent(msg.getId());
+        evt.setInventory(InterfaceInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
 
     @Override
     public boolean start() {
@@ -148,6 +267,10 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             validate((APICreateNetWorkMsg) msg);
         }else if(msg instanceof APIUpdateNetWorkMsg){
             validate((APIUpdateNetWorkMsg) msg);
+        }else if(msg instanceof APICreateInterfaceNassMsg){
+            validate((APICreateInterfaceNassMsg) msg);
+        }else if(msg instanceof APICreateInterfaceBossMsg){
+            validate((APICreateInterfaceBossMsg) msg);
         }
         return msg;
     }
@@ -209,6 +332,28 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         }
 
+    }
+
+    private void validate(APICreateInterfaceNassMsg msg){
+        //判断同一个用户的接口名称是否已经存在
+
+        SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
+        q.add(InterfaceVO_.name, SimpleQuery.Op.EQ, msg.getName());
+        q.add(InterfaceVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
+        if(q.isExists()){
+            throw new ApiMessageInterceptionException(argerr("Interface's name %s is already exist ",msg.getName()));
+        }
+    }
+
+    private void validate(APICreateInterfaceBossMsg msg){
+        //判断同一个用户的接口名称是否已经存在
+
+        SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
+        q.add(InterfaceVO_.name, SimpleQuery.Op.EQ, msg.getName());
+        q.add(InterfaceVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        if(q.isExists()){
+            throw new ApiMessageInterceptionException(argerr("Interface's name %s is already exist ",msg.getName()));
+        }
     }
 
 

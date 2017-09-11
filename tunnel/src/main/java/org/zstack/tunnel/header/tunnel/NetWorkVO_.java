@@ -13,7 +13,7 @@ public class NetWorkVO_ {
     public static volatile SingularAttribute<NetWorkVO, String> accountUuid;
     public static volatile SingularAttribute<NetWorkVO, String> name;
     public static volatile SingularAttribute<NetWorkVO, Integer> vsi;
-    public static volatile SingularAttribute<NetWorkVO, String> monitorIp;
+    public static volatile SingularAttribute<NetWorkVO, String> monitorCidr;
     public static volatile SingularAttribute<NetWorkVO, String> description;
     public static volatile SingularAttribute<NetWorkVO, Timestamp> createDate;
     public static volatile SingularAttribute<NetWorkVO, Timestamp> lastOpDate;

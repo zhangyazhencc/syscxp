@@ -1,5 +1,6 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.header.message.APIParam;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
 import org.zstack.header.vo.Index;

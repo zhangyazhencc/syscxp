@@ -10,7 +10,7 @@ import org.zstack.header.notification.ApiNotification;
 /**
  * Created by frank on 7/10/2015.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY, names = {"user"})
+@Action(category = AccountConstant.ACTION_CATEGORY_USER)
 public class APIUpdateUserMsg extends APIMessage implements AccountMessage{
 
     @APIParam(resourceType = UserVO.class, checkAccount = true, operationTarget = true, required = false)
@@ -32,7 +32,7 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage{
     private String description;
 
     @APIParam(maxLength = 255, required = false)
-    private String PolicyUuid;
+    private String policyUuid;
 
     @APIParam(maxLength = 32, required = false)
     private UserType userType;
@@ -103,11 +103,11 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage{
     }
 
     public String getPolicyUuid() {
-        return PolicyUuid;
+        return policyUuid;
     }
 
     public void setPolicyUuid(String policyUuid) {
-        PolicyUuid = policyUuid;
+        this.policyUuid = policyUuid;
     }
 
     public ApiNotification __notification__() {
@@ -132,6 +132,6 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage{
 
     @Override
     public String getAccountUuid() {
-        return this.getAccountUuid();
+        return this.getSession().getAccountUuid();
     }
 }

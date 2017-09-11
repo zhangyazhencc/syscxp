@@ -178,4 +178,9 @@
         <name>org.zstack.account.header.identity.APIResetUserPWDMsg</name>
     </message>
 
+    <message>
+        <name>org.zstack.account.header.identity.APIVerifyRepetitionMsg</name>
+    </message>
+
+
 </service>

@@ -1,7 +1,6 @@
 package org.zstack.tunnel.header.switchs;
 
 import org.zstack.header.search.Inventory;
-import org.zstack.tunnel.header.node.NodeInventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -9,43 +8,42 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by DCY on 2017-09-06
+ * Created by DCY on 2017-09-08
  */
-@Inventory(mappingVOClass = SwitchAttributionVO.class)
-public class SwitchAttributionToNodeAndModelInventory {
-
+@Inventory(mappingVOClass = PhysicalSwitchVO.class)
+public class PhysicalSwitchInventory {
     private String uuid;
     private String nodeUuid;
-    private NodeInventory node;
     private String switchModelUuid;
-    private SwitchModelInventory switchModel;
     private String code;
     private String name;
     private String brand;
     private String owner;
+    private PhysicalSwitchType type;
     private String rack;
     private String description;
     private String mIP;
+    private String localIP;
     private String username;
     private String password;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    public static SwitchAttributionToNodeAndModelInventory valueOf(SwitchAttributionVO vo){
-        SwitchAttributionToNodeAndModelInventory inv = new SwitchAttributionToNodeAndModelInventory();
+    public static PhysicalSwitchInventory valueOf(PhysicalSwitchVO vo){
+        PhysicalSwitchInventory inv = new PhysicalSwitchInventory();
 
         inv.setUuid(vo.getUuid());
         inv.setNodeUuid(vo.getNodeUuid());
-        inv.setNode(NodeInventory.valueOf(vo.getNode()));
         inv.setSwitchModelUuid(vo.getSwitchModelUuid());
-        inv.setSwitchModel(SwitchModelInventory.valueOf(vo.getSwitchModel()));
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
         inv.setBrand(vo.getBrand());
         inv.setOwner(vo.getOwner());
+        inv.setType(vo.getType());
         inv.setRack(vo.getRack());
         inv.setDescription(vo.getDescription());
         inv.setmIP(vo.getmIP());
+        inv.setLocalIP(vo.getLocalIP());
         inv.setUsername(vo.getUsername());
         inv.setPassword(vo.getPassword());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -54,10 +52,10 @@ public class SwitchAttributionToNodeAndModelInventory {
         return inv;
     }
 
-    public static List<SwitchAttributionToNodeAndModelInventory> valueOf(Collection<SwitchAttributionVO> vos) {
-        List<SwitchAttributionToNodeAndModelInventory> lst = new ArrayList<SwitchAttributionToNodeAndModelInventory>(vos.size());
-        for (SwitchAttributionVO vo : vos) {
-            lst.add(SwitchAttributionToNodeAndModelInventory.valueOf(vo));
+    public static List<PhysicalSwitchInventory> valueOf(Collection<PhysicalSwitchVO> vos) {
+        List<PhysicalSwitchInventory> lst = new ArrayList<PhysicalSwitchInventory>(vos.size());
+        for (PhysicalSwitchVO vo : vos) {
+            lst.add(PhysicalSwitchInventory.valueOf(vo));
         }
         return lst;
     }
@@ -78,28 +76,12 @@ public class SwitchAttributionToNodeAndModelInventory {
         this.nodeUuid = nodeUuid;
     }
 
-    public NodeInventory getNode() {
-        return node;
-    }
-
-    public void setNode(NodeInventory node) {
-        this.node = node;
-    }
-
     public String getSwitchModelUuid() {
         return switchModelUuid;
     }
 
     public void setSwitchModelUuid(String switchModelUuid) {
         this.switchModelUuid = switchModelUuid;
-    }
-
-    public SwitchModelInventory getSwitchModel() {
-        return switchModel;
-    }
-
-    public void setSwitchModel(SwitchModelInventory switchModel) {
-        this.switchModel = switchModel;
     }
 
     public String getCode() {
@@ -188,5 +170,21 @@ public class SwitchAttributionToNodeAndModelInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public PhysicalSwitchType getType() {
+        return type;
+    }
+
+    public void setType(PhysicalSwitchType type) {
+        this.type = type;
+    }
+
+    public String getLocalIP() {
+        return localIP;
+    }
+
+    public void setLocalIP(String localIP) {
+        this.localIP = localIP;
     }
 }

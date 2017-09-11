@@ -17,7 +17,7 @@ public class NetWorkInventory {
     private String accountUuid;
     private String name;
     private Integer vsi;
-    private String monitorIp;
+    private String monitorCidr;
     private String description;
     private Timestamp createDate;
     private Timestamp lastOpDate;
@@ -28,7 +28,7 @@ public class NetWorkInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setName(vo.getName());
         inv.setVsi(vo.getVsi());
-        inv.setMonitorIp(vo.getMonitorIp());
+        inv.setMonitorCidr(vo.getMonitorCidr());
         inv.setDescription(vo.getDescription());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -75,12 +75,12 @@ public class NetWorkInventory {
         this.vsi = vsi;
     }
 
-    public String getMonitorIp() {
-        return monitorIp;
+    public String getMonitorCidr() {
+        return monitorCidr;
     }
 
-    public void setMonitorIp(String monitorIp) {
-        this.monitorIp = monitorIp;
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
     }
 
     public String getDescription() {

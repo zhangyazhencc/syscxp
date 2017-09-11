@@ -27,8 +27,8 @@ public class SwitchAO {
     private String name;
 
     @Column
-    @ForeignKey(parentEntityClass = SwitchAttributionEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
-    private String switchAttributionUuid;
+    @ForeignKey(parentEntityClass = PhysicalSwitchEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
+    private String physicalSwitchUuid;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -85,12 +85,12 @@ public class SwitchAO {
         this.name = name;
     }
 
-    public String getSwitchAttributionUuid() {
-        return switchAttributionUuid;
+    public String getPhysicalSwitchUuid() {
+        return physicalSwitchUuid;
     }
 
-    public void setSwitchAttributionUuid(String switchAttributionUuid) {
-        this.switchAttributionUuid = switchAttributionUuid;
+    public void setPhysicalSwitchUuid(String physicalSwitchUuid) {
+        this.physicalSwitchUuid = physicalSwitchUuid;
     }
 
     public SwitchUpperType getUpperType() {

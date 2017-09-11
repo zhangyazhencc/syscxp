@@ -26,7 +26,6 @@ import org.zstack.sms.SmsService;
 import org.zstack.utils.ExceptionDSL;
 import org.zstack.utils.Utils;
 
-import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
 import java.util.*;
@@ -179,7 +178,7 @@ public class AccountBase extends AbstractAccount {
         APIResetAccountPWDEvent evt = new APIResetAccountPWDEvent(msg.getId());
         AccountVO cont = dbf.findByUuid(msg.getUuid(), AccountVO.class);
 
-        String pwd = getRandomString(8);
+        String pwd = getRandomString(12);
 
         cont.setPassword(DigestUtils.sha512Hex(pwd));
         dbf.updateAndRefresh(cont);
@@ -192,13 +191,13 @@ public class AccountBase extends AbstractAccount {
 
         APIResetUserPWDEvent evt = new APIResetUserPWDEvent(msg.getId());
         UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
-        if (!msg.getSession().getType().equals(AccountType.SystemAdmin) &&
+        if (msg.getSession().getType() != AccountType.SystemAdmin &&
                 !msg.getAccountUuid().equals(user.getAccountUuid())) {
             throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot reset the password of other user [uuid: %s]",
                     msg.getAccountUuid(), msg.getUuid()));
         }
 
-        String pwd = getRandomString(8);
+        String pwd = getRandomString(12);
 
         user.setPassword(DigestUtils.sha512Hex(pwd));
         dbf.updateAndRefresh(user);
@@ -234,7 +233,6 @@ public class AccountBase extends AbstractAccount {
         APIGetAccountReply reply = new APIGetAccountReply();
         AccountVO account = dbf.findByUuid(msg.getAccountUuid(),AccountVO.class);
 
-
         reply.setInventory(AccountInventory.valueOf(account));
         bus.reply(msg, reply);
     }
@@ -242,7 +240,7 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIGetUserMsg msg) {
         APIGetUserReply reply = new APIGetUserReply();
 
-        UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(),UserVO.class);
+        UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
         reply.setInventory(UserInventory.valueOf(user));
         bus.reply(msg, reply);
     }
@@ -272,7 +270,7 @@ public class AccountBase extends AbstractAccount {
         acvo.setAccountUuid(msg.getAccountUuid());
         acvo.setName(msg.getName());
         acvo.setPhone(msg.getPhone());
-        acvo.setEmail(msg.getPhone());
+        acvo.setEmail(msg.getEmail());
         acvo.setNoticeWay(msg.getNoticeWay());
 
         APICreateAccountContactsEvent evt = new APICreateAccountContactsEvent(msg.getId());
@@ -282,35 +280,15 @@ public class AccountBase extends AbstractAccount {
 
     private void handle(APIDeleteAccountContactsMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), AccountContactsVO.class);
-        APIDeletePolicyEvent evt = new APIDeletePolicyEvent(msg.getId());
 
-        bus.publish(evt);
-    }
+        APIDeleteAccountContactsEvent evt = new APIDeleteAccountContactsEvent(msg.getId());
 
-    private void handle(APIDeleteUserMsg msg) {
-        APIDeleteUserEvent evt = new APIDeleteUserEvent(msg.getId());
-
-        dbf.removeByPrimaryKey(msg.getUuid(), UserVO.class);
         bus.publish(evt);
     }
 
     private void handle(APIUpdateAccountContactsMsg msg) {
         APIUpdateAccountContactsEvent evt = new APIUpdateAccountContactsEvent(msg.getId());
         AccountContactsVO cont = dbf.findByUuid(msg.getUuid(), AccountContactsVO.class);
-
-        SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
-        q.add(ProxyAccountRefVO_.customerAcccountUuid, SimpleQuery.Op.EQ, msg.getUuid());
-        ProxyAccountRefVO acvo = q.find();
-
-        if (!msg.getSession().getType().equals(AccountType.SystemAdmin) &&
-                !cont.getAccountUuid().equals(msg.getAccountUuid()) &&
-                (acvo == null || !msg.getAccountUuid().equals(acvo.getAccountUuid()))
-                ) {
-            throw new OperationFailureException(operr("account[uuid: %s] is a normal account, " +
-                            "it cannot update the infomation of another account[uuid: %s]",
-                    msg.getAccountUuid(), msg.getUuid()));
-        }
-
 
         if(msg.getName() != null){
             cont.setName(msg.getName());
@@ -343,13 +321,13 @@ public class AccountBase extends AbstractAccount {
                     msg.getSession().getAccountUuid()));
         }else{
             if (account.getPhoneStatus() == ValidateStatus.Unvalidated) {
-                evt.setPhone(msg.getPhone());
-
                 account.setPhone(msg.getPhone());
                 account.setPhoneStatus(ValidateStatus.Validated);
                 dbf.updateAndRefresh(account);
             }
         }
+
+        evt.setPhone(account.getPhone());
 
         bus.publish(evt);
     }
@@ -360,9 +338,6 @@ public class AccountBase extends AbstractAccount {
         UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
 
         if (user.getPhoneStatus() == ValidateStatus.Unvalidated && smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
-
-            evt.setPhone(msg.getPhone());
-
             user.setPhone(msg.getPhone());
             user.setPhoneStatus(ValidateStatus.Validated);
             dbf.updateAndRefresh(user);
@@ -371,6 +346,7 @@ public class AccountBase extends AbstractAccount {
                     msg.getSession().getAccountUuid()));
         }
 
+        evt.setPhone(msg.getPhone());
         bus.publish(evt);
     }
 
@@ -378,11 +354,15 @@ public class AccountBase extends AbstractAccount {
 
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
         UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
-        if (user.getPassword().equals(msg.getOldpassword())) {
-            user.setPassword(msg.getNewpassword());
-            evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
-        } else {
-            throw new CloudRuntimeException("bad old passwords");
+        if (user.getPhone().equals(msg.getPhone())) {
+            if (user.getPassword().equals(msg.getOldpassword())) {
+                user.setPassword(msg.getNewpassword());
+                evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
+            } else {
+                throw new CloudRuntimeException("bad old passwords");
+            }
+        }else{
+            throw new ApiMessageInterceptionException(argerr("wrong phone"));
         }
 
         bus.publish(evt);
@@ -448,92 +428,60 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIUpdateAccountMsg msg) {
         AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
 
-        boolean accountis = false;
+        boolean update = false;
         if (msg.getCompany() != null) {
             account.setCompany(msg.getCompany());
-            accountis = true;
+            update = true;
         }
         if (msg.getDescription() != null) {
             account.setDescription(msg.getDescription());
-            accountis = true;
+            update = true;
         }
-        if (msg.getEmail() != null) {
+        if (msg.getEmail() != null && ! msg.getEmail().equalsIgnoreCase(account.getEmail())) {
             account.setEmail(msg.getEmail());
             account.setEmailStatus(ValidateStatus.Unvalidated);
-            accountis = true;
+            update = true;
         }
 
-        if (msg.getPhone() != null) {
+        if (msg.getPhone() != null && ! msg.getPhone().equalsIgnoreCase(account.getPhone())) {
             account.setPhone(msg.getPhone());
             account.setPhoneStatus(ValidateStatus.Unvalidated);
-            accountis = true;
-        }
-        if (msg.getStatus() != null) {
-            account.setStatus(msg.getStatus().equals(AccountStatus.Available)
-                    ? AccountStatus.Available : AccountStatus.Disabled);
-            accountis = true;
-        }
-        if (msg.getTrueName() != null) {
-            account.setTrueName(msg.getTrueName());
-            accountis = true;
+            update = true;
         }
 
-        if (msg.getType() != null) {
-            if (msg.getType().equals(AccountType.Normal)) {
-                account.setType(AccountType.Normal);
-            } else if (msg.getType().equals(AccountType.Proxy)) {
-                account.setType(AccountType.Proxy);
-            } else if (msg.getType().equals(AccountType.SystemAdmin)) {
-                account.setType(AccountType.SystemAdmin);
-            }
-            accountis = true;
+        if (msg.getTrueName() != null) {
+            account.setTrueName(msg.getTrueName());
+            update = true;
         }
 
         if (msg.getIndustry() != null) {
             account.setIndustry(msg.getIndustry());
-            accountis = true;
+            update = true;
         }
 
-        if (accountis) {
+        if (msg.getSession().getType() == AccountType.SystemAdmin) {
+            if (msg.getStatus() != null) {
+                account.setStatus(msg.getStatus());
+                update = true;
+            }
+
+            if (msg.getType() != null) {
+                account.setType(AccountType.valueOf(msg.getType()));
+                update = true;
+            }
+
+            if (msg.getGrade() != null) {
+                account.getAccountExtraInfo().setGrade(msg.getGrade());
+                update = true;
+            }
+        }
+
+        if (update) {
             account = dbf.updateAndRefresh(account);
         }
 
-
-        AccountExtraInfoVO aeivo = dbf.findByUuid(msg.getUuid(), AccountExtraInfoVO.class);
-        if (aeivo == null) {
-            aeivo = new AccountExtraInfoVO();
-        }
-        boolean done = false;
-        if (msg.getGrade() != null) {
-            if (msg.getGrade().equals(AccountGrade.Normal)) {
-                aeivo.setGrade(AccountGrade.Normal);
-            } else if (msg.getGrade().equals(AccountGrade.Middling)) {
-                aeivo.setGrade(AccountGrade.Middling);
-            } else if (msg.getGrade().equals(AccountGrade.Important)) {
-                aeivo.setGrade(AccountGrade.Important);
-            } else {
-                throw new OperationFailureException(operr("Parameter is not legal(grade)"));
-            }
-            done = true;
-        }
-
-        if (msg.getSalesman() != null) {
-            aeivo.setUserUuid(msg.getSalesman());
-            done = true;
-        }
-
-        if (done) {
-            if (aeivo.getUuid() != null) {
-                aeivo = dbf.updateAndRefresh(aeivo);
-            } else {
-                aeivo.setUuid(Platform.getUuid());
-                aeivo.setAccountUuid(account.getUuid());
-                aeivo = dbf.persistAndRefresh(aeivo);
-            }
-        }
-
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
-        evt.setInventory(AccountInventory.valueOf(account, aeivo));
+        evt.setInventory(AccountInventory.valueOf(account));
         bus.publish(evt);
 
     }
@@ -554,22 +502,21 @@ public class AccountBase extends AbstractAccount {
         }
 
         if (msg.getDepartment() != null) {
-            user.setPassword(msg.getDepartment());
+            user.setDepartment(msg.getDepartment());
             update = true;
         }
-        if (msg.getEmail() != null) {
+        if (msg.getEmail() != null && ! msg.getEmail().equalsIgnoreCase(user.getEmail())) {
             user.setEmail(msg.getEmail());
             user.setEmailStatus(ValidateStatus.Unvalidated);
             update = true;
         }
-        if (msg.getPhone() != null) {
+        if (msg.getPhone() != null && ! msg.getPhone().equalsIgnoreCase(user.getPhone())) {
             user.setPhone(msg.getPhone());
             user.setPhoneStatus(ValidateStatus.Unvalidated);
             update = true;
         }
         if (msg.getStatus() != null) {
-            user.setStatus(msg.getStatus().equals(AccountStatus.Available)
-                    ? AccountStatus.Available : AccountStatus.Disabled);
+            user.setStatus(msg.getStatus());
             update = true;
         }
         if (msg.getTrueName() != null) {
@@ -577,8 +524,24 @@ public class AccountBase extends AbstractAccount {
             update = true;
         }
 
-        if(msg.getSession().isAdminAccountSession() && msg.getUserType() != null){
+        if(msg.getSession().getType() == AccountType.SystemAdmin && msg.getUserType() != null){
             user.setUserType(msg.getUserType());
+            update = true;
+        }
+
+        if (msg.getPolicyUuid() != null) {
+            Set<PolicyVO> policySet = new HashSet<>();
+            PolicyVO policy = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
+            if (policy != null) {
+                policySet.add(policy);
+            }
+            user.setPolicySet(policySet);
+
+//            uprvo = new UserPolicyRefVO();
+//            uprvo.setPolicyUuid(msg.getPolicyUuid());
+//            uprvo.setUserUuid(msg.getUuid());
+//            dbf.persist(uprvo);
+
             update = true;
         }
 
@@ -586,88 +549,77 @@ public class AccountBase extends AbstractAccount {
             user = dbf.updateAndRefresh(user);
         }
 
-
-        if (msg.getPolicyUuid() != null) {
-            SimpleQuery<UserPolicyRefVO> q = dbf.createQuery(UserPolicyRefVO.class);
-            q.add(UserPolicyRefVO_.userUuid, SimpleQuery.Op.EQ, msg.getUuid());
-            UserPolicyRefVO uprvo = q.find();
-
-            Set<PolicyVO> policy = new HashSet<>();
-            policy.add(dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class));
-            user.setPolicy(policy);
-
-            if (uprvo != null) {
-                uprvo.setPolicyUuid(msg.getPolicyUuid());
-                dbf.update(uprvo);
-            } else {
-                uprvo = new UserPolicyRefVO();
-                uprvo.setPolicyUuid(msg.getPolicyUuid());
-                uprvo.setUserUuid(msg.getUuid());
-                dbf.persist(uprvo);
-            }
-        }
-
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
         evt.setInventory(UserInventory.valueOf(user));
+        bus.publish(evt);
+    }
+
+    private void handle(APIDeleteUserMsg msg) {
+        APIDeleteUserEvent evt = new APIDeleteUserEvent(msg.getId());
+
+        dbf.removeByPrimaryKey(msg.getUuid(), UserVO.class);
         bus.publish(evt);
     }
 
     @Transactional
     private void handle(APICreateAccountMsg msg) {
 
-        AccountVO accountvo = new AccountVO();
+        AccountVO accountVO = new AccountVO();
 
-        accountvo.setUuid(Platform.getUuid());
-        accountvo.setName(msg.getName());
-        accountvo.setPassword(msg.getPassword());
-        accountvo.setCompany(msg.getCompany());
-        accountvo.setDescription(msg.getDescription());
-        accountvo.setEmail(msg.getEmail());
-        accountvo.setIndustry(msg.getIndustry());
-        accountvo.setPhone(msg.getPhone());
-        accountvo.setTrueName(msg.getTrueName());
-        accountvo.setStatus(AccountStatus.Available);
+        accountVO.setUuid(Platform.getUuid());
+        accountVO.setName(msg.getName());
+        accountVO.setPassword(msg.getPassword());
+        accountVO.setCompany(msg.getCompany());
+        accountVO.setDescription(msg.getDescription());
+        accountVO.setEmail(msg.getEmail());
+        accountVO.setIndustry(msg.getIndustry());
+        accountVO.setPhone(msg.getPhone());
+        accountVO.setTrueName(msg.getTrueName());
+        accountVO.setStatus(AccountStatus.Available);
         if(msg.getType() != null){
-            accountvo.setType(msg.getType().equals("Proxy")?AccountType.Proxy:AccountType.Normal);
+            accountVO.setType(AccountType.valueOf(msg.getType()));
         }else{
-            accountvo.setType(AccountType.Normal);
+            accountVO.setType(AccountType.Normal);
         }
 
-        accountvo.setPhoneStatus(ValidateStatus.Unvalidated);
-        accountvo.setEmailStatus(ValidateStatus.Unvalidated);
+        accountVO.setPhoneStatus(ValidateStatus.Unvalidated);
+        accountVO.setEmailStatus(ValidateStatus.Unvalidated);
 
-        accountvo = dbf.persistAndRefresh(accountvo);
-
-
-        AccountExtraInfoVO aeivo = new AccountExtraInfoVO();
-        aeivo.setUuid(Platform.getUuid());
-        aeivo.setAccountUuid(accountvo.getUuid());
+        AccountExtraInfoVO ext = new AccountExtraInfoVO();
+        ext.setUuid(accountVO.getUuid());
+        ext.setCreateWay("register");
         if(msg.getGrade() != null){
-            aeivo.setGrade(msg.getGrade());
+            ext.setGrade(msg.getGrade());
+        }else{
+            ext.setGrade(AccountGrade.Normal);
         }
-        if (msg.getUserUuid() != null) {
-            aeivo.setUserUuid(msg.getUserUuid());
-        }
-        aeivo.setCreateWay(msg.getSession().getType().toString());
-        aeivo = dbf.persistAndRefresh(aeivo);
 
-        AccountApiSecurityVO api = new AccountApiSecurityVO();
-        api.setUuid(Platform.getUuid());
-        api.setAccountUuid(accountvo.getUuid());
-        api.setPrivateKey(getRandomString(36));
-        api.setPublicKey(getRandomString(36));
-        dbf.persist(api);
+        ext.setUserUuid(msg.getUserUuid());
+
+        ext.setCreateWay(msg.getSession().getType().toString());
+
+        accountVO.setAccountExtraInfo(ext);
+
+        accountVO = dbf.persistAndRefresh(accountVO);
 
         if (msg.getSession().isProxySession()) {
             ProxyAccountRefVO prevo = new ProxyAccountRefVO();
             prevo.setAccountUuid(msg.getAccountUuid());
-            prevo.setCustomerAcccountUuid(accountvo.getUuid());
+            prevo.setCustomerAcccountUuid(accountVO.getUuid());
 
             dbf.persist(prevo);
         }
 
+        AccountApiSecurityVO api = new AccountApiSecurityVO();
+        api.setUuid(Platform.getUuid());
+        api.setAccountUuid(accountVO.getUuid());
+        api.setPrivateKey(getRandomString(36));
+        api.setPublicKey(getRandomString(36));
+        dbf.persist(api);
+
+
         APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
-        evt.setInventory(AccountInventory.valueOf(accountvo, aeivo));
+        evt.setInventory(AccountInventory.valueOf(accountVO));
         bus.publish(evt);
     }
 
@@ -678,37 +630,34 @@ public class AccountBase extends AbstractAccount {
 
         uservo.setUuid(Platform.getUuid());
         uservo.setAccountUuid(msg.getAccountUuid());
-        uservo.setDepartment(msg.getDepartment());
-        uservo.setDescription(msg.getDescription());
         uservo.setEmail(msg.getEmail());
         uservo.setName(msg.getName());
         uservo.setPassword(msg.getPassword());
         uservo.setPhone(msg.getPhone());
         uservo.setStatus(AccountStatus.Available);
         uservo.setTrueName(msg.getTrueName());
+        uservo.setDepartment(msg.getDepartment());
+        uservo.setDescription(msg.getDescription());
 
         uservo.setEmailStatus(ValidateStatus.Unvalidated);
         uservo.setPhoneStatus(ValidateStatus.Unvalidated);
 
-        if(msg.getSession().isAdminAccountSession() && msg.getUserType() != null){
+        if(msg.getSession().getType() == AccountType.SystemAdmin && msg.getUserType() != null){
             uservo.setUserType(msg.getUserType());
         }else{
             uservo.setUserType(UserType.normal);
         }
 
-        uservo = dbf.persistAndRefresh(uservo);
-
-        UserPolicyRefVO uprv = new UserPolicyRefVO();
-        if (msg.getPolicyUuid() != null && dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class) != null) {
-            uprv.setUserUuid(uservo.getUuid());
-            uprv.setPolicyUuid(msg.getPolicyUuid());
-            dbf.persist(uprv);
-
-            Set<PolicyVO> policy = new HashSet<>();
-            policy.add(dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class));
-            uservo.setPolicy(policy);
-
+        if (msg.getPolicyUuid() != null) {
+            Set<PolicyVO> policySet = new HashSet<>();
+            PolicyVO policy = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
+            if (policy != null) {
+                policySet.add(policy);
+            }
+            uservo.setPolicySet(policySet);
         }
+
+        uservo = dbf.persistAndRefresh(uservo);
 
         APICreateUserEvent evt = new APICreateUserEvent(msg.getId());
         evt.setInventory(UserInventory.valueOf(uservo));
@@ -723,22 +672,22 @@ public class AccountBase extends AbstractAccount {
         pvo.setAccountUuid(msg.getAccountUuid());
         pvo.setDescription(msg.getDescription());
 
-        List<PolicyStatement> list = new ArrayList<>();
-        PolicyStatement  ps = new PolicyStatement();
-        ps.setEffect(StatementEffect.Allow);
-        List<String> actions = new ArrayList<>();
-        List uuids = msg.getPermissionUuids();
-        for(int i=0;i<uuids.size();i++){
-            actions.add(dbf.findByUuid(uuids.get(i).toString(),PermissionVO.class).getPermission());
+        Set<PermissionVO> permissionSet = new HashSet<PermissionVO>();
+
+        for (String id  : msg.getPermissionUuids()) {
+            PermissionVO permissionVO = dbf.findByUuid(id, PermissionVO.class);
+            if (permissionVO != null ){
+                permissionSet.add(permissionVO);
+            }
         }
 
-        ps.setActions(actions);
-        list.add(ps);
-        pvo.setPolicyStatement(JSONObjectUtil.toJsonString(list));
+        pvo.setPermissionSet(permissionSet);
+
+        pvo = dbf.persistAndRefresh(pvo);
 
         APICreatePolicyEvent evt = new APICreatePolicyEvent(msg.getId());
 
-        evt.setInventory(PolicyInventory.valueOf(dbf.persistAndRefresh(pvo)));
+        evt.setInventory(PolicyInventory.valueOf(pvo));
         bus.publish(evt);
     }
 
@@ -808,19 +757,19 @@ public class AccountBase extends AbstractAccount {
             auth.setName(msg.getName());
             update = true;
         }
-        if (!StringUtils.isEmpty(msg.getAccountType())) {
+        if (msg.getAccountType() != null) {
             auth.setAccountType(msg.getAccountType());
             update = true;
         }
-        if (!StringUtils.isEmpty(msg.getPermission())) {
+        if (msg.getPermission() != null) {
             auth.setPermission(msg.getPermission());
             update = true;
         }
-        if (!StringUtils.isEmpty(msg.getType())) {
+        if (msg.getType() != null) {
             auth.setType(msg.getType());
             update = true;
         }
-        if (!StringUtils.isEmpty(msg.getSortId())) {
+        if (msg.getSortId() != null) {
             auth.setSortId(msg.getSortId());
             update = true;
         }

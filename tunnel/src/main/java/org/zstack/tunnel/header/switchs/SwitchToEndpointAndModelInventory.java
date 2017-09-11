@@ -19,7 +19,7 @@ public class SwitchToEndpointAndModelInventory {
     private String code;
     private String name;
     private String switchAttributionUuid;
-    private SwitchAttributionToModelInventory switchAttribution;
+    private PhysicalSwitchToModelInventory switchAttribution;
     private SwitchUpperType upperType;
     private Integer enabled;
     private String description;
@@ -36,8 +36,8 @@ public class SwitchToEndpointAndModelInventory {
         inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpoint()));
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
-        inv.setSwitchAttributionUuid(vo.getSwitchAttributionUuid());
-        inv.setSwitchAttribution(SwitchAttributionToModelInventory.valueOf(vo.getSwitchAttribution()));
+        inv.setSwitchAttributionUuid(vo.getPhysicalSwitchUuid());
+        inv.setSwitchAttribution(PhysicalSwitchToModelInventory.valueOf(vo.getPhysicalSwitch()));
         inv.setUpperType(vo.getUpperType());
         inv.setEnabled(vo.getEnabled());
         inv.setDescription(vo.getDescription());
@@ -105,11 +105,11 @@ public class SwitchToEndpointAndModelInventory {
         this.switchAttributionUuid = switchAttributionUuid;
     }
 
-    public SwitchAttributionToModelInventory getSwitchAttribution() {
+    public PhysicalSwitchToModelInventory getSwitchAttribution() {
         return switchAttribution;
     }
 
-    public void setSwitchAttribution(SwitchAttributionToModelInventory switchAttribution) {
+    public void setSwitchAttribution(PhysicalSwitchToModelInventory switchAttribution) {
         this.switchAttribution = switchAttribution;
     }
 

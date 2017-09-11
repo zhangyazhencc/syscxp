@@ -157,4 +157,9 @@ public class SLACompensateVO {
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
     }
+
+    @PreUpdate
+    void preUpdate() {
+        lastOpDate = null;
+    }
 }

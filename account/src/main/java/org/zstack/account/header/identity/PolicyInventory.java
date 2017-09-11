@@ -1,16 +1,11 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.header.identity.PolicyStatement;
-import org.zstack.header.query.ExpandedQueries;
-import org.zstack.header.query.ExpandedQuery;
 import org.zstack.header.search.Inventory;
-import org.zstack.utils.gson.JSONObjectUtil;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 @Inventory(mappingVOClass = PolicyVO.class)
 
@@ -23,14 +18,14 @@ public class PolicyInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    private Set<PermissionVO> permissions;
+    private List<PermissionInventory> permissions;
 
     public static PolicyInventory valueOf(PolicyVO vo) {
         PolicyInventory inv = new PolicyInventory();
         inv.setName(vo.getName());
         inv.setUuid(vo.getUuid());
         inv.setDescription(vo.getDescription());
-        inv.setPermissions(vo.getPermissions());
+        inv.setPermissions(PermissionInventory.valueOf(vo.getPermissionSet()));
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -95,11 +90,11 @@ public class PolicyInventory {
         this.lastOpDate = lastOpDate;
     }
 
-    public Set<PermissionVO> getPermissions() {
+    public List<PermissionInventory> getPermissions() {
         return permissions;
     }
 
-    public void setPermissions(Set<PermissionVO> permissions) {
+    public void setPermissions(List<PermissionInventory> permissions) {
         this.permissions = permissions;
     }
 }

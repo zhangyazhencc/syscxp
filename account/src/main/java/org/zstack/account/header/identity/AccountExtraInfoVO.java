@@ -22,10 +22,6 @@ public class AccountExtraInfoVO {
     @Id
     @Column
     private String uuid;
-    
-    @Column
-    @Index
-    private String accountUuid;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -52,10 +48,6 @@ public class AccountExtraInfoVO {
         return uuid;
     }
 
-    public String getAccountUuid() {
-        return accountUuid;
-    }
-
     public AccountGrade getGrade() {
         return grade;
     }
@@ -74,10 +66,6 @@ public class AccountExtraInfoVO {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
     }
 
     public void setGrade(AccountGrade grade) {
