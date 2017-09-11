@@ -412,6 +412,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     @Override
+    @Transactional
     public void prepareDbInitialValue() {
         logger.debug("Created initial system admin account");
         try {
@@ -435,6 +436,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 ext.setGrade(AccountGrade.Normal);
                 vo.setAccountExtraInfo(ext);
 
+                dbf.persist(vo);
+
                 AccountApiSecurityVO api = new AccountApiSecurityVO();
                 api.setUuid(Platform.getUuid());
                 api.setAccountUuid(vo.getUuid());
@@ -442,7 +445,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 api.setPublicKey(getRandomString(36));
                 dbf.persist(api);
 
-                dbf.persist(vo);
                 logger.debug(String.format("Created initial system admin account[name:%s]", AccountConstant.INITIAL_SYSTEM_ADMIN_NAME));
             }
         } catch (Exception e) {
