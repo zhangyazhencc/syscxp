@@ -224,6 +224,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         void validate(APIMessage msg) {
             this.msg = msg;
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
+                suppressCredentialCheck();
             } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)) {
                 innerCredentialCheck();
             } else {
