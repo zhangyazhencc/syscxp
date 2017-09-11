@@ -448,6 +448,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     @Override
+    @Transactional
     public void prepareDbInitialValue() {
         logger.debug("Created initial system admin account");
         try {
@@ -469,7 +470,10 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 AccountExtraInfoVO ext = new AccountExtraInfoVO();
                 ext.setUuid(vo.getUuid());
                 ext.setGrade(AccountGrade.Normal);
+                ext.setCreateWay("init");
                 vo.setAccountExtraInfo(ext);
+
+                dbf.persist(vo);
 
                 AccountApiSecurityVO api = new AccountApiSecurityVO();
                 api.setUuid(Platform.getUuid());
@@ -478,8 +482,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 api.setPublicKey(getRandomString(36));
                 dbf.persist(api);
 
-                dbf.persist(vo);
                 logger.debug(String.format("Created initial system admin account[name:%s]", AccountConstant.INITIAL_SYSTEM_ADMIN_NAME));
+
             }
         } catch (Exception e) {
             throw new CloudRuntimeException("Unable to create default system admin account", e);

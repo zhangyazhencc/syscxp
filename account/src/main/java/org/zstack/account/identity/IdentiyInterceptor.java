@@ -75,7 +75,8 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
     }
 
     @Override
-    protected void removeExpiredSession(List<String> sessionUuids){
+    @Transactional
+    public void removeExpiredSession(List<String> sessionUuids){
         String dsql = "delete from SessionVO s where CURRENT_TIMESTAMP  >= s.expiredDate";
         Query dq = dbf.getEntityManager().createQuery(dsql);
         dq.executeUpdate();

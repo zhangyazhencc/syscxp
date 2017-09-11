@@ -3,12 +3,7 @@ package org.zstack.billing.header.balance;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Inheritance;
-import javax.persistence.InheritanceType;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
@@ -77,6 +72,11 @@ public class AccountBalanceVO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    @PreUpdate
+    void preUpdate() {
+        lastOpDate = null;
     }
 
     public Timestamp getLastOpDate() {

@@ -19,7 +19,7 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
     @Autowired
     private RESTFacade restf;
     @Override
-    protected void removeExpiredSession(List<String> sessionUuids) {
+    public void removeExpiredSession(List<String> sessionUuids) {
 
     }
 

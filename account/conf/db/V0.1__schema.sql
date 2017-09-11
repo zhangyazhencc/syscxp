@@ -230,13 +230,12 @@ CREATE TABLE `PermissionVO` (
 	`description` varchar(255) DEFAULT NULL COMMENT '权限描述',
 	`permission` text NOT NULL COMMENT '权限字符串',
 	`type` varchar(32) DEFAULT NULL COMMENT '权限类型',
-	`sortId` varchar(11) DEFAULT NULL COMMENT '排序ID',
+	`sortId` int(10) DEFAULT 0 COMMENT '排序ID',
 	`accountType` varchar(32) DEFAULT NULL COMMENT '',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 
 CREATE TABLE  `PolicyPermissionRefVO` (
   `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
@@ -246,3 +245,19 @@ CREATE TABLE  `PolicyPermissionRefVO` (
   `createDate` timestamp ,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Normal',0,'{"actions":["tunnel:read","node:read","monitor:read"],"effect":"Allow"}');
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelFullAccess','管理专线网络权限','tunnel','Normal','1','{"actions":["tunnel:.*","node:read","monitor:.*"],"effect":"Allow"}');
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('NodeReadOnlyAccess','只读访问节点的权限','tunnel','SystemAdmin','0','{"actions":["node:read"],"effect":"Allow"}');
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('NodeFullAccess','管理节点权限','tunnel','SystemAdmin','1','{"actions":["node:.*"],"effect":"Allow"}');
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('SwitchReadOnlyAccess','只读访问交换机的权限','tunnel','SystemAdmin','0','{"actions":["switch:read"],"effect":"Allow"}');
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('SwitchFullAccess','管理交换机权限','tunnel','SystemAdmin','1','{"actions":["switch:.*","node:read"],"effect":"Allow"}');
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelHostReadOnlyAccess','只读访问监控主机的权限','tunnel','SystemAdmin','0','{"actions":["tunnelHost:read"],"effect":"Allow"}');
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelHostFullAccess','管理监控主机权限','tunnel','SystemAdmin','1','{"actions":["tunnelHost:.*","node:read"],"effect":"Allow"}');
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('VPNReadOnlyAccess','只读访问VPN权限','vpn','Normal','0	','{"actions":["vpn:read"],"effect":"Allow"}');
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('VPNFullAccess','管理VPN权限','vpn','Normal','1','{"actions":["vpn:.*"],"effect":"Allow"}');
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('BillingReadOnlyAccess','只读访问费用中心的权限','billing','Normal','0','{"actions":["order:read","recharge:read","receipt:read","renew:read","sla:read"],"effect":"Allow"}');
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('BillingFullAccess','管理费用中心的权限','billing','Normal','1','{"actions":["order:.*","recharge:.*","receipt:.*","renew:.*","sla:.*"],"effect":"Allow"}');
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('AccountReadOnlyAccess','只读访问账户中心的权限','account','Normal','0','{"actions":["account:read"],"effect":"Allow"}');
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('AccountFullAccess','管理账户中心的权限','account','Normal','1','{"actions":["account:.*", "user:.*"],"effect":"Allow"}');
+INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('UserFullAccess','管理User的权限','account','Normal','2','{"actions": ["user:.*"],"effect":"Allow"}');

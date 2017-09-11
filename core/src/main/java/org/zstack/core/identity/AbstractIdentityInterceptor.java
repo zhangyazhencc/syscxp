@@ -102,7 +102,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         }
     }
 
-    protected abstract void removeExpiredSession(List<String> sessionUuids);
+    public abstract void removeExpiredSession(List<String> sessionUuids);
 
     private void startExpiredSessionCollector() {
         logger.debug("startExpiredSessionCollector");
@@ -224,6 +224,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         void validate(APIMessage msg) {
             this.msg = msg;
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
+                suppressCredentialCheck();
             } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)) {
                 innerCredentialCheck();
             } else {
