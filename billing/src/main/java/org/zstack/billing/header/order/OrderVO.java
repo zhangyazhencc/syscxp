@@ -228,4 +228,9 @@ public class OrderVO {
     public void setDuration(int duration) {
         this.duration = duration;
     }
+
+    @PreUpdate
+    void preUpdate() {
+        lastOpDate = null;
+    }
 }
