@@ -5,7 +5,7 @@ import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;
 
-@Action(category = BillingConstant.ACTION_CATEGORY, names = {"read", "balance"})
+@Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
 public class APIGetAccountBalanceMsg extends APISyncCallMessage {
 
     @APIParam(required = false,resourceType = AccountBalanceVO.class)

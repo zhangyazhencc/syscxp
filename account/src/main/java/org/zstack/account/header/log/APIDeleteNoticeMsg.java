@@ -1,13 +1,13 @@
 package org.zstack.account.header.log;
 
-import org.zstack.account.log.NoticeConstant;
+import org.zstack.account.header.account.AccountConstant;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIDeleteMessage;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
-@Action(category = NoticeConstant.ACTION_CATEGORY, names = {"notice"}, adminOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, adminOnly = true)
 public class APIDeleteNoticeMsg extends APIDeleteMessage {
     @APIParam()
     private String uuid;

@@ -7,6 +7,7 @@ public interface BillingConstant {
     public static final String SERVICE_ID = "billing";
 
     public static final String ACTION_CATEGORY = "billing";
+    public static final String ACTION_CATEGORY_ACCOUNT = "account";
     public static final String ACTION_CATEGORY_SLA = "sla";
     public static final String ACTION_CATEGORY_ORDER = "order";
     public static final String ACTION_CATEGORY_RECHARGE = "recharge";

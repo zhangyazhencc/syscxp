@@ -298,8 +298,10 @@ public class NotificationManager extends AbstractService {
                         NotificationVO vo = new NotificationVO();
                         vo.setUuid(Platform.getUuid());
                         vo.setName(builder.notificationName);
-                        vo.setAccountUuid(session.getAccountUuid());
-                        vo.setUserUuid(session.getUserUuid());
+                        if (session != null) {
+                            vo.setAccountUuid(session.getAccountUuid());
+                            vo.setUserUuid(session.getUserUuid());
+                        }
                         vo.setCategory(builder.category);
                         vo.setSuccess(builder.success);
                         vo.setRemoteIp(builder.remoteIp);
