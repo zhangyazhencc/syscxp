@@ -20,7 +20,7 @@
         <property name="name" value="bill_trigger"/>
         <property name="group" value="bill_trigger_group"/>
         <property name="jobDetail" ref="billJob"/>
-        <property name="cronExpression" value="0 43 18 * * ?" />
+        <property name="cronExpression" value="0 0 2 1 * ?" />
         <property name="timeZone">
             <value>GMT+8:00</value>
         </property>
@@ -51,7 +51,7 @@
         <property name="name" value="renew_trigger"/>
         <property name="group" value="renew_trigger_group"/>
         <property name="jobDetail" ref="renewJob"/>
-        <property name="cronExpression" value="0 */1 * * * ?" />
+        <property name="cronExpression" value="0 0 */6 * * ?" />
         <property name="timeZone">
             <value>GMT+8:00</value>
         </property>
