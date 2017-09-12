@@ -36,6 +36,11 @@ public class NetWorkVO {
     @Column
     private Timestamp lastOpDate;
 
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
+
     public String getUuid() {
         return uuid;
     }
