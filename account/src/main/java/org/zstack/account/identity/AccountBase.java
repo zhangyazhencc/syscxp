@@ -140,10 +140,13 @@ public class AccountBase extends AbstractAccount {
             handle((APIDeleteUserMsg) msg);
         } else if (msg instanceof APIResetUserPWDMsg) {
             handle((APIResetUserPWDMsg) msg);
+        } else if (msg instanceof APIUpdateRoleMsg) {
+            handle((APIUpdateRoleMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
+
 
     /*
     private void handle(APIMailCodeSendMsg msg) {
@@ -175,6 +178,38 @@ public class AccountBase extends AbstractAccount {
         System.out.println(" 邮件发送成功.. ");
     }
 */
+    @Transactional
+    private void handle(APIUpdateRoleMsg msg) {
+
+        RoleVO role = dbf.findByUuid(msg.getUuid(),RoleVO.class);
+
+        if(msg.getName() != null){
+            role.setName(msg.getName());
+        }
+
+        if(msg.getDescription() != null){
+            role.setDescription(msg.getDescription());
+        }
+
+        if(msg.getPolicyUuids() != null){
+            Set<PolicyVO> policySet = new HashSet<>();
+            for (String id : msg.getPolicyUuids()) {
+                PolicyVO policy = dbf.findByUuid(id, PolicyVO.class);
+                if (policy != null ){
+                    policySet.add(policy);
+                }
+            }
+            role.setPolicySet(policySet);
+        }
+
+        role = dbf.getEntityManager().merge(role);
+
+        APIUpdateRoleEvent evt = new APIUpdateRoleEvent(msg.getId());
+
+        evt.setInventory(RoleInventory.valueOf(role));
+        bus.publish(evt);
+    }
+
     private void handle(APIResetAccountPWDMsg msg) {
 
         APIResetAccountPWDEvent evt = new APIResetAccountPWDEvent(msg.getId());

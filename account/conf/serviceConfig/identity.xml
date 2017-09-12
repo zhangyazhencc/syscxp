@@ -182,5 +182,11 @@
         <name>org.zstack.account.header.identity.APIVerifyRepetitionMsg</name>
     </message>
 
+    <message>
+        <name>org.zstack.account.header.identity.APIUpdateRoleMsg</name>
+    </message>
+
+
+
 
 </service>
