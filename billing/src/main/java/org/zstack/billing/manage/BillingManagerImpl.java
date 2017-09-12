@@ -698,7 +698,12 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    void payMethod(APIMessage msg, OrderVO orderVo, AccountBalanceVO abvo, BigDecimal total, Timestamp currentTimeStamp) {
+    public void payMethod(APIMessage msg, OrderVO orderVo, AccountBalanceVO abvo, BigDecimal total, Timestamp currentTimeStamp) {
+        int hash = msg.getSession().getAccountUuid().hashCode();
+        if (hash < 0) {
+            hash = ~hash;
+        }
+        String outTradeNO = currentTimeStamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
         if (abvo.getPresentBalance().compareTo(BigDecimal.ZERO) > 0) {
             if (abvo.getPresentBalance().compareTo(total) > 0) {
                 BigDecimal presentNow = abvo.getPresentBalance().subtract(total);
@@ -715,7 +720,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 dealDetailVO.setType(DealType.DEDUCTION);
                 dealDetailVO.setState(DealState.SUCCESS);
                 dealDetailVO.setBalance(presentNow);
-                dealDetailVO.setOutTradeNO(orderVo.getUuid());
+                dealDetailVO.setOutTradeNO(outTradeNO);
                 dealDetailVO.setOpAccountUuid(msg.getSession().getAccountUuid());
                 dbf.persistAndRefresh(dealDetailVO);
 
@@ -737,7 +742,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 dealDetailVO.setType(DealType.DEDUCTION);
                 dealDetailVO.setState(DealState.SUCCESS);
                 dealDetailVO.setBalance(BigDecimal.ZERO);
-                dealDetailVO.setOutTradeNO(orderVo.getUuid());
+                dealDetailVO.setOutTradeNO(outTradeNO+"-1");
                 dealDetailVO.setOpAccountUuid(msg.getSession().getAccountUuid());
                 dbf.persistAndRefresh(dealDetailVO);
 
@@ -753,7 +758,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 dVO.setType(DealType.DEDUCTION);
                 dVO.setState(DealState.SUCCESS);
                 dVO.setBalance(remainCash);
-                dVO.setOutTradeNO(orderVo.getUuid());
+                dVO.setOutTradeNO(outTradeNO+"-2");
                 dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
                 dbf.persistAndRefresh(dVO);
             }
@@ -774,6 +779,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(remainCashBalance);
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
+            dVO.setOutTradeNO(outTradeNO);
             dbf.persistAndRefresh(dVO);
         }
     }
@@ -805,7 +811,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     @Transactional
-    private void handle(APICreateOrderMsg msg) {
+    public void handle(APICreateOrderMsg msg) {
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
         BigDecimal dischargePrice = BigDecimal.ZERO;
@@ -824,10 +830,11 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             AccountDischargeVO accountDischargeVO = qDischarge.find();
             int productDisCharge = 100;
             if (accountDischargeVO != null) {
-                productDisCharge = accountDischargeVO.getDisCharge() == 0 ? 100 : accountDischargeVO.getDisCharge();
+                productDisCharge = accountDischargeVO.getDisCharge() <= 0 ? 100 : accountDischargeVO.getDisCharge();
             }
-            originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()));
-            dischargePrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN));
+            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()));
+            BigDecimal currentDischarge = BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
+            dischargePrice = dischargePrice.add(currentDischarge);
 
         }
 
@@ -845,6 +852,17 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         BigDecimal mayPayTotal = cashBalance.add(presentBalance).add(creditPoint);//可支付金额
 
         OrderVO orderVo = new OrderVO();
+
+        orderVo.setUuid(Platform.getUuid());
+        orderVo.setAccountUuid(msg.getSession().getAccountUuid());
+        orderVo.setProductName(msg.getProductName());
+        orderVo.setState(OrderState.PAID);
+        orderVo.setProductType(msg.getProductType());
+        orderVo.setProductChargeModel(msg.getProductChargeModel());
+        orderVo.setPayTime(currentTimestamp);
+        orderVo.setProductDescription(msg.getProductDescription());
+        orderVo.setProductUuid(msg.getProductUuid());
+        orderVo.setDuration(msg.getDuration());
 
         if (msg.getType() == OrderType.MODIFY || msg.getType() == OrderType.UN_SUBCRIBE) {
             Timestamp startTime = new Timestamp(currentTimestamp.getTime() - 30 * 24 * 60 * 60 * 1000);//todo this would get from product
@@ -1036,16 +1054,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
         }
 
-        orderVo.setUuid(Platform.getUuid());
-        orderVo.setAccountUuid(msg.getSession().getAccountUuid());
-        orderVo.setProductName(msg.getProductName());
-        orderVo.setState(OrderState.PAID);
-        orderVo.setProductType(msg.getProductType());
-        orderVo.setProductChargeModel(msg.getProductChargeModel());
-        orderVo.setPayTime(currentTimestamp);
-        orderVo.setProductDescription(msg.getProductDescription());
-        orderVo.setProductUuid(msg.getProductUuid());
-        orderVo.setDuration(msg.getDuration());
+
 
         dbf.updateAndRefresh(abvo);
         dbf.persistAndRefresh(orderVo);

@@ -464,7 +464,6 @@ public class AccountBase extends AbstractAccount {
                 account.setStatus(msg.getStatus());
                 update = true;
             }
-
             if (msg.getType() != null) {
                 account.setType(AccountType.valueOf(msg.getType()));
                 update = true;
@@ -472,6 +471,11 @@ public class AccountBase extends AbstractAccount {
 
             if (msg.getGrade() != null) {
                 account.getAccountExtraInfo().setGrade(msg.getGrade());
+                update = true;
+            }
+
+            if (msg.getUserUuid() != null) {
+                account.getAccountExtraInfo().setUserUuid(msg.getUserUuid());
                 update = true;
             }
         }
@@ -587,7 +591,7 @@ public class AccountBase extends AbstractAccount {
 
         AccountExtraInfoVO ext = new AccountExtraInfoVO();
         ext.setUuid(accountVO.getUuid());
-        ext.setCreateWay("register");
+        ext.setCreateWay(msg.getSession().getType().toString());
         if(msg.getGrade() != null){
             ext.setGrade(msg.getGrade());
         }else{
@@ -596,18 +600,16 @@ public class AccountBase extends AbstractAccount {
 
         ext.setUserUuid(msg.getUserUuid());
 
-        ext.setCreateWay(msg.getSession().getType().toString());
-
         accountVO.setAccountExtraInfo(ext);
 
-        accountVO = dbf.persistAndRefresh(accountVO);
+        dbf.getEntityManager().persist(accountVO);
 
         if (msg.getSession().isProxySession()) {
             ProxyAccountRefVO prevo = new ProxyAccountRefVO();
             prevo.setAccountUuid(msg.getAccountUuid());
             prevo.setCustomerAcccountUuid(accountVO.getUuid());
 
-            dbf.persist(prevo);
+            dbf.getEntityManager().persist(prevo);
         }
 
         AccountApiSecurityVO api = new AccountApiSecurityVO();
@@ -615,8 +617,7 @@ public class AccountBase extends AbstractAccount {
         api.setAccountUuid(accountVO.getUuid());
         api.setPrivateKey(getRandomString(36));
         api.setPublicKey(getRandomString(36));
-        dbf.persist(api);
-
+        dbf.getEntityManager().persist(api);
 
         APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
         evt.setInventory(AccountInventory.valueOf(accountVO));

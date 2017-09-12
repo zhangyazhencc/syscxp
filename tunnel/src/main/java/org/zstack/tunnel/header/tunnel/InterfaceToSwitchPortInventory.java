@@ -23,6 +23,7 @@ public class InterfaceToSwitchPortInventory {
     private Integer bandwidth;
     private Integer isExclusive;
     private String description;
+    private Integer months;
     private Timestamp expiredDate;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -38,6 +39,7 @@ public class InterfaceToSwitchPortInventory {
         inv.setBandwidth(vo.getBandwidth());
         inv.setIsExclusive(vo.getIsExclusive());
         inv.setDescription(vo.getDescription());
+        inv.setMonths(vo.getMonths());
         inv.setExpiredDate(vo.getExpiredDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -148,4 +150,11 @@ public class InterfaceToSwitchPortInventory {
         this.switchPort = switchPort;
     }
 
+    public Integer getMonths() {
+        return months;
+    }
+
+    public void setMonths(Integer months) {
+        this.months = months;
+    }
 }

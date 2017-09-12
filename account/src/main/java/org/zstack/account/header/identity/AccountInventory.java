@@ -51,7 +51,11 @@ public class AccountInventory {
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
 
-        inv.setExtraInfo(AccountExtraInfoInventory.valueOf(vo.getAccountExtraInfo()));
+        //SystemAdmin 没有扩展信息
+        if(vo.getAccountExtraInfo() != null){
+            inv.setExtraInfo(AccountExtraInfoInventory.valueOf(vo.getAccountExtraInfo()));
+        }
+
 
         return inv;
     }

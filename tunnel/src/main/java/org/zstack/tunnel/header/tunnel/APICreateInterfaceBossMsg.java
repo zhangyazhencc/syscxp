@@ -2,8 +2,6 @@ package org.zstack.tunnel.header.tunnel;
 
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
-import org.zstack.tunnel.header.endpoint.EndpointType;
-import org.zstack.tunnel.header.switchs.SwitchPortType;
 
 /**
  * Created by DCY on 2017-09-11

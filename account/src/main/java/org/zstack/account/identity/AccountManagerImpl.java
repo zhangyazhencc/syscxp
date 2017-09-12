@@ -217,12 +217,22 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         accountVO.setPhoneStatus(ValidateStatus.Validated);
         accountVO.setEmailStatus(ValidateStatus.Unvalidated);
 
+
         AccountExtraInfoVO ext = new AccountExtraInfoVO();
         ext.setUuid(accountVO.getUuid());
         ext.setCreateWay("register");
+        ext.setGrade(AccountGrade.Normal);
+
         accountVO.setAccountExtraInfo(ext);
 
-        accountVO = dbf.persistAndRefresh(accountVO);
+        dbf.getEntityManager().persist(accountVO);
+
+        AccountApiSecurityVO api = new AccountApiSecurityVO();
+        api.setUuid(Platform.getUuid());
+        api.setAccountUuid(accountVO.getUuid());
+        api.setPrivateKey(getRandomString(36));
+        api.setPublicKey(getRandomString(36));
+        dbf.getEntityManager().persist(api);
 
         APIRegisterAccountEvent evt = new APIRegisterAccountEvent(msg.getId());
         evt.setInventory(AccountInventory.valueOf(accountVO));
@@ -473,14 +483,14 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 ext.setCreateWay("init");
                 vo.setAccountExtraInfo(ext);
 
-                dbf.persist(vo);
+                dbf.getEntityManager().persist(vo);
 
                 AccountApiSecurityVO api = new AccountApiSecurityVO();
                 api.setUuid(Platform.getUuid());
                 api.setAccountUuid(vo.getUuid());
                 api.setPrivateKey(getRandomString(36));
                 api.setPublicKey(getRandomString(36));
-                dbf.persist(api);
+                dbf.getEntityManager().persist(api);
 
                 logger.debug(String.format("Created initial system admin account[name:%s]", AccountConstant.INITIAL_SYSTEM_ADMIN_NAME));
 

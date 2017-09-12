@@ -574,5 +574,21 @@ public class NetworkUtils {
 
         return sb.toString();
     }
+
+    public static int randomAllocateVlan(int startVlan, int endVlan, List<Integer> allocatedVlans) {
+        int total = endVlan - startVlan + 1;
+        if (total == allocatedVlans.size()) {
+            return 0;  //not vlan
+        }
+
+        BitSet full = new BitSet(total);
+        for (int alloc : allocatedVlans) {
+            full.set(alloc - startVlan);
+        }
+
+        int a  = full.nextClearBit(0);
+
+        return a + startVlan;
+    }
 }
 

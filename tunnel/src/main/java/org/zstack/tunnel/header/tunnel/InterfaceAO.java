@@ -41,6 +41,9 @@ public class InterfaceAO {
     private String description;
 
     @Column
+    private Integer months;
+
+    @Column
     private Timestamp expiredDate;
 
     @Column
@@ -135,5 +138,13 @@ public class InterfaceAO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public Integer getMonths() {
+        return months;
+    }
+
+    public void setMonths(Integer months) {
+        this.months = months;
     }
 }
