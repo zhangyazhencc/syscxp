@@ -273,4 +273,4 @@ INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES 
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('AccountFullAccess','管理账户中心的权限','account','Normal','1','{"actions":["account:.*", "user:.*"],"effect":"Allow"}');
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('UserFullAccess','管理User的权限','account','Normal','2','{"actions": ["user:.*"],"effect":"Allow"}');
 
-UPDATE `syscxp_account`.`PolicyVO` p set p.createDate = current_timestamp();
+UPDATE `PolicyVO` p set p.createDate = current_timestamp();

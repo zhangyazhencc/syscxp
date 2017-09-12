@@ -37,6 +37,9 @@ import org.apache.commons.codec.digest.DigestUtils;
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
 
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class AccountBase extends AbstractAccount {
     private static final CLogger logger = Utils.getLogger(AccountBase.class);
@@ -148,25 +151,24 @@ public class AccountBase extends AbstractAccount {
     }
 
 
-    /*
+
     private void handle(APIMailCodeSendMsg msg) {
 
         JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
         // 设定mail server
         senderImpl.setHost(" smtp.163.com ");
-
         // 建立邮件消息
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         // 设置收件人，寄件人 用数组发送多个邮件
         // String[] array = new String[] {"sun111@163.com","sun222@sohu.com"};
         // mailMessage.setTo(array);
-        mailMessage.setTo(" toEmail@sina.com ");
-        mailMessage.setFrom(" userName@163.com ");
-        mailMessage.setSubject(" 测试简单文本邮件发送！ ");
-        mailMessage.setText(" 测试我的简单邮件发送机制！！ ");
+        mailMessage.setTo(msg.getMail());
+        mailMessage.setFrom("wangwg@syscloud.cn");
+        mailMessage.setSubject("验证码");
+        mailMessage.setText(String.valueOf(new Random().nextInt(1000000)));
 
-        senderImpl.setUsername(" userName "); // 根据自己的情况,设置username
-        senderImpl.setPassword(" password "); // 根据自己的情况, 设置password
+        senderImpl.setUsername(" userName ");
+        senderImpl.setPassword(" password ");
 
         Properties prop = new Properties();
         prop.put(" mail.smtp.auth ", " true "); // 将这个参数设为true，让服务器进行认证,认证用户名和密码是否正确
@@ -175,9 +177,12 @@ public class AccountBase extends AbstractAccount {
         // 发送邮件
         senderImpl.send(mailMessage);
 
-        System.out.println(" 邮件发送成功.. ");
+
+        APIMailCodeSendReply reply = new APIMailCodeSendReply();
+        bus.reply(msg, reply);
+
     }
-*/
+
     @Transactional
     private void handle(APIUpdateRoleMsg msg) {
 
@@ -201,6 +206,7 @@ public class AccountBase extends AbstractAccount {
             }
             role.setPolicySet(policySet);
         }
+
 
         role = dbf.getEntityManager().merge(role);
 
