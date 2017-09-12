@@ -1,6 +1,25 @@
 /*20170912 sunxuelong */
 ALTER TABLE HostEO CHANGE ip hostIp VARCHAR(128);
 
+CREATE OR REPLACE
+VIEW `syscxp_tunnel`.`hostvo` AS
+    SELECT
+        `syscxp_tunnel`.`hosteo`.`uuid` AS `uuid`,
+        `syscxp_tunnel`.`hosteo`.`nodeUuid` AS `nodeUuid`,
+        `syscxp_tunnel`.`hosteo`.`name` AS `name`,
+        `syscxp_tunnel`.`hosteo`.`code` AS `code`,
+        `syscxp_tunnel`.`hosteo`.`hostIp` AS `hostIp`,
+        `syscxp_tunnel`.`hosteo`.`username` AS `username`,
+        `syscxp_tunnel`.`hosteo`.`password` AS `password`,
+        `syscxp_tunnel`.`hosteo`.`state` AS `state`,
+        `syscxp_tunnel`.`hosteo`.`status` AS `status`,
+        `syscxp_tunnel`.`hosteo`.`lastOpDate` AS `lastOpDate`,
+        `syscxp_tunnel`.`hosteo`.`createDate` AS `createDate`
+    FROM
+        `syscxp_tunnel`.`hosteo`
+    WHERE
+        (`syscxp_tunnel`.`hosteo`.`deleted` = 0);
+
 /*20170911 sunxuelong */
 alter table syscxp_tunnel.HostEO add nodeUuid varchar(32) comment '节点ID(NodeEO.uuid)' after uuid;
 
