@@ -1,10 +1,7 @@
 package org.zstack.tunnel.header.node;
 
-import org.zstack.core.db.converter.ListAttributeConverter;
-
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.List;
 
 /**
  * Created by DCY on 2017-08-22
@@ -58,6 +55,11 @@ public class NodeAO {
 
     @Column
     private Timestamp lastOpDate;
+
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
 
     @Column
     private Timestamp createDate;

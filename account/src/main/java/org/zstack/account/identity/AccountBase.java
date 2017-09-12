@@ -579,11 +579,6 @@ public class AccountBase extends AbstractAccount {
             }
             user.setRoleSet(roleSet);
 
-//            uprvo = new UserRoleRefVO();
-//            uprvo.setRoleUuid(msg.getRoleUuid());
-//            uprvo.setUserUuid(msg.getUuid());
-//            dbf.persist(uprvo);
-
             update = true;
         }
 

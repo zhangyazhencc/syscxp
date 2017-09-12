@@ -113,26 +113,30 @@ public class NodeManagerImpl  extends AbstractService implements NodeManager,Api
 
     private void handle(APIUpdateNodeMsg msg){
         NodeVO vo = dbf.findByUuid(msg.getUuid(),NodeVO.class);
-        boolean update = false;
-        if(msg.getName() != null){
-            vo.setName(msg.getName());
-            update = true;
+
+        vo.setCode(msg.getCode());
+        vo.setName(msg.getName());
+        vo.setLongtitude(msg.getLongtitude());
+        vo.setLatitude(msg.getLatitude());
+        vo.setProperty(msg.getProperty());
+        vo.setProvince(msg.getProvince());
+        vo.setCity(msg.getCity());
+        vo.setAddress(msg.getAddress());
+        vo.setContact(msg.getContact());
+        vo.setTelephone(msg.getTelephone());
+        vo.setStatus(msg.getStatus());
+        if(msg.getExtensionInfoUuid() != null){
+            vo.setExtensionInfoUuid(msg.getExtensionInfoUuid());
+        }else{
+            vo.setExtensionInfoUuid(null);
         }
-        if(msg.getCode() != null){
-            vo.setCode(msg.getCode());
-            update = true;
-        }
-        if(msg.getProperty() != null){
-            vo.setProperty(msg.getProperty());
-            update = true;
-        }
-        if(msg.getStatus() != null){
-            vo.setStatus(msg.getStatus());
-            update = true;
+        if(msg.getDescription() != null){
+            vo.setDescription(msg.getDescription());
+        }else{
+            vo.setDescription(null);
         }
 
-        if (update)
-            vo = dbf.updateAndRefresh(vo);
+        vo = dbf.updateAndRefresh(vo);
 
         APIUpdateNodeEvent evt = new APIUpdateNodeEvent(msg.getId());
         evt.setInventory(NodeInventory.valueOf(vo));
