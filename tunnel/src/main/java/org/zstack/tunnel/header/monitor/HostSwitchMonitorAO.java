@@ -3,6 +3,7 @@ package org.zstack.tunnel.header.monitor;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.PreUpdate;
 import java.sql.Timestamp;
 
 /**
@@ -30,6 +31,11 @@ public class HostSwitchMonitorAO {
 
     @Column
     private Timestamp lastOpDate;
+
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
 
     @Column
     private Timestamp createDate;
