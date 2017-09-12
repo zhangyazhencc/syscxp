@@ -6,6 +6,7 @@ import org.zstack.tunnel.header.switchs.SwitchPortVO;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.PreUpdate;
 import java.sql.Timestamp;
 
 /**
@@ -51,6 +52,11 @@ public class InterfaceAO {
 
     @Column
     private Timestamp createDate;
+
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
 
     public String getUuid() {
         return uuid;
