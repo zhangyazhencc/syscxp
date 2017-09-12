@@ -1,8 +1,8 @@
-package org.zstack.account.header.identity;
+package org.zstack.account.header.user;
 
 import org.zstack.account.header.account.AccountConstant;
 import org.zstack.account.header.account.AccountMessage;
-import org.zstack.account.header.user.UserVO;
+import org.zstack.account.header.identity.RoleVO;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
