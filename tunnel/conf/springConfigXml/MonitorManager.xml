@@ -12,13 +12,13 @@
     http://zstack.org/schema/zstack/plugin.xsd"
        default-init-method="init" default-destroy-method="destroy">
 
-    <bean id="IdentiyInterceptor" class="org.zstack.tunnel.identity.IdentiyInterceptor">
+<!--    <bean id="IdentityInterceptor" class="org.zstack.tunnel.identity.IdentityInterceptor">
         <zstack:plugin>
             <zstack:extension interface="org.zstack.header.apimediator.GlobalApiMessageInterceptor"/>
             <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
         </zstack:plugin>
 
-    </bean>
+    </bean>-->
 
     <bean id="MonitorManager" class="org.zstack.tunnel.manage.MonitorManagerImpl">
         <zstack:plugin>

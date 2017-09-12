@@ -483,7 +483,7 @@ public class AccountBase extends AbstractAccount {
         }
 
         if (update) {
-            account = dbf.updateAndRefresh(account);
+            account = dbf.getEntityManager().merge(account);
         }
 
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
@@ -552,7 +552,7 @@ public class AccountBase extends AbstractAccount {
         }
 
         if (update) {
-            user = dbf.updateAndRefresh(user);
+            user = dbf.getEntityManager().merge(user);
         }
 
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());

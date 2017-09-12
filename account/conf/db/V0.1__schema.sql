@@ -239,10 +239,24 @@ CREATE TABLE `PolicyVO` (
 CREATE TABLE  `RolePolicyRefVO` (
 	`id` INT UNIQUE AUTO_INCREMENT,
 	`roleUuid` varchar(32) NOT NULL COMMENT '角色UUID',
-    `policyUuid` varchar(32) NOT NULL COMMENT '权限uuid',
+  `policyUuid` varchar(32) NOT NULL COMMENT '权限uuid',
 	`createDate` timestamp DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE UserVO ADD CONSTRAINT fkUserVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE RESTRICT;
+ALTER TABLE AccountExtraInfoVO ADD CONSTRAINT fkAccountExtraInfoVOAccountVO FOREIGN KEY (uuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
+ALTER TABLE AccountContactsVO ADD CONSTRAINT fkAccountContactsVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
+ALTER TABLE AccountApiSecurityVO ADD CONSTRAINT fkAccountApiSecurityVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
+
+ALTER TABLE ProxyAccountRefVO ADD CONSTRAINT fkProxyAccountRefVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
+
+
+ALTER TABLE RoleVO ADD CONSTRAINT fkRoleVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
+ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE RESTRICT;
+ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVOUserVO FOREIGN KEY (userUuid) REFERENCES UserVO (uuid) ON DELETE RESTRICT;
+ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE RESTRICT;
+ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVOPolicyVO FOREIGN KEY (policyUuid) REFERENCES PolicyVO (uuid) ON DELETE RESTRICT;
 
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Normal',0,'{"actions":["tunnel:read","node:read","monitor:read"],"effect":"Allow"}');
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelFullAccess','管理专线网络权限','tunnel','Normal','1','{"actions":["tunnel:.*","node:read","monitor:.*"],"effect":"Allow"}');
