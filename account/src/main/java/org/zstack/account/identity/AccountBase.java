@@ -483,7 +483,7 @@ public class AccountBase extends AbstractAccount {
         }
 
         if (update) {
-            account = dbf.updateAndRefresh(account);
+            account = dbf.getEntityManager().merge(account);
         }
 
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
@@ -535,13 +535,13 @@ public class AccountBase extends AbstractAccount {
             update = true;
         }
 
-        if (msg.getPolicyUuid() != null) {
-            Set<RoleVO> policySet = new HashSet<>();
-            RoleVO policy = dbf.findByUuid(msg.getPolicyUuid(), RoleVO.class);
-            if (policy != null) {
-                policySet.add(policy);
+        if (msg.getRoleUuid() != null) {
+            Set<RoleVO> roleSet = new HashSet<>();
+            RoleVO role = dbf.findByUuid(msg.getRoleUuid(), RoleVO.class);
+            if (role != null) {
+                roleSet.add(role);
             }
-            user.setRoleSet(policySet);
+            user.setRoleSet(roleSet);
 
 //            uprvo = new UserRoleRefVO();
 //            uprvo.setRoleUuid(msg.getRoleUuid());
@@ -552,7 +552,7 @@ public class AccountBase extends AbstractAccount {
         }
 
         if (update) {
-            user = dbf.updateAndRefresh(user);
+            user = dbf.getEntityManager().merge(user);
         }
 
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
@@ -652,12 +652,12 @@ public class AccountBase extends AbstractAccount {
         }
 
         if (msg.getPolicyUuid() != null) {
-            Set<RoleVO> policySet = new HashSet<>();
-            RoleVO policy = dbf.findByUuid(msg.getPolicyUuid(), RoleVO.class);
-            if (policy != null) {
-                policySet.add(policy);
+            Set<RoleVO> roleSet = new HashSet<>();
+            RoleVO role = dbf.findByUuid(msg.getPolicyUuid(), RoleVO.class);
+            if (role != null) {
+                roleSet.add(role);
             }
-            uservo.setRoleSet(policySet);
+            uservo.setRoleSet(roleSet);
         }
 
         uservo = dbf.persistAndRefresh(uservo);

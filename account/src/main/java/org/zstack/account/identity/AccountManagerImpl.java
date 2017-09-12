@@ -131,7 +131,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.name, Op.EQ, msg.getAccountName());
             if(q.isExists()){
-                reply.setAccountName(false);
+                reply.setAccountName(true);
             }
         }
 
@@ -139,21 +139,22 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.email, Op.EQ, msg.getAccountEmail());
             if(q.isExists()){
-                reply.setAccountEmail(false);
+                reply.setAccountEmail(true);
             }
         }
         if(msg.getAccountPhone() != null){
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.phone, Op.EQ, msg.getAccountPhone());
             if(q.isExists()){
-                reply.setAccountPhone(false);
+                reply.setAccountPhone(true);
             }
         }
         if(msg.getUserName() != null){
             SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
-            q.add(UserVO_.email, Op.EQ, msg.getUserName());
+            q.add(UserVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
+            q.add(UserVO_.name, Op.EQ, msg.getUserName());
             if(q.isExists()){
-                reply.setUserName(false);
+                reply.setUserName(true);
             }
         }
         bus.reply(msg, reply);

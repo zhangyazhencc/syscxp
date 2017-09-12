@@ -14,6 +14,9 @@ public class APIUpdateHostMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = HostVO.class)
     private String uuid;
 
+    @APIParam(required = false,maxLength = 32)
+    private String nodeUuid;
+
     @APIParam(required = false,maxLength = 128)
     private String name;
 
@@ -21,7 +24,7 @@ public class APIUpdateHostMsg extends APIMessage {
     private String code;
 
     @APIParam(required = false,maxLength = 128)
-    private String ip;
+    private String hostIp;
 
     @APIParam(required = false,maxLength = 128)
     private String username;
@@ -31,6 +34,14 @@ public class APIUpdateHostMsg extends APIMessage {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 
     public void setUuid(String uuid) {
@@ -53,12 +64,12 @@ public class APIUpdateHostMsg extends APIMessage {
         this.code = code;
     }
 
-    public String getIp() {
-        return ip;
+    public String getHostIp() {
+        return hostIp;
     }
 
-    public void setIp(String ip) {
-        this.ip = ip;
+    public void setHostIp(String hostIp) {
+        this.hostIp = hostIp;
     }
 
     public String getUsername() {

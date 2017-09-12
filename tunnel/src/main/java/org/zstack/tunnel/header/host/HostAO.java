@@ -14,13 +14,16 @@ public class HostAO {
     private String uuid;
 
     @Column
+    private String nodeUuid;
+
+    @Column
     private String name;
 
     @Column
     private String code;
 
     @Column
-    private String ip;
+    private String hostIp;
 
     @Column
     private String username;
@@ -49,6 +52,14 @@ public class HostAO {
         this.uuid = uuid;
     }
 
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
+    }
+
     public String getName() {
         return name;
     }
@@ -65,12 +76,12 @@ public class HostAO {
         this.code = code;
     }
 
-    public String getIp() {
-        return ip;
+    public String getHostIp() {
+        return hostIp;
     }
 
-    public void setIp(String ip) {
-        this.ip = ip;
+    public void setHostIp(String hostIp) {
+        this.hostIp = hostIp;
     }
 
     public String getUsername() {

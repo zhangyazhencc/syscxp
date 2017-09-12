@@ -1,5 +1,56 @@
-use syscxp_tunnel;
+/*20170912 sunxuelong */
+ALTER TABLE HostEO CHANGE ip hostIp VARCHAR(128);
 
+CREATE OR REPLACE
+VIEW `syscxp_tunnel`.`hostvo` AS
+    SELECT
+        `syscxp_tunnel`.`hosteo`.`uuid` AS `uuid`,
+        `syscxp_tunnel`.`hosteo`.`nodeUuid` AS `nodeUuid`,
+        `syscxp_tunnel`.`hosteo`.`name` AS `name`,
+        `syscxp_tunnel`.`hosteo`.`code` AS `code`,
+        `syscxp_tunnel`.`hosteo`.`hostIp` AS `hostIp`,
+        `syscxp_tunnel`.`hosteo`.`username` AS `username`,
+        `syscxp_tunnel`.`hosteo`.`password` AS `password`,
+        `syscxp_tunnel`.`hosteo`.`state` AS `state`,
+        `syscxp_tunnel`.`hosteo`.`status` AS `status`,
+        `syscxp_tunnel`.`hosteo`.`lastOpDate` AS `lastOpDate`,
+        `syscxp_tunnel`.`hosteo`.`createDate` AS `createDate`
+    FROM
+        `syscxp_tunnel`.`hosteo`
+    WHERE
+        (`syscxp_tunnel`.`hosteo`.`deleted` = 0);
+
+/*20170911 sunxuelong */
+alter table syscxp_tunnel.HostEO add nodeUuid varchar(32) comment '节点ID(NodeEO.uuid)' after uuid;
+
+CREATE OR REPLACE VIEW `syscxp_tunnel`.`HostVO` AS
+SELECT uuid, nodeUuid, name, code, ip, username, password, state, status, lastOpDate, createDate
+  FROM `HostEO`
+ WHERE deleted = 0;
+
+CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`HostSwitchMonitorVO` (
+  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+  `hostUuid` varchar(32) NOT NULL COMMENT '主机UUID(HostEO.uuid)',
+  `physicalSwitchUuid` VARCHAR(32) NOT NULL COMMENT '物理交换机UUID(PhysicalSwitchVO.uuid)',
+  `physicalSwitchPortName` VARCHAR(128) NOT NULL COMMENT '物理交换机端口名称',
+  `interfaceName` VARCHAR(128) NOT NULL COMMENT '网卡名称',
+  `deleted` INT(11) NOT NULL DEFAULT '0',
+  `lastOpDate` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp COMMENT '最后一次操作时间',
+  `createDate` TIMESTAMP NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
+  PRIMARY KEY (`uuid`)
+  )
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COMMENT '监控主机与交换机接口映射';
+
+create view syscxp_tunnel.HostSwitchMonitorVO as
+select uuid,hostUuid,physicalSwitchUuid,physicalSwitchPortName,interfaceName,lastOpDate,createDate
+  from syscxp_tunnel.HostSwitchMonitorEO
+ where deleted = 0;
+
+
+#######################################################################################################
+use syscxp_tunnel;
 CREATE TABLE  `syscxp_tunnel`.`ManagementNodeVO` (
   `uuid` varchar(32) NOT NULL UNIQUE,
   `hostName` varchar(255) DEFAULT NULL,

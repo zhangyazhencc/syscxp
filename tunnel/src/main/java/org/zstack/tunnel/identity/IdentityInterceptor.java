@@ -5,6 +5,6 @@ import org.zstack.core.identity.DefaultIdentityInterceptor;
 /**
  * Created by zxhread on 17/8/3.
  */
-public class IdentiyInterceptor extends DefaultIdentityInterceptor {
+public class IdentityInterceptor extends DefaultIdentityInterceptor {
 
 }

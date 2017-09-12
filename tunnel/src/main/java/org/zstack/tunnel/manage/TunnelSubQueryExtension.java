@@ -4,14 +4,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.zstack.header.query.APIQueryMessage;
 import org.zstack.query.AbstractMysqlQuerySubQueryExtension;
 import org.zstack.query.QueryUtils;
-import org.zstack.tunnel.identity.IdentiyInterceptor;
+import org.zstack.tunnel.identity.IdentityInterceptor;
 
 /**
  * Created by DCY on 2017-09-07
  */
 public class TunnelSubQueryExtension extends AbstractMysqlQuerySubQueryExtension {
     @Autowired
-    private IdentiyInterceptor identiyInterceptor;
+    private IdentityInterceptor identityInterceptor;
 
     @Override
     public String makeSubquery(APIQueryMessage msg, Class inventoryClass) {
@@ -20,7 +20,7 @@ public class TunnelSubQueryExtension extends AbstractMysqlQuerySubQueryExtension
         }
 
         Class entityClass = QueryUtils.getEntityClassFromInventoryClass(inventoryClass);
-        if (!identiyInterceptor.isResourceHavingAccountReference(entityClass)) {
+        if (!identityInterceptor.isResourceHavingAccountReference(entityClass)) {
             return null;
         }
 

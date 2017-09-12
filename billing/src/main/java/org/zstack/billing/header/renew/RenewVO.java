@@ -36,6 +36,7 @@ public class RenewVO {
     private ProductType productType;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private ProductChargeModel productChargeModel;
 
     @Column

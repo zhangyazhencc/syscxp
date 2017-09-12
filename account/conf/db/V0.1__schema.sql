@@ -244,6 +244,19 @@ CREATE TABLE  `RolePolicyRefVO` (
 	PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+ALTER TABLE UserVO ADD CONSTRAINT fkUserVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE RESTRICT;
+ALTER TABLE AccountExtraInfoVO ADD CONSTRAINT fkAccountExtraInfoVOAccountVO FOREIGN KEY (uuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
+ALTER TABLE AccountContactsVO ADD CONSTRAINT fkAccountContactsVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
+ALTER TABLE AccountApiSecurityVO ADD CONSTRAINT fkAccountApiSecurityVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
+
+ALTER TABLE ProxyAccountRefVO ADD CONSTRAINT fkProxyAccountRefVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
+
+ALTER TABLE RoleVO ADD CONSTRAINT fkRoleVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
+ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE RESTRICT;
+ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVOUserVO FOREIGN KEY (userUuid) REFERENCES UserVO (uuid) ON DELETE RESTRICT;
+ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE RESTRICT;
+ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVOPolicyVO FOREIGN KEY (roleUuid) REFERENCES PolicyVO (uuid) ON DELETE RESTRICT;
+
 INSERT INTO `syscxp_account`.`PolicyVO` (`uuid`, `name`, `description`, `permission`, `type`, `sortId`, `accountType`, `lastOpDate`, `createDate`) VALUES ('AccountFullAccess', '管理账户中心的权限', NULL, '{"actions":["account:.*", "user:.*"],"effect":"Allow"}', 'account', '1', 'Normal', '2017-09-12 12:29:38', '2017-09-12 12:29:38');
 INSERT INTO `syscxp_account`.`PolicyVO` (`uuid`, `name`, `description`, `permission`, `type`, `sortId`, `accountType`, `lastOpDate`, `createDate`) VALUES ('AccountReadOnlyAccess', '只读访问账户中心的权限', NULL, '{"actions":["account:read"],"effect":"Allow"}', 'account', '0', 'Normal', '2017-09-12 12:29:38', '2017-09-12 12:29:38');
 INSERT INTO `syscxp_account`.`PolicyVO` (`uuid`, `name`, `description`, `permission`, `type`, `sortId`, `accountType`, `lastOpDate`, `createDate`) VALUES ('BillingFullAccess', '管理费用中心的权限', NULL, '{"actions":["order:.*","recharge:.*","receipt:.*","renew:.*","sla:.*"],"effect":"Allow"}', 'billing', '1', 'Normal', '2017-09-12 12:29:38', '2017-09-12 12:29:38');
