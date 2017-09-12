@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://zstack.org/schema/zstack">
+    <id>generate</id>
+
+    <message>
+        <name>org.zstack.header.configuration.APIGenerateApiJsonTemplateMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.configuration.APIGenerateApiTypeScriptDefinitionMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.configuration.APIGenerateGroovyClassMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.configuration.APIGenerateSqlForeignKeyMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.configuration.APIGenerateSqlIndexMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.configuration.APIGenerateTestLinkDocumentMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.configuration.APIGenerateSqlVOViewMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.query.APIGenerateInventoryQueryDetailsMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.header.query.APIGenerateQueryableFieldsMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+</service>

@@ -7,7 +7,7 @@ import org.zstack.header.message.APISyncCallMessage;
 
 import java.sql.Timestamp;
 
-@Action(category = BillingConstant.ACTION_CATEGORY, names = {"read", "balance"})
+@Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
 public class APIGetExpenseGrossMonthListMsg extends APISyncCallMessage {
 
     @APIParam
