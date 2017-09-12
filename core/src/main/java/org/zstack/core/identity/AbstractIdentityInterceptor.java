@@ -36,7 +36,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
     private static final CLogger logger = Utils.getLogger(AbstractIdentityInterceptor.class);
 
     @Autowired
-    protected DatabaseFacade dbf;
+    private DatabaseFacade dbf;
     @Autowired
     protected ErrorFacade errf;
     @Autowired
@@ -473,5 +473,9 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
 
     public SessionInventory getSession(String sessionUuid) {
         return sessions.get(sessionUuid);
+    }
+
+    public DatabaseFacade getDbf() {
+        return dbf;
     }
 }
