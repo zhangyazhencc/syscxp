@@ -1,6 +1,6 @@
 package org.zstack.account.header.log;
 
-import org.zstack.account.log.NoticeConstant;
+import org.zstack.account.header.account.AccountConstant;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
@@ -8,7 +8,8 @@ import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
 import java.sql.Timestamp;
-@Action(category = NoticeConstant.ACTION_CATEGORY, names = {"notice"})
+
+@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT,adminOnly = true)
 public class APIUpdateNoticeMsg extends APIMessage {
     @APIParam(resourceType = NoticeVO.class,checkAccount = true, emptyString = false)
     private String uuid;

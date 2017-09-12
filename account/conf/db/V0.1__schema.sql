@@ -239,7 +239,7 @@ CREATE TABLE `PolicyVO` (
 CREATE TABLE  `RolePolicyRefVO` (
 	`id` INT UNIQUE AUTO_INCREMENT,
 	`roleUuid` varchar(32) NOT NULL COMMENT '角色UUID',
-  `policyUuid` varchar(32) NOT NULL COMMENT '权限uuid',
+    `policyUuid` varchar(32) NOT NULL COMMENT '权限uuid',
 	`createDate` timestamp DEFAULT CURRENT_TIMESTAMP,
 	PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -251,12 +251,11 @@ ALTER TABLE AccountApiSecurityVO ADD CONSTRAINT fkAccountApiSecurityVOAccountVO 
 
 ALTER TABLE ProxyAccountRefVO ADD CONSTRAINT fkProxyAccountRefVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
 
-
 ALTER TABLE RoleVO ADD CONSTRAINT fkRoleVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
 ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE RESTRICT;
 ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVOUserVO FOREIGN KEY (userUuid) REFERENCES UserVO (uuid) ON DELETE RESTRICT;
 ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE RESTRICT;
-ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVOPolicyVO FOREIGN KEY (policyUuid) REFERENCES PolicyVO (uuid) ON DELETE RESTRICT;
+ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVOPolicyVO FOREIGN KEY (roleUuid) REFERENCES PolicyVO (uuid) ON DELETE RESTRICT;
 
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Normal',0,'{"actions":["tunnel:read","node:read","monitor:read"],"effect":"Allow"}');
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelFullAccess','管理专线网络权限','tunnel','Normal','1','{"actions":["tunnel:.*","node:read","monitor:.*"],"effect":"Allow"}');
@@ -273,3 +272,5 @@ INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES 
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('AccountReadOnlyAccess','只读访问账户中心的权限','account','Normal','0','{"actions":["account:read"],"effect":"Allow"}');
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('AccountFullAccess','管理账户中心的权限','account','Normal','1','{"actions":["account:.*", "user:.*"],"effect":"Allow"}');
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('UserFullAccess','管理User的权限','account','Normal','2','{"actions": ["user:.*"],"effect":"Allow"}');
+
+UPDATE `syscxp_account`.`PolicyVO` p set p.createDate = current_timestamp();

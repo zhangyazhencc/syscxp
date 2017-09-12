@@ -7,7 +7,7 @@ import org.zstack.header.message.APIParam;
 
 import java.math.BigDecimal;
 
-@Action(category = BillingConstant.ACTION_CATEGORY, names = {"recharge"})
+@Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"})
 public class APIUpdateAccountBalanceMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = AccountBalanceVO.class)
     private String accountUuid;

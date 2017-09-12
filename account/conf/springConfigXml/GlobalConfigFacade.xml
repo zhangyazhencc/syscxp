@@ -24,4 +24,11 @@
             <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor" />
 		</zstack:plugin>
     </bean>
+
+	<bean id="ConfigurationManager" class="org.zstack.core.generate.ConfigurationManagerImpl">
+		<zstack:plugin>
+			<zstack:extension interface="org.zstack.header.Service" />
+		</zstack:plugin>
+	</bean>
+
 </beans>

@@ -101,7 +101,7 @@ public class APIRegisterAccountMsg extends APIMessage {
             public void after(APIEvent evt) {
                 String uuid = null;
                 if (evt.isSuccess()) {
-                    uuid = ((APICreateAccountEvent)evt).getInventory().getUuid();
+                    uuid = ((APIRegisterAccountEvent)evt).getInventory().getUuid();
                 }
                 ntfy("Regist ").resource(uuid, AccountVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
