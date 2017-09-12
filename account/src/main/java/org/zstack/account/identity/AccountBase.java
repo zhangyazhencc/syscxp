@@ -202,6 +202,7 @@ public class AccountBase extends AbstractAccount {
             role.setPolicySet(policySet);
         }
 
+
         role = dbf.getEntityManager().merge(role);
 
         APIUpdateRoleEvent evt = new APIUpdateRoleEvent(msg.getId());
