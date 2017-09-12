@@ -1,5 +1,7 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.account.header.account.AccountConstant;
+import org.zstack.account.header.account.AccountMessage;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.Action;
 import org.zstack.header.identity.PermissionType;
@@ -9,7 +11,7 @@ import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
 @Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, adminOnly = true)
-public class APICreatePermissionMsg extends  APIMessage implements  AccountMessage {
+public class APICreatePermissionMsg extends  APIMessage implements AccountMessage {
     @APIParam(maxLength = 128)
     private String name;
 

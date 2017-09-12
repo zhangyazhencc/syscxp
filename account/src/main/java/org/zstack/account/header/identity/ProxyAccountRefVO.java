@@ -1,6 +1,7 @@
 package org.zstack.account.header.identity;
 
 
+import org.zstack.account.header.account.AccountVO;
 import org.zstack.header.vo.ForeignKey;
 import org.zstack.header.vo.ForeignKey.ReferenceOption;
 

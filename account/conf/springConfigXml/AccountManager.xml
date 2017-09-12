@@ -21,7 +21,7 @@
         <property name="resourceTypeForAccountRef">
             <list>
                 <value>org.zstack.account.header.identity.PolicyVO</value>
-                <value>org.zstack.account.header.identity.UserVO</value>
+                <value>org.zstack.account.header.user.UserVO</value>
             </list>
         </property>
     </bean>

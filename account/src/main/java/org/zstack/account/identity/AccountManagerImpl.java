@@ -6,6 +6,8 @@ import org.zstack.account.header.identity.APICheckApiPermissionMsg;
 import org.zstack.account.header.identity.APICheckApiPermissionReply;
 import org.zstack.account.header.identity.APIValidateSessionMsg;
 import org.zstack.account.header.identity.APIValidateSessionReply;
+import org.zstack.account.header.account.*;
+import org.zstack.account.header.user.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.MessageSafe;
@@ -29,7 +31,6 @@ import org.zstack.utils.logging.CLogger;
 import org.zstack.sms.SmsService;
 
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
 import java.util.*;
 

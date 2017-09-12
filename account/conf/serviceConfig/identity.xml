@@ -4,11 +4,11 @@
     <interceptor>AccountManager</interceptor>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreateAccountMsg</name>
+        <name>org.zstack.account.header.account.APICreateAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateAccountMsg</name>
+        <name>org.zstack.account.header.account.APIUpdateAccountMsg</name>
     </message>
 
     <message>
@@ -32,23 +32,23 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreateUserMsg</name>
+        <name>org.zstack.account.header.user.APICreateUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateUserMsg</name>
+        <name>org.zstack.account.header.user.APIUpdateUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIDeleteUserMsg</name>
+        <name>org.zstack.account.header.user.APIDeleteUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIQueryUserMsg</name>
+        <name>org.zstack.account.header.user.APIQueryUserMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIQueryAccountMsg</name>
+        <name>org.zstack.account.header.account.APIQueryAccountMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
@@ -60,15 +60,15 @@
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIQueryAccountApiSecurityMsg</name>
+        <name>org.zstack.account.header.account.APIQueryAccountApiSecurityMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIQueryAccountExtraInfoMsg</name>
+        <name>org.zstack.account.header.account.APIQueryAccountExtraInfoMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIQueryAccountContactsMsg</name>
+        <name>org.zstack.account.header.account.APIQueryAccountContactsMsg</name>
         <serviceId>query</serviceId>
     </message>
 
@@ -77,27 +77,27 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateUserPWDMsg</name>
+        <name>org.zstack.account.header.user.APIUpdateUserPWDMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateAccountPWDMsg</name>
+        <name>org.zstack.account.header.account.APIUpdateAccountPWDMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateAccountPhoneMsg</name>
+        <name>org.zstack.account.header.account.APIUpdateAccountPhoneMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateUserPhoneMsg</name>
+        <name>org.zstack.account.header.user.APIUpdateUserPhoneMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateAccountEmailMsg</name>
+        <name>org.zstack.account.header.account.APIUpdateAccountEmailMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateUserEmailMsg</name>
+        <name>org.zstack.account.header.user.APIUpdateUserEmailMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIAttachPolicyToUserMsg</name>
+        <name>org.zstack.account.header.user.APIAttachPolicyToUserMsg</name>
     </message>
 
     <message>
@@ -123,59 +123,59 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIAccountPhoneAuthenticationMsg</name>
+        <name>org.zstack.account.header.account.APIAccountPhoneAuthenticationMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIUserPhoneAuthenticationMsg</name>
+        <name>org.zstack.account.header.user.APIUserPhoneAuthenticationMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateAccountContactsMsg</name>
+        <name>org.zstack.account.header.account.APIUpdateAccountContactsMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreateAccountContactsMsg</name>
+        <name>org.zstack.account.header.account.APICreateAccountContactsMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIDeleteAccountContactsMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.account.header.identity.APIResetAccountPWDMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.account.header.identity.APIResetAccountApiSecurityMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.account.header.identity.APIUpdateApiAllowIPMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.account.header.identity.APIGetAccountApiKeyMsg</name>
+        <name>org.zstack.account.header.account.APIDeleteAccountContactsMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIRegisterAccountMsg</name>
+        <name>org.zstack.account.header.account.APIResetAccountPWDMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.account.APIResetAccountApiSecurityMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.account.APIUpdateApiAllowIPMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.account.header.account.APIGetAccountApiKeyMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIGetAccountMsg</name>
+        <name>org.zstack.account.header.account.APIRegisterAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIGetUserMsg</name>
+        <name>org.zstack.account.header.account.APIGetAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIAccountPWDBackMsg</name>
+        <name>org.zstack.account.header.user.APIGetUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIUserPWDBackMsg</name>
+        <name>org.zstack.account.header.account.APIAccountPWDBackMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIResetUserPWDMsg</name>
+        <name>org.zstack.account.header.user.APIUserPWDBackMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.user.APIResetUserPWDMsg</name>
     </message>
 
     <message>

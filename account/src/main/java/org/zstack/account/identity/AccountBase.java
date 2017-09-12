@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.zstack.account.header.identity.*;
+import org.zstack.account.header.account.*;
+import org.zstack.account.header.user.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cascade.CascadeFacade;
 import org.zstack.core.cloudbus.CloudBus;
