@@ -18,6 +18,7 @@ import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.tunnel.header.endpoint.EndpointType;
+import org.zstack.tunnel.header.switchs.SwitchVlanInventory;
 import org.zstack.tunnel.header.tunnel.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
@@ -84,6 +85,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             handle((APICreateInterfaceNassMsg) msg);
         }else if(msg instanceof APICreateInterfaceBossMsg){
             handle((APICreateInterfaceBossMsg) msg);
+        }else if(msg instanceof APICreateTunnelMsg){
+            handle((APICreateTunnelMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -189,6 +192,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
         vo.setSwitchPortUuid(portUuid);
         vo.setBandwidth(msg.getBandwidth());
+        vo.setMonths(msg.getMonths());
 
         Calendar cal = Calendar.getInstance();
         Date date = new Date();
@@ -222,6 +226,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setIsExclusive(msg.getIsExclusive());
         vo.setSwitchPortUuid(msg.getSwitchPortUuid());
         vo.setBandwidth(msg.getBandwidth());
+        vo.setMonths(msg.getMonths());
 
         Calendar cal = Calendar.getInstance();
         Date date = new Date();
@@ -242,6 +247,66 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         APICreateInterfaceBossEvent evt = new APICreateInterfaceBossEvent(msg.getId());
         evt.setInventory(InterfaceInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APICreateTunnelMsg msg){
+        TunnelVO vo = new TunnelVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setAccountUuid(msg.getSession().getAccountUuid());
+        vo.setNetWorkUuid(msg.getNetWorkUuid());
+        vo.setName(msg.getName());
+        vo.setInterfaceAUuid(msg.getInterfaceAUuid());
+        vo.setInterfaceZUuid(msg.getInterfaceZUuid());
+
+        if(msg.getIsExclusiveA() == 0){     //共享口，不能开启QINQ,策略分配一个外部VLAN
+            vo.setEnableQinqA(0);
+            //找出该Tunnel所属虚拟交换机下的所有可用VLAN段
+            String sql = "select a.* from SwitchVlanVO a where a.switchUuid in " +
+                    "(select distinct b.uuid from SwitchVO b,SwitchPortVO c,InterfaceVO d" +
+                    "where b.uuid = c.switchUuid and c.uuid = d.switchPortUuid and d.uuid = '"+msg.getInterfaceAUuid()+"')";
+            Query vq = dbf.getEntityManager().createNativeQuery(sql);
+            List<SwitchVlanInventory> vlanList = vq.getResultList();
+            //找出该虚拟交换机下所有已经分配的VLAN
+
+        }else{                              //独享口
+            if(msg.getEnableQinqA() == 0){  //不开启QINQ，策略分配一个外部VLAN
+                vo.setEnableQinqA(0);
+
+            }else{                          //开启QINQ,策略分配一个外部VLAN，用户指定至少一个内部VLAN段
+                vo.setEnableQinqA(1);
+            }
+        }
+        if(msg.getIsExclusiveZ() == 0){     //共享口，不能开启QINQ,策略分配一个外部VLAN
+            vo.setEnableQinqZ(0);
+
+        }else{                              //独享口
+            if(msg.getEnableQinqZ() == 0){  //不开启QINQ，策略分配一个外部VLAN
+                vo.setEnableQinqZ(0);
+
+            }else{                          //开启QINQ,策略分配一个外部VLAN，用户指定至少一个内部VLAN段
+                vo.setEnableQinqZ(1);
+            }
+        }
+
+        vo.setMonths(msg.getMonths());
+        vo.setBandwidth(msg.getBandwidth());
+        vo.setDistance(null);
+        vo.setState(TunnelState.UNPAID);
+        vo.setStatus(TunnelStatus.BREAK);
+        vo.setIsMonitor(0);
+        vo.setExpiredDate(null);
+        if(msg.getDescription() != null){
+            vo.setDescription(msg.getDescription());
+        }else{
+            vo.setDescription(null);
+        }
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateTunnelNassEvent evt = new APICreateTunnelNassEvent(msg.getId());
+        evt.setInventory(TunnelInventory.valueOf(vo));
         bus.publish(evt);
     }
 

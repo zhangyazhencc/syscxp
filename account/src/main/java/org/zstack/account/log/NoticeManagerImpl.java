@@ -2,10 +2,8 @@ package org.zstack.account.log;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
-import org.zstack.account.header.identity.AccountVO;
-import org.zstack.account.header.identity.AccountVO_;
-import org.zstack.account.header.identity.SessionVO;
-import org.zstack.account.header.identity.SessionVO_;
+import org.zstack.account.header.account.AccountVO;
+import org.zstack.account.header.account.AccountVO_;
 import org.zstack.account.header.log.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;

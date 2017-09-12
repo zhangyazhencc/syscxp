@@ -249,12 +249,13 @@ CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `isExclusive` TINYINT(1) NOT NULL COMMENT '如果是CLOUD端口，是否独享',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+  `months` int(11) NOT NULL COMMENT '最近一次购买时长',
   `expiredDate` timestamp NOT NULL COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, name, switchPortUuid, endpointUuid, bandwidth, isExclusive, description, expiredDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, name, switchPortUuid, endpointUuid, bandwidth, isExclusive, description, months, expiredDate, lastOpDate, createDate
                                           FROM `InterfaceEO` WHERE deleted = 0;
 
 ##云专线
@@ -265,7 +266,7 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `name` varchar(128) NOT NULL COMMENT '通道名称',
   `bandwidth` int(11) NOT NULL COMMENT '带宽',
   `distance` decimal(10,2) DEFAULT NULL COMMENT '距离',
-  `state` varchar(32) NOT NULL DEFAULT 'CLOSED' COMMENT '状况:开通，未开通,未支付',
+  `state` varchar(32) NOT NULL DEFAULT 'UNPAID' COMMENT '状况:开通，未开通,未支付',
   `status` varchar(32) NOT NULL DEFAULT 'BREAK' COMMENT '状态：正常，中断，异常',
   `interfaceAUuid` VARCHAR(32) NOT NULL COMMENT '选择物理接口A',
   `aVlan` INT(11)  COMMENT 'A点VLAN',
@@ -275,12 +276,14 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `enableQinqZ` TINYINT(1) NOT NULL DEFAULT '0' COMMENT 'Z是否开启Qinq',
   `isMonitor` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否开启监控',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
-  `expiredDate` timestamp NOT NULL COMMENT '截止时间',
+  `description` varchar(255) DEFAULT NULL COMMENT '描述',
+  `months` int(11) NOT NULL COMMENT '最近一次购买时长',
+  `expiredDate` timestamp DEFAULT NULL COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, netWorkUuid, name, bandwidth, distance, state, status, interfaceAUuid, aVlan, interfaceZUuid, zVlan, enableQinq, isMonitor, expiredDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, netWorkUuid, name, bandwidth, distance, state, status, interfaceAUuid, aVlan, enableQinqA, interfaceZUuid, zVlan, enableQinqZ, isMonitor, description, months, expiredDate, lastOpDate, createDate
                                         FROM `TunnelEO` WHERE deleted = 0;
 
 ##Qinq模式网段

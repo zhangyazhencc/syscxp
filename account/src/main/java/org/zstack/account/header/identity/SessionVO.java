@@ -1,5 +1,6 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.account.header.account.AccountVO;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.vo.ForeignKey;

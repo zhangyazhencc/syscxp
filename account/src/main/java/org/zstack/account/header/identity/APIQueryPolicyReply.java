@@ -8,7 +8,7 @@ import java.util.List;
 import static org.zstack.utils.CollectionDSL.list;
 
 /**
- * Created by frank on 7/14/2015.
+ * Created by wangwg on 2017/08/15.
  */
 @RestResponse(allTo = "inventories")
 public class APIQueryPolicyReply extends APIQueryReply {
@@ -27,7 +27,6 @@ public class APIQueryPolicyReply extends APIQueryReply {
         PolicyInventory inventory = new PolicyInventory();
         inventory.setName("testuser");
         inventory.setUuid(uuid());
-        inventory.setAccountUuid(uuid());
         reply.setInventories(list(inventory));
 
         return reply;

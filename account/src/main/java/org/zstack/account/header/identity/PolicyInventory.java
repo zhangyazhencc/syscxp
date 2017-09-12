@@ -1,5 +1,7 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.header.identity.AccountType;
+import org.zstack.header.identity.PermissionType;
 import org.zstack.header.search.Inventory;
 
 import java.sql.Timestamp;
@@ -11,24 +13,23 @@ import java.util.List;
 
 public class PolicyInventory {
 
-    private String name;
     private String uuid;
-    private String accountUuid;
+    private String name;
+    private String permission;
     private String description;
+    private PermissionType type;
+    private AccountType accountType;
     private Timestamp createDate;
     private Timestamp lastOpDate;
-
-    private List<PermissionInventory> permissions;
 
     public static PolicyInventory valueOf(PolicyVO vo) {
         PolicyInventory inv = new PolicyInventory();
         inv.setName(vo.getName());
         inv.setUuid(vo.getUuid());
+        inv.setType(vo.getType());
+        inv.setAccountType(vo.getAccountType());
+        inv.setPermission(vo.getPermission());
         inv.setDescription(vo.getDescription());
-        inv.setPermissions(PermissionInventory.valueOf(vo.getPermissionSet()));
-        inv.setAccountUuid(vo.getAccountUuid());
-        inv.setCreateDate(vo.getCreateDate());
-        inv.setLastOpDate(vo.getLastOpDate());
         return inv;
     }
 
@@ -40,61 +41,67 @@ public class PolicyInventory {
         return invs;
     }
 
-
-
-    public String getAccountUuid() {
-        return accountUuid;
+    public PermissionType getType() {
+        return type;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+    public void setType(PermissionType type) {
+        this.type = type;
     }
 
-    public String getName() {
-        return name;
+    public AccountType getAccountType() {
+        return accountType;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setAccountType(AccountType level) {
+        this.accountType = level;
     }
 
     public String getUuid() {
         return uuid;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public String getName() {
+        return name;
     }
 
     public String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public Timestamp getCreateDate() {
         return createDate;
-    }
-
-    public void setCreateDate(Timestamp createDate) {
-        this.createDate = createDate;
     }
 
     public Timestamp getLastOpDate() {
         return lastOpDate;
     }
 
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getPermission() {
+        return permission;
+    }
+
+    public void setPermission(String permission) {
+        this.permission = permission;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
+    }
+
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
-    }
-
-    public List<PermissionInventory> getPermissions() {
-        return permissions;
-    }
-
-    public void setPermissions(List<PermissionInventory> permissions) {
-        this.permissions = permissions;
     }
 }

@@ -10,7 +10,7 @@ import org.zstack.header.message.APIParam;
  */
 @InnerCredentialCheck
 public class APIGetSessionPolicyMsg extends APISessionMessage {
-    @APIParam(nonempty = true)
+    @APIParam(emptyString = false)
     private String sessionUuid;
 
     public String getSessionUuid() {

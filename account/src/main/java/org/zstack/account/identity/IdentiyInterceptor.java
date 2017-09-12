@@ -3,6 +3,8 @@ package org.zstack.account.identity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.transaction.annotation.Transactional;
+import org.zstack.account.header.account.AccountVO;
+import org.zstack.account.header.user.UserVO;
 import org.zstack.core.Platform;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
@@ -62,8 +64,8 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
         List<PolicyStatement> policyStatements = new ArrayList<>();
         UserVO user = dbf.findByUuid(userUuid, UserVO.class);
 
-        for (PolicyVO policy : user.getPolicySet()) {
-            for (PermissionVO permission : policy.getPermissionSet()) {
+        for (RoleVO policy : user.getRoleSet()) {
+            for (PolicyVO permission : policy.getPolicySet()) {
                 PolicyStatement p = JSONObjectUtil.toObject(permission.getPermission(), PolicyStatement.class);
                 p.setUuid(permission.getUuid());
                 p.setName(permission.getName());

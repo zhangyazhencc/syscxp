@@ -9,15 +9,15 @@
         <class>org.zstack.core.job.JobQueueVO</class>
         <class>org.zstack.core.job.JobQueueEntryVO</class>
 
-        <class>org.zstack.account.header.identity.AccountVO</class>
-        <class>org.zstack.account.header.identity.UserVO</class>
-        <class>org.zstack.account.header.identity.PolicyVO</class>
-        <class>org.zstack.account.header.identity.UserPolicyRefVO</class>
+        <class>org.zstack.account.header.account.AccountVO</class>
+        <class>org.zstack.account.header.user.UserVO</class>
+        <class>org.zstack.account.header.identity.RoleVO</class>
+        <class>org.zstack.account.header.user.UserRoleRefVO</class>
         <class>org.zstack.account.header.identity.SessionVO</class>
-        <class>org.zstack.account.header.identity.AccountExtraInfoVO</class>
-        <class>org.zstack.account.header.identity.PermissionVO</class>
-        <class>org.zstack.account.header.identity.AccountContactsVO</class>
-        <class>org.zstack.account.header.identity.AccountApiSecurityVO</class>
+        <class>org.zstack.account.header.account.AccountExtraInfoVO</class>
+        <class>org.zstack.account.header.identity.PolicyVO</class>
+        <class>org.zstack.account.header.account.AccountContactsVO</class>
+        <class>org.zstack.account.header.account.AccountApiSecurityVO</class>
         <class>org.zstack.account.header.identity.ProxyAccountRefVO</class>
 
         <class>org.zstack.account.header.log.NoticeVO</class>

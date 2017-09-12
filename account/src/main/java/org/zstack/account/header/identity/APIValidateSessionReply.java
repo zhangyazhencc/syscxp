@@ -1,5 +1,7 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.account.header.account.AccountInventory;
+import org.zstack.account.header.user.UserInventory;
 import org.zstack.header.message.APIReply;
 
 /**
@@ -20,7 +22,7 @@ public class APIValidateSessionReply extends APIReply {
         return accountInventory;
     }
 
-    public org.zstack.account.header.identity.UserInventory getUserInventory() {
+    public org.zstack.account.header.user.UserInventory getUserInventory() {
         return UserInventory;
     }
 
@@ -28,7 +30,7 @@ public class APIValidateSessionReply extends APIReply {
         this.accountInventory = accountInventory;
     }
 
-    public void setUserInventory(org.zstack.account.header.identity.UserInventory userInventory) {
+    public void setUserInventory(org.zstack.account.header.user.UserInventory userInventory) {
         UserInventory = userInventory;
     }
 

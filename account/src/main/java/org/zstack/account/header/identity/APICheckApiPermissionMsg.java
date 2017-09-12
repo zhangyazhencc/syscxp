@@ -1,5 +1,7 @@
 package org.zstack.account.header.identity;
 
+import org.zstack.account.header.account.AccountConstant;
+import org.zstack.account.header.user.UserVO;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;

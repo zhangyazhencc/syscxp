@@ -6,6 +6,8 @@ import org.zstack.account.header.identity.APICheckApiPermissionMsg;
 import org.zstack.account.header.identity.APICheckApiPermissionReply;
 import org.zstack.account.header.identity.APIValidateSessionMsg;
 import org.zstack.account.header.identity.APIValidateSessionReply;
+import org.zstack.account.header.account.*;
+import org.zstack.account.header.user.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.MessageSafe;
@@ -29,7 +31,6 @@ import org.zstack.utils.logging.CLogger;
 import org.zstack.sms.SmsService;
 
 import javax.persistence.Query;
-import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -201,7 +202,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     @Transactional
-    private void handle(APIRegisterAccountMsg msg) {
+    public void handle(APIRegisterAccountMsg msg) {
 
         AccountVO accountVO = new AccountVO();
         accountVO.setUuid(Platform.getUuid());
@@ -217,12 +218,22 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         accountVO.setPhoneStatus(ValidateStatus.Validated);
         accountVO.setEmailStatus(ValidateStatus.Unvalidated);
 
+
         AccountExtraInfoVO ext = new AccountExtraInfoVO();
         ext.setUuid(accountVO.getUuid());
         ext.setCreateWay("register");
+        ext.setGrade(AccountGrade.Normal);
+
         accountVO.setAccountExtraInfo(ext);
 
-        accountVO = dbf.persistAndRefresh(accountVO);
+        dbf.getEntityManager().persist(accountVO);
+
+        AccountApiSecurityVO api = new AccountApiSecurityVO();
+        api.setUuid(Platform.getUuid());
+        api.setAccountUuid(accountVO.getUuid());
+        api.setPrivateKey(getRandomString(30));
+        api.setPublicKey(getRandomString(16));
+        dbf.getEntityManager().persist(api);
 
         APIRegisterAccountEvent evt = new APIRegisterAccountEvent(msg.getId());
         evt.setInventory(AccountInventory.valueOf(accountVO));
@@ -363,11 +374,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         bus.reply(msg, reply);
     }
 
-//    private List<PolicyInventory> getUserPolicys(String userUuid) {
-//        String sql = "select p from PolicyVO p, UserPolicyRefVO ref where ref.userUuid = :uuid and ref.policyUuid = p.uuid";
-//        TypedQuery<PolicyVO> q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
+//    private List<RoleInventory> getUserPolicys(String userUuid) {
+//        String sql = "select p from RoleVO p, UserRoleRefVO ref where ref.userUuid = :uuid and ref.roleUuid = p.uuid";
+//        TypedQuery<RoleVO> q = dbf.getEntityManager().createQuery(sql, RoleVO.class);
 //        q.setParameter("uuid", userUuid);
-//        return PolicyInventory.valueOf(q.getResultList());
+//        return RoleInventory.valueOf(q.getResultList());
 //    }
 
 
@@ -473,17 +484,16 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 ext.setCreateWay("init");
                 vo.setAccountExtraInfo(ext);
 
-                dbf.persist(vo);
+                dbf.getEntityManager().persist(vo);
 
                 AccountApiSecurityVO api = new AccountApiSecurityVO();
                 api.setUuid(Platform.getUuid());
                 api.setAccountUuid(vo.getUuid());
-                api.setPrivateKey(getRandomString(36));
-                api.setPublicKey(getRandomString(36));
-                dbf.persist(api);
+                api.setPrivateKey(getRandomString(30));
+                api.setPublicKey(getRandomString(16));
+                dbf.getEntityManager().persist(api);
 
                 logger.debug(String.format("Created initial system admin account[name:%s]", AccountConstant.INITIAL_SYSTEM_ADMIN_NAME));
-
             }
         } catch (Exception e) {
             throw new CloudRuntimeException("Unable to create default system admin account", e);
@@ -491,7 +501,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     @Transactional(readOnly = true)
-    private Timestamp getCurrentSqlDate() {
+    public Timestamp getCurrentSqlDate() {
         Query query = dbf.getEntityManager().createNativeQuery("select current_timestamp()");
         return (Timestamp) query.getSingleResult();
     }
@@ -531,8 +541,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIResetAccountApiSecurityMsg) msg);
         } else if (msg instanceof APIGetAccountApiKeyMsg) {
             validate((APIGetAccountApiKeyMsg) msg);
-        } else if (msg instanceof APIQueryPermissionMsg) {
-            validate((APIQueryPermissionMsg) msg);
+        } else if (msg instanceof APIQueryPolicyMsg) {
+            validate((APIQueryPolicyMsg) msg);
         } else if (msg instanceof APIRegisterAccountMsg) {
             validate((APIRegisterAccountMsg) msg);
         }
@@ -552,11 +562,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     }
 
-    private void validate(APIQueryPermissionMsg msg) {
+    private void validate(APIQueryPolicyMsg msg) {
         if (msg.getSession().getType().equals(AccountType.Proxy))
-            msg.addQueryCondition(PermissionVO_.accountType.getName(), QueryOp.IN, "Proxy", "Normal");
+            msg.addQueryCondition(PolicyVO_.accountType.getName(), QueryOp.IN, "Proxy", "Normal");
         if (msg.getSession().getType().equals(AccountType.Normal))
-            msg.addQueryCondition(PermissionVO_.accountType.getName(), QueryOp.IN, "Normal");
+            msg.addQueryCondition(PolicyVO_.accountType.getName(), QueryOp.IN, "Normal");
     }
 
     private void validate(APIResetAccountPWDMsg msg) {
