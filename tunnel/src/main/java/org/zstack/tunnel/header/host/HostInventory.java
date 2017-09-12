@@ -17,7 +17,7 @@ public class HostInventory {
     private String nodeUuid;
     private String name;
     private String code;
-    private String ip;
+    private String hostIp;
     private String username;
     private String password;
     private HostState state;
@@ -31,7 +31,7 @@ public class HostInventory {
         inv.setNodeUuid(vo.getNodeUuid());
         inv.setName(vo.getName());
         inv.setCode(vo.getCode());
-        inv.setIp(vo.getIp());
+        inv.setHostIp(vo.getHostIp());
         inv.setUsername(vo.getUsername());
         inv.setPassword(vo.getPassword());
         inv.setState(vo.getState());
@@ -81,20 +81,20 @@ public class HostInventory {
         this.code = code;
     }
 
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
     public String getUsername() {
         return username;
     }
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getHostIp() {
+        return hostIp;
+    }
+
+    public void setHostIp(String hostIp) {
+        this.hostIp = hostIp;
     }
 
     public String getPassword() {

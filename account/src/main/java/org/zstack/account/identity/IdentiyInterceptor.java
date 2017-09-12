@@ -23,9 +23,6 @@ import java.util.concurrent.TimeUnit;
 
 public class IdentiyInterceptor extends AbstractIdentityInterceptor {
 
-    @Autowired
-    private ErrorFacade errf;
-
 
     public SessionInventory initSession(AccountVO account, UserVO user) {
         int maxLoginTimes = IdentityGlobalConfig.MAX_CONCURRENT_SESSION.value(Integer.class);

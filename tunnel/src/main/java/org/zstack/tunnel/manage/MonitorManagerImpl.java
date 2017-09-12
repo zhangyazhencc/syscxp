@@ -1,6 +1,5 @@
 package org.zstack.tunnel.manage;
 
-import com.sun.xml.internal.bind.v2.TODO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
@@ -94,7 +93,7 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
         vo.setNodeUuid(msg.getNodeUuid());
         vo.setCode(msg.getCode());
         vo.setName(msg.getName());
-        vo.setIp(msg.getIp());
+        vo.setHostIp(msg.getHostIp());
         vo.setUsername(msg.getUsername());
         vo.setPassword(msg.getPassword());
         vo.setState(HostState.UNDEPLOYED);
@@ -122,8 +121,8 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
             vo.setCode(msg.getCode());
             update = true;
         }
-        if(msg.getIp() != null){
-            vo.setIp(msg.getIp());
+        if(msg.getHostIp() != null){
+            vo.setHostIp(msg.getHostIp());
             update = true;
         }
         if(msg.getUsername() != null){

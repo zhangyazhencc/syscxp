@@ -24,7 +24,7 @@ public class APIUpdateHostMsg extends APIMessage {
     private String code;
 
     @APIParam(required = false,maxLength = 128)
-    private String ip;
+    private String hostIp;
 
     @APIParam(required = false,maxLength = 128)
     private String username;
@@ -64,12 +64,12 @@ public class APIUpdateHostMsg extends APIMessage {
         this.code = code;
     }
 
-    public String getIp() {
-        return ip;
+    public String getHostIp() {
+        return hostIp;
     }
 
-    public void setIp(String ip) {
-        this.ip = ip;
+    public void setHostIp(String hostIp) {
+        this.hostIp = hostIp;
     }
 
     public String getUsername() {

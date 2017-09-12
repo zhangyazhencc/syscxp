@@ -27,7 +27,7 @@ public class BillJob extends QuartzJobBean {
     private static final CLogger logger = Utils.getLogger(BillJob.class);
 
     @Transactional
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    public void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
 
         GLock lock = new GLock(String.format("id-%s","createBill"), 120);
         lock.lock();
