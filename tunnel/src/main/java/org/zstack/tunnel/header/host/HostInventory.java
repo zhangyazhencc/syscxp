@@ -14,6 +14,7 @@ import java.util.List;
 public class HostInventory {
 
     private String uuid;
+    private String nodeUuid;
     private String name;
     private String code;
     private String ip;
@@ -27,6 +28,7 @@ public class HostInventory {
     public static HostInventory valueOf(HostVO vo){
         HostInventory inv = new HostInventory();
         inv.setUuid(vo.getUuid());
+        inv.setNodeUuid(vo.getNodeUuid());
         inv.setName(vo.getName());
         inv.setCode(vo.getCode());
         inv.setIp(vo.getIp());
@@ -49,6 +51,14 @@ public class HostInventory {
 
     public String getUuid() {
         return uuid;
+    }
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 
     public void setUuid(String uuid) {
