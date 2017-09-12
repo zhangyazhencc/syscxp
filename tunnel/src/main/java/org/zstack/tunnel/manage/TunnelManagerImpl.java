@@ -18,6 +18,7 @@ import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.tunnel.header.endpoint.EndpointType;
+import org.zstack.tunnel.header.switchs.SwitchVlanInventory;
 import org.zstack.tunnel.header.tunnel.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
@@ -261,6 +262,13 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         if(msg.getIsExclusiveA() == 0){     //共享口，不能开启QINQ,策略分配一个外部VLAN
             vo.setEnableQinqA(0);
+            //找出该Tunnel所属虚拟交换机下的所有可用VLAN段
+            String sql = "select a.* from SwitchVlanVO a where a.switchUuid in " +
+                    "(select distinct b.uuid from SwitchVO b,SwitchPortVO c,InterfaceVO d" +
+                    "where b.uuid = c.switchUuid and c.uuid = d.switchPortUuid and d.uuid = '"+msg.getInterfaceAUuid()+"')";
+            Query vq = dbf.getEntityManager().createNativeQuery(sql);
+            List<SwitchVlanInventory> vlanList = vq.getResultList();
+            //找出该虚拟交换机下所有已经分配的VLAN
 
         }else{                              //独享口
             if(msg.getEnableQinqA() == 0){  //不开启QINQ，策略分配一个外部VLAN
