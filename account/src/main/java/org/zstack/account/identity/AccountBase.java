@@ -253,8 +253,8 @@ public class AccountBase extends AbstractAccount {
         q.add(AccountApiSecurityVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         AccountApiSecurityVO api = q.find();
 
-        api.setPublicKey(getRandomString(36));
-        api.setPrivateKey(getRandomString(36));
+        api.setPublicKey(getRandomString(16));
+        api.setPrivateKey(getRandomString(30));
 
         dbf.updateAndRefresh(api);
 
@@ -615,8 +615,8 @@ public class AccountBase extends AbstractAccount {
         AccountApiSecurityVO api = new AccountApiSecurityVO();
         api.setUuid(Platform.getUuid());
         api.setAccountUuid(accountVO.getUuid());
-        api.setPrivateKey(getRandomString(36));
-        api.setPublicKey(getRandomString(36));
+        api.setPrivateKey(getRandomString(30));
+        api.setPublicKey(getRandomString(16));
         dbf.getEntityManager().persist(api);
 
         APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
