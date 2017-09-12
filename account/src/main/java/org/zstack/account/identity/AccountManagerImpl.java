@@ -380,7 +380,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         identiyInterceptor.logOutSession(msg.getSessionUuid());
         bus.reply(msg, reply);
     }
-    
+
     private void handle(APILogInByUserMsg msg) {
         APILogInReply reply = new APILogInReply();
 

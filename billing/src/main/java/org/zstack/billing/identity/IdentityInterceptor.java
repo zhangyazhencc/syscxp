@@ -20,7 +20,7 @@ public class IdentityInterceptor extends DefaultIdentityInterceptor {
 
         String accountUuid = session.getAccountUuid();
         if (!StringUtils.isEmpty(accountUuid)) {
-            SimpleQuery<AccountBalanceVO> q = dbf.createQuery(AccountBalanceVO.class);
+            SimpleQuery<AccountBalanceVO> q = getDbf().createQuery(AccountBalanceVO.class);
             q.add(AccountBalanceVO_.uuid, SimpleQuery.Op.EQ, accountUuid);
             AccountBalanceVO a = q.find();
             if (a == null) {
@@ -29,12 +29,12 @@ public class IdentityInterceptor extends DefaultIdentityInterceptor {
                 vo.setCashBalance(new BigDecimal("0"));
                 vo.setPresentBalance(new BigDecimal("0"));
                 vo.setCreditPoint(new BigDecimal("0"));
-                dbf.persist(vo);
+                getDbf().persist(vo);
             }
         }
-        List<ProductPriceUnitVO> ppu = dbf.listAll(ProductPriceUnitVO.class);
+        List<ProductPriceUnitVO> ppu = getDbf().listAll(ProductPriceUnitVO.class);
         for(ProductPriceUnitVO productPriceUnitVO : ppu){
-            SimpleQuery<AccountDischargeVO> query = dbf.createQuery(AccountDischargeVO.class);
+            SimpleQuery<AccountDischargeVO> query = getDbf().createQuery(AccountDischargeVO.class);
             query.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
             query.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductType());
             query.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategory());
@@ -46,7 +46,7 @@ public class IdentityInterceptor extends DefaultIdentityInterceptor {
                 accountDischargeVO.setCategory(productPriceUnitVO.getCategory());
                 accountDischargeVO.setProductType(productPriceUnitVO.getProductType());
                 accountDischargeVO.setDisCharge(100);
-                dbf.persistAndRefresh(accountDischargeVO);
+                getDbf().persistAndRefresh(accountDischargeVO);
             }
         }
     }
