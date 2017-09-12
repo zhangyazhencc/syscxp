@@ -1,6 +1,7 @@
-use syscxp_tunnel;
+/*20170912 sunxuelong */
+ALTER TABLE HostEO CHANGE ip hostIp VARCHAR(128);
 
-/*20170911 sunxuelong*/
+/*20170911 sunxuelong */
 alter table syscxp_tunnel.HostEO add nodeUuid varchar(32) comment '节点ID(NodeEO.uuid)' after uuid;
 
 CREATE OR REPLACE VIEW `syscxp_tunnel`.`HostVO` AS
@@ -30,7 +31,7 @@ select uuid,hostUuid,physicalSwitchUuid,physicalSwitchPortName,interfaceName,las
 
 
 #######################################################################################################
-
+use syscxp_tunnel;
 CREATE TABLE  `syscxp_tunnel`.`ManagementNodeVO` (
   `uuid` varchar(32) NOT NULL UNIQUE,
   `hostName` varchar(255) DEFAULT NULL,
