@@ -24,6 +24,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -60,18 +61,7 @@ public class RESTApiController {
     public String alipayReturnUrl(HttpServletRequest request, HttpServletResponse rsp) throws IOException {
         try {
             //获取支付宝GET过来反馈信息
-            Map<String, String> params = new HashMap<String, String>();
-            Map<String, String[]> requestParams = request.getParameterMap();
-            for (Iterator<String> iter = requestParams.keySet().iterator(); iter.hasNext(); ) {
-                String name = (String) iter.next();
-                String[] values = (String[]) requestParams.get(name);
-                String valueStr = "";
-                for (int i = 0; i < values.length; i++) {
-                    valueStr = (i == values.length - 1) ? valueStr + values[i] : valueStr + values[i] + ",";
-                }
-                valueStr = new String(valueStr.getBytes("ISO-8859-1"), "utf-8");
-                params.put(name, valueStr);
-            }
+            Map<String, String> params = getParamterMap(request);
             APIVerifyReturnMsg msg = new APIVerifyReturnMsg();
             msg.setParam(params);
             msg.setServiceId("billing");
@@ -93,21 +83,9 @@ public class RESTApiController {
     @RequestMapping(value = "/alipay/notify", method = {RequestMethod.POST})
     public void alipayNotifyUrl(HttpServletRequest request, HttpServletResponse rsp) throws IOException {
         try {
-            Map<String,String> params = new HashMap<String,String>();
-            Map<String,String[]> requestParams = request.getParameterMap();
-            for (Iterator<String> iter = requestParams.keySet().iterator(); iter.hasNext();) {
-                String name = (String) iter.next();
-                String[] values = (String[]) requestParams.get(name);
-                String valueStr = "";
-                for (int i = 0; i < values.length; i++) {
-                    valueStr = (i == values.length - 1) ? valueStr + values[i]
-                            : valueStr + values[i] + ",";
-                }
-                valueStr = new String(valueStr.getBytes("ISO-8859-1"), "utf-8");
-                params.put(name, valueStr);
-            }
-
+            Map<String, String> params = getParamterMap(request);
             APIVerifyNotifyMsg msg = new APIVerifyNotifyMsg();
+
             msg.setParam(params);
             msg.setServiceId("billing");
             RestAPIResponse res = restApi.call(msg);
@@ -127,6 +105,23 @@ public class RESTApiController {
             logger.warn(t.getMessage(), t);
             rsp.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR, t.getMessage());
         }
+    }
+
+    private Map<String, String> getParamterMap(HttpServletRequest request) throws UnsupportedEncodingException {
+        Map<String,String> params = new HashMap<String,String>();
+        Map requestParams = request.getParameterMap();
+        for (Iterator iter = requestParams.keySet().iterator(); iter.hasNext();) {
+            String name = (String) iter.next();
+            String[] values = (String[]) requestParams.get(name);
+            String valueStr = "";
+            for (int i = 0; i < values.length; i++) {
+                valueStr = (i == values.length - 1) ? valueStr + values[i]
+                        : valueStr + values[i] + ",";
+            }
+            valueStr = new String(valueStr.getBytes("ISO-8859-1"), "utf-8");
+            params.put(name, valueStr);
+        }
+        return params;
     }
 
     private String handleByMessageType(String body, String ip) {

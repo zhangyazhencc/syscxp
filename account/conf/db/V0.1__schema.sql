@@ -238,12 +238,10 @@ CREATE TABLE `PermissionVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE  `PolicyPermissionRefVO` (
-  `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
 	`policyUuid` varchar(32) NOT NULL COMMENT '角色UUID',
-  `permissionUuid` varchar(32) NOT NULL COMMENT '权限uuid',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp ,
-  PRIMARY KEY  (`id`)
+    `permissionUuid` varchar(32) NOT NULL COMMENT '权限uuid',
+    CONSTRAINT PolicyVO_uuid_fk FOREIGN KEY (policyUuid) REFERENCES PolicyVO (uuid),
+    CONSTRAINT PermissionVO_uuid_fk FOREIGN KEY (permissionUuid) REFERENCES PermissionVO (uuid)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Normal',0,'{"actions":["tunnel:read","node:read","monitor:read"],"effect":"Allow"}');

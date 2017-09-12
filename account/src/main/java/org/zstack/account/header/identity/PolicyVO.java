@@ -23,7 +23,7 @@ public class PolicyVO {
     @Column
     private String description;
 
-    @ManyToMany(cascade=CascadeType.ALL, fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name="PolicyPermissionRefVO",
             joinColumns=@JoinColumn(name="policyUuid"),

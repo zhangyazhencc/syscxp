@@ -201,7 +201,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     @Transactional
-    private void handle(APIRegisterAccountMsg msg) {
+    public void handle(APIRegisterAccountMsg msg) {
 
         AccountVO accountVO = new AccountVO();
         accountVO.setUuid(Platform.getUuid());
@@ -458,7 +458,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = CloudRuntimeException.class)
     public void prepareDbInitialValue() {
         logger.debug("Created initial system admin account");
         try {
@@ -501,7 +501,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     @Transactional(readOnly = true)
-    private Timestamp getCurrentSqlDate() {
+    public Timestamp getCurrentSqlDate() {
         Query query = dbf.getEntityManager().createNativeQuery("select current_timestamp()");
         return (Timestamp) query.getSingleResult();
     }
