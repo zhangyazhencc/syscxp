@@ -67,7 +67,7 @@ public class AccountApiSecurityVO {
     }
 
     public void setPublicKey(String publicKey) {
-        this.publicKey = publicKey;
+        this.publicKey = "account" + publicKey;
     }
 
     public void setPrivateKey(String privateKey) {

@@ -81,7 +81,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         bus.dealWithUnknownMessage(msg);
     }
 
-    private void handleApiMessage(APIMessage msg) {
+    @Transactional
+    public void handleApiMessage(APIMessage msg) {
         if (msg instanceof APIGetAccountBalanceMsg) {
             handle((APIGetAccountBalanceMsg) msg);
         } else if (msg instanceof APIUpdateAccountBalanceMsg) {
@@ -983,6 +984,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             orderVo.setPrice(dischargePrice);
             orderVo.setType(OrderType.BUY);
             payMethod(msg, orderVo, abvo, originalPrice, currentTimestamp);
+            if(true)
+            throw new IllegalArgumentException("argument invalid");
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(currentTimestamp);
             calendar.add(Calendar.MONTH, duration.intValue());

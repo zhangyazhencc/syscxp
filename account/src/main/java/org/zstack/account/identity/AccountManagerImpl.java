@@ -201,7 +201,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     @Transactional
-    private void handle(APIRegisterAccountMsg msg) {
+    public void handle(APIRegisterAccountMsg msg) {
 
         AccountVO accountVO = new AccountVO();
         accountVO.setUuid(Platform.getUuid());
@@ -230,8 +230,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         AccountApiSecurityVO api = new AccountApiSecurityVO();
         api.setUuid(Platform.getUuid());
         api.setAccountUuid(accountVO.getUuid());
-        api.setPrivateKey(getRandomString(36));
-        api.setPublicKey(getRandomString(36));
+        api.setPrivateKey(getRandomString(30));
+        api.setPublicKey(getRandomString(16));
         dbf.getEntityManager().persist(api);
 
         APIRegisterAccountEvent evt = new APIRegisterAccountEvent(msg.getId());
@@ -458,7 +458,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = CloudRuntimeException.class)
     public void prepareDbInitialValue() {
         logger.debug("Created initial system admin account");
         try {
@@ -488,8 +488,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 AccountApiSecurityVO api = new AccountApiSecurityVO();
                 api.setUuid(Platform.getUuid());
                 api.setAccountUuid(vo.getUuid());
-                api.setPrivateKey(getRandomString(36));
-                api.setPublicKey(getRandomString(36));
+                api.setPrivateKey(getRandomString(30));
+                api.setPublicKey(getRandomString(16));
                 dbf.getEntityManager().persist(api);
 
                 logger.debug(String.format("Created initial system admin account[name:%s]", AccountConstant.INITIAL_SYSTEM_ADMIN_NAME));
@@ -501,7 +501,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     @Transactional(readOnly = true)
-    private Timestamp getCurrentSqlDate() {
+    public Timestamp getCurrentSqlDate() {
         Query query = dbf.getEntityManager().createNativeQuery("select current_timestamp()");
         return (Timestamp) query.getSingleResult();
     }
