@@ -8,8 +8,8 @@ import org.zstack.header.query.AutoQuery;
 /**
  * Created by wangwg on 2017/08/15.
  */
-@AutoQuery(replyClass = APIQueryPermissionReply.class, inventoryClass = PermissionInventory.class)
+@AutoQuery(replyClass = APIQueryRoleReply.class, inventoryClass = RoleInventory.class)
 @Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"}, accountOnly = true)
-public class APIQueryPermissionMsg extends APIQueryMessage {
+public class APIQueryRoleMsg extends APIQueryMessage {
 
 }

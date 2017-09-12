@@ -100,20 +100,20 @@ public class AccountBase extends AbstractAccount {
             handle((APIUpdateAccountMsg) msg);
         } else if (msg instanceof APIUpdateUserMsg) {
             handle((APIUpdateUserMsg) msg);
-        } else if (msg instanceof APICreatePolicyMsg) {
-            handle((APICreatePolicyMsg) msg);
+        } else if (msg instanceof APICreateRoleMsg) {
+            handle((APICreateRoleMsg) msg);
         } else if (msg instanceof APIDetachPolicyFromUserMsg) {
             handle((APIDetachPolicyFromUserMsg) msg);
-        } else if (msg instanceof APIDeletePolicyMsg) {
-            handle((APIDeletePolicyMsg) msg);
+        } else if (msg instanceof APIDeleteRoleMsg) {
+            handle((APIDeleteRoleMsg) msg);
         } else if (msg instanceof APIAttachPolicyToUserMsg) {
             handle((APIAttachPolicyToUserMsg) msg);
-        } else if (msg instanceof APIUpdatePermissionMsg) {
-            handle((APIUpdatePermissionMsg) msg);
-        } else if (msg instanceof APICreatePermissionMsg) {
-            handle((APICreatePermissionMsg) msg);
-        } else if (msg instanceof APIDeletePermissionMsg) {
-            handle((APIDeletePermissionMsg) msg);
+        } else if (msg instanceof APIUpdatePolicyMsg) {
+            handle((APIUpdatePolicyMsg) msg);
+        } else if (msg instanceof APICreatePolicyMsg) {
+            handle((APICreatePolicyMsg) msg);
+        } else if (msg instanceof APIDeletePolicyMsg) {
+            handle((APIDeletePolicyMsg) msg);
         } else if (msg instanceof APIAccountPhoneAuthenticationMsg) {
             handle((APIAccountPhoneAuthenticationMsg) msg);
         } else if (msg instanceof APIUserPhoneAuthenticationMsg) {
@@ -536,15 +536,15 @@ public class AccountBase extends AbstractAccount {
         }
 
         if (msg.getPolicyUuid() != null) {
-            Set<PolicyVO> policySet = new HashSet<>();
-            PolicyVO policy = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
+            Set<RoleVO> policySet = new HashSet<>();
+            RoleVO policy = dbf.findByUuid(msg.getPolicyUuid(), RoleVO.class);
             if (policy != null) {
                 policySet.add(policy);
             }
-            user.setPolicySet(policySet);
+            user.setRoleSet(policySet);
 
-//            uprvo = new UserPolicyRefVO();
-//            uprvo.setPolicyUuid(msg.getPolicyUuid());
+//            uprvo = new UserRoleRefVO();
+//            uprvo.setRoleUuid(msg.getRoleUuid());
 //            uprvo.setUserUuid(msg.getUuid());
 //            dbf.persist(uprvo);
 
@@ -652,12 +652,12 @@ public class AccountBase extends AbstractAccount {
         }
 
         if (msg.getPolicyUuid() != null) {
-            Set<PolicyVO> policySet = new HashSet<>();
-            PolicyVO policy = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
+            Set<RoleVO> policySet = new HashSet<>();
+            RoleVO policy = dbf.findByUuid(msg.getPolicyUuid(), RoleVO.class);
             if (policy != null) {
                 policySet.add(policy);
             }
-            uservo.setPolicySet(policySet);
+            uservo.setRoleSet(policySet);
         }
 
         uservo = dbf.persistAndRefresh(uservo);
@@ -667,38 +667,38 @@ public class AccountBase extends AbstractAccount {
         bus.publish(evt);
     }
 
-    private void handle(APICreatePolicyMsg msg) {
+    private void handle(APICreateRoleMsg msg) {
 
-        PolicyVO pvo = new PolicyVO();
-        pvo.setUuid(Platform.getUuid());
-        pvo.setName(msg.getName());
-        pvo.setAccountUuid(msg.getAccountUuid());
-        pvo.setDescription(msg.getDescription());
+        RoleVO role = new RoleVO();
+        role.setUuid(Platform.getUuid());
+        role.setName(msg.getName());
+        role.setAccountUuid(msg.getAccountUuid());
+        role.setDescription(msg.getDescription());
 
-        Set<PermissionVO> permissionSet = new HashSet<PermissionVO>();
+        Set<PolicyVO> policySet = new HashSet<>();
 
-        for (String id  : msg.getPermissionUuids()) {
-            PermissionVO permissionVO = dbf.findByUuid(id, PermissionVO.class);
-            if (permissionVO != null ){
-                permissionSet.add(permissionVO);
+        for (String id : msg.getPolicyUuids()) {
+            PolicyVO policy = dbf.findByUuid(id, PolicyVO.class);
+            if (policy != null ){
+                policySet.add(policy);
             }
         }
 
-        pvo.setPermissionSet(permissionSet);
+        role.setPolicySet(policySet);
 
-        pvo = dbf.persistAndRefresh(pvo);
+        role = dbf.persistAndRefresh(role);
 
-        APICreatePolicyEvent evt = new APICreatePolicyEvent(msg.getId());
+        APICreateRoleEvent evt = new APICreateRoleEvent(msg.getId());
 
-        evt.setInventory(PolicyInventory.valueOf(pvo));
+        evt.setInventory(RoleInventory.valueOf(role));
         bus.publish(evt);
     }
 
     private void handle(APIDetachPolicyFromUserMsg msg) {
-        SimpleQuery<UserPolicyRefVO> q = dbf.createQuery(UserPolicyRefVO.class);
-        q.add(UserPolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
-        q.add(UserPolicyRefVO_.userUuid, SimpleQuery.Op.EQ, msg.getUserUuid());
-        UserPolicyRefVO ref = q.find();
+        SimpleQuery<UserRoleRefVO> q = dbf.createQuery(UserRoleRefVO.class);
+        q.add(UserRoleRefVO_.roleUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
+        q.add(UserRoleRefVO_.userUuid, SimpleQuery.Op.EQ, msg.getUserUuid());
+        UserRoleRefVO ref = q.find();
         if (ref != null) {
             dbf.remove(ref);
         } else {
@@ -710,9 +710,9 @@ public class AccountBase extends AbstractAccount {
         bus.publish(evt);
     }
 
-    private void handle(APIDeletePolicyMsg msg) {
-        dbf.removeByPrimaryKey(msg.getUuid(), PolicyVO.class);
-        APIDeletePolicyEvent evt = new APIDeletePolicyEvent(msg.getId());
+    private void handle(APIDeleteRoleMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(), RoleVO.class);
+        APIDeleteRoleEvent evt = new APIDeleteRoleEvent(msg.getId());
 
         bus.publish(evt);
     }
@@ -720,8 +720,8 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIAttachPolicyToUserMsg msg) {
         APIAttachPolicyToUserEvent evt = new APIAttachPolicyToUserEvent(msg.getId());
 
-        UserPolicyRefVO upvo = new UserPolicyRefVO();
-        upvo.setPolicyUuid(msg.getPolicyUuid());
+        UserRoleRefVO upvo = new UserRoleRefVO();
+        upvo.setRoleUuid(msg.getRoleUuid());
         upvo.setUserUuid(msg.getUserUuid());
 
         try {
@@ -735,9 +735,9 @@ public class AccountBase extends AbstractAccount {
         bus.publish(evt);
     }
 
-    private void handle(APICreatePermissionMsg msg) {
+    private void handle(APICreatePolicyMsg msg) {
 
-        PermissionVO auth = new PermissionVO();
+        PolicyVO auth = new PolicyVO();
         auth.setUuid(Platform.getUuid());
         auth.setPermission(msg.getPermission());
         auth.setName(msg.getName());
@@ -745,15 +745,15 @@ public class AccountBase extends AbstractAccount {
         auth.setType(msg.getType());
         auth.setAccountType(msg.getAccountType());
 
-        APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
+        APICreatePolicyEvent evt = new APICreatePolicyEvent(msg.getId());
 
-        evt.setInventory(PermissionInventory.valueOf(dbf.persistAndRefresh(auth)));
+        evt.setInventory(PolicyInventory.valueOf(dbf.persistAndRefresh(auth)));
         bus.publish(evt);
     }
 
-    private void handle(APIUpdatePermissionMsg msg) {
+    private void handle(APIUpdatePolicyMsg msg) {
 
-        PermissionVO auth = dbf.findByUuid(msg.getUuid(), PermissionVO.class);
+        PolicyVO auth = dbf.findByUuid(msg.getUuid(), PolicyVO.class);
 
         boolean update = false;
         if (!StringUtils.isEmpty(msg.getName())) {
@@ -781,16 +781,16 @@ public class AccountBase extends AbstractAccount {
             auth = dbf.updateAndRefresh(auth);
         }
 
-        APIUpdatePermisstionEvent evt = new APIUpdatePermisstionEvent(msg.getId());
+        APIUpdatePolicyEvent evt = new APIUpdatePolicyEvent(msg.getId());
 
-        evt.setInventory(PermissionInventory.valueOf(auth));
+        evt.setInventory(PolicyInventory.valueOf(auth));
         bus.publish(evt);
 
     }
 
-    private void handle(APIDeletePermissionMsg msg) {
-        dbf.removeByPrimaryKey(msg.getUuid(), PermissionVO.class);
-        APICreatePermissionEvent evt = new APICreatePermissionEvent(msg.getId());
+    private void handle(APIDeletePolicyMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(), PolicyVO.class);
+        APICreatePolicyEvent evt = new APICreatePolicyEvent(msg.getId());
 
         bus.publish(evt);
     }

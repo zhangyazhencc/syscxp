@@ -1,11 +1,14 @@
 package org.zstack.account.header.identity;
 
-import org.zstack.account.header.account.AccountVO;
-import org.zstack.header.vo.ForeignKey;
+import org.zstack.header.identity.AccountType;
+import org.zstack.header.identity.PermissionType;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.Set;
+
+/**
+ * Created by wangwg on 2017/8/15.
+ */
 
 @Entity
 @Table
@@ -15,22 +18,24 @@ public class PolicyVO {
     private String uuid;
 
     @Column
-    @ForeignKey(parentEntityClass = AccountVO.class, parentKey = "uuid", onDeleteAction = ForeignKey.ReferenceOption.CASCADE)
-    private String accountUuid;
+    private String name;
 
     @Column
-    private String name;
+    private String permission;
 
     @Column
     private String description;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-            name="PolicyPermissionRefVO",
-            joinColumns=@JoinColumn(name="policyUuid"),
-            inverseJoinColumns=@JoinColumn(name="permissionUuid")
-    )
-    private Set<PermissionVO> permissionSet;
+    @Column
+    private int sortId;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private PermissionType type;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private AccountType accountType;
 
     @Column
     private Timestamp createDate;
@@ -43,59 +48,75 @@ public class PolicyVO {
         lastOpDate = null;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public String getUuid() {
         return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
     }
 
     public String getName() {
         return name;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getAccountUuid() {
-        return accountUuid;
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+    public String getDescription() {
+        return description;
     }
 
     public Timestamp getCreateDate() {
         return createDate;
     }
 
-    public void setCreateDate(Timestamp createDate) {
-        this.createDate = createDate;
-    }
-
     public Timestamp getLastOpDate() {
         return lastOpDate;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
     }
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
     }
 
-    public Set<PermissionVO> getPermissionSet() {
-        return permissionSet;
+    public String getPermission() {
+        return permission;
     }
 
-    public void setPermissionSet(Set<PermissionVO> permissionSet) {
-        this.permissionSet = permissionSet;
+    public int getSortId() {
+        return sortId;
+    }
+
+    public void setPermission(String permission) {
+        this.permission = permission;
+    }
+
+    public void setSortId(int sortId) {
+        this.sortId = sortId;
+    }
+
+    public PermissionType getType() {
+        return type;
+    }
+
+    public void setType(PermissionType type) {
+        this.type = type;
+    }
+
+    public AccountType getAccountType() {
+        return accountType;
+    }
+
+    public void setAccountType(AccountType accountType) {
+        this.accountType = accountType;
     }
 }

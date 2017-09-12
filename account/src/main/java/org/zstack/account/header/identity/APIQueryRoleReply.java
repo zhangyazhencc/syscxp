@@ -8,25 +8,26 @@ import java.util.List;
 import static org.zstack.utils.CollectionDSL.list;
 
 /**
- * Created by wangwg on 2017/08/15.
+ * Created by frank on 7/14/2015.
  */
 @RestResponse(allTo = "inventories")
-public class APIQueryPermissionReply extends APIQueryReply {
-    private List<PermissionInventory> inventories;
+public class APIQueryRoleReply extends APIQueryReply {
+    private List<RoleInventory> inventories;
 
-    public List<PermissionInventory> getInventories() {
+    public List<RoleInventory> getInventories() {
         return inventories;
     }
 
-    public void setInventories(List<PermissionInventory> inventories) {
+    public void setInventories(List<RoleInventory> inventories) {
         this.inventories = inventories;
     }
  
-    public static APIQueryPermissionReply __example__() {
-        APIQueryPermissionReply reply = new APIQueryPermissionReply();
-        PermissionInventory inventory = new PermissionInventory();
+    public static APIQueryRoleReply __example__() {
+        APIQueryRoleReply reply = new APIQueryRoleReply();
+        RoleInventory inventory = new RoleInventory();
         inventory.setName("testuser");
         inventory.setUuid(uuid());
+        inventory.setAccountUuid(uuid());
         reply.setInventories(list(inventory));
 
         return reply;

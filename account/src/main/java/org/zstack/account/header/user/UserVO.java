@@ -1,7 +1,7 @@
 package org.zstack.account.header.user;
 
 import org.zstack.account.header.account.AccountVO;
-import org.zstack.account.header.identity.PolicyVO;
+import org.zstack.account.header.identity.RoleVO;
 import org.zstack.header.identity.ValidateStatus;
 import org.zstack.header.identity.AccountStatus;
 import org.zstack.header.vo.ForeignKey;
@@ -52,13 +52,13 @@ public class UserVO {
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
 
-    @ManyToMany(cascade=CascadeType.ALL,fetch = FetchType.LAZY)
+    @ManyToMany(cascade=CascadeType.REFRESH,fetch = FetchType.LAZY)
     @JoinTable(
-            name="UserPolicyRefVO",
+            name="UserRoleRefVO",
             joinColumns=@JoinColumn(name="userUuid"),
-            inverseJoinColumns=@JoinColumn(name="policyUuid")
+            inverseJoinColumns=@JoinColumn(name="roleUuid")
     )
-    private Set<PolicyVO> policySet;
+    private Set<RoleVO> roleSet;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -190,12 +190,12 @@ public class UserVO {
         this.phoneStatus = phoneStatus;
     }
 
-    public Set<PolicyVO> getPolicySet() {
-        return policySet;
+    public Set<RoleVO> getRoleSet() {
+        return roleSet;
     }
 
-    public void setPolicySet(Set<PolicyVO> policySet) {
-        this.policySet = policySet;
+    public void setRoleSet(Set<RoleVO> roleSet) {
+        this.roleSet = roleSet;
     }
 
     public UserType getUserType() {

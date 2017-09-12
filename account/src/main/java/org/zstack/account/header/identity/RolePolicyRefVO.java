@@ -9,30 +9,22 @@ import java.sql.Timestamp;
 
 @Entity
 @Table
-public class PolicyPermissionRefVO {
+public class RolePolicyRefVO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
     private long id;
 
     @Column
+    @ForeignKey(parentEntityClass = RoleVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
+    private String roleUuid;
+
+    @Column
     @ForeignKey(parentEntityClass = PolicyVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
     private String policyUuid;
 
     @Column
-    @ForeignKey(parentEntityClass = PermissionVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
-    private String permissionUuid;
-
-    @Column
     private Timestamp createDate;
-
-    @Column
-    private Timestamp lastOpDate;
-
-    @PreUpdate
-    private void preUpdate() {
-        lastOpDate = null;
-    }
 
     public long getId() {
         return id;
@@ -40,10 +32,6 @@ public class PolicyPermissionRefVO {
 
     public Timestamp getCreateDate() {
         return createDate;
-    }
-
-    public Timestamp getLastOpDate() {
-        return lastOpDate;
     }
 
     public void setId(long id) {
@@ -54,23 +42,19 @@ public class PolicyPermissionRefVO {
         this.createDate = createDate;
     }
 
-    public void setLastOpDate(Timestamp lastOpDate) {
-        this.lastOpDate = lastOpDate;
+    public void setRoleUuid(String roleUuid) {
+        this.roleUuid = roleUuid;
     }
 
     public void setPolicyUuid(String policyUuid) {
         this.policyUuid = policyUuid;
     }
 
-    public void setPermissionUuid(String permissionUuid) {
-        this.permissionUuid = permissionUuid;
+    public String getRoleUuid() {
+        return roleUuid;
     }
 
     public String getPolicyUuid() {
         return policyUuid;
-    }
-
-    public String getPermissionUuid() {
-        return permissionUuid;
     }
 }

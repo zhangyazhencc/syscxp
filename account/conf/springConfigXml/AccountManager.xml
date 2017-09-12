@@ -20,7 +20,7 @@
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>org.zstack.account.header.identity.PolicyVO</value>
+                <value>org.zstack.account.header.identity.RoleVO</value>
                 <value>org.zstack.account.header.user.UserVO</value>
             </list>
         </property>

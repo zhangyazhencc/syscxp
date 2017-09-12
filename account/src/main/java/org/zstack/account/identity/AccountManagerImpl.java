@@ -374,11 +374,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         bus.reply(msg, reply);
     }
 
-//    private List<PolicyInventory> getUserPolicys(String userUuid) {
-//        String sql = "select p from PolicyVO p, UserPolicyRefVO ref where ref.userUuid = :uuid and ref.policyUuid = p.uuid";
-//        TypedQuery<PolicyVO> q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
+//    private List<RoleInventory> getUserPolicys(String userUuid) {
+//        String sql = "select p from RoleVO p, UserRoleRefVO ref where ref.userUuid = :uuid and ref.roleUuid = p.uuid";
+//        TypedQuery<RoleVO> q = dbf.getEntityManager().createQuery(sql, RoleVO.class);
 //        q.setParameter("uuid", userUuid);
-//        return PolicyInventory.valueOf(q.getResultList());
+//        return RoleInventory.valueOf(q.getResultList());
 //    }
 
 
@@ -459,7 +459,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     @Override
-    @Transactional(rollbackFor = CloudRuntimeException.class)
+    @Transactional
     public void prepareDbInitialValue() {
         logger.debug("Created initial system admin account");
         try {
@@ -494,7 +494,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 dbf.getEntityManager().persist(api);
 
                 logger.debug(String.format("Created initial system admin account[name:%s]", AccountConstant.INITIAL_SYSTEM_ADMIN_NAME));
-
             }
         } catch (Exception e) {
             throw new CloudRuntimeException("Unable to create default system admin account", e);
@@ -542,8 +541,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIResetAccountApiSecurityMsg) msg);
         } else if (msg instanceof APIGetAccountApiKeyMsg) {
             validate((APIGetAccountApiKeyMsg) msg);
-        } else if (msg instanceof APIQueryPermissionMsg) {
-            validate((APIQueryPermissionMsg) msg);
+        } else if (msg instanceof APIQueryPolicyMsg) {
+            validate((APIQueryPolicyMsg) msg);
         } else if (msg instanceof APIRegisterAccountMsg) {
             validate((APIRegisterAccountMsg) msg);
         }
@@ -563,11 +562,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     }
 
-    private void validate(APIQueryPermissionMsg msg) {
+    private void validate(APIQueryPolicyMsg msg) {
         if (msg.getSession().getType().equals(AccountType.Proxy))
-            msg.addQueryCondition(PermissionVO_.accountType.getName(), QueryOp.IN, "Proxy", "Normal");
+            msg.addQueryCondition(PolicyVO_.accountType.getName(), QueryOp.IN, "Proxy", "Normal");
         if (msg.getSession().getType().equals(AccountType.Normal))
-            msg.addQueryCondition(PermissionVO_.accountType.getName(), QueryOp.IN, "Normal");
+            msg.addQueryCondition(PolicyVO_.accountType.getName(), QueryOp.IN, "Normal");
     }
 
     private void validate(APIResetAccountPWDMsg msg) {

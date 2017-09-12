@@ -127,9 +127,9 @@ CREATE TABLE  `UserVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
-CREATE TABLE `PolicyVO` (
+CREATE TABLE `RoleVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-	`name` varchar(128) NOT NULL UNIQUE COMMENT '角色名称',
+	`name` varchar(128) NOT NULL COMMENT '角色名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '角色描述',
 	`accountUuid` varchar(32) NOT NULL COMMENT '所属账户UUID',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
@@ -137,12 +137,11 @@ CREATE TABLE `PolicyVO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `UserPolicyRefVO` (
+CREATE TABLE `UserRoleRefVO` (
   `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
 	`userUuid` varchar(32) NOT NULL COMMENT '用户UUID',
-	`policyUuid` varchar(32) NOT NULL COMMENT '角色UUID',
-	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
+	`roleUuid` varchar(32) NOT NULL COMMENT '角色UUID',
+  `createDate` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -224,7 +223,7 @@ CREATE TABLE `SmsVO` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `PermissionVO` (
+CREATE TABLE `PolicyVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`name` varchar(128) NOT NULL COMMENT '权限名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '权限描述',
@@ -237,25 +236,26 @@ CREATE TABLE `PermissionVO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `PolicyPermissionRefVO` (
-	`policyUuid` varchar(32) NOT NULL COMMENT '角色UUID',
-    `permissionUuid` varchar(32) NOT NULL COMMENT '权限uuid',
-    CONSTRAINT PolicyVO_uuid_fk FOREIGN KEY (policyUuid) REFERENCES PolicyVO (uuid),
-    CONSTRAINT PermissionVO_uuid_fk FOREIGN KEY (permissionUuid) REFERENCES PermissionVO (uuid)
+CREATE TABLE  `RolePolicyRefVO` (
+	`id` INT UNIQUE AUTO_INCREMENT,
+	`roleUuid` varchar(32) NOT NULL COMMENT '角色UUID',
+    `policyUuid` varchar(32) NOT NULL COMMENT '权限uuid',
+	`createDate` timestamp DEFAULT CURRENT_TIMESTAMP,
+	PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Normal',0,'{"actions":["tunnel:read","node:read","monitor:read"],"effect":"Allow"}');
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelFullAccess','管理专线网络权限','tunnel','Normal','1','{"actions":["tunnel:.*","node:read","monitor:.*"],"effect":"Allow"}');
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('NodeReadOnlyAccess','只读访问节点的权限','tunnel','SystemAdmin','0','{"actions":["node:read"],"effect":"Allow"}');
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('NodeFullAccess','管理节点权限','tunnel','SystemAdmin','1','{"actions":["node:.*"],"effect":"Allow"}');
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('SwitchReadOnlyAccess','只读访问交换机的权限','tunnel','SystemAdmin','0','{"actions":["switch:read"],"effect":"Allow"}');
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('SwitchFullAccess','管理交换机权限','tunnel','SystemAdmin','1','{"actions":["switch:.*","node:read"],"effect":"Allow"}');
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelHostReadOnlyAccess','只读访问监控主机的权限','tunnel','SystemAdmin','0','{"actions":["tunnelHost:read"],"effect":"Allow"}');
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelHostFullAccess','管理监控主机权限','tunnel','SystemAdmin','1','{"actions":["tunnelHost:.*","node:read"],"effect":"Allow"}');
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('VPNReadOnlyAccess','只读访问VPN权限','vpn','Normal','0	','{"actions":["vpn:read"],"effect":"Allow"}');
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('VPNFullAccess','管理VPN权限','vpn','Normal','1','{"actions":["vpn:.*"],"effect":"Allow"}');
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('BillingReadOnlyAccess','只读访问费用中心的权限','billing','Normal','0','{"actions":["order:read","recharge:read","receipt:read","renew:read","sla:read"],"effect":"Allow"}');
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('BillingFullAccess','管理费用中心的权限','billing','Normal','1','{"actions":["order:.*","recharge:.*","receipt:.*","renew:.*","sla:.*"],"effect":"Allow"}');
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('AccountReadOnlyAccess','只读访问账户中心的权限','account','Normal','0','{"actions":["account:read"],"effect":"Allow"}');
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('AccountFullAccess','管理账户中心的权限','account','Normal','1','{"actions":["account:.*", "user:.*"],"effect":"Allow"}');
-INSERT INTO PermissionVO (uuid, name, type, accountType, sortId, permission) VALUES ('UserFullAccess','管理User的权限','account','Normal','2','{"actions": ["user:.*"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Normal',0,'{"actions":["tunnel:read","node:read","monitor:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelFullAccess','管理专线网络权限','tunnel','Normal','1','{"actions":["tunnel:.*","node:read","monitor:.*"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('NodeReadOnlyAccess','只读访问节点的权限','tunnel','SystemAdmin','0','{"actions":["node:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('NodeFullAccess','管理节点权限','tunnel','SystemAdmin','1','{"actions":["node:.*"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('SwitchReadOnlyAccess','只读访问交换机的权限','tunnel','SystemAdmin','0','{"actions":["switch:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('SwitchFullAccess','管理交换机权限','tunnel','SystemAdmin','1','{"actions":["switch:.*","node:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelHostReadOnlyAccess','只读访问监控主机的权限','tunnel','SystemAdmin','0','{"actions":["tunnelHost:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelHostFullAccess','管理监控主机权限','tunnel','SystemAdmin','1','{"actions":["tunnelHost:.*","node:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('VPNReadOnlyAccess','只读访问VPN权限','vpn','Normal','0	','{"actions":["vpn:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('VPNFullAccess','管理VPN权限','vpn','Normal','1','{"actions":["vpn:.*"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('BillingReadOnlyAccess','只读访问费用中心的权限','billing','Normal','0','{"actions":["order:read","recharge:read","receipt:read","renew:read","sla:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('BillingFullAccess','管理费用中心的权限','billing','Normal','1','{"actions":["order:.*","recharge:.*","receipt:.*","renew:.*","sla:.*"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('AccountReadOnlyAccess','只读访问账户中心的权限','account','Normal','0','{"actions":["account:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('AccountFullAccess','管理账户中心的权限','account','Normal','1','{"actions":["account:.*", "user:.*"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('UserFullAccess','管理User的权限','account','Normal','2','{"actions": ["user:.*"],"effect":"Allow"}');

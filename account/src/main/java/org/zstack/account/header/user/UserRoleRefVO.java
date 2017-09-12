@@ -1,7 +1,7 @@
 package org.zstack.account.header.user;
 
 
-import org.zstack.account.header.identity.PolicyVO;
+import org.zstack.account.header.identity.RoleVO;
 import org.zstack.header.vo.ForeignKey;
 import org.zstack.header.vo.ForeignKey.ReferenceOption;
 
@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 
 @Entity
 @Table
-public class UserPolicyRefVO {
+public class UserRoleRefVO {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
@@ -21,19 +21,11 @@ public class UserPolicyRefVO {
     private String userUuid;
 
     @Column
-    @ForeignKey(parentEntityClass = PolicyVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
-    private String policyUuid;
+    @ForeignKey(parentEntityClass = RoleVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
+    private String roleUuid;
 
     @Column
     private Timestamp createDate;
-
-    @Column
-    private Timestamp lastOpDate;
-
-    @PreUpdate
-    private void preUpdate() {
-        lastOpDate = null;
-    }
 
     public long getId() {
         return id;
@@ -51,12 +43,12 @@ public class UserPolicyRefVO {
         this.userUuid = userUuid;
     }
 
-    public String getPolicyUuid() {
-        return policyUuid;
+    public String getRoleUuid() {
+        return roleUuid;
     }
 
-    public void setPolicyUuid(String policyUuid) {
-        this.policyUuid = policyUuid;
+    public void setRoleUuid(String roleUuid) {
+        this.roleUuid = roleUuid;
     }
 
     public Timestamp getCreateDate() {
@@ -67,11 +59,4 @@ public class UserPolicyRefVO {
         this.createDate = createDate;
     }
 
-    public Timestamp getLastOpDate() {
-        return lastOpDate;
-    }
-
-    public void setLastOpDate(Timestamp lastOpDate) {
-        this.lastOpDate = lastOpDate;
-    }
 }

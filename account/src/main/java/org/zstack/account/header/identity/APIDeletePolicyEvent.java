@@ -1,12 +1,11 @@
 package org.zstack.account.header.identity;
 
 import org.zstack.header.message.APIEvent;
-import org.zstack.header.rest.RestResponse;
 
 /**
- * Created by frank on 7/9/2015.
+ * Created by wangwg on 2017/08/15.
  */
-@RestResponse
+
 public class APIDeletePolicyEvent extends APIEvent {
     public APIDeletePolicyEvent() {
     }

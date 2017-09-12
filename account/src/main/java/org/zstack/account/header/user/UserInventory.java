@@ -1,7 +1,7 @@
 package org.zstack.account.header.user;
 
 
-import org.zstack.account.header.identity.PolicyInventory;
+import org.zstack.account.header.identity.RoleInventory;
 import org.zstack.header.search.Inventory;
 
 import java.sql.Timestamp;
@@ -27,7 +27,7 @@ public class UserInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    private List<PolicyInventory> policys;
+    private List<RoleInventory> roles;
 
     public static UserInventory valueOf(UserVO vo) {
         UserInventory inv = new UserInventory();
@@ -46,7 +46,7 @@ public class UserInventory {
         inv.setTrueName(vo.getTrueName());
         inv.setDescription(vo.getDescription());
 
-        inv.setPolicys(PolicyInventory.valueOf(vo.getPolicySet()));
+        inv.setRoles(RoleInventory.valueOf(vo.getRoleSet()));
 
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -166,12 +166,12 @@ public class UserInventory {
         this.department = department;
     }
 
-    public List<PolicyInventory> getPolicys() {
-        return policys;
+    public List<RoleInventory> getRoles() {
+        return roles;
     }
 
-    public void setPolicys(List<PolicyInventory> policys) {
-        this.policys = policys;
+    public void setRoles(List<RoleInventory> roles) {
+        this.roles = roles;
     }
 
     public String getUserType() {

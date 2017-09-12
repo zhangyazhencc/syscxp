@@ -14,7 +14,7 @@ import org.zstack.header.notification.ApiNotification;
  */
 @Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
 public class APIDetachPolicyFromUserMsg extends APIMessage implements AccountMessage {
-    @APIParam(resourceType = PolicyVO.class, checkAccount = true, operationTarget = true)
+    @APIParam(resourceType = RoleVO.class, checkAccount = true, operationTarget = true)
     private String policyUuid;
     @APIParam(resourceType = UserVO.class, checkAccount = true, operationTarget = true)
     private String userUuid;

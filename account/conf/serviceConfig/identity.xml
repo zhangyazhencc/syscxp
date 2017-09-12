@@ -52,11 +52,11 @@
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIQueryPolicyMsg</name>
+        <name>org.zstack.account.header.identity.APIQueryRoleMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIQueryPermissionMsg</name>
+        <name>org.zstack.account.header.identity.APIQueryPolicyMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
@@ -101,11 +101,11 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIDeletePolicyMsg</name>
+        <name>org.zstack.account.header.identity.APIDeleteRoleMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreatePolicyMsg</name>
+        <name>org.zstack.account.header.identity.APICreateRoleMsg</name>
     </message>
 
     <message>
@@ -113,13 +113,13 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreatePermissionMsg</name>
+        <name>org.zstack.account.header.identity.APICreatePolicyMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIUpdatePermissionMsg</name>
+        <name>org.zstack.account.header.identity.APIUpdatePolicyMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIDeletePermissionMsg</name>
+        <name>org.zstack.account.header.identity.APIDeletePolicyMsg</name>
     </message>
 
     <message>

@@ -5,7 +5,7 @@ import org.zstack.header.rest.RestResponse;
 
 @RestResponse
 public class APIAttachPolicyToUserEvent extends APIEvent {
-    private UserPolicyRefVO upv;
+    private UserRoleRefVO upv;
 
     public APIAttachPolicyToUserEvent() {
         super(null);
@@ -15,11 +15,11 @@ public class APIAttachPolicyToUserEvent extends APIEvent {
         super(apiId);
     }
 
-    public UserPolicyRefVO getUpv() {
+    public UserRoleRefVO getUpv() {
         return upv;
     }
 
-    public void setUpv(UserPolicyRefVO upv) {
+    public void setUpv(UserRoleRefVO upv) {
         this.upv = upv;
     }
 }

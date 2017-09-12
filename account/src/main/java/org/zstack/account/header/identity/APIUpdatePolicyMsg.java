@@ -11,7 +11,7 @@ import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
 @Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"}, adminOnly = true)
-public class APIUpdatePermissionMsg extends APIMessage implements AccountMessage {
+public class APIUpdatePolicyMsg extends APIMessage implements AccountMessage {
 
     @APIParam(maxLength = 255)
     private String uuid;
@@ -92,8 +92,8 @@ public class APIUpdatePermissionMsg extends APIMessage implements AccountMessage
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update PermissionVO")
-                        .resource(uuid, PermissionVO.class.getSimpleName())
+                ntfy("Update PolicyVO")
+                        .resource(uuid, PolicyVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };

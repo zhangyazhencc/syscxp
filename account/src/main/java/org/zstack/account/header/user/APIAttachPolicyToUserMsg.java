@@ -2,7 +2,7 @@ package org.zstack.account.header.user;
 
 import org.zstack.account.header.account.AccountConstant;
 import org.zstack.account.header.account.AccountMessage;
-import org.zstack.account.header.identity.PolicyVO;
+import org.zstack.account.header.identity.RoleVO;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
@@ -13,8 +13,8 @@ import org.zstack.header.notification.ApiNotification;
 public class APIAttachPolicyToUserMsg extends APIMessage implements AccountMessage {
     @APIParam(resourceType = UserVO.class, checkAccount = true, operationTarget = true)
     private String userUuid;
-    @APIParam(resourceType = PolicyVO.class, checkAccount = true, operationTarget = true)
-    private String policyUuid;
+    @APIParam(resourceType = RoleVO.class, checkAccount = true, operationTarget = true)
+    private String roleUuid;
 
     @Override
     public String getAccountUuid() {
@@ -29,18 +29,18 @@ public class APIAttachPolicyToUserMsg extends APIMessage implements AccountMessa
         this.userUuid = userUuid;
     }
 
-    public String getPolicyUuid() {
-        return policyUuid;
+    public String getRoleUuid() {
+        return roleUuid;
     }
 
-    public void setPolicyUuid(String policyUuid) {
-        this.policyUuid = policyUuid;
+    public void setRoleUuid(String roleUuid) {
+        this.roleUuid = roleUuid;
     }
 
     public static APIAttachPolicyToUserMsg __example__() {
         APIAttachPolicyToUserMsg msg = new APIAttachPolicyToUserMsg();
 
-        msg.setPolicyUuid(uuid());
+        msg.setRoleUuid(uuid());
         msg.setUserUuid(uuid());
 
         return msg;
@@ -52,7 +52,7 @@ public class APIAttachPolicyToUserMsg extends APIMessage implements AccountMessa
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Attaching a policy[uuid:%s]", policyUuid).resource(userUuid, UserVO.class.getSimpleName())
+                ntfy("Attaching a policy[uuid:%s]", roleUuid).resource(userUuid, UserVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };
