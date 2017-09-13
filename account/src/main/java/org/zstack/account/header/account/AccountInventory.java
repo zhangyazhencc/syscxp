@@ -42,10 +42,7 @@ public class AccountInventory {
         inv.setPhoneStatus(vo.getPhoneStatus().toString());
 
         inv.setType(vo.getType().toString());
-
-        if(vo.getIndustry() !=null){
-            inv.setIndustry(vo.getIndustry().toString());
-        }
+        inv.setIndustry(vo.getIndustry());
 
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());

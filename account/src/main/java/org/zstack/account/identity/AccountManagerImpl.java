@@ -1,8 +1,6 @@
 package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.account.header.identity.APICheckApiPermissionMsg;
 import org.zstack.account.header.identity.APICheckApiPermissionReply;
@@ -35,6 +33,7 @@ import org.zstack.sms.SmsService;
 import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.zstack.header.identity.*;
 
@@ -62,6 +61,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     @Autowired
     private SmsService smsService;
 
+    class VerificationCode {
+        String code;
+        Timestamp expiredDate;
+    }
+    private Map<String, VerificationCode> sessions = new ConcurrentHashMap<>();
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
@@ -121,35 +125,13 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIUserPWDBackMsg) msg);
         } else if(msg instanceof APIVerifyRepetitionMsg){
             handle((APIVerifyRepetitionMsg) msg);
-        } else if(msg instanceof APIMailCodeSendMsg){
-            handle((APIMailCodeSendMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APIMailCodeSendMsg msg) {
 
-        JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
-        senderImpl.setHost(" smtp.163.com ");
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setTo(msg.getMail());
-        mailMessage.setFrom("wangwg@syscloud.cn");
-        mailMessage.setSubject("验证码");
-        mailMessage.setText(String.valueOf(new Random().nextInt(1000000)));
-        senderImpl.setUsername("wangwg@syscloud.cn");
-        senderImpl.setPassword("wang88v5");
-        Properties prop = new Properties();
-        prop.put(" mail.smtp.auth ", " true "); // 将这个参数设为true，让服务器进行认证,认证用户名和密码是否正确
-        prop.put(" mail.smtp.timeout ", " 25000 ");
-        senderImpl.setJavaMailProperties(prop);
 
-        senderImpl.send(mailMessage);
-        logger.debug(">>>>>>>>>>>>>>>>>>发送成功<<<<<<<<<<<<<<<<<<<<<<");
-        APIMailCodeSendReply reply = new APIMailCodeSendReply();
-        bus.reply(msg, reply);
-
-    }
 
     private void handle(APIVerifyRepetitionMsg msg) {
         APIVerifyRepetitionReply reply = new APIVerifyRepetitionReply();

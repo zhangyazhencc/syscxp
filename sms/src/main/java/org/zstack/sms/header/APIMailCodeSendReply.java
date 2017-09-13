@@ -1,4 +1,4 @@
-package org.zstack.account.header.identity;
+package org.zstack.sms.header;
 
 
 import org.zstack.header.message.APIReply;
