@@ -33,6 +33,7 @@ import org.zstack.sms.SmsService;
 import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.zstack.header.identity.*;
 
@@ -60,6 +61,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     @Autowired
     private SmsService smsService;
 
+    class VerificationCode {
+        String code;
+        Timestamp expiredDate;
+    }
+    private Map<String, VerificationCode> sessions = new ConcurrentHashMap<>();
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
@@ -123,6 +129,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             bus.dealWithUnknownMessage(msg);
         }
     }
+
+
+
 
     private void handle(APIVerifyRepetitionMsg msg) {
         APIVerifyRepetitionReply reply = new APIVerifyRepetitionReply();
@@ -375,20 +384,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         bus.reply(msg, reply);
     }
 
-//    private List<RoleInventory> getUserPolicys(String userUuid) {
-//        String sql = "select p from RoleVO p, UserRoleRefVO ref where ref.userUuid = :uuid and ref.roleUuid = p.uuid";
-//        TypedQuery<RoleVO> q = dbf.getEntityManager().createQuery(sql, RoleVO.class);
-//        q.setParameter("uuid", userUuid);
-//        return RoleInventory.valueOf(q.getResultList());
-//    }
-
-
     private void handle(APILogOutMsg msg) {
         APILogOutReply reply = new APILogOutReply();
         identiyInterceptor.logOutSession(msg.getSessionUuid());
         bus.reply(msg, reply);
     }
-
 
     private void handle(APILogInByUserMsg msg) {
         APILogInReply reply = new APILogInReply();
@@ -694,17 +694,19 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateUserMsg msg) {
-        UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
+        if (msg.getName() != null) {
+            UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
 
-        SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
-        q.add(UserVO_.accountUuid, Op.EQ, user.getAccountUuid());
-        q.add(UserVO_.name, Op.EQ, msg.getName());
-        if (q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("unable to create a user. user name %s is already under the account[uuid:%s]",
-                    msg.getName(), msg.getAccountUuid()));
+            SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
+            q.add(UserVO_.accountUuid, Op.EQ, user.getAccountUuid());
+            q.add(UserVO_.name, Op.EQ, msg.getName());
+            q.add(UserVO_.uuid, Op.NOT_EQ, user.getUuid());
+            if (q.isExists()) {
+                throw new ApiMessageInterceptionException(argerr("unable to create a user. user name %s is already under the account[uuid:%s]",
+                        msg.getName(), msg.getAccountUuid()));
+            }
         }
     }
-
 
     private void validate(APIUpdateAccountMsg msg) {
         if (AccountType.SystemAdmin.toString().equalsIgnoreCase(msg.getType())){

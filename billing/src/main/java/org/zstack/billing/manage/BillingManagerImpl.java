@@ -42,6 +42,7 @@ import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
+import javax.management.relation.RoleUnresolved;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
@@ -128,9 +129,41 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIDeleteSLACompensateMsg) msg);
         } else if (msg instanceof APIGetProductPriceMsg) {
             handle((APIGetProductPriceMsg) msg);
+        } else if (msg instanceof APIGetAccountBalanceListMsg) {
+            handle((APIGetAccountBalanceListMsg) msg);
+        }  else if (msg instanceof APIUpdateOrderExpiredTimeMsg) {
+            handle((APIUpdateOrderExpiredTimeMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIUpdateOrderExpiredTimeMsg msg) {
+        SimpleQuery<OrderVO> query = dbf.createQuery(OrderVO.class);
+        query.add(OrderVO_.productUuid, Op.EQ, msg.getProductUuid());
+        query.add(OrderVO_.productStatus, Op.EQ, 0);
+        OrderVO orderVO = query.find();
+        if(orderVO == null){
+            throw new RuntimeException("cannot find the order");
+        }
+        orderVO.setProductEffectTimeStart(msg.getStartTime());
+        orderVO.setProductEffectTimeEnd(msg.getEndTime());
+        orderVO.setProductStatus(1);
+        dbf.updateAndRefresh(orderVO);
+        APIUpdateOrderExpiredTimeEvent event = new APIUpdateOrderExpiredTimeEvent();
+        event.setInventory(OrderInventory.valueOf(orderVO));
+        bus.publish(event);
+    }
+
+    private void handle(APIGetAccountBalanceListMsg msg) {
+        List<String> accountUuids = msg.getAccountUuids();
+        SimpleQuery<AccountBalanceVO> query = dbf.createQuery(AccountBalanceVO.class);
+        query.add(AccountBalanceVO_.uuid, Op.IN, accountUuids);
+        List<AccountBalanceVO> accountBalanceVOs = query.list();
+        List<AccountBalanceInventory> accountBalanceInventories = AccountBalanceInventory.valueOf(accountBalanceVOs);
+        APIGetAccountBalanceListReply reply = new APIGetAccountBalanceListReply();
+        reply.setInventories(accountBalanceInventories);
+        bus.reply(msg,reply);
     }
 
     private void handle(APIGetProductPriceMsg msg) {
@@ -865,11 +898,13 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         orderVo.setDuration(msg.getDuration());
 
         if (msg.getType() == OrderType.MODIFY || msg.getType() == OrderType.UN_SUBCRIBE) {
-            Timestamp startTime = new Timestamp(currentTimestamp.getTime() - 30 * 24 * 60 * 60 * 1000);//todo this would get from product
-            Timestamp endTime = new Timestamp(currentTimestamp.getTime() + 30 * 24 * 60 * 60 * 1000);//todo this would get from product
-            long useDays = (currentTimestamp.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
-            long notUseDays = (endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
-            long days = (endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
+            Calendar c = Calendar.getInstance();
+            c.add(Calendar.MONTH, -1);
+            Timestamp startTime = new Timestamp(c.getTime().getTime());
+            c.add(Calendar.MONTH,2);
+            Timestamp endTime = new Timestamp(c.getTime().getTime()); long useDays = Math.abs(currentTimestamp.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
+            long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
+            long days = Math.abs(endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
 
             SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
             query.add(RenewVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
@@ -884,33 +919,37 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 BigDecimal needPayMoney = dischargePrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
                 BigDecimal needPayOriginMoney = originalPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
                 BigDecimal subMoney = needPayMoney.subtract(remainMoney);
-                if (remainMoney.compareTo(needPayMoney) <= 0) {//upgrade
+                if (subMoney.compareTo(BigDecimal.ZERO) >= 0) {//upgrade
                     if (subMoney.compareTo(mayPayTotal) > 0) {
                         throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
                     }
                     orderVo.setType(OrderType.UPGRADE);
                     orderVo.setOriginalPrice(needPayOriginMoney.subtract(remainMoney));
                     orderVo.setPrice(subMoney);
+                    orderVo.setProductEffectTimeStart(startTime);
+                    orderVo.setProductEffectTimeEnd(endTime);
                     payMethod(msg, orderVo, abvo, subMoney, currentTimestamp);
 
                 } else { //downgrade
-                    BigDecimal valuePayCash = getValueblePayCash(msg.getSession().getAccountUuid(), msg.getProductUuid(), currentTimestamp);
+                    BigDecimal valuePayCash = getValueblePayCash(msg.getSession().getAccountUuid(), msg.getProductUuid());
                     orderVo.setType(OrderType.DOWNGRADE);
-                    if (subMoney.compareTo(valuePayCash) < 0) {
-                        subMoney = valuePayCash;
+                    if (subMoney.compareTo(valuePayCash.negate()) < 0) {
+                        subMoney = valuePayCash.negate();
                     }
                     orderVo.setPayCash(subMoney);
                     orderVo.setPayPresent(BigDecimal.ZERO);
                     orderVo.setOriginalPrice(subMoney);
                     orderVo.setPrice(subMoney);
-                    BigDecimal remainCash = abvo.getCashBalance().add(subMoney);
+                    orderVo.setProductEffectTimeStart(startTime);
+                    orderVo.setProductEffectTimeEnd(endTime);
+                    BigDecimal remainCash = abvo.getCashBalance().add(subMoney.negate());
                     abvo.setCashBalance(remainCash);
 
                     DealDetailVO dVO = new DealDetailVO();
                     dVO.setUuid(Platform.getUuid());
                     dVO.setAccountUuid(msg.getSession().getAccountUuid());
                     dVO.setDealWay(DealWay.CASH_BILL);
-                    dVO.setIncome(subMoney);
+                    dVO.setIncome(subMoney.negate());
                     dVO.setExpend(BigDecimal.ZERO);
                     dVO.setFinishTime(currentTimestamp);
                     dVO.setType(DealType.REFUND);
@@ -937,7 +976,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                     dbf.getEntityManager().persist(priceRefRenewVO);
                 }
             } else {
-                BigDecimal valuePayCash = getValueblePayCash(msg.getSession().getAccountUuid(), msg.getProductUuid(), currentTimestamp);
+                BigDecimal valuePayCash = getValueblePayCash(msg.getSession().getAccountUuid(), msg.getProductUuid());
                 orderVo.setType(OrderType.UN_SUBCRIBE);
                 if (remainMoney.compareTo(valuePayCash) < 0) {
                     remainMoney = valuePayCash;
@@ -945,6 +984,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 orderVo.setOriginalPrice(remainMoney);
                 orderVo.setPrice(remainMoney);
                 orderVo.setProductEffectTimeEnd(currentTimestamp);
+                orderVo.setProductEffectTimeEnd(startTime);
                 BigDecimal remainCash = abvo.getCashBalance().add(remainMoney);
                 abvo.setCashBalance(remainCash);
                 orderVo.setPayPresent(BigDecimal.ZERO);
@@ -981,6 +1021,9 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             orderVo.setOriginalPrice(originalPrice);
             orderVo.setPrice(dischargePrice);
             orderVo.setType(OrderType.BUY);
+            if(msg.getProductType() == ProductType.TUNNEL){
+                orderVo.setProductStatus(0);
+            }
             payMethod(msg, orderVo, abvo, dischargePrice, currentTimestamp);
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(currentTimestamp);
@@ -997,7 +1040,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             renewVO.setProductType(orderVo.getProductType());
             renewVO.setProductDescription(orderVo.getProductDescription());
             renewVO.setRenewAuto(true);
-            renewVO.setPricePerDay(dischargePrice.divide(BigDecimal.valueOf(30), 4, BigDecimal.ROUND_HALF_EVEN));
+            renewVO.setPricePerDay(dischargePrice.divide(BigDecimal.valueOf(30).multiply(duration), 4, BigDecimal.ROUND_HALF_EVEN));
             dbf.getEntityManager().persist(renewVO);
 
             for (String productPriceUnitUuid : productPriceUnitUuids) {
@@ -1066,12 +1109,12 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     @Transactional
-    private BigDecimal getValueblePayCash(String accountUuid, String productUuid, Timestamp currentTimestamp) {
+    private BigDecimal getValueblePayCash(String accountUuid, String productUuid) {
         BigDecimal total = BigDecimal.ZERO;
         SimpleQuery<OrderVO> query = dbf.createQuery(OrderVO.class);
         query.add(OrderVO_.accountUuid, Op.EQ, accountUuid);
         query.add(OrderVO_.productUuid, Op.EQ, productUuid);
-        query.add(OrderVO_.productEffectTimeEnd, Op.GT, currentTimestamp);
+        query.add(OrderVO_.productEffectTimeEnd, Op.GT, dbf.getCurrentSqlTime());
         query.orderBy(OrderVO_.createDate, SimpleQuery.Od.DESC);
         List<OrderVO> orderVOs = query.list();
         if (orderVOs.size() == 0) {
@@ -1081,7 +1124,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             if (orderVO.getType() == OrderType.DOWNGRADE || orderVO.getType() == OrderType.UN_SUBCRIBE) {
                 break;
             }
-            total.add(orderVO.getPayCash());
+            total = total.add(orderVO.getPayCash());
         }
 
         return total;
@@ -1142,12 +1185,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void handle(APIGetAccountBalanceMsg msg) {
-        AccountBalanceVO vo = null;
-        if (!StringUtils.isEmpty(msg.getAccountUuid())) {
-            vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        } else {
-            vo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
-        }
+        AccountBalanceVO vo =  dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
         AccountBalanceInventory inventory = AccountBalanceInventory.valueOf(vo);
         APIGetAccountBalanceReply reply = new APIGetAccountBalanceReply();
         reply.setInventory(inventory);

@@ -8,6 +8,10 @@
     </message>
 
     <message>
+        <name>org.zstack.billing.header.balance.APIGetAccountBalanceListMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.billing.header.balance.APIUpdateAccountBalanceMsg</name>
     </message>
 
@@ -91,6 +95,10 @@
 
    <message>
         <name>org.zstack.billing.header.order.APIGetProductPriceMsg</name>
+    </message>
+
+   <message>
+        <name>org.zstack.billing.header.order.APIUpdateOrderExpiredTimeMsg</name>
     </message>
 
     <message>

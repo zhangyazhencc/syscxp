@@ -38,14 +38,12 @@ public class AccountInventory {
         inv.setDescription(vo.getDescription());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
+        inv.setStatus(vo.getStatus().toString());
         inv.setEmailStatus(vo.getEmailStatus().toString());
         inv.setPhoneStatus(vo.getPhoneStatus().toString());
 
         inv.setType(vo.getType().toString());
-
-        if(vo.getIndustry() !=null){
-            inv.setIndustry(vo.getIndustry().toString());
-        }
+        inv.setIndustry(vo.getIndustry());
 
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());

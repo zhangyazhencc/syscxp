@@ -13,6 +13,10 @@
     </message>
 
     <message>
+        <name>org.zstack.tunnel.header.node.APIDeleteNodeMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.tunnel.header.node.APIQueryNodeMsg</name>
         <serviceId>query</serviceId>
     </message>
@@ -24,6 +28,10 @@
 
     <message>
         <name>org.zstack.tunnel.header.endpoint.APIUpdateEndpointMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.endpoint.APIDeleteEndpointMsg</name>
     </message>
 
     <message>

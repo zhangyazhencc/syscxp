@@ -148,36 +148,6 @@ public class AccountBase extends AbstractAccount {
     }
 
 
-    /*
-    private void handle(APIMailCodeSendMsg msg) {
-
-        JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
-        // 设定mail server
-        senderImpl.setHost(" smtp.163.com ");
-
-        // 建立邮件消息
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        // 设置收件人，寄件人 用数组发送多个邮件
-        // String[] array = new String[] {"sun111@163.com","sun222@sohu.com"};
-        // mailMessage.setTo(array);
-        mailMessage.setTo(" toEmail@sina.com ");
-        mailMessage.setFrom(" userName@163.com ");
-        mailMessage.setSubject(" 测试简单文本邮件发送！ ");
-        mailMessage.setText(" 测试我的简单邮件发送机制！！ ");
-
-        senderImpl.setUsername(" userName "); // 根据自己的情况,设置username
-        senderImpl.setPassword(" password "); // 根据自己的情况, 设置password
-
-        Properties prop = new Properties();
-        prop.put(" mail.smtp.auth ", " true "); // 将这个参数设为true，让服务器进行认证,认证用户名和密码是否正确
-        prop.put(" mail.smtp.timeout ", " 25000 ");
-        senderImpl.setJavaMailProperties(prop);
-        // 发送邮件
-        senderImpl.send(mailMessage);
-
-        System.out.println(" 邮件发送成功.. ");
-    }
-*/
     @Transactional
     private void handle(APIUpdateRoleMsg msg) {
 
@@ -201,6 +171,7 @@ public class AccountBase extends AbstractAccount {
             }
             role.setPolicySet(policySet);
         }
+
 
         role = dbf.getEntityManager().merge(role);
 
@@ -578,11 +549,6 @@ public class AccountBase extends AbstractAccount {
             }
             user.setRoleSet(roleSet);
 
-//            uprvo = new UserRoleRefVO();
-//            uprvo.setRoleUuid(msg.getRoleUuid());
-//            uprvo.setUserUuid(msg.getUuid());
-//            dbf.persist(uprvo);
-
             update = true;
         }
 
@@ -686,9 +652,9 @@ public class AccountBase extends AbstractAccount {
             uservo.setUserType(UserType.normal);
         }
 
-        if (msg.getPolicyUuid() != null) {
+        if (msg.getRoleUuid() != null) {
             Set<RoleVO> roleSet = new HashSet<>();
-            RoleVO role = dbf.findByUuid(msg.getPolicyUuid(), RoleVO.class);
+            RoleVO role = dbf.findByUuid(msg.getRoleUuid(), RoleVO.class);
             if (role != null) {
                 roleSet.add(role);
             }

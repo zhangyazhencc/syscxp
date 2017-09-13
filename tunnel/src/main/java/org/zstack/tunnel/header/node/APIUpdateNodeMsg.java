@@ -14,18 +14,32 @@ public class APIUpdateNodeMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = NodeVO.class)
     private String uuid;
-
-    @APIParam(required = false,maxLength = 255)
+    @APIParam(emptyString = false,maxLength = 255)
     private String name;
-
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String code;
-
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(required = false,maxLength = 255)
+    private String description;
+    @APIParam(emptyString = false)
+    private double longtitude;
+    @APIParam(emptyString = false)
+    private double latitude;
+    @APIParam(emptyString = false,maxLength = 128)
     private String property;
-
-    @APIParam(required = false,validValues = {"CLOSE", "OPEN","AVAILABLE"})
+    @APIParam(emptyString = false,maxLength = 128)
+    private String province;
+    @APIParam(emptyString = false,maxLength = 128)
+    private String city;
+    @APIParam(emptyString = false,maxLength = 256)
+    private String address;
+    @APIParam(emptyString = false,maxLength = 128)
+    private String contact;
+    @APIParam(emptyString = false,maxLength = 32)
+    private String telephone;
+    @APIParam(emptyString = false,validValues = {"CLOSE", "OPEN","AVAILABLE"})
     private NodeStatus status;
+    @APIParam(required = false,maxLength = 32)
+    private String extensionInfoUuid;
 
     public String getUuid() {
         return uuid;
@@ -51,6 +65,30 @@ public class APIUpdateNodeMsg extends APIMessage {
         this.code = code;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public double getLongtitude() {
+        return longtitude;
+    }
+
+    public void setLongtitude(double longtitude) {
+        this.longtitude = longtitude;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
     public String getProperty() {
         return property;
     }
@@ -59,11 +97,59 @@ public class APIUpdateNodeMsg extends APIMessage {
         this.property = property;
     }
 
+    public String getProvince() {
+        return province;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    public String getCity() {
+        return city;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public String getContact() {
+        return contact;
+    }
+
+    public void setContact(String contact) {
+        this.contact = contact;
+    }
+
+    public String getTelephone() {
+        return telephone;
+    }
+
+    public void setTelephone(String telephone) {
+        this.telephone = telephone;
+    }
+
     public NodeStatus getStatus() {
         return status;
     }
 
     public void setStatus(NodeStatus status) {
         this.status = status;
+    }
+
+    public String getExtensionInfoUuid() {
+        return extensionInfoUuid;
+    }
+
+    public void setExtensionInfoUuid(String extensionInfoUuid) {
+        this.extensionInfoUuid = extensionInfoUuid;
     }
 }

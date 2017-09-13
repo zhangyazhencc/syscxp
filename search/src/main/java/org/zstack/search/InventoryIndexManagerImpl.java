@@ -39,7 +39,6 @@ import org.zstack.utils.data.Pair;
 import org.zstack.utils.function.Function;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.utils.path.PathUtil;
-import sun.net.www.content.text.plain;
 
 import javax.persistence.*;
 import java.io.File;

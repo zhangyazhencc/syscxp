@@ -47,6 +47,11 @@ public class EndpointAO {
     @Column
     private Timestamp lastOpDate;
 
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
+
     @Column
     private Timestamp createDate;
 

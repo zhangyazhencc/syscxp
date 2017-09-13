@@ -5,6 +5,5 @@ package org.zstack.tunnel.header.node;
  */
 public enum NodeStatus {
     CLOSE,
-    OPEN,
-    AVAILABLE
+    OPEN
 }

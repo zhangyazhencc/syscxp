@@ -186,7 +186,4 @@
         <name>org.zstack.account.header.identity.APIUpdateRoleMsg</name>
     </message>
 
-
-
-
 </service>

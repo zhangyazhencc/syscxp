@@ -37,7 +37,7 @@ public class APICreateNodeMsg extends APIMessage {
     private String contact;
     @APIParam(emptyString = false,maxLength = 32)
     private String telephone;
-    @APIParam(emptyString = false,validValues = {"CLOSE", "OPEN","AVAILABLE"})
+    @APIParam(emptyString = false,validValues = {"CLOSE", "OPEN"})
     private NodeStatus status;
     @APIParam(required = false,maxLength = 32)
     private String extensionInfoUuid;

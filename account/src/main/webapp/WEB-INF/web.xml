@@ -7,7 +7,7 @@
     <absolute-ordering />
     
     <servlet>
-        <servlet-name>Account Dispatcher Servlet</servlet-name>
+        <servlet-name>Syscxp Dispatcher Servlet</servlet-name>
         <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
         <init-param>
             <param-name>contextConfigLocation</param-name>
@@ -27,7 +27,7 @@
     </context-param>
     
     <servlet-mapping>
-        <servlet-name>Account Dispatcher Servlet</servlet-name>
+        <servlet-name>Syscxp Dispatcher Servlet</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
 
@@ -35,6 +35,17 @@
         <servlet-name>default</servlet-name>
         <url-pattern>/static/*</url-pattern>
     </servlet-mapping>
+
+    <filter>
+        <filter-name>UrlRewriteFilter</filter-name>
+        <filter-class>org.tuckey.web.filters.urlrewrite.UrlRewriteFilter</filter-class>
+    </filter>
+    <filter-mapping>
+        <filter-name>UrlRewriteFilter</filter-name>
+        <url-pattern>/static/*</url-pattern>
+        <dispatcher>REQUEST</dispatcher>
+        <dispatcher>FORWARD</dispatcher>
+    </filter-mapping>
 
     <!-- NOTE: this listener must be put as the first listener to execute, don't change the order !!! -->
     <listener>
