@@ -31,6 +31,10 @@
     </message>
 
     <message>
+        <name>org.zstack.tunnel.header.endpoint.APIDeleteEndpointMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.tunnel.header.endpoint.APIQueryEndpointMsg</name>
         <serviceId>query</serviceId>
     </message>
