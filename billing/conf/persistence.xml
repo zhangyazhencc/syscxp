@@ -20,5 +20,6 @@
         <class>org.zstack.billing.header.balance.DealDetailVO</class>
         <class>org.zstack.billing.header.sla.SLACompensateVO</class>
         <class>org.zstack.billing.header.balance.AccountDischargeVO</class>
+        <class>org.zstack.billing.header.order.ProductPriceUnitVO</class>
     </persistence-unit>
 </persistence>
