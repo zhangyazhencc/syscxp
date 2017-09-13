@@ -1,6 +1,8 @@
 package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.account.header.identity.APICheckApiPermissionMsg;
 import org.zstack.account.header.identity.APICheckApiPermissionReply;
@@ -119,9 +121,41 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIUserPWDBackMsg) msg);
         } else if(msg instanceof APIVerifyRepetitionMsg){
             handle((APIVerifyRepetitionMsg) msg);
+        } else if(msg instanceof APIMailCodeSendMsg){
+            handle((APIMailCodeSendMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIMailCodeSendMsg msg) {
+
+        JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
+        // 设定mail server
+        senderImpl.setHost(" smtp.163.com ");
+        // 建立邮件消息
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        // 设置收件人，寄件人 用数组发送多个邮件
+        // String[] array = new String[] {"sun111@163.com","sun222@sohu.com"};
+        // mailMessage.setTo(array);
+        mailMessage.setTo(msg.getMail());
+        mailMessage.setFrom("wangwg@syscloud.cn");
+        mailMessage.setSubject("验证码");
+        mailMessage.setText(String.valueOf(new Random().nextInt(1000000)));
+
+        senderImpl.setUsername("wangwg@syscloud.cn");
+        senderImpl.setPassword("wang88v5");
+
+        Properties prop = new Properties();
+        prop.put(" mail.smtp.auth ", " true "); // 将这个参数设为true，让服务器进行认证,认证用户名和密码是否正确
+        prop.put(" mail.smtp.timeout ", " 25000 ");
+        senderImpl.setJavaMailProperties(prop);
+        // 发送邮件
+        senderImpl.send(mailMessage);
+        logger.debug("发送成功！");
+        APIMailCodeSendReply reply = new APIMailCodeSendReply();
+        bus.reply(msg, reply);
+
     }
 
     private void handle(APIVerifyRepetitionMsg msg) {
