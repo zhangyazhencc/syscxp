@@ -8,7 +8,7 @@ import org.zstack.tunnel.header.switchs.SwitchPortType;
 /**
  * Created by DCY on 2017-09-08
  */
-public class APICreateInterfaceNassMsg extends APIMessage {
+public class APICreateInterfaceMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
