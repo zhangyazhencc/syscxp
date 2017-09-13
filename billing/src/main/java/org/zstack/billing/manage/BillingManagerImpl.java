@@ -42,6 +42,7 @@ import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
+import javax.management.relation.RoleUnresolved;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
@@ -130,9 +131,28 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIGetProductPriceMsg) msg);
         } else if (msg instanceof APIGetAccountBalanceListMsg) {
             handle((APIGetAccountBalanceListMsg) msg);
+        }  else if (msg instanceof APIUpdateOrderExpiredTimeMsg) {
+            handle((APIUpdateOrderExpiredTimeMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIUpdateOrderExpiredTimeMsg msg) {
+        SimpleQuery<OrderVO> query = dbf.createQuery(OrderVO.class);
+        query.add(OrderVO_.productUuid, Op.EQ, msg.getProductUuid());
+        query.add(OrderVO_.productStatus, Op.EQ, 0);
+        OrderVO orderVO = query.find();
+        if(orderVO == null){
+            throw new RuntimeException("cannot find the order");
+        }
+        orderVO.setProductEffectTimeStart(msg.getStartTime());
+        orderVO.setProductEffectTimeEnd(msg.getEndTime());
+        orderVO.setProductStatus(1);
+        dbf.updateAndRefresh(orderVO);
+        APIUpdateOrderExpiredTimeEvent event = new APIUpdateOrderExpiredTimeEvent();
+        event.setInventory(OrderInventory.valueOf(orderVO));
+        bus.publish(event);
     }
 
     private void handle(APIGetAccountBalanceListMsg msg) {
@@ -1001,6 +1021,9 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             orderVo.setOriginalPrice(originalPrice);
             orderVo.setPrice(dischargePrice);
             orderVo.setType(OrderType.BUY);
+            if(msg.getProductType() == ProductType.TUNNEL){
+                orderVo.setProductStatus(0);
+            }
             payMethod(msg, orderVo, abvo, dischargePrice, currentTimestamp);
             Calendar calendar = Calendar.getInstance();
             calendar.setTime(currentTimestamp);
