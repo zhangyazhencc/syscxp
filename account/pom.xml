@@ -157,9 +157,8 @@
                                     <type>${project.packaging}</type>
                                 </artifactItem>
                             </artifactItems>
-                            <!--   <outputDirectory>${dist.console.war.dir}</outputDirectory>   -->
                             <!--指定war包保存地址-->
-                            <outputDirectory>${parent.relativePath}/build/target</outputDirectory>
+                            <outputDirectory>${parent.relativePath}/build/target/</outputDirectory>
                             <includes>
                                 <include>*.war</include>
                             </includes>
