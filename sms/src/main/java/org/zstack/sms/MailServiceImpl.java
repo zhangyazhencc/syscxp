@@ -26,8 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
-import static org.zstack.core.Platform.argerr;
-
 
 public class MailServiceImpl extends AbstractService implements MailService, ApiMessageInterceptor {
 
