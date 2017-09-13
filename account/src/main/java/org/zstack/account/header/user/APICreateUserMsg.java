@@ -26,8 +26,9 @@ public class APICreateUserMsg extends APIMessage implements AccountMessage {
     private String department;
     @APIParam(maxLength = 255, required = false)
     private String description;
+
     @APIParam(maxLength = 255, required = false)
-    private String policyUuid;
+    private String roleUuid;
 
     @APIParam(maxLength = 32, required = false)
     private UserType userType;
@@ -93,12 +94,12 @@ public class APICreateUserMsg extends APIMessage implements AccountMessage {
         this.department = department;
     }
 
-    public String getPolicyUuid() {
-        return policyUuid;
+    public String getRoleUuid() {
+        return roleUuid;
     }
 
-    public void setPolicyUuid(String policyUuid) {
-        this.policyUuid = policyUuid;
+    public void setRoleUuid(String roleUuid) {
+        this.roleUuid = roleUuid;
     }
 
     public ApiNotification __notification__() {

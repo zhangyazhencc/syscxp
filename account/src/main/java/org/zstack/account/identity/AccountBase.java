@@ -652,9 +652,9 @@ public class AccountBase extends AbstractAccount {
             uservo.setUserType(UserType.normal);
         }
 
-        if (msg.getPolicyUuid() != null) {
+        if (msg.getRoleUuid() != null) {
             Set<RoleVO> roleSet = new HashSet<>();
-            RoleVO role = dbf.findByUuid(msg.getPolicyUuid(), RoleVO.class);
+            RoleVO role = dbf.findByUuid(msg.getRoleUuid(), RoleVO.class);
             if (role != null) {
                 roleSet.add(role);
             }
