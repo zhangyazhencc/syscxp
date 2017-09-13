@@ -38,6 +38,7 @@ public class AccountInventory {
         inv.setDescription(vo.getDescription());
         inv.setEmail(vo.getEmail());
         inv.setPhone(vo.getPhone());
+        inv.setStatus(vo.getStatus().toString());
         inv.setEmailStatus(vo.getEmailStatus().toString());
         inv.setPhoneStatus(vo.getPhoneStatus().toString());
 

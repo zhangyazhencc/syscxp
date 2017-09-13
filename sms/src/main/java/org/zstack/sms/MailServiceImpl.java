@@ -61,9 +61,30 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
         if (msg instanceof APIGetVerificationCodeMsg) {
             handle((APIMailCodeSendMsg) msg);
+        }else if (msg instanceof APIValidateMailCodeMsg) {
+            handle((APIValidateMailCodeMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void  handle(APIValidateMailCodeMsg msg){
+        APIValidateVerificationCodeReply reply = new APIValidateVerificationCodeReply();
+
+        boolean valid = false;
+        VerificationCode verificationCode = sessions.get(msg.getMail());
+        if (verificationCode == null){
+        }else{
+            Timestamp curr = new Timestamp(System.currentTimeMillis());
+            if (curr.before(verificationCode.expiredDate) && msg.getCode().equals(verificationCode.code)) {
+                valid = true;
+            }else{
+            }
+        }
+
+        reply.setValid(valid);
+
+        bus.reply(msg, reply);
     }
 
     private void  handle(APIMailCodeSendMsg msg){
@@ -79,8 +100,8 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
         senderImpl.setUsername(MailGlobalProperty.USERNAME);
         senderImpl.setPassword(MailGlobalProperty.PASSWORD);
         Properties prop = new Properties();
-        prop.put(" mail.smtp.auth ", " true "); // 将这个参数设为true，让服务器进行认证,认证用户名和密码是否正确
-        prop.put(" mail.smtp.timeout ", " 25000 ");
+        prop.put(" mail.smtp.auth ", "true"); // 将这个参数设为true，让服务器进行认证,认证用户名和密码是否正确
+        prop.put(" mail.smtp.timeout ", "25000");
         senderImpl.setJavaMailProperties(prop);
 
         senderImpl.send(mailMessage);

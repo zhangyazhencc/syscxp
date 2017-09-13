@@ -7,4 +7,8 @@
         <name>org.zstack.sms.header.APIMailCodeSendMsg</name>
     </message>
 
+    <message>
+        <name>org.zstack.sms.header.APIValidateMailCodeMsg</name>
+    </message>
+
 </service>
