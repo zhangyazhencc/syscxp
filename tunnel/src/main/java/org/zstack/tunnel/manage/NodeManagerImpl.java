@@ -18,6 +18,8 @@ import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.tunnel.header.endpoint.*;
+import org.zstack.tunnel.header.host.HostEO;
+import org.zstack.tunnel.header.host.HostInventory;
 import org.zstack.tunnel.header.node.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
@@ -27,7 +29,7 @@ import static org.zstack.core.Platform.argerr;
 /**
  * Created by DCY on 2017-09-07
  */
-public class NodeManagerImpl  extends AbstractService implements NodeManager,ApiMessageInterceptor {
+public class NodeManagerImpl extends AbstractService implements NodeManager, ApiMessageInterceptor {
 
     private static final CLogger logger = Utils.getLogger(NodeManagerImpl.class);
 
@@ -65,20 +67,22 @@ public class NodeManagerImpl  extends AbstractService implements NodeManager,Api
     }
 
     private void handleApiMessage(APIMessage msg) {
-        if(msg instanceof APICreateNodeMsg){
+        if (msg instanceof APICreateNodeMsg) {
             handle((APICreateNodeMsg) msg);
-        }else if(msg instanceof APIUpdateNodeMsg){
+        } else if (msg instanceof APIUpdateNodeMsg) {
             handle((APIUpdateNodeMsg) msg);
-        }else if(msg instanceof APICreateEndpointMsg){
+        } else if (msg instanceof APIDeleteNodeMsg) {
+            handle((APIDeleteNodeMsg) msg);
+        } else if (msg instanceof APICreateEndpointMsg) {
             handle((APICreateEndpointMsg) msg);
-        }else if(msg instanceof APIUpdateEndpointMsg){
+        } else if (msg instanceof APIUpdateEndpointMsg) {
             handle((APIUpdateEndpointMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APICreateNodeMsg msg){
+    private void handle(APICreateNodeMsg msg) {
         NodeVO vo = new NodeVO();
 
         vo.setUuid(Platform.getUuid());
@@ -93,14 +97,14 @@ public class NodeManagerImpl  extends AbstractService implements NodeManager,Api
         vo.setContact(msg.getContact());
         vo.setTelephone(msg.getTelephone());
         vo.setStatus(msg.getStatus());
-        if(msg.getExtensionInfoUuid() != null){
+        if (msg.getExtensionInfoUuid() != null) {
             vo.setExtensionInfoUuid(msg.getExtensionInfoUuid());
-        }else{
+        } else {
             vo.setExtensionInfoUuid(null);
         }
-        if(msg.getDescription() != null){
+        if (msg.getDescription() != null) {
             vo.setDescription(msg.getDescription());
-        }else{
+        } else {
             vo.setDescription(null);
         }
 
@@ -111,8 +115,8 @@ public class NodeManagerImpl  extends AbstractService implements NodeManager,Api
         bus.publish(evt);
     }
 
-    private void handle(APIUpdateNodeMsg msg){
-        NodeVO vo = dbf.findByUuid(msg.getUuid(),NodeVO.class);
+    private void handle(APIUpdateNodeMsg msg) {
+        NodeVO vo = dbf.findByUuid(msg.getUuid(), NodeVO.class);
 
         vo.setCode(msg.getCode());
         vo.setName(msg.getName());
@@ -125,14 +129,14 @@ public class NodeManagerImpl  extends AbstractService implements NodeManager,Api
         vo.setContact(msg.getContact());
         vo.setTelephone(msg.getTelephone());
         vo.setStatus(msg.getStatus());
-        if(msg.getExtensionInfoUuid() != null){
+        if (msg.getExtensionInfoUuid() != null) {
             vo.setExtensionInfoUuid(msg.getExtensionInfoUuid());
-        }else{
+        } else {
             vo.setExtensionInfoUuid(null);
         }
-        if(msg.getDescription() != null){
+        if (msg.getDescription() != null) {
             vo.setDescription(msg.getDescription());
-        }else{
+        } else {
             vo.setDescription(null);
         }
 
@@ -143,7 +147,21 @@ public class NodeManagerImpl  extends AbstractService implements NodeManager,Api
         bus.publish(evt);
     }
 
-    private void handle(APICreateEndpointMsg msg){
+    private void handle(APIDeleteNodeMsg msg) {
+        String uuid = msg.getUuid();
+        NodeEO eo = dbf.findByUuid(uuid, NodeEO.class);
+        eo.setDeleted(1);
+
+        if (eo != null) {
+            dbf.update(eo);
+        }
+
+        // NodeInventory inventory = NodeInventory.valueOf(eo);
+        APIDeleteNodeEvent event = new APIDeleteNodeEvent(msg.getId());
+        bus.publish(event);
+    }
+
+    private void handle(APICreateEndpointMsg msg) {
         EndpointVO vo = new EndpointVO();
 
         vo.setUuid(Platform.getUuid());
@@ -154,9 +172,9 @@ public class NodeManagerImpl  extends AbstractService implements NodeManager,Api
         vo.setEnabled(1);
         vo.setOpenToCustomers(0);
         vo.setStatus(EndpointStatus.NORMAL);
-        if(msg.getDescription() != null){
+        if (msg.getDescription() != null) {
             vo.setDescription(msg.getDescription());
-        }else{
+        } else {
             vo.setDescription(null);
         }
 
@@ -167,22 +185,22 @@ public class NodeManagerImpl  extends AbstractService implements NodeManager,Api
         bus.publish(evt);
     }
 
-    private void handle(APIUpdateEndpointMsg msg){
-        EndpointVO vo = dbf.findByUuid(msg.getUuid(),EndpointVO.class);
+    private void handle(APIUpdateEndpointMsg msg) {
+        EndpointVO vo = dbf.findByUuid(msg.getUuid(), EndpointVO.class);
         boolean update = false;
-        if(msg.getName() != null){
+        if (msg.getName() != null) {
             vo.setName(msg.getName());
             update = true;
         }
-        if(msg.getCode() != null){
+        if (msg.getCode() != null) {
             vo.setCode(msg.getCode());
             update = true;
         }
-        if(msg.getEnabled() != null){
+        if (msg.getEnabled() != null) {
             vo.setEnabled(msg.getEnabled());
             update = true;
         }
-        if(msg.getOpenToCustomers() != null){
+        if (msg.getOpenToCustomers() != null) {
             vo.setOpenToCustomers(msg.getOpenToCustomers());
             update = true;
         }
@@ -212,75 +230,75 @@ public class NodeManagerImpl  extends AbstractService implements NodeManager,Api
 
     @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        if(msg instanceof APICreateNodeMsg){
+        if (msg instanceof APICreateNodeMsg) {
             validate((APICreateNodeMsg) msg);
-        }else if(msg instanceof APIUpdateNodeMsg){
+        } else if (msg instanceof APIUpdateNodeMsg) {
             validate((APIUpdateNodeMsg) msg);
-        }else if(msg instanceof APICreateEndpointMsg){
+        } else if (msg instanceof APICreateEndpointMsg) {
             validate((APICreateEndpointMsg) msg);
-        }else if(msg instanceof APIUpdateEndpointMsg){
+        } else if (msg instanceof APIUpdateEndpointMsg) {
             validate((APIUpdateEndpointMsg) msg);
         }
         return msg;
     }
 
-    private void validate(APICreateNodeMsg msg){
+    private void validate(APICreateNodeMsg msg) {
         //判断code是否已经存在
         SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
         q.add(NodeVO_.code, SimpleQuery.Op.EQ, msg.getCode());
-        if(q.isExists()){
-            throw new ApiMessageInterceptionException(argerr("node's code %s is already exist ",msg.getCode()));
+        if (q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("node's code %s is already exist ", msg.getCode()));
         }
     }
 
-    private void validate(APIUpdateNodeMsg msg){
+    private void validate(APIUpdateNodeMsg msg) {
         //判断所修改的节点是否存在
         SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
         q.add(NodeVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
         if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("node %s is not exist ",msg.getUuid()));
+            throw new ApiMessageInterceptionException(argerr("node %s is not exist ", msg.getUuid()));
         }
         //判断code是否已经存在
-        if(msg.getCode() != null){
+        if (msg.getCode() != null) {
             SimpleQuery<NodeVO> q2 = dbf.createQuery(NodeVO.class);
             q2.add(NodeVO_.code, SimpleQuery.Op.EQ, msg.getCode());
             q2.add(NodeVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
-            if(q2.isExists()){
-                throw new ApiMessageInterceptionException(argerr("node's code %s is already exist ",msg.getCode()));
+            if (q2.isExists()) {
+                throw new ApiMessageInterceptionException(argerr("node's code %s is already exist ", msg.getCode()));
             }
         }
 
     }
 
-    private void validate(APICreateEndpointMsg msg){
+    private void validate(APICreateEndpointMsg msg) {
         //判断code是否已经存在
         SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
         q.add(EndpointVO_.code, SimpleQuery.Op.EQ, msg.getCode());
-        if(q.isExists()){
-            throw new ApiMessageInterceptionException(argerr("endpoint's code %s is already exist ",msg.getCode()));
+        if (q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("endpoint's code %s is already exist ", msg.getCode()));
         }
         //判断连接点所属节点是否存在
         SimpleQuery<NodeVO> q2 = dbf.createQuery(NodeVO.class);
         q2.add(NodeVO_.uuid, SimpleQuery.Op.EQ, msg.getNodeUuid());
         if (!q2.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("node %s is not exist ",msg.getNodeUuid()));
+            throw new ApiMessageInterceptionException(argerr("node %s is not exist ", msg.getNodeUuid()));
         }
     }
 
-    private void validate(APIUpdateEndpointMsg msg){
+    private void validate(APIUpdateEndpointMsg msg) {
         //判断所修改的连接点是否存在
         SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
         q.add(EndpointVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
         if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("endpoint %s is not exist ",msg.getUuid()));
+            throw new ApiMessageInterceptionException(argerr("endpoint %s is not exist ", msg.getUuid()));
         }
         //判断code是否已经存在
-        if(msg.getCode() != null){
+        if (msg.getCode() != null) {
             SimpleQuery<EndpointVO> q2 = dbf.createQuery(EndpointVO.class);
             q2.add(EndpointVO_.code, SimpleQuery.Op.EQ, msg.getCode());
             q2.add(EndpointVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
-            if(q2.isExists()){
-                throw new ApiMessageInterceptionException(argerr("endpoint's code %s is already exist ",msg.getCode()));
+            if (q2.isExists()) {
+                throw new ApiMessageInterceptionException(argerr("endpoint's code %s is already exist ", msg.getCode()));
             }
         }
 
