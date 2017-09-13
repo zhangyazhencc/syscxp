@@ -77,6 +77,9 @@ public class OrderVO {
     @Column
     private int duration;
 
+    @Column
+    private int productStatus;
+
     public String getUuid() {
         return uuid;
     }
@@ -227,6 +230,14 @@ public class OrderVO {
 
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public int getProductStatus() {
+        return productStatus;
+    }
+
+    public void setProductStatus(int productStatus) {
+        this.productStatus = productStatus;
     }
 
     @PreUpdate

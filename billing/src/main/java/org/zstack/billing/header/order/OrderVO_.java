@@ -29,6 +29,7 @@ public class OrderVO_ {
     public static volatile SingularAttribute<OrderVO, BigDecimal> originalPrice;
     public static volatile SingularAttribute<OrderVO, String> productUuid;
     public static volatile SingularAttribute<OrderVO, Integer> duration;
+    public static volatile SingularAttribute<OrderVO, Integer> productStatus;
     public static volatile SingularAttribute<OrderVO, String> productUnitPriceUuid;
 
 }
