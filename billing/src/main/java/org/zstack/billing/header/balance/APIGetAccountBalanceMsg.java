@@ -8,7 +8,7 @@ import org.zstack.header.message.APISyncCallMessage;
 @Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
 public class APIGetAccountBalanceMsg extends APISyncCallMessage {
 
-    @APIParam(required = false,resourceType = AccountBalanceVO.class)
+    @APIParam(required = false)
     private String accountUuid;
 
     public String getAccountUuid() {
