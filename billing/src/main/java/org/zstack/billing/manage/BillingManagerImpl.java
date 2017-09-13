@@ -128,9 +128,22 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIDeleteSLACompensateMsg) msg);
         } else if (msg instanceof APIGetProductPriceMsg) {
             handle((APIGetProductPriceMsg) msg);
+        } else if (msg instanceof APIGetAccountBalanceListMsg) {
+            handle((APIGetAccountBalanceListMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetAccountBalanceListMsg msg) {
+        List<String> accountUuids = msg.getAccountUuids();
+        SimpleQuery<AccountBalanceVO> query = dbf.createQuery(AccountBalanceVO.class);
+        query.add(AccountBalanceVO_.uuid, Op.IN, accountUuids);
+        List<AccountBalanceVO> accountBalanceVOs = query.list();
+        List<AccountBalanceInventory> accountBalanceInventories = AccountBalanceInventory.valueOf(accountBalanceVOs);
+        APIGetAccountBalanceListReply reply = new APIGetAccountBalanceListReply();
+        reply.setInventories(accountBalanceInventories);
+        bus.reply(msg,reply);
     }
 
     private void handle(APIGetProductPriceMsg msg) {
@@ -1149,12 +1162,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void handle(APIGetAccountBalanceMsg msg) {
-        AccountBalanceVO vo = null;
-        if (!StringUtils.isEmpty(msg.getAccountUuid())) {
-            vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        } else {
-            vo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
-        }
+        AccountBalanceVO vo =  dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
         AccountBalanceInventory inventory = AccountBalanceInventory.valueOf(vo);
         APIGetAccountBalanceReply reply = new APIGetAccountBalanceReply();
         reply.setInventory(inventory);
