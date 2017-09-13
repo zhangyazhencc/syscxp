@@ -45,9 +45,6 @@ public class SwitchAO {
     private SwitchStatus status;
 
     @Column
-    private Integer isPrivate;
-
-    @Column
     private Timestamp lastOpDate;
 
     @Column
@@ -128,14 +125,6 @@ public class SwitchAO {
 
     public void setStatus(SwitchStatus status) {
         this.status = status;
-    }
-
-    public Integer getIsPrivate() {
-        return isPrivate;
-    }
-
-    public void setIsPrivate(Integer isPrivate) {
-        this.isPrivate = isPrivate;
     }
 
     public Timestamp getLastOpDate() {

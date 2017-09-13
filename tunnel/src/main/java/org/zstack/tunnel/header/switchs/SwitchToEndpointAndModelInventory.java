@@ -18,13 +18,12 @@ public class SwitchToEndpointAndModelInventory {
     private EndpointInventory endpoint;
     private String code;
     private String name;
-    private String switchAttributionUuid;
-    private PhysicalSwitchToModelInventory switchAttribution;
+    private String physicalSwitchUuid;
+    private PhysicalSwitchToModelInventory physicalSwitch;
     private SwitchUpperType upperType;
     private Integer enabled;
     private String description;
     private SwitchStatus status;
-    private Integer isPrivate;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -36,13 +35,12 @@ public class SwitchToEndpointAndModelInventory {
         inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpoint()));
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
-        inv.setSwitchAttributionUuid(vo.getPhysicalSwitchUuid());
-        inv.setSwitchAttribution(PhysicalSwitchToModelInventory.valueOf(vo.getPhysicalSwitch()));
+        inv.setPhysicalSwitchUuid(vo.getPhysicalSwitchUuid());
+        inv.setPhysicalSwitch(PhysicalSwitchToModelInventory.valueOf(vo.getPhysicalSwitch()));
         inv.setUpperType(vo.getUpperType());
         inv.setEnabled(vo.getEnabled());
         inv.setDescription(vo.getDescription());
         inv.setStatus(vo.getStatus());
-        inv.setIsPrivate(vo.getIsPrivate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
 
@@ -97,20 +95,20 @@ public class SwitchToEndpointAndModelInventory {
         this.name = name;
     }
 
-    public String getSwitchAttributionUuid() {
-        return switchAttributionUuid;
+    public String getPhysicalSwitchUuid() {
+        return physicalSwitchUuid;
     }
 
-    public void setSwitchAttributionUuid(String switchAttributionUuid) {
-        this.switchAttributionUuid = switchAttributionUuid;
+    public void setPhysicalSwitchUuid(String physicalSwitchUuid) {
+        this.physicalSwitchUuid = physicalSwitchUuid;
     }
 
-    public PhysicalSwitchToModelInventory getSwitchAttribution() {
-        return switchAttribution;
+    public PhysicalSwitchToModelInventory getPhysicalSwitch() {
+        return physicalSwitch;
     }
 
-    public void setSwitchAttribution(PhysicalSwitchToModelInventory switchAttribution) {
-        this.switchAttribution = switchAttribution;
+    public void setPhysicalSwitch(PhysicalSwitchToModelInventory physicalSwitch) {
+        this.physicalSwitch = physicalSwitch;
     }
 
     public SwitchUpperType getUpperType() {
@@ -143,14 +141,6 @@ public class SwitchToEndpointAndModelInventory {
 
     public void setStatus(SwitchStatus status) {
         this.status = status;
-    }
-
-    public Integer getIsPrivate() {
-        return isPrivate;
-    }
-
-    public void setIsPrivate(Integer isPrivate) {
-        this.isPrivate = isPrivate;
     }
 
     public Timestamp getLastOpDate() {

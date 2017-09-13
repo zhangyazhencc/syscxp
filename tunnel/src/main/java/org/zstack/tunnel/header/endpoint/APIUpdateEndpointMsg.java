@@ -15,17 +15,20 @@ public class APIUpdateEndpointMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
     private String uuid;
 
-    @APIParam(required = false,maxLength = 255)
+    @APIParam(emptyString = false,maxLength = 255)
     private String name;
 
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String code;
 
-    @APIParam(required = false)
+    @APIParam(emptyString = false,maxLength = 1)
     private Integer enabled;
 
-    @APIParam(required = false)
-    private Integer openToCustomers;
+    @APIParam(emptyString = false,maxLength = 1)
+    public Integer openToCustomers;
+
+    @APIParam(required = false,maxLength = 255)
+    private String description;
 
     public String getUuid() {
         return uuid;
@@ -33,6 +36,23 @@ public class APIUpdateEndpointMsg extends APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
     }
 
     public Integer getEnabled() {
@@ -51,19 +71,11 @@ public class APIUpdateEndpointMsg extends APIMessage {
         this.openToCustomers = openToCustomers;
     }
 
-    public String getName() {
-        return name;
+    public String getDescription() {
+        return description;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

@@ -8,7 +8,7 @@ import org.zstack.core.GlobalPropertyDefinition;
 @GlobalPropertyDefinition
 public class MailGlobalProperty {
 
-    @GlobalProperty(name = "host", defaultValue = "smtp.163.com")
+    @GlobalProperty(name = "host", defaultValue = "smtp.exmail.qq.com")
     public static String HOST;
 
     @GlobalProperty(name = "from", defaultValue = "wangwg@syscloud.cn")

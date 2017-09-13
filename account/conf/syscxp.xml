@@ -52,4 +52,5 @@
     <import resource="springConfigXml/NotificationManager.xml"/>
     <import resource="springConfigXml/Sms.xml"/>
     <import resource="springConfigXml/Mail.xml"/>
+
 </beans>

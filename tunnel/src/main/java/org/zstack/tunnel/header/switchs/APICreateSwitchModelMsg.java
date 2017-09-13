@@ -14,7 +14,7 @@ public class APICreateSwitchModelMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 128)
     private String model;
-    @APIParam(maxLength = 128)
+    @APIParam(required = false,maxLength = 128)
     private String subModel;
     @APIParam(emptyString = false)
     private Integer mpls;

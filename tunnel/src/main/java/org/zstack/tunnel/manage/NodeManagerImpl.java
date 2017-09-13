@@ -77,6 +77,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APICreateEndpointMsg) msg);
         } else if (msg instanceof APIUpdateEndpointMsg) {
             handle((APIUpdateEndpointMsg) msg);
+        } else if (msg instanceof APIDeleteEndpointMsg) {
+            handle((APIDeleteEndpointMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -187,30 +189,31 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIUpdateEndpointMsg msg) {
         EndpointVO vo = dbf.findByUuid(msg.getUuid(), EndpointVO.class);
-        boolean update = false;
-        if (msg.getName() != null) {
-            vo.setName(msg.getName());
-            update = true;
-        }
-        if (msg.getCode() != null) {
-            vo.setCode(msg.getCode());
-            update = true;
-        }
-        if (msg.getEnabled() != null) {
-            vo.setEnabled(msg.getEnabled());
-            update = true;
-        }
-        if (msg.getOpenToCustomers() != null) {
-            vo.setOpenToCustomers(msg.getOpenToCustomers());
-            update = true;
-        }
 
-        if (update)
-            vo = dbf.updateAndRefresh(vo);
+        vo.setName(msg.getName());
+        vo.setCode(msg.getCode());
+        vo.setEnabled(msg.getEnabled());
+        vo.setOpenToCustomers(msg.getOpenToCustomers());
+
+        vo = dbf.updateAndRefresh(vo);
 
         APIUpdateEndpointEvent evt = new APIUpdateEndpointEvent(msg.getId());
         evt.setInventory(EndpointInventory.valueOf(vo));
         bus.publish(evt);
+    }
+
+    private void handle(APIDeleteEndpointMsg msg) {
+        String uuid = msg.getUuid();
+        EndpointEO eo = dbf.findByUuid(uuid, EndpointEO.class);
+        eo.setDeleted(1);
+
+        if (eo != null) {
+            dbf.update(eo);
+        }
+
+        // NodeInventory inventory = NodeInventory.valueOf(eo);
+        APIDeleteNodeEvent event = new APIDeleteNodeEvent(msg.getId());
+        bus.publish(event);
     }
 
     @Override

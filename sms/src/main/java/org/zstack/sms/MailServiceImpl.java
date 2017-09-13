@@ -57,7 +57,7 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
     public void handleMessage(Message msg) {
 
-        if (msg instanceof APIGetVerificationCodeMsg) {
+        if (msg instanceof APIMailCodeSendMsg) {
             handle((APIMailCodeSendMsg) msg);
         }else if (msg instanceof APIValidateMailCodeMsg) {
             handle((APIValidateMailCodeMsg) msg);
