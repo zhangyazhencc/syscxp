@@ -17,7 +17,7 @@ public class SwitchVO extends SwitchAO {
     @JoinColumn(name="endpointUuid", insertable=false, updatable=false)
     private EndpointVO endpoint;
 
-    @OneToOne(fetch= FetchType.EAGER)
+    @ManyToOne(fetch= FetchType.EAGER)
     @JoinColumn(name="physicalSwitchUuid", insertable=false, updatable=false)
     private PhysicalSwitchVO physicalSwitch;
 

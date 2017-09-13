@@ -18,7 +18,6 @@ public class SwitchAO_ {
     public static volatile SingularAttribute<SwitchAO, Integer> enabled;
     public static volatile SingularAttribute<SwitchAO, String> description;
     public static volatile SingularAttribute<SwitchAO, SwitchStatus> status;
-    public static volatile SingularAttribute<SwitchAO, Integer> isPrivate;
     public static volatile SingularAttribute<SwitchAO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<SwitchAO, Timestamp> createDate;
 }

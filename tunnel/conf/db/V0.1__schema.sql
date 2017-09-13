@@ -111,7 +111,7 @@ CREATE TABLE  `syscxp_tunnel`.`NodeEO` (
   `longtitude` DECIMAL(10,5) NOT NULL COMMENT '经度',
   `latitude` DECIMAL(10,5) NOT NULL COMMENT '纬度',
   `property` varchar(128) NOT NULL COMMENT '节点类型',
-  `status` varchar(16) NOT NULL COMMENT '是否开放',
+  `status` varchar(16) NOT NULL COMMENT '是否开放,官网展示用的',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `extensionInfoUuid` varchar(32)  DEFAULT NULL COMMENT '节点额外信息',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
@@ -175,7 +175,7 @@ CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, switchModelUuid, name, code, brand, owner, type, rack, description, mIP, localIP, username, password, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, nodeUuid, switchModelUuid, name, code, brand, owner, type, rack, description, mIP, localIP, username, password, lastOpDate, createDate
                                           FROM `PhysicalSwitchEO` WHERE deleted = 0;
 
 ##交换机(虚拟交换机)
@@ -189,14 +189,13 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
   `enabled` TINYINT(1) NOT NULL DEFAULT '1' COMMENT '是否启用',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `status` varchar(16) NOT NULL DEFAULT 'NORMAL' COMMENT '状态',
-  `isPrivate` TINYINT(1) NOT NULL COMMENT '1:专用 0:公用',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, physicalSwitchUuid, endpointUuid, name, code, upperType, enabled, description, status, isPrivate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, physicalSwitchUuid, endpointUuid, name, code, upperType, enabled, description, status, lastOpDate, createDate
                                             FROM `SwitchEO` WHERE deleted = 0;
 
 

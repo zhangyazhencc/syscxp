@@ -22,7 +22,6 @@ public class SwitchToModelInventory {
     private Integer enabled;
     private String description;
     private SwitchStatus status;
-    private Integer isPrivate;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -39,7 +38,6 @@ public class SwitchToModelInventory {
         inv.setEnabled(vo.getEnabled());
         inv.setDescription(vo.getDescription());
         inv.setStatus(vo.getStatus());
-        inv.setIsPrivate(vo.getIsPrivate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
 
@@ -132,14 +130,6 @@ public class SwitchToModelInventory {
 
     public void setStatus(SwitchStatus status) {
         this.status = status;
-    }
-
-    public Integer getIsPrivate() {
-        return isPrivate;
-    }
-
-    public void setIsPrivate(Integer isPrivate) {
-        this.isPrivate = isPrivate;
     }
 
     public Timestamp getLastOpDate() {

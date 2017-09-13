@@ -22,8 +22,6 @@ public class APICreateSwitchMsg extends APIMessage {
     private String physicalSwitchUuid;
     @APIParam(emptyString = false,validValues = {"FABRIC", "INTERNET"})
     private SwitchUpperType upperType;
-    @APIParam(emptyString = false)
-    private Integer isPrivate;
     @APIParam(required = false,maxLength = 255)
     private String description;
 
@@ -65,14 +63,6 @@ public class APICreateSwitchMsg extends APIMessage {
 
     public void setUpperType(SwitchUpperType upperType) {
         this.upperType = upperType;
-    }
-
-    public Integer getIsPrivate() {
-        return isPrivate;
-    }
-
-    public void setIsPrivate(Integer isPrivate) {
-        this.isPrivate = isPrivate;
     }
 
     public String getDescription() {
