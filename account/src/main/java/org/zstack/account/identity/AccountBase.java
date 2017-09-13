@@ -37,9 +37,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
 
-//import org.springframework.mail.SimpleMailMessage;
-//import org.springframework.mail.javamail.JavaMailSenderImpl;
-
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class AccountBase extends AbstractAccount {
     private static final CLogger logger = Utils.getLogger(AccountBase.class);
@@ -150,38 +147,6 @@ public class AccountBase extends AbstractAccount {
         }
     }
 
-
-
-//    private void handle(APIMailCodeSendMsg msg) {
-//
-//        JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
-//        // 设定mail server
-//        senderImpl.setHost(" smtp.163.com ");
-//        // 建立邮件消息
-//        SimpleMailMessage mailMessage = new SimpleMailMessage();
-//        // 设置收件人，寄件人 用数组发送多个邮件
-//        // String[] array = new String[] {"sun111@163.com","sun222@sohu.com"};
-//        // mailMessage.setTo(array);
-//        mailMessage.setTo(msg.getMail());
-//        mailMessage.setFrom("wangwg@syscloud.cn");
-//        mailMessage.setSubject("验证码");
-//        mailMessage.setText(String.valueOf(new Random().nextInt(1000000)));
-//
-//        senderImpl.setUsername(" userName ");
-//        senderImpl.setPassword(" password ");
-//
-//        Properties prop = new Properties();
-//        prop.put(" mail.smtp.auth ", " true "); // 将这个参数设为true，让服务器进行认证,认证用户名和密码是否正确
-//        prop.put(" mail.smtp.timeout ", " 25000 ");
-//        senderImpl.setJavaMailProperties(prop);
-//        // 发送邮件
-//        senderImpl.send(mailMessage);
-//
-//
-//        APIMailCodeSendReply reply = new APIMailCodeSendReply();
-//        bus.reply(msg, reply);
-//
-//    }
 
     @Transactional
     private void handle(APIUpdateRoleMsg msg) {
