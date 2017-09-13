@@ -8,11 +8,19 @@
     </message>
 
     <message>
+        <name>org.zstack.tunnel.header.switchs.APIDeleteSwitchModelMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.tunnel.header.switchs.APICreatePhysicalSwitchMsg</name>
     </message>
 
     <message>
         <name>org.zstack.tunnel.header.switchs.APIUpdatePhysicalSwitchMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIDeletePhysicalSwitchMsg</name>
     </message>
 
     <message>
@@ -24,11 +32,27 @@
     </message>
 
     <message>
+        <name>org.zstack.tunnel.header.switchs.APIDeleteSwitchMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.tunnel.header.switchs.APICreateSwitchPortMsg</name>
     </message>
 
     <message>
+        <name>org.zstack.tunnel.header.switchs.APIUpdateSwitchPortMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIDeleteSwitchPortMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.tunnel.header.switchs.APICreateSwitchVlanMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.switchs.APIDeleteSwitchVlanMsg</name>
     </message>
 
     <message>

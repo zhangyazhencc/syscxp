@@ -26,8 +26,6 @@ public class APIUpdateSwitchMsg extends APIMessage {
     private Integer enabled;
     @APIParam(required = false,validValues = {"NORMAL", "UNUSUAL"})
     private SwitchStatus status;
-    @APIParam(required = false)
-    private Integer isPrivate;
     @APIParam(required = false,maxLength = 255)
     private String description;
 
@@ -85,14 +83,6 @@ public class APIUpdateSwitchMsg extends APIMessage {
 
     public void setStatus(SwitchStatus status) {
         this.status = status;
-    }
-
-    public Integer getIsPrivate() {
-        return isPrivate;
-    }
-
-    public void setIsPrivate(Integer isPrivate) {
-        this.isPrivate = isPrivate;
     }
 
     public String getDescription() {

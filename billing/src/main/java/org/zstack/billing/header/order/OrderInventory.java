@@ -51,6 +51,8 @@ public class OrderInventory {
 
     private int duration;
 
+    private int productStatus;
+
     public static OrderInventory valueOf(OrderVO vo) {
         OrderInventory inv = new OrderInventory();
         inv.setUuid(vo.getUuid());
@@ -72,6 +74,7 @@ public class OrderInventory {
         inv.setOriginalPrice(vo.getOriginalPrice());
         inv.setProductUuid(vo.getProductUuid());
         inv.setDuration(vo.getDuration());
+        inv.setProductStatus(vo.getProductStatus());
         return inv;
     }
 
@@ -83,6 +86,13 @@ public class OrderInventory {
         return lst;
     }
 
+    public int getProductStatus() {
+        return productStatus;
+    }
+
+    public void setProductStatus(int productStatus) {
+        this.productStatus = productStatus;
+    }
 
     public String getUuid() {
         return uuid;
