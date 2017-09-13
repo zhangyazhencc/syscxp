@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>test api2</title>
+    <title>test api</title>
 </head>
 
 
@@ -19,12 +19,12 @@
 <script src="js/angular-cookies.js"></script>
 
 <div ng-app="myApp" ng-controller="testCtrl">
-    发送消息<br/>
+发送消息<br/>
     <textarea rows="10" cols="100" name="msg" ng-model="msg"></textarea>
     <br/>
     <button ng-click="post()" style="width:80px;"> 提 交 </button> 查询次数(异步消息)：<input type="text" ng-model="second">
     <br/>
-    返回<br/>
+返回<br/>
     <textarea rows="10" cols="100"  name="rspmsg" ng-model="rspmsg"></textarea>
 
 
@@ -72,7 +72,7 @@
     </textarea>
 
 <br/>检查Session是否有效 APIValidateSessionMsg：<br/>
-<textarea cols="200">
+    <textarea cols="200">
     {"org.zstack.account.header.identity.APIValidateSessionMsg":{"sessionUuid":"kma762s1ya9brsu7qpzm7ono00tmidvu","session":{"uuid":"kma762s1ya9brsu7qpzm7ono00tmidvu"}}}
     </textarea>
 <br/>获取Session及用户Policy -> APIGetSessionPolicyMsg：<br/>
@@ -82,7 +82,24 @@
 
 <br/>APIUpdateAccountMsg：<br/>
 <textarea cols="200">
-{"org.zstack.account.header.account.APIUpdateAccountMsg":{"description":"b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86","session":{"uuid":"kma762s1ya9brsu7qpzm7ono00tmidvu"}}}
+{"org.zstack.account.header.identity.APIUpdateAccountMsg":{"description":"b109f3bbbc244eb82441917ed06d618b9008dd09b3befd1b5e07394c706a8bb980b1d7785e5976ec049b46df5f1326af5a2ea6d103fd07c95385ffab0cacbc86","session":{"uuid":"kma762s1ya9brsu7qpzm7ono00tmidvu"}}}
+</textarea>
+
+<br/>APICreateNoticeMsg：<br/>
+<textarea cols="200">
+{"org.zstack.account.header.log.APICreateNoticeMsg":{"title":"wwwwww","link":"wwwwlink","startTime":"2017-08-25 13:49:29","endTime":"2017-08-23 13:49:29","session":{"uuid":"91e7d7b983444a08bba5ed93d03290b4"}}}
+</textarea>
+<br/>APIUpdateNoticeMsg：<br/>
+<textarea cols="200">
+{"org.zstack.account.header.log.APIUpdateNoticeMsg":{"uuid":"fcc5cbe51c1f41ff902a94339d6e88eb","title":"wwwwww","link":"wwwwlink","startTime":"2017-08-25 13:49:29","endTime":"2017-08-29 13:49:29","session":{"uuid":"f1b1006d00754976878953a376ae8bdd"}}}
+</textarea>
+<br/>APIDeleteNoticeMsgcp ：<br/>
+<textarea cols="200">
+{"org.zstack.account.header.log.APIDeleteNoticeMsg":{"uuid":"kma762s1ya9brsu7qpzm7ono00tmidvu","session":{"uuid":"kma762s1ya9brsu7qpzm7ono00tmidvu"}}}
+</textarea>
+<br/>APIQueryNoticeMsg：<br/>
+<textarea cols="200">
+{"org.zstack.account.header.log.APIQueryNoticeMsg":{"conditions":[],"limit":2,"start":0,"count":false,"groupBy":"","replyWithCount":true,"sortBy":"","fields":[],session":{"uuid":"kma762s1ya9brsu7qpzm7ono00tmidvu"}}}
 </textarea>
 </body>
 </html>
