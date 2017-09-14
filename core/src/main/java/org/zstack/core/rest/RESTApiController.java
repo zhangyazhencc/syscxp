@@ -64,7 +64,6 @@ public class RESTApiController {
             Map<String, String> params = getParamterMap(request);
             APIVerifyReturnMsg msg = new APIVerifyReturnMsg();
             msg.setParam(params);
-            msg.setServiceId("billing");
             RestAPIResponse res = restApi.call(msg);
             if (res.getState().equals(RestAPIState.Done.toString())) {
                 APIVerifyReturnReply replay = (APIVerifyReturnReply) RESTApiDecoder.loads(res.getResult());
@@ -87,7 +86,6 @@ public class RESTApiController {
             APIVerifyNotifyMsg msg = new APIVerifyNotifyMsg();
 
             msg.setParam(params);
-            msg.setServiceId("billing");
             RestAPIResponse res = restApi.call(msg);
             if (res.getState().equals(RestAPIState.Done.toString())) {
                 APIVerifyNotifyReply replay = (APIVerifyNotifyReply) RESTApiDecoder.loads(res.getResult());
