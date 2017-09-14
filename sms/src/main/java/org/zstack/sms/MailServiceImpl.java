@@ -7,7 +7,6 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
-import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.thread.PeriodicTask;
 import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.AbstractService;
@@ -89,6 +88,21 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
         bus.reply(msg, reply);
     }
+
+    public boolean ValidateMailCode(String mail, String code) {
+        VerificationCode verificationCode = sessions.get(mail);
+
+        Timestamp curr = new Timestamp(System.currentTimeMillis());
+        if(verificationCode != null
+                && curr.before(verificationCode.expiredDate)
+                && code.equals(verificationCode.code)){
+            return true;
+        }else{
+            return false;
+        }
+
+    }
+
 
     private void  handle(APIMailCodeSendMsg msg) throws OperationFailureException {
 

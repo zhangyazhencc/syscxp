@@ -12,25 +12,47 @@ import org.zstack.header.notification.ApiNotification;
 @Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"}, accountOnly = true)
 public class APIUpdateAccountEmailMsg extends APIMessage implements AccountMessage{
     @APIParam
-    private String email;
+    private String OldEmail;
 
     @APIParam
-    private String code;
+    private String OldCode;
 
-    public String getEmail() {
-        return email;
+    @APIParam
+    private String newEmail;
+
+    @APIParam
+    private String newCode;
+
+    public String getOldEmail() {
+        return OldEmail;
     }
 
-    public String getCode() {
-        return code;
+    public void setOldEmail(String oldEmail) {
+        OldEmail = oldEmail;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public String getOldCode() {
+        return OldCode;
     }
 
-    public void setCode(String code) {
-        this.code = code;
+    public void setOldCode(String oldCode) {
+        OldCode = oldCode;
+    }
+
+    public String getNewEmail() {
+        return newEmail;
+    }
+
+    public void setNewEmail(String newEmail) {
+        this.newEmail = newEmail;
+    }
+
+    public String getNewCode() {
+        return newCode;
+    }
+
+    public void setNewCode(String newCode) {
+        this.newCode = newCode;
     }
 
     @Override
