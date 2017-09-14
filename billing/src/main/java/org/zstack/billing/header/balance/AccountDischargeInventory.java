@@ -24,6 +24,10 @@ public class AccountDischargeInventory {
 
     private Timestamp lastOpDate;
 
+    private String categoryName;
+
+    private String productTypeName;
+
     public static AccountDischargeInventory valueOf(AccountDischargeVO vo) {
         AccountDischargeInventory inv = new AccountDischargeInventory();
         inv.setUuid(vo.getUuid());
@@ -33,6 +37,8 @@ public class AccountDischargeInventory {
         inv.setCategory(vo.getCategory());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        inv.setCategoryName(vo.getCategoryName());
+        inv.setProductTypeName(vo.getProductTypeName());
         return inv;
     }
 
@@ -99,5 +105,21 @@ public class AccountDischargeInventory {
 
     public void setCategory(Category category) {
         this.category = category;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public String getProductTypeName() {
+        return productTypeName;
+    }
+
+    public void setProductTypeName(String productTypeName) {
+        this.productTypeName = productTypeName;
     }
 }

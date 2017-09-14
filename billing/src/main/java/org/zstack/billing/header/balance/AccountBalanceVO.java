@@ -5,6 +5,7 @@ import java.sql.Timestamp;
 
 import javax.persistence.*;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
 
@@ -29,9 +30,11 @@ public class AccountBalanceVO {
     private BigDecimal cashBalance;
 
     @Column
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private Timestamp createDate;
 
     @Column
+    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private Timestamp lastOpDate;
 
     public String getUuid() {
