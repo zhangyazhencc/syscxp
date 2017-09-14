@@ -1,6 +1,5 @@
 package org.zstack.sms;
 
-
 import com.sun.mail.util.MailSSLSocketFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -20,7 +19,6 @@ import org.zstack.header.message.Message;
 import org.zstack.sms.header.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
-
 
 import java.sql.Timestamp;
 import java.util.*;
@@ -71,7 +69,7 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
     }
 
     private void  handle(APIValidateMailCodeMsg msg){
-        APIValidateVerificationCodeReply reply = new APIValidateVerificationCodeReply();
+        APIValidateMailCodeReply reply = new APIValidateMailCodeReply();
 
         boolean valid = false;
         VerificationCode verificationCode = sessions.get(msg.getMail());

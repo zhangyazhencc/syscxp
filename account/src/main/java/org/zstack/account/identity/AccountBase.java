@@ -24,6 +24,7 @@ import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.*;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
+import org.zstack.sms.MailService;
 import org.zstack.sms.SmsService;
 import org.zstack.utils.ExceptionDSL;
 import org.zstack.utils.Utils;
@@ -60,7 +61,8 @@ public class AccountBase extends AbstractAccount {
 
     @Autowired
     private SmsService smsService;
-
+    @Autowired
+    MailService mailservice;
     public AccountBase(AccountVO vo) {
         this.vo = vo;
     }
@@ -336,6 +338,27 @@ public class AccountBase extends AbstractAccount {
         }
 
         evt.setPhone(account.getPhone());
+
+        bus.publish(evt);
+    }
+
+    private void handle(APIAccountMailAuthenticationMsg msg) {
+
+        APIAccountMailAuthenticationEvent evt = new APIAccountMailAuthenticationEvent(msg.getId());
+        AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
+
+        if (!mailservice.ValidateMailCode(msg.getMail(), msg.getCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getSession().getAccountUuid()));
+        }else{
+            if (account.getEmailStatus() == ValidateStatus.Unvalidated) {
+                account.setEmail(msg.getMail());
+                account.setEmailStatus(ValidateStatus.Validated);
+                dbf.updateAndRefresh(account);
+            }
+        }
+
+        evt.setMail(account.getEmail());
 
         bus.publish(evt);
     }

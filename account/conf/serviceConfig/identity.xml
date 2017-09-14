@@ -186,4 +186,10 @@
         <name>org.zstack.account.header.identity.APIUpdateRoleMsg</name>
     </message>
 
+    <message>
+        <name>org.zstack.account.header.account.APIAccountMailAuthenticationMsg</name>
+    </message>
+
+
+
 </service>
