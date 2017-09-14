@@ -21,6 +21,10 @@
         <serviceId>query</serviceId>
     </message>
 
+    <message>
+        <name>org.zstack.tunnel.header.node.APIGetDistinctNodeCityMsg</name>
+    </message>
+
     <!--ENDPOINT-->
     <message>
         <name>org.zstack.tunnel.header.endpoint.APICreateEndpointMsg</name>

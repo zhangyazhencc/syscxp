@@ -159,9 +159,9 @@
                             </artifactItems>
                             <!--指定war包保存地址-->
                             <outputDirectory>${parent.relativePath}/build/target/</outputDirectory>
-                            <includes>
+                            <!--<includes>
                                 <include>*.war</include>
-                            </includes>
+                            </includes>-->
                         </configuration>
                     </execution>
                 </executions>

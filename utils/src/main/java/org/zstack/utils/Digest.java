@@ -1,5 +1,7 @@
 package org.zstack.utils;
 
+import org.apache.commons.codec.digest.DigestUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 
@@ -10,7 +12,7 @@ public class Digest {
     public static String getMD5ByFile(String filePath) {
         try {
             FileInputStream fis = new FileInputStream(new File(filePath));
-            String md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(fis);
+            String md5 = DigestUtils.md5Hex(fis);
             fis.close();
             return md5;
         } catch (Exception e) {
@@ -20,8 +22,7 @@ public class Digest {
 
     public static String getMD5(String str) {
         try {
-            String md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex(str);
-            return md5;
+            return DigestUtils.md5Hex(str);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

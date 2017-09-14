@@ -17,8 +17,10 @@ import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
+import org.zstack.tunnel.header.endpoint.EndpointEO;
 import org.zstack.tunnel.header.host.*;
 import org.zstack.tunnel.header.monitor.*;
+import org.zstack.tunnel.header.node.APIDeleteNodeEvent;
 import org.zstack.tunnel.header.node.NodeVO;
 import org.zstack.tunnel.header.node.NodeVO_;
 import org.zstack.tunnel.header.switchs.SwitchPortVO;
@@ -73,6 +75,8 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
             handle((APICreateHostMsg) msg);
         }else if(msg instanceof APIUpdateHostMsg){
             handle((APIUpdateHostMsg) msg);
+        }else if(msg instanceof APIDeleteHostMsg){
+            handle((APIDeleteHostMsg) msg);
         }else if(msg instanceof APICreateHostMonitorMsg){
             handle((APICreateHostMonitorMsg) msg);
         }else if(msg instanceof APIUpdateHostMonitorMsg){
@@ -140,6 +144,20 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
         APIUpdateHostEvent evt = new APIUpdateHostEvent(msg.getId());
         evt.setInventory(HostInventory.valueOf(vo));
         bus.publish(evt);
+    }
+
+    private void handle(APIDeleteHostMsg msg){
+        String uuid = msg.getUuid();
+
+        HostEO hostEO = dbf.findByUuid(uuid,HostEO.class);
+
+        if (hostEO != null) {
+            hostEO.setDeleted(1);
+            dbf.update(hostEO);
+        }
+
+        APIDeleteHostEvent event = new APIDeleteHostEvent(msg.getId());
+        bus.publish(event);
     }
 
     private void handle(APICreateHostMonitorMsg msg){

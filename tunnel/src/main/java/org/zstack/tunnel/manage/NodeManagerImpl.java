@@ -18,11 +18,13 @@ import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.tunnel.header.endpoint.*;
-import org.zstack.tunnel.header.host.HostEO;
-import org.zstack.tunnel.header.host.HostInventory;
 import org.zstack.tunnel.header.node.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
+
+import javax.persistence.TypedQuery;
+
+import java.util.List;
 
 import static org.zstack.core.Platform.argerr;
 
@@ -73,6 +75,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIUpdateNodeMsg) msg);
         } else if (msg instanceof APIDeleteNodeMsg) {
             handle((APIDeleteNodeMsg) msg);
+        } else if (msg instanceof APIGetDistinctNodeCityMsg) {
+            handle((APIGetDistinctNodeCityMsg) msg);
         } else if (msg instanceof APICreateEndpointMsg) {
             handle((APICreateEndpointMsg) msg);
         } else if (msg instanceof APIUpdateEndpointMsg) {
@@ -152,15 +156,24 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     private void handle(APIDeleteNodeMsg msg) {
         String uuid = msg.getUuid();
         NodeEO eo = dbf.findByUuid(uuid, NodeEO.class);
-        eo.setDeleted(1);
 
         if (eo != null) {
+            eo.setDeleted(1);
             dbf.update(eo);
         }
 
-        // NodeInventory inventory = NodeInventory.valueOf(eo);
         APIDeleteNodeEvent event = new APIDeleteNodeEvent(msg.getId());
         bus.publish(event);
+    }
+
+    private void handle(APIGetDistinctNodeCityMsg msg) {
+        String sql = "select distinct city from NodeVO";
+        TypedQuery<String> q = dbf.getEntityManager().createQuery(sql,String.class);
+        List<String> cities = q.getResultList();
+
+        APIGetDistinctNodeCityReply reply = new APIGetDistinctNodeCityReply();
+        reply.setCities(cities);
+        bus.reply(msg,reply);
     }
 
     private void handle(APICreateEndpointMsg msg) {
@@ -173,7 +186,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         vo.setEndpointType(msg.getEndpointType());
         vo.setEnabled(1);
         vo.setOpenToCustomers(0);
-        vo.setStatus(EndpointStatus.NORMAL);
         if (msg.getDescription() != null) {
             vo.setDescription(msg.getDescription());
         } else {
@@ -205,14 +217,14 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     private void handle(APIDeleteEndpointMsg msg) {
         String uuid = msg.getUuid();
         EndpointEO eo = dbf.findByUuid(uuid, EndpointEO.class);
-        eo.setDeleted(1);
-
         if (eo != null) {
+            eo.setDeleted(1);
             dbf.update(eo);
         }
 
-        // NodeInventory inventory = NodeInventory.valueOf(eo);
         APIDeleteNodeEvent event = new APIDeleteNodeEvent(msg.getId());
+        // NodeInventory inventory = NodeInventory.valueOf(eo);
+        // event.setInventory(inventory);
         bus.publish(event);
     }
 
