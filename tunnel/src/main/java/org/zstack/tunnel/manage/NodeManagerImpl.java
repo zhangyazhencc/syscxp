@@ -186,7 +186,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         vo.setEndpointType(msg.getEndpointType());
         vo.setEnabled(1);
         vo.setOpenToCustomers(0);
-        vo.setStatus(EndpointStatus.NORMAL);
         if (msg.getDescription() != null) {
             vo.setDescription(msg.getDescription());
         } else {

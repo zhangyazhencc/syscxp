@@ -19,7 +19,6 @@ public class EndpointAO_ {
     public static volatile SingularAttribute<EndpointAO, Integer> enabled;
     public static volatile SingularAttribute<EndpointAO, Integer> openToCustomers;
     public static volatile SingularAttribute<EndpointAO, String> description;
-    public static volatile SingularAttribute<EndpointAO, EndpointStatus> status;
     public static volatile SingularAttribute<EndpointAO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<EndpointAO, Timestamp> createDate;
 }

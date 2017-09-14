@@ -1,6 +1,7 @@
 package org.zstack.sms;
 
 
+import com.sun.mail.util.MailSSLSocketFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -12,6 +13,7 @@ import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
+import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.exception.CloudRuntimeException;
 
 import org.zstack.header.message.APIMessage;
@@ -20,11 +22,14 @@ import org.zstack.sms.header.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
+
 import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import static org.zstack.core.Platform.operr;
 
 
 public class MailServiceImpl extends AbstractService implements MailService, ApiMessageInterceptor {
@@ -85,26 +90,35 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
         bus.reply(msg, reply);
     }
 
-    private void  handle(APIMailCodeSendMsg msg){
+    private void  handle(APIMailCodeSendMsg msg) throws OperationFailureException {
 
-        JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
-        senderImpl.setHost(MailGlobalProperty.HOST);
         SimpleMailMessage mailMessage = new SimpleMailMessage();
         mailMessage.setTo(msg.getMail());
         mailMessage.setFrom(MailGlobalProperty.FROM);
         mailMessage.setSubject("验证码");
         String code = String.valueOf(new Random().nextInt(1000000));
         mailMessage.setText(code);
+
+        JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
+        senderImpl.setHost(MailGlobalProperty.HOST);
+        senderImpl.setPort(25);
         senderImpl.setUsername(MailGlobalProperty.USERNAME);
         senderImpl.setPassword(MailGlobalProperty.PASSWORD);
         Properties prop = new Properties();
-        prop.put(" mail.smtp.auth ", "true"); // 将这个参数设为true，让服务器进行认证,认证用户名和密码是否正确
+        prop.put(" mail.smtp.auth ", "true");
         prop.put(" mail.smtp.timeout ", "25000");
         senderImpl.setJavaMailProperties(prop);
 
-        senderImpl.send(mailMessage);
-        logger.debug(">>>>>>>>>>>>>>>>>>发送成功<<<<<<<<<<<<<<<<<<<<<<");
 
+        try{
+            senderImpl.send(mailMessage);
+
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new OperationFailureException(operr("message:" + e.getMessage()));
+        }
+
+        logger.debug(">>>>>>>>>>>>>>>>>>发送成功<<<<<<<<<<<<<<<<<<<<<<");
         VerificationCode verificationCode = sessions.get(msg.getMail());
         long expiredTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60 * 10);   // 10 minute
         if (verificationCode == null){
