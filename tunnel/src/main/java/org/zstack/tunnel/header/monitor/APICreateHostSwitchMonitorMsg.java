@@ -17,9 +17,6 @@ import java.sql.Timestamp;
 public class APICreateHostSwitchMonitorMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32)
-    private String uuid;
-
-    @APIParam(emptyString = false,maxLength = 32)
     private String hostUuid;
 
     @APIParam(emptyString = false,maxLength = 32)
@@ -30,14 +27,6 @@ public class APICreateHostSwitchMonitorMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 128)
     private String interfaceName;
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
 
     public String getHostUuid() {
         return hostUuid;

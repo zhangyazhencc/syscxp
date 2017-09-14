@@ -1,10 +1,7 @@
 package org.zstack.tunnel.header.monitor;
 
 import org.zstack.header.search.Inventory;
-import org.zstack.tunnel.header.host.HostMonitorInventory;
-import org.zstack.tunnel.header.host.HostMonitorVO;
 
-import javax.persistence.Column;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
