@@ -347,18 +347,3 @@ CREATE TABLE  `syscxp_tunnel`.`HostEO` (
 CREATE VIEW `syscxp_tunnel`.`HostVO` AS SELECT uuid, name, code, ip, username, password, state, status, lastOpDate, createDate
                                                      FROM `HostEO` WHERE deleted = 0;
 
-##监控机监控
-CREATE TABLE `syscxp_tunnel`.`HostMonitorEO` (
-  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `hostUuid` VARCHAR(32) NOT NULL COMMENT '监控机UUID',
-  `switchPortUuid` VARCHAR(32) NOT NULL COMMENT '交换机UUID',
-  `interfaceName` varchar(128)  NOT NULL COMMENT '接口名称',
-  `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  PRIMARY KEY (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE VIEW `syscxp_tunnel`.`HostMonitorVO` AS SELECT uuid, hostUuid, switchPortUuid, interfaceName, lastOpDate, createDate
-                                          FROM `HostMonitorEO` WHERE deleted = 0;
-
