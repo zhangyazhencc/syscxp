@@ -77,14 +77,12 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
             handle((APIUpdateHostMsg) msg);
         }else if(msg instanceof APIDeleteHostMsg){
             handle((APIDeleteHostMsg) msg);
-        }else if(msg instanceof APICreateHostMonitorMsg){
-            handle((APICreateHostMonitorMsg) msg);
-        }else if(msg instanceof APIUpdateHostMonitorMsg){
-            handle((APIUpdateHostMonitorMsg) msg);
         } else if(msg instanceof APICreateHostSwitchMonitorMsg){
             handle((APICreateHostSwitchMonitorMsg) msg);
         } else if(msg instanceof APIUpdateHostSwitchMonitorMsg){
             handle((APIUpdateHostSwitchMonitorMsg) msg);
+        }else if(msg instanceof APICreateTunnelMonitorMsg){
+            handle((APICreateTunnelMonitorMsg) msg);
         } else{
             bus.dealWithUnknownMessage(msg);
         }
@@ -160,41 +158,6 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
         bus.publish(event);
     }
 
-    private void handle(APICreateHostMonitorMsg msg){
-        HostMonitorVO vo = new HostMonitorVO();
-
-        vo.setUuid(Platform.getUuid());
-        vo.setHostUuid(msg.getHostUuid());
-        vo.setSwitchPortUuid(msg.getSwitchPortUuid());
-        vo.setInterfaceName(msg.getInterfaceName());
-
-        vo = dbf.persistAndRefresh(vo);
-
-        APICreateHostMonitorEvent evt = new APICreateHostMonitorEvent(msg.getId());
-        evt.setInventory(HostMonitorInventory.valueOf(vo));
-        bus.publish(evt);
-    }
-
-    private void handle(APIUpdateHostMonitorMsg msg){
-        HostMonitorVO vo = dbf.findByUuid(msg.getUuid(),HostMonitorVO.class);
-        boolean update = false;
-        if(msg.getInterfaceName() != null){
-            vo.setInterfaceName(msg.getInterfaceName());
-            update = true;
-        }
-        if(msg.getSwitchPortUuid() != null){
-            vo.setSwitchPortUuid(msg.getSwitchPortUuid());
-            update = true;
-        }
-
-        if (update)
-            vo = dbf.updateAndRefresh(vo);
-
-        APIUpdateHostMonitorEvent evt = new APIUpdateHostMonitorEvent(msg.getId());
-        evt.setInventory(HostMonitorInventory.valueOf(vo));
-        bus.publish(evt);
-    }
-
     private void handle(APICreateHostSwitchMonitorMsg msg){
         HostSwitchMonitorVO vo = new HostSwitchMonitorVO();
 
@@ -243,6 +206,26 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
             throw new IllegalArgumentException("UUID not exist!");
     }
 
+    private void handle(APICreateTunnelMonitorMsg msg){
+        TunnelMonitorVO vo = new TunnelMonitorVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setTunnelUuid(msg.getTunnelUuid());
+        vo.setHostAUuid(msg.getHostAUuid());
+        vo.setMonitorAIp(msg.getMonitorAIp());
+        vo.setHostZUuid(msg.getHostZUuid());
+        vo.setMonitorZIp(msg.getMonitorZIp());
+        vo.setStatus(msg.getStatus());
+        vo.setMsg(msg.getMsg());
+
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateTunnelMonitorEvent event = new APICreateTunnelMonitorEvent(msg.getId());
+        event.setInventory(TunnelMonitorInventory.valueOf(vo));
+        bus.publish(event);
+    }
+
     @Override
     public boolean start() {
         return true;
@@ -264,10 +247,6 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
             validate((APICreateHostMsg) msg);
         }else if(msg instanceof APIUpdateHostMsg){
             validate((APIUpdateHostMsg) msg);
-        }else if(msg instanceof APICreateHostMonitorMsg){
-            validate((APICreateHostMonitorMsg) msg);
-        }else if(msg instanceof APIUpdateHostMonitorMsg){
-            validate((APIUpdateHostMonitorMsg) msg);
         }else if(msg instanceof APICreateHostSwitchMonitorMsg){
             validate((APICreateHostSwitchMonitorMsg) msg);
         }else if(msg instanceof APIUpdateHostSwitchMonitorMsg){
@@ -310,46 +289,6 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
                 throw new ApiMessageInterceptionException(argerr("node %s is not exist ",msg.getNodeUuid()));
             }
         }
-    }
-
-    private void validate(APICreateHostMonitorMsg msg){
-
-        //判断所属监控机是否存在
-        SimpleQuery<HostVO> q = dbf.createQuery(HostVO.class);
-        q.add(HostVO_.uuid, SimpleQuery.Op.EQ, msg.getHostUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("host %s is not exist ",msg.getHostUuid()));
-        }
-        //判断所选择的交换机端口是否存在
-        SimpleQuery<SwitchPortVO> q2 = dbf.createQuery(SwitchPortVO.class);
-        q2.add(SwitchPortVO_.uuid, SimpleQuery.Op.EQ, msg.getSwitchPortUuid());
-        if (!q2.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("switchPort %s is not exist ",msg.getSwitchPortUuid()));
-        }
-    }
-
-    private void validate(APIUpdateHostMonitorMsg msg){
-        //判断所修改的监控机交换机是否存在
-        SimpleQuery<HostMonitorVO> q = dbf.createQuery(HostMonitorVO.class);
-        q.add(HostMonitorVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("HostSwitchMonitor %s is not exist ",msg.getUuid()));
-        }
-        //判断所属监控机是否存在
-        SimpleQuery<HostVO> q2 = dbf.createQuery(HostVO.class);
-        q2.add(HostVO_.uuid, SimpleQuery.Op.EQ, msg.getHostUuid());
-        if (!q2.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("host %s is not exist ",msg.getHostUuid()));
-        }
-        //判断所选择的交换机端口是否存在
-        if(msg.getSwitchPortUuid() != null){
-            SimpleQuery<SwitchPortVO> q3 = dbf.createQuery(SwitchPortVO.class);
-            q3.add(SwitchPortVO_.uuid, SimpleQuery.Op.EQ, msg.getSwitchPortUuid());
-            if (!q3.isExists()) {
-                throw new ApiMessageInterceptionException(argerr("switchPort %s is not exist ",msg.getSwitchPortUuid()));
-            }
-        }
-
     }
 
     private void validate(APICreateHostSwitchMonitorMsg msg){

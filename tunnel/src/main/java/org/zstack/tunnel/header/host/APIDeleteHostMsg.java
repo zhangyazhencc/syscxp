@@ -10,7 +10,6 @@ import org.zstack.tunnel.manage.TunnelConstant;
  * @Cretion Date: 2017-09-14.
  * @Description: .
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY_HOST, names = {"delete"}, adminOnly = true)
 public class APIDeleteHostMsg extends APIMessage {
     @APIParam(emptyString = false,checkAccount = true,resourceType = HostEO.class)
     private String uuid;

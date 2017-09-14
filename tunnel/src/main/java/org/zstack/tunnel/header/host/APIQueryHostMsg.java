@@ -8,7 +8,6 @@ import org.zstack.tunnel.manage.TunnelConstant;
 /**
  * Created by DCY on 2017-08-30
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY_HOST, names = {"read"}, adminOnly = true)
 @AutoQuery(replyClass = APIQueryHostReply.class, inventoryClass = HostInventory.class)
 public class APIQueryHostMsg extends APIQueryMessage {
 }

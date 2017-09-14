@@ -9,7 +9,6 @@ import org.zstack.tunnel.manage.TunnelConstant;
  * Created by DCY on 2017-08-30
  */
 
-@Action(category = TunnelConstant.ACTION_CATEGORY_HOST, names = {"create"}, adminOnly = true)
 public class APICreateHostMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 32)
     private String nodeUuid;

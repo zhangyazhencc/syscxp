@@ -17,14 +17,6 @@
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.host.APICreateHostMonitorMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.tunnel.header.host.APIUpdateHostMonitorMsg</name>
-    </message>
-
-    <message>
         <name>org.zstack.tunnel.header.monitor.APICreateHostSwitchMonitorMsg</name>
     </message>
 
@@ -34,11 +26,6 @@
 
     <message>
         <name>org.zstack.tunnel.header.host.APIQueryHostMsg</name>
-        <serviceId>query</serviceId>
-    </message>
-
-    <message>
-        <name>org.zstack.tunnel.header.host.APIQueryHostMonitorMsg</name>
         <serviceId>query</serviceId>
     </message>
 
