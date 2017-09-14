@@ -30,11 +30,9 @@ public class AccountBalanceVO {
     private BigDecimal cashBalance;
 
     @Column
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private Timestamp createDate;
 
     @Column
-    @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME)
     private Timestamp lastOpDate;
 
     public String getUuid() {
