@@ -28,6 +28,7 @@
         <module>tunnel</module>
         <module>build</module>
         <module>sms</module>
+        <module>vpn</module>
     </modules>
 
     <dependencyManagement>
