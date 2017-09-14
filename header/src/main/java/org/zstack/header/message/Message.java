@@ -126,4 +126,7 @@ public abstract class Message implements Serializable, AsyncBackup {
     public int hashCode() {
         return getId().hashCode();
     }
+
+    public class RecipientType {
+    }
 }
