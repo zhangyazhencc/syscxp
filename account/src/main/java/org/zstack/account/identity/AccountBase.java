@@ -415,7 +415,7 @@ public class AccountBase extends AbstractAccount {
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
 
         AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
-        account.setEmail(msg.getEmail());
+        account.setEmail(msg.getNewEmail());
         evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
 
         bus.publish(evt);

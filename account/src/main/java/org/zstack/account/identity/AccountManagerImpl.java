@@ -25,6 +25,7 @@ import org.zstack.header.identity.AccountType;
 import org.zstack.header.managementnode.PrepareDbInitialValueExtensionPoint;
 import org.zstack.header.message.*;
 import org.zstack.header.query.QueryOp;
+import org.zstack.sms.MailService;
 import org.zstack.utils.*;
 import org.zstack.utils.logging.CLogger;
 
@@ -33,7 +34,6 @@ import org.zstack.sms.SmsService;
 import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.zstack.header.identity.*;
 
@@ -57,15 +57,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private ErrorFacade errf;
     @Autowired
     private IdentiyInterceptor identiyInterceptor;
-
     @Autowired
     private SmsService smsService;
+    @Autowired
+    MailService mailservice;
 
-    class VerificationCode {
-        String code;
-        Timestamp expiredDate;
-    }
-    private Map<String, VerificationCode> sessions = new ConcurrentHashMap<>();
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
@@ -630,10 +626,17 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateUserEmailMsg msg) {
-//        if () {
-//            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-//                    msg.initSession().getAccountUuid()));
-//        }
+
+        if(!msg.getOldEmail().equals(dbf.findByUuid(msg.getSession().getUserUuid(),
+                UserVO.class).getEmail())){
+            throw new ApiMessageInterceptionException(argerr("wrong oldmail"));
+        }
+
+        if (!mailservice.ValidateMailCode(msg.getOldEmail(), msg.getOldCode())||
+                !mailservice.ValidateMailCode(msg.getNewEmail(), msg.getNewCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getSession().getAccountUuid()));
+        }
     }
 
     private void validate(APIUpdateAccountPWDMsg msg) {
@@ -662,10 +665,17 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateAccountEmailMsg msg) {
-//        if () {
-//            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-//                    msg.initSession().getAccountUuid()));
-//        }
+
+        if(!msg.getOldEmail().equals(dbf.findByUuid(msg.getSession().getAccountUuid(),
+                AccountVO.class).getEmail())){
+            throw new ApiMessageInterceptionException(argerr("wrong oldmail"));
+        }
+
+        if (!mailservice.ValidateMailCode(msg.getOldEmail(), msg.getOldCode())||
+                !mailservice.ValidateMailCode(msg.getNewEmail(), msg.getNewCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getSession().getAccountUuid()));
+        }
     }
 
 

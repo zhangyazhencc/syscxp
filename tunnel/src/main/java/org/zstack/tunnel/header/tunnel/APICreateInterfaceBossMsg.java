@@ -1,11 +1,14 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.manage.TunnelConstant;
 
 /**
  * Created by DCY on 2017-09-11
  */
+@Action(category = TunnelConstant.ACTION_CATEGORY)
 public class APICreateInterfaceBossMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32)
