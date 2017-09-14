@@ -194,6 +194,7 @@ CREATE TABLE `OrderVO` (
   `productDescription` varchar(500) DEFAULT NULL COMMENT '产品说明，json格式',
   `productChargeModel` varchar(50) DEFAULT NULL COMMENT '计费方式--按月，按年',
   `duration` int(10) unsigned NOT NULL DEFAULT 0,
+  `productStatus` tinyint(1) unsigned DEFAULT 1 COMMENT '产品是否开通',
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -227,6 +228,8 @@ CREATE TABLE `ProductPriceUnitVO` (
   `comment` varchar(500) DEFAULT NULL COMMENT '备注',
   `lastOpDate` timestamp NOT NULL DEFAULT current_timestamp(),
   `createDate` timestamp ,
+   `categoryName` varchar(200) DEFAULT NULL COMMENT 'category名称',
+  `productTypeName` varchar(200) DEFAULT NULL COMMENT '产品分类名称',
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `NewIndex1` (`productType`,`category`,`config`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

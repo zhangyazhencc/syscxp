@@ -7,13 +7,13 @@ import org.zstack.header.rest.RestResponse;
  * Created by DCY on 2017-09-11
  */
 @RestResponse(allTo = "inventory")
-public class APICreateTunnelNassEvent extends APIEvent {
+public class APICreateTunnelEvent extends APIEvent {
 
     private TunnelInventory inventory;
 
-    public APICreateTunnelNassEvent(){}
+    public APICreateTunnelEvent(){}
 
-    public APICreateTunnelNassEvent(String apiId){super(apiId);}
+    public APICreateTunnelEvent(String apiId){super(apiId);}
 
     public TunnelInventory getInventory() {
         return inventory;

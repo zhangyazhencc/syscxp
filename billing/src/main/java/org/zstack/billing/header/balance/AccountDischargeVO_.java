@@ -12,6 +12,8 @@ public class AccountDischargeVO_ {
 
     public static volatile SingularAttribute<AccountDischargeVO, String> uuid;
     public static volatile SingularAttribute<AccountDischargeVO, String> accountUuid;
+    public static volatile SingularAttribute<AccountDischargeVO, String> categoryName;
+    public static volatile SingularAttribute<AccountDischargeVO, String> productTypeName;
     public static volatile SingularAttribute<AccountDischargeVO, Integer> disCharge;
     public static volatile SingularAttribute<AccountDischargeVO, ProductType> productType;
     public static volatile SingularAttribute<AccountDischargeVO, Category> category;

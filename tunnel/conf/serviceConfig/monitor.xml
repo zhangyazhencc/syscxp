@@ -13,6 +13,10 @@
     </message>
 
     <message>
+        <name>org.zstack.tunnel.header.host.APIDeleteHostMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.tunnel.header.host.APICreateHostMonitorMsg</name>
     </message>
 
