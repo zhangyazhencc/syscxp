@@ -8,7 +8,6 @@ import org.zstack.header.message.APIParam;
  * @Cretion Date: 2017-09-11.
  * @Description: .
  */
-//@Action(category = TunnelConstant.ACTION_CATEGORY,accountControl = true)
 public class APIUpdateHostSwitchMonitorMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = HostSwitchMonitorVO.class)

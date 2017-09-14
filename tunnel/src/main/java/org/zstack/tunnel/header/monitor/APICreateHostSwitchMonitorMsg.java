@@ -13,7 +13,6 @@ import java.sql.Timestamp;
  * @Cretion Date: 2017-09-11.
  * @Description: .
  */
-//@Action(category = TunnelConstant.ACTION_CATEGORY,accountControl = true)
 public class APICreateHostSwitchMonitorMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32)
