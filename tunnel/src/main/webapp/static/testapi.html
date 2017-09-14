@@ -36,7 +36,7 @@
     app.controller('testCtrl', function($scope, $http) {
         $scope.sync = function() {
 
-            $http.post('../api', $scope.msg)
+            $http.post('/api', $scope.msg)
                     .success(function (response) {
                         $scope.rspmsg = JSON.stringify(response);
                     });

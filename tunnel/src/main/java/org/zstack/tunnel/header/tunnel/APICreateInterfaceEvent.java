@@ -7,12 +7,12 @@ import org.zstack.header.rest.RestResponse;
  * Created by DCY on 2017-09-08
  */
 @RestResponse(allTo = "inventory")
-public class APICreateInterfaceNassEvent extends APIEvent {
+public class APICreateInterfaceEvent extends APIEvent {
     private InterfaceInventory inventory;
 
-    public APICreateInterfaceNassEvent(){}
+    public APICreateInterfaceEvent(){}
 
-    public APICreateInterfaceNassEvent(String apiId){super(apiId);}
+    public APICreateInterfaceEvent(String apiId){super(apiId);}
 
     public InterfaceInventory getInventory() {
         return inventory;

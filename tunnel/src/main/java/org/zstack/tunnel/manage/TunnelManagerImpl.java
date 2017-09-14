@@ -81,8 +81,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             handle((APICreateNetWorkMsg) msg);
         }else if(msg instanceof APIUpdateNetWorkMsg){
             handle((APIUpdateNetWorkMsg) msg);
-        }else if(msg instanceof APICreateInterfaceNassMsg){
-            handle((APICreateInterfaceNassMsg) msg);
+        }else if(msg instanceof APICreateInterfaceMsg){
+            handle((APICreateInterfaceMsg) msg);
         }else if(msg instanceof APICreateInterfaceBossMsg){
             handle((APICreateInterfaceBossMsg) msg);
         }else if(msg instanceof APICreateTunnelMsg){
@@ -143,7 +143,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         bus.publish(evt);
     }
 
-    private void handle(APICreateInterfaceNassMsg msg){
+    private void handle(APICreateInterfaceMsg msg){
         InterfaceVO vo = new InterfaceVO();
 
         vo.setUuid(Platform.getUuid());
@@ -211,7 +211,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         vo = dbf.persistAndRefresh(vo);
 
-        APICreateInterfaceNassEvent evt = new APICreateInterfaceNassEvent(msg.getId());
+        APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
         evt.setInventory(InterfaceInventory.valueOf(vo));
         bus.publish(evt);
     }
@@ -305,7 +305,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         vo = dbf.persistAndRefresh(vo);
 
-        APICreateTunnelNassEvent evt = new APICreateTunnelNassEvent(msg.getId());
+        APICreateTunnelEvent evt = new APICreateTunnelEvent(msg.getId());
         evt.setInventory(TunnelInventory.valueOf(vo));
         bus.publish(evt);
     }
@@ -332,8 +332,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             validate((APICreateNetWorkMsg) msg);
         }else if(msg instanceof APIUpdateNetWorkMsg){
             validate((APIUpdateNetWorkMsg) msg);
-        }else if(msg instanceof APICreateInterfaceNassMsg){
-            validate((APICreateInterfaceNassMsg) msg);
+        }else if(msg instanceof APICreateInterfaceMsg){
+            validate((APICreateInterfaceMsg) msg);
         }else if(msg instanceof APICreateInterfaceBossMsg){
             validate((APICreateInterfaceBossMsg) msg);
         }
@@ -399,7 +399,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     }
 
-    private void validate(APICreateInterfaceNassMsg msg){
+    private void validate(APICreateInterfaceMsg msg){
         //判断同一个用户的接口名称是否已经存在
 
         SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
