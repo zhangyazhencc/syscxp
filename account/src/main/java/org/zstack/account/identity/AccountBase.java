@@ -613,6 +613,7 @@ public class AccountBase extends AbstractAccount {
             prevo.setCustomerAcccountUuid(accountVO.getUuid());
 
             dbf.getEntityManager().persist(prevo);
+            dbf.getEntityManager().refresh(prevo);
         }
 
         AccountApiSecurityVO api = new AccountApiSecurityVO();
@@ -621,6 +622,11 @@ public class AccountBase extends AbstractAccount {
         api.setPrivateKey(getRandomString(30));
         api.setPublicKey(getRandomString(16));
         dbf.getEntityManager().persist(api);
+
+
+        dbf.getEntityManager().flush();
+        dbf.getEntityManager().refresh(accountVO);
+        dbf.getEntityManager().refresh(api);
 
         APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
         evt.setInventory(AccountInventory.valueOf(accountVO));
