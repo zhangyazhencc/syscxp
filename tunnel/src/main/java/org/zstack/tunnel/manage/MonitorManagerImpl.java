@@ -20,9 +20,7 @@ import org.zstack.header.message.Message;
 import org.zstack.tunnel.header.endpoint.EndpointEO;
 import org.zstack.tunnel.header.host.*;
 import org.zstack.tunnel.header.monitor.*;
-import org.zstack.tunnel.header.node.APIDeleteNodeEvent;
-import org.zstack.tunnel.header.node.NodeVO;
-import org.zstack.tunnel.header.node.NodeVO_;
+import org.zstack.tunnel.header.node.*;
 import org.zstack.tunnel.header.switchs.SwitchPortVO;
 import org.zstack.tunnel.header.switchs.SwitchPortVO_;
 import org.zstack.utils.Utils;
@@ -33,7 +31,7 @@ import static org.zstack.core.Platform.argerr;
 /**
  * Created by DCY on 2017-09-07
  */
-public class MonitorManagerImpl  extends AbstractService implements MonitorManager,ApiMessageInterceptor {
+public class MonitorManagerImpl extends AbstractService implements MonitorManager, ApiMessageInterceptor {
 
     private static final CLogger logger = Utils.getLogger(MonitorManagerImpl.class);
 
@@ -71,24 +69,26 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
     }
 
     private void handleApiMessage(APIMessage msg) {
-        if(msg instanceof APICreateHostMsg){
+        if (msg instanceof APICreateHostMsg) {
             handle((APICreateHostMsg) msg);
-        }else if(msg instanceof APIUpdateHostMsg){
+        } else if (msg instanceof APIUpdateHostMsg) {
             handle((APIUpdateHostMsg) msg);
-        }else if(msg instanceof APIDeleteHostMsg){
+        } else if (msg instanceof APIDeleteHostMsg) {
             handle((APIDeleteHostMsg) msg);
-        } else if(msg instanceof APICreateHostSwitchMonitorMsg){
+        } else if (msg instanceof APICreateHostSwitchMonitorMsg) {
             handle((APICreateHostSwitchMonitorMsg) msg);
-        } else if(msg instanceof APIUpdateHostSwitchMonitorMsg){
+        } else if (msg instanceof APIUpdateHostSwitchMonitorMsg) {
             handle((APIUpdateHostSwitchMonitorMsg) msg);
-        }else if(msg instanceof APICreateTunnelMonitorMsg){
+        } else if (msg instanceof APICreateTunnelMonitorMsg) {
             handle((APICreateTunnelMonitorMsg) msg);
-        } else{
+        } else if (msg instanceof APIUpdateTunnelMonitorMsg) {
+            handle((APIUpdateTunnelMonitorMsg) msg);
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APICreateHostMsg msg){
+    private void handle(APICreateHostMsg msg) {
         HostVO vo = new HostVO();
 
         vo.setUuid(Platform.getUuid());
@@ -107,47 +107,28 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
         bus.publish(evt);
     }
 
-    private void handle(APIUpdateHostMsg msg){
-        HostVO vo = dbf.findByUuid(msg.getUuid(),HostVO.class);
-        boolean update = false;
+    private void handle(APIUpdateHostMsg msg) {
+        HostVO vo = dbf.findByUuid(msg.getUuid(), HostVO.class);
 
-        if(msg.getNodeUuid() != null){
-            vo.setNodeUuid(msg.getNodeUuid());
-            update = true;
-        }
-        if(msg.getName() != null){
-            vo.setName(msg.getName());
-            update = true;
-        }
-        if(msg.getCode() != null){
-            vo.setCode(msg.getCode());
-            update = true;
-        }
-        if(msg.getHostIp() != null){
-            vo.setHostIp(msg.getHostIp());
-            update = true;
-        }
-        if(msg.getUsername() != null){
-            vo.setUsername(msg.getUsername());
-            update = true;
-        }
-        if(msg.getPassword() != null){
-            vo.setPassword(msg.getPassword());
-            update = true;
-        }
+        vo.setNodeUuid(msg.getNodeUuid());
+        vo.setCode(msg.getCode());
+        vo.setName(msg.getName());
+        vo.setHostIp(msg.getHostIp());
+        vo.setUsername(msg.getUsername());
+        vo.setPassword(msg.getPassword());
+        vo.setState(msg.getState());
 
-        if (update)
-            vo = dbf.updateAndRefresh(vo);
+        vo = dbf.updateAndRefresh(vo);
 
         APIUpdateHostEvent evt = new APIUpdateHostEvent(msg.getId());
         evt.setInventory(HostInventory.valueOf(vo));
         bus.publish(evt);
     }
 
-    private void handle(APIDeleteHostMsg msg){
+    private void handle(APIDeleteHostMsg msg) {
         String uuid = msg.getUuid();
 
-        HostEO hostEO = dbf.findByUuid(uuid,HostEO.class);
+        HostEO hostEO = dbf.findByUuid(uuid, HostEO.class);
 
         if (hostEO != null) {
             hostEO.setDeleted(1);
@@ -158,7 +139,7 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
         bus.publish(event);
     }
 
-    private void handle(APICreateHostSwitchMonitorMsg msg){
+    private void handle(APICreateHostSwitchMonitorMsg msg) {
         HostSwitchMonitorVO vo = new HostSwitchMonitorVO();
 
         vo.setUuid(Platform.getUuid());
@@ -175,38 +156,20 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
     }
 
     private void handle(APIUpdateHostSwitchMonitorMsg msg) {
-        HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(),HostSwitchMonitorVO.class);
-        if(vo != null){
-            boolean update = false;
-            if(msg.getHostUuid() != null){
-                vo.setHostUuid(msg.getHostUuid());
-                update = true;
-            }
-            if(msg.getPhysicalSwitchUuid() != null){
-                vo.setHostUuid(msg.getHostUuid());
-                update = true;
-            }
-            if(msg.getPhysicalSwitchPortName() != null){
-                vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
-                update = true;
-            }
-            if(msg.getInterfaceName() != null){
-                vo.setInterfaceName(msg.getInterfaceName());
-                update = true;
-            }
+        HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
 
-            if(update){
-                vo = dbf.updateAndRefresh(vo);
+        vo.setHostUuid(msg.getHostUuid());
+        vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
+        vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
+        vo.setInterfaceName(msg.getInterfaceName());
+        vo = dbf.updateAndRefresh(vo);
 
-                APIUpdateHostSwitchMonitorEvent event = new APIUpdateHostSwitchMonitorEvent(msg.getId());
-                event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
-                bus.publish(event);
-            }
-        }else
-            throw new IllegalArgumentException("UUID not exist!");
+        APIUpdateHostSwitchMonitorEvent event = new APIUpdateHostSwitchMonitorEvent(msg.getId());
+        event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+        bus.publish(event);
     }
 
-    private void handle(APICreateTunnelMonitorMsg msg){
+    private void handle(APICreateTunnelMonitorMsg msg) {
         TunnelMonitorVO vo = new TunnelMonitorVO();
 
         vo.setUuid(Platform.getUuid());
@@ -218,12 +181,30 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
         vo.setStatus(msg.getStatus());
         vo.setMsg(msg.getMsg());
 
-
         vo = dbf.persistAndRefresh(vo);
 
         APICreateTunnelMonitorEvent event = new APICreateTunnelMonitorEvent(msg.getId());
         event.setInventory(TunnelMonitorInventory.valueOf(vo));
         bus.publish(event);
+    }
+
+    private void handle(APIUpdateTunnelMonitorMsg msg) {
+        TunnelMonitorVO vo = dbf.findByUuid(msg.getUuid(), TunnelMonitorVO.class);
+
+        vo.setTunnelUuid(msg.getTunnelUuid());
+        vo.setHostAUuid(msg.getHostAUuid());
+        vo.setMonitorAIp(msg.getMonitorAIp());
+        vo.setHostZUuid(msg.getHostZUuid());
+        vo.setMonitorZIp(msg.getMonitorZIp());
+        vo.setStatus(msg.getStatus());
+        if (msg.getMsg() != null) {
+            vo.setMsg(msg.getMsg());
+        }
+        vo = dbf.updateAndRefresh(vo);
+
+        APIUpdateTunnelMonitorEvent evt = new APIUpdateTunnelMonitorEvent(msg.getId());
+        evt.setInventory(TunnelMonitorInventory.valueOf(vo));
+        bus.publish(evt);
     }
 
     @Override
@@ -243,66 +224,66 @@ public class MonitorManagerImpl  extends AbstractService implements MonitorManag
 
     @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        if(msg instanceof APICreateHostMsg){    //---------intercept-HOST-----------------------------------
+        if (msg instanceof APICreateHostMsg) {    //---------intercept-HOST-----------------------------------
             validate((APICreateHostMsg) msg);
-        }else if(msg instanceof APIUpdateHostMsg){
+        } else if (msg instanceof APIUpdateHostMsg) {
             validate((APIUpdateHostMsg) msg);
-        }else if(msg instanceof APICreateHostSwitchMonitorMsg){
+        } else if (msg instanceof APICreateHostSwitchMonitorMsg) {
             validate((APICreateHostSwitchMonitorMsg) msg);
-        }else if(msg instanceof APIUpdateHostSwitchMonitorMsg){
+        } else if (msg instanceof APIUpdateHostSwitchMonitorMsg) {
             validate((APICreateHostSwitchMonitorMsg) msg);
         }
         return msg;
     }
 
     //-----------------------------------------------------VALIDATE-HOST------------------------------------------------
-    private void validate(APICreateHostMsg msg){
+    private void validate(APICreateHostMsg msg) {
         //判断code是否已经存在
         SimpleQuery<HostVO> q = dbf.createQuery(HostVO.class);
         q.add(HostVO_.code, SimpleQuery.Op.EQ, msg.getCode());
-        if(q.isExists()){
-            throw new ApiMessageInterceptionException(argerr("host's code %s is already exist ",msg.getCode()));
+        if (q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("host's code %s is already exist ", msg.getCode()));
         }
     }
 
-    private void validate(APIUpdateHostMsg msg){
+    private void validate(APIUpdateHostMsg msg) {
         //判断所修改的监控机是否存在
         SimpleQuery<HostVO> q = dbf.createQuery(HostVO.class);
         q.add(HostVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
         if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("host %s is not exist ",msg.getUuid()));
+            throw new ApiMessageInterceptionException(argerr("host %s is not exist ", msg.getUuid()));
         }
         //判断code是否已经存在
-        if(msg.getCode() != null){
+        if (msg.getCode() != null) {
             SimpleQuery<HostVO> q2 = dbf.createQuery(HostVO.class);
             q2.add(HostVO_.code, SimpleQuery.Op.EQ, msg.getCode());
             q2.add(HostVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
-            if(q2.isExists()){
-                throw new ApiMessageInterceptionException(argerr("host's code %s is already exist ",msg.getCode()));
+            if (q2.isExists()) {
+                throw new ApiMessageInterceptionException(argerr("host's code %s is already exist ", msg.getCode()));
             }
         }
         //判断交换机所属节点是否存在
-        if(msg.getNodeUuid() != null){
+        if (msg.getNodeUuid() != null) {
             SimpleQuery<NodeVO> q3 = dbf.createQuery(NodeVO.class);
             q3.add(NodeVO_.uuid, SimpleQuery.Op.EQ, msg.getNodeUuid());
             if (!q3.isExists()) {
-                throw new ApiMessageInterceptionException(argerr("node %s is not exist ",msg.getNodeUuid()));
+                throw new ApiMessageInterceptionException(argerr("node %s is not exist ", msg.getNodeUuid()));
             }
         }
     }
 
-    private void validate(APICreateHostSwitchMonitorMsg msg){
+    private void validate(APICreateHostSwitchMonitorMsg msg) {
         // check hostUuid
         checkHostExist(msg.getHostUuid());
         // check physicalSwitchUuid
         // TODO: sunxuelong 2017/9/11  check physicalSwitchUuid;
     }
 
-    public void checkHostExist(String hostUuid){
+    public void checkHostExist(String hostUuid) {
         SimpleQuery<HostVO> q = dbf.createQuery(HostVO.class);
         q.add(HostVO_.uuid, SimpleQuery.Op.EQ, hostUuid);
         if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("host %s is not exist ",hostUuid));
+            throw new ApiMessageInterceptionException(argerr("host %s is not exist ", hostUuid));
         }
     }
 

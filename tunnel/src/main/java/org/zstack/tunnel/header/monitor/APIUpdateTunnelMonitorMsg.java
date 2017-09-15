@@ -4,13 +4,17 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.tunnel.header.host.HostEO;
 import org.zstack.tunnel.header.tunnel.TunnelEO;
+import org.zstack.tunnel.manage.TunnelConstant;
 
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-09-11.
  * @Description: .
  */
-public class APICreateTunnelMonitorMsg extends APIMessage {
+public class APIUpdateTunnelMonitorMsg extends APIMessage {
+
+    @APIParam(emptyString = false,resourceType = HostSwitchMonitorVO.class)
+    private String uuid;
 
     @APIParam(emptyString = false,maxLength = 32,resourceType = TunnelEO.class)
     private String tunnelUuid;
@@ -32,6 +36,14 @@ public class APICreateTunnelMonitorMsg extends APIMessage {
 
     @APIParam(required = false,maxLength = 32)
     private String msg;
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
     public String getTunnelUuid() {
         return tunnelUuid;

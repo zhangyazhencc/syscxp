@@ -25,8 +25,25 @@
     </message>
 
     <message>
+        <name>org.zstack.tunnel.header.monitor.APICreateTunnelMonitorMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.monitor.APIUpdateTunnelMonitorMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.tunnel.header.host.APIQueryHostMsg</name>
         <serviceId>query</serviceId>
     </message>
 
+    <message>
+        <name>org.zstack.tunnel.header.monitor.APIQueryTunnelMonitorMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.monitor.APIQueryHostSwitchMonitorMsg</name>
+        <serviceId>query</serviceId>
+    </message>
 </service>
