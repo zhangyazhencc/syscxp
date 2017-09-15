@@ -1,5 +1,6 @@
 package org.zstack.vpn.header;
 
+import org.springframework.util.CollectionUtils;
 import org.zstack.header.search.Inventory;
 
 import java.sql.Timestamp;
@@ -20,6 +21,8 @@ public class VpnGatewayInventory {
     private VpnStatus status;
     private Integer months;
     private Timestamp expiredDate;
+    private List<TunnelIfaceInventory> tunnelIfaces;
+    private List<VpnRouteInventory> vpnRoutes;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -36,6 +39,10 @@ public class VpnGatewayInventory {
         inv.setStatus(vo.getStatus());
         inv.setMonths(vo.getMonths());
         inv.setExpiredDate(vo.getExpiredDate());
+        if (!CollectionUtils.isEmpty(vo.getTunnelIfaces()))
+            inv.setTunnelIfaces(TunnelIfaceInventory.valueOf(vo.getTunnelIfaces()));
+        if (!CollectionUtils.isEmpty(vo.getTunnelIfaces()))
+            inv.setTunnelIfaces(TunnelIfaceInventory.valueOf(vo.getTunnelIfaces()));
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
@@ -152,5 +159,21 @@ public class VpnGatewayInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public List<TunnelIfaceInventory> getTunnelIfaces() {
+        return tunnelIfaces;
+    }
+
+    public void setTunnelIfaces(List<TunnelIfaceInventory> tunnelIfaces) {
+        this.tunnelIfaces = tunnelIfaces;
+    }
+
+    public List<VpnRouteInventory> getVpnRoutes() {
+        return vpnRoutes;
+    }
+
+    public void setVpnRoutes(List<VpnRouteInventory> vpnRoutes) {
+        this.vpnRoutes = vpnRoutes;
     }
 }

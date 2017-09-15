@@ -10,7 +10,7 @@ import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"delete"}, adminOnly = true)
 public class APIDeleteTunnelIfaceMsg extends APIDeleteMessage {
-    @APIParam
+    @APIParam(resourceType = TunnelIfaceVO.class)
     private String uuid;
 
     public String getUuid() {
@@ -20,6 +20,7 @@ public class APIDeleteTunnelIfaceMsg extends APIDeleteMessage {
     public void setUuid(String uuid) {
         this.uuid = uuid;
     }
+
     public ApiNotification __notification__() {
         final APIMessage that = this;
 

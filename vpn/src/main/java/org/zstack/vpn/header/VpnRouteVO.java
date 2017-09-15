@@ -1,5 +1,9 @@
 package org.zstack.vpn.header;
 
+import org.zstack.header.vo.ForeignKey;
+import org.zstack.header.vo.ForeignKey.ReferenceOption;
+
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -11,6 +15,7 @@ public class VpnRouteVO {
     @Column
     private String uuid;
     @Column
+    @ForeignKey(parentEntityClass = VpnGatewayVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
     private String gatewayUuid;
     @Column
     private RouteType routeType;

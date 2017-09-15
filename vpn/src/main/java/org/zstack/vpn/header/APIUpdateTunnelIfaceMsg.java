@@ -9,9 +9,9 @@ import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
 public class APIUpdateTunnelIfaceMsg extends APIMessage{
-    @APIParam
+    @APIParam(resourceType = TunnelIfaceVO.class)
     private String uuid;
-    @APIParam(required = false)
+    @APIParam
     private String name;
 
     public String getUuid() {

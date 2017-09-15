@@ -2,6 +2,7 @@ package org.zstack.vpn.header;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Set;
 
 @Entity
 @Table
@@ -29,6 +30,12 @@ public class VpnGatewayVO {
     private VpnStatus status;
     @Column
     private Integer months;
+    @OneToMany(cascade = CascadeType.REMOVE)
+    @JoinColumn(name="gatewayUuid",referencedColumnName="uuid")
+    private Set<TunnelIfaceVO> tunnelIfaces;
+    @OneToMany(cascade = CascadeType.REMOVE)
+    @JoinColumn(name="gatewayUuid",referencedColumnName="uuid")
+    private Set<VpnRouteVO> vpnRoutes;
     @Column
     private Timestamp expiredDate;
     @Column
@@ -139,5 +146,21 @@ public class VpnGatewayVO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public Set<TunnelIfaceVO> getTunnelIfaces() {
+        return tunnelIfaces;
+    }
+
+    public void setTunnelIfaces(Set<TunnelIfaceVO> tunnelIfaces) {
+        this.tunnelIfaces = tunnelIfaces;
+    }
+
+    public Set<VpnRouteVO> getVpnRoutes() {
+        return vpnRoutes;
+    }
+
+    public void setVpnRoutes(Set<VpnRouteVO> vpnRoutes) {
+        this.vpnRoutes = vpnRoutes;
     }
 }

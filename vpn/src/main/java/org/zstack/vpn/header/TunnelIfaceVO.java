@@ -1,5 +1,7 @@
 package org.zstack.vpn.header;
 
+import org.zstack.header.vo.ForeignKey;
+import org.zstack.header.vo.ForeignKey.ReferenceOption;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import java.sql.Timestamp;
@@ -9,6 +11,7 @@ public class TunnelIfaceVO {
     @Column
     private String uuid;
     @Column
+    @ForeignKey(parentEntityClass = VpnGatewayVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
     private String gatewayUuid;
     @Column
     private String name;

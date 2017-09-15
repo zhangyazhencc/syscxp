@@ -9,14 +9,14 @@ import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
 public class APIUpdateVpnGatewayMsg extends APIMessage{
-    @APIParam
+    @APIParam(resourceType = VpnGatewayVO.class, checkAccount = true)
     private String uuid;
     @APIParam(required = false)
     private String name;
     @APIParam(required = false)
     private String description;
     @APIParam(required = false)
-    private Integer vpnCidr;
+    private String vpnCidr;
     @APIParam(required = false)
     private VpnStatus status;
 
@@ -44,11 +44,11 @@ public class APIUpdateVpnGatewayMsg extends APIMessage{
         this.description = description;
     }
 
-    public Integer getVpnCidr() {
+    public String getVpnCidr() {
         return vpnCidr;
     }
 
-    public void setVpnCidr(Integer vpnCidr) {
+    public void setVpnCidr(String vpnCidr) {
         this.vpnCidr = vpnCidr;
     }
 
