@@ -20,6 +20,28 @@ VIEW `syscxp_tunnel`.`hostvo` AS
     WHERE
         (`syscxp_tunnel`.`hosteo`.`deleted` = 0);
 
+/*20170915 sunxuelong */
+CREATE TABLE IF NOT EXISTS SpeedRecordsVO (
+  `uuid` VARCHAR(32) NOT NULL comment 'UUID',
+  `tunnelUuid` VARCHAR(32) NOT NULL COMMENT 'TunnelVO.uuid',
+  `srcHostUuid` VARCHAR(32) NOT NULL COMMENT '发起监控机uuid',
+  `dstHostUuid` VARCHAR(32) NOT NULL COMMENT '目标监控机uuid',
+  `protocol` VARCHAR(32) NOT NULL COMMENT '协议',
+  `duration` INT(11) NOT NULL COMMENT '持续时间(秒)',
+  `avgSpeed` INT(11) NOT NULL COMMENT '平均速度(k/s)',
+  `maxSpeed` INT(11) NOT NULL COMMENT '最大速度(k/s)',
+  `minSpeed` INT(11) NOT NULL COMMENT '最小速度(k/s)',
+  `completed` TINYINT(1) NOT NULL COMMENT '完成标识 0:未完成 1:已完成',
+  `deleted` TINYINT(1) NOT NULL DEFAULT '0',
+  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `uuid` (`uuid`)
+)
+ENGINE = InnoDB
+DEFAULT CHARACTER SET = utf8
+COMMENT '监控测速配置';
+
 /*20170911 sunxuelong */
 alter table syscxp_tunnel.HostEO add nodeUuid varchar(32) comment '节点ID(NodeEO.uuid)' after uuid;
 
