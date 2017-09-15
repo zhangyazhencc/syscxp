@@ -59,13 +59,13 @@ CREATE TABLE  `syscxp_vpn`.`VpnGatewayVO` (
 	`endpointUuid` VARCHAR(32) NOT NULL COMMENT '连接点uuid',
 	`status` VARCHAR(10) DEFAULT NULL COMMENT '启动状态',
 	`months` int(11) NOT NULL COMMENT '购买时长',
-	`expiredDate` timestamp DEFAULT NULL COMMENT '截止时间',
+	`expiredDate` timestamp COMMENT '截止时间',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `syscxp_vpn`.`tunnelIfaceVO` (
+CREATE TABLE  `syscxp_vpn`.`TunnelIfaceVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`gatewayUuid` VARCHAR(32) NOT NULL COMMENT 'VPN网关',
 	`name` varchar(255) NOT NULL COMMENT '名称',
@@ -80,10 +80,10 @@ CREATE TABLE  `syscxp_vpn`.`tunnelIfaceVO` (
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `syscxp_vpn`.`tunnelIfaceVO` (
+CREATE TABLE  `syscxp_vpn`.`VpnRouteVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`gatewayUuid` VARCHAR(32) NOT NULL COMMENT 'VPN网关',
-	`type` varchar(32) NOT NULL COMMENT '类型',
+	`routeType` varchar(32) NOT NULL COMMENT '类型',
 	`nextIfaceUuid` VARCHAR(32) NOT NULL COMMENT '下一跳接口',
 	`nextIfaceName` VARCHAR(32) NOT NULL COMMENT '',
 	`targetCidr` VARCHAR(32) NOT NULL COMMENT '目标网段',
@@ -94,12 +94,12 @@ CREATE TABLE  `syscxp_vpn`.`tunnelIfaceVO` (
 
 CREATE TABLE  `syscxp_vpn`.`VpnHostVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-	`name` varchar(255) NOT NULL COMMENT '名称',
+	`name` varchar(255) NOT NULL UNIQUE COMMENT '名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '描述',
 	`publicIface` VARCHAR(255) NOT NULL COMMENT '公共物理接口',
 	`tunnelIface` VARCHAR(255) NOT NULL COMMENT '云专线物理接口',
 	`hostIp` VARCHAR(128) NOT NULL COMMENT '物理机IP',
-	`sshPort` VARCHAR(10) DEFAULT '' COMMENT 'ssh端口',
+	`sshPort` VARCHAR(10) NOT NULL COMMENT 'ssh端口',
 	`username` VARCHAR(255) NOT NULL COMMENT '用户名',
 	`password` VARCHAR(255) NOT NULL COMMENT '密码',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',

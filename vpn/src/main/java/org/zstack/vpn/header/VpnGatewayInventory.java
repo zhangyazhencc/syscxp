@@ -1,40 +1,54 @@
 package org.zstack.vpn.header;
 
-import javax.persistence.*;
+import org.zstack.header.search.Inventory;
+
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-@Entity
-@Table
-public class VpnGatewayVO {
-
-    @Id
-    @Column
+@Inventory(mappingVOClass = VpnGatewayVO.class)
+public class VpnGatewayInventory {
     private String uuid;
-    @Column
     private String accountUuid;
-    @Column
     private String hostUuid;
-    @Column
     private String name;
-    @Column
     private String description;
-    @Column
     private String vpnCidr;
-    @Column
     private Integer bandwidth;
-    @Column
     private String endpointUuid;
-    @Column
-    @Enumerated(EnumType.STRING)
     private VpnStatus status;
-    @Column
     private Integer months;
-    @Column
     private Timestamp expiredDate;
-    @Column
     private Timestamp lastOpDate;
-    @Column
     private Timestamp createDate;
+
+    public static VpnGatewayInventory valueOf(VpnGatewayVO vo) {
+        VpnGatewayInventory inv = new VpnGatewayInventory();
+        inv.setUuid(vo.getUuid());
+        inv.setAccountUuid(vo.getAccountUuid());
+        inv.setHostUuid(vo.getHostUuid());
+        inv.setName(vo.getName());
+        inv.setDescription(vo.getDescription());
+        inv.setVpnCidr(vo.getVpnCidr());
+        inv.setBandwidth(vo.getBandwidth());
+        inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setStatus(vo.getStatus());
+        inv.setMonths(vo.getMonths());
+        inv.setExpiredDate(vo.getExpiredDate());
+        inv.setLastOpDate(vo.getLastOpDate());
+        inv.setCreateDate(vo.getCreateDate());
+        return inv;
+    }
+
+    public static List<VpnGatewayInventory> valueOf(Collection<VpnGatewayVO> vos) {
+        List<VpnGatewayInventory> invs = new ArrayList<VpnGatewayInventory>();
+        for (VpnGatewayVO vo : vos) {
+            invs.add(VpnGatewayInventory.valueOf(vo));
+        }
+
+        return invs;
+    }
 
     public String getUuid() {
         return uuid;
@@ -101,7 +115,6 @@ public class VpnGatewayVO {
     }
 
     public VpnStatus getStatus() {
-
         return status;
     }
 
