@@ -38,9 +38,9 @@ public class APICreateTunnelMsg extends APIMessage {
     @APIParam(required = false)
     private String description;
     @APIParam(required = false)
-    private List<VlanSegment> vlanSegmentA;
+    private List<InnerVlanSegment> vlanSegmentA;
     @APIParam(required = false)
-    private List<VlanSegment> vlanSegmentZ;
+    private List<InnerVlanSegment> vlanSegmentZ;
 
     public String getNetWorkUuid() {
         return netWorkUuid;
@@ -130,19 +130,19 @@ public class APICreateTunnelMsg extends APIMessage {
         this.description = description;
     }
 
-    public List<VlanSegment> getVlanSegmentA() {
+    public List<InnerVlanSegment> getVlanSegmentA() {
         return vlanSegmentA;
     }
 
-    public void setVlanSegmentA(List<VlanSegment> vlanSegmentA) {
+    public void setVlanSegmentA(List<InnerVlanSegment> vlanSegmentA) {
         this.vlanSegmentA = vlanSegmentA;
     }
 
-    public List<VlanSegment> getVlanSegmentZ() {
+    public List<InnerVlanSegment> getVlanSegmentZ() {
         return vlanSegmentZ;
     }
 
-    public void setVlanSegmentZ(List<VlanSegment> vlanSegmentZ) {
+    public void setVlanSegmentZ(List<InnerVlanSegment> vlanSegmentZ) {
         this.vlanSegmentZ = vlanSegmentZ;
     }
 
