@@ -20,7 +20,7 @@
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>org.zstack.vpn.header.gateway.VpnVO</value>
+                <value>org.zstack.vpn.header.vpn.VpnVO</value>
             </list>
         </property>
     </bean>
