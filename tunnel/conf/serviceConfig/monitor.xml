@@ -33,7 +33,20 @@
     </message>
 
     <message>
+        <name>org.zstack.tunnel.header.monitor.APICreateSpeedRecordsMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.monitor.APIUpdateSpeedRecordsMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.tunnel.header.host.APIQueryHostMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.monitor.APIQuerySpeedRecordsMsg</name>
         <serviceId>query</serviceId>
     </message>
 

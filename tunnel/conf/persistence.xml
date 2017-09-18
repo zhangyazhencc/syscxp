@@ -36,5 +36,8 @@
         <class>org.zstack.tunnel.header.monitor.HostSwitchMonitorVO</class>
         <class>org.zstack.tunnel.header.monitor.HostSwitchMonitorEO</class>
 
+        <class>org.zstack.tunnel.header.monitor.TunnelMonitorVO</class>
+        <class>org.zstack.tunnel.header.monitor.SpeedRecordsVO</class>
+
     </persistence-unit>
 </persistence>
