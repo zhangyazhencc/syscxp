@@ -153,11 +153,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         vo.setLocalIP(msg.getLocalIP());
         vo.setUsername(msg.getUsername());
         vo.setPassword(msg.getPassword());
-        if(msg.getDescription() != null){
-            vo.setDescription(msg.getDescription());
-        }else{
-            vo.setDescription(null);
-        }
+        vo.setDescription(msg.getDescription());
 
         vo = dbf.persistAndRefresh(vo);
 

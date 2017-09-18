@@ -97,6 +97,8 @@ public class APICreateInterfaceMsg extends APIMessage {
     }
 
     public String getAccountUuid() {
+
+
         return accountUuid;
     }
 

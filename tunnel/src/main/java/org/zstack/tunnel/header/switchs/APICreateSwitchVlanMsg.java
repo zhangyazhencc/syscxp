@@ -15,7 +15,7 @@ public class APICreateSwitchVlanMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 32)
     private String switchUuid;
 
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false, numberRange = {1, 4094})
     private Integer startVlan;
 
     @APIParam(emptyString = false)

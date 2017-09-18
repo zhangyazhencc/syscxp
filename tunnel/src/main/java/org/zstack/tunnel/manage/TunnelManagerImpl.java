@@ -10,12 +10,14 @@ import org.zstack.core.cloudbus.ResourceDestinationMaker;
 import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.DbEntityLister;
+import org.zstack.core.db.GLock;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.tunnel.header.endpoint.EndpointType;
@@ -116,28 +118,32 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }else{                              //---boss
             vo.setAccountUuid(msg.getAccountUuid());
         }
+        GLock glock = new GLock("maxvsi", 120);
+        glock.lock();
         String sql = "select max(vo.vsi) from NetWorkVO vo";
-        TypedQuery<Integer> vq = dbf.getEntityManager().createQuery(sql, Integer.class);
-        Integer vsi = vq.getSingleResult();
-        if(vsi == null){
-            vsi=0;
-            vo.setVsi(vsi+1);
-        }else{
-            vo.setVsi(vsi+1);
-        }
-        vo.setName(msg.getName());
-        vo.setMonitorCidr(msg.getMonitorCidr());
-        if(msg.getDescription() != null){
+        try {
+            TypedQuery<Integer> vq = dbf.getEntityManager().createQuery(sql, Integer.class);
+            Integer vsi = vq.getSingleResult();
+
+            if(vsi == null){
+                vo.setVsi(1);
+            }else{
+                vo.setVsi(vsi+1);
+            }
+
+            vo.setName(msg.getName());
+            vo.setMonitorCidr(msg.getMonitorCidr());
             vo.setDescription(msg.getDescription());
-        }else{
-            vo.setDescription(null);
+
+            vo = dbf.persistAndRefresh(vo);
+
+            APICreateNetWorkEvent evt = new APICreateNetWorkEvent(msg.getId());
+            evt.setInventory(NetWorkInventory.valueOf(vo));
+            bus.publish(evt);
+
+        }finally {
+            glock.unlock();
         }
-
-        vo = dbf.persistAndRefresh(vo);
-
-        APICreateNetWorkEvent evt = new APICreateNetWorkEvent(msg.getId());
-        evt.setInventory(NetWorkInventory.valueOf(vo));
-        bus.publish(evt);
     }
 
     private void handle(APICreateNetWorkManualMsg msg){
@@ -148,11 +154,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setVsi(msg.getVsi());
         vo.setName(msg.getName());
         vo.setMonitorCidr(msg.getMonitorCidr());
-        if(msg.getDescription() != null){
-            vo.setDescription(msg.getDescription());
-        }else{
-            vo.setDescription(null);
-        }
+        vo.setDescription(msg.getDescription());
 
         vo = dbf.persistAndRefresh(vo);
 
@@ -378,8 +380,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     @Transactional
     private void handle(APICreateTunnelMsg msg){
         TunnelVO vo = new TunnelVO();
-        String tunnelUuid = Platform.getUuid();
-        vo.setUuid(tunnelUuid);
+        vo.setUuid(Platform.getUuid());
 
         if(msg.getAccountUuid() == null){   //---nass
             vo.setAccountUuid(msg.getSession().getAccountUuid());
@@ -411,7 +412,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if(aVlan != null){
             vo.setaVlan(aVlan);
         }else{
-            aVlan = allocateVlan(vlanListA,allocatedVlansA);
+            aVlan = allocateVlan(vlanListA, allocatedVlansA);
             if(aVlan == 0){
                 throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
             }
@@ -445,12 +446,12 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         //如果是独享口并开启Qinq,需要指定内部vlan段
         if(msg.getIsExclusiveA() == 1 && msg.getEnableQinqA() == 1){
             vo.setEnableQinqA(msg.getEnableQinqA());
-            List<VlanSegment> vlanSegmentA = msg.getVlanSegmentA();
+            List<InnerVlanSegment> vlanSegmentA = msg.getVlanSegmentA();
 
-            for(VlanSegment vlanSegment:vlanSegmentA){
+            for(InnerVlanSegment vlanSegment:vlanSegmentA){
                 QinqVO qvo = new QinqVO();
                 qvo.setUuid(Platform.getUuid());
-                qvo.setTunnelUuid(tunnelUuid);
+                qvo.setTunnelUuid(vo.getUuid());
                 qvo.setInterfaceUuid(msg.getInterfaceAUuid());
                 qvo.setStartVlan(vlanSegment.getStartVlan());
                 qvo.setEndVlan(vlanSegment.getEndVlan());
@@ -461,12 +462,12 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
         if(msg.getIsExclusiveZ() == 1 && msg.getEnableQinqZ() == 1){
             vo.setEnableQinqZ(msg.getEnableQinqZ());
-            List<VlanSegment> vlanSegmentZ = msg.getVlanSegmentZ();
+            List<InnerVlanSegment> vlanSegmentZ = msg.getVlanSegmentZ();
 
-            for(VlanSegment vlanSegment:vlanSegmentZ){
+            for(InnerVlanSegment vlanSegment:vlanSegmentZ){
                 QinqVO qvo = new QinqVO();
                 qvo.setUuid(Platform.getUuid());
-                qvo.setTunnelUuid(tunnelUuid);
+                qvo.setTunnelUuid(vo.getUuid());
                 qvo.setInterfaceUuid(msg.getInterfaceZUuid());
                 qvo.setStartVlan(vlanSegment.getStartVlan());
                 qvo.setEndVlan(vlanSegment.getEndVlan());
@@ -533,9 +534,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
 
         if(msg.getVlanSegmentA() != null){
-            List<VlanSegment> vlanSegmentA = msg.getVlanSegmentA();
+            List<InnerVlanSegment> vlanSegmentA = msg.getVlanSegmentA();
 
-            for(VlanSegment vlanSegment:vlanSegmentA){
+            for(InnerVlanSegment vlanSegment:vlanSegmentA){
                 QinqVO qvo = new QinqVO();
                 qvo.setUuid(Platform.getUuid());
                 qvo.setTunnelUuid(tunnelUuid);
@@ -546,9 +547,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             }
         }
         if(msg.getVlanSegmentZ() != null){
-            List<VlanSegment> vlanSegmentZ = msg.getVlanSegmentZ();
+            List<InnerVlanSegment> vlanSegmentZ = msg.getVlanSegmentZ();
 
-            for(VlanSegment vlanSegment:vlanSegmentZ){
+            for(InnerVlanSegment vlanSegment:vlanSegmentZ){
                 QinqVO qvo = new QinqVO();
                 qvo.setUuid(Platform.getUuid());
                 qvo.setTunnelUuid(tunnelUuid);
@@ -666,7 +667,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     //分配可用VLAN
-    private int allocateVlan(List<SwitchVlanVO> vlanList,List<Integer> allocatedVlans){
+    private int allocateVlan(List<SwitchVlanVO> vlanList, List<Integer> allocatedVlans){
         int vlan = 0;
         for (SwitchVlanVO vlanVO : vlanList) {
             Integer startVlan = vlanVO.getStartVlan();
@@ -734,9 +735,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     private void validate(APICreateNetWorkMsg msg){
         String accountUuid = null;
-        if(msg.getAccountUuid() == null){  //---nass
+        if(msg.getSession().getType() != AccountType.SystemAdmin){  //---nass
             accountUuid = msg.getSession().getAccountUuid();
-        }else{                              //---boss
+        }else{ //---boss
             accountUuid = msg.getAccountUuid();
         }
 
@@ -905,8 +906,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 "or (:startVlan between a.startVlan and a.endVlan) " +
                 "or (:endVlan between a.startVlan and a.endVlan))";
         if(msg.getVlanSegmentA() != null){
-            List<VlanSegment> vlanSegmentA = msg.getVlanSegmentA();
-            for(VlanSegment vlanSegment:vlanSegmentA){
+            List<InnerVlanSegment> vlanSegmentA = msg.getVlanSegmentA();
+            for(InnerVlanSegment vlanSegment:vlanSegmentA){
                 TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
                 vq.setParameter("interfaceUuid",msg.getInterfaceAUuid());
                 vq.setParameter("startVlan",vlanSegment.getStartVlan());
@@ -919,8 +920,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
 
         if(msg.getVlanSegmentZ() != null){
-            List<VlanSegment> vlanSegmentZ = msg.getVlanSegmentZ();
-            for(VlanSegment vlanSegment:vlanSegmentZ){
+            List<InnerVlanSegment> vlanSegmentZ = msg.getVlanSegmentZ();
+            for(InnerVlanSegment vlanSegment:vlanSegmentZ){
                 TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
                 vq.setParameter("interfaceUuid",msg.getInterfaceZUuid());
                 vq.setParameter("startVlan",vlanSegment.getStartVlan());
@@ -1034,8 +1035,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 "or (:startVlan between a.startVlan and a.endVlan) " +
                 "or (:endVlan between a.startVlan and a.endVlan))";
         if(msg.getVlanSegmentA() != null){
-            List<VlanSegment> vlanSegmentA = msg.getVlanSegmentA();
-            for(VlanSegment vlanSegment:vlanSegmentA){
+            List<InnerVlanSegment> vlanSegmentA = msg.getVlanSegmentA();
+            for(InnerVlanSegment vlanSegment:vlanSegmentA){
                 TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
                 vq.setParameter("interfaceUuid",msg.getInterfaceAUuid());
                 vq.setParameter("startVlan",vlanSegment.getStartVlan());
@@ -1048,8 +1049,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
 
         if(msg.getVlanSegmentZ() != null){
-            List<VlanSegment> vlanSegmentZ = msg.getVlanSegmentZ();
-            for(VlanSegment vlanSegment:vlanSegmentZ){
+            List<InnerVlanSegment> vlanSegmentZ = msg.getVlanSegmentZ();
+            for(InnerVlanSegment vlanSegment:vlanSegmentZ){
                 TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
                 vq.setParameter("interfaceUuid",msg.getInterfaceZUuid());
                 vq.setParameter("startVlan",vlanSegment.getStartVlan());

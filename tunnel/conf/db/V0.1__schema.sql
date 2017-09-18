@@ -1,3 +1,24 @@
+/*20170915 sunxuelong */
+CREATE TABLE `SpeedRecordsVO` (
+  `uuid` varchar(32) NOT NULL COMMENT 'uuid',
+  `tunnelUuid` varchar(32) NOT NULL COMMENT 'TunnelVO.uuid',
+  `srcHostUuid` varchar(32) NOT NULL COMMENT '源监控机uuid',
+  `srcMonitorIp` varchar(32) NOT NULL COMMENT '源监控IP',
+  `dstHostUuid` varchar(32) NOT NULL COMMENT '目标监控机uuid',
+  `dstMonitorIp` varchar(32) NOT NULL COMMENT '目标监控IP',
+  `protocolType` varchar(32) NOT NULL COMMENT '协议',
+  `duration` int(11) NOT NULL COMMENT '持续时间(秒)',
+  `avgSpeed` int(11) DEFAULT '0' COMMENT '平均速度(k/s)',
+  `maxSpeed` int(11) DEFAULT '0' COMMENT '最大速度(k/s)',
+  `minSpeed` int(11) DEFAULT '0' COMMENT '最小速度(k/s)',
+  `completed` tinyint(1) NOT NULL DEFAULT '0' COMMENT '完成标识 0:未完成 1:已完成',
+  `deleted` tinyint(1) NOT NULL DEFAULT '0',
+  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `uuid` (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='监控测速纪录';
+
 /*20170912 sunxuelong */
 ALTER TABLE HostEO CHANGE ip hostIp VARCHAR(128);
 
@@ -297,36 +318,24 @@ CREATE TABLE  `syscxp_tunnel`.`QinqVO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
-##速度测试
-CREATE TABLE `syscxp_tunnel`.`SpeedRecordsVO` (
-  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `tunnelUuid` VARCHAR(32) DEFAULT NULL,
-  `protocol` varchar(32) DEFAULT NULL,
-  `duration` int(11) DEFAULT NULL,
-  `srcDirection` int(11) DEFAULT NULL,
-  `dstDirection` int(11) DEFAULT NULL,
-  `avgSpeed` int(11) DEFAULT NULL,
-  `maxSpeed` int(11) DEFAULT NULL,
-  `minSpeed` int(11) DEFAULT NULL,
-  `completed` TINYINT(1) DEFAULT NULL,
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  PRIMARY KEY (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 ##通道监控
-CREATE TABLE `syscxp_tunnel`.`TunnelMonitorVO` (
-  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `tunnelUuid` VARCHAR(32) DEFAULT NULL,
-  `monitorAIp` varchar(64) DEFAULT NULL,
-  `monitorBIp` varchar(64) DEFAULT NULL,
-  `status` varchar(32) DEFAULT NULL,
-  `msg` varchar(1024) DEFAULT NULL,
+CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`TunnelMonitorVO` (
+  `uuid` varchar(32) NOT NULL COMMENT 'uuid',
+  `tunnelUuid` VARCHAR(32) NOT NULL COMMENT '通道uuid(TunnelVO.uuid)',
+  `hostAUuid` VARCHAR(32) NOT NULL COMMENT 'A端监控主机(HostVO.uuid)',
+  `monitorAIp` varchar(64) NOT NULL COMMENT 'A端监控IP',
+  `hostZUuid` varchar(64) NOT NULL COMMENT 'Z端监控主机(HostVO.uuid)',
+  `monitorZIp` varchar(64) NOT NULL COMMENT 'Z端监控IP',
+  `status` varchar(32) NOT NULL COMMENT '状态(NORMAL,APPLYING,TERMINATED',
+  `msg` varchar(1024) COMMENT '消息',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
-  PRIMARY KEY (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `uuid` (`uuid`)
+)
+ENGINE=InnoDB
+DEFAULT CHARSET=utf8
+COMMENT '通道监控';
 
 ##监控机
 CREATE TABLE  `syscxp_tunnel`.`HostEO` (
