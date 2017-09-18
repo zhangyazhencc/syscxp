@@ -1,4 +1,4 @@
-package org.zstack.billing.manage;
+package org.zstack.header.billing;
 
 import org.zstack.header.rest.SDK;
 

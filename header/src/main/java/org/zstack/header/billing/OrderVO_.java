@@ -1,7 +1,4 @@
-package org.zstack.billing.header.order;
-
-import org.zstack.billing.header.balance.ProductChargeModel;
-import org.zstack.billing.header.balance.ProductType;
+package org.zstack.header.billing;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;

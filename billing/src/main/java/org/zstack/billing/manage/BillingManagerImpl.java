@@ -21,28 +21,33 @@ import org.zstack.billing.header.order.*;
 import org.zstack.billing.header.receipt.*;
 import org.zstack.billing.header.renew.*;
 import org.zstack.billing.header.sla.*;
+import org.zstack.core.identity.IdentityGlobalProperty;
+import org.zstack.core.identity.InnerMessageHelper;
+import org.zstack.core.rest.RESTApiDecoder;
+import org.zstack.header.account.APIExistsAccountByUuidMsg;
+import org.zstack.header.account.APIExistsAccountByUuidReply;
 import org.zstack.header.alipay.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
-import org.zstack.core.cloudbus.EventFacade;
 import org.zstack.core.cloudbus.MessageSafe;
-import org.zstack.core.componentloader.PluginRegistry;
-import org.zstack.core.config.GlobalConfigFacade;
 import org.zstack.core.db.*;
 import org.zstack.core.db.SimpleQuery.Op;
 import org.zstack.core.errorcode.ErrorFacade;
-import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
+import org.zstack.header.billing.*;
 import org.zstack.header.exception.CloudRuntimeException;
+import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
+import org.zstack.header.rest.RESTFacade;
+import org.zstack.header.rest.RestAPIResponse;
+import org.zstack.header.rest.RestAPIState;
 import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
-import javax.management.relation.RoleUnresolved;
 import javax.persistence.Query;
 import javax.persistence.TypedQuery;
 
@@ -59,13 +64,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     @Autowired
     private ErrorFacade errf;
     @Autowired
-    private ThreadFacade thdf;
-    @Autowired
-    private PluginRegistry pluginRgty;
-    @Autowired
-    private EventFacade evtf;
-    @Autowired
-    private GlobalConfigFacade gcf;
+    private RESTFacade restf;
 
     @Override
     @MessageSafe
@@ -1134,6 +1133,23 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     private void handle(APIUpdateAccountBalanceMsg msg) {
         AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+        if(vo == null){
+            APIExistsAccountByUuidMsg aMsg = new APIExistsAccountByUuidMsg();
+            InnerMessageHelper.setMD5(aMsg);
+            String gstr = RESTApiDecoder.dump(aMsg);
+            RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
+            SessionInventory session = null;
+            if (rsp.getState().equals(RestAPIState.Done.toString())) {
+                APIExistsAccountByUuidReply replay = (APIExistsAccountByUuidReply) RESTApiDecoder.loads(rsp.getResult());
+                if (replay.isExist()) {
+                   throw new IllegalArgumentException("the account uuid is not valid");
+                }
+            }
+            AccountBalanceVO accountBalanceVO = new AccountBalanceVO();
+            accountBalanceVO.setUuid(msg.getAccountUuid());
+            vo = dbf.persistAndRefresh(accountBalanceVO);
+        }
+
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
         int hash = msg.getAccountUuid().hashCode();
