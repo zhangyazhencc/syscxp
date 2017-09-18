@@ -43,7 +43,7 @@
         <name>org.zstack.account.header.user.APIDeleteUserMsg</name>
     </message>
     <message>
-        <name>org.zstack.header.account.APIExistsAccountByUuidMsg</name>
+        <name>org.zstack.header.account.APIValidateAccountMsg</name>
     </message>
 
     <message>

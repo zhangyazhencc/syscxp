@@ -24,8 +24,8 @@ import org.zstack.billing.header.sla.*;
 import org.zstack.core.identity.IdentityGlobalProperty;
 import org.zstack.core.identity.InnerMessageHelper;
 import org.zstack.core.rest.RESTApiDecoder;
-import org.zstack.header.account.APIExistsAccountByUuidMsg;
-import org.zstack.header.account.APIExistsAccountByUuidReply;
+import org.zstack.header.account.APIValidateAccountMsg;
+import org.zstack.header.account.APIValidateAccountReply;
 import org.zstack.header.alipay.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
@@ -1134,14 +1134,14 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     private void handle(APIUpdateAccountBalanceMsg msg) {
         AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         if(vo == null){
-            APIExistsAccountByUuidMsg aMsg = new APIExistsAccountByUuidMsg();
+            APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
             InnerMessageHelper.setMD5(aMsg);
             String gstr = RESTApiDecoder.dump(aMsg);
             RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
             SessionInventory session = null;
             if (rsp.getState().equals(RestAPIState.Done.toString())) {
-                APIExistsAccountByUuidReply replay = (APIExistsAccountByUuidReply) RESTApiDecoder.loads(rsp.getResult());
-                if (replay.isExist()) {
+                APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
+                if (replay.isValidAccount()) {
                    throw new IllegalArgumentException("the account uuid is not valid");
                 }
             }

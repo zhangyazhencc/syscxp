@@ -18,8 +18,8 @@ import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.*;
 import org.zstack.core.errorcode.ErrorFacade;
 
-import org.zstack.header.account.APIExistsAccountByUuidMsg;
-import org.zstack.header.account.APIExistsAccountByUuidReply;
+import org.zstack.header.account.APIValidateAccountMsg;
+import org.zstack.header.account.APIValidateAccountReply;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.exception.CloudRuntimeException;
@@ -146,18 +146,18 @@ public class AccountBase extends AbstractAccount {
             handle((APIResetUserPWDMsg) msg);
         } else if (msg instanceof APIUpdateRoleMsg) {
             handle((APIUpdateRoleMsg) msg);
-        }else if (msg instanceof APIExistsAccountByUuidMsg) {
-            handle((APIExistsAccountByUuidMsg) msg);
+        }else if (msg instanceof APIValidateAccountMsg) {
+            handle((APIValidateAccountMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APIExistsAccountByUuidMsg msg) {
+    private void handle(APIValidateAccountMsg msg) {
         AccountVO accountVO = dbf.findByUuid(msg.getUuid(),AccountVO.class);
-        APIExistsAccountByUuidReply reply = new APIExistsAccountByUuidReply();
+        APIValidateAccountReply reply = new APIValidateAccountReply();
         if(accountVO!=null){
-            reply.setExist(true);
+            reply.setValidAccount(true);
         }
         bus.reply(msg, reply);
     }
