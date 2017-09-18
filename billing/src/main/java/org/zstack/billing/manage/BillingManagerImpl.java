@@ -132,9 +132,45 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIGetAccountBalanceListMsg) msg);
         }  else if (msg instanceof APIUpdateOrderExpiredTimeMsg) {
             handle((APIUpdateOrderExpiredTimeMsg) msg);
+        }   else if (msg instanceof APICreateAccountDischargeMsg) {
+            handle((APICreateAccountDischargeMsg) msg);
+        }   else if (msg instanceof APIDeleteAccountDischargeMsg) {
+            handle((APIDeleteAccountDischargeMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIDeleteAccountDischargeMsg msg) {
+        AccountDischargeVO accountDischargeVO = dbf.findByUuid(msg.getUuid(), AccountDischargeVO.class);
+        if (accountDischargeVO != null) {
+            dbf.remove(accountDischargeVO);
+        }
+        APIDeleteAccountDischargeEvent event = new APIDeleteAccountDischargeEvent();
+        event.setInventory(AccountDischargeInventory.valueOf(accountDischargeVO));
+        bus.publish(event);
+    }
+
+    private void handle(APICreateAccountDischargeMsg msg) {
+        SimpleQuery<AccountDischargeVO> query = dbf.createQuery(AccountDischargeVO.class);
+        query.add(AccountDischargeVO_.accountUuid, Op.EQ, msg.getAccountUuid());
+        query.add(AccountDischargeVO_.productType, Op.EQ, msg.getProductType());
+        query.add(AccountDischargeVO_.category, Op.EQ, msg.getCategory());
+        boolean exists = query.isExists();
+        if(exists){
+            throw new IllegalArgumentException("the account has the discharge");
+        }
+        AccountDischargeVO accountDischargeVO = new AccountDischargeVO();
+        accountDischargeVO.setUuid(Platform.getUuid());
+        accountDischargeVO.setAccountUuid(msg.getAccountUuid());
+        accountDischargeVO.setProductType(msg.getProductType());
+        accountDischargeVO.setCategory(msg.getCategory());
+        accountDischargeVO.setDisCharge(msg.getDisCharge());
+        dbf.persistAndRefresh(accountDischargeVO);
+        APICreateAccountDischargeEvent event = new APICreateAccountDischargeEvent();
+        event.setInventory(AccountDischargeInventory.valueOf(accountDischargeVO));
+        bus.publish(event);
+
     }
 
     private void handle(APIUpdateOrderExpiredTimeMsg msg) {

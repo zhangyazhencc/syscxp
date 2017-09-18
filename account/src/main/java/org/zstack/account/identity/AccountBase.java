@@ -1,5 +1,6 @@
 package org.zstack.account.identity;
 
+import org.hibernate.annotations.Source;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -146,11 +147,15 @@ public class AccountBase extends AbstractAccount {
             handle((APIResetUserPWDMsg) msg);
         } else if (msg instanceof APIUpdateRoleMsg) {
             handle((APIUpdateRoleMsg) msg);
+        } else if (msg instanceof APIAccountMailAuthenticationMsg) {
+            handle((APIAccountMailAuthenticationMsg) msg);
         }else if (msg instanceof APIValidateAccountMsg) {
             handle((APIValidateAccountMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+
+
     }
 
     private void handle(APIValidateAccountMsg msg) {
@@ -301,6 +306,7 @@ public class AccountBase extends AbstractAccount {
         evt.setInventory(AccountContactsInventory.valueOf(dbf.persistAndRefresh(acvo)));
         bus.publish(evt);
     }
+
 
     private void handle(APIDeleteAccountContactsMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), AccountContactsVO.class);
@@ -471,6 +477,9 @@ public class AccountBase extends AbstractAccount {
 
     @Transactional
     private void handle(APIUpdateAccountMsg msg) {
+
+        logger.error(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+msg.getUserUuid()+"<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
+
         AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
 
         boolean update = false;
@@ -522,11 +531,15 @@ public class AccountBase extends AbstractAccount {
             if (msg.getUserUuid() != null) {
                 account.getAccountExtraInfo().setUserUuid(msg.getUserUuid());
                 update = true;
+                logger.error(">>>>>>>>>>>>>>>>>>>>>>ififififiif>>>>>>>");
             }
         }
 
         if (update) {
-            account = dbf.getEntityManager().merge(account);
+//            account = dbf.getEntityManager().merge(account);
+            account = dbf.updateAndRefresh(account);
+            logger.error(">>>>>>>>>>>>>>>>upupupupupupupup>>>>>>>>>>>>>");
+
         }
 
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
