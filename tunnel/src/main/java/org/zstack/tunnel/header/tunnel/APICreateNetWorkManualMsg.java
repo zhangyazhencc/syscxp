@@ -4,14 +4,16 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 /**
- * Created by DCY on 2017-09-07
+ * Created by DCY on 2017-09-14
  */
-public class APICreateNetWorkMsg extends APIMessage {
+public class APICreateNetWorkManualMsg extends APIMessage {
 
-    @APIParam(required = false,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32)
     private String accountUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
+    @APIParam(emptyString = false)
+    private Integer vsi;
     @APIParam(emptyString = false,maxLength = 32)
     private String monitorCidr;
     @APIParam(required = false,maxLength = 255)
@@ -31,6 +33,14 @@ public class APICreateNetWorkMsg extends APIMessage {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public Integer getVsi() {
+        return vsi;
+    }
+
+    public void setVsi(Integer vsi) {
+        this.vsi = vsi;
     }
 
     public String getMonitorCidr() {

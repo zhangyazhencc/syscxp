@@ -6,11 +6,11 @@ import org.zstack.header.message.APIParam;
 import java.util.List;
 
 /**
- * Created by DCY on 2017-09-11
+ * Created by DCY on 2017-09-15
  */
-public class APICreateTunnelMsg extends APIMessage {
+public class APICreateTunnelManualMsg extends APIMessage {
 
-    @APIParam(required = false,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32)
     private String accountUuid;
     @APIParam(emptyString = false,resourceType = NetWorkVO.class, checkAccount = true)
     private String netWorkUuid;
@@ -20,24 +20,32 @@ public class APICreateTunnelMsg extends APIMessage {
     private Integer bandwidth;
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceAUuid;
+    @APIParam(emptyString = false)
+    private Integer aVlan;
     @APIParam(required = false)
     private Integer enableQinqA;
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceZUuid;
+    @APIParam(emptyString = false)
+    private Integer zVlan;
     @APIParam(required = false)
     private Integer enableQinqZ;
     @APIParam(emptyString = false)
     private Integer months;
-    @APIParam(emptyString = false)
-    private Integer isExclusiveA;
-    @APIParam(emptyString = false)
-    private Integer isExclusiveZ;
     @APIParam(required = false)
     private String description;
     @APIParam(required = false)
     private List<VlanSegment> vlanSegmentA;
     @APIParam(required = false)
     private List<VlanSegment> vlanSegmentZ;
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
 
     public String getNetWorkUuid() {
         return netWorkUuid;
@@ -71,6 +79,14 @@ public class APICreateTunnelMsg extends APIMessage {
         this.interfaceAUuid = interfaceAUuid;
     }
 
+    public Integer getaVlan() {
+        return aVlan;
+    }
+
+    public void setaVlan(Integer aVlan) {
+        this.aVlan = aVlan;
+    }
+
     public Integer getEnableQinqA() {
         return enableQinqA;
     }
@@ -87,6 +103,14 @@ public class APICreateTunnelMsg extends APIMessage {
         this.interfaceZUuid = interfaceZUuid;
     }
 
+    public Integer getzVlan() {
+        return zVlan;
+    }
+
+    public void setzVlan(Integer zVlan) {
+        this.zVlan = zVlan;
+    }
+
     public Integer getEnableQinqZ() {
         return enableQinqZ;
     }
@@ -101,22 +125,6 @@ public class APICreateTunnelMsg extends APIMessage {
 
     public void setMonths(Integer months) {
         this.months = months;
-    }
-
-    public Integer getIsExclusiveA() {
-        return isExclusiveA;
-    }
-
-    public void setIsExclusiveA(Integer isExclusiveA) {
-        this.isExclusiveA = isExclusiveA;
-    }
-
-    public Integer getIsExclusiveZ() {
-        return isExclusiveZ;
-    }
-
-    public void setIsExclusiveZ(Integer isExclusiveZ) {
-        this.isExclusiveZ = isExclusiveZ;
     }
 
     public String getDescription() {
@@ -141,13 +149,5 @@ public class APICreateTunnelMsg extends APIMessage {
 
     public void setVlanSegmentZ(List<VlanSegment> vlanSegmentZ) {
         this.vlanSegmentZ = vlanSegmentZ;
-    }
-
-    public String getAccountUuid() {
-        return accountUuid;
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
     }
 }

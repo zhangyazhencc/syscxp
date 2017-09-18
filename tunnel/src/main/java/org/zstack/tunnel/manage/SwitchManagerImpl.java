@@ -29,6 +29,8 @@ import org.zstack.utils.logging.CLogger;
 
 import javax.persistence.TypedQuery;
 
+import java.util.List;
+
 import static org.zstack.core.Platform.argerr;
 
 /**
@@ -704,15 +706,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         if(msg.getStartVlan() > msg.getEndVlan()){
             throw new ApiMessageInterceptionException(argerr("endvlan must more than startvlan"));
         }
-        //String sql1 = "select count(*) from PhysicalSwitchVO a,SwitchVO b,SwitchVlanVO c where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid and c.switchUuid = '"+msg.getSwitchUuid()+"' and c.startVlan <= "+msg.getStartVlan()+" and c.endVlan >= "+msg.getStartVlan();
-        //String sql2 = "select count(*) from PhysicalSwitchVO a,SwitchVO b,SwitchVlanVO c where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid and c.switchUuid = '"+msg.getSwitchUuid()+"' and c.startVlan > "+msg.getEndVlan();
-        //TypedQuery<Integer> vq1 = dbf.getEntityManager().createQuery(sql1, Integer.class);
-        //Integer count1 = vq1.getSingleResult();
-        //TypedQuery<Integer> vq2 = dbf.getEntityManager().createQuery(sql2, Integer.class);
-        //Integer count2 = vq2.getSingleResult();
-        //if(count1 == 0 && count2 >0){
-        //    throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
-        //}
+
         String sql = "select count(a.uuid) from PhysicalSwitchVO a,SwitchVO b,SwitchVlanVO c " +
                 "where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid " +
                 "and a.uuid = (select physicalSwitchUuid from SwitchVO where uuid = :switchUuid) " +
@@ -738,7 +732,33 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             throw new ApiMessageInterceptionException(argerr("SwitchVlan %s is not exist ",msg.getUuid()));
         }
         //判断该Vlan段有没有被使用
+        SwitchVlanVO vo = dbf.findByUuid(msg.getUuid(),SwitchVlanVO.class);
+        List<Integer> vlanList = fingAllocateVlanBySwitch(vo.getSwitchUuid());
+        if(vlanList.size() > 0){
+            for(Integer vlan : vlanList){
+                if(vlan >= vo.getStartVlan() && vlan <= vo.getEndVlan()){
+                    throw new ApiMessageInterceptionException(argerr("cannot delete,switchVlan is being used!"));
+                }
+            }
+        }
 
 
+    }
+
+    //查询该虚拟交换机下Tunnel已经分配的Vlan
+    private List<Integer> fingAllocateVlanBySwitch(String switchUuid){
+        String sql = "select distinct a.aVlan as 'vlan' from TunnelVO a,InterfaceVO b,SwitchPortVO c " +
+                "where a.interfaceAUuid = b.uuid " +
+                "and b.switchPortUuid = c.uuid " +
+                "and c.switchUuid = :switchUuid " +
+                "union " +
+                "select distinct a.zVlan as 'vlan' from TunnelVO a,InterfaceVO b,SwitchPortVO c " +
+                "where a.interfaceZUuid = b.uuid " +
+                "and b.switchPortUuid = c.uuid " +
+                "and c.switchUuid = :switchUuid ";
+        TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);
+        avq.setParameter("switchUuid",switchUuid);
+        List<Integer> allocatedVlans = avq.getResultList();
+        return allocatedVlans;
     }
 }

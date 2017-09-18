@@ -10,6 +10,8 @@ import org.zstack.tunnel.header.switchs.SwitchPortType;
  */
 public class APICreateInterfaceMsg extends APIMessage {
 
+    @APIParam(required = false,maxLength = 32)
+    private String accountUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
     @APIParam(emptyString = false,maxLength = 32)
@@ -89,5 +91,13 @@ public class APICreateInterfaceMsg extends APIMessage {
 
     public void setMonths(Integer months) {
         this.months = months;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

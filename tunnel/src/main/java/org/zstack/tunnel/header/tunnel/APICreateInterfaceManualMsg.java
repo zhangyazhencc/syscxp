@@ -6,7 +6,7 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by DCY on 2017-09-11
  */
-public class APICreateInterfaceBossMsg extends APIMessage {
+public class APICreateInterfaceManualMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32)
     private String accountUuid;
