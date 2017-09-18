@@ -1,6 +1,6 @@
 package org.zstack.billing.header.order;
 
-import org.zstack.billing.header.balance.ProductType;
+import org.zstack.header.billing.ProductType;
 import org.zstack.header.search.Inventory;
 
 import java.sql.Timestamp;

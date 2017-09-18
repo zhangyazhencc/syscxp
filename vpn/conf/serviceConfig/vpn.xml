@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://zstack.org/schema/zstack">
+    <id>vpn</id>
+    <message>
+        <name>org.zstack.vpn.header.gateway.APICreateVpnRouteMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.vpn.header.gateway.APIDeleteVpnRouteMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.vpn.header.host.APICreateVpnHostMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.vpn.header.host.APIUpdateVpnHostMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.vpn.header.host.APIDeleteVpnHostMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.vpn.header.gateway.APICreateVpnGatewayMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.vpn.header.gateway.APIUpdateVpnGatewayMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.vpn.header.gateway.APIUpdateVpnBindwidthMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.vpn.header.gateway.APIDeleteVpnGatewayMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.vpn.header.gateway.APICreateTunnelIfaceMsg</name>
+    </message>
+    <message>
+        <name>org.zstack.vpn.header.APIUpdateTunnelIfaceMsgg</name>
+    </message>
+    <message>
+        <name>org.zstack.vpn.header.gateway.APIDeleteTunnelIfaceMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.vpn.header.gateway.APIQueryVpnGatewayMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.vpn.header.host.APIQueryVpnHostMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+</service>

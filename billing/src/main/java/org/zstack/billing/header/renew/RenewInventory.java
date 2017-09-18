@@ -1,7 +1,7 @@
 package org.zstack.billing.header.renew;
 
-import org.zstack.billing.header.balance.ProductChargeModel;
-import org.zstack.billing.header.balance.ProductType;
+import org.zstack.header.billing.ProductChargeModel;
+import org.zstack.header.billing.ProductType;
 import org.zstack.header.search.Inventory;
 
 import java.math.BigDecimal;

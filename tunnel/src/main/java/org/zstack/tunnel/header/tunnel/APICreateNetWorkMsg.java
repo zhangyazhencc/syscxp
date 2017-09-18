@@ -15,8 +15,6 @@ public class APICreateNetWorkMsg extends APIMessage {
     private String accountUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
-    @APIParam(required = false)
-    private Integer vsi;
     @APIParam(emptyString = false,maxLength = 32)
     private String monitorCidr;
     @APIParam(required = false,maxLength = 255)
@@ -52,13 +50,5 @@ public class APICreateNetWorkMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public Integer getVsi() {
-        return vsi;
-    }
-
-    public void setVsi(Integer vsi) {
-        this.vsi = vsi;
     }
 }

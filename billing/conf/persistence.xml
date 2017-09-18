@@ -10,7 +10,7 @@
         <class>org.zstack.core.job.JobQueueEntryVO</class>
 
         <class>org.zstack.billing.header.balance.AccountBalanceVO</class>
-        <class>org.zstack.billing.header.order.OrderVO</class>
+        <class>org.zstack.header.billing.OrderVO</class>
         <class>org.zstack.billing.header.bill.BillVO</class>
         <class>org.zstack.billing.header.renew.RenewVO</class>
         <class>org.zstack.billing.header.renew.PriceRefRenewVO</class>

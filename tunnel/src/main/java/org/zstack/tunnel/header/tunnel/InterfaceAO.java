@@ -26,7 +26,7 @@ public class InterfaceAO {
     private String name;
 
     @Column
-    @ForeignKey(parentEntityClass = SwitchPortVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
+    @ForeignKey(parentEntityClass = SwitchPortVO.class, onDeleteAction = ForeignKey.ReferenceOption.NO_ACTION)
     private String switchPortUuid;
 
     @Column

@@ -19,6 +19,8 @@ import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.*;
 import org.zstack.core.errorcode.ErrorFacade;
 
+import org.zstack.header.account.APIValidateAccountMsg;
+import org.zstack.header.account.APIValidateAccountReply;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.exception.CloudRuntimeException;
@@ -147,11 +149,22 @@ public class AccountBase extends AbstractAccount {
             handle((APIUpdateRoleMsg) msg);
         } else if (msg instanceof APIAccountMailAuthenticationMsg) {
             handle((APIAccountMailAuthenticationMsg) msg);
+        }else if (msg instanceof APIValidateAccountMsg) {
+            handle((APIValidateAccountMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
 
 
+    }
+
+    private void handle(APIValidateAccountMsg msg) {
+        AccountVO accountVO = dbf.findByUuid(msg.getUuid(),AccountVO.class);
+        APIValidateAccountReply reply = new APIValidateAccountReply();
+        if(accountVO!=null){
+            reply.setValidAccount(true);
+        }
+        bus.reply(msg, reply);
     }
 
 
@@ -283,6 +296,7 @@ public class AccountBase extends AbstractAccount {
         AccountContactsVO acvo = new AccountContactsVO();
         acvo.setUuid(Platform.getUuid());
         acvo.setAccountUuid(msg.getAccountUuid());
+        acvo.setDescription(msg.getDescription());
         acvo.setName(msg.getName());
         acvo.setPhone(msg.getPhone());
         acvo.setEmail(msg.getEmail());

@@ -19,7 +19,7 @@ public class APIUpdatePhysicalSwitchMsg extends APIMessage {
     private String nodeUuid;
     @APIParam(required = false,maxLength = 32)
     private String switchModelUuid;
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false, required = false,maxLength = 128)
     private String code;
     @APIParam(required = false,maxLength = 128)
     private String name;
