@@ -1,5 +1,6 @@
 package org.zstack.account.identity;
 
+import org.hibernate.annotations.Source;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,9 +145,13 @@ public class AccountBase extends AbstractAccount {
             handle((APIResetUserPWDMsg) msg);
         } else if (msg instanceof APIUpdateRoleMsg) {
             handle((APIUpdateRoleMsg) msg);
+        } else if (msg instanceof APIAccountMailAuthenticationMsg) {
+            handle((APIAccountMailAuthenticationMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+
+
     }
 
 
@@ -287,6 +292,7 @@ public class AccountBase extends AbstractAccount {
         evt.setInventory(AccountContactsInventory.valueOf(dbf.persistAndRefresh(acvo)));
         bus.publish(evt);
     }
+
 
     private void handle(APIDeleteAccountContactsMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), AccountContactsVO.class);
@@ -512,7 +518,8 @@ public class AccountBase extends AbstractAccount {
         }
 
         if (update) {
-            account = dbf.getEntityManager().merge(account);
+//            account = dbf.getEntityManager().merge(account);
+            account = dbf.updateAndRefresh(account);
         }
 
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
