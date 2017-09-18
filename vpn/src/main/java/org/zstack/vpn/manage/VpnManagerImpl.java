@@ -13,7 +13,8 @@ import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
-import org.zstack.vpn.header.*;
+import org.zstack.vpn.header.gateway.*;
+import org.zstack.vpn.header.host.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -93,6 +94,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         host.setSshPort(msg.getSshPort());
         host.setUsername(msg.getUsername());
         host.setPassword(msg.getPassword());
+        host.setState(HostState.Enabled);
+        host.setStatus(HostStatus.Connecting);
 
         host = dbf.persistAndRefresh(host);
         APICreateVpnHostEvent evt = new APICreateVpnHostEvent(msg.getId());

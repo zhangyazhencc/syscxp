@@ -2,49 +2,49 @@
 <service xmlns="http://zstack.org/schema/zstack">
     <id>vpn</id>
     <message>
-        <name>org.zstack.vpn.header.APICreateVpnRouteMsg</name>
+        <name>org.zstack.vpn.header.gateway.APICreateVpnRouteMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.APIDeleteVpnRouteMsg</name>
+        <name>org.zstack.vpn.header.gateway.APIDeleteVpnRouteMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.APICreateVpnHostMsg</name>
+        <name>org.zstack.vpn.header.host.APICreateVpnHostMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.APIUpdateVpnHostMsg</name>
+        <name>org.zstack.vpn.header.host.APIUpdateVpnHostMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.APIDeleteVpnHostMsg</name>
+        <name>org.zstack.vpn.header.host.APIDeleteVpnHostMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.APICreateVpnGatewayMsg</name>
+        <name>org.zstack.vpn.header.gateway.APICreateVpnGatewayMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.APIUpdateVpnGatewayMsg</name>
+        <name>org.zstack.vpn.header.gateway.APIUpdateVpnGatewayMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.APIUpdateVpnBindwidthMsg</name>
+        <name>org.zstack.vpn.header.gateway.APIUpdateVpnBindwidthMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.APIDeleteVpnGatewayMsg</name>
+        <name>org.zstack.vpn.header.gateway.APIDeleteVpnGatewayMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.APICreateTunnelIfaceMsg</name>
+        <name>org.zstack.vpn.header.gateway.APICreateTunnelIfaceMsg</name>
     </message>
     <message>
         <name>org.zstack.vpn.header.APIUpdateTunnelIfaceMsgg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.APIDeleteTunnelIfaceMsg</name>
+        <name>org.zstack.vpn.header.gateway.APIDeleteTunnelIfaceMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.vpn.header.APIQueryVpnGatewayMsg</name>
+        <name>org.zstack.vpn.header.gateway.APIQueryVpnGatewayMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.vpn.header.APIQueryVpnHostMsg</name>
+        <name>org.zstack.vpn.header.host.APIQueryVpnHostMsg</name>
         <serviceId>query</serviceId>
     </message>
 
