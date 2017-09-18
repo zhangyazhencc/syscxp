@@ -1,6 +1,8 @@
 package org.zstack.vpn.header.gateway;
 
 import org.zstack.header.search.Inventory;
+import org.zstack.vpn.manage.EntityState;
+import org.zstack.vpn.manage.RunningStatus;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -17,7 +19,8 @@ public class VpnGatewayInventory {
     private String vpnCidr;
     private Integer bandwidth;
     private String endpointUuid;
-    private VpnStatus status;
+    private RunningStatus status;
+    private EntityState state;
     private Integer months;
     private Timestamp expiredDate;
     private List<TunnelIfaceInventory> tunnelIfaces;
@@ -34,8 +37,9 @@ public class VpnGatewayInventory {
         inv.setDescription(vo.getDescription());
         inv.setVpnCidr(vo.getVpnCidr());
         inv.setBandwidth(vo.getBandwidth());
-        inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setEndpointUuid(vo.getEndpoint());
         inv.setStatus(vo.getStatus());
+        inv.setState(vo.getState());
         inv.setMonths(vo.getMonths());
         inv.setExpiredDate(vo.getExpiredDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -50,6 +54,14 @@ public class VpnGatewayInventory {
         }
 
         return invs;
+    }
+
+    public EntityState getState() {
+        return state;
+    }
+
+    public void setState(EntityState state) {
+        this.state = state;
     }
 
     public String getUuid() {
@@ -116,11 +128,11 @@ public class VpnGatewayInventory {
         this.endpointUuid = endpointUuid;
     }
 
-    public VpnStatus getStatus() {
+    public RunningStatus getStatus() {
         return status;
     }
 
-    public void setStatus(VpnStatus status) {
+    public void setStatus(RunningStatus status) {
         this.status = status;
     }
 

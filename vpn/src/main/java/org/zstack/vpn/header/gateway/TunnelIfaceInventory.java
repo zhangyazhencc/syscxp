@@ -13,8 +13,7 @@ public class TunnelIfaceInventory {
     private String gatewayUuid;
     private String name;
     private String description;
-    private String tunnelUuid;
-    private String tunnelName;
+    private String tunnel;
     private String serverIP;
     private String clientIP;
     private String mask;
@@ -27,8 +26,7 @@ public class TunnelIfaceInventory {
         inv.setGatewayUuid(vo.getGatewayUuid());
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
-        inv.setTunnelUuid(vo.getTunnelUuid());
-        inv.setTunnelName(vo.getTunnelName());
+        inv.setTunnel(vo.getTunnel());
         inv.setServerIP(vo.getServerIP());
         inv.setClientIP(vo.getClientIP());
         inv.setMask(vo.getMask());
@@ -77,20 +75,12 @@ public class TunnelIfaceInventory {
         this.description = description;
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public String getTunnel() {
+        return tunnel;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
-    }
-
-    public String getTunnelName() {
-        return tunnelName;
-    }
-
-    public void setTunnelName(String tunnelName) {
-        this.tunnelName = tunnelName;
+    public void setTunnel(String tunnel) {
+        this.tunnel = tunnel;
     }
 
     public String getServerIP() {

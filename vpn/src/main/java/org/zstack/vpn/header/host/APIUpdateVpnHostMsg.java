@@ -20,7 +20,7 @@ public class APIUpdateVpnHostMsg extends APIMessage{
     @APIParam(required = false)
     private String tunnelIface;
     @APIParam(required = false)
-    private String hostIp;
+    private String manageIp;
     @APIParam(required = false)
     private String sshPort;
     @APIParam(required = false)
@@ -68,12 +68,12 @@ public class APIUpdateVpnHostMsg extends APIMessage{
         this.tunnelIface = tunnelIface;
     }
 
-    public String getHostIp() {
-        return hostIp;
+    public String getManageIp() {
+        return manageIp;
     }
 
-    public void setHostIp(String hostIp) {
-        this.hostIp = hostIp;
+    public void setManageIp(String manageIp) {
+        this.manageIp = manageIp;
     }
 
     public String getSshPort() {

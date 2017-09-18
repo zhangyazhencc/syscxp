@@ -90,12 +90,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         host.setDescription(msg.getDescription());
         host.setPublicIface(msg.getPublicIface());
         host.setTunnelIface(msg.getTunnelIface());
-        host.setHostIp(msg.getHostIp());
+        host.setManageIp(msg.getManageIp());
         host.setSshPort(msg.getSshPort());
         host.setUsername(msg.getUsername());
         host.setPassword(msg.getPassword());
-        host.setState(HostState.Enabled);
-        host.setStatus(HostStatus.Connecting);
+        host.setState(EntityState.Enabled);
+        host.setStatus(org.zstack.vpn.manage.RunningStatus.Connecting);
 
         host = dbf.persistAndRefresh(host);
         APICreateVpnHostEvent evt = new APICreateVpnHostEvent(msg.getId());
@@ -111,8 +111,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         gateway.setName(msg.getDescription());
         gateway.setVpnCidr(msg.getVpnCidr());
         gateway.setBandwidth(msg.getBandwidth());
-        gateway.setEndpointUuid(msg.getEndpointUuid());
-        gateway.setStatus(VpnStatus.STOP);
+        gateway.setEndpoint(msg.getEndpoint());
+        gateway.setState(EntityState.Enabled);
+        gateway.setStatus(RunningStatus.Connecting);
         gateway.setMonths(msg.getMonths());
         gateway.setExpiredDate(Timestamp.valueOf(LocalDateTime.now()
                 .plus(msg.getMonths(), ChronoUnit.MONTHS)));
@@ -139,11 +140,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             gateway.setVpnCidr(msg.getVpnCidr());
             update = true;
         }
-        if (msg.getStatus() != null) {
-            gateway.setStatus(msg.getStatus());
+        if (msg.getState() != null) {
+            gateway.setState(msg.getState());
             update = true;
         }
-        dbf.updateAndRefresh(gateway);
+        if (update)
+            dbf.updateAndRefresh(gateway);
         APIUpdateVpnGatewayEvent evt = new APIUpdateVpnGatewayEvent(msg.getId());
         evt.setInventory(VpnGatewayInventory.valueOf(gateway));
         bus.publish(evt);
@@ -153,7 +155,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnGatewayVO gateway = dbf.findByUuid(msg.getUuid(), VpnGatewayVO.class);
         gateway.setBandwidth(msg.getBandwidth());
 
-        // Todo create order
+        // Todo create
         gateway = dbf.persistAndRefresh(gateway);
         APIUpdateVpnGatewayEvent evt = new APIUpdateVpnGatewayEvent(msg.getId());
         evt.setInventory(VpnGatewayInventory.valueOf(gateway));
@@ -172,8 +174,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         tunnelIface.setGatewayUuid(msg.getGatewayUuid());
         tunnelIface.setName(msg.getName());
         tunnelIface.setDescription(msg.getDescription());
-        tunnelIface.setTunnelUuid(msg.getTunnelUuid());
-        tunnelIface.setTunnelName(msg.getTunnelName());
+        tunnelIface.setTunnel(msg.getTunnel());
         tunnelIface.setServerIP(msg.getServerIP());
         tunnelIface.setClientIP(msg.getClientIP());
         tunnelIface.setMask(msg.getMask());
@@ -203,8 +204,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnRouteVO vpnRoute = new VpnRouteVO();
         vpnRoute.setGatewayUuid(msg.getGatewayUuid());
         vpnRoute.setRouteType(msg.getRouteType());
-        vpnRoute.setNextIfaceUuid(msg.getNextIfaceUuid());
-        vpnRoute.setNextIfaceName(msg.getNextIfaceName());
+        vpnRoute.setNextIface(msg.getNextIface());
+        vpnRoute.setNextIface2(msg.getNextIface2());
         vpnRoute.setTargetCidr(msg.getTargetCidr());
 
         vpnRoute = dbf.persistAndRefresh(vpnRoute);

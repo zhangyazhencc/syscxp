@@ -1,5 +1,8 @@
 package org.zstack.vpn.header.host;
 
+import org.zstack.vpn.manage.EntityState;
+import org.zstack.vpn.manage.RunningStatus;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -18,18 +21,19 @@ public class VpnHostVO {
     @Column
     private String publicIface;
     @Column
+    private String publicIp;
+    @Column
     private String tunnelIface;
     @Column
-    private String hostIp;
+    private String manageIp;
     @Column
     private String sshPort;
     @Column
     @Enumerated(EnumType.STRING)
-    private HostState state;
-
+    private EntityState state;
     @Column
     @Enumerated(EnumType.STRING)
-    private HostStatus status;
+    private RunningStatus status;
     @Column
     private String username;
     @Column
@@ -38,6 +42,14 @@ public class VpnHostVO {
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
+
+    public String getPublicIp() {
+        return publicIp;
+    }
+
+    public void setPublicIp(String publicIp) {
+        this.publicIp = publicIp;
+    }
 
     public String getEndpoint() {
         return endpoint;
@@ -48,19 +60,19 @@ public class VpnHostVO {
     }
 
 
-    public HostState getState() {
+    public EntityState getState() {
         return state;
     }
 
-    public void setState(HostState state) {
+    public void setState(EntityState state) {
         this.state = state;
     }
 
-    public HostStatus getStatus() {
+    public RunningStatus getStatus() {
         return status;
     }
 
-    public void setStatus(HostStatus status) {
+    public void setStatus(RunningStatus status) {
         this.status = status;
     }
 
@@ -104,12 +116,12 @@ public class VpnHostVO {
         this.tunnelIface = tunnelIface;
     }
 
-    public String getHostIp() {
-        return hostIp;
+    public String getManageIp() {
+        return manageIp;
     }
 
-    public void setHostIp(String hostIp) {
-        this.hostIp = hostIp;
+    public void setManageIp(String manageIp) {
+        this.manageIp = manageIp;
     }
 
     public String getSshPort() {

@@ -12,8 +12,8 @@ public class VpnRouteInventory {
     private String uuid;
     private String gatewayUuid;
     private RouteType routeType;
-    private String nextIfaceUuid;
-    private String nextIfaceName;
+    private String nextIface;
+    private String nextIface2;
     private String targetCidr;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -23,8 +23,8 @@ public class VpnRouteInventory {
         inv.setUuid(vo.getUuid());
         inv.setGatewayUuid(vo.getGatewayUuid());
         inv.setRouteType(vo.getRouteType());
-        inv.setNextIfaceName(vo.getNextIfaceName());
-        inv.setNextIfaceUuid(vo.getNextIfaceUuid());
+        inv.setNextIface2(vo.getNextIface2());
+        inv.setNextIface(vo.getNextIface());
         inv.setTargetCidr(vo.getTargetCidr());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -64,20 +64,20 @@ public class VpnRouteInventory {
         this.routeType = routeType;
     }
 
-    public String getNextIfaceUuid() {
-        return nextIfaceUuid;
+    public String getNextIface() {
+        return nextIface;
     }
 
-    public void setNextIfaceUuid(String nextIfaceUuid) {
-        this.nextIfaceUuid = nextIfaceUuid;
+    public void setNextIface(String nextIface) {
+        this.nextIface = nextIface;
     }
 
-    public String getNextIfaceName() {
-        return nextIfaceName;
+    public String getNextIface2() {
+        return nextIface2;
     }
 
-    public void setNextIfaceName(String nextIfaceName) {
-        this.nextIfaceName = nextIfaceName;
+    public void setNextIface2(String nextIface2) {
+        this.nextIface2 = nextIface2;
     }
 
     public String getTargetCidr() {

@@ -14,9 +14,9 @@ public class APICreateVpnRouteMsg extends APIMessage {
     @APIParam
     private RouteType routeType;
     @APIParam(emptyString = false)
-    private String nextIfaceUuid;
+    private String nextIface;
     @APIParam(emptyString = false)
-    private String nextIfaceName;
+    private String nextIface2;
     @APIParam(emptyString = false)
     private String targetCidr;
 
@@ -36,20 +36,20 @@ public class APICreateVpnRouteMsg extends APIMessage {
         this.routeType = routeType;
     }
 
-    public String getNextIfaceUuid() {
-        return nextIfaceUuid;
+    public String getNextIface() {
+        return nextIface;
     }
 
-    public void setNextIfaceUuid(String nextIfaceUuid) {
-        this.nextIfaceUuid = nextIfaceUuid;
+    public void setNextIface(String nextIface) {
+        this.nextIface = nextIface;
     }
 
-    public String getNextIfaceName() {
-        return nextIfaceName;
+    public String getNextIface2() {
+        return nextIface2;
     }
 
-    public void setNextIfaceName(String nextIfaceName) {
-        this.nextIfaceName = nextIfaceName;
+    public void setNextIface2(String nextIface2) {
+        this.nextIface2 = nextIface2;
     }
 
     public String getTargetCidr() {

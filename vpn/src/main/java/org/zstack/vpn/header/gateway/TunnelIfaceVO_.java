@@ -12,8 +12,7 @@ public class TunnelIfaceVO_ {
     public static volatile SingularAttribute<VpnHostVO, String> gatewayUuid;
     public static volatile SingularAttribute<VpnHostVO, String> name;
     public static volatile SingularAttribute<VpnHostVO, String> description;
-    public static volatile SingularAttribute<VpnHostVO, String> tunnelUuid;
-    public static volatile SingularAttribute<VpnHostVO, String> tunnelName;
+    public static volatile SingularAttribute<VpnHostVO, String> tunnel;
     public static volatile SingularAttribute<VpnHostVO, String> serverIP;
     public static volatile SingularAttribute<VpnHostVO, String> clientIP;
     public static volatile SingularAttribute<VpnHostVO, String> mask;

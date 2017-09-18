@@ -18,9 +18,7 @@ public class TunnelIfaceVO {
     @Column
     private String description;
     @Column
-    private String tunnelUuid;
-    @Column
-    private String tunnelName;
+    private String tunnel;
     @Column
     private String serverIP;
     @Column
@@ -76,20 +74,12 @@ public class TunnelIfaceVO {
         this.description = description;
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public String getTunnel() {
+        return tunnel;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
-    }
-
-    public String getTunnelName() {
-        return tunnelName;
-    }
-
-    public void setTunnelName(String tunnelName) {
-        this.tunnelName = tunnelName;
+    public void setTunnel(String tunnel) {
+        this.tunnel = tunnel;
     }
 
     public String getServerIP() {

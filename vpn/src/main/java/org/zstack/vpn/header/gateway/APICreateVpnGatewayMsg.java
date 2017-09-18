@@ -20,7 +20,7 @@ public class APICreateVpnGatewayMsg extends APIMessage {
     @APIParam(emptyString = false)
     private Integer bandwidth;
     @APIParam(emptyString = false)
-    private String endpointUuid;
+    private String endpoint;
     @APIParam(emptyString = false)
     private Integer months;
 
@@ -64,12 +64,12 @@ public class APICreateVpnGatewayMsg extends APIMessage {
         this.bandwidth = bandwidth;
     }
 
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public String getEndpoint() {
+        return endpoint;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setEndpoint(String endpoint) {
+        this.endpoint = endpoint;
     }
 
     public Integer getMonths() {

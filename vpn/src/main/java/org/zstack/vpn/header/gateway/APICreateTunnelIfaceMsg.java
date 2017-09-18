@@ -16,9 +16,7 @@ public class APICreateTunnelIfaceMsg extends APIMessage {
     @APIParam(required = false)
     private String description;
     @APIParam(emptyString = false)
-    private String tunnelUuid;
-    @APIParam(emptyString = false)
-    private String tunnelName;
+    private String tunnel;
     @APIParam(emptyString = false)
     private String serverIP;
     @APIParam(emptyString = false)
@@ -50,20 +48,12 @@ public class APICreateTunnelIfaceMsg extends APIMessage {
         this.gatewayUuid = gatewayUuid;
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public String getTunnel() {
+        return tunnel;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
-    }
-
-    public String getTunnelName() {
-        return tunnelName;
-    }
-
-    public void setTunnelName(String tunnelName) {
-        this.tunnelName = tunnelName;
+    public void setTunnel(String tunnel) {
+        this.tunnel = tunnel;
     }
 
     public String getServerIP() {

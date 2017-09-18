@@ -14,8 +14,9 @@ public class VpnHostInventory {
     private String description;
     private String endpoint;
     private String publicIface;
+    private String publicIp;
     private String tunnelIface;
-    private String hostIp;
+    private String manageIp;
     private String sshPort;
     private String state;
     private String status;
@@ -30,8 +31,9 @@ public class VpnHostInventory {
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
         inv.setPublicIface(vo.getPublicIface());
+        inv.setPublicIp(vo.getPublicIp());
         inv.setTunnelIface(vo.getTunnelIface());
-        inv.setHostIp(vo.getHostIp());
+        inv.setManageIp(vo.getManageIp());
         inv.setSshPort(vo.getSshPort());
         inv.setUsername(vo.getUsername());
         inv.setPassword(vo.getPassword());
@@ -49,6 +51,14 @@ public class VpnHostInventory {
             invs.add(VpnHostInventory.valueOf(vo));
         }
         return invs;
+    }
+
+    public String getPublicIp() {
+        return publicIp;
+    }
+
+    public void setPublicIp(String publicIp) {
+        this.publicIp = publicIp;
     }
 
     public String getState() {
@@ -115,12 +125,12 @@ public class VpnHostInventory {
         this.tunnelIface = tunnelIface;
     }
 
-    public String getHostIp() {
-        return hostIp;
+    public String getManageIp() {
+        return manageIp;
     }
 
-    public void setHostIp(String hostIp) {
-        this.hostIp = hostIp;
+    public void setManageIp(String manageIp) {
+        this.manageIp = manageIp;
     }
 
     public String getSshPort() {

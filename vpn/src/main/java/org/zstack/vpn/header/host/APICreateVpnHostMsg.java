@@ -16,15 +16,25 @@ public class APICreateVpnHostMsg extends APIMessage {
     @APIParam(emptyString = false)
     private String publicIface;
     @APIParam(emptyString = false)
+    private String publicIp;
+    @APIParam(emptyString = false)
     private String tunnelIface;
     @APIParam(emptyString = false)
-    private String hostIp;
+    private String manageIp;
     @APIParam(emptyString = false)
     private String sshPort;
     @APIParam(emptyString = false)
     private String username;
     @APIParam(emptyString = false)
     private String password;
+
+    public String getPublicIp() {
+        return publicIp;
+    }
+
+    public void setPublicIp(String publicIp) {
+        this.publicIp = publicIp;
+    }
 
     public String getName() {
         return name;
@@ -58,12 +68,12 @@ public class APICreateVpnHostMsg extends APIMessage {
         this.tunnelIface = tunnelIface;
     }
 
-    public String getHostIp() {
-        return hostIp;
+    public String getManageIp() {
+        return manageIp;
     }
 
-    public void setHostIp(String hostIp) {
-        this.hostIp = hostIp;
+    public void setManageIp(String manageIp) {
+        this.manageIp = manageIp;
     }
 
     public String getSshPort() {

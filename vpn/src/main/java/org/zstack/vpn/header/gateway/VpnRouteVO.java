@@ -20,27 +20,15 @@ public class VpnRouteVO {
     @Column
     private RouteType routeType;
     @Column
-    private String nextIfaceUuid;
+    private String nextIface;
     @Column
-    private String nextIfaceName;
+    private String nextIface2;
     @Column
     private String targetCidr;
     @Column
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
-
-    @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="gatewayUuid", insertable=false, updatable=false)
-    private VpnGatewayVO vpnGateway;
-
-    public VpnGatewayVO getVpnGateway() {
-        return vpnGateway;
-    }
-
-    public void setVpnGateway(VpnGatewayVO vpnGateway) {
-        this.vpnGateway = vpnGateway;
-    }
 
     public String getUuid() {
         return uuid;
@@ -67,20 +55,20 @@ public class VpnRouteVO {
         this.routeType = routeType;
     }
 
-    public String getNextIfaceUuid() {
-        return nextIfaceUuid;
+    public String getNextIface() {
+        return nextIface;
     }
 
-    public void setNextIfaceUuid(String nextIfaceUuid) {
-        this.nextIfaceUuid = nextIfaceUuid;
+    public void setNextIface(String nextIface) {
+        this.nextIface = nextIface;
     }
 
-    public String getNextIfaceName() {
-        return nextIfaceName;
+    public String getNextIface2() {
+        return nextIface2;
     }
 
-    public void setNextIfaceName(String nextIfaceName) {
-        this.nextIfaceName = nextIfaceName;
+    public void setNextIface2(String nextIface2) {
+        this.nextIface2 = nextIface2;
     }
 
     public String getTargetCidr() {
