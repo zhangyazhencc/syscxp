@@ -1,84 +1,96 @@
-package org.zstack.billing.header.order;
+package org.zstack.header.billing;
 
-import org.zstack.billing.header.balance.ProductChargeModel;
-import org.zstack.billing.header.balance.ProductType;
-import org.zstack.header.search.SqlTrigger;
-import org.zstack.header.search.TriggerIndex;
+import org.zstack.header.search.Inventory;
 
-import javax.persistence.*;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-@Entity
-@Table
-@Inheritance(strategy = InheritanceType.JOINED)
-@TriggerIndex
-@SqlTrigger
-public class OrderVO {
-    @Id
-    @Column
+@Inventory(mappingVOClass = OrderVO.class)
+public class OrderInventory {
+
     private String uuid;
 
-    @Column
-    @Enumerated(EnumType.STRING)
     private OrderType type;
 
-    @Column
     private Timestamp payTime;
 
-    @Column
-    @Enumerated(EnumType.STRING)
     private OrderState state;
 
-    @Column
     private BigDecimal payPresent;
 
-    @Column
     private BigDecimal payCash;
 
-    @Column
     private String accountUuid;
 
-    @Column
     private Timestamp productEffectTimeStart;
 
-    @Column
     private Timestamp productEffectTimeEnd;
 
-    @Column
     private Timestamp createDate;
 
-    @Column
     private Timestamp lastOpDate;
 
-    @Column
     private String productName;
 
-    @Column
-    @Enumerated(EnumType.STRING)
     private ProductType productType;
 
-    @Column
-    @Enumerated(EnumType.STRING)
     private ProductChargeModel productChargeModel;
 
-    @Column
     private String productDescription;
 
-    @Column
-    private BigDecimal price;
-
-    @Column
-    private BigDecimal originalPrice;
-
-    @Column
     private String productUuid;
 
-    @Column
+    private BigDecimal price;
+
+    private BigDecimal originalPrice;
+
     private int duration;
 
-    @Column
     private int productStatus;
+
+    public static OrderInventory valueOf(OrderVO vo) {
+        OrderInventory inv = new OrderInventory();
+        inv.setUuid(vo.getUuid());
+        inv.setAccountUuid(vo.getAccountUuid());
+        inv.setPayCash(vo.getPayCash());
+        inv.setPayPresent(vo.getPayPresent());
+        inv.setState(vo.getState());
+        inv.setType(vo.getType());
+        inv.setPayTime(vo.getPayTime());
+        inv.setProductChargeModel(vo.getProductChargeModel());
+        inv.setProductDescription(vo.getProductDescription());
+        inv.setProductEffectTimeEnd(vo.getProductEffectTimeEnd());
+        inv.setProductEffectTimeStart(vo.getProductEffectTimeStart());
+        inv.setProductName(vo.getProductName());
+        inv.setProductType(vo.getProductType());
+        inv.setCreateDate(vo.getCreateDate());
+        inv.setLastOpDate(vo.getLastOpDate());
+        inv.setPrice(vo.getPrice());
+        inv.setOriginalPrice(vo.getOriginalPrice());
+        inv.setProductUuid(vo.getProductUuid());
+        inv.setDuration(vo.getDuration());
+        inv.setProductStatus(vo.getProductStatus());
+        return inv;
+    }
+
+    public static List<OrderInventory> valueOf(Collection<OrderVO> vos) {
+        List<OrderInventory> lst = new ArrayList<OrderInventory>(vos.size());
+        for (OrderVO vo : vos) {
+            lst.add(OrderInventory.valueOf(vo));
+        }
+        return lst;
+    }
+
+    public int getProductStatus() {
+        return productStatus;
+    }
+
+    public void setProductStatus(int productStatus) {
+        this.productStatus = productStatus;
+    }
 
     public String getUuid() {
         return uuid;
@@ -200,6 +212,14 @@ public class OrderVO {
         this.productDescription = productDescription;
     }
 
+    public String getProductUuid() {
+        return productUuid;
+    }
+
+    public void setProductUuid(String productUuid) {
+        this.productUuid = productUuid;
+    }
+
     public BigDecimal getPrice() {
         return price;
     }
@@ -216,14 +236,6 @@ public class OrderVO {
         this.originalPrice = originalPrice;
     }
 
-    public String getProductUuid() {
-        return productUuid;
-    }
-
-    public void setProductUuid(String productUuid) {
-        this.productUuid = productUuid;
-    }
-
     public int getDuration() {
         return duration;
     }
@@ -232,16 +244,4 @@ public class OrderVO {
         this.duration = duration;
     }
 
-    public int getProductStatus() {
-        return productStatus;
-    }
-
-    public void setProductStatus(int productStatus) {
-        this.productStatus = productStatus;
-    }
-
-    @PreUpdate
-    void preUpdate() {
-        lastOpDate = null;
-    }
 }

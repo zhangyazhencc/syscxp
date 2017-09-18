@@ -1,6 +1,7 @@
 package org.zstack.billing.header.balance;
 
 import org.zstack.billing.header.order.Category;
+import org.zstack.header.billing.ProductType;
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
 

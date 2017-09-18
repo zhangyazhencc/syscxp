@@ -1,5 +1,6 @@
 package org.zstack.billing.header.order;
 
+import org.zstack.header.billing.OrderInventory;
 import org.zstack.header.query.APIQueryReply;
 
 import java.util.List;

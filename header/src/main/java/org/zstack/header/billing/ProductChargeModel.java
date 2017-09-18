@@ -1,4 +1,4 @@
-package org.zstack.billing.header.balance;
+package org.zstack.header.billing;
 
 public enum ProductChargeModel {
     BY_MONTH,

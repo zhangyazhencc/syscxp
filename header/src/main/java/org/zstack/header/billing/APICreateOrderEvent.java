@@ -1,4 +1,4 @@
-package org.zstack.billing.header.order;
+package org.zstack.header.billing;
 
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.rest.RestResponse;

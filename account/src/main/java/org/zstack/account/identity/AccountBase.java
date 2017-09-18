@@ -18,6 +18,8 @@ import org.zstack.core.componentloader.PluginRegistry;
 import org.zstack.core.db.*;
 import org.zstack.core.errorcode.ErrorFacade;
 
+import org.zstack.header.account.APIExistsAccountByUuidMsg;
+import org.zstack.header.account.APIExistsAccountByUuidReply;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.exception.CloudRuntimeException;
@@ -144,9 +146,20 @@ public class AccountBase extends AbstractAccount {
             handle((APIResetUserPWDMsg) msg);
         } else if (msg instanceof APIUpdateRoleMsg) {
             handle((APIUpdateRoleMsg) msg);
+        }else if (msg instanceof APIExistsAccountByUuidMsg) {
+            handle((APIExistsAccountByUuidMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIExistsAccountByUuidMsg msg) {
+        AccountVO accountVO = dbf.findByUuid(msg.getUuid(),AccountVO.class);
+        APIExistsAccountByUuidReply reply = new APIExistsAccountByUuidReply();
+        if(accountVO!=null){
+            reply.setExist(true);
+        }
+        bus.reply(msg, reply);
     }
 
 

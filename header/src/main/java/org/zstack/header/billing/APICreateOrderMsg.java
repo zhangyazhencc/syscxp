@@ -1,15 +1,12 @@
-package org.zstack.billing.header.order;
+package org.zstack.header.billing;
 
-import org.zstack.billing.header.balance.ProductChargeModel;
-import org.zstack.billing.header.balance.ProductType;
-import org.zstack.billing.manage.BillingConstant;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 import java.util.List;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_ORDER, names = {"create"})
+@Action(category = "order", names = {"create"})
 public class APICreateOrderMsg extends APIMessage {
 
     @APIParam(emptyString = false)

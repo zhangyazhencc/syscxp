@@ -1,4 +1,4 @@
-package org.zstack.billing.header.order;
+package org.zstack.header.billing;
 
 public enum OrderState {
     PAID,
