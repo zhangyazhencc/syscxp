@@ -8,6 +8,10 @@
         <class>org.zstack.header.managementnode.ManagementNodeVO</class>
         <class>org.zstack.core.job.JobQueueVO</class>
         <class>org.zstack.core.job.JobQueueEntryVO</class>
+        <class>org.zstack.vpn.header.VpnGatewayVO</class>
+        <class>org.zstack.vpn.header.VpnRouteVO</class>
+        <class>org.zstack.vpn.header.TunnelIfaceVO</class>
+        <class>org.zstack.vpn.header.VpnHostVO</class>
 
     </persistence-unit>
 </persistence>

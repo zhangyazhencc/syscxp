@@ -17,7 +17,7 @@ public class MailGlobalProperty {
     @GlobalProperty(name = "username", defaultValue = "wangwg@syscloud.cn")
     public static String USERNAME;
 
-    @GlobalProperty(name = "password", defaultValue = "wang88v5")
+    @GlobalProperty(name = "password", defaultValue = "Aa123456789")
     public static String PASSWORD;
 
 }

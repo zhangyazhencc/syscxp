@@ -41,10 +41,6 @@ public class EndpointAO {
     private String description;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private EndpointStatus status;
-
-    @Column
     private Timestamp lastOpDate;
 
     @PreUpdate
@@ -126,14 +122,6 @@ public class EndpointAO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
-    }
-
-    public EndpointStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(EndpointStatus status) {
-        this.status = status;
     }
 
     public EndpointType getEndpointType() {

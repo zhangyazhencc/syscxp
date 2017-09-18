@@ -23,7 +23,6 @@ public class EndpointInventory {
     private Integer enabled;
     private Integer openToCustomers;
     private String description;
-    private EndpointStatus status;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -37,7 +36,6 @@ public class EndpointInventory {
         inv.setEnabled(vo.getEnabled());
         inv.setOpenToCustomers(vo.getOpenToCustomers());
         inv.setDescription(vo.getDescription());
-        inv.setStatus(vo.getStatus());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
@@ -121,14 +119,6 @@ public class EndpointInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
-    }
-
-    public EndpointStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(EndpointStatus status) {
-        this.status = status;
     }
 
     public EndpointType getEndpointType() {

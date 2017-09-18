@@ -13,11 +13,7 @@ import java.sql.Timestamp;
  * @Cretion Date: 2017-09-11.
  * @Description: .
  */
-//@Action(category = TunnelConstant.ACTION_CATEGORY,accountControl = true)
 public class APICreateHostSwitchMonitorMsg extends APIMessage {
-
-    @APIParam(emptyString = false,maxLength = 32)
-    private String uuid;
 
     @APIParam(emptyString = false,maxLength = 32)
     private String hostUuid;
@@ -30,14 +26,6 @@ public class APICreateHostSwitchMonitorMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 128)
     private String interfaceName;
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
 
     public String getHostUuid() {
         return hostUuid;

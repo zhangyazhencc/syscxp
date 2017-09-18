@@ -580,37 +580,37 @@ public class Platform {
             return ip;
         }
 
-        Linux.ShellResult ret = Linux.shell("/sbin/ip route");
-        String defaultLine = null;
-        for (String s : ret.getStdout().split("\n")) {
-            if (s.contains("default via")) {
-                defaultLine = s;
-                break;
-            }
-        }
+//        Linux.ShellResult ret = Linux.shell("/sbin/ip route");
+//        String defaultLine = null;
+//        for (String s : ret.getStdout().split("\n")) {
+//            if (s.contains("default via")) {
+//                defaultLine = s;
+//                break;
+//            }
+//        }
 
-        String err = "cannot get management server ip of this machine. there are three ways to get the ip.\n1) search for 'management.server.ip' java property\n2) search for 'ZSTACK_MANAGEMENT_SERVER_IP' environment variable\n3) search for default route printed out by '/sbin/ip route'\nhowever, all above methods failed";
-        if (defaultLine == null) {
-            throw new CloudRuntimeException(err);
-        }
+//        String err = "cannot get management server ip of this machine. there are three ways to get the ip.\n1) search for 'management.server.ip' java property\n2) search for 'ZSTACK_MANAGEMENT_SERVER_IP' environment variable\n3) search for default route printed out by '/sbin/ip route'\nhowever, all above methods failed";
+//        if (defaultLine == null) {
+//            throw new CloudRuntimeException(err);
+//        }
+//
+//        try {
+//            Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
+//            for (NetworkInterface iface : Collections.list(nets)) {
+//                String name = iface.getName();
+//                if (defaultLine.contains(name)) {
+//                    InetAddress ia = iface.getInetAddresses().nextElement();
+//                    ip = ia.getHostAddress();
+//                    break;
+//                }
+//            }
+//        } catch (SocketException e) {
+//            throw new CloudRuntimeException(e);
+//        }
 
-        try {
-            Enumeration<NetworkInterface> nets = NetworkInterface.getNetworkInterfaces();
-            for (NetworkInterface iface : Collections.list(nets)) {
-                String name = iface.getName();
-                if (defaultLine.contains(name)) {
-                    InetAddress ia = iface.getInetAddresses().nextElement();
-                    ip = ia.getHostAddress();
-                    break;
-                }
-            }
-        } catch (SocketException e) {
-            throw new CloudRuntimeException(e);
-        }
-
-        if (ip == null) {
-            throw new CloudRuntimeException(err);
-        }
+//        if (ip == null) {
+//            throw new CloudRuntimeException(err);
+//        }
 
         logger.info(String.format("get management IP[%s] from default route[/sbin/ip route]", ip));
         managementServerIp = ip;

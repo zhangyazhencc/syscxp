@@ -8,29 +8,31 @@ import org.zstack.tunnel.manage.TunnelConstant;
 /**
  * Created by DCY on 2017-08-30
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY_HOST, names = {"update"}, adminOnly = true)
 public class APIUpdateHostMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = HostVO.class)
     private String uuid;
 
-    @APIParam(required = false,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32)
     private String nodeUuid;
 
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String name;
 
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String code;
 
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String hostIp;
 
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String username;
 
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,maxLength = 128)
     private String password;
+
+    @APIParam(required = false,maxLength = 128)
+    private HostState state;
 
     public String getUuid() {
         return uuid;
@@ -86,5 +88,13 @@ public class APIUpdateHostMsg extends APIMessage {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public HostState getState() {
+        return state;
+    }
+
+    public void setState(HostState state) {
+        this.state = state;
     }
 }

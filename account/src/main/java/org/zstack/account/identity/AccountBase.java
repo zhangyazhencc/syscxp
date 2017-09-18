@@ -24,6 +24,7 @@ import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.*;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
+import org.zstack.sms.MailService;
 import org.zstack.sms.SmsService;
 import org.zstack.utils.ExceptionDSL;
 import org.zstack.utils.Utils;
@@ -37,7 +38,7 @@ import org.apache.commons.codec.digest.DigestUtils;
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
 
-@Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
+@Configurable(preConstruction = true, dependencyCheck = true, autowire = Autowire.BY_TYPE)
 public class AccountBase extends AbstractAccount {
     private static final CLogger logger = Utils.getLogger(AccountBase.class);
 
@@ -60,7 +61,8 @@ public class AccountBase extends AbstractAccount {
 
     @Autowired
     private SmsService smsService;
-
+    @Autowired
+    MailService mailservice;
     public AccountBase(AccountVO vo) {
         this.vo = vo;
     }
@@ -151,21 +153,21 @@ public class AccountBase extends AbstractAccount {
     @Transactional
     private void handle(APIUpdateRoleMsg msg) {
 
-        RoleVO role = dbf.findByUuid(msg.getUuid(),RoleVO.class);
+        RoleVO role = dbf.findByUuid(msg.getUuid(), RoleVO.class);
 
-        if(msg.getName() != null){
+        if (msg.getName() != null) {
             role.setName(msg.getName());
         }
 
-        if(msg.getDescription() != null){
+        if (msg.getDescription() != null) {
             role.setDescription(msg.getDescription());
         }
 
-        if(msg.getPolicyUuids() != null){
+        if (msg.getPolicyUuids() != null) {
             Set<PolicyVO> policySet = new HashSet<>();
             for (String id : msg.getPolicyUuids()) {
                 PolicyVO policy = dbf.findByUuid(id, PolicyVO.class);
-                if (policy != null ){
+                if (policy != null) {
                     policySet.add(policy);
                 }
             }
@@ -239,7 +241,7 @@ public class AccountBase extends AbstractAccount {
 
     private void handle(APIGetAccountMsg msg) {
         APIGetAccountReply reply = new APIGetAccountReply();
-        AccountVO account = dbf.findByUuid(msg.getAccountUuid(),AccountVO.class);
+        AccountVO account = dbf.findByUuid(msg.getAccountUuid(), AccountVO.class);
 
         reply.setInventory(AccountInventory.valueOf(account));
         bus.reply(msg, reply);
@@ -276,6 +278,7 @@ public class AccountBase extends AbstractAccount {
         AccountContactsVO acvo = new AccountContactsVO();
         acvo.setUuid(Platform.getUuid());
         acvo.setAccountUuid(msg.getAccountUuid());
+        acvo.setDescription(msg.getDescription());
         acvo.setName(msg.getName());
         acvo.setPhone(msg.getPhone());
         acvo.setEmail(msg.getEmail());
@@ -298,7 +301,7 @@ public class AccountBase extends AbstractAccount {
         APIUpdateAccountContactsEvent evt = new APIUpdateAccountContactsEvent(msg.getId());
         AccountContactsVO cont = dbf.findByUuid(msg.getUuid(), AccountContactsVO.class);
 
-        if(msg.getName() != null){
+        if (msg.getName() != null) {
             cont.setName(msg.getName());
         }
         if (msg.getDescription() != null) {
@@ -327,7 +330,7 @@ public class AccountBase extends AbstractAccount {
         if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
-        }else{
+        } else {
             if (account.getPhoneStatus() == ValidateStatus.Unvalidated) {
                 account.setPhone(msg.getPhone());
                 account.setPhoneStatus(ValidateStatus.Validated);
@@ -336,6 +339,27 @@ public class AccountBase extends AbstractAccount {
         }
 
         evt.setPhone(account.getPhone());
+
+        bus.publish(evt);
+    }
+
+    private void handle(APIAccountMailAuthenticationMsg msg) {
+
+        APIAccountMailAuthenticationEvent evt = new APIAccountMailAuthenticationEvent(msg.getId());
+        AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
+
+        if (!mailservice.ValidateMailCode(msg.getMail(), msg.getCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getSession().getAccountUuid()));
+        }else{
+            if (account.getEmailStatus() == ValidateStatus.Unvalidated) {
+                account.setEmail(msg.getMail());
+                account.setEmailStatus(ValidateStatus.Validated);
+                dbf.updateAndRefresh(account);
+            }
+        }
+
+        evt.setMail(account.getEmail());
 
         bus.publish(evt);
     }
@@ -349,7 +373,7 @@ public class AccountBase extends AbstractAccount {
             user.setPhone(msg.getPhone());
             user.setPhoneStatus(ValidateStatus.Validated);
             dbf.updateAndRefresh(user);
-        }else{
+        } else {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
@@ -369,7 +393,7 @@ public class AccountBase extends AbstractAccount {
             } else {
                 throw new CloudRuntimeException("bad old passwords");
             }
-        }else{
+        } else {
             throw new ApiMessageInterceptionException(argerr("wrong phone"));
         }
 
@@ -415,7 +439,7 @@ public class AccountBase extends AbstractAccount {
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
 
         AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class);
-        account.setEmail(msg.getEmail());
+        account.setEmail(msg.getNewEmail());
         evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
 
         bus.publish(evt);
@@ -445,13 +469,13 @@ public class AccountBase extends AbstractAccount {
             account.setDescription(msg.getDescription());
             update = true;
         }
-        if (msg.getEmail() != null && ! msg.getEmail().equalsIgnoreCase(account.getEmail())) {
+        if (msg.getEmail() != null && !msg.getEmail().equalsIgnoreCase(account.getEmail())) {
             account.setEmail(msg.getEmail());
             account.setEmailStatus(ValidateStatus.Unvalidated);
             update = true;
         }
 
-        if (msg.getPhone() != null && ! msg.getPhone().equalsIgnoreCase(account.getPhone())) {
+        if (msg.getPhone() != null && !msg.getPhone().equalsIgnoreCase(account.getPhone())) {
             account.setPhone(msg.getPhone());
             account.setPhoneStatus(ValidateStatus.Unvalidated);
             update = true;
@@ -517,12 +541,12 @@ public class AccountBase extends AbstractAccount {
             user.setDepartment(msg.getDepartment());
             update = true;
         }
-        if (msg.getEmail() != null && ! msg.getEmail().equalsIgnoreCase(user.getEmail())) {
+        if (msg.getEmail() != null && !msg.getEmail().equalsIgnoreCase(user.getEmail())) {
             user.setEmail(msg.getEmail());
             user.setEmailStatus(ValidateStatus.Unvalidated);
             update = true;
         }
-        if (msg.getPhone() != null && ! msg.getPhone().equalsIgnoreCase(user.getPhone())) {
+        if (msg.getPhone() != null && !msg.getPhone().equalsIgnoreCase(user.getPhone())) {
             user.setPhone(msg.getPhone());
             user.setPhoneStatus(ValidateStatus.Unvalidated);
             update = true;
@@ -536,7 +560,7 @@ public class AccountBase extends AbstractAccount {
             update = true;
         }
 
-        if(msg.getSession().getType() == AccountType.SystemAdmin && msg.getUserType() != null){
+        if (msg.getSession().getType() == AccountType.SystemAdmin && msg.getUserType() != null) {
             user.setUserType(msg.getUserType());
             update = true;
         }
@@ -583,9 +607,9 @@ public class AccountBase extends AbstractAccount {
         accountVO.setPhone(msg.getPhone());
         accountVO.setTrueName(msg.getTrueName());
         accountVO.setStatus(AccountStatus.Available);
-        if(msg.getType() != null){
+        if (msg.getType() != null) {
             accountVO.setType(AccountType.valueOf(msg.getType()));
-        }else{
+        } else {
             accountVO.setType(AccountType.Normal);
         }
 
@@ -595,9 +619,9 @@ public class AccountBase extends AbstractAccount {
         AccountExtraInfoVO ext = new AccountExtraInfoVO();
         ext.setUuid(accountVO.getUuid());
         ext.setCreateWay(msg.getSession().getType().toString());
-        if(msg.getGrade() != null){
+        if (msg.getGrade() != null) {
             ext.setGrade(msg.getGrade());
-        }else{
+        } else {
             ext.setGrade(AccountGrade.Normal);
         }
 
@@ -613,6 +637,7 @@ public class AccountBase extends AbstractAccount {
             prevo.setCustomerAcccountUuid(accountVO.getUuid());
 
             dbf.getEntityManager().persist(prevo);
+            dbf.getEntityManager().refresh(prevo);
         }
 
         AccountApiSecurityVO api = new AccountApiSecurityVO();
@@ -621,6 +646,11 @@ public class AccountBase extends AbstractAccount {
         api.setPrivateKey(getRandomString(30));
         api.setPublicKey(getRandomString(16));
         dbf.getEntityManager().persist(api);
+
+
+        dbf.getEntityManager().flush();
+        dbf.getEntityManager().refresh(accountVO);
+        dbf.getEntityManager().refresh(api);
 
         APICreateAccountEvent evt = new APICreateAccountEvent(msg.getId());
         evt.setInventory(AccountInventory.valueOf(accountVO));
@@ -646,9 +676,9 @@ public class AccountBase extends AbstractAccount {
         uservo.setEmailStatus(ValidateStatus.Unvalidated);
         uservo.setPhoneStatus(ValidateStatus.Unvalidated);
 
-        if(msg.getSession().getType() == AccountType.SystemAdmin && msg.getUserType() != null){
+        if (msg.getSession().getType() == AccountType.SystemAdmin && msg.getUserType() != null) {
             uservo.setUserType(msg.getUserType());
-        }else{
+        } else {
             uservo.setUserType(UserType.normal);
         }
 
@@ -680,7 +710,7 @@ public class AccountBase extends AbstractAccount {
 
         for (String id : msg.getPolicyUuids()) {
             PolicyVO policy = dbf.findByUuid(id, PolicyVO.class);
-            if (policy != null ){
+            if (policy != null) {
                 policySet.add(policy);
             }
         }

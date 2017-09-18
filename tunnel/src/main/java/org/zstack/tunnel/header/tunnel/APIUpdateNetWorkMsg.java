@@ -1,11 +1,14 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.manage.TunnelConstant;
 
 /**
  * Created by DCY on 2017-09-07
  */
+@Action(category = TunnelConstant.ACTION_CATEGORY)
 public class APIUpdateNetWorkMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = NetWorkVO.class)
