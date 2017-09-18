@@ -986,6 +986,42 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
 
         //判断外部vlan是否可用
+            //给A端口vlan验证
+            //同一个VSI下同一个物理接口不用分配vlan，他们vlan一样
+        Integer aVlan = null;
+        aVlan = findVlanForSameVsiAndInterface(msg.getNetWorkUuid(), msg.getInterfaceAUuid());
+        if(aVlan != null){
+            if(aVlan != msg.getaVlan()){
+                throw new ApiMessageInterceptionException(argerr("该端口在同一专有网络下已经分配vlan，请使用该vlan %s ",aVlan));
+            }
+        }else{
+            if(allocatedVlansA.contains(msg.getaVlan())){
+                throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用",msg.getaVlan()));
+            }
+        }
+            //给Z端口vlan验证
+            //同一个VSI下同一个物理接口不用分配vlan，他们vlan一样
+        Integer zVlan = null;
+        zVlan = findVlanForSameVsiAndInterface(msg.getNetWorkUuid(), msg.getInterfaceZUuid());
+        if(zVlan != null){
+            if(zVlan != msg.getzVlan()){
+                throw new ApiMessageInterceptionException(argerr("该端口在同一专有网络下已经分配vlan，请使用该vlan %s ",zVlan));
+            }
+        }else{
+            //如果Z端和A端属于同一个虚拟交换机且A端的vlan是重新分配的，那么Z端已经分配的VLAN集合要加上上一步分配的A端vlan
+            if(switchUuidA.equals(switchUuidZ) && findVlanForSameVsiAndInterface(msg.getNetWorkUuid(), msg.getInterfaceAUuid()) == null){
+                allocatedVlansZ.add(msg.getaVlan());
+                if(allocatedVlansZ.contains(msg.getzVlan())){
+                    throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用",msg.getzVlan()));
+                }
+
+            }else{
+                if(allocatedVlansZ.contains(msg.getzVlan())){
+                    throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用",msg.getzVlan()));
+                }
+            }
+
+        }
 
 
         //判断同一个switchPort下内部VLAN段是否有重叠
