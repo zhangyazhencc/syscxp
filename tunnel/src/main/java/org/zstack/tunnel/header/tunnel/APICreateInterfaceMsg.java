@@ -13,6 +13,8 @@ import org.zstack.tunnel.manage.TunnelConstant;
 @Action(category = TunnelConstant.ACTION_CATEGORY)
 public class APICreateInterfaceMsg extends APIMessage {
 
+    @APIParam(required = false,maxLength = 32)
+    private String accountUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
     @APIParam(emptyString = false,maxLength = 32)
@@ -92,5 +94,15 @@ public class APICreateInterfaceMsg extends APIMessage {
 
     public void setMonths(Integer months) {
         this.months = months;
+    }
+
+    public String getAccountUuid() {
+
+
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

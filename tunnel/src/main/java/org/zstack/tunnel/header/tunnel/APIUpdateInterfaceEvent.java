@@ -4,15 +4,15 @@ import org.zstack.header.message.APIEvent;
 import org.zstack.header.rest.RestResponse;
 
 /**
- * Created by DCY on 2017-09-11
+ * Created by DCY on 2017-09-14
  */
 @RestResponse(allTo = "inventory")
-public class APICreateInterfaceBossEvent extends APIEvent {
+public class APIUpdateInterfaceEvent extends APIEvent {
     private InterfaceInventory inventory;
 
-    public APICreateInterfaceBossEvent(){}
+    public APIUpdateInterfaceEvent(){}
 
-    public APICreateInterfaceBossEvent(String apiId){super(apiId);}
+    public APIUpdateInterfaceEvent(String apiId){super(apiId);}
 
     public InterfaceInventory getInventory() {
         return inventory;

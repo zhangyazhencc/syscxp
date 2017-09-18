@@ -13,17 +13,19 @@ import java.util.List;
 @Action(category = TunnelConstant.ACTION_CATEGORY)
 public class APICreateTunnelMsg extends APIMessage {
 
-    @APIParam(resourceType = NetWorkVO.class, checkAccount = true)
+    @APIParam(required = false,maxLength = 32)
+    private String accountUuid;
+    @APIParam(emptyString = false,resourceType = NetWorkVO.class, checkAccount = true)
     private String netWorkUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
     @APIParam(emptyString = false)
     private Integer bandwidth;
-    @APIParam(resourceType = InterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceAUuid;
     @APIParam(required = false)
     private Integer enableQinqA;
-    @APIParam(resourceType = InterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceZUuid;
     @APIParam(required = false)
     private Integer enableQinqZ;
@@ -36,9 +38,9 @@ public class APICreateTunnelMsg extends APIMessage {
     @APIParam(required = false)
     private String description;
     @APIParam(required = false)
-    private List<VlanSegment> vlanSegmentA;
+    private List<InnerVlanSegment> vlanSegmentA;
     @APIParam(required = false)
-    private List<VlanSegment> vlanSegmentZ;
+    private List<InnerVlanSegment> vlanSegmentZ;
 
     public String getNetWorkUuid() {
         return netWorkUuid;
@@ -128,19 +130,27 @@ public class APICreateTunnelMsg extends APIMessage {
         this.description = description;
     }
 
-    public List<VlanSegment> getVlanSegmentA() {
+    public List<InnerVlanSegment> getVlanSegmentA() {
         return vlanSegmentA;
     }
 
-    public void setVlanSegmentA(List<VlanSegment> vlanSegmentA) {
+    public void setVlanSegmentA(List<InnerVlanSegment> vlanSegmentA) {
         this.vlanSegmentA = vlanSegmentA;
     }
 
-    public List<VlanSegment> getVlanSegmentZ() {
+    public List<InnerVlanSegment> getVlanSegmentZ() {
         return vlanSegmentZ;
     }
 
-    public void setVlanSegmentZ(List<VlanSegment> vlanSegmentZ) {
+    public void setVlanSegmentZ(List<InnerVlanSegment> vlanSegmentZ) {
         this.vlanSegmentZ = vlanSegmentZ;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

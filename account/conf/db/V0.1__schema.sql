@@ -76,7 +76,7 @@ CREATE TABLE `AccountExtraInfoVO` (
 
 CREATE TABLE `AccountContactsVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-	`accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '账户uuid',
+	`accountUuid` varchar(32) NOT NULL COMMENT '账户uuid',
 	`name` varchar(128) DEFAULT NULL COMMENT '联系人',
 	`phone` varchar(36) DEFAULT NULL COMMENT '联系电话',
 	`email` varchar(36) DEFAULT NULL COMMENT '邮箱',

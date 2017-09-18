@@ -20,10 +20,16 @@
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>org.zstack.account.header.identity.RoleVO</value>
-                <value>org.zstack.account.header.user.UserVO</value>
+                <value>org.zstack.vpn.header.VpnGatewayVO</value>
             </list>
         </property>
+    </bean>
+    <bean id="VpnManager" class="org.zstack.vpn.manage.VpnManagerImpl">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.header.apimediator.GlobalApiMessageInterceptor"/>
+            <zstack:extension interface="org.zstack.header.Service"/>
+        </zstack:plugin>
+
     </bean>
 
 

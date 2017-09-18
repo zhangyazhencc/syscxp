@@ -267,7 +267,7 @@ CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `switchPortUuid` varchar(32) NOT NULL COMMENT '对应交换机端口',
   `endpointUuid` varchar(32) NOT NULL COMMENT '对应连接点',
   `bandwidth` int(11) NOT NULL COMMENT '带宽',
-  `isExclusive` TINYINT(1) NOT NULL COMMENT '如果是CLOUD端口，是否独享',
+  `isExclusive` TINYINT(1) NOT NULL COMMENT '是否独享',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `months` int(11) NOT NULL COMMENT '最近一次购买时长',
@@ -299,7 +299,7 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `months` int(11) NOT NULL COMMENT '最近一次购买时长',
-  `expiredDate` timestamp DEFAULT NULL COMMENT '截止时间',
+  `expiredDate` timestamp DEFAULT CURRENT_TIMESTAMP COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)

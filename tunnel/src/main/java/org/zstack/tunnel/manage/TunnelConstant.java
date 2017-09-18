@@ -11,5 +11,4 @@ public interface TunnelConstant {
 
     String SERVICE_ID = "tunnel";
     String ACTION_CATEGORY = "tunnel";
-    String ACTION_CATEGORY_HOST = "tunnelHost";
 }

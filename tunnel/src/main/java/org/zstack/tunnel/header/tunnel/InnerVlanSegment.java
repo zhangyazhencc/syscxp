@@ -3,7 +3,7 @@ package org.zstack.tunnel.header.tunnel;
 /**
  * Created by DCY on 2017-09-11
  */
-public class VlanSegment {
+public class InnerVlanSegment {
     private Integer startVlan;
     private Integer endVlan;
 
