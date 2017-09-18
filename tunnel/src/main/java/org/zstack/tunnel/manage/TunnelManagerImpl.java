@@ -599,7 +599,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         q.add(QinqVO_.tunnelUuid, SimpleQuery.Op.EQ, tunnelUuid);
         List<QinqVO> qinqList = q.list();
         if (qinqList.size() > 0) {
-            dbf.removeCollection(qinqList,QinqVO.class);
+            for(QinqVO qv : qinqList){
+                dbf.getEntityManager().remove(qv);
+            }
         }
 
         APIDeleteTunnelEvent evt = new APIDeleteTunnelEvent(msg.getId());
