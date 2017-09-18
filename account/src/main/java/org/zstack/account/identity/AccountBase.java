@@ -478,8 +478,6 @@ public class AccountBase extends AbstractAccount {
     @Transactional
     private void handle(APIUpdateAccountMsg msg) {
 
-        logger.error(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>"+msg.getUserUuid()+"<<<<<<<<<<<<<<<<<<<<<<<<<<<<<");
-
         AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
 
         boolean update = false;
@@ -531,15 +529,11 @@ public class AccountBase extends AbstractAccount {
             if (msg.getUserUuid() != null) {
                 account.getAccountExtraInfo().setUserUuid(msg.getUserUuid());
                 update = true;
-                logger.error(">>>>>>>>>>>>>>>>>>>>>>ififififiif>>>>>>>");
             }
         }
 
         if (update) {
-//            account = dbf.getEntityManager().merge(account);
-            account = dbf.updateAndRefresh(account);
-            logger.error(">>>>>>>>>>>>>>>>upupupupupupupup>>>>>>>>>>>>>");
-
+            account = dbf.getEntityManager().merge(account);
         }
 
         APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
