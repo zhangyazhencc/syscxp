@@ -21,7 +21,7 @@ public class VpnRouteInventory {
     public static VpnRouteInventory valueOf(VpnRouteVO vo) {
         VpnRouteInventory inv = new VpnRouteInventory();
         inv.setUuid(vo.getUuid());
-        inv.setGatewayUuid(vo.getGatewayUuid());
+        inv.setGatewayUuid(vo.getVpnUuid());
         inv.setRouteType(vo.getRouteType());
         inv.setNextIface2(vo.getNextIface2());
         inv.setNextIface(vo.getNextIface());

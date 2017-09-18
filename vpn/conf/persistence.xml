@@ -9,9 +9,9 @@
         <class>org.zstack.core.job.JobQueueVO</class>
         <class>org.zstack.core.job.JobQueueEntryVO</class>
 
-        <class>org.zstack.vpn.header.gateway.VpnGatewayVO</class>
+        <class>org.zstack.vpn.header.gateway.VpnVO</class>
         <class>org.zstack.vpn.header.gateway.VpnRouteVO</class>
-        <class>org.zstack.vpn.header.gateway.TunnelIfaceVO</class>
+        <class>org.zstack.vpn.header.gateway.VpnInterfaceVO</class>
         <class>org.zstack.vpn.header.host.VpnHostVO</class>
 
     </persistence-unit>

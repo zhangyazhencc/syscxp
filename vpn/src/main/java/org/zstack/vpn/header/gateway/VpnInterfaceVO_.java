@@ -6,8 +6,8 @@ import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 import java.sql.Timestamp;
 
-@StaticMetamodel(TunnelIfaceVO.class)
-public class TunnelIfaceVO_ {
+@StaticMetamodel(VpnInterfaceVO.class)
+public class VpnInterfaceVO_ {
     public static volatile SingularAttribute<VpnHostVO, String> uuid;
     public static volatile SingularAttribute<VpnHostVO, String> gatewayUuid;
     public static volatile SingularAttribute<VpnHostVO, String> name;

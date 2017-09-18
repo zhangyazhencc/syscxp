@@ -91,8 +91,8 @@ public class APICreateVpnGatewayMsg extends APIMessage {
                     uuid = ((APICreateVpnGatewayEvent) evt).getInventory().getUuid();
                 }
 
-                ntfy("Create VpnGatewayVO")
-                        .resource(uuid, VpnGatewayVO.class.getSimpleName())
+                ntfy("Create VpnVO")
+                        .resource(uuid, VpnVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };

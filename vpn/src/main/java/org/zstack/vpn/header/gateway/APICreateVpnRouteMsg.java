@@ -9,7 +9,7 @@ import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
 public class APICreateVpnRouteMsg extends APIMessage {
-    @APIParam(resourceType = VpnGatewayVO.class, checkAccount = true)
+    @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String gatewayUuid;
     @APIParam
     private RouteType routeType;

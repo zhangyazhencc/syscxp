@@ -5,13 +5,12 @@ import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
-import org.zstack.vpn.manage.EntityState;
-import org.zstack.vpn.manage.RunningStatus;
+import org.zstack.vpn.manage.HostState;
 import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
 public class APIUpdateVpnGatewayMsg extends APIMessage{
-    @APIParam(resourceType = VpnGatewayVO.class, checkAccount = true)
+    @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String uuid;
     @APIParam(required = false)
     private String name;
@@ -20,7 +19,7 @@ public class APIUpdateVpnGatewayMsg extends APIMessage{
     @APIParam(required = false)
     private String vpnCidr;
     @APIParam(required = false)
-    private EntityState state;
+    private HostState state;
 
     public String getUuid() {
         return uuid;
@@ -54,11 +53,11 @@ public class APIUpdateVpnGatewayMsg extends APIMessage{
         this.vpnCidr = vpnCidr;
     }
 
-    public EntityState getState() {
+    public HostState getState() {
         return state;
     }
 
-    public void setState(EntityState state) {
+    public void setState(HostState state) {
         this.state = state;
     }
 
@@ -68,8 +67,8 @@ public class APIUpdateVpnGatewayMsg extends APIMessage{
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update VpnGatewayVO")
-                        .resource(uuid, VpnGatewayVO.class.getSimpleName())
+                ntfy("Update VpnVO")
+                        .resource(uuid, VpnVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };

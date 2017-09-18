@@ -5,7 +5,7 @@ import org.zstack.header.exception.CloudRuntimeException;
 import java.util.HashMap;
 import java.util.Map;
 
-public enum RunningStatus {
+public enum HostStatus {
     Connecting,
     Connected,
     Disconnected;
@@ -32,9 +32,9 @@ public enum RunningStatus {
 
     private static class Transaction {
         RunningStatusEvent event;
-        RunningStatus nextStatus;
+        HostStatus nextStatus;
 
-        private Transaction(RunningStatusEvent event, RunningStatus nextStatus) {
+        private Transaction(RunningStatusEvent event, HostStatus nextStatus) {
             this.event = event;
             this.nextStatus = nextStatus;
         }
@@ -48,7 +48,7 @@ public enum RunningStatus {
 
     private Map<RunningStatusEvent, Transaction> transactionMap = new HashMap<RunningStatusEvent, Transaction>();
 
-    public RunningStatus nextStatus(RunningStatusEvent event) {
+    public HostStatus nextStatus(RunningStatusEvent event) {
         Transaction tran = transactionMap.get(event);
         if (tran == null) {
             throw new CloudRuntimeException(String.format("cannot find next status for current status[%s] on transaction event[%s]",

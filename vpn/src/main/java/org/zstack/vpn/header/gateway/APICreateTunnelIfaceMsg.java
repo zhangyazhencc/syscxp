@@ -9,7 +9,7 @@ import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
 public class APICreateTunnelIfaceMsg extends APIMessage {
-    @APIParam(resourceType = VpnGatewayVO.class, checkAccount = true)
+    @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String gatewayUuid;
     @APIParam(emptyString = false)
     private String name;
@@ -91,8 +91,8 @@ public class APICreateTunnelIfaceMsg extends APIMessage {
                     uuid = ((APICreateTunnelIfaceEvent) evt).getInventory().getUuid();
                 }
 
-                ntfy("Create TunnelIfaceVO")
-                        .resource(uuid, TunnelIfaceVO.class.getSimpleName())
+                ntfy("Create VpnInterfaceVO")
+                        .resource(uuid, VpnInterfaceVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };

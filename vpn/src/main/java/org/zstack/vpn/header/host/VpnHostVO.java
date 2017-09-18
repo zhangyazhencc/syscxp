@@ -1,7 +1,7 @@
 package org.zstack.vpn.header.host;
 
-import org.zstack.vpn.manage.EntityState;
-import org.zstack.vpn.manage.RunningStatus;
+import org.zstack.vpn.manage.HostState;
+import org.zstack.vpn.manage.HostStatus;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -15,25 +15,25 @@ public class VpnHostVO {
     @Column
     private String name;
     @Column
-    private String endpoint;
+    private String endpointUuid;
     @Column
     private String description;
     @Column
-    private String publicIface;
+    private String publicInterface;
     @Column
     private String publicIp;
     @Column
-    private String tunnelIface;
+    private String tunnelInterface;
     @Column
     private String manageIp;
     @Column
     private String sshPort;
     @Column
     @Enumerated(EnumType.STRING)
-    private EntityState state;
+    private HostState state;
     @Column
     @Enumerated(EnumType.STRING)
-    private RunningStatus status;
+    private HostStatus status;
     @Column
     private String username;
     @Column
@@ -51,28 +51,28 @@ public class VpnHostVO {
         this.publicIp = publicIp;
     }
 
-    public String getEndpoint() {
-        return endpoint;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 
 
-    public EntityState getState() {
+    public HostState getState() {
         return state;
     }
 
-    public void setState(EntityState state) {
+    public void setState(HostState state) {
         this.state = state;
     }
 
-    public RunningStatus getStatus() {
+    public HostStatus getStatus() {
         return status;
     }
 
-    public void setStatus(RunningStatus status) {
+    public void setStatus(HostStatus status) {
         this.status = status;
     }
 
@@ -100,20 +100,20 @@ public class VpnHostVO {
         this.description = description;
     }
 
-    public String getPublicIface() {
-        return publicIface;
+    public String getPublicInterface() {
+        return publicInterface;
     }
 
-    public void setPublicIface(String publicIface) {
-        this.publicIface = publicIface;
+    public void setPublicInterface(String publicInterface) {
+        this.publicInterface = publicInterface;
     }
 
-    public String getTunnelIface() {
-        return tunnelIface;
+    public String getTunnelInterface() {
+        return tunnelInterface;
     }
 
-    public void setTunnelIface(String tunnelIface) {
-        this.tunnelIface = tunnelIface;
+    public void setTunnelInterface(String tunnelInterface) {
+        this.tunnelInterface = tunnelInterface;
     }
 
     public String getManageIp() {

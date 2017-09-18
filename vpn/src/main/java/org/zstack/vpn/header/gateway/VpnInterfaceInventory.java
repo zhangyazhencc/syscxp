@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = TunnelIfaceVO.class)
-public class TunnelIfaceInventory {
+@Inventory(mappingVOClass = VpnInterfaceVO.class)
+public class VpnInterfaceInventory {
     private String uuid;
     private String gatewayUuid;
     private String name;
@@ -20,25 +20,24 @@ public class TunnelIfaceInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    public static TunnelIfaceInventory valueOf(TunnelIfaceVO vo) {
-        TunnelIfaceInventory inv = new TunnelIfaceInventory();
+    public static VpnInterfaceInventory valueOf(VpnInterfaceVO vo) {
+        VpnInterfaceInventory inv = new VpnInterfaceInventory();
         inv.setUuid(vo.getUuid());
-        inv.setGatewayUuid(vo.getGatewayUuid());
+        inv.setGatewayUuid(vo.getVpnUuid());
         inv.setName(vo.getName());
-        inv.setDescription(vo.getDescription());
-        inv.setTunnel(vo.getTunnel());
-        inv.setServerIP(vo.getServerIP());
-        inv.setClientIP(vo.getClientIP());
-        inv.setMask(vo.getMask());
+        inv.setTunnel(vo.getTunnelUuid());
+        inv.setServerIP(vo.getLocalIp());
+        inv.setClientIP(vo.getRemoteIp());
+        inv.setMask(vo.getNetmask());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
     }
 
-    public static List<TunnelIfaceInventory> valueOf(Collection<TunnelIfaceVO> vos) {
-        List<TunnelIfaceInventory> invs = new ArrayList<TunnelIfaceInventory>();
-        for (TunnelIfaceVO vo : vos) {
-            invs.add(TunnelIfaceInventory.valueOf(vo));
+    public static List<VpnInterfaceInventory> valueOf(Collection<VpnInterfaceVO> vos) {
+        List<VpnInterfaceInventory> invs = new ArrayList<VpnInterfaceInventory>();
+        for (VpnInterfaceVO vo : vos) {
+            invs.add(VpnInterfaceInventory.valueOf(vo));
         }
 
         return invs;
