@@ -3,7 +3,7 @@ package org.zstack.vpn.header.gateway;
 import org.zstack.header.message.APIEvent;
 
 public class APIUpdateVpnBindwidthEvent extends APIEvent{
-    VpnGatewayInventory inventory;
+    VpnInventory inventory;
 
     public APIUpdateVpnBindwidthEvent() {
     }
@@ -12,11 +12,11 @@ public class APIUpdateVpnBindwidthEvent extends APIEvent{
         super(apiId);
     }
 
-    public VpnGatewayInventory getInventory() {
+    public VpnInventory getInventory() {
         return inventory;
     }
 
-    public void setInventory(VpnGatewayInventory inventory) {
+    public void setInventory(VpnInventory inventory) {
         this.inventory = inventory;
     }
 }

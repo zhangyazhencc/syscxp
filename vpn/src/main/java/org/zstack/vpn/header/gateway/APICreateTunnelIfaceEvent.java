@@ -3,7 +3,7 @@ package org.zstack.vpn.header.gateway;
 import org.zstack.header.message.APIEvent;
 
 public class APICreateTunnelIfaceEvent extends APIEvent{
-    private TunnelIfaceInventory inventory;
+    private VpnInterfaceInventory inventory;
 
     public APICreateTunnelIfaceEvent() {
     }
@@ -12,11 +12,11 @@ public class APICreateTunnelIfaceEvent extends APIEvent{
         super(apiId);
     }
 
-    public TunnelIfaceInventory getInventory() {
+    public VpnInterfaceInventory getInventory() {
         return inventory;
     }
 
-    public void setInventory(TunnelIfaceInventory inventory) {
+    public void setInventory(VpnInterfaceInventory inventory) {
         this.inventory = inventory;
     }
 }

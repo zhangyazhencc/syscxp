@@ -30,14 +30,14 @@ public class VpnHostInventory {
         inv.setUuid(vo.getUuid());
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
-        inv.setPublicIface(vo.getPublicIface());
+        inv.setPublicIface(vo.getPublicInterface());
         inv.setPublicIp(vo.getPublicIp());
-        inv.setTunnelIface(vo.getTunnelIface());
+        inv.setTunnelIface(vo.getTunnelInterface());
         inv.setManageIp(vo.getManageIp());
         inv.setSshPort(vo.getSshPort());
         inv.setUsername(vo.getUsername());
         inv.setPassword(vo.getPassword());
-        inv.setEndpoint(vo.getEndpoint());
+        inv.setEndpoint(vo.getEndpointUuid());
         inv.setState(vo.getState().toString());
         inv.setStatus(vo.getStatus().toString());
         inv.setLastOpDate(vo.getLastOpDate());

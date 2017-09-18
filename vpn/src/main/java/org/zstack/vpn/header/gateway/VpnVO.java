@@ -1,8 +1,8 @@
 package org.zstack.vpn.header.gateway;
 
 import org.zstack.header.search.TriggerIndex;
-import org.zstack.vpn.manage.EntityState;
-import org.zstack.vpn.manage.RunningStatus;
+import org.zstack.vpn.manage.HostState;
+import org.zstack.vpn.manage.HostStatus;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 @Entity
 @Table
 @TriggerIndex
-public class VpnGatewayVO {
+public class VpnVO {
 
     @Id
     @Column
@@ -28,13 +28,13 @@ public class VpnGatewayVO {
     @Column
     private Integer bandwidth;
     @Column
-    private String endpoint;
+    private String endpointUuid;
     @Column
     @Enumerated(EnumType.STRING)
-    private EntityState state;
+    private HostState state;
     @Column
     @Enumerated(EnumType.STRING)
-    private RunningStatus status;
+    private HostStatus status;
     @Column
     private Integer months;
     @Column
@@ -52,11 +52,11 @@ public class VpnGatewayVO {
         this.uuid = uuid;
     }
 
-    public EntityState getState() {
+    public HostState getState() {
         return state;
     }
 
-    public void setState(EntityState state) {
+    public void setState(HostState state) {
         this.state = state;
     }
 
@@ -108,20 +108,20 @@ public class VpnGatewayVO {
         this.bandwidth = bandwidth;
     }
 
-    public String getEndpoint() {
-        return endpoint;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 
-    public RunningStatus getStatus() {
+    public HostStatus getStatus() {
 
         return status;
     }
 
-    public void setStatus(RunningStatus status) {
+    public void setStatus(HostStatus status) {
         this.status = status;
     }
 

@@ -9,7 +9,7 @@ import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
 public class APIUpdateVpnBindwidthMsg extends APIMessage{
-    @APIParam(resourceType = VpnGatewayVO.class, checkAccount = true)
+    @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String uuid;
     @APIParam
     private Integer bandwidth;
@@ -36,8 +36,8 @@ public class APIUpdateVpnBindwidthMsg extends APIMessage{
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update VpnGatewayVO bandwidth")
-                        .resource(uuid, VpnGatewayVO.class.getSimpleName())
+                ntfy("Update VpnVO bandwidth")
+                        .resource(uuid, VpnVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };

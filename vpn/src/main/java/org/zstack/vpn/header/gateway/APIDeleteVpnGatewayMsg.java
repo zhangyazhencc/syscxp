@@ -10,7 +10,7 @@ import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"delete"}, adminOnly = true)
 public class APIDeleteVpnGatewayMsg extends APIDeleteMessage {
-    @APIParam(resourceType = VpnGatewayVO.class)
+    @APIParam(resourceType = VpnVO.class)
     private String uuid;
 
     public String getUuid() {
@@ -26,8 +26,8 @@ public class APIDeleteVpnGatewayMsg extends APIDeleteMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Delete VpnGatewayVO")
-                        .resource(uuid, VpnGatewayVO.class.getSimpleName())
+                ntfy("Delete VpnVO")
+                        .resource(uuid, VpnVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };

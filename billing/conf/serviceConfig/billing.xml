@@ -101,6 +101,14 @@
         <name>org.zstack.billing.header.order.APIUpdateOrderExpiredTimeMsg</name>
     </message>
 
+   <message>
+        <name>org.zstack.billing.header.balance.APICreateAccountDischargeMsg</name>
+    </message>
+
+   <message>
+        <name>org.zstack.billing.header.balance.APIDeleteAccountDischargeMsg</name>
+    </message>
+
     <message>
         <name>org.zstack.billing.header.balance.APIQueryDisChargeMsg</name>
         <serviceId>query</serviceId>

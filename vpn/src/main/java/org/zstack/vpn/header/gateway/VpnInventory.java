@@ -1,16 +1,16 @@
 package org.zstack.vpn.header.gateway;
 
 import org.zstack.header.search.Inventory;
-import org.zstack.vpn.manage.EntityState;
-import org.zstack.vpn.manage.RunningStatus;
+import org.zstack.vpn.manage.HostState;
+import org.zstack.vpn.manage.HostStatus;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = VpnGatewayVO.class)
-public class VpnGatewayInventory {
+@Inventory(mappingVOClass = VpnVO.class)
+public class VpnInventory {
     private String uuid;
     private String accountUuid;
     private String hostUuid;
@@ -19,17 +19,17 @@ public class VpnGatewayInventory {
     private String vpnCidr;
     private Integer bandwidth;
     private String endpointUuid;
-    private RunningStatus status;
-    private EntityState state;
+    private HostStatus status;
+    private HostState state;
     private Integer months;
     private Timestamp expiredDate;
-    private List<TunnelIfaceInventory> tunnelIfaces;
+    private List<VpnInterfaceInventory> tunnelIfaces;
     private List<VpnRouteInventory> vpnRoutes;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    public static VpnGatewayInventory valueOf(VpnGatewayVO vo) {
-        VpnGatewayInventory inv = new VpnGatewayInventory();
+    public static VpnInventory valueOf(VpnVO vo) {
+        VpnInventory inv = new VpnInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setHostUuid(vo.getHostUuid());
@@ -37,7 +37,7 @@ public class VpnGatewayInventory {
         inv.setDescription(vo.getDescription());
         inv.setVpnCidr(vo.getVpnCidr());
         inv.setBandwidth(vo.getBandwidth());
-        inv.setEndpointUuid(vo.getEndpoint());
+        inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setStatus(vo.getStatus());
         inv.setState(vo.getState());
         inv.setMonths(vo.getMonths());
@@ -47,20 +47,20 @@ public class VpnGatewayInventory {
         return inv;
     }
 
-    public static List<VpnGatewayInventory> valueOf(Collection<VpnGatewayVO> vos) {
-        List<VpnGatewayInventory> invs = new ArrayList<VpnGatewayInventory>();
-        for (VpnGatewayVO vo : vos) {
-            invs.add(VpnGatewayInventory.valueOf(vo));
+    public static List<VpnInventory> valueOf(Collection<VpnVO> vos) {
+        List<VpnInventory> invs = new ArrayList<VpnInventory>();
+        for (VpnVO vo : vos) {
+            invs.add(VpnInventory.valueOf(vo));
         }
 
         return invs;
     }
 
-    public EntityState getState() {
+    public HostState getState() {
         return state;
     }
 
-    public void setState(EntityState state) {
+    public void setState(HostState state) {
         this.state = state;
     }
 
@@ -128,11 +128,11 @@ public class VpnGatewayInventory {
         this.endpointUuid = endpointUuid;
     }
 
-    public RunningStatus getStatus() {
+    public HostStatus getStatus() {
         return status;
     }
 
-    public void setStatus(RunningStatus status) {
+    public void setStatus(HostStatus status) {
         this.status = status;
     }
 
@@ -168,11 +168,11 @@ public class VpnGatewayInventory {
         this.createDate = createDate;
     }
 
-    public List<TunnelIfaceInventory> getTunnelIfaces() {
+    public List<VpnInterfaceInventory> getTunnelIfaces() {
         return tunnelIfaces;
     }
 
-    public void setTunnelIfaces(List<TunnelIfaceInventory> tunnelIfaces) {
+    public void setTunnelIfaces(List<VpnInterfaceInventory> tunnelIfaces) {
         this.tunnelIfaces = tunnelIfaces;
     }
 

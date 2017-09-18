@@ -9,7 +9,7 @@ import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
 public class APIUpdateTunnelIfaceMsg extends APIMessage{
-    @APIParam(resourceType = TunnelIfaceVO.class)
+    @APIParam(resourceType = VpnInterfaceVO.class)
     private String uuid;
     @APIParam
     private String name;
@@ -37,8 +37,8 @@ public class APIUpdateTunnelIfaceMsg extends APIMessage{
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update TunnelIfaceVO")
-                        .resource(uuid, TunnelIfaceVO.class.getSimpleName())
+                ntfy("Update VpnInterfaceVO")
+                        .resource(uuid, VpnInterfaceVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };

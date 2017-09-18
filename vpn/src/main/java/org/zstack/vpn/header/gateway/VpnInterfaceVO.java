@@ -3,14 +3,10 @@ package org.zstack.vpn.header.gateway;
 import org.zstack.header.vo.ForeignKey;
 import org.zstack.header.vo.ForeignKey.ReferenceOption;
 
-
 import javax.persistence.*;
 import java.sql.Timestamp;
 
-@Entity
-@Table
-public class VpnRouteVO {
-
+public class VpnInterfaceVO {
     @Id
     @Column
     private String uuid;
@@ -18,13 +14,15 @@ public class VpnRouteVO {
     @ForeignKey(parentEntityClass = VpnVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
     private String vpnUuid;
     @Column
-    private RouteType routeType;
+    private String name;
     @Column
-    private String nextIface;
+    private String tunnelUuid;
     @Column
-    private String nextIface2;
+    private String localIp;
     @Column
-    private String targetCidr;
+    private String remoteIp;
+    @Column
+    private String netmask;
     @Column
     private Timestamp lastOpDate;
     @Column
@@ -38,7 +36,6 @@ public class VpnRouteVO {
         this.uuid = uuid;
     }
 
-
     public String getVpnUuid() {
         return vpnUuid;
     }
@@ -47,36 +44,44 @@ public class VpnRouteVO {
         this.vpnUuid = vpnUuid;
     }
 
-    public RouteType getRouteType() {
-        return routeType;
+    public String getName() {
+        return name;
     }
 
-    public void setRouteType(RouteType routeType) {
-        this.routeType = routeType;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getNextIface() {
-        return nextIface;
+    public String getTunnelUuid() {
+        return tunnelUuid;
     }
 
-    public void setNextIface(String nextIface) {
-        this.nextIface = nextIface;
+    public void setTunnelUuid(String tunnelUuid) {
+        this.tunnelUuid = tunnelUuid;
     }
 
-    public String getNextIface2() {
-        return nextIface2;
+    public String getLocalIp() {
+        return localIp;
     }
 
-    public void setNextIface2(String nextIface2) {
-        this.nextIface2 = nextIface2;
+    public void setLocalIp(String localIp) {
+        this.localIp = localIp;
     }
 
-    public String getTargetCidr() {
-        return targetCidr;
+    public String getRemoteIp() {
+        return remoteIp;
     }
 
-    public void setTargetCidr(String targetCidr) {
-        this.targetCidr = targetCidr;
+    public void setRemoteIp(String remoteIp) {
+        this.remoteIp = remoteIp;
+    }
+
+    public String getNetmask() {
+        return netmask;
+    }
+
+    public void setNetmask(String netmask) {
+        this.netmask = netmask;
     }
 
     public Timestamp getLastOpDate() {

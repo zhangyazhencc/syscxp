@@ -5,13 +5,13 @@ import org.zstack.header.query.APIQueryReply;
 import java.util.List;
 
 public class APIQueryVpnGatewayReply extends APIQueryReply {
-    List<VpnGatewayInventory> inventories;
+    List<VpnInventory> inventories;
 
-    public List<VpnGatewayInventory> getInventories() {
+    public List<VpnInventory> getInventories() {
         return inventories;
     }
 
-    public void setInventories(List<VpnGatewayInventory> inventories) {
+    public void setInventories(List<VpnInventory> inventories) {
         this.inventories = inventories;
     }
 }
