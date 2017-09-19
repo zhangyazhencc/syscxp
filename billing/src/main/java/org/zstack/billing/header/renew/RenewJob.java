@@ -6,21 +6,20 @@ import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.billing.header.balance.*;
 import org.zstack.billing.header.order.*;
-import org.zstack.billing.manage.BillingErrors;
-import org.zstack.billing.manage.BillingManagerImpl;
-import org.zstack.billing.manage.BillingServiceException;
 import org.zstack.core.Platform;
-import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.GLock;
 import org.zstack.core.db.SimpleQuery;
+import org.zstack.header.billing.OrderState;
+import org.zstack.header.billing.OrderType;
+import org.zstack.header.billing.OrderVO;
+import org.zstack.header.billing.ProductChargeModel;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 

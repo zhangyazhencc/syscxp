@@ -36,10 +36,12 @@ public class SwitchPortVO {
     private SwitchPortType portType;
 
     @Column
-    private Integer isExclusive;
+    @Enumerated(EnumType.STRING)
+    private SwitchPortAttribute portAttribute;
 
     @Column
-    private Integer enabled;
+    @Enumerated(EnumType.STRING)
+    private SwitchPortState state;
 
     @Column
     private Timestamp createDate;
@@ -84,14 +86,6 @@ public class SwitchPortVO {
         this.portName = portName;
     }
 
-    public Integer getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Integer enabled) {
-        this.enabled = enabled;
-    }
-
     public Timestamp getCreateDate() {
         return createDate;
     }
@@ -124,11 +118,19 @@ public class SwitchPortVO {
         this.portType = portType;
     }
 
-    public Integer getIsExclusive() {
-        return isExclusive;
+    public SwitchPortAttribute getPortAttribute() {
+        return portAttribute;
     }
 
-    public void setIsExclusive(Integer isExclusive) {
-        this.isExclusive = isExclusive;
+    public void setPortAttribute(SwitchPortAttribute portAttribute) {
+        this.portAttribute = portAttribute;
+    }
+
+    public SwitchPortState getState() {
+        return state;
+    }
+
+    public void setState(SwitchPortState state) {
+        this.state = state;
     }
 }

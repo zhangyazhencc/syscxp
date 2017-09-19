@@ -8,13 +8,13 @@ import java.util.List;
  * Created by DCY on 2017-09-11
  */
 public class APIQueryInterfaceReply extends APIQueryReply {
-    private List<InterfaceToSwitchPortInventory> inventories;
+    private List<InterfaceInventory> inventories;
 
-    public List<InterfaceToSwitchPortInventory> getInventories() {
+    public List<InterfaceInventory> getInventories() {
         return inventories;
     }
 
-    public void setInventories(List<InterfaceToSwitchPortInventory> inventories) {
+    public void setInventories(List<InterfaceInventory> inventories) {
         this.inventories = inventories;
     }
 }

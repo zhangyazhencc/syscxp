@@ -20,7 +20,7 @@
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>org.zstack.tunnel.header.tunnel.NetWorkVO</value>
+                <value>org.zstack.tunnel.header.tunnel.NetworkVO</value>
                 <value>org.zstack.tunnel.header.tunnel.InterfaceVO</value>
                 <value>org.zstack.tunnel.header.tunnel.TunnelVO</value>
             </list>

@@ -1,6 +1,6 @@
 package org.zstack.billing.header.balance;
 
-import org.zstack.billing.manage.BillingConstant;
+import org.zstack.header.billing.BillingConstant;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 
 @Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"})
 public class APIUpdateAccountBalanceMsg extends APIMessage {
-    @APIParam(emptyString = false,resourceType = AccountBalanceVO.class)
+    @APIParam(emptyString = false)
     private String accountUuid;
 
     @APIParam(required = false)

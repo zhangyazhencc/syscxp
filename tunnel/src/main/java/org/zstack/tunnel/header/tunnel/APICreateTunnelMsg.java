@@ -1,8 +1,10 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.header.switchs.SwitchPortAttribute;
 import org.zstack.tunnel.manage.TunnelConstant;
 
 import java.util.List;
@@ -13,41 +15,51 @@ import java.util.List;
 @Action(category = TunnelConstant.ACTION_CATEGORY)
 public class APICreateTunnelMsg extends APIMessage {
 
-    @APIParam(required = false,maxLength = 32)
+    @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
-    @APIParam(emptyString = false,resourceType = NetWorkVO.class, checkAccount = true)
-    private String netWorkUuid;
+    @APIParam(emptyString = false,resourceType = NetworkVO.class, checkAccount = true)
+    private String networkUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
-    @APIParam(emptyString = false)
-    private Integer bandwidth;
+    @APIParam
+    private Long bandwidth;
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceAUuid;
-    @APIParam(required = false)
-    private Integer enableQinqA;
+    @APIParam(emptyString = false,validValues = {"Enabled", "Disabled"})
+    private TunnelQinqState qinqStateA;
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceZUuid;
-    @APIParam(required = false)
-    private Integer enableQinqZ;
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false,validValues = {"Enabled", "Disabled"})
+    private TunnelQinqState qinqStateZ;
+    @APIParam
     private Integer months;
-    @APIParam(emptyString = false)
-    private Integer isExclusiveA;
-    @APIParam(emptyString = false)
-    private Integer isExclusiveZ;
-    @APIParam(required = false)
+    @APIParam(emptyString = false,required = false)
     private String description;
     @APIParam(required = false)
     private List<InnerVlanSegment> vlanSegmentA;
     @APIParam(required = false)
     private List<InnerVlanSegment> vlanSegmentZ;
 
-    public String getNetWorkUuid() {
-        return netWorkUuid;
+
+
+    public String getAccountUuid() {
+        if(getSession().getType() == AccountType.SystemAdmin){
+            return accountUuid;
+        }else{
+            return getSession().getAccountUuid();
+        }
     }
 
-    public void setNetWorkUuid(String netWorkUuid) {
-        this.netWorkUuid = netWorkUuid;
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
+
+    public String getNetworkUuid() {
+        return networkUuid;
+    }
+
+    public void setNetworkUuid(String networkUuid) {
+        this.networkUuid = networkUuid;
     }
 
     public String getName() {
@@ -58,11 +70,11 @@ public class APICreateTunnelMsg extends APIMessage {
         this.name = name;
     }
 
-    public Integer getBandwidth() {
+    public Long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Integer bandwidth) {
+    public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
 
@@ -74,12 +86,12 @@ public class APICreateTunnelMsg extends APIMessage {
         this.interfaceAUuid = interfaceAUuid;
     }
 
-    public Integer getEnableQinqA() {
-        return enableQinqA;
+    public TunnelQinqState getQinqStateA() {
+        return qinqStateA;
     }
 
-    public void setEnableQinqA(Integer enableQinqA) {
-        this.enableQinqA = enableQinqA;
+    public void setQinqStateA(TunnelQinqState qinqStateA) {
+        this.qinqStateA = qinqStateA;
     }
 
     public String getInterfaceZUuid() {
@@ -90,12 +102,12 @@ public class APICreateTunnelMsg extends APIMessage {
         this.interfaceZUuid = interfaceZUuid;
     }
 
-    public Integer getEnableQinqZ() {
-        return enableQinqZ;
+    public TunnelQinqState getQinqStateZ() {
+        return qinqStateZ;
     }
 
-    public void setEnableQinqZ(Integer enableQinqZ) {
-        this.enableQinqZ = enableQinqZ;
+    public void setQinqStateZ(TunnelQinqState qinqStateZ) {
+        this.qinqStateZ = qinqStateZ;
     }
 
     public Integer getMonths() {
@@ -104,22 +116,6 @@ public class APICreateTunnelMsg extends APIMessage {
 
     public void setMonths(Integer months) {
         this.months = months;
-    }
-
-    public Integer getIsExclusiveA() {
-        return isExclusiveA;
-    }
-
-    public void setIsExclusiveA(Integer isExclusiveA) {
-        this.isExclusiveA = isExclusiveA;
-    }
-
-    public Integer getIsExclusiveZ() {
-        return isExclusiveZ;
-    }
-
-    public void setIsExclusiveZ(Integer isExclusiveZ) {
-        this.isExclusiveZ = isExclusiveZ;
     }
 
     public String getDescription() {
@@ -144,13 +140,5 @@ public class APICreateTunnelMsg extends APIMessage {
 
     public void setVlanSegmentZ(List<InnerVlanSegment> vlanSegmentZ) {
         this.vlanSegmentZ = vlanSegmentZ;
-    }
-
-    public String getAccountUuid() {
-        return accountUuid;
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
     }
 }

@@ -10,6 +10,6 @@ import org.zstack.tunnel.manage.SwitchConstant;
  */
 @Action(category = SwitchConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
 
-@AutoQuery(replyClass = APIQuerySwitchVlanReply.class, inventoryClass = SwitchVlanToModelInventory.class)
+@AutoQuery(replyClass = APIQuerySwitchVlanReply.class, inventoryClass = SwitchVlanInventory.class)
 public class APIQuerySwitchVlanMsg extends APIQueryMessage {
 }

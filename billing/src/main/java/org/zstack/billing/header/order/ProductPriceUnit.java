@@ -1,6 +1,6 @@
 package org.zstack.billing.header.order;
 
-import org.zstack.billing.header.balance.ProductType;
+import org.zstack.header.billing.ProductType;
 
 public class ProductPriceUnit {
 

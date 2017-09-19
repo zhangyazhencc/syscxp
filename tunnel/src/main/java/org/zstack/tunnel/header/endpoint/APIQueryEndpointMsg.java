@@ -11,6 +11,6 @@ import org.zstack.tunnel.manage.TunnelConstant;
  */
 
 @Action(category = NodeConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
-@AutoQuery(replyClass = APIQueryEndpointReply.class, inventoryClass = EndpointToNodeInventory.class)
+@AutoQuery(replyClass = APIQueryEndpointReply.class, inventoryClass = EndpointInventory.class)
 public class APIQueryEndpointMsg extends APIQueryMessage {
 }

@@ -14,7 +14,6 @@ public class PhysicalSwitchAO_ {
     public static volatile SingularAttribute<PhysicalSwitchAO, String> switchModelUuid;
     public static volatile SingularAttribute<PhysicalSwitchAO, String> code;
     public static volatile SingularAttribute<PhysicalSwitchAO, String> name;
-    public static volatile SingularAttribute<PhysicalSwitchAO, String> brand;
     public static volatile SingularAttribute<PhysicalSwitchAO, PhysicalSwitchType> type;
     public static volatile SingularAttribute<PhysicalSwitchAO, String> owner;
     public static volatile SingularAttribute<PhysicalSwitchAO, String> rack;

@@ -14,9 +14,9 @@ import java.util.List;
 public class SwitchModelInventory {
 
     private String uuid;
+    private String brand;
     private String model;
     private String subModel;
-    private Integer mpls;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
@@ -24,9 +24,9 @@ public class SwitchModelInventory {
         SwitchModelInventory inv = new SwitchModelInventory();
 
         inv.setUuid(vo.getUuid());
+        inv.setBrand(vo.getBrand());
         inv.setModel(vo.getModel());
         inv.setSubModel(vo.getSubModel());
-        inv.setMpls(vo.getMpls());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
 
@@ -65,14 +65,6 @@ public class SwitchModelInventory {
         this.subModel = subModel;
     }
 
-    public Integer getMpls() {
-        return mpls;
-    }
-
-    public void setMpls(Integer mpls) {
-        this.mpls = mpls;
-    }
-
     public Timestamp getCreateDate() {
         return createDate;
     }
@@ -87,5 +79,13 @@ public class SwitchModelInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
     }
 }

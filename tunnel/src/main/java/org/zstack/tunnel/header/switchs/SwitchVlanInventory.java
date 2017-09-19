@@ -17,6 +17,8 @@ public class SwitchVlanInventory {
 
     private String switchUuid;
 
+    private SwitchInventory switchs;
+
     private Integer startVlan;
 
     private Integer endVlan;
@@ -30,6 +32,7 @@ public class SwitchVlanInventory {
 
         inv.setUuid(vo.getUuid());
         inv.setSwitchUuid(vo.getSwitchUuid());
+        inv.setSwitchs(SwitchInventory.valueOf(vo.getSwitchs()));
         inv.setStartVlan(vo.getStartVlan());
         inv.setEndVlan(vo.getEndVlan());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -92,5 +95,13 @@ public class SwitchVlanInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public SwitchInventory getSwitchs() {
+        return switchs;
+    }
+
+    public void setSwitchs(SwitchInventory switchs) {
+        this.switchs = switchs;
     }
 }

@@ -1,9 +1,10 @@
 package org.zstack.billing.header.order;
 
+import org.zstack.header.billing.OrderInventory;
 import org.zstack.header.message.APIEvent;
 
 public class APIUpdateOrderExpiredTimeEvent   extends APIEvent {
-    private  OrderInventory inventory;
+    private OrderInventory inventory;
 
     public APIUpdateOrderExpiredTimeEvent(){}
 

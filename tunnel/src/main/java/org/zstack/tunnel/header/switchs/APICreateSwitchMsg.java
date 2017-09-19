@@ -3,6 +3,7 @@ package org.zstack.tunnel.header.switchs;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.header.endpoint.EndpointVO;
 import org.zstack.tunnel.manage.SwitchConstant;
 
 /**
@@ -12,17 +13,17 @@ import org.zstack.tunnel.manage.SwitchConstant;
 
 public class APICreateSwitchMsg extends APIMessage {
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32,resourceType = EndpointVO.class)
     private String endpointUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String code;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32,resourceType = PhysicalSwitchVO.class)
     private String physicalSwitchUuid;
     @APIParam(emptyString = false,validValues = {"FABRIC", "INTERNET"})
     private SwitchUpperType upperType;
-    @APIParam(required = false,maxLength = 255)
+    @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
 
     public String getEndpointUuid() {

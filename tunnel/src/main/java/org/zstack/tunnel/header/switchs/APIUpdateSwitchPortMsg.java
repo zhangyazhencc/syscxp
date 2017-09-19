@@ -13,8 +13,8 @@ public class APIUpdateSwitchPortMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = SwitchPortVO.class)
     private String uuid;
-    @APIParam(required = false)
-    private Integer enabled;
+    @APIParam(emptyString = false,required = false,validValues = {"Enabled", "Disabled"})
+    private SwitchPortState state;
 
     public String getUuid() {
         return uuid;
@@ -24,11 +24,11 @@ public class APIUpdateSwitchPortMsg extends APIMessage {
         this.uuid = uuid;
     }
 
-    public Integer getEnabled() {
-        return enabled;
+    public SwitchPortState getState() {
+        return state;
     }
 
-    public void setEnabled(Integer enabled) {
-        this.enabled = enabled;
+    public void setState(SwitchPortState state) {
+        this.state = state;
     }
 }

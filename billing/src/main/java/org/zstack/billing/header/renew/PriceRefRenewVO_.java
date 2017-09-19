@@ -1,11 +1,7 @@
 package org.zstack.billing.header.renew;
 
-import org.zstack.billing.header.balance.ProductChargeModel;
-import org.zstack.billing.header.balance.ProductType;
-
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @StaticMetamodel(PriceRefRenewVO.class)

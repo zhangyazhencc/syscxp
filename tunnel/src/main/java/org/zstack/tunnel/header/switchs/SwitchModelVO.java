@@ -16,13 +16,13 @@ public class SwitchModelVO {
     private String uuid;
 
     @Column
+    private String brand;
+
+    @Column
     private String model;
 
     @Column
     private String subModel;
-
-    @Column
-    private Integer mpls;
 
     @Column
     private Timestamp createDate;
@@ -59,14 +59,6 @@ public class SwitchModelVO {
         this.subModel = subModel;
     }
 
-    public Integer getMpls() {
-        return mpls;
-    }
-
-    public void setMpls(Integer mpls) {
-        this.mpls = mpls;
-    }
-
     public Timestamp getCreateDate() {
         return createDate;
     }
@@ -81,5 +73,13 @@ public class SwitchModelVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
     }
 }

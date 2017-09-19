@@ -2,7 +2,7 @@
 <Configuration status="warn">
     <Appenders>
         <RollingFile name="RollingFile" fileName="${sys:catalina.home}/logs/vpn.log"
-                     filePattern="${sys:catalina.home}/logs/management-serve-vpn-%d{yyyy-MM-dd}-%i.log">
+                     filePattern="${sys:catalina.home}/logs/management-server-vpn-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
                 <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c{1}] %X{api,} %m%n</pattern>
             </PatternLayout>

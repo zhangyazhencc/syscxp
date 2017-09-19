@@ -1,6 +1,6 @@
 package org.zstack.billing.header.bill;
 
-import org.zstack.billing.header.balance.ProductType;
+import org.zstack.header.billing.ProductType;
 
 import java.math.BigDecimal;
 
