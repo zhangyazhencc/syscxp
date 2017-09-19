@@ -626,6 +626,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if(q.isExists()){
             throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ",msg.getName()));
         }
+        //判断通道两端的连接点是否相同，不允许相同
+        if(msg.getEndpointPointAUuid() == msg.getEndpointPointZUuid()){
+            throw new ApiMessageInterceptionException(argerr("通道两端不允许在同一个连接点 "));
+        }
+
         //判断同一个switchPort下内部VLAN段是否有重叠
         String sql = "select count(a.uuid) from QinqVO a " +
                 "where a.interfaceUuid = :interfaceUuid " +
@@ -672,6 +677,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         q.add(TunnelVO_.networkUuid, SimpleQuery.Op.EQ, msg.getNetworkUuid());
         if(q.isExists()){
             throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ",msg.getName()));
+        }
+
+        //判断通道两端的连接点是否相同，不允许相同
+        if(msg.getEndpointPointAUuid() == msg.getEndpointPointZUuid()){
+            throw new ApiMessageInterceptionException(argerr("通道两端不允许在同一个连接点 "));
         }
 
         TunnelStrategy ts = new TunnelStrategy();

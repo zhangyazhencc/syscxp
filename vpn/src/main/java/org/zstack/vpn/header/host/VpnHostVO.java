@@ -1,8 +1,5 @@
 package org.zstack.vpn.header.host;
 
-import org.zstack.vpn.manage.HostState;
-import org.zstack.vpn.manage.HostStatus;
-
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -30,10 +27,10 @@ public class VpnHostVO {
     private String sshPort;
     @Column
     @Enumerated(EnumType.STRING)
-    private HostState state;
+    private VpnState state;
     @Column
     @Enumerated(EnumType.STRING)
-    private HostStatus status;
+    private VpnStatus status;
     @Column
     private String username;
     @Column
@@ -60,19 +57,19 @@ public class VpnHostVO {
     }
 
 
-    public HostState getState() {
+    public VpnState getState() {
         return state;
     }
 
-    public void setState(HostState state) {
+    public void setState(VpnState state) {
         this.state = state;
     }
 
-    public HostStatus getStatus() {
+    public VpnStatus getStatus() {
         return status;
     }
 
-    public void setStatus(HostStatus status) {
+    public void setStatus(VpnStatus status) {
         this.status = status;
     }
 
