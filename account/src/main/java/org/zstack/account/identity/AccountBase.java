@@ -1,6 +1,5 @@
 package org.zstack.account.identity;
 
-import org.hibernate.annotations.Source;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
