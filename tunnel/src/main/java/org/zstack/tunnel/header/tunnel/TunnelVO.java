@@ -13,38 +13,14 @@ import javax.persistence.*;
 public class TunnelVO extends TunnelAO{
 
     @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="netWorkUuid", insertable=false, updatable=false)
-    private NetWorkVO netWorkVO;
+    @JoinColumn(name="networkUuid", insertable=false, updatable=false)
+    private NetworkVO networkVO;
 
-    @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="interfaceAUuid", insertable=false, updatable=false)
-    private InterfaceVO interfaceAVO;
-
-    @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="interfaceZUuid", insertable=false, updatable=false)
-    private InterfaceVO interfaceZVO;
-
-    public NetWorkVO getNetWorkVO() {
-        return netWorkVO;
+    public NetworkVO getNetworkVO() {
+        return networkVO;
     }
 
-    public void setNetWorkVO(NetWorkVO netWorkVO) {
-        this.netWorkVO = netWorkVO;
-    }
-
-    public InterfaceVO getInterfaceAVO() {
-        return interfaceAVO;
-    }
-
-    public void setInterfaceAVO(InterfaceVO interfaceAVO) {
-        this.interfaceAVO = interfaceAVO;
-    }
-
-    public InterfaceVO getInterfaceZVO() {
-        return interfaceZVO;
-    }
-
-    public void setInterfaceZVO(InterfaceVO interfaceZVO) {
-        this.interfaceZVO = interfaceZVO;
+    public void setNetworkVO(NetworkVO networkVO) {
+        this.networkVO = networkVO;
     }
 }

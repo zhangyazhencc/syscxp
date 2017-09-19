@@ -2,6 +2,7 @@ package org.zstack.tunnel.header.tunnel;
 
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.header.endpoint.EndpointVO;
 
 import java.util.List;
 
@@ -12,27 +13,31 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32)
     private String accountUuid;
-    @APIParam(emptyString = false,resourceType = NetWorkVO.class, checkAccount = true)
-    private String netWorkUuid;
+    @APIParam(emptyString = false,resourceType = NetworkVO.class, checkAccount = true)
+    private String networkUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
-    @APIParam(emptyString = false)
-    private Integer bandwidth;
+    @APIParam
+    private Long bandwidth;
+    @APIParam(emptyString = false,resourceType = EndpointVO.class)
+    private String endpointPointAUuid;
+    @APIParam(emptyString = false,resourceType = EndpointVO.class)
+    private String endpointPointZUuid;
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceAUuid;
-    @APIParam(emptyString = false)
+    @APIParam(numberRange = {1, 4094})
     private Integer aVlan;
-    @APIParam(required = false)
-    private Integer enableQinqA;
+    @APIParam(emptyString = false,validValues = {"Enabled", "Disabled"})
+    private TunnelQinqState qinqStateA;
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceZUuid;
-    @APIParam(emptyString = false)
+    @APIParam(numberRange = {1, 4094})
     private Integer zVlan;
-    @APIParam(required = false)
-    private Integer enableQinqZ;
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false,validValues = {"Enabled", "Disabled"})
+    private TunnelQinqState qinqStateZ;
+    @APIParam
     private Integer months;
-    @APIParam(required = false)
+    @APIParam(emptyString = false,required = false)
     private String description;
     @APIParam(required = false)
     private List<InnerVlanSegment> vlanSegmentA;
@@ -47,12 +52,12 @@ public class APICreateTunnelManualMsg extends APIMessage {
         this.accountUuid = accountUuid;
     }
 
-    public String getNetWorkUuid() {
-        return netWorkUuid;
+    public String getNetworkUuid() {
+        return networkUuid;
     }
 
-    public void setNetWorkUuid(String netWorkUuid) {
-        this.netWorkUuid = netWorkUuid;
+    public void setNetworkUuid(String networkUuid) {
+        this.networkUuid = networkUuid;
     }
 
     public String getName() {
@@ -63,11 +68,11 @@ public class APICreateTunnelManualMsg extends APIMessage {
         this.name = name;
     }
 
-    public Integer getBandwidth() {
+    public Long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Integer bandwidth) {
+    public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
 
@@ -87,12 +92,12 @@ public class APICreateTunnelManualMsg extends APIMessage {
         this.aVlan = aVlan;
     }
 
-    public Integer getEnableQinqA() {
-        return enableQinqA;
+    public TunnelQinqState getQinqStateA() {
+        return qinqStateA;
     }
 
-    public void setEnableQinqA(Integer enableQinqA) {
-        this.enableQinqA = enableQinqA;
+    public void setQinqStateA(TunnelQinqState qinqStateA) {
+        this.qinqStateA = qinqStateA;
     }
 
     public String getInterfaceZUuid() {
@@ -111,12 +116,12 @@ public class APICreateTunnelManualMsg extends APIMessage {
         this.zVlan = zVlan;
     }
 
-    public Integer getEnableQinqZ() {
-        return enableQinqZ;
+    public TunnelQinqState getQinqStateZ() {
+        return qinqStateZ;
     }
 
-    public void setEnableQinqZ(Integer enableQinqZ) {
-        this.enableQinqZ = enableQinqZ;
+    public void setQinqStateZ(TunnelQinqState qinqStateZ) {
+        this.qinqStateZ = qinqStateZ;
     }
 
     public Integer getMonths() {
@@ -149,5 +154,21 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     public void setVlanSegmentZ(List<InnerVlanSegment> vlanSegmentZ) {
         this.vlanSegmentZ = vlanSegmentZ;
+    }
+
+    public String getEndpointPointAUuid() {
+        return endpointPointAUuid;
+    }
+
+    public void setEndpointPointAUuid(String endpointPointAUuid) {
+        this.endpointPointAUuid = endpointPointAUuid;
+    }
+
+    public String getEndpointPointZUuid() {
+        return endpointPointZUuid;
+    }
+
+    public void setEndpointPointZUuid(String endpointPointZUuid) {
+        this.endpointPointZUuid = endpointPointZUuid;
     }
 }

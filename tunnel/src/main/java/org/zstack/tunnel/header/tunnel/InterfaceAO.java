@@ -3,10 +3,7 @@ package org.zstack.tunnel.header.tunnel;
 import org.zstack.header.vo.ForeignKey;
 import org.zstack.tunnel.header.switchs.SwitchPortVO;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.PreUpdate;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
 /**
@@ -33,10 +30,7 @@ public class InterfaceAO {
     private String endpointUuid;
 
     @Column
-    private Integer bandwidth;
-
-    @Column
-    private Integer isExclusive;
+    private Long bandwidth;
 
     @Column
     private String description;
@@ -98,22 +92,6 @@ public class InterfaceAO {
         this.endpointUuid = endpointUuid;
     }
 
-    public Integer getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(Integer bandwidth) {
-        this.bandwidth = bandwidth;
-    }
-
-    public Integer getIsExclusive() {
-        return isExclusive;
-    }
-
-    public void setIsExclusive(Integer isExclusive) {
-        this.isExclusive = isExclusive;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -152,5 +130,13 @@ public class InterfaceAO {
 
     public void setMonths(Integer months) {
         this.months = months;
+    }
+
+    public Long getBandwidth() {
+        return bandwidth;
+    }
+
+    public void setBandwidth(Long bandwidth) {
+        this.bandwidth = bandwidth;
     }
 }

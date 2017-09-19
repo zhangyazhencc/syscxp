@@ -6,8 +6,8 @@ import org.zstack.header.message.APIParam;
 /**
  * Created by DCY on 2017-09-14
  */
-public class APIDeleteNetWorkMsg extends APIMessage {
-    @APIParam(emptyString = false, resourceType = NetWorkVO.class)
+public class APIDeleteNetworkMsg extends APIMessage {
+    @APIParam(emptyString = false, resourceType = NetworkVO.class)
     private String uuid;
 
     public String getUuid() {

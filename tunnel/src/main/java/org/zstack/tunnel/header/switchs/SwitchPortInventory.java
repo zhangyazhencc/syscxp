@@ -16,15 +16,17 @@ public class SwitchPortInventory {
 
     private String switchUuid;
 
+    private SwitchInventory switchs;
+
     private Integer portNum;
 
     private String portName;
 
     private SwitchPortType portType;
 
-    private Integer isExclusive;
+    private SwitchPortAttribute portAttribute;
 
-    private Integer enabled;
+    private SwitchPortState state;
 
     private Timestamp createDate;
 
@@ -35,11 +37,12 @@ public class SwitchPortInventory {
 
         inv.setUuid(vo.getUuid());
         inv.setSwitchUuid(vo.getSwitchUuid());
+        inv.setSwitchs(SwitchInventory.valueOf(vo.getSwitchs()));
         inv.setPortNum(vo.getPortNum());
         inv.setPortName(vo.getPortName());
         inv.setPortType(vo.getPortType());
-        inv.setIsExclusive(vo.getIsExclusive());
-        inv.setEnabled(vo.getEnabled());
+        inv.setPortAttribute(vo.getPortAttribute());
+        inv.setState(vo.getState());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
 
@@ -86,14 +89,6 @@ public class SwitchPortInventory {
         this.portName = portName;
     }
 
-    public Integer getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Integer enabled) {
-        this.enabled = enabled;
-    }
-
     public Timestamp getCreateDate() {
         return createDate;
     }
@@ -118,11 +113,27 @@ public class SwitchPortInventory {
         this.portType = portType;
     }
 
-    public Integer getIsExclusive() {
-        return isExclusive;
+    public SwitchInventory getSwitchs() {
+        return switchs;
     }
 
-    public void setIsExclusive(Integer isExclusive) {
-        this.isExclusive = isExclusive;
+    public void setSwitchs(SwitchInventory switchs) {
+        this.switchs = switchs;
+    }
+
+    public SwitchPortAttribute getPortAttribute() {
+        return portAttribute;
+    }
+
+    public void setPortAttribute(SwitchPortAttribute portAttribute) {
+        this.portAttribute = portAttribute;
+    }
+
+    public SwitchPortState getState() {
+        return state;
+    }
+
+    public void setState(SwitchPortState state) {
+        this.state = state;
     }
 }

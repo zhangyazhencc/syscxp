@@ -1,8 +1,9 @@
 package org.zstack.header.account;
 
+import org.zstack.header.identity.SuppressCredentialCheck;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;
-
+@SuppressCredentialCheck
 public class APIValidateAccountMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false)

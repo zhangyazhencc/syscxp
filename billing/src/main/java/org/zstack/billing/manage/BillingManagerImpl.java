@@ -146,7 +146,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         if (accountDischargeVO != null) {
             dbf.remove(accountDischargeVO);
         }
-        APIDeleteAccountDischargeEvent event = new APIDeleteAccountDischargeEvent();
+        APIDeleteAccountDischargeEvent event = new APIDeleteAccountDischargeEvent(msg.getId());
         event.setInventory(AccountDischargeInventory.valueOf(accountDischargeVO));
         bus.publish(event);
     }
@@ -167,7 +167,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         accountDischargeVO.setCategory(msg.getCategory());
         accountDischargeVO.setDisCharge(msg.getDisCharge());
         dbf.persistAndRefresh(accountDischargeVO);
-        APICreateAccountDischargeEvent event = new APICreateAccountDischargeEvent();
+        APICreateAccountDischargeEvent event = new APICreateAccountDischargeEvent(msg.getId());
         event.setInventory(AccountDischargeInventory.valueOf(accountDischargeVO));
         bus.publish(event);
 
@@ -1171,18 +1171,21 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         if(vo == null){
             APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
+            aMsg.setUuid(msg.getAccountUuid());
             InnerMessageHelper.setMD5(aMsg);
             String gstr = RESTApiDecoder.dump(aMsg);
             RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
-            SessionInventory session = null;
             if (rsp.getState().equals(RestAPIState.Done.toString())) {
                 APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
-                if (replay.isValidAccount()) {
+                if (!replay.isValidAccount()) {
                    throw new IllegalArgumentException("the account uuid is not valid");
                 }
             }
             AccountBalanceVO accountBalanceVO = new AccountBalanceVO();
             accountBalanceVO.setUuid(msg.getAccountUuid());
+            accountBalanceVO.setCreditPoint(BigDecimal.ZERO);
+            accountBalanceVO.setPresentBalance(BigDecimal.ZERO);
+            accountBalanceVO.setCashBalance(BigDecimal.ZERO);
             vo = dbf.persistAndRefresh(accountBalanceVO);
         }
 

@@ -7,21 +7,21 @@ import org.zstack.header.rest.RestResponse;
  * Created by DCY on 2017-09-07
  */
 @RestResponse(allTo = "inventory")
-public class APIUpdateNetWorkEvent extends APIEvent {
+public class APIUpdateNetworkEvent extends APIEvent {
 
-    private NetWorkInventory inventory;
+    private NetworkInventory inventory;
 
-    public APIUpdateNetWorkEvent(String apiId) {
+    public APIUpdateNetworkEvent(String apiId) {
         super(apiId);
     }
 
-    public APIUpdateNetWorkEvent() {}
+    public APIUpdateNetworkEvent() {}
 
-    public NetWorkInventory getInventory() {
+    public NetworkInventory getInventory() {
         return inventory;
     }
 
-    public void setInventory(NetWorkInventory inventory) {
+    public void setInventory(NetworkInventory inventory) {
         this.inventory = inventory;
     }
 }

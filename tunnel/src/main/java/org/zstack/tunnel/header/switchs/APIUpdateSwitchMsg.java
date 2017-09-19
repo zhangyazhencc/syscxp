@@ -14,19 +14,19 @@ public class APIUpdateSwitchMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = SwitchVO.class)
     private String uuid;
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,required = false,maxLength = 128)
     private String code;
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,required = false,maxLength = 128)
     private String name;
-    @APIParam(required = false,maxLength = 32)
+    @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = PhysicalSwitchVO.class)
     private String physicalSwitchUuid;
-    @APIParam(required = false,validValues = {"FABRIC", "INTERNET"})
+    @APIParam(emptyString = false,required = false,validValues = {"FABRIC", "INTERNET"})
     private SwitchUpperType upperType;
-    @APIParam(required = false)
-    private Integer enabled;
-    @APIParam(required = false,validValues = {"NORMAL", "UNUSUAL"})
+    @APIParam(emptyString = false,required = false,validValues = {"Enabled", "Disabled","PreMaintenance","Maintenance"})
+    private SwitchState state;
+    @APIParam(emptyString = false,required = false,validValues = {"Connecting", "Connected","Disconnected"})
     private SwitchStatus status;
-    @APIParam(required = false,maxLength = 255)
+    @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
 
     public String getUuid() {
@@ -69,14 +69,6 @@ public class APIUpdateSwitchMsg extends APIMessage {
         this.upperType = upperType;
     }
 
-    public Integer getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Integer enabled) {
-        this.enabled = enabled;
-    }
-
     public SwitchStatus getStatus() {
         return status;
     }
@@ -91,5 +83,13 @@ public class APIUpdateSwitchMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public SwitchState getState() {
+        return state;
+    }
+
+    public void setState(SwitchState state) {
+        this.state = state;
     }
 }

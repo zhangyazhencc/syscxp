@@ -1,5 +1,6 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
@@ -9,19 +10,25 @@ import org.zstack.tunnel.manage.TunnelConstant;
  * Created by DCY on 2017-09-07
  */
 @Action(category = TunnelConstant.ACTION_CATEGORY)
-public class APICreateNetWorkMsg extends APIMessage {
+public class APICreateNetworkMsg extends APIMessage {
 
-    @APIParam(required = false,maxLength = 32)
+    @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
     @APIParam(emptyString = false,maxLength = 32)
     private String monitorCidr;
-    @APIParam(required = false,maxLength = 255)
+    @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
 
     public String getAccountUuid() {
-        return accountUuid;
+
+        if(getSession().getType() == AccountType.SystemAdmin){
+            return accountUuid;
+        }else{
+            return getSession().getAccountUuid();
+        }
+
     }
 
     public void setAccountUuid(String accountUuid) {

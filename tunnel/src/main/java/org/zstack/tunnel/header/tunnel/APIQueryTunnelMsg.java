@@ -6,6 +6,6 @@ import org.zstack.header.query.AutoQuery;
 /**
  * Created by DCY on 2017-09-17
  */
-@AutoQuery(replyClass = APIQueryTunnelReply.class, inventoryClass = TunnelToNetWorkAndSwitchPortInventory.class)
+@AutoQuery(replyClass = APIQueryTunnelReply.class, inventoryClass = TunnelInventory.class)
 public class APIQueryTunnelMsg  extends APIQueryMessage {
 }

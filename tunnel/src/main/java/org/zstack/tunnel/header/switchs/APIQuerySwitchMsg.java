@@ -10,6 +10,6 @@ import org.zstack.tunnel.manage.SwitchConstant;
  */
 @Action(category = SwitchConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
 
-@AutoQuery(replyClass = APIQuerySwitchReply.class, inventoryClass = SwitchToEndpointAndModelInventory.class)
+@AutoQuery(replyClass = APIQuerySwitchReply.class, inventoryClass = SwitchInventory.class)
 public class APIQuerySwitchMsg extends APIQueryMessage {
 }

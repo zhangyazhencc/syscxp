@@ -1,5 +1,6 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
@@ -9,14 +10,14 @@ import org.zstack.header.message.APIParam;
 public class APIUpdateInterfaceMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = InterfaceVO.class)
     private String uuid;
-    @APIParam(required = false,maxLength = 32)
+    @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,required = false,maxLength = 128)
     private String name;
-    @APIParam(required = false,maxLength = 255)
+    @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
     @APIParam(required = false)
-    private Integer bandwidth;
+    private Long bandwidth;
 
     public String getUuid() {
         return uuid;
@@ -42,19 +43,23 @@ public class APIUpdateInterfaceMsg extends APIMessage {
         this.description = description;
     }
 
-    public Integer getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(Integer bandwidth) {
-        this.bandwidth = bandwidth;
-    }
-
     public String getAccountUuid() {
-        return accountUuid;
+        if(getSession().getType() == AccountType.SystemAdmin){
+            return accountUuid;
+        }else{
+            return getSession().getAccountUuid();
+        }
     }
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public Long getBandwidth() {
+        return bandwidth;
+    }
+
+    public void setBandwidth(Long bandwidth) {
+        this.bandwidth = bandwidth;
     }
 }

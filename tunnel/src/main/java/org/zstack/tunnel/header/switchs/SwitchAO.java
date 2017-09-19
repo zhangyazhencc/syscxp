@@ -35,10 +35,11 @@ public class SwitchAO {
     private SwitchUpperType upperType;
 
     @Column
-    private Integer enabled;
+    private String description;
 
     @Column
-    private String description;
+    @Enumerated(EnumType.STRING)
+    private SwitchState state;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -103,14 +104,6 @@ public class SwitchAO {
         this.upperType = upperType;
     }
 
-    public Integer getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Integer enabled) {
-        this.enabled = enabled;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -141,5 +134,13 @@ public class SwitchAO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public SwitchState getState() {
+        return state;
+    }
+
+    public void setState(SwitchState state) {
+        this.state = state;
     }
 }

@@ -23,8 +23,8 @@ public class NodeInventory {
     private String province;
     private String city;
     private String address;
-    private double longtitude;
-    private double latitude;
+    private Double longtitude;
+    private Double latitude;
     private String property;
     private NodeStatus status;
     private Timestamp lastOpDate;
@@ -139,19 +139,19 @@ public class NodeInventory {
         this.address = address;
     }
 
-    public double getLongtitude() {
+    public Double getLongtitude() {
         return longtitude;
     }
 
-    public void setLongtitude(double longtitude) {
+    public void setLongtitude(Double longtitude) {
         this.longtitude = longtitude;
     }
 
-    public double getLatitude() {
+    public Double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(double latitude) {
+    public void setLatitude(Double latitude) {
         this.latitude = latitude;
     }
 

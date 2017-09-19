@@ -1,5 +1,6 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
@@ -9,18 +10,18 @@ import org.zstack.tunnel.manage.TunnelConstant;
  * Created by DCY on 2017-09-07
  */
 @Action(category = TunnelConstant.ACTION_CATEGORY)
-public class APIUpdateNetWorkMsg extends APIMessage {
+public class APIUpdateNetworkMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = NetWorkVO.class)
+    @APIParam(emptyString = false,resourceType = NetworkVO.class)
     private String uuid;
 
-    @APIParam(required = false,maxLength = 32)
+    @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
 
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,required = false,maxLength = 128)
     private String name;
 
-    @APIParam(required = false,maxLength = 255)
+    @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
 
     public String getUuid() {
@@ -48,7 +49,11 @@ public class APIUpdateNetWorkMsg extends APIMessage {
     }
 
     public String getAccountUuid() {
-        return accountUuid;
+        if(getSession().getType() == AccountType.SystemAdmin){
+            return accountUuid;
+        }else{
+            return getSession().getAccountUuid();
+        }
     }
 
     public void setAccountUuid(String accountUuid) {

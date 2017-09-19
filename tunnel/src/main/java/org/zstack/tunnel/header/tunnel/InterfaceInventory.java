@@ -1,6 +1,7 @@
 package org.zstack.tunnel.header.tunnel;
 
 import org.zstack.header.search.Inventory;
+import org.zstack.tunnel.header.switchs.SwitchPortInventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -16,9 +17,9 @@ public class InterfaceInventory {
     private String accountUuid;
     private String name;
     private String switchPortUuid;
+    private SwitchPortInventory switchPort;
     private String endpointUuid;
-    private Integer bandwidth;
-    private Integer isExclusive;
+    private Long bandwidth;
     private String description;
     private Integer months;
     private Timestamp expiredDate;
@@ -31,9 +32,9 @@ public class InterfaceInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setName(vo.getName());
         inv.setSwitchPortUuid(vo.getSwitchPortUuid());
+        inv.setSwitchPort(SwitchPortInventory.valueOf(vo.getSwitchPortVO()));
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setBandwidth(vo.getBandwidth());
-        inv.setIsExclusive(vo.getIsExclusive());
         inv.setDescription(vo.getDescription());
         inv.setMonths(vo.getMonths());
         inv.setExpiredDate(vo.getExpiredDate());
@@ -90,22 +91,6 @@ public class InterfaceInventory {
         this.endpointUuid = endpointUuid;
     }
 
-    public Integer getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(Integer bandwidth) {
-        this.bandwidth = bandwidth;
-    }
-
-    public Integer getIsExclusive() {
-        return isExclusive;
-    }
-
-    public void setIsExclusive(Integer isExclusive) {
-        this.isExclusive = isExclusive;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -144,5 +129,21 @@ public class InterfaceInventory {
 
     public void setMonths(Integer months) {
         this.months = months;
+    }
+
+    public SwitchPortInventory getSwitchPort() {
+        return switchPort;
+    }
+
+    public void setSwitchPort(SwitchPortInventory switchPort) {
+        this.switchPort = switchPort;
+    }
+
+    public Long getBandwidth() {
+        return bandwidth;
+    }
+
+    public void setBandwidth(Long bandwidth) {
+        this.bandwidth = bandwidth;
     }
 }

@@ -3,6 +3,9 @@ package org.zstack.tunnel.header.tunnel;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.header.endpoint.EndpointVO;
+import org.zstack.tunnel.header.switchs.SwitchPortAttribute;
+import org.zstack.tunnel.header.switchs.SwitchPortVO;
 import org.zstack.tunnel.manage.TunnelConstant;
 
 /**
@@ -16,15 +19,13 @@ public class APICreateInterfaceManualMsg extends APIMessage {
     private String accountUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32,resourceType = SwitchPortVO.class)
     private String switchPortUuid;
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32,resourceType = EndpointVO.class)
     private String endpointUuid;
-    @APIParam(emptyString = false)
-    private Integer bandwidth;
-    @APIParam(emptyString = false)
-    private Integer isExclusive;
-    @APIParam(required = false,maxLength = 255)
+    @APIParam
+    private Long bandwidth;
+    @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
     @APIParam(emptyString = false)
     private Integer months;
@@ -61,22 +62,6 @@ public class APICreateInterfaceManualMsg extends APIMessage {
         this.endpointUuid = endpointUuid;
     }
 
-    public Integer getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(Integer bandwidth) {
-        this.bandwidth = bandwidth;
-    }
-
-    public Integer getIsExclusive() {
-        return isExclusive;
-    }
-
-    public void setIsExclusive(Integer isExclusive) {
-        this.isExclusive = isExclusive;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -91,5 +76,13 @@ public class APICreateInterfaceManualMsg extends APIMessage {
 
     public void setMonths(Integer months) {
         this.months = months;
+    }
+
+    public Long getBandwidth() {
+        return bandwidth;
+    }
+
+    public void setBandwidth(Long bandwidth) {
+        this.bandwidth = bandwidth;
     }
 }

@@ -13,11 +13,19 @@ import org.zstack.tunnel.manage.SwitchConstant;
 public class APICreateSwitchModelMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 128)
+    private String brand;
+    @APIParam(emptyString = false,maxLength = 128)
     private String model;
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,required = false,maxLength = 128)
     private String subModel;
-    @APIParam(emptyString = false)
-    private Integer mpls;
+
+    public String getBrand() {
+        return brand;
+    }
+
+    public void setBrand(String brand) {
+        this.brand = brand;
+    }
 
     public String getModel() {
         return model;
@@ -33,13 +41,5 @@ public class APICreateSwitchModelMsg extends APIMessage {
 
     public void setSubModel(String subModel) {
         this.subModel = subModel;
-    }
-
-    public Integer getMpls() {
-        return mpls;
-    }
-
-    public void setMpls(Integer mpls) {
-        this.mpls = mpls;
     }
 }

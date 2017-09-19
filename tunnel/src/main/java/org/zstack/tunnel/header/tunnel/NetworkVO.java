@@ -1,23 +1,53 @@
 package org.zstack.tunnel.header.tunnel;
 
-import org.zstack.header.message.APIMessage;
-import org.zstack.header.message.APIParam;
+import javax.persistence.*;
+import java.sql.Timestamp;
 
 /**
- * Created by DCY on 2017-09-14
+ * Created by DCY on 2017-09-05
  */
-public class APICreateNetWorkManualMsg extends APIMessage {
+@Entity
+@Table
+@Inheritance(strategy = InheritanceType.JOINED)
+public class NetworkVO {
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @Id
+    @Column
+    private String uuid;
+
+    @Column
     private String accountUuid;
-    @APIParam(emptyString = false,maxLength = 128)
+
+    @Column
     private String name;
-    @APIParam(emptyString = false)
+
+    @Column
     private Integer vsi;
-    @APIParam(emptyString = false,maxLength = 32)
+
+    @Column
     private String monitorCidr;
-    @APIParam(required = false,maxLength = 255)
+
+    @Column
     private String description;
+
+    @Column
+    private Timestamp createDate;
+
+    @Column
+    private Timestamp lastOpDate;
+
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
     public String getAccountUuid() {
         return accountUuid;
@@ -57,5 +87,21 @@ public class APICreateNetWorkManualMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public Timestamp getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
+    }
+
+    public Timestamp getLastOpDate() {
+        return lastOpDate;
+    }
+
+    public void setLastOpDate(Timestamp lastOpDate) {
+        this.lastOpDate = lastOpDate;
     }
 }
