@@ -1,5 +1,6 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
@@ -9,10 +10,10 @@ import org.zstack.header.message.APIParam;
 public class APIUpdateTunnelMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class)
     private String uuid;
-    @APIParam(required = false,maxLength = 32)
+    @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
     @APIParam(required = false)
-    private Integer bandwidth;
+    private Long bandwidth;
 
     public String getUuid() {
         return uuid;
@@ -23,18 +24,22 @@ public class APIUpdateTunnelMsg extends APIMessage {
     }
 
     public String getAccountUuid() {
-        return accountUuid;
+        if(getSession().getType() == AccountType.SystemAdmin){
+            return accountUuid;
+        }else{
+            return getSession().getAccountUuid();
+        }
     }
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
     }
 
-    public Integer getBandwidth() {
+    public Long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Integer bandwidth) {
+    public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
 }

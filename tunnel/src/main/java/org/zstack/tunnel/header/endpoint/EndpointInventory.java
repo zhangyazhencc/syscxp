@@ -17,6 +17,7 @@ import java.util.List;
 public class EndpointInventory {
     private String uuid;
     private String nodeUuid;
+    private NodeInventory node;
     private String name;
     private String code;
     private EndpointType endpointType;
@@ -30,6 +31,7 @@ public class EndpointInventory {
         EndpointInventory inv = new EndpointInventory();
         inv.setUuid(vo.getUuid());
         inv.setNodeUuid(vo.getNodeUuid());
+        inv.setNode(NodeInventory.valueOf(vo.getNodeVO()));
         inv.setName(vo.getName());
         inv.setCode(vo.getCode());
         inv.setEndpointType(vo.getEndpointType());
@@ -127,5 +129,13 @@ public class EndpointInventory {
 
     public void setEndpointType(EndpointType endpointType) {
         this.endpointType = endpointType;
+    }
+
+    public NodeInventory getNode() {
+        return node;
+    }
+
+    public void setNode(NodeInventory node) {
+        this.node = node;
     }
 }

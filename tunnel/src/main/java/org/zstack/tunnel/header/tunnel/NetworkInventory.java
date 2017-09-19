@@ -10,8 +10,8 @@ import java.util.List;
 /**
  * Created by DCY on 2017-09-07
  */
-@Inventory(mappingVOClass = NetWorkVO.class)
-public class NetWorkInventory {
+@Inventory(mappingVOClass = NetworkVO.class)
+public class NetworkInventory {
 
     private String uuid;
     private String accountUuid;
@@ -22,8 +22,8 @@ public class NetWorkInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    public static NetWorkInventory valueOf(NetWorkVO vo){
-        NetWorkInventory inv = new NetWorkInventory();
+    public static NetworkInventory valueOf(NetworkVO vo){
+        NetworkInventory inv = new NetworkInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setName(vo.getName());
@@ -35,10 +35,10 @@ public class NetWorkInventory {
         return inv;
     }
 
-    public static List<NetWorkInventory> valueOf(Collection<NetWorkVO> vos) {
-        List<NetWorkInventory> lst = new ArrayList<NetWorkInventory>(vos.size());
-        for (NetWorkVO vo : vos) {
-            lst.add(NetWorkInventory.valueOf(vo));
+    public static List<NetworkInventory> valueOf(Collection<NetworkVO> vos) {
+        List<NetworkInventory> lst = new ArrayList<NetworkInventory>(vos.size());
+        for (NetworkVO vo : vos) {
+            lst.add(NetworkInventory.valueOf(vo));
         }
         return lst;
     }

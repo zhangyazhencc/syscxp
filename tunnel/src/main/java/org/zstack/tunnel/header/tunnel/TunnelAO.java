@@ -19,14 +19,14 @@ public class TunnelAO {
     private String accountUuid;
 
     @Column
-    @ForeignKey(parentEntityClass = NetWorkVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
-    private String netWorkUuid;
+    @ForeignKey(parentEntityClass = NetworkVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
+    private String networkUuid;
 
     @Column
     private String name;
 
     @Column
-    private Integer bandwidth;
+    private Long bandwidth;
 
     @Column
     private Double distance;
@@ -40,27 +40,8 @@ public class TunnelAO {
     private TunnelStatus status;
 
     @Column
-    @ForeignKey(parentEntityClass = InterfaceEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
-    private String interfaceAUuid;
-
-    @Column
-    private Integer aVlan;
-
-    @Column
-    private Integer enableQinqA;
-
-    @Column
-    @ForeignKey(parentEntityClass = InterfaceEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
-    private String interfaceZUuid;
-
-    @Column
-    private Integer zVlan;
-
-    @Column
-    private Integer enableQinqZ;
-
-    @Column
-    private Integer isMonitor;
+    @Enumerated(EnumType.STRING)
+    private TunnelMonitorState monitorState;
 
     @Column
     private Integer months;
@@ -98,12 +79,12 @@ public class TunnelAO {
         this.accountUuid = accountUuid;
     }
 
-    public String getNetWorkUuid() {
-        return netWorkUuid;
+    public String getNetworkUuid() {
+        return networkUuid;
     }
 
-    public void setNetWorkUuid(String netWorkUuid) {
-        this.netWorkUuid = netWorkUuid;
+    public void setNetworkUuid(String networkUuid) {
+        this.networkUuid = networkUuid;
     }
 
     public String getName() {
@@ -114,11 +95,11 @@ public class TunnelAO {
         this.name = name;
     }
 
-    public Integer getBandwidth() {
+    public Long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Integer bandwidth) {
+    public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
 
@@ -146,60 +127,28 @@ public class TunnelAO {
         this.status = status;
     }
 
-    public String getInterfaceAUuid() {
-        return interfaceAUuid;
+    public TunnelMonitorState getMonitorState() {
+        return monitorState;
     }
 
-    public void setInterfaceAUuid(String interfaceAUuid) {
-        this.interfaceAUuid = interfaceAUuid;
+    public void setMonitorState(TunnelMonitorState monitorState) {
+        this.monitorState = monitorState;
     }
 
-    public Integer getaVlan() {
-        return aVlan;
+    public Integer getMonths() {
+        return months;
     }
 
-    public void setaVlan(Integer aVlan) {
-        this.aVlan = aVlan;
+    public void setMonths(Integer months) {
+        this.months = months;
     }
 
-    public Integer getEnableQinqA() {
-        return enableQinqA;
+    public String getDescription() {
+        return description;
     }
 
-    public void setEnableQinqA(Integer enableQinqA) {
-        this.enableQinqA = enableQinqA;
-    }
-
-    public String getInterfaceZUuid() {
-        return interfaceZUuid;
-    }
-
-    public void setInterfaceZUuid(String interfaceZUuid) {
-        this.interfaceZUuid = interfaceZUuid;
-    }
-
-    public Integer getzVlan() {
-        return zVlan;
-    }
-
-    public void setzVlan(Integer zVlan) {
-        this.zVlan = zVlan;
-    }
-
-    public Integer getEnableQinqZ() {
-        return enableQinqZ;
-    }
-
-    public void setEnableQinqZ(Integer enableQinqZ) {
-        this.enableQinqZ = enableQinqZ;
-    }
-
-    public Integer getIsMonitor() {
-        return isMonitor;
-    }
-
-    public void setIsMonitor(Integer isMonitor) {
-        this.isMonitor = isMonitor;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Timestamp getExpiredDate() {
@@ -224,21 +173,5 @@ public class TunnelAO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
-    }
-
-    public Integer getMonths() {
-        return months;
-    }
-
-    public void setMonths(Integer months) {
-        this.months = months;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 }

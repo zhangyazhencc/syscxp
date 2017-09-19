@@ -4,31 +4,27 @@ import javax.persistence.*;
 import java.sql.Timestamp;
 
 /**
- * Created by DCY on 2017-09-05
+ * Created by DCY on 2017-09-18
  */
 @Entity
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
-public class NetWorkVO {
-
+public class TunnelInterfaceRefVO {
     @Id
     @Column
     private String uuid;
 
     @Column
-    private String accountUuid;
+    private String tunnelUuid;
 
     @Column
-    private String name;
+    private String interfaceUuid;
 
     @Column
-    private Integer vsi;
+    private Integer innerVlan;
 
     @Column
-    private String monitorCidr;
-
-    @Column
-    private String description;
+    private TunnelQinqState qinqState;
 
     @Column
     private Timestamp createDate;
@@ -49,44 +45,36 @@ public class NetWorkVO {
         this.uuid = uuid;
     }
 
-    public String getAccountUuid() {
-        return accountUuid;
+    public String getTunnelUuid() {
+        return tunnelUuid;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+    public void setTunnelUuid(String tunnelUuid) {
+        this.tunnelUuid = tunnelUuid;
     }
 
-    public String getName() {
-        return name;
+    public String getInterfaceUuid() {
+        return interfaceUuid;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setInterfaceUuid(String interfaceUuid) {
+        this.interfaceUuid = interfaceUuid;
     }
 
-    public Integer getVsi() {
-        return vsi;
+    public Integer getInnerVlan() {
+        return innerVlan;
     }
 
-    public void setVsi(Integer vsi) {
-        this.vsi = vsi;
+    public void setInnerVlan(Integer innerVlan) {
+        this.innerVlan = innerVlan;
     }
 
-    public String getMonitorCidr() {
-        return monitorCidr;
+    public TunnelQinqState getQinqState() {
+        return qinqState;
     }
 
-    public void setMonitorCidr(String monitorCidr) {
-        this.monitorCidr = monitorCidr;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    public void setQinqState(TunnelQinqState qinqState) {
+        this.qinqState = qinqState;
     }
 
     public Timestamp getCreateDate() {

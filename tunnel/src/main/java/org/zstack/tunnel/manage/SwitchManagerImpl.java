@@ -109,13 +109,9 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         SwitchModelVO vo = new SwitchModelVO();
 
         vo.setUuid(Platform.getUuid());
+        vo.setBrand(msg.getBrand());
         vo.setModel(msg.getModel());
-        if(msg.getSubModel() != null){
-            vo.setSubModel(msg.getSubModel());
-        }else{
-            vo.setSubModel(null);
-        }
-        vo.setMpls(msg.getMpls());
+        vo.setSubModel(msg.getSubModel());
 
         vo = dbf.persistAndRefresh(vo);
 
@@ -145,7 +141,6 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         vo.setSwitchModelUuid(msg.getSwitchModelUuid());
         vo.setCode(msg.getCode());
         vo.setName(msg.getName());
-        vo.setBrand(msg.getBrand());
         vo.setOwner(msg.getOwner());
         vo.setType(msg.getType());
         vo.setRack(msg.getRack());
@@ -166,10 +161,6 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         PhysicalSwitchVO vo = dbf.findByUuid(msg.getUuid(),PhysicalSwitchVO.class);
         boolean update = false;
 
-        if(msg.getNodeUuid() != null){
-            vo.setNodeUuid(msg.getNodeUuid());
-            update = true;
-        }
         if(msg.getSwitchModelUuid() != null){
             vo.setSwitchModelUuid(msg.getSwitchModelUuid());
             update = true;
@@ -180,10 +171,6 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         }
         if(msg.getName() != null){
             vo.setName(msg.getName());
-            update = true;
-        }
-        if(msg.getBrand() != null){
-            vo.setBrand(msg.getBrand());
             update = true;
         }
         if(msg.getOwner() != null){
@@ -249,13 +236,10 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         vo.setName(msg.getName());
         vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
         vo.setUpperType(msg.getUpperType());
-        vo.setStatus(SwitchStatus.NORMAL);
-        vo.setEnabled(1);
-        if(msg.getDescription() != null){
-            vo.setDescription(msg.getDescription());
-        }else{
-            vo.setDescription(null);
-        }
+        vo.setState(SwitchState.Enabled);
+        vo.setStatus(SwitchStatus.Connected);
+        vo.setDescription(msg.getDescription());
+
 
         vo = dbf.persistAndRefresh(vo);
 
@@ -283,8 +267,8 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             vo.setUpperType(msg.getUpperType());
             update = true;
         }
-        if(msg.getEnabled() != null){
-            vo.setEnabled(msg.getEnabled());
+        if(msg.getState() != null){
+            vo.setState(msg.getState());
             update = true;
         }
         if(msg.getStatus() != null){
@@ -324,8 +308,8 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         vo.setPortNum(null);
         vo.setPortName(msg.getPortName());
         vo.setPortType(msg.getPortType());
-        vo.setIsExclusive(msg.getIsExclusive());
-        vo.setEnabled(1);
+        vo.setPortAttribute(msg.getPortAttribute());
+        vo.setState(SwitchPortState.Enabled);
 
         vo = dbf.persistAndRefresh(vo);
 
@@ -337,8 +321,8 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
     private void handle(APIUpdateSwitchPortMsg msg){
         SwitchPortVO vo = dbf.findByUuid(msg.getUuid(),SwitchPortVO.class);
         boolean update = false;
-        if(msg.getEnabled() != null){
-            vo.setEnabled(msg.getEnabled());
+        if(msg.getState() != null){
+            vo.setState(msg.getState());
             update = true;
         }
 
@@ -459,16 +443,10 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
     }
 
     private void validate(APIDeleteSwitchModelMsg msg){
-        //判断要删除的对象是否存在
-        SimpleQuery<SwitchModelVO> q = dbf.createQuery(SwitchModelVO.class);
-        q.add(SwitchModelVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("SwitchModel %s is not exist ",msg.getUuid()));
-        }
         //判断该型号是否被物理交换机使用
-        SimpleQuery<PhysicalSwitchVO> q2 = dbf.createQuery(PhysicalSwitchVO.class);
-        q2.add(PhysicalSwitchVO_.switchModelUuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (q2.isExists()) {
+        SimpleQuery<PhysicalSwitchVO> q = dbf.createQuery(PhysicalSwitchVO.class);
+        q.add(PhysicalSwitchVO_.switchModelUuid, SimpleQuery.Op.EQ, msg.getUuid());
+        if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("cannot delete,switchModel is being used!"));
         }
 
@@ -481,78 +459,46 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         if(q.isExists()){
             throw new ApiMessageInterceptionException(argerr("PhysicalSwitch's code %s is already exist ",msg.getCode()));
         }
-        //判断交换机所属节点是否存在
-        SimpleQuery<NodeVO> q2 = dbf.createQuery(NodeVO.class);
-        q2.add(NodeVO_.uuid, SimpleQuery.Op.EQ, msg.getNodeUuid());
-        if (!q2.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("node %s is not exist ",msg.getNodeUuid()));
-        }
-        //判断交换机所属型号是否存在
-        SimpleQuery<SwitchModelVO> q3 = dbf.createQuery(SwitchModelVO.class);
-        q3.add(SwitchModelVO_.uuid, SimpleQuery.Op.EQ, msg.getSwitchModelUuid());
-        if (!q3.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("switchModel %s is not exist ",msg.getSwitchModelUuid()));
-        }
         //判断mIP和LocalIp唯一性
-        SimpleQuery<PhysicalSwitchVO> q4 = dbf.createQuery(PhysicalSwitchVO.class);
-        q4.add(PhysicalSwitchVO_.mIP, SimpleQuery.Op.EQ, msg.getmIP());
-        if(q4.isExists()){
+        SimpleQuery<PhysicalSwitchVO> q2 = dbf.createQuery(PhysicalSwitchVO.class);
+        q2.add(PhysicalSwitchVO_.mIP, SimpleQuery.Op.EQ, msg.getmIP());
+        if(q2.isExists()){
             throw new ApiMessageInterceptionException(argerr("PhysicalSwitch's mip %s is already exist ",msg.getmIP()));
         }
-        SimpleQuery<PhysicalSwitchVO> q5 = dbf.createQuery(PhysicalSwitchVO.class);
-        q5.add(PhysicalSwitchVO_.localIP, SimpleQuery.Op.EQ, msg.getLocalIP());
-        if(q5.isExists()){
+        SimpleQuery<PhysicalSwitchVO> q3 = dbf.createQuery(PhysicalSwitchVO.class);
+        q3.add(PhysicalSwitchVO_.localIP, SimpleQuery.Op.EQ, msg.getLocalIP());
+        if(q3.isExists()){
             throw new ApiMessageInterceptionException(argerr("PhysicalSwitch's localIp %s is already exist ",msg.getLocalIP()));
         }
 
     }
 
     private void validate(APIUpdatePhysicalSwitchMsg msg){
-        //判断所修改的交换机是否存在
-        SimpleQuery<PhysicalSwitchVO> q = dbf.createQuery(PhysicalSwitchVO.class);
-        q.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("PhysicalSwitch %s is not exist ",msg.getUuid()));
-        }
+
         //判断code是否已经存在
         if(msg.getCode() != null){
-            SimpleQuery<PhysicalSwitchVO> q2 = dbf.createQuery(PhysicalSwitchVO.class);
-            q2.add(PhysicalSwitchVO_.code, SimpleQuery.Op.EQ, msg.getCode());
-            q2.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
-            if(q2.isExists()){
+            SimpleQuery<PhysicalSwitchVO> q = dbf.createQuery(PhysicalSwitchVO.class);
+            q.add(PhysicalSwitchVO_.code, SimpleQuery.Op.EQ, msg.getCode());
+            q.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
+            if(q.isExists()){
                 throw new ApiMessageInterceptionException(argerr("PhysicalSwitch's code %s is already exist ",msg.getCode()));
             }
         }
-        //判断交换机所属节点是否存在
-        if(msg.getNodeUuid() != null){
-            SimpleQuery<NodeVO> q3 = dbf.createQuery(NodeVO.class);
-            q3.add(NodeVO_.uuid, SimpleQuery.Op.EQ, msg.getNodeUuid());
-            if (!q3.isExists()) {
-                throw new ApiMessageInterceptionException(argerr("node %s is not exist ",msg.getNodeUuid()));
-            }
-        }
-        //判断交换机所属型号是否存在
-        if(msg.getSwitchModelUuid() != null){
-            SimpleQuery<SwitchModelVO> q4 = dbf.createQuery(SwitchModelVO.class);
-            q4.add(SwitchModelVO_.uuid, SimpleQuery.Op.EQ, msg.getSwitchModelUuid());
-            if (!q4.isExists()) {
-                throw new ApiMessageInterceptionException(argerr("switchModel %s is not exist ",msg.getSwitchModelUuid()));
-            }
-        }
+
         //判断mIP和LocalIp唯一性
         if(msg.getmIP() != null){
-            SimpleQuery<PhysicalSwitchVO> q5 = dbf.createQuery(PhysicalSwitchVO.class);
-            q5.add(PhysicalSwitchVO_.mIP, SimpleQuery.Op.EQ, msg.getmIP());
-            q5.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
-            if(q5.isExists()){
+            SimpleQuery<PhysicalSwitchVO> q2 = dbf.createQuery(PhysicalSwitchVO.class);
+            q2.add(PhysicalSwitchVO_.mIP, SimpleQuery.Op.EQ, msg.getmIP());
+            q2.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
+            if(q2.isExists()){
                 throw new ApiMessageInterceptionException(argerr("PhysicalSwitch's mip %s is already exist ",msg.getmIP()));
             }
         }
         if(msg.getLocalIP() != null){
-            SimpleQuery<PhysicalSwitchVO> q6 = dbf.createQuery(PhysicalSwitchVO.class);
-            q6.add(PhysicalSwitchVO_.localIP, SimpleQuery.Op.EQ, msg.getLocalIP());
-            q6.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
-            if(q6.isExists()){
+            SimpleQuery<PhysicalSwitchVO> q3 = dbf.createQuery(PhysicalSwitchVO.class);
+            q3.add(PhysicalSwitchVO_.localIP, SimpleQuery.Op.EQ, msg.getLocalIP());
+            q3.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
+            if(q3.isExists()){
                 throw new ApiMessageInterceptionException(argerr("PhysicalSwitch's localIp %s is already exist ",msg.getLocalIP()));
             }
         }
@@ -560,16 +506,11 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
     }
 
     private void validate(APIDeletePhysicalSwitchMsg msg){
-        //判断所删除的交换机是否存在
-        SimpleQuery<PhysicalSwitchVO> q = dbf.createQuery(PhysicalSwitchVO.class);
-        q.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("PhysicalSwitch %s is not exist ",msg.getUuid()));
-        }
+
         //判断该物理交换机下是否有虚拟交换机
-        SimpleQuery<SwitchVO> q2 = dbf.createQuery(SwitchVO.class);
-        q2.add(SwitchVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (q2.isExists()) {
+        SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
+        q.add(SwitchVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, msg.getUuid());
+        if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("cannot delete,PhysicalSwitch is being used!"));
         }
     }
@@ -581,34 +522,16 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         if(q.isExists()){
             throw new ApiMessageInterceptionException(argerr("switch's code %s is already exist ",msg.getCode()));
         }
-        //判断交换机所属连接点是否存在
-        SimpleQuery<EndpointVO> q2 = dbf.createQuery(EndpointVO.class);
-        q2.add(EndpointVO_.uuid, SimpleQuery.Op.EQ, msg.getEndpointUuid());
-        if (!q2.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("endpoint %s is not exist ",msg.getEndpointUuid()));
-        }
-        //判断交换机所属物理交换机是否存在
-        SimpleQuery<PhysicalSwitchVO> q3 = dbf.createQuery(PhysicalSwitchVO.class);
-        q3.add(PhysicalSwitchVO_.uuid, SimpleQuery.Op.EQ, msg.getPhysicalSwitchUuid());
-        if (!q3.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("physicalSwitch %s is not exist ",msg.getPhysicalSwitchUuid()));
-        }
 
     }
 
     private void validate(APIUpdateSwitchMsg msg){
-        //判断所修改的交换机是否存在
-        SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
-        q.add(SwitchVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getUuid()));
-        }
         //判断code是否已经存在
         if(msg.getCode() != null){
-            SimpleQuery<SwitchVO> q2 = dbf.createQuery(SwitchVO.class);
-            q2.add(SwitchVO_.code, SimpleQuery.Op.EQ, msg.getCode());
-            q2.add(SwitchVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
-            if(q2.isExists()){
+            SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
+            q.add(SwitchVO_.code, SimpleQuery.Op.EQ, msg.getCode());
+            q.add(SwitchVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
+            if(q.isExists()){
                 throw new ApiMessageInterceptionException(argerr("switch's code %s is already exist ",msg.getCode()));
             }
         }
@@ -616,34 +539,24 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
     }
 
     private void validate(APIDeleteSwitchMsg msg){
-        //判断所删除的交换机是否存在
-        SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
-        q.add(SwitchVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("Switch %s is not exist ",msg.getUuid()));
-        }
+
         //判断该交换机下是否有端口
-        SimpleQuery<SwitchPortVO> q2 = dbf.createQuery(SwitchPortVO.class);
-        q2.add(SwitchPortVO_.switchUuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (q2.isExists()) {
+        SimpleQuery<SwitchPortVO> q = dbf.createQuery(SwitchPortVO.class);
+        q.add(SwitchPortVO_.switchUuid, SimpleQuery.Op.EQ, msg.getUuid());
+        if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("cannot delete,Switch is being used by switchPort!"));
         }
         //判断该交换机下是否有Vlan段
-        SimpleQuery<SwitchVlanVO> q3 = dbf.createQuery(SwitchVlanVO.class);
-        q3.add(SwitchVlanVO_.switchUuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (q3.isExists()) {
+        SimpleQuery<SwitchVlanVO> q2 = dbf.createQuery(SwitchVlanVO.class);
+        q2.add(SwitchVlanVO_.switchUuid, SimpleQuery.Op.EQ, msg.getUuid());
+        if (q2.isExists()) {
             throw new ApiMessageInterceptionException(argerr("cannot delete,Switch is being used by switchVlan!"));
         }
     }
 
 
     private void validate(APICreateSwitchPortMsg msg){
-        //判断端口所在的交换机UUID是否存在
-        SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
-        q.add(SwitchVO_.uuid, SimpleQuery.Op.EQ, msg.getSwitchUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getSwitchUuid()));
-        }
+
         //端口名称在一个物理交换机下是否存在
         String sql = "select count(a.uuid) from PhysicalSwitchVO a,SwitchVO b,SwitchPortVO c " +
                 "where a.uuid = b.physicalSwitchUuid " +
@@ -659,50 +572,25 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         }
     }
 
-    private void validate(APIUpdateSwitchPortMsg msg){
-        //判断所修改的端口是否存在
-        SimpleQuery<SwitchPortVO> q = dbf.createQuery(SwitchPortVO.class);
-        q.add(SwitchPortVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("switchPort %s is not exist ",msg.getUuid()));
-        }
-
-    }
+    private void validate(APIUpdateSwitchPortMsg msg){ }
 
     private void validate(APIDeleteSwitchPortMsg msg){
-        //判断要删除的对象是否存在
-        SimpleQuery<SwitchPortVO> q = dbf.createQuery(SwitchPortVO.class);
-        q.add(SwitchPortVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("SwitchPort %s is not exist ",msg.getUuid()));
-        }
+
         //判断该端口是否被买了
-        SimpleQuery<InterfaceVO> q2 = dbf.createQuery(InterfaceVO.class);
-        q2.add(InterfaceVO_.switchPortUuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (q2.isExists()) {
+        SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
+        q.add(InterfaceVO_.switchPortUuid, SimpleQuery.Op.EQ, msg.getUuid());
+        if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("cannot delete,switchPort is being used!"));
         }
 
     }
 
     private void validate(APICreateSwitchVlanMsg msg){
-        //判断VLAN所在的交换机UUID是否存在
-        SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
-        q.add(SwitchVO_.uuid, SimpleQuery.Op.EQ, msg.getSwitchUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("switch %s is not exist ",msg.getSwitchUuid()));
-        }
-        //VLAN最小0，最大4096，同一个物理交换机下的VLAN不能重叠
-        if(msg.getStartVlan() < 1){
-            throw new ApiMessageInterceptionException(argerr("startVlan Minimum is 1"));
-        }
-        if(msg.getEndVlan() > 4094){
-            throw new ApiMessageInterceptionException(argerr("endvlan maximum  is 4094"));
-        }
+
         if(msg.getStartVlan() > msg.getEndVlan()){
             throw new ApiMessageInterceptionException(argerr("endvlan must more than startvlan"));
         }
-
+        //同一个物理交换机下的VLAN不能重叠
         String sql = "select count(a.uuid) from PhysicalSwitchVO a,SwitchVO b,SwitchVlanVO c " +
                 "where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid " +
                 "and a.uuid = (select physicalSwitchUuid from SwitchVO where uuid = :switchUuid) " +
@@ -721,12 +609,6 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
     }
 
     private void validate(APIDeleteSwitchVlanMsg msg){
-        //判断要删除的对象是否存在
-        SimpleQuery<SwitchVlanVO> q = dbf.createQuery(SwitchVlanVO.class);
-        q.add(SwitchVlanVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("SwitchVlan %s is not exist ",msg.getUuid()));
-        }
         //判断该Vlan段有没有被使用
         SwitchVlanVO vo = dbf.findByUuid(msg.getUuid(),SwitchVlanVO.class);
         List<Integer> vlanList = fingAllocateVlanBySwitch(vo.getSwitchUuid());
@@ -737,19 +619,12 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
                 }
             }
         }
-
-
     }
 
     //查询该虚拟交换机下Tunnel已经分配的Vlan
     private List<Integer> fingAllocateVlanBySwitch(String switchUuid){
-        String sql = "select distinct a.aVlan as 'vlan' from TunnelVO a,InterfaceVO b,SwitchPortVO c " +
-                "where a.interfaceAUuid = b.uuid " +
-                "and b.switchPortUuid = c.uuid " +
-                "and c.switchUuid = :switchUuid " +
-                "union " +
-                "select distinct a.zVlan as 'vlan' from TunnelVO a,InterfaceVO b,SwitchPortVO c " +
-                "where a.interfaceZUuid = b.uuid " +
+        String sql = "select distinct a.innerVlan from TunnelInterfaceRefVO a,InterfaceVO b,SwitchPortVO c " +
+                "where a.interfaceUuid = b.uuid " +
                 "and b.switchPortUuid = c.uuid " +
                 "and c.switchUuid = :switchUuid ";
         TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);

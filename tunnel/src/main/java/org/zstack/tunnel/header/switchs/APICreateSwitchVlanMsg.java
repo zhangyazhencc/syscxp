@@ -12,13 +12,13 @@ import org.zstack.tunnel.manage.SwitchConstant;
 
 public class APICreateSwitchVlanMsg extends APIMessage {
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32,resourceType = SwitchVO.class)
     private String switchUuid;
 
-    @APIParam(emptyString = false, numberRange = {1, 4094})
+    @APIParam(numberRange = {1, 4094})
     private Integer startVlan;
 
-    @APIParam(emptyString = false)
+    @APIParam(numberRange = {1, 4094})
     private Integer endVlan;
 
     public String getSwitchUuid() {
