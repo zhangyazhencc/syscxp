@@ -185,7 +185,7 @@ public class RenewJob extends QuartzJobBean {
 
                     Timestamp startTime = new Timestamp(currentTimestamp.getTime() - 30 * 24 * 60 * 60 * 1000);//todo this would get from product
                     Timestamp endTime = new Timestamp(currentTimestamp.getTime() + 30 * 24 * 60 * 60 * 1000);//todo this would get from product
-                    long notUseDays = (endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
+                    long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
                     renewVO.setPricePerDay(renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays)).add(dischargePrice).divide(BigDecimal.valueOf(notUseDays).add(duration),4,BigDecimal.ROUND_HALF_EVEN));
                     databaseFacade.getEntityManager().merge(renewVO);
 
