@@ -3,13 +3,14 @@ package org.zstack.account.header.identity;
 import org.zstack.header.identity.SuppressCredentialCheck;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.header.message.APISyncCallMessage;
 
 /**
  * Created by wangwg on 2017/09/11.
  */
 
 @SuppressCredentialCheck
-public class APIVerifyRepetitionMsg extends APIMessage {
+public class APIVerifyRepetitionMsg extends APISyncCallMessage {
 
     @APIParam(maxLength = 128, required = false)
     private String accountName;

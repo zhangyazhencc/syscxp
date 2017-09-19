@@ -20,10 +20,8 @@ public class APIUpdateNodeMsg extends APIMessage {
     private String code;
     @APIParam(required = false,maxLength = 255)
     private String description;
-    @APIParam(emptyString = false)
-    private double longtitude;
-    @APIParam(emptyString = false)
-    private double latitude;
+    private Double longtitude;
+    private Double latitude;
     @APIParam(emptyString = false,maxLength = 128)
     private String property;
     @APIParam(emptyString = false,maxLength = 128)
@@ -73,19 +71,19 @@ public class APIUpdateNodeMsg extends APIMessage {
         this.description = description;
     }
 
-    public double getLongtitude() {
+    public Double getLongtitude() {
         return longtitude;
     }
 
-    public void setLongtitude(double longtitude) {
+    public void setLongtitude(Double longtitude) {
         this.longtitude = longtitude;
     }
 
-    public double getLatitude() {
+    public Double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(double latitude) {
+    public void setLatitude(Double latitude) {
         this.latitude = latitude;
     }
 

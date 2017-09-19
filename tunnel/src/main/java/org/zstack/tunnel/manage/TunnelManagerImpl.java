@@ -19,6 +19,7 @@ import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
+import org.zstack.tunnel.header.node.NodeVO;
 import org.zstack.tunnel.header.switchs.*;
 import org.zstack.tunnel.header.tunnel.*;
 import org.zstack.utils.Utils;
@@ -339,7 +340,12 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         vo.setMonths(msg.getMonths());
         vo.setBandwidth(msg.getBandwidth());
-        vo.setDistance(null);
+
+        //根据经纬度算距离
+        NodeVO nvoA = dbf.findByUuid(msg.getNodeAUuid(),NodeVO.class);
+        NodeVO nvoZ = dbf.findByUuid(msg.getNodeZUuid(),NodeVO.class);
+        vo.setDistance(Distance.getDistance(nvoA.getLongtitude(),nvoA.getLatitude(),nvoZ.getLongtitude(),nvoZ.getLatitude()));
+
         vo.setState(TunnelState.Unpaid);
         vo.setStatus(TunnelStatus.Disconnected);
         vo.setMonitorState(TunnelMonitorState.Disabled);
@@ -408,7 +414,12 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         vo.setMonths(msg.getMonths());
         vo.setBandwidth(msg.getBandwidth());
-        vo.setDistance(null);
+
+        //根据经纬度算距离
+        NodeVO nvoA = dbf.findByUuid(msg.getNodeAUuid(),NodeVO.class);
+        NodeVO nvoZ = dbf.findByUuid(msg.getNodeZUuid(),NodeVO.class);
+        vo.setDistance(Distance.getDistance(nvoA.getLongtitude(),nvoA.getLatitude(),nvoZ.getLongtitude(),nvoZ.getLatitude()));
+
         vo.setState(TunnelState.Unpaid);
         vo.setStatus(TunnelStatus.Disconnected);
         vo.setMonitorState(TunnelMonitorState.Disabled);
@@ -626,6 +637,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if(q.isExists()){
             throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ",msg.getName()));
         }
+        //判断通道两端的连接点是否相同，不允许相同
+        if(msg.getEndpointPointAUuid() == msg.getEndpointPointZUuid()){
+            throw new ApiMessageInterceptionException(argerr("通道两端不允许在同一个连接点 "));
+        }
+
         //判断同一个switchPort下内部VLAN段是否有重叠
         String sql = "select count(a.uuid) from QinqVO a " +
                 "where a.interfaceUuid = :interfaceUuid " +
@@ -672,6 +688,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         q.add(TunnelVO_.networkUuid, SimpleQuery.Op.EQ, msg.getNetworkUuid());
         if(q.isExists()){
             throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ",msg.getName()));
+        }
+
+        //判断通道两端的连接点是否相同，不允许相同
+        if(msg.getEndpointPointAUuid() == msg.getEndpointPointZUuid()){
+            throw new ApiMessageInterceptionException(argerr("通道两端不允许在同一个连接点 "));
         }
 
         TunnelStrategy ts = new TunnelStrategy();

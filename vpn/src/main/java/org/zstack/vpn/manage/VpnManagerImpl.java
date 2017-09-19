@@ -13,7 +13,9 @@ import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
-import org.zstack.vpn.header.gateway.*;
+import org.zstack.vpn.header.host.VpnState;
+import org.zstack.vpn.header.host.VpnStatus;
+import org.zstack.vpn.header.vpn.*;
 import org.zstack.vpn.header.host.*;
 
 import java.sql.Timestamp;
@@ -48,20 +50,20 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APIUpdateVpnHostMsg) msg);
         } else if (msg instanceof APIDeleteVpnHostMsg) {
             handle((APIDeleteVpnHostMsg) msg);
-        } else if (msg instanceof APICreateVpnGatewayMsg) {
-            handle((APICreateVpnGatewayMsg) msg);
-        } else if (msg instanceof APIUpdateVpnGatewayMsg) {
-            handle((APIUpdateVpnGatewayMsg) msg);
+        } else if (msg instanceof APICreateVpnMsg) {
+            handle((APICreateVpnMsg) msg);
+        } else if (msg instanceof APIUpdateVpnMsg) {
+            handle((APIUpdateVpnMsg) msg);
         } else if (msg instanceof APIUpdateVpnBindwidthMsg) {
             handle((APIUpdateVpnBindwidthMsg) msg);
-        } else if (msg instanceof APIDeleteVpnGatewayMsg) {
-            handle((APIDeleteVpnGatewayMsg) msg);
-        } else if (msg instanceof APICreateTunnelIfaceMsg) {
-            handle((APICreateTunnelIfaceMsg) msg);
-        } else if (msg instanceof APIUpdateTunnelIfaceMsg) {
-            handle((APIUpdateTunnelIfaceMsg) msg);
-        } else if (msg instanceof APIDeleteTunnelIfaceMsg) {
-            handle((APIDeleteTunnelIfaceMsg) msg);
+        } else if (msg instanceof APIDeleteVpnMsg) {
+            handle((APIDeleteVpnMsg) msg);
+        } else if (msg instanceof APICreateVpnInterfaceMsg) {
+            handle((APICreateVpnInterfaceMsg) msg);
+        } else if (msg instanceof APIUpdateVpnInterfaceMsg) {
+            handle((APIUpdateVpnInterfaceMsg) msg);
+        } else if (msg instanceof APIDeleteVpnInterfaceMsg) {
+            handle((APIDeleteVpnInterfaceMsg) msg);
         } else if (msg instanceof APICreateVpnRouteMsg) {
             handle((APICreateVpnRouteMsg) msg);
         } else if (msg instanceof APIDeleteVpnRouteMsg) {
@@ -94,8 +96,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         host.setSshPort(msg.getSshPort());
         host.setUsername(msg.getUsername());
         host.setPassword(msg.getPassword());
-        host.setState(HostState.Enabled);
-        host.setStatus(HostStatus.Connecting);
+        host.setState(VpnState.Enabled);
+        host.setStatus(VpnStatus.Connecting);
 
         host = dbf.persistAndRefresh(host);
         APICreateVpnHostEvent evt = new APICreateVpnHostEvent(msg.getId());
@@ -103,7 +105,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         bus.publish(evt);
     }
 
-    private void handle(APICreateVpnGatewayMsg msg) {
+    private void handle(APICreateVpnMsg msg) {
         VpnVO gateway = new VpnVO();
         gateway.setUuid(Platform.getUuid());
         gateway.setAccountUuid(msg.getSession().getAccountUuid());
@@ -112,20 +114,20 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         gateway.setVpnCidr(msg.getVpnCidr());
         gateway.setBandwidth(msg.getBandwidth());
         gateway.setEndpointUuid(msg.getEndpoint());
-        gateway.setState(HostState.Enabled);
-        gateway.setStatus(HostStatus.Connecting);
+        gateway.setState(VpnState.Enabled);
+        gateway.setStatus(VpnStatus.Connecting);
         gateway.setMonths(msg.getMonths());
         gateway.setExpiredDate(Timestamp.valueOf(LocalDateTime.now()
                 .plus(msg.getMonths(), ChronoUnit.MONTHS)));
 
         // Todo create order
         gateway = dbf.persistAndRefresh(gateway);
-        APICreateVpnGatewayEvent evt = new APICreateVpnGatewayEvent(msg.getId());
+        APICreateVpnEvent evt = new APICreateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(gateway));
         bus.publish(evt);
     }
 
-    private void handle(APIUpdateVpnGatewayMsg msg) {
+    private void handle(APIUpdateVpnMsg msg) {
         VpnVO gateway = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         boolean update = false;
         if (StringUtils.isEmpty(msg.getName())) {
@@ -146,7 +148,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
         if (update)
             dbf.updateAndRefresh(gateway);
-        APIUpdateVpnGatewayEvent evt = new APIUpdateVpnGatewayEvent(msg.getId());
+        APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(gateway));
         bus.publish(evt);
     }
@@ -157,18 +159,18 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         // Todo create
         gateway = dbf.persistAndRefresh(gateway);
-        APIUpdateVpnGatewayEvent evt = new APIUpdateVpnGatewayEvent(msg.getId());
+        APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(gateway));
         bus.publish(evt);
     }
 
-    private void handle(APIDeleteVpnGatewayMsg msg) {
+    private void handle(APIDeleteVpnMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), VpnVO.class);
         APIDeleteVpnHostEvent evt = new APIDeleteVpnHostEvent(msg.getId());
         bus.publish(evt);
     }
 
-    private void handle(APICreateTunnelIfaceMsg msg) {
+    private void handle(APICreateVpnInterfaceMsg msg) {
         VpnInterfaceVO tunnelIface = new VpnInterfaceVO();
         tunnelIface.setUuid(Platform.getUuid());
         tunnelIface.setVpnUuid(msg.getGatewayUuid());
@@ -179,23 +181,23 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         tunnelIface.setNetmask(msg.getMask());
 
         tunnelIface = dbf.persistAndRefresh(tunnelIface);
-        APICreateTunnelIfaceEvent evt = new APICreateTunnelIfaceEvent(msg.getId());
+        APICreateVpnInterfaceEvent evt = new APICreateVpnInterfaceEvent(msg.getId());
         evt.setInventory(VpnInterfaceInventory.valueOf(tunnelIface));
         bus.publish(evt);
     }
 
-    private void handle(APIUpdateTunnelIfaceMsg msg) {
+    private void handle(APIUpdateVpnInterfaceMsg msg) {
         VpnInterfaceVO tunnelIface = dbf.findByUuid(msg.getUuid(), VpnInterfaceVO.class);
         tunnelIface.setName(msg.getName());
         tunnelIface = dbf.persistAndRefresh(tunnelIface);
-        APIUpdateTunnelIfaceEvent evt = new APIUpdateTunnelIfaceEvent(msg.getId());
+        APIUpdateVpnInterfaceEvent evt = new APIUpdateVpnInterfaceEvent(msg.getId());
         evt.setInventory(VpnInterfaceInventory.valueOf(tunnelIface));
         bus.publish(evt);
     }
 
-    private void handle(APIDeleteTunnelIfaceMsg msg) {
+    private void handle(APIDeleteVpnInterfaceMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), VpnVO.class);
-        APIDeleteTunnelIfaceEvent evt = new APIDeleteTunnelIfaceEvent(msg.getId());
+        APIDeleteVpnInterfaceEvent evt = new APIDeleteVpnInterfaceEvent(msg.getId());
         bus.publish(evt);
     }
 
@@ -245,22 +247,22 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             validate((APIDeleteVpnHostMsg) msg);
         } else if (msg instanceof APIQueryVpnHostMsg) {
             validate((APIQueryVpnHostMsg) msg);
-        } else if (msg instanceof APICreateVpnGatewayMsg) {
-            validate((APICreateVpnGatewayMsg) msg);
-        } else if (msg instanceof APIDeleteVpnGatewayMsg) {
-            validate((APIDeleteVpnGatewayMsg) msg);
-        } else if (msg instanceof APIQueryVpnGatewayMsg) {
-            validate((APIQueryVpnGatewayMsg) msg);
-        } else if (msg instanceof APIUpdateVpnGatewayMsg) {
-            validate((APIUpdateVpnGatewayMsg) msg);
+        } else if (msg instanceof APICreateVpnMsg) {
+            validate((APICreateVpnMsg) msg);
+        } else if (msg instanceof APIDeleteVpnMsg) {
+            validate((APIDeleteVpnMsg) msg);
+        } else if (msg instanceof APIQueryVpnMsg) {
+            validate((APIQueryVpnMsg) msg);
+        } else if (msg instanceof APIUpdateVpnMsg) {
+            validate((APIUpdateVpnMsg) msg);
         } else if (msg instanceof APIUpdateVpnBindwidthMsg) {
             validate((APIUpdateVpnBindwidthMsg) msg);
-        } else if (msg instanceof APIUpdateTunnelIfaceMsg) {
-            validate((APIUpdateTunnelIfaceMsg) msg);
-        } else if (msg instanceof APIDeleteTunnelIfaceMsg) {
-            validate((APIDeleteTunnelIfaceMsg) msg);
-        } else if (msg instanceof APICreateTunnelIfaceMsg) {
-            validate((APICreateTunnelIfaceMsg) msg);
+        } else if (msg instanceof APIUpdateVpnInterfaceMsg) {
+            validate((APIUpdateVpnInterfaceMsg) msg);
+        } else if (msg instanceof APIDeleteVpnInterfaceMsg) {
+            validate((APIDeleteVpnInterfaceMsg) msg);
+        } else if (msg instanceof APICreateVpnInterfaceMsg) {
+            validate((APICreateVpnInterfaceMsg) msg);
         } else if (msg instanceof APICreateVpnRouteMsg) {
             validate((APICreateVpnRouteMsg) msg);
         } else if (msg instanceof APIDeleteVpnRouteMsg) {
@@ -277,15 +279,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     }
 
-    private void validate(APICreateTunnelIfaceMsg msg) {
+    private void validate(APICreateVpnInterfaceMsg msg) {
 
     }
 
-    private void validate(APIDeleteTunnelIfaceMsg msg) {
+    private void validate(APIDeleteVpnInterfaceMsg msg) {
 
     }
 
-    private void validate(APIUpdateTunnelIfaceMsg msg) {
+    private void validate(APIUpdateVpnInterfaceMsg msg) {
 
     }
 
@@ -293,18 +295,18 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void validate(APIUpdateVpnBindwidthMsg msg) {
     }
 
-    private void validate(APIUpdateVpnGatewayMsg msg) {
+    private void validate(APIUpdateVpnMsg msg) {
     }
 
-    private void validate(APIQueryVpnGatewayMsg msg) {
-
-    }
-
-    private void validate(APIDeleteVpnGatewayMsg msg) {
+    private void validate(APIQueryVpnMsg msg) {
 
     }
 
-    private void validate(APICreateVpnGatewayMsg msg) {
+    private void validate(APIDeleteVpnMsg msg) {
+
+    }
+
+    private void validate(APICreateVpnMsg msg) {
 
     }
 
