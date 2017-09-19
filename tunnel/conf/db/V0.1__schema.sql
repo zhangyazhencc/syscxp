@@ -154,14 +154,13 @@ CREATE TABLE  `syscxp_tunnel`.`EndpointEO` (
   `enabled` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT '是否启用',
   `openToCustomers` TINYINT(1)  NOT NULL DEFAULT '0' COMMENT '是否对外开放',
   `description` varchar(255)  DEFAULT NULL COMMENT '描述',
-  `status` varchar(16) NOT NULL DEFAULT 'NORMAL' COMMENT '状态',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`EndpointVO` AS SELECT uuid, nodeUuid, name, code, endpointType, enabled, openToCustomers, description, status, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`EndpointVO` AS SELECT uuid, nodeUuid, name, code, endpointType, enabled, openToCustomers, description, lastOpDate, createDate
                             FROM `EndpointEO` WHERE deleted = 0;
 
 ##交换机型号
