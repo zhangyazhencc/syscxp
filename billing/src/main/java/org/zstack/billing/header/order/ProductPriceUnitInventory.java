@@ -31,6 +31,10 @@ public class ProductPriceUnitInventory {
 
     private Integer discharge  =100;
 
+    private String categoryName;
+
+    private String productTypeName;
+
     public static ProductPriceUnitInventory valueOf(ProductPriceUnitVO vo) {
         ProductPriceUnitInventory inv = new ProductPriceUnitInventory();
         inv.setUuid(vo.getUuid());
@@ -42,7 +46,8 @@ public class ProductPriceUnitInventory {
         inv.setComment(vo.getComment());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
-
+        inv.setCategoryName(vo.getCategoryName());
+        inv.setProductTypeName(vo.getProductTypeName());
         return inv;
     }
 
@@ -119,19 +124,35 @@ public class ProductPriceUnitInventory {
         this.createDate = createDate;
     }
 
-    public Timestamp getLastOpDate() {
-        return lastOpDate;
-    }
-
-    public void setLastOpDate(Timestamp lastOpDate) {
-        this.lastOpDate = lastOpDate;
-    }
-
     public Integer getDischarge() {
         return discharge;
     }
 
     public void setDischarge(Integer discharge) {
         this.discharge = discharge;
+    }
+
+    public String getProductTypeName() {
+        return productTypeName;
+    }
+
+    public void setProductTypeName(String productTypeName) {
+        this.productTypeName = productTypeName;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public Timestamp getLastOpDate() {
+        return lastOpDate;
+    }
+
+    public void setLastOpDate(Timestamp lastOpDate) {
+        this.lastOpDate = lastOpDate;
     }
 }

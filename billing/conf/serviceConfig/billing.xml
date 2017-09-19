@@ -16,7 +16,23 @@
     </message>
 
     <message>
-        <name>org.zstack.header.billing.APICreateOrderMsg</name>
+        <name>org.zstack.header.billing.APICreateBuyOrderMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.billing.APICreateRenewOrderMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.billing.APICreateModifyOrderMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.billing.APICreateUnsubcribeOrderMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.billing.APICreateSLACompensationOrderMsg</name>
     </message>
 
     <message>
@@ -107,6 +123,10 @@
 
    <message>
         <name>org.zstack.billing.header.balance.APIDeleteAccountDischargeMsg</name>
+    </message>
+
+   <message>
+        <name>org.zstack.billing.header.balance.APIGetAccountDischargeCategoryMsg</name>
     </message>
 
     <message>

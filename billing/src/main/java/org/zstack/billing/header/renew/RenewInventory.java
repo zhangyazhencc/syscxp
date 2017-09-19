@@ -29,12 +29,15 @@ public class RenewInventory {
 
     private int duration;
 
+    private boolean isRenewAuto;
+
     private Timestamp createDate;
 
     private Timestamp lastOpDate;
 
     private BigDecimal pricePerDay;
 
+    private Timestamp expiredTime;
 
     public static RenewInventory valueOf(RenewVO vo) {
         RenewInventory inv = new RenewInventory();
@@ -48,6 +51,8 @@ public class RenewInventory {
         inv.setProductUuid(vo.getProductUuid());
         inv.setPricePerDay(vo.getPricePerDay());
         inv.setProductDescription(vo.getProductDescription());
+        inv.setRenewAuto(vo.isRenewAuto());
+        inv.setExpiredTime(vo.getExpiredTime());
         return inv;
     }
 
@@ -145,5 +150,21 @@ public class RenewInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public boolean isRenewAuto() {
+        return isRenewAuto;
+    }
+
+    public void setRenewAuto(boolean renewAuto) {
+        isRenewAuto = renewAuto;
+    }
+
+    public Timestamp getExpiredTime() {
+        return expiredTime;
+    }
+
+    public void setExpiredTime(Timestamp expiredTime) {
+        this.expiredTime = expiredTime;
     }
 }
