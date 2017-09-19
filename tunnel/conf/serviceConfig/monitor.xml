@@ -25,11 +25,19 @@
     </message>
 
     <message>
+        <name>org.zstack.tunnel.header.monitor.APIDeleteHostSwitchMonitorMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.tunnel.header.monitor.APICreateTunnelMonitorMsg</name>
     </message>
 
     <message>
         <name>org.zstack.tunnel.header.monitor.APIUpdateTunnelMonitorMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.monitor.APIDeleteTunnelMonitorMsg</name>
     </message>
 
     <message>

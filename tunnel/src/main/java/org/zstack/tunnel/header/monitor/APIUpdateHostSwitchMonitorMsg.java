@@ -2,21 +2,23 @@ package org.zstack.tunnel.header.monitor;
 
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.header.host.HostVO;
+import org.zstack.tunnel.header.switchs.PhysicalSwitchVO;
 
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-09-11.
- * @Description: .
+ * @Description: 更新监控主机与物理交换机关联.
  */
 public class APIUpdateHostSwitchMonitorMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = HostSwitchMonitorVO.class)
     private String uuid;
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false,resourceType = HostVO.class)
     private String hostUuid;
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false,resourceType = PhysicalSwitchVO.class)
     private String physicalSwitchUuid;
 
     @APIParam(emptyString = false,maxLength = 128)

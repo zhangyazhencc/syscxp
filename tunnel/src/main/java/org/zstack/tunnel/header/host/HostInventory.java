@@ -21,7 +21,7 @@ public class HostInventory {
     private String username;
     private String password;
     private HostState state;
-    private String status;
+    private HostStatus status;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -113,11 +113,11 @@ public class HostInventory {
         this.state = state;
     }
 
-    public String getStatus() {
+    public HostStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(HostStatus status) {
         this.status = status;
     }
 
