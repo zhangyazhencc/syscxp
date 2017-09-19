@@ -129,7 +129,7 @@ CREATE TABLE `NodeEO` (
   `province` varchar(128) NOT NULL COMMENT '省',
   `city` varchar(128) NOT NULL COMMENT '市',
   `address` varchar(256) NOT NULL COMMENT '地址',
-  `longtitude` double(11,6) DEFAULT NULL COMMENT '经度',
+  `longtitude` double(11,6) NOT NULL COMMENT '经度',
   `latitude` double(11,6) NOT NULL COMMENT '纬度',
   `property` varchar(128) NOT NULL COMMENT '节点类型',
   `status` varchar(16) NOT NULL COMMENT '是否开放',
