@@ -1,10 +1,10 @@
 package org.zstack.billing.header.balance;
 
 import org.zstack.billing.header.order.Category;
+import org.zstack.header.billing.ProductType;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @StaticMetamodel(AccountDischargeVO.class)

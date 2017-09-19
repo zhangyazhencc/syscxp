@@ -20,10 +20,11 @@
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>org.zstack.vpn.header.VpnGatewayVO</value>
+                <value>org.zstack.vpn.header.gateway.VpnVO</value>
             </list>
         </property>
     </bean>
+
     <bean id="VpnManager" class="org.zstack.vpn.manage.VpnManagerImpl">
         <zstack:plugin>
             <zstack:extension interface="org.zstack.header.apimediator.GlobalApiMessageInterceptor"/>

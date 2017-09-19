@@ -1,6 +1,6 @@
 package org.zstack.billing.header.sla;
 
-import org.zstack.billing.header.balance.ProductType;
+import org.zstack.header.billing.ProductType;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;

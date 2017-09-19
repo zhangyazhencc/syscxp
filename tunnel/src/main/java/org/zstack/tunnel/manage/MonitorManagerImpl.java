@@ -17,6 +17,7 @@ import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
+import org.zstack.header.search.APICreateSearchIndexMsg;
 import org.zstack.tunnel.header.endpoint.EndpointEO;
 import org.zstack.tunnel.header.host.*;
 import org.zstack.tunnel.header.monitor.*;
@@ -83,6 +84,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APICreateTunnelMonitorMsg) msg);
         } else if (msg instanceof APIUpdateTunnelMonitorMsg) {
             handle((APIUpdateTunnelMonitorMsg) msg);
+        } else if (msg instanceof APICreateSpeedRecordsMsg) {
+            handle((APICreateSpeedRecordsMsg) msg);
+        } else if (msg instanceof APIUpdateSpeedRecordsMsg) {
+            handle((APIUpdateSpeedRecordsMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -205,6 +210,39 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         APIUpdateTunnelMonitorEvent evt = new APIUpdateTunnelMonitorEvent(msg.getId());
         evt.setInventory(TunnelMonitorInventory.valueOf(vo));
         bus.publish(evt);
+    }
+
+    private void handle(APICreateSpeedRecordsMsg msg) {
+        SpeedRecordsVO vo = new SpeedRecordsVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setTunnelUuid(msg.getTunnelUuid());
+        vo.setSrcHostUuid(msg.getSrcHostUuid());
+        vo.setSrcMonitorIp(msg.getSrcHostUuid());
+        vo.setDstHostUuid(msg.getDstHostUuid());
+        vo.setDstMonitorIp(msg.getDstMonitorIp());
+        vo.setProtocolType(msg.getProtocolType());
+        vo.setDuration(msg.getDuration());
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateSpeedRecordsEvent event = new APICreateSpeedRecordsEvent(msg.getId());
+        event.setInventory(SpeedRecordsInventory.valueOf(vo));
+        bus.publish(event);
+    }
+
+    private void handle(APIUpdateSpeedRecordsMsg msg) {
+        SpeedRecordsVO vo = dbf.findByUuid(msg.getUuid(), SpeedRecordsVO.class);
+
+        vo.setAvgSpeed(msg.getAvgSpeed());
+        vo.setMaxSpeed(msg.getMaxSpeed());
+        vo.setMinSpeed(msg.getMinSpeed());
+        vo.setCompleted(msg.getCompleted());
+
+        vo = dbf.updateAndRefresh(vo);
+
+        APIUpdateSpeedRecordsEvent event = new APIUpdateSpeedRecordsEvent(msg.getId());
+        event.setInventory(SpeedRecordsInventory.valueOf(vo));
+        bus.publish(event);
     }
 
     @Override
