@@ -19,6 +19,7 @@ import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
+import org.zstack.tunnel.header.node.NodeVO;
 import org.zstack.tunnel.header.switchs.*;
 import org.zstack.tunnel.header.tunnel.*;
 import org.zstack.utils.Utils;
@@ -339,7 +340,12 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         vo.setMonths(msg.getMonths());
         vo.setBandwidth(msg.getBandwidth());
-        vo.setDistance(null);
+
+        //根据经纬度算距离
+        NodeVO nvoA = dbf.findByUuid(msg.getNodeAUuid(),NodeVO.class);
+        NodeVO nvoZ = dbf.findByUuid(msg.getNodeZUuid(),NodeVO.class);
+        vo.setDistance(Distance.getDistance(nvoA.getLongtitude(),nvoA.getLatitude(),nvoZ.getLongtitude(),nvoZ.getLatitude()));
+
         vo.setState(TunnelState.Unpaid);
         vo.setStatus(TunnelStatus.Disconnected);
         vo.setMonitorState(TunnelMonitorState.Disabled);
@@ -408,7 +414,12 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         vo.setMonths(msg.getMonths());
         vo.setBandwidth(msg.getBandwidth());
-        vo.setDistance(null);
+
+        //根据经纬度算距离
+        NodeVO nvoA = dbf.findByUuid(msg.getNodeAUuid(),NodeVO.class);
+        NodeVO nvoZ = dbf.findByUuid(msg.getNodeZUuid(),NodeVO.class);
+        vo.setDistance(Distance.getDistance(nvoA.getLongtitude(),nvoA.getLatitude(),nvoZ.getLongtitude(),nvoZ.getLatitude()));
+
         vo.setState(TunnelState.Unpaid);
         vo.setStatus(TunnelStatus.Disconnected);
         vo.setMonitorState(TunnelMonitorState.Disabled);

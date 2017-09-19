@@ -282,7 +282,7 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `networkUuid` VARCHAR(32) NOT NULL COMMENT '所属专有网络',
   `name` varchar(128) NOT NULL COMMENT '通道名称',
   `bandwidth` BIGINT NOT NULL COMMENT '带宽',
-  `distance` decimal(10,2) DEFAULT NULL COMMENT '距离',
+  `distance` decimal(10,2) NOT NULL COMMENT '距离',
   `state` varchar(32) NOT NULL DEFAULT 'Unpaid' COMMENT '状况:开通，未开通,未支付',
   `status` varchar(32) NOT NULL DEFAULT 'Disconnected' COMMENT '状态',
   `monitorState` varchar(32) NOT NULL DEFAULT 'Disabled' COMMENT '是否开启监控',

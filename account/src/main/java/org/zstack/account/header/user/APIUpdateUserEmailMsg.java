@@ -16,10 +16,10 @@ import org.zstack.header.notification.ApiNotification;
 public class APIUpdateUserEmailMsg extends APIMessage implements AccountMessage {
 
     @APIParam
-    private String OldEmail;
+    private String oldEmail;
 
     @APIParam
-    private String OldCode;
+    private String oldCode;
 
     @APIParam
     private String newEmail;
@@ -28,19 +28,19 @@ public class APIUpdateUserEmailMsg extends APIMessage implements AccountMessage 
     private String newCode;
 
     public String getOldEmail() {
-        return OldEmail;
+        return oldEmail;
     }
 
     public void setOldEmail(String oldEmail) {
-        OldEmail = oldEmail;
+        oldEmail = oldEmail;
     }
 
     public String getOldCode() {
-        return OldCode;
+        return oldCode;
     }
 
     public void setOldCode(String oldCode) {
-        OldCode = oldCode;
+        oldCode = oldCode;
     }
 
     public String getNewEmail() {
