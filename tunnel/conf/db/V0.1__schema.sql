@@ -119,26 +119,27 @@ CREATE TABLE  `syscxp_tunnel`.`JobQueueEntryVO` (
 #########################################################################################
 
 ## 节点
-CREATE TABLE  `syscxp_tunnel`.`NodeEO` (
-  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `name` varchar(255) NOT NULL  COMMENT '节点名称',
-  `code` varchar(128) NOT NULL  COMMENT '节点编号',
+CREATE TABLE `NodeEO` (
+  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+  `name` varchar(255) NOT NULL COMMENT '节点名称',
+  `code` varchar(128) NOT NULL COMMENT '节点编号',
   `description` varchar(255) DEFAULT NULL COMMENT '节点描述',
   `contact` varchar(128) NOT NULL COMMENT '联系人',
   `telephone` varchar(32) NOT NULL COMMENT '联系人电话',
   `province` varchar(128) NOT NULL COMMENT '省',
   `city` varchar(128) NOT NULL COMMENT '市',
-  `address` VARCHAR(256) NOT NULL COMMENT '地址',
-  `longtitude` DECIMAL(10,5) NOT NULL COMMENT '经度',
-  `latitude` DECIMAL(10,5) NOT NULL COMMENT '纬度',
+  `address` varchar(256) NOT NULL COMMENT '地址',
+  `longtitude` double(10,5) DEFAULT NULL COMMENT '经度',
+  `latitude` double(10,5) NOT NULL COMMENT '纬度',
   `property` varchar(128) NOT NULL COMMENT '节点类型',
-  `status` varchar(16) NOT NULL COMMENT '是否开放,官网展示用的',
-  `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
-  `extensionInfoUuid` varchar(32)  DEFAULT NULL COMMENT '节点额外信息',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  PRIMARY KEY  (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `status` varchar(16) NOT NULL COMMENT '是否开放',
+  `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+  `extensionInfoUuid` varchar(32) DEFAULT NULL COMMENT '节点额外信息',
+  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `uuid` (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '网络节点';
 
 CREATE VIEW `syscxp_tunnel`.`NodeVO` AS SELECT uuid, name, code, description, contact, telephone, province, city, address, longtitude, latitude, property, status, extensionInfoUuid, lastOpDate, createDate
                         FROM `NodeEO` WHERE deleted = 0;
