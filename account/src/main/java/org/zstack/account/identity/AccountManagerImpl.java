@@ -15,6 +15,8 @@ import org.zstack.core.db.*;
 import org.zstack.core.db.SimpleQuery.Op;
 import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.header.AbstractService;
+import org.zstack.header.account.APIValidateAccountMsg;
+import org.zstack.header.account.APIValidateAccountReply;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.errorcode.OperationFailureException;
@@ -121,13 +123,22 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIUserPWDBackMsg) msg);
         } else if(msg instanceof APIVerifyRepetitionMsg){
             handle((APIVerifyRepetitionMsg) msg);
+        }else if (msg instanceof APIValidateAccountMsg) {
+            handle((APIValidateAccountMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
 
-
+    private void handle(APIValidateAccountMsg msg) {
+        AccountVO accountVO = dbf.findByUuid(msg.getUuid(),AccountVO.class);
+        APIValidateAccountReply reply = new APIValidateAccountReply();
+        if(accountVO!=null){
+            reply.setValidAccount(true);
+        }
+        bus.reply(msg, reply);
+    }
 
     private void handle(APIVerifyRepetitionMsg msg) {
         APIVerifyRepetitionReply reply = new APIVerifyRepetitionReply();
