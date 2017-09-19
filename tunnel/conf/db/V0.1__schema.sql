@@ -12,7 +12,6 @@ CREATE TABLE `SpeedRecordsVO` (
   `maxSpeed` int(11) DEFAULT '0' COMMENT '最大速度(k/s)',
   `minSpeed` int(11) DEFAULT '0' COMMENT '最小速度(k/s)',
   `completed` tinyint(1) NOT NULL DEFAULT '0' COMMENT '完成标识 0:未完成 1:已完成',
-  `deleted` tinyint(1) NOT NULL DEFAULT '0',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`uuid`),
