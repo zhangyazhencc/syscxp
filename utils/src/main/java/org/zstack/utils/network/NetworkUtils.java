@@ -76,6 +76,13 @@ public class NetworkUtils {
         return matcher.matches();
     }
 
+    public static boolean isLegalPort(int port){
+        if(port < 0 || port > 65535)
+            return  false;
+        else
+            return true;
+    }
+
     public static boolean isNetmask(String netmask) {
         return validNetmasks.contains(netmask);
     }
