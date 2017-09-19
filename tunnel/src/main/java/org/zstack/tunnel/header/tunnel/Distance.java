@@ -5,8 +5,6 @@ package org.zstack.tunnel.header.tunnel;
  */
 public class Distance {
 
-
-    // 未考虑南半球和西经情况，遇到负数请自己调整代码
     public static double getDistance(double lon1, double lat1, double lon2, double lat2) {
         double PI = 3.141592653589793231462643383279169399375;
         double latR = 6378140, lonR = 6356755;
