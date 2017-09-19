@@ -4,6 +4,7 @@ import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.header.endpoint.EndpointVO;
 import org.zstack.tunnel.header.switchs.SwitchPortAttribute;
 import org.zstack.tunnel.manage.TunnelConstant;
 
@@ -23,6 +24,10 @@ public class APICreateTunnelMsg extends APIMessage {
     private String name;
     @APIParam
     private Long bandwidth;
+    @APIParam(emptyString = false,resourceType = EndpointVO.class)
+    private String endpointPointAUuid;
+    @APIParam(emptyString = false,resourceType = EndpointVO.class)
+    private String endpointPointZUuid;
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceAUuid;
     @APIParam(emptyString = false,validValues = {"Enabled", "Disabled"})
@@ -140,5 +145,21 @@ public class APICreateTunnelMsg extends APIMessage {
 
     public void setVlanSegmentZ(List<InnerVlanSegment> vlanSegmentZ) {
         this.vlanSegmentZ = vlanSegmentZ;
+    }
+
+    public String getEndpointPointAUuid() {
+        return endpointPointAUuid;
+    }
+
+    public void setEndpointPointAUuid(String endpointPointAUuid) {
+        this.endpointPointAUuid = endpointPointAUuid;
+    }
+
+    public String getEndpointPointZUuid() {
+        return endpointPointZUuid;
+    }
+
+    public void setEndpointPointZUuid(String endpointPointZUuid) {
+        this.endpointPointZUuid = endpointPointZUuid;
     }
 }

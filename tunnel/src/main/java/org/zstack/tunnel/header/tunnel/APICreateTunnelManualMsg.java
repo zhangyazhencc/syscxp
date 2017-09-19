@@ -2,6 +2,7 @@ package org.zstack.tunnel.header.tunnel;
 
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.header.endpoint.EndpointVO;
 
 import java.util.List;
 
@@ -18,6 +19,10 @@ public class APICreateTunnelManualMsg extends APIMessage {
     private String name;
     @APIParam
     private Long bandwidth;
+    @APIParam(emptyString = false,resourceType = EndpointVO.class)
+    private String endpointPointAUuid;
+    @APIParam(emptyString = false,resourceType = EndpointVO.class)
+    private String endpointPointZUuid;
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceAUuid;
     @APIParam(numberRange = {1, 4094})
@@ -149,5 +154,21 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     public void setVlanSegmentZ(List<InnerVlanSegment> vlanSegmentZ) {
         this.vlanSegmentZ = vlanSegmentZ;
+    }
+
+    public String getEndpointPointAUuid() {
+        return endpointPointAUuid;
+    }
+
+    public void setEndpointPointAUuid(String endpointPointAUuid) {
+        this.endpointPointAUuid = endpointPointAUuid;
+    }
+
+    public String getEndpointPointZUuid() {
+        return endpointPointZUuid;
+    }
+
+    public void setEndpointPointZUuid(String endpointPointZUuid) {
+        this.endpointPointZUuid = endpointPointZUuid;
     }
 }
