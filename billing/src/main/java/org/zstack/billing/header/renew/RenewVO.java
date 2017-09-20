@@ -7,6 +7,7 @@ import org.zstack.header.search.TriggerIndex;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.sql.Time;
 import java.sql.Timestamp;
 
 @Entity
@@ -50,6 +51,8 @@ public class RenewVO {
 
     @Column
     private BigDecimal pricePerDay;
+    @Column
+    private Timestamp expiredTime;
 
     public BigDecimal getPricePerDay() {
         return pricePerDay;
@@ -142,5 +145,13 @@ public class RenewVO {
     @PreUpdate
     void preUpdate() {
         lastOpDate = null;
+    }
+
+    public Timestamp getExpiredTime() {
+        return expiredTime;
+    }
+
+    public void setExpiredTime(Timestamp expiredTime) {
+        this.expiredTime = expiredTime;
     }
 }

@@ -158,12 +158,16 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIDeleteNodeMsg msg) {
         String uuid = msg.getUuid();
+        NodeVO vo = dbf.findByUuid(uuid,NodeVO.class);
 
         NodeEO eo = dbf.findByUuid(uuid, NodeEO.class);
         eo.setDeleted(1);
         dbf.update(eo);
 
         APIDeleteNodeEvent event = new APIDeleteNodeEvent(msg.getId());
+        NodeInventory inventory = NodeInventory.valueOf(vo);
+        event.setInventory(inventory);
+
         bus.publish(event);
     }
 
@@ -217,12 +221,16 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIDeleteEndpointMsg msg) {
         String uuid = msg.getUuid();
+        EndpointVO vo = dbf.findByUuid(uuid,EndpointVO.class);
 
         EndpointEO eo = dbf.findByUuid(uuid, EndpointEO.class);
         eo.setDeleted(1);
         dbf.update(eo);
 
-        APIDeleteNodeEvent event = new APIDeleteNodeEvent(msg.getId());
+        APIDeleteEndpointEvent event = new APIDeleteEndpointEvent(msg.getId());
+        EndpointInventory inventory = EndpointInventory.valueOf(vo);
+        event.setInventory(inventory);
+
         bus.publish(event);
     }
 
@@ -268,8 +276,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         }
 
         //检查经纬度
-        validateLongitudeAndLatitude(msg.getLatitude(),msg.getCode());
-        validateLongitudeAndLatitude(msg.getLongtitude(),msg.getCode());
+        validateLongitudeAndLatitude(msg.getLatitude());
+        validateLongitudeAndLatitude(msg.getLongtitude());
     }
 
     private void validate(APIUpdateNodeMsg msg) {
@@ -284,8 +292,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         }
 
         //检查经纬度
-        validateLongitudeAndLatitude(msg.getLatitude(),msg.getCode());
-        validateLongitudeAndLatitude(msg.getLongtitude(),msg.getCode());
+        validateLongitudeAndLatitude(msg.getLatitude());
+        validateLongitudeAndLatitude(msg.getLongtitude());
     }
 
     private void validate(APIDeleteNodeMsg msg) {
@@ -293,14 +301,14 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         SimpleQuery<EndpointVO> queryEndpoint = dbf.createQuery(EndpointVO.class);
         queryEndpoint.add(EndpointVO_.nodeUuid,SimpleQuery.Op.EQ,msg.getUuid());
         if (queryEndpoint.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("Endpoint exist,cannot be deleted!", msg.getUuid()));
+            throw new ApiMessageInterceptionException(argerr("Endpoint exist,cannot be deleted!"));
         }
 
         //判断是否被物理交换机关联
         SimpleQuery<PhysicalSwitchVO> queryPhysicalSwitch = dbf.createQuery(PhysicalSwitchVO.class);
         queryPhysicalSwitch.add(EndpointVO_.nodeUuid,SimpleQuery.Op.EQ,msg.getUuid());
         if (queryPhysicalSwitch.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("Physical switch exist,cannot be deleted!", msg.getUuid()));
+            throw new ApiMessageInterceptionException(argerr("Physical switch exist,cannot be deleted!"));
         }
     }
 
@@ -323,7 +331,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                 throw new ApiMessageInterceptionException(argerr("endpoint's code %s is already exist ", msg.getCode()));
             }
         }
-
     }
 
     private void validate(APIDeleteEndpointMsg msg) {
@@ -331,19 +338,18 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         SimpleQuery<SwitchVO> querySwitch = dbf.createQuery(SwitchVO.class);
         querySwitch.add(SwitchVO_.endpointUuid,SimpleQuery.Op.EQ,msg.getUuid());
         if (querySwitch.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("Virtual switch exist,cannot be deleted!", msg.getUuid()));
+            throw new ApiMessageInterceptionException(argerr("Virtual switch exist,cannot be deleted!"));
         }
     }
 
     /**
      * 检查经度与维度是否合法
      * @param data：经度或维度值
-     * @param msgCode：Code
      */
-    private void validateLongitudeAndLatitude(Double data,String msgCode){
+    private void validateLongitudeAndLatitude(Double data){
         if(data == null)
-            throw new ApiMessageInterceptionException(argerr("longitude or latitude cannot be null!",msgCode));
-        if(data > 99999.99999 || data < -99999.99999)
-            throw new ApiMessageInterceptionException(argerr("longitude or latitude must between -99999.99999 and 99999.99999!",msgCode));
+            throw new ApiMessageInterceptionException(argerr("longitude or latitude cannot be null!",""));
+        if(data > 9999.999999 || data < -9999.999999)
+            throw new ApiMessageInterceptionException(argerr("longitude or latitude ( %s ) must between -99999.99999 and 99999.99999!",data.toString()));
     }
 }

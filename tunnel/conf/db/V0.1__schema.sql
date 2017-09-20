@@ -12,7 +12,6 @@ CREATE TABLE `SpeedRecordsVO` (
   `maxSpeed` int(11) DEFAULT '0' COMMENT '最大速度(k/s)',
   `minSpeed` int(11) DEFAULT '0' COMMENT '最小速度(k/s)',
   `completed` tinyint(1) NOT NULL DEFAULT '0' COMMENT '完成标识 0:未完成 1:已完成',
-  `deleted` tinyint(1) NOT NULL DEFAULT '0',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`uuid`),
@@ -129,8 +128,8 @@ CREATE TABLE `NodeEO` (
   `province` varchar(128) NOT NULL COMMENT '省',
   `city` varchar(128) NOT NULL COMMENT '市',
   `address` varchar(256) NOT NULL COMMENT '地址',
-  `longtitude` double(10,5) DEFAULT NULL COMMENT '经度',
-  `latitude` double(10,5) NOT NULL COMMENT '纬度',
+  `longtitude` double(11,6) NOT NULL COMMENT '经度',
+  `latitude` double(11,6) NOT NULL COMMENT '纬度',
   `property` varchar(128) NOT NULL COMMENT '节点类型',
   `status` varchar(16) NOT NULL COMMENT '是否开放',
   `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
@@ -154,14 +153,13 @@ CREATE TABLE  `syscxp_tunnel`.`EndpointEO` (
   `enabled` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT '是否启用',
   `openToCustomers` TINYINT(1)  NOT NULL DEFAULT '0' COMMENT '是否对外开放',
   `description` varchar(255)  DEFAULT NULL COMMENT '描述',
-  `status` varchar(16) NOT NULL DEFAULT 'NORMAL' COMMENT '状态',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`EndpointVO` AS SELECT uuid, nodeUuid, name, code, endpointType, enabled, openToCustomers, description, status, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`EndpointVO` AS SELECT uuid, nodeUuid, name, code, endpointType, enabled, openToCustomers, description, lastOpDate, createDate
                             FROM `EndpointEO` WHERE deleted = 0;
 
 ##交换机型号
@@ -284,7 +282,7 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `networkUuid` VARCHAR(32) NOT NULL COMMENT '所属专有网络',
   `name` varchar(128) NOT NULL COMMENT '通道名称',
   `bandwidth` BIGINT NOT NULL COMMENT '带宽',
-  `distance` decimal(10,2) DEFAULT NULL COMMENT '距离',
+  `distance` decimal(10,2) NOT NULL COMMENT '距离',
   `state` varchar(32) NOT NULL DEFAULT 'Unpaid' COMMENT '状况:开通，未开通,未支付',
   `status` varchar(32) NOT NULL DEFAULT 'Disconnected' COMMENT '状态',
   `monitorState` varchar(32) NOT NULL DEFAULT 'Disabled' COMMENT '是否开启监控',
@@ -343,21 +341,22 @@ DEFAULT CHARSET=utf8
 COMMENT '通道监控';
 
 ##监控机
-CREATE TABLE  `syscxp_tunnel`.`HostEO` (
-  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+CREATE TABLE `HostEO` (
+  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+  `nodeUuid` varchar(32) DEFAULT NULL COMMENT '节点ID(NodeEO.uuid)',
   `name` varchar(128) NOT NULL COMMENT '监控机名称',
   `code` varchar(128) NOT NULL COMMENT '监控机编号',
-  `ip` varchar(128) NOT NULL COMMENT '管理IP',
+  `hostIp` varchar(128) DEFAULT NULL,
   `username` varchar(128) NOT NULL COMMENT '用户名',
   `password` varchar(128) NOT NULL COMMENT '密码',
-  `state` varchar(32) NOT NULL DEFAULT 'UNDEPLOYED' COMMENT '监控状况：已部署，未部署',
-  `status` varchar(32) DEFAULT NULL COMMENT '监控状态',
-  `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  PRIMARY KEY  (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  `state` varchar(32) NOT NULL DEFAULT 'Undeployed' COMMENT '监控状况：已部署，未部署',
+  `status` varchar(32) NOT NULL DEFAULT 'Connected' COMMENT '监控状态',
+  `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `uuid` (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '监控主机';
 
 CREATE VIEW `syscxp_tunnel`.`HostVO` AS SELECT uuid, name, code, ip, username, password, state, status, lastOpDate, createDate
                                                      FROM `HostEO` WHERE deleted = 0;
-

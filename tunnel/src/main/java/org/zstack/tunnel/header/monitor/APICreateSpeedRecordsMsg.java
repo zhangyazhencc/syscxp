@@ -12,16 +12,16 @@ import org.zstack.tunnel.header.tunnel.TunnelEO;
  */
 public class APICreateSpeedRecordsMsg extends APIMessage {
 
-    @APIParam(emptyString = false,maxLength = 32,resourceType = TunnelEO.class)
+    @APIParam(emptyString = false,resourceType = TunnelEO.class)
     private String tunnelUuid;
 
-    @APIParam(emptyString = false,maxLength = 32,resourceType = HostEO.class)
+    @APIParam(emptyString = false,resourceType = HostEO.class)
     private String srcHostUuid;
 
     @APIParam(emptyString = false,maxLength = 64)
     private String srcMonitorIp;
 
-    @APIParam(emptyString = false,maxLength = 32,resourceType = HostEO.class)
+    @APIParam(emptyString = false,resourceType = HostEO.class)
     private String dstHostUuid;
 
     @APIParam(emptyString = false,maxLength = 64)

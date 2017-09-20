@@ -3,6 +3,9 @@ package org.zstack.billing.manage;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -86,8 +89,16 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIGetAccountBalanceMsg) msg);
         } else if (msg instanceof APIUpdateAccountBalanceMsg) {
             handle((APIUpdateAccountBalanceMsg) msg);
-        } else if (msg instanceof APICreateOrderMsg) {
-            handle((APICreateOrderMsg) msg);
+        } else if (msg instanceof APICreateBuyOrderMsg) {
+            handle((APICreateBuyOrderMsg) msg);
+        } else if (msg instanceof APICreateRenewOrderMsg) {
+            handle((APICreateRenewOrderMsg) msg);
+        } else if (msg instanceof APICreateSLACompensationOrderMsg) {
+            handle((APICreateSLACompensationOrderMsg) msg);
+        } else if (msg instanceof APICreateUnsubcribeOrderMsg) {
+            handle((APICreateUnsubcribeOrderMsg) msg);
+        } else if (msg instanceof APICreateModifyOrderMsg) {
+            handle((APICreateModifyOrderMsg) msg);
         } else if (msg instanceof APIGetExpenseGrossMonthListMsg) {
             handle((APIGetExpenseGrossMonthListMsg) msg);
         } else if (msg instanceof APIUpdateRenewMsg) {
@@ -130,15 +141,27 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APIGetProductPriceMsg) msg);
         } else if (msg instanceof APIGetAccountBalanceListMsg) {
             handle((APIGetAccountBalanceListMsg) msg);
-        }  else if (msg instanceof APIUpdateOrderExpiredTimeMsg) {
+        } else if (msg instanceof APIUpdateOrderExpiredTimeMsg) {
             handle((APIUpdateOrderExpiredTimeMsg) msg);
-        }   else if (msg instanceof APICreateAccountDischargeMsg) {
+        } else if (msg instanceof APICreateAccountDischargeMsg) {
             handle((APICreateAccountDischargeMsg) msg);
-        }   else if (msg instanceof APIDeleteAccountDischargeMsg) {
+        } else if (msg instanceof APIDeleteAccountDischargeMsg) {
             handle((APIDeleteAccountDischargeMsg) msg);
+        } else if (msg instanceof APIGetAccountDischargeCategoryMsg) {
+            handle((APIGetAccountDischargeCategoryMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetAccountDischargeCategoryMsg msg) {
+        SimpleQuery<ProductPriceUnitVO> query = dbf.createQuery(ProductPriceUnitVO.class);
+        query.groupBy(ProductPriceUnitVO_.category);
+        List<ProductPriceUnitVO> categories = query.list();
+        APIGetAccountDischargeCategoryReply reply = new APIGetAccountDischargeCategoryReply();
+        reply.setInventories(ProductPriceUnitInventory.valueOf(categories));
+        bus.reply(msg, reply);
+
     }
 
     private void handle(APIDeleteAccountDischargeMsg msg) {
@@ -157,7 +180,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         query.add(AccountDischargeVO_.productType, Op.EQ, msg.getProductType());
         query.add(AccountDischargeVO_.category, Op.EQ, msg.getCategory());
         boolean exists = query.isExists();
-        if(exists){
+        if (exists) {
             throw new IllegalArgumentException("the account has the discharge");
         }
         AccountDischargeVO accountDischargeVO = new AccountDischargeVO();
@@ -178,7 +201,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         query.add(OrderVO_.productUuid, Op.EQ, msg.getProductUuid());
         query.add(OrderVO_.productStatus, Op.EQ, 0);
         OrderVO orderVO = query.find();
-        if(orderVO == null){
+        if (orderVO == null) {
             throw new RuntimeException("cannot find the order");
         }
         orderVO.setProductEffectTimeStart(msg.getStartTime());
@@ -198,7 +221,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         List<AccountBalanceInventory> accountBalanceInventories = AccountBalanceInventory.valueOf(accountBalanceVOs);
         APIGetAccountBalanceListReply reply = new APIGetAccountBalanceListReply();
         reply.setInventories(accountBalanceInventories);
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
     }
 
     private void handle(APIGetProductPriceMsg msg) {
@@ -487,29 +510,16 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         BillVO vo = dbf.findByUuid(msg.getUuid(), BillVO.class);
 
         Timestamp billTimestamp = vo.getBillDate();
-        Calendar calendar1 = Calendar.getInstance();
-        calendar1.setTime(billTimestamp);
-        calendar1.set(Calendar.HOUR_OF_DAY, 0);
-        calendar1.set(Calendar.MINUTE, 0);
-        calendar1.set(Calendar.SECOND, 0);
-        calendar1.set(Calendar.MILLISECOND, 0);
-        calendar1.add(Calendar.MONTH, -1);
-        calendar1.set(Calendar.DAY_OF_MONTH, 1);
-        calendar1.set(calendar1.get(Calendar.YEAR), calendar1.get(Calendar.MONTH), calendar1.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
-        Timestamp startTime = new Timestamp(calendar1.getTime().getTime());
-        Calendar calendar2 = Calendar.getInstance();
-        calendar2.set(Calendar.DAY_OF_MONTH, 0);
-        calendar2.set(Calendar.HOUR_OF_DAY, 23);
-        calendar2.set(Calendar.MINUTE, 59);
-        calendar2.set(Calendar.SECOND, 59);
-        calendar2.set(Calendar.MILLISECOND, 999);
-        Timestamp endTime = new Timestamp(calendar2.getTime().getTime());
+        LocalDateTime localDateTime =  billTimestamp.toLocalDateTime();
+        LocalDate date = LocalDate.of(localDateTime.getYear(),1,1);
+        LocalTime time = LocalTime.MIN;
+        localDateTime =  LocalDateTime.of(date,time);
         String accountUuid = msg.getSession().getAccountUuid();
         String sql = "select count(*) as categoryCount, sum(payPresent) as payPresentTotal,sum(payCash) as payCashTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and payTime BETWEEN :dateStart and  :dateEnd  group by productType ";
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("accountUuid", accountUuid);
-        q.setParameter("dateStart", startTime);
-        q.setParameter("dateEnd", endTime);
+        q.setParameter("dateStart", Timestamp.valueOf(localDateTime));
+        q.setParameter("dateEnd", Timestamp.valueOf(localDateTime.plusMonths(1)));
         List<Object[]> objs = q.getResultList();
         List<Monetary> bills = objs.stream().map(Monetary::new).collect(Collectors.toList());
         BillInventory inventory = BillInventory.valueOf(vo);
@@ -879,7 +889,357 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     @Transactional
-    private void handle(APICreateOrderMsg msg) {
+    private void handle(APICreateRenewOrderMsg msg) {
+        RenewVO renewVO = dbf.findByUuid(msg.getRenewUuid(), RenewVO.class);
+        if (renewVO == null) {
+            throw new IllegalArgumentException("please input the correct value");
+        }
+        Timestamp currentTimestamp = dbf.getCurrentSqlTime();
+        BigDecimal dischargePrice = BigDecimal.ZERO;
+        BigDecimal originalPrice = BigDecimal.ZERO;
+        SimpleQuery<PriceRefRenewVO> queryPriceRefRenewVO = dbf.createQuery(PriceRefRenewVO.class);
+        queryPriceRefRenewVO.add(PriceRefRenewVO_.renewUuid, SimpleQuery.Op.EQ, msg.getRenewUuid());
+        List<PriceRefRenewVO> PriceRefRenewVOs = queryPriceRefRenewVO.list();
+
+        for (PriceRefRenewVO priceUuid : PriceRefRenewVOs) {
+            ProductPriceUnitVO productPriceUnitVO = dbf.findByUuid(priceUuid.getProductPriceUnitUuid(), ProductPriceUnitVO.class);
+            if (productPriceUnitVO == null) {
+                throw new IllegalArgumentException("price uuid is not valid");
+            }
+            SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
+            qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategory());
+            qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductType());
+            qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
+            AccountDischargeVO accountDischargeVO = qDischarge.find();
+            int productDisCharge = 100;
+            if (accountDischargeVO != null) {
+                productDisCharge = accountDischargeVO.getDisCharge() == 0 ? 100 : accountDischargeVO.getDisCharge();
+            }
+            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()));
+            dischargePrice = dischargePrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));
+
+        }
+        int originDuration = msg.getDuration();
+        BigDecimal duration = BigDecimal.valueOf(originDuration);
+        if (msg.getProductChargeModel().equals(ProductChargeModel.BY_YEAR)) {
+            duration = duration.multiply(BigDecimal.valueOf(12));
+        }
+
+        AccountBalanceVO abvo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+        BigDecimal cashBalance = abvo.getCashBalance();
+        BigDecimal presentBalance = abvo.getPresentBalance();
+        BigDecimal creditPoint = abvo.getCreditPoint();
+        BigDecimal mayPayTotal = cashBalance.add(presentBalance).add(creditPoint);//可支付金额
+
+        OrderVO orderVo = new OrderVO();
+
+        originalPrice = originalPrice.multiply(duration);
+        dischargePrice = dischargePrice.multiply(duration);
+        if (originalPrice.compareTo(mayPayTotal) > 0) {
+            return;
+        }
+        payMethod(msg, orderVo, abvo, dischargePrice, currentTimestamp);
+        orderVo.setType(OrderType.RENEW);
+        orderVo.setOriginalPrice(originalPrice);
+        orderVo.setPrice(dischargePrice);
+        //todo modify product from tunel
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentTimestamp);
+        calendar.add(Calendar.MONTH, duration.intValue());
+        orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
+        orderVo.setProductEffectTimeStart(currentTimestamp);
+
+        Timestamp startTime = new Timestamp(currentTimestamp.getTime() - 30 * 24 * 60 * 60 * 1000);//todo this would get from product
+        Timestamp endTime = new Timestamp(currentTimestamp.getTime() + 30 * 24 * 60 * 60 * 1000);//todo this would get from product
+        long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
+
+        renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
+        renewVO.setProductChargeModel(msg.getProductChargeModel());
+
+        renewVO.setPricePerDay(renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays)).add(dischargePrice).divide(BigDecimal.valueOf(notUseDays).add(duration), 4, BigDecimal.ROUND_HALF_EVEN));
+        dbf.getEntityManager().merge(renewVO);
+
+        orderVo.setUuid(Platform.getUuid());
+        orderVo.setAccountUuid(renewVO.getAccountUuid());
+        orderVo.setProductName(renewVO.getProductName());
+        orderVo.setState(OrderState.PAID);
+        orderVo.setProductType(renewVO.getProductType());
+        orderVo.setProductChargeModel(renewVO.getProductChargeModel());
+        orderVo.setPayTime(currentTimestamp);
+        orderVo.setProductDescription(renewVO.getProductDescription());
+        orderVo.setProductUuid(renewVO.getProductUuid());
+        orderVo.setDuration(originDuration);
+
+        dbf.getEntityManager().merge(abvo);
+        dbf.getEntityManager().persist(orderVo);
+        dbf.getEntityManager().flush();
+        APICreateOrderEvent event = new APICreateOrderEvent(msg.getId());
+        event.setInventory(OrderInventory.valueOf(orderVo));
+        bus.publish(event);
+    }
+
+    @Transactional
+    private void handle(APICreateSLACompensationOrderMsg msg) {
+        Timestamp currentTimestamp = dbf.getCurrentSqlTime();
+
+        OrderVO orderVo = new OrderVO();
+        orderVo.setUuid(Platform.getUuid());
+        orderVo.setAccountUuid(msg.getSession().getAccountUuid());
+        orderVo.setProductName(msg.getProductName());
+        orderVo.setState(OrderState.PAID);
+        orderVo.setProductType(msg.getProductType());
+        orderVo.setProductChargeModel(ProductChargeModel.BY_DAY);
+        orderVo.setPayTime(currentTimestamp);
+        orderVo.setProductDescription(msg.getProductDescription());
+        orderVo.setProductUuid(msg.getProductUuid());
+        orderVo.setDuration(msg.getDuration());
+
+        orderVo.setPayCash(BigDecimal.ZERO);
+        orderVo.setPayPresent(BigDecimal.ZERO);
+        orderVo.setType(OrderType.SLA_COMPENSATION);
+        orderVo.setOriginalPrice(BigDecimal.ZERO);
+        orderVo.setPrice(BigDecimal.ZERO);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentTimestamp);
+        calendar.add(Calendar.DAY_OF_YEAR, msg.getDuration());
+        orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
+        orderVo.setProductStatus(1);
+
+        dbf.getEntityManager().persist(orderVo);
+        dbf.getEntityManager().flush();
+
+        OrderInventory inventory = OrderInventory.valueOf(orderVo);
+        APICreateOrderEvent evt = new APICreateOrderEvent(msg.getId());
+        evt.setInventory(inventory);
+        bus.publish(evt);
+
+    }
+
+    @Transactional
+    private void handle(APICreateUnsubcribeOrderMsg msg) {
+        Timestamp currentTimestamp = dbf.getCurrentSqlTime();
+
+        BigDecimal dischargePrice = BigDecimal.ZERO;
+        BigDecimal originalPrice = BigDecimal.ZERO;
+
+        AccountBalanceVO abvo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+        BigDecimal cashBalance = abvo.getCashBalance();
+        BigDecimal presentBalance = abvo.getPresentBalance();
+        BigDecimal creditPoint = abvo.getCreditPoint();
+
+        OrderVO orderVo = new OrderVO();
+
+        orderVo.setUuid(Platform.getUuid());
+        orderVo.setAccountUuid(msg.getSession().getAccountUuid());
+        orderVo.setProductName(msg.getProductName());
+        orderVo.setState(OrderState.PAID);
+        orderVo.setProductType(msg.getProductType());
+        orderVo.setProductChargeModel(msg.getProductChargeModel());
+        orderVo.setPayTime(currentTimestamp);
+        orderVo.setProductDescription(msg.getProductDescription());
+        orderVo.setProductUuid(msg.getProductUuid());
+        orderVo.setDuration(msg.getDuration());
+
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, -1);
+        Timestamp startTime = new Timestamp(c.getTime().getTime());
+        c.add(Calendar.MONTH, 2);
+        Timestamp endTime = new Timestamp(c.getTime().getTime());
+        long useDays = Math.abs(currentTimestamp.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
+        long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
+        long days = Math.abs(endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
+
+        SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
+        query.add(RenewVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
+        query.add(RenewVO_.productUuid, Op.EQ, msg.getProductUuid());
+        RenewVO renewVO = query.find();
+        if (renewVO == null) {
+            throw new IllegalArgumentException("could not find the product purchased history ");
+        }
+
+        BigDecimal remainMoney = renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal valuePayCash = getValueblePayCash(msg.getSession().getAccountUuid(), msg.getProductUuid());
+        orderVo.setType(OrderType.UN_SUBCRIBE);
+        if (remainMoney.compareTo(valuePayCash) < 0) {
+            remainMoney = valuePayCash;
+        }
+        orderVo.setOriginalPrice(remainMoney);
+        orderVo.setPrice(remainMoney);
+        orderVo.setProductEffectTimeEnd(currentTimestamp);
+        orderVo.setProductEffectTimeEnd(startTime);
+        BigDecimal remainCash = abvo.getCashBalance().add(remainMoney);
+        abvo.setCashBalance(remainCash);
+        orderVo.setPayPresent(BigDecimal.ZERO);
+        orderVo.setPayCash(remainMoney.negate());
+
+        DealDetailVO dVO = new DealDetailVO();
+        dVO.setUuid(Platform.getUuid());
+        dVO.setAccountUuid(msg.getSession().getAccountUuid());
+        dVO.setDealWay(DealWay.CASH_BILL);
+        dVO.setIncome(remainMoney);
+        dVO.setExpend(BigDecimal.ZERO);
+        dVO.setFinishTime(currentTimestamp);
+        dVO.setType(DealType.REFUND);
+        dVO.setState(DealState.SUCCESS);
+        dVO.setBalance(remainCash);
+        dVO.setOutTradeNO(orderVo.getUuid());
+        dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
+        dbf.getEntityManager().persist(dVO);
+        dbf.getEntityManager().remove(renewVO);
+        SimpleQuery<PriceRefRenewVO> q = dbf.createQuery(PriceRefRenewVO.class);
+        q.add(PriceRefRenewVO_.renewUuid, Op.EQ, renewVO.getUuid());
+        List<PriceRefRenewVO> renewVOs = q.list();
+        dbf.removeCollection(renewVOs, PriceRefRenewVO.class);
+
+
+        dbf.getEntityManager().merge(abvo);
+        dbf.getEntityManager().persist(orderVo);
+        dbf.getEntityManager().flush();
+
+        OrderInventory inventory = OrderInventory.valueOf(orderVo);
+        APICreateOrderEvent evt = new APICreateOrderEvent(msg.getId());
+        evt.setInventory(inventory);
+        bus.publish(evt);
+
+    }
+
+    @Transactional
+    private void handle(APICreateModifyOrderMsg msg) {
+        Timestamp currentTimestamp = dbf.getCurrentSqlTime();
+
+        BigDecimal dischargePrice = BigDecimal.ZERO;
+        BigDecimal originalPrice = BigDecimal.ZERO;
+
+        List<String> productPriceUnitUuids = msg.getProductPriceUnitUuids();
+        for (String productPriceUnitUuid : productPriceUnitUuids) {
+            ProductPriceUnitVO productPriceUnitVO = dbf.findByUuid(productPriceUnitUuid, ProductPriceUnitVO.class);
+            if (productPriceUnitVO == null) {
+                throw new IllegalArgumentException("price uuid is not valid");
+            }
+            SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
+            qDischarge.add(AccountDischargeVO_.category, Op.EQ, productPriceUnitVO.getCategory());
+            qDischarge.add(AccountDischargeVO_.productType, Op.EQ, productPriceUnitVO.getProductType());
+            qDischarge.add(AccountDischargeVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
+            AccountDischargeVO accountDischargeVO = qDischarge.find();
+            int productDisCharge = 100;
+            if (accountDischargeVO != null) {
+                productDisCharge = accountDischargeVO.getDisCharge() <= 0 ? 100 : accountDischargeVO.getDisCharge();
+            }
+            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()));
+            BigDecimal currentDischarge = BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
+            dischargePrice = dischargePrice.add(currentDischarge);
+
+        }
+
+        AccountBalanceVO abvo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+        BigDecimal cashBalance = abvo.getCashBalance();
+        BigDecimal presentBalance = abvo.getPresentBalance();
+        BigDecimal creditPoint = abvo.getCreditPoint();
+        BigDecimal mayPayTotal = cashBalance.add(presentBalance).add(creditPoint);//可支付金额
+
+        OrderVO orderVo = new OrderVO();
+
+        orderVo.setUuid(Platform.getUuid());
+        orderVo.setAccountUuid(msg.getSession().getAccountUuid());
+        orderVo.setProductName(msg.getProductName());
+        orderVo.setState(OrderState.PAID);
+        orderVo.setProductType(msg.getProductType());
+        orderVo.setProductChargeModel(msg.getProductChargeModel());
+        orderVo.setPayTime(currentTimestamp);
+        orderVo.setProductDescription(msg.getProductDescription());
+        orderVo.setProductUuid(msg.getProductUuid());
+        orderVo.setDuration(msg.getDuration());
+
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.MONTH, -1);
+        Timestamp startTime = new Timestamp(c.getTime().getTime());
+        c.add(Calendar.MONTH, 2);
+        Timestamp endTime = new Timestamp(c.getTime().getTime());
+        long useDays = Math.abs(currentTimestamp.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
+        long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
+        long days = Math.abs(endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
+
+        SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
+        query.add(RenewVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
+        query.add(RenewVO_.productUuid, Op.EQ, msg.getProductUuid());
+        RenewVO renewVO = query.find();
+        if (renewVO == null) {
+            throw new IllegalArgumentException("could not find the product purchased history ");
+        }
+
+        BigDecimal remainMoney = renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal needPayMoney = dischargePrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal needPayOriginMoney = originalPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal subMoney = needPayMoney.subtract(remainMoney);
+        if (subMoney.compareTo(BigDecimal.ZERO) >= 0) { //upgrade
+            if (subMoney.compareTo(mayPayTotal) > 0) {
+                throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
+            }
+            orderVo.setType(OrderType.UPGRADE);
+            orderVo.setOriginalPrice(needPayOriginMoney.subtract(remainMoney));
+            orderVo.setPrice(subMoney);
+            orderVo.setProductEffectTimeStart(startTime);
+            orderVo.setProductEffectTimeEnd(endTime);
+            payMethod(msg, orderVo, abvo, subMoney, currentTimestamp);
+
+        } else { //downgrade
+            BigDecimal valuePayCash = getValueblePayCash(msg.getSession().getAccountUuid(), msg.getProductUuid());
+            orderVo.setType(OrderType.DOWNGRADE);
+            if (subMoney.compareTo(valuePayCash.negate()) < 0) {
+                subMoney = valuePayCash.negate();
+            }
+            orderVo.setPayCash(subMoney);
+            orderVo.setPayPresent(BigDecimal.ZERO);
+            orderVo.setOriginalPrice(subMoney);
+            orderVo.setPrice(subMoney);
+            orderVo.setProductEffectTimeStart(startTime);
+            orderVo.setProductEffectTimeEnd(endTime);
+            BigDecimal remainCash = abvo.getCashBalance().add(subMoney.negate());
+            abvo.setCashBalance(remainCash);
+
+            DealDetailVO dVO = new DealDetailVO();
+            dVO.setUuid(Platform.getUuid());
+            dVO.setAccountUuid(msg.getSession().getAccountUuid());
+            dVO.setDealWay(DealWay.CASH_BILL);
+            dVO.setIncome(subMoney.negate());
+            dVO.setExpend(BigDecimal.ZERO);
+            dVO.setFinishTime(currentTimestamp);
+            dVO.setType(DealType.REFUND);
+            dVO.setState(DealState.SUCCESS);
+            dVO.setBalance(remainCash);
+            dVO.setOutTradeNO(orderVo.getUuid());
+            dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
+            dbf.getEntityManager().persist(dVO);
+        }
+        renewVO.setPricePerDay(dischargePrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN));
+        dbf.getEntityManager().merge(renewVO);
+        SimpleQuery<PriceRefRenewVO> q = dbf.createQuery(PriceRefRenewVO.class);
+        q.add(PriceRefRenewVO_.renewUuid, Op.EQ, renewVO.getUuid());
+        List<PriceRefRenewVO> renewVOs = q.list();
+        dbf.removeCollection(renewVOs, PriceRefRenewVO.class);
+        for (String productPriceUnitUuid : productPriceUnitUuids) {
+            PriceRefRenewVO priceRefRenewVO = new PriceRefRenewVO();
+            priceRefRenewVO.setUuid(Platform.getUuid());
+            priceRefRenewVO.setProductPriceUnitUuid(productPriceUnitUuid);
+            priceRefRenewVO.setAccountUuid(msg.getSession().getAccountUuid());
+            priceRefRenewVO.setRenewUuid(renewVO.getUuid());
+            dbf.getEntityManager().persist(priceRefRenewVO);
+        }
+
+        dbf.getEntityManager().merge(abvo);
+        dbf.getEntityManager().persist(orderVo);
+        dbf.getEntityManager().flush();
+
+        OrderInventory inventory = OrderInventory.valueOf(orderVo);
+        APICreateOrderEvent evt = new APICreateOrderEvent(msg.getId());
+        evt.setInventory(inventory);
+        bus.publish(evt);
+
+    }
+
+
+    @Transactional
+    private void handle(APICreateBuyOrderMsg msg) {
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
         BigDecimal dischargePrice = BigDecimal.ZERO;
@@ -907,10 +1267,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         }
 
         BigDecimal duration = BigDecimal.valueOf(msg.getDuration());
-        if (msg.getType() == OrderType.BUY || msg.getType() == OrderType.RENEW) {
-            if (msg.getProductChargeModel().equals(ProductChargeModel.BY_YEAR)) {
-                duration = duration.multiply(BigDecimal.valueOf(12));
-            }
+        if (msg.getProductChargeModel().equals(ProductChargeModel.BY_YEAR)) {
+            duration = duration.multiply(BigDecimal.valueOf(12));
         }
 
         AccountBalanceVO abvo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
@@ -932,203 +1290,45 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         orderVo.setProductUuid(msg.getProductUuid());
         orderVo.setDuration(msg.getDuration());
 
-        if (msg.getType() == OrderType.MODIFY || msg.getType() == OrderType.UN_SUBCRIBE) {
-            Calendar c = Calendar.getInstance();
-            c.add(Calendar.MONTH, -1);
-            Timestamp startTime = new Timestamp(c.getTime().getTime());
-            c.add(Calendar.MONTH,2);
-            Timestamp endTime = new Timestamp(c.getTime().getTime()); long useDays = Math.abs(currentTimestamp.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
-            long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
-            long days = Math.abs(endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
+        originalPrice = originalPrice.multiply(duration);
+        dischargePrice = dischargePrice.multiply(duration);
 
-            SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
-            query.add(RenewVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
-            query.add(RenewVO_.productUuid, Op.EQ, msg.getProductUuid());
-            RenewVO renewVO = query.find();
-            if (renewVO == null) {
-                throw new IllegalArgumentException("could not find the product purchased history ");
-            }
+        if (dischargePrice.compareTo(mayPayTotal) > 0) {
+            throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
+        }
+        orderVo.setOriginalPrice(originalPrice);
+        orderVo.setPrice(dischargePrice);
+        orderVo.setType(OrderType.BUY);
+        if (msg.getProductType() == ProductType.TUNNEL) {
+            orderVo.setProductStatus(0);
+        }
+        payMethod(msg, orderVo, abvo, dischargePrice, currentTimestamp);
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentTimestamp);
+        calendar.add(Calendar.MONTH, duration.intValue());
+        orderVo.setProductEffectTimeStart(currentTimestamp);
+        orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
 
-            BigDecimal remainMoney = renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays));
-            if (msg.getType() == OrderType.MODIFY) {
-                BigDecimal needPayMoney = dischargePrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
-                BigDecimal needPayOriginMoney = originalPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
-                BigDecimal subMoney = needPayMoney.subtract(remainMoney);
-                if (subMoney.compareTo(BigDecimal.ZERO) >= 0) {//upgrade
-                    if (subMoney.compareTo(mayPayTotal) > 0) {
-                        throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
-                    }
-                    orderVo.setType(OrderType.UPGRADE);
-                    orderVo.setOriginalPrice(needPayOriginMoney.subtract(remainMoney));
-                    orderVo.setPrice(subMoney);
-                    orderVo.setProductEffectTimeStart(startTime);
-                    orderVo.setProductEffectTimeEnd(endTime);
-                    payMethod(msg, orderVo, abvo, subMoney, currentTimestamp);
+        RenewVO renewVO = new RenewVO();
+        renewVO.setUuid(Platform.getUuid());
+        renewVO.setProductChargeModel(orderVo.getProductChargeModel());
+        renewVO.setProductUuid(orderVo.getProductUuid());
+        renewVO.setAccountUuid(orderVo.getAccountUuid());
+        renewVO.setProductName(orderVo.getProductName());
+        renewVO.setProductType(orderVo.getProductType());
+        renewVO.setProductDescription(orderVo.getProductDescription());
+        renewVO.setRenewAuto(true);
+        renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
+        renewVO.setPricePerDay(dischargePrice.divide(BigDecimal.valueOf(30).multiply(duration), 4, BigDecimal.ROUND_HALF_EVEN));
+        dbf.getEntityManager().persist(renewVO);
 
-                } else { //downgrade
-                    BigDecimal valuePayCash = getValueblePayCash(msg.getSession().getAccountUuid(), msg.getProductUuid());
-                    orderVo.setType(OrderType.DOWNGRADE);
-                    if (subMoney.compareTo(valuePayCash.negate()) < 0) {
-                        subMoney = valuePayCash.negate();
-                    }
-                    orderVo.setPayCash(subMoney);
-                    orderVo.setPayPresent(BigDecimal.ZERO);
-                    orderVo.setOriginalPrice(subMoney);
-                    orderVo.setPrice(subMoney);
-                    orderVo.setProductEffectTimeStart(startTime);
-                    orderVo.setProductEffectTimeEnd(endTime);
-                    BigDecimal remainCash = abvo.getCashBalance().add(subMoney.negate());
-                    abvo.setCashBalance(remainCash);
-
-                    DealDetailVO dVO = new DealDetailVO();
-                    dVO.setUuid(Platform.getUuid());
-                    dVO.setAccountUuid(msg.getSession().getAccountUuid());
-                    dVO.setDealWay(DealWay.CASH_BILL);
-                    dVO.setIncome(subMoney.negate());
-                    dVO.setExpend(BigDecimal.ZERO);
-                    dVO.setFinishTime(currentTimestamp);
-                    dVO.setType(DealType.REFUND);
-                    dVO.setState(DealState.SUCCESS);
-                    dVO.setBalance(remainCash);
-                    dVO.setOutTradeNO(orderVo.getUuid());
-                    dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
-                    dbf.getEntityManager().persist(dVO);
-                }
-                renewVO.setProductChargeModel(orderVo.getProductChargeModel());
-                renewVO.setProductDescription(orderVo.getProductDescription());
-                renewVO.setPricePerDay(dischargePrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN));
-                dbf.getEntityManager().merge(renewVO);
-                SimpleQuery<PriceRefRenewVO> q = dbf.createQuery(PriceRefRenewVO.class);
-                q.add(PriceRefRenewVO_.renewUuid, Op.EQ, renewVO.getUuid());
-                List<PriceRefRenewVO> renewVOs = q.list();
-                dbf.removeCollection(renewVOs, PriceRefRenewVO.class);
-                for (String productPriceUnitUuid : productPriceUnitUuids) {
-                    PriceRefRenewVO priceRefRenewVO = new PriceRefRenewVO();
-                    priceRefRenewVO.setUuid(Platform.getUuid());
-                    priceRefRenewVO.setProductPriceUnitUuid(productPriceUnitUuid);
-                    priceRefRenewVO.setAccountUuid(msg.getSession().getAccountUuid());
-                    priceRefRenewVO.setRenewUuid(renewVO.getUuid());
-                    dbf.getEntityManager().persist(priceRefRenewVO);
-                }
-            } else {
-                BigDecimal valuePayCash = getValueblePayCash(msg.getSession().getAccountUuid(), msg.getProductUuid());
-                orderVo.setType(OrderType.UN_SUBCRIBE);
-                if (remainMoney.compareTo(valuePayCash) < 0) {
-                    remainMoney = valuePayCash;
-                }
-                orderVo.setOriginalPrice(remainMoney);
-                orderVo.setPrice(remainMoney);
-                orderVo.setProductEffectTimeEnd(currentTimestamp);
-                orderVo.setProductEffectTimeEnd(startTime);
-                BigDecimal remainCash = abvo.getCashBalance().add(remainMoney);
-                abvo.setCashBalance(remainCash);
-                orderVo.setPayPresent(BigDecimal.ZERO);
-                orderVo.setPayCash(remainMoney.negate());
-
-                DealDetailVO dVO = new DealDetailVO();
-                dVO.setUuid(Platform.getUuid());
-                dVO.setAccountUuid(msg.getSession().getAccountUuid());
-                dVO.setDealWay(DealWay.CASH_BILL);
-                dVO.setIncome(remainMoney);
-                dVO.setExpend(BigDecimal.ZERO);
-                dVO.setFinishTime(currentTimestamp);
-                dVO.setType(DealType.REFUND);
-                dVO.setState(DealState.SUCCESS);
-                dVO.setBalance(remainCash);
-                dVO.setOutTradeNO(orderVo.getUuid());
-                dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
-                dbf.getEntityManager().persist(dVO);
-                dbf.getEntityManager().remove(renewVO);
-                SimpleQuery<PriceRefRenewVO> q = dbf.createQuery(PriceRefRenewVO.class);
-                q.add(PriceRefRenewVO_.renewUuid, Op.EQ, renewVO.getUuid());
-                List<PriceRefRenewVO> renewVOs = q.list();
-                dbf.removeCollection(renewVOs, PriceRefRenewVO.class);
-            }
-
-
-        } else if (msg.getType().equals(OrderType.BUY)) {
-            originalPrice = originalPrice.multiply(duration);
-            dischargePrice = dischargePrice.multiply(duration);
-
-            if (dischargePrice.compareTo(mayPayTotal) > 0) {
-                throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
-            }
-            orderVo.setOriginalPrice(originalPrice);
-            orderVo.setPrice(dischargePrice);
-            orderVo.setType(OrderType.BUY);
-            if(msg.getProductType() == ProductType.TUNNEL){
-                orderVo.setProductStatus(0);
-            }
-            payMethod(msg, orderVo, abvo, dischargePrice, currentTimestamp);
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(currentTimestamp);
-            calendar.add(Calendar.MONTH, duration.intValue());
-            orderVo.setProductEffectTimeStart(currentTimestamp);
-            orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
-
-            RenewVO renewVO = new RenewVO();
-            renewVO.setUuid(Platform.getUuid());
-            renewVO.setProductChargeModel(orderVo.getProductChargeModel());
-            renewVO.setProductUuid(orderVo.getProductUuid());
-            renewVO.setAccountUuid(orderVo.getAccountUuid());
-            renewVO.setProductName(orderVo.getProductName());
-            renewVO.setProductType(orderVo.getProductType());
-            renewVO.setProductDescription(orderVo.getProductDescription());
-            renewVO.setRenewAuto(true);
-            renewVO.setPricePerDay(dischargePrice.divide(BigDecimal.valueOf(30).multiply(duration), 4, BigDecimal.ROUND_HALF_EVEN));
-            dbf.getEntityManager().persist(renewVO);
-
-            for (String productPriceUnitUuid : productPriceUnitUuids) {
-                PriceRefRenewVO priceRefRenewVO = new PriceRefRenewVO();
-                priceRefRenewVO.setUuid(Platform.getUuid());
-                priceRefRenewVO.setProductPriceUnitUuid(productPriceUnitUuid);
-                priceRefRenewVO.setAccountUuid(msg.getSession().getAccountUuid());
-                priceRefRenewVO.setRenewUuid(renewVO.getUuid());
-                dbf.getEntityManager().persist(priceRefRenewVO);
-            }
-
-
-        } else if (msg.getType().equals(OrderType.SLA_COMPENSATION)) {
-            orderVo.setPayCash(BigDecimal.ZERO);
-            orderVo.setPayPresent(BigDecimal.ZERO);
-            orderVo.setType(OrderType.SLA_COMPENSATION);
-            orderVo.setOriginalPrice(BigDecimal.ZERO);
-            orderVo.setPrice(BigDecimal.ZERO);
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(currentTimestamp);
-            calendar.add(Calendar.DAY_OF_YEAR, duration.intValue());
-            orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
-        } else if (msg.getType().equals(OrderType.RENEW)) {
-            originalPrice = originalPrice.multiply(duration);
-            dischargePrice = dischargePrice.multiply(duration);
-            if (originalPrice.compareTo(mayPayTotal) > 0) {
-                throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
-            }
-            payMethod(msg, orderVo, abvo, dischargePrice, currentTimestamp);
-            orderVo.setType(OrderType.RENEW);
-            orderVo.setOriginalPrice(originalPrice);
-            orderVo.setPrice(dischargePrice);
-            //todo modify product from tunel
-            Calendar calendar = Calendar.getInstance();
-            calendar.setTime(currentTimestamp);
-            calendar.add(Calendar.MONTH, duration.intValue());
-            orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
-
-            SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
-            query.add(RenewVO_.accountUuid, Op.EQ, orderVo.getAccountUuid());
-            query.add(RenewVO_.productUuid, Op.EQ, orderVo.getProductUuid());
-            RenewVO renewVO = query.find();
-            if (renewVO == null) {
-                throw new IllegalArgumentException("can not found the product");
-            }
-            renewVO.setProductChargeModel(orderVo.getProductChargeModel());
-
-            Timestamp startTime = new Timestamp(currentTimestamp.getTime() - 30 * 24 * 60 * 60 * 1000);//todo this would get from product
-            Timestamp endTime = new Timestamp(currentTimestamp.getTime() + 30 * 24 * 60 * 60 * 1000);//todo this would get from product
-            long notUseDays = (endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
-            renewVO.setPricePerDay(renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays)).add(dischargePrice).divide(BigDecimal.valueOf(notUseDays).add(duration)));
-            dbf.getEntityManager().merge(renewVO);
-
+        for (String productPriceUnitUuid : productPriceUnitUuids) {
+            PriceRefRenewVO priceRefRenewVO = new PriceRefRenewVO();
+            priceRefRenewVO.setUuid(Platform.getUuid());
+            priceRefRenewVO.setProductPriceUnitUuid(productPriceUnitUuid);
+            priceRefRenewVO.setAccountUuid(msg.getSession().getAccountUuid());
+            priceRefRenewVO.setRenewUuid(renewVO.getUuid());
+            dbf.getEntityManager().persist(priceRefRenewVO);
         }
 
 
@@ -1169,7 +1369,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     private void handle(APIUpdateAccountBalanceMsg msg) {
         AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        if(vo == null){
+        if (vo == null) {
             APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
             aMsg.setUuid(msg.getAccountUuid());
             InnerMessageHelper.setMD5(aMsg);
@@ -1178,7 +1378,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             if (rsp.getState().equals(RestAPIState.Done.toString())) {
                 APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
                 if (!replay.isValidAccount()) {
-                   throw new IllegalArgumentException("the account uuid is not valid");
+                    throw new IllegalArgumentException("the account uuid is not valid");
                 }
             }
             AccountBalanceVO accountBalanceVO = new AccountBalanceVO();
@@ -1240,7 +1440,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void handle(APIGetAccountBalanceMsg msg) {
-        AccountBalanceVO vo =  dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+        AccountBalanceVO vo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
         AccountBalanceInventory inventory = AccountBalanceInventory.valueOf(vo);
         APIGetAccountBalanceReply reply = new APIGetAccountBalanceReply();
         reply.setInventory(inventory);

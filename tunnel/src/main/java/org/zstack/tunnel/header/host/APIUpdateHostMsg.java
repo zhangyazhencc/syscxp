@@ -3,6 +3,7 @@ package org.zstack.tunnel.header.host;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.header.node.NodeVO;
 import org.zstack.tunnel.manage.TunnelConstant;
 
 /**
@@ -10,29 +11,32 @@ import org.zstack.tunnel.manage.TunnelConstant;
  */
 public class APIUpdateHostMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = HostVO.class)
+    @APIParam(emptyString = false, resourceType = HostVO.class)
     private String uuid;
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false, resourceType = NodeVO.class)
     private String nodeUuid;
 
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(emptyString = false, maxLength = 128)
     private String name;
 
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(emptyString = false, maxLength = 128)
     private String code;
 
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(emptyString = false, maxLength = 128)
     private String hostIp;
 
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(emptyString = false, maxLength = 128)
     private String username;
 
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(emptyString = false, maxLength = 128)
     private String password;
 
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,validValues = {"Deployed","Undeployed"})
     private HostState state;
+
+    @APIParam(emptyString = false,validValues = {"Connecting","Connected","Disconnected"})
+    private HostStatus status;
 
     public String getUuid() {
         return uuid;
@@ -96,5 +100,13 @@ public class APIUpdateHostMsg extends APIMessage {
 
     public void setState(HostState state) {
         this.state = state;
+    }
+
+    public HostStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(HostStatus status) {
+        this.status = status;
     }
 }

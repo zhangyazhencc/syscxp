@@ -5,6 +5,7 @@ import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.tunnel.header.endpoint.EndpointVO;
+import org.zstack.tunnel.header.node.NodeVO;
 import org.zstack.tunnel.header.switchs.SwitchPortAttribute;
 import org.zstack.tunnel.manage.TunnelConstant;
 
@@ -24,6 +25,10 @@ public class APICreateTunnelMsg extends APIMessage {
     private String name;
     @APIParam
     private Long bandwidth;
+    @APIParam(emptyString = false,resourceType = NodeVO.class)
+    private String nodeAUuid;
+    @APIParam(emptyString = false,resourceType = NodeVO.class)
+    private String nodeZUuid;
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
     private String endpointPointAUuid;
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
@@ -161,5 +166,21 @@ public class APICreateTunnelMsg extends APIMessage {
 
     public void setEndpointPointZUuid(String endpointPointZUuid) {
         this.endpointPointZUuid = endpointPointZUuid;
+    }
+
+    public String getNodeAUuid() {
+        return nodeAUuid;
+    }
+
+    public void setNodeAUuid(String nodeAUuid) {
+        this.nodeAUuid = nodeAUuid;
+    }
+
+    public String getNodeZUuid() {
+        return nodeZUuid;
+    }
+
+    public void setNodeZUuid(String nodeZUuid) {
+        this.nodeZUuid = nodeZUuid;
     }
 }

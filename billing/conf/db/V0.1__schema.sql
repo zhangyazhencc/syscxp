@@ -290,7 +290,7 @@ CREATE TABLE `ReceiptVO` (
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户id',
   `lastOpDate` timestamp NOT NULL DEFAULT  current_timestamp(),
   `createDate` timestamp ,
-  `comment` varchar(255) DEFAULT NULL COMMENT '备注',
+  `commet` varchar(255) DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

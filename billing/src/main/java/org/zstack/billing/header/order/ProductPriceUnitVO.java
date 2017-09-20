@@ -44,6 +44,27 @@ public class ProductPriceUnitVO {
     @Column
     private Timestamp lastOpDate;
 
+    @Column
+    private String productTypeName;
+
+    @Column
+    private String categoryName;
+
+    public String getProductTypeName() {
+        return productTypeName;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
+
+    public void setProductTypeName(String productTypeName) {
+        this.productTypeName = productTypeName;
+    }
 
     public String getUuid() {
         return uuid;
