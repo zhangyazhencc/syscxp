@@ -188,14 +188,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             gateway.setDescription(msg.getDescription());
             update = true;
         }
-        if (StringUtils.isEmpty(msg.getVpnCidr())) {
-            gateway.setVpnCidr(msg.getVpnCidr());
-            update = true;
-        }
-        if (msg.getState() != null) {
-            gateway.setState(msg.getState());
-            update = true;
-        }
         if (update)
             dbf.updateAndRefresh(gateway);
         APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
