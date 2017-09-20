@@ -3,6 +3,10 @@ package org.zstack.tunnel.header.tunnel;
 import org.zstack.header.vo.EO;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by DCY on 2017-09-11
@@ -13,38 +17,26 @@ import javax.persistence.*;
 public class TunnelVO extends TunnelAO{
 
     @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="netWorkUuid", insertable=false, updatable=false)
-    private NetWorkVO netWorkVO;
+    @JoinColumn(name="networkUuid", insertable=false, updatable=false)
+    private NetworkVO networkVO;
 
-    @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="interfaceAUuid", insertable=false, updatable=false)
-    private InterfaceVO interfaceAVO;
+    @OneToMany
+    @JoinColumn(name = "tunnelUuid", insertable = false, updatable = false)
+    private List<TunnelInterfaceVO> tunnelInterfaceVO = new ArrayList<TunnelInterfaceVO>();
 
-    @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="interfaceZUuid", insertable=false, updatable=false)
-    private InterfaceVO interfaceZVO;
-
-    public NetWorkVO getNetWorkVO() {
-        return netWorkVO;
+    public NetworkVO getNetworkVO() {
+        return networkVO;
     }
 
-    public void setNetWorkVO(NetWorkVO netWorkVO) {
-        this.netWorkVO = netWorkVO;
+    public void setNetworkVO(NetworkVO networkVO) {
+        this.networkVO = networkVO;
     }
 
-    public InterfaceVO getInterfaceAVO() {
-        return interfaceAVO;
+    public List<TunnelInterfaceVO> getTunnelInterfaceVO() {
+        return tunnelInterfaceVO;
     }
 
-    public void setInterfaceAVO(InterfaceVO interfaceAVO) {
-        this.interfaceAVO = interfaceAVO;
-    }
-
-    public InterfaceVO getInterfaceZVO() {
-        return interfaceZVO;
-    }
-
-    public void setInterfaceZVO(InterfaceVO interfaceZVO) {
-        this.interfaceZVO = interfaceZVO;
+    public void setTunnelInterfaceVO(List<TunnelInterfaceVO> tunnelInterfaceVO) {
+        this.tunnelInterfaceVO = tunnelInterfaceVO;
     }
 }

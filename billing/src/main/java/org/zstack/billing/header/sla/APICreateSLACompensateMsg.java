@@ -23,19 +23,16 @@ public class APICreateSLACompensateMsg extends APIMessage {
     private String productName;
 
     @APIParam(emptyString = false)
-    private String reason;
-
-    @APIParam(emptyString = false,required = false)
-    private String description;
+    private SLAReason reason;
 
     @APIParam(emptyString = false)
     private int duration;
 
     @APIParam(emptyString = false)
-    private Timestamp timeStart;
+    private String comment;
 
-    @APIParam(emptyString = false)
-    private Timestamp timeEnd;
+
+
 
     public String getAccountUuid() {
         return accountUuid;
@@ -69,22 +66,6 @@ public class APICreateSLACompensateMsg extends APIMessage {
         this.productName = productName;
     }
 
-    public String getReason() {
-        return reason;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public int getDuration() {
         return duration;
     }
@@ -93,19 +74,19 @@ public class APICreateSLACompensateMsg extends APIMessage {
         this.duration = duration;
     }
 
-    public Timestamp getTimeStart() {
-        return timeStart;
+    public SLAReason getReason() {
+        return reason;
     }
 
-    public void setTimeStart(Timestamp timeStart) {
-        this.timeStart = timeStart;
+    public void setReason(SLAReason reason) {
+        this.reason = reason;
     }
 
-    public Timestamp getTimeEnd() {
-        return timeEnd;
+    public String getComment() {
+        return comment;
     }
 
-    public void setTimeEnd(Timestamp timeEnd) {
-        this.timeEnd = timeEnd;
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }

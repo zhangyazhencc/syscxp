@@ -1,6 +1,7 @@
 package org.zstack.tunnel.header.switchs;
 
 import org.zstack.header.search.Inventory;
+import org.zstack.tunnel.header.node.NodeInventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -14,10 +15,11 @@ import java.util.List;
 public class PhysicalSwitchInventory {
     private String uuid;
     private String nodeUuid;
+    private NodeInventory node;
     private String switchModelUuid;
+    private SwitchModelInventory switchModel;
     private String code;
     private String name;
-    private String brand;
     private String owner;
     private PhysicalSwitchType type;
     private String rack;
@@ -34,10 +36,11 @@ public class PhysicalSwitchInventory {
 
         inv.setUuid(vo.getUuid());
         inv.setNodeUuid(vo.getNodeUuid());
+        inv.setNode(NodeInventory.valueOf(vo.getNode()));
         inv.setSwitchModelUuid(vo.getSwitchModelUuid());
+        inv.setSwitchModel(SwitchModelInventory.valueOf(vo.getSwitchModel()));
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
-        inv.setBrand(vo.getBrand());
         inv.setOwner(vo.getOwner());
         inv.setType(vo.getType());
         inv.setRack(vo.getRack());
@@ -98,14 +101,6 @@ public class PhysicalSwitchInventory {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getBrand() {
-        return brand;
-    }
-
-    public void setBrand(String brand) {
-        this.brand = brand;
     }
 
     public String getOwner() {
@@ -186,5 +181,21 @@ public class PhysicalSwitchInventory {
 
     public void setLocalIP(String localIP) {
         this.localIP = localIP;
+    }
+
+    public NodeInventory getNode() {
+        return node;
+    }
+
+    public void setNode(NodeInventory node) {
+        this.node = node;
+    }
+
+    public SwitchModelInventory getSwitchModel() {
+        return switchModel;
+    }
+
+    public void setSwitchModel(SwitchModelInventory switchModel) {
+        this.switchModel = switchModel;
     }
 }

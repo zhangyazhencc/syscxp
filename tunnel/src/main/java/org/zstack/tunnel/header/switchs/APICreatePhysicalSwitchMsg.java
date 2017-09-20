@@ -3,6 +3,7 @@ package org.zstack.tunnel.header.switchs;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.header.node.NodeVO;
 import org.zstack.tunnel.manage.SwitchConstant;
 
 /**
@@ -11,19 +12,17 @@ import org.zstack.tunnel.manage.SwitchConstant;
 @Action(category = SwitchConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreatePhysicalSwitchMsg extends APIMessage {
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32,resourceType = NodeVO.class)
     private String nodeUuid;
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32,resourceType = SwitchModelVO.class)
     private String switchModelUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String code;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
     @APIParam(emptyString = false,maxLength = 128)
-    private String brand;
-    @APIParam(emptyString = false,maxLength = 128)
     private String owner;
-    @APIParam(emptyString = false,validValues = {"JOIN", "TRANSPORT"})
+    @APIParam(emptyString = false,validValues = {"ACCESS", "TRANSPORT"})
     private PhysicalSwitchType type;
     @APIParam(emptyString = false,maxLength = 32)
     private String rack;
@@ -35,7 +34,7 @@ public class APICreatePhysicalSwitchMsg extends APIMessage {
     private String username;
     @APIParam(emptyString = false,maxLength = 128)
     private String password;
-    @APIParam(required = false,maxLength = 255)
+    @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
 
     public String getCode() {
@@ -52,14 +51,6 @@ public class APICreatePhysicalSwitchMsg extends APIMessage {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getBrand() {
-        return brand;
-    }
-
-    public void setBrand(String brand) {
-        this.brand = brand;
     }
 
     public String getOwner() {

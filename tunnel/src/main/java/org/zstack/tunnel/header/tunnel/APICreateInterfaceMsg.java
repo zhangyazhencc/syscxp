@@ -1,9 +1,12 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.tunnel.header.endpoint.EndpointType;
+import org.zstack.tunnel.header.endpoint.EndpointVO;
+import org.zstack.tunnel.header.switchs.SwitchPortAttribute;
 import org.zstack.tunnel.header.switchs.SwitchPortType;
 import org.zstack.tunnel.manage.TunnelConstant;
 
@@ -13,23 +16,21 @@ import org.zstack.tunnel.manage.TunnelConstant;
 @Action(category = TunnelConstant.ACTION_CATEGORY)
 public class APICreateInterfaceMsg extends APIMessage {
 
-    @APIParam(required = false,maxLength = 32)
+    @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32,resourceType = EndpointVO.class)
     private String endpointUuid;
-    @APIParam(emptyString = false)
-    private Integer bandwidth;
-    @APIParam(emptyString = false)
-    private Integer isExclusive;
-    @APIParam(emptyString = false,validValues = {"CLOUD", "ACCESSIN"})
-    private EndpointType endpointType;
-    @APIParam(required = false,validValues = {"RJ45", "SFP_1G","SFG_10G"})
+    @APIParam
+    private Long bandwidth;
+    @APIParam(emptyString = false,validValues = {"Exclusive", "Shared"})
+    private SwitchPortAttribute portAttribute;
+    @APIParam(emptyString = false,required = false,validValues = {"RJ45", "SFP_1G","SFG_10G"})
     private SwitchPortType portType;
-    @APIParam(required = false,maxLength = 255)
+    @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
-    @APIParam(emptyString = false)
+    @APIParam
     private Integer months;
 
     public String getName() {
@@ -48,22 +49,6 @@ public class APICreateInterfaceMsg extends APIMessage {
         this.endpointUuid = endpointUuid;
     }
 
-    public Integer getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(Integer bandwidth) {
-        this.bandwidth = bandwidth;
-    }
-
-    public Integer getIsExclusive() {
-        return isExclusive;
-    }
-
-    public void setIsExclusive(Integer isExclusive) {
-        this.isExclusive = isExclusive;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -80,14 +65,6 @@ public class APICreateInterfaceMsg extends APIMessage {
         this.portType = portType;
     }
 
-    public EndpointType getEndpointType() {
-        return endpointType;
-    }
-
-    public void setEndpointType(EndpointType endpointType) {
-        this.endpointType = endpointType;
-    }
-
     public Integer getMonths() {
         return months;
     }
@@ -97,12 +74,30 @@ public class APICreateInterfaceMsg extends APIMessage {
     }
 
     public String getAccountUuid() {
-
-
-        return accountUuid;
+        if(getSession().getType() == AccountType.SystemAdmin){
+            return accountUuid;
+        }else{
+            return getSession().getAccountUuid();
+        }
     }
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public Long getBandwidth() {
+        return bandwidth;
+    }
+
+    public void setBandwidth(Long bandwidth) {
+        this.bandwidth = bandwidth;
+    }
+
+    public SwitchPortAttribute getPortAttribute() {
+        return portAttribute;
+    }
+
+    public void setPortAttribute(SwitchPortAttribute portAttribute) {
+        this.portAttribute = portAttribute;
     }
 }

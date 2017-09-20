@@ -3,6 +3,70 @@
     <id>tunnel</id>
     <interceptor>TunnelManager</interceptor>
 
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APICreateNetworkMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APICreateNetworkManualMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APIUpdateNetworkMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APIDeleteNetworkMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APICreateInterfaceMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APICreateInterfaceManualMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APIUpdateInterfaceMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APIDeleteInterfaceMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APICreateTunnelMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APICreateTunnelManualMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APIUpdateTunnelMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APIDeleteTunnelMsg</name>
+    </message>
+
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APIQueryNetworkMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APIQueryInterfaceMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APIQueryTunnelMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
 
 
 </service>

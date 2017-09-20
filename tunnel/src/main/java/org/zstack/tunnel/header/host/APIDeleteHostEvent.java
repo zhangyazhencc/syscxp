@@ -8,10 +8,19 @@ import org.zstack.header.message.APIEvent;
  * @Description: .
  */
 public class APIDeleteHostEvent extends APIEvent {
+    private HostInventory inventory;
     public APIDeleteHostEvent() {
     }
 
     public APIDeleteHostEvent(String apiId) {
         super(apiId);
+    }
+
+    public void setInventory(HostInventory inventory) {
+        this.inventory = inventory;
+    }
+
+    public HostInventory getInventory() {
+        return inventory;
     }
 }

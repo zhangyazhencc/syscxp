@@ -3,9 +3,7 @@ package org.zstack.tunnel.header.tunnel;
 import org.zstack.header.search.Inventory;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by DCY on 2017-09-11
@@ -15,19 +13,15 @@ public class TunnelInventory {
 
     private String uuid;
     private String accountUuid;
-    private String netWorkUuid;
+    private String networkUuid;
+    private NetworkInventory network;
+    private List<TunnelInterfaceInventory> tunnelInterface = new ArrayList<TunnelInterfaceInventory>();
     private String name;
-    private Integer bandwidth;
+    private Long bandwidth;
     private Double distance;
     private TunnelState state;
     private TunnelStatus status;
-    private String interfaceAUuid;
-    private Integer aVlan;
-    private Integer enableQinqA;
-    private String interfaceZUuid;
-    private Integer zVlan;
-    private Integer enableQinqZ;
-    private Integer isMonitor;
+    private TunnelMonitorState monitorState;
     private Integer months;
     private String description;
     private Timestamp expiredDate;
@@ -38,19 +32,15 @@ public class TunnelInventory {
         TunnelInventory inv = new TunnelInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
-        inv.setNetWorkUuid(vo.getNetWorkUuid());
+        inv.setNetworkUuid(vo.getNetworkUuid());
+        inv.setNetwork(NetworkInventory.valueOf(vo.getNetworkVO()));
+        inv.setTunnelInterface(TunnelInterfaceInventory.valueOf(vo.getTunnelInterfaceVO()));
         inv.setName(vo.getName());
         inv.setBandwidth(vo.getBandwidth());
         inv.setDistance(vo.getDistance());
         inv.setState(vo.getState());
         inv.setStatus(vo.getStatus());
-        inv.setInterfaceAUuid(vo.getInterfaceAUuid());
-        inv.setaVlan(vo.getaVlan());
-        inv.setEnableQinqA(vo.getEnableQinqA());
-        inv.setInterfaceZUuid(vo.getInterfaceZUuid());
-        inv.setzVlan(vo.getzVlan());
-        inv.setEnableQinqZ(vo.getEnableQinqZ());
-        inv.setIsMonitor(vo.getIsMonitor());
+        inv.setMonitorState(vo.getMonitorState());
         inv.setMonths(vo.getMonths());
         inv.setDescription(vo.getDescription());
         inv.setExpiredDate(vo.getExpiredDate());
@@ -83,12 +73,20 @@ public class TunnelInventory {
         this.accountUuid = accountUuid;
     }
 
-    public String getNetWorkUuid() {
-        return netWorkUuid;
+    public String getNetworkUuid() {
+        return networkUuid;
     }
 
-    public void setNetWorkUuid(String netWorkUuid) {
-        this.netWorkUuid = netWorkUuid;
+    public void setNetworkUuid(String networkUuid) {
+        this.networkUuid = networkUuid;
+    }
+
+    public NetworkInventory getNetwork() {
+        return network;
+    }
+
+    public void setNetwork(NetworkInventory network) {
+        this.network = network;
     }
 
     public String getName() {
@@ -99,11 +97,11 @@ public class TunnelInventory {
         this.name = name;
     }
 
-    public Integer getBandwidth() {
+    public Long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Integer bandwidth) {
+    public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
 
@@ -131,60 +129,28 @@ public class TunnelInventory {
         this.status = status;
     }
 
-    public String getInterfaceAUuid() {
-        return interfaceAUuid;
+    public TunnelMonitorState getMonitorState() {
+        return monitorState;
     }
 
-    public void setInterfaceAUuid(String interfaceAUuid) {
-        this.interfaceAUuid = interfaceAUuid;
+    public void setMonitorState(TunnelMonitorState monitorState) {
+        this.monitorState = monitorState;
     }
 
-    public Integer getaVlan() {
-        return aVlan;
+    public Integer getMonths() {
+        return months;
     }
 
-    public void setaVlan(Integer aVlan) {
-        this.aVlan = aVlan;
+    public void setMonths(Integer months) {
+        this.months = months;
     }
 
-    public Integer getEnableQinqA() {
-        return enableQinqA;
+    public String getDescription() {
+        return description;
     }
 
-    public void setEnableQinqA(Integer enableQinqA) {
-        this.enableQinqA = enableQinqA;
-    }
-
-    public String getInterfaceZUuid() {
-        return interfaceZUuid;
-    }
-
-    public void setInterfaceZUuid(String interfaceZUuid) {
-        this.interfaceZUuid = interfaceZUuid;
-    }
-
-    public Integer getzVlan() {
-        return zVlan;
-    }
-
-    public void setzVlan(Integer zVlan) {
-        this.zVlan = zVlan;
-    }
-
-    public Integer getEnableQinqZ() {
-        return enableQinqZ;
-    }
-
-    public void setEnableQinqZ(Integer enableQinqZ) {
-        this.enableQinqZ = enableQinqZ;
-    }
-
-    public Integer getIsMonitor() {
-        return isMonitor;
-    }
-
-    public void setIsMonitor(Integer isMonitor) {
-        this.isMonitor = isMonitor;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Timestamp getExpiredDate() {
@@ -211,19 +177,11 @@ public class TunnelInventory {
         this.createDate = createDate;
     }
 
-    public Integer getMonths() {
-        return months;
+    public List<TunnelInterfaceInventory> getTunnelInterface() {
+        return tunnelInterface;
     }
 
-    public void setMonths(Integer months) {
-        this.months = months;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    public void setTunnelInterface(List<TunnelInterfaceInventory> tunnelInterface) {
+        this.tunnelInterface = tunnelInterface;
     }
 }

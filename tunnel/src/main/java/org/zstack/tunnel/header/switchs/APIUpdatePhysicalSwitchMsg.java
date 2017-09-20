@@ -15,31 +15,27 @@ public class APIUpdatePhysicalSwitchMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = PhysicalSwitchVO.class)
     private String uuid;
-    @APIParam(required = false,maxLength = 32)
-    private String nodeUuid;
-    @APIParam(required = false,maxLength = 32)
+    @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = SwitchModelVO.class)
     private String switchModelUuid;
-    @APIParam(emptyString = false, required = false,maxLength = 128)
+    @APIParam(emptyString = false,required = false,maxLength = 128)
     private String code;
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,required = false,maxLength = 128)
     private String name;
-    @APIParam(required = false,maxLength = 128)
-    private String brand;
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,required = false,maxLength = 128)
     private String owner;
-    @APIParam(required = false,validValues = {"JOIN", "TRANSPORT"})
+    @APIParam(emptyString = false,required = false,validValues = {"ACCESS", "TRANSPORT"})
     private PhysicalSwitchType type;
-    @APIParam(required = false,maxLength = 32)
+    @APIParam(emptyString = false,required = false,maxLength = 32)
     private String rack;
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,required = false,maxLength = 128)
     private String mIP;
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,required = false,maxLength = 128)
     private String localIP;
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,required = false,maxLength = 128)
     private String username;
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(emptyString = false,required = false,maxLength = 128)
     private String password;
-    @APIParam(required = false,maxLength = 255)
+    @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
 
     public String getUuid() {
@@ -64,14 +60,6 @@ public class APIUpdatePhysicalSwitchMsg extends APIMessage {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getBrand() {
-        return brand;
-    }
-
-    public void setBrand(String brand) {
-        this.brand = brand;
     }
 
     public String getOwner() {
@@ -128,14 +116,6 @@ public class APIUpdatePhysicalSwitchMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getNodeUuid() {
-        return nodeUuid;
-    }
-
-    public void setNodeUuid(String nodeUuid) {
-        this.nodeUuid = nodeUuid;
     }
 
     public String getLocalIP() {

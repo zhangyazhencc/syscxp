@@ -1,6 +1,7 @@
 package org.zstack.tunnel.header.switchs;
 
 import org.zstack.header.search.Inventory;
+import org.zstack.tunnel.header.endpoint.EndpointInventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -15,12 +16,14 @@ public class SwitchInventory {
 
     private String uuid;
     private String endpointUuid;
+    private EndpointInventory endpoint;
     private String code;
     private String name;
     private String physicalSwitchUuid;
+    private PhysicalSwitchInventory physicalSwitch;
     private SwitchUpperType upperType;
-    private Integer enabled;
     private String description;
+    private SwitchState state;
     private SwitchStatus status;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -30,12 +33,14 @@ public class SwitchInventory {
 
         inv.setUuid(vo.getUuid());
         inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpoint()));
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
         inv.setPhysicalSwitchUuid(vo.getPhysicalSwitchUuid());
+        inv.setPhysicalSwitch(PhysicalSwitchInventory.valueOf(vo.getPhysicalSwitch()));
         inv.setUpperType(vo.getUpperType());
-        inv.setEnabled(vo.getEnabled());
         inv.setDescription(vo.getDescription());
+        inv.setState(vo.getState());
         inv.setStatus(vo.getStatus());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -49,6 +54,14 @@ public class SwitchInventory {
             lst.add(SwitchInventory.valueOf(vo));
         }
         return lst;
+    }
+
+    public SwitchState getState() {
+        return state;
+    }
+
+    public void setState(SwitchState state) {
+        this.state = state;
     }
 
     public String getUuid() {
@@ -99,14 +112,6 @@ public class SwitchInventory {
         this.upperType = upperType;
     }
 
-    public Integer getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Integer enabled) {
-        this.enabled = enabled;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -137,5 +142,21 @@ public class SwitchInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public EndpointInventory getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(EndpointInventory endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    public PhysicalSwitchInventory getPhysicalSwitch() {
+        return physicalSwitch;
+    }
+
+    public void setPhysicalSwitch(PhysicalSwitchInventory physicalSwitch) {
+        this.physicalSwitch = physicalSwitch;
     }
 }

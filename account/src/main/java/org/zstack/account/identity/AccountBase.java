@@ -1,6 +1,5 @@
 package org.zstack.account.identity;
 
-import org.hibernate.annotations.Source;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,24 +148,12 @@ public class AccountBase extends AbstractAccount {
             handle((APIUpdateRoleMsg) msg);
         } else if (msg instanceof APIAccountMailAuthenticationMsg) {
             handle((APIAccountMailAuthenticationMsg) msg);
-        }else if (msg instanceof APIValidateAccountMsg) {
-            handle((APIValidateAccountMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
 
 
     }
-
-    private void handle(APIValidateAccountMsg msg) {
-        AccountVO accountVO = dbf.findByUuid(msg.getUuid(),AccountVO.class);
-        APIValidateAccountReply reply = new APIValidateAccountReply();
-        if(accountVO!=null){
-            reply.setValidAccount(true);
-        }
-        bus.reply(msg, reply);
-    }
-
 
     @Transactional
     private void handle(APIUpdateRoleMsg msg) {

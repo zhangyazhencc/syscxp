@@ -19,6 +19,9 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.tunnel.header.endpoint.*;
 import org.zstack.tunnel.header.node.*;
+import org.zstack.tunnel.header.switchs.PhysicalSwitchVO;
+import org.zstack.tunnel.header.switchs.SwitchVO;
+import org.zstack.tunnel.header.switchs.SwitchVO_;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
@@ -155,14 +158,16 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIDeleteNodeMsg msg) {
         String uuid = msg.getUuid();
-        NodeEO eo = dbf.findByUuid(uuid, NodeEO.class);
+        NodeVO vo = dbf.findByUuid(uuid,NodeVO.class);
 
-        if (eo != null) {
-            eo.setDeleted(1);
-            dbf.update(eo);
-        }
+        NodeEO eo = dbf.findByUuid(uuid, NodeEO.class);
+        eo.setDeleted(1);
+        dbf.update(eo);
 
         APIDeleteNodeEvent event = new APIDeleteNodeEvent(msg.getId());
+        NodeInventory inventory = NodeInventory.valueOf(vo);
+        event.setInventory(inventory);
+
         bus.publish(event);
     }
 
@@ -216,15 +221,16 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIDeleteEndpointMsg msg) {
         String uuid = msg.getUuid();
-        EndpointEO eo = dbf.findByUuid(uuid, EndpointEO.class);
-        if (eo != null) {
-            eo.setDeleted(1);
-            dbf.update(eo);
-        }
+        EndpointVO vo = dbf.findByUuid(uuid,EndpointVO.class);
 
-        APIDeleteNodeEvent event = new APIDeleteNodeEvent(msg.getId());
-        // NodeInventory inventory = NodeInventory.valueOf(eo);
-        // event.setInventory(inventory);
+        EndpointEO eo = dbf.findByUuid(uuid, EndpointEO.class);
+        eo.setDeleted(1);
+        dbf.update(eo);
+
+        APIDeleteEndpointEvent event = new APIDeleteEndpointEvent(msg.getId());
+        EndpointInventory inventory = EndpointInventory.valueOf(vo);
+        event.setInventory(inventory);
+
         bus.publish(event);
     }
 
@@ -249,10 +255,14 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             validate((APICreateNodeMsg) msg);
         } else if (msg instanceof APIUpdateNodeMsg) {
             validate((APIUpdateNodeMsg) msg);
+        } else if (msg instanceof APIDeleteNodeMsg) {
+            validate((APIDeleteNodeMsg) msg);
         } else if (msg instanceof APICreateEndpointMsg) {
             validate((APICreateEndpointMsg) msg);
         } else if (msg instanceof APIUpdateEndpointMsg) {
             validate((APIUpdateEndpointMsg) msg);
+        } else if (msg instanceof APIDeleteEndpointMsg) {
+            validate((APIDeleteEndpointMsg) msg);
         }
         return msg;
     }
@@ -264,25 +274,42 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("node's code %s is already exist ", msg.getCode()));
         }
+
+        //检查经纬度
+        validateLongitudeAndLatitude(msg.getLatitude());
+        validateLongitudeAndLatitude(msg.getLongtitude());
     }
 
     private void validate(APIUpdateNodeMsg msg) {
-        //判断所修改的节点是否存在
-        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
-        q.add(NodeVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("node %s is not exist ", msg.getUuid()));
-        }
         //判断code是否已经存在
         if (msg.getCode() != null) {
-            SimpleQuery<NodeVO> q2 = dbf.createQuery(NodeVO.class);
-            q2.add(NodeVO_.code, SimpleQuery.Op.EQ, msg.getCode());
-            q2.add(NodeVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
-            if (q2.isExists()) {
+            SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
+            q.add(NodeVO_.code, SimpleQuery.Op.EQ, msg.getCode());
+            q.add(NodeVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
+            if (q.isExists()) {
                 throw new ApiMessageInterceptionException(argerr("node's code %s is already exist ", msg.getCode()));
             }
         }
 
+        //检查经纬度
+        validateLongitudeAndLatitude(msg.getLatitude());
+        validateLongitudeAndLatitude(msg.getLongtitude());
+    }
+
+    private void validate(APIDeleteNodeMsg msg) {
+        //判断是否被连接点关联
+        SimpleQuery<EndpointVO> queryEndpoint = dbf.createQuery(EndpointVO.class);
+        queryEndpoint.add(EndpointVO_.nodeUuid,SimpleQuery.Op.EQ,msg.getUuid());
+        if (queryEndpoint.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("Endpoint exist,cannot be deleted!"));
+        }
+
+        //判断是否被物理交换机关联
+        SimpleQuery<PhysicalSwitchVO> queryPhysicalSwitch = dbf.createQuery(PhysicalSwitchVO.class);
+        queryPhysicalSwitch.add(EndpointVO_.nodeUuid,SimpleQuery.Op.EQ,msg.getUuid());
+        if (queryPhysicalSwitch.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("Physical switch exist,cannot be deleted!"));
+        }
     }
 
     private void validate(APICreateEndpointMsg msg) {
@@ -292,30 +319,37 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("endpoint's code %s is already exist ", msg.getCode()));
         }
-        //判断连接点所属节点是否存在
-        SimpleQuery<NodeVO> q2 = dbf.createQuery(NodeVO.class);
-        q2.add(NodeVO_.uuid, SimpleQuery.Op.EQ, msg.getNodeUuid());
-        if (!q2.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("node %s is not exist ", msg.getNodeUuid()));
-        }
     }
 
     private void validate(APIUpdateEndpointMsg msg) {
-        //判断所修改的连接点是否存在
-        SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
-        q.add(EndpointVO_.uuid, SimpleQuery.Op.EQ, msg.getUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("endpoint %s is not exist ", msg.getUuid()));
-        }
         //判断code是否已经存在
         if (msg.getCode() != null) {
-            SimpleQuery<EndpointVO> q2 = dbf.createQuery(EndpointVO.class);
-            q2.add(EndpointVO_.code, SimpleQuery.Op.EQ, msg.getCode());
-            q2.add(EndpointVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
-            if (q2.isExists()) {
+            SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
+            q.add(EndpointVO_.code, SimpleQuery.Op.EQ, msg.getCode());
+            q.add(EndpointVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
+            if (q.isExists()) {
                 throw new ApiMessageInterceptionException(argerr("endpoint's code %s is already exist ", msg.getCode()));
             }
         }
+    }
 
+    private void validate(APIDeleteEndpointMsg msg) {
+        //判断是否被虚拟交换机关联
+        SimpleQuery<SwitchVO> querySwitch = dbf.createQuery(SwitchVO.class);
+        querySwitch.add(SwitchVO_.endpointUuid,SimpleQuery.Op.EQ,msg.getUuid());
+        if (querySwitch.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("Virtual switch exist,cannot be deleted!"));
+        }
+    }
+
+    /**
+     * 检查经度与维度是否合法
+     * @param data：经度或维度值
+     */
+    private void validateLongitudeAndLatitude(Double data){
+        if(data == null)
+            throw new ApiMessageInterceptionException(argerr("longitude or latitude cannot be null!",""));
+        if(data > 9999.999999 || data < -9999.999999)
+            throw new ApiMessageInterceptionException(argerr("longitude or latitude ( %s ) must between -99999.99999 and 99999.99999!",data.toString()));
     }
 }

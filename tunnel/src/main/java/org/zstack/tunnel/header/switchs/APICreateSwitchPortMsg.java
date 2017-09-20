@@ -12,7 +12,7 @@ import org.zstack.tunnel.manage.SwitchConstant;
 
 public class APICreateSwitchPortMsg extends APIMessage {
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32,resourceType = SwitchVO.class)
     private String switchUuid;
 
     @APIParam(emptyString = false,maxLength = 128)
@@ -21,8 +21,8 @@ public class APICreateSwitchPortMsg extends APIMessage {
     @APIParam(emptyString = false,validValues = {"RJ45", "SFP_1G","SFG_10G"})
     private SwitchPortType portType;
 
-    @APIParam(emptyString = false)
-    private Integer isExclusive;
+    @APIParam(emptyString = false,validValues = {"Exclusive", "Shared"})
+    private SwitchPortAttribute portAttribute;
 
 
     public String getSwitchUuid() {
@@ -49,11 +49,11 @@ public class APICreateSwitchPortMsg extends APIMessage {
         this.portType = portType;
     }
 
-    public Integer getIsExclusive() {
-        return isExclusive;
+    public SwitchPortAttribute getPortAttribute() {
+        return portAttribute;
     }
 
-    public void setIsExclusive(Integer isExclusive) {
-        this.isExclusive = isExclusive;
+    public void setPortAttribute(SwitchPortAttribute portAttribute) {
+        this.portAttribute = portAttribute;
     }
 }

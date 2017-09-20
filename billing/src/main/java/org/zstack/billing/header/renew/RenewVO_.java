@@ -22,5 +22,6 @@ public class RenewVO_ {
     public static volatile SingularAttribute<RenewVO, ProductChargeModel> productChargeModel;
     public static volatile SingularAttribute<RenewVO, Timestamp> createDate;
     public static volatile SingularAttribute<RenewVO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<RenewVO, Timestamp> expiredTime;
 
 }

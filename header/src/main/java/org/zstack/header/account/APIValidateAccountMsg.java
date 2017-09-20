@@ -1,8 +1,10 @@
 package org.zstack.header.account;
 
+import org.zstack.header.identity.InnerCredentialCheck;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;
 
+@InnerCredentialCheck
 public class APIValidateAccountMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false)

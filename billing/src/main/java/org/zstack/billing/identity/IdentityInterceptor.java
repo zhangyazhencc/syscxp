@@ -32,23 +32,6 @@ public class IdentityInterceptor extends DefaultIdentityInterceptor {
                 getDbf().persist(vo);
             }
         }
-        List<ProductPriceUnitVO> ppu = getDbf().listAll(ProductPriceUnitVO.class);
-        for(ProductPriceUnitVO productPriceUnitVO : ppu){
-            SimpleQuery<AccountDischargeVO> query = getDbf().createQuery(AccountDischargeVO.class);
-            query.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
-            query.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductType());
-            query.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategory());
-            AccountDischargeVO accountDischargeVO = query.find();
-            if(accountDischargeVO == null){
-                accountDischargeVO = new AccountDischargeVO();
-                accountDischargeVO.setUuid(Platform.getUuid());
-                accountDischargeVO.setAccountUuid(accountUuid);
-                accountDischargeVO.setCategory(productPriceUnitVO.getCategory());
-                accountDischargeVO.setProductType(productPriceUnitVO.getProductType());
-                accountDischargeVO.setDisCharge(100);
-                getDbf().persistAndRefresh(accountDischargeVO);
-            }
-        }
     }
 
 }

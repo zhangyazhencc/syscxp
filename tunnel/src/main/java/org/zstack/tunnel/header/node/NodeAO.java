@@ -41,10 +41,10 @@ public class NodeAO {
     private String address;
 
     @Column
-    private double longtitude;
+    private Double longtitude;
 
     @Column
-    private double latitude;
+    private Double latitude;
 
     @Column
     private String property;

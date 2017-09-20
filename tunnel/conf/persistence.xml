@@ -23,12 +23,13 @@
         <class>org.zstack.tunnel.header.switchs.SwitchPortVO</class>
         <class>org.zstack.tunnel.header.switchs.SwitchVlanVO</class>
 
-        <class>org.zstack.tunnel.header.tunnel.NetWorkVO</class>
+        <class>org.zstack.tunnel.header.tunnel.NetworkVO</class>
         <class>org.zstack.tunnel.header.tunnel.InterfaceVO</class>
         <class>org.zstack.tunnel.header.tunnel.InterfaceEO</class>
         <class>org.zstack.tunnel.header.tunnel.TunnelVO</class>
         <class>org.zstack.tunnel.header.tunnel.TunnelEO</class>
         <class>org.zstack.tunnel.header.tunnel.QinqVO</class>
+        <class>org.zstack.tunnel.header.tunnel.TunnelInterfaceVO</class>
 
         <class>org.zstack.tunnel.header.host.HostVO</class>
         <class>org.zstack.tunnel.header.host.HostEO</class>

@@ -36,7 +36,8 @@ public class HostAO {
     private HostState state;
 
     @Column
-    private String status;
+    @Enumerated(EnumType.STRING)
+    private HostStatus status;
 
     @Column
     private Timestamp lastOpDate;
@@ -113,11 +114,11 @@ public class HostAO {
         this.state = state;
     }
 
-    public String getStatus() {
+    public HostStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(HostStatus status) {
         this.status = status;
     }
 

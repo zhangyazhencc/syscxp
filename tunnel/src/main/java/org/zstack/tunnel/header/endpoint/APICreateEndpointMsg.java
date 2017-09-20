@@ -3,6 +3,7 @@ package org.zstack.tunnel.header.endpoint;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
+import org.zstack.tunnel.header.node.NodeVO;
 import org.zstack.tunnel.manage.NodeConstant;
 import org.zstack.tunnel.manage.TunnelConstant;
 
@@ -13,7 +14,7 @@ import org.zstack.tunnel.manage.TunnelConstant;
 @Action(category = NodeConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreateEndpointMsg extends APIMessage {
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 32,resourceType = NodeVO.class)
     private String nodeUuid;
 
     @APIParam(emptyString = false,maxLength = 255)

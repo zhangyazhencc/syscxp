@@ -8,29 +8,29 @@ import org.zstack.tunnel.header.tunnel.TunnelEO;
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-09-11.
- * @Description: .
+ * @Description: 创建监控通道.
  */
 public class APICreateTunnelMonitorMsg extends APIMessage {
 
-    @APIParam(emptyString = false,maxLength = 32,resourceType = TunnelEO.class)
+    @APIParam(emptyString = false,resourceType = TunnelEO.class)
     private String tunnelUuid;
 
-    @APIParam(emptyString = false,maxLength = 32,resourceType = HostEO.class)
+    @APIParam(emptyString = false,resourceType = HostEO.class)
     private String hostAUuid;
 
     @APIParam(emptyString = false,maxLength = 64)
     private String monitorAIp;
 
-    @APIParam(emptyString = false,maxLength = 32,resourceType = HostEO.class)
+    @APIParam(emptyString = false,resourceType = HostEO.class)
     private String hostZUuid;
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false,maxLength = 64)
     private String monitorZIp;
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false,validValues = { "NORMAL","APPLYING","TERMINATED"})
     private TunnelMonitorStatus status;
 
-    @APIParam(required = false,maxLength = 32)
+    @APIParam(required = false,maxLength = 1024)
     private String msg;
 
     public String getTunnelUuid() {
