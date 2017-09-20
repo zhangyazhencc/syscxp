@@ -1,4 +1,4 @@
-package org.zstack.vpn.header.vpn;
+package org.zstack.vpn.header.host;
 
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIEvent;
@@ -7,22 +7,16 @@ import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 import org.zstack.vpn.manage.VpnConstant;
 
-@Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
-public class APIUpdateVpnMsg extends APIMessage{
-    @APIParam(resourceType = VpnVO.class, checkAccount = true)
-    private String uuid;
-    @APIParam(required = false)
+@Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
+public class APICreateZoneMsg extends APIMessage {
+    @APIParam(emptyString = false)
     private String name;
     @APIParam(required = false)
     private String description;
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
+    @APIParam(emptyString = false)
+    private String province;
+    @APIParam(emptyString = false)
+    private String nodeUuid;
 
     public String getName() {
         return name;
@@ -40,14 +34,35 @@ public class APIUpdateVpnMsg extends APIMessage{
         this.description = description;
     }
 
+    public String getProvince() {
+        return province;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
+    }
+
     public ApiNotification __notification__() {
         final APIMessage that = this;
 
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update VpnVO")
-                        .resource(uuid, VpnVO.class.getSimpleName())
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateZoneEvent) evt).getInventory().getUuid();
+                }
+
+                ntfy("Create ZoneVO")
+                        .resource(uuid, ZoneVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };

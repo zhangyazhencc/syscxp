@@ -18,8 +18,6 @@ public class APIUpdateVpnHostMsg extends APIMessage{
     @APIParam(required = false)
     private String publicIface;
     @APIParam(required = false)
-    private String tunnelIface;
-    @APIParam(required = false)
     private String manageIp;
     @APIParam(required = false)
     private String sshPort;
@@ -58,14 +56,6 @@ public class APIUpdateVpnHostMsg extends APIMessage{
 
     public void setPublicIface(String publicIface) {
         this.publicIface = publicIface;
-    }
-
-    public String getTunnelIface() {
-        return tunnelIface;
-    }
-
-    public void setTunnelIface(String tunnelIface) {
-        this.tunnelIface = tunnelIface;
     }
 
     public String getManageIp() {

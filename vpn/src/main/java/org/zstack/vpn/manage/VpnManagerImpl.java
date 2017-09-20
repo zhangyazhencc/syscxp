@@ -25,13 +25,11 @@ import org.zstack.vpn.header.vpn.*;
 import org.zstack.vpn.manage.VpnCommands.*;
 import org.zstack.vpn.header.host.*;
 
-import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
@@ -138,7 +136,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         host.setName(msg.getName());
         host.setDescription(msg.getDescription());
         host.setPublicInterface(msg.getPublicIface());
-        host.setTunnelInterface(msg.getTunnelIface());
+        host.setZoneUuid(msg.getZoneUuid());
         host.setManageIp(msg.getManageIp());
         host.setSshPort(msg.getSshPort());
         host.setUsername(msg.getUsername());
@@ -176,29 +174,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
 
         APICreateVpnEvent evt = new APICreateVpnEvent(msg.getId());
-
-        new Http<>(VpnConstant.CREATE_VPN_PATH, cmd, CreateVpnResponse.class).call(new ReturnValueCompletion<CreateVpnResponse>(msg) {
-            @Override
-            public void success(CreateVpnResponse ret) {
-                if (!ret.isSuccess()) {
-                    logger.debug(String.format("[%s,%s]>>> callback fail", ret.getClass().getSimpleName(), ret.isSuccess()));
-                    evt.setError(operr(ret.getError()));
-                } else {
-                    // Todo create order
-                    logger.debug(">>> callback success");
-
-                    evt.setInventory(VpnInventory.valueOf(dbf.persistAndRefresh(vpn)));
-                }
-                bus.publish(evt);
-            }
-
-            @Override
-            public void fail(ErrorCode errorCode) {
-                logger.debug(String.format("[%s:%s]>>> callback fail", errorCode.getCode(), errorCode.getDescription()));
-                evt.setError(errorCode);
-                bus.publish(evt);
-            }
-        });
 
     }
 
@@ -248,11 +223,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APICreateVpnInterfaceMsg msg) {
         VpnInterfaceVO tunnelIface = new VpnInterfaceVO();
         tunnelIface.setUuid(Platform.getUuid());
-        tunnelIface.setVpnUuid(msg.getGatewayUuid());
+        tunnelIface.setVpnUuid(msg.getVpnUuid());
         tunnelIface.setName(msg.getName());
-        tunnelIface.setTunnelUuid(msg.getTunnel());
-        tunnelIface.setLocalIp(msg.getServerIP());
-        tunnelIface.setRemoteIp(msg.getClientIP());
+        tunnelIface.setTunnelUuid(msg.getTunnelUuid());
+        tunnelIface.setLocalIp(msg.getLocalIP());
         tunnelIface.setNetmask(msg.getMask());
 
         tunnelIface = dbf.persistAndRefresh(tunnelIface);
@@ -394,41 +368,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void validate(APIQueryVpnHostMsg msg) {
     }
 
-    class Http<T> {
-        String path;
-        AgentCommand cmd;
-        Class<T> responseClass;
-
-        public Http(String path, AgentCommand cmd, Class<T> rspClz) {
-            this.path = path;
-            this.cmd = cmd;
-            this.responseClass = rspClz;
-        }
-
-        void call(ReturnValueCompletion<T> completion) {
-            Map<String, String> header = new HashMap<>();
-            header.put(VpnConstant.HTTP_HEADER_VPN_UUID, cmd.getVpnUuid());
-            header.put(VpnConstant.HTTP_HEADER_VPN_HOST_IP, cmd.getHostIp());
-            restf.asyncJsonPost(buildUrl(path), cmd, header, new JsonAsyncRESTCallback<T>(completion) {
-                @Override
-                public void fail(ErrorCode err) {
-                    completion.fail(err);
-                }
-
-                @Override
-                public void success(T ret) {
-                    completion.success(ret);
-                }
-
-                @Override
-                public Class<T> getReturnClass() {
-                    return responseClass;
-                }
-            });
-            logger.debug(">>> call vpn controller");
-        }
-    }
-
     private String buildUrl(String path) {
         UriComponentsBuilder ub = UriComponentsBuilder
                 .fromHttpUrl(VpnConstant.MANAGER_URL)
@@ -436,5 +375,4 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         return ub.build().toUriString();
     }
-
 }

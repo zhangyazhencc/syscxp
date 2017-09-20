@@ -8,13 +8,11 @@ import org.zstack.header.notification.ApiNotification;
 import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
-public class APIUpdateVpnMsg extends APIMessage{
+public class APIUpdateVpnStateMsg extends APIMessage{
     @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String uuid;
-    @APIParam(required = false)
-    private String name;
-    @APIParam(required = false)
-    private String description;
+    @APIParam
+    private VpnState state;
 
     public String getUuid() {
         return uuid;
@@ -24,20 +22,12 @@ public class APIUpdateVpnMsg extends APIMessage{
         this.uuid = uuid;
     }
 
-    public String getName() {
-        return name;
+    public VpnState getState() {
+        return state;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    public void setState(VpnState state) {
+        this.state = state;
     }
 
     public ApiNotification __notification__() {
@@ -46,7 +36,7 @@ public class APIUpdateVpnMsg extends APIMessage{
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update VpnVO")
+                ntfy("Update VpnVO state")
                         .resource(uuid, VpnVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }

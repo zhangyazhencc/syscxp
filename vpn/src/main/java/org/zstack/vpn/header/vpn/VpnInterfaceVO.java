@@ -22,9 +22,9 @@ public class VpnInterfaceVO {
     @Column
     private String localIp;
     @Column
-    private String remoteIp;
-    @Column
     private String netmask;
+    @Column
+    private String vlan;
     @Column
     private Timestamp lastOpDate;
     @Column
@@ -36,6 +36,14 @@ public class VpnInterfaceVO {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getVlan() {
+        return vlan;
+    }
+
+    public void setVlan(String vlan) {
+        this.vlan = vlan;
     }
 
     public String getVpnUuid() {
@@ -68,14 +76,6 @@ public class VpnInterfaceVO {
 
     public void setLocalIp(String localIp) {
         this.localIp = localIp;
-    }
-
-    public String getRemoteIp() {
-        return remoteIp;
-    }
-
-    public void setRemoteIp(String remoteIp) {
-        this.remoteIp = remoteIp;
     }
 
     public String getNetmask() {

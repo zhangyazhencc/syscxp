@@ -23,6 +23,56 @@ public class APICreateVpnMsg extends APIMessage {
     private String endpoint;
     @APIParam(emptyString = false)
     private Integer months;
+    @APIParam(emptyString = false)
+    private String tunnelUuid;
+    @APIParam(emptyString = false)
+    private String localIp;
+    @APIParam(emptyString = false)
+    private String netmask;
+    @APIParam(emptyString = false)
+    private String vlan;
+    @APIParam(required = false)
+    private String accountUuid;
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
+
+    public String getTunnelUuid() {
+        return tunnelUuid;
+    }
+
+    public void setTunnelUuid(String tunnelUuid) {
+        this.tunnelUuid = tunnelUuid;
+    }
+
+    public String getLocalIp() {
+        return localIp;
+    }
+
+    public void setLocalIp(String localIp) {
+        this.localIp = localIp;
+    }
+
+    public String getNetmask() {
+        return netmask;
+    }
+
+    public void setNetmask(String netmask) {
+        this.netmask = netmask;
+    }
+
+    public String getVlan() {
+        return vlan;
+    }
+
+    public void setVlan(String vlan) {
+        this.vlan = vlan;
+    }
 
     public String getName() {
         return name;

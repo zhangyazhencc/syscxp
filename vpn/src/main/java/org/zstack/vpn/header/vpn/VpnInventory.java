@@ -16,6 +16,8 @@ public class VpnInventory {
     private String name;
     private String description;
     private String vpnCidr;
+    private String port;
+    private String vlan;
     private Long bandwidth;
     private String endpointUuid;
     private VpnStatus status;
@@ -39,6 +41,8 @@ public class VpnInventory {
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setStatus(vo.getStatus());
         inv.setState(vo.getState());
+        inv.setPort(vo.getPort());
+        inv.setVlan(vo.getVlan());
         inv.setMonths(vo.getMonths());
         inv.setExpiredDate(vo.getExpiredDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -53,6 +57,22 @@ public class VpnInventory {
         }
 
         return invs;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public String getVlan() {
+        return vlan;
+    }
+
+    public void setVlan(String vlan) {
+        this.vlan = vlan;
     }
 
     public VpnState getState() {

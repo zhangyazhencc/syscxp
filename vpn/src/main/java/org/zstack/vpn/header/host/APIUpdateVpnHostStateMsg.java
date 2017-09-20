@@ -1,4 +1,4 @@
-package org.zstack.vpn.header.vpn;
+package org.zstack.vpn.header.host;
 
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIEvent;
@@ -8,13 +8,11 @@ import org.zstack.header.notification.ApiNotification;
 import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
-public class APIUpdateVpnMsg extends APIMessage{
-    @APIParam(resourceType = VpnVO.class, checkAccount = true)
+public class APIUpdateVpnHostStateMsg extends APIMessage{
+    @APIParam
     private String uuid;
     @APIParam(required = false)
-    private String name;
-    @APIParam(required = false)
-    private String description;
+    private HostState state;
 
     public String getUuid() {
         return uuid;
@@ -24,20 +22,12 @@ public class APIUpdateVpnMsg extends APIMessage{
         this.uuid = uuid;
     }
 
-    public String getName() {
-        return name;
+    public HostState getState() {
+        return state;
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
+    public void setState(HostState state) {
+        this.state = state;
     }
 
     public ApiNotification __notification__() {
@@ -46,8 +36,8 @@ public class APIUpdateVpnMsg extends APIMessage{
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update VpnVO")
-                        .resource(uuid, VpnVO.class.getSimpleName())
+                ntfy("Update VpnHostVO state")
+                        .resource(uuid, VpnHostVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };

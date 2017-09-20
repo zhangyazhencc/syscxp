@@ -1,6 +1,9 @@
 package org.zstack.vpn.header.vpn;
 
 import org.zstack.header.search.TriggerIndex;
+import org.zstack.header.vo.ForeignKey;
+import org.zstack.header.vo.ForeignKey.ReferenceOption;
+import org.zstack.vpn.header.host.VpnHostVO;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -16,6 +19,7 @@ public class VpnVO {
     @Column
     private String accountUuid;
     @Column
+    @ForeignKey(parentEntityClass = VpnHostVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
     private String hostUuid;
     @Column
     private String name;
@@ -27,6 +31,10 @@ public class VpnVO {
     private Long bandwidth;
     @Column
     private String endpointUuid;
+    @Column
+    private String port;
+    @Column
+    private String vlan;
     @Column
     @Enumerated(EnumType.STRING)
     private VpnState state;
@@ -48,6 +56,22 @@ public class VpnVO {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getPort() {
+        return port;
+    }
+
+    public void setPort(String port) {
+        this.port = port;
+    }
+
+    public String getVlan() {
+        return vlan;
+    }
+
+    public void setVlan(String vlan) {
+        this.vlan = vlan;
     }
 
     public VpnState getState() {

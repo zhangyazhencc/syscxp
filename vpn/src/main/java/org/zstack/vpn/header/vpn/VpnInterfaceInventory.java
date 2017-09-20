@@ -12,11 +12,10 @@ public class VpnInterfaceInventory {
     private String uuid;
     private String vpnUuid;
     private String name;
-    private String description;
-    private String tunnel;
-    private String serverIP;
-    private String clientIP;
-    private String mask;
+    private String tunnelUuid;
+    private String vlan;
+    private String localIp;
+    private String netmask;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -25,10 +24,10 @@ public class VpnInterfaceInventory {
         inv.setUuid(vo.getUuid());
         inv.setVpnUuid(vo.getVpnUuid());
         inv.setName(vo.getName());
-        inv.setTunnel(vo.getTunnelUuid());
-        inv.setServerIP(vo.getLocalIp());
-        inv.setClientIP(vo.getRemoteIp());
-        inv.setMask(vo.getNetmask());
+        inv.setTunnelUuid(vo.getTunnelUuid());
+        inv.setVlan(vo.getVlan());
+        inv.setNetmask(vo.getNetmask());
+        inv.setLocalIp(vo.getLocalIp());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
@@ -66,44 +65,36 @@ public class VpnInterfaceInventory {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public String getTunnelUuid() {
+        return tunnelUuid;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setTunnelUuid(String tunnelUuid) {
+        this.tunnelUuid = tunnelUuid;
     }
 
-    public String getTunnel() {
-        return tunnel;
+    public String getVlan() {
+        return vlan;
     }
 
-    public void setTunnel(String tunnel) {
-        this.tunnel = tunnel;
+    public void setVlan(String vlan) {
+        this.vlan = vlan;
     }
 
-    public String getServerIP() {
-        return serverIP;
+    public String getLocalIp() {
+        return localIp;
     }
 
-    public void setServerIP(String serverIP) {
-        this.serverIP = serverIP;
+    public void setLocalIp(String localIp) {
+        this.localIp = localIp;
     }
 
-    public String getClientIP() {
-        return clientIP;
+    public String getNetmask() {
+        return netmask;
     }
 
-    public void setClientIP(String clientIP) {
-        this.clientIP = clientIP;
-    }
-
-    public String getMask() {
-        return mask;
-    }
-
-    public void setMask(String mask) {
-        this.mask = mask;
+    public void setNetmask(String netmask) {
+        this.netmask = netmask;
     }
 
     public Timestamp getLastOpDate() {

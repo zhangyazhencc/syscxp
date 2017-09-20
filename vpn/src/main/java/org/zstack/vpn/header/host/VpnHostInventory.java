@@ -12,10 +12,9 @@ public class VpnHostInventory {
     private String uuid;
     private String name;
     private String description;
-    private String endpoint;
+    private String zoneUuid;
     private String publicIface;
     private String publicIp;
-    private String tunnelIface;
     private String manageIp;
     private String sshPort;
     private String state;
@@ -32,12 +31,11 @@ public class VpnHostInventory {
         inv.setDescription(vo.getDescription());
         inv.setPublicIface(vo.getPublicInterface());
         inv.setPublicIp(vo.getPublicIp());
-        inv.setTunnelIface(vo.getTunnelInterface());
+        inv.setZoneUuid(vo.getZoneUuid());
         inv.setManageIp(vo.getManageIp());
         inv.setSshPort(vo.getSshPort());
         inv.setUsername(vo.getUsername());
         inv.setPassword(vo.getPassword());
-        inv.setEndpoint(vo.getEndpointUuid());
         inv.setState(vo.getState().toString());
         inv.setStatus(vo.getStatus().toString());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -77,14 +75,6 @@ public class VpnHostInventory {
         this.status = status;
     }
 
-    public String getEndpoint() {
-        return endpoint;
-    }
-
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
-    }
-
     public String getUuid() {
         return uuid;
     }
@@ -117,12 +107,12 @@ public class VpnHostInventory {
         this.publicIface = publicIface;
     }
 
-    public String getTunnelIface() {
-        return tunnelIface;
+    public String getZoneUuid() {
+        return zoneUuid;
     }
 
-    public void setTunnelIface(String tunnelIface) {
-        this.tunnelIface = tunnelIface;
+    public void setZoneUuid(String zoneUuid) {
+        this.zoneUuid = zoneUuid;
     }
 
     public String getManageIp() {

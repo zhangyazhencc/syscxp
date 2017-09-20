@@ -1,5 +1,8 @@
 package org.zstack.vpn.header.host;
 
+import org.zstack.header.vo.ForeignKey;
+import org.zstack.header.vo.ForeignKey.ReferenceOption;
+
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -12,15 +15,14 @@ public class VpnHostVO {
     @Column
     private String name;
     @Column
-    private String endpointUuid;
+    @ForeignKey(parentEntityClass = ZoneVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.SET_NULL)
+    private String zoneUuid;
     @Column
     private String description;
     @Column
     private String publicInterface;
     @Column
     private String publicIp;
-    @Column
-    private String tunnelInterface;
     @Column
     private String manageIp;
     @Column
@@ -48,14 +50,13 @@ public class VpnHostVO {
         this.publicIp = publicIp;
     }
 
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public String getZoneUuid() {
+        return zoneUuid;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setZoneUuid(String zoneUuid) {
+        this.zoneUuid = zoneUuid;
     }
-
 
     public HostState getState() {
         return state;
@@ -103,14 +104,6 @@ public class VpnHostVO {
 
     public void setPublicInterface(String publicInterface) {
         this.publicInterface = publicInterface;
-    }
-
-    public String getTunnelInterface() {
-        return tunnelInterface;
-    }
-
-    public void setTunnelInterface(String tunnelInterface) {
-        this.tunnelInterface = tunnelInterface;
     }
 
     public String getManageIp() {

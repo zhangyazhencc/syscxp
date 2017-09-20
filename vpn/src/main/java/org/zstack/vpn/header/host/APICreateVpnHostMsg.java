@@ -17,8 +17,8 @@ public class APICreateVpnHostMsg extends APIMessage {
     private String publicIface;
     @APIParam(emptyString = false)
     private String publicIp;
-    @APIParam(emptyString = false)
-    private String tunnelIface;
+    @APIParam(resourceType = ZoneVO.class, checkAccount = true)
+    private String zoneUuid;
     @APIParam(emptyString = false)
     private String manageIp;
     @APIParam(emptyString = false)
@@ -60,14 +60,6 @@ public class APICreateVpnHostMsg extends APIMessage {
         this.publicIface = publicIface;
     }
 
-    public String getTunnelIface() {
-        return tunnelIface;
-    }
-
-    public void setTunnelIface(String tunnelIface) {
-        this.tunnelIface = tunnelIface;
-    }
-
     public String getManageIp() {
         return manageIp;
     }
@@ -90,6 +82,14 @@ public class APICreateVpnHostMsg extends APIMessage {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getZoneUuid() {
+        return zoneUuid;
+    }
+
+    public void setZoneUuid(String zoneUuid) {
+        this.zoneUuid = zoneUuid;
     }
 
     public String getPassword() {

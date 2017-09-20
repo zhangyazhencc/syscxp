@@ -1,4 +1,4 @@
-package org.zstack.vpn.header.vpn;
+package org.zstack.vpn.header.host;
 
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIEvent;
@@ -8,17 +8,15 @@ import org.zstack.header.notification.ApiNotification;
 import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
-public class APICreateVpnInterfaceMsg extends APIMessage {
-    @APIParam(resourceType = VpnVO.class, checkAccount = true)
-    private String vpnUuid;
+public class APICreateHostInterfaceMsg extends APIMessage {
     @APIParam(emptyString = false)
     private String name;
     @APIParam(required = false)
-    private String tunnelUuid;
+    private String hostUuid;
     @APIParam(emptyString = false)
-    private String localIP;
+    private String endpointUuid;
     @APIParam(emptyString = false)
-    private String mask;
+    private String interfaceUuid;
 
     public String getName() {
         return name;
@@ -28,36 +26,28 @@ public class APICreateVpnInterfaceMsg extends APIMessage {
         this.name = name;
     }
 
-    public String getVpnUuid() {
-        return vpnUuid;
+    public String getHostUuid() {
+        return hostUuid;
     }
 
-    public void setVpnUuid(String vpnUuid) {
-        this.vpnUuid = vpnUuid;
+    public void setHostUuid(String hostUuid) {
+        this.hostUuid = hostUuid;
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 
-    public String getLocalIP() {
-        return localIP;
+    public String getInterfaceUuid() {
+        return interfaceUuid;
     }
 
-    public void setLocalIP(String localIP) {
-        this.localIP = localIP;
-    }
-
-    public String getMask() {
-        return mask;
-    }
-
-    public void setMask(String mask) {
-        this.mask = mask;
+    public void setInterfaceUuid(String interfaceUuid) {
+        this.interfaceUuid = interfaceUuid;
     }
 
     public ApiNotification __notification__() {
@@ -68,11 +58,11 @@ public class APICreateVpnInterfaceMsg extends APIMessage {
             public void after(APIEvent evt) {
                 String uuid = null;
                 if (evt.isSuccess()) {
-                    uuid = ((APICreateVpnInterfaceEvent) evt).getInventory().getUuid();
+                    uuid = ((APICreateHostInterfaceEvent) evt).getInventory().getUuid();
                 }
 
-                ntfy("Create VpnInterfaceVO")
-                        .resource(uuid, VpnInterfaceVO.class.getSimpleName())
+                ntfy("Create HostInterfaceVO")
+                        .resource(uuid, HostInterfaceVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };
