@@ -24,7 +24,6 @@ import org.zstack.tunnel.header.switchs.*;
 import org.zstack.tunnel.header.tunnel.*;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
-import org.zstack.utils.network.NetworkUtils;
 
 import javax.persistence.TypedQuery;
 
@@ -285,28 +284,30 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         TunnelStrategy ts = new TunnelStrategy();
 
         //给A端口分配外部vlan
-        Integer innerVlanA = ts.getInnerVlanByStrategy(msg.getNetworkUuid() ,msg.getInterfaceAUuid());
-        if(innerVlanA == 0){
+        Integer vlanA = ts.getInnerVlanByStrategy(msg.getNetworkUuid() ,msg.getInterfaceAUuid());
+        if(vlanA == 0){
             throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
         }
-        TunnelInterfaceRefVO tivoA = new TunnelInterfaceRefVO();
+        TunnelInterfaceVO tivoA = new TunnelInterfaceVO();
         tivoA.setUuid(Platform.getUuid());
         tivoA.setTunnelUuid(vo.getUuid());
         tivoA.setInterfaceUuid(msg.getInterfaceAUuid());
-        tivoA.setInnerVlan(innerVlanA);
+        tivoA.setVlan(vlanA);
+        tivoA.setSortTag("A");
         tivoA.setQinqState(msg.getQinqStateA());
         dbf.getEntityManager().persist(tivoA);
 
         //给Z端口分配外部vlan
-        Integer innerVlanZ = ts.getInnerVlanByStrategy(msg.getNetworkUuid() ,msg.getInterfaceZUuid());
-        if(innerVlanZ == 0){
+        Integer vlanZ = ts.getInnerVlanByStrategy(msg.getNetworkUuid() ,msg.getInterfaceZUuid());
+        if(vlanZ == 0){
             throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
         }
-        TunnelInterfaceRefVO tivoZ = new TunnelInterfaceRefVO();
+        TunnelInterfaceVO tivoZ = new TunnelInterfaceVO();
         tivoZ.setUuid(Platform.getUuid());
         tivoZ.setTunnelUuid(vo.getUuid());
         tivoZ.setInterfaceUuid(msg.getInterfaceZUuid());
-        tivoZ.setInnerVlan(innerVlanZ);
+        tivoZ.setVlan(vlanZ);
+        tivoZ.setSortTag("Z");
         tivoZ.setQinqState(msg.getQinqStateZ());
         dbf.getEntityManager().persist(tivoZ);
 
@@ -317,21 +318,19 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             for(InnerVlanSegment vlanSegment:vlanSegmentA){
                 QinqVO qvo = new QinqVO();
                 qvo.setUuid(Platform.getUuid());
-                qvo.setTunnelUuid(vo.getUuid());
-                qvo.setInterfaceUuid(msg.getInterfaceAUuid());
+                qvo.setTunnelInterfaceUuid(tivoA.getUuid());
                 qvo.setStartVlan(vlanSegment.getStartVlan());
                 qvo.setEndVlan(vlanSegment.getEndVlan());
                 dbf.getEntityManager().persist(qvo);
             }
         }
-        if(msg.getQinqStateA() == TunnelQinqState.Enabled){
+        if(msg.getQinqStateZ() == TunnelQinqState.Enabled){
             List<InnerVlanSegment> vlanSegmentZ = msg.getVlanSegmentZ();
 
             for(InnerVlanSegment vlanSegment:vlanSegmentZ){
                 QinqVO qvo = new QinqVO();
                 qvo.setUuid(Platform.getUuid());
-                qvo.setTunnelUuid(vo.getUuid());
-                qvo.setInterfaceUuid(msg.getInterfaceZUuid());
+                qvo.setTunnelInterfaceUuid(tivoZ.getUuid());
                 qvo.setStartVlan(vlanSegment.getStartVlan());
                 qvo.setEndVlan(vlanSegment.getEndVlan());
                 dbf.getEntityManager().persist(qvo);
@@ -368,19 +367,21 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setNetworkUuid(msg.getNetworkUuid());
         vo.setName(msg.getName());
 
-        TunnelInterfaceRefVO tivoA = new TunnelInterfaceRefVO();
+        TunnelInterfaceVO tivoA = new TunnelInterfaceVO();
         tivoA.setUuid(Platform.getUuid());
         tivoA.setTunnelUuid(vo.getUuid());
         tivoA.setInterfaceUuid(msg.getInterfaceAUuid());
-        tivoA.setInnerVlan(msg.getaVlan());
+        tivoA.setVlan(msg.getaVlan());
+        tivoA.setSortTag("A");
         tivoA.setQinqState(msg.getQinqStateA());
         dbf.getEntityManager().persist(tivoA);
 
-        TunnelInterfaceRefVO tivoZ = new TunnelInterfaceRefVO();
+        TunnelInterfaceVO tivoZ = new TunnelInterfaceVO();
         tivoZ.setUuid(Platform.getUuid());
         tivoZ.setTunnelUuid(vo.getUuid());
         tivoZ.setInterfaceUuid(msg.getInterfaceZUuid());
-        tivoZ.setInnerVlan(msg.getzVlan());
+        tivoZ.setVlan(msg.getzVlan());
+        tivoZ.setSortTag("Z");
         tivoZ.setQinqState(msg.getQinqStateZ());
         dbf.getEntityManager().persist(tivoZ);
 
@@ -391,21 +392,19 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             for(InnerVlanSegment vlanSegment:vlanSegmentA){
                 QinqVO qvo = new QinqVO();
                 qvo.setUuid(Platform.getUuid());
-                qvo.setTunnelUuid(vo.getUuid());
-                qvo.setInterfaceUuid(msg.getInterfaceAUuid());
+                qvo.setTunnelInterfaceUuid(tivoA.getUuid());
                 qvo.setStartVlan(vlanSegment.getStartVlan());
                 qvo.setEndVlan(vlanSegment.getEndVlan());
                 dbf.getEntityManager().persist(qvo);
             }
         }
-        if(msg.getQinqStateA() == TunnelQinqState.Enabled){
+        if(msg.getQinqStateZ() == TunnelQinqState.Enabled){
             List<InnerVlanSegment> vlanSegmentZ = msg.getVlanSegmentZ();
 
             for(InnerVlanSegment vlanSegment:vlanSegmentZ){
                 QinqVO qvo = new QinqVO();
                 qvo.setUuid(Platform.getUuid());
-                qvo.setTunnelUuid(vo.getUuid());
-                qvo.setInterfaceUuid(msg.getInterfaceZUuid());
+                qvo.setTunnelInterfaceUuid(tivoZ.getUuid());
                 qvo.setStartVlan(vlanSegment.getStartVlan());
                 qvo.setEndVlan(vlanSegment.getEndVlan());
                 dbf.getEntityManager().persist(qvo);
@@ -461,26 +460,28 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         eo = dbf.getEntityManager().merge(eo);
 
         String tunnelUuid = msg.getUuid();
-        //删除对应的QinqVO
-        SimpleQuery<QinqVO> q = dbf.createQuery(QinqVO.class);
-        q.add(QinqVO_.tunnelUuid, SimpleQuery.Op.EQ, tunnelUuid);
-        List<QinqVO> qinqList = q.list();
-        if (qinqList.size() > 0) {
-            for(QinqVO qv : qinqList){
-                dbf.getEntityManager().remove(qv);
-            }
-        }
 
-        //删除对应的TunnelInterfaceRefVO
-        SimpleQuery<TunnelInterfaceRefVO> q2 = dbf.createQuery(TunnelInterfaceRefVO.class);
-        q2.add(TunnelInterfaceRefVO_.tunnelUuid, SimpleQuery.Op.EQ, tunnelUuid);
-        List<TunnelInterfaceRefVO> tivList = q2.list();
+        //删除对应的 TunnelInterfaceVO 和 QingqVO
+        SimpleQuery<TunnelInterfaceVO> q = dbf.createQuery(TunnelInterfaceVO.class);
+        q.add(TunnelInterfaceVO_.tunnelUuid, SimpleQuery.Op.EQ, tunnelUuid);
+        List<TunnelInterfaceVO> tivList = q.list();
         if (tivList.size() > 0) {
-            for(TunnelInterfaceRefVO tiv : tivList){
+            for(TunnelInterfaceVO tiv : tivList){
+
+                //删 TunnelInterfaceVO
                 dbf.getEntityManager().remove(tiv);
+
+                //删 QingqVO
+                SimpleQuery<QinqVO> q2 = dbf.createQuery(QinqVO.class);
+                q2.add(QinqVO_.tunnelInterfaceUuid, SimpleQuery.Op.EQ, tiv.getUuid());
+                List<QinqVO> qinqList = q2.list();
+                if (qinqList.size() > 0) {
+                    for(QinqVO qv : qinqList){
+                        dbf.getEntityManager().remove(qv);
+                    }
+                }
             }
         }
-
         APIDeleteTunnelEvent evt = new APIDeleteTunnelEvent(msg.getId());
         evt.setInventory(TunnelInventory.valueOf(vo));
         bus.publish(evt);
@@ -621,8 +622,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     private void validate(APIDeleteInterfaceMsg msg){
         //判断云专线下是否有该物理接口
-        SimpleQuery<TunnelInterfaceRefVO> q = dbf.createQuery(TunnelInterfaceRefVO.class);
-        q.add(TunnelInterfaceRefVO_.interfaceUuid, SimpleQuery.Op.EQ, msg.getUuid());
+        SimpleQuery<TunnelInterfaceVO> q = dbf.createQuery(TunnelInterfaceVO.class);
+        q.add(TunnelInterfaceVO_.interfaceUuid, SimpleQuery.Op.EQ, msg.getUuid());
         if(q.isExists()){
             throw new ApiMessageInterceptionException(argerr("cannot delete,interface is being used!"));
         }
@@ -643,8 +644,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
 
         //判断同一个switchPort下内部VLAN段是否有重叠
-        String sql = "select count(a.uuid) from QinqVO a " +
-                "where a.interfaceUuid = :interfaceUuid " +
+        String sql = "select count(a.uuid) from QinqVO a, TunnelInterfaceVO b, InterfaceVO c " +
+                "where a.tunnelInterfaceUuid = b.uuid and b.interfaceUuid = c.uuid " +
+                "and c.switchPortUuid = (select switchPortUuid from InterfaceVO where uuid = :interfaceUuid) " +
                 "and ((a.startVlan between :startVlan and :endVlan) " +
                 "or (a.endVlan between :startVlan and :endVlan) " +
                 "or (:startVlan between a.startVlan and a.endVlan) " +
@@ -762,8 +764,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
 
         //判断同一个switchPort下内部VLAN段是否有重叠
-        String sql = "select count(a.uuid) from QinqVO a " +
-                "where a.interfaceUuid = :interfaceUuid " +
+        String sql = "select count(a.uuid) from QinqVO a, TunnelInterfaceVO b, InterfaceVO c " +
+                "where a.tunnelInterfaceUuid = b.uuid and b.interfaceUuid = c.uuid " +
+                "and c.switchPortUuid = (select switchPortUuid from InterfaceVO where uuid = :interfaceUuid) " +
                 "and ((a.startVlan between :startVlan and :endVlan) " +
                 "or (a.endVlan between :startVlan and :endVlan) " +
                 "or (:startVlan between a.startVlan and a.endVlan) " +

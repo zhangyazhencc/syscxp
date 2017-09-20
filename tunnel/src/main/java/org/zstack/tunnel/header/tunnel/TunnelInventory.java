@@ -3,9 +3,7 @@ package org.zstack.tunnel.header.tunnel;
 import org.zstack.header.search.Inventory;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by DCY on 2017-09-11
@@ -17,6 +15,7 @@ public class TunnelInventory {
     private String accountUuid;
     private String networkUuid;
     private NetworkInventory network;
+    private List<TunnelInterfaceInventory> tunnelInterface = new ArrayList<TunnelInterfaceInventory>();
     private String name;
     private Long bandwidth;
     private Double distance;
@@ -35,6 +34,7 @@ public class TunnelInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setNetworkUuid(vo.getNetworkUuid());
         inv.setNetwork(NetworkInventory.valueOf(vo.getNetworkVO()));
+        inv.setTunnelInterface(TunnelInterfaceInventory.valueOf(vo.getTunnelInterfaceVO()));
         inv.setName(vo.getName());
         inv.setBandwidth(vo.getBandwidth());
         inv.setDistance(vo.getDistance());
@@ -175,5 +175,13 @@ public class TunnelInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public List<TunnelInterfaceInventory> getTunnelInterface() {
+        return tunnelInterface;
+    }
+
+    public void setTunnelInterface(List<TunnelInterfaceInventory> tunnelInterface) {
+        this.tunnelInterface = tunnelInterface;
     }
 }

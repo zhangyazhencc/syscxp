@@ -22,9 +22,9 @@ public class SLACompensateInventory {
 
     private String productName;
 
-    private String reason;
+    private SLAReason reason;
 
-    private String description;
+    private String comment;
 
     private int duration;
 
@@ -43,7 +43,7 @@ public class SLACompensateInventory {
         SLACompensateInventory inv = new SLACompensateInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
-        inv.setDescription(vo.getDescription());
+        inv.setComment(vo.getComment());
         inv.setDuration(vo.getDuration());
         inv.setProductName(vo.getProductName());
         inv.setProductType(vo.getProductType());
@@ -106,22 +106,6 @@ public class SLACompensateInventory {
         this.productName = productName;
     }
 
-    public String getReason() {
-        return reason;
-    }
-
-    public void setReason(String reason) {
-        this.reason = reason;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public int getDuration() {
         return duration;
     }
@@ -168,5 +152,21 @@ public class SLACompensateInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public SLAReason getReason() {
+        return reason;
+    }
+
+    public void setReason(SLAReason reason) {
+        this.reason = reason;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }

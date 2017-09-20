@@ -10,11 +10,8 @@ import java.sql.Timestamp;
 
 @Action(category = BillingConstant.ACTION_CATEGORY_SLA, names = {"update"})
 public class APIUpdateSLACompensateMsg extends APIMessage {
-    @APIParam(emptyString =false)
+    @APIParam(emptyString =false,resourceType = SLACompensateVO.class)
     private String uuid;
-
-    @APIParam(emptyString =false)
-    private String accountUuid;
 
     @APIParam(emptyString =false)
     private String productUuid;
@@ -26,10 +23,10 @@ public class APIUpdateSLACompensateMsg extends APIMessage {
     private String productName;
 
     @APIParam(emptyString =false)
-    private String reason;
+    private SLAReason reason;
 
     @APIParam(emptyString =false,required = false)
-    private String description;
+    private String comment;
 
     @APIParam()
     private Integer duration;
@@ -59,14 +56,6 @@ public class APIUpdateSLACompensateMsg extends APIMessage {
         this.uuid = uuid;
     }
 
-    public String getAccountUuid() {
-        return accountUuid;
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
-
     public String getProductUuid() {
         return productUuid;
     }
@@ -91,20 +80,20 @@ public class APIUpdateSLACompensateMsg extends APIMessage {
         this.productName = productName;
     }
 
-    public String getReason() {
+    public SLAReason getReason() {
         return reason;
     }
 
-    public void setReason(String reason) {
+    public void setReason(SLAReason reason) {
         this.reason = reason;
     }
 
-    public String getDescription() {
-        return description;
+    public String getComment() {
+        return comment;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 
     public Integer getDuration() {
