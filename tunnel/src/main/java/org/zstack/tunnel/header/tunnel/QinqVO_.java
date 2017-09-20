@@ -11,8 +11,7 @@ import java.sql.Timestamp;
 public class QinqVO_ {
 
     public static volatile SingularAttribute<QinqVO, String> uuid;
-    public static volatile SingularAttribute<QinqVO, String> tunnelUuid;
-    public static volatile SingularAttribute<QinqVO, String> interfaceUuid;
+    public static volatile SingularAttribute<QinqVO, String> tunnelInterfaceUuid;
     public static volatile SingularAttribute<QinqVO, Integer> startVlan;
     public static volatile SingularAttribute<QinqVO, Integer> endVlan;
     public static volatile SingularAttribute<QinqVO, Timestamp> createDate;

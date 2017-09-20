@@ -72,7 +72,7 @@ public class TunnelStrategy {
 
     //策略分配外部VLAN
     public Integer getInnerVlanByStrategy(String networkUuid ,String interfaceUuid){
-        Integer innerVlan = null;
+        Integer vlan = null;
 
         //查询该TUNNEL的物理接口所属的虚拟交换机
         String switchUuid = findSwitchByInterface(interfaceUuid);
@@ -82,12 +82,12 @@ public class TunnelStrategy {
         List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
 
         //同一个VSI下同一个物理接口不用分配vlan，他们vlan一样
-        innerVlan = findVlanForSameVsiAndInterface(networkUuid, interfaceUuid);
-        if(innerVlan != null){
-            return innerVlan;
+        vlan = findVlanForSameVsiAndInterface(networkUuid, interfaceUuid);
+        if(vlan != null){
+            return vlan;
         }else{
-            innerVlan = allocateVlan(vlanList, allocatedVlans);
-            return innerVlan;
+            vlan = allocateVlan(vlanList, allocatedVlans);
+            return vlan;
         }
 
     }
@@ -116,7 +116,7 @@ public class TunnelStrategy {
     //查询该虚拟交换机下Tunnel已经分配的Vlan
     public List<Integer> fingAllocateVlanBySwitch(String switchUuid){
 
-        String sql = "select distinct a.innerVlan from TunnelInterfaceRefVO a,InterfaceVO b,SwitchPortVO c " +
+        String sql = "select distinct a.vlan from TunnelInterfaceVO a,InterfaceVO b,SwitchPortVO c " +
                 "where a.interfaceUuid = b.uuid " +
                 "and b.switchPortUuid = c.uuid " +
                 "and c.switchUuid = :switchUuid ";
@@ -128,7 +128,7 @@ public class TunnelStrategy {
 
     //查询该端口在同一个VSI下有否存在，如果存在，直接使用该端口的vlan即可
     public Integer findVlanForSameVsiAndInterface(String networkUuid, String interfaceUuid){
-        String sql = "select distinct a.innerVlan from TunnelVO a,TunnelInterfaceRefVO b where a.uuid = b.tunnelUuid " +
+        String sql = "select distinct b.vlan from TunnelVO a,TunnelInterfaceVO b where a.uuid = b.tunnelUuid " +
                 "and a.networkUuid = :networkUuid and b.interfaceUuid = :interfaceUuid ";
         TypedQuery<Integer> vlanq = dbf.getEntityManager().createQuery(sql,Integer.class);
         vlanq.setParameter("networkUuid",networkUuid);

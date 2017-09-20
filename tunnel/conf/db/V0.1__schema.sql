@@ -298,11 +298,12 @@ CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, networkUuid,
                                         FROM `TunnelEO` WHERE deleted = 0;
 
 ##云专线端口信息表
-CREATE TABLE  `syscxp_tunnel`.`TunnelInterfaceRefVO` (
+CREATE TABLE  `syscxp_tunnel`.`TunnelInterfaceVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `tunnelUuid` varchar(32) NOT NULL COMMENT '所属云专线',
   `interfaceUuid` varchar(32) NOT NULL COMMENT '所属物理接口',
-  `innerVlan` INT(11) NOT NULL COMMENT '端口外部vlan',
+  `vlan` INT(11) NOT NULL COMMENT '端口外部vlan',
+  `sortTag` varchar(32) NOT NULL COMMENT '排序',
   `qinqState` varchar(32) NOT NULL DEFAULT 'Disabled' COMMENT '是否开启qinq,共享为Disabled,独享才可以启用',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
@@ -312,8 +313,7 @@ CREATE TABLE  `syscxp_tunnel`.`TunnelInterfaceRefVO` (
 ##Qinq模式网段
 CREATE TABLE  `syscxp_tunnel`.`QinqVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `tunnelUuid` varchar(32) NOT NULL COMMENT '所属云专线',
-  `interfaceUuid` varchar(32) NOT NULL COMMENT '所属物理接口',
+  `tunnelInterfaceUuid` varchar(32) NOT NULL COMMENT '所属云专线端口',
   `startVlan` INT(11) NOT NULL COMMENT '起始VLAN',
   `endVlan` INT(11) NOT NULL COMMENT '结束VLAN',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',

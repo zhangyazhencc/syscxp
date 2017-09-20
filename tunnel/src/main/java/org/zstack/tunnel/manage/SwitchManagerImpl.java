@@ -623,7 +623,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
 
     //查询该虚拟交换机下Tunnel已经分配的Vlan
     private List<Integer> fingAllocateVlanBySwitch(String switchUuid){
-        String sql = "select distinct a.innerVlan from TunnelInterfaceRefVO a,InterfaceVO b,SwitchPortVO c " +
+        String sql = "select distinct a.vlan from TunnelInterfaceVO a,InterfaceVO b,SwitchPortVO c " +
                 "where a.interfaceUuid = b.uuid " +
                 "and b.switchPortUuid = c.uuid " +
                 "and c.switchUuid = :switchUuid ";
