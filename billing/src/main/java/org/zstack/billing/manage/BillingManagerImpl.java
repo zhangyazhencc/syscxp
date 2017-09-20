@@ -41,6 +41,7 @@ import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.billing.*;
 import org.zstack.header.exception.CloudRuntimeException;
+import org.zstack.header.identity.AccountType;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.header.rest.RESTFacade;
@@ -120,6 +121,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APICreateSLACompensateMsg) msg);
         } else if (msg instanceof APIUpdateSLACompensateMsg) {
             handle((APIUpdateSLACompensateMsg) msg);
+        }else if (msg instanceof APIUpdateSLACompensateStateMsg) {
+            handle((APIUpdateSLACompensateStateMsg) msg);
         } else if (msg instanceof APIGetBillMsg) {
             handle((APIGetBillMsg) msg);
         } else if (msg instanceof APICreateReceiptMsg) {
@@ -152,6 +155,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             bus.dealWithUnknownMessage(msg);
         }
     }
+
 
     private void handle(APIGetAccountDischargeCategoryMsg msg) {
         SimpleQuery<ProductPriceUnitVO> query = dbf.createQuery(ProductPriceUnitVO.class);
@@ -535,13 +539,38 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     }
 
+    private void handle(APIUpdateSLACompensateStateMsg msg) {
+        SLACompensateVO slaCompensateVO = dbf.findByUuid(msg.getUuid(), SLACompensateVO.class);
+        String productUuid = slaCompensateVO.getProductUuid();
+        //todo get product expired
+        if(msg.getState() == SLAState.APPLIED){
+            Timestamp expiredTime = dbf.getCurrentSqlTime();
+            Timestamp endTime = new Timestamp(expiredTime.getTime()+slaCompensateVO.getDuration()*24*60*60*1000);
+            slaCompensateVO.setTimeStart(expiredTime);
+            slaCompensateVO.setTimeStart(endTime);
+            slaCompensateVO.setState(SLAState.APPLIED);
+            dbf.updateAndRefresh(slaCompensateVO);
+        } else if(msg.getState() == SLAState.DONE){
+            if(msg.getSession().getType() != AccountType.SystemAdmin){
+                throw new RuntimeException("you have not the permission to do this");
+            }
+            //todo modify the product expired time
+            slaCompensateVO.setState(SLAState.DONE);
+            dbf.updateAndRefresh(slaCompensateVO);
+        }
+        SLACompensateInventory ri = SLACompensateInventory.valueOf(slaCompensateVO);
+        APIUpdateSLACompensateStateEvent evt = new APIUpdateSLACompensateStateEvent(msg.getId());
+        evt.setInventory(ri);
+        bus.publish(evt);
+
+    }
+
+
     private void handle(APIUpdateSLACompensateMsg msg) {
         SLACompensateVO vo = dbf.findByUuid(msg.getUuid(), SLACompensateVO.class);
-        if (msg.getAccountUuid() != null) {
-            vo.setAccountUuid(msg.getAccountUuid());
-        }
-        if (msg.getDescription() != null) {
-            vo.setDescription(msg.getDescription());
+
+        if (msg.getComment() != null) {
+           vo.setComment(msg.getComment());
         }
         if (msg.getDuration() != null) {
             vo.setDuration(msg.getDuration());
@@ -564,10 +593,6 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         if (msg.getProductUuid() != null) {
             vo.setProductUuid(msg.getProductUuid());
         }
-        if (msg.getState() != null) {
-            vo.setState(msg.getState());
-        }
-
         dbf.updateAndRefresh(vo);
         SLACompensateInventory ri = SLACompensateInventory.valueOf(vo);
         APIUpdateSLACompensateEvent evt = new APIUpdateSLACompensateEvent(msg.getId());
@@ -580,14 +605,13 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         SLACompensateVO vo = new SLACompensateVO();
         vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(msg.getAccountUuid());
-        vo.setDescription(msg.getDescription());
+        vo.setComment(msg.getComment());
         vo.setDuration(msg.getDuration());
         vo.setProductUuid(msg.getProductUuid());
         vo.setProductName(msg.getProductName());
         vo.setProductType(msg.getProductType());
         vo.setReason(msg.getReason());
         vo.setState(SLAState.NOT_APPLY);
-
         dbf.persistAndRefresh(vo);
         SLACompensateInventory ri = SLACompensateInventory.valueOf(vo);
         APICreateSLACompensateEvent evt = new APICreateSLACompensateEvent(msg.getId());
