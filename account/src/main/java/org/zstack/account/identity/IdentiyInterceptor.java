@@ -61,16 +61,22 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
         List<PolicyStatement> policyStatements = new ArrayList<>();
         UserVO user = getDbf().findByUuid(userUuid, UserVO.class);
 
-        for (RoleVO policy : user.getRoleSet()) {
-            for (PolicyVO permission : policy.getPolicySet()) {
-                PolicyStatement p = JSONObjectUtil.toObject(permission.getPermission(), PolicyStatement.class);
-                p.setUuid(permission.getUuid());
-                p.setName(permission.getName());
-                policyStatements.add(p);
+        if(user.getRoleSet() != null ){
+            for (RoleVO policy : user.getRoleSet()) {
+                for (PolicyVO permission : policy.getPolicySet()) {
+                    PolicyStatement p = JSONObjectUtil.toObject(permission.getPermission(), PolicyStatement.class);
+                    p.setUuid(permission.getUuid());
+                    p.setName(permission.getName());
+                    policyStatements.add(p);
+                }
             }
+            return policyStatements;
         }
 
-        return policyStatements;
+        return null;
+
+
+
     }
 
     @Override
