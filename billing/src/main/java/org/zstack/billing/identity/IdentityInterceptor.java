@@ -20,7 +20,7 @@ public class IdentityInterceptor extends DefaultIdentityInterceptor {
 
         String accountUuid = session.getAccountUuid();
         if (!StringUtils.isEmpty(accountUuid)) {
-            SimpleQuery<AccountBalanceVO> q = getDbf().createQuery(AccountBalanceVO.class);
+            SimpleQuery<AccountBalanceVO> q = dbf.createQuery(AccountBalanceVO.class);
             q.add(AccountBalanceVO_.uuid, SimpleQuery.Op.EQ, accountUuid);
             AccountBalanceVO a = q.find();
             if (a == null) {
@@ -29,7 +29,7 @@ public class IdentityInterceptor extends DefaultIdentityInterceptor {
                 vo.setCashBalance(new BigDecimal("0"));
                 vo.setPresentBalance(new BigDecimal("0"));
                 vo.setCreditPoint(new BigDecimal("0"));
-                getDbf().persist(vo);
+                dbf.persist(vo);
             }
         }
     }
