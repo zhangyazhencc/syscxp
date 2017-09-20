@@ -6,6 +6,6 @@ import org.zstack.header.query.APIQueryMessage;
 import org.zstack.header.query.AutoQuery;
 
 @Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
-@AutoQuery(replyClass = APIQueryDisChargeReply.class, inventoryClass = AccountDischargeInventory.class)
-public class APIQueryDisChargeMsg  extends APIQueryMessage {
+@AutoQuery(replyClass = APIQueryAccountDischargeReply.class, inventoryClass = AccountDischargeInventory.class)
+public class APIQueryAccountDischargeMsg extends APIQueryMessage {
 }

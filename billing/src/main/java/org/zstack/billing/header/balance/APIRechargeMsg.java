@@ -1,12 +1,10 @@
-package org.zstack.header.alipay;
+package org.zstack.billing.header.balance;
 
-import org.zstack.header.identity.InnerCredentialCheck;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;
 
 import java.math.BigDecimal;
 
-@InnerCredentialCheck
 public class APIRechargeMsg extends APISyncCallMessage {
 
     @APIParam(required = false)

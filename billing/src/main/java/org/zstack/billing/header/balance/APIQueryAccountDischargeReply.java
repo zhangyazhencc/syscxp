@@ -4,7 +4,7 @@ import org.zstack.header.query.APIQueryReply;
 
 import java.util.List;
 
-public class APIQueryDisChargeReply extends APIQueryReply {
+public class APIQueryAccountDischargeReply extends APIQueryReply {
 
     private List<AccountDischargeInventory> inventories;
 

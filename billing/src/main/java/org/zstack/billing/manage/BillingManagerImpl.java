@@ -41,7 +41,6 @@ import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.billing.*;
 import org.zstack.header.exception.CloudRuntimeException;
-import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.header.rest.RESTFacade;
@@ -177,18 +176,24 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     private void handle(APICreateAccountDischargeMsg msg) {
         SimpleQuery<AccountDischargeVO> query = dbf.createQuery(AccountDischargeVO.class);
         query.add(AccountDischargeVO_.accountUuid, Op.EQ, msg.getAccountUuid());
-        query.add(AccountDischargeVO_.productType, Op.EQ, msg.getProductType());
         query.add(AccountDischargeVO_.category, Op.EQ, msg.getCategory());
         boolean exists = query.isExists();
         if (exists) {
             throw new IllegalArgumentException("the account has the discharge");
         }
+        SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
+        q.add(ProductPriceUnitVO_.category, Op.EQ,msg.getCategory());
+        q.groupBy(ProductPriceUnitVO_.category);
+        ProductPriceUnitVO productPriceUnitVO = q.find();
+
         AccountDischargeVO accountDischargeVO = new AccountDischargeVO();
         accountDischargeVO.setUuid(Platform.getUuid());
         accountDischargeVO.setAccountUuid(msg.getAccountUuid());
-        accountDischargeVO.setProductType(msg.getProductType());
         accountDischargeVO.setCategory(msg.getCategory());
         accountDischargeVO.setDisCharge(msg.getDisCharge());
+        accountDischargeVO.setCategoryName(productPriceUnitVO.getCategoryName());
+        accountDischargeVO.setProductTypeName(productPriceUnitVO.getProductTypeName());
+        accountDischargeVO.setProductType(productPriceUnitVO.getProductType());
         dbf.persistAndRefresh(accountDischargeVO);
         APICreateAccountDischargeEvent event = new APICreateAccountDischargeEvent(msg.getId());
         event.setInventory(AccountDischargeInventory.valueOf(accountDischargeVO));
