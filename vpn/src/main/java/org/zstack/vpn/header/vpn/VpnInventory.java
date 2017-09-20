@@ -18,7 +18,7 @@ public class VpnInventory {
     private String name;
     private String description;
     private String vpnCidr;
-    private Integer bandwidth;
+    private Long bandwidth;
     private String endpointUuid;
     private VpnStatus status;
     private VpnState state;
@@ -117,11 +117,11 @@ public class VpnInventory {
         this.vpnCidr = vpnCidr;
     }
 
-    public Integer getBandwidth() {
+    public Long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Integer bandwidth) {
+    public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
 

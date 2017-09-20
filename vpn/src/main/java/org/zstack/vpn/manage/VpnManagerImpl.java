@@ -5,22 +5,30 @@ import org.springframework.util.StringUtils;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
-import org.zstack.core.db.DbEntityLister;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.header.AbstractService;
+import org.zstack.header.Constants;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
+import org.zstack.header.core.ReturnValueCompletion;
+import org.zstack.header.errorcode.ErrorCode;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
+import org.zstack.header.rest.JsonAsyncRESTCallback;
+import org.zstack.header.rest.RESTFacade;
 import org.zstack.vpn.header.host.VpnState;
 import org.zstack.vpn.header.host.VpnStatus;
 import org.zstack.vpn.header.vpn.*;
+import org.zstack.vpn.manage.VpnCommands.*;
 import org.zstack.vpn.header.host.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import static org.zstack.core.Platform.argerr;
 
@@ -31,7 +39,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     @Autowired
     private DatabaseFacade dbf;
     @Autowired
-    private DbEntityLister dl;
+    private RESTFacade restf;
     @Autowired
     private ErrorFacade errf;
 
@@ -68,9 +76,28 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APICreateVpnRouteMsg) msg);
         } else if (msg instanceof APIDeleteVpnRouteMsg) {
             handle((APIDeleteVpnRouteMsg) msg);
+        } else if (msg instanceof APIGetVpnMsg) {
+            handle((APIGetVpnMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetVpnMsg msg) {
+        VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+
+        SimpleQuery query = dbf.createQuery(VpnInterfaceVO.class);
+        query.add(VpnInterfaceVO_.vpnUuid, SimpleQuery.Op.EQ, msg.getUuid());
+        vpn.setVpnInterfaces(query.list());
+
+        query = dbf.createQuery(VpnRouteVO.class);
+        query.add(VpnRouteVO_.vpnUuid, SimpleQuery.Op.EQ, msg.getUuid());
+        vpn.setVpnRoutes(query.list());
+
+        APIGetVpnReply reply = new APIGetVpnReply();
+        reply.setInventory(VpnInventory.valueOf(vpn));
+
+        bus.reply(msg, reply);
     }
 
     private void handle(APIDeleteVpnHostMsg msg) {
@@ -81,8 +108,21 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void handle(APIUpdateVpnHostMsg msg) {
         VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
-        if (StringUtils.isEmpty(msg.getName())) ;
+        boolean update = false;
+        if (StringUtils.isEmpty(msg.getName())) {
+            host.setName(msg.getName());
+            update = true;
+        }
+        if (StringUtils.isEmpty(msg.getDescription())) {
+            host.setDescription(msg.getDescription());
+            update = true;
+        }
+        if (update)
+            dbf.updateAndRefresh(host);
 
+        APIUpdateVpnHostEvent evt = new APIUpdateVpnHostEvent(msg.getId());
+        evt.setInventory(VpnHostInventory.valueOf(host));
+        bus.publish(evt);
     }
 
     private void handle(APICreateVpnHostMsg msg) {
@@ -205,8 +245,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnRouteVO vpnRoute = new VpnRouteVO();
         vpnRoute.setVpnUuid(msg.getGatewayUuid());
         vpnRoute.setRouteType(msg.getRouteType());
-        vpnRoute.setNextIface(msg.getNextIface());
-        vpnRoute.setNextIface2(msg.getNextIface2());
+        vpnRoute.setNextInterface(msg.getNextIface());
         vpnRoute.setTargetCidr(msg.getTargetCidr());
 
         vpnRoute = dbf.persistAndRefresh(vpnRoute);
@@ -272,25 +311,19 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APIDeleteVpnRouteMsg msg) {
-
     }
 
     private void validate(APICreateVpnRouteMsg msg) {
-
     }
 
     private void validate(APICreateVpnInterfaceMsg msg) {
-
     }
 
     private void validate(APIDeleteVpnInterfaceMsg msg) {
-
     }
 
     private void validate(APIUpdateVpnInterfaceMsg msg) {
-
     }
-
 
     private void validate(APIUpdateVpnBindwidthMsg msg) {
     }
@@ -299,15 +332,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APIQueryVpnMsg msg) {
-
     }
 
     private void validate(APIDeleteVpnMsg msg) {
-
     }
 
     private void validate(APICreateVpnMsg msg) {
-
     }
 
     private void validate(APICreateVpnHostMsg msg) {
@@ -329,4 +359,37 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void validate(APIQueryVpnHostMsg msg) {
     }
 
+    class Http<T> {
+        String path;
+        AgentCommand cmd;
+        Class<T> responseClass;
+
+        public Http(String path, AgentCommand cmd, Class<T> rspClz) {
+            this.path = path;
+            this.cmd = cmd;
+            this.responseClass = rspClz;
+        }
+
+        void call(ReturnValueCompletion<T> completion) {
+            Map<String, String> header = new HashMap<>();
+            header.put(VpnConstant.HTTP_HEADER_VPN_UUID, cmd.getVpnUuid());
+            header.put(VpnConstant.HTTP_HEADER_VPN_HOST_IP, cmd.getHostIp());
+            restf.asyncJsonPost(path, cmd, header, new JsonAsyncRESTCallback<T>(completion) {
+                @Override
+                public void fail(ErrorCode err) {
+                    completion.fail(err);
+                }
+
+                @Override
+                public void success(T ret) {
+                    completion.success(ret);
+                }
+
+                @Override
+                public Class<T> getReturnClass() {
+                    return responseClass;
+                }
+            });
+        }
+    }
 }

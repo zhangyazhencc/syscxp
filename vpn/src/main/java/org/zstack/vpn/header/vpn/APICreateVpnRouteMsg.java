@@ -7,6 +7,8 @@ import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 import org.zstack.vpn.manage.VpnConstant;
 
+import java.util.List;
+
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
 public class APICreateVpnRouteMsg extends APIMessage {
     @APIParam(resourceType = VpnVO.class, checkAccount = true)
@@ -14,9 +16,7 @@ public class APICreateVpnRouteMsg extends APIMessage {
     @APIParam
     private RouteType routeType;
     @APIParam(emptyString = false)
-    private String nextIface;
-    @APIParam(emptyString = false)
-    private String nextIface2;
+    private List<String> nextIface;
     @APIParam(emptyString = false)
     private String targetCidr;
 
@@ -36,20 +36,12 @@ public class APICreateVpnRouteMsg extends APIMessage {
         this.routeType = routeType;
     }
 
-    public String getNextIface() {
+    public List<String> getNextIface() {
         return nextIface;
     }
 
-    public void setNextIface(String nextIface) {
+    public void setNextIface(List<String> nextIface) {
         this.nextIface = nextIface;
-    }
-
-    public String getNextIface2() {
-        return nextIface2;
-    }
-
-    public void setNextIface2(String nextIface2) {
-        this.nextIface2 = nextIface2;
     }
 
     public String getTargetCidr() {

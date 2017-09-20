@@ -12,7 +12,7 @@ public class APIUpdateVpnBindwidthMsg extends APIMessage{
     @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String uuid;
     @APIParam
-    private Integer bandwidth;
+    private Long bandwidth;
 
     public String getUuid() {
         return uuid;
@@ -22,11 +22,11 @@ public class APIUpdateVpnBindwidthMsg extends APIMessage{
         this.uuid = uuid;
     }
 
-    public Integer getBandwidth() {
+    public Long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Integer bandwidth) {
+    public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
 

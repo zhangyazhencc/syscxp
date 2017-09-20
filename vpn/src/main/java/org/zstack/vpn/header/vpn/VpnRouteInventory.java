@@ -10,10 +10,9 @@ import java.util.List;
 @Inventory(mappingVOClass = VpnRouteVO.class)
 public class VpnRouteInventory {
     private String uuid;
-    private String gatewayUuid;
+    private String vpnUuid;
     private RouteType routeType;
-    private String nextIface;
-    private String nextIface2;
+    private List<String> nextIface;
     private String targetCidr;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -21,10 +20,8 @@ public class VpnRouteInventory {
     public static VpnRouteInventory valueOf(VpnRouteVO vo) {
         VpnRouteInventory inv = new VpnRouteInventory();
         inv.setUuid(vo.getUuid());
-        inv.setGatewayUuid(vo.getVpnUuid());
+        inv.setVpnUuid(vo.getVpnUuid());
         inv.setRouteType(vo.getRouteType());
-        inv.setNextIface2(vo.getNextIface2());
-        inv.setNextIface(vo.getNextIface());
         inv.setTargetCidr(vo.getTargetCidr());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -48,12 +45,12 @@ public class VpnRouteInventory {
         this.uuid = uuid;
     }
 
-    public String getGatewayUuid() {
-        return gatewayUuid;
+    public String getVpnUuid() {
+        return vpnUuid;
     }
 
-    public void setGatewayUuid(String gatewayUuid) {
-        this.gatewayUuid = gatewayUuid;
+    public void setVpnUuid(String vpnUuid) {
+        this.vpnUuid = vpnUuid;
     }
 
     public RouteType getRouteType() {
@@ -64,20 +61,12 @@ public class VpnRouteInventory {
         this.routeType = routeType;
     }
 
-    public String getNextIface() {
+    public List<String> getNextIface() {
         return nextIface;
     }
 
-    public void setNextIface(String nextIface) {
+    public void setNextIface(List<String> nextIface) {
         this.nextIface = nextIface;
-    }
-
-    public String getNextIface2() {
-        return nextIface2;
-    }
-
-    public void setNextIface2(String nextIface2) {
-        this.nextIface2 = nextIface2;
     }
 
     public String getTargetCidr() {

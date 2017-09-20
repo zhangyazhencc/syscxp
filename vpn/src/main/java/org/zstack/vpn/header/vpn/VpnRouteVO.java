@@ -1,11 +1,13 @@
 package org.zstack.vpn.header.vpn;
 
+import org.zstack.core.db.converter.ListAttributeConverter;
 import org.zstack.header.vo.ForeignKey;
 import org.zstack.header.vo.ForeignKey.ReferenceOption;
 
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.List;
 
 @Entity
 @Table
@@ -20,9 +22,8 @@ public class VpnRouteVO {
     @Column
     private RouteType routeType;
     @Column
-    private String nextIface;
-    @Column
-    private String nextIface2;
+    @Convert(converter = ListAttributeConverter.class)
+    private List<String> nextInterface;
     @Column
     private String targetCidr;
     @Column
@@ -55,20 +56,12 @@ public class VpnRouteVO {
         this.routeType = routeType;
     }
 
-    public String getNextIface() {
-        return nextIface;
+    public List<String> getNextInterface() {
+        return nextInterface;
     }
 
-    public void setNextIface(String nextIface) {
-        this.nextIface = nextIface;
-    }
-
-    public String getNextIface2() {
-        return nextIface2;
-    }
-
-    public void setNextIface2(String nextIface2) {
-        this.nextIface2 = nextIface2;
+    public void setNextInterface(List<String> nextInterface) {
+        this.nextInterface = nextInterface;
     }
 
     public String getTargetCidr() {

@@ -10,7 +10,7 @@ import java.util.List;
 @Inventory(mappingVOClass = VpnInterfaceVO.class)
 public class VpnInterfaceInventory {
     private String uuid;
-    private String gatewayUuid;
+    private String vpnUuid;
     private String name;
     private String description;
     private String tunnel;
@@ -23,7 +23,7 @@ public class VpnInterfaceInventory {
     public static VpnInterfaceInventory valueOf(VpnInterfaceVO vo) {
         VpnInterfaceInventory inv = new VpnInterfaceInventory();
         inv.setUuid(vo.getUuid());
-        inv.setGatewayUuid(vo.getVpnUuid());
+        inv.setVpnUuid(vo.getVpnUuid());
         inv.setName(vo.getName());
         inv.setTunnel(vo.getTunnelUuid());
         inv.setServerIP(vo.getLocalIp());
@@ -50,12 +50,12 @@ public class VpnInterfaceInventory {
         this.uuid = uuid;
     }
 
-    public String getGatewayUuid() {
-        return gatewayUuid;
+    public String getVpnUuid() {
+        return vpnUuid;
     }
 
-    public void setGatewayUuid(String gatewayUuid) {
-        this.gatewayUuid = gatewayUuid;
+    public void setVpnUuid(String vpnUuid) {
+        this.vpnUuid = vpnUuid;
     }
 
     public String getName() {

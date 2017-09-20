@@ -6,6 +6,7 @@ import org.zstack.vpn.header.host.VpnStatus;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.List;
 import java.util.Set;
 
 @Entity
@@ -27,7 +28,7 @@ public class VpnVO {
     @Column
     private String vpnCidr;
     @Column
-    private Integer bandwidth;
+    private Long bandwidth;
     @Column
     private String endpointUuid;
     @Column
@@ -45,23 +46,23 @@ public class VpnVO {
     @Column
     private Timestamp createDate;
 
-    private Set<VpnInterfaceVO> vpnInterfaces;
+    private List<VpnInterfaceVO> vpnInterfaces;
 
-    private Set<VpnRouteVO> vpnRoutes;
+    private List<VpnRouteVO> vpnRoutes;
 
-    public Set<VpnInterfaceVO> getVpnInterfaces() {
+    public List<VpnInterfaceVO> getVpnInterfaces() {
         return vpnInterfaces;
     }
 
-    public void setVpnInterfaces(Set<VpnInterfaceVO> vpnInterfaces) {
+    public void setVpnInterfaces(List<VpnInterfaceVO> vpnInterfaces) {
         this.vpnInterfaces = vpnInterfaces;
     }
 
-    public Set<VpnRouteVO> getVpnRoutes() {
+    public List<VpnRouteVO> getVpnRoutes() {
         return vpnRoutes;
     }
 
-    public void setVpnRoutes(Set<VpnRouteVO> vpnRoutes) {
+    public void setVpnRoutes(List<VpnRouteVO> vpnRoutes) {
         this.vpnRoutes = vpnRoutes;
     }
 
@@ -121,11 +122,11 @@ public class VpnVO {
         this.vpnCidr = vpnCidr;
     }
 
-    public Integer getBandwidth() {
+    public Long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Integer bandwidth) {
+    public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
 

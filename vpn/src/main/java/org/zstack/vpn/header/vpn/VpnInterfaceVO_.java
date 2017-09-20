@@ -9,7 +9,7 @@ import java.sql.Timestamp;
 @StaticMetamodel(VpnInterfaceVO.class)
 public class VpnInterfaceVO_ {
     public static volatile SingularAttribute<VpnHostVO, String> uuid;
-    public static volatile SingularAttribute<VpnHostVO, String> gatewayUuid;
+    public static volatile SingularAttribute<VpnHostVO, String> vpnUuid;
     public static volatile SingularAttribute<VpnHostVO, String> name;
     public static volatile SingularAttribute<VpnHostVO, String> description;
     public static volatile SingularAttribute<VpnHostVO, String> tunnel;
