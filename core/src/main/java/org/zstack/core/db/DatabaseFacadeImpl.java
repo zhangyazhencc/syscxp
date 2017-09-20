@@ -516,7 +516,7 @@ public class DatabaseFacadeImpl implements DatabaseFacade, Component {
     }
 
     @Override
-    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
+    //@Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
     public <T> T findByUuid(String uuid, Class<T> entityClass) {
         return this.getEntityManager().find(entityClass, uuid);
     }

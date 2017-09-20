@@ -62,8 +62,8 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
         UserVO user = getDbf().findByUuid(userUuid, UserVO.class);
 
         if(user.getRoleSet() != null ){
-            for (RoleVO policy : user.getRoleSet()) {
-                for (PolicyVO permission : policy.getPolicySet()) {
+            for (RoleVO role : user.getRoleSet()) {
+                for (PolicyVO permission : role.getPolicySet()) {
                     PolicyStatement p = JSONObjectUtil.toObject(permission.getPermission(), PolicyStatement.class);
                     p.setUuid(permission.getUuid());
                     p.setName(permission.getName());
