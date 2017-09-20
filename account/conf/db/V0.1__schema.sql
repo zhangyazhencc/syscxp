@@ -110,7 +110,7 @@ CREATE TABLE  `AccountApiSecurityVO` (
 CREATE TABLE  `UserVO` (
     `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
     `accountUuid` varchar(32) NOT NULL COMMENT '所属账户UUID',
-    `name` varchar(128) NOT NULL UNIQUE COMMENT '用户名称',
+    `name` varchar(128) NOT NULL COMMENT '用户名称',
     `password` varchar(128) NOT NULL COMMENT '用户密码',
     `email` varchar(36) NOT NULL COMMENT '邮箱',
     `emailStatus` varchar(36) NOT NULL COMMENT '邮箱是否认证',
