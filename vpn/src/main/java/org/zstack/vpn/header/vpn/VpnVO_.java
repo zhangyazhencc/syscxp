@@ -1,8 +1,8 @@
 package org.zstack.vpn.header.vpn;
 
 import org.zstack.vpn.header.host.VpnHostVO;
-import org.zstack.vpn.header.host.VpnState;
-import org.zstack.vpn.header.host.VpnStatus;
+import org.zstack.vpn.header.host.HostState;
+import org.zstack.vpn.header.host.HostStatus;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;

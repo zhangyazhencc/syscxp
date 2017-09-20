@@ -13,8 +13,8 @@ import javax.servlet.http.HttpServletResponse;
 public class AsyncRESTCallController {
     @Autowired
     private RESTFacadeImpl restf;
-    
-    @RequestMapping(value=RESTConstant.CALLBACK_PATH,  method={RequestMethod.POST, RequestMethod.PUT})
+
+    @RequestMapping(value = RESTConstant.CALLBACK_PATH, method = {RequestMethod.POST, RequestMethod.PUT})
     public void callback(HttpServletRequest req, HttpServletResponse rsp) {
         restf.notifyCallback(req, rsp);
     }

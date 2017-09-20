@@ -48,7 +48,7 @@ CREATE TABLE  `syscxp_vpn`.`JobQueueEntryVO` (
     PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `syscxp_vpn`.`VpnGatewayVO` (
+CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`accountUuid` varchar(32) NOT NULL COMMENT '所属账户',
 	`hostUuid` varchar(32) NOT NULL COMMENT '物理机',
@@ -110,6 +110,6 @@ CREATE TABLE  `syscxp_vpn`.`VpnHostVO` (
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-ALTER TABLE VpnGatewayVO ADD CONSTRAINT fkVpnGatewayVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE CASCADE;
-ALTER TABLE VpnInterfaceVO ADD CONSTRAINT fkTunnelIfaceVOVpnGatewayVO FOREIGN KEY (vpnUuid) REFERENCES VpnGatewayVO (uuid) ON DELETE CASCADE;
-ALTER TABLE VpnRouteVO ADD CONSTRAINT fkVpnRouteVOVpnGatewayVO FOREIGN KEY (vpnUuid) REFERENCES VpnGatewayVO (uuid) ON DELETE CASCADE;
+ALTER TABLE VpnVO ADD CONSTRAINT fkVpnGatewayVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE CASCADE;
+ALTER TABLE VpnInterfaceVO ADD CONSTRAINT fkTunnelIfaceVOVpnGatewayVO FOREIGN KEY (vpnUuid) REFERENCES VpnVO (uuid) ON DELETE CASCADE;
+ALTER TABLE VpnRouteVO ADD CONSTRAINT fkVpnRouteVOVpnGatewayVO FOREIGN KEY (vpnUuid) REFERENCES VpnVO (uuid) ON DELETE CASCADE;

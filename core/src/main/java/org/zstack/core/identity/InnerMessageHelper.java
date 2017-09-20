@@ -8,20 +8,17 @@ import org.zstack.utils.gson.JSONObjectUtil;
 
 public class InnerMessageHelper {
 
-    private static final String KEY_ = CoreGlobalProperty.INNER_MESSAGE_MD5_KEY;
-
-    private static final long EXPIRATION = CoreGlobalProperty.INNER_MESSAGE_EXPIRE;
-
     public static void setMD5(APIMessage message) {
         message.setSignature(getMD5(message));
     }
 
     public static String getMD5(APIMessage message) {
-        return DigestUtils.md5Hex(JSONObjectUtil.toJsonString(message.getDeclaredFieldAndValues()) + KEY_);
+        return DigestUtils.md5Hex(JSONObjectUtil.toJsonString(message.getDeclaredFieldAndValues())
+                + CoreGlobalProperty.INNER_MESSAGE_MD5_KEY);
     }
 
     public static Boolean validSignature(APIMessage message) {
-        if (StringUtils.isEmpty(message))
+        if (StringUtils.isEmpty(message.getSignature()))
             return false;
         String signature = message.getSignature();
         message.setSignature(null);
@@ -29,6 +26,6 @@ public class InnerMessageHelper {
     }
 
     public static Boolean isExpirate(APIMessage message) {
-        return System.currentTimeMillis() - message.getCreatedTime() > EXPIRATION * 1000;
+        return System.currentTimeMillis() - message.getCreatedTime() > CoreGlobalProperty.INNER_MESSAGE_EXPIRE * 1000;
     }
 }

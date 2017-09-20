@@ -27,10 +27,10 @@ public class VpnHostVO {
     private String sshPort;
     @Column
     @Enumerated(EnumType.STRING)
-    private VpnState state;
+    private HostState state;
     @Column
     @Enumerated(EnumType.STRING)
-    private VpnStatus status;
+    private HostStatus status;
     @Column
     private String username;
     @Column
@@ -57,19 +57,19 @@ public class VpnHostVO {
     }
 
 
-    public VpnState getState() {
+    public HostState getState() {
         return state;
     }
 
-    public void setState(VpnState state) {
+    public void setState(HostState state) {
         this.state = state;
     }
 
-    public VpnStatus getStatus() {
+    public HostStatus getStatus() {
         return status;
     }
 
-    public void setStatus(VpnStatus status) {
+    public void setStatus(HostStatus status) {
         this.status = status;
     }
 

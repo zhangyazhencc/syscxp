@@ -1,13 +1,9 @@
 package org.zstack.vpn.header.vpn;
 
 import org.zstack.header.search.TriggerIndex;
-import org.zstack.vpn.header.host.VpnState;
-import org.zstack.vpn.header.host.VpnStatus;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.List;
-import java.util.Set;
 
 @Entity
 @Table
@@ -46,26 +42,6 @@ public class VpnVO {
     @Column
     private Timestamp createDate;
 
-    private List<VpnInterfaceVO> vpnInterfaces;
-
-    private List<VpnRouteVO> vpnRoutes;
-
-    public List<VpnInterfaceVO> getVpnInterfaces() {
-        return vpnInterfaces;
-    }
-
-    public void setVpnInterfaces(List<VpnInterfaceVO> vpnInterfaces) {
-        this.vpnInterfaces = vpnInterfaces;
-    }
-
-    public List<VpnRouteVO> getVpnRoutes() {
-        return vpnRoutes;
-    }
-
-    public void setVpnRoutes(List<VpnRouteVO> vpnRoutes) {
-        this.vpnRoutes = vpnRoutes;
-    }
-
     public String getUuid() {
         return uuid;
     }
@@ -80,6 +56,10 @@ public class VpnVO {
 
     public void setState(VpnState state) {
         this.state = state;
+    }
+
+    public void setStatus(VpnStatus status) {
+        this.status = status;
     }
 
     public String getAccountUuid() {
@@ -139,12 +119,7 @@ public class VpnVO {
     }
 
     public VpnStatus getStatus() {
-
         return status;
-    }
-
-    public void setStatus(VpnStatus status) {
-        this.status = status;
     }
 
     public Integer getMonths() {

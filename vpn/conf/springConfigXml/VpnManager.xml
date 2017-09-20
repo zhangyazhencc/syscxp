@@ -27,7 +27,7 @@
 
     <bean id="VpnManager" class="org.zstack.vpn.manage.VpnManagerImpl">
         <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.apimediator.GlobalApiMessageInterceptor"/>
+            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
             <zstack:extension interface="org.zstack.header.Service"/>
         </zstack:plugin>
 

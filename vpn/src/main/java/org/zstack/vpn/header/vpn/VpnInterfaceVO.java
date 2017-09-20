@@ -6,6 +6,8 @@ import org.zstack.header.vo.ForeignKey.ReferenceOption;
 import javax.persistence.*;
 import java.sql.Timestamp;
 
+@Entity
+@Table
 public class VpnInterfaceVO {
     @Id
     @Column

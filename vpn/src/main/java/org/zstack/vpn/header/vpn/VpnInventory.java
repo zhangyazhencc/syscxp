@@ -2,8 +2,6 @@ package org.zstack.vpn.header.vpn;
 
 import org.springframework.util.CollectionUtils;
 import org.zstack.header.search.Inventory;
-import org.zstack.vpn.header.host.VpnState;
-import org.zstack.vpn.header.host.VpnStatus;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -45,10 +43,6 @@ public class VpnInventory {
         inv.setExpiredDate(vo.getExpiredDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
-        if (!CollectionUtils.isEmpty(vo.getVpnInterfaces()))
-            inv.setInterfaceInventories(VpnInterfaceInventory.valueOf(vo.getVpnInterfaces()));
-        if (!CollectionUtils.isEmpty(vo.getVpnRoutes()))
-            inv.setRouteInventories(VpnRouteInventory.valueOf(vo.getVpnRoutes()));
         return inv;
     }
 

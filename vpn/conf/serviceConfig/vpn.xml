@@ -32,7 +32,7 @@
         <name>org.zstack.vpn.header.vpn.APICreateVpnInterfaceMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.APIUpdateTunnelIfaceMsgg</name>
+        <name>org.zstack.vpn.header.vpn.APIUpdateVpnInterfaceMsg</name>
     </message>
     <message>
         <name>org.zstack.vpn.header.vpn.APIDeleteVpnInterfaceMsg</name>

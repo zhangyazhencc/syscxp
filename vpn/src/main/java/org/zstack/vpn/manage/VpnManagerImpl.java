@@ -2,13 +2,13 @@ package org.zstack.vpn.manage;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponentsBuilder;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.header.AbstractService;
-import org.zstack.header.Constants;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.core.ReturnValueCompletion;
@@ -17,22 +17,28 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.header.rest.JsonAsyncRESTCallback;
 import org.zstack.header.rest.RESTFacade;
-import org.zstack.vpn.header.host.VpnState;
-import org.zstack.vpn.header.host.VpnStatus;
+import org.zstack.utils.Utils;
+import org.zstack.utils.logging.CLogger;
+import org.zstack.vpn.header.host.HostState;
+import org.zstack.vpn.header.host.HostStatus;
 import org.zstack.vpn.header.vpn.*;
 import org.zstack.vpn.manage.VpnCommands.*;
 import org.zstack.vpn.header.host.*;
 
+import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
 
 import static org.zstack.core.Platform.argerr;
+import static org.zstack.core.Platform.operr;
+
 
 public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMessageInterceptor {
+    private static final CLogger logger = Utils.getLogger(VpnManagerImpl.class);
 
     @Autowired
     private CloudBus bus;
@@ -86,17 +92,18 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APIGetVpnMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
 
+        VpnInventory inventory = VpnInventory.valueOf(vpn);
+
         SimpleQuery query = dbf.createQuery(VpnInterfaceVO.class);
         query.add(VpnInterfaceVO_.vpnUuid, SimpleQuery.Op.EQ, msg.getUuid());
-        vpn.setVpnInterfaces(query.list());
+        inventory.setInterfaceInventories(VpnInterfaceInventory.valueOf(query.list()));
 
         query = dbf.createQuery(VpnRouteVO.class);
         query.add(VpnRouteVO_.vpnUuid, SimpleQuery.Op.EQ, msg.getUuid());
-        vpn.setVpnRoutes(query.list());
+        inventory.setRouteInventories(VpnRouteInventory.valueOf(query.list()));
 
         APIGetVpnReply reply = new APIGetVpnReply();
-        reply.setInventory(VpnInventory.valueOf(vpn));
-
+        reply.setInventory(inventory);
         bus.reply(msg, reply);
     }
 
@@ -136,8 +143,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         host.setSshPort(msg.getSshPort());
         host.setUsername(msg.getUsername());
         host.setPassword(msg.getPassword());
-        host.setState(VpnState.Enabled);
-        host.setStatus(VpnStatus.Connecting);
+        host.setState(HostState.Enabled);
+        host.setStatus(HostStatus.Connecting);
 
         host = dbf.persistAndRefresh(host);
         APICreateVpnHostEvent evt = new APICreateVpnHostEvent(msg.getId());
@@ -146,25 +153,53 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void handle(APICreateVpnMsg msg) {
-        VpnVO gateway = new VpnVO();
-        gateway.setUuid(Platform.getUuid());
-        gateway.setAccountUuid(msg.getSession().getAccountUuid());
-        gateway.setHostUuid(msg.getHostUuid());
-        gateway.setName(msg.getDescription());
-        gateway.setVpnCidr(msg.getVpnCidr());
-        gateway.setBandwidth(msg.getBandwidth());
-        gateway.setEndpointUuid(msg.getEndpoint());
-        gateway.setState(VpnState.Enabled);
-        gateway.setStatus(VpnStatus.Connecting);
-        gateway.setMonths(msg.getMonths());
-        gateway.setExpiredDate(Timestamp.valueOf(LocalDateTime.now()
+        final VpnVO vpn = new VpnVO();
+        vpn.setUuid(Platform.getUuid());
+        vpn.setAccountUuid(msg.getSession().getAccountUuid());
+        vpn.setHostUuid(msg.getHostUuid());
+        vpn.setName(msg.getDescription());
+        vpn.setVpnCidr(msg.getVpnCidr());
+        vpn.setBandwidth(msg.getBandwidth());
+        vpn.setEndpointUuid(msg.getEndpoint());
+        vpn.setState(VpnState.Disabled);
+        vpn.setStatus(VpnStatus.Disconnected);
+        vpn.setMonths(msg.getMonths());
+        vpn.setExpiredDate(Timestamp.valueOf(LocalDateTime.now()
                 .plus(msg.getMonths(), ChronoUnit.MONTHS)));
 
-        // Todo create order
-        gateway = dbf.persistAndRefresh(gateway);
+        CreateVpnCmd cmd = new CreateVpnCmd();
+        cmd.setVpnUuid(vpn.getUuid());
+        cmd.setHostIp(vpn.getHostUuid());
+        cmd.setBandwidth(vpn.getBandwidth());
+        cmd.setMonths(vpn.getMonths());
+        cmd.setVpnCidr(vpn.getVpnCidr());
+
+
         APICreateVpnEvent evt = new APICreateVpnEvent(msg.getId());
-        evt.setInventory(VpnInventory.valueOf(gateway));
-        bus.publish(evt);
+
+        new Http<>(VpnConstant.CREATE_VPN_PATH, cmd, CreateVpnResponse.class).call(new ReturnValueCompletion<CreateVpnResponse>(msg) {
+            @Override
+            public void success(CreateVpnResponse ret) {
+                if (!ret.isSuccess()) {
+                    logger.debug(String.format("[%s,%s]>>> callback fail", ret.getClass().getSimpleName(), ret.isSuccess()));
+                    evt.setError(operr(ret.getError()));
+                } else {
+                    // Todo create order
+                    logger.debug(">>> callback success");
+
+                    evt.setInventory(VpnInventory.valueOf(dbf.persistAndRefresh(vpn)));
+                }
+                bus.publish(evt);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.debug(String.format("[%s:%s]>>> callback fail", errorCode.getCode(), errorCode.getDescription()));
+                evt.setError(errorCode);
+                bus.publish(evt);
+            }
+        });
+
     }
 
     private void handle(APIUpdateVpnMsg msg) {
@@ -374,7 +409,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             Map<String, String> header = new HashMap<>();
             header.put(VpnConstant.HTTP_HEADER_VPN_UUID, cmd.getVpnUuid());
             header.put(VpnConstant.HTTP_HEADER_VPN_HOST_IP, cmd.getHostIp());
-            restf.asyncJsonPost(path, cmd, header, new JsonAsyncRESTCallback<T>(completion) {
+            restf.asyncJsonPost(buildUrl(path), cmd, header, new JsonAsyncRESTCallback<T>(completion) {
                 @Override
                 public void fail(ErrorCode err) {
                     completion.fail(err);
@@ -390,6 +425,16 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     return responseClass;
                 }
             });
+            logger.debug(">>> call vpn controller");
         }
     }
+
+    private String buildUrl(String path) {
+        UriComponentsBuilder ub = UriComponentsBuilder
+                .fromHttpUrl(VpnConstant.MANAGER_URL)
+                .path(path);
+
+        return ub.build().toUriString();
+    }
+
 }

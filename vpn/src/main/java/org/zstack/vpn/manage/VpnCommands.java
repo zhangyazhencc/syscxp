@@ -51,6 +51,12 @@ public class VpnCommands {
         }
     }
 
+    public static class CheckVpnHostStateCmd extends AgentCommand{
+    }
+
+    public static class CheckVpnHostStateResponse extends AgentResponse{
+
+    }
     public static class CreateVpnCmd extends AgentCommand{
         private Long bandwidth;
         private String vpnCidr;

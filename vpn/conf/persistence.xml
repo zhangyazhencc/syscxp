@@ -8,11 +8,12 @@
         <class>org.zstack.header.managementnode.ManagementNodeVO</class>
         <class>org.zstack.core.job.JobQueueVO</class>
         <class>org.zstack.core.job.JobQueueEntryVO</class>
+        <class>org.zstack.core.notification.NotificationVO</class>
 
         <class>org.zstack.vpn.header.vpn.VpnVO</class>
         <class>org.zstack.vpn.header.vpn.VpnRouteVO</class>
         <class>org.zstack.vpn.header.vpn.VpnInterfaceVO</class>
         <class>org.zstack.vpn.header.host.VpnHostVO</class>
-
+        <class>org.zstack.vpn.header.vpn.VpnKeyVO</class>
     </persistence-unit>
 </persistence>
