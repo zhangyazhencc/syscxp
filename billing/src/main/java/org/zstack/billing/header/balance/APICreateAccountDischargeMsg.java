@@ -11,9 +11,6 @@ public class APICreateAccountDischargeMsg extends APIMessage {
     private String accountUuid;
 
     @APIParam
-    private ProductType productType;
-
-    @APIParam
     private Category category;
 
     @APIParam(numberRange = {1,100})
@@ -25,14 +22,6 @@ public class APICreateAccountDischargeMsg extends APIMessage {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
-    }
-
-    public ProductType getProductType() {
-        return productType;
-    }
-
-    public void setProductType(ProductType productType) {
-        this.productType = productType;
     }
 
     public Category getCategory() {

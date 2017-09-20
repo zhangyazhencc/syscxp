@@ -1,4 +1,4 @@
-package org.zstack.header.alipay;
+package org.zstack.billing.header.balance;
 
 import org.zstack.header.message.APIReply;
 import org.zstack.header.rest.RestResponse;
