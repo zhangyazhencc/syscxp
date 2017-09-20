@@ -10,7 +10,7 @@ import org.zstack.header.notification.ApiNotification;
 @Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, accountOnly = true)
 public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
 
-    @APIParam(required = true)
+    @APIParam
     private String uuid;
 
     @APIParam(maxLength = 36, required = false)
@@ -28,7 +28,6 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
     private AccountGrade grade;
     @APIParam(maxLength = 36, required = false)
     private String userUuid;
-
 
     @APIParam(maxLength = 128, required = false)
     private AccountStatus status;
