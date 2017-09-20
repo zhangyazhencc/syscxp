@@ -78,6 +78,10 @@
     </message>
 
     <message>
+        <name>org.zstack.billing.header.sla.APIUpdateSLACompensateStateMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.billing.header.bill.APIGetBillMsg</name>
     </message>
 
