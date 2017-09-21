@@ -3,13 +3,15 @@ package org.zstack.account.header.user;
 import org.zstack.account.header.account.AccountConstant;
 import org.zstack.account.header.account.AccountMessage;
 import org.zstack.header.identity.Action;
+import org.zstack.header.identity.UserCredentialCheck;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 /**
  * Created by wangwg on 2017/8/8.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY_USER)
+@UserCredentialCheck
+@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
 public class APIUpdateUserPhoneMsg extends APIMessage implements AccountMessage {
 
     @APIParam
