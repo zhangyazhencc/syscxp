@@ -5,5 +5,6 @@ public enum DealType {
     DEDUCTION,
     RECHARGE,
     REFUND,
-    PROXY_RECHARGE
+    PROXY_RECHARGE,
+    PRESENT
 }

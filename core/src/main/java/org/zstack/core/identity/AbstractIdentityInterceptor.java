@@ -340,7 +340,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                 }
             }
 
-            if (msg.getClass().isAnnotationPresent(UserCredentialCheck.class)){
+            if (msg.getClass().isAnnotationPresent(SuppressUserCredentialCheck.class)){
                 return;
             }
 

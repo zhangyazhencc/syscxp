@@ -3,12 +3,13 @@ package org.zstack.billing.header.bill;
 import org.zstack.header.billing.ProductType;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 
 public class Monetary {
 
     private ProductType type;
 
-    private BigDecimal categoryCount;
+    private BigInteger categoryCount;
 
     private BigDecimal payPresentTotal;
 
@@ -17,7 +18,7 @@ public class Monetary {
     public Monetary(){}
     public Monetary(Object[] objs) {
         type = ProductType.valueOf((String) objs[0]);
-        categoryCount = (BigDecimal) objs[1];
+        categoryCount = (BigInteger) objs[1];
         payPresentTotal = (BigDecimal) objs[2];
         payCashTotal = (BigDecimal) objs[3];
     }
@@ -30,11 +31,11 @@ public class Monetary {
         this.type = type;
     }
 
-    public BigDecimal getCategoryCount() {
+    public BigInteger getCategoryCount() {
         return categoryCount;
     }
 
-    public void setCategoryCount(BigDecimal categoryCount) {
+    public void setCategoryCount(BigInteger categoryCount) {
         this.categoryCount = categoryCount;
     }
 

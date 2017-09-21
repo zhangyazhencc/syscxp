@@ -2,13 +2,13 @@ package org.zstack.vpn.header.vpn;
 
 import org.zstack.header.message.APIEvent;
 
-public class APIUpdateVpnBindwidthEvent extends APIEvent{
+public class APIUpdateVpnBandwidthEvent extends APIEvent{
     VpnInventory inventory;
 
-    public APIUpdateVpnBindwidthEvent() {
+    public APIUpdateVpnBandwidthEvent() {
     }
 
-    public APIUpdateVpnBindwidthEvent(String apiId) {
+    public APIUpdateVpnBandwidthEvent(String apiId) {
         super(apiId);
     }
 

@@ -3,7 +3,7 @@ package org.zstack.account.header.identity;
 import org.zstack.account.header.account.AccountConstant;
 import org.zstack.account.header.user.UserVO;
 import org.zstack.header.identity.Action;
-import org.zstack.header.identity.UserCredentialCheck;
+import org.zstack.header.identity.SuppressUserCredentialCheck;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;
 
@@ -14,7 +14,7 @@ import static org.zstack.utils.CollectionDSL.list;
 /**
  * Created by xing5 on 2016/3/10.
  */
-@UserCredentialCheck
+@SuppressUserCredentialCheck
 @Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
 public class APICheckApiPermissionMsg extends APISyncCallMessage {
     @APIParam(required = false, resourceType = UserVO.class)

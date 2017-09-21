@@ -3,7 +3,7 @@ package org.zstack.account.header.user;
 import org.zstack.account.header.account.AccountConstant;
 import org.zstack.account.header.account.AccountMessage;
 import org.zstack.header.identity.Action;
-import org.zstack.header.identity.UserCredentialCheck;
+import org.zstack.header.identity.SuppressUserCredentialCheck;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
@@ -13,7 +13,7 @@ import org.zstack.header.notification.ApiNotification;
  * Created by wangwg on 2017/08/09.
  * modify by wangwg on 2017/09/14.
  */
-@UserCredentialCheck
+@SuppressUserCredentialCheck
 @Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"})
 public class APIUpdateUserEmailMsg extends APIMessage implements AccountMessage {
 

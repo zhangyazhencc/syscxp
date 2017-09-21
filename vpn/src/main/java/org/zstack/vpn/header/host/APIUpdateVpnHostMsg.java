@@ -16,7 +16,9 @@ public class APIUpdateVpnHostMsg extends APIMessage{
     @APIParam(required = false)
     private String description;
     @APIParam(required = false)
-    private String publicIface;
+    private String publicInterface;
+    @APIParam(required = false)
+    private String publicIp;
     @APIParam(required = false)
     private String manageIp;
     @APIParam(required = false)
@@ -25,6 +27,16 @@ public class APIUpdateVpnHostMsg extends APIMessage{
     private String username;
     @APIParam(required = false)
     private String password;
+    @APIParam(required = false)
+    private String zoneUuid;
+
+    public String getZoneUuid() {
+        return zoneUuid;
+    }
+
+    public void setZoneUuid(String zoneUuid) {
+        this.zoneUuid = zoneUuid;
+    }
 
     public String getUuid() {
         return uuid;
@@ -50,12 +62,20 @@ public class APIUpdateVpnHostMsg extends APIMessage{
         this.description = description;
     }
 
-    public String getPublicIface() {
-        return publicIface;
+    public String getPublicIp() {
+        return publicIp;
     }
 
-    public void setPublicIface(String publicIface) {
-        this.publicIface = publicIface;
+    public void setPublicIp(String publicIp) {
+        this.publicIp = publicIp;
+    }
+
+    public String getPublicInterface() {
+        return publicInterface;
+    }
+
+    public void setPublicInterface(String publicInterface) {
+        this.publicInterface = publicInterface;
     }
 
     public String getManageIp() {
