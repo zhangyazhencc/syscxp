@@ -1,36 +1,21 @@
 package org.zstack.vpn.manage;
 
-import org.zstack.core.validation.ConditionalValidation;
+import org.zstack.header.agent.AgentResponse;
+import org.zstack.header.agent.AgentCommand;
 
 public class VpnCommands {
 
-    public static class AgentResponse implements ConditionalValidation {
-        private boolean success = true;
-        private String error;
 
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public void setSuccess(boolean success) {
-            this.success = success;
-        }
-
-        public String getError() {
-            return error;
-        }
-
-        public void setError(String error) {
-            this.error = error;
-            this.success = false;
-        }
-
-        @Override
-        public boolean needValidation() {
-            return success;
-        }
+    public static class CheckVpnHostStateCmd extends AgentCommand{
     }
-    public static class AgentCommand {
+
+    public static class CheckVpnHostStateResponse extends AgentResponse {
+
+    }
+    public static class CreateVpnCmd extends AgentCommand{
+        private Long bandwidth;
+        private String vpnCidr;
+        private Integer months;
         private String hostIp;
         private String vpnUuid;
 
@@ -49,19 +34,6 @@ public class VpnCommands {
         public void setVpnUuid(String vpnUuid) {
             this.vpnUuid = vpnUuid;
         }
-    }
-
-    public static class CheckVpnHostStateCmd extends AgentCommand{
-    }
-
-    public static class CheckVpnHostStateResponse extends AgentResponse{
-
-    }
-    public static class CreateVpnCmd extends AgentCommand{
-        private Long bandwidth;
-        private String vpnCidr;
-        private Integer months;
-
         public Long getBandwidth() {
             return bandwidth;
         }

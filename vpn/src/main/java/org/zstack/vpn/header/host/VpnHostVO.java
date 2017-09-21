@@ -15,7 +15,7 @@ public class VpnHostVO {
     @Column
     private String name;
     @Column
-    @ForeignKey(parentEntityClass = ZoneVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.SET_NULL)
+    @ForeignKey(parentEntityClass = ZoneVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.RESTRICT)
     private String zoneUuid;
     @Column
     private String description;
