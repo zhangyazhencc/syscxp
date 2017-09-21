@@ -459,8 +459,20 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             validate((APIQueryVpnMsg) msg);
         } else if (msg instanceof APIUpdateVpnMsg) {
             validate((APIUpdateVpnMsg) msg);
+        } else if (msg instanceof APICreateZoneMsg) {
+            validate((APICreateZoneMsg) msg);
         }
         return msg;
+    }
+
+    private void validate(APICreateZoneMsg msg) {
+        SimpleQuery query = dbf.createQuery(ZoneVO.class);
+        query.add(ZoneVO_.name, SimpleQuery.Op.EQ, msg.getName());
+        if (query.isExists()) {
+            throw new ApiMessageInterceptionException(argerr(
+                    "The Zone[name:%s] is already exist.", msg.getName()
+            ));
+        }
     }
 
 
