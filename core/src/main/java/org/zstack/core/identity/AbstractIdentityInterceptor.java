@@ -338,6 +338,10 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                 }
             }
 
+            if (msg.getClass().isAnnotationPresent(UserCredentialCheck.class)){
+                return;
+            }
+
             List<PolicyStatement> userPolicys = session.getPolicyStatements();
             Decision d = decide(userPolicys);
             if (d != null) {

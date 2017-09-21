@@ -2,6 +2,7 @@ package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.account.header.account.AccountVO;
 import org.zstack.account.header.user.UserVO;
@@ -56,10 +57,11 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
         return session;
     }
 
-    @Transactional
+    @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
     public List<PolicyStatement> getUserPolicyStatements(String userUuid){
         List<PolicyStatement> policyStatements = new ArrayList<>();
-        UserVO user = dbf.findByUuid(userUuid, UserVO.class);
+        //UserVO user = dbf.findByUuid(userUuid, UserVO.class);
+        UserVO user = dbf.getEntityManager().find(UserVO.class, userUuid);
 
         if(user.getRoleSet() != null ){
             for (RoleVO role : user.getRoleSet()) {
