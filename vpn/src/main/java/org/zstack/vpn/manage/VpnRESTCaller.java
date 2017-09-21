@@ -3,11 +3,8 @@ package org.zstack.vpn.manage;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.web.util.UriComponentsBuilder;
-import org.zstack.core.rest.RESTApiDecoder;
+import org.zstack.header.agent.AgentCommand;
 import org.zstack.header.exception.CloudRuntimeException;
-import org.zstack.header.message.APIMessage;
-import org.zstack.header.rest.RESTConstant;
 import org.zstack.header.rest.RESTFacade;
 import org.zstack.header.rest.RestAPIResponse;
 import org.zstack.header.rest.RestAPIState;
@@ -19,35 +16,35 @@ import org.zstack.utils.logging.CLogger;
 import java.util.concurrent.TimeUnit;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
-public class SyncRESTCaller {
-    private static final CLogger logger = Utils.getLogger(SyncRESTCaller.class);
+public class VpnRESTCaller {
+    private static final CLogger logger = Utils.getLogger(VpnRESTCaller.class);
     @Autowired
     private RESTFacade restf;
 
     private String baseUrl;
 
-    public SyncRESTCaller(String baseUrl) {
+    public VpnRESTCaller(String baseUrl) {
         this.baseUrl = baseUrl;
     }
 
-    public SyncRESTCaller() {
-        this("http://localhost:5000");
+    public VpnRESTCaller() {
+        this(VpnGlobalProperty.VPN_CONTROLLER_URL);
     }
 
-    private RestAPIResponse queryResponse(String uuid) {
-        String url =  URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_RESULT, uuid);
+    private RestAPIResponse checkState(String path, AgentCommand cmd) {
+        String url =  URLBuilder.buildUrlFromBase(baseUrl, path);
         String res = restf.getRESTTemplate().getForObject(url, String.class);
         return JSONObjectUtil.toObject(res, RestAPIResponse.class);
     }
 
-    public RestAPIResponse syncPost(String path, APIMessage msg, long interval, long timeout) throws InterruptedException {
-        String msgStr = RESTApiDecoder.dump(msg);
+    public RestAPIResponse syncPost(String path, AgentCommand cmd, long interval, long timeout) throws InterruptedException {
+        String cmdStr = JSONObjectUtil.toJsonString(cmd);
         String url = URLBuilder.buildUrlFromBase(baseUrl, path);
-        RestAPIResponse rsp = restf.syncJsonPost(url, msgStr, RestAPIResponse.class);
+        RestAPIResponse rsp = restf.syncJsonPost(url, cmdStr, RestAPIResponse.class);
         long curr = 0;
         while (!rsp.getState().equals(RestAPIState.Done.toString()) && curr < timeout) {
             Thread.sleep(interval);
-            rsp = queryResponse(rsp.getUuid());
+            rsp = checkState(path,cmd);
             curr += interval;
         }
 
@@ -58,8 +55,9 @@ public class SyncRESTCaller {
         return rsp;
     }
 
-    public RestAPIResponse syncPost(String url, APIMessage msg) throws InterruptedException {
-        return syncPost(url, msg, 500, TimeUnit.SECONDS.toMillis(15));
+
+    public RestAPIResponse syncPost(String url, AgentCommand cmd) throws InterruptedException {
+        return syncPost(url, cmd, 0, TimeUnit.SECONDS.toMillis(15));
     }
 
 }
