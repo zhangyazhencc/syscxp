@@ -524,7 +524,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         LocalTime time = LocalTime.MIN;
         localDateTime =  LocalDateTime.of(date,time);
         String accountUuid = msg.getSession().getAccountUuid();
-        String sql = "select count(*) as categoryCount, sum(payPresent) as payPresentTotal,sum(payCash) as payCashTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and payTime BETWEEN :dateStart and  :dateEnd  group by productType ";
+        String sql = "select productType, count(*) as categoryCount, sum(payPresent) as payPresentTotal,sum(payCash) as payCashTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and payTime BETWEEN :dateStart and  :dateEnd  group by productType ";
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("accountUuid", accountUuid);
         q.setParameter("dateStart", Timestamp.valueOf(localDateTime));
@@ -1372,7 +1372,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     }
 
-    @Transactional
+    @Transactional(readOnly=true)
     private BigDecimal getValueblePayCash(String accountUuid, String productUuid) {
         BigDecimal total = BigDecimal.ZERO;
         SimpleQuery<OrderVO> query = dbf.createQuery(OrderVO.class);
@@ -1453,9 +1453,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setType(DealType.PROXY_RECHARGE);
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(vo.getCashBalance());
-            dVO.setOutTradeNO(outTradeNO);
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
-            dVO.setTradeNO(msg.getTradeNO());
+            dVO.setOutTradeNO(msg.getTradeNO());
             dVO.setComment(msg.getComment());
 
             dbf.persist(dVO);

@@ -20,7 +20,7 @@
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>org.zstack.billing.header.balance.AccountBalanceVO</value>
+                <value>org.zstack.header.billing.AccountBalanceVO</value>
                 <value>org.zstack.header.billing.OrderVO</value>
                 <value>org.zstack.billing.header.bill.BillVO</value>
                 <value>org.zstack.billing.header.renew.RenewVO</value>

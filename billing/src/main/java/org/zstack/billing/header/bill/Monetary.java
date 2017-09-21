@@ -8,7 +8,7 @@ public class Monetary {
 
     private ProductType type;
 
-    private Integer categoryCount;
+    private BigDecimal categoryCount;
 
     private BigDecimal payPresentTotal;
 
@@ -17,7 +17,7 @@ public class Monetary {
     public Monetary(){}
     public Monetary(Object[] objs) {
         type = ProductType.valueOf((String) objs[0]);
-        categoryCount = (Integer) objs[1];
+        categoryCount = (BigDecimal) objs[1];
         payPresentTotal = (BigDecimal) objs[2];
         payCashTotal = (BigDecimal) objs[3];
     }
@@ -30,11 +30,11 @@ public class Monetary {
         this.type = type;
     }
 
-    public Integer getCategoryCount() {
+    public BigDecimal getCategoryCount() {
         return categoryCount;
     }
 
-    public void setCategoryCount(Integer categoryCount) {
+    public void setCategoryCount(BigDecimal categoryCount) {
         this.categoryCount = categoryCount;
     }
 
