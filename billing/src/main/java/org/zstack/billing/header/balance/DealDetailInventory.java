@@ -26,6 +26,7 @@ public class DealDetailInventory {
     private String outTradeNO;
     private String tradeNO;
     private String opAccountUuid;
+    private String comment;
 
     public static DealDetailInventory valueOf(DealDetailVO vo) {
         DealDetailInventory inv = new DealDetailInventory();
@@ -43,7 +44,7 @@ public class DealDetailInventory {
         inv.setTradeNO(vo.getTradeNO());
         inv.setOutTradeNO(vo.getOutTradeNO());
         inv.setOpAccountUuid(vo.getOpAccountUuid());
-
+        inv.setComment(vo.getComment());
         return inv;
     }
 
@@ -165,5 +166,13 @@ public class DealDetailInventory {
 
     public void setOpAccountUuid(String opAccountUuid) {
         this.opAccountUuid = opAccountUuid;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }
