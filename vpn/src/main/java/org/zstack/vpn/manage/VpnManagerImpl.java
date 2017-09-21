@@ -106,7 +106,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void handle(APIDeleteZoneMsg msg) {
-        dbf.removeByPrimaryKey(msg.getUuid(), HostInterfaceVO.class);
+        dbf.removeByPrimaryKey(msg.getUuid(), ZoneVO.class);
         APIDeleteZoneEvent evt = new APIDeleteZoneEvent(msg.getId());
         bus.publish(evt);
     }
@@ -114,19 +114,19 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APIUpdateZoneMsg msg) {
         ZoneVO zone = dbf.findByUuid(msg.getUuid(), ZoneVO.class);
         boolean update = false;
-        if (StringUtils.isEmpty(msg.getName())) {
+        if (!StringUtils.isEmpty(msg.getName())) {
             zone.setName(msg.getName());
             update = true;
         }
-        if (StringUtils.isEmpty(msg.getDescription())) {
+        if (!StringUtils.isEmpty(msg.getDescription())) {
             zone.setDescription(msg.getDescription());
             update = true;
         }
-        if (StringUtils.isEmpty(msg.getNodeUuid())) {
+        if (!StringUtils.isEmpty(msg.getNodeUuid())) {
             zone.setNodeUuid(msg.getNodeUuid());
             update = true;
         }
-        if (StringUtils.isEmpty(msg.getProvince())) {
+        if (!StringUtils.isEmpty(msg.getProvince())) {
             zone.setProvince(msg.getProvince());
             update = true;
         }
@@ -207,39 +207,39 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APIUpdateVpnHostMsg msg) {
         VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
         boolean update = false;
-        if (StringUtils.isEmpty(msg.getName())) {
+        if (!StringUtils.isEmpty(msg.getName())) {
             host.setName(msg.getName());
             update = true;
         }
-        if (StringUtils.isEmpty(msg.getDescription())) {
+        if (!StringUtils.isEmpty(msg.getDescription())) {
             host.setDescription(msg.getDescription());
             update = true;
         }
-        if (StringUtils.isEmpty(msg.getPublicInterface())) {
+        if (!StringUtils.isEmpty(msg.getPublicInterface())) {
             host.setPublicInterface(msg.getPublicInterface());
             update = true;
         }
-        if (StringUtils.isEmpty(msg.getPublicIp())) {
+        if (!StringUtils.isEmpty(msg.getPublicIp())) {
             host.setPublicIp(msg.getPublicIp());
             update = true;
         }
-        if (StringUtils.isEmpty(msg.getManageIp())) {
+        if (!StringUtils.isEmpty(msg.getManageIp())) {
             host.setManageIp(msg.getManageIp());
             update = true;
         }
-        if (StringUtils.isEmpty(msg.getSshPort())) {
+        if (!StringUtils.isEmpty(msg.getSshPort())) {
             host.setSshPort(msg.getSshPort());
             update = true;
         }
-        if (StringUtils.isEmpty(msg.getUsername())) {
+        if (!StringUtils.isEmpty(msg.getUsername())) {
             host.setUsername(msg.getUsername());
             update = true;
         }
-        if (StringUtils.isEmpty(msg.getPassword())) {
+        if (!StringUtils.isEmpty(msg.getPassword())) {
             host.setPassword(msg.getPassword());
             update = true;
         }
-        if (StringUtils.isEmpty(msg.getZoneUuid())) {
+        if (!StringUtils.isEmpty(msg.getZoneUuid())) {
             host.setZoneUuid(msg.getZoneUuid());
             update = true;
         }
@@ -321,11 +321,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APIUpdateVpnMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         boolean update = false;
-        if (StringUtils.isEmpty(msg.getName())) {
+        if (!StringUtils.isEmpty(msg.getName())) {
             vpn.setName(msg.getName());
             update = true;
         }
-        if (StringUtils.isEmpty(msg.getDescription())) {
+        if (!StringUtils.isEmpty(msg.getDescription())) {
             vpn.setDescription(msg.getDescription());
             update = true;
         }
@@ -477,7 +477,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
 
     private void validate(APIUpdateVpnMsg msg) {
-        if (StringUtils.isEmpty(msg.getName())) {
+        if (!StringUtils.isEmpty(msg.getName())) {
             SimpleQuery query = dbf.createQuery(VpnVO.class);
             query.add(VpnVO_.name, SimpleQuery.Op.EQ, msg.getName());
             query.add(VpnVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
@@ -516,7 +516,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APIUpdateVpnHostMsg msg) {
-        if (StringUtils.isEmpty(msg.getName())) {
+        if (!StringUtils.isEmpty(msg.getName())) {
             SimpleQuery query = dbf.createQuery(VpnHostVO.class);
             query.add(VpnHostVO_.name, SimpleQuery.Op.EQ, msg.getName());
             query.add(VpnHostVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
