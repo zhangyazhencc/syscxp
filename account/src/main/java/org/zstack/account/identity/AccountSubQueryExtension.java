@@ -1,6 +1,7 @@
 package org.zstack.account.identity;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.zstack.account.header.account.APIQueryAccountMsg;
 import org.zstack.account.header.account.AccountConstant;
 import org.zstack.account.header.account.AccountVO;
 import org.zstack.account.header.account.AccountVO_;
@@ -37,7 +38,8 @@ public class AccountSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
 
         //String priKey = QueryUtils.getPrimaryKeyNameFromEntityClass(entityClass);\
 
-        if(msg.getSession().getType() == AccountType.Proxy){
+        if(msg instanceof APIQueryAccountMsg){
+
             StringBuffer uuidlist = new StringBuffer() ;
             uuidlist.append("");
             SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
@@ -48,15 +50,22 @@ public class AccountSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
                     uuidlist.append("'" + ps.getCustomerAcccountUuid().toString() + "',");
                 }
             }
+
             if(uuidlist.length() > 0){
                 uuidlist.substring(0,uuidlist.length());
+                return String.format("%s.uuid in (%s)", inventoryClass.getSimpleName().toLowerCase()
+                        , uuidlist) ;
+            }else{
+                return String.format("%s.uuid = '%s'", inventoryClass.getSimpleName().toLowerCase()
+                        , msg.getSession().getAccountUuid()) ;
             }
-            return String.format("%s.uuid in (%s)", inventoryClass.getSimpleName().toLowerCase()
-                    , uuidlist) ;
+
+        }else{
+            return String.format("%s.accountUuid = '%s'", inventoryClass.getSimpleName().toLowerCase()
+                    , msg.getSession().getAccountUuid()) ;
         }
 
-        return String.format("%s.accountUuid = '%s'", inventoryClass.getSimpleName().toLowerCase()
-                , msg.getSession().getAccountUuid()) ;
+
 
     }
 }
