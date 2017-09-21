@@ -57,6 +57,9 @@ public class DealDetailVO {
     private String tradeNO;
 
     @Column
+    private String comment;
+
+    @Column
     private String opAccountUuid;
 
     public String getOutTradeNO() {
@@ -169,5 +172,13 @@ public class DealDetailVO {
 
     public void setOpAccountUuid(String opAccountUuid) {
         this.opAccountUuid = opAccountUuid;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }

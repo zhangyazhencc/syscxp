@@ -520,7 +520,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
         Timestamp billTimestamp = vo.getBillDate();
         LocalDateTime localDateTime =  billTimestamp.toLocalDateTime();
-        LocalDate date = LocalDate.of(localDateTime.getYear(),1,1);
+        LocalDate date = LocalDate.of(localDateTime.getYear(),localDateTime.getMonth(),1);
         LocalTime time = LocalTime.MIN;
         localDateTime =  LocalDateTime.of(date,time);
         String accountUuid = msg.getSession().getAccountUuid();
@@ -1427,7 +1427,6 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
         if (msg.getPresent() != null) {
             vo.setPresentBalance(vo.getPresentBalance().add(msg.getPresent()));
-            DealDetailVO dealDetailVO = new DealDetailVO();
             DealDetailVO dVO = new DealDetailVO();
             dVO.setUuid(Platform.getUuid());
             dVO.setAccountUuid(msg.getAccountUuid());
@@ -1440,10 +1439,10 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setBalance(vo.getCashBalance());
             dVO.setOutTradeNO(outTradeNO);
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
+            dVO.setComment(msg.getComment());
             dbf.persist(dVO);
         } else if (msg.getCash() != null) {
             vo.setCashBalance(vo.getCashBalance().add(msg.getCash()));
-            DealDetailVO dealDetailVO = new DealDetailVO();
             DealDetailVO dVO = new DealDetailVO();
             dVO.setUuid(Platform.getUuid());
             dVO.setAccountUuid(msg.getAccountUuid());
@@ -1451,11 +1450,14 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setIncome(msg.getCash());
             dVO.setExpend(BigDecimal.ZERO);
             dVO.setFinishTime(dbf.getCurrentSqlTime());
-            dVO.setType(DealType.RECHARGE);
+            dVO.setType(DealType.PROXY_RECHARGE);
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(vo.getCashBalance());
             dVO.setOutTradeNO(outTradeNO);
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
+            dVO.setTradeNO(msg.getTradeNO());
+            dVO.setComment(msg.getComment());
+
             dbf.persist(dVO);
         } else if (msg.getCredit() != null) {
             vo.setCreditPoint(msg.getCredit());

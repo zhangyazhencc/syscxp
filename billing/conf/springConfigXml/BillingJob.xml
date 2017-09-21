@@ -31,7 +31,7 @@
         <property name="jobDetail" ref="billJob" />
         <property name="startDelay" value="5000" />
         <property name="repeatInterval" value="10000" />
-        <property name="repeatCount" value="0" />
+        <property name="repeatCount" value="1" />
     </bean>
 
     <bean name="renewJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
