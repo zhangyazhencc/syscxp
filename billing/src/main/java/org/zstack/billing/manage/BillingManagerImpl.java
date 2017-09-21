@@ -528,7 +528,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("accountUuid", accountUuid);
         q.setParameter("dateStart", Timestamp.valueOf(localDateTime));
-        q.setParameter("dateEnd", Timestamp.valueOf(localDateTime.plusMonths(1)));
+        q.setParameter("dateEnd", Timestamp.valueOf(localDateTime.plusMonths(1).minusSeconds(1)));
         List<Object[]> objs = q.getResultList();
         List<Monetary> bills = objs.stream().map(Monetary::new).collect(Collectors.toList());
         BillInventory inventory = BillInventory.valueOf(vo);
@@ -1434,7 +1434,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setIncome(msg.getPresent());
             dVO.setExpend(BigDecimal.ZERO);
             dVO.setFinishTime(dbf.getCurrentSqlTime());
-            dVO.setType(DealType.RECHARGE);
+            dVO.setType(DealType.PRESENT);
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(vo.getCashBalance());
             dVO.setOutTradeNO(outTradeNO);
