@@ -109,7 +109,9 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         final int interval = CoreGlobalProperty.SESSION_CLEANUP_INTERVAL;
         expiredSessionCollector = thdf.submitPeriodicTask(new PeriodicTask() {
 
+            @Transactional
             private List<String> deleteExpiredSessions() {
+                logger.debug("clear expired session");
                 List<String> uuids = new ArrayList<String>();
                 Timestamp curr = getCurrentSqlDate();
                 for (Map.Entry<String, SessionInventory> entry : sessions.entrySet()) {

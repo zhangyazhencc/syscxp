@@ -63,6 +63,9 @@
                             <goal>jar</goal>
                         </goals>
                         <configuration>
+                            <includes>
+                                <include>**/*.class</include>
+                            </includes>
                             <finalName>${project.artifactId}-${project.version}</finalName>
                         </configuration>
                     </execution>
