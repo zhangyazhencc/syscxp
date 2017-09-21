@@ -148,6 +148,8 @@ public class AccountBase extends AbstractAccount {
             handle((APIUpdateRoleMsg) msg);
         } else if (msg instanceof APIAccountMailAuthenticationMsg) {
             handle((APIAccountMailAuthenticationMsg) msg);
+        } else if (msg instanceof APIDeleteProxyAccountRefMsg) {
+            handle((APIDeleteProxyAccountRefMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -829,6 +831,13 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIDeletePolicyMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), PolicyVO.class);
         APICreatePolicyEvent evt = new APICreatePolicyEvent(msg.getId());
+
+        bus.publish(evt);
+    }
+
+    private void handle(APIDeleteProxyAccountRefMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(), ProxyAccountRefVO.class);
+        APIDeleteProxyAccountRefEvent evt = new APIDeleteProxyAccountRefEvent(msg.getId());
 
         bus.publish(evt);
     }

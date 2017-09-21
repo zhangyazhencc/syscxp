@@ -125,9 +125,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIVerifyRepetitionMsg) msg);
         }else if (msg instanceof APIValidateAccountMsg) {
             handle((APIValidateAccountMsg) msg);
-        } else {
+        }else {
             bus.dealWithUnknownMessage(msg);
         }
+
+
     }
 
 
@@ -553,6 +555,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIQueryPolicyMsg) msg);
         } else if (msg instanceof APIRegisterAccountMsg) {
             validate((APIRegisterAccountMsg) msg);
+        } else if (msg instanceof APIDeleteProxyAccountRefMsg) {
+            validate((APIDeleteProxyAccountRefMsg) msg);
         }
 
         setServiceId(msg);
@@ -560,14 +564,20 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         return msg;
     }
 
+    private void validate(APIDeleteProxyAccountRefMsg msg) {
+        SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
+        q.add(ProxyAccountRefVO_.accountUuid, Op.EQ, msg.getAccountUuid());
+        q.add(ProxyAccountRefVO_.customerAcccountUuid, Op.EQ, msg.getUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("customerAcccount[uuid:%s] is not belong to this account[uuid:%s]"
+                    ,msg.getUuid(),msg.getAccountUuid()));
+        }
+    }
+
     private void validate(APIRegisterAccountMsg msg) {
-
-        //测试中，去除验证
-//        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
-//            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-//                    msg.getAccountUuid()));
-//        }
-
+        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match"));
+        }
     }
 
     private void validate(APIQueryPolicyMsg msg) {

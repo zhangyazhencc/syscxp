@@ -41,7 +41,6 @@ public class AccountSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
         if(msg instanceof APIQueryAccountMsg){
 
             StringBuffer uuidlist = new StringBuffer() ;
-            uuidlist.append("");
             SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
             q.add(ProxyAccountRefVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
             if(q.list() != null && q.list().size() > 0){

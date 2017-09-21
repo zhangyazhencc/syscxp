@@ -43,7 +43,7 @@ public class BillJob extends QuartzJobBean {
             localDateTime =  LocalDateTime.of(date,time);
 
             Timestamp startTime =  Timestamp.valueOf(localDateTime);
-            Timestamp endTime = Timestamp.valueOf(localDateTime.plusMonths(1));
+            Timestamp endTime = Timestamp.valueOf(localDateTime.plusMonths(1).minusSeconds(1));
 
             String sql = "select accountUuid,dealWay, sum(expend)as expend,sum(income)as income from DealDetailVO where  state = 'SUCCESS' and finishTime between :dateStart and  :dateEnd  group by accountUuid,dealWay";
             Query q = databaseFacade.getEntityManager().createNativeQuery(sql);
