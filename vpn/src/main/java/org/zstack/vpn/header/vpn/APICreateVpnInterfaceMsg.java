@@ -18,7 +18,7 @@ public class APICreateVpnInterfaceMsg extends APIMessage {
     @APIParam(emptyString = false)
     private String localIP;
     @APIParam(emptyString = false)
-    private String mask;
+    private String netmask;
 
     public String getName() {
         return name;
@@ -52,12 +52,12 @@ public class APICreateVpnInterfaceMsg extends APIMessage {
         this.localIP = localIP;
     }
 
-    public String getMask() {
-        return mask;
+    public String getNetmask() {
+        return netmask;
     }
 
-    public void setMask(String mask) {
-        this.mask = mask;
+    public void setNetmask(String netmask) {
+        this.netmask = netmask;
     }
 
     public ApiNotification __notification__() {

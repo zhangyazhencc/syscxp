@@ -14,7 +14,7 @@ public class APICreateVpnHostMsg extends APIMessage {
     @APIParam(required = false)
     private String description;
     @APIParam(emptyString = false)
-    private String publicIface;
+    private String publicInterface;
     @APIParam(emptyString = false)
     private String publicIp;
     @APIParam(resourceType = ZoneVO.class, checkAccount = true)
@@ -52,12 +52,12 @@ public class APICreateVpnHostMsg extends APIMessage {
         this.description = description;
     }
 
-    public String getPublicIface() {
-        return publicIface;
+    public String getPublicInterface() {
+        return publicInterface;
     }
 
-    public void setPublicIface(String publicIface) {
-        this.publicIface = publicIface;
+    public void setPublicInterface(String publicInterface) {
+        this.publicInterface = publicInterface;
     }
 
     public String getManageIp() {

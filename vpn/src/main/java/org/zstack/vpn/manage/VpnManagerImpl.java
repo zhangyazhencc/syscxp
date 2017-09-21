@@ -62,8 +62,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APICreateVpnMsg) msg);
         } else if (msg instanceof APIUpdateVpnMsg) {
             handle((APIUpdateVpnMsg) msg);
-        } else if (msg instanceof APIUpdateVpnBindwidthMsg) {
-            handle((APIUpdateVpnBindwidthMsg) msg);
+        } else if (msg instanceof APIUpdateVpnBandwidthMsg) {
+            handle((APIUpdateVpnBandwidthMsg) msg);
         } else if (msg instanceof APIDeleteVpnMsg) {
             handle((APIDeleteVpnMsg) msg);
         } else if (msg instanceof APICreateVpnInterfaceMsg) {
@@ -257,7 +257,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         host.setUuid(Platform.getUuid());
         host.setName(msg.getName());
         host.setDescription(msg.getDescription());
-        host.setPublicInterface(msg.getPublicIface());
+        host.setPublicInterface(msg.getPublicInterface());
         host.setPublicIp(msg.getPublicIp());
         host.setZoneUuid(msg.getZoneUuid());
         host.setManageIp(msg.getManageIp());
@@ -289,6 +289,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setMonths(msg.getMonths());
         vpn.setExpiredDate(Timestamp.valueOf(LocalDateTime.now()
                 .plus(msg.getMonths(), ChronoUnit.MONTHS)));
+        //Todo random port
         //保存vpn
         dbf.getEntityManager().persist(vpn);
 
@@ -339,7 +340,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         vpn.setState(msg.getState());
 
-        // Todo update state
+        // Todo update vpn state
         vpn = dbf.persistAndRefresh(vpn);
         APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(vpn));
@@ -350,18 +351,18 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         vpn.setVpnCidr(msg.getVpnCidr());
 
-        // Todo update cidr
+        // Todo update vpn cidr
         vpn = dbf.persistAndRefresh(vpn);
         APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(vpn));
         bus.publish(evt);
     }
 
-    private void handle(APIUpdateVpnBindwidthMsg msg) {
+    private void handle(APIUpdateVpnBandwidthMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         vpn.setBandwidth(msg.getBandwidth());
 
-        // Todo update bindwidth
+        // Todo update vpn bindwidth
         vpn = dbf.persistAndRefresh(vpn);
         APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(vpn));
@@ -382,7 +383,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         iface.setName(msg.getName());
         iface.setTunnelUuid(msg.getTunnelUuid());
         iface.setLocalIp(msg.getLocalIP());
-        iface.setNetmask(msg.getMask());
+        iface.setNetmask(msg.getNetmask());
 
         //Todo create vpn iface
         iface = dbf.persistAndRefresh(iface);
@@ -410,7 +411,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void handle(APICreateVpnRouteMsg msg) {
         VpnRouteVO vpnRoute = new VpnRouteVO();
-        vpnRoute.setVpnUuid(msg.getGatewayUuid());
+        vpnRoute.setVpnUuid(msg.getVpnUuid());
         vpnRoute.setRouteType(msg.getRouteType());
         vpnRoute.setNextInterface(msg.getNextIface());
         vpnRoute.setTargetCidr(msg.getTargetCidr());
