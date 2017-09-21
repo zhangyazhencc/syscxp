@@ -16,6 +16,9 @@ import org.zstack.utils.logging.CLogger;
 import javax.persistence.Query;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -32,29 +35,19 @@ public class BillJob extends QuartzJobBean {
         GLock lock = new GLock(String.format("id-%s","createBill"), 120);
         lock.lock();
         try {
-            Timestamp currentTimestamp = databaseFacade.getCurrentSqlTime();
+            Timestamp billTimestamp = databaseFacade.getCurrentSqlTime();
+            logger.info(billTimestamp+"########");
+            LocalDateTime localDateTime =  billTimestamp.toLocalDateTime();
+            LocalDate date = LocalDate.of(localDateTime.getYear(),localDateTime.getMonth(),1);
+            LocalTime time = LocalTime.MIN;
+            localDateTime =  LocalDateTime.of(date,time);
 
-            Calendar calendar1 = Calendar.getInstance();
-            calendar1.setTime(currentTimestamp);
-            calendar1.set(Calendar.HOUR_OF_DAY, 0);
-            calendar1.set(Calendar.MINUTE, 0);
-            calendar1.set(Calendar.SECOND, 0);
-            calendar1.set(Calendar.MILLISECOND, 0);
-            calendar1.add(Calendar.MONTH, -1);
-            calendar1.set(Calendar.DAY_OF_MONTH, 1);
-            calendar1.set(calendar1.get(Calendar.YEAR), calendar1.get(Calendar.MONTH), calendar1.get(Calendar.DAY_OF_MONTH), 0, 0, 0);
-            Timestamp startTime = new Timestamp(calendar1.getTime().getTime());
-            Calendar calendar2 = Calendar.getInstance();
-            calendar2.set(Calendar.DAY_OF_MONTH, 0);
-            calendar2.set(Calendar.HOUR_OF_DAY, 23);
-            calendar2.set(Calendar.MINUTE, 59);
-            calendar2.set(Calendar.SECOND, 59);
-            calendar2.set(Calendar.MILLISECOND, 999);
-            Timestamp endTime = new Timestamp(calendar2.getTime().getTime());
+            Timestamp startTime =  Timestamp.valueOf(localDateTime);
+            Timestamp endTime = Timestamp.valueOf(localDateTime.plusMonths(1));
 
             String sql = "select accountUuid,dealWay, sum(expend)as expend,sum(income)as income from DealDetailVO where  state = 'SUCCESS' and finishTime between :dateStart and  :dateEnd  group by accountUuid,dealWay";
             Query q = databaseFacade.getEntityManager().createNativeQuery(sql);
-            q.setParameter("dateStart", startTime);
+            q.setParameter("dateStart",startTime);
             q.setParameter("dateEnd", endTime);
             List<Object[]> objs = q.getResultList();
             List<BillStatistics> bills = objs.stream().map(BillStatistics::new).collect(Collectors.toList());
@@ -79,7 +72,7 @@ public class BillJob extends QuartzJobBean {
                         BillVO vo = new BillVO();
                         vo.setUuid(uuid);
                         vo.setAccountUuid(accountUuid);
-                        vo.setBillDate(currentTimestamp);
+                        vo.setBillDate(billTimestamp);
                         vo.setTimeStart(startTime);
                         vo.setTimeEnd(endTime);
                         caculateBalance(bill, vo);

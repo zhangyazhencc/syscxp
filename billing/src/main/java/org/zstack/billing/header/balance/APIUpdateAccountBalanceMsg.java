@@ -21,6 +21,12 @@ public class APIUpdateAccountBalanceMsg extends APIMessage {
     @APIParam(required = false)
     private BigDecimal cash;
 
+    @APIParam(required = false)
+    private String tradeNO;
+
+    @APIParam(required = false)
+    private String comment;
+
     public String getAccountUuid() {
         return accountUuid;
     }
@@ -51,5 +57,21 @@ public class APIUpdateAccountBalanceMsg extends APIMessage {
 
     public void setCash(BigDecimal cash) {
         this.cash = cash;
+    }
+
+    public String getTradeNO() {
+        return tradeNO;
+    }
+
+    public void setTradeNO(String tradeNO) {
+        this.tradeNO = tradeNO;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }
