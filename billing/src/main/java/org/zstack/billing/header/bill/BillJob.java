@@ -4,7 +4,7 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.transaction.annotation.Transactional;
-import org.zstack.billing.header.balance.AccountBalanceVO;
+import org.zstack.header.billing.AccountBalanceVO;
 import org.zstack.billing.header.balance.DealWay;
 import org.zstack.core.Platform;
 import org.zstack.core.db.DatabaseFacade;

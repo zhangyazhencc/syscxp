@@ -1,8 +1,7 @@
-package org.zstack.billing.header.order;
+package org.zstack.header.billing;
 
+import org.zstack.header.billing.ProductPriceInventory;
 import org.zstack.header.message.APIReply;
-
-import java.util.List;
 
 public class APIGetProductPriceReply extends APIReply {
 

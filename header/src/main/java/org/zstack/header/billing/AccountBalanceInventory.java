@@ -1,39 +1,42 @@
-package org.zstack.billing.header.balance;
+package org.zstack.header.billing;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-import javax.persistence.*;
+import org.zstack.header.search.Inventory;
 
-import org.springframework.format.annotation.DateTimeFormat;
-import org.zstack.header.search.SqlTrigger;
-import org.zstack.header.search.TriggerIndex;
+@Inventory(mappingVOClass = AccountBalanceVO.class)
+public class AccountBalanceInventory {
 
-@Entity
-@Table
-@Inheritance(strategy = InheritanceType.JOINED)
-@TriggerIndex
-@SqlTrigger
-public class AccountBalanceVO {
-
-    @Id
-    @Column
     private String uuid;
-
-    @Column
     private BigDecimal presentBalance;
-
-    @Column
     private BigDecimal creditPoint;
-
-    @Column
     private BigDecimal cashBalance;
-
-    @Column
     private Timestamp createDate;
-
-    @Column
     private Timestamp lastOpDate;
+
+    public static AccountBalanceInventory valueOf(AccountBalanceVO vo) {
+        AccountBalanceInventory inv = new AccountBalanceInventory();
+        inv.setUuid(vo.getUuid());
+        inv.setCashBalance(vo.getCashBalance());
+        inv.setPresentBalance(vo.getPresentBalance());
+        inv.setCreditPoint(vo.getCreditPoint());
+        inv.setCreateDate(vo.getCreateDate());
+        inv.setLastOpDate(vo.getLastOpDate());
+        return inv;
+    }
+
+    public static List<AccountBalanceInventory> valueOf(Collection<AccountBalanceVO> vos) {
+        List<AccountBalanceInventory> lst = new ArrayList<AccountBalanceInventory>(vos.size());
+        for (AccountBalanceVO vo : vos) {
+            lst.add(AccountBalanceInventory.valueOf(vo));
+        }
+        return lst;
+    }
+
 
     public String getUuid() {
         return uuid;
@@ -73,11 +76,6 @@ public class AccountBalanceVO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
-    }
-
-    @PreUpdate
-    void preUpdate() {
-        lastOpDate = null;
     }
 
     public Timestamp getLastOpDate() {
