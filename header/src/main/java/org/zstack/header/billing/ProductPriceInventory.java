@@ -1,6 +1,4 @@
-package org.zstack.billing.header.order;
-
-import org.zstack.billing.header.balance.AccountBalanceInventory;
+package org.zstack.header.billing;
 
 import java.util.List;
 
