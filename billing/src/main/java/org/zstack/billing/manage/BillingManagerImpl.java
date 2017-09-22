@@ -99,8 +99,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APICreateUnsubcribeOrderMsg) msg);
         } else if (msg instanceof APICreateModifyOrderMsg) {
             handle((APICreateModifyOrderMsg) msg);
-        } else if (msg instanceof APIGetExpenseGrossMonthListMsg) {
-            handle((APIGetExpenseGrossMonthListMsg) msg);
+        } else if (msg instanceof APIGetExpenseGrossMonthMsg) {
+            handle((APIGetExpenseGrossMonthMsg) msg);
         } else if (msg instanceof APIUpdateRenewMsg) {
             handle((APIUpdateRenewMsg) msg);
         } else if (msg instanceof APIGetValuebleReceiptMsg) {
@@ -155,7 +155,6 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             bus.dealWithUnknownMessage(msg);
         }
     }
-
 
     private void handle(APIGetAccountDischargeCategoryMsg msg) {
         SimpleQuery<ProductPriceUnitVO> query = dbf.createQuery(ProductPriceUnitVO.class);
@@ -928,15 +927,15 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     }
 
-    private void handle(APIGetExpenseGrossMonthListMsg msg) {
-        String sql = "select DATE_FORMAT(payTime,'%Y-%m') mon,sum(payPresent)+sum(payCash) as payTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and payTime between :dateStart and :dateEnd group by mon order by mon asc";
+    private void handle(APIGetExpenseGrossMonthMsg msg) {
+        String sql = "select DATE_FORMAT(payTime,'%Y-%m') mon,sum(payPresent)+sum(payCash) as payTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and DATE_FORMAT(payTime,'%Y-%m-%d  %T') between :dateStart and :dateEnd group by mon order by mon asc";
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("accountUuid", msg.getSession().getAccountUuid());
         q.setParameter("dateStart", msg.getDateStart());
         q.setParameter("dateEnd", msg.getDateEnd());
         List<Object[]> objs = q.getResultList();
         List<ExpenseGross> vos = objs.stream().map(ExpenseGross::new).collect(Collectors.toList());
-        APIGetExpenseGrossMonthListReply reply = new APIGetExpenseGrossMonthListReply();
+        APIGetExpenseGrossMonthReply reply = new APIGetExpenseGrossMonthReply();
         reply.setInventories(vos);
         bus.reply(msg, reply);
     }
