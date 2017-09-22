@@ -15,6 +15,12 @@ public class APIUpdateReceiptMsg extends APIMessage{
     private String reason;
 
     @APIParam(emptyString = false,required = false)
+    private String receiptNO;
+
+    @APIParam(emptyString = false,required = false)
+    private String opMan;
+
+    @APIParam(emptyString = false,required = false)
     private ReceiptState state;
 
     public String getUuid() {
@@ -39,5 +45,21 @@ public class APIUpdateReceiptMsg extends APIMessage{
 
     public void setState(ReceiptState state) {
         this.state = state;
+    }
+
+    public String getReceiptNO() {
+        return receiptNO;
+    }
+
+    public void setReceiptNO(String receiptNO) {
+        this.receiptNO = receiptNO;
+    }
+
+    public String getOpMan() {
+        return opMan;
+    }
+
+    public void setOpMan(String opMan) {
+        this.opMan = opMan;
     }
 }

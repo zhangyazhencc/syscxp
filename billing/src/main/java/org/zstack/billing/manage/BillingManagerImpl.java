@@ -497,8 +497,11 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         ReceiptState state = msg.getState();
         ReceiptVO vo = dbf.findByUuid(receiptUuid, ReceiptVO.class);
         vo.setState(msg.getState());
+        vo.setCommet(msg.getReason());
         if (vo.getState().equals(ReceiptState.REJECT)) {
-            vo.setCommet(msg.getReason());
+            vo.setOpMan(msg.getOpMan());
+        } else if(vo.getState().equals(ReceiptState.DONE)){
+            vo.setReceiptNO(msg.getReceiptNO());
         }
         dbf.updateAndRefresh(vo);
         ReceiptInventory inventory = ReceiptInventory.valueOf(vo);

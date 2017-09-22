@@ -40,6 +40,12 @@ public class ReceiptVO {
     @Column
     private Timestamp lastOpDate;
 
+    @Column
+    private String receiptNO;
+
+    @Column
+    private String opMan;
+
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name="receiptInfoUuid")
     private ReceiptInfoVO receiptInfoVO;
@@ -131,5 +137,21 @@ public class ReceiptVO {
     @PreUpdate
     void preUpdate() {
         lastOpDate = null;
+    }
+
+    public String getReceiptNO() {
+        return receiptNO;
+    }
+
+    public void setReceiptNO(String receiptNO) {
+        this.receiptNO = receiptNO;
+    }
+
+    public String getOpMan() {
+        return opMan;
+    }
+
+    public void setOpMan(String opMan) {
+        this.opMan = opMan;
     }
 }
