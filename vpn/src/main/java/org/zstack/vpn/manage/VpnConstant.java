@@ -8,7 +8,9 @@ public interface VpnConstant {
 
     public static final String VPN_PAY_PATH = "";
 
-    public static final String CREATE_VPN_PATH = "createvpn";
+    public static final String VPN_ROOT_PATH = "vpn";
+
+    public static final String CREATE_VPN_PATH = "init-vpn";
 
     public static final String DELETE_VPN_PATH = "createvpn";
 
@@ -24,11 +26,11 @@ public interface VpnConstant {
 
     public static final String ADD_VPN_INTERFACE_PATH = "createvpn";
 
-    public static final String DELETE_VPN_INTERFACE_PATH = "createvpn";
+    public static final String DELETE_VPN_INTERFACE_PATH = "del-ddn-if";
 
-    public static final String ADD_VPN_ROUTE_PATH = "createvpn";
+    public static final String ADD_VPN_ROUTE_PATH = "add-route";
 
-    public static final String DELETE_VPN_ROUTE_PATH = "createvpn";
+    public static final String DELETE_VPN_ROUTE_PATH = "del-route";
 
     public static final String CHECK_VPN_STATE_PATH = "createvpn";
 

@@ -1,9 +1,11 @@
 package org.zstack.header.billing;
 
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIParam;
 
 import java.util.List;
 
+@Action(category = BillingConstant.ACTION_CATEGORY_ORDER)
 public class APICreateBuyOrderMsg extends APICreateOrderMsg {
     @APIParam(nonempty = true)
     private List<String> productPriceUnitUuids;

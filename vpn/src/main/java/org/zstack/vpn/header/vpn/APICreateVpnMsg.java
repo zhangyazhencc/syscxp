@@ -24,7 +24,7 @@ public class APICreateVpnMsg extends APIMessage {
     @APIParam(emptyString = false)
     private Integer months;
     @APIParam(emptyString = false)
-    private String tunnelUuid;
+    private String networkUuid;
     @APIParam(emptyString = false)
     private String localIp;
     @APIParam(emptyString = false)
@@ -42,12 +42,12 @@ public class APICreateVpnMsg extends APIMessage {
         this.accountUuid = accountUuid;
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public String getNetworkUuid() {
+        return networkUuid;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
+    public void setNetworkUuid(String networkUuid) {
+        this.networkUuid = networkUuid;
     }
 
     public String getLocalIp() {

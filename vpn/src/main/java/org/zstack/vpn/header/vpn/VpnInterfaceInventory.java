@@ -24,7 +24,7 @@ public class VpnInterfaceInventory {
         inv.setUuid(vo.getUuid());
         inv.setVpnUuid(vo.getVpnUuid());
         inv.setName(vo.getName());
-        inv.setTunnelUuid(vo.getTunnelUuid());
+        inv.setTunnelUuid(vo.getNetworkUuid());
         inv.setVlan(vo.getVlan());
         inv.setNetmask(vo.getNetmask());
         inv.setLocalIp(vo.getLocalIp());

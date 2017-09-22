@@ -3,16 +3,21 @@ package org.zstack.vpn.manage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.Q;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
+import org.zstack.core.thread.PeriodicTask;
+import org.zstack.core.thread.Task;
+import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.identity.AccountType;
+import org.zstack.header.identity.SessionInventory;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.header.rest.RESTFacade;
@@ -28,6 +33,11 @@ import org.zstack.vpn.header.host.*;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.zstack.core.Platform.argerr;
 
@@ -43,6 +53,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private RESTFacade restf;
     @Autowired
     private ErrorFacade errf;
+    @Autowired
+    private ThreadFacade thdf;
 
     public void handleMessage(Message msg) {
         if (msg instanceof APIMessage) {
@@ -285,46 +297,64 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setVpnCidr(msg.getVpnCidr());
         vpn.setBandwidth(msg.getBandwidth());
         vpn.setEndpointUuid(msg.getEndpointUuid());
-        vpn.setPort(generatePort(msg.getHostUuid()));
         vpn.setState(VpnState.Creating);
         vpn.setStatus(VpnStatus.Disconnected);
         vpn.setMonths(msg.getMonths());
         vpn.setExpiredDate(Timestamp.valueOf(LocalDateTime.now()
                 .plus(msg.getMonths(), ChronoUnit.MONTHS)));
-        //Todo random port
+        vpn.setPort(generatePort(msg.getHostUuid()));
         //保存vpn
         dbf.getEntityManager().persist(vpn);
 
-        final VpnInterfaceVO vpnInterface = new VpnInterfaceVO();
-        vpnInterface.setUuid(Platform.getUuid());
-        vpnInterface.setName(msg.getName() + msg.getVlan());
-        vpnInterface.setVpnUuid(vpn.getUuid());
-        vpnInterface.setLocalIp(msg.getLocalIp());
-        vpnInterface.setNetmask(msg.getNetmask());
-        vpnInterface.setVlan(msg.getVlan());
-        vpnInterface.setTunnelUuid(msg.getTunnelUuid());
-
+        final VpnInterfaceVO vpnIface = new VpnInterfaceVO();
+        vpnIface.setUuid(Platform.getUuid());
+        vpnIface.setName(msg.getName() + msg.getVlan());
+        vpnIface.setVpnUuid(vpn.getUuid());
+        vpnIface.setLocalIp(msg.getLocalIp());
+        vpnIface.setNetmask(msg.getNetmask());
+        vpnIface.setVlan(msg.getVlan());
+        vpnIface.setNetworkUuid(msg.getNetworkUuid());
         //保存vpn接口
-        dbf.getEntityManager().persist(vpnInterface);
-
-
-        CreateVpnCmd cmd = new CreateVpnCmd();
-        cmd.setVpnUuid(vpn.getUuid());
-        cmd.setHostIp(vpn.getHostUuid());
-        cmd.setBandwidth(vpn.getBandwidth());
-        cmd.setMonths(vpn.getMonths());
-        cmd.setVpnCidr(vpn.getVpnCidr());
-
+        dbf.getEntityManager().persist(vpnIface);
 
         //Todo create vpn
+        CreateVpnCmd cmd = CreateVpnCmd.valueOf(vpn.getHostUuid(), vpn, vpnIface);
+
+        new VpnRESTCaller().syncPost(VpnConstant.CREATE_VPN_PATH, cmd);
+        checkVpnCreateState(cmd);
+
+
         APICreateVpnEvent evt = new APICreateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(vpn));
         bus.publish(evt);
-        dbf.getEntityManager().flush();
+    }
+    private final ThreadLocal<Future<Void>> checkTaskState = new ThreadLocal<>();
+
+    private void checkVpnCreateState(CreateVpnCmd cmd) {
+        logger.debug("checkVpnCreateState");
+        checkTaskState.set(thdf.submit(new Task<Void>() {
+
+            @Override
+            public Void call() throws Exception {
+                int count = 10;
+                AgentResponse rsp;
+                do {
+                     rsp = new VpnRESTCaller().checkState(VpnConstant.CHECK_TASK_STATE_PATH, cmd);
+                     count--;
+                }while (!rsp.isSuccess() && count >0);
+
+                return null;
+            }
+
+            @Override
+            public String getName() {
+                return "checkVpnCreateState";
+            }
+        }));
     }
 
+    // 生成端口号，规则：从30000开始，当前主机存在的vpn服务端口号+1
     private Integer generatePort(String hostUuid) {
-
         Q q = Q.New(VpnVO.class)
                 .eq(VpnVO_.hostUuid, hostUuid)
                 .orderBy(VpnVO_.port, SimpleQuery.Od.DESC)
@@ -398,7 +428,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         iface.setUuid(Platform.getUuid());
         iface.setVpnUuid(msg.getVpnUuid());
         iface.setName(msg.getName());
-        iface.setTunnelUuid(msg.getTunnelUuid());
+        iface.setNetworkUuid(msg.getTunnelUuid());
         iface.setLocalIp(msg.getLocalIP());
         iface.setNetmask(msg.getNetmask());
 

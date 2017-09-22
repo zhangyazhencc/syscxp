@@ -1,10 +1,13 @@
 package org.zstack.billing.header.balance;
 
+import org.zstack.header.billing.BillingConstant;
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;
 
 import java.math.BigDecimal;
 
+@Action(category = BillingConstant.ACTION_CATEGORY_RECHARGE)
 public class APIRechargeMsg extends APISyncCallMessage {
 
     @APIParam(required = false)

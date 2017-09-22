@@ -18,7 +18,7 @@ public class VpnInterfaceVO {
     @Column
     private String name;
     @Column
-    private String tunnelUuid;
+    private String networkUuid;
     @Column
     private String localIp;
     @Column
@@ -62,12 +62,12 @@ public class VpnInterfaceVO {
         this.name = name;
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public String getNetworkUuid() {
+        return networkUuid;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
+    public void setNetworkUuid(String networkUuid) {
+        this.networkUuid = networkUuid;
     }
 
     public String getLocalIp() {

@@ -8,7 +8,7 @@ import org.zstack.header.message.APIParam;
 import java.util.List;
 
 @InnerCredentialCheck
-@Action(category = "order", names = {"create"})
+@Action(category = BillingConstant.ACTION_CATEGORY_ORDER, names = {"create"})
 public class APICreateOrderMsg extends APIMessage {
 
     @APIParam(emptyString = false)
