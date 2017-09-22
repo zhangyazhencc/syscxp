@@ -5,5 +5,6 @@ public enum Category {
     SFP,
     ALIBABA,
     LONG,
-    SHORT
+    SHORT,
+    VPN
 }

@@ -415,11 +415,13 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         bus.reply(msg, reply);
     }
 
+    @Transactional
     private void handle(APIRechargeMsg msg) {
         String accountUuid = msg.getSession().getAccountUuid();
         if (!StringUtils.isEmpty(msg.getAccountUuid())) {
             if (!dbf.isExist(msg.getAccountUuid(), AccountBalanceVO.class)) {
-                throw new IllegalArgumentException("could not find the account,please check it");
+                AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+                InitAccountBlance(msg, vo);
             }
             accountUuid = msg.getAccountUuid();
         }
@@ -449,8 +451,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         Map<String, String> param = new HashMap<>();
         param.put("out_trade_no", outTradeNO);
         param.put("total_amount", total.toString());
-        param.put("subject", "cloud special network");
-        param.put("body", "description");
+        param.put("subject", "cloud-special-network");
+        param.put("body", "专有网络");
         param.put("product_code", "FAST_INSTANT_TRADE_PAY");
         alipayRequest.setBizContent(JSONObjectUtil.toJsonString(param));
         String result = "FAILURE";
@@ -458,12 +460,35 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             result = alipayClient.pageExecute(alipayRequest).getBody();
         } catch (AlipayApiException e) {
             logger.error("cannot access alipay");
+            throw new RuntimeException("cannot access alipay");
         }
         logger.info(result);
         APIRechargeReply reply = new APIRechargeReply();
         reply.setInventory(result);
         bus.reply(msg, reply);
 
+    }
+
+    private void InitAccountBlance(APIRechargeMsg msg, AccountBalanceVO vo) {
+        if (vo == null) {
+            APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
+            aMsg.setUuid(msg.getAccountUuid());
+            InnerMessageHelper.setMD5(aMsg);
+            String gstr = RESTApiDecoder.dump(aMsg);
+            RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
+            if (rsp.getState().equals(RestAPIState.Done.toString())) {
+                APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
+                if (!replay.isValidAccount()) {
+                    throw new IllegalArgumentException("the account uuid is not valid");
+                }
+            }
+            AccountBalanceVO accountBalanceVO = new AccountBalanceVO();
+            accountBalanceVO.setUuid(msg.getAccountUuid());
+            accountBalanceVO.setCreditPoint(BigDecimal.ZERO);
+            accountBalanceVO.setPresentBalance(BigDecimal.ZERO);
+            accountBalanceVO.setCashBalance(BigDecimal.ZERO);
+            vo = dbf.persistAndRefresh(accountBalanceVO);
+        }
     }
 
     private void handle(APIUpdateReceiptMsg msg) {
