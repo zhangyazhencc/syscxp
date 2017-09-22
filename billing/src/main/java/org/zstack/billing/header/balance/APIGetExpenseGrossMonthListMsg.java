@@ -2,13 +2,13 @@ package org.zstack.billing.header.balance;
 
 import org.zstack.header.billing.BillingConstant;
 import org.zstack.header.identity.Action;
-import org.zstack.header.identity.UserCredentialCheck;
+import org.zstack.header.identity.SuppressUserCredentialCheck;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;
 
 import java.sql.Timestamp;
 
-@UserCredentialCheck
+@SuppressUserCredentialCheck
 @Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
 public class APIGetExpenseGrossMonthListMsg extends APISyncCallMessage {
 

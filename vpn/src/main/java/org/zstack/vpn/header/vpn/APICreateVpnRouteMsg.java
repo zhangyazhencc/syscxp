@@ -12,7 +12,7 @@ import java.util.List;
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
 public class APICreateVpnRouteMsg extends APIMessage {
     @APIParam(resourceType = VpnVO.class, checkAccount = true)
-    private String gatewayUuid;
+    private String vpnUuid;
     @APIParam
     private RouteType routeType;
     @APIParam(emptyString = false)
@@ -20,12 +20,12 @@ public class APICreateVpnRouteMsg extends APIMessage {
     @APIParam(emptyString = false)
     private String targetCidr;
 
-    public String getGatewayUuid() {
-        return gatewayUuid;
+    public String getVpnUuid() {
+        return vpnUuid;
     }
 
-    public void setGatewayUuid(String gatewayUuid) {
-        this.gatewayUuid = gatewayUuid;
+    public void setVpnUuid(String vpnUuid) {
+        this.vpnUuid = vpnUuid;
     }
 
     public RouteType getRouteType() {

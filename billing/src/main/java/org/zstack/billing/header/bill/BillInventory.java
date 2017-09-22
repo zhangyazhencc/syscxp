@@ -38,8 +38,6 @@ public class BillInventory {
 
     private Timestamp lastOpDate;
 
-    private  List<Monetary> bills;
-
     public static BillInventory valueOf(BillVO vo) {
         BillInventory inv = new BillInventory();
         inv.setUuid(vo.getUuid());
@@ -171,11 +169,4 @@ public class BillInventory {
         this.lastOpDate = lastOpDate;
     }
 
-    public List<Monetary> getBills() {
-        return bills;
-    }
-
-    public void setBills(List<Monetary> bills) {
-        this.bills = bills;
-    }
 }

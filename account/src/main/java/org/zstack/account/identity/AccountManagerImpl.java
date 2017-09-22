@@ -62,7 +62,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     @Autowired
     private SmsService smsService;
     @Autowired
-    MailService mailservice;
+    private MailService mailService;
 
     @Override
     @MessageSafe
@@ -653,8 +653,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             throw new ApiMessageInterceptionException(argerr("wrong oldmail"));
         }
 
-        if (!mailservice.ValidateMailCode(msg.getOldEmail(), msg.getOldCode())||
-                !mailservice.ValidateMailCode(msg.getNewEmail(), msg.getNewCode())) {
+        if (!mailService.ValidateMailCode(msg.getOldEmail(), msg.getOldCode())||
+                !mailService.ValidateMailCode(msg.getNewEmail(), msg.getNewCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
@@ -692,8 +692,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             throw new ApiMessageInterceptionException(argerr("wrong oldmail"));
         }
 
-        if (!mailservice.ValidateMailCode(msg.getOldEmail(), msg.getOldCode())||
-                !mailservice.ValidateMailCode(msg.getNewEmail(), msg.getNewCode())) {
+        if (!mailService.ValidateMailCode(msg.getOldEmail(), msg.getOldCode())||
+                !mailService.ValidateMailCode(msg.getNewEmail(), msg.getNewCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
