@@ -9,10 +9,10 @@ import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
 public class APIUpdateVpnHostStateMsg extends APIMessage{
-    @APIParam
+    @APIParam(resourceType = VpnHostVO.class)
     private String uuid;
     @APIParam(required = false)
-    private HostState state;
+    private String state;
 
     public String getUuid() {
         return uuid;
@@ -22,11 +22,11 @@ public class APIUpdateVpnHostStateMsg extends APIMessage{
         this.uuid = uuid;
     }
 
-    public HostState getState() {
+    public String getState() {
         return state;
     }
 
-    public void setState(HostState state) {
+    public void setState(String state) {
         this.state = state;
     }
 

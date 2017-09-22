@@ -20,7 +20,7 @@ public class APICreateVpnMsg extends APIMessage {
     @APIParam
     private Long bandwidth;
     @APIParam(emptyString = false)
-    private String endpoint;
+    private String endpointUuid;
     @APIParam(emptyString = false)
     private Integer months;
     @APIParam(emptyString = false)
@@ -29,8 +29,8 @@ public class APICreateVpnMsg extends APIMessage {
     private String localIp;
     @APIParam(emptyString = false)
     private String netmask;
-    @APIParam(emptyString = false)
-    private String vlan;
+    @APIParam
+    private Integer vlan;
     @APIParam(required = false)
     private String accountUuid;
 
@@ -66,11 +66,11 @@ public class APICreateVpnMsg extends APIMessage {
         this.netmask = netmask;
     }
 
-    public String getVlan() {
+    public Integer getVlan() {
         return vlan;
     }
 
-    public void setVlan(String vlan) {
+    public void setVlan(Integer vlan) {
         this.vlan = vlan;
     }
 
@@ -114,12 +114,12 @@ public class APICreateVpnMsg extends APIMessage {
         this.bandwidth = bandwidth;
     }
 
-    public String getEndpoint() {
-        return endpoint;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 
     public Integer getMonths() {

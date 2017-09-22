@@ -16,22 +16,22 @@ public class APIValidateSessionReply extends APIReply {
 
     private AccountInventory accountInventory;
 
-    private UserInventory UserInventory;
+    private UserInventory userInventory;
 
-    public AccountInventory getAccountInventory() {
+    public AccountInventory userInventory() {
         return accountInventory;
     }
 
-    public org.zstack.account.header.user.UserInventory getUserInventory() {
-        return UserInventory;
+    public UserInventory getUserInventory() {
+        return userInventory;
     }
 
     public void setAccountInventory(AccountInventory accountInventory) {
         this.accountInventory = accountInventory;
     }
 
-    public void setUserInventory(org.zstack.account.header.user.UserInventory userInventory) {
-        UserInventory = userInventory;
+    public void setUserInventory(UserInventory userInventory) {
+        this.userInventory = userInventory;
     }
 
     public boolean isValidSession() {

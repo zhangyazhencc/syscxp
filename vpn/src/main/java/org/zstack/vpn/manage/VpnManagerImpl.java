@@ -6,6 +6,7 @@ import org.springframework.util.StringUtils;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
+import org.zstack.core.db.Q;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.header.AbstractService;
@@ -142,8 +143,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APIUpdateVpnHostStateMsg msg) {
         VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
 
-        host.setState(msg.getState());
+        host.setState(HostState.valueOf(msg.getState()));
 
+        host = dbf.updateAndRefresh(host);
         APIUpdateVpnHostStateEvent evt = new APIUpdateVpnHostStateEvent(msg.getId());
         evt.setInventory(VpnHostInventory.valueOf(host));
         bus.publish(evt);
@@ -173,7 +175,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         iface = dbf.persistAndRefresh(iface);
 
-        iface = dbf.persistAndRefresh(iface);
         APICreateHostInterfaceEvent evt = new APICreateHostInterfaceEvent(msg.getId());
         evt.setInventory(HostInterfaceInventory.valueOf(iface));
         bus.publish(evt);
@@ -283,7 +284,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setName(msg.getDescription());
         vpn.setVpnCidr(msg.getVpnCidr());
         vpn.setBandwidth(msg.getBandwidth());
-        vpn.setEndpointUuid(msg.getEndpoint());
+        vpn.setEndpointUuid(msg.getEndpointUuid());
+        vpn.setPort(generatePort(msg.getHostUuid()));
         vpn.setState(VpnState.Creating);
         vpn.setStatus(VpnStatus.Disconnected);
         vpn.setMonths(msg.getMonths());
@@ -300,6 +302,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpnInterface.setLocalIp(msg.getLocalIp());
         vpnInterface.setNetmask(msg.getNetmask());
         vpnInterface.setVlan(msg.getVlan());
+        vpnInterface.setTunnelUuid(msg.getTunnelUuid());
 
         //保存vpn接口
         dbf.getEntityManager().persist(vpnInterface);
@@ -312,10 +315,24 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         cmd.setMonths(vpn.getMonths());
         cmd.setVpnCidr(vpn.getVpnCidr());
 
+
         //Todo create vpn
         APICreateVpnEvent evt = new APICreateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(vpn));
         bus.publish(evt);
+        dbf.getEntityManager().flush();
+    }
+
+    private Integer generatePort(String hostUuid) {
+
+        Q q = Q.New(VpnVO.class)
+                .eq(VpnVO_.hostUuid, hostUuid)
+                .orderBy(VpnVO_.port, SimpleQuery.Od.DESC)
+                .limit(1)
+                .select(VpnVO_.port);
+        if (!q.isExists())
+            return 30000;
+        return (Integer) q.findValue() + 1;
     }
 
     private void handle(APIUpdateVpnMsg msg) {
@@ -338,10 +355,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void handle(APIUpdateVpnStateMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        vpn.setState(msg.getState());
+        vpn.setState(VpnState.valueOf(msg.getState()));
 
         // Todo update vpn state
-        vpn = dbf.persistAndRefresh(vpn);
+        vpn = dbf.updateAndRefresh(vpn);
         APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(vpn));
         bus.publish(evt);
@@ -461,32 +478,43 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             validate((APIUpdateVpnMsg) msg);
         } else if (msg instanceof APICreateZoneMsg) {
             validate((APICreateZoneMsg) msg);
+        } else if (msg instanceof APIDeleteZoneMsg) {
+            validate((APIDeleteZoneMsg) msg);
+        } else if (msg instanceof APIDeleteHostInterfaceMsg) {
+            validate((APIDeleteHostInterfaceMsg) msg);
         }
         return msg;
     }
 
-    private void validate(APICreateZoneMsg msg) {
-        SimpleQuery query = dbf.createQuery(ZoneVO.class);
-        query.add(ZoneVO_.name, SimpleQuery.Op.EQ, msg.getName());
-        if (query.isExists()) {
+    private void validate(APIDeleteHostInterfaceMsg msg) {
+    }
+
+    private void validate(APIDeleteZoneMsg msg) {
+        Q q = Q.New(VpnHostVO.class)
+                .eq(VpnHostVO_.zoneUuid, msg.getUuid());
+        if (q.isExists())
             throw new ApiMessageInterceptionException(argerr(
-                    "The Zone[name:%s] is already exist.", msg.getName()
+                    "The Zone[uuid:%s] has at least one vpn host, can not delete.", msg.getUuid()
             ));
-        }
+    }
+
+    private void validate(APICreateZoneMsg msg) {
+        Q q = Q.New(ZoneVO.class)
+                .eq(ZoneVO_.name, msg.getName());
+        if (q.isExists())
+            throw new ApiMessageInterceptionException(argerr(
+                    "The ZoneVO[name:%s] is already exist.", msg.getName()
+            ));
     }
 
 
     private void validate(APIUpdateVpnMsg msg) {
-        if (!StringUtils.isEmpty(msg.getName())) {
-            SimpleQuery query = dbf.createQuery(VpnVO.class);
-            query.add(VpnVO_.name, SimpleQuery.Op.EQ, msg.getName());
-            query.add(VpnVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
-            if (query.isExists()) {
-                throw new ApiMessageInterceptionException(argerr(
-                        "The VpnHost[name:%s] is already exist.", msg.getName()
-                ));
-            }
-        }
+        Q q = Q.New(VpnVO.class)
+                .eq(VpnVO_.name, msg.getName());
+        if (q.isExists())
+            throw new ApiMessageInterceptionException(argerr(
+                    "The Vpn[name:%s] is already exist.", msg.getName()
+            ));
     }
 
     private void validate(APIQueryVpnMsg msg) {
@@ -496,36 +524,30 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APICreateVpnMsg msg) {
-        SimpleQuery query = dbf.createQuery(VpnVO.class);
-        query.add(VpnVO_.name, SimpleQuery.Op.EQ, msg.getName());
-        if (query.isExists()) {
+        Q q = Q.New(VpnVO.class)
+                .eq(VpnVO_.name, msg.getName());
+        if (q.isExists())
             throw new ApiMessageInterceptionException(argerr(
                     "The Vpn[name:%s] is already exist.", msg.getName()
             ));
-        }
     }
 
     private void validate(APICreateVpnHostMsg msg) {
-        SimpleQuery query = dbf.createQuery(VpnHostVO.class);
-        query.add(VpnHostVO_.name, SimpleQuery.Op.EQ, msg.getName());
-        if (query.isExists()) {
+        Q q = Q.New(VpnHostVO.class)
+                .eq(VpnHostVO_.name, msg.getName());
+        if (q.isExists())
             throw new ApiMessageInterceptionException(argerr(
                     "The VpnHost[name:%s] is already exist.", msg.getName()
             ));
-        }
     }
 
     private void validate(APIUpdateVpnHostMsg msg) {
-        if (!StringUtils.isEmpty(msg.getName())) {
-            SimpleQuery query = dbf.createQuery(VpnHostVO.class);
-            query.add(VpnHostVO_.name, SimpleQuery.Op.EQ, msg.getName());
-            query.add(VpnHostVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
-            if (query.isExists()) {
-                throw new ApiMessageInterceptionException(argerr(
-                        "The VpnHost[name:%s] is already exist.", msg.getName()
-                ));
-            }
-        }
+        Q q = Q.New(VpnHostVO.class)
+                .eq(VpnHostVO_.name, msg.getName());
+        if (q.isExists())
+            throw new ApiMessageInterceptionException(argerr(
+                    "The VpnHost[name:%s] is already exist.", msg.getName()
+            ));
     }
 
 }

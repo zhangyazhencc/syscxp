@@ -14,7 +14,7 @@ public class VpnInterfaceVO_ {
     public static volatile SingularAttribute<VpnHostVO, String> description;
     public static volatile SingularAttribute<VpnHostVO, String> tunnel;
     public static volatile SingularAttribute<VpnHostVO, String> localIp;
-    public static volatile SingularAttribute<VpnHostVO, String> vlan;
+    public static volatile SingularAttribute<VpnHostVO, Integer> vlan;
     public static volatile SingularAttribute<VpnHostVO, String> mask;
     public static volatile SingularAttribute<VpnHostVO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<VpnHostVO, Timestamp> createDate;
