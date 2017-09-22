@@ -557,7 +557,6 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         List<Object[]> objs = q.getResultList();
         List<Monetary> bills = objs.stream().map(Monetary::new).collect(Collectors.toList());
         BillInventory inventory = BillInventory.valueOf(vo);
-        inventory.setBills(bills);
         APIGetBillReply reply = new APIGetBillReply();
         reply.setInventory(inventory);
         bus.reply(msg, reply);
