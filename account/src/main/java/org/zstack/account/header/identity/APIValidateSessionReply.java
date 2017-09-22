@@ -14,10 +14,6 @@ public class APIValidateSessionReply extends APIReply {
 
     private boolean validSession;
 
-    private UserInventory userInventory;
-
-    private AccountInventory accountInventory;
-
     public boolean isValidSession() {
         return validSession;
     }
@@ -26,19 +22,4 @@ public class APIValidateSessionReply extends APIReply {
         this.validSession = validSession;
     }
 
-    public UserInventory getUserInventory() {
-        return userInventory;
-    }
-
-    public void setUserInventory(UserInventory userInventory) {
-        this.userInventory = userInventory;
-    }
-
-    public AccountInventory getAccountInventory() {
-        return accountInventory;
-    }
-
-    public void setAccountInventory(AccountInventory accountInventory) {
-        this.accountInventory = accountInventory;
-    }
 }
