@@ -22,7 +22,7 @@ public class APIValidateSessionReply extends APIReply {
         return accountInventory;
     }
 
-    public org.zstack.account.header.user.UserInventory getUserInventory() {
+    public UserInventory getUserInventory() {
         return UserInventory;
     }
 
@@ -30,7 +30,7 @@ public class APIValidateSessionReply extends APIReply {
         this.accountInventory = accountInventory;
     }
 
-    public void setUserInventory(org.zstack.account.header.user.UserInventory userInventory) {
+    public void setUserInventory(UserInventory userInventory) {
         UserInventory = userInventory;
     }
 
