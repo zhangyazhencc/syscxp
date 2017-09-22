@@ -421,7 +421,9 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         if (!StringUtils.isEmpty(msg.getAccountUuid())) {
             if (!dbf.isExist(msg.getAccountUuid(), AccountBalanceVO.class)) {
                 AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-                InitAccountBlance(msg, vo);
+                if(vo == null){
+                    initAccountBlance(msg.getAccountUuid());
+                }
             }
             accountUuid = msg.getAccountUuid();
         }
@@ -469,10 +471,9 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     }
 
-    private void InitAccountBlance(APIRechargeMsg msg, AccountBalanceVO vo) {
-        if (vo == null) {
+    private AccountBalanceVO initAccountBlance(String accountUuid) {
             APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
-            aMsg.setUuid(msg.getAccountUuid());
+            aMsg.setUuid(accountUuid);
             InnerMessageHelper.setMD5(aMsg);
             String gstr = RESTApiDecoder.dump(aMsg);
             RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
@@ -483,12 +484,11 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 }
             }
             AccountBalanceVO accountBalanceVO = new AccountBalanceVO();
-            accountBalanceVO.setUuid(msg.getAccountUuid());
+            accountBalanceVO.setUuid(accountUuid);
             accountBalanceVO.setCreditPoint(BigDecimal.ZERO);
             accountBalanceVO.setPresentBalance(BigDecimal.ZERO);
             accountBalanceVO.setCashBalance(BigDecimal.ZERO);
-            vo = dbf.persistAndRefresh(accountBalanceVO);
-        }
+            return  dbf.persistAndRefresh(accountBalanceVO);
     }
 
     private void handle(APIUpdateReceiptMsg msg) {
@@ -1424,23 +1424,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     private void handle(APIUpdateAccountBalanceMsg msg) {
         AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         if (vo == null) {
-            APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
-            aMsg.setUuid(msg.getAccountUuid());
-            InnerMessageHelper.setMD5(aMsg);
-            String gstr = RESTApiDecoder.dump(aMsg);
-            RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
-            if (rsp.getState().equals(RestAPIState.Done.toString())) {
-                APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
-                if (!replay.isValidAccount()) {
-                    throw new IllegalArgumentException("the account uuid is not valid");
-                }
-            }
-            AccountBalanceVO accountBalanceVO = new AccountBalanceVO();
-            accountBalanceVO.setUuid(msg.getAccountUuid());
-            accountBalanceVO.setCreditPoint(BigDecimal.ZERO);
-            accountBalanceVO.setPresentBalance(BigDecimal.ZERO);
-            accountBalanceVO.setCashBalance(BigDecimal.ZERO);
-            vo = dbf.persistAndRefresh(accountBalanceVO);
+            initAccountBlance(msg.getAccountUuid());
         }
 
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
