@@ -14,25 +14,9 @@ public class APIValidateSessionReply extends APIReply {
 
     private boolean validSession;
 
+    private UserInventory userInventory;
+
     private AccountInventory accountInventory;
-
-    private UserInventory UserInventory;
-
-    public AccountInventory getAccountInventory() {
-        return accountInventory;
-    }
-
-    public UserInventory getUserInventory() {
-        return UserInventory;
-    }
-
-    public void setAccountInventory(AccountInventory accountInventory) {
-        this.accountInventory = accountInventory;
-    }
-
-    public void setUserInventory(UserInventory userInventory) {
-        UserInventory = userInventory;
-    }
 
     public boolean isValidSession() {
         return validSession;
@@ -42,10 +26,19 @@ public class APIValidateSessionReply extends APIReply {
         this.validSession = validSession;
     }
 
-    public static APIValidateSessionReply __example__() {
-        APIValidateSessionReply reply = new APIValidateSessionReply();
-        reply.setValidSession(true);
-        return reply;
+    public UserInventory getUserInventory() {
+        return userInventory;
     }
 
+    public void setUserInventory(UserInventory userInventory) {
+        this.userInventory = userInventory;
+    }
+
+    public AccountInventory getAccountInventory() {
+        return accountInventory;
+    }
+
+    public void setAccountInventory(AccountInventory accountInventory) {
+        this.accountInventory = accountInventory;
+    }
 }
