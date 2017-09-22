@@ -6,6 +6,8 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -928,6 +930,19 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void handle(APIGetExpenseGrossMonthMsg msg) {
+
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM");
+        LocalDate start = LocalDate.parse(msg.getDateStart());
+        LocalDate end = LocalDate.parse(msg.getDateEnd());
+        List<ExpenseGross> list = new ArrayList<ExpenseGross>();
+        long duration  = ChronoUnit.MONTHS.between(start,end);
+        for(int i= 0; i<=duration;i++){
+            ExpenseGross e = new ExpenseGross();
+            e.setMon(start.format(f));
+            list.add(e);
+            start =  start.plusMonths(1);
+        }
+
         String sql = "select DATE_FORMAT(payTime,'%Y-%m') mon,sum(payPresent)+sum(payCash) as payTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and DATE_FORMAT(payTime,'%Y-%m-%d  %T') between :dateStart and :dateEnd group by mon order by mon asc";
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("accountUuid", msg.getSession().getAccountUuid());
@@ -935,9 +950,21 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         q.setParameter("dateEnd", msg.getDateEnd());
         List<Object[]> objs = q.getResultList();
         List<ExpenseGross> vos = objs.stream().map(ExpenseGross::new).collect(Collectors.toList());
+        for(ExpenseGross e: list){
+            e.setTotal(getValue(e.getMon(),vos));
+        }
         APIGetExpenseGrossMonthReply reply = new APIGetExpenseGrossMonthReply();
-        reply.setInventories(vos);
+        reply.setInventories(list);
         bus.reply(msg, reply);
+    }
+
+    private BigDecimal getValue(String s,List<ExpenseGross> vos){
+        for(ExpenseGross e : vos){
+            if(s.equals(e.getMon())){
+                return e.getTotal();
+            }
+        }
+        return BigDecimal.ZERO;
     }
 
     @Transactional
