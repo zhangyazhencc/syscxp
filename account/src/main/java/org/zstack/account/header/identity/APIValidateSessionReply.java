@@ -14,38 +14,12 @@ public class APIValidateSessionReply extends APIReply {
 
     private boolean validSession;
 
-    private AccountInventory accountInventory;
-
-    private UserInventory userInventory;
-
-    public AccountInventory userInventory() {
-        return accountInventory;
-    }
-
-    public UserInventory getUserInventory() {
-        return userInventory;
-    }
-
-    public void setAccountInventory(AccountInventory accountInventory) {
-        this.accountInventory = accountInventory;
-    }
-
-    public void setUserInventory(UserInventory userInventory) {
-        this.userInventory = userInventory;
-    }
-
     public boolean isValidSession() {
         return validSession;
     }
 
     public void setValidSession(boolean validSession) {
         this.validSession = validSession;
-    }
-
-    public static APIValidateSessionReply __example__() {
-        APIValidateSessionReply reply = new APIValidateSessionReply();
-        reply.setValidSession(true);
-        return reply;
     }
 
 }

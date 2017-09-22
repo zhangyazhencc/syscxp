@@ -6,6 +6,8 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -99,8 +101,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             handle((APICreateUnsubcribeOrderMsg) msg);
         } else if (msg instanceof APICreateModifyOrderMsg) {
             handle((APICreateModifyOrderMsg) msg);
-        } else if (msg instanceof APIGetExpenseGrossMonthListMsg) {
-            handle((APIGetExpenseGrossMonthListMsg) msg);
+        } else if (msg instanceof APIGetExpenseGrossMonthMsg) {
+            handle((APIGetExpenseGrossMonthMsg) msg);
         } else if (msg instanceof APIUpdateRenewMsg) {
             handle((APIUpdateRenewMsg) msg);
         } else if (msg instanceof APIGetValuebleReceiptMsg) {
@@ -155,7 +157,6 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             bus.dealWithUnknownMessage(msg);
         }
     }
-
 
     private void handle(APIGetAccountDischargeCategoryMsg msg) {
         SimpleQuery<ProductPriceUnitVO> query = dbf.createQuery(ProductPriceUnitVO.class);
@@ -496,8 +497,11 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         ReceiptState state = msg.getState();
         ReceiptVO vo = dbf.findByUuid(receiptUuid, ReceiptVO.class);
         vo.setState(msg.getState());
+        vo.setCommet(msg.getReason());
         if (vo.getState().equals(ReceiptState.REJECT)) {
-            vo.setCommet(msg.getReason());
+            vo.setOpMan(msg.getOpMan());
+        } else if(vo.getState().equals(ReceiptState.DONE)){
+            vo.setReceiptNO(msg.getReceiptNO());
         }
         dbf.updateAndRefresh(vo);
         ReceiptInventory inventory = ReceiptInventory.valueOf(vo);
@@ -557,8 +561,8 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         List<Object[]> objs = q.getResultList();
         List<Monetary> bills = objs.stream().map(Monetary::new).collect(Collectors.toList());
         BillInventory inventory = BillInventory.valueOf(vo);
-        inventory.setBills(bills);
         APIGetBillReply reply = new APIGetBillReply();
+        inventory.setBills(bills);
         reply.setInventory(inventory);
         bus.reply(msg, reply);
 
@@ -929,17 +933,42 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     }
 
-    private void handle(APIGetExpenseGrossMonthListMsg msg) {
-        String sql = "select DATE_FORMAT(payTime,'%Y-%m') mon,sum(payPresent)+sum(payCash) as payTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and payTime between :dateStart and :dateEnd group by mon order by mon asc";
+    private void handle(APIGetExpenseGrossMonthMsg msg) {
+
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM");
+        LocalDate start = LocalDate.parse(msg.getDateStart());
+        LocalDate end = LocalDate.parse(msg.getDateEnd());
+        List<ExpenseGross> list = new ArrayList<ExpenseGross>();
+        long duration  = ChronoUnit.MONTHS.between(start,end);
+        for(int i= 0; i<=duration;i++){
+            ExpenseGross e = new ExpenseGross();
+            e.setMon(start.format(f));
+            list.add(e);
+            start =  start.plusMonths(1);
+        }
+
+        String sql = "select DATE_FORMAT(payTime,'%Y-%m') mon,sum(payPresent)+sum(payCash) as payTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and DATE_FORMAT(payTime,'%Y-%m-%d  %T') between :dateStart and :dateEnd group by mon order by mon asc";
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("accountUuid", msg.getSession().getAccountUuid());
         q.setParameter("dateStart", msg.getDateStart());
         q.setParameter("dateEnd", msg.getDateEnd());
         List<Object[]> objs = q.getResultList();
         List<ExpenseGross> vos = objs.stream().map(ExpenseGross::new).collect(Collectors.toList());
-        APIGetExpenseGrossMonthListReply reply = new APIGetExpenseGrossMonthListReply();
-        reply.setInventories(vos);
+        for(ExpenseGross e: list){
+            e.setTotal(getValue(e.getMon(),vos));
+        }
+        APIGetExpenseGrossMonthReply reply = new APIGetExpenseGrossMonthReply();
+        reply.setInventories(list);
         bus.reply(msg, reply);
+    }
+
+    private BigDecimal getValue(String s,List<ExpenseGross> vos){
+        for(ExpenseGross e : vos){
+            if(s.equals(e.getMon())){
+                return e.getTotal();
+            }
+        }
+        return BigDecimal.ZERO;
     }
 
     @Transactional

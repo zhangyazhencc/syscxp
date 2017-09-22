@@ -36,8 +36,9 @@
     </message>
 
     <message>
-        <name>org.zstack.billing.header.balance.APIGetExpenseGrossMonthListMsg</name>
+        <name>org.zstack.billing.header.balance.APIGetExpenseGrossMonthMsg</name>
     </message>
+
     <message>
         <name>org.zstack.billing.header.renew.APIUpdateRenewMsg</name>
     </message>

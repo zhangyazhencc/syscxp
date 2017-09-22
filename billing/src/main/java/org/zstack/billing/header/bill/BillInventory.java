@@ -38,7 +38,7 @@ public class BillInventory {
 
     private Timestamp lastOpDate;
 
-    private  List<Monetary> bills;
+    private List<Monetary> bills;
 
     public static BillInventory valueOf(BillVO vo) {
         BillInventory inv = new BillInventory();

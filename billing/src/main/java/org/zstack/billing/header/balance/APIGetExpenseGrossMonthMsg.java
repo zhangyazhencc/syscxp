@@ -10,27 +10,27 @@ import java.sql.Timestamp;
 
 @SuppressUserCredentialCheck
 @Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
-public class APIGetExpenseGrossMonthListMsg extends APISyncCallMessage {
+public class APIGetExpenseGrossMonthMsg extends APISyncCallMessage {
 
-    @APIParam
-    private Timestamp dateStart;
+    @APIParam(emptyString = false)
+    private String dateStart;
 
-    @APIParam
-    private Timestamp dateEnd;
+    @APIParam(emptyString = false)
+    private String dateEnd;
 
-    public Timestamp getDateStart() {
+    public String getDateStart() {
         return dateStart;
     }
 
-    public void setDateStart(Timestamp dateStart) {
+    public void setDateStart(String dateStart) {
         this.dateStart = dateStart;
     }
 
-    public Timestamp getDateEnd() {
+    public String getDateEnd() {
         return dateEnd;
     }
 
-    public void setDateEnd(Timestamp dateEnd) {
+    public void setDateEnd(String dateEnd) {
         this.dateEnd = dateEnd;
     }
 
