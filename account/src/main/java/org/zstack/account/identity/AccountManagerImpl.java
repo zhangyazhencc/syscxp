@@ -62,7 +62,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     @Autowired
     private SmsService smsService;
     @Autowired
-    MailService mailservice;
+    private MailService mailService;
 
     @Override
     @MessageSafe
@@ -125,9 +125,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIVerifyRepetitionMsg) msg);
         }else if (msg instanceof APIValidateAccountMsg) {
             handle((APIValidateAccountMsg) msg);
-        } else {
+        }else {
             bus.dealWithUnknownMessage(msg);
         }
+
+
     }
 
 
@@ -340,18 +342,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
         reply.setValidSession(valid);
 
-        if(valid){
-            if(msg.getSession().getAccountUuid().equals(msg.getSession().getUserUuid())){
-                reply.setAccountInventory(AccountInventory.valueOf(
-                        dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class)
-                ));
-            }else{
-                reply.setUserInventory(UserInventory.valueOf(
-                        dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class)
-                ));
-            }
-        }
-
         bus.reply(msg, reply);
     }
 
@@ -553,6 +543,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             validate((APIQueryPolicyMsg) msg);
         } else if (msg instanceof APIRegisterAccountMsg) {
             validate((APIRegisterAccountMsg) msg);
+        } else if (msg instanceof APIDeleteProxyAccountRefMsg) {
+            validate((APIDeleteProxyAccountRefMsg) msg);
         }
 
         setServiceId(msg);
@@ -560,14 +552,20 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         return msg;
     }
 
+    private void validate(APIDeleteProxyAccountRefMsg msg) {
+        SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
+        q.add(ProxyAccountRefVO_.accountUuid, Op.EQ, msg.getAccountUuid());
+        q.add(ProxyAccountRefVO_.customerAcccountUuid, Op.EQ, msg.getUuid());
+        if (!q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("customerAcccount[uuid:%s] is not belong to this account[uuid:%s]"
+                    ,msg.getUuid(),msg.getAccountUuid()));
+        }
+    }
+
     private void validate(APIRegisterAccountMsg msg) {
-
-        //测试中，去除验证
-//        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
-//            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
-//                    msg.getAccountUuid()));
-//        }
-
+        if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match"));
+        }
     }
 
     private void validate(APIQueryPolicyMsg msg) {
@@ -643,8 +641,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             throw new ApiMessageInterceptionException(argerr("wrong oldmail"));
         }
 
-        if (!mailservice.ValidateMailCode(msg.getOldEmail(), msg.getOldCode())||
-                !mailservice.ValidateMailCode(msg.getNewEmail(), msg.getNewCode())) {
+        if (!mailService.ValidateMailCode(msg.getOldEmail(), msg.getOldCode())||
+                !mailService.ValidateMailCode(msg.getNewEmail(), msg.getNewCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
@@ -682,8 +680,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             throw new ApiMessageInterceptionException(argerr("wrong oldmail"));
         }
 
-        if (!mailservice.ValidateMailCode(msg.getOldEmail(), msg.getOldCode())||
-                !mailservice.ValidateMailCode(msg.getNewEmail(), msg.getNewCode())) {
+        if (!mailService.ValidateMailCode(msg.getOldEmail(), msg.getOldCode())||
+                !mailService.ValidateMailCode(msg.getNewEmail(), msg.getNewCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }

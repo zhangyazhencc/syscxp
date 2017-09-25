@@ -5,7 +5,6 @@ import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
-import org.zstack.vpn.header.host.VpnState;
 import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
@@ -16,10 +15,6 @@ public class APIUpdateVpnMsg extends APIMessage{
     private String name;
     @APIParam(required = false)
     private String description;
-    @APIParam(required = false)
-    private String vpnCidr;
-    @APIParam(required = false)
-    private VpnState state;
 
     public String getUuid() {
         return uuid;
@@ -43,22 +38,6 @@ public class APIUpdateVpnMsg extends APIMessage{
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getVpnCidr() {
-        return vpnCidr;
-    }
-
-    public void setVpnCidr(String vpnCidr) {
-        this.vpnCidr = vpnCidr;
-    }
-
-    public VpnState getState() {
-        return state;
-    }
-
-    public void setState(VpnState state) {
-        this.state = state;
     }
 
     public ApiNotification __notification__() {

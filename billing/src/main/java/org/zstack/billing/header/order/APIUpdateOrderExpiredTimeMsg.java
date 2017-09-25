@@ -1,11 +1,14 @@
 package org.zstack.billing.header.order;
 
+import org.zstack.header.billing.BillingConstant;
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
 import javax.persistence.PreUpdate;
 import java.sql.Timestamp;
 
+@Action(category = BillingConstant.ACTION_CATEGORY_ORDER, adminOnly = true)
 public class APIUpdateOrderExpiredTimeMsg extends APIMessage {
 
     @APIParam

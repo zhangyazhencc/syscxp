@@ -48,33 +48,34 @@ CREATE TABLE  `syscxp_vpn`.`JobQueueEntryVO` (
     PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `syscxp_vpn`.`VpnGatewayVO` (
+CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`accountUuid` varchar(32) NOT NULL COMMENT '所属账户',
 	`hostUuid` varchar(32) NOT NULL COMMENT '物理机',
 	`name` varchar(255) NOT NULL COMMENT '名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '描述',
 	`vpnCidr` VARCHAR(32) NOT NULL COMMENT 'VPN网段',
-	`bandwidth` int(11) NOT NULL COMMENT '带宽',
+	`bandwidth` BIGINT NOT NULL COMMENT '带宽',
 	`endpointUuid` VARCHAR(32) NOT NULL COMMENT '连接点uuid',
+	`port` VARCHAR(10) NOT NULL COMMENT 'VPN端口',
 	`state` VARCHAR(32) DEFAULT NULL COMMENT '启用状态',
 	`status` VARCHAR(32) DEFAULT NULL COMMENT '运行状态',
 	`months` int(11) NOT NULL COMMENT '购买时长',
+	`memo` VARCHAR(255) DEFAULT NULL COMMENT '备注',
 	`expiredDate` timestamp COMMENT '截止时间',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `syscxp_vpn`.`TunnelIfaceVO` (
+CREATE TABLE  `syscxp_vpn`.VpnInterfaceVO (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`vpnUuid` VARCHAR(32) NOT NULL COMMENT 'VPN网关',
 	`name` varchar(255) NOT NULL COMMENT '名称',
-	`description` varchar(255) DEFAULT NULL COMMENT '描述',
-	`tunnel` VARCHAR(128) NOT NULL COMMENT '专线网络uuid',
-	`localIp` varchar(128) NOT NULL COMMENT '服务端IP',
-	`remoteIp` varchar(128) NOT NULL COMMENT '客户IP',
+	`networkUuid` VARCHAR(128) NOT NULL COMMENT '专线网络uuid',
+	`localIp` varchar(128) NOT NULL COMMENT '接口地址',
 	`netmask` VARCHAR(128) NOT NULL COMMENT '子网掩码',
+	`vlan` INT NOT NULL COMMENT '端口外部vlan',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)
@@ -84,9 +85,19 @@ CREATE TABLE  `syscxp_vpn`.`VpnRouteVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`vpnUuid` VARCHAR(32) NOT NULL COMMENT 'VPN网关',
 	`routeType` varchar(32) NOT NULL COMMENT '类型',
-	`nextIface` VARCHAR(32) NOT NULL COMMENT '下一跳接口',
-	`nextIface2` VARCHAR(32) NOT NULL COMMENT '等价路由接口',
+	`nextInterface` VARCHAR(32) NOT NULL COMMENT '下一跳接口',
 	`targetCidr` VARCHAR(32) NOT NULL COMMENT '目标网段',
+	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+	`createDate` timestamp,
+	PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  `syscxp_vpn`.`ZoneVO` (
+	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+	`name` varchar(255) NOT NULL UNIQUE COMMENT '名称',
+	`province` VARCHAR(32) NOT NULL COMMENT '省份',
+	`description` varchar(255) DEFAULT NULL COMMENT '描述',
+	`nodeUuid` VARCHAR(32) NOT NULL COMMENT '节点',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)
@@ -95,11 +106,10 @@ CREATE TABLE  `syscxp_vpn`.`VpnRouteVO` (
 CREATE TABLE  `syscxp_vpn`.`VpnHostVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`name` varchar(255) NOT NULL UNIQUE COMMENT '名称',
-	`endpointUuid` VARCHAR(32) NOT NULL COMMENT '连接点',
+	`zoneUuid` VARCHAR(32) NOT NULL COMMENT '区域',
 	`description` varchar(255) DEFAULT NULL COMMENT '描述',
 	`publicInterface` VARCHAR(255) NOT NULL COMMENT '公网物理接口',
 	`publicIp` VARCHAR(32) NOT NULL COMMENT '公网IP',
- 	`tunnelInterface` VARCHAR(255) NOT NULL COMMENT '云专线物理接口',
 	`state` VARCHAR(32) NOT NULL COMMENT '启用状态',
 	`status` VARCHAR(32) NOT NULL COMMENT '运行状态',
 	`manageIp` VARCHAR(128) NOT NULL COMMENT '管理网IP',
@@ -111,6 +121,20 @@ CREATE TABLE  `syscxp_vpn`.`VpnHostVO` (
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-ALTER TABLE VpnGatewayVO ADD CONSTRAINT fkVpnGatewayVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE CASCADE;
-ALTER TABLE TunnelIfaceVO ADD CONSTRAINT fkTunnelIfaceVOVpnGatewayVO FOREIGN KEY (vpnUuid) REFERENCES VpnGatewayVO (uuid) ON DELETE CASCADE;
-ALTER TABLE VpnRouteVO ADD CONSTRAINT fkVpnRouteVOVpnGatewayVO FOREIGN KEY (vpnUuid) REFERENCES VpnGatewayVO (uuid) ON DELETE CASCADE;
+CREATE TABLE  `syscxp_vpn`.`HostInterfaceVO` (
+	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+	`name` varchar(255) NOT NULL UNIQUE COMMENT '名称',
+	`hostUuid` VARCHAR(32) NOT NULL COMMENT '物理机',
+	`endpointUuid` varchar(32) NOT NULL COMMENT '连接点',
+	`interfaceUuid` varchar(32) NOT NULL COMMENT '物理接口',
+	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+	`createDate` timestamp,
+	PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+ALTER TABLE VpnHostVO ADD CONSTRAINT fkVpnHostVOZoneVO FOREIGN KEY (zoneUuid) REFERENCES ZoneVO (uuid) ON DELETE RESTRICT;
+ALTER TABLE HostInterfaceVO ADD CONSTRAINT fkHostInterfaceVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE CASCADE;
+ALTER TABLE VpnVO ADD CONSTRAINT fkVpnVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE RESTRICT;
+ALTER TABLE VpnInterfaceVO ADD CONSTRAINT fkTunnelIfaceVOVpnVO FOREIGN KEY (vpnUuid) REFERENCES VpnVO (uuid) ON DELETE CASCADE;
+ALTER TABLE VpnRouteVO ADD CONSTRAINT fkVpnRouteVOVpnVO FOREIGN KEY (vpnUuid) REFERENCES VpnVO (uuid) ON DELETE CASCADE;

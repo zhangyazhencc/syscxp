@@ -8,7 +8,6 @@ management-server*.gz
 *.class
 */target/
 *.swp
-.swp
 target/
 *loop.sh
 *zstack-api-cli.log
@@ -25,11 +24,10 @@ premium/
 .classpath
 .project
 .settings
-zstack-api.log
 .vscode/
 test-premium/zstack-integration-test-result/
 envDSLTree
 test/zstack-integration-test-result/
-premium/test-premium/zstack-api.log
-/bin/
-billing/pom.xml  
+*/container_settings.json
+
+

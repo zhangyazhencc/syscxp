@@ -190,9 +190,8 @@
     </message>
 
     <message>
-        <name>org.zstack.account.header.account.APIAccountMailAuthenticationMsg</name>
+        <name>org.zstack.account.header.account.APIDeleteProxyAccountRefMsg</name>
     </message>
-
 
 
 </service>

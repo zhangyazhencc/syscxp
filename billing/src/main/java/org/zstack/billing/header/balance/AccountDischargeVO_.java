@@ -1,6 +1,6 @@
 package org.zstack.billing.header.balance;
 
-import org.zstack.billing.header.order.Category;
+import org.zstack.header.billing.Category;
 import org.zstack.header.billing.ProductType;
 
 import javax.persistence.metamodel.SingularAttribute;

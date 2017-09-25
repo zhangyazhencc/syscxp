@@ -17,12 +17,62 @@ public class APICreateVpnMsg extends APIMessage {
     private String hostUuid;
     @APIParam(emptyString = false)
     private String vpnCidr;
+    @APIParam
+    private Long bandwidth;
     @APIParam(emptyString = false)
-    private Integer bandwidth;
-    @APIParam(emptyString = false)
-    private String endpoint;
+    private String endpointUuid;
     @APIParam(emptyString = false)
     private Integer months;
+    @APIParam(emptyString = false)
+    private String networkUuid;
+    @APIParam(emptyString = false)
+    private String localIp;
+    @APIParam(emptyString = false)
+    private String netmask;
+    @APIParam
+    private Integer vlan;
+    @APIParam(required = false)
+    private String accountUuid;
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
+
+    public String getNetworkUuid() {
+        return networkUuid;
+    }
+
+    public void setNetworkUuid(String networkUuid) {
+        this.networkUuid = networkUuid;
+    }
+
+    public String getLocalIp() {
+        return localIp;
+    }
+
+    public void setLocalIp(String localIp) {
+        this.localIp = localIp;
+    }
+
+    public String getNetmask() {
+        return netmask;
+    }
+
+    public void setNetmask(String netmask) {
+        this.netmask = netmask;
+    }
+
+    public Integer getVlan() {
+        return vlan;
+    }
+
+    public void setVlan(Integer vlan) {
+        this.vlan = vlan;
+    }
 
     public String getName() {
         return name;
@@ -56,20 +106,20 @@ public class APICreateVpnMsg extends APIMessage {
         this.vpnCidr = vpnCidr;
     }
 
-    public Integer getBandwidth() {
+    public Long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Integer bandwidth) {
+    public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
 
-    public String getEndpoint() {
-        return endpoint;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 
     public Integer getMonths() {

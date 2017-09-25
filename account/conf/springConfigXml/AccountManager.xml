@@ -23,6 +23,7 @@
                 <value>org.zstack.account.header.identity.RoleVO</value>
                 <value>org.zstack.account.header.user.UserVO</value>
                 <value>org.zstack.account.header.account.AccountApiSecurityVO</value>
+                <value>org.zstack.account.header.account.AccountVO</value>
 
             </list>
         </property>

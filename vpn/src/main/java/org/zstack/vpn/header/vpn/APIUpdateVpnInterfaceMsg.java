@@ -9,7 +9,7 @@ import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
 public class APIUpdateVpnInterfaceMsg extends APIMessage{
-    @APIParam(resourceType = VpnInterfaceVO.class)
+    @APIParam(resourceType = VpnInterfaceVO.class, checkAccount = true)
     private String uuid;
     @APIParam
     private String name;

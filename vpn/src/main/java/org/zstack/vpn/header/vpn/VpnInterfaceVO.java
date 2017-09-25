@@ -6,6 +6,8 @@ import org.zstack.header.vo.ForeignKey.ReferenceOption;
 import javax.persistence.*;
 import java.sql.Timestamp;
 
+@Entity
+@Table
 public class VpnInterfaceVO {
     @Id
     @Column
@@ -16,13 +18,13 @@ public class VpnInterfaceVO {
     @Column
     private String name;
     @Column
-    private String tunnelUuid;
+    private String networkUuid;
     @Column
     private String localIp;
     @Column
-    private String remoteIp;
-    @Column
     private String netmask;
+    @Column
+    private Integer vlan;
     @Column
     private Timestamp lastOpDate;
     @Column
@@ -34,6 +36,14 @@ public class VpnInterfaceVO {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public Integer getVlan() {
+        return vlan;
+    }
+
+    public void setVlan(Integer vlan) {
+        this.vlan = vlan;
     }
 
     public String getVpnUuid() {
@@ -52,12 +62,12 @@ public class VpnInterfaceVO {
         this.name = name;
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public String getNetworkUuid() {
+        return networkUuid;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
+    public void setNetworkUuid(String networkUuid) {
+        this.networkUuid = networkUuid;
     }
 
     public String getLocalIp() {
@@ -66,14 +76,6 @@ public class VpnInterfaceVO {
 
     public void setLocalIp(String localIp) {
         this.localIp = localIp;
-    }
-
-    public String getRemoteIp() {
-        return remoteIp;
-    }
-
-    public void setRemoteIp(String remoteIp) {
-        this.remoteIp = remoteIp;
     }
 
     public String getNetmask() {

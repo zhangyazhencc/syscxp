@@ -10,25 +10,24 @@ import java.util.List;
 @Inventory(mappingVOClass = VpnInterfaceVO.class)
 public class VpnInterfaceInventory {
     private String uuid;
-    private String gatewayUuid;
+    private String vpnUuid;
     private String name;
-    private String description;
-    private String tunnel;
-    private String serverIP;
-    private String clientIP;
-    private String mask;
+    private String tunnelUuid;
+    private Integer vlan;
+    private String localIp;
+    private String netmask;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
     public static VpnInterfaceInventory valueOf(VpnInterfaceVO vo) {
         VpnInterfaceInventory inv = new VpnInterfaceInventory();
         inv.setUuid(vo.getUuid());
-        inv.setGatewayUuid(vo.getVpnUuid());
+        inv.setVpnUuid(vo.getVpnUuid());
         inv.setName(vo.getName());
-        inv.setTunnel(vo.getTunnelUuid());
-        inv.setServerIP(vo.getLocalIp());
-        inv.setClientIP(vo.getRemoteIp());
-        inv.setMask(vo.getNetmask());
+        inv.setTunnelUuid(vo.getNetworkUuid());
+        inv.setVlan(vo.getVlan());
+        inv.setNetmask(vo.getNetmask());
+        inv.setLocalIp(vo.getLocalIp());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
@@ -50,12 +49,12 @@ public class VpnInterfaceInventory {
         this.uuid = uuid;
     }
 
-    public String getGatewayUuid() {
-        return gatewayUuid;
+    public String getVpnUuid() {
+        return vpnUuid;
     }
 
-    public void setGatewayUuid(String gatewayUuid) {
-        this.gatewayUuid = gatewayUuid;
+    public void setVpnUuid(String vpnUuid) {
+        this.vpnUuid = vpnUuid;
     }
 
     public String getName() {
@@ -66,44 +65,36 @@ public class VpnInterfaceInventory {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public String getTunnelUuid() {
+        return tunnelUuid;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setTunnelUuid(String tunnelUuid) {
+        this.tunnelUuid = tunnelUuid;
     }
 
-    public String getTunnel() {
-        return tunnel;
+    public Integer getVlan() {
+        return vlan;
     }
 
-    public void setTunnel(String tunnel) {
-        this.tunnel = tunnel;
+    public void setVlan(Integer vlan) {
+        this.vlan = vlan;
     }
 
-    public String getServerIP() {
-        return serverIP;
+    public String getLocalIp() {
+        return localIp;
     }
 
-    public void setServerIP(String serverIP) {
-        this.serverIP = serverIP;
+    public void setLocalIp(String localIp) {
+        this.localIp = localIp;
     }
 
-    public String getClientIP() {
-        return clientIP;
+    public String getNetmask() {
+        return netmask;
     }
 
-    public void setClientIP(String clientIP) {
-        this.clientIP = clientIP;
-    }
-
-    public String getMask() {
-        return mask;
-    }
-
-    public void setMask(String mask) {
-        this.mask = mask;
+    public void setNetmask(String netmask) {
+        this.netmask = netmask;
     }
 
     public Timestamp getLastOpDate() {

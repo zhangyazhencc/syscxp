@@ -45,6 +45,8 @@ CREATE TABLE `AccountDischargeVO` (
   `disCharge` tinyint(3) unsigned DEFAULT 100 COMMENT '折扣',
   `lastOpDate` timestamp NOT NULL  DEFAULT current_timestamp(),
   `createDate` timestamp  ,
+  `categoryName` varchar(256) DEFAULT NULL,
+   `productTypeName` varchar(256) DEFAULT NULL,
   PRIMARY KEY (`uuid`),
   KEY `Uni_accountUuid_productType` (`accountUuid`,`productType`,`category`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -92,6 +94,7 @@ CREATE TABLE `DealDetailVO` (
   `createDate` timestamp ,
   `orderUuid` varchar(32) DEFAULT NULL,
   `opAccountUuid` varchar(32) DEFAULT NULL COMMENT '操作人',
+   `comment` varchar(2000) DEFAULT NULL,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `NewIndex1` (`outTradeNO`),
   UNIQUE KEY `NewIndex2` (`tradeNO`)
@@ -310,6 +313,7 @@ CREATE TABLE `RenewVO` (
   `lastOpDate` timestamp NOT NULL DEFAULT  current_timestamp(),
   `createDate` timestamp ,
   `pricePerDay` decimal(12,4) DEFAULT NULL,
+  `expiredTime` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `UNI_ACCOUNT_PRODUCT_ID` (`accountUuid`,`productUuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -327,7 +331,7 @@ CREATE TABLE `SLACompensateVO` (
   `productUuid` varchar(32) DEFAULT NULL COMMENT '产品uuid',
   `productName` varchar(128) DEFAULT NULL,
   `reason` varchar(128) DEFAULT NULL COMMENT '赔偿原因',
-  `description` varchar(1000) DEFAULT NULL COMMENT '赔偿说明',
+  `comment` varchar(1000) DEFAULT NULL COMMENT '赔偿说明',
   `duration` int(11) DEFAULT 0 COMMENT '赔偿天数',
   `timeStart` timestamp NULL DEFAULT NULL COMMENT '赔偿起始时间',
   `timeEnd` timestamp NULL DEFAULT NULL COMMENT '赔偿终止时间',

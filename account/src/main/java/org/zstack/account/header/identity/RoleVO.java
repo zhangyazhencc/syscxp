@@ -24,7 +24,7 @@ public class RoleVO {
     @Column
     private String description;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.REFRESH)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)
     @JoinTable(
             name="RolePolicyRefVO",
             joinColumns=@JoinColumn(name="roleUuid"),

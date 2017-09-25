@@ -36,8 +36,9 @@
     </message>
 
     <message>
-        <name>org.zstack.billing.header.balance.APIGetExpenseGrossMonthListMsg</name>
+        <name>org.zstack.billing.header.balance.APIGetExpenseGrossMonthMsg</name>
     </message>
+
     <message>
         <name>org.zstack.billing.header.renew.APIUpdateRenewMsg</name>
     </message>
@@ -78,6 +79,10 @@
     </message>
 
     <message>
+        <name>org.zstack.billing.header.sla.APIUpdateSLACompensateStateMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.billing.header.bill.APIGetBillMsg</name>
     </message>
 
@@ -110,7 +115,7 @@
     </message>
 
    <message>
-        <name>org.zstack.billing.header.order.APIGetProductPriceMsg</name>
+        <name>org.zstack.header.billing.APIGetProductPriceMsg</name>
     </message>
 
    <message>

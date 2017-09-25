@@ -6,7 +6,7 @@ import org.zstack.header.message.*;
 import java.util.Map;
 
 @InnerCredentialCheck
-public class APICreateNotificationMsg extends APICreateMessage {
+public class APICreateNotificationMsg extends APIMessage {
     @APIParam
     private String name;
     @APIParam

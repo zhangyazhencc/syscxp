@@ -36,7 +36,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
     private static final CLogger logger = Utils.getLogger(AbstractIdentityInterceptor.class);
 
     @Autowired
-    private DatabaseFacade dbf;
+    protected DatabaseFacade dbf;
     @Autowired
     protected ErrorFacade errf;
     @Autowired
@@ -109,7 +109,9 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         final int interval = CoreGlobalProperty.SESSION_CLEANUP_INTERVAL;
         expiredSessionCollector = thdf.submitPeriodicTask(new PeriodicTask() {
 
+            @Transactional
             private List<String> deleteExpiredSessions() {
+                logger.debug("clear expired session");
                 List<String> uuids = new ArrayList<String>();
                 Timestamp curr = getCurrentSqlDate();
                 for (Map.Entry<String, SessionInventory> entry : sessions.entrySet()) {
@@ -338,6 +340,10 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                 }
             }
 
+            if (msg.getClass().isAnnotationPresent(SuppressUserCredentialCheck.class)){
+                return;
+            }
+
             List<PolicyStatement> userPolicys = session.getPolicyStatements();
             Decision d = decide(userPolicys);
             if (d != null) {
@@ -475,7 +481,4 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         return sessions.get(sessionUuid);
     }
 
-    public DatabaseFacade getDbf() {
-        return dbf;
-    }
 }

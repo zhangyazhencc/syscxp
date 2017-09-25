@@ -1,12 +1,12 @@
 package org.zstack.vpn.header.vpn;
 
 import org.zstack.header.search.TriggerIndex;
-import org.zstack.vpn.header.host.VpnState;
-import org.zstack.vpn.header.host.VpnStatus;
+import org.zstack.header.vo.ForeignKey;
+import org.zstack.header.vo.ForeignKey.ReferenceOption;
+import org.zstack.vpn.header.host.VpnHostVO;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.Set;
 
 @Entity
 @Table
@@ -19,6 +19,7 @@ public class VpnVO {
     @Column
     private String accountUuid;
     @Column
+    @ForeignKey(parentEntityClass = VpnHostVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
     private String hostUuid;
     @Column
     private String name;
@@ -27,9 +28,11 @@ public class VpnVO {
     @Column
     private String vpnCidr;
     @Column
-    private Integer bandwidth;
+    private Long bandwidth;
     @Column
     private String endpointUuid;
+    @Column
+    private Integer port;
     @Column
     @Enumerated(EnumType.STRING)
     private VpnState state;
@@ -45,26 +48,6 @@ public class VpnVO {
     @Column
     private Timestamp createDate;
 
-    private Set<VpnInterfaceVO> vpnInterfaces;
-
-    private Set<VpnRouteVO> vpnRoutes;
-
-    public Set<VpnInterfaceVO> getVpnInterfaces() {
-        return vpnInterfaces;
-    }
-
-    public void setVpnInterfaces(Set<VpnInterfaceVO> vpnInterfaces) {
-        this.vpnInterfaces = vpnInterfaces;
-    }
-
-    public Set<VpnRouteVO> getVpnRoutes() {
-        return vpnRoutes;
-    }
-
-    public void setVpnRoutes(Set<VpnRouteVO> vpnRoutes) {
-        this.vpnRoutes = vpnRoutes;
-    }
-
     public String getUuid() {
         return uuid;
     }
@@ -73,12 +56,24 @@ public class VpnVO {
         this.uuid = uuid;
     }
 
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
+    }
+
     public VpnState getState() {
         return state;
     }
 
     public void setState(VpnState state) {
         this.state = state;
+    }
+
+    public void setStatus(VpnStatus status) {
+        this.status = status;
     }
 
     public String getAccountUuid() {
@@ -121,11 +116,11 @@ public class VpnVO {
         this.vpnCidr = vpnCidr;
     }
 
-    public Integer getBandwidth() {
+    public Long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Integer bandwidth) {
+    public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
 
@@ -138,12 +133,7 @@ public class VpnVO {
     }
 
     public VpnStatus getStatus() {
-
         return status;
-    }
-
-    public void setStatus(VpnStatus status) {
-        this.status = status;
     }
 
     public Integer getMonths() {

@@ -1,10 +1,12 @@
 package org.zstack.billing.header.balance;
 
-import org.zstack.billing.header.order.Category;
-import org.zstack.header.billing.ProductType;
+import org.zstack.header.billing.BillingConstant;
+import org.zstack.header.billing.Category;
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
+@Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT)
 public class APICreateAccountDischargeMsg extends APIMessage {
 
     @APIParam(emptyString = false)

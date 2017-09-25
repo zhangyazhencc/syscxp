@@ -2,8 +2,6 @@ package org.zstack.vpn.header.vpn;
 
 import org.springframework.util.CollectionUtils;
 import org.zstack.header.search.Inventory;
-import org.zstack.vpn.header.host.VpnState;
-import org.zstack.vpn.header.host.VpnStatus;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -18,7 +16,9 @@ public class VpnInventory {
     private String name;
     private String description;
     private String vpnCidr;
-    private Integer bandwidth;
+    private Integer port;
+    private Integer vlan;
+    private Long bandwidth;
     private String endpointUuid;
     private VpnStatus status;
     private VpnState state;
@@ -41,14 +41,11 @@ public class VpnInventory {
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setStatus(vo.getStatus());
         inv.setState(vo.getState());
+        inv.setPort(vo.getPort());
         inv.setMonths(vo.getMonths());
         inv.setExpiredDate(vo.getExpiredDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
-        if (!CollectionUtils.isEmpty(vo.getVpnInterfaces()))
-            inv.setInterfaceInventories(VpnInterfaceInventory.valueOf(vo.getVpnInterfaces()));
-        if (!CollectionUtils.isEmpty(vo.getVpnRoutes()))
-            inv.setRouteInventories(VpnRouteInventory.valueOf(vo.getVpnRoutes()));
         return inv;
     }
 
@@ -59,6 +56,22 @@ public class VpnInventory {
         }
 
         return invs;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
+    }
+
+    public Integer getVlan() {
+        return vlan;
+    }
+
+    public void setVlan(Integer vlan) {
+        this.vlan = vlan;
     }
 
     public VpnState getState() {
@@ -117,11 +130,11 @@ public class VpnInventory {
         this.vpnCidr = vpnCidr;
     }
 
-    public Integer getBandwidth() {
+    public Long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Integer bandwidth) {
+    public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
 

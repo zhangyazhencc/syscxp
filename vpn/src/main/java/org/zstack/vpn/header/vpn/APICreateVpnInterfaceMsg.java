@@ -10,19 +10,15 @@ import org.zstack.vpn.manage.VpnConstant;
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
 public class APICreateVpnInterfaceMsg extends APIMessage {
     @APIParam(resourceType = VpnVO.class, checkAccount = true)
-    private String gatewayUuid;
+    private String vpnUuid;
     @APIParam(emptyString = false)
     private String name;
     @APIParam(required = false)
-    private String description;
+    private String tunnelUuid;
     @APIParam(emptyString = false)
-    private String tunnel;
+    private String localIP;
     @APIParam(emptyString = false)
-    private String serverIP;
-    @APIParam(emptyString = false)
-    private String clientIP;
-    @APIParam(emptyString = false)
-    private String mask;
+    private String netmask;
 
     public String getName() {
         return name;
@@ -32,52 +28,36 @@ public class APICreateVpnInterfaceMsg extends APIMessage {
         this.name = name;
     }
 
-    public String getDescription() {
-        return description;
+    public String getVpnUuid() {
+        return vpnUuid;
     }
 
-    public void setDescription(String description) {
-        this.description = description;
+    public void setVpnUuid(String vpnUuid) {
+        this.vpnUuid = vpnUuid;
     }
 
-    public String getGatewayUuid() {
-        return gatewayUuid;
+    public String getTunnelUuid() {
+        return tunnelUuid;
     }
 
-    public void setGatewayUuid(String gatewayUuid) {
-        this.gatewayUuid = gatewayUuid;
+    public void setTunnelUuid(String tunnelUuid) {
+        this.tunnelUuid = tunnelUuid;
     }
 
-    public String getTunnel() {
-        return tunnel;
+    public String getLocalIP() {
+        return localIP;
     }
 
-    public void setTunnel(String tunnel) {
-        this.tunnel = tunnel;
+    public void setLocalIP(String localIP) {
+        this.localIP = localIP;
     }
 
-    public String getServerIP() {
-        return serverIP;
+    public String getNetmask() {
+        return netmask;
     }
 
-    public void setServerIP(String serverIP) {
-        this.serverIP = serverIP;
-    }
-
-    public String getClientIP() {
-        return clientIP;
-    }
-
-    public void setClientIP(String clientIP) {
-        this.clientIP = clientIP;
-    }
-
-    public String getMask() {
-        return mask;
-    }
-
-    public void setMask(String mask) {
-        this.mask = mask;
+    public void setNetmask(String netmask) {
+        this.netmask = netmask;
     }
 
     public ApiNotification __notification__() {
