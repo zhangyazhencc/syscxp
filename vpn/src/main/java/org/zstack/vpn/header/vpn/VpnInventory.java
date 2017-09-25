@@ -20,7 +20,7 @@ public class VpnInventory {
     private String endpointUuid;
     private VpnStatus status;
     private VpnState state;
-    private Integer months;
+    private Integer duration;
     private Timestamp expiredDate;
     private List<VpnInterfaceInventory> interfaceInventories;
     private List<VpnRouteInventory> routeInventories;
@@ -39,7 +39,7 @@ public class VpnInventory {
         inv.setStatus(vo.getStatus());
         inv.setState(vo.getState());
         inv.setPort(vo.getPort());
-        inv.setMonths(vo.getDuration());
+        inv.setDuration(vo.getDuration());
         inv.setExpiredDate(vo.getExpiredDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -145,12 +145,12 @@ public class VpnInventory {
         this.status = status;
     }
 
-    public Integer getMonths() {
-        return months;
+    public Integer getDuration() {
+        return duration;
     }
 
-    public void setMonths(Integer months) {
-        this.months = months;
+    public void setDuration(Integer duration) {
+        this.duration = duration;
     }
 
     public Timestamp getExpiredDate() {

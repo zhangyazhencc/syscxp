@@ -18,6 +18,8 @@ public class VpnVO {
     private String uuid;
     @Column
     private String accountUuid;
+    @Column
+    private String hostUuid;
 
     @ManyToOne(fetch= FetchType.EAGER)
     @JoinColumn(name="hostUuid", insertable=false, updatable=false)
@@ -48,6 +50,14 @@ public class VpnVO {
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
+
+    public String getHostUuid() {
+        return hostUuid;
+    }
+
+    public void setHostUuid(String hostUuid) {
+        this.hostUuid = hostUuid;
+    }
 
     @OneToMany
     @JoinColumn(name = "vpnUuid", insertable = false, updatable = false)

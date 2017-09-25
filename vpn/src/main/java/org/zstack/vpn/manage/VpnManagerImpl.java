@@ -9,6 +9,7 @@ import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.Q;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
+import org.zstack.core.identity.InnerMessageHelper;
 import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.core.thread.Task;
 import org.zstack.core.thread.ThreadFacade;
@@ -16,12 +17,12 @@ import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.billing.*;
-import org.zstack.header.errorcode.SysErrors;
 import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
+import org.zstack.header.rest.RESTConstant;
 import org.zstack.header.rest.RESTFacade;
 import org.zstack.header.query.QueryOp;
 import org.zstack.header.rest.RestAPIResponse;
@@ -325,9 +326,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         createBuyOrderMsg.setDuration(vpn.getDuration());
         createBuyOrderMsg.setProductDescription(vpn.getDescription());
         createBuyOrderMsg.setProductPriceUnitUuids(msg.getProductPriceUnitUuids());
+        InnerMessageHelper.setMD5(createBuyOrderMsg);
         RestAPIResponse rsp;
         try {
-            rsp = new VpnRESTCaller(VpnGlobalProperty.BILLING_SERVER_URL).syncPost(null, createBuyOrderMsg);
+            rsp = new VpnRESTCaller(VpnGlobalProperty.BILLING_SERVER_URL).syncPost(RESTConstant.REST_API_CALL, createBuyOrderMsg);
         } catch (InterruptedException e) {
             throw new CloudRuntimeException(String.format("failed to post to %s, Exception: ", VpnGlobalProperty.BILLING_SERVER_URL, e.getMessage()));
         }
@@ -387,7 +389,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 .orderBy(VpnVO_.port, SimpleQuery.Od.DESC)
                 .limit(1)
                 .select(VpnVO_.port);
-        if (!q.isExists())
+        boolean flag = q.isExists();
+        if (!flag)
             return 30000;
         return (Integer) q.findValue() + 1;
     }
