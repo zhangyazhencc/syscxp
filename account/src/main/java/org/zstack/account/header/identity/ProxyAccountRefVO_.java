@@ -11,9 +11,9 @@ import java.sql.Timestamp;
  */
 @StaticMetamodel(ProxyAccountRefVO.class)
 public class ProxyAccountRefVO_ {
-    public static volatile SingularAttribute<UserRoleRefVO, Long> id;
-    public static volatile SingularAttribute<UserRoleRefVO, String> accountUuid;
-    public static volatile SingularAttribute<UserRoleRefVO, String> customerAcccountUuid;
-    public static volatile SingularAttribute<UserRoleRefVO, Timestamp> createDate;
-    public static volatile SingularAttribute<UserRoleRefVO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<ProxyAccountRefVO, Long> id;
+    public static volatile SingularAttribute<ProxyAccountRefVO, String> accountUuid;
+    public static volatile SingularAttribute<ProxyAccountRefVO, String> customerAcccountUuid;
+    public static volatile SingularAttribute<ProxyAccountRefVO, Timestamp> createDate;
+    public static volatile SingularAttribute<ProxyAccountRefVO, Timestamp> lastOpDate;
 }

@@ -301,4 +301,14 @@ CREATE TABLE `TicketRecordVO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `DictionaryVO` (
+  `id` INT UNIQUE AUTO_INCREMENT,
+  `dictName` varchar(32) NOT NULL COMMENT '字典名称',
+  `dictKey` varchar(32) NOT NULL COMMENT '字典',
+  `dictValue` varchar(32) NOT NULL COMMENT '字典值',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp ,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
