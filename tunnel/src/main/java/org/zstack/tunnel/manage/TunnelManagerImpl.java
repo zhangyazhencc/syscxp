@@ -463,19 +463,15 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         List<TunnelInterfaceVO> tivList = q.list();
         if (tivList.size() > 0) {
             for(TunnelInterfaceVO tiv : tivList){
-
-                //删 TunnelInterfaceVO
                 dbf.getEntityManager().remove(tiv);
-
-                //删 QingqVO
-                SimpleQuery<QinqVO> q2 = dbf.createQuery(QinqVO.class);
-                q2.add(QinqVO_.tunnelInterfaceUuid, SimpleQuery.Op.EQ, tiv.getUuid());
-                List<QinqVO> qinqList = q2.list();
-                if (qinqList.size() > 0) {
-                    for(QinqVO qv : qinqList){
-                        dbf.getEntityManager().remove(qv);
-                    }
-                }
+            }
+        }
+        SimpleQuery<QinqVO> q2 = dbf.createQuery(QinqVO.class);
+        q2.add(QinqVO_.tunnelUuid, SimpleQuery.Op.EQ, tunnelUuid);
+        List<QinqVO> qinqList = q2.list();
+        if (qinqList.size() > 0) {
+            for(QinqVO qv : qinqList){
+                dbf.getEntityManager().remove(qv);
             }
         }
         APIDeleteTunnelEvent evt = new APIDeleteTunnelEvent(msg.getId());
@@ -640,26 +636,41 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
 
         //判断同一个switchPort下内部VLAN段是否有重叠
-        String sql = "select count(a.uuid) from QinqVO a, TunnelInterfaceVO b, InterfaceVO c " +
-                "where a.tunnelInterfaceUuid = b.uuid and b.interfaceUuid = c.uuid " +
-                "and c.switchPortUuid = (select switchPortUuid from InterfaceVO where uuid = :interfaceUuid) " +
+        String sql = "select count(a.uuid) from QinqVO a " +
+                "where a.tunnelUuid in (select b.tunnelUuid from TunnelInterfaceVO b where b.interfaceUuid = :interfaceUuid and b.qinqState = 'Enabled') " +
                 "and ((a.startVlan between :startVlan and :endVlan) " +
                 "or (a.endVlan between :startVlan and :endVlan) " +
                 "or (:startVlan between a.startVlan and a.endVlan) " +
                 "or (:endVlan between a.startVlan and a.endVlan))";
         if(msg.getVlanSegment() != null){
-            List<InnerVlanSegment> vlanSegments= msg.getVlanSegment();
-            for(InnerVlanSegment vlanSegment:vlanSegments){
-                TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-                vq.setParameter("interfaceUuid",msg.getInterfaceAUuid());
-                vq.setParameter("startVlan",vlanSegment.getStartVlan());
-                vq.setParameter("endVlan",vlanSegment.getEndVlan());
-                Long count = vq.getSingleResult();
-                if(count > 0){
-                    throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+            if(msg.getQinqStateA() == TunnelQinqState.Enabled){
+                List<InnerVlanSegment> vlanSegments= msg.getVlanSegment();
+                for(InnerVlanSegment vlanSegment:vlanSegments){
+                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
+                    vq.setParameter("interfaceUuid",msg.getInterfaceAUuid());
+                    vq.setParameter("startVlan",vlanSegment.getStartVlan());
+                    vq.setParameter("endVlan",vlanSegment.getEndVlan());
+                    Long count = vq.getSingleResult();
+                    if(count > 0){
+                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+                    }
+                }
+            }
+            if(msg.getQinqStateZ() == TunnelQinqState.Enabled){
+                List<InnerVlanSegment> vlanSegments= msg.getVlanSegment();
+                for(InnerVlanSegment vlanSegment:vlanSegments){
+                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
+                    vq.setParameter("interfaceUuid",msg.getInterfaceZUuid());
+                    vq.setParameter("startVlan",vlanSegment.getStartVlan());
+                    vq.setParameter("endVlan",vlanSegment.getEndVlan());
+                    Long count = vq.getSingleResult();
+                    if(count > 0){
+                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+                    }
                 }
             }
         }
+
 
     }
 
@@ -744,28 +755,40 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         }
 
-
         //判断同一个switchPort下内部VLAN段是否有重叠
-        String sql = "select count(a.uuid) from QinqVO a, TunnelInterfaceVO b, InterfaceVO c " +
-                "where a.tunnelInterfaceUuid = b.uuid and b.interfaceUuid = c.uuid " +
-                "and c.switchPortUuid = (select switchPortUuid from InterfaceVO where uuid = :interfaceUuid) " +
+        String sql = "select count(a.uuid) from QinqVO a " +
+                "where a.tunnelUuid in (select tunnelUuid from TunnelInterfaceVO where interfaceUuid = :interfaceUuid and qinqState = 'Enabled') " +
                 "and ((a.startVlan between :startVlan and :endVlan) " +
                 "or (a.endVlan between :startVlan and :endVlan) " +
                 "or (:startVlan between a.startVlan and a.endVlan) " +
                 "or (:endVlan between a.startVlan and a.endVlan))";
-        if (msg.getVlanSegment() != null) {
-            List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
-            for (InnerVlanSegment vlanSegment : vlanSegments) {
-                TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-                vq.setParameter("interfaceUuid", msg.getInterfaceAUuid());
-                vq.setParameter("startVlan", vlanSegment.getStartVlan());
-                vq.setParameter("endVlan", vlanSegment.getEndVlan());
-                Long count = vq.getSingleResult();
-                if (count > 0) {
-                    throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+        if(msg.getVlanSegment() != null){
+            if(msg.getQinqStateA() == TunnelQinqState.Enabled){
+                List<InnerVlanSegment> vlanSegments= msg.getVlanSegment();
+                for(InnerVlanSegment vlanSegment:vlanSegments){
+                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
+                    vq.setParameter("interfaceUuid",msg.getInterfaceAUuid());
+                    vq.setParameter("startVlan",vlanSegment.getStartVlan());
+                    vq.setParameter("endVlan",vlanSegment.getEndVlan());
+                    Long count = vq.getSingleResult();
+                    if(count > 0){
+                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+                    }
                 }
             }
-
+            if(msg.getQinqStateZ() == TunnelQinqState.Enabled){
+                List<InnerVlanSegment> vlanSegments= msg.getVlanSegment();
+                for(InnerVlanSegment vlanSegment:vlanSegments){
+                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
+                    vq.setParameter("interfaceUuid",msg.getInterfaceZUuid());
+                    vq.setParameter("startVlan",vlanSegment.getStartVlan());
+                    vq.setParameter("endVlan",vlanSegment.getEndVlan());
+                    Long count = vq.getSingleResult();
+                    if(count > 0){
+                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+                    }
+                }
+            }
         }
     }
 
