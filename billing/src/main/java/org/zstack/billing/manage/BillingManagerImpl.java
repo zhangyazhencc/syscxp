@@ -1355,7 +1355,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
             qDischarge.add(AccountDischargeVO_.category, Op.EQ, productPriceUnitVO.getCategory());
             qDischarge.add(AccountDischargeVO_.productType, Op.EQ, productPriceUnitVO.getProductType());
-            qDischarge.add(AccountDischargeVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
+            qDischarge.add(AccountDischargeVO_.accountUuid, Op.EQ, msg.getAccountUuid());
             AccountDischargeVO accountDischargeVO = qDischarge.find();
             int productDisCharge = 100;
             if (accountDischargeVO != null) {
@@ -1372,7 +1372,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             duration = duration.multiply(BigDecimal.valueOf(12));
         }
 
-        AccountBalanceVO abvo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+        AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         BigDecimal cashBalance = abvo.getCashBalance();
         BigDecimal presentBalance = abvo.getPresentBalance();
         BigDecimal creditPoint = abvo.getCreditPoint();
@@ -1381,7 +1381,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         OrderVO orderVo = new OrderVO();
 
         orderVo.setUuid(Platform.getUuid());
-        orderVo.setAccountUuid(msg.getSession().getAccountUuid());
+        orderVo.setAccountUuid(msg.getAccountUuid());
         orderVo.setProductName(msg.getProductName());
         orderVo.setState(OrderState.PAID);
         orderVo.setProductType(msg.getProductType());
@@ -1427,7 +1427,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             PriceRefRenewVO priceRefRenewVO = new PriceRefRenewVO();
             priceRefRenewVO.setUuid(Platform.getUuid());
             priceRefRenewVO.setProductPriceUnitUuid(productPriceUnitUuid);
-            priceRefRenewVO.setAccountUuid(msg.getSession().getAccountUuid());
+            priceRefRenewVO.setAccountUuid(msg.getAccountUuid());
             priceRefRenewVO.setRenewUuid(renewVO.getUuid());
             dbf.getEntityManager().persist(priceRefRenewVO);
         }

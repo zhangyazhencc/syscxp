@@ -13,6 +13,9 @@ public class APICreateOrderMsg extends APIMessage {
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private int duration;
 
+    @APIParam(emptyString = false)
+    private String accountUuid;
+
 
     public ProductChargeModel getProductChargeModel() {
         return productChargeModel;
@@ -30,4 +33,11 @@ public class APICreateOrderMsg extends APIMessage {
         this.duration = duration;
     }
 
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
 }
