@@ -283,11 +283,22 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
     }
 
     private void handle(APIUpdateAccountDischargeMsg msg) {
-        String uuid = msg.getUuid();
+        AccountDischargeVO accountDischargeVO = dbf.findByUuid(msg.getUuid(), AccountDischargeVO.class);
         if(msg.getSession().getType().equals(AccountType.Proxy)){
-            AccountDischargeVO accountDischargeVO = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountDischargeVO.class);
+            SimpleQuery<AccountDischargeVO> q = dbf.createQuery(AccountDischargeVO.class);
+            q.add(AccountDischargeVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
+            q.add(AccountDischargeVO_.productType, Op.EQ, accountDischargeVO.getProductType());
+            q.add(AccountDischargeVO_.accountUuid, Op.EQ, accountDischargeVO.getCategory());
+            AccountDischargeVO adVO = q.find();
+            int disCharge = adVO.getDisCharge();
+            if(msg.getDischarge()>disCharge){
+                throw new IllegalArgumentException("cannot give a discharge large than self");
+            }
         }
-        AccountDischargeVO accountDischargeVO = dbf.findByUuid(uuid, AccountDischargeVO.class);
+        if(msg.getSession().getType() == AccountType.Normal){
+            throw new IllegalArgumentException("you are not permit");
+        }
+
         accountDischargeVO.setDisCharge(msg.getDischarge());
         dbf.updateAndRefresh(accountDischargeVO);
         AccountDischargeInventory inventory = AccountDischargeInventory.valueOf(accountDischargeVO);
