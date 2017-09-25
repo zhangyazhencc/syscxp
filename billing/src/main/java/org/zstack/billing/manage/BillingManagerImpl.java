@@ -578,6 +578,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             slaCompensateVO.setTimeStart(expiredTime);
             slaCompensateVO.setTimeStart(endTime);
             slaCompensateVO.setState(SLAState.APPLIED);
+            slaCompensateVO.setApplyTime(dbf.getCurrentSqlTime());
             dbf.updateAndRefresh(slaCompensateVO);
         } else if(msg.getState() == SLAState.DONE){
             if(msg.getSession().getType() != AccountType.SystemAdmin){
