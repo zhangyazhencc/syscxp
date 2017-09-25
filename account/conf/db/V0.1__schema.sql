@@ -90,7 +90,7 @@ CREATE TABLE `AccountContactsVO` (
 CREATE TABLE  `ProxyAccountRefVO` (
   `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
 	`accountUuid` varchar(32) NOT NULL COMMENT '代理商（包括系统管理员）UUID',
-  `customerAcccountUuid` varchar(32) NOT NULL COMMENT '由代理商（包括系统管理员）创建的主账号',
+  `customerAccountUuid` varchar(32) NOT NULL COMMENT '由代理商（包括系统管理员）创建的主账号',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
   PRIMARY KEY  (`id`)
@@ -137,6 +137,7 @@ CREATE TABLE `RoleVO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+
 CREATE TABLE `UserRoleRefVO` (
   `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
 	`userUuid` varchar(32) NOT NULL COMMENT '用户UUID',
@@ -144,6 +145,7 @@ CREATE TABLE `UserRoleRefVO` (
   `createDate` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 CREATE TABLE  `SessionVO` (
     `uuid` varchar(32) NOT NULL UNIQUE,
@@ -274,3 +276,44 @@ INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES 
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('UserFullAccess','管理User的权限','account','Normal','2','{"actions": ["user:.*"],"effect":"Allow"}');
 
 UPDATE `PolicyVO` p set p.createDate = current_timestamp();
+
+
+CREATE TABLE `TicketVO` (
+  `uuid` varchar(32) NOT NULL UNIQUE COMMENT '工单编号(uuid)',
+  `accountUuid` varchar(32) NOT NULL COMMENT '创建账户',
+  `userUuid` varchar(32) COMMENT '创建用户(可为空)',
+  `type` varchar(128) NOT NULL COMMENT '工单类型(数据字典)',
+  `content` text NOT NULL COMMENT '工单内容',
+  `status` varchar(32) NOT NULL COMMENT '工单最新状态(枚举)',
+  `phone` varchar(32) NOT NULL COMMENT '手机',
+  `email` varchar(32) NOT NULL COMMENT '邮箱',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp ,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `TicketRecordVO` (
+  `uuid` varchar(32) NOT NULL UNIQUE COMMENT '记录uuid',
+  `ticketUuid` varchar(32) NOT NULL COMMENT '工单uuid',
+  `belongTo` varchar(32) NOT NULL COMMENT '沟通方(枚举)',
+  `content` text NOT NULL COMMENT '沟通内容',
+  `status` text NOT NULL COMMENT '当前工单状态(枚举)',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `DictionaryVO` (
+  `id` INT UNIQUE AUTO_INCREMENT,
+  `dictName` varchar(32) NOT NULL COMMENT '字典名称',
+  `dictKey` varchar(32) NOT NULL COMMENT '字典',
+  `dictValue` varchar(32) NOT NULL COMMENT '字典值',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','专线网络');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','云服务器');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','VPN网关');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','账户');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','账务');

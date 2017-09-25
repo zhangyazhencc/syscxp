@@ -6,11 +6,11 @@ import java.sql.Timestamp;
 
 @StaticMetamodel(HostInterfaceVO.class)
 public class HostInterfaceVO_ {
-    public static volatile SingularAttribute<VpnHostVO, String> uuid;
-    public static volatile SingularAttribute<VpnHostVO, String> name;
-    public static volatile SingularAttribute<VpnHostVO, String> hostUuid;
-    public static volatile SingularAttribute<VpnHostVO, String> endpointUuid;
-    public static volatile SingularAttribute<VpnHostVO, String> interfaceUuid;
-    public static volatile SingularAttribute<VpnHostVO, Timestamp> lastOpDate;
-    public static volatile SingularAttribute<VpnHostVO, Timestamp> createDate;
+    public static volatile SingularAttribute<HostInterfaceVO, String> uuid;
+    public static volatile SingularAttribute<HostInterfaceVO, String> name;
+    public static volatile SingularAttribute<HostInterfaceVO, String> hostUuid;
+    public static volatile SingularAttribute<HostInterfaceVO, String> endpointUuid;
+    public static volatile SingularAttribute<HostInterfaceVO, String> interfaceUuid;
+    public static volatile SingularAttribute<HostInterfaceVO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<HostInterfaceVO, Timestamp> createDate;
 }

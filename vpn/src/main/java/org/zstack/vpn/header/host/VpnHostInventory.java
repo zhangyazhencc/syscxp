@@ -12,7 +12,6 @@ public class VpnHostInventory {
     private String uuid;
     private String name;
     private String description;
-    private String zoneUuid;
     private String publicIface;
     private String publicIp;
     private String manageIp;
@@ -21,6 +20,8 @@ public class VpnHostInventory {
     private String status;
     private String username;
     private String password;
+    private ZoneInventory zoneInventory;
+    private List<HostInterfaceInventory> hostInterfaceInventories;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -31,7 +32,6 @@ public class VpnHostInventory {
         inv.setDescription(vo.getDescription());
         inv.setPublicIface(vo.getPublicInterface());
         inv.setPublicIp(vo.getPublicIp());
-        inv.setZoneUuid(vo.getZoneUuid());
         inv.setManageIp(vo.getManageIp());
         inv.setSshPort(vo.getSshPort());
         inv.setUsername(vo.getUsername());
@@ -40,6 +40,8 @@ public class VpnHostInventory {
         inv.setStatus(vo.getStatus().toString());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
+        inv.setZoneInventory(ZoneInventory.valueOf(vo.getZone()));
+        inv.setHostInterfaceInventories(HostInterfaceInventory.valueOf(vo.getHostInterfaces()));
         return inv;
     }
 
@@ -49,6 +51,22 @@ public class VpnHostInventory {
             invs.add(VpnHostInventory.valueOf(vo));
         }
         return invs;
+    }
+
+    public List<HostInterfaceInventory> getHostInterfaceInventories() {
+        return hostInterfaceInventories;
+    }
+
+    public void setHostInterfaceInventories(List<HostInterfaceInventory> hostInterfaceInventories) {
+        this.hostInterfaceInventories = hostInterfaceInventories;
+    }
+
+    public ZoneInventory getZoneInventory() {
+        return zoneInventory;
+    }
+
+    public void setZoneInventory(ZoneInventory zoneInventory) {
+        this.zoneInventory = zoneInventory;
     }
 
     public String getPublicIp() {
@@ -105,14 +123,6 @@ public class VpnHostInventory {
 
     public void setPublicIface(String publicIface) {
         this.publicIface = publicIface;
-    }
-
-    public String getZoneUuid() {
-        return zoneUuid;
-    }
-
-    public void setZoneUuid(String zoneUuid) {
-        this.zoneUuid = zoneUuid;
     }
 
     public String getManageIp() {

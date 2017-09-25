@@ -1,14 +1,9 @@
 package org.zstack.header.billing;
 
-import org.zstack.header.identity.Action;
-import org.zstack.header.identity.InnerCredentialCheck;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
-import java.util.List;
 
-@InnerCredentialCheck
-@Action(category = BillingConstant.ACTION_CATEGORY_ORDER, names = {"create"})
 public class APICreateOrderMsg extends APIMessage {
 
     @APIParam(emptyString = false)
@@ -17,6 +12,9 @@ public class APICreateOrderMsg extends APIMessage {
 
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private int duration;
+
+    @APIParam(emptyString = false)
+    private String accountUuid;
 
 
     public ProductChargeModel getProductChargeModel() {
@@ -35,4 +33,11 @@ public class APICreateOrderMsg extends APIMessage {
         this.duration = duration;
     }
 
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
 }

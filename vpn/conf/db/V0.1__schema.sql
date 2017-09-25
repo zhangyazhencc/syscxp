@@ -60,7 +60,7 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`port` VARCHAR(10) NOT NULL COMMENT 'VPN端口',
 	`state` VARCHAR(32) DEFAULT NULL COMMENT '启用状态',
 	`status` VARCHAR(32) DEFAULT NULL COMMENT '运行状态',
-	`months` int(11) NOT NULL COMMENT '购买时长',
+	`duration` int(11) NOT NULL COMMENT '购买时长',
 	`memo` VARCHAR(255) DEFAULT NULL COMMENT '备注',
 	`expiredDate` timestamp COMMENT '截止时间',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',

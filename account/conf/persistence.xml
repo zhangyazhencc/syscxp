@@ -18,7 +18,7 @@
         <class>org.zstack.account.header.identity.PolicyVO</class>
         <class>org.zstack.account.header.account.AccountContactsVO</class>
         <class>org.zstack.account.header.account.AccountApiSecurityVO</class>
-        <class>org.zstack.account.header.identity.ProxyAccountRefVO</class>
+        <class>org.zstack.account.header.account.ProxyAccountRefVO</class>
 
         <class>org.zstack.account.header.log.NoticeVO</class>
         <class>org.zstack.sms.header.SmsVO</class>

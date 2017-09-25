@@ -22,7 +22,7 @@ public class SLACompensateInventory {
 
     private String productName;
 
-    private SLAReason reason;
+    private String reason;
 
     private String comment;
 
@@ -157,11 +157,11 @@ public class SLACompensateInventory {
         this.lastOpDate = lastOpDate;
     }
 
-    public SLAReason getReason() {
+    public String getReason() {
         return reason;
     }
 
-    public void setReason(SLAReason reason) {
+    public void setReason(String reason) {
         this.reason = reason;
     }
 
