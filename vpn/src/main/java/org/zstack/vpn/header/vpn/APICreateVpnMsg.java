@@ -7,6 +7,8 @@ import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 import org.zstack.vpn.manage.VpnConstant;
 
+import java.util.List;
+
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
 public class APICreateVpnMsg extends APIMessage {
     @APIParam(emptyString = false)
@@ -22,7 +24,7 @@ public class APICreateVpnMsg extends APIMessage {
     @APIParam(emptyString = false)
     private String endpointUuid;
     @APIParam(emptyString = false)
-    private Integer months;
+    private Integer duration;
     @APIParam(emptyString = false)
     private String networkUuid;
     @APIParam(emptyString = false)
@@ -30,9 +32,20 @@ public class APICreateVpnMsg extends APIMessage {
     @APIParam(emptyString = false)
     private String netmask;
     @APIParam
-    private Integer vlan;
+    private String vlan;
     @APIParam(required = false)
     private String accountUuid;
+
+    @APIParam
+    private List<String> productPriceUnitUuids;
+
+    public List<String> getProductPriceUnitUuids() {
+        return productPriceUnitUuids;
+    }
+
+    public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
+        this.productPriceUnitUuids = productPriceUnitUuids;
+    }
 
     public String getAccountUuid() {
         return accountUuid;
@@ -66,11 +79,11 @@ public class APICreateVpnMsg extends APIMessage {
         this.netmask = netmask;
     }
 
-    public Integer getVlan() {
+    public String getVlan() {
         return vlan;
     }
 
-    public void setVlan(Integer vlan) {
+    public void setVlan(String vlan) {
         this.vlan = vlan;
     }
 
@@ -122,12 +135,12 @@ public class APICreateVpnMsg extends APIMessage {
         this.endpointUuid = endpointUuid;
     }
 
-    public Integer getMonths() {
-        return months;
+    public Integer getDuration() {
+        return duration;
     }
 
-    public void setMonths(Integer months) {
-        this.months = months;
+    public void setDuration(Integer duration) {
+        this.duration = duration;
     }
 
     public ApiNotification __notification__() {

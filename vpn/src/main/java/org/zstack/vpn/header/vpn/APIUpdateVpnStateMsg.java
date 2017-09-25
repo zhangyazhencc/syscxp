@@ -12,7 +12,7 @@ public class APIUpdateVpnStateMsg extends APIMessage{
     @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String uuid;
     @APIParam
-    private String state;
+    private VpnState state;
 
     public String getUuid() {
         return uuid;
@@ -22,11 +22,11 @@ public class APIUpdateVpnStateMsg extends APIMessage{
         this.uuid = uuid;
     }
 
-    public String getState() {
+    public VpnState getState() {
         return state;
     }
 
-    public void setState(String state) {
+    public void setState(VpnState state) {
         this.state = state;
     }
 
