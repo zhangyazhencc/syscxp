@@ -42,7 +42,7 @@ public class AccountSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
 
             if (((APIQueryAccountMsg) msg).isQueryCustomer()){
 
-                return String.format("%s.uuid in (select customerAcccountUuid from ProxyAccountRefVO where acccountUuid = '%s')", inventoryClass.getSimpleName().toLowerCase()
+                return String.format("%s.uuid in (select customerAccountUuid from ProxyAccountRefVO where accountUuid = '%s')", inventoryClass.getSimpleName().toLowerCase()
                         , msg.getSession().getAccountUuid()) ;
 
             }else{
