@@ -280,12 +280,14 @@ UPDATE `PolicyVO` p set p.createDate = current_timestamp();
 
 CREATE TABLE `TicketVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT '工单编号(uuid)',
-  `accountUuid` varchar(32) NOT NULL COMMENT '创建者账户',
-  `userUuid` varchar(32) COMMENT '创建者(可为空)',
+  `accountUuid` varchar(32) NOT NULL COMMENT '创建账户',
+  `userUuid` varchar(32) COMMENT '创建用户(可为空)',
   `type` varchar(128) NOT NULL COMMENT '工单类型(数据字典)',
   `content` text NOT NULL COMMENT '工单内容',
-  `status` text NOT NULL COMMENT '工单最新状态(枚举)',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `status` varchar(32) NOT NULL COMMENT '工单最新状态(枚举)',
+  `phone` varchar(32) NOT NULL COMMENT '手机',
+  `email` varchar(32) NOT NULL COMMENT '邮箱',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -296,8 +298,8 @@ CREATE TABLE `TicketRecordVO` (
   `belongTo` varchar(32) NOT NULL COMMENT '沟通方(枚举)',
   `content` text NOT NULL COMMENT '沟通内容',
   `status` text NOT NULL COMMENT '当前工单状态(枚举)',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp ,
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -306,9 +308,12 @@ CREATE TABLE `DictionaryVO` (
   `dictName` varchar(32) NOT NULL COMMENT '字典名称',
   `dictKey` varchar(32) NOT NULL COMMENT '字典',
   `dictValue` varchar(32) NOT NULL COMMENT '字典值',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp ,
-  PRIMARY KEY  (`uuid`)
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','专线网络');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','云服务器');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','VPN网关');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','账户');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','账务');

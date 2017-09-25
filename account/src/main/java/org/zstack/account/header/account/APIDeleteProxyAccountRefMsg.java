@@ -1,6 +1,5 @@
 package org.zstack.account.header.account;
 
-import org.zstack.account.header.identity.ProxyAccountRefVO;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIDeleteMessage;
 import org.zstack.header.message.APIEvent;

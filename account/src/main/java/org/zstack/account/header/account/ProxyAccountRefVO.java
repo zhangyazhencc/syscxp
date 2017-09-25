@@ -1,4 +1,4 @@
-package org.zstack.account.header.identity;
+package org.zstack.account.header.account;
 
 
 import org.zstack.account.header.account.AccountVO;

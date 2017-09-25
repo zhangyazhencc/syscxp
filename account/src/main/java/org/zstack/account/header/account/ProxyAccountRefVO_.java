@@ -1,6 +1,4 @@
-package org.zstack.account.header.identity;
-
-import org.zstack.account.header.user.UserRoleRefVO;
+package org.zstack.account.header.account;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
