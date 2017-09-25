@@ -1,6 +1,8 @@
 package org.zstack.tunnel.header.tunnel;
 
 import org.zstack.header.vo.EO;
+import org.zstack.tunnel.header.endpoint.EndpointEO;
+import org.zstack.tunnel.header.endpoint.EndpointVO;
 import org.zstack.tunnel.header.switchs.SwitchPortVO;
 
 import javax.persistence.*;
@@ -14,17 +16,15 @@ import javax.persistence.*;
 public class InterfaceVO extends InterfaceAO{
 
     @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="switchPortUuid", insertable=false, updatable=false)
-    private SwitchPortVO switchPortVO;
+    @JoinColumn(name="endpointUuid", insertable=false, updatable=false)
+    private EndpointVO endpointVO;
 
 
-    public SwitchPortVO getSwitchPortVO() {
-        return switchPortVO;
+    public EndpointVO getEndpointVO() {
+        return endpointVO;
     }
 
-    public void setSwitchPortVO(SwitchPortVO switchPortVO) {
-        this.switchPortVO = switchPortVO;
+    public void setEndpointVO(EndpointVO endpointVO) {
+        this.endpointVO = endpointVO;
     }
-
-
 }

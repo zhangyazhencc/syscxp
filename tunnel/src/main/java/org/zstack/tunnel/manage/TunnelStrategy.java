@@ -1,8 +1,13 @@
 package org.zstack.tunnel.manage;
 
+import org.springframework.beans.factory.annotation.Autowire;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 import org.zstack.core.db.DatabaseFacade;
+import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.tunnel.header.switchs.*;
+import org.zstack.tunnel.header.tunnel.TunnelInterfaceVO;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.utils.network.NetworkUtils;
@@ -18,10 +23,13 @@ import static org.zstack.core.Platform.argerr;
  *
  * Tunnel策略生成类
  */
-public class TunnelStrategy {
+
+@Configurable(preConstruction = true, dependencyCheck = true, autowire = Autowire.BY_TYPE)
+public class TunnelStrategy  {
 
     private static final CLogger logger = Utils.getLogger(TunnelStrategy.class);
 
+    @Autowired
     private DatabaseFacade dbf;
 
     //策略分配端口
@@ -35,10 +43,10 @@ public class TunnelStrategy {
                     "and c.portAttribute = :portAttribute and c.state = :portState";
             TypedQuery<String> vq = dbf.getEntityManager().createQuery(sql, String.class);
             vq.setParameter("endpointUuid",endpointUuid);
-            vq.setParameter("switchState", SwitchState.Enabled.toString());
-            vq.setParameter("switchStatus", SwitchStatus.Connected.toString());
-            vq.setParameter("portAttribute",portAttribute.toString());
-            vq.setParameter("portState", SwitchPortState.Enabled.toString());
+            vq.setParameter("switchState", SwitchState.Enabled);
+            vq.setParameter("switchStatus", SwitchStatus.Connected);
+            vq.setParameter("portAttribute",portAttribute);
+            vq.setParameter("portState", SwitchPortState.Enabled);
             List<String> portList = vq.getResultList();
             if(portList.size() > 0){
                 Random r = new Random();
@@ -53,11 +61,11 @@ public class TunnelStrategy {
                     "and c.uuid not in (select switchPortUuid from InterfaceVO)";
             TypedQuery<String> vq = dbf.getEntityManager().createQuery(sql, String.class);
             vq.setParameter("endpointUuid",endpointUuid);
-            vq.setParameter("switchState", SwitchState.Enabled.toString());
-            vq.setParameter("switchStatus", SwitchStatus.Connected.toString());
-            vq.setParameter("portAttribute",portAttribute.toString());
-            vq.setParameter("portState", SwitchPortState.Enabled.toString());
-            vq.setParameter("portType",portType.toString());
+            vq.setParameter("switchState", SwitchState.Enabled);
+            vq.setParameter("switchStatus", SwitchStatus.Connected);
+            vq.setParameter("portAttribute",portAttribute);
+            vq.setParameter("portState", SwitchPortState.Enabled);
+            vq.setParameter("portType",portType);
             List<String> portList = vq.getResultList();
             if(portList.size() > 0){
                 Random r = new Random();
@@ -81,15 +89,20 @@ public class TunnelStrategy {
         //查询该虚拟交换机下已经分配的Vlan
         List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
 
+
         //同一个VSI下同一个物理接口不用分配vlan，他们vlan一样
         vlan = findVlanForSameVsiAndInterface(networkUuid, interfaceUuid);
-        if(vlan != null){
+        if(vlan != -1){
             return vlan;
         }else{
-            vlan = allocateVlan(vlanList, allocatedVlans);
-            return vlan;
-        }
+            if(allocatedVlans.isEmpty()){
+                return vlanList.get(0).getStartVlan();
+            }else{
+                vlan = allocateVlan(vlanList, allocatedVlans);
+                return vlan;
+            }
 
+        }
     }
 
     //查询物理接口所属的虚拟交换机
@@ -105,8 +118,7 @@ public class TunnelStrategy {
 
     //查询该虚拟交换机下所有的Vlan段
     public List<SwitchVlanVO> findSwitchVlanBySwitch (String switchUuid){
-        String sql = "select a.uuid, a.switchUuid, a.startVlan, a.endVlan, a.lastOpDate, a.createDate " +
-                "from SwitchVlanVO a where a.switchUuid = :switchUuid";
+        String sql = "select a from SwitchVlanVO a where a.switchUuid = :switchUuid";
         TypedQuery<SwitchVlanVO> svq = dbf.getEntityManager().createQuery(sql, SwitchVlanVO.class);
         svq.setParameter("switchUuid",switchUuid);
         List<SwitchVlanVO> vlanList = svq.getResultList();
@@ -128,17 +140,14 @@ public class TunnelStrategy {
 
     //查询该端口在同一个VSI下有否存在，如果存在，直接使用该端口的vlan即可
     public Integer findVlanForSameVsiAndInterface(String networkUuid, String interfaceUuid){
-        String sql = "select distinct b.vlan from TunnelVO a,TunnelInterfaceVO b where a.uuid = b.tunnelUuid " +
+        String sql = "select b from TunnelVO a,TunnelInterfaceVO b where a.uuid = b.tunnelUuid " +
                 "and a.networkUuid = :networkUuid and b.interfaceUuid = :interfaceUuid ";
-        TypedQuery<Integer> vlanq = dbf.getEntityManager().createQuery(sql,Integer.class);
+        TypedQuery<TunnelInterfaceVO> vlanq = dbf.getEntityManager().createQuery(sql,TunnelInterfaceVO.class);
         vlanq.setParameter("networkUuid",networkUuid);
         vlanq.setParameter("interfaceUuid",interfaceUuid);
-        Integer vlan = vlanq.getSingleResult();
-        if(vlan != null){
-            return vlan;
-        }else{
-            return null;
-        }
+
+        List<TunnelInterfaceVO> list = vlanq.getResultList();
+        return list.isEmpty() ? -1 : list.get(0).getVlan();
     }
 
     //分配可用VLAN

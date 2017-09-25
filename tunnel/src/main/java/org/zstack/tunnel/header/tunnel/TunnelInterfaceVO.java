@@ -35,6 +35,7 @@ public class TunnelInterfaceVO {
     private String sortTag;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private TunnelQinqState qinqState;
 
     @Column

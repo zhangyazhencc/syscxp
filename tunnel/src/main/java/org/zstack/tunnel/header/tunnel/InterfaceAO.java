@@ -1,6 +1,7 @@
 package org.zstack.tunnel.header.tunnel;
 
 import org.zstack.header.vo.ForeignKey;
+import org.zstack.tunnel.header.endpoint.EndpointEO;
 import org.zstack.tunnel.header.switchs.SwitchPortVO;
 
 import javax.persistence.*;
@@ -23,10 +24,10 @@ public class InterfaceAO {
     private String name;
 
     @Column
-    @ForeignKey(parentEntityClass = SwitchPortVO.class, onDeleteAction = ForeignKey.ReferenceOption.NO_ACTION)
     private String switchPortUuid;
 
     @Column
+    @ForeignKey(parentEntityClass = EndpointEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String endpointUuid;
 
     @Column

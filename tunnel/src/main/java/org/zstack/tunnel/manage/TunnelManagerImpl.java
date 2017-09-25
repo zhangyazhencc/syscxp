@@ -30,6 +30,7 @@ import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.zstack.core.Platform.argerr;
@@ -111,7 +112,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         GLock glock = new GLock("maxvsi", 120);
         glock.lock();
-        String sql = "select max(vo.vsi) from NetWorkVO vo";
+        String sql = "select max(vo.vsi) from NetworkVO vo";
         try {
             TypedQuery<Integer> vq = dbf.getEntityManager().createQuery(sql, Integer.class);
             Integer vsi = vq.getSingleResult();
@@ -297,6 +298,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivoA.setQinqState(msg.getQinqStateA());
         dbf.getEntityManager().persist(tivoA);
 
+        tivoA.setInterfaceVO(dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class));
+
         //给Z端口分配外部vlan
         Integer vlanZ = ts.getInnerVlanByStrategy(msg.getNetworkUuid() ,msg.getInterfaceZUuid());
         if(vlanZ == 0){
@@ -311,26 +314,17 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivoZ.setQinqState(msg.getQinqStateZ());
         dbf.getEntityManager().persist(tivoZ);
 
+        tivoZ.setInterfaceVO(dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class));
+
         //如果开启Qinq,需要指定内部vlan段
-        if(msg.getQinqStateA() == TunnelQinqState.Enabled){
-            List<InnerVlanSegment> vlanSegmentA = msg.getVlanSegmentA();
+        //在同一个专有网络下，该端口没有被使用过，才会让用户选择是否开启Qinq,否则是否开启属性和同一个端口一致
+        if(msg.getQinqStateA() == TunnelQinqState.Enabled || msg.getQinqStateZ() == TunnelQinqState.Enabled){
+            List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
 
-            for(InnerVlanSegment vlanSegment:vlanSegmentA){
+            for(InnerVlanSegment vlanSegment:vlanSegments){
                 QinqVO qvo = new QinqVO();
                 qvo.setUuid(Platform.getUuid());
-                qvo.setTunnelInterfaceUuid(tivoA.getUuid());
-                qvo.setStartVlan(vlanSegment.getStartVlan());
-                qvo.setEndVlan(vlanSegment.getEndVlan());
-                dbf.getEntityManager().persist(qvo);
-            }
-        }
-        if(msg.getQinqStateZ() == TunnelQinqState.Enabled){
-            List<InnerVlanSegment> vlanSegmentZ = msg.getVlanSegmentZ();
-
-            for(InnerVlanSegment vlanSegment:vlanSegmentZ){
-                QinqVO qvo = new QinqVO();
-                qvo.setUuid(Platform.getUuid());
-                qvo.setTunnelInterfaceUuid(tivoZ.getUuid());
+                qvo.setTunnelUuid(vo.getUuid());
                 qvo.setStartVlan(vlanSegment.getStartVlan());
                 qvo.setEndVlan(vlanSegment.getEndVlan());
                 dbf.getEntityManager().persist(qvo);
@@ -352,6 +346,12 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setDescription(msg.getDescription());
 
         dbf.getEntityManager().persist(vo);
+
+        vo.setNetworkVO(dbf.findByUuid(msg.getNetworkUuid(),NetworkVO.class));
+        List<TunnelInterfaceVO> tivo = new ArrayList<TunnelInterfaceVO>();
+        tivo.add(tivoA);
+        tivo.add(tivoZ);
+        vo.setTunnelInterfaceVO(tivo);
 
         APICreateTunnelEvent evt = new APICreateTunnelEvent(msg.getId());
         evt.setInventory(TunnelInventory.valueOf(vo));
@@ -375,6 +375,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivoA.setSortTag("A");
         tivoA.setQinqState(msg.getQinqStateA());
         dbf.getEntityManager().persist(tivoA);
+        tivoA.setInterfaceVO(dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class));
 
         TunnelInterfaceVO tivoZ = new TunnelInterfaceVO();
         tivoZ.setUuid(Platform.getUuid());
@@ -384,27 +385,17 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivoZ.setSortTag("Z");
         tivoZ.setQinqState(msg.getQinqStateZ());
         dbf.getEntityManager().persist(tivoZ);
+        tivoZ.setInterfaceVO(dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class));
 
         //如果开启Qinq,需要指定内部vlan段
-        if(msg.getQinqStateA() == TunnelQinqState.Enabled){
-            List<InnerVlanSegment> vlanSegmentA = msg.getVlanSegmentA();
+        //在同一个专有网络下，该端口没有被使用过，才会让用户选择是否开启Qinq,否则是否开启属性和同一个端口一致
+        if(msg.getQinqStateA() == TunnelQinqState.Enabled || msg.getQinqStateZ() == TunnelQinqState.Enabled){
+            List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
 
-            for(InnerVlanSegment vlanSegment:vlanSegmentA){
+            for(InnerVlanSegment vlanSegment:vlanSegments){
                 QinqVO qvo = new QinqVO();
                 qvo.setUuid(Platform.getUuid());
-                qvo.setTunnelInterfaceUuid(tivoA.getUuid());
-                qvo.setStartVlan(vlanSegment.getStartVlan());
-                qvo.setEndVlan(vlanSegment.getEndVlan());
-                dbf.getEntityManager().persist(qvo);
-            }
-        }
-        if(msg.getQinqStateZ() == TunnelQinqState.Enabled){
-            List<InnerVlanSegment> vlanSegmentZ = msg.getVlanSegmentZ();
-
-            for(InnerVlanSegment vlanSegment:vlanSegmentZ){
-                QinqVO qvo = new QinqVO();
-                qvo.setUuid(Platform.getUuid());
-                qvo.setTunnelInterfaceUuid(tivoZ.getUuid());
+                qvo.setTunnelUuid(vo.getUuid());
                 qvo.setStartVlan(vlanSegment.getStartVlan());
                 qvo.setEndVlan(vlanSegment.getEndVlan());
                 dbf.getEntityManager().persist(qvo);
@@ -425,8 +416,13 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setExpiredDate(dbf.getCurrentSqlTime());
         vo.setDescription(msg.getDescription());
 
-
         dbf.getEntityManager().persist(vo);
+
+        vo.setNetworkVO(dbf.findByUuid(msg.getNetworkUuid(),NetworkVO.class));
+        List<TunnelInterfaceVO> tivo = new ArrayList<TunnelInterfaceVO>();
+        tivo.add(tivoA);
+        tivo.add(tivoZ);
+        vo.setTunnelInterfaceVO(tivo);
 
         APICreateTunnelManualEvent evt = new APICreateTunnelManualEvent(msg.getId());
         evt.setInventory(TunnelInventory.valueOf(vo));
@@ -651,9 +647,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 "or (a.endVlan between :startVlan and :endVlan) " +
                 "or (:startVlan between a.startVlan and a.endVlan) " +
                 "or (:endVlan between a.startVlan and a.endVlan))";
-        if(msg.getVlanSegmentA() != null){
-            List<InnerVlanSegment> vlanSegmentA = msg.getVlanSegmentA();
-            for(InnerVlanSegment vlanSegment:vlanSegmentA){
+        if(msg.getVlanSegment() != null){
+            List<InnerVlanSegment> vlanSegments= msg.getVlanSegment();
+            for(InnerVlanSegment vlanSegment:vlanSegments){
                 TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
                 vq.setParameter("interfaceUuid",msg.getInterfaceAUuid());
                 vq.setParameter("startVlan",vlanSegment.getStartVlan());
@@ -665,35 +661,21 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             }
         }
 
-        if(msg.getVlanSegmentZ() != null){
-            List<InnerVlanSegment> vlanSegmentZ = msg.getVlanSegmentZ();
-            for(InnerVlanSegment vlanSegment:vlanSegmentZ){
-                TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-                vq.setParameter("interfaceUuid",msg.getInterfaceZUuid());
-                vq.setParameter("startVlan",vlanSegment.getStartVlan());
-                vq.setParameter("endVlan",vlanSegment.getEndVlan());
-                Long count = vq.getSingleResult();
-                if(count > 0){
-                    throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
-                }
-            }
-        }
-
     }
 
-    private void validate(APICreateTunnelManualMsg msg){
+    private void validate(APICreateTunnelManualMsg msg) {
 
         //判断同一个用户和同一个专有网络下的名称是否已经存在
         SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
         q.add(TunnelVO_.name, SimpleQuery.Op.EQ, msg.getName());
         q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         q.add(TunnelVO_.networkUuid, SimpleQuery.Op.EQ, msg.getNetworkUuid());
-        if(q.isExists()){
-            throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ",msg.getName()));
+        if (q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ", msg.getName()));
         }
 
         //判断通道两端的连接点是否相同，不允许相同
-        if(msg.getEndpointPointAUuid() == msg.getEndpointPointZUuid()){
+        if (msg.getEndpointPointAUuid() == msg.getEndpointPointZUuid()) {
             throw new ApiMessageInterceptionException(argerr("通道两端不允许在同一个连接点 "));
         }
 
@@ -712,51 +694,51 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         //判断外部VLAN是否在该虚拟交换机的VLAN段中
         Boolean innerA = false;
-        for(SwitchVlanVO switchVlanVO:vlanListA){
-            if(msg.getaVlan() >= switchVlanVO.getStartVlan() && msg.getaVlan() <= switchVlanVO.getEndVlan()){
+        for (SwitchVlanVO switchVlanVO : vlanListA) {
+            if (msg.getaVlan() >= switchVlanVO.getStartVlan() && msg.getaVlan() <= switchVlanVO.getEndVlan()) {
                 innerA = true;
                 break;
             }
         }
-        if(innerA == false){
+        if (innerA == false) {
             throw new ApiMessageInterceptionException(argerr("avlan not in switchVlan"));
         }
         Boolean innerZ = false;
-        for(SwitchVlanVO switchVlanVO:vlanListZ){
-            if(msg.getzVlan() >= switchVlanVO.getStartVlan() && msg.getzVlan() <= switchVlanVO.getEndVlan()){
+        for (SwitchVlanVO switchVlanVO : vlanListZ) {
+            if (msg.getzVlan() >= switchVlanVO.getStartVlan() && msg.getzVlan() <= switchVlanVO.getEndVlan()) {
                 innerZ = true;
                 break;
             }
         }
-        if(innerZ == false){
+        if (innerZ == false) {
             throw new ApiMessageInterceptionException(argerr("zvlan not in switchVlan"));
         }
 
         //判断外部vlan是否可用
-            //给A端口vlan验证
-            //同一个VSI下同一个物理接口不用分配vlan，他们vlan一样
+        //给A端口vlan验证
+        //同一个VSI下同一个物理接口不用分配vlan，他们vlan一样
         Integer aVlan = null;
         aVlan = ts.findVlanForSameVsiAndInterface(msg.getNetworkUuid(), msg.getInterfaceAUuid());
-        if(aVlan != null){
-            if(aVlan != msg.getaVlan()){
-                throw new ApiMessageInterceptionException(argerr("该端口在同一专有网络下已经分配vlan，请使用该vlan %s ",aVlan));
+        if (aVlan != -1) {
+            if (aVlan != msg.getaVlan()) {
+                throw new ApiMessageInterceptionException(argerr("该端口在同一专有网络下已经分配vlan，请使用该vlan %s ", aVlan));
             }
-        }else{
-            if(allocatedVlansA.contains(msg.getaVlan())){
-                throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用",msg.getaVlan()));
+        } else {
+            if (allocatedVlansA.contains(msg.getaVlan())) {
+                throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", msg.getaVlan()));
             }
         }
-            //给Z端口vlan验证
-            //同一个VSI下同一个物理接口不用分配vlan，他们vlan一样
+        //给Z端口vlan验证
+        //同一个VSI下同一个物理接口不用分配vlan，他们vlan一样
         Integer zVlan = null;
         zVlan = ts.findVlanForSameVsiAndInterface(msg.getNetworkUuid(), msg.getInterfaceZUuid());
-        if(zVlan != null){
-            if(zVlan != msg.getzVlan()){
-                throw new ApiMessageInterceptionException(argerr("该端口在同一专有网络下已经分配vlan，请使用该vlan %s ",zVlan));
+        if (zVlan != -1) {
+            if (zVlan != msg.getzVlan()) {
+                throw new ApiMessageInterceptionException(argerr("该端口在同一专有网络下已经分配vlan，请使用该vlan %s ", zVlan));
             }
-        }else{
-            if(allocatedVlansZ.contains(msg.getzVlan())){
-                throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用",msg.getzVlan()));
+        } else {
+            if (allocatedVlansZ.contains(msg.getzVlan())) {
+                throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", msg.getzVlan()));
             }
 
 
@@ -771,32 +753,19 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 "or (a.endVlan between :startVlan and :endVlan) " +
                 "or (:startVlan between a.startVlan and a.endVlan) " +
                 "or (:endVlan between a.startVlan and a.endVlan))";
-        if(msg.getVlanSegmentA() != null){
-            List<InnerVlanSegment> vlanSegmentA = msg.getVlanSegmentA();
-            for(InnerVlanSegment vlanSegment:vlanSegmentA){
+        if (msg.getVlanSegment() != null) {
+            List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
+            for (InnerVlanSegment vlanSegment : vlanSegments) {
                 TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-                vq.setParameter("interfaceUuid",msg.getInterfaceAUuid());
-                vq.setParameter("startVlan",vlanSegment.getStartVlan());
-                vq.setParameter("endVlan",vlanSegment.getEndVlan());
+                vq.setParameter("interfaceUuid", msg.getInterfaceAUuid());
+                vq.setParameter("startVlan", vlanSegment.getStartVlan());
+                vq.setParameter("endVlan", vlanSegment.getEndVlan());
                 Long count = vq.getSingleResult();
-                if(count > 0){
+                if (count > 0) {
                     throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
                 }
             }
-        }
 
-        if(msg.getVlanSegmentZ() != null){
-            List<InnerVlanSegment> vlanSegmentZ = msg.getVlanSegmentZ();
-            for(InnerVlanSegment vlanSegment:vlanSegmentZ){
-                TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-                vq.setParameter("interfaceUuid",msg.getInterfaceZUuid());
-                vq.setParameter("startVlan",vlanSegment.getStartVlan());
-                vq.setParameter("endVlan",vlanSegment.getEndVlan());
-                Long count = vq.getSingleResult();
-                if(count > 0){
-                    throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
-                }
-            }
         }
     }
 
