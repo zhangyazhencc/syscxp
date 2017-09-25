@@ -40,20 +40,11 @@ public class AccountSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
 
         if(msg instanceof APIQueryAccountMsg){
 
-            StringBuffer uuidlist = new StringBuffer() ;
-            SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
-            q.add(ProxyAccountRefVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
-            if(q.list() != null && q.list().size() > 0){
-                for(Object pr : q.list()){
-                    ProxyAccountRefVO ps = (ProxyAccountRefVO)pr;
-                    uuidlist.append("'" + ps.getCustomerAcccountUuid().toString() + "',");
-                }
-            }
+            if (((APIQueryAccountMsg) msg).isQueryCustomer()){
 
-            if(uuidlist.length() > 0){
-                uuidlist.substring(0,uuidlist.length());
-                return String.format("%s.uuid in (%s)", inventoryClass.getSimpleName().toLowerCase()
-                        , uuidlist) ;
+                return String.format("%s.uuid in (select customerAcccountUuid from ProxyAccountRefVO where acccountUuid = '%s')", inventoryClass.getSimpleName().toLowerCase()
+                        , msg.getSession().getAccountUuid()) ;
+
             }else{
                 return String.format("%s.uuid = '%s'", inventoryClass.getSimpleName().toLowerCase()
                         , msg.getSession().getAccountUuid()) ;
