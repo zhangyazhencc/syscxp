@@ -17,9 +17,6 @@ public class APICreateBuyOrderMsg extends APICreateOrderMsg {
     private ProductType productType;
 
     @APIParam(emptyString = false)
-    private OrderType type;
-
-    @APIParam(emptyString = false)
     private String productUuid;
 
     @APIParam
@@ -39,14 +36,6 @@ public class APICreateBuyOrderMsg extends APICreateOrderMsg {
 
     public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
         this.productPriceUnitUuids = productPriceUnitUuids;
-    }
-
-    public OrderType getType() {
-        return type;
-    }
-
-    public void setType(OrderType type) {
-        this.type = type;
     }
 
     public String getProductName() {
