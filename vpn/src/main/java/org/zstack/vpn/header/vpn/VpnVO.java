@@ -7,6 +7,8 @@ import org.zstack.vpn.header.host.VpnHostVO;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table
@@ -18,9 +20,10 @@ public class VpnVO {
     private String uuid;
     @Column
     private String accountUuid;
-    @Column
-    @ForeignKey(parentEntityClass = VpnHostVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
-    private String hostUuid;
+
+    @ManyToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name="hostUuid", insertable=false, updatable=false)
+    private VpnHostVO vpnHost;
     @Column
     private String name;
     @Column
@@ -47,6 +50,38 @@ public class VpnVO {
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
+
+    @OneToMany
+    @JoinColumn(name = "vpnUuid", insertable = false, updatable = false)
+    private List<VpnInterfaceVO> vpnInterfaces = new ArrayList<>();
+
+    @OneToMany
+    @JoinColumn(name = "vpnUuid", insertable = false, updatable = false)
+    private List<VpnRouteVO> vpnRoutes = new ArrayList<>();
+
+    public VpnHostVO getVpnHost() {
+        return vpnHost;
+    }
+
+    public void setVpnHost(VpnHostVO vpnHost) {
+        this.vpnHost = vpnHost;
+    }
+
+    public List<VpnInterfaceVO> getVpnInterfaces() {
+        return vpnInterfaces;
+    }
+
+    public void setVpnInterfaces(List<VpnInterfaceVO> vpnInterfaces) {
+        this.vpnInterfaces = vpnInterfaces;
+    }
+
+    public List<VpnRouteVO> getVpnRoutes() {
+        return vpnRoutes;
+    }
+
+    public void setVpnRoutes(List<VpnRouteVO> vpnRoutes) {
+        this.vpnRoutes = vpnRoutes;
+    }
 
     public String getUuid() {
         return uuid;
@@ -82,14 +117,6 @@ public class VpnVO {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
-    }
-
-    public String getHostUuid() {
-        return hostUuid;
-    }
-
-    public void setHostUuid(String hostUuid) {
-        this.hostUuid = hostUuid;
     }
 
     public String getName() {

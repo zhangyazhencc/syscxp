@@ -24,7 +24,7 @@ public class VpnInterfaceVO {
     @Column
     private String netmask;
     @Column
-    private Integer vlan;
+    private String vlan;
     @Column
     private Timestamp lastOpDate;
     @Column
@@ -38,11 +38,11 @@ public class VpnInterfaceVO {
         this.uuid = uuid;
     }
 
-    public Integer getVlan() {
+    public String getVlan() {
         return vlan;
     }
 
-    public void setVlan(Integer vlan) {
+    public void setVlan(String vlan) {
         this.vlan = vlan;
     }
 

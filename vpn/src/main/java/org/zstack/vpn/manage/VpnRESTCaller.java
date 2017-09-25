@@ -13,9 +13,11 @@ import org.zstack.utils.URLBuilder;
 import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
+import org.zstack.vpn.header.vpn.VpnState;
 import org.zstack.vpn.manage.VpnCommands.*;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 
@@ -35,33 +37,36 @@ public class VpnRESTCaller {
         this(VpnGlobalProperty.VPN_BASE_URL);
     }
 
-    public AgentResponse checkState(AgentCommand cmd, long interval, long timeout) {
-        String url = buildUrl(VpnConstant.CHECK_TASK_STATE_PATH);
-        String cmdStr = JSONObjectUtil.toJsonString(cmd);
+    public CheckStateResponse checkState(String path, AgentCommand cmd, long interval, long timeout) throws InterruptedException {
         long curr = 0;
         CheckStateResponse rsp;
         do {
-            rsp = restf.getRESTTemplate().postForObject(url, cmdStr, CheckStateResponse.class);
-        } while (!rsp.isSuccess() && curr < timeout);
-        if (curr >= timeout) {
-            throw new CloudRuntimeException(String.format("timeout after %s ms, error message", curr, rsp.getError()));
+            Thread.sleep(interval);
+            rsp = queryState(path, cmd);
+            curr += interval;
         }
+        while (rsp.getStatusCode() != HttpStatus.OK && Objects.equals(rsp.getState(), VpnCreateState.Creating) && curr < timeout);
 
+        if (curr >= timeout) {
+            throw new CloudRuntimeException(String.format("timeout after %s ms, error", curr, rsp.getError()));
+        }
         return rsp;
     }
 
+    public CheckStateResponse checkState(String path, AgentCommand cmd, long timeout) throws InterruptedException {
+        return checkState(path, cmd, 1000, TimeUnit.MINUTES.toMillis(timeout));
+    }
 
-    public CheckStateResponse checkState(String path, AgentCommand cmd) {
+    public CheckStateResponse checkState(String path, AgentCommand cmd) throws InterruptedException {
+        return checkState(path, cmd, 1000, TimeUnit.MINUTES.toMillis(10));
+    }
+
+
+    public CheckStateResponse queryState(String path, AgentCommand cmd) {
         String url = buildUrl(path);
         String body = JSONObjectUtil.toJsonString(cmd);
 
-        ResponseEntity<String> rsp = new Retry<ResponseEntity<String>>() {
-            @Override
-            @RetryCondition(onExceptions = {IOException.class, RestClientException.class})
-            protected ResponseEntity<String> call() {
-                return restf.getRESTTemplate().postForEntity(url, body, String.class);
-            }
-        }.run();
+        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, body, String.class);
 
         CheckStateResponse response = JSONObjectUtil.toObject(rsp.getBody(), CheckStateResponse.class);
         if (response == null) {
@@ -72,25 +77,10 @@ public class VpnRESTCaller {
     }
 
 
-    public AgentResponse syncPost(String path, AgentCommand cmd, long interval, long timeout) {
+    public AgentResponse syncPost(String path, AgentCommand cmd) {
         String cmdStr = JSONObjectUtil.toJsonString(cmd);
         String url = buildUrl(path);
-        AgentResponse rsp = restf.syncJsonPost(url, cmdStr, AgentResponse.class);
-        long curr = 0;
-        while (!rsp.isSuccess() && curr < timeout) {
-            rsp = checkState(path, cmd);
-            curr += interval;
-        }
-
-        if (curr >= timeout) {
-            throw new CloudRuntimeException(String.format("timeout after %s ms, error message", curr, rsp.getError()));
-        }
-
-        return rsp;
-    }
-
-    public AgentResponse syncPost(String url, AgentCommand cmd) {
-        return syncPost(url, cmd, 500, TimeUnit.SECONDS.toMillis(15));
+        return restf.syncJsonPost(url, cmdStr, AgentResponse.class);
     }
 
     private String buildUrl(String path) {

@@ -30,7 +30,7 @@ public class APICreateVpnMsg extends APIMessage {
     @APIParam(emptyString = false)
     private String netmask;
     @APIParam
-    private Integer vlan;
+    private String vlan;
     @APIParam(required = false)
     private String accountUuid;
 
@@ -66,11 +66,11 @@ public class APICreateVpnMsg extends APIMessage {
         this.netmask = netmask;
     }
 
-    public Integer getVlan() {
+    public String getVlan() {
         return vlan;
     }
 
-    public void setVlan(Integer vlan) {
+    public void setVlan(String vlan) {
         this.vlan = vlan;
     }
 

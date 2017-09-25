@@ -1,6 +1,5 @@
 package org.zstack.vpn.header.vpn;
 
-import org.springframework.util.CollectionUtils;
 import org.zstack.header.search.Inventory;
 
 import java.sql.Timestamp;
@@ -12,7 +11,6 @@ import java.util.List;
 public class VpnInventory {
     private String uuid;
     private String accountUuid;
-    private String hostUuid;
     private String name;
     private String description;
     private String vpnCidr;
@@ -33,7 +31,6 @@ public class VpnInventory {
         VpnInventory inv = new VpnInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
-        inv.setHostUuid(vo.getHostUuid());
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
         inv.setVpnCidr(vo.getVpnCidr());
@@ -46,6 +43,8 @@ public class VpnInventory {
         inv.setExpiredDate(vo.getExpiredDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
+        inv.setInterfaceInventories(VpnInterfaceInventory.valueOf(vo.getVpnInterfaces()));
+        inv.setRouteInventories(VpnRouteInventory.valueOf(vo.getVpnRoutes()));
         return inv;
     }
 
@@ -96,14 +95,6 @@ public class VpnInventory {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
-    }
-
-    public String getHostUuid() {
-        return hostUuid;
-    }
-
-    public void setHostUuid(String hostUuid) {
-        this.hostUuid = hostUuid;
     }
 
     public String getName() {

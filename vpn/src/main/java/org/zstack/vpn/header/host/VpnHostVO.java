@@ -5,6 +5,8 @@ import org.zstack.header.vo.ForeignKey.ReferenceOption;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table
@@ -14,9 +16,6 @@ public class VpnHostVO {
     private String uuid;
     @Column
     private String name;
-    @Column
-    @ForeignKey(parentEntityClass = ZoneVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.RESTRICT)
-    private String zoneUuid;
     @Column
     private String description;
     @Column
@@ -42,20 +41,36 @@ public class VpnHostVO {
     @Column
     private Timestamp createDate;
 
+    @ManyToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name="zoneUuid", insertable=false, updatable=false)
+    private ZoneVO zone;
+
+    @OneToMany
+    @JoinColumn(name = "hostUuid", insertable = false, updatable = false)
+    private List<HostInterfaceVO> hostInterfaces;
+
+    public ZoneVO getZone() {
+        return zone;
+    }
+
+    public void setZone(ZoneVO zone) {
+        this.zone = zone;
+    }
+
+    public List<HostInterfaceVO> getHostInterfaces() {
+        return hostInterfaces;
+    }
+
+    public void setHostInterfaces(List<HostInterfaceVO> hostInterfaces) {
+        this.hostInterfaces = hostInterfaces;
+    }
+
     public String getPublicIp() {
         return publicIp;
     }
 
     public void setPublicIp(String publicIp) {
         this.publicIp = publicIp;
-    }
-
-    public String getZoneUuid() {
-        return zoneUuid;
-    }
-
-    public void setZoneUuid(String zoneUuid) {
-        this.zoneUuid = zoneUuid;
     }
 
     public HostState getState() {

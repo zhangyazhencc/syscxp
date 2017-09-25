@@ -12,7 +12,7 @@ public class VpnRouteInventory {
     private String uuid;
     private String vpnUuid;
     private RouteType routeType;
-    private List<String> nextIface;
+    private List<String> nextInterface;
     private String targetCidr;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -61,12 +61,12 @@ public class VpnRouteInventory {
         this.routeType = routeType;
     }
 
-    public List<String> getNextIface() {
-        return nextIface;
+    public List<String> getNextInterface() {
+        return nextInterface;
     }
 
-    public void setNextIface(List<String> nextIface) {
-        this.nextIface = nextIface;
+    public void setNextInterface(List<String> nextInterface) {
+        this.nextInterface = nextInterface;
     }
 
     public String getTargetCidr() {
