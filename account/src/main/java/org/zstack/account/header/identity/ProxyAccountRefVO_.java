@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 public class ProxyAccountRefVO_ {
     public static volatile SingularAttribute<ProxyAccountRefVO, Long> id;
     public static volatile SingularAttribute<ProxyAccountRefVO, String> accountUuid;
-    public static volatile SingularAttribute<ProxyAccountRefVO, String> customerAcccountUuid;
+    public static volatile SingularAttribute<ProxyAccountRefVO, String> customerAccountUuid;
     public static volatile SingularAttribute<ProxyAccountRefVO, Timestamp> createDate;
     public static volatile SingularAttribute<ProxyAccountRefVO, Timestamp> lastOpDate;
 }
