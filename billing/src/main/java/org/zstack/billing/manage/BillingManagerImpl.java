@@ -284,6 +284,9 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     private void handle(APIUpdateAccountDischargeMsg msg) {
         String uuid = msg.getUuid();
+        if(msg.getSession().getType().equals(AccountType.Proxy)){
+            AccountDischargeVO accountDischargeVO = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountDischargeVO.class);
+        }
         AccountDischargeVO accountDischargeVO = dbf.findByUuid(uuid, AccountDischargeVO.class);
         accountDischargeVO.setDisCharge(msg.getDischarge());
         dbf.updateAndRefresh(accountDischargeVO);
