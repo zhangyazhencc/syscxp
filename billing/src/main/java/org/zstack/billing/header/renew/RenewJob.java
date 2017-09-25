@@ -41,7 +41,11 @@ public class RenewJob extends QuartzJobBean {
             logger.info(renewVOs.toString());
             for (RenewVO renewVO : renewVOs) {
                 Timestamp expiredTimestamp = currentTimestamp;//todo get from product by productUuid
-                if (expiredTimestamp.getTime() <= currentTimestamp.getTime() && (currentTimestamp.getTime() - expiredTimestamp.getTime()) < 7 * 24 * 60 * 60 * 1000l) {
+                if(currentTimestamp.getTime()-expiredTimestamp.getTime()>7*24*60*60*1000l){
+                    databaseFacade.getEntityManager().remove(renewVO);
+                    databaseFacade.getEntityManager().flush();
+                }
+                if (expiredTimestamp.getTime() <= currentTimestamp.getTime()) {
 
                     BigDecimal dischargePrice = BigDecimal.ZERO;
                     BigDecimal originalPrice = BigDecimal.ZERO;
