@@ -56,6 +56,9 @@ public class SLACompensateVO {
     @Column
     private Timestamp lastOpDate;
 
+    @Column
+    private Timestamp applyTime;
+
     public String getUuid() {
         return uuid;
     }
@@ -164,5 +167,13 @@ public class SLACompensateVO {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Timestamp getApplyTime() {
+        return applyTime;
+    }
+
+    public void setApplyTime(Timestamp applyTime) {
+        this.applyTime = applyTime;
     }
 }
