@@ -1,11 +1,8 @@
 package org.zstack.vpn.header.host;
 
-import org.zstack.header.vo.ForeignKey;
-import org.zstack.header.vo.ForeignKey.ReferenceOption;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity

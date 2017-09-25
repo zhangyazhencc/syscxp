@@ -1,8 +1,6 @@
 package org.zstack.vpn.header.vpn;
 
 import org.zstack.header.search.TriggerIndex;
-import org.zstack.header.vo.ForeignKey;
-import org.zstack.header.vo.ForeignKey.ReferenceOption;
 import org.zstack.vpn.header.host.VpnHostVO;
 
 import javax.persistence.*;
@@ -43,7 +41,7 @@ public class VpnVO {
     @Enumerated(EnumType.STRING)
     private VpnStatus status;
     @Column
-    private Integer months;
+    private Integer duration;
     @Column
     private Timestamp expiredDate;
     @Column
@@ -163,12 +161,12 @@ public class VpnVO {
         return status;
     }
 
-    public Integer getMonths() {
-        return months;
+    public Integer getDuration() {
+        return duration;
     }
 
-    public void setMonths(Integer months) {
-        this.months = months;
+    public void setDuration(Integer duration) {
+        this.duration = duration;
     }
 
     public Timestamp getExpiredDate() {

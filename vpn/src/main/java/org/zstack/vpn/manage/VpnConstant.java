@@ -6,8 +6,6 @@ public interface VpnConstant {
 
     public static final String ACTION_CATEGORY_VPN = "vpn";
 
-    public static final String VPN_PAY_PATH = "";
-
     public static final String VPN_ROOT_PATH = "vpn";
 
     public static final String CREATE_VPN_PATH = "init-vpn";
@@ -16,7 +14,7 @@ public interface VpnConstant {
 
     public static final String STOP_VPN_PATH = "close-vpn";
 
-    public static final String RESTART_VPN_PATH = "start-vpn";
+    public static final String START_VPN_PATH = "start-vpn";
 
     public static final String UPDATE_VPN_CIDR_PATH = "createvpn";
 

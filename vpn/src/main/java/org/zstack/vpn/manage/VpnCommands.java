@@ -124,7 +124,7 @@ public class VpnCommands {
             cmd.setPort(vo.getPort());
             cmd.setVpnCidr(vo.getVpnCidr());
             cmd.setBandwidth(vo.getBandwidth());
-            cmd.setMonths(vo.getMonths());
+            cmd.setMonths(vo.getDuration());
             cmd.setVpnInterfaceCmds(VpnInterfaceCmd.valueOf(hostIp, vo.getVpnInterfaces()));
             cmd.setVpnRouteCmds(VpnRouteCmd.valueOf(hostIp, vo.getVpnRoutes()));
             return cmd;
@@ -183,6 +183,36 @@ public class VpnCommands {
 
     }
 
+    public static class UpdateVpnStateCmd extends AgentCommand {
+        UpdateVpnStateCmd(String hostIp) {
+            super(hostIp);
+        }
+        private List<String> vlan_list;
+
+        public static UpdateVpnStateCmd valueOf(String hostIp, VpnVO vo) {
+            UpdateVpnStateCmd cmd = new UpdateVpnStateCmd(hostIp);
+            cmd.setVpnUuid(vo.getUuid());
+            List<String> vlans = new ArrayList<>();
+            vo.getVpnInterfaces().forEach(iface->{
+                        vlans.add(iface.getVlan());
+                    }
+            );
+            cmd.setVlans(vlans);
+            return cmd;
+        }
+
+        public List<String> getVlans() {
+            return vlan_list;
+        }
+
+        public void setVlans(List<String> vlans) {
+            this.vlan_list = vlans;
+        }
+    }
+
+    public static class UpdateVpnStateResponse extends AgentResponse {
+
+    }
     public static class DeleteVpnCmd extends AgentCommand {
         DeleteVpnCmd(String hostIp) {
             super(hostIp);
@@ -224,7 +254,7 @@ public class VpnCommands {
         public static UpdateVpnExpireDateCmd valueOf(String hostIp, VpnVO vo) {
             UpdateVpnExpireDateCmd cmd = new UpdateVpnExpireDateCmd(hostIp);
             cmd.setVpnUuid(vo.getUuid());
-            cmd.setMonths(vo.getMonths());
+            cmd.setMonths(vo.getDuration());
             return cmd;
         }
         public Integer getMonths() {
@@ -263,6 +293,33 @@ public class VpnCommands {
     }
 
     public static class UpdateVpnBandWidthResponse extends AgentResponse {
+
+    }
+
+    public static class UpdateVpnCidrCmd extends AgentCommand {
+        private String vpnCidr;
+
+        UpdateVpnCidrCmd(String hostIp) {
+            super(hostIp);
+        }
+
+        public static UpdateVpnCidrCmd valueOf(String hostIp, VpnVO vo) {
+            UpdateVpnCidrCmd cmd = new UpdateVpnCidrCmd(hostIp);
+            cmd.setVpnUuid(vo.getUuid());
+            cmd.setVpnCidr(vo.getVpnCidr());
+            return cmd;
+        }
+
+        public String getVpnCidr() {
+            return vpnCidr;
+        }
+
+        public void setVpnCidr(String vpnCidr) {
+            this.vpnCidr = vpnCidr;
+        }
+    }
+
+    public static class UpdateVpnCidrResponse extends AgentResponse {
 
     }
 

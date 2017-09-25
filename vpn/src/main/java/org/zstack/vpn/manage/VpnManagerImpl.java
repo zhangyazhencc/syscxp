@@ -1,28 +1,30 @@
 package org.zstack.vpn.manage;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.Q;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
-import org.zstack.core.thread.PeriodicTask;
+import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.core.thread.Task;
 import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
+import org.zstack.header.billing.*;
+import org.zstack.header.errorcode.SysErrors;
+import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.AccountType;
-import org.zstack.header.identity.SessionInventory;
+import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.header.rest.RESTFacade;
 import org.zstack.header.query.QueryOp;
+import org.zstack.header.rest.RestAPIResponse;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.vpn.header.host.HostState;
@@ -34,12 +36,6 @@ import org.zstack.vpn.header.host.*;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import static org.zstack.core.Platform.argerr;
 
@@ -92,7 +88,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         } else if (msg instanceof APIDeleteVpnRouteMsg) {
             handle((APIDeleteVpnRouteMsg) msg);
         } else if (msg instanceof APIGetVpnMsg) {
-            handle((APIGetVpnMsg) msg);
+            handle(
+(APIGetVpnMsg) msg);
         } else if (msg instanceof APICreateHostInterfaceMsg) {
             handle((APICreateHostInterfaceMsg) msg);
         } else if (msg instanceof APICreateZoneMsg) {
@@ -300,9 +297,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setEndpointUuid(msg.getEndpointUuid());
         vpn.setState(VpnState.Creating);
         vpn.setStatus(VpnStatus.Disconnected);
-        vpn.setMonths(msg.getMonths());
+        vpn.setDuration(msg.getDuration());
         vpn.setExpiredDate(Timestamp.valueOf(LocalDateTime.now()
-                .plus(msg.getMonths(), ChronoUnit.MONTHS)));
+                .plus(msg.getDuration(), ChronoUnit.MONTHS)));
         vpn.setPort(generatePort(msg.getHostUuid()));
         VpnHostVO vpnHost = dbf.findByUuid(msg.getHostUuid(), VpnHostVO.class);
         vpn.setVpnHost(vpnHost);
@@ -320,10 +317,29 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         //保存vpn接口
         dbf.getEntityManager().persist(vpnIface);
         //Todo create order
+        APICreateBuyOrderMsg createBuyOrderMsg = new APICreateBuyOrderMsg();
+        createBuyOrderMsg.setProductName(vpn.getName());
+        createBuyOrderMsg.setProductUuid(vpn.getUuid());
+        createBuyOrderMsg.setProductType(ProductType.VPN);
+        createBuyOrderMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
+        createBuyOrderMsg.setDuration(vpn.getDuration());
+        createBuyOrderMsg.setProductDescription(vpn.getDescription());
+        createBuyOrderMsg.setProductPriceUnitUuids(msg.getProductPriceUnitUuids());
+        RestAPIResponse rsp;
+        try {
+            rsp = new VpnRESTCaller(VpnGlobalProperty.BILLING_SERVER_URL).syncPost(null, createBuyOrderMsg);
+        } catch (InterruptedException e) {
+            throw new CloudRuntimeException(String.format("failed to post to %s, Exception: ", VpnGlobalProperty.BILLING_SERVER_URL, e.getMessage()));
+        }
+         APIEvent apiEvent = (APIEvent) RESTApiDecoder.loads(rsp.getResult());
+        if (!apiEvent.isSuccess()){
+            throw new CloudRuntimeException(String.format("failed to create order,error code: %s.", apiEvent.getError().toString()));
+
+        }
 
 
         CreateVpnCmd cmd = CreateVpnCmd.valueOf(vpnHost.getManageIp(), vpn);
-        new VpnRESTCaller().syncPost(VpnConstant.CREATE_VPN_PATH, cmd);
+        new VpnRESTCaller().syncPostForVPN(VpnConstant.CREATE_VPN_PATH, cmd);
         checkVpnCreateState(cmd);
 
 
@@ -398,11 +414,22 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     @Transactional
     public void handle(APIUpdateVpnStateMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        vpn.setState(VpnState.valueOf(msg.getState()));
+        if (msg.getState() != vpn.getState()) {
+            vpn.setState(msg.getState());
 
-
-        // Todo update vpn state
-        vpn = dbf.updateAndRefresh(vpn);
+            UpdateVpnStateCmd cmd = UpdateVpnStateCmd.valueOf(vpn.getVpnHost().getManageIp(), vpn);
+            switch (msg.getState()) {
+                case Enabled:
+                    new VpnRESTCaller().syncPostForVPN(VpnConstant.START_VPN_PATH, cmd);
+                    break;
+                case Disabled:
+                    new VpnRESTCaller().syncPostForVPN(VpnConstant.STOP_VPN_PATH, cmd);
+                    break;
+                default:
+                    break;
+            }
+            vpn = dbf.updateAndRefresh(vpn);
+        }
         APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(vpn));
         bus.publish(evt);
@@ -414,6 +441,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setVpnCidr(msg.getVpnCidr());
 
         // Todo update vpn cidr
+        UpdateVpnCidrCmd cmd = UpdateVpnCidrCmd.valueOf(vpn.getVpnHost().getManageIp(), vpn);
+        new VpnRESTCaller().syncPostForVPN(VpnConstant.UPDATE_VPN_CIDR_PATH, cmd);
+
+
         vpn = dbf.persistAndRefresh(vpn);
         APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(vpn));
@@ -426,6 +457,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setBandwidth(msg.getBandwidth());
 
         // Todo update vpn bindwidth
+        UpdateVpnBandWidthCmd cmd = UpdateVpnBandWidthCmd.valueOf(vpn.getVpnHost().getManageIp(), vpn);
+        new VpnRESTCaller().syncPostForVPN(VpnConstant.UPDATE_VPN_BINDWIDTH_PATH, cmd);
+
         vpn = dbf.persistAndRefresh(vpn);
         APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(vpn));
@@ -434,7 +468,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     @Transactional
     public void handle(APIDeleteVpnMsg msg) {
+
         // Todo delete vpn
+        VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+        DeleteVpnCmd cmd = DeleteVpnCmd.valueOf(vpn.getVpnHost().getManageIp(), vpn);
+        new VpnRESTCaller().syncPostForVPN(VpnConstant.UPDATE_VPN_BINDWIDTH_PATH, cmd);
+
+
         dbf.removeByPrimaryKey(msg.getUuid(), VpnVO.class);
         APIDeleteVpnHostEvent evt = new APIDeleteVpnHostEvent(msg.getId());
         bus.publish(evt);
@@ -452,7 +492,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         //Todo create vpn iface
         VpnInterfaceCmd cmd = VpnInterfaceCmd.valueOf(msg.getLocalIP(), iface);
-        new VpnRESTCaller().syncPost(VpnConstant.ADD_VPN_INTERFACE_PATH, cmd);
+        new VpnRESTCaller().syncPostForVPN(VpnConstant.ADD_VPN_INTERFACE_PATH, cmd);
 
 
         iface = dbf.persistAndRefresh(iface);
@@ -476,7 +516,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         VpnVO vpn = dbf.findByUuid(iface.getVpnUuid(), VpnVO.class);
         VpnInterfaceCmd cmd = VpnInterfaceCmd.valueOf(vpn.getVpnHost().getManageIp(), iface);
-        new VpnRESTCaller().syncPost(VpnConstant.DELETE_VPN_INTERFACE_PATH, cmd);
+        new VpnRESTCaller().syncPostForVPN(VpnConstant.DELETE_VPN_INTERFACE_PATH, cmd);
 
         //Todo delete vpn iface
         dbf.removeByPrimaryKey(msg.getUuid(), VpnInterfaceVO.class);
@@ -495,7 +535,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         //Todo create vpn route
         VpnVO vpn = dbf.findByUuid(msg.getVpnUuid(), VpnVO.class);
         VpnRouteCmd cmd = VpnRouteCmd.valueOf(vpn.getVpnHost().getManageIp(), route);
-        new VpnRESTCaller().syncPost(VpnConstant.ADD_VPN_ROUTE_PATH, cmd);
+        new VpnRESTCaller().syncPostForVPN(VpnConstant.ADD_VPN_ROUTE_PATH, cmd);
 
         route = dbf.persistAndRefresh(route);
         APICreateVpnRouteEvent evt = new APICreateVpnRouteEvent(msg.getId());
@@ -510,7 +550,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         //Todo delete vpn route
         VpnVO vpn = dbf.findByUuid(route.getVpnUuid(), VpnVO.class);
         VpnRouteCmd cmd = VpnRouteCmd.valueOf(vpn.getVpnHost().getManageIp(), route);
-        new VpnRESTCaller().syncPost(VpnConstant.ADD_VPN_ROUTE_PATH, cmd);
+        new VpnRESTCaller().syncPostForVPN(VpnConstant.ADD_VPN_ROUTE_PATH, cmd);
 
         dbf.removeByPrimaryKey(msg.getUuid(), VpnVO.class);
         APIDeleteVpnRouteEvent evt = new APIDeleteVpnRouteEvent(msg.getId());
@@ -554,6 +594,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
         return msg;
     }
+
 
     private void validate(APIDeleteHostInterfaceMsg msg) {
     }

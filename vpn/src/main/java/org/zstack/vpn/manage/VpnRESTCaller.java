@@ -4,19 +4,19 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.http.*;
-import org.springframework.web.client.RestClientException;
-import org.zstack.core.retry.Retry;
-import org.zstack.core.retry.RetryCondition;
+import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.header.exception.CloudRuntimeException;
+import org.zstack.header.message.APIMessage;
+import org.zstack.header.rest.RESTConstant;
 import org.zstack.header.rest.RESTFacade;
+import org.zstack.header.rest.RestAPIResponse;
+import org.zstack.header.rest.RestAPIState;
 import org.zstack.utils.URLBuilder;
 import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
-import org.zstack.vpn.header.vpn.VpnState;
 import org.zstack.vpn.manage.VpnCommands.*;
 
-import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -41,11 +41,11 @@ public class VpnRESTCaller {
         long curr = 0;
         CheckStateResponse rsp;
         do {
-            Thread.sleep(interval);
+            TimeUnit.MILLISECONDS.sleep(interval);
             rsp = queryState(path, cmd);
             curr += interval;
         }
-        while (rsp.getStatusCode() != HttpStatus.OK && Objects.equals(rsp.getState(), VpnCreateState.Creating) && curr < timeout);
+        while (rsp.getStatusCode() != HttpStatus.OK && rsp.getState() == VpnCreateState.Creating && curr < timeout);
 
         if (curr >= timeout) {
             throw new CloudRuntimeException(String.format("timeout after %s ms, error", curr, rsp.getError()));
@@ -53,12 +53,8 @@ public class VpnRESTCaller {
         return rsp;
     }
 
-    public CheckStateResponse checkState(String path, AgentCommand cmd, long timeout) throws InterruptedException {
-        return checkState(path, cmd, 1000, TimeUnit.MINUTES.toMillis(timeout));
-    }
-
     public CheckStateResponse checkState(String path, AgentCommand cmd) throws InterruptedException {
-        return checkState(path, cmd, 1000, TimeUnit.MINUTES.toMillis(10));
+        return checkState(path, cmd,1000, TimeUnit.MINUTES.toMillis(10));
     }
 
 
@@ -77,7 +73,7 @@ public class VpnRESTCaller {
     }
 
 
-    public AgentResponse syncPost(String path, AgentCommand cmd) {
+    public AgentResponse syncPostForVPN(String path, AgentCommand cmd) {
         String cmdStr = JSONObjectUtil.toJsonString(cmd);
         String url = buildUrl(path);
         return restf.syncJsonPost(url, cmdStr, AgentResponse.class);
@@ -85,6 +81,34 @@ public class VpnRESTCaller {
 
     private String buildUrl(String path) {
         return URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.VPN_ROOT_PATH, path);
+    }
+
+    private RestAPIResponse queryResponse(String uuid) {
+        String url =  URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_RESULT, uuid);
+        String res = restf.getRESTTemplate().getForObject(url, String.class);
+        return JSONObjectUtil.toObject(res, RestAPIResponse.class);
+    }
+
+    public RestAPIResponse syncPost(String path, APIMessage msg, long interval, long timeout) throws InterruptedException {
+        String msgStr = RESTApiDecoder.dump(msg);
+        String url = URLBuilder.buildUrlFromBase(baseUrl, path);
+        RestAPIResponse rsp = restf.syncJsonPost(url, msgStr, RestAPIResponse.class);
+        long curr = 0;
+        while (!rsp.getState().equals(RestAPIState.Done.toString()) && curr < timeout) {
+            TimeUnit.MILLISECONDS.sleep(interval);
+            rsp = queryResponse(rsp.getUuid());
+            curr += interval;
+        }
+
+        if (curr >= timeout) {
+            throw new CloudRuntimeException(String.format("timeout after %s ms, result uuid:%s", curr, rsp.getUuid()));
+        }
+
+        return rsp;
+    }
+
+    public RestAPIResponse syncPost(String url, APIMessage msg) throws InterruptedException {
+        return syncPost(url, msg, 500, TimeUnit.SECONDS.toMillis(15));
     }
 }
 
