@@ -342,18 +342,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
         reply.setValidSession(valid);
 
-        if(valid){
-            if(msg.getSession().getAccountUuid().equals(msg.getSession().getUserUuid())){
-                reply.setAccountInventory(AccountInventory.valueOf(
-                        dbf.findByUuid(msg.getSession().getAccountUuid(), AccountVO.class)
-                ));
-            }else{
-                reply.setUserInventory(UserInventory.valueOf(
-                        dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class)
-                ));
-            }
-        }
-
         bus.reply(msg, reply);
     }
 

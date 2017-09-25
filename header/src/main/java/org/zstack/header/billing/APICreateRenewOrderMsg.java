@@ -1,6 +1,9 @@
 package org.zstack.header.billing;
 
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIParam;
+
+@Action(category = BillingConstant.ACTION_CATEGORY_ORDER)
 
 public class APICreateRenewOrderMsg  extends APICreateOrderMsg {
 

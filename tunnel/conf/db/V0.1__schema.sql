@@ -313,7 +313,7 @@ CREATE TABLE  `syscxp_tunnel`.`TunnelInterfaceVO` (
 ##Qinq模式网段
 CREATE TABLE  `syscxp_tunnel`.`QinqVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `tunnelInterfaceUuid` varchar(32) NOT NULL COMMENT '所属云专线端口',
+  `tunnelUuid` varchar(32) NOT NULL COMMENT '所属云专线',
   `startVlan` INT(11) NOT NULL COMMENT '起始VLAN',
   `endVlan` INT(11) NOT NULL COMMENT '结束VLAN',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',

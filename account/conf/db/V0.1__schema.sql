@@ -90,7 +90,7 @@ CREATE TABLE `AccountContactsVO` (
 CREATE TABLE  `ProxyAccountRefVO` (
   `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
 	`accountUuid` varchar(32) NOT NULL COMMENT '代理商（包括系统管理员）UUID',
-  `customerAcccountUuid` varchar(32) NOT NULL COMMENT '由代理商（包括系统管理员）创建的主账号',
+  `customerAccountUuid` varchar(32) NOT NULL COMMENT '由代理商（包括系统管理员）创建的主账号',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
   PRIMARY KEY  (`id`)

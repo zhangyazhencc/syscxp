@@ -10,7 +10,6 @@ import org.zstack.vpn.manage.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"delete"}, adminOnly = true)
 public class APIDeleteHostInterfaceMsg extends APIDeleteMessage {
-    @APIParam(resourceType = VpnHostVO.class)
     private String uuid;
 
     public String getUuid() {

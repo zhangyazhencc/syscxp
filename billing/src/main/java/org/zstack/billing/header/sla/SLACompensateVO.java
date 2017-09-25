@@ -32,8 +32,7 @@ public class SLACompensateVO {
     private String productName;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private SLAReason reason;
+    private String reason;
 
     @Column
     private String comment;
@@ -55,6 +54,9 @@ public class SLACompensateVO {
 
     @Column
     private Timestamp lastOpDate;
+
+    @Column
+    private Timestamp applyTime;
 
     public String getUuid() {
         return uuid;
@@ -150,11 +152,11 @@ public class SLACompensateVO {
         lastOpDate = null;
     }
 
-    public SLAReason getReason() {
+    public String getReason() {
         return reason;
     }
 
-    public void setReason(SLAReason reason) {
+    public void setReason(String reason) {
         this.reason = reason;
     }
 
@@ -164,5 +166,13 @@ public class SLACompensateVO {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public Timestamp getApplyTime() {
+        return applyTime;
+    }
+
+    public void setApplyTime(Timestamp applyTime) {
+        this.applyTime = applyTime;
     }
 }

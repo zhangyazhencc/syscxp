@@ -36,6 +36,12 @@ public class ReceiptInventory {
 
     private ReceiptInfoInventory receiptInfoInventory;
 
+    private String opMan;
+
+    private String receiptNO;
+
+    private String comment;
+
     public static ReceiptInventory valueOf(ReceiptVO vo) {
         ReceiptInventory inv = new ReceiptInventory();
         inv.setUuid(vo.getUuid());
@@ -47,6 +53,9 @@ public class ReceiptInventory {
         inv.setTotal(vo.getTotal());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        inv.setOpMan(vo.getOpMan());
+        inv.setReceiptNO(vo.getReceiptNO());
+        inv.setComment(vo.getCommet());
 
         return inv;
     }
@@ -129,5 +138,29 @@ public class ReceiptInventory {
 
     public void setReceiptInfoInventory(ReceiptInfoInventory receiptInfoInventory) {
         this.receiptInfoInventory = receiptInfoInventory;
+    }
+
+    public String getOpMan() {
+        return opMan;
+    }
+
+    public void setOpMan(String opMan) {
+        this.opMan = opMan;
+    }
+
+    public String getReceiptNO() {
+        return receiptNO;
+    }
+
+    public void setReceiptNO(String receiptNO) {
+        this.receiptNO = receiptNO;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }

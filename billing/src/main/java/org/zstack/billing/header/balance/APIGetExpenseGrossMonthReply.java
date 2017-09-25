@@ -6,7 +6,7 @@ import org.zstack.header.rest.RestResponse;
 import java.util.List;
 
 @RestResponse(allTo = "inventories")
-public class APIGetExpenseGrossMonthListReply extends APIReply {
+public class APIGetExpenseGrossMonthReply extends APIReply {
 
     private List<ExpenseGross> inventories;
 

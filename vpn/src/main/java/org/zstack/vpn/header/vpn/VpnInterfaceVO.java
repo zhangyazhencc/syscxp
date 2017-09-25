@@ -18,13 +18,13 @@ public class VpnInterfaceVO {
     @Column
     private String name;
     @Column
-    private String tunnelUuid;
+    private String networkUuid;
     @Column
     private String localIp;
     @Column
     private String netmask;
     @Column
-    private String vlan;
+    private Integer vlan;
     @Column
     private Timestamp lastOpDate;
     @Column
@@ -38,11 +38,11 @@ public class VpnInterfaceVO {
         this.uuid = uuid;
     }
 
-    public String getVlan() {
+    public Integer getVlan() {
         return vlan;
     }
 
-    public void setVlan(String vlan) {
+    public void setVlan(Integer vlan) {
         this.vlan = vlan;
     }
 
@@ -62,12 +62,12 @@ public class VpnInterfaceVO {
         this.name = name;
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public String getNetworkUuid() {
+        return networkUuid;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
+    public void setNetworkUuid(String networkUuid) {
+        this.networkUuid = networkUuid;
     }
 
     public String getLocalIp() {

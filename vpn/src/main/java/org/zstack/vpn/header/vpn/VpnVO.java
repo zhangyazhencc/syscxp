@@ -32,9 +32,7 @@ public class VpnVO {
     @Column
     private String endpointUuid;
     @Column
-    private String port;
-    @Column
-    private String vlan;
+    private Integer port;
     @Column
     @Enumerated(EnumType.STRING)
     private VpnState state;
@@ -58,20 +56,12 @@ public class VpnVO {
         this.uuid = uuid;
     }
 
-    public String getPort() {
+    public Integer getPort() {
         return port;
     }
 
-    public void setPort(String port) {
+    public void setPort(Integer port) {
         this.port = port;
-    }
-
-    public String getVlan() {
-        return vlan;
-    }
-
-    public void setVlan(String vlan) {
-        this.vlan = vlan;
     }
 
     public VpnState getState() {

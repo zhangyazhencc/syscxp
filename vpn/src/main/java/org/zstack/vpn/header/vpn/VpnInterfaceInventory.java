@@ -13,7 +13,7 @@ public class VpnInterfaceInventory {
     private String vpnUuid;
     private String name;
     private String tunnelUuid;
-    private String vlan;
+    private Integer vlan;
     private String localIp;
     private String netmask;
     private Timestamp lastOpDate;
@@ -24,7 +24,7 @@ public class VpnInterfaceInventory {
         inv.setUuid(vo.getUuid());
         inv.setVpnUuid(vo.getVpnUuid());
         inv.setName(vo.getName());
-        inv.setTunnelUuid(vo.getTunnelUuid());
+        inv.setTunnelUuid(vo.getNetworkUuid());
         inv.setVlan(vo.getVlan());
         inv.setNetmask(vo.getNetmask());
         inv.setLocalIp(vo.getLocalIp());
@@ -73,11 +73,11 @@ public class VpnInterfaceInventory {
         this.tunnelUuid = tunnelUuid;
     }
 
-    public String getVlan() {
+    public Integer getVlan() {
         return vlan;
     }
 
-    public void setVlan(String vlan) {
+    public void setVlan(Integer vlan) {
         this.vlan = vlan;
     }
 

@@ -427,7 +427,6 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         if(msg.getSubModel() == null){
             SimpleQuery<SwitchModelVO> q = dbf.createQuery(SwitchModelVO.class);
             q.add(SwitchModelVO_.model, SimpleQuery.Op.EQ, msg.getModel());
-            q.add(SwitchModelVO_.subModel, SimpleQuery.Op.NULL);
             if(q.isExists()){
                 throw new ApiMessageInterceptionException(argerr("switchModel %s is already exist ",msg.getModel()));
             }

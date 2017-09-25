@@ -22,7 +22,7 @@ public class ProxyAccountRefVO {
 
     @Column
     @ForeignKey(parentEntityClass = AccountVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
-    private String customerAcccountUuid;
+    private String customerAccountUuid;
 
     @Column
     private Timestamp createDate;
@@ -47,16 +47,16 @@ public class ProxyAccountRefVO {
         return accountUuid;
     }
 
-    public String getCustomerAcccountUuid() {
-        return customerAcccountUuid;
+    public String getCustomerAccountUuid() {
+        return customerAccountUuid;
     }
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
     }
 
-    public void setCustomerAcccountUuid(String customerAcccountUuid) {
-        this.customerAcccountUuid = customerAcccountUuid;
+    public void setCustomerAccountUuid(String customerAccountUuid) {
+        this.customerAccountUuid = customerAccountUuid;
     }
 
     public Timestamp getCreateDate() {

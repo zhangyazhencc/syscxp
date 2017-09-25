@@ -10,4 +10,14 @@ import org.zstack.header.query.AutoQuery;
 @AutoQuery(replyClass = APIQueryAccountReply.class, inventoryClass = AccountInventory.class)
 @Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
 public class APIQueryAccountMsg extends APIQueryMessage {
+
+    private boolean queryCustomer;
+
+    public boolean isQueryCustomer() {
+        return queryCustomer;
+    }
+
+    public void setQueryCustomer(boolean queryCustomer) {
+        this.queryCustomer = queryCustomer;
+    }
 }

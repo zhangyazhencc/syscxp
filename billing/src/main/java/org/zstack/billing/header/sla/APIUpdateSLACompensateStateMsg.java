@@ -1,8 +1,11 @@
 package org.zstack.billing.header.sla;
 
+import org.zstack.header.billing.BillingConstant;
+import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
+@Action(category = BillingConstant.ACTION_CATEGORY_SLA)
 public class APIUpdateSLACompensateStateMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = SLACompensateVO.class)

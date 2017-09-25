@@ -1,6 +1,7 @@
 package org.zstack.tunnel.header.tunnel;
 
 import org.zstack.header.search.Inventory;
+import org.zstack.tunnel.header.endpoint.EndpointInventory;
 import org.zstack.tunnel.header.switchs.SwitchPortInventory;
 
 import java.sql.Timestamp;
@@ -17,8 +18,8 @@ public class InterfaceInventory {
     private String accountUuid;
     private String name;
     private String switchPortUuid;
-    private SwitchPortInventory switchPort;
     private String endpointUuid;
+    private EndpointInventory endpoint;
     private Long bandwidth;
     private String description;
     private Integer months;
@@ -32,7 +33,7 @@ public class InterfaceInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setName(vo.getName());
         inv.setSwitchPortUuid(vo.getSwitchPortUuid());
-        inv.setSwitchPort(SwitchPortInventory.valueOf(vo.getSwitchPortVO()));
+        inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpointVO()));
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setBandwidth(vo.getBandwidth());
         inv.setDescription(vo.getDescription());
@@ -131,19 +132,19 @@ public class InterfaceInventory {
         this.months = months;
     }
 
-    public SwitchPortInventory getSwitchPort() {
-        return switchPort;
-    }
-
-    public void setSwitchPort(SwitchPortInventory switchPort) {
-        this.switchPort = switchPort;
-    }
-
     public Long getBandwidth() {
         return bandwidth;
     }
 
     public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
+    }
+
+    public EndpointInventory getEndpoint() {
+        return endpoint;
+    }
+
+    public void setEndpoint(EndpointInventory endpoint) {
+        this.endpoint = endpoint;
     }
 }
