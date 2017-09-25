@@ -404,7 +404,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
                 vo.setCashBalance(balance);
                 dbf.updateAndRefresh(vo);
 
-                dealDetailVO.setBalance(balance);
+                dealDetailVO.setBalance(balance==null?BigDecimal.ZERO:balance);
                 dealDetailVO.setState(DealState.SUCCESS);
                 dealDetailVO.setFinishTime(dbf.getCurrentSqlTime());
                 dealDetailVO.setTradeNO(trade_no);
@@ -442,7 +442,10 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         vo.setState(DealState.FAILURE);
         vo.setType(DealType.RECHARGE);
         vo.setDealWay(DealWay.CASH_BILL);
-        vo.setIncome(total);
+        vo.setIncome(total==null?BigDecimal.ZERO:total);
+        vo.setExpend(BigDecimal.ZERO);
+        AccountBalanceVO accountBalanceVO = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+        vo.setBalance(accountBalanceVO.getCashBalance());
         vo.setFinishTime(currentTimestamp);
         vo.setAccountUuid(accountUuid);
         vo.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -578,6 +581,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             slaCompensateVO.setTimeStart(expiredTime);
             slaCompensateVO.setTimeStart(endTime);
             slaCompensateVO.setState(SLAState.APPLIED);
+            slaCompensateVO.setApplyTime(dbf.getCurrentSqlTime());
             dbf.updateAndRefresh(slaCompensateVO);
         } else if(msg.getState() == SLAState.DONE){
             if(msg.getSession().getType() != AccountType.SystemAdmin){
@@ -1159,12 +1163,12 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         dVO.setUuid(Platform.getUuid());
         dVO.setAccountUuid(msg.getSession().getAccountUuid());
         dVO.setDealWay(DealWay.CASH_BILL);
-        dVO.setIncome(remainMoney);
+        dVO.setIncome(remainMoney==null?BigDecimal.ZERO:remainMoney);
         dVO.setExpend(BigDecimal.ZERO);
         dVO.setFinishTime(currentTimestamp);
         dVO.setType(DealType.REFUND);
         dVO.setState(DealState.SUCCESS);
-        dVO.setBalance(remainCash);
+        dVO.setBalance(remainCash==null?BigDecimal.ZERO:remainCash);
         dVO.setOutTradeNO(orderVo.getUuid());
         dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
         dbf.getEntityManager().persist(dVO);
@@ -1289,7 +1293,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setFinishTime(currentTimestamp);
             dVO.setType(DealType.REFUND);
             dVO.setState(DealState.SUCCESS);
-            dVO.setBalance(remainCash);
+            dVO.setBalance(remainCash==null?BigDecimal.ZERO:remainCash);
             dVO.setOutTradeNO(orderVo.getUuid());
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
             dbf.getEntityManager().persist(dVO);
@@ -1474,7 +1478,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setFinishTime(dbf.getCurrentSqlTime());
             dVO.setType(DealType.PRESENT);
             dVO.setState(DealState.SUCCESS);
-            dVO.setBalance(vo.getCashBalance());
+            dVO.setBalance(vo.getCashBalance()==null?BigDecimal.ZERO:vo.getCashBalance());
             dVO.setOutTradeNO(outTradeNO);
             dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
             dVO.setComment(msg.getComment());

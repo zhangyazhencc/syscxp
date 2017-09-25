@@ -642,7 +642,7 @@ public class AccountBase extends AbstractAccount {
         if (msg.getSession().isProxySession()) {
             ProxyAccountRefVO prevo = new ProxyAccountRefVO();
             prevo.setAccountUuid(msg.getAccountUuid());
-            prevo.setCustomerAcccountUuid(accountVO.getUuid());
+            prevo.setCustomerAccountUuid(accountVO.getUuid());
 
             dbf.getEntityManager().persist(prevo);
             dbf.getEntityManager().refresh(prevo);

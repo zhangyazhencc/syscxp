@@ -16,7 +16,7 @@ public class QinqVO {
     private String uuid;
 
     @Column
-    private String tunnelInterfaceUuid;
+    private String tunnelUuid;
 
     @Column
     private Integer startVlan;
@@ -75,11 +75,11 @@ public class QinqVO {
         this.lastOpDate = lastOpDate;
     }
 
-    public String getTunnelInterfaceUuid() {
-        return tunnelInterfaceUuid;
+    public String getTunnelUuid() {
+        return tunnelUuid;
     }
 
-    public void setTunnelInterfaceUuid(String tunnelInterfaceUuid) {
-        this.tunnelInterfaceUuid = tunnelInterfaceUuid;
+    public void setTunnelUuid(String tunnelUuid) {
+        this.tunnelUuid = tunnelUuid;
     }
 }

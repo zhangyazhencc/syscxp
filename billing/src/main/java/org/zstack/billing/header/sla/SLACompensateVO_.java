@@ -21,4 +21,5 @@ public class SLACompensateVO_ {
     public static volatile SingularAttribute<SLACompensateVO, SLAState> state;
     public static volatile SingularAttribute<SLACompensateVO, Timestamp> createDate;
     public static volatile SingularAttribute<SLACompensateVO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<SLACompensateVO, Timestamp> applyTime;
 }

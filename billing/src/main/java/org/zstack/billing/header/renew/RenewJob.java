@@ -106,7 +106,7 @@ public class RenewJob extends QuartzJobBean {
                             dealDetailVO.setFinishTime(currentTimestamp);
                             dealDetailVO.setType(DealType.DEDUCTION);
                             dealDetailVO.setState(DealState.SUCCESS);
-                            dealDetailVO.setBalance(presentNow);
+                            dealDetailVO.setBalance(presentNow==null?BigDecimal.ZERO:presentNow);
                             dealDetailVO.setOutTradeNO(outTradeNO);
                             dealDetailVO.setOpAccountUuid(renewVO.getAccountUuid());
                             databaseFacade.getEntityManager().persist(dealDetailVO);
@@ -144,7 +144,7 @@ public class RenewJob extends QuartzJobBean {
                             dVO.setFinishTime(currentTimestamp);
                             dVO.setType(DealType.DEDUCTION);
                             dVO.setState(DealState.SUCCESS);
-                            dVO.setBalance(remainCash);
+                            dVO.setBalance(remainCash==null?BigDecimal.ZERO:remainCash);
                             dVO.setOutTradeNO(outTradeNO+"-2");
                             dVO.setOpAccountUuid(renewVO.getAccountUuid());
                             databaseFacade.getEntityManager().persist(dVO);
@@ -164,7 +164,7 @@ public class RenewJob extends QuartzJobBean {
                         dVO.setFinishTime(currentTimestamp);
                         dVO.setType(DealType.DEDUCTION);
                         dVO.setState(DealState.SUCCESS);
-                        dVO.setBalance(remainCashBalance);
+                        dVO.setBalance(remainCashBalance==null?BigDecimal.ZERO:remainCashBalance);
                         dVO.setOutTradeNO(outTradeNO);
                         dVO.setOpAccountUuid(renewVO.getAccountUuid());
                         databaseFacade.getEntityManager().persist(dVO);

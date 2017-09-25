@@ -23,7 +23,7 @@ public class APIUpdateSLACompensateMsg extends APIMessage {
     private String productName;
 
     @APIParam(emptyString =false)
-    private SLAReason reason;
+    private String reason;
 
     @APIParam(emptyString =false,required = false)
     private String comment;
@@ -80,11 +80,11 @@ public class APIUpdateSLACompensateMsg extends APIMessage {
         this.productName = productName;
     }
 
-    public SLAReason getReason() {
+    public String getReason() {
         return reason;
     }
 
-    public void setReason(SLAReason reason) {
+    public void setReason(String reason) {
         this.reason = reason;
     }
 
