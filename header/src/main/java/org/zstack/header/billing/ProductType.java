@@ -2,7 +2,7 @@ package org.zstack.header.billing;
 
 public enum ProductType {
     TUNNEL,
-    ECP,
+    VHOST,
     PORT,
     VPN
 }

@@ -34,6 +34,7 @@ public class RenewVO {
     private String productName;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private ProductType productType;
 
     @Column
