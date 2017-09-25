@@ -276,7 +276,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dbf.remove(slaCompensateVO);
         }
         SLACompensateInventory inventory = SLACompensateInventory.valueOf(slaCompensateVO);
-        APIDeleteSLACompensateEvent event = new APIDeleteSLACompensateEvent();
+        APIDeleteSLACompensateEvent event = new APIDeleteSLACompensateEvent(msg.getId());
         event.setInventory(inventory);
         bus.publish(event);
 
