@@ -111,7 +111,7 @@ public class VpnCommands {
         private String cidr;
         private Long bandwidth;
         private Integer months;
-        private List<VpnInterfaceCmd> vpnInterfaceCmds;
+        private List<VpnInterfaceCmd> ddn_if_list;
         private List<VpnRouteCmd> vpnRouteCmds;
 
         CreateVpnCmd(String hostIp) {
@@ -131,11 +131,11 @@ public class VpnCommands {
         }
 
         public List<VpnInterfaceCmd> getVpnInterfaceCmds() {
-            return vpnInterfaceCmds;
+            return ddn_if_list;
         }
 
         public void setVpnInterfaceCmds(List<VpnInterfaceCmd> vpnInterfaceCmds) {
-            this.vpnInterfaceCmds = vpnInterfaceCmds;
+            this.ddn_if_list = vpnInterfaceCmds;
         }
 
         public List<VpnRouteCmd> getVpnRouteCmds() {
