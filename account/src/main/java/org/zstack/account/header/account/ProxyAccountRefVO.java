@@ -1,7 +1,6 @@
 package org.zstack.account.header.account;
 
 
-import org.zstack.account.header.account.AccountVO;
 import org.zstack.header.vo.ForeignKey;
 import org.zstack.header.vo.ForeignKey.ReferenceOption;
 
@@ -23,6 +22,10 @@ public class ProxyAccountRefVO {
     @Column
     @ForeignKey(parentEntityClass = AccountVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
     private String customerAccountUuid;
+
+    @ManyToOne(cascade = CascadeType.REFRESH,fetch = FetchType.EAGER)
+    @JoinColumn(name = "customerAccountUuid")
+    private  AccountVO proxyAccountVO;
 
     @Column
     private Timestamp createDate;
@@ -73,5 +76,13 @@ public class ProxyAccountRefVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public AccountVO getProxyAccountVO() {
+        return proxyAccountVO;
+    }
+
+    public void setProxyAccountVO(AccountVO proxyAccountVO) {
+        this.proxyAccountVO = proxyAccountVO;
     }
 }
