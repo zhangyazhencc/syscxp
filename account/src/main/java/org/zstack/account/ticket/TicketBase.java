@@ -3,7 +3,10 @@ package org.zstack.account.ticket;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.zstack.account.header.ticket.APICreateTicketMsg;
+import org.zstack.account.header.account.APICreateAccountEvent;
+import org.zstack.account.header.account.AccountInventory;
+import org.zstack.account.header.ticket.*;
+import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.MessageSafe;
 import org.zstack.core.db.DatabaseFacade;
@@ -39,12 +42,27 @@ public class TicketBase extends AbstractAccount {
 
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateTicketMsg) {
-
+            handle((APICreateTicketMsg)msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
 
 
+    }
+
+    private void handle(APICreateTicketMsg msg) {
+
+        TicketVO vo =  new TicketVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setAccountUuid(msg.getSession().getAccountUuid());
+        vo.setUserUuid(msg.getSession().getUserUuid());
+        vo.setType(msg.getType());
+        vo.setContent(msg.getContent());
+        vo.setStatus(TicketStatus.untreated);
+
+        APICreateTicketEvent evt = new APICreateTicketEvent(msg.getId());
+        evt.setInventory(TicketInventory.valueOf(dbf.persistAndRefresh(vo)));
+        bus.publish(evt);
     }
 
 
