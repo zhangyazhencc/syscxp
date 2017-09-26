@@ -1,12 +1,13 @@
 package org.zstack.header.billing;
 
 import org.zstack.header.identity.Action;
+import org.zstack.header.identity.InnerCredentialCheck;
 import org.zstack.header.message.APIParam;
 
 import java.util.List;
 
 @Action(category = BillingConstant.ACTION_CATEGORY_ORDER)
-
+@InnerCredentialCheck
 public class APICreateModifyOrderMsg extends APICreateOrderMsg {
     @APIParam(emptyString = false)
     private String productName;
