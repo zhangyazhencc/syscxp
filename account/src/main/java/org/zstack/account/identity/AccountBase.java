@@ -842,12 +842,10 @@ public class AccountBase extends AbstractAccount {
         if (q.isExists()) {
             ProxyAccountRefVO vo  =  q.find();
             dbf.removeByPrimaryKey(vo.getId(), ProxyAccountRefVO.class);
-
         }else{
             throw new ApiMessageInterceptionException(argerr("customerAcccount[uuid:%s] is not belong to this account[uuid:%s]"
                     ,msg.getUuid(),msg.getAccountUuid()));
         }
-
         APIDeleteProxyAccountRefEvent evt = new APIDeleteProxyAccountRefEvent(msg.getId());
 
         bus.publish(evt);

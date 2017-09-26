@@ -9,6 +9,6 @@ import org.zstack.header.query.AutoQuery;
  */
 @AutoQuery(replyClass = APIQueryProxyAccountReply.class, inventoryClass = ProxyAccountInventory.class)
 @Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
-public class APIQueryProxyAccountMsg extends APIQueryMessage {
+public class APIQueryProxyAccountMsg extends APIQueryMessage{
 
 }
