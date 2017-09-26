@@ -51,13 +51,37 @@ public class VpnCommands {
     }
 
     public static class CheckVpnHostStateCmd extends AgentCommand {
+
+    }
+
+    public static class AddVpnHostCmd extends AgentCommand {
+
+        public static AddVpnHostCmd valueOf(String hostIp) {
+            AddVpnHostCmd cmd = new AddVpnHostCmd();
+            cmd.setHostIp(hostIp);
+            return cmd;
+        }
+    }
+    public static class AddVpnHostResponse extends AgentResponse {
+
+    }
+    public static class ReconnectVpnHostCmd extends AgentCommand {
+
+        public static ReconnectVpnHostCmd valueOf(String hostIp) {
+            ReconnectVpnHostCmd cmd = new ReconnectVpnHostCmd();
+            cmd.setHostIp(hostIp);
+            return cmd;
+        }
+    }
+    public static class ReconnectVpnHostResponse extends AgentResponse {
+
     }
 
     public static class CheckVpnStateCmd extends AgentCommand {
 
         private Integer port;
 
-        public static CheckVpnStateCmd valueOf(String hostIp, VpnVO vo) {
+        public static CheckVpnStateCmd valueOf(VpnVO vo) {
             CheckVpnStateCmd cmd = new CheckVpnStateCmd();
             cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setPort(vo.getPort());

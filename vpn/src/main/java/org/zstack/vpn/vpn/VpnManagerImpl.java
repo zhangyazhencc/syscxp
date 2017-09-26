@@ -280,7 +280,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         createOrder(orderMsg);
 
         UpdateVpnBandWidthCmd cmd = UpdateVpnBandWidthCmd.valueOf(vpn);
-        new VpnRESTCaller().syncPostForVPN(VpnConstant.UPDATE_VPN_BANDWIDTH_PATH, cmd, UpdateVpnBandWidthResponse.class);
+        new VpnRESTCaller().syncPostForVPN(VpnConstant.UPDATE_VPN_BANDWIDTH_PATH, cmd, AddVpnHostResponse.class);
 
         vpn = dbf.persistAndRefresh(vpn);
         APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
