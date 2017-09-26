@@ -25,7 +25,15 @@
         </property>
     </bean>
 
-    <bean id="VpnManager" class="org.zstack.vpn.manage.VpnManagerImpl">
+    <bean id="VpnManager" class="org.zstack.vpn.vpn.VpnManagerImpl">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
+            <zstack:extension interface="org.zstack.header.Service"/>
+        </zstack:plugin>
+
+    </bean>
+
+    <bean id="HostManager" class="org.zstack.vpn.host.HostManagerImpl">
         <zstack:plugin>
             <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
             <zstack:extension interface="org.zstack.header.Service"/>

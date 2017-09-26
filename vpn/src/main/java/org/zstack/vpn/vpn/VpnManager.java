@@ -1,4 +1,4 @@
-package org.zstack.vpn.manage;
+package org.zstack.vpn.vpn;
 
 public interface VpnManager {
 }

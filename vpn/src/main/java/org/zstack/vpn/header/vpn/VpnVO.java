@@ -45,7 +45,7 @@ public class VpnVO {
     @Column
     private Integer duration;
     @Column
-    private Timestamp expiredDate;
+    private Timestamp expireDate;
     @Column
     private Timestamp lastOpDate;
     @Column
@@ -179,12 +179,12 @@ public class VpnVO {
         this.duration = duration;
     }
 
-    public Timestamp getExpiredDate() {
-        return expiredDate;
+    public Timestamp getExpireDate() {
+        return expireDate;
     }
 
-    public void setExpiredDate(Timestamp expiredDate) {
-        this.expiredDate = expiredDate;
+    public void setExpireDate(Timestamp expireDate) {
+        this.expireDate = expireDate;
     }
 
     public Timestamp getLastOpDate() {

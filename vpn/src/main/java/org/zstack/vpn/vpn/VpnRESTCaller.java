@@ -1,4 +1,4 @@
-package org.zstack.vpn.manage;
+package org.zstack.vpn.vpn;
 
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +15,8 @@ import org.zstack.utils.URLBuilder;
 import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
-import org.zstack.vpn.manage.VpnCommands.*;
+import org.zstack.vpn.vpn.VpnCommands.*;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 
@@ -73,10 +72,10 @@ public class VpnRESTCaller {
     }
 
 
-    public AgentResponse syncPostForVPN(String path, AgentCommand cmd) {
+    public <T extends AgentResponse> T syncPostForVPN(String path, AgentCommand cmd, Class<T>  rspClass) {
         String cmdStr = JSONObjectUtil.toJsonString(cmd);
         String url = buildUrl(path);
-        return restf.syncJsonPost(url, cmdStr, AgentResponse.class);
+        return restf.syncJsonPost(url, cmdStr, rspClass);
     }
 
     private String buildUrl(String path) {

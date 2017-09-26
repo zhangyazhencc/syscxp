@@ -1,4 +1,4 @@
-package org.zstack.vpn.manage;
+package org.zstack.vpn.vpn;
 
 import org.zstack.core.GlobalProperty;
 import org.zstack.core.GlobalPropertyDefinition;

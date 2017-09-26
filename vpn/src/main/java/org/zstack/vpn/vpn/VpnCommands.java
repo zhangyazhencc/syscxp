@@ -1,4 +1,4 @@
-package org.zstack.vpn.manage;
+package org.zstack.vpn.vpn;
 
 import org.springframework.http.HttpStatus;
 import org.zstack.vpn.header.vpn.*;
@@ -110,7 +110,7 @@ public class VpnCommands {
         private Integer port;
         private String cidr;
         private Long bandwidth;
-        private Integer months;
+        private Integer duration;
         private List<VpnInterfaceCmd> ddn_if_list;
         private List<VpnRouteCmd> vpnRouteCmds;
 
@@ -124,7 +124,7 @@ public class VpnCommands {
             cmd.setPort(vo.getPort());
             cmd.setVpnCidr(vo.getVpnCidr());
             cmd.setBandwidth(vo.getBandwidth());
-            cmd.setMonths(vo.getDuration());
+            cmd.setDuration(vo.getDuration());
             cmd.setVpnInterfaceCmds(VpnInterfaceCmd.valueOf(hostIp, vo.getVpnInterfaces()));
             cmd.setVpnRouteCmds(VpnRouteCmd.valueOf(hostIp, vo.getVpnRoutes()));
             return cmd;
@@ -170,12 +170,12 @@ public class VpnCommands {
             this.bandwidth = bandwidth;
         }
 
-        public Integer getMonths() {
-            return months;
+        public Integer getDuration() {
+            return duration;
         }
 
-        public void setMonths(Integer months) {
-            this.months = months;
+        public void setDuration(Integer duration) {
+            this.duration = duration;
         }
     }
 
@@ -244,29 +244,29 @@ public class VpnCommands {
 
     }
 
-    public static class UpdateVpnExpireDateCmd extends AgentCommand {
-        private Integer months;
+    public static class UpdateVpnDurationCmd extends AgentCommand {
+        private Integer duration;
 
-        UpdateVpnExpireDateCmd(String hostIp) {
+        UpdateVpnDurationCmd(String hostIp) {
             super(hostIp);
         }
 
-        public static UpdateVpnExpireDateCmd valueOf(String hostIp, VpnVO vo) {
-            UpdateVpnExpireDateCmd cmd = new UpdateVpnExpireDateCmd(hostIp);
+        public static UpdateVpnDurationCmd valueOf(String hostIp, VpnVO vo) {
+            UpdateVpnDurationCmd cmd = new UpdateVpnDurationCmd(hostIp);
             cmd.setVpnUuid(vo.getUuid());
-            cmd.setMonths(vo.getDuration());
+            cmd.setDuration(vo.getDuration());
             return cmd;
         }
-        public Integer getMonths() {
-            return months;
+        public Integer getDuration() {
+            return duration;
         }
 
-        public void setMonths(Integer months) {
-            this.months = months;
+        public void setDuration(Integer duration) {
+            this.duration = duration;
         }
     }
 
-    public static class UpdateVpnExpireDateResponse extends AgentResponse {
+    public static class UpdateVpnDurationResponse extends AgentResponse {
 
     }
 

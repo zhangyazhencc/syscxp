@@ -40,7 +40,7 @@ public class VpnInventory {
         inv.setState(vo.getState());
         inv.setPort(vo.getPort());
         inv.setDuration(vo.getDuration());
-        inv.setExpiredDate(vo.getExpiredDate());
+        inv.setExpiredDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         inv.setInterfaceInventories(VpnInterfaceInventory.valueOf(vo.getVpnInterfaces()));
