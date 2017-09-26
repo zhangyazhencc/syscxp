@@ -348,12 +348,10 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
 
         orderVo.setUuid(Platform.getUuid());
         orderVo.setAccountUuid(msg.getAccountUuid());
-        orderVo.setProductName(msg.getProductName());
         orderVo.setState(OrderState.PAID);
         orderVo.setProductType(msg.getProductType());
         orderVo.setProductChargeModel(msg.getProductChargeModel());
         orderVo.setPayTime(currentTimestamp);
-        orderVo.setProductDescription(msg.getProductDescription());
         orderVo.setProductUuid(msg.getProductUuid());
         orderVo.setDuration(msg.getDuration());
 
@@ -685,7 +683,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
 
     @Override
     public String getId() {
-        return bus.makeLocalServiceId(BillingConstant.SERVICE_ID);
+        return bus.makeLocalServiceId(BillingConstant.SERVICE_ID_ORDER);
     }
 
     @Override

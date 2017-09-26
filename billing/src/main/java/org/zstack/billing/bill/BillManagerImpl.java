@@ -91,7 +91,7 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
 
     @Override
     public String getId() {
-        return bus.makeLocalServiceId(BillingConstant.SERVICE_ID);
+        return bus.makeLocalServiceId(BillingConstant.SERVICE_ID_BILL);
     }
 
     @Override

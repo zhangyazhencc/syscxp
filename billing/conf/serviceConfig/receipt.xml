@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <service xmlns="http://zstack.org/schema/zstack">
-    <id>billing</id>
+    <id>receipt</id>
     <interceptor>ReceiptManager</interceptor>
 
     <message>
@@ -37,12 +37,7 @@
     <message>
         <name>org.zstack.billing.header.receipt.APIUpdateReceiptMsg</name>
     </message>
-
-    <message>
-        <name>org.zstack.billing.header.renew.APIQueryRenewMsg</name>
-        <serviceId>query</serviceId>
-    </message>
-
+    
     <message>
         <name>org.zstack.billing.header.receipt.APIQueryReceiptPostAddressMsg</name>
         <serviceId>query</serviceId>
