@@ -2,36 +2,6 @@
 <service xmlns="http://zstack.org/schema/zstack">
     <id>vpn</id>
     <interceptor>VpnManager</interceptor>
-
-    <message>
-        <name>org.zstack.vpn.header.host.APICreateZoneMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.vpn.header.host.APIUpdateZoneMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.vpn.header.host.APIDeleteZoneMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.vpn.header.host.APICreateVpnHostMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.vpn.header.host.APIUpdateVpnHostMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.vpn.header.host.APIDeleteVpnHostMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.vpn.header.host.APIUpdateVpnHostStateMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.vpn.header.host.APICreateHostInterfaceMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.vpn.header.host.APIDeleteHostInterfaceMsg</name>
-    </message>
-
-
     <message>
         <name>org.zstack.vpn.header.vpn.APICreateVpnMsg</name>
     </message>
@@ -75,17 +45,5 @@
         <serviceId>query</serviceId>
     </message>
 
-    <message>
-        <name>org.zstack.vpn.header.host.APIQueryVpnHostMsg</name>
-        <serviceId>query</serviceId>
-    </message>
-    <message>
-        <name>org.zstack.vpn.header.host.APIQueryHostInterfaceMsg</name>
-        <serviceId>query</serviceId>
-    </message>
-    <message>
-        <name>org.zstack.vpn.header.host.APIQueryZoneMsg</name>
-        <serviceId>query</serviceId>
-    </message>
 
 </service>

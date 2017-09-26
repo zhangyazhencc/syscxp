@@ -14,7 +14,6 @@
         <class>org.zstack.vpn.header.vpn.VpnRouteVO</class>
         <class>org.zstack.vpn.header.vpn.VpnInterfaceVO</class>
         <class>org.zstack.vpn.header.host.VpnHostVO</class>
-        <class>org.zstack.vpn.header.vpn.VpnKeyVO</class>
         <class>org.zstack.vpn.header.host.ZoneVO</class>
         <class>org.zstack.vpn.header.host.HostInterfaceVO</class>
     </persistence-unit>

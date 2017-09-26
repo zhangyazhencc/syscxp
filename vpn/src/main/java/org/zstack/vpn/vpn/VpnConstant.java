@@ -1,4 +1,4 @@
-package org.zstack.vpn.manage;
+package org.zstack.vpn.vpn;
 
 public interface VpnConstant {
 
@@ -34,7 +34,7 @@ public interface VpnConstant {
 
     public static final String CHECK_HOST_STATE_PATH = "/createvpn";
 
-    public static final String CHECK_TASK_STATE_PATH = "/createvpn";
+    public static final String CHECK_CREATE_STATE_PATH = "/check-state";
 
     public static final String DOWNLOAD_CERTIFICATE_PATH = "/createvpn";
 
