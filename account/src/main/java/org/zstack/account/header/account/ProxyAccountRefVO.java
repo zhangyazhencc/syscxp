@@ -24,8 +24,6 @@ public class ProxyAccountRefVO {
     @ForeignKey(parentEntityClass = AccountVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
     private String customerAccountUuid;
 
-    private AccountVO customerAccountVO;
-
     @Column
     private Timestamp createDate;
 
