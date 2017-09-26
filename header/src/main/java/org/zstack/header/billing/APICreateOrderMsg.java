@@ -16,6 +16,9 @@ public class APICreateOrderMsg extends APIMessage {
     @APIParam(emptyString = false)
     private String accountUuid;
 
+    @APIParam(emptyString = false,required = false)
+    private String opAccountUuid;
+
 
     public ProductChargeModel getProductChargeModel() {
         return productChargeModel;
@@ -39,5 +42,13 @@ public class APICreateOrderMsg extends APIMessage {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public String getOpAccountUuid() {
+        return opAccountUuid;
+    }
+
+    public void setOpAccountUuid(String opAccountUuid) {
+        this.opAccountUuid = opAccountUuid;
     }
 }
