@@ -49,6 +49,10 @@
     </message>
 
     <message>
+        <name>org.zstack.tunnel.header.monitor.APICreateMonitorCidrMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.tunnel.header.host.APIQueryHostMsg</name>
         <serviceId>query</serviceId>
     </message>

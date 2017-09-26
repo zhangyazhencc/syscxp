@@ -88,6 +88,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APICreateSpeedRecordsMsg) msg);
         } else if (msg instanceof APIUpdateSpeedRecordsMsg) {
             handle((APIUpdateSpeedRecordsMsg) msg);
+        } else if (msg instanceof APICreateMonitorCidrMsg) {
+            handle((APICreateMonitorCidrMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -274,6 +276,32 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         bus.publish(event);
     }
 
+    private void handle(APICreateMonitorCidrMsg msg) {
+        MonitorCidrVO vo = new MonitorCidrVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setMonitorCidr(msg.getMonitorCidr());
+        String startAddress = null;
+        String endAddress = null;
+
+        try {
+            CIDRUtils cidrUtils = new CIDRUtils(msg.getMonitorCidr());
+            startAddress = cidrUtils.getNetworkAddress();
+            endAddress = cidrUtils.getBroadcastAddress();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        vo.setStartAddress(startAddress);
+        vo.setEndAddress(endAddress);
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateMonitorCidrEvent evt = new APICreateMonitorCidrEvent(msg.getId());
+        evt.setInventory(MonitorCidrInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
     @Override
     public boolean start() {
         return true;
@@ -301,8 +329,19 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             validate((APICreateTunnelMonitorMsg) msg);
         } else if (msg instanceof APIUpdateTunnelMonitorMsg) {
             validate((APIUpdateTunnelMonitorMsg) msg);
+        } else if (msg instanceof APICreateMonitorCidrMsg) {
+            validate((APICreateMonitorCidrMsg) msg);
         }
         return msg;
+    }
+
+    private void validate(APICreateMonitorCidrMsg msg) {
+        //判断监控网段是否已经存在
+        SimpleQuery<MonitorCidrVO> q = dbf.createQuery(MonitorCidrVO.class);
+        q.add(MonitorCidrVO_.monitorCidr, SimpleQuery.Op.EQ, msg.getMonitorCidr());
+        if (q.isExists())
+            throw new ApiMessageInterceptionException(argerr("MonitorCird %s is already exist ", msg.getMonitorCidr()));
+
     }
 
     private void validate(APICreateHostMsg msg) {
