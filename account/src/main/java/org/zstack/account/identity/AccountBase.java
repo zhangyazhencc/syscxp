@@ -376,7 +376,9 @@ public class AccountBase extends AbstractAccount {
         APIUserPhoneAuthenticationEvent evt = new APIUserPhoneAuthenticationEvent(msg.getId());
         UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
 
-        if (user.getPhoneStatus() == ValidateStatus.Unvalidated && smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
+//        if (user.getPhoneStatus() == ValidateStatus.Unvalidated &&
+        if (user.getPhoneStatus().toString().equals(ValidateStatus.Unvalidated.toString()) &&
+                smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
             user.setPhone(msg.getPhone());
             user.setPhoneStatus(ValidateStatus.Validated);
             dbf.updateAndRefresh(user);
