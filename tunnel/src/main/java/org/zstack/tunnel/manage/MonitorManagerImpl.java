@@ -1,7 +1,5 @@
 package org.zstack.tunnel.manage;
 
-import com.sun.xml.internal.bind.v2.TODO;
-import org.codehaus.groovy.transform.trait.Traits;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.core.Platform;
@@ -29,9 +27,7 @@ import org.zstack.utils.network.NetworkUtils;
 
 import javax.persistence.TypedQuery;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.zstack.core.Platform.argerr;
 

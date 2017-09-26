@@ -1,11 +1,6 @@
 #!/bin/sh
 set -u
 
-if [ x$CATALINA_HOME == "x" ]; then
-    echo '$CATALINA_HOME is not set, check tomcat manual'
-    exit 1
-fi
-
 cd ..
 mvn -DskipTests clean install
 cd -
