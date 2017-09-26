@@ -9,7 +9,6 @@ public class APICreateOrderMsg extends APIMessage {
     @APIParam(emptyString = false)
     private ProductChargeModel productChargeModel;
 
-
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private int duration;
 
