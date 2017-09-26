@@ -4,18 +4,6 @@
     <interceptor>BillingManager</interceptor>
 
     <message>
-        <name>org.zstack.billing.header.balance.APIGetAccountBalanceMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.billing.header.balance.APIGetAccountBalanceListMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.billing.header.balance.APIUpdateAccountBalanceMsg</name>
-    </message>
-
-    <message>
         <name>org.zstack.header.billing.APICreateBuyOrderMsg</name>
     </message>
 
@@ -33,10 +21,6 @@
 
     <message>
         <name>org.zstack.header.billing.APICreateSLACompensationOrderMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.billing.header.balance.APIGetExpenseGrossMonthMsg</name>
     </message>
 
     <message>
@@ -95,19 +79,11 @@
     </message>
 
     <message>
-        <name>org.zstack.billing.header.balance.APIRechargeMsg</name>
-    </message>
-
-    <message>
         <name>org.zstack.header.alipay.APIVerifyReturnMsg</name>
     </message>
 
     <message>
         <name>org.zstack.header.alipay.APIVerifyNotifyMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.billing.header.balance.APIUpdateAccountDischargeMsg</name>
     </message>
 
    <message>
@@ -122,23 +98,6 @@
         <name>org.zstack.billing.header.order.APIUpdateOrderExpiredTimeMsg</name>
     </message>
 
-   <message>
-        <name>org.zstack.billing.header.balance.APICreateAccountDischargeMsg</name>
-    </message>
-
-   <message>
-        <name>org.zstack.billing.header.balance.APIDeleteAccountDischargeMsg</name>
-    </message>
-
-   <message>
-        <name>org.zstack.billing.header.balance.APIGetAccountDischargeCategoryMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.billing.header.balance.APIQueryAccountDischargeMsg</name>
-        <serviceId>query</serviceId>
-    </message>
-
     <message>
         <name>org.zstack.billing.header.order.APIQueryOrderMsg</name>
         <serviceId>query</serviceId>
@@ -146,11 +105,6 @@
 
     <message>
         <name>org.zstack.billing.header.renew.APIQueryRenewMsg</name>
-        <serviceId>query</serviceId>
-    </message>
-
-    <message>
-        <name>org.zstack.billing.header.balance.APIQueryDealDetailMsg</name>
         <serviceId>query</serviceId>
     </message>
 

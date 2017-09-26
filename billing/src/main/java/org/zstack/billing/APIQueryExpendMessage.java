@@ -1,4 +1,4 @@
-package org.zstack.billing.manage;
+package org.zstack.billing;
 
 import org.zstack.header.message.APIParam;
 import org.zstack.header.query.APIQueryMessage;

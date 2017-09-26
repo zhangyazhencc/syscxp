@@ -1,4 +1,4 @@
-package org.zstack.billing.manage;
+package org.zstack.billing;
 
 public enum BillingErrors {
 
