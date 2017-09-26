@@ -5,5 +5,5 @@ package org.zstack.account.header.ticket;
  */
 public enum BelongTo {
     Admin,
-    customer
+    Customer
 }

@@ -34,7 +34,7 @@
         </property>
     </bean>
 
-    <bean id="BillingManager" class="org.zstack.billing.manage.BillingManagerImpl">
+    <bean id="BalanceManager" class="org.zstack.billing.balance.BalanceManagerImpl">
         <zstack:plugin>
             <zstack:extension interface="org.zstack.header.Component"/>
             <zstack:extension interface="org.zstack.header.Service"/>
@@ -43,7 +43,47 @@
 
     </bean>
 
-    <bean id="BillingSubQueryExtension" class="org.zstack.billing.manage.BillingSubQueryExtension">
+    <bean id="OrderManager" class="org.zstack.billing.order.OrderManagerImpl">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.header.Component"/>
+            <zstack:extension interface="org.zstack.header.Service"/>
+            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
+        </zstack:plugin>
+    </bean>
+
+    <bean id="BillManager" class="org.zstack.billing.bill.BillManagerImpl">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.header.Component"/>
+            <zstack:extension interface="org.zstack.header.Service"/>
+            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
+        </zstack:plugin>
+    </bean>
+
+    <bean id="SlaManager" class="org.zstack.billing.sla.SlaManagerImpl">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.header.Component"/>
+            <zstack:extension interface="org.zstack.header.Service"/>
+            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
+        </zstack:plugin>
+    </bean>
+
+    <bean id="RenewManager" class="org.zstack.billing.renew.RenewManagerImpl">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.header.Component"/>
+            <zstack:extension interface="org.zstack.header.Service"/>
+            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
+        </zstack:plugin>
+    </bean>
+
+    <bean id="ReceiptManager" class="org.zstack.billing.receipt.ReceiptManagerImpl">
+        <zstack:plugin>
+            <zstack:extension interface="org.zstack.header.Component"/>
+            <zstack:extension interface="org.zstack.header.Service"/>
+            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
+        </zstack:plugin>
+    </bean>
+
+    <bean id="BillingSubQueryExtension" class="org.zstack.billing.BillingSubQueryExtension">
         <zstack:plugin>
             <zstack:extension interface="org.zstack.query.MysqlQuerySubQueryExtension"/>
         </zstack:plugin>

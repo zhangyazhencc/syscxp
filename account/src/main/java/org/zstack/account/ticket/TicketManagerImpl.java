@@ -4,8 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.account.header.account.*;
 import org.zstack.account.header.identity.*;
-import org.zstack.account.header.ticket.APICreateTicketMsg;
-import org.zstack.account.header.ticket.TicketMessage;
+import org.zstack.account.header.ticket.*;
 import org.zstack.account.header.user.*;
 import org.zstack.account.identity.AccountBase;
 import org.zstack.account.identity.AccountManager;
@@ -38,6 +37,7 @@ import org.zstack.utils.logging.CLogger;
 import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
@@ -65,7 +65,7 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
     public void handleMessage(Message msg) {
         if (msg instanceof TicketMessage) {
             TicketBase base = new TicketBase();
-            base.handleMessage((Message) msg);
+            base.handleMessage(msg);
         } else if (msg instanceof APIMessage) {
             handleApiMessage((APIMessage) msg);
         } else {
@@ -97,11 +97,29 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
 
         if (msg instanceof APICreateTicketMsg) {
+            validate((APICreateTicketMsg)msg);
 
         }
         setServiceId(msg);
 
         return msg;
+    }
+
+    private void validate(APICreateTicketMsg msg) {
+        SimpleQuery<DictionaryVO> q = dbf.createQuery(DictionaryVO.class);
+        q.add(DictionaryVO_.dictKey, Op.EQ, "TicketType");
+        List<DictionaryVO> list = q.list();
+        boolean is = false;
+        for(DictionaryVO vo : list){
+            if(vo.getDictValue().equals(msg.getType())){
+                is = true;
+            }
+        }
+        if(!is){
+            throw new ApiMessageInterceptionException(argerr("value[%s] of type is not exist",
+                    msg.getType()));
+        }
+
     }
 
     private void setServiceId(APIMessage msg) {

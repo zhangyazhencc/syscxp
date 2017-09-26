@@ -553,13 +553,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIDeleteProxyAccountRefMsg msg) {
-        SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
-        q.add(ProxyAccountRefVO_.accountUuid, Op.EQ, msg.getAccountUuid());
-        q.add(ProxyAccountRefVO_.customerAccountUuid, Op.EQ, msg.getUuid());
-        if (!q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("customerAcccount[uuid:%s] is not belong to this account[uuid:%s]"
-                    ,msg.getUuid(),msg.getAccountUuid()));
-        }
+
     }
 
     private void validate(APIRegisterAccountMsg msg) {

@@ -281,7 +281,7 @@ UPDATE `PolicyVO` p set p.createDate = current_timestamp();
 CREATE TABLE `TicketVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT '工单编号(uuid)',
   `accountUuid` varchar(32) NOT NULL COMMENT '创建账户',
-  `userUuid` varchar(32) COMMENT '创建用户(可为空)',
+  `userUuid` varchar(32) NOT NULL COMMENT '创建用户/账户',
   `type` varchar(128) NOT NULL COMMENT '工单类型(数据字典)',
   `content` text NOT NULL COMMENT '工单内容',
   `status` varchar(32) NOT NULL COMMENT '工单最新状态(枚举)',
@@ -308,12 +308,14 @@ CREATE TABLE `DictionaryVO` (
   `dictName` varchar(32) NOT NULL COMMENT '字典名称',
   `dictKey` varchar(32) NOT NULL COMMENT '字典',
   `dictValue` varchar(32) NOT NULL COMMENT '字典值',
+  `valueName` varchar(36) NOT NULL COMMENT '字典值名称',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','专线网络');
-INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','云服务器');
-INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','VPN网关');
-INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','账户');
-INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','账务');
+
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue, valueName) VALUES ('工单类型','TicketType','private_network','专线网络');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue, valueName) VALUES ('工单类型','TicketType','cloud_server','云服务器');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue, valueName) VALUES ('工单类型','TicketType','VPN','VPN网关');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue, valueName) VALUES ('工单类型','TicketType','account','账户');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue, valueName) VALUES ('工单类型','TicketType','billing','账务');

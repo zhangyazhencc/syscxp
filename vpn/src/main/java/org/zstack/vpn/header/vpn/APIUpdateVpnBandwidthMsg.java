@@ -5,7 +5,9 @@ import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
-import org.zstack.vpn.manage.VpnConstant;
+import org.zstack.vpn.vpn.VpnConstant;
+
+import java.util.List;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
 public class APIUpdateVpnBandwidthMsg extends APIMessage{
@@ -13,6 +15,16 @@ public class APIUpdateVpnBandwidthMsg extends APIMessage{
     private String uuid;
     @APIParam
     private Long bandwidth;
+    @APIParam
+    private List<String> productPriceUnitUuids;
+
+    public List<String> getProductPriceUnitUuids() {
+        return productPriceUnitUuids;
+    }
+
+    public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
+        this.productPriceUnitUuids = productPriceUnitUuids;
+    }
 
     public String getUuid() {
         return uuid;
