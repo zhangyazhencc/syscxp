@@ -11,4 +11,16 @@
         <name>org.zstack.account.header.ticket.APICreateTicketRecordMsg</name>
     </message>
 
+    <message>
+        <name>org.zstack.account.header.ticket.APIQueryTicketTypeMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>org.zstack.account.header.ticket.APIQueryTicketRecordMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+
+
 </service>
