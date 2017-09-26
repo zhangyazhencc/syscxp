@@ -13,15 +13,16 @@ import org.zstack.header.notification.ApiNotification;
 @Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT,accountOnly = true)
 public class APIDeleteProxyAccountRefMsg extends APIDeleteMessage implements AccountMessage{
 
-    private String uuid;
+    private String refId;
 
-    public String getUuid() {
-        return uuid;
+    public String getRefId() {
+        return refId;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setRefId(String refId) {
+        this.refId = refId;
     }
+
 
     public ApiNotification __notification__() {
         APIMessage that = this;
@@ -29,7 +30,7 @@ public class APIDeleteProxyAccountRefMsg extends APIDeleteMessage implements Acc
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Deleting").resource(uuid, ProxyAccountRefVO.class.getSimpleName())
+                ntfy("Deleting").resource(refId, ProxyAccountRefVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };

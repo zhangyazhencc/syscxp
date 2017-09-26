@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <service xmlns="http://zstack.org/schema/zstack">
     <id>ticket</id>
-    <interceptor>ticketManager</interceptor>
+    <interceptor>TicketManager</interceptor>
 
     <message>
         <name>org.zstack.account.header.ticket.APICreateTicketMsg</name>

@@ -433,8 +433,44 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
         boolean update = false;
 
+        if(msg.getNetworkUuid() != null){
+            vo.setNetworkUuid(msg.getNetworkUuid());
+            update = true;
+        }
         if(msg.getBandwidth() != null){
             vo.setBandwidth(msg.getBandwidth());
+            update = true;
+        }
+        if(msg.getName() != null){
+            vo.setName(msg.getName());
+            update = true;
+        }
+        if(msg.getDistance() != null){
+            vo.setDistance(msg.getDistance());
+            update = true;
+        }
+        if(msg.getState() != null){
+            vo.setState(msg.getState());
+            update = true;
+        }
+        if(msg.getStatus() != null){
+            vo.setStatus(msg.getStatus());
+            update = true;
+        }
+        if(msg.getMonitorState() != null){
+            vo.setMonitorState(msg.getMonitorState());
+            update = true;
+        }
+        if(msg.getDescription() != null){
+            vo.setDescription(msg.getDescription());
+            update = true;
+        }
+        if(msg.getMonths() != null){
+            vo.setMonths(msg.getMonths());
+            update = true;
+        }
+        if(msg.getExpiredDate() != null){
+            vo.setExpiredDate(msg.getExpiredDate());
             update = true;
         }
 
@@ -792,7 +828,20 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
     }
 
-    private void validate(APIUpdateTunnelMsg msg){ }
+    private void validate(APIUpdateTunnelMsg msg){
+        //判断同一个用户和同一个专有网络下的名称是否已经存在
+        if(msg.getName() != null){
+            SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
+            q.add(TunnelVO_.name, SimpleQuery.Op.EQ, msg.getName());
+            q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+            q.add(TunnelVO_.networkUuid, SimpleQuery.Op.EQ, msg.getNetworkUuid());
+            q.add(TunnelVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
+            if(q.isExists()){
+                throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ",msg.getName()));
+            }
+        }
+
+    }
 
     private void validate(APIDeleteTunnelMsg msg){ }
 }
