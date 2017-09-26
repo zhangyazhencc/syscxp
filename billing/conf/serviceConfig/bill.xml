@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://zstack.org/schema/zstack">
+    <id>billing</id>
+    <interceptor>BillManager</interceptor>
+
+    <message>
+        <name>org.zstack.billing.header.bill.APIGetBillMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.bill.APIQueryBillMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+</service>

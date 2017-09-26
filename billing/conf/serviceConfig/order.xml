@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://zstack.org/schema/zstack">
+    <id>billing</id>
+    <interceptor>OrderManager</interceptor>
+
+    <message>
+        <name>org.zstack.header.billing.APICreateBuyOrderMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.billing.APICreateRenewOrderMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.billing.APICreateModifyOrderMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.billing.APICreateUnsubcribeOrderMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.header.billing.APICreateSLACompensationOrderMsg</name>
+    </message>
+
+   <message>
+        <name>org.zstack.billing.header.order.APIUpdateOrderExpiredTimeMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.order.APIQueryOrderMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+</service>

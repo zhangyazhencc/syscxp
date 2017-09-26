@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://zstack.org/schema/zstack">
+    <id>billing</id>
+    <interceptor>SlaManager</interceptor>
+
+    <message>
+        <name>org.zstack.billing.header.sla.APICreateSLACompensateMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.sla.APIUpdateSLACompensateMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.sla.APIUpdateSLACompensateStateMsg</name>
+    </message>
+
+   <message>
+        <name>org.zstack.billing.header.sla.APIDeleteSLACompensateMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.sla.APIQuerySLACompensateMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+
+</service>

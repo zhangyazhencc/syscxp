@@ -1,4 +1,4 @@
-package org.zstack.billing.manage;
+package org.zstack.billing;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -1143,12 +1143,10 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
         orderVo.setUuid(Platform.getUuid());
         orderVo.setAccountUuid(msg.getAccountUuid());
-        orderVo.setProductName(msg.getProductName());
         orderVo.setState(OrderState.PAID);
         orderVo.setProductType(msg.getProductType());
         orderVo.setProductChargeModel(msg.getProductChargeModel());
         orderVo.setPayTime(currentTimestamp);
-        orderVo.setProductDescription(msg.getProductDescription());
         orderVo.setProductUuid(msg.getProductUuid());
         orderVo.setDuration(msg.getDuration());
 
