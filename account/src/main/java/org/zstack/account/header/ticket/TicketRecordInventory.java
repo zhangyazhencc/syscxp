@@ -7,29 +7,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = TicketVO.class)
-public class TicketInventory {
+@Inventory(mappingVOClass = TicketRecordVO.class)
+public class TicketRecordInventory {
 
     private String uuid;
-    private String accountUuid;
-    private String userUuid;
-    private String AdminUserUuid;
-
-    private String type;
+    private String ticketUuid;
+    private String belongTo;
     private String content;
     private String status;
-
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
 
-    public static TicketInventory valueOf(TicketVO vo) {
-        TicketInventory inv = new TicketInventory();
+    public static TicketRecordInventory valueOf(TicketRecordVO vo) {
+        TicketRecordInventory inv = new TicketRecordInventory();
         inv.setUuid(vo.getUuid());
-        inv.setAccountUuid(vo.getAccountUuid());
-        inv.setUserUuid(vo.getUserUuid());
-        inv.setAdminUserUuid(vo.getAdminUserUuid());
-        inv.setType(vo.getType());
+        inv.setTicketUuid(vo.getTicketUuid());
+        inv.setBelongTo(vo.getBelongTo().toString());
         inv.setContent(vo.getContent());
         inv.setStatus(vo.getStatus().toString());
         inv.setCreateDate(vo.getCreateDate());
@@ -37,10 +31,10 @@ public class TicketInventory {
         return inv;
     }
 
-    public static List<TicketInventory> valueOf(Collection<TicketVO> vos) {
-        List<TicketInventory> lst = new ArrayList<TicketInventory>(vos.size());
-        for (TicketVO vo : vos) {
-            lst.add(TicketInventory.valueOf(vo));
+    public static List<TicketRecordInventory> valueOf(Collection<TicketRecordVO> vos) {
+        List<TicketRecordInventory> lst = new ArrayList<TicketRecordInventory>(vos.size());
+        for (TicketRecordVO vo : vos) {
+            lst.add(TicketRecordInventory.valueOf(vo));
         }
         return lst;
     }
@@ -53,28 +47,20 @@ public class TicketInventory {
         this.uuid = uuid;
     }
 
-    public String getAccountUuid() {
-        return accountUuid;
+    public String getTicketUuid() {
+        return ticketUuid;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+    public void setTicketUuid(String ticketUuid) {
+        this.ticketUuid = ticketUuid;
     }
 
-    public String getUserUuid() {
-        return userUuid;
+    public String getBelongTo() {
+        return belongTo;
     }
 
-    public void setUserUuid(String userUuid) {
-        this.userUuid = userUuid;
-    }
-
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
+    public void setBelongTo(String belongTo) {
+        this.belongTo = belongTo;
     }
 
     public String getContent() {
@@ -107,13 +93,5 @@ public class TicketInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
-    }
-
-    public String getAdminUserUuid() {
-        return AdminUserUuid;
-    }
-
-    public void setAdminUserUuid(String adminUserUuid) {
-        AdminUserUuid = adminUserUuid;
     }
 }
