@@ -24,6 +24,13 @@ public class APICreateBuyOrderMsg extends APICreateOrderMsg {
     @APIParam
     private String productDescription;
 
+    @APIParam(emptyString = false)
+    private ProductChargeModel productChargeModel;
+
+    @APIParam(numberRange = {1,Integer.MAX_VALUE})
+    private int duration;
+
+
     public String getProductDescription() {
         return productDescription;
     }
@@ -62,5 +69,21 @@ public class APICreateBuyOrderMsg extends APICreateOrderMsg {
 
     public void setProductUuid(String productUuid) {
         this.productUuid = productUuid;
+    }
+
+    public ProductChargeModel getProductChargeModel() {
+        return productChargeModel;
+    }
+
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
+        this.productChargeModel = productChargeModel;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 }
