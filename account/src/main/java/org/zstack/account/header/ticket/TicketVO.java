@@ -26,6 +26,9 @@ public class TicketVO {
     private String userUuid;
 
     @Column
+    private String adminUserUuid;
+
+    @Column
     private String type;
 
     @Column
@@ -36,7 +39,6 @@ public class TicketVO {
 
     @Column
     private String email;
-
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -131,5 +133,13 @@ public class TicketVO {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getAdminUserUuid() {
+        return adminUserUuid;
+    }
+
+    public void setAdminUserUuid(String adminUserUuid) {
+        this.adminUserUuid = adminUserUuid;
     }
 }

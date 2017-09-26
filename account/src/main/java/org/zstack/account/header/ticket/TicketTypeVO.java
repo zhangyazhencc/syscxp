@@ -1,7 +1,5 @@
 package org.zstack.account.header.ticket;
 
-import org.zstack.account.header.account.AccountVO;
-import org.zstack.header.vo.ForeignKey;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -12,7 +10,7 @@ import java.sql.Timestamp;
 
 @Entity
 @Table
-public class DictionaryVO {
+public class TicketTypeVO {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,16 +18,10 @@ public class DictionaryVO {
     private long id;
 
     @Column
-    private String dictName;
+    private String typeValue;
 
     @Column
-    private String dictKey;
-
-    @Column
-    private String dictValue;
-
-    @Column
-    private String valueName;
+    private String typeName;
 
     @Column
     private Timestamp createDate;
@@ -50,36 +42,20 @@ public class DictionaryVO {
         this.id = id;
     }
 
-    public String getDictName() {
-        return dictName;
+    public String getTypeValue() {
+        return typeValue;
     }
 
-    public void setDictName(String dictName) {
-        this.dictName = dictName;
+    public void setTypeValue(String typeValue) {
+        this.typeValue = typeValue;
     }
 
-    public String getDictKey() {
-        return dictKey;
+    public String getTypeName() {
+        return typeName;
     }
 
-    public void setDictKey(String dictKey) {
-        this.dictKey = dictKey;
-    }
-
-    public String getDictValue() {
-        return dictValue;
-    }
-
-    public String getValueName() {
-        return valueName;
-    }
-
-    public void setValueName(String valueName) {
-        this.valueName = valueName;
-    }
-
-    public void setDictValue(String dictValue) {
-        this.dictValue = dictValue;
+    public void setTypeName(String typeName) {
+        this.typeName = typeName;
     }
 
     public Timestamp getCreateDate() {
