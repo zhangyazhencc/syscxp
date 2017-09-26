@@ -59,9 +59,57 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
             handle((APICreateTicketMsg)msg);
         }else if(msg instanceof APIDeleteTicketMsg){
             handle((APIDeleteTicketMsg)msg);
+        }else if(msg instanceof APIUpdateTicketMsg){
+            handle((APIUpdateTicketMsg)msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
+
+    }
+
+    private void handle(APIUpdateTicketMsg msg) {
+
+        TicketVO vo = dbf.findByUuid(msg.getUuid(),TicketVO.class);
+        boolean isupdate = false;
+        if(msg.getContent() != null){
+            vo.setContent(msg.getContent());
+            isupdate = true;
+        }
+        if(msg.getEmail() != null){
+            vo.setEmail(msg.getEmail());
+            isupdate = true;
+        }
+        if(msg.getPhone() != null){
+            vo.setPhone(msg.getPhone());
+            isupdate = true;
+        }
+        if(msg.getStatus() != null){
+            vo.setStatus(msg.getStatus());
+            isupdate = true;
+        }
+        if(msg.getType() != null){
+            List<TicketTypeVO> list =  dbf.createQuery(TicketTypeVO.class).list();
+            boolean is = false;
+            for(TicketTypeVO tyvo : list){
+                if(tyvo.getTypeValue().equals(msg.getType())){
+                    is = true;
+                }
+            }
+            if(!is){
+                throw new ApiMessageInterceptionException(argerr("value[%s] of type is not exist",
+                        msg.getType()));
+            }
+            vo.setType(msg.getType());
+            isupdate = true;
+        }
+        if(isupdate){
+           vo = dbf.updateAndRefresh(vo);
+        }
+
+        APIUpdateTicketEvent event = new APIUpdateTicketEvent(msg.getId());
+
+        event.setInventory(TicketInventory.valueOf(vo));
+        bus.publish(event);
 
     }
 
