@@ -72,7 +72,7 @@ public class RenewManagerImpl  extends AbstractService implements  ApiMessageInt
 
     @Override
     public String getId() {
-        return bus.makeLocalServiceId(BillingConstant.SERVICE_ID);
+        return bus.makeLocalServiceId(BillingConstant.SERVICE_ID_RENEW);
     }
 
     @Override

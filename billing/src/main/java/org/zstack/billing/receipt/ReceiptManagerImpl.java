@@ -302,7 +302,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
 
     @Override
     public String getId() {
-        return bus.makeLocalServiceId(BillingConstant.SERVICE_ID);
+        return bus.makeLocalServiceId(BillingConstant.SERVICE_ID_RECEIPT);
     }
 
     @Override

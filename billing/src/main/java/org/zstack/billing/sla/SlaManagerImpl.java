@@ -148,7 +148,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
 
     @Override
     public String getId() {
-        return bus.makeLocalServiceId(BillingConstant.SERVICE_ID);
+        return bus.makeLocalServiceId(BillingConstant.SERVICE_ID_SLA);
     }
 
     @Override
