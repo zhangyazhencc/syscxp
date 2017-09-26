@@ -15,6 +15,7 @@ import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
+import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.utils.Utils;
@@ -23,6 +24,7 @@ import org.zstack.utils.logging.CLogger;
 import java.util.List;
 
 import static org.zstack.core.Platform.argerr;
+import static org.zstack.core.Platform.operr;
 
 /**
  * Created by wangwg on 2017/09/25.
@@ -64,6 +66,13 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
     }
 
     private void handle(APIDeleteTicketMsg msg) {
+        TicketVO vo = dbf.findByUuid(msg.getUuid(),TicketVO.class);
+        if(!vo.getAccountUuid().equals(msg.getSession().getAccountUuid())
+                || (vo.getUserUuid() != null && !vo.getUserUuid().equals(msg.getSession().getUserUuid()))){
+
+            throw new OperationFailureException(operr("the ticket is not belong to this account/user"));
+        }
+
         dbf.removeByPrimaryKey(msg.getUuid(), TicketVO.class);
         APIDeleteTicketEvent evt = new APIDeleteTicketEvent(msg.getId());
 
