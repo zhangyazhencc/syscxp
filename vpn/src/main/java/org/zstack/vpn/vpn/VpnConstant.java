@@ -18,9 +18,7 @@ public interface VpnConstant {
 
     public static final String UPDATE_VPN_CIDR_PATH = "/createvpn";
 
-    public static final String UPDATE_VPN_BINDWIDTH_PATH = "/createvpn";
-
-    public static final String UPDATE_VPN_DURATION_PATH = "/createvpn";
+    public static final String UPDATE_VPN_BANDWIDTH_PATH = "/update-bandwith";
 
     public static final String ADD_VPN_INTERFACE_PATH = "/add-ddn-if";
 

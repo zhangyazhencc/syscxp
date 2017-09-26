@@ -29,9 +29,6 @@ public class VpnCommands {
     }
 
     public static class AgentCommand {
-        AgentCommand(String hostIp) {
-            this.host_ip = hostIp;
-        }
 
         private String host_ip;
         private String uuid;
@@ -54,24 +51,15 @@ public class VpnCommands {
     }
 
     public static class CheckVpnHostStateCmd extends AgentCommand {
-        CheckVpnHostStateCmd(String hostIp) {
-            super(hostIp);
-        }
-
-        public static CheckVpnHostStateCmd valueOf(String hostIp) {
-            return new CheckVpnHostStateCmd(hostIp);
-        }
     }
 
     public static class CheckVpnStateCmd extends AgentCommand {
-        CheckVpnStateCmd(String hostIp) {
-            super(hostIp);
-        }
 
         private Integer port;
 
         public static CheckVpnStateCmd valueOf(String hostIp, VpnVO vo) {
-            CheckVpnStateCmd cmd = new CheckVpnStateCmd(hostIp);
+            CheckVpnStateCmd cmd = new CheckVpnStateCmd();
+            cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setPort(vo.getPort());
             return cmd;
         }
@@ -114,19 +102,16 @@ public class VpnCommands {
         private List<VpnInterfaceCmd> ddn_if_list;
         private List<VpnRouteCmd> vpnRouteCmds;
 
-        CreateVpnCmd(String hostIp) {
-            super(hostIp);
-        }
-
-        public static CreateVpnCmd valueOf(String hostIp, VpnVO vo) {
-            CreateVpnCmd cmd = new CreateVpnCmd(hostIp);
+        public static CreateVpnCmd valueOf(VpnVO vo) {
+            CreateVpnCmd cmd = new CreateVpnCmd();
+            cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setVpnUuid(vo.getUuid());
             cmd.setPort(vo.getPort());
             cmd.setVpnCidr(vo.getVpnCidr());
             cmd.setBandwidth(vo.getBandwidth());
             cmd.setDuration(vo.getDuration());
-            cmd.setVpnInterfaceCmds(VpnInterfaceCmd.valueOf(hostIp, vo.getVpnInterfaces()));
-            cmd.setVpnRouteCmds(VpnRouteCmd.valueOf(hostIp, vo.getVpnRoutes()));
+            cmd.setVpnInterfaceCmds(VpnInterfaceCmd.valueOf(cmd.getHostIp(), vo.getVpnInterfaces()));
+            cmd.setVpnRouteCmds(VpnRouteCmd.valueOf(cmd.getHostIp(), vo.getVpnRoutes()));
             return cmd;
         }
 
@@ -184,13 +169,11 @@ public class VpnCommands {
     }
 
     public static class UpdateVpnStateCmd extends AgentCommand {
-        UpdateVpnStateCmd(String hostIp) {
-            super(hostIp);
-        }
         private List<String> vlan_list;
 
-        public static UpdateVpnStateCmd valueOf(String hostIp, VpnVO vo) {
-            UpdateVpnStateCmd cmd = new UpdateVpnStateCmd(hostIp);
+        public static UpdateVpnStateCmd valueOf(VpnVO vo) {
+            UpdateVpnStateCmd cmd = new UpdateVpnStateCmd();
+            cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setVpnUuid(vo.getUuid());
             List<String> vlans = new ArrayList<>();
             vo.getVpnInterfaces().forEach(iface->{
@@ -214,13 +197,11 @@ public class VpnCommands {
 
     }
     public static class DeleteVpnCmd extends AgentCommand {
-        DeleteVpnCmd(String hostIp) {
-            super(hostIp);
-        }
         private List<String> vlan_list;
 
-        public static DeleteVpnCmd valueOf(String hostIp, VpnVO vo) {
-            DeleteVpnCmd cmd = new DeleteVpnCmd(hostIp);
+        public static DeleteVpnCmd valueOf(VpnVO vo) {
+            DeleteVpnCmd cmd = new DeleteVpnCmd();
+            cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setVpnUuid(vo.getUuid());
             List<String> vlans = new ArrayList<>();
                     vo.getVpnInterfaces().forEach(iface->{
@@ -244,41 +225,12 @@ public class VpnCommands {
 
     }
 
-    public static class UpdateVpnDurationCmd extends AgentCommand {
-        private Integer duration;
-
-        UpdateVpnDurationCmd(String hostIp) {
-            super(hostIp);
-        }
-
-        public static UpdateVpnDurationCmd valueOf(String hostIp, VpnVO vo) {
-            UpdateVpnDurationCmd cmd = new UpdateVpnDurationCmd(hostIp);
-            cmd.setVpnUuid(vo.getUuid());
-            cmd.setDuration(vo.getDuration());
-            return cmd;
-        }
-        public Integer getDuration() {
-            return duration;
-        }
-
-        public void setDuration(Integer duration) {
-            this.duration = duration;
-        }
-    }
-
-    public static class UpdateVpnDurationResponse extends AgentResponse {
-
-    }
-
     public static class UpdateVpnBandWidthCmd extends AgentCommand {
         private Long bandwidth;
 
-        UpdateVpnBandWidthCmd(String hostIp) {
-            super(hostIp);
-        }
-
-        public static UpdateVpnBandWidthCmd valueOf(String hostIp, VpnVO vo) {
-            UpdateVpnBandWidthCmd cmd = new UpdateVpnBandWidthCmd(hostIp);
+        public static UpdateVpnBandWidthCmd valueOf(VpnVO vo) {
+            UpdateVpnBandWidthCmd cmd = new UpdateVpnBandWidthCmd();
+            cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setVpnUuid(vo.getUuid());
             cmd.setBandwidth(vo.getBandwidth());
             return cmd;
@@ -299,12 +251,9 @@ public class VpnCommands {
     public static class UpdateVpnCidrCmd extends AgentCommand {
         private String vpnCidr;
 
-        UpdateVpnCidrCmd(String hostIp) {
-            super(hostIp);
-        }
-
-        public static UpdateVpnCidrCmd valueOf(String hostIp, VpnVO vo) {
-            UpdateVpnCidrCmd cmd = new UpdateVpnCidrCmd(hostIp);
+        public static UpdateVpnCidrCmd valueOf(VpnVO vo) {
+            UpdateVpnCidrCmd cmd = new UpdateVpnCidrCmd();
+            cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setVpnUuid(vo.getUuid());
             cmd.setVpnCidr(vo.getVpnCidr());
             return cmd;
@@ -329,7 +278,7 @@ public class VpnCommands {
         private String vlan;
 
         VpnInterfaceCmd(String hostIp) {
-            super(hostIp);
+            this.setHostIp(hostIp);
         }
 
         public String getLocalIp() {
@@ -393,7 +342,7 @@ public class VpnCommands {
         }
 
         VpnRouteCmd(String hostIp) {
-            super(hostIp);
+            this.setHostIp(hostIp);
         }
 
         public List<String> getNextIface() {

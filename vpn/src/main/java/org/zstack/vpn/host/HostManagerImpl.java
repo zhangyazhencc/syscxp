@@ -251,7 +251,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
 
     public String getId() {
-        return bus.makeLocalServiceId(VpnConstant.SERVICE_ID);
+        return bus.makeLocalServiceId(HostConstant.SERVICE_ID);
     }
 
     public boolean start() {
