@@ -30,6 +30,7 @@
         <class>org.zstack.tunnel.header.tunnel.TunnelEO</class>
         <class>org.zstack.tunnel.header.tunnel.QinqVO</class>
         <class>org.zstack.tunnel.header.tunnel.TunnelInterfaceVO</class>
+        <class>org.zstack.tunnel.header.monitor.MonitorCidrVO</class>
 
         <class>org.zstack.tunnel.header.host.HostVO</class>
         <class>org.zstack.tunnel.header.host.HostEO</class>

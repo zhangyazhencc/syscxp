@@ -1,6 +1,6 @@
 package org.zstack.billing.header.order;
 
-import org.zstack.billing.manage.APIQueryExpendMessage;
+import org.zstack.billing.APIQueryExpendMessage;
 import org.zstack.header.billing.BillingConstant;
 import org.zstack.header.billing.OrderInventory;
 import org.zstack.header.identity.Action;

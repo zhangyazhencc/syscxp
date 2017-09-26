@@ -297,6 +297,17 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
 CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, networkUuid, name, bandwidth, distance, state, status, monitorState, description, months, expiredDate, lastOpDate, createDate
                                         FROM `TunnelEO` WHERE deleted = 0;
 
+##监控网段字典表
+CREATE TABLE `syscxp_tunnel`.`MonitorCidrVO` (
+  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `monitorCidr` VARCHAR(32) NOT NULL COMMENT '监控网段IP',
+  `startAddress` VARCHAR(32) NOT NULL COMMENT '起始网络位',
+  `endAddress` VARCHAR(32) NOT NULL COMMENT '最后广播位',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 ##云专线端口信息表
 CREATE TABLE  `syscxp_tunnel`.`TunnelInterfaceVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',

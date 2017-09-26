@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://zstack.org/schema/zstack">
+    <id>renew</id>
+    <interceptor>RenewManager</interceptor>
+
+    <message>
+        <name>org.zstack.billing.header.renew.APIUpdateRenewMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.billing.header.renew.APIQueryRenewMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+</service>
