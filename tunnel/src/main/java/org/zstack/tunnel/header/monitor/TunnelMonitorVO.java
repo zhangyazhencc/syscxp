@@ -3,9 +3,12 @@ package org.zstack.tunnel.header.monitor;
 
 import org.zstack.header.search.SqlTrigger;
 import org.zstack.header.search.TriggerIndex;
+import org.zstack.tunnel.header.tunnel.TunnelInterfaceVO;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @Author: sunxuelong.
@@ -49,6 +52,12 @@ public class TunnelMonitorVO {
 
     @Column
     private Timestamp createDate;
+
+    //private List<TunnelMonitorInterfaceVO> tunnelMonitorInterfaceVOList;
+
+    @OneToMany
+    @JoinColumn(name = "tunnelMonitorUuid", insertable = false, updatable = false)
+    private List<TunnelMonitorInterfaceVO> tunnelMonitorInterfaceVOList = new ArrayList<TunnelMonitorInterfaceVO>();
 
     @PreUpdate
     private void preUpdate() {
@@ -133,5 +142,13 @@ public class TunnelMonitorVO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public List<TunnelMonitorInterfaceVO> getTunnelMonitorInterfaceVOList() {
+        return tunnelMonitorInterfaceVOList;
+    }
+
+    public void setTunnelMonitorInterfaceVOList(List<TunnelMonitorInterfaceVO> tunnelMonitorInterfaceVOList) {
+        this.tunnelMonitorInterfaceVOList = tunnelMonitorInterfaceVOList;
     }
 }
