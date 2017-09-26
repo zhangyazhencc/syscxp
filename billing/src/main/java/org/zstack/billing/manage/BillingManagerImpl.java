@@ -1016,7 +1016,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
             qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategory());
             qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductType());
-            qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
+            qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
             AccountDischargeVO accountDischargeVO = qDischarge.find();
             int productDisCharge = 100;
             if (accountDischargeVO != null) {
@@ -1032,7 +1032,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             duration = duration.multiply(BigDecimal.valueOf(12));
         }
 
-        AccountBalanceVO abvo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+        AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         BigDecimal cashBalance = abvo.getCashBalance();
         BigDecimal presentBalance = abvo.getPresentBalance();
         BigDecimal creditPoint = abvo.getCreditPoint();
@@ -1091,7 +1091,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
         OrderVO orderVo = new OrderVO();
         orderVo.setUuid(Platform.getUuid());
-        orderVo.setAccountUuid(msg.getSession().getAccountUuid());
+        orderVo.setAccountUuid(msg.getAccountUuid());
         orderVo.setProductName(msg.getProductName());
         orderVo.setState(OrderState.PAID);
         orderVo.setProductType(msg.getProductType());
@@ -1129,7 +1129,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         BigDecimal dischargePrice = BigDecimal.ZERO;
         BigDecimal originalPrice = BigDecimal.ZERO;
 
-        AccountBalanceVO abvo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+        AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         BigDecimal cashBalance = abvo.getCashBalance();
         BigDecimal presentBalance = abvo.getPresentBalance();
         BigDecimal creditPoint = abvo.getCreditPoint();
@@ -1137,7 +1137,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         OrderVO orderVo = new OrderVO();
 
         orderVo.setUuid(Platform.getUuid());
-        orderVo.setAccountUuid(msg.getSession().getAccountUuid());
+        orderVo.setAccountUuid(msg.getAccountUuid());
         orderVo.setProductName(msg.getProductName());
         orderVo.setState(OrderState.PAID);
         orderVo.setProductType(msg.getProductType());
@@ -1157,7 +1157,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         long days = Math.abs(endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
 
         SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
-        query.add(RenewVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
+        query.add(RenewVO_.accountUuid, Op.EQ, msg.getAccountUuid());
         query.add(RenewVO_.productUuid, Op.EQ, msg.getProductUuid());
         RenewVO renewVO = query.find();
         if (renewVO == null) {
@@ -1181,7 +1181,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
         DealDetailVO dVO = new DealDetailVO();
         dVO.setUuid(Platform.getUuid());
-        dVO.setAccountUuid(msg.getSession().getAccountUuid());
+        dVO.setAccountUuid(msg.getAccountUuid());
         dVO.setDealWay(DealWay.CASH_BILL);
         dVO.setIncome(remainMoney==null?BigDecimal.ZERO:remainMoney);
         dVO.setExpend(BigDecimal.ZERO);
@@ -1190,7 +1190,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         dVO.setState(DealState.SUCCESS);
         dVO.setBalance(remainCash==null?BigDecimal.ZERO:remainCash);
         dVO.setOutTradeNO(orderVo.getUuid());
-        dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
+        dVO.setOpAccountUuid(msg.getOpAccountUuid());
         dbf.getEntityManager().persist(dVO);
         dbf.getEntityManager().remove(renewVO);
         SimpleQuery<PriceRefRenewVO> q = dbf.createQuery(PriceRefRenewVO.class);
@@ -1226,7 +1226,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
             qDischarge.add(AccountDischargeVO_.category, Op.EQ, productPriceUnitVO.getCategory());
             qDischarge.add(AccountDischargeVO_.productType, Op.EQ, productPriceUnitVO.getProductType());
-            qDischarge.add(AccountDischargeVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
+            qDischarge.add(AccountDischargeVO_.accountUuid, Op.EQ, msg.getAccountUuid());
             AccountDischargeVO accountDischargeVO = qDischarge.find();
             int productDisCharge = 100;
             if (accountDischargeVO != null) {
@@ -1247,7 +1247,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         OrderVO orderVo = new OrderVO();
 
         orderVo.setUuid(Platform.getUuid());
-        orderVo.setAccountUuid(msg.getSession().getAccountUuid());
+        orderVo.setAccountUuid(msg.getAccountUuid());
         orderVo.setProductName(msg.getProductName());
         orderVo.setState(OrderState.PAID);
         orderVo.setProductType(msg.getProductType());
@@ -1267,7 +1267,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         long days = Math.abs(endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
 
         SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
-        query.add(RenewVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
+        query.add(RenewVO_.accountUuid, Op.EQ, msg.getAccountUuid());
         query.add(RenewVO_.productUuid, Op.EQ, msg.getProductUuid());
         RenewVO renewVO = query.find();
         if (renewVO == null) {
@@ -1306,7 +1306,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
             DealDetailVO dVO = new DealDetailVO();
             dVO.setUuid(Platform.getUuid());
-            dVO.setAccountUuid(msg.getSession().getAccountUuid());
+            dVO.setAccountUuid(msg.getAccountUuid());
             dVO.setDealWay(DealWay.CASH_BILL);
             dVO.setIncome(subMoney.negate());
             dVO.setExpend(BigDecimal.ZERO);
@@ -1315,7 +1315,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(remainCash==null?BigDecimal.ZERO:remainCash);
             dVO.setOutTradeNO(orderVo.getUuid());
-            dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
+            dVO.setOpAccountUuid(msg.getOpAccountUuid());
             dbf.getEntityManager().persist(dVO);
         }
         renewVO.setPricePerDay(dischargePrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN));
@@ -1328,7 +1328,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
             PriceRefRenewVO priceRefRenewVO = new PriceRefRenewVO();
             priceRefRenewVO.setUuid(Platform.getUuid());
             priceRefRenewVO.setProductPriceUnitUuid(productPriceUnitUuid);
-            priceRefRenewVO.setAccountUuid(msg.getSession().getAccountUuid());
+            priceRefRenewVO.setAccountUuid(msg.getAccountUuid());
             priceRefRenewVO.setRenewUuid(renewVO.getUuid());
             dbf.getEntityManager().persist(priceRefRenewVO);
         }
