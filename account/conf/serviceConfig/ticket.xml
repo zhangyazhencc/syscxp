@@ -21,6 +21,13 @@
         <serviceId>query</serviceId>
     </message>
 
+    <message>
+        <name>org.zstack.account.header.ticket.APIQueryTicketMsg</name>
+        <serviceId>query</serviceId>
+    </message>
 
+    <message>
+        <name>org.zstack.account.header.ticket.APIDeleteTicketMsg</name>
+    </message>
 
 </service>

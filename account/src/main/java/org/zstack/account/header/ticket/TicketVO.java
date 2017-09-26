@@ -5,6 +5,7 @@ import org.zstack.header.vo.ForeignKey;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * Created by wangwg on 2017/9/25.
@@ -43,6 +44,10 @@ public class TicketVO {
     @Column
     @Enumerated(EnumType.STRING)
     private TicketStatus status;
+
+    @OneToMany
+    @JoinColumn(name = "ticketUuid", insertable = false, updatable = false)
+    private List<TicketRecordVO> ticketRecordVOS;
 
     @Column
     private Timestamp createDate;
@@ -141,5 +146,13 @@ public class TicketVO {
 
     public void setAdminUserUuid(String adminUserUuid) {
         this.adminUserUuid = adminUserUuid;
+    }
+
+    public void setTicketRecordVOS(List<TicketRecordVO> ticketRecordVOS) {
+        this.ticketRecordVOS = ticketRecordVOS;
+    }
+
+    public List<TicketRecordVO> getTicketRecordVOS() {
+        return ticketRecordVOS;
     }
 }

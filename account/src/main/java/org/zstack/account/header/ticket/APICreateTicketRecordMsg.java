@@ -65,10 +65,10 @@ public class APICreateTicketRecordMsg extends APIMessage {
             public void after(APIEvent evt) {
                 String uuid = null;
                 if (evt.isSuccess()) {
-                    uuid = ((APICreateTicketEvent) evt).getInventory().getUuid();
+                    uuid = ((APICreateTicketRecordEvent) evt).getInventory().getUuid();
                 }
                 ntfy("Create TicketRecord")
-                        .resource(uuid, TicketVO.class.getSimpleName())
+                        .resource(uuid, TicketRecordVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };

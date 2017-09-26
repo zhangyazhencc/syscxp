@@ -55,11 +55,22 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
             handle((APICreateTicketRecordMsg)msg);
         }else if(msg instanceof APICreateTicketMsg){
             handle((APICreateTicketMsg)msg);
+        }else if(msg instanceof APIDeleteTicketMsg){
+            handle((APIDeleteTicketMsg)msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
 
     }
+
+    private void handle(APIDeleteTicketMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(), TicketVO.class);
+        APIDeleteTicketEvent evt = new APIDeleteTicketEvent(msg.getId());
+
+        bus.publish(evt);
+    }
+
+
     @Transactional
     private void handle(APICreateTicketRecordMsg msg) {
         TicketRecordVO vo = new TicketRecordVO();
@@ -85,7 +96,9 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
         TicketVO vo =  new TicketVO();
         vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(msg.getSession().getAccountUuid());
-        vo.setUserUuid(msg.getSession().getUserUuid());
+        if(!msg.getSession().getAccountUuid().equals(msg.getSession().getUserUuid())){
+            vo.setUserUuid(msg.getSession().getUserUuid());
+        }
         vo.setType(msg.getType());
         vo.setContent(msg.getContent());
         vo.setStatus(TicketStatus.untreated);
