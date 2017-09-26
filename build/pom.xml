@@ -74,21 +74,7 @@
                     <artifactId>search</artifactId>
                     <version>${project.version}</version>
                 </dependency>
-                <dependency>
-                    <groupId>org.zstack</groupId>
-                    <artifactId>billing</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.zstack</groupId>
-                    <artifactId>account</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
-                <dependency>
-                    <groupId>org.zstack</groupId>
-                    <artifactId>tunnel</artifactId>
-                    <version>${project.version}</version>
-                </dependency>
+
             </dependencies>
         </profile>
     </profiles>
@@ -162,30 +148,12 @@
             <artifactId>search</artifactId>
             <version>${project.version}</version>
         </dependency>
-
-        <dependency>
-            <groupId>org.zstack</groupId>
-            <artifactId>account</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.zstack</groupId>
-            <artifactId>billing</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
         <dependency>
             <groupId>org.zstack</groupId>
             <artifactId>sms</artifactId>
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.zstack</groupId>
-            <artifactId>tunnel</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
     </dependencies>
 </project>
