@@ -997,7 +997,12 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
 
     @Transactional
     private void handle(APICreateRenewOrderMsg msg) {
-        RenewVO renewVO = dbf.findByUuid(msg.getRenewUuid(), RenewVO.class);
+
+        SimpleQuery<RenewVO> qRenew = dbf.createQuery(RenewVO.class);
+        qRenew.add(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
+        qRenew.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        RenewVO renewVO = qRenew.find();
+
         if (renewVO == null) {
             throw new IllegalArgumentException("please input the correct value");
         }
@@ -1005,7 +1010,7 @@ public class BillingManagerImpl extends AbstractService implements BillingManage
         BigDecimal dischargePrice = BigDecimal.ZERO;
         BigDecimal originalPrice = BigDecimal.ZERO;
         SimpleQuery<PriceRefRenewVO> queryPriceRefRenewVO = dbf.createQuery(PriceRefRenewVO.class);
-        queryPriceRefRenewVO.add(PriceRefRenewVO_.renewUuid, SimpleQuery.Op.EQ, msg.getRenewUuid());
+        queryPriceRefRenewVO.add(PriceRefRenewVO_.renewUuid, SimpleQuery.Op.EQ, renewVO.getUuid());
         List<PriceRefRenewVO> PriceRefRenewVOs = queryPriceRefRenewVO.list();
 
         for (PriceRefRenewVO priceUuid : PriceRefRenewVOs) {
