@@ -90,7 +90,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APIDeleteVpnRouteMsg) msg);
         } else if (msg instanceof APIGetVpnMsg) {
             handle(
-(APIGetVpnMsg) msg);
+                    (APIGetVpnMsg) msg);
         } else if (msg instanceof APICreateHostInterfaceMsg) {
             handle((APICreateHostInterfaceMsg) msg);
         } else if (msg instanceof APICreateZoneMsg) {
@@ -288,9 +288,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     @Transactional
     public void handle(APICreateVpnMsg msg) {
+        String accountUuid = StringUtils.isEmpty(msg.getAccountUuid()) ? msg.getSession().getAccountUuid() : msg.getAccountUuid();
         final VpnVO vpn = new VpnVO();
         vpn.setUuid(Platform.getUuid());
-        vpn.setAccountUuid(msg.getSession().getAccountUuid());
+        vpn.setAccountUuid(accountUuid);
         vpn.setDescription(msg.getDescription());
         vpn.setName(msg.getDescription());
         vpn.setVpnCidr(msg.getVpnCidr());
@@ -326,6 +327,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         createBuyOrderMsg.setDuration(vpn.getDuration());
         createBuyOrderMsg.setProductDescription(vpn.getDescription());
         createBuyOrderMsg.setProductPriceUnitUuids(msg.getProductPriceUnitUuids());
+        createBuyOrderMsg.setAccountUuid(accountUuid);
         InnerMessageHelper.setMD5(createBuyOrderMsg);
         RestAPIResponse rsp;
         try {
@@ -333,9 +335,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         } catch (InterruptedException e) {
             throw new CloudRuntimeException(String.format("failed to post to %s, Exception: ", VpnGlobalProperty.BILLING_SERVER_URL, e.getMessage()));
         }
-         APIEvent apiEvent = (APIEvent) RESTApiDecoder.loads(rsp.getResult());
-        if (!apiEvent.isSuccess()){
-            throw new CloudRuntimeException(String.format("failed to create order,error code: %s.", apiEvent.getError().toString()));
+        APIEvent apiEvent = (APIEvent) RESTApiDecoder.loads(rsp.getResult());
+        if (!apiEvent.isSuccess()) {
+            throw new CloudRuntimeException(String.format("failed to create order, code: %s, detail: %s", apiEvent.getError().getCode(), apiEvent.getError().getDetails()));
 
         }
 
@@ -637,6 +639,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APICreateVpnMsg msg) {
+        if (msg.getSession().getType() == AccountType.Normal && StringUtils.isEmpty(msg.getAccountUuid())) {
+            throw new ApiMessageInterceptionException(argerr(
+                    "The Account[uuid:%s] is not a admin or proxy.", msg.getSession().getAccountUuid()
+            ));
+        }
         Q q = Q.New(VpnVO.class)
                 .eq(VpnVO_.name, msg.getName());
         if (q.isExists())
