@@ -97,7 +97,7 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
 
         if (msg instanceof APICreateTicketMsg) {
-            volidata((APICreateTicketMsg)msg);
+            validate((APICreateTicketMsg)msg);
 
         }
         setServiceId(msg);
@@ -105,18 +105,21 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
         return msg;
     }
 
-    private void volidata(APICreateTicketMsg msg) {
+    private void validate(APICreateTicketMsg msg) {
         SimpleQuery<DictionaryVO> q = dbf.createQuery(DictionaryVO.class);
         q.add(DictionaryVO_.dictKey, Op.EQ, "TicketType");
         List<DictionaryVO> list = q.list();
+        boolean is = false;
         for(DictionaryVO vo : list){
-            if(vo.getValueName().equals(msg.getType())){
-
+            if(vo.getDictValue().equals(msg.getType())){
+                is = true;
             }
-
+        }
+        if(!is){
+            throw new ApiMessageInterceptionException(argerr("value[%s] of type is not exist",
+                    msg.getType()));
         }
 
-        msg.getType();
     }
 
     private void setServiceId(APIMessage msg) {

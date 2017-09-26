@@ -313,8 +313,9 @@ CREATE TABLE `DictionaryVO` (
   `createDate` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','专线网络');
-INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','云服务器');
-INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','VPN网关');
-INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','账户');
-INSERT INTO DictionaryVO (dictName, dictKey, dictValue) VALUES ('工单类型','TicketType','账务');
+
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue, valueName) VALUES ('工单类型','TicketType','private_network','专线网络');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue, valueName) VALUES ('工单类型','TicketType','cloud_server','云服务器');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue, valueName) VALUES ('工单类型','TicketType','VPN','VPN网关');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue, valueName) VALUES ('工单类型','TicketType','account','账户');
+INSERT INTO DictionaryVO (dictName, dictKey, dictValue, valueName) VALUES ('工单类型','TicketType','billing','账务');

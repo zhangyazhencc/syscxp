@@ -835,7 +835,7 @@ public class AccountBase extends AbstractAccount {
     }
 
     private void handle(APIDeleteProxyAccountRefMsg msg) {
-        dbf.removeByPrimaryKey(msg.getUuid(), ProxyAccountRefVO.class);
+        dbf.removeByPrimaryKey(msg.getRefId(), ProxyAccountRefVO.class);
         APIDeleteProxyAccountRefEvent evt = new APIDeleteProxyAccountRefEvent(msg.getId());
 
         bus.publish(evt);
