@@ -195,6 +195,7 @@
 
     <message>
         <name>org.zstack.account.header.account.APIQueryProxyAccountMsg</name>
+        <serviceId>query</serviceId>
     </message>
 
 </service>

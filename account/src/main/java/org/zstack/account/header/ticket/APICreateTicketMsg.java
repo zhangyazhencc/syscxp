@@ -10,13 +10,16 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.notification.ApiNotification;
 
+/**
+ * Created by wangwg on 2017/9/26.
+ */
 @Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT,names = "create")
-public class APICreateTicketMsg  extends APIMessage implements TicketMessage{
+public class APICreateTicketMsg  extends APIMessage {
 
     @APIParam(maxLength = 128)
     private String type;
 
-    @APIParam(maxLength = 128)
+    @APIParam(maxLength = 2048)
     private String content;
 
     @APIParam(maxLength = 32)
@@ -24,11 +27,6 @@ public class APICreateTicketMsg  extends APIMessage implements TicketMessage{
 
     @APIParam(maxLength = 32)
     private String email;
-
-    @Override
-    public String getAccountUuid() {
-        return this.getSession().getAccountUuid();
-    }
 
     public String getType() {
         return type;
@@ -72,7 +70,7 @@ public class APICreateTicketMsg  extends APIMessage implements TicketMessage{
                 if (evt.isSuccess()) {
                     uuid = ((APICreateTicketEvent) evt).getInventory().getUuid();
                 }
-                ntfy("Create Account")
+                ntfy("Create Ticket")
                         .resource(uuid, TicketVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }

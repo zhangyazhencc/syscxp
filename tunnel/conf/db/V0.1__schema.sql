@@ -1,3 +1,16 @@
+/*201709225 sunxuelong */
+CREATE TABLE IF NOT EXISTS TunnelMonitorInterfaceVO (
+  `uuid` VARCHAR(32) NOT NULL COMMENT '主键',
+  `TunnelMonitorUuid` VARCHAR(32) NOT NULL COMMENT '监控通道uuid(TunnelMonitorVO.uuid)',
+  `interfaceType` VARCHAR(32) NOT NULL COMMENT '类型("A","Z")',
+  `hostUuid` VARCHAR(32) NOT NULL COMMENT '监控主机UUID(HostVO.uuid)',
+  `monitorIp` VARCHAR(64) NOT NULL COMMENT '监控IP(NetworkVO.monitorCidr)',
+  `lastOpDate` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `uuid` (`uuid`))
+ENGINE = InnoDB DEFAULT CHARSET = utf8 COMMENT '监控通道两端信息表';
+
 /*20170915 sunxuelong */
 CREATE TABLE `SpeedRecordsVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'uuid',
@@ -22,23 +35,23 @@ CREATE TABLE `SpeedRecordsVO` (
 ALTER TABLE HostEO CHANGE ip hostIp VARCHAR(128);
 
 CREATE OR REPLACE
-VIEW `syscxp_tunnel`.`hostvo` AS
+VIEW `syscxp_tunnel`.`HostVO` AS
     SELECT
-        `syscxp_tunnel`.`hosteo`.`uuid` AS `uuid`,
-        `syscxp_tunnel`.`hosteo`.`nodeUuid` AS `nodeUuid`,
-        `syscxp_tunnel`.`hosteo`.`name` AS `name`,
-        `syscxp_tunnel`.`hosteo`.`code` AS `code`,
-        `syscxp_tunnel`.`hosteo`.`hostIp` AS `hostIp`,
-        `syscxp_tunnel`.`hosteo`.`username` AS `username`,
-        `syscxp_tunnel`.`hosteo`.`password` AS `password`,
-        `syscxp_tunnel`.`hosteo`.`state` AS `state`,
-        `syscxp_tunnel`.`hosteo`.`status` AS `status`,
-        `syscxp_tunnel`.`hosteo`.`lastOpDate` AS `lastOpDate`,
-        `syscxp_tunnel`.`hosteo`.`createDate` AS `createDate`
+        `syscxp_tunnel`.`HostEO`.`uuid` AS `uuid`,
+        `syscxp_tunnel`.`HostEO`.`nodeUuid` AS `nodeUuid`,
+        `syscxp_tunnel`.`HostEO`.`name` AS `name`,
+        `syscxp_tunnel`.`HostEO`.`code` AS `code`,
+        `syscxp_tunnel`.`HostEO`.`hostIp` AS `hostIp`,
+        `syscxp_tunnel`.`HostEO`.`username` AS `username`,
+        `syscxp_tunnel`.`HostEO`.`password` AS `password`,
+        `syscxp_tunnel`.`HostEO`.`state` AS `state`,
+        `syscxp_tunnel`.`HostEO`.`status` AS `status`,
+        `syscxp_tunnel`.`HostEO`.`lastOpDate` AS `lastOpDate`,
+        `syscxp_tunnel`.`HostEO`.`createDate` AS `createDate`
     FROM
-        `syscxp_tunnel`.`hosteo`
+        `syscxp_tunnel`.`HostEO`
     WHERE
-        (`syscxp_tunnel`.`hosteo`.`deleted` = 0);
+        (`syscxp_tunnel`.`HostEO`.`deleted` = 0);
 
 /*20170911 sunxuelong */
 alter table syscxp_tunnel.HostEO add nodeUuid varchar(32) comment '节点ID(NodeEO.uuid)' after uuid;
@@ -48,7 +61,7 @@ SELECT uuid, nodeUuid, name, code, ip, username, password, state, status, lastOp
   FROM `HostEO`
  WHERE deleted = 0;
 
-CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`HostSwitchMonitorVO` (
+CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`HostSwitchMonitorAO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `hostUuid` varchar(32) NOT NULL COMMENT '主机UUID(HostEO.uuid)',
   `physicalSwitchUuid` VARCHAR(32) NOT NULL COMMENT '物理交换机UUID(PhysicalSwitchVO.uuid)',
@@ -296,6 +309,17 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, networkUuid, name, bandwidth, distance, state, status, monitorState, description, months, expiredDate, lastOpDate, createDate
                                         FROM `TunnelEO` WHERE deleted = 0;
+
+##监控网段字典表
+CREATE TABLE `syscxp_tunnel`.`MonitorCidrVO` (
+  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `monitorCidr` VARCHAR(32) NOT NULL COMMENT '监控网段IP',
+  `startAddress` VARCHAR(32) NOT NULL COMMENT '起始网络位',
+  `endAddress` VARCHAR(32) NOT NULL COMMENT '最后广播位',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##云专线端口信息表
 CREATE TABLE  `syscxp_tunnel`.`TunnelInterfaceVO` (

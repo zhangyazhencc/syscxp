@@ -3,7 +3,9 @@ package org.zstack.tunnel.header.monitor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.tunnel.header.host.HostEO;
+import org.zstack.tunnel.header.host.HostVO;
 import org.zstack.tunnel.header.tunnel.TunnelEO;
+import org.zstack.tunnel.header.tunnel.TunnelVO;
 
 /**
  * @Author: sunxuelong.
@@ -12,16 +14,16 @@ import org.zstack.tunnel.header.tunnel.TunnelEO;
  */
 public class APICreateTunnelMonitorMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = TunnelEO.class)
+    @APIParam(emptyString = false,resourceType = TunnelVO.class)
     private String tunnelUuid;
 
-    @APIParam(emptyString = false,resourceType = HostEO.class)
+    @APIParam(emptyString = false,resourceType = HostVO.class)
     private String hostAUuid;
 
     @APIParam(emptyString = false,maxLength = 64)
     private String monitorAIp;
 
-    @APIParam(emptyString = false,resourceType = HostEO.class)
+    @APIParam(emptyString = false,resourceType = HostVO.class)
     private String hostZUuid;
 
     @APIParam(emptyString = false,maxLength = 64)

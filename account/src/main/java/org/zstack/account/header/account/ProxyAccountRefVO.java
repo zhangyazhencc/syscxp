@@ -24,7 +24,7 @@ public class ProxyAccountRefVO {
     private String customerAccountUuid;
 
     @ManyToOne(cascade = CascadeType.REFRESH,fetch = FetchType.EAGER)
-    @JoinColumn(name = "customerAccountUuid")
+    @JoinColumn(name = "customerAccountUuid",insertable = false,updatable = false)
     private  AccountVO proxyAccountVO;
 
     @Column

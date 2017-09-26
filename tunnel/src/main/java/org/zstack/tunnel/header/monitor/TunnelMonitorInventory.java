@@ -35,6 +35,8 @@ public class TunnelMonitorInventory {
 
     private Timestamp createDate;
 
+    private List<TunnelMonitorInterfaceInventory> tunnelMonitorInterfaceInventories;
+
     public static TunnelMonitorInventory valueOf(TunnelMonitorVO vo){
         TunnelMonitorInventory inventory = new TunnelMonitorInventory();
         inventory.setUuid(vo.getUuid());
@@ -47,6 +49,7 @@ public class TunnelMonitorInventory {
         inventory.setMsg(vo.getMsg());
         inventory.setLastOpDate(vo.getLastOpDate());
         inventory.setCreateDate(vo.getCreateDate());
+        inventory.setTunnelMonitorInterfaceInventories(TunnelMonitorInterfaceInventory.valueOf(vo.getTunnelMonitorInterfaceVOList()));
 
         return inventory;
     }
@@ -139,4 +142,13 @@ public class TunnelMonitorInventory {
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
     }
+
+    public List<TunnelMonitorInterfaceInventory> getTunnelMonitorInterfaceInventories() {
+        return tunnelMonitorInterfaceInventories;
+    }
+
+    public void setTunnelMonitorInterfaceInventories(List<TunnelMonitorInterfaceInventory> tunnelMonitorInterfaceInventories) {
+        this.tunnelMonitorInterfaceInventories = tunnelMonitorInterfaceInventories;
+    }
 }
+

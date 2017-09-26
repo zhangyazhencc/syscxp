@@ -3,11 +3,7 @@ package org.zstack.account.ticket;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.zstack.account.header.account.*;
-import org.zstack.account.header.identity.*;
 import org.zstack.account.header.ticket.*;
-import org.zstack.account.header.user.*;
-import org.zstack.account.identity.AccountBase;
-import org.zstack.account.identity.AccountManager;
 import org.zstack.account.identity.IdentiyInterceptor;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
@@ -17,29 +13,15 @@ import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.db.SimpleQuery.Op;
 import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.header.AbstractService;
-import org.zstack.header.account.APIValidateAccountMsg;
-import org.zstack.header.account.APIValidateAccountReply;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.errorcode.OperationFailureException;
-import org.zstack.header.errorcode.SysErrors;
-import org.zstack.header.exception.CloudRuntimeException;
-import org.zstack.header.identity.*;
-import org.zstack.header.managementnode.PrepareDbInitialValueExtensionPoint;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
-import org.zstack.header.query.QueryOp;
-import org.zstack.sms.MailService;
-import org.zstack.sms.SmsService;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 
-import javax.persistence.Query;
-import java.sql.Timestamp;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Random;
 
 import static org.zstack.core.Platform.argerr;
 import static org.zstack.core.Platform.operr;
@@ -63,19 +45,128 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
-        if (msg instanceof TicketMessage) {
-            TicketBase base = new TicketBase();
-            base.handleMessage(msg);
-        } else if (msg instanceof APIMessage) {
-            handleApiMessage((APIMessage) msg);
-        } else {
-            bus.dealWithUnknownMessage(msg);
-        }
+       if (msg instanceof APIMessage) {
+           handleApiMessage((APIMessage) msg);
+       } else {
+           bus.dealWithUnknownMessage(msg);
+       }
     }
 
     private void handleApiMessage(APIMessage msg) {
+        if(msg instanceof APICreateTicketRecordMsg){
+            handle((APICreateTicketRecordMsg)msg);
+        }else if(msg instanceof APICreateTicketMsg){
+            handle((APICreateTicketMsg)msg);
+        }else if(msg instanceof APIDeleteTicketMsg){
+            handle((APIDeleteTicketMsg)msg);
+        }else if(msg instanceof APIUpdateTicketMsg){
+            handle((APIUpdateTicketMsg)msg);
+        }else{
+            bus.dealWithUnknownMessage(msg);
+        }
 
     }
+
+    private void handle(APIUpdateTicketMsg msg) {
+
+        TicketVO vo = dbf.findByUuid(msg.getUuid(),TicketVO.class);
+        boolean isupdate = false;
+        if(msg.getContent() != null){
+            vo.setContent(msg.getContent());
+            isupdate = true;
+        }
+        if(msg.getEmail() != null){
+            vo.setEmail(msg.getEmail());
+            isupdate = true;
+        }
+        if(msg.getPhone() != null){
+            vo.setPhone(msg.getPhone());
+            isupdate = true;
+        }
+        if(msg.getStatus() != null){
+            vo.setStatus(msg.getStatus());
+            isupdate = true;
+        }
+        if(msg.getType() != null){
+            List<TicketTypeVO> list =  dbf.createQuery(TicketTypeVO.class).list();
+            boolean is = false;
+            for(TicketTypeVO tyvo : list){
+                if(tyvo.getTypeValue().equals(msg.getType())){
+                    is = true;
+                }
+            }
+            if(!is){
+                throw new ApiMessageInterceptionException(argerr("value[%s] of type is not exist",
+                        msg.getType()));
+            }
+            vo.setType(msg.getType());
+            isupdate = true;
+        }
+        if(isupdate){
+           vo = dbf.updateAndRefresh(vo);
+        }
+
+        APIUpdateTicketEvent event = new APIUpdateTicketEvent(msg.getId());
+
+        event.setInventory(TicketInventory.valueOf(vo));
+        bus.publish(event);
+
+    }
+
+    private void handle(APIDeleteTicketMsg msg) {
+        TicketVO vo = dbf.findByUuid(msg.getUuid(),TicketVO.class);
+        if(!vo.getAccountUuid().equals(msg.getSession().getAccountUuid())
+                || (vo.getUserUuid() != null && !vo.getUserUuid().equals(msg.getSession().getUserUuid()))){
+
+            throw new OperationFailureException(operr("the ticket is not belong to this account/user"));
+        }
+
+        dbf.removeByPrimaryKey(msg.getUuid(), TicketVO.class);
+        APIDeleteTicketEvent evt = new APIDeleteTicketEvent(msg.getId());
+
+        bus.publish(evt);
+    }
+
+
+    @Transactional
+    private void handle(APICreateTicketRecordMsg msg) {
+        TicketRecordVO vo = new TicketRecordVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setTicketUuid(msg.getTicketUuid());
+        vo.setBelongTo(msg.getBelongto());
+        vo.setContent(msg.getContent());
+        vo.setStatus(msg.getStatus());
+        vo = dbf.persistAndRefresh(vo);
+
+        TicketVO tvo = dbf.findByUuid(msg.getTicketUuid(),TicketVO.class);
+        tvo.setStatus(msg.getStatus());
+        tvo.setAdminUserUuid(msg.getSession().getUserUuid());
+        dbf.getEntityManager().merge(tvo);
+
+        APICreateTicketRecordEvent event = new APICreateTicketRecordEvent(msg.getId());
+        event.setInventory(TicketRecordInventory.valueOf(vo));
+        bus.publish(event);
+
+    }
+
+    private void handle(APICreateTicketMsg msg) {
+
+        TicketVO vo =  new TicketVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setAccountUuid(msg.getSession().getAccountUuid());
+        if(!msg.getSession().getAccountUuid().equals(msg.getSession().getUserUuid())){
+            vo.setUserUuid(msg.getSession().getUserUuid());
+        }
+        vo.setType(msg.getType());
+        vo.setContent(msg.getContent());
+        vo.setStatus(TicketStatus.untreated);
+
+        APICreateTicketEvent evt = new APICreateTicketEvent(msg.getId());
+        evt.setInventory(TicketInventory.valueOf(dbf.persistAndRefresh(vo)));
+        bus.publish(evt);
+
+    }
+
 
     @Override
     public String getId() {
@@ -106,12 +197,10 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
     }
 
     private void validate(APICreateTicketMsg msg) {
-        SimpleQuery<DictionaryVO> q = dbf.createQuery(DictionaryVO.class);
-        q.add(DictionaryVO_.dictKey, Op.EQ, "TicketType");
-        List<DictionaryVO> list = q.list();
+        List<TicketTypeVO> list =  dbf.createQuery(TicketTypeVO.class).list();
         boolean is = false;
-        for(DictionaryVO vo : list){
-            if(vo.getDictValue().equals(msg.getType())){
+        for(TicketTypeVO vo : list){
+            if(vo.getTypeValue().equals(msg.getType())){
                 is = true;
             }
         }

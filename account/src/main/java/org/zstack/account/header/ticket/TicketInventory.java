@@ -13,6 +13,8 @@ public class TicketInventory {
     private String uuid;
     private String accountUuid;
     private String userUuid;
+    private String AdminUserUuid;
+
     private String type;
     private String content;
     private String status;
@@ -26,6 +28,7 @@ public class TicketInventory {
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setUserUuid(vo.getUserUuid());
+        inv.setAdminUserUuid(vo.getAdminUserUuid());
         inv.setType(vo.getType());
         inv.setContent(vo.getContent());
         inv.setStatus(vo.getStatus().toString());
@@ -104,5 +107,13 @@ public class TicketInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getAdminUserUuid() {
+        return AdminUserUuid;
+    }
+
+    public void setAdminUserUuid(String adminUserUuid) {
+        AdminUserUuid = adminUserUuid;
     }
 }
