@@ -13,6 +13,9 @@ public class APICreateUnsubcribeOrderMsg extends APICreateOrderMsg {
     @APIParam(emptyString = false)
     private String productUuid;
 
+    @APIParam(emptyString = false)
+    private String productName;
+
     public ProductType getProductType() {
         return productType;
     }
@@ -29,4 +32,11 @@ public class APICreateUnsubcribeOrderMsg extends APICreateOrderMsg {
         this.productUuid = productUuid;
     }
 
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
+    }
 }
