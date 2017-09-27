@@ -50,6 +50,16 @@ public class VpnVO {
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
+    @Column
+    private String sid;
+
+    public String getSid() {
+        return sid;
+    }
+
+    public void setSid(String sid) {
+        this.sid = sid;
+    }
 
     public String getHostUuid() {
         return hostUuid;

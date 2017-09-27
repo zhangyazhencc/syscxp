@@ -1,6 +1,7 @@
 package org.zstack.vpn.vpn;
 
 import org.springframework.http.HttpStatus;
+import org.zstack.vpn.header.host.VpnHostVO;
 import org.zstack.vpn.header.vpn.*;
 
 import java.util.ArrayList;
@@ -10,6 +11,15 @@ public class VpnCommands {
     public static class AgentResponse {
         private String error;
         private boolean success = true;
+        private HttpStatus statusCode;
+
+        public HttpStatus getStatusCode() {
+            return statusCode;
+        }
+
+        public void setStatusCode(HttpStatus statusCode) {
+            this.statusCode = statusCode;
+        }
 
         public String getError() {
             return error;
@@ -50,15 +60,20 @@ public class VpnCommands {
         }
     }
 
-    public static class CheckVpnHostStateCmd extends AgentCommand {
 
+    public static class CheckVpnHostStatusCmd extends AgentCommand {
+        public static CheckVpnHostStatusCmd valueOf(VpnHostVO vo) {
+            CheckVpnHostStatusCmd cmd = new CheckVpnHostStatusCmd();
+            cmd.setHostIp(vo.getManageIp());
+            return cmd;
+        }
     }
 
     public static class AddVpnHostCmd extends AgentCommand {
 
-        public static AddVpnHostCmd valueOf(String hostIp) {
+        public static AddVpnHostCmd valueOf(VpnHostVO vo) {
             AddVpnHostCmd cmd = new AddVpnHostCmd();
-            cmd.setHostIp(hostIp);
+            cmd.setHostIp(vo.getManageIp());
             return cmd;
         }
     }
@@ -67,9 +82,9 @@ public class VpnCommands {
     }
     public static class ReconnectVpnHostCmd extends AgentCommand {
 
-        public static ReconnectVpnHostCmd valueOf(String hostIp) {
+        public static ReconnectVpnHostCmd valueOf(VpnHostVO vo) {
             ReconnectVpnHostCmd cmd = new ReconnectVpnHostCmd();
-            cmd.setHostIp(hostIp);
+            cmd.setHostIp(vo.getManageIp());
             return cmd;
         }
     }
@@ -77,12 +92,12 @@ public class VpnCommands {
 
     }
 
-    public static class CheckVpnStateCmd extends AgentCommand {
+    public static class CheckVpnStatusCmd extends AgentCommand {
 
         private Integer port;
 
-        public static CheckVpnStateCmd valueOf(VpnVO vo) {
-            CheckVpnStateCmd cmd = new CheckVpnStateCmd();
+        public static CheckVpnStatusCmd valueOf(VpnVO vo) {
+            CheckVpnStatusCmd cmd = new CheckVpnStatusCmd();
             cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setPort(vo.getPort());
             return cmd;
@@ -96,27 +111,20 @@ public class VpnCommands {
             this.port = port;
         }
     }
+    public static class CheckStatusResponse extends AgentResponse {
 
-    public static class CheckStateResponse extends AgentResponse {
-        private HttpStatus statusCode;
-        private VpnCreateState state;
+        private ResponseStatus status;
 
-        public VpnCreateState getState() {
-            return state;
+        public ResponseStatus getState() {
+            return status;
         }
 
-        public void setState(VpnCreateState state) {
-            this.state = state;
+        public void setState(ResponseStatus state) {
+            this.status = state;
         }
 
-        public HttpStatus getStatusCode() {
-            return statusCode;
-        }
-
-        public void setStatusCode(HttpStatus statusCode) {
-            this.statusCode = statusCode;
-        }
     }
+
 
     public static class CreateVpnCmd extends AgentCommand {
         private Integer port;

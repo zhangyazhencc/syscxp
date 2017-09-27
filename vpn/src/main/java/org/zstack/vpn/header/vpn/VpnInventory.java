@@ -22,6 +22,7 @@ public class VpnInventory {
     private VpnState state;
     private Integer duration;
     private Timestamp expiredDate;
+    private String sid;
     private List<VpnInterfaceInventory> interfaceInventories;
     private List<VpnRouteInventory> routeInventories;
     private Timestamp lastOpDate;
@@ -43,6 +44,7 @@ public class VpnInventory {
         inv.setExpiredDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
+        inv.setSid(vo.getSid());
         inv.setInterfaceInventories(VpnInterfaceInventory.valueOf(vo.getVpnInterfaces()));
         inv.setRouteInventories(VpnRouteInventory.valueOf(vo.getVpnRoutes()));
         return inv;
@@ -55,6 +57,14 @@ public class VpnInventory {
         }
 
         return invs;
+    }
+
+    public String getSid() {
+        return sid;
+    }
+
+    public void setSid(String sid) {
+        this.sid = sid;
     }
 
     public Integer getPort() {

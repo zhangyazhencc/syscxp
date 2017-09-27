@@ -1,12 +1,18 @@
 package org.zstack.vpn.host;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
+import org.zstack.core.config.GlobalConfig;
+import org.zstack.core.config.GlobalConfigUpdateExtensionPoint;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.Q;
+import org.zstack.core.db.UpdateQuery;
 import org.zstack.core.errorcode.ErrorFacade;
+import org.zstack.core.thread.PeriodicTask;
+import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
@@ -16,8 +22,15 @@ import org.zstack.header.rest.RESTFacade;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.vpn.header.host.*;
+import org.zstack.vpn.vpn.ResponseStatus;
 import org.zstack.vpn.vpn.VpnCommands.*;
+import org.zstack.vpn.vpn.VpnGlobalConfig;
 import org.zstack.vpn.vpn.VpnRESTCaller;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static org.zstack.core.Platform.argerr;
 
@@ -33,6 +46,9 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
     private RESTFacade restf;
     @Autowired
     private ErrorFacade errf;
+    @Autowired
+    private ThreadFacade thdf;
+
 
     public void handleMessage(Message msg) {
         if (msg instanceof APIMessage) {
@@ -61,20 +77,19 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             handle((APIUpdateVpnHostStateMsg) msg);
         } else if (msg instanceof APIUpdateZoneMsg) {
             handle((APIUpdateZoneMsg) msg);
-        } else if (msg instanceof APIReconnectVpnHostMsg){
+        } else if (msg instanceof APIReconnectVpnHostMsg) {
             handle((APIReconnectVpnHostMsg) msg);
-        }else {
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
 
-
     private void handle(APIReconnectVpnHostMsg msg) {
         VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
 
-        ReconnectVpnHostCmd cmd = ReconnectVpnHostCmd.valueOf(host.getUuid());
-        new VpnRESTCaller().syncPostForVPN(HostConstant.RECONNECT_HOST__PATH, cmd, ReconnectVpnHostResponse.class);
+        ReconnectVpnHostCmd cmd = ReconnectVpnHostCmd.valueOf(host);
+        new VpnRESTCaller().syncPostForVpn(HostConstant.RECONNECT_HOST__PATH, cmd, ReconnectVpnHostResponse.class);
 
         APIReconnectVpnHostEvent evt = new APIReconnectVpnHostEvent(msg.getId());
         bus.publish(evt);
@@ -230,11 +245,11 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         host.setUsername(msg.getUsername());
         host.setPassword(msg.getPassword());
         host.setState(HostState.Enabled);
-        host.setStatus(HostStatus.Connecting);
+        host.setStatus(HostStatus.Connected);
 
 
-        AddVpnHostCmd cmd = AddVpnHostCmd.valueOf(host.getUuid());
-        new VpnRESTCaller().syncPostForVPN(HostConstant.ADD_HOST__PATH, cmd, UpdateVpnBandWidthResponse.class);
+        AddVpnHostCmd cmd = AddVpnHostCmd.valueOf(host);
+        new VpnRESTCaller().syncPostForVpn(HostConstant.ADD_HOST_PATH, cmd, UpdateVpnBandWidthResponse.class);
 
 
         host = dbf.persistAndRefresh(host);
@@ -252,7 +267,89 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         return bus.makeLocalServiceId(HostConstant.SERVICE_ID);
     }
 
+    private Future<Void> HostCheckThread;
+    private int hostStatusCheckWorkerInterval;
+    private List<String> disconnectedHostUuids = new ArrayList<>();
+    private void startFailureHostCopingThread() {
+        HostCheckThread = thdf.submitPeriodicTask(new HostStatusCheckWorker());
+        logger.debug(String.format("security group failureHostCopingThread starts[failureHostWorkerInterval: %ss]", hostStatusCheckWorkerInterval));
+    }
+
+    private void restartFailureHostCopingThread() {
+        if (HostCheckThread != null) {
+            HostCheckThread.cancel(true);
+        }
+        startFailureHostCopingThread();
+    }
+
+    private void prepareGlobalConfig() {
+        hostStatusCheckWorkerInterval = VpnGlobalConfig.HOST_STATUS_CHECK_WORKER_INTERVAL.value(Integer.class);
+
+        GlobalConfigUpdateExtensionPoint onUpdate = new GlobalConfigUpdateExtensionPoint() {
+            @Override
+            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
+                if (VpnGlobalConfig.HOST_STATUS_CHECK_WORKER_INTERVAL.isMe(newConfig)) {
+                    hostStatusCheckWorkerInterval = newConfig.value(Integer.class);
+                    restartFailureHostCopingThread();
+                }
+            }
+        };
+
+        VpnGlobalConfig.HOST_STATUS_CHECK_WORKER_INTERVAL.installUpdateExtension(onUpdate);
+    }
+
+    private class HostStatusCheckWorker implements PeriodicTask {
+        @Transactional
+        private List<VpnHostVO> getAllHosts() {
+
+            return Q.New(VpnHostVO.class)
+                    .eq(VpnHostVO_.state, HostState.Enabled)
+                    .list();
+        }
+
+        private void updateHostStatus() {
+            UpdateQuery.New(VpnHostVO.class)
+                    .in(VpnHostVO_.uuid, disconnectedHostUuids)
+                    .set(VpnHostVO_.status, HostStatus.Disconnected)
+                    .update();
+        }
+
+        @Override
+        public void run() {
+            disconnectedHostUuids.clear();
+            List<VpnHostVO> vos = getAllHosts();
+            if (vos.isEmpty()) {
+                return;
+            }
+            for (VpnHostVO vo : vos) {
+                CheckVpnHostStatusCmd cmd = CheckVpnHostStatusCmd.valueOf(vo);
+                CheckStatusResponse rsp = new VpnRESTCaller().checkState(HostConstant.CHECK_HOST_STATE_PATH, cmd);
+                if (rsp.getState() == ResponseStatus.Disconnected){
+                    disconnectedHostUuids.add(vo.getUuid());
+                }
+            }
+            updateHostStatus();
+        }
+
+        @Override
+        public TimeUnit getTimeUnit() {
+            return TimeUnit.SECONDS;
+        }
+
+        @Override
+        public long getInterval() {
+            return hostStatusCheckWorkerInterval;
+        }
+
+        @Override
+        public String getName() {
+            return HostStatusCheckWorker.class.getName();
+        }
+    }
+
+
     public boolean start() {
+        prepareGlobalConfig();
         return true;
     }
 
