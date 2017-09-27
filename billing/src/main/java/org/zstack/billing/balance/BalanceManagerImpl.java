@@ -210,7 +210,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
             SimpleQuery<AccountDischargeVO> q = dbf.createQuery(AccountDischargeVO.class);
             q.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
             q.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, accountDischargeVO.getProductType());
-            q.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, accountDischargeVO.getCategory());
+            q.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, accountDischargeVO.getCategory());
             AccountDischargeVO adVO = q.find();
             int disCharge = adVO.getDisCharge();
             if(msg.getDischarge()>disCharge){
