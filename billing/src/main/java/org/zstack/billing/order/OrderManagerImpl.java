@@ -371,12 +371,13 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         }
 
         BigDecimal remainMoney = renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays));
-        BigDecimal valuePayCash = getValueblePayCash(msg.getSession().getAccountUuid(), msg.getProductUuid());
+        BigDecimal valuePayCash = getValueblePayCash(msg.getAccountUuid(), msg.getProductUuid());
         orderVo.setType(OrderType.UN_SUBCRIBE);
         if (remainMoney.compareTo(valuePayCash) < 0) {
             remainMoney = valuePayCash;
         }
         orderVo.setOriginalPrice(remainMoney);
+        orderVo.setProductName(msg.getProductName());
         orderVo.setPrice(remainMoney);
         orderVo.setProductEffectTimeEnd(currentTimestamp);
         orderVo.setProductEffectTimeEnd(startTime);
@@ -398,7 +399,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         dVO.setOutTradeNO(orderVo.getUuid());
         dVO.setOpAccountUuid(msg.getOpAccountUuid());
         dbf.getEntityManager().persist(dVO);
-        dbf.getEntityManager().remove(renewVO);
+        dbf.getEntityManager().remove(dbf.getEntityManager().find(RenewVO.class,renewVO.getUuid()));
         SimpleQuery<PriceRefRenewVO> q = dbf.createQuery(PriceRefRenewVO.class);
         q.add(PriceRefRenewVO_.renewUuid, SimpleQuery.Op.EQ, renewVO.getUuid());
         List<PriceRefRenewVO> renewVOs = q.list();
@@ -444,7 +445,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
 
         }
 
-        AccountBalanceVO abvo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+        AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         BigDecimal cashBalance = abvo.getCashBalance();
         BigDecimal presentBalance = abvo.getPresentBalance();
         BigDecimal creditPoint = abvo.getCreditPoint();
@@ -494,7 +495,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
             payMethod(msg, orderVo, abvo, subMoney, currentTimestamp);
 
         } else { //downgrade
-            BigDecimal valuePayCash = getValueblePayCash(msg.getSession().getAccountUuid(), msg.getProductUuid());
+            BigDecimal valuePayCash = getValueblePayCash(msg.getAccountUuid(), msg.getProductUuid());
             orderVo.setType(OrderType.DOWNGRADE);
             if (subMoney.compareTo(valuePayCash.negate()) < 0) {
                 subMoney = valuePayCash.negate();
