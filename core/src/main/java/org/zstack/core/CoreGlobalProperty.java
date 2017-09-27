@@ -50,4 +50,10 @@ public class CoreGlobalProperty {
 
     @GlobalProperty(name = "accountServerUrl", defaultValue = "http://192.168.211.99:8081/api")
     public static String ACCOUNT_SERVER_URL;
+
+    @GlobalProperty(name = "vpnManagerUrl", defaultValue = "http://192.168.211.200:8080")
+    public static String VPN_BASE_URL;
+
+    @GlobalProperty(name = "billingServerUrl", defaultValue = "http://192.168.211.99:8082/billing")
+    public static String BILLING_SERVER_URL;
 }

@@ -273,6 +273,16 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
     private Future<Void> hostCheckThread;
     private int hostStatusCheckWorkerInterval;
+    List<String> disconnectedHosts = new ArrayList<>();
+
+    private List<String> getDisconnectedHosts() {
+
+        return Q.New(VpnHostVO.class)
+                .eq(VpnHostVO_.state, HostState.Enabled)
+                .eq(VpnHostVO_.status, HostStatus.Disconnected)
+                .select(VpnHostVO_.manageIp)
+                .listValues();
+    }
 
     private void startFailureHostCopingThread() {
         hostCheckThread = thdf.submitPeriodicTask(new HostStatusCheckWorker());
@@ -287,6 +297,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
     }
 
     private void prepareGlobalConfig() {
+        disconnectedHosts = getDisconnectedHosts();
         hostStatusCheckWorkerInterval = VpnGlobalConfig.STATUS_CHECK_WORKER_INTERVAL.value(Integer.class);
 
         GlobalConfigUpdateExtensionPoint onUpdate = new GlobalConfigUpdateExtensionPoint() {
@@ -312,9 +323,9 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
                     .list();
         }
 
-        private void updateHostStatus(List<String> hostUuids) {
+        private void updateHostStatus() {
             UpdateQuery.New(VpnHostVO.class)
-                    .in(VpnHostVO_.uuid, hostUuids)
+                    .in(VpnHostVO_.uuid, disconnectedHosts)
                     .set(VpnHostVO_.status, HostStatus.Disconnected)
                     .update();
         }
@@ -330,19 +341,11 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
                 CheckStatusResponse rsp = new VpnRESTCaller().checkState(HostConstant.CHECK_HOST_STATE_PATH, cmd);
                 if (rsp.getStatusCode() != HttpStatus.OK)
                     continue;
-                if (rsp.getStatus() == ResponseStatus.Disconnected)
-                    continue;
-
-                vos.remove(vo);
+                if (!rsp.isSuccess())
+                    disconnectedHosts.add(vo.getManageIp());
             }
 
-
-            updateHostStatus(CollectionUtils.transformToList(vos, new Function<String, VpnHostVO>() {
-                @Override
-                public String call(VpnHostVO arg) {
-                    return arg.getUuid();
-                }
-            }));
+            updateHostStatus();
         }
 
         @Override
