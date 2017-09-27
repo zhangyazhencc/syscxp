@@ -40,13 +40,14 @@ public class TunnelStrategy  {
                     "where a.uuid = b.endpointUuid and b.uuid = c.switchUuid " +
                     "and a.uuid = :endpointUuid " +
                     "and b.state = :switchState and b.status = :switchStatus " +
-                    "and c.portAttribute = :portAttribute and c.state = :portState";
+                    "and c.portAttribute = :portAttribute and c.state = :portState and c.autoAllot = :autoAllot ";
             TypedQuery<String> vq = dbf.getEntityManager().createQuery(sql, String.class);
             vq.setParameter("endpointUuid",endpointUuid);
             vq.setParameter("switchState", SwitchState.Enabled);
             vq.setParameter("switchStatus", SwitchStatus.Connected);
             vq.setParameter("portAttribute",portAttribute);
             vq.setParameter("portState", SwitchPortState.Enabled);
+            vq.setParameter("autoAllot", 1);
             List<String> portList = vq.getResultList();
             if(portList.size() > 0){
                 Random r = new Random();
@@ -57,7 +58,7 @@ public class TunnelStrategy  {
                     "where a.uuid = b.endpointUuid and b.uuid = c.switchUuid " +
                     "and a.uuid = :endpointUuid " +
                     "and b.state = :switchState and b.status = :switchStatus " +
-                    "and c.portAttribute = :portAttribute and c.state = :portState and c.portType = :portType " +
+                    "and c.portAttribute = :portAttribute and c.state = :portState and c.portType = :portType and c.autoAllot = :autoAllot " +
                     "and c.uuid not in (select switchPortUuid from InterfaceVO)";
             TypedQuery<String> vq = dbf.getEntityManager().createQuery(sql, String.class);
             vq.setParameter("endpointUuid",endpointUuid);
@@ -66,6 +67,7 @@ public class TunnelStrategy  {
             vq.setParameter("portAttribute",portAttribute);
             vq.setParameter("portState", SwitchPortState.Enabled);
             vq.setParameter("portType",portType);
+            vq.setParameter("autoAllot", 1);
             List<String> portList = vq.getResultList();
             if(portList.size() > 0){
                 Random r = new Random();

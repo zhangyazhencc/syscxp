@@ -40,6 +40,9 @@ public class SwitchPortVO {
     private SwitchPortAttribute portAttribute;
 
     @Column
+    private Integer autoAllot;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private SwitchPortState state;
 
@@ -132,5 +135,13 @@ public class SwitchPortVO {
 
     public void setState(SwitchPortState state) {
         this.state = state;
+    }
+
+    public Integer getAutoAllot() {
+        return autoAllot;
+    }
+
+    public void setAutoAllot(Integer autoAllot) {
+        this.autoAllot = autoAllot;
     }
 }

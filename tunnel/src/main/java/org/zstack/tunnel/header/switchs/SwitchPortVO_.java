@@ -15,6 +15,7 @@ public class SwitchPortVO_ {
     public static volatile SingularAttribute<SwitchPortVO, String> portName;
     public static volatile SingularAttribute<SwitchPortVO, String> portType;
     public static volatile SingularAttribute<SwitchPortVO, SwitchPortAttribute> portAttribute;
+    public static volatile SingularAttribute<SwitchPortVO, Integer> autoAllot;
     public static volatile SingularAttribute<SwitchPortVO, SwitchPortState> state;
     public static volatile SingularAttribute<SwitchPortVO, Timestamp> createDate;
     public static volatile SingularAttribute<SwitchPortVO, Timestamp> lastOpDate;

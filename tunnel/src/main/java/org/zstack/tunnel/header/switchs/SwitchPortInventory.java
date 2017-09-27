@@ -26,6 +26,8 @@ public class SwitchPortInventory {
 
     private SwitchPortAttribute portAttribute;
 
+    private Integer autoAllot;
+
     private SwitchPortState state;
 
     private Timestamp createDate;
@@ -42,6 +44,7 @@ public class SwitchPortInventory {
         inv.setPortName(vo.getPortName());
         inv.setPortType(vo.getPortType());
         inv.setPortAttribute(vo.getPortAttribute());
+        inv.setAutoAllot(vo.getAutoAllot());
         inv.setState(vo.getState());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -135,5 +138,13 @@ public class SwitchPortInventory {
 
     public void setState(SwitchPortState state) {
         this.state = state;
+    }
+
+    public Integer getAutoAllot() {
+        return autoAllot;
+    }
+
+    public void setAutoAllot(Integer autoAllot) {
+        this.autoAllot = autoAllot;
     }
 }

@@ -24,6 +24,9 @@ public class APICreateSwitchPortMsg extends APIMessage {
     @APIParam(emptyString = false,validValues = {"Exclusive", "Shared"})
     private SwitchPortAttribute portAttribute;
 
+    @APIParam(numberRange = {0, 1})
+    private Integer autoAllot;
+
 
     public String getSwitchUuid() {
         return switchUuid;
@@ -55,5 +58,13 @@ public class APICreateSwitchPortMsg extends APIMessage {
 
     public void setPortAttribute(SwitchPortAttribute portAttribute) {
         this.portAttribute = portAttribute;
+    }
+
+    public Integer getAutoAllot() {
+        return autoAllot;
+    }
+
+    public void setAutoAllot(Integer autoAllot) {
+        this.autoAllot = autoAllot;
     }
 }
