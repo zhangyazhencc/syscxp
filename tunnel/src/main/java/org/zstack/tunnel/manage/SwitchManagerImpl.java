@@ -309,6 +309,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         vo.setPortName(msg.getPortName());
         vo.setPortType(msg.getPortType());
         vo.setPortAttribute(msg.getPortAttribute());
+        vo.setAutoAllot(msg.getAutoAllot());
         vo.setState(SwitchPortState.Enabled);
 
         vo = dbf.persistAndRefresh(vo);

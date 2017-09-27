@@ -32,7 +32,6 @@ import org.zstack.tunnel.header.tunnel.NetworkVO;
 import org.zstack.tunnel.header.tunnel.TunnelInterfaceVO;
 import org.zstack.tunnel.header.tunnel.TunnelInterfaceVO_;
 import org.zstack.tunnel.header.tunnel.TunnelVO;
-import org.zstack.tunnel.sdk.sdn.service.RyuController;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.utils.network.NetworkUtils;
@@ -249,7 +248,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         tunnelMonitorVO.setMonitorAIp(msg.getMonitorAIp());
         tunnelMonitorVO.setHostZUuid(msg.getHostZUuid());
         tunnelMonitorVO.setMonitorZIp(msg.getMonitorZIp());
-        tunnelMonitorVO.setStatus(msg.getStatus());
+        tunnelMonitorVO.setStatus(TunnelMonitorStatus.APPLYING);
         tunnelMonitorVO.setMsg(msg.getMsg());
         dbf.getEntityManager().persist(tunnelMonitorVO);
 

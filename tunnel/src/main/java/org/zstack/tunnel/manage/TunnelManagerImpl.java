@@ -19,6 +19,8 @@ import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
+import org.zstack.tunnel.header.monitor.APICreateTunnelMonitorMsg;
+import org.zstack.tunnel.header.monitor.TunnelMonitorVO;
 import org.zstack.tunnel.header.node.NodeVO;
 import org.zstack.tunnel.header.switchs.*;
 import org.zstack.tunnel.header.tunnel.*;
@@ -200,7 +202,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         TunnelStrategy ts = new TunnelStrategy();
         String switchPortUuid = ts.getSwitchPortByStrategy(msg.getEndpointUuid() ,msg.getPortAttribute() ,msg.getPortType());
         if(switchPortUuid == null){
-            throw new ApiMessageInterceptionException(argerr("该连接点下无可用的云共享端口"));
+            throw new ApiMessageInterceptionException(argerr("该连接点下无可用的端口"));
         }
 
         vo.setSwitchPortUuid(switchPortUuid);
@@ -336,9 +338,22 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setBandwidth(msg.getBandwidth());
         vo.setState(TunnelState.Unpaid);
         vo.setStatus(TunnelStatus.Disconnected);
-        vo.setMonitorState(TunnelMonitorState.Disabled);
         vo.setExpiredDate(dbf.getCurrentSqlTime());
         vo.setDescription(msg.getDescription());
+
+        //默认给创建的通道开启监控
+        try{
+            MonitorManagerImpl monitorManager = new MonitorManagerImpl();
+            APICreateTunnelMonitorMsg apiCreateTunnelMonitorMsg = new APICreateTunnelMonitorMsg();
+            apiCreateTunnelMonitorMsg.setTunnelUuid(vo.getUuid());
+            TunnelMonitorVO tunnelMonitorVO = monitorManager.createTunnelMonitorHandle(apiCreateTunnelMonitorMsg);
+            if(tunnelMonitorVO != null){
+                vo.setMonitorState(TunnelMonitorState.Enabled);
+            }
+        }catch(Exception e){
+            vo.setMonitorState(TunnelMonitorState.Disabled);
+        }
+
         dbf.getEntityManager().persist(vo);
 
         vo.setNetworkVO(dbf.findByUuid(msg.getNetworkUuid(),NetworkVO.class));
@@ -346,10 +361,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivo.add(tivoA);
         tivo.add(tivoZ);
         vo.setTunnelInterfaceVO(tivo);
-
-        //默认给创建的通道开启监控
-        MonitorManagerImpl monitorManager = new MonitorManagerImpl();
-        //monitorManager.handleMessage();
 
         APICreateTunnelEvent evt = new APICreateTunnelEvent(msg.getId());
         evt.setInventory(TunnelInventory.valueOf(vo));
