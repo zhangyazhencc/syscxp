@@ -28,8 +28,6 @@ import org.zstack.header.query.QueryOp;
 import org.zstack.header.rest.RestAPIResponse;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
-import org.zstack.vpn.header.host.HostState;
-import org.zstack.vpn.header.host.HostStatus;
 import org.zstack.vpn.header.vpn.*;
 import org.zstack.vpn.vpn.VpnCommands.*;
 import org.zstack.vpn.header.host.*;
@@ -65,13 +63,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void handleApiMessage(APIMessage msg) {
-        if (msg instanceof APICreateVpnHostMsg) {
-            handle((APICreateVpnHostMsg) msg);
-        } else if (msg instanceof APIUpdateVpnHostMsg) {
-            handle((APIUpdateVpnHostMsg) msg);
-        } else if (msg instanceof APIDeleteVpnHostMsg) {
-            handle((APIDeleteVpnHostMsg) msg);
-        } else if (msg instanceof APICreateVpnMsg) {
+        if (msg instanceof APICreateVpnMsg) {
             handle((APICreateVpnMsg) msg);
         } else if (msg instanceof APIUpdateVpnMsg) {
             handle((APIUpdateVpnMsg) msg);
@@ -89,111 +81,17 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APIDeleteVpnRouteMsg) msg);
         } else if (msg instanceof APIGetVpnMsg) {
             handle((APIGetVpnMsg) msg);
-        } else if (msg instanceof APICreateHostInterfaceMsg) {
-            handle((APICreateHostInterfaceMsg) msg);
-        } else if (msg instanceof APICreateZoneMsg) {
-            handle((APICreateZoneMsg) msg);
-        } else if (msg instanceof APIDeleteHostInterfaceMsg) {
-            handle((APIDeleteHostInterfaceMsg) msg);
-        } else if (msg instanceof APIDeleteZoneMsg) {
-            handle((APIDeleteZoneMsg) msg);
-        } else if (msg instanceof APIUpdateVpnHostStateMsg) {
-            handle((APIUpdateVpnHostStateMsg) msg);
-        } else if (msg instanceof APIUpdateZoneMsg) {
-            handle((APIUpdateZoneMsg) msg);
         } else if (msg instanceof APIUpdateVpnStateMsg) {
             handle((APIUpdateVpnStateMsg) msg);
         } else if (msg instanceof APIUpdateVpnCidrMsg) {
             handle((APIUpdateVpnCidrMsg) msg);
         } else if (msg instanceof APIUpdateVpnExpireDateMsg) {
             handle((APIUpdateVpnExpireDateMsg) msg);
-        } else if (msg instanceof APIUpdateVpnDurationMsg) {
-            handle((APIUpdateVpnDurationMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-
-    private void handle(APIDeleteHostInterfaceMsg msg) {
-        dbf.removeByPrimaryKey(msg.getUuid(), HostInterfaceVO.class);
-        APIDeleteHostInterfaceEvent evt = new APIDeleteHostInterfaceEvent(msg.getId());
-        bus.publish(evt);
-    }
-
-    private void handle(APIDeleteZoneMsg msg) {
-        dbf.removeByPrimaryKey(msg.getUuid(), ZoneVO.class);
-        APIDeleteZoneEvent evt = new APIDeleteZoneEvent(msg.getId());
-        bus.publish(evt);
-    }
-
-    private void handle(APIUpdateZoneMsg msg) {
-        ZoneVO zone = dbf.findByUuid(msg.getUuid(), ZoneVO.class);
-        boolean update = false;
-        if (!StringUtils.isEmpty(msg.getName())) {
-            zone.setName(msg.getName());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getDescription())) {
-            zone.setDescription(msg.getDescription());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getNodeUuid())) {
-            zone.setNodeUuid(msg.getNodeUuid());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getProvince())) {
-            zone.setProvince(msg.getProvince());
-            update = true;
-        }
-        if (update)
-            zone = dbf.updateAndRefresh(zone);
-
-        APIUpdateZoneEvent evt = new APIUpdateZoneEvent(msg.getId());
-        evt.setInventory(ZoneInventory.valueOf(zone));
-        bus.publish(evt);
-
-    }
-
-    private void handle(APIUpdateVpnHostStateMsg msg) {
-        VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
-
-        host.setState(HostState.valueOf(msg.getState()));
-
-        host = dbf.updateAndRefresh(host);
-        APIUpdateVpnHostStateEvent evt = new APIUpdateVpnHostStateEvent(msg.getId());
-        evt.setInventory(VpnHostInventory.valueOf(host));
-        bus.publish(evt);
-    }
-
-    private void handle(APICreateZoneMsg msg) {
-        ZoneVO zone = new ZoneVO();
-        zone.setUuid(Platform.getUuid());
-        zone.setProvince(msg.getProvince());
-        zone.setName(msg.getName());
-        zone.setDescription(msg.getDescription());
-        zone.setNodeUuid(msg.getNodeUuid());
-
-        zone = dbf.persistAndRefresh(zone);
-        APICreateZoneEvent evt = new APICreateZoneEvent(msg.getId());
-        evt.setInventory(ZoneInventory.valueOf(zone));
-        bus.publish(evt);
-    }
-
-    private void handle(APICreateHostInterfaceMsg msg) {
-        HostInterfaceVO iface = new HostInterfaceVO();
-        iface.setUuid(Platform.getUuid());
-        iface.setName(msg.getName());
-        iface.setHostUuid(msg.getHostUuid());
-        iface.setEndpointUuid(msg.getEndpointUuid());
-        iface.setInterfaceUuid(msg.getInterfaceUuid());
-
-        iface = dbf.persistAndRefresh(iface);
-
-        APICreateHostInterfaceEvent evt = new APICreateHostInterfaceEvent(msg.getId());
-        evt.setInventory(HostInterfaceInventory.valueOf(iface));
-        bus.publish(evt);
-    }
 
     private void handle(APIGetVpnMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
@@ -205,88 +103,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         bus.reply(msg, reply);
     }
 
-    private void handle(APIDeleteVpnHostMsg msg) {
-        dbf.removeByPrimaryKey(msg.getUuid(), VpnHostVO.class);
-
-        APIDeleteVpnHostEvent evt = new APIDeleteVpnHostEvent(msg.getId());
-        bus.publish(evt);
-    }
-
-    private void handle(APIUpdateVpnHostMsg msg) {
-        VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
-        boolean update = false;
-        if (!StringUtils.isEmpty(msg.getName())) {
-            host.setName(msg.getName());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getDescription())) {
-            host.setDescription(msg.getDescription());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getPublicInterface())) {
-            host.setPublicInterface(msg.getPublicInterface());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getPublicIp())) {
-            host.setPublicIp(msg.getPublicIp());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getManageIp())) {
-            host.setManageIp(msg.getManageIp());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getSshPort())) {
-            host.setSshPort(msg.getSshPort());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getUsername())) {
-            host.setUsername(msg.getUsername());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getPassword())) {
-            host.setPassword(msg.getPassword());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getZoneUuid())) {
-            host.setZone(dbf.findByUuid(msg.getZoneUuid(), ZoneVO.class));
-            update = true;
-        }
-
-        if (update)
-            dbf.updateAndRefresh(host);
-
-        APIUpdateVpnHostEvent evt = new APIUpdateVpnHostEvent(msg.getId());
-        evt.setInventory(VpnHostInventory.valueOf(host));
-        bus.publish(evt);
-    }
-
-    private void handle(APICreateVpnHostMsg msg) {
-        VpnHostVO host = new VpnHostVO();
-        host.setUuid(Platform.getUuid());
-        host.setName(msg.getName());
-        host.setDescription(msg.getDescription());
-        host.setPublicInterface(msg.getPublicInterface());
-        host.setPublicIp(msg.getPublicIp());
-        host.setZone(dbf.findByUuid(msg.getZoneUuid(), ZoneVO.class));
-        host.setManageIp(msg.getManageIp());
-        host.setSshPort(msg.getSshPort());
-        host.setUsername(msg.getUsername());
-        host.setPassword(msg.getPassword());
-        host.setState(HostState.Enabled);
-        host.setStatus(HostStatus.Connecting);
-
-        host = dbf.persistAndRefresh(host);
-        APICreateVpnHostEvent evt = new APICreateVpnHostEvent(msg.getId());
-        evt.setInventory(VpnHostInventory.valueOf(host));
-        bus.publish(evt);
-    }
 
     @Transactional
     public void handle(APICreateVpnMsg msg) {
-        String accountUuid = StringUtils.isEmpty(msg.getAccountUuid()) ? msg.getSession().getAccountUuid() : msg.getAccountUuid();
         final VpnVO vpn = new VpnVO();
         vpn.setUuid(Platform.getUuid());
-        vpn.setAccountUuid(accountUuid);
+        vpn.setAccountUuid(msg.getAccountUuid());
         vpn.setDescription(msg.getDescription());
         vpn.setName(msg.getDescription());
         vpn.setVpnCidr(msg.getVpnCidr());
@@ -297,6 +119,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setDuration(msg.getDuration());
         vpn.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
         vpn.setPort(generatePort(msg.getHostUuid()));
+        vpn.setHostUuid(msg.getHostUuid());
         VpnHostVO vpnHost = dbf.findByUuid(msg.getHostUuid(), VpnHostVO.class);
         vpn.setVpnHost(vpnHost);
 
@@ -315,6 +138,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         //保存vpn
         dbf.getEntityManager().persist(vpn);
+        dbf.getEntityManager().persist(vpnIface);
+        dbf.getEntityManager().flush();
 
         //Todo create order
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
@@ -325,11 +150,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         orderMsg.setDuration(vpn.getDuration());
         orderMsg.setProductDescription(vpn.getDescription());
         orderMsg.setProductPriceUnitUuids(msg.getProductPriceUnitUuids());
-        orderMsg.setAccountUuid(vpn.getAccountUuid());
+        orderMsg.setAccountUuid(msg.getAccountUuid());
+        orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
         createOrder(orderMsg);
 
 
-        CreateVpnCmd cmd = CreateVpnCmd.valueOf(vpnHost.getManageIp(), vpn);
+        CreateVpnCmd cmd = CreateVpnCmd.valueOf(vpn);
         CreateVpnResponse response = new VpnRESTCaller()
                 .syncPostForVPN(VpnConstant.CREATE_VPN_PATH, cmd, CreateVpnResponse.class);
         System.out.println(response.isSuccess());
@@ -401,29 +227,36 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     @Transactional
-    public void handle(APIUpdateVpnDurationMsg msg) {
-        VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        vpn.setExpireDate(Timestamp.valueOf(vpn.getExpireDate().toLocalDateTime().plusDays(msg.getDuration())));
-
-        //Todo update Duration
-
-
-
-        dbf.updateAndRefresh(vpn);
-        APIUpdateVpnDurationEvent evt = new APIUpdateVpnDurationEvent(msg.getId());
-        evt.setInventory(VpnInventory.valueOf(vpn));
-        bus.publish(evt);
-    }
-
-    @Transactional
     public void handle(APIUpdateVpnExpireDateMsg msg) {
+
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        vpn.setExpireDate(Timestamp.valueOf(vpn.getExpireDate().toLocalDateTime().plusDays(msg.getDays())));
-
-        //Todo update ExpireDate
-
-
-
+        LocalDateTime newTime = vpn.getExpireDate().toLocalDateTime();
+        switch (msg.getType()) {
+            case RENEW:
+                APICreateRenewOrderMsg renewOrderMsg = new APICreateRenewOrderMsg();
+                renewOrderMsg.setProductUuid(vpn.getUuid());
+                renewOrderMsg.setDuration(msg.getDuration());
+                renewOrderMsg.setAccountUuid(msg.getAccountUuid());
+                renewOrderMsg.setOpAccountUuid(msg.getOpAccountUuid());
+                createOrder(renewOrderMsg);
+                newTime = newTime.plusMonths(msg.getDuration());
+                break;
+            case SLA_COMPENSATION:
+                APICreateSLACompensationOrderMsg slaCompensationOrderMsg = new APICreateSLACompensationOrderMsg();
+                slaCompensationOrderMsg.setProductUuid(vpn.getUuid());
+                slaCompensationOrderMsg.setProductName(vpn.getName());
+                slaCompensationOrderMsg.setProductDescription(vpn.getDescription());
+                slaCompensationOrderMsg.setProductType(ProductType.VPN);
+                slaCompensationOrderMsg.setDuration(msg.getDuration());
+                slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
+                slaCompensationOrderMsg.setOpAccountUuid(msg.getOpAccountUuid());
+                createOrder(slaCompensationOrderMsg);
+                newTime = newTime.plusDays(msg.getDuration());
+                break;
+            default:
+                break;
+        }
+        vpn.setExpireDate(Timestamp.valueOf(newTime));
 
         dbf.updateAndRefresh(vpn);
         APIUpdateVpnExpireDateEvent evt = new APIUpdateVpnExpireDateEvent(msg.getId());
@@ -442,13 +275,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         orderMsg.setProductDescription(vpn.getDescription());
         orderMsg.setProductPriceUnitUuids(msg.getProductPriceUnitUuids());
         orderMsg.setProductType(ProductType.VPN);
+        orderMsg.setAccountUuid(msg.getAccountUuid());
+        orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
         createOrder(orderMsg);
 
-
-        // Todo update vpn bindwidth
-        UpdateVpnBandWidthCmd cmd = UpdateVpnBandWidthCmd.valueOf(vpn.getVpnHost().getManageIp(), vpn);
-        new VpnRESTCaller().syncPostForVPN(VpnConstant.UPDATE_VPN_BINDWIDTH_PATH, cmd, UpdateVpnBandWidthResponse.class);
-
+        UpdateVpnBandWidthCmd cmd = UpdateVpnBandWidthCmd.valueOf(vpn);
+        new VpnRESTCaller().syncPostForVPN(VpnConstant.UPDATE_VPN_BANDWIDTH_PATH, cmd, AddVpnHostResponse.class);
 
         vpn = dbf.persistAndRefresh(vpn);
         APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
@@ -481,7 +313,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         if (msg.getState() != vpn.getState()) {
             vpn.setState(msg.getState());
 
-            UpdateVpnStateCmd cmd = UpdateVpnStateCmd.valueOf(vpn.getVpnHost().getManageIp(), vpn);
+            UpdateVpnStateCmd cmd = UpdateVpnStateCmd.valueOf(vpn);
             switch (msg.getState()) {
                 case Enabled:
                     new VpnRESTCaller().syncPostForVPN(VpnConstant.START_VPN_PATH, cmd, UpdateVpnStateResponse.class);
@@ -505,7 +337,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setVpnCidr(msg.getVpnCidr());
 
         // Todo update vpn cidr
-        UpdateVpnCidrCmd cmd = UpdateVpnCidrCmd.valueOf(vpn.getVpnHost().getManageIp(), vpn);
+        UpdateVpnCidrCmd cmd = UpdateVpnCidrCmd.valueOf(vpn);
         new VpnRESTCaller().syncPostForVPN(VpnConstant.UPDATE_VPN_CIDR_PATH, cmd, UpdateVpnCidrResponse.class);
 
 
@@ -518,11 +350,17 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     @Transactional
     public void handle(APIDeleteVpnMsg msg) {
-
-        // Todo delete vpn
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        DeleteVpnCmd cmd = DeleteVpnCmd.valueOf(vpn.getVpnHost().getManageIp(), vpn);
-        new VpnRESTCaller().syncPostForVPN(VpnConstant.UPDATE_VPN_BINDWIDTH_PATH, cmd, DeleteVpnResponse.class);
+
+        APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
+        orderMsg.setProductUuid(vpn.getUuid());
+        orderMsg.setProductType(ProductType.VPN);
+        createOrder(orderMsg);
+
+
+
+        DeleteVpnCmd cmd = DeleteVpnCmd.valueOf(vpn);
+        new VpnRESTCaller().syncPostForVPN(VpnConstant.UPDATE_VPN_BANDWIDTH_PATH, cmd, DeleteVpnResponse.class);
 
 
         dbf.removeByPrimaryKey(msg.getUuid(), VpnVO.class);
@@ -616,46 +454,14 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        if (msg instanceof APICreateVpnHostMsg) {
-            validate((APICreateVpnHostMsg) msg);
-        } else if (msg instanceof APIUpdateVpnHostMsg) {
-            validate((APIUpdateVpnHostMsg) msg);
-        } else if (msg instanceof APICreateVpnMsg) {
+        if (msg instanceof APICreateVpnMsg) {
             validate((APICreateVpnMsg) msg);
         } else if (msg instanceof APIQueryVpnMsg) {
             validate((APIQueryVpnMsg) msg);
         } else if (msg instanceof APIUpdateVpnMsg) {
             validate((APIUpdateVpnMsg) msg);
-        } else if (msg instanceof APICreateZoneMsg) {
-            validate((APICreateZoneMsg) msg);
-        } else if (msg instanceof APIDeleteZoneMsg) {
-            validate((APIDeleteZoneMsg) msg);
-        } else if (msg instanceof APIDeleteHostInterfaceMsg) {
-            validate((APIDeleteHostInterfaceMsg) msg);
         }
         return msg;
-    }
-
-
-    private void validate(APIDeleteHostInterfaceMsg msg) {
-    }
-
-    private void validate(APIDeleteZoneMsg msg) {
-        Q q = Q.New(VpnHostVO.class)
-                .eq(VpnHostVO_.zoneUuid, msg.getUuid());
-        if (q.isExists())
-            throw new ApiMessageInterceptionException(argerr(
-                    "The Zone[uuid:%s] has at least one vpn host, can not delete.", msg.getUuid()
-            ));
-    }
-
-    private void validate(APICreateZoneMsg msg) {
-        Q q = Q.New(ZoneVO.class)
-                .eq(ZoneVO_.name, msg.getName());
-        if (q.isExists())
-            throw new ApiMessageInterceptionException(argerr(
-                    "The ZoneVO[name:%s] is already exist.", msg.getName()
-            ));
     }
 
 
@@ -685,24 +491,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         if (q.isExists())
             throw new ApiMessageInterceptionException(argerr(
                     "The Vpn[name:%s] is already exist.", msg.getName()
-            ));
-    }
-
-    private void validate(APICreateVpnHostMsg msg) {
-        Q q = Q.New(VpnHostVO.class)
-                .eq(VpnHostVO_.name, msg.getName());
-        if (q.isExists())
-            throw new ApiMessageInterceptionException(argerr(
-                    "The VpnHost[name:%s] is already exist.", msg.getName()
-            ));
-    }
-
-    private void validate(APIUpdateVpnHostMsg msg) {
-        Q q = Q.New(VpnHostVO.class)
-                .eq(VpnHostVO_.name, msg.getName());
-        if (q.isExists())
-            throw new ApiMessageInterceptionException(argerr(
-                    "The VpnHost[name:%s] is already exist.", msg.getName()
             ));
     }
 

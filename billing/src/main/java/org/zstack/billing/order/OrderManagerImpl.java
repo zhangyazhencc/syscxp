@@ -350,10 +350,8 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         orderVo.setAccountUuid(msg.getAccountUuid());
         orderVo.setState(OrderState.PAID);
         orderVo.setProductType(msg.getProductType());
-        orderVo.setProductChargeModel(msg.getProductChargeModel());
         orderVo.setPayTime(currentTimestamp);
         orderVo.setProductUuid(msg.getProductUuid());
-        orderVo.setDuration(msg.getDuration());
 
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, -1);
@@ -459,11 +457,9 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         orderVo.setProductName(msg.getProductName());
         orderVo.setState(OrderState.PAID);
         orderVo.setProductType(msg.getProductType());
-        orderVo.setProductChargeModel(msg.getProductChargeModel());
         orderVo.setPayTime(currentTimestamp);
         orderVo.setProductDescription(msg.getProductDescription());
         orderVo.setProductUuid(msg.getProductUuid());
-        orderVo.setDuration(msg.getDuration());
 
         Calendar c = Calendar.getInstance();
         c.add(Calendar.MONTH, -1);

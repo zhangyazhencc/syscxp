@@ -10,7 +10,7 @@ import org.zstack.vpn.vpn.VpnConstant;
 import java.util.List;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
-public class APICreateVpnMsg extends APIMessage {
+public class APICreateVpnMsg extends APIVpnMassage {
     @APIParam(emptyString = false)
     private String name;
     @APIParam(required = false)
@@ -33,8 +33,6 @@ public class APICreateVpnMsg extends APIMessage {
     private String netmask;
     @APIParam
     private String vlan;
-    @APIParam(required = false)
-    private String accountUuid;
 
     @APIParam
     private List<String> productPriceUnitUuids;
@@ -45,14 +43,6 @@ public class APICreateVpnMsg extends APIMessage {
 
     public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
         this.productPriceUnitUuids = productPriceUnitUuids;
-    }
-
-    public String getAccountUuid() {
-        return accountUuid;
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
     }
 
     public String getNetworkUuid() {

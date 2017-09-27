@@ -30,4 +30,8 @@
         <name>org.zstack.account.header.ticket.APIDeleteTicketMsg</name>
     </message>
 
+    <message>
+        <name>org.zstack.account.header.ticket.APIUpdateTicketMsg</name>
+    </message>
+
 </service>

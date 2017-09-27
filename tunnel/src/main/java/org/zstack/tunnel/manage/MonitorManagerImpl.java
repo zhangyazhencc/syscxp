@@ -23,6 +23,7 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.tunnel.header.host.*;
 import org.zstack.tunnel.header.monitor.*;
+import org.zstack.tunnel.header.switchs.PhysicalSwitchVO;
 import org.zstack.tunnel.header.switchs.SwitchPortState;
 import org.zstack.tunnel.header.switchs.SwitchState;
 import org.zstack.tunnel.header.switchs.SwitchStatus;
@@ -38,6 +39,7 @@ import org.zstack.utils.network.NetworkUtils;
 
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -524,8 +526,48 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             validate((APIUpdateTunnelMonitorMsg) msg);
         } else if (msg instanceof APICreateMonitorCidrMsg) {
             validate((APICreateMonitorCidrMsg) msg);
+        } else if (msg instanceof APICreateHostSwitchMonitorMsg) {
+            validate((APICreateHostSwitchMonitorMsg) msg);
         }
         return msg;
+    }
+
+    private void validate(APICreateHostSwitchMonitorMsg msg) {
+        //判断监控机和物理交换机所属节点是否一样
+        HostVO hostVO = dbf.findByUuid(msg.getHostUuid(),HostVO.class);
+        String hostNodeUuid = hostVO.getNodeUuid();
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(msg.getPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+        String physicalNodeUuid = physicalSwitchVO.getNodeUuid();
+        if(!hostNodeUuid.equals(physicalNodeUuid)){
+            throw new ApiMessageInterceptionException(argerr("该监控机不能监控非该节点下的物理交换机 "));
+        }
+
+        //判断监控口在该物理交换机下是否开了业务
+        String sql = "select count(a.uuid) from SwitchPortVO a, SwitchVO b " +
+                "where a.switchUuid = b.uuid " +
+                "and b.physicalSwitchUuid = :physicalSwitchUuid and a.portName = :portName ";
+        TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
+        vq.setParameter("physicalSwitchUuid",msg.getPhysicalSwitchUuid());
+        vq.setParameter("portName",msg.getPhysicalSwitchPortName());
+        Long count = vq.getSingleResult();
+        if(count>0){
+            throw new ApiMessageInterceptionException(argerr("该端口已经在业务口被录用，不能创建监控口 "));
+        }
+
+        //判断监控口名称在该物理交换机下是否存在
+        SimpleQuery<HostSwitchMonitorVO> q = dbf.createQuery(HostSwitchMonitorVO.class);
+        q.add(HostSwitchMonitorVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, msg.getPhysicalSwitchUuid());
+        q.add(HostSwitchMonitorVO_.physicalSwitchPortName, SimpleQuery.Op.EQ, msg.getPhysicalSwitchPortName());
+        if (q.isExists())
+            throw new ApiMessageInterceptionException(argerr("physicalSwitchPortName %s is already exist ", msg.getPhysicalSwitchPortName()));
+
+        //同一个监控机的网卡名称要唯一
+        SimpleQuery<HostSwitchMonitorVO> q2 = dbf.createQuery(HostSwitchMonitorVO.class);
+        q2.add(HostSwitchMonitorVO_.hostUuid, SimpleQuery.Op.EQ, msg.getHostUuid());
+        q2.add(HostSwitchMonitorVO_.interfaceName, SimpleQuery.Op.EQ, msg.getInterfaceName());
+        if (q2.isExists())
+            throw new ApiMessageInterceptionException(argerr("interfaceName %s is already exist ", msg.getInterfaceName()));
+
     }
 
     private void validate(APICreateMonitorCidrMsg msg) {

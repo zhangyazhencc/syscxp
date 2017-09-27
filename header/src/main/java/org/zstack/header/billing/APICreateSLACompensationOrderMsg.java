@@ -18,6 +18,8 @@ public class APICreateSLACompensationOrderMsg extends APICreateOrderMsg {
 
     @APIParam
     private String productDescription;
+    @APIParam
+    private int duration;
 
     public String getProductName() {
         return productName;
@@ -49,5 +51,13 @@ public class APICreateSLACompensationOrderMsg extends APICreateOrderMsg {
 
     public void setProductDescription(String productDescription) {
         this.productDescription = productDescription;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
     }
 }

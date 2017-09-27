@@ -1,5 +1,6 @@
 package org.zstack.vpn.header.vpn;
 
+import org.zstack.header.billing.OrderType;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
@@ -8,30 +9,28 @@ import org.zstack.header.notification.ApiNotification;
 import org.zstack.vpn.vpn.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
-public class APIUpdateVpnExpireDateMsg extends APIMessage{
+public class APIUpdateVpnExpireDateMsg extends APIVpnMassage {
     @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String uuid;
     @APIParam
-    private Integer days;
+    private Integer duration;
     @APIParam
-    private String uint;
-    @APIParam
-    private boolean expand;
+    private OrderType type;
 
-    public String getUint() {
-        return uint;
+    public Integer getDuration() {
+        return duration;
     }
 
-    public void setUint(String uint) {
-        this.uint = uint;
+    public void setDuration(Integer duration) {
+        this.duration = duration;
     }
 
-    public boolean isExpand() {
-        return expand;
+    public OrderType getType() {
+        return type;
     }
 
-    public void setExpand(boolean expand) {
-        this.expand = expand;
+    public void setType(OrderType type) {
+        this.type = type;
     }
 
     public String getUuid() {
@@ -40,14 +39,6 @@ public class APIUpdateVpnExpireDateMsg extends APIMessage{
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public Integer getDays() {
-        return days;
-    }
-
-    public void setDays(Integer days) {
-        this.days = days;
     }
 
     public ApiNotification __notification__() {

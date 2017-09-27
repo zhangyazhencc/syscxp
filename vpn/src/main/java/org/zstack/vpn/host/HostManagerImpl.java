@@ -1,44 +1,23 @@
 package org.zstack.vpn.host;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.db.DatabaseFacade;
 import org.zstack.core.db.Q;
-import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
-import org.zstack.core.identity.InnerMessageHelper;
-import org.zstack.core.rest.RESTApiDecoder;
-import org.zstack.core.thread.Task;
-import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
-import org.zstack.header.billing.*;
-import org.zstack.header.exception.CloudRuntimeException;
-import org.zstack.header.identity.AccountType;
-import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
-import org.zstack.header.query.QueryOp;
-import org.zstack.header.rest.RESTConstant;
 import org.zstack.header.rest.RESTFacade;
-import org.zstack.header.rest.RestAPIResponse;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.vpn.header.host.*;
-import org.zstack.vpn.header.vpn.*;
 import org.zstack.vpn.vpn.VpnCommands.*;
-import org.zstack.vpn.vpn.VpnConstant;
-import org.zstack.vpn.vpn.VpnGlobalProperty;
 import org.zstack.vpn.vpn.VpnRESTCaller;
-
-import java.sql.Timestamp;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
 import static org.zstack.core.Platform.argerr;
 
@@ -82,9 +61,23 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             handle((APIUpdateVpnHostStateMsg) msg);
         } else if (msg instanceof APIUpdateZoneMsg) {
             handle((APIUpdateZoneMsg) msg);
-        } else {
+        } else if (msg instanceof APIReconnectVpnHostMsg){
+            handle((APIReconnectVpnHostMsg) msg);
+        }else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+
+
+    private void handle(APIReconnectVpnHostMsg msg) {
+        VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
+
+        ReconnectVpnHostCmd cmd = ReconnectVpnHostCmd.valueOf(host.getUuid());
+        new VpnRESTCaller().syncPostForVPN(HostConstant.RECONNECT_HOST__PATH, cmd, ReconnectVpnHostResponse.class);
+
+        APIReconnectVpnHostEvent evt = new APIReconnectVpnHostEvent(msg.getId());
+        bus.publish(evt);
     }
 
 
@@ -239,6 +232,11 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         host.setState(HostState.Enabled);
         host.setStatus(HostStatus.Connecting);
 
+
+        AddVpnHostCmd cmd = AddVpnHostCmd.valueOf(host.getUuid());
+        new VpnRESTCaller().syncPostForVPN(HostConstant.ADD_HOST__PATH, cmd, UpdateVpnBandWidthResponse.class);
+
+
         host = dbf.persistAndRefresh(host);
         APICreateVpnHostEvent evt = new APICreateVpnHostEvent(msg.getId());
         evt.setInventory(VpnHostInventory.valueOf(host));
@@ -251,12 +249,13 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
 
     public String getId() {
-        return bus.makeLocalServiceId(VpnConstant.SERVICE_ID);
+        return bus.makeLocalServiceId(HostConstant.SERVICE_ID);
     }
 
     public boolean start() {
         return true;
     }
+
 
     public boolean stop() {
         return true;
@@ -317,5 +316,6 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
                     "The VpnHost[name:%s] is already exist.", msg.getName()
             ));
     }
+
 
 }

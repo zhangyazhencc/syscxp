@@ -8,7 +8,7 @@ import org.zstack.header.notification.ApiNotification;
 import org.zstack.vpn.vpn.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
-public class APIUpdateVpnCidrMsg extends APIMessage{
+public class APIUpdateVpnCidrMsg extends APIMessage {
     @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String uuid;
     @APIParam
