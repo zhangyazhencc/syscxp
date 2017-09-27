@@ -277,14 +277,13 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     private void handle(APICreateTunnelMsg msg){
         TunnelVO vo = new TunnelVO();
         vo.setUuid(Platform.getUuid());
-
         vo.setAccountUuid(msg.getAccountUuid());
         vo.setNetworkUuid(msg.getNetworkUuid());
         vo.setName(msg.getName());
 
         TunnelStrategy ts = new TunnelStrategy();
 
-        //给A端口分配外部vlan
+        //给A端口分配外部vlan,并创建TunnelInterface
         Integer vlanA = ts.getInnerVlanByStrategy(msg.getNetworkUuid() ,msg.getInterfaceAUuid());
         if(vlanA == 0){
             throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
@@ -297,10 +296,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivoA.setSortTag("A");
         tivoA.setQinqState(msg.getQinqStateA());
         dbf.getEntityManager().persist(tivoA);
-
         tivoA.setInterfaceVO(dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class));
 
-        //给Z端口分配外部vlan
+        //给Z端口分配外部vlan,并创建TunnelInterface
         Integer vlanZ = ts.getInnerVlanByStrategy(msg.getNetworkUuid() ,msg.getInterfaceZUuid());
         if(vlanZ == 0){
             throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
@@ -313,14 +311,12 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivoZ.setSortTag("Z");
         tivoZ.setQinqState(msg.getQinqStateZ());
         dbf.getEntityManager().persist(tivoZ);
-
         tivoZ.setInterfaceVO(dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class));
 
         //如果开启Qinq,需要指定内部vlan段
         //在同一个专有网络下，该端口没有被使用过，才会让用户选择是否开启Qinq,否则是否开启属性和同一个端口一致
         if(msg.getQinqStateA() == TunnelQinqState.Enabled || msg.getQinqStateZ() == TunnelQinqState.Enabled){
             List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
-
             for(InnerVlanSegment vlanSegment:vlanSegments){
                 QinqVO qvo = new QinqVO();
                 qvo.setUuid(Platform.getUuid());
@@ -331,20 +327,18 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             }
         }
 
-        vo.setMonths(msg.getMonths());
-        vo.setBandwidth(msg.getBandwidth());
-
         //根据经纬度算距离
         NodeVO nvoA = dbf.findByUuid(msg.getNodeAUuid(),NodeVO.class);
         NodeVO nvoZ = dbf.findByUuid(msg.getNodeZUuid(),NodeVO.class);
         vo.setDistance(Distance.getDistance(nvoA.getLongtitude(),nvoA.getLatitude(),nvoZ.getLongtitude(),nvoZ.getLatitude()));
 
+        vo.setMonths(msg.getMonths());
+        vo.setBandwidth(msg.getBandwidth());
         vo.setState(TunnelState.Unpaid);
         vo.setStatus(TunnelStatus.Disconnected);
         vo.setMonitorState(TunnelMonitorState.Disabled);
         vo.setExpiredDate(dbf.getCurrentSqlTime());
         vo.setDescription(msg.getDescription());
-
         dbf.getEntityManager().persist(vo);
 
         vo.setNetworkVO(dbf.findByUuid(msg.getNetworkUuid(),NetworkVO.class));
@@ -352,6 +346,10 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivo.add(tivoA);
         tivo.add(tivoZ);
         vo.setTunnelInterfaceVO(tivo);
+
+        //默认给创建的通道开启监控
+        MonitorManagerImpl monitorManager = new MonitorManagerImpl();
+        //monitorManager.handleMessage();
 
         APICreateTunnelEvent evt = new APICreateTunnelEvent(msg.getId());
         evt.setInventory(TunnelInventory.valueOf(vo));
