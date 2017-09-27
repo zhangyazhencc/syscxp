@@ -3,8 +3,16 @@
     <config>
         <category>notification</category>
         <name>webhook.url</name>
-	<description>The webhook where the management node sends notifications</description>
+        <description>The webhook where the management node sends notifications</description>
         <defaultValue>null</defaultValue>
         <type>java.lang.String</type>
+    </config>
+
+    <config>
+        <name>host.statusCheckWorkerInterval</name>
+        <description>The vpn server check host status, in seconds</description>
+        <defaultValue>60</defaultValue>
+        <category>vpn</category>
+        <type>java.lang.Integer</type>
     </config>
 </globalConfig>

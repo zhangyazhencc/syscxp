@@ -21,6 +21,7 @@ public class VpnVO_ {
     public static volatile SingularAttribute<VpnVO, VpnState> state;
     public static volatile SingularAttribute<VpnVO, Integer> duration;
     public static volatile SingularAttribute<VpnVO, Timestamp> expiredDate;
+    public static volatile SingularAttribute<VpnVO, String> sid;
     public static volatile SingularAttribute<VpnVO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<VpnVO, Timestamp> createDate;
 }
