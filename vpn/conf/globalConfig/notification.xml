@@ -9,7 +9,7 @@
     </config>
 
     <config>
-        <name>host.statusCheckWorkerInterval</name>
+        <name>vpn.statusCheckWorkerInterval</name>
         <description>The vpn server check host status, in seconds</description>
         <defaultValue>60</defaultValue>
         <category>vpn</category>

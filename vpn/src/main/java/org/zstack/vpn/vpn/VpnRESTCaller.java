@@ -45,11 +45,11 @@ public class VpnRESTCaller {
         long curr = 0;
         CheckStatusResponse rsp;
         do {
-            TimeUnit.MILLISECONDS.sleep(interval);
+            TimeUnit.SECONDS.sleep(interval);
             rsp = checkState(path, cmd);
             curr += interval;
         }
-        while (rsp.getStatusCode() != HttpStatus.OK || Objects.equals(rsp.getState(), ResponseStatus.Creating.toString()) || curr < timeout);
+        while ((rsp.getStatusCode() != HttpStatus.OK || rsp.getStatus() == ResponseStatus.Creating) && curr < timeout);
 
         if (curr >= timeout) {
             throw new CloudRuntimeException(String.format("timeout after %s ms, error", curr, rsp.getError()));
@@ -58,7 +58,7 @@ public class VpnRESTCaller {
     }
 
     public CheckStatusResponse asyncCheckState(String path, AgentCommand cmd) throws InterruptedException {
-        return asyncCheckState(path, cmd, 1000, TimeUnit.MINUTES.toMillis(10));
+        return asyncCheckState(path, cmd, 1, TimeUnit.MINUTES.toSeconds(10));
     }
 
 
@@ -104,32 +104,12 @@ public class VpnRESTCaller {
         return URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.VPN_ROOT_PATH, path);
     }
 
-    private RestAPIResponse queryResponse(String uuid) {
-        String url = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_RESULT, uuid);
-        String res = restf.getRESTTemplate().getForObject(url, String.class);
-        return JSONObjectUtil.toObject(res, RestAPIResponse.class);
+    public RestAPIResponse syncPostForResult(APIMessage msg, long interval, long timeout) {
+        return restf.syncJsonPostForResult(baseUrl, msg, interval, timeout);
     }
 
-    public RestAPIResponse syncPost(String path, APIMessage msg, long interval, long timeout) throws InterruptedException {
-        String msgStr = RESTApiDecoder.dump(msg);
-        String url = URLBuilder.buildUrlFromBase(baseUrl, path);
-        RestAPIResponse rsp = restf.syncJsonPost(url, msgStr, RestAPIResponse.class);
-        long curr = 0;
-        while (!rsp.getState().equals(RestAPIState.Done.toString()) && curr < timeout) {
-            TimeUnit.MILLISECONDS.sleep(interval);
-            rsp = queryResponse(rsp.getUuid());
-            curr += interval;
-        }
-
-        if (curr >= timeout) {
-            throw new CloudRuntimeException(String.format("timeout after %s ms, result uuid:%s", curr, rsp.getUuid()));
-        }
-
-        return rsp;
-    }
-
-    public RestAPIResponse syncPost(String url, APIMessage msg) throws InterruptedException {
-        return syncPost(url, msg, 500, TimeUnit.SECONDS.toMillis(15));
+    public RestAPIResponse syncPostForResult(APIMessage msg) {
+        return syncPostForResult(msg, 500, TimeUnit.SECONDS.toMillis(15));
     }
 }
 

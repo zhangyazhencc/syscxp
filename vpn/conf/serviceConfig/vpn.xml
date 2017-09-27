@@ -15,6 +15,9 @@
         <name>org.zstack.vpn.header.vpn.APIUpdateVpnBandwidthMsg</name>
     </message>
     <message>
+        <name>org.zstack.vpn.header.vpn.APIUpdateVpnExpireDateMsg</name>
+    </message>
+    <message>
         <name>org.zstack.vpn.header.vpn.APIUpdateVpnCidrMsg</name>
     </message>
     <message>

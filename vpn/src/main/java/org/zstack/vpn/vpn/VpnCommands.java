@@ -1,6 +1,8 @@
 package org.zstack.vpn.vpn;
 
 import org.springframework.http.HttpStatus;
+import org.zstack.utils.CollectionUtils;
+import org.zstack.utils.function.Function;
 import org.zstack.vpn.header.host.VpnHostVO;
 import org.zstack.vpn.header.vpn.*;
 
@@ -13,6 +15,15 @@ public class VpnCommands {
         private boolean success = true;
         private HttpStatus statusCode;
 
+        private ResponseStatus status;
+
+        public ResponseStatus getStatus() {
+            return status;
+        }
+
+        public void setStatus(ResponseStatus status) {
+            this.status = status;
+        }
         public HttpStatus getStatusCode() {
             return statusCode;
         }
@@ -113,15 +124,6 @@ public class VpnCommands {
     }
     public static class CheckStatusResponse extends AgentResponse {
 
-        private ResponseStatus status;
-
-        public ResponseStatus getState() {
-            return status;
-        }
-
-        public void setState(ResponseStatus state) {
-            this.status = state;
-        }
 
     }
 
@@ -207,12 +209,12 @@ public class VpnCommands {
             UpdateVpnStateCmd cmd = new UpdateVpnStateCmd();
             cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setVpnUuid(vo.getUuid());
-            List<String> vlans = new ArrayList<>();
-            vo.getVpnInterfaces().forEach(iface->{
-                        vlans.add(iface.getVlan());
-                    }
-            );
-            cmd.setVlans(vlans);
+            cmd.setVlans(CollectionUtils.transformToList(vo.getVpnInterfaces(), new Function<String, VpnInterfaceVO>() {
+                @Override
+                public String call(VpnInterfaceVO arg) {
+                    return arg.getVlan();
+                }
+            }));
             return cmd;
         }
 
@@ -235,12 +237,12 @@ public class VpnCommands {
             DeleteVpnCmd cmd = new DeleteVpnCmd();
             cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setVpnUuid(vo.getUuid());
-            List<String> vlans = new ArrayList<>();
-                    vo.getVpnInterfaces().forEach(iface->{
-                        vlans.add(iface.getVlan());
-                    }
-            );
-            cmd.setVlans(vlans);
+            cmd.setVlans(CollectionUtils.transformToList(vo.getVpnInterfaces(), new Function<String, VpnInterfaceVO>() {
+                @Override
+                public String call(VpnInterfaceVO arg) {
+                    return arg.getVlan();
+                }
+            }));
             return cmd;
         }
 

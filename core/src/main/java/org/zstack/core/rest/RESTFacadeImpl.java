@@ -11,6 +11,7 @@ import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.MessageCommandRecorder;
 import org.zstack.core.Platform;
 import org.zstack.core.errorcode.ErrorFacade;
+import org.zstack.core.identity.InnerMessageHelper;
 import org.zstack.core.retry.Retry;
 import org.zstack.core.retry.RetryCondition;
 import org.zstack.core.thread.AsyncThread;
@@ -24,11 +25,9 @@ import org.zstack.header.errorcode.ErrorCode;
 import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.errorcode.SysErrors;
 import org.zstack.header.exception.CloudRuntimeException;
+import org.zstack.header.message.APIMessage;
 import org.zstack.header.rest.*;
-import org.zstack.utils.DebugUtils;
-import org.zstack.utils.ExceptionDSL;
-import org.zstack.utils.IptablesUtils;
-import org.zstack.utils.Utils;
+import org.zstack.utils.*;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
@@ -47,7 +46,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RESTFacadeImpl implements RESTFacade {
     private static final CLogger logger = Utils.getLogger(RESTFacadeImpl.class);
-    
+
     @Autowired
     private ThreadFacade thdf;
     @Autowired
@@ -292,7 +291,7 @@ public class RESTFacadeImpl implements RESTFacade {
                 }
 
                 if (callback instanceof JsonAsyncRESTCallback) {
-                    JsonAsyncRESTCallback jcallback = (JsonAsyncRESTCallback)callback;
+                    JsonAsyncRESTCallback jcallback = (JsonAsyncRESTCallback) callback;
                     Object obj = JSONObjectUtil.toObject(responseEntity.getBody(), jcallback.getReturnClass());
                     try {
                         ErrorCode err = vf.validateErrorByErrorCode(obj);
@@ -390,9 +389,9 @@ public class RESTFacadeImpl implements RESTFacade {
                 sb.append(line);
             }
             req.getReader().close();
-            
+
             HttpHeaders header = new HttpHeaders();
-            for (Enumeration e = req.getHeaderNames() ; e.hasMoreElements() ;) {
+            for (Enumeration e = req.getHeaderNames(); e.hasMoreElements(); ) {
                 String name = e.nextElement().toString();
                 header.add(name, req.getHeader(name));
             }
@@ -451,7 +450,7 @@ public class RESTFacadeImpl implements RESTFacade {
         if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
             throw new OperationFailureException(operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
         }
-        
+
         if (rsp.getBody() != null && returnClass != Void.class) {
 
             if (logger.isTraceEnabled()) {
@@ -468,7 +467,7 @@ public class RESTFacadeImpl implements RESTFacade {
     public void echo(String url, Completion callback) {
         echo(url, callback, TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(30));
     }
-    
+
     @Override
     public void echo(final String url, final Completion completion, final long interval, final long timeout) {
         class Echo implements CancelablePeriodicTask {
@@ -476,7 +475,7 @@ public class RESTFacadeImpl implements RESTFacade {
 
             Echo() {
                 this.count = timeout / interval;
-                DebugUtils.Assert(count!=0, String.format("invalid timeout[%s], interval[%s]", timeout, interval));
+                DebugUtils.Assert(count != 0, String.format("invalid timeout[%s], interval[%s]", timeout, interval));
             }
 
             @Override
@@ -571,5 +570,41 @@ public class RESTFacadeImpl implements RESTFacade {
     @Override
     public void installBeforeAsyncJsonPostInterceptor(BeforeAsyncJsonPostInterceptor interceptor) {
         interceptors.add(interceptor);
+    }
+
+    public RestAPIResponse syncJsonPostForResult(String baseUrl, APIMessage innerMsg, long interval, long timeout) {
+        InnerMessageHelper.setMD5(innerMsg);
+        return syncJsonPostForResult(baseUrl, RESTApiDecoder.dump(innerMsg), interval, timeout);
+    }
+
+    public RestAPIResponse syncJsonPostForResult(String baseUrl, APIMessage innerMsg) {
+
+        return syncJsonPostForResult(baseUrl, innerMsg, 500, TimeUnit.SECONDS.toMillis(15));
+    }
+
+    public RestAPIResponse syncJsonPostForResult(String baseUrl, String body, long interval, long timeout) {
+        RestAPIResponse rsp = syncJsonPost(URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL), body, RestAPIResponse.class);
+        long curr = 0;
+        while (!rsp.getState().equals(RestAPIState.Done.toString()) && curr < timeout) {
+            String resultUrl = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_RESULT, rsp.getUuid());
+            try {
+                TimeUnit.MILLISECONDS.sleep(interval);
+            } catch (InterruptedException e) {
+                logger.debug(String.format("fail to get result[uuid: %s] from Url[%s]", rsp.getUuid(), resultUrl));
+            }
+            rsp = JSONObjectUtil.toObject(template.getForObject(resultUrl, String.class), RestAPIResponse.class);
+
+            curr += interval;
+        }
+
+        if (curr >= timeout) {
+            throw new CloudRuntimeException(String.format("timeout after %s ms, result uuid:%s", curr, rsp.getUuid()));
+        }
+
+        return rsp;
+    }
+
+    public RestAPIResponse syncJsonPostForResult(String baseUrl, String body) {
+        return syncJsonPostForResult(baseUrl, body, 500, TimeUnit.SECONDS.toMillis(15));
     }
 }

@@ -4,6 +4,8 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.web.client.RestTemplate;
 import org.zstack.header.core.Completion;
+import org.zstack.header.exception.CloudRuntimeException;
+import org.zstack.header.message.APIMessage;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -59,4 +61,12 @@ public interface RESTFacade {
         factory.setConnectTimeout(connectTimeout);
         return new TimeoutRestTemplate(factory);
     }
+
+    RestAPIResponse syncJsonPostForResult(String baseUrl, APIMessage innerMsg, long interval, long timeout);
+
+    RestAPIResponse syncJsonPostForResult(String baseUrl, APIMessage innerMsg);
+
+    RestAPIResponse syncJsonPostForResult(String baseUrl, String body, long interval, long timeout);
+
+    RestAPIResponse syncJsonPostForResult(String baseUrl, String body);
 }

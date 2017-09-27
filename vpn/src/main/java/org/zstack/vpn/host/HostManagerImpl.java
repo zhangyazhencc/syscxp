@@ -1,6 +1,7 @@
 package org.zstack.vpn.host;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.zstack.core.Platform;
@@ -19,9 +20,12 @@ import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.header.rest.RESTFacade;
+import org.zstack.utils.CollectionUtils;
 import org.zstack.utils.Utils;
+import org.zstack.utils.function.Function;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.vpn.header.host.*;
+import org.zstack.vpn.header.vpn.VpnInterfaceVO;
 import org.zstack.vpn.vpn.ResponseStatus;
 import org.zstack.vpn.vpn.VpnCommands.*;
 import org.zstack.vpn.vpn.VpnGlobalConfig;
@@ -267,35 +271,35 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         return bus.makeLocalServiceId(HostConstant.SERVICE_ID);
     }
 
-    private Future<Void> HostCheckThread;
+    private Future<Void> hostCheckThread;
     private int hostStatusCheckWorkerInterval;
-    private List<String> disconnectedHostUuids = new ArrayList<>();
+
     private void startFailureHostCopingThread() {
-        HostCheckThread = thdf.submitPeriodicTask(new HostStatusCheckWorker());
+        hostCheckThread = thdf.submitPeriodicTask(new HostStatusCheckWorker());
         logger.debug(String.format("security group failureHostCopingThread starts[failureHostWorkerInterval: %ss]", hostStatusCheckWorkerInterval));
     }
 
     private void restartFailureHostCopingThread() {
-        if (HostCheckThread != null) {
-            HostCheckThread.cancel(true);
+        if (hostCheckThread != null) {
+            hostCheckThread.cancel(true);
         }
         startFailureHostCopingThread();
     }
 
     private void prepareGlobalConfig() {
-        hostStatusCheckWorkerInterval = VpnGlobalConfig.HOST_STATUS_CHECK_WORKER_INTERVAL.value(Integer.class);
+        hostStatusCheckWorkerInterval = VpnGlobalConfig.STATUS_CHECK_WORKER_INTERVAL.value(Integer.class);
 
         GlobalConfigUpdateExtensionPoint onUpdate = new GlobalConfigUpdateExtensionPoint() {
             @Override
             public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
-                if (VpnGlobalConfig.HOST_STATUS_CHECK_WORKER_INTERVAL.isMe(newConfig)) {
+                if (VpnGlobalConfig.STATUS_CHECK_WORKER_INTERVAL.isMe(newConfig)) {
                     hostStatusCheckWorkerInterval = newConfig.value(Integer.class);
                     restartFailureHostCopingThread();
                 }
             }
         };
 
-        VpnGlobalConfig.HOST_STATUS_CHECK_WORKER_INTERVAL.installUpdateExtension(onUpdate);
+        VpnGlobalConfig.STATUS_CHECK_WORKER_INTERVAL.installUpdateExtension(onUpdate);
     }
 
     private class HostStatusCheckWorker implements PeriodicTask {
@@ -304,19 +308,19 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
             return Q.New(VpnHostVO.class)
                     .eq(VpnHostVO_.state, HostState.Enabled)
+                    .eq(VpnHostVO_.status, HostStatus.Connected)
                     .list();
         }
 
-        private void updateHostStatus() {
+        private void updateHostStatus(List<String> hostUuids) {
             UpdateQuery.New(VpnHostVO.class)
-                    .in(VpnHostVO_.uuid, disconnectedHostUuids)
+                    .in(VpnHostVO_.uuid, hostUuids)
                     .set(VpnHostVO_.status, HostStatus.Disconnected)
                     .update();
         }
 
         @Override
         public void run() {
-            disconnectedHostUuids.clear();
             List<VpnHostVO> vos = getAllHosts();
             if (vos.isEmpty()) {
                 return;
@@ -324,11 +328,21 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             for (VpnHostVO vo : vos) {
                 CheckVpnHostStatusCmd cmd = CheckVpnHostStatusCmd.valueOf(vo);
                 CheckStatusResponse rsp = new VpnRESTCaller().checkState(HostConstant.CHECK_HOST_STATE_PATH, cmd);
-                if (rsp.getState() == ResponseStatus.Disconnected){
-                    disconnectedHostUuids.add(vo.getUuid());
-                }
+                if (rsp.getStatusCode() != HttpStatus.OK)
+                    continue;
+                if (rsp.getStatus() == ResponseStatus.Disconnected)
+                    continue;
+
+                vos.remove(vo);
             }
-            updateHostStatus();
+
+
+            updateHostStatus(CollectionUtils.transformToList(vos, new Function<String, VpnHostVO>() {
+                @Override
+                public String call(VpnHostVO arg) {
+                    return arg.getUuid();
+                }
+            }));
         }
 
         @Override
