@@ -14,23 +14,9 @@ import org.zstack.tunnel.header.tunnel.TunnelVO;
  */
 public class APICreateTunnelMonitorMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = TunnelVO.class)
+    // @APIParam(emptyString = false,resourceType = TunnelVO.class)
+    @APIParam(required = false,maxLength = 1024)
     private String tunnelUuid;
-
-    @APIParam(emptyString = false,resourceType = HostVO.class)
-    private String hostAUuid;
-
-    @APIParam(emptyString = false,maxLength = 64)
-    private String monitorAIp;
-
-    @APIParam(emptyString = false,resourceType = HostVO.class)
-    private String hostZUuid;
-
-    @APIParam(emptyString = false,maxLength = 64)
-    private String monitorZIp;
-
-    @APIParam(emptyString = false,validValues = { "NORMAL","APPLYING","TERMINATED"})
-    private TunnelMonitorStatus status;
 
     @APIParam(required = false,maxLength = 1024)
     private String msg;
@@ -41,46 +27,6 @@ public class APICreateTunnelMonitorMsg extends APIMessage {
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
-    }
-
-    public String getHostAUuid() {
-        return hostAUuid;
-    }
-
-    public void setHostAUuid(String hostAUuid) {
-        this.hostAUuid = hostAUuid;
-    }
-
-    public String getMonitorAIp() {
-        return monitorAIp;
-    }
-
-    public void setMonitorAIp(String monitorAIp) {
-        this.monitorAIp = monitorAIp;
-    }
-
-    public String getHostZUuid() {
-        return hostZUuid;
-    }
-
-    public void setHostZUuid(String hostZUuid) {
-        this.hostZUuid = hostZUuid;
-    }
-
-    public String getMonitorZIp() {
-        return monitorZIp;
-    }
-
-    public void setMonitorZIp(String monitorZIp) {
-        this.monitorZIp = monitorZIp;
-    }
-
-    public TunnelMonitorStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TunnelMonitorStatus status) {
-        this.status = status;
     }
 
     public String getMsg() {
