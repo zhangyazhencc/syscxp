@@ -1,6 +1,7 @@
 package org.zstack.vpn.vpn;
 
-import org.springframework.http.HttpStatus;
+import org.zstack.header.vpn.VpnAgentCommand;
+import org.zstack.header.vpn.VpnAgentResponse;
 import org.zstack.utils.CollectionUtils;
 import org.zstack.utils.function.Function;
 import org.zstack.vpn.header.host.VpnHostVO;
@@ -10,69 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class VpnCommands {
-    public static class AgentResponse {
-        private String error;
-        private boolean success = true;
-        private HttpStatus statusCode;
-
-        private ResponseStatus status;
-
-        public ResponseStatus getStatus() {
-            return status;
-        }
-
-        public void setStatus(ResponseStatus status) {
-            this.status = status;
-        }
-        public HttpStatus getStatusCode() {
-            return statusCode;
-        }
-
-        public void setStatusCode(HttpStatus statusCode) {
-            this.statusCode = statusCode;
-        }
-
-        public String getError() {
-            return error;
-        }
-
-        public void setError(String error) {
-            this.error = error;
-        }
-
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public void setSuccess(boolean success) {
-            this.success = success;
-        }
-    }
-
-    public static class AgentCommand {
-
-        private String host_ip;
-        private String uuid;
-
-        public String getHostIp() {
-            return host_ip;
-        }
-
-        public void setHostIp(String hostIp) {
-            this.host_ip = hostIp;
-        }
-
-        public String getVpnUuid() {
-            return uuid;
-        }
-
-        public void setVpnUuid(String vpnUuid) {
-            this.uuid = vpnUuid;
-        }
-    }
-
-
-    public static class CheckVpnHostStatusCmd extends AgentCommand {
+    
+    public static class CheckVpnHostStatusCmd extends VpnAgentCommand {
         public static CheckVpnHostStatusCmd valueOf(VpnHostVO vo) {
             CheckVpnHostStatusCmd cmd = new CheckVpnHostStatusCmd();
             cmd.setHostIp(vo.getManageIp());
@@ -80,7 +20,7 @@ public class VpnCommands {
         }
     }
 
-    public static class AddVpnHostCmd extends AgentCommand {
+    public static class AddVpnHostCmd extends VpnAgentCommand {
 
         public static AddVpnHostCmd valueOf(VpnHostVO vo) {
             AddVpnHostCmd cmd = new AddVpnHostCmd();
@@ -88,10 +28,21 @@ public class VpnCommands {
             return cmd;
         }
     }
-    public static class AddVpnHostResponse extends AgentResponse {
+    public static class AddVpnHostResponse extends VpnAgentResponse {
 
     }
-    public static class ReconnectVpnHostCmd extends AgentCommand {
+    public static class DeleteVpnHostCmd extends VpnAgentCommand {
+
+        public static DeleteVpnHostCmd valueOf(VpnHostVO vo) {
+            DeleteVpnHostCmd cmd = new DeleteVpnHostCmd();
+            cmd.setHostIp(vo.getManageIp());
+            return cmd;
+        }
+    }
+    public static class DeleteVpnHostResponse extends VpnAgentResponse {
+
+    }
+    public static class ReconnectVpnHostCmd extends VpnAgentCommand {
 
         public static ReconnectVpnHostCmd valueOf(VpnHostVO vo) {
             ReconnectVpnHostCmd cmd = new ReconnectVpnHostCmd();
@@ -99,13 +50,11 @@ public class VpnCommands {
             return cmd;
         }
     }
-    public static class ReconnectVpnHostResponse extends AgentResponse {
+    public static class ReconnectVpnHostResponse extends VpnAgentResponse {
 
     }
 
-    public static class CheckVpnStatusCmd extends AgentCommand {
-
-        private Integer port;
+    public static class CheckVpnStatusCmd extends VpnAgentCommand {
 
         public static CheckVpnStatusCmd valueOf(VpnVO vo) {
             CheckVpnStatusCmd cmd = new CheckVpnStatusCmd();
@@ -114,22 +63,25 @@ public class VpnCommands {
             return cmd;
         }
 
-        public Integer getPort() {
-            return port;
-        }
-
-        public void setPort(Integer port) {
-            this.port = port;
-        }
     }
-    public static class CheckStatusResponse extends AgentResponse {
-
+    public static class CheckStatusResponse extends VpnAgentResponse {
 
     }
+    public static class ReconnectVpnCmd extends VpnAgentCommand {
 
+        public static ReconnectVpnCmd valueOf(VpnVO vo) {
+            ReconnectVpnCmd cmd = new ReconnectVpnCmd();
+            cmd.setHostIp(vo.getVpnHost().getManageIp());
+            cmd.setVpnUuid(vo.getUuid());
+            return cmd;
+        }
+    }
+    public static class ReconnectVpnResponse extends VpnAgentResponse {
 
-    public static class CreateVpnCmd extends AgentCommand {
-        private Integer port;
+    }
+
+    public static class CreateVpnCmd extends VpnAgentCommand {
+
         private String cidr;
         private Long bandwidth;
         private Integer duration;
@@ -165,14 +117,6 @@ public class VpnCommands {
             this.vpnRouteCmds = vpnRouteCmds;
         }
 
-        public Integer getPort() {
-            return port;
-        }
-
-        public void setPort(Integer port) {
-            this.port = port;
-        }
-
         public String getVpnCidr() {
             return cidr;
         }
@@ -198,11 +142,11 @@ public class VpnCommands {
         }
     }
 
-    public static class CreateVpnResponse extends AgentResponse {
+    public static class CreateVpnResponse extends VpnAgentResponse {
 
     }
 
-    public static class UpdateVpnStateCmd extends AgentCommand {
+    public static class UpdateVpnStateCmd extends VpnAgentCommand {
         private List<String> vlan_list;
 
         public static UpdateVpnStateCmd valueOf(VpnVO vo) {
@@ -227,10 +171,10 @@ public class VpnCommands {
         }
     }
 
-    public static class UpdateVpnStateResponse extends AgentResponse {
+    public static class UpdateVpnStateResponse extends VpnAgentResponse {
 
     }
-    public static class DeleteVpnCmd extends AgentCommand {
+    public static class DeleteVpnCmd extends VpnAgentCommand {
         private List<String> vlan_list;
 
         public static DeleteVpnCmd valueOf(VpnVO vo) {
@@ -255,11 +199,11 @@ public class VpnCommands {
         }
     }
 
-    public static class DeleteVpnResponse extends AgentResponse {
+    public static class DeleteVpnResponse extends VpnAgentResponse {
 
     }
 
-    public static class UpdateVpnBandWidthCmd extends AgentCommand {
+    public static class UpdateVpnBandWidthCmd extends VpnAgentCommand {
         private Long bandwidth;
 
         public static UpdateVpnBandWidthCmd valueOf(VpnVO vo) {
@@ -278,11 +222,11 @@ public class VpnCommands {
         }
     }
 
-    public static class UpdateVpnBandWidthResponse extends AgentResponse {
+    public static class UpdateVpnBandWidthResponse extends VpnAgentResponse {
 
     }
 
-    public static class UpdateVpnCidrCmd extends AgentCommand {
+    public static class UpdateVpnCidrCmd extends VpnAgentCommand {
         private String vpnCidr;
 
         public static UpdateVpnCidrCmd valueOf(VpnVO vo) {
@@ -302,11 +246,11 @@ public class VpnCommands {
         }
     }
 
-    public static class UpdateVpnCidrResponse extends AgentResponse {
+    public static class UpdateVpnCidrResponse extends VpnAgentResponse {
 
     }
 
-    public static class VpnInterfaceCmd extends AgentCommand {
+    public static class VpnInterfaceCmd extends VpnAgentCommand {
         private String local_ip;
         private String netmask;
         private String vlan;
@@ -354,11 +298,11 @@ public class VpnCommands {
         }
     }
 
-    public static class VpnInterfaceResponse extends AgentResponse {
+    public static class VpnInterfaceResponse extends VpnAgentResponse {
 
     }
 
-    public static class VpnRouteCmd extends AgentCommand {
+    public static class VpnRouteCmd extends VpnAgentCommand {
         private List<String> next_ip;
         private String dest_cidr;
 
@@ -396,7 +340,7 @@ public class VpnCommands {
         }
     }
 
-    public static class VpnRouteResponse extends AgentResponse {
+    public static class VpnRouteResponse extends VpnAgentResponse {
 
     }
 

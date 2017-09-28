@@ -1,16 +1,14 @@
-package org.zstack.tunnel.header.monitor;
-
-import org.zstack.header.search.Inventory;
+package org.zstack.tunnel.sdk.sdn.vo;
 
 import java.util.List;
 
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-09-26.
- * @Description: RYU 控制器监控下发.
+ * @Description: RYU 控制器监控下发信息.
  */
-public class
-TunnelMonitorIssueDetailInventory {
+//@Inventory(mappingVOClass = TunnelMonitorVO.class)
+public class TunnelMonitorIssueVO {
 
     private Integer vlan_id;
     private String m_ip;
@@ -19,16 +17,6 @@ TunnelMonitorIssueDetailInventory {
     private String nw_dst;
     private String out_port;
     private Integer bandwidth;
-
-   /* public static TunnelMonitorIssueDetailInventory valueOf(TunnelMonitorVO vo){
-
-        return null;
-    }
-
-    public static List<TunnelMonitorIssueDetailInventory> valueOf(List<TunnelMonitorVO> vos){
-
-        return null;
-    }*/
 
     public Integer getVlan_id() {
         return vlan_id;

@@ -1,4 +1,6 @@
-/*201709225 sunxuelong */
+
+ALTER TABLE TunnelMonitorInterfaceVO ADD interfaceUuid varchar(32) COMMENT '' AFTER interfaceType;
+
 CREATE TABLE IF NOT EXISTS TunnelMonitorInterfaceVO (
   `uuid` VARCHAR(32) NOT NULL COMMENT '主键',
   `TunnelMonitorUuid` VARCHAR(32) NOT NULL COMMENT '监控通道uuid(TunnelMonitorVO.uuid)',
@@ -11,7 +13,6 @@ CREATE TABLE IF NOT EXISTS TunnelMonitorInterfaceVO (
   UNIQUE KEY `uuid` (`uuid`))
 ENGINE = InnoDB DEFAULT CHARSET = utf8 COMMENT '监控通道两端信息表';
 
-/*20170915 sunxuelong */
 CREATE TABLE `SpeedRecordsVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'uuid',
   `tunnelUuid` varchar(32) NOT NULL COMMENT 'TunnelVO.uuid',
@@ -31,7 +32,6 @@ CREATE TABLE `SpeedRecordsVO` (
   UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='监控测速纪录';
 
-/*20170912 sunxuelong */
 ALTER TABLE HostEO CHANGE ip hostIp VARCHAR(128);
 
 CREATE OR REPLACE
@@ -53,7 +53,6 @@ VIEW `syscxp_tunnel`.`HostVO` AS
     WHERE
         (`syscxp_tunnel`.`HostEO`.`deleted` = 0);
 
-/*20170911 sunxuelong */
 alter table syscxp_tunnel.HostEO add nodeUuid varchar(32) comment '节点ID(NodeEO.uuid)' after uuid;
 
 CREATE OR REPLACE VIEW `syscxp_tunnel`.`HostVO` AS
