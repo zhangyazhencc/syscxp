@@ -14,6 +14,7 @@ import org.zstack.core.db.Q;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.db.UpdateQuery;
 import org.zstack.core.errorcode.ErrorFacade;
+import org.zstack.core.identity.InnerMessageHelper;
 import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.core.thread.PeriodicTask;
 import org.zstack.core.thread.Task;
@@ -26,6 +27,7 @@ import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
+import org.zstack.header.message.APIReply;
 import org.zstack.header.message.Message;
 import org.zstack.header.rest.RESTFacade;
 import org.zstack.header.query.QueryOp;
@@ -34,6 +36,7 @@ import org.zstack.utils.CollectionDSL;
 import org.zstack.utils.CollectionUtils;
 import org.zstack.utils.Utils;
 import org.zstack.utils.function.Function;
+import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.vpn.header.vpn.*;
 import org.zstack.vpn.vpn.VpnCommands.*;
@@ -121,6 +124,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setUuid(Platform.getUuid());
         vpn.setSid(Platform.getUuid());
         vpn.setKey(Platform.getUuid());
+        vpn.setMaxModifies(VpnConstant.MAX_MOTIFIES);
         vpn.setAccountUuid(msg.getAccountUuid());
         vpn.setDescription(msg.getDescription());
         vpn.setName(msg.getName());
@@ -153,7 +157,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         orderMsg.setDuration(vpn.getDuration());
         orderMsg.setProductDescription(vpn.getDescription());
         orderMsg.setProductPriceUnitUuids(msg.getProductPriceUnitUuids());
-        orderMsg.setAccountUuid(msg.getAccountUuid());
+//        orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
         createOrder(orderMsg);
 
@@ -174,11 +178,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void createOrder(APICreateOrderMsg orderMsg) {
-        RestAPIResponse rsp = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncPostForResult(orderMsg);
+        RestAPIResponse rsp = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
 
-        APIEvent apiEvent = (APIEvent) RESTApiDecoder.loads(rsp.getResult());
-        if (!apiEvent.isSuccess()) {
-            throw new OperationFailureException(apiEvent.getError());
+        APIReply apiReply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
+        if (!apiReply.isSuccess()) {
+            throw new OperationFailureException(apiReply.getError());
         }
     }
 
@@ -295,6 +299,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
         if (!StringUtils.isEmpty(msg.getDescription())) {
             vpn.setDescription(msg.getDescription());
+            update = true;
+        }
+        if (msg.getMaxModifies() != null) {
+            vpn.setMaxModifies(msg.getMaxModifies());
             update = true;
         }
         if (update)

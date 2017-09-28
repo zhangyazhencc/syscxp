@@ -6,10 +6,13 @@ import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
 import org.zstack.core.CoreGlobalProperty;
+import org.zstack.core.identity.InnerMessageHelper;
+import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.core.retry.Retry;
 import org.zstack.core.retry.RetryCondition;
 import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.message.APIMessage;
+import org.zstack.header.rest.RESTConstant;
 import org.zstack.header.rest.RESTFacade;
 import org.zstack.header.rest.RestAPIResponse;
 import org.zstack.header.rest.RestAPIState;
@@ -109,12 +112,10 @@ public class VpnRESTCaller {
         return URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.VPN_ROOT_PATH, path);
     }
 
-    public RestAPIResponse syncPostForResult(APIMessage msg, long interval, long timeout) {
-        return restf.syncJsonPostForResult(baseUrl, msg, interval, timeout);
+    public RestAPIResponse syncJsonPost(APIMessage innerMsg) {
+        InnerMessageHelper.setMD5(innerMsg);
+        return restf.syncJsonPost(URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL), RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
     }
 
-    public RestAPIResponse syncPostForResult(APIMessage msg) {
-        return syncPostForResult(msg, 500, TimeUnit.SECONDS.toMillis(15));
-    }
 }
 

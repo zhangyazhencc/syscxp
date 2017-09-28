@@ -11,7 +11,6 @@ import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.MessageCommandRecorder;
 import org.zstack.core.Platform;
 import org.zstack.core.errorcode.ErrorFacade;
-import org.zstack.core.identity.InnerMessageHelper;
 import org.zstack.core.retry.Retry;
 import org.zstack.core.retry.RetryCondition;
 import org.zstack.core.thread.AsyncThread;
@@ -25,7 +24,6 @@ import org.zstack.header.errorcode.ErrorCode;
 import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.errorcode.SysErrors;
 import org.zstack.header.exception.CloudRuntimeException;
-import org.zstack.header.message.APIMessage;
 import org.zstack.header.rest.*;
 import org.zstack.utils.*;
 import org.zstack.utils.gson.JSONObjectUtil;
@@ -37,7 +35,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -385,8 +382,6 @@ public class RESTFacadeImpl implements RESTFacade {
     @Override
     public HttpEntity<String> httpServletRequestToHttpEntity(HttpServletRequest req) {
         try {
-            System.out.println(req.getCharacterEncoding());
-            req.setCharacterEncoding("UTF-8");
             StringBuilder sb = new StringBuilder();
             String line;
             while ((line = req.getReader().readLine()) != null) {
@@ -460,8 +455,13 @@ public class RESTFacadeImpl implements RESTFacade {
             if (logger.isTraceEnabled()) {
                 logger.trace(String.format("[http response(url: %s)] %s", url, rsp.getBody()));
             }
+            String rspbody = rsp.getBody();
+            try {
+                rspbody = new String(rspbody.getBytes("ISO-8859-1"), "utf-8");
+            } catch (UnsupportedEncodingException e) {
+            }
 
-            return JSONObjectUtil.toObject(rsp.getBody(), returnClass);
+            return JSONObjectUtil.toObject(rspbody, returnClass);
         } else {
             return null;
         }
@@ -576,42 +576,4 @@ public class RESTFacadeImpl implements RESTFacade {
         interceptors.add(interceptor);
     }
 
-    public RestAPIResponse syncJsonPostForResult(String baseUrl, APIMessage innerMsg, long interval, long timeout) {
-        InnerMessageHelper.setMD5(innerMsg);
-        return syncJsonPostForResult(baseUrl, RESTApiDecoder.dump(innerMsg), interval, timeout);
-    }
-
-    public RestAPIResponse syncJsonPostForResult(String baseUrl, APIMessage innerMsg) {
-
-        return syncJsonPostForResult(baseUrl, innerMsg, 500, TimeUnit.SECONDS.toMillis(15));
-    }
-
-    public RestAPIResponse syncJsonPostForResult(String baseUrl, String body, long interval, long timeout) {
-        RestAPIResponse rsp = syncJsonPost(URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL), body, RestAPIResponse.class);
-        long curr = 0;
-        while (!rsp.getState().equals(RestAPIState.Done.toString()) && curr < timeout) {
-//            String resultUrl = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_RESULT, rsp.getUuid());
-
-            String resultUrl ="http://192.168.211.99:8082/billing/api/result/04500cfa4cd048189290c4a6da62e734";
-            try {
-                TimeUnit.MILLISECONDS.sleep(interval);
-            } catch (InterruptedException e) {
-                logger.debug(String.format("fail to get result[uuid: %s] from Url[%s]", rsp.getUuid(), resultUrl));
-            }
-            ResponseEntity<String> entity = template.exchange(resultUrl, HttpMethod.GET, null, String.class);
-
-            rsp = JSONObjectUtil.toObject(entity.getBody(), RestAPIResponse.class);
-            curr += interval;
-        }
-
-        if (curr >= timeout) {
-            throw new CloudRuntimeException(String.format("timeout after %s ms, result uuid:%s", curr, rsp.getUuid()));
-        }
-
-        return rsp;
-    }
-
-    public RestAPIResponse syncJsonPostForResult(String baseUrl, String body) {
-        return syncJsonPostForResult(baseUrl, body, 500, TimeUnit.SECONDS.toMillis(15));
-    }
 }

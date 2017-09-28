@@ -62,11 +62,4 @@ public interface RESTFacade {
         return new TimeoutRestTemplate(factory);
     }
 
-    RestAPIResponse syncJsonPostForResult(String baseUrl, APIMessage innerMsg, long interval, long timeout);
-
-    RestAPIResponse syncJsonPostForResult(String baseUrl, APIMessage innerMsg);
-
-    RestAPIResponse syncJsonPostForResult(String baseUrl, String body, long interval, long timeout);
-
-    RestAPIResponse syncJsonPostForResult(String baseUrl, String body);
 }
