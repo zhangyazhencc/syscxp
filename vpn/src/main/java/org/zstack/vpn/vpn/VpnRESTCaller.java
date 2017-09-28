@@ -5,15 +5,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.http.*;
 import org.springframework.web.client.RestClientException;
-import org.zstack.core.rest.RESTApiDecoder;
+import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.retry.Retry;
 import org.zstack.core.retry.RetryCondition;
 import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.message.APIMessage;
-import org.zstack.header.rest.RESTConstant;
 import org.zstack.header.rest.RESTFacade;
 import org.zstack.header.rest.RestAPIResponse;
 import org.zstack.header.rest.RestAPIState;
+import org.zstack.header.vpn.VpnAgentCommand;
+import org.zstack.header.vpn.VpnAgentResponse;
 import org.zstack.utils.URLBuilder;
 import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
@@ -21,7 +22,6 @@ import org.zstack.utils.logging.CLogger;
 import org.zstack.vpn.vpn.VpnCommands.*;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 
@@ -38,18 +38,22 @@ public class VpnRESTCaller {
     }
 
     public VpnRESTCaller() {
-        this(VpnGlobalProperty.VPN_BASE_URL);
+        this(CoreGlobalProperty.VPN_BASE_URL);
     }
 
-    public CheckStatusResponse asyncCheckState(String path, AgentCommand cmd, long interval, long timeout) throws InterruptedException {
+    public CheckStatusResponse asyncCheckState(String path, VpnAgentCommand cmd, long interval, long timeout) {
         long curr = 0;
         CheckStatusResponse rsp;
         do {
-            TimeUnit.SECONDS.sleep(interval);
+            try {
+                TimeUnit.SECONDS.sleep(interval);
+            } catch (InterruptedException e) {
+                logger.debug(String.format("fail to get result[uuid: %s] from Url[%s]", cmd.getVpnUuid(), path));
+            }
             rsp = checkState(path, cmd);
             curr += interval;
         }
-        while ((rsp.getStatusCode() != HttpStatus.OK || rsp.getStatus() == ResponseStatus.Creating) && curr < timeout);
+        while ((rsp.getStatusCode() != HttpStatus.OK || rsp.getState() == RestAPIState.Processing) && curr < timeout);
 
         if (curr >= timeout) {
             throw new CloudRuntimeException(String.format("timeout after %s ms, error", curr, rsp.getError()));
@@ -57,17 +61,17 @@ public class VpnRESTCaller {
         return rsp;
     }
 
-    public CheckStatusResponse asyncCheckState(String path, AgentCommand cmd) throws InterruptedException {
+    public CheckStatusResponse asyncCheckState(String path, VpnAgentCommand cmd) throws InterruptedException {
         return asyncCheckState(path, cmd, 1, TimeUnit.MINUTES.toSeconds(10));
     }
 
 
-    public CheckStatusResponse checkState(String path, AgentCommand cmd) {
+    public CheckStatusResponse checkState(String path, VpnAgentCommand cmd) {
         return syncPostForVpn(path, cmd, CheckStatusResponse.class);
     }
 
 
-    public <T extends AgentResponse> T syncPostForVpn(String path, AgentCommand cmd, Class<T> rspClass) {
+    public <T extends VpnAgentResponse> T syncPostForVpn(String path, VpnAgentCommand cmd, Class<T> rspClass) {
         String body = JSONObjectUtil.toJsonString(cmd);
         String url = buildUrl(path);
 
@@ -93,7 +97,7 @@ public class VpnRESTCaller {
         T response = JSONObjectUtil.toObject(rsp.getBody(), rspClass);
 
         if (response == null) {
-            response = (T) new AgentResponse();
+            response = (T) new VpnAgentResponse();
         }
         response.setStatusCode(rsp.getStatusCode());
 

@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.config.GlobalConfig;
@@ -13,7 +14,6 @@ import org.zstack.core.db.Q;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.db.UpdateQuery;
 import org.zstack.core.errorcode.ErrorFacade;
-import org.zstack.core.identity.InnerMessageHelper;
 import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.core.thread.PeriodicTask;
 import org.zstack.core.thread.Task;
@@ -27,21 +27,17 @@ import org.zstack.header.identity.AccountType;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
-import org.zstack.header.rest.RESTConstant;
 import org.zstack.header.rest.RESTFacade;
 import org.zstack.header.query.QueryOp;
 import org.zstack.header.rest.RestAPIResponse;
 import org.zstack.utils.CollectionUtils;
 import org.zstack.utils.Utils;
 import org.zstack.utils.function.Function;
-import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.vpn.header.vpn.*;
-import org.zstack.vpn.host.HostConstant;
 import org.zstack.vpn.vpn.VpnCommands.*;
 import org.zstack.vpn.header.host.*;
 
-import java.io.UnsupportedEncodingException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -50,7 +46,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.zstack.core.Platform.argerr;
-import static org.zstack.core.Platform.httperr;
 import static org.zstack.core.Platform.operr;
 
 
@@ -172,12 +167,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         CreateVpnCmd cmd = CreateVpnCmd.valueOf(vpn);
         CreateVpnResponse rsp = new VpnRESTCaller()
                 .syncPostForVpn(VpnConstant.CREATE_VPN_PATH, cmd, CreateVpnResponse.class);
-        if (rsp.getStatusCode() != HttpStatus.OK) {
-            throw new OperationFailureException(operr("failed to post to %s, status code: %s, response body: %s",
-                    VpnConstant.CREATE_VPN_PATH, rsp.getStatusCode(), rsp.getError()));
-
+        if (rsp.getStatusCode() == HttpStatus.OK) {
+            checkVpnCreateState(cmd);
         }
-        checkVpnCreateState(cmd);
+
 
         APICreateVpnEvent evt = new APICreateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(vpn));
@@ -185,7 +178,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void createOrder(APICreateOrderMsg orderMsg) {
-        RestAPIResponse rsp = new VpnRESTCaller(VpnGlobalProperty.BILLING_SERVER_URL).syncPostForResult(orderMsg);
+        RestAPIResponse rsp = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncPostForResult(orderMsg);
 
         APIEvent apiEvent = (APIEvent) RESTApiDecoder.loads(rsp.getResult());
         if (!apiEvent.isSuccess()) {
@@ -201,17 +194,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             public Object call() throws Exception {
                 CheckStatusResponse rsp = new VpnRESTCaller().asyncCheckState(VpnConstant.CHECK_CREATE_STATE_PATH, cmd);
                 VpnVO vpnVO = dbf.findByUuid(cmd.getVpnUuid(), VpnVO.class);
-                switch (rsp.getStatus()) {
-                    case Connected:
+                if (rsp.isSuccess()) {
                         vpnVO.setState(VpnState.Enabled);
                         vpnVO.setStatus(VpnStatus.Connected);
-                        break;
-                    case Disconnected:
+                }else {
                         vpnVO.setState(VpnState.Disabled);
                         vpnVO.setStatus(VpnStatus.Disconnected);
-                        break;
-                    default:
-                        break;
                 }
 
                 dbf.updateAndRefresh(vpnVO);
@@ -526,7 +514,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 if (rsp.getStatusCode() != HttpStatus.OK) {
                     continue;
                 }
-                if (rsp.getStatus() == ResponseStatus.Disconnected) {
+                if (!rsp.isSuccess()) {
                     reconnectVpn(vo);
                     continue;
                 }
@@ -552,7 +540,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         @Override
         public String getName() {
-            return VpnManagerImpl.VpnStatusCheckWorker.class.getName();
+            return VpnStatusCheckWorker.class.getName();
         }
     }
 
