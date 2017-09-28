@@ -385,6 +385,8 @@ public class RESTFacadeImpl implements RESTFacade {
     @Override
     public HttpEntity<String> httpServletRequestToHttpEntity(HttpServletRequest req) {
         try {
+            System.out.println(req.getCharacterEncoding());
+            req.setCharacterEncoding("UTF-8");
             StringBuilder sb = new StringBuilder();
             String line;
             while ((line = req.getReader().readLine()) != null) {
