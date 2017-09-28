@@ -31,6 +31,17 @@ public class VpnCommands {
     public static class AddVpnHostResponse extends VpnAgentResponse {
 
     }
+    public static class DeleteVpnHostCmd extends VpnAgentCommand {
+
+        public static DeleteVpnHostCmd valueOf(VpnHostVO vo) {
+            DeleteVpnHostCmd cmd = new DeleteVpnHostCmd();
+            cmd.setHostIp(vo.getManageIp());
+            return cmd;
+        }
+    }
+    public static class DeleteVpnHostResponse extends VpnAgentResponse {
+
+    }
     public static class ReconnectVpnHostCmd extends VpnAgentCommand {
 
         public static ReconnectVpnHostCmd valueOf(VpnHostVO vo) {
@@ -45,8 +56,6 @@ public class VpnCommands {
 
     public static class CheckVpnStatusCmd extends VpnAgentCommand {
 
-        private Integer port;
-
         public static CheckVpnStatusCmd valueOf(VpnVO vo) {
             CheckVpnStatusCmd cmd = new CheckVpnStatusCmd();
             cmd.setHostIp(vo.getVpnHost().getManageIp());
@@ -54,21 +63,25 @@ public class VpnCommands {
             return cmd;
         }
 
-        public Integer getPort() {
-            return port;
-        }
-
-        public void setPort(Integer port) {
-            this.port = port;
-        }
     }
     public static class CheckStatusResponse extends VpnAgentResponse {
 
     }
+    public static class ReconnectVpnCmd extends VpnAgentCommand {
 
+        public static ReconnectVpnCmd valueOf(VpnVO vo) {
+            ReconnectVpnCmd cmd = new ReconnectVpnCmd();
+            cmd.setHostIp(vo.getVpnHost().getManageIp());
+            cmd.setVpnUuid(vo.getUuid());
+            return cmd;
+        }
+    }
+    public static class ReconnectVpnResponse extends VpnAgentResponse {
+
+    }
 
     public static class CreateVpnCmd extends VpnAgentCommand {
-        private Integer port;
+
         private String cidr;
         private Long bandwidth;
         private Integer duration;
@@ -102,14 +115,6 @@ public class VpnCommands {
 
         public void setVpnRouteCmds(List<VpnRouteCmd> vpnRouteCmds) {
             this.vpnRouteCmds = vpnRouteCmds;
-        }
-
-        public Integer getPort() {
-            return port;
-        }
-
-        public void setPort(Integer port) {
-            this.port = port;
         }
 
         public String getVpnCidr() {

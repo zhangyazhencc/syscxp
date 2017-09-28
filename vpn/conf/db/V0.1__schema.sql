@@ -63,6 +63,8 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`duration` int(11) NOT NULL COMMENT '购买时长',
 	`memo` VARCHAR(255) DEFAULT NULL COMMENT '备注',
 	`sid` varchar(32) NOT NULL COMMENT 'SID',
+	`key` VARCHAR(32) NOT NULL COMMENT 'cert-key',
+	`payment` VARCHAR(32) NOT NULL COMMENT '支付状态',
 	`expireDate` timestamp COMMENT '截止时间',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,

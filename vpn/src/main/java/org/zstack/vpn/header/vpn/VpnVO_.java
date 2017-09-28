@@ -1,7 +1,5 @@
 package org.zstack.vpn.header.vpn;
 
-import org.zstack.vpn.header.host.VpnHostVO;
-
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
 import java.sql.Timestamp;
@@ -22,6 +20,8 @@ public class VpnVO_ {
     public static volatile SingularAttribute<VpnVO, Integer> duration;
     public static volatile SingularAttribute<VpnVO, Timestamp> expiredDate;
     public static volatile SingularAttribute<VpnVO, String> sid;
+    public static volatile SingularAttribute<VpnVO, String> key;
+    public static volatile SingularAttribute<VpnVO, Payment> payment;
     public static volatile SingularAttribute<VpnVO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<VpnVO, Timestamp> createDate;
 }

@@ -30,7 +30,7 @@ public interface VpnConstant {
 
     public static final String CHECK_VPN_STATE_PATH = "/createvpn";
 
-    public static final String CHECK_HOST_STATE_PATH = "/createvpn";
+    public static final String RECONNECT_VPN_PATH = "/reconnect-vpn";
 
     public static final String CHECK_CREATE_STATE_PATH = "/check-state";
 

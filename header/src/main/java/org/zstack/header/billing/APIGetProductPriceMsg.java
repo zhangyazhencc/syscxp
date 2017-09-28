@@ -1,7 +1,5 @@
 package org.zstack.header.billing;
 
-import org.zstack.header.billing.BillingConstant;
-import org.zstack.header.billing.ProductPriceUnit;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIParam;
 import org.zstack.header.message.APISyncCallMessage;
