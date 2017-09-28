@@ -52,6 +52,26 @@ public class VpnVO {
     private Timestamp createDate;
     @Column
     private String sid;
+    @Column
+    private String key;
+    @Column
+    private Payment payment;
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
 
     public String getSid() {
         return sid;

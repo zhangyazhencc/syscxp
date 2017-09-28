@@ -3,6 +3,15 @@ package org.zstack.header.vpn;
 public class VpnAgentCommand {
     private String host_ip;
     private String uuid;
+    private Integer port;
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
+    }
 
     public String getHostIp() {
         return host_ip;
