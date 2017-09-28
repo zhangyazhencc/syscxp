@@ -10,7 +10,7 @@ import org.zstack.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/9/26.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT,names = "create")
+@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
 public class APICreateTicketRecordMsg extends APIMessage {
 
     @APIParam(maxLength = 32)
