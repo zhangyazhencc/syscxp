@@ -36,6 +36,8 @@ import static org.zstack.core.Platform.operr;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -586,14 +588,17 @@ public class RESTFacadeImpl implements RESTFacade {
         RestAPIResponse rsp = syncJsonPost(URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL), body, RestAPIResponse.class);
         long curr = 0;
         while (!rsp.getState().equals(RestAPIState.Done.toString()) && curr < timeout) {
-            String resultUrl = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_RESULT, rsp.getUuid());
+//            String resultUrl = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_RESULT, rsp.getUuid());
+
+            String resultUrl ="http://192.168.211.99:8082/billing/api/result/04500cfa4cd048189290c4a6da62e734";
             try {
                 TimeUnit.MILLISECONDS.sleep(interval);
             } catch (InterruptedException e) {
                 logger.debug(String.format("fail to get result[uuid: %s] from Url[%s]", rsp.getUuid(), resultUrl));
             }
-            rsp = JSONObjectUtil.toObject(template.getForObject(resultUrl, String.class), RestAPIResponse.class);
+            ResponseEntity<String> entity = template.exchange(resultUrl, HttpMethod.GET, null, String.class);
 
+            rsp = JSONObjectUtil.toObject(entity.getBody(), RestAPIResponse.class);
             curr += interval;
         }
 
