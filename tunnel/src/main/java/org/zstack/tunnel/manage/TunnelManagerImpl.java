@@ -349,6 +349,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             TunnelMonitorVO tunnelMonitorVO = monitorManager.createTunnelMonitorHandle(apiCreateTunnelMonitorMsg);
             if(tunnelMonitorVO != null){
                 vo.setMonitorState(TunnelMonitorState.Enabled);
+            }else{
+                vo.setMonitorState(TunnelMonitorState.Disabled);
             }
         }catch(Exception e){
             vo.setMonitorState(TunnelMonitorState.Disabled);
