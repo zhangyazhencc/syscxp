@@ -1,5 +1,6 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.billing.ProductChargeModel;
 import org.zstack.header.search.Inventory;
 import org.zstack.tunnel.header.endpoint.EndpointInventory;
 import org.zstack.tunnel.header.switchs.SwitchPortInventory;
@@ -22,7 +23,9 @@ public class InterfaceInventory {
     private EndpointInventory endpoint;
     private Long bandwidth;
     private String description;
-    private Integer months;
+    private InterfaceState state;
+    private Integer duration;
+    private ProductChargeModel productChargeModel;
     private Timestamp expiredDate;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -37,7 +40,9 @@ public class InterfaceInventory {
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setBandwidth(vo.getBandwidth());
         inv.setDescription(vo.getDescription());
-        inv.setMonths(vo.getMonths());
+        inv.setState(vo.getState());
+        inv.setDuration(vo.getDuration());
+        inv.setProductChargeModel(vo.getProductChargeModel());
         inv.setExpiredDate(vo.getExpiredDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -124,14 +129,6 @@ public class InterfaceInventory {
         this.createDate = createDate;
     }
 
-    public Integer getMonths() {
-        return months;
-    }
-
-    public void setMonths(Integer months) {
-        this.months = months;
-    }
-
     public Long getBandwidth() {
         return bandwidth;
     }
@@ -146,5 +143,29 @@ public class InterfaceInventory {
 
     public void setEndpoint(EndpointInventory endpoint) {
         this.endpoint = endpoint;
+    }
+
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+
+    public ProductChargeModel getProductChargeModel() {
+        return productChargeModel;
+    }
+
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
+        this.productChargeModel = productChargeModel;
+    }
+
+    public InterfaceState getState() {
+        return state;
+    }
+
+    public void setState(InterfaceState state) {
+        this.state = state;
     }
 }

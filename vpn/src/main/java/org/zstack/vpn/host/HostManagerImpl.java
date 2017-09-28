@@ -20,13 +20,9 @@ import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.header.rest.RESTFacade;
-import org.zstack.utils.CollectionUtils;
 import org.zstack.utils.Utils;
-import org.zstack.utils.function.Function;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.vpn.header.host.*;
-import org.zstack.vpn.header.vpn.VpnInterfaceVO;
-import org.zstack.vpn.vpn.ResponseStatus;
 import org.zstack.vpn.vpn.VpnCommands.*;
 import org.zstack.vpn.vpn.VpnGlobalConfig;
 import org.zstack.vpn.vpn.VpnRESTCaller;
@@ -93,7 +89,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
 
         ReconnectVpnHostCmd cmd = ReconnectVpnHostCmd.valueOf(host);
-        new VpnRESTCaller().syncPostForVpn(HostConstant.RECONNECT_HOST__PATH, cmd, ReconnectVpnHostResponse.class);
+        new VpnRESTCaller().syncPostForVpn(HostConstant.RECONNECT_HOST_PATH, cmd, ReconnectVpnHostResponse.class);
 
         APIReconnectVpnHostEvent evt = new APIReconnectVpnHostEvent(msg.getId());
         bus.publish(evt);
@@ -182,6 +178,10 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
 
     private void handle(APIDeleteVpnHostMsg msg) {
+
+        DeleteVpnHostCmd cmd = DeleteVpnHostCmd.valueOf(dbf.findByUuid(msg.getUuid(), VpnHostVO.class));
+        new VpnRESTCaller().syncPostForVpn(HostConstant.Delete_HOST_PATH, cmd, DeleteVpnHostResponse.class);
+
         dbf.removeByPrimaryKey(msg.getUuid(), VpnHostVO.class);
 
         APIDeleteVpnHostEvent evt = new APIDeleteVpnHostEvent(msg.getId());
@@ -273,14 +273,14 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
     private Future<Void> hostCheckThread;
     private int hostStatusCheckWorkerInterval;
-    List<String> disconnectedHosts = new ArrayList<>();
+    private List<String> disconnectedHosts = new ArrayList<>();
 
     private List<String> getDisconnectedHosts() {
 
         return Q.New(VpnHostVO.class)
                 .eq(VpnHostVO_.state, HostState.Enabled)
                 .eq(VpnHostVO_.status, HostStatus.Disconnected)
-                .select(VpnHostVO_.manageIp)
+                .select(VpnHostVO_.uuid)
                 .listValues();
     }
 
@@ -339,10 +339,8 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             for (VpnHostVO vo : vos) {
                 CheckVpnHostStatusCmd cmd = CheckVpnHostStatusCmd.valueOf(vo);
                 CheckStatusResponse rsp = new VpnRESTCaller().checkState(HostConstant.CHECK_HOST_STATE_PATH, cmd);
-                if (rsp.getStatusCode() != HttpStatus.OK)
-                    continue;
-                if (!rsp.isSuccess())
-                    disconnectedHosts.add(vo.getManageIp());
+                if (rsp.getStatusCode() != HttpStatus.OK || !rsp.isSuccess())
+                    disconnectedHosts.add(vo.getUuid());
             }
 
             updateHostStatus();
@@ -400,6 +398,15 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         if (q.isExists())
             throw new ApiMessageInterceptionException(argerr(
                     "The Zone[uuid:%s] has at least one vpn host, can not delete.", msg.getUuid()
+            ));
+    }
+
+    private void validate(APIDeleteVpnHostMsg msg) {
+        Q q = Q.New(VpnHostVO.class)
+                .eq(VpnHostVO_.zoneUuid, msg.getUuid());
+        if (q.isExists())
+            throw new ApiMessageInterceptionException(argerr(
+                    "The VpnHostVO[uuid:%s] has at least one vpn instance, can not delete.", msg.getUuid()
             ));
     }
 

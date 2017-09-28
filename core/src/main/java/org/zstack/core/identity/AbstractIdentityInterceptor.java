@@ -227,7 +227,8 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
             this.msg = msg;
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
                 suppressCredentialCheck();
-            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)) {
+            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)
+                    && msg.getSession() == null) {
                 innerCredentialCheck();
             } else {
                 action = actions.get(msg.getClass());
@@ -340,7 +341,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                 }
             }
 
-            if (msg.getClass().isAnnotationPresent(SuppressUserCredentialCheck.class)){
+            if (msg.getClass().isAnnotationPresent(SuppressUserCredentialCheck.class)) {
                 return;
             }
 

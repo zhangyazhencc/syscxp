@@ -14,6 +14,7 @@ import java.sql.Timestamp;
 public class TunnelMonitorInterfaceVO_ {
     public static volatile SingularAttribute<TunnelMonitorVO,String> uuid;
     public static volatile SingularAttribute<TunnelMonitorVO,String> tunnelMonitorUuid;
+    public static volatile SingularAttribute<TunnelMonitorVO,String> interfaceUuid;
     public static volatile SingularAttribute<TunnelMonitorVO,InterfaceType> interfaceType;
     public static volatile SingularAttribute<TunnelMonitorVO,String> hostUuid;
     public static volatile SingularAttribute<TunnelMonitorVO,String> monitorIp;

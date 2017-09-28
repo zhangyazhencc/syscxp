@@ -1,5 +1,6 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.billing.ProductChargeModel;
 import org.zstack.header.search.Inventory;
 
 import java.sql.Timestamp;
@@ -22,7 +23,8 @@ public class TunnelInventory {
     private TunnelState state;
     private TunnelStatus status;
     private TunnelMonitorState monitorState;
-    private Integer months;
+    private Integer duration;
+    private ProductChargeModel productChargeModel;
     private String description;
     private Timestamp expiredDate;
     private Timestamp lastOpDate;
@@ -41,7 +43,8 @@ public class TunnelInventory {
         inv.setState(vo.getState());
         inv.setStatus(vo.getStatus());
         inv.setMonitorState(vo.getMonitorState());
-        inv.setMonths(vo.getMonths());
+        inv.setDuration(vo.getDuration());
+        inv.setProductChargeModel(vo.getProductChargeModel());
         inv.setDescription(vo.getDescription());
         inv.setExpiredDate(vo.getExpiredDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -137,14 +140,6 @@ public class TunnelInventory {
         this.monitorState = monitorState;
     }
 
-    public Integer getMonths() {
-        return months;
-    }
-
-    public void setMonths(Integer months) {
-        this.months = months;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -183,5 +178,21 @@ public class TunnelInventory {
 
     public void setTunnelInterface(List<TunnelInterfaceInventory> tunnelInterface) {
         this.tunnelInterface = tunnelInterface;
+    }
+
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+
+    public ProductChargeModel getProductChargeModel() {
+        return productChargeModel;
+    }
+
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
+        this.productChargeModel = productChargeModel;
     }
 }

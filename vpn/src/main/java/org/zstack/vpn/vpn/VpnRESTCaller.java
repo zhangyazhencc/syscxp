@@ -22,6 +22,7 @@ import org.zstack.utils.logging.CLogger;
 import org.zstack.vpn.vpn.VpnCommands.*;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.TimeUnit;
 
 

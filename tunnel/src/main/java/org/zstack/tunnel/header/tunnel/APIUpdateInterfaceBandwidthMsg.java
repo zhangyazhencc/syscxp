@@ -1,21 +1,24 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.billing.ProductChargeModel;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 
+import java.util.List;
+
 /**
- * Created by DCY on 2017-09-14
+ * Create by DCY on 2017/9/28
  */
-public class APIUpdateInterfaceMsg extends APIMessage {
+public class APIUpdateInterfaceBandwidthMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = InterfaceVO.class)
     private String uuid;
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
-    @APIParam(emptyString = false,required = false,maxLength = 128)
-    private String name;
-    @APIParam(emptyString = false,required = false,maxLength = 255)
-    private String description;
+    @APIParam
+    private Long bandwidth;
+    @APIParam(nonempty = true)
+    private List<String> productPriceUnitUuids;
 
     public String getUuid() {
         return uuid;
@@ -23,22 +26,6 @@ public class APIUpdateInterfaceMsg extends APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getAccountUuid() {
@@ -51,5 +38,21 @@ public class APIUpdateInterfaceMsg extends APIMessage {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public Long getBandwidth() {
+        return bandwidth;
+    }
+
+    public void setBandwidth(Long bandwidth) {
+        this.bandwidth = bandwidth;
+    }
+
+    public List<String> getProductPriceUnitUuids() {
+        return productPriceUnitUuids;
+    }
+
+    public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
+        this.productPriceUnitUuids = productPriceUnitUuids;
     }
 }
