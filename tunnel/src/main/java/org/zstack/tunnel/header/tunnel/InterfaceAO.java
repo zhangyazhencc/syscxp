@@ -1,5 +1,6 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.billing.ProductChargeModel;
 import org.zstack.header.vo.ForeignKey;
 import org.zstack.tunnel.header.endpoint.EndpointEO;
 import org.zstack.tunnel.header.switchs.SwitchPortVO;
@@ -37,7 +38,15 @@ public class InterfaceAO {
     private String description;
 
     @Column
-    private Integer months;
+    @Enumerated(EnumType.STRING)
+    private InterfaceState state;
+
+    @Column
+    private Integer duration;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private ProductChargeModel productChargeModel;
 
     @Column
     private Timestamp expiredDate;
@@ -125,19 +134,35 @@ public class InterfaceAO {
         this.createDate = createDate;
     }
 
-    public Integer getMonths() {
-        return months;
-    }
-
-    public void setMonths(Integer months) {
-        this.months = months;
-    }
-
     public Long getBandwidth() {
         return bandwidth;
     }
 
     public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
+    }
+
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+
+    public ProductChargeModel getProductChargeModel() {
+        return productChargeModel;
+    }
+
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
+        this.productChargeModel = productChargeModel;
+    }
+
+    public InterfaceState getState() {
+        return state;
+    }
+
+    public void setState(InterfaceState state) {
+        this.state = state;
     }
 }
