@@ -280,14 +280,16 @@ UPDATE `PolicyVO` p set p.createDate = current_timestamp();
 
 CREATE TABLE `TicketVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT '工单编号(uuid)',
-  `accountUuid` varchar(32) NOT NULL COMMENT '创建账户',
-  `userUuid` varchar(32) NOT NULL COMMENT '创建用户/账户',
-  `adminUserUuid` varchar(32) COMMENT '工单处理人',
-  `type` varchar(128) NOT NULL COMMENT '工单类型(数据字典)',
+  `accountUuid` varchar(32) COMMENT '创建账户',
+  `userUuid` varchar(32) COMMENT '创建用户/账户',
+  `adminUserUuid` varchar(32) COMMENT '工单处理人(管理员为空)',
+  `ticketTypeCode` varchar(128) NOT NULL COMMENT '工单类型(数据字典)',
   `content` text NOT NULL COMMENT '工单内容',
+  `contentExtra` text COMMENT '工单json数据',
   `status` varchar(32) NOT NULL COMMENT '工单最新状态(枚举)',
   `phone` varchar(32) NOT NULL COMMENT '手机',
   `email` varchar(32) NOT NULL COMMENT '邮箱',
+  `ticketFrom` varchar(32) NOT NULL COMMENT '来源',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp ,
   PRIMARY KEY  (`uuid`)
@@ -296,7 +298,8 @@ CREATE TABLE `TicketVO` (
 CREATE TABLE `TicketRecordVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT '记录uuid',
   `ticketUuid` varchar(32) NOT NULL COMMENT '工单uuid',
-  `belongTo` varchar(32) NOT NULL COMMENT '沟通方(枚举)',
+  `recordBy` varchar(32) NOT NULL COMMENT '沟通方(枚举)',
+  `adminUserUuid` varchar(32) COMMENT '创建用户(管理员为空)',
   `content` text NOT NULL COMMENT '沟通内容',
   `status` text NOT NULL COMMENT '当前工单状态(枚举)',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
@@ -305,16 +308,24 @@ CREATE TABLE `TicketRecordVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `TicketTypeVO` (
-  `id` INT UNIQUE AUTO_INCREMENT,
-  `typeValue` varchar(32) NOT NULL COMMENT '枚举值',
-  `typeName` varchar(36) NOT NULL COMMENT '枚举值名称',
+  `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
+  `code` varchar(50) NOT NULL COMMENT '枚举值',
+  `name` varchar(36) NOT NULL COMMENT '枚举值名称',
+  `category` varchar(36) NOT NULL COMMENT '枚举值分类',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO DictionaryVO (typeValue, typeName) VALUES ('private_network','专线网络');
-INSERT INTO DictionaryVO (typeValue, typeName) VALUES ('cloud_server','云服务器');
-INSERT INTO DictionaryVO (typeValue, typeName) VALUES ('VPN','VPN网关');
-INSERT INTO DictionaryVO (typeValue, typeName) VALUES ('account','账户');
-INSERT INTO DictionaryVO (typeValue, typeName) VALUES ('billing','账务');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('PrivateNetwork','专线网络', 'cxp');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('CloudServer','云服务器', 'cxp');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('VPN','VPN网关', 'cxp');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('Account','账户', 'cxp');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('Billing','账务', 'cxp');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('CloudLine','申请云专线工单','apply');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('Trustee','申请托管工单','apply');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('LeadCable','申请引接缆工单','apply');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('CrossConnection','申请交叉互联工单','apply');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('InternetEntrance','申请互联网工单','apply');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('CloudTransmission','申请云传输工单','apply');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('Others','其他','');
