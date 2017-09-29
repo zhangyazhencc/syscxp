@@ -5,13 +5,13 @@
 		<description>Max number of sessions management server accepts. When this limit met, new session will be rejected</description>
 		<defaultValue>5000</defaultValue>
 		<category>identity</category>
-		<ticketTypeCode>java.lang.Integer</ticketTypeCode>
+		<type>java.lang.Integer</type>
 	</config>
 	<config>
 		<name>session.timeout</name>
 		<description>A timeout period assigned to a session. After timeout, the session will be cleaned out.</description>
 		<defaultValue>7200</defaultValue>
 		<category>identity</category>
-		<ticketTypeCode>java.lang.Integer</ticketTypeCode>
+		<type>java.lang.Integer</type>
 	</config>
 </globalConfig>

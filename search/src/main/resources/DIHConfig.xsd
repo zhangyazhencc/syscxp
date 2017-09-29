@@ -5,25 +5,25 @@
             attributeFormDefault="unqualified">
 
 	<xsd:complexType name="field">
-		<xsd:attribute name="name" ticketTypeCode="xsd:string" use="required"></xsd:attribute>
-		<xsd:attribute name="column" ticketTypeCode="xsd:string"></xsd:attribute>
+		<xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
+		<xsd:attribute name="column" type="xsd:string"></xsd:attribute>
 	</xsd:complexType>
 
 	<xsd:complexType name="entity">
 		<xsd:sequence>
 			<xsd:sequence maxOccurs="unbounded" minOccurs="0">
-				<xsd:element name="entity" ticketTypeCode="entity" />
+				<xsd:element name="entity" type="entity" />
 			</xsd:sequence>
 			<xsd:sequence maxOccurs="unbounded" minOccurs="0">
-				<xsd:element name="field" ticketTypeCode="field" />
+				<xsd:element name="field" type="field" />
 			</xsd:sequence>
 		</xsd:sequence>
-		<xsd:attribute name="parentDeltaQuery" ticketTypeCode="xsd:string" use="required"></xsd:attribute>
-		<xsd:attribute name="deltaImportQuery" ticketTypeCode="xsd:string" use="required"></xsd:attribute>
-		<xsd:attribute name="deltaQuery" ticketTypeCode="xsd:string" use="required"></xsd:attribute>
-		<xsd:attribute name="query" ticketTypeCode="xsd:string" use="required"></xsd:attribute>
-		<xsd:attribute name="pk" ticketTypeCode="xsd:string" use="required"></xsd:attribute>
-		<xsd:attribute name="name" ticketTypeCode="xsd:string" use="required"></xsd:attribute>
+		<xsd:attribute name="parentDeltaQuery" type="xsd:string" use="required"></xsd:attribute>
+		<xsd:attribute name="deltaImportQuery" type="xsd:string" use="required"></xsd:attribute>
+		<xsd:attribute name="deltaQuery" type="xsd:string" use="required"></xsd:attribute>
+		<xsd:attribute name="query" type="xsd:string" use="required"></xsd:attribute>
+		<xsd:attribute name="pk" type="xsd:string" use="required"></xsd:attribute>
+		<xsd:attribute name="name" type="xsd:string" use="required"></xsd:attribute>
 	</xsd:complexType>
 
 	<xsd:element name="dataConfig">
@@ -31,16 +31,16 @@
 			<xsd:sequence>
 				<xsd:element name="dataSource">
 					<xsd:complexType>
-						<xsd:attribute name="driver" ticketTypeCode="xsd:string" use="required"></xsd:attribute>
-						<xsd:attribute name="url" ticketTypeCode="xsd:string"></xsd:attribute>
-						<xsd:attribute name="user" ticketTypeCode="xsd:string"></xsd:attribute>
-						<xsd:attribute name="password" ticketTypeCode="xsd:string"></xsd:attribute>
+						<xsd:attribute name="driver" type="xsd:string" use="required"></xsd:attribute>
+						<xsd:attribute name="url" type="xsd:string"></xsd:attribute>
+						<xsd:attribute name="user" type="xsd:string"></xsd:attribute>
+						<xsd:attribute name="password" type="xsd:string"></xsd:attribute>
 					</xsd:complexType>
 				</xsd:element>
 				<xsd:element name="document">
 					<xsd:complexType>
 						<xsd:sequence maxOccurs="unbounded" minOccurs="0">
-							<xsd:element name="entity" ticketTypeCode="entity" />
+							<xsd:element name="entity" type="entity" />
 						</xsd:sequence>
 					</xsd:complexType>
 				</xsd:element>

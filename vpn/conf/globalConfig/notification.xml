@@ -5,7 +5,7 @@
         <name>webhook.url</name>
         <description>The webhook where the management node sends notifications</description>
         <defaultValue>null</defaultValue>
-        <ticketTypeCode>java.lang.String</ticketTypeCode>
+        <type>java.lang.String</type>
     </config>
 
     <config>
@@ -13,6 +13,6 @@
         <description>The vpn server check host status, in seconds</description>
         <defaultValue>60</defaultValue>
         <category>vpn</category>
-        <ticketTypeCode>java.lang.Integer</ticketTypeCode>
+        <type>java.lang.Integer</type>
     </config>
 </globalConfig>

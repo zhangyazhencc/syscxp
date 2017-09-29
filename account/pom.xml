@@ -78,7 +78,7 @@
                                     <groupId>${project.groupId}</groupId>
                                     <artifactId>${project.artifactId}</artifactId>
                                     <version>${project.version}</version>
-                                    <ticketTypeCode>${project.packaging}</ticketTypeCode>
+                                    <type>${project.packaging}</type>
                                 </artifactItem>
                             </artifactItems>
                             <!--指定war包保存地址-->

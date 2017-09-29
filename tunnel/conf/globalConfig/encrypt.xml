@@ -6,6 +6,6 @@
         <name>encrypt.algorithm</name>
         <description>encrypt algorithm used in zstack</description>
         <defaultValue>xBGEJoGhwep9+o0FpTgW8D==</defaultValue>
-        <ticketTypeCode>java.lang.String</ticketTypeCode>
+        <type>java.lang.String</type>
     </config>
 </globalConfig>

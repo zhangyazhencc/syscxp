@@ -165,7 +165,7 @@ CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchEO` (
   `code` varchar(128) NOT NULL COMMENT '交换机编号',
   `name` varchar(128) NOT NULL COMMENT '交换机名称',
   `owner` varchar(128) NOT NULL COMMENT '交换机属主',
-  `ticketTypeCode` varchar(32) NOT NULL COMMENT '交换机类型：接入还是输出',
+  `type` varchar(32) NOT NULL COMMENT '交换机类型：接入还是输出',
   `rack` varchar(32) NOT NULL COMMENT '交换机位置',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `mIP` varchar(128) NOT NULL COMMENT '管理IP',
@@ -178,7 +178,7 @@ CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, nodeUuid, switchModelUuid, name, code,  owner, ticketTypeCode, rack, description, mIP, localIP, username, password, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, nodeUuid, switchModelUuid, name, code,  owner, type, rack, description, mIP, localIP, username, password, lastOpDate, createDate
                                           FROM `PhysicalSwitchEO` WHERE deleted = 0;
 
 ##交换机(虚拟交换机)

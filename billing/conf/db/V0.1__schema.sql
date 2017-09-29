@@ -82,7 +82,7 @@ CREATE TABLE `DealDetailVO` (
   `uuid` varchar(32) NOT NULL COMMENT '主键',
   `outTradeNO` varchar(128) DEFAULT NULL COMMENT '流水号',
   `tradeNO` varchar(128) DEFAULT NULL COMMENT '支付宝流水号',
-  `ticketTypeCode` varchar(50) DEFAULT NULL COMMENT '交易类型',
+  `type` varchar(50) DEFAULT NULL COMMENT '交易类型',
   `expend` decimal(12,4) DEFAULT NULL COMMENT '支出',
   `income` decimal(12,4) DEFAULT NULL COMMENT '收入',
   `dealWay` varchar(50) DEFAULT NULL COMMENT '交易方式',
@@ -179,7 +179,7 @@ DROP TABLE IF EXISTS `OrderVO`;
 
 CREATE TABLE `OrderVO` (
   `uuid` varchar(32) NOT NULL COMMENT '主键',
-  `ticketTypeCode` varchar(50) DEFAULT NULL COMMENT '订单类型',
+  `type` varchar(50) DEFAULT NULL COMMENT '订单类型',
   `payTime` timestamp NULL DEFAULT NULL COMMENT '购买时间',
   `state` varchar(50) DEFAULT NULL COMMENT '订单状态',
   `originalPrice` decimal(12,4) DEFAULT 0.0000 COMMENT '产品总价',
@@ -248,7 +248,7 @@ DROP TABLE IF EXISTS `ReceiptInfoVO`;
 
 CREATE TABLE `ReceiptInfoVO` (
   `uuid` varchar(32) NOT NULL COMMENT '主键',
-  `ticketTypeCode` varchar(50) DEFAULT NULL COMMENT '发票类型',
+  `type` varchar(50) DEFAULT NULL COMMENT '发票类型',
   `title` varchar(200) DEFAULT NULL COMMENT '发票抬头',
   `bankName` varchar(200) DEFAULT NULL COMMENT '开户银行名',
   `bankAccountNumber` varchar(30) DEFAULT NULL COMMENT '基本开户账号',

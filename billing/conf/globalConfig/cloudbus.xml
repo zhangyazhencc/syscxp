@@ -5,6 +5,6 @@
         <name>statistics.on</name>
         <description>A boolean value indicating whether enabling message statistics through JMX</description>
         <defaultValue>false</defaultValue>
-        <ticketTypeCode>java.lang.Boolean</ticketTypeCode>
+        <type>java.lang.Boolean</type>
     </config>
 </globalConfig>

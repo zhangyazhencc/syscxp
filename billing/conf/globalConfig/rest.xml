@@ -5,7 +5,7 @@
         <name>completedApi.expiredPeriod</name>
         <description>How long a completed API can stay in the database before it's deleted, in seconds</description>
         <defaultValue>10800</defaultValue>
-        <ticketTypeCode>java.lang.Integer</ticketTypeCode>
+        <type>java.lang.Integer</type>
     </config>
 
     <config>
@@ -13,6 +13,6 @@
         <name>expiredApi.scanInterval</name>
         <description>The interval the GC thread scans the database for completed, expired API records, in seconds</description>
         <defaultValue>3600</defaultValue>
-        <ticketTypeCode>java.lang.Integer</ticketTypeCode>
+        <type>java.lang.Integer</type>
     </config>
 </globalConfig>
