@@ -2,6 +2,7 @@ package org.zstack.tunnel.manage;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.zstack.core.CoreGlobalProperty;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.EventFacade;
@@ -13,13 +14,18 @@ import org.zstack.core.db.DbEntityLister;
 import org.zstack.core.db.GLock;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
+import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.billing.*;
+import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.message.APIMessage;
+import org.zstack.header.message.APIReply;
 import org.zstack.header.message.Message;
+import org.zstack.header.rest.RestAPIResponse;
+import org.zstack.tunnel.header.endpoint.EndpointVO;
 import org.zstack.tunnel.header.monitor.APICreateTunnelMonitorMsg;
 import org.zstack.tunnel.header.monitor.TunnelMonitorVO;
 import org.zstack.tunnel.header.node.NodeVO;
@@ -219,11 +225,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDescription(msg.getDescription());
-        if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-            vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration(), ChronoUnit.MONTHS)));
-        }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-            vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
-        }
+
 
         //TODO 调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
@@ -232,14 +234,24 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setProductType(ProductType.PORT);
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
-        orderMsg.setProductDescription(vo.getDescription());
+        orderMsg.setProductDescription("dingchunyu");
         orderMsg.setProductPriceUnitUuids(msg.getProductPriceUnitUuids());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        //createOrder(orderMsg);
+        RestAPIResponse rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+        APIReply apiReply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
+        if (!apiReply.isSuccess()) {
+            throw new OperationFailureException(apiReply.getError());
+        }
 
         vo.setState(InterfaceState.paid);
-        vo = dbf.persistAndRefresh(vo);
+        if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+            vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration(), ChronoUnit.MONTHS)));
+        }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+            vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+        }
+        vo.setEndpointVO(dbf.findByUuid(msg.getEndpointUuid(),EndpointVO.class));
+        dbf.getEntityManager().persist(vo);
 
         APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
         evt.setInventory(InterfaceInventory.valueOf(vo));
