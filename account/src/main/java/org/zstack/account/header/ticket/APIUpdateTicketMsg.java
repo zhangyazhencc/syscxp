@@ -17,7 +17,7 @@ public class APIUpdateTicketMsg extends APIMessage {
     private String uuid;
 
     @APIParam(maxLength = 128, required = false)
-    private String type;
+    private String ticketTypeCode;
 
     @APIParam(maxLength = 2048, required = false)
     private String content;
@@ -31,12 +31,23 @@ public class APIUpdateTicketMsg extends APIMessage {
     @APIParam(maxLength = 32, required = false)
     private TicketStatus status;
 
-    public String getType() {
-        return type;
+    @APIParam(maxLength = 32, required = false)
+    private String adminUserUuid;
+
+    public String getAdminUserUuid() {
+        return adminUserUuid;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setAdminUserUuid(String adminUserUuid) {
+        this.adminUserUuid = adminUserUuid;
+    }
+
+    public String getTicketTypeCode() {
+        return ticketTypeCode;
+    }
+
+    public void setTicketTypeCode(String ticketTypeCode) {
+        this.ticketTypeCode = ticketTypeCode;
     }
 
     public String getContent() {

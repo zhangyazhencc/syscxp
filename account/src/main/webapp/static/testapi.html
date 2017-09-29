@@ -6,7 +6,7 @@
 </head>
 
 
-<script type="text/javascript">
+<script ticketTypeCode="text/javascript">
     var ua = window.navigator.userAgent;
     var msie = ua.indexOf("MSIE ");
     if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))
@@ -22,7 +22,7 @@
 发送消息<br/>
     <textarea rows="10" cols="100" name="msg" ng-model="msg"></textarea>
     <br/>
-    <button ng-click="post()" style="width:80px;"> 提 交 </button> 查询次数(异步消息)：<input type="text" ng-model="second">
+    <button ng-click="post()" style="width:80px;"> 提 交 </button> 查询次数(异步消息)：<input ticketTypeCode="text" ng-model="second">
     <br/>
 返回<br/>
     <textarea rows="10" cols="100"  name="rspmsg" ng-model="rspmsg"></textarea>

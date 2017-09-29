@@ -7,16 +7,16 @@
     <xsd:element name="error">
         <xsd:complexType>
             <xsd:sequence>
-                <xsd:element name="prefix" type="xsd:string"
+                <xsd:element name="prefix" ticketTypeCode="xsd:string"
                     minOccurs="1" maxOccurs="1"></xsd:element>
 
                 <xsd:sequence maxOccurs="unbounded" minOccurs="0">
                     <xsd:element name="code">
                         <xsd:complexType>
                             <xsd:sequence>
-                                <xsd:element name="id" type="xsd:int" minOccurs="1" maxOccurs="1"></xsd:element>
-                                <xsd:element name="description" type="xsd:string" minOccurs="1" maxOccurs="1"></xsd:element>
-                                <xsd:element name="elaboration" type="xsd:string"></xsd:element>
+                                <xsd:element name="id" ticketTypeCode="xsd:int" minOccurs="1" maxOccurs="1"></xsd:element>
+                                <xsd:element name="description" ticketTypeCode="xsd:string" minOccurs="1" maxOccurs="1"></xsd:element>
+                                <xsd:element name="elaboration" ticketTypeCode="xsd:string"></xsd:element>
                             </xsd:sequence>
                         </xsd:complexType>
                     </xsd:element>

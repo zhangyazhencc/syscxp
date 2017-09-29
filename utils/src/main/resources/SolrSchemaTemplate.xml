@@ -38,7 +38,7 @@
        1.1: multiValued attribute introduced, false by default -->
 
   <types>
-    <!-- field type definitions. The "name" attribute is
+    <!-- fiticketTypeCodetype definitions. The "name" attribute is
        just a label to be used by field definitions.  The "class"
        attribute and any other attributes determine the real
        behavior of the fieldType.
@@ -46,14 +46,14 @@
        org.apache.solr.analysis package.
     -->
 
-    <!-- The StrField type is not analyzed, but indexed/stored verbatim.  
+    <!-- The StrFiticketTypeCodetype is not analyzed, but indexed/stored verbatim.
        - StrField and TextField support an optional compressThreshold which
        limits compression (if enabled in the derived fields) to values which
        exceed a certain size (in characters).
     -->
     <fieldType name="string" class="solr.StrField" sortMissingLast="true" omitNorms="true"/>
 
-    <!-- boolean type: "true" or "false" -->
+    <!-- boolticketTypeCodetype: "true" or "false" -->
     <fieldType name="boolean" class="solr.BoolField" sortMissingLast="true" omitNorms="true"/>
 
     <!-- The optional sortMissingLast and sortMissingFirst attributes are
@@ -113,7 +113,7 @@
 
 
     <!-- The "RandomSortField" is not used to store or search any
-         data.  You can declare fields of this type it in your schema
+         data.  You can declare fields of tticketTypeCodetype it in your schema
          to generate psuedo-random orderings of your docs for sorting 
          purposes.  The ordering is generated based on the field name 
          and the version of the index, As long as the index version
@@ -130,7 +130,7 @@
          analyzers may be specified for indexing and querying.
 
          The optional positionIncrementGap puts space between multiple fields of
-         this type on the same document, with the purpose of preventing false phrase
+         tticketTypeCodetype on the same document, with the purpose of preventing false phrase
          matching across fields.
 
          For more info on customizing your analyzer chain, please see
@@ -159,7 +159,7 @@
         WordDelim parts) are removed.
         -->
     <fieldType name="text" class="solr.TextField" positionIncrementGap="100">
-      <analyzer type="index">
+      <analyzer ticketTypeCode="index">
         <tokenizer class="solr.WhitespaceTokenizerFactory"/>
         <!-- in this example, we will only use synonyms at query time
         <filter class="solr.SynonymFilterFactory" synonyms="index_synonyms.txt" ignoreCase="true" expand="false"/>
@@ -171,7 +171,7 @@
         <filter class="solr.PorterStemFilterFactory"/>
         <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
       </analyzer>
-      <analyzer type="query">
+      <analyzer ticketTypeCode="query">
         <tokenizer class="solr.WhitespaceTokenizerFactory"/>
         <filter class="solr.SynonymFilterFactory" synonyms="synonyms.txt" ignoreCase="true" expand="true"/>
         <filter class="solr.StopFilterFactory" ignoreCase="true" words="stopwords.txt"/>
@@ -232,7 +232,7 @@
       </analyzer>
     </fieldType>
 
-    <!-- since fields of this type are by default not stored or indexed, any data added to 
+    <!-- since fields of tticketTypeCodetype are by default not stored or indexed, any data added to
          them will be ignored outright 
      --> 
     <fieldtype name="ignored" stored="false" indexed="false" class="solr.StrField" /> 
@@ -243,11 +243,11 @@
  <fields>
    <!-- Valid attributes for fields:
      name: mandatory - the name for the field
-     type: mandatory - the name of a previously defined type from the <types> section
+ ticketTypeCodetype: mandatory - the name of a previously defiticketTypeCodetype from the <types> section
      indexed: true if this field should be indexed (searchable or sortable)
      stored: true if this field should be retrievable
      compressed: [false] if this field should be stored using gzip compression
-       (this will only apply if the field type is compressable; among
+       (this will only apply if the fiticketTypeCodetype is compressable; among
        the standard field types, only TextField and StrField are)
      multiValued: true if this field may contain multiple values per document
      omitNorms: (expert) set to true to omit the norms associated with

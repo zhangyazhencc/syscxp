@@ -1,6 +1,4 @@
 
-ALTER TABLE TunnelMonitorInterfaceVO ADD interfaceUuid varchar(32) COMMENT '' AFTER interfaceType;
-
 CREATE TABLE IF NOT EXISTS TunnelMonitorInterfaceVO (
   `uuid` VARCHAR(32) NOT NULL COMMENT '主键',
   `TunnelMonitorUuid` VARCHAR(32) NOT NULL COMMENT '监控通道uuid(TunnelMonitorVO.uuid)',
@@ -12,6 +10,8 @@ CREATE TABLE IF NOT EXISTS TunnelMonitorInterfaceVO (
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `uuid` (`uuid`))
 ENGINE = InnoDB DEFAULT CHARSET = utf8 COMMENT '监控通道两端信息表';
+
+ALTER TABLE TunnelMonitorInterfaceVO ADD interfaceUuid varchar(32) COMMENT '' AFTER interfaceType;
 
 CREATE TABLE `SpeedRecordsVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'uuid',
@@ -31,34 +31,6 @@ CREATE TABLE `SpeedRecordsVO` (
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='监控测速纪录';
-
-ALTER TABLE HostEO CHANGE ip hostIp VARCHAR(128);
-
-CREATE OR REPLACE
-VIEW `syscxp_tunnel`.`HostVO` AS
-    SELECT
-        `syscxp_tunnel`.`HostEO`.`uuid` AS `uuid`,
-        `syscxp_tunnel`.`HostEO`.`nodeUuid` AS `nodeUuid`,
-        `syscxp_tunnel`.`HostEO`.`name` AS `name`,
-        `syscxp_tunnel`.`HostEO`.`code` AS `code`,
-        `syscxp_tunnel`.`HostEO`.`hostIp` AS `hostIp`,
-        `syscxp_tunnel`.`HostEO`.`username` AS `username`,
-        `syscxp_tunnel`.`HostEO`.`password` AS `password`,
-        `syscxp_tunnel`.`HostEO`.`state` AS `state`,
-        `syscxp_tunnel`.`HostEO`.`status` AS `status`,
-        `syscxp_tunnel`.`HostEO`.`lastOpDate` AS `lastOpDate`,
-        `syscxp_tunnel`.`HostEO`.`createDate` AS `createDate`
-    FROM
-        `syscxp_tunnel`.`HostEO`
-    WHERE
-        (`syscxp_tunnel`.`HostEO`.`deleted` = 0);
-
-alter table syscxp_tunnel.HostEO add nodeUuid varchar(32) comment '节点ID(NodeEO.uuid)' after uuid;
-
-CREATE OR REPLACE VIEW `syscxp_tunnel`.`HostVO` AS
-SELECT uuid, nodeUuid, name, code, ip, username, password, state, status, lastOpDate, createDate
-  FROM `HostEO`
- WHERE deleted = 0;
 
 CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`HostSwitchMonitorAO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
@@ -193,7 +165,7 @@ CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchEO` (
   `code` varchar(128) NOT NULL COMMENT '交换机编号',
   `name` varchar(128) NOT NULL COMMENT '交换机名称',
   `owner` varchar(128) NOT NULL COMMENT '交换机属主',
-  `type` varchar(32) NOT NULL COMMENT '交换机类型：接入还是输出',
+  `ticketTypeCode` varchar(32) NOT NULL COMMENT '交换机类型：接入还是输出',
   `rack` varchar(32) NOT NULL COMMENT '交换机位置',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `mIP` varchar(128) NOT NULL COMMENT '管理IP',
@@ -206,7 +178,7 @@ CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, nodeUuid, switchModelUuid, name, code,  owner, type, rack, description, mIP, localIP, username, password, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, nodeUuid, switchModelUuid, name, code,  owner, ticketTypeCode, rack, description, mIP, localIP, username, password, lastOpDate, createDate
                                           FROM `PhysicalSwitchEO` WHERE deleted = 0;
 
 ##交换机(虚拟交换机)
@@ -385,5 +357,26 @@ CREATE TABLE `HostEO` (
   UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '监控主机';
 
-CREATE VIEW `syscxp_tunnel`.`HostVO` AS SELECT uuid, name, code, ip, username, password, state, status, lastOpDate, createDate
-                                                     FROM `HostEO` WHERE deleted = 0;
+
+ALTER TABLE HostEO CHANGE ip hostIp VARCHAR(128);
+
+CREATE OR REPLACE
+VIEW `syscxp_tunnel`.`HostVO` AS
+    SELECT
+        `syscxp_tunnel`.`HostEO`.`uuid` AS `uuid`,
+        `syscxp_tunnel`.`HostEO`.`nodeUuid` AS `nodeUuid`,
+        `syscxp_tunnel`.`HostEO`.`name` AS `name`,
+        `syscxp_tunnel`.`HostEO`.`code` AS `code`,
+        `syscxp_tunnel`.`HostEO`.`hostIp` AS `hostIp`,
+        `syscxp_tunnel`.`HostEO`.`username` AS `username`,
+        `syscxp_tunnel`.`HostEO`.`password` AS `password`,
+        `syscxp_tunnel`.`HostEO`.`state` AS `state`,
+        `syscxp_tunnel`.`HostEO`.`status` AS `status`,
+        `syscxp_tunnel`.`HostEO`.`lastOpDate` AS `lastOpDate`,
+        `syscxp_tunnel`.`HostEO`.`createDate` AS `createDate`
+    FROM
+        `syscxp_tunnel`.`HostEO`
+    WHERE
+        (`syscxp_tunnel`.`HostEO`.`deleted` = 0);
+
+alter table syscxp_tunnel.HostEO add nodeUuid varchar(32) comment '节点ID(NodeEO.uuid)' after uuid;

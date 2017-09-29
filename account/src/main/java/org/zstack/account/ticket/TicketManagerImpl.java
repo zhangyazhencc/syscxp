@@ -9,8 +9,6 @@ import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.MessageSafe;
 import org.zstack.core.db.DatabaseFacade;
-import org.zstack.core.db.SimpleQuery;
-import org.zstack.core.db.SimpleQuery.Op;
 import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
@@ -87,19 +85,24 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
             vo.setStatus(msg.getStatus());
             isupdate = true;
         }
-        if(msg.getType() != null){
+        if(msg.getAdminUserUuid() != null){
+            vo.setAdminUserUuid(msg.getAdminUserUuid());
+            isupdate = true;
+        }
+
+        if(msg.getTicketTypeCode() != null){
             List<TicketTypeVO> list =  dbf.createQuery(TicketTypeVO.class).list();
             boolean is = false;
             for(TicketTypeVO tyvo : list){
-                if(tyvo.getTypeValue().equals(msg.getType())){
+                if(tyvo.getCode().equals(msg.getTicketTypeCode())){
                     is = true;
                 }
             }
             if(!is){
                 throw new ApiMessageInterceptionException(argerr("value[%s] of type is not exist",
-                        msg.getType()));
+                        msg.getTicketTypeCode()));
             }
-            vo.setType(msg.getType());
+            vo.setTicketTypeCode(msg.getTicketTypeCode());
             isupdate = true;
         }
         if(isupdate){
@@ -133,14 +136,21 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
         TicketRecordVO vo = new TicketRecordVO();
         vo.setUuid(Platform.getUuid());
         vo.setTicketUuid(msg.getTicketUuid());
-        vo.setBelongTo(msg.getBelongto());
+        vo.setRecordBy(msg.getRecordBy());
         vo.setContent(msg.getContent());
         vo.setStatus(msg.getStatus());
+        if(msg.getRecordBy() == RecordBy.AdminUser ){
+            vo.setAdminUserUuid(msg.getSession().getUserUuid());
+        }
+
         vo = dbf.persistAndRefresh(vo);
 
         TicketVO tvo = dbf.findByUuid(msg.getTicketUuid(),TicketVO.class);
         tvo.setStatus(msg.getStatus());
-        tvo.setAdminUserUuid(msg.getSession().getUserUuid());
+        if(msg.getSession() != null){
+            tvo.setAdminUserUuid(msg.getSession().getUserUuid());
+        }
+
         dbf.getEntityManager().merge(tvo);
 
         APICreateTicketRecordEvent event = new APICreateTicketRecordEvent(msg.getId());
@@ -153,11 +163,19 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
 
         TicketVO vo =  new TicketVO();
         vo.setUuid(Platform.getUuid());
-        vo.setAccountUuid(msg.getSession().getAccountUuid());
-        if(!msg.getSession().getAccountUuid().equals(msg.getSession().getUserUuid())){
-            vo.setUserUuid(msg.getSession().getUserUuid());
+        if(!msg.getTicketFrom().toString().equals(TicketFrom.apply.toString())){
+            vo.setAccountUuid(msg.getSession().getAccountUuid());
+            if(!msg.getSession().getAccountUuid().equals(msg.getSession().getUserUuid())){
+                vo.setUserUuid(msg.getSession().getUserUuid());
+            }
         }
-        vo.setType(msg.getType());
+        vo.setTicketTypeCode(msg.getTicketTypeCode());
+
+        if(vo.getContentExtra() != null){
+            vo.setContentExtra(msg.getContentExtra());
+        }
+
+        vo.setTicketFrom(msg.getTicketFrom());
         vo.setContent(msg.getContent());
         vo.setStatus(TicketStatus.untreated);
 
@@ -200,22 +218,19 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
         List<TicketTypeVO> list =  dbf.createQuery(TicketTypeVO.class).list();
         boolean is = false;
         for(TicketTypeVO vo : list){
-            if(vo.getTypeValue().equals(msg.getType())){
+            if(vo.getCode().equals(msg.getTicketTypeCode())){
                 is = true;
             }
         }
         if(!is){
             throw new ApiMessageInterceptionException(argerr("value[%s] of type is not exist",
-                    msg.getType()));
+                    msg.getTicketTypeCode()));
         }
 
     }
 
     private void setServiceId(APIMessage msg) {
-        if (msg instanceof TicketMessage) {
-            TicketMessage amsg = (TicketMessage) msg;
-            bus.makeTargetServiceIdByResourceUuid(msg, AccountConstant.SERVICE_ID, amsg.getAccountUuid());
-        }
+      bus.makeTargetServiceIdByResourceUuid(msg, AccountConstant.SERVICE_ID, "");
     }
 
 }

@@ -235,7 +235,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
         orderMsg.setProductDescription("dingchunyu");
-        orderMsg.setProductPriceUnitUuids(msg.getProductPriceUnitUuids());
+        orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         RestAPIResponse rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
@@ -275,11 +275,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDescription(msg.getDescription());
-        if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-            vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration(), ChronoUnit.MONTHS)));
-        }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-            vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
-        }
 
         //TODO 调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
@@ -288,14 +283,24 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setProductType(ProductType.PORT);
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
-        orderMsg.setProductDescription(vo.getDescription());
-        orderMsg.setProductPriceUnitUuids(msg.getProductPriceUnitUuids());
+        orderMsg.setProductDescription("dingchunyu");
+        orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        //createOrder(orderMsg);
+        RestAPIResponse rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+        APIReply apiReply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
+        if (!apiReply.isSuccess()) {
+            throw new OperationFailureException(apiReply.getError());
+        }
 
         vo.setState(InterfaceState.paid);
-        vo = dbf.persistAndRefresh(vo);
+        if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+            vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration(), ChronoUnit.MONTHS)));
+        }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+            vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+        }
+        vo.setEndpointVO(dbf.findByUuid(msg.getEndpointUuid(),EndpointVO.class));
+        dbf.getEntityManager().persist(vo);
 
         APICreateInterfaceManualEvent evt = new APICreateInterfaceManualEvent(msg.getId());
         evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -335,7 +340,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setProductUuid(vo.getUuid());
         orderMsg.setProductName(vo.getName());
         orderMsg.setProductDescription(vo.getDescription());
-        orderMsg.setProductPriceUnitUuids(msg.getProductPriceUnitUuids());
+        orderMsg.setUnits(msg.getUnits());
         orderMsg.setProductType(ProductType.PORT);
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -485,7 +490,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
         orderMsg.setProductDescription(vo.getDescription());
-        orderMsg.setProductPriceUnitUuids(msg.getProductPriceUnitUuids());
+        orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         //createOrder(orderMsg);

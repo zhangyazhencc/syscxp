@@ -5,6 +5,6 @@
         <name>webhook.url</name>
 	<description>The webhook where the management node sends notifications</description>
         <defaultValue>null</defaultValue>
-        <type>java.lang.String</type>
+        <ticketTypeCode>java.lang.String</ticketTypeCode>
     </config>
 </globalConfig>

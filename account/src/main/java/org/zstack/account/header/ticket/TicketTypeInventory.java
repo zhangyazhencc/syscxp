@@ -11,8 +11,10 @@ import java.util.List;
 public class TicketTypeInventory {
 
     private long id;
-    private String typeValue;
-    private String typeName;
+    private String code;
+    private String name;
+    private String category;
+
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
@@ -20,9 +22,9 @@ public class TicketTypeInventory {
     public static TicketTypeInventory valueOf(TicketTypeVO vo) {
         TicketTypeInventory inv = new TicketTypeInventory();
         inv.setId(vo.getId());
-        inv.setTypeName(vo.getTypeName());
-        inv.setTypeValue(vo.getTypeValue());
-
+        inv.setName(vo.getName());
+        inv.setCode(vo.getCode());
+        inv.setCategory(vo.getCategory());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
@@ -36,6 +38,14 @@ public class TicketTypeInventory {
         return lst;
     }
 
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
+    }
+
     public long getId() {
         return id;
     }
@@ -44,20 +54,20 @@ public class TicketTypeInventory {
         this.id = id;
     }
 
-    public String getTypeValue() {
-        return typeValue;
+    public String getCode() {
+        return code;
     }
 
-    public void setTypeValue(String typeValue) {
-        this.typeValue = typeValue;
+    public void setCode(String code) {
+        this.code = code;
     }
 
-    public String getTypeName() {
-        return typeName;
+    public String getName() {
+        return name;
     }
 
-    public void setTypeName(String typeName) {
-        this.typeName = typeName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Timestamp getCreateDate() {

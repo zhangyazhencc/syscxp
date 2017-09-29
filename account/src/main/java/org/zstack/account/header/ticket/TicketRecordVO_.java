@@ -13,7 +13,8 @@ import java.sql.Timestamp;
 public class TicketRecordVO_ {
     public static volatile SingularAttribute<TicketRecordVO, String> uuid;
     public static volatile SingularAttribute<TicketRecordVO, String> ticketUuid;
-    public static volatile SingularAttribute<TicketRecordVO, String> belongTo;
+    public static volatile SingularAttribute<TicketRecordVO, String> adminUserUuid;
+    public static volatile SingularAttribute<TicketRecordVO, String> recordBy;
     public static volatile SingularAttribute<TicketRecordVO, String> content;
     public static volatile SingularAttribute<TicketRecordVO, TicketStatus> status;
     public static volatile SingularAttribute<TicketRecordVO, Timestamp> createDate;
