@@ -1,5 +1,7 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.billing.ProductChargeModel;
+import org.zstack.header.billing.ProductPriceUnit;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
@@ -9,6 +11,8 @@ import org.zstack.tunnel.header.endpoint.EndpointVO;
 import org.zstack.tunnel.header.switchs.SwitchPortAttribute;
 import org.zstack.tunnel.header.switchs.SwitchPortType;
 import org.zstack.tunnel.manage.TunnelConstant;
+
+import java.util.List;
 
 /**
  * Created by DCY on 2017-09-08
@@ -31,7 +35,11 @@ public class APICreateInterfaceMsg extends APIMessage {
     @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
     @APIParam
-    private Integer months;
+    private Integer duration;
+    @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
+    private ProductChargeModel productChargeModel;
+    @APIParam(nonempty = true)
+    private List<ProductPriceUnit> units;
 
     public String getName() {
         return name;
@@ -65,14 +73,6 @@ public class APICreateInterfaceMsg extends APIMessage {
         this.portType = portType;
     }
 
-    public Integer getMonths() {
-        return months;
-    }
-
-    public void setMonths(Integer months) {
-        this.months = months;
-    }
-
     public String getAccountUuid() {
         if(getSession().getType() == AccountType.SystemAdmin){
             return accountUuid;
@@ -99,5 +99,29 @@ public class APICreateInterfaceMsg extends APIMessage {
 
     public void setPortAttribute(SwitchPortAttribute portAttribute) {
         this.portAttribute = portAttribute;
+    }
+
+    public ProductChargeModel getProductChargeModel() {
+        return productChargeModel;
+    }
+
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
+        this.productChargeModel = productChargeModel;
+    }
+
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+
+    public List<ProductPriceUnit> getUnits() {
+        return units;
+    }
+
+    public void setUnits(List<ProductPriceUnit> units) {
+        this.units = units;
     }
 }

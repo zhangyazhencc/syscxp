@@ -56,6 +56,7 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`description` varchar(255) DEFAULT NULL COMMENT '描述',
 	`vpnCidr` VARCHAR(32) NOT NULL COMMENT 'VPN网段',
 	`bandwidth` BIGINT NOT NULL COMMENT '带宽',
+	`maxModifies` INT DEFAULT 5 COMMENT '最大调整次数',
 	`endpointUuid` VARCHAR(32) NOT NULL COMMENT '连接点uuid',
 	`port` VARCHAR(10) NOT NULL COMMENT 'VPN端口',
 	`state` VARCHAR(32) DEFAULT NULL COMMENT '启用状态',

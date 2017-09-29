@@ -32,6 +32,14 @@
     </message>
 
     <message>
+        <name>org.zstack.tunnel.header.tunnel.APIUpdateInterfaceBandwidthMsg</name>
+    </message>
+
+    <message>
+        <name>org.zstack.tunnel.header.tunnel.APIUpdateInterfaceExpireDateMsg</name>
+    </message>
+
+    <message>
         <name>org.zstack.tunnel.header.tunnel.APIDeleteInterfaceMsg</name>
     </message>
 

@@ -1,5 +1,7 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.billing.ProductChargeModel;
+import org.zstack.header.billing.ProductPriceUnit;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
@@ -7,6 +9,8 @@ import org.zstack.tunnel.header.endpoint.EndpointVO;
 import org.zstack.tunnel.header.switchs.SwitchPortAttribute;
 import org.zstack.tunnel.header.switchs.SwitchPortVO;
 import org.zstack.tunnel.manage.TunnelConstant;
+
+import java.util.List;
 
 /**
  * Created by DCY on 2017-09-11
@@ -27,8 +31,12 @@ public class APICreateInterfaceManualMsg extends APIMessage {
     private Long bandwidth;
     @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
-    @APIParam(emptyString = false)
-    private Integer months;
+    @APIParam
+    private Integer duration;
+    @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
+    private ProductChargeModel productChargeModel;
+    @APIParam(nonempty = true)
+    private List<ProductPriceUnit> units;
 
     public String getAccountUuid() {
         return accountUuid;
@@ -70,19 +78,35 @@ public class APICreateInterfaceManualMsg extends APIMessage {
         this.description = description;
     }
 
-    public Integer getMonths() {
-        return months;
-    }
-
-    public void setMonths(Integer months) {
-        this.months = months;
-    }
-
     public Long getBandwidth() {
         return bandwidth;
     }
 
     public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
+    }
+
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+
+    public ProductChargeModel getProductChargeModel() {
+        return productChargeModel;
+    }
+
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
+        this.productChargeModel = productChargeModel;
+    }
+
+    public List<ProductPriceUnit> getUnits() {
+        return units;
+    }
+
+    public void setUnits(List<ProductPriceUnit> units) {
+        this.units = units;
     }
 }

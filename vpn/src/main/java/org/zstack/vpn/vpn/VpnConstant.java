@@ -4,6 +4,8 @@ public interface VpnConstant {
 
     public static final String SERVICE_ID = "vpn";
 
+    public static final Integer MAX_MOTIFIES = 5;
+
     public static final String ACTION_CATEGORY_VPN = "vpn";
 
     public static final String VPN_ROOT_PATH = "vpn";

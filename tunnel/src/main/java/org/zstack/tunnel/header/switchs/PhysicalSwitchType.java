@@ -5,5 +5,6 @@ package org.zstack.tunnel.header.switchs;
  */
 public enum PhysicalSwitchType {
     ACCESS,
-    TRANSPORT
+    TRANSPORT,
+    BOTH
 }

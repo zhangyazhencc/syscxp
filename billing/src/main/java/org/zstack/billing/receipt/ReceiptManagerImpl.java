@@ -65,6 +65,8 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
             handle((APICreateReceiptPostAddressMsg) msg);
         } else if (msg instanceof APIUpdateReceiptPostAddressMsg) {
             handle((APIUpdateReceiptPostAddressMsg) msg);
+        } else if (msg instanceof APIUpdateReceiptMsg) {
+            handle((APIUpdateReceiptMsg) msg);
         } else if (msg instanceof APIDeleteReceiptPostAddressMsg) {
             handle((APIDeleteReceiptPostAddressMsg) msg);
         } else if (msg instanceof APICreateReceiptInfoMsg) {
@@ -78,6 +80,24 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         }  else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIUpdateReceiptMsg msg) {
+        String receiptUuid = msg.getUuid();
+        ReceiptState state = msg.getState();
+        ReceiptVO vo = dbf.findByUuid(receiptUuid, ReceiptVO.class);
+        vo.setState(msg.getState());
+        vo.setCommet(msg.getReason());
+        if (vo.getState().equals(ReceiptState.REJECT)) {
+            vo.setOpMan(msg.getOpMan());
+        } else if(vo.getState().equals(ReceiptState.DONE)){
+            vo.setReceiptNO(msg.getReceiptNO());
+        }
+        dbf.updateAndRefresh(vo);
+        ReceiptInventory inventory = ReceiptInventory.valueOf(vo);
+        APIUpdateReceiptEvent evt = new APIUpdateReceiptEvent(msg.getId());
+        evt.setInventory(inventory);
+        bus.publish(evt);
     }
     private void handle(APICreateReceiptMsg msg) {
         String accountUuid = msg.getSession().getAccountUuid();
