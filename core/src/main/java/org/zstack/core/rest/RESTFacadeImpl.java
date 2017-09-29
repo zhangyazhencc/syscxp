@@ -455,13 +455,7 @@ public class RESTFacadeImpl implements RESTFacade {
             if (logger.isTraceEnabled()) {
                 logger.trace(String.format("[http response(url: %s)] %s", url, rsp.getBody()));
             }
-            String rspbody = rsp.getBody();
-            try {
-                rspbody = new String(rspbody.getBytes("ISO-8859-1"), "utf-8");
-            } catch (UnsupportedEncodingException e) {
-            }
-
-            return JSONObjectUtil.toObject(rspbody, returnClass);
+            return JSONObjectUtil.toObject(rsp.getBody(), returnClass);
         } else {
             return null;
         }

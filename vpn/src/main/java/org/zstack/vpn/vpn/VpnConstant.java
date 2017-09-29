@@ -10,7 +10,7 @@ public interface VpnConstant {
 
     public static final String VPN_ROOT_PATH = "vpn";
 
-    public static final String CREATE_VPN_PATH = "/init-vpn";
+    public static final String INIT_VPN_PATH = "/init-vpn";
 
     public static final String DELETE_VPN_PATH = "/destroy-vpn";
 

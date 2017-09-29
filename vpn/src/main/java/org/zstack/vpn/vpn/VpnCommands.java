@@ -80,7 +80,7 @@ public class VpnCommands {
 
     }
 
-    public static class CreateVpnCmd extends VpnAgentCommand {
+    public static class InitVpnCmd extends VpnAgentCommand {
 
         private String cidr;
         private Long bandwidth;
@@ -88,8 +88,8 @@ public class VpnCommands {
         private List<VpnInterfaceCmd> ddn_if_list;
         private List<VpnRouteCmd> vpnRouteCmds;
 
-        public static CreateVpnCmd valueOf(VpnVO vo) {
-            CreateVpnCmd cmd = new CreateVpnCmd();
+        public static InitVpnCmd valueOf(VpnVO vo) {
+            InitVpnCmd cmd = new InitVpnCmd();
             cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setVpnUuid(vo.getUuid());
             cmd.setPort(vo.getPort());
