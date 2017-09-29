@@ -145,7 +145,7 @@ public class StringDSL {
         try {
             if (str.equals(new String(str.getBytes(encode), encode))) {
                 String s = encode;
-                return s;
+                System.out.println(s);
             }
         } catch (Exception exception) {
         }
@@ -153,7 +153,7 @@ public class StringDSL {
         try {
             if (str.equals(new String(str.getBytes(encode), encode))) {
                 String s1 = encode;
-                return s1;
+                System.out.println(s1);
             }
         } catch (Exception exception1) {
         }
@@ -161,7 +161,7 @@ public class StringDSL {
         try {
             if (str.equals(new String(str.getBytes(encode), encode))) {
                 String s2 = encode;
-                return s2;
+                System.out.println(s2);
             }
         } catch (Exception exception2) {
         }
@@ -169,10 +169,11 @@ public class StringDSL {
         try {
             if (str.equals(new String(str.getBytes(encode), encode))) {
                 String s3 = encode;
-                return s3;
+                System.out.println(s3);
             }
         } catch (Exception exception3) {
         }
+        System.out.println("Unknown");
         return "Unknown";
     }
 }

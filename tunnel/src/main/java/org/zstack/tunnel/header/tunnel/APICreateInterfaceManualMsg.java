@@ -1,6 +1,7 @@
 package org.zstack.tunnel.header.tunnel;
 
 import org.zstack.header.billing.ProductChargeModel;
+import org.zstack.header.billing.ProductPriceUnit;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
@@ -35,7 +36,7 @@ public class APICreateInterfaceManualMsg extends APIMessage {
     @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
     private ProductChargeModel productChargeModel;
     @APIParam(nonempty = true)
-    private List<String> productPriceUnitUuids;
+    private List<ProductPriceUnit> units;
 
     public String getAccountUuid() {
         return accountUuid;
@@ -101,11 +102,11 @@ public class APICreateInterfaceManualMsg extends APIMessage {
         this.productChargeModel = productChargeModel;
     }
 
-    public List<String> getProductPriceUnitUuids() {
-        return productPriceUnitUuids;
+    public List<ProductPriceUnit> getUnits() {
+        return units;
     }
 
-    public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
-        this.productPriceUnitUuids = productPriceUnitUuids;
+    public void setUnits(List<ProductPriceUnit> units) {
+        this.units = units;
     }
 }

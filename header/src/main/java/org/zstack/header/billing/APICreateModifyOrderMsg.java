@@ -13,7 +13,7 @@ public class APICreateModifyOrderMsg extends APICreateOrderMsg {
     private String productName;
 
     @APIParam(nonempty = true)
-    private List<String> productPriceUnitUuids;
+    private List<ProductPriceUnit> units;
 
     @APIParam(emptyString = false)
     private ProductType productType;
@@ -56,11 +56,11 @@ public class APICreateModifyOrderMsg extends APICreateOrderMsg {
         this.productDescription = productDescription;
     }
 
-    public List<String> getProductPriceUnitUuids() {
-        return productPriceUnitUuids;
+    public List<ProductPriceUnit> getUnits() {
+        return units;
     }
 
-    public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
-        this.productPriceUnitUuids = productPriceUnitUuids;
+    public void setUnits(List<ProductPriceUnit> units) {
+        this.units = units;
     }
 }
