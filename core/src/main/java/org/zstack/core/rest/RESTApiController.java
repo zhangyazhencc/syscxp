@@ -37,7 +37,7 @@ public class RESTApiController {
     @Autowired
     private RESTFacade restf;
 
-    @RequestMapping(value = RESTConstant.REST_API_RESULT + "{uuid}", method = {RequestMethod.GET, RequestMethod.PUT},produces="application/json;charset=UTF-8")
+    @RequestMapping(value = RESTConstant.REST_API_RESULT + "{uuid}", method = {RequestMethod.GET, RequestMethod.PUT})
     public void queryResult(@PathVariable String uuid, HttpServletResponse rsp) throws IOException {
         try {
             RestAPIResponse apiRsp = restApi.getResult(uuid);
@@ -141,7 +141,7 @@ public class RESTApiController {
         return JSONObjectUtil.toJsonString(rsp);
     }
 
-    @RequestMapping(value = RESTConstant.REST_API_CALL, method = {RequestMethod.POST, RequestMethod.PUT},produces="application/json;charset=UTF-8")
+    @RequestMapping(value = RESTConstant.REST_API_CALL, method = {RequestMethod.POST, RequestMethod.PUT})
     public void post(HttpServletRequest request, HttpServletResponse response) throws IOException {
         HttpEntity<String> entity = restf.httpServletRequestToHttpEntity(request);
         try {
