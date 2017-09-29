@@ -169,7 +169,7 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
                 vo.setUserUuid(msg.getSession().getUserUuid());
             }
         }
-        vo.setTicketTypeCode(msg.getType());
+        vo.setTicketTypeCode(msg.getTicketTypeCode());
 
         if(vo.getContentExtra() != null){
             vo.setContentExtra(msg.getContentExtra());
@@ -218,13 +218,13 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
         List<TicketTypeVO> list =  dbf.createQuery(TicketTypeVO.class).list();
         boolean is = false;
         for(TicketTypeVO vo : list){
-            if(vo.getCode().equals(msg.getType())){
+            if(vo.getCode().equals(msg.getTicketTypeCode())){
                 is = true;
             }
         }
         if(!is){
             throw new ApiMessageInterceptionException(argerr("value[%s] of type is not exist",
-                    msg.getType()));
+                    msg.getTicketTypeCode()));
         }
 
     }
