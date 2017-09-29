@@ -10,8 +10,10 @@ import org.zstack.core.identity.InnerMessageHelper;
 import org.zstack.core.rest.RESTApiDecoder;
 import org.zstack.core.retry.Retry;
 import org.zstack.core.retry.RetryCondition;
+import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.message.APIMessage;
+import org.zstack.header.message.APIReply;
 import org.zstack.header.rest.RESTConstant;
 import org.zstack.header.rest.RESTFacade;
 import org.zstack.header.rest.RestAPIResponse;
@@ -112,9 +114,12 @@ public class VpnRESTCaller {
         return URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.VPN_ROOT_PATH, path);
     }
 
-    public RestAPIResponse syncJsonPost(APIMessage innerMsg) {
+    public APIReply syncJsonPost(APIMessage innerMsg) {
+        String url = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL);
         InnerMessageHelper.setMD5(innerMsg);
-        return restf.syncJsonPost(URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL), RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
+
+        RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
+        return  (APIReply) RESTApiDecoder.loads(rsp.getResult());
     }
 
 }

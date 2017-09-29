@@ -57,7 +57,7 @@ public class VpnInventory {
     }
 
     public static List<VpnInventory> valueOf(Collection<VpnVO> vos) {
-        List<VpnInventory> invs = new ArrayList<VpnInventory>();
+        List<VpnInventory> invs = new ArrayList<>();
         for (VpnVO vo : vos) {
             invs.add(VpnInventory.valueOf(vo));
         }

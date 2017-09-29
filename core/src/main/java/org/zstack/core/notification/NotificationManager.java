@@ -275,7 +275,6 @@ public class NotificationManager extends AbstractService {
                     if (NotificationGlobalConfig.WEBHOOK_URL.value() != null && !NotificationGlobalConfig.WEBHOOK_URL.value().equals("null")) {
 
                         APICreateNotificationMsg msg = new APICreateNotificationMsg();
-                        msg.setSession(session);
                         msg.setAccountUuid(session.getAccountUuid());
                         msg.setUserUuid(session.getUserUuid());
                         msg.setName(builder.notificationName);
