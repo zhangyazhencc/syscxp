@@ -2,25 +2,8 @@ package org.zstack.header.vpn;
 
 public class VpnAgentCommand {
     private String host_ip;
-    private String public_ip;
     private String uuid;
     private Integer port;
-
-    public String getPublicIp() {
-        return public_ip;
-    }
-
-    public void setPublicIp(String publicIp) {
-        this.public_ip = publicIp;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
 
     public Integer getPort() {
         return port;

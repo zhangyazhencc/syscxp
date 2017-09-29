@@ -6,17 +6,8 @@ import org.zstack.header.rest.RestAPIState;
 
 /**
  */
-public class VpnAgentResponse extends AgentResponse{
+public class VpnAgentResponse {
     private HttpStatus statusCode;
-    private RestAPIState state;
-
-    public RestAPIState getState() {
-        return state;
-    }
-
-    public void setState(RestAPIState state) {
-        this.state = state;
-    }
 
     public HttpStatus getStatusCode() {
         return statusCode;

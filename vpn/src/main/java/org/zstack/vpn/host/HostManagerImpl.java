@@ -338,7 +338,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             }
             for (VpnHostVO vo : vos) {
                 CheckVpnHostStatusCmd cmd = CheckVpnHostStatusCmd.valueOf(vo);
-                CheckStatusResponse rsp = new VpnRESTCaller().checkState(HostConstant.CHECK_HOST_STATE_PATH, cmd);
+                CheckStatusResponse rsp = new VpnRESTCaller().checkState(HostConstant.CHECK_HOST_STATUS_PATH, cmd);
                 if (rsp.getStatusCode() != HttpStatus.OK || !rsp.isSuccess())
                     disconnectedHosts.add(vo.getUuid());
             }
