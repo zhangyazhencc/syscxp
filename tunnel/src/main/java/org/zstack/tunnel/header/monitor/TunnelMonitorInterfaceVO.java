@@ -20,6 +20,9 @@ public class TunnelMonitorInterfaceVO {
     private String tunnelMonitorUuid;
 
     @Column
+    private String interfaceUuid;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private InterfaceType interfaceType;
 
@@ -54,6 +57,14 @@ public class TunnelMonitorInterfaceVO {
 
     public void setTunnelMonitorUuid(String tunnelMonitorUuid) {
         this.tunnelMonitorUuid = tunnelMonitorUuid;
+    }
+
+    public String getInterfaceUuid() {
+        return interfaceUuid;
+    }
+
+    public void setInterfaceUuid(String interfaceUuid) {
+        this.interfaceUuid = interfaceUuid;
     }
 
     public InterfaceType getInterfaceType() {

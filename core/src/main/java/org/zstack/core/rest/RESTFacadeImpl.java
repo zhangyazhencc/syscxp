@@ -25,10 +25,7 @@ import org.zstack.header.errorcode.OperationFailureException;
 import org.zstack.header.errorcode.SysErrors;
 import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.rest.*;
-import org.zstack.utils.DebugUtils;
-import org.zstack.utils.ExceptionDSL;
-import org.zstack.utils.IptablesUtils;
-import org.zstack.utils.Utils;
+import org.zstack.utils.*;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 
@@ -37,6 +34,7 @@ import static org.zstack.core.Platform.operr;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -47,7 +45,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RESTFacadeImpl implements RESTFacade {
     private static final CLogger logger = Utils.getLogger(RESTFacadeImpl.class);
-    
+
     @Autowired
     private ThreadFacade thdf;
     @Autowired
@@ -292,7 +290,7 @@ public class RESTFacadeImpl implements RESTFacade {
                 }
 
                 if (callback instanceof JsonAsyncRESTCallback) {
-                    JsonAsyncRESTCallback jcallback = (JsonAsyncRESTCallback)callback;
+                    JsonAsyncRESTCallback jcallback = (JsonAsyncRESTCallback) callback;
                     Object obj = JSONObjectUtil.toObject(responseEntity.getBody(), jcallback.getReturnClass());
                     try {
                         ErrorCode err = vf.validateErrorByErrorCode(obj);
@@ -390,9 +388,9 @@ public class RESTFacadeImpl implements RESTFacade {
                 sb.append(line);
             }
             req.getReader().close();
-            
+
             HttpHeaders header = new HttpHeaders();
-            for (Enumeration e = req.getHeaderNames() ; e.hasMoreElements() ;) {
+            for (Enumeration e = req.getHeaderNames(); e.hasMoreElements(); ) {
                 String name = e.nextElement().toString();
                 header.add(name, req.getHeader(name));
             }
@@ -451,14 +449,19 @@ public class RESTFacadeImpl implements RESTFacade {
         if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
             throw new OperationFailureException(operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
         }
-        
+
         if (rsp.getBody() != null && returnClass != Void.class) {
 
             if (logger.isTraceEnabled()) {
                 logger.trace(String.format("[http response(url: %s)] %s", url, rsp.getBody()));
             }
+            String rspbody = rsp.getBody();
+            try {
+                rspbody = new String(rspbody.getBytes("ISO-8859-1"), "utf-8");
+            } catch (UnsupportedEncodingException e) {
+            }
 
-            return JSONObjectUtil.toObject(rsp.getBody(), returnClass);
+            return JSONObjectUtil.toObject(rspbody, returnClass);
         } else {
             return null;
         }
@@ -468,7 +471,7 @@ public class RESTFacadeImpl implements RESTFacade {
     public void echo(String url, Completion callback) {
         echo(url, callback, TimeUnit.SECONDS.toMillis(1), TimeUnit.SECONDS.toMillis(30));
     }
-    
+
     @Override
     public void echo(final String url, final Completion completion, final long interval, final long timeout) {
         class Echo implements CancelablePeriodicTask {
@@ -476,7 +479,7 @@ public class RESTFacadeImpl implements RESTFacade {
 
             Echo() {
                 this.count = timeout / interval;
-                DebugUtils.Assert(count!=0, String.format("invalid timeout[%s], interval[%s]", timeout, interval));
+                DebugUtils.Assert(count != 0, String.format("invalid timeout[%s], interval[%s]", timeout, interval));
             }
 
             @Override
@@ -572,4 +575,5 @@ public class RESTFacadeImpl implements RESTFacade {
     public void installBeforeAsyncJsonPostInterceptor(BeforeAsyncJsonPostInterceptor interceptor) {
         interceptors.add(interceptor);
     }
+
 }

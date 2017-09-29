@@ -18,6 +18,8 @@ public class TunnelMonitorInterfaceInventory {
 
     private String tunnelMonitorUuid;
 
+    private String interfaceUuid;
+
     private InterfaceType interfaceType;
 
     private String hostUuid;
@@ -64,6 +66,14 @@ public class TunnelMonitorInterfaceInventory {
 
     public void setTunnelMonitorUuid(String tunnelMonitorUuid) {
         this.tunnelMonitorUuid = tunnelMonitorUuid;
+    }
+
+    public String getInterfaceUuid() {
+        return interfaceUuid;
+    }
+
+    public void setInterfaceUuid(String interfaceUuid) {
+        this.interfaceUuid = interfaceUuid;
     }
 
     public InterfaceType getInterfaceType() {

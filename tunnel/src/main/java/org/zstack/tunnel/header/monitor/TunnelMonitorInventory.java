@@ -19,14 +19,6 @@ public class TunnelMonitorInventory {
 
     private String tunnelUuid;
 
-    private String hostAUuid;
-
-    private String monitorAIp;
-
-    private String hostZUuid;
-
-    private String monitorZIp;
-
     private TunnelMonitorStatus status;
 
     private String msg;
@@ -41,10 +33,6 @@ public class TunnelMonitorInventory {
         TunnelMonitorInventory inventory = new TunnelMonitorInventory();
         inventory.setUuid(vo.getUuid());
         inventory.setTunnelUuid(vo.getTunnelUuid());
-        inventory.setHostAUuid(vo.getHostAUuid());
-        inventory.setMonitorAIp(vo.getMonitorAIp());
-        inventory.setHostZUuid(vo.getHostZUuid());
-        inventory.setMonitorZIp(vo.getMonitorZIp());
         inventory.setStatus(vo.getStatus());
         inventory.setMsg(vo.getMsg());
         inventory.setLastOpDate(vo.getLastOpDate());
@@ -77,38 +65,6 @@ public class TunnelMonitorInventory {
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
-    }
-
-    public String getHostAUuid() {
-        return hostAUuid;
-    }
-
-    public void setHostAUuid(String hostAUuid) {
-        this.hostAUuid = hostAUuid;
-    }
-
-    public String getMonitorAIp() {
-        return monitorAIp;
-    }
-
-    public void setMonitorAIp(String monitorAIp) {
-        this.monitorAIp = monitorAIp;
-    }
-
-    public String getHostZUuid() {
-        return hostZUuid;
-    }
-
-    public void setHostZUuid(String hostZUuid) {
-        this.hostZUuid = hostZUuid;
-    }
-
-    public String getMonitorZIp() {
-        return monitorZIp;
-    }
-
-    public void setMonitorZIp(String monitorZIp) {
-        this.monitorZIp = monitorZIp;
     }
 
     public TunnelMonitorStatus getStatus() {

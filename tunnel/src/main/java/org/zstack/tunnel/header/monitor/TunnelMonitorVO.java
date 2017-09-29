@@ -29,18 +29,6 @@ public class TunnelMonitorVO {
     private String tunnelUuid;
 
     @Column
-    private String hostAUuid;
-
-    @Column
-    private String monitorAIp;
-
-    @Column
-    private String hostZUuid;
-
-    @Column
-    private String monitorZIp;
-
-    @Column
     @Enumerated(EnumType.STRING)
     private TunnelMonitorStatus status;
 
@@ -78,38 +66,6 @@ public class TunnelMonitorVO {
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
-    }
-
-    public String getHostAUuid() {
-        return hostAUuid;
-    }
-
-    public void setHostAUuid(String hostAUuid) {
-        this.hostAUuid = hostAUuid;
-    }
-
-    public String getMonitorAIp() {
-        return monitorAIp;
-    }
-
-    public void setMonitorAIp(String monitorAIp) {
-        this.monitorAIp = monitorAIp;
-    }
-
-    public String getHostZUuid() {
-        return hostZUuid;
-    }
-
-    public void setHostZUuid(String hostZUuid) {
-        this.hostZUuid = hostZUuid;
-    }
-
-    public String getMonitorZIp() {
-        return monitorZIp;
-    }
-
-    public void setMonitorZIp(String monitorZIp) {
-        this.monitorZIp = monitorZIp;
     }
 
     public TunnelMonitorStatus getStatus() {

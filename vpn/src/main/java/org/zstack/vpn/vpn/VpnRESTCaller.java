@@ -4,20 +4,28 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.http.*;
+import org.springframework.web.client.RestClientException;
+import org.zstack.core.CoreGlobalProperty;
+import org.zstack.core.identity.InnerMessageHelper;
 import org.zstack.core.rest.RESTApiDecoder;
+import org.zstack.core.retry.Retry;
+import org.zstack.core.retry.RetryCondition;
 import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.rest.RESTConstant;
 import org.zstack.header.rest.RESTFacade;
 import org.zstack.header.rest.RestAPIResponse;
 import org.zstack.header.rest.RestAPIState;
+import org.zstack.header.vpn.VpnAgentCommand;
+import org.zstack.header.vpn.VpnAgentResponse;
 import org.zstack.utils.URLBuilder;
 import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.vpn.vpn.VpnCommands.*;
 
-import java.time.LocalDateTime;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.concurrent.TimeUnit;
 
 
@@ -34,18 +42,22 @@ public class VpnRESTCaller {
     }
 
     public VpnRESTCaller() {
-        this(VpnGlobalProperty.VPN_BASE_URL);
+        this(CoreGlobalProperty.VPN_BASE_URL);
     }
 
-    public CheckStateResponse checkState(String path, AgentCommand cmd, long interval, long timeout) throws InterruptedException {
+    public CheckStatusResponse asyncCheckState(String path, VpnAgentCommand cmd, long interval, long timeout) {
         long curr = 0;
-        CheckStateResponse rsp;
+        CheckStatusResponse rsp;
         do {
-            TimeUnit.MILLISECONDS.sleep(interval);
-            rsp = queryState(path, cmd);
+            try {
+                TimeUnit.SECONDS.sleep(interval);
+            } catch (InterruptedException e) {
+                logger.debug(String.format("fail to get result[uuid: %s] from Url[%s]", cmd.getVpnUuid(), path));
+            }
+            rsp = checkState(path, cmd);
             curr += interval;
         }
-        while (rsp.getStatusCode() != HttpStatus.OK && rsp.getState() == VpnCreateState.Creating && curr < timeout);
+        while ((rsp.getStatusCode() != HttpStatus.OK || rsp.getState() == RestAPIState.Processing) && curr < timeout);
 
         if (curr >= timeout) {
             throw new CloudRuntimeException(String.format("timeout after %s ms, error", curr, rsp.getError()));
@@ -53,62 +65,57 @@ public class VpnRESTCaller {
         return rsp;
     }
 
-    public CheckStateResponse checkState(String path, AgentCommand cmd) throws InterruptedException {
-        return checkState(path, cmd,1000, TimeUnit.MINUTES.toMillis(10));
+    public CheckStatusResponse asyncCheckState(String path, VpnAgentCommand cmd) throws InterruptedException {
+        return asyncCheckState(path, cmd, 1, TimeUnit.MINUTES.toSeconds(10));
     }
 
 
-    public CheckStateResponse queryState(String path, AgentCommand cmd) {
-        String url = buildUrl(path);
+    public CheckStatusResponse checkState(String path, VpnAgentCommand cmd) {
+        return syncPostForVpn(path, cmd, CheckStatusResponse.class);
+    }
+
+
+    public <T extends VpnAgentResponse> T syncPostForVpn(String path, VpnAgentCommand cmd, Class<T> rspClass) {
         String body = JSONObjectUtil.toJsonString(cmd);
+        String url = buildUrl(path);
 
-        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, body, String.class);
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+        requestHeaders.setContentLength(body.length());
+        HttpEntity<String> req = new HttpEntity<String>(body, requestHeaders);
+        if (logger.isTraceEnabled()) {
+            logger.trace(String.format("json post[%s], %s", url, req.toString()));
+        }
 
-        CheckStateResponse response = JSONObjectUtil.toObject(rsp.getBody(), CheckStateResponse.class);
+        ResponseEntity<String> rsp = new Retry<ResponseEntity<String>>() {
+            @Override
+            @RetryCondition(onExceptions = {IOException.class, RestClientException.class})
+            protected ResponseEntity<String> call() {
+                return restf.getRESTTemplate().exchange(url, HttpMethod.POST, req, String.class);
+            }
+        }.run();
+        if (logger.isTraceEnabled()) {
+            logger.trace(String.format("[http response(url: %s)] %s", url, rsp.getBody()));
+        }
+
+        T response = JSONObjectUtil.toObject(rsp.getBody(), rspClass);
+
         if (response == null) {
-            response = new CheckStateResponse();
+            response = (T) new VpnAgentResponse();
         }
         response.setStatusCode(rsp.getStatusCode());
+
         return response;
-    }
-
-
-    public <T extends AgentResponse> T syncPostForVPN(String path, AgentCommand cmd, Class<T>  rspClass) {
-        String cmdStr = JSONObjectUtil.toJsonString(cmd);
-        String url = buildUrl(path);
-        return restf.syncJsonPost(url, cmdStr, rspClass);
     }
 
     private String buildUrl(String path) {
         return URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.VPN_ROOT_PATH, path);
     }
 
-    private RestAPIResponse queryResponse(String uuid) {
-        String url =  URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_RESULT, uuid);
-        String res = restf.getRESTTemplate().getForObject(url, String.class);
-        return JSONObjectUtil.toObject(res, RestAPIResponse.class);
+    public RestAPIResponse syncJsonPost(APIMessage innerMsg) {
+        InnerMessageHelper.setMD5(innerMsg);
+        return restf.syncJsonPost(URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL), RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
     }
 
-    public RestAPIResponse syncPost(String path, APIMessage msg, long interval, long timeout) throws InterruptedException {
-        String msgStr = RESTApiDecoder.dump(msg);
-        String url = URLBuilder.buildUrlFromBase(baseUrl, path);
-        RestAPIResponse rsp = restf.syncJsonPost(url, msgStr, RestAPIResponse.class);
-        long curr = 0;
-        while (!rsp.getState().equals(RestAPIState.Done.toString()) && curr < timeout) {
-            TimeUnit.MILLISECONDS.sleep(interval);
-            rsp = queryResponse(rsp.getUuid());
-            curr += interval;
-        }
-
-        if (curr >= timeout) {
-            throw new CloudRuntimeException(String.format("timeout after %s ms, result uuid:%s", curr, rsp.getUuid()));
-        }
-
-        return rsp;
-    }
-
-    public RestAPIResponse syncPost(String url, APIMessage msg) throws InterruptedException {
-        return syncPost(url, msg, 500, TimeUnit.SECONDS.toMillis(15));
-    }
 }
 

@@ -50,6 +50,46 @@ public class VpnVO {
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
+    @Column
+    private String sid;
+    @Column
+    private String key;
+    @Column
+    private Payment payment;
+    @Column
+    private Integer maxModifies;
+
+    public Integer getMaxModifies() {
+        return maxModifies;
+    }
+
+    public void setMaxModifies(Integer maxModifies) {
+        this.maxModifies = maxModifies;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public String getSid() {
+        return sid;
+    }
+
+    public void setSid(String sid) {
+        this.sid = sid;
+    }
 
     public String getHostUuid() {
         return hostUuid;
@@ -59,11 +99,11 @@ public class VpnVO {
         this.hostUuid = hostUuid;
     }
 
-    @OneToMany
+    @OneToMany(fetch= FetchType.EAGER)
     @JoinColumn(name = "vpnUuid", insertable = false, updatable = false)
     private List<VpnInterfaceVO> vpnInterfaces = new ArrayList<>();
 
-    @OneToMany
+    @OneToMany(fetch= FetchType.EAGER)
     @JoinColumn(name = "vpnUuid", insertable = false, updatable = false)
     private List<VpnRouteVO> vpnRoutes = new ArrayList<>();
 

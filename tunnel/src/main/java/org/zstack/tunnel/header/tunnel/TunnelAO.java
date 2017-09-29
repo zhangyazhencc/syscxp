@@ -1,5 +1,6 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.billing.ProductChargeModel;
 import org.zstack.header.vo.ForeignKey;
 
 import javax.persistence.*;
@@ -44,7 +45,11 @@ public class TunnelAO {
     private TunnelMonitorState monitorState;
 
     @Column
-    private Integer months;
+    private Integer duration;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private ProductChargeModel productChargeModel;
 
     @Column
     private String description;
@@ -135,14 +140,6 @@ public class TunnelAO {
         this.monitorState = monitorState;
     }
 
-    public Integer getMonths() {
-        return months;
-    }
-
-    public void setMonths(Integer months) {
-        this.months = months;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -173,5 +170,21 @@ public class TunnelAO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+
+    public ProductChargeModel getProductChargeModel() {
+        return productChargeModel;
+    }
+
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
+        this.productChargeModel = productChargeModel;
     }
 }

@@ -4,6 +4,8 @@ public interface VpnConstant {
 
     public static final String SERVICE_ID = "vpn";
 
+    public static final Integer MAX_MOTIFIES = 5;
+
     public static final String ACTION_CATEGORY_VPN = "vpn";
 
     public static final String VPN_ROOT_PATH = "vpn";
@@ -30,7 +32,7 @@ public interface VpnConstant {
 
     public static final String CHECK_VPN_STATE_PATH = "/createvpn";
 
-    public static final String CHECK_HOST_STATE_PATH = "/createvpn";
+    public static final String RECONNECT_VPN_PATH = "/reconnect-vpn";
 
     public static final String CHECK_CREATE_STATE_PATH = "/check-state";
 

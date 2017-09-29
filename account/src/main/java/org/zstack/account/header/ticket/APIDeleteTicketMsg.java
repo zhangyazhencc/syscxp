@@ -11,7 +11,7 @@ import org.zstack.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/09/26.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT,names = "delete")
+@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
 public class APIDeleteTicketMsg extends APIDeleteMessage {
 
     private String uuid;

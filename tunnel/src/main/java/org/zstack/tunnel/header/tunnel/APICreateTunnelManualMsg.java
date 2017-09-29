@@ -1,5 +1,6 @@
 package org.zstack.tunnel.header.tunnel;
 
+import org.zstack.header.billing.ProductChargeModel;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
 import org.zstack.tunnel.header.endpoint.EndpointVO;
@@ -41,7 +42,11 @@ public class APICreateTunnelManualMsg extends APIMessage {
     @APIParam(emptyString = false,validValues = {"Enabled", "Disabled"})
     private TunnelQinqState qinqStateZ;
     @APIParam
-    private Integer months;
+    private Integer duration;
+    @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
+    private ProductChargeModel productChargeModel;
+    @APIParam(nonempty = true)
+    private List<String> productPriceUnitUuids;
     @APIParam(emptyString = false,required = false)
     private String description;
     @APIParam(required = false)
@@ -127,14 +132,6 @@ public class APICreateTunnelManualMsg extends APIMessage {
         this.qinqStateZ = qinqStateZ;
     }
 
-    public Integer getMonths() {
-        return months;
-    }
-
-    public void setMonths(Integer months) {
-        this.months = months;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -181,5 +178,29 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     public void setNodeZUuid(String nodeZUuid) {
         this.nodeZUuid = nodeZUuid;
+    }
+
+    public Integer getDuration() {
+        return duration;
+    }
+
+    public void setDuration(Integer duration) {
+        this.duration = duration;
+    }
+
+    public ProductChargeModel getProductChargeModel() {
+        return productChargeModel;
+    }
+
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
+        this.productChargeModel = productChargeModel;
+    }
+
+    public List<String> getProductPriceUnitUuids() {
+        return productPriceUnitUuids;
+    }
+
+    public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
+        this.productPriceUnitUuids = productPriceUnitUuids;
     }
 }

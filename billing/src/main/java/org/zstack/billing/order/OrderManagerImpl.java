@@ -17,6 +17,8 @@ import org.zstack.core.db.DbEntityLister;
 import org.zstack.core.db.SimpleQuery;
 import org.zstack.core.errorcode.ErrorFacade;
 
+import org.zstack.core.thread.CancelablePeriodicTask;
+import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.AbstractService;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
@@ -32,6 +34,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class OrderManagerImpl  extends AbstractService implements  ApiMessageInterceptor {
 
@@ -47,6 +50,9 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
     private ErrorFacade errf;
     @Autowired
     private RESTFacade restf;
+
+    @Autowired
+    private ThreadFacade threadFacade;
 
     @Override
     @MessageSafe
@@ -290,9 +296,9 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         dbf.getEntityManager().merge(abvo);
         dbf.getEntityManager().persist(orderVo);
         dbf.getEntityManager().flush();
-        APICreateOrderEvent event = new APICreateOrderEvent(msg.getId());
-        event.setInventory(OrderInventory.valueOf(orderVo));
-        bus.publish(event);
+        APICreateOrderReply reply = new APICreateOrderReply();
+        reply.setInventory(OrderInventory.valueOf(orderVo));
+        bus.reply(msg,reply);
     }
 
     @Transactional
@@ -326,9 +332,9 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         dbf.getEntityManager().flush();
 
         OrderInventory inventory = OrderInventory.valueOf(orderVo);
-        APICreateOrderEvent evt = new APICreateOrderEvent(msg.getId());
-        evt.setInventory(inventory);
-        bus.publish(evt);
+        APICreateOrderReply reply = new APICreateOrderReply();
+        reply.setInventory(inventory);
+        bus.reply(msg,reply);
 
     }
 
@@ -371,12 +377,13 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         }
 
         BigDecimal remainMoney = renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays));
-        BigDecimal valuePayCash = getValueblePayCash(msg.getSession().getAccountUuid(), msg.getProductUuid());
+        BigDecimal valuePayCash = getValueblePayCash(msg.getAccountUuid(), msg.getProductUuid());
         orderVo.setType(OrderType.UN_SUBCRIBE);
         if (remainMoney.compareTo(valuePayCash) < 0) {
             remainMoney = valuePayCash;
         }
         orderVo.setOriginalPrice(remainMoney);
+        orderVo.setProductName(msg.getProductName());
         orderVo.setPrice(remainMoney);
         orderVo.setProductEffectTimeEnd(currentTimestamp);
         orderVo.setProductEffectTimeEnd(startTime);
@@ -398,7 +405,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         dVO.setOutTradeNO(orderVo.getUuid());
         dVO.setOpAccountUuid(msg.getOpAccountUuid());
         dbf.getEntityManager().persist(dVO);
-        dbf.getEntityManager().remove(renewVO);
+        dbf.getEntityManager().remove(dbf.getEntityManager().find(RenewVO.class,renewVO.getUuid()));
         SimpleQuery<PriceRefRenewVO> q = dbf.createQuery(PriceRefRenewVO.class);
         q.add(PriceRefRenewVO_.renewUuid, SimpleQuery.Op.EQ, renewVO.getUuid());
         List<PriceRefRenewVO> renewVOs = q.list();
@@ -410,9 +417,9 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         dbf.getEntityManager().flush();
 
         OrderInventory inventory = OrderInventory.valueOf(orderVo);
-        APICreateOrderEvent evt = new APICreateOrderEvent(msg.getId());
-        evt.setInventory(inventory);
-        bus.publish(evt);
+        APICreateOrderReply reply = new APICreateOrderReply();
+        reply.setInventory(inventory);
+        bus.reply(msg,reply);
 
     }
 
@@ -444,7 +451,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
 
         }
 
-        AccountBalanceVO abvo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+        AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         BigDecimal cashBalance = abvo.getCashBalance();
         BigDecimal presentBalance = abvo.getPresentBalance();
         BigDecimal creditPoint = abvo.getCreditPoint();
@@ -494,7 +501,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
             payMethod(msg, orderVo, abvo, subMoney, currentTimestamp);
 
         } else { //downgrade
-            BigDecimal valuePayCash = getValueblePayCash(msg.getSession().getAccountUuid(), msg.getProductUuid());
+            BigDecimal valuePayCash = getValueblePayCash(msg.getAccountUuid(), msg.getProductUuid());
             orderVo.setType(OrderType.DOWNGRADE);
             if (subMoney.compareTo(valuePayCash.negate()) < 0) {
                 subMoney = valuePayCash.negate();
@@ -542,9 +549,9 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         dbf.getEntityManager().flush();
 
         OrderInventory inventory = OrderInventory.valueOf(orderVo);
-        APICreateOrderEvent evt = new APICreateOrderEvent(msg.getId());
-        evt.setInventory(inventory);
-        bus.publish(evt);
+        APICreateOrderReply reply = new APICreateOrderReply();
+        reply.setInventory(inventory);
+        bus.reply(msg,reply);
 
     }
 
@@ -648,9 +655,11 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         dbf.getEntityManager().flush();
 
         OrderInventory inventory = OrderInventory.valueOf(orderVo);
-        APICreateOrderEvent evt = new APICreateOrderEvent(msg.getId());
-        evt.setInventory(inventory);
-        bus.publish(evt);
+        APICreateOrderReply reply = new APICreateOrderReply();
+        reply.setInventory(inventory);
+        //todo notify
+//        threadFacade.submitCancelablePeriodicTask();
+        bus.reply(msg,reply);
 
     }
 

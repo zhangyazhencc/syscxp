@@ -1,4 +1,6 @@
-/*201709225 sunxuelong */
+
+ALTER TABLE TunnelMonitorInterfaceVO ADD interfaceUuid varchar(32) COMMENT '' AFTER interfaceType;
+
 CREATE TABLE IF NOT EXISTS TunnelMonitorInterfaceVO (
   `uuid` VARCHAR(32) NOT NULL COMMENT '主键',
   `TunnelMonitorUuid` VARCHAR(32) NOT NULL COMMENT '监控通道uuid(TunnelMonitorVO.uuid)',
@@ -11,7 +13,6 @@ CREATE TABLE IF NOT EXISTS TunnelMonitorInterfaceVO (
   UNIQUE KEY `uuid` (`uuid`))
 ENGINE = InnoDB DEFAULT CHARSET = utf8 COMMENT '监控通道两端信息表';
 
-/*20170915 sunxuelong */
 CREATE TABLE `SpeedRecordsVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'uuid',
   `tunnelUuid` varchar(32) NOT NULL COMMENT 'TunnelVO.uuid',
@@ -31,7 +32,6 @@ CREATE TABLE `SpeedRecordsVO` (
   UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='监控测速纪录';
 
-/*20170912 sunxuelong */
 ALTER TABLE HostEO CHANGE ip hostIp VARCHAR(128);
 
 CREATE OR REPLACE
@@ -53,7 +53,6 @@ VIEW `syscxp_tunnel`.`HostVO` AS
     WHERE
         (`syscxp_tunnel`.`HostEO`.`deleted` = 0);
 
-/*20170911 sunxuelong */
 alter table syscxp_tunnel.HostEO add nodeUuid varchar(32) comment '节点ID(NodeEO.uuid)' after uuid;
 
 CREATE OR REPLACE VIEW `syscxp_tunnel`.`HostVO` AS
@@ -239,6 +238,7 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchPortVO` (
   `portName` varchar(128) NOT NULL COMMENT '端口名称',
   `portType` varchar(128) NOT NULL COMMENT '端口类型：光口，电口',
   `portAttribute` varchar(128) NOT NULL COMMENT '独享：Exclusive 共享：Shared',
+  `autoAllot` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT '是否自动分配',
   `state` varchar(128) NOT NULL DEFAULT 'Enabled' COMMENT '是否启用',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
@@ -278,14 +278,16 @@ CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `endpointUuid` varchar(32) NOT NULL COMMENT '对应连接点',
   `bandwidth` BIGINT NOT NULL COMMENT '带宽',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
+  `state` varchar(32) NOT NULL DEFAULT 'Unpaid' COMMENT '状况:已支付,未支付',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
-  `months` int(11) NOT NULL COMMENT '最近一次购买时长',
+  `duration` int(11) NOT NULL COMMENT '最近一次购买时长',
+  `productChargeModel` varchar(32) NOT NULL COMMENT '产品付费方式',
   `expiredDate` timestamp NOT NULL COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, name, switchPortUuid, endpointUuid, bandwidth, description, months, expiredDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, name, switchPortUuid, endpointUuid, bandwidth, description, state, duration, productChargeModel, expiredDate, lastOpDate, createDate
                                           FROM `InterfaceEO` WHERE deleted = 0;
 
 ##云专线
@@ -301,13 +303,14 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `monitorState` varchar(32) NOT NULL DEFAULT 'Disabled' COMMENT '是否开启监控',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
-  `months` int(11) NOT NULL COMMENT '最近一次购买时长',
-  `expiredDate` timestamp DEFAULT CURRENT_TIMESTAMP COMMENT '截止时间',
+  `duration` int(11) NOT NULL COMMENT '最近一次购买时长',
+  `productChargeModel` varchar(32) NOT NULL COMMENT '产品付费方式',
+  `expiredDate` timestamp NOT NULL COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, networkUuid, name, bandwidth, distance, state, status, monitorState, description, months, expiredDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, networkUuid, name, bandwidth, distance, state, status, monitorState, description, duration, productChargeModel, expiredDate, lastOpDate, createDate
                                         FROM `TunnelEO` WHERE deleted = 0;
 
 ##监控网段字典表

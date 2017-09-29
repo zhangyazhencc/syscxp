@@ -23,7 +23,7 @@ public class APIUpdatePhysicalSwitchMsg extends APIMessage {
     private String name;
     @APIParam(emptyString = false,required = false,maxLength = 128)
     private String owner;
-    @APIParam(emptyString = false,required = false,validValues = {"ACCESS", "TRANSPORT"})
+    @APIParam(emptyString = false,required = false,validValues = {"ACCESS", "TRANSPORT","BOTH"})
     private PhysicalSwitchType type;
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String rack;

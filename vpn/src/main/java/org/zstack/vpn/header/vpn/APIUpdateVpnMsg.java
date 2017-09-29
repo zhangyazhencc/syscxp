@@ -15,6 +15,16 @@ public class APIUpdateVpnMsg extends APIMessage{
     private String name;
     @APIParam(required = false)
     private String description;
+    @APIParam(required = false, numberRange = {0, 10})
+    private Integer maxModifies;
+
+    public Integer getMaxModifies() {
+        return maxModifies;
+    }
+
+    public void setMaxModifies(Integer maxModifies) {
+        this.maxModifies = maxModifies;
+    }
 
     public String getUuid() {
         return uuid;

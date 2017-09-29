@@ -26,8 +26,6 @@ public class APIUpdateTunnelMsg extends APIMessage {
     private TunnelStatus status;
     @APIParam(emptyString = false,required = false,validValues = {"Enabled", "Disabled"})
     private TunnelMonitorState monitorState;
-    @APIParam(required = false)
-    private Integer months;
     @APIParam(emptyString = false,required = false)
     private String description;
     @APIParam(required = false)
@@ -109,14 +107,6 @@ public class APIUpdateTunnelMsg extends APIMessage {
 
     public void setMonitorState(TunnelMonitorState monitorState) {
         this.monitorState = monitorState;
-    }
-
-    public Integer getMonths() {
-        return months;
-    }
-
-    public void setMonths(Integer months) {
-        this.months = months;
     }
 
     public String getDescription() {

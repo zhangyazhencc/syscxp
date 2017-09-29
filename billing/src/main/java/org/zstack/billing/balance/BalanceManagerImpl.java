@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.zstack.billing.AlipayGlobalProperty;
+import org.zstack.billing.BillingErrors;
+import org.zstack.billing.BillingServiceException;
 import org.zstack.billing.header.balance.*;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
@@ -43,6 +45,7 @@ import org.zstack.utils.logging.CLogger;
 
 import javax.persistence.Query;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -173,6 +176,10 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
         List<ProductPriceUnit> units = msg.getUnits();
         List<ProductPriceUnitInventory> productPriceUnits = new ArrayList<>();
         AccountBalanceVO accountBalanceVO = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+
+        BigDecimal dischargePrice = BigDecimal.ZERO;
+        BigDecimal originalPrice = BigDecimal.ZERO;
+
         for (ProductPriceUnit unit : units) {
             SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
             q.add(ProductPriceUnitVO_.category, SimpleQuery.Op.EQ, unit.getCategory());
@@ -192,15 +199,37 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
             if (accountDischargeVO != null) {
                 discharge = accountDischargeVO.getDisCharge() == 0 ? 100 : accountDischargeVO.getDisCharge();
             }
+            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()));
+            BigDecimal currentDischarge = BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(BigDecimal.valueOf(discharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
+            dischargePrice = dischargePrice.add(currentDischarge);
             inventory.setDischarge(discharge);
             productPriceUnits.add(inventory);
         }
+
+        BigDecimal duration = BigDecimal.valueOf(msg.getDuration());
+        if (msg.getProductChargeModel().equals(ProductChargeModel.BY_YEAR)) {
+            duration = duration.multiply(BigDecimal.valueOf(12));
+        }
+
+        AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+        BigDecimal cashBalance = abvo.getCashBalance();
+        BigDecimal presentBalance = abvo.getPresentBalance();
+        BigDecimal creditPoint = abvo.getCreditPoint();
+        BigDecimal mayPayTotal = cashBalance.add(presentBalance).add(creditPoint);//可支付金额
+
+        originalPrice = originalPrice.multiply(duration);
+        dischargePrice = dischargePrice.multiply(duration);
+        boolean payable = dischargePrice.compareTo(mayPayTotal) <= 0;
+
+
         AccountBalanceInventory accountBalanceInventory = AccountBalanceInventory.valueOf(accountBalanceVO);
-        ProductPriceInventory productPriceInventory = new ProductPriceInventory();
-        productPriceInventory.setAccountBalanceInventory(accountBalanceInventory);
-        productPriceInventory.setProductPriceInventories(productPriceUnits);
         APIGetProductPriceReply reply = new APIGetProductPriceReply();
-        reply.setInventory(productPriceInventory);
+        reply.setAccountBalanceInventory(accountBalanceInventory);
+        reply.setProductPriceInventories(productPriceUnits);
+        reply.setMayPayTotal(mayPayTotal);
+        reply.setOriginalPrice(originalPrice);
+        reply.setDischargePrice(dischargePrice);
+        reply.setPayable(payable);
         bus.reply(msg, reply);
     }
 
@@ -210,7 +239,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
             SimpleQuery<AccountDischargeVO> q = dbf.createQuery(AccountDischargeVO.class);
             q.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
             q.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, accountDischargeVO.getProductType());
-            q.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, accountDischargeVO.getCategory());
+            q.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, accountDischargeVO.getCategory());
             AccountDischargeVO adVO = q.find();
             int disCharge = adVO.getDisCharge();
             if(msg.getDischarge()>disCharge){

@@ -16,8 +16,6 @@ public class APIUpdateInterfaceMsg extends APIMessage {
     private String name;
     @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
-    @APIParam(required = false)
-    private Long bandwidth;
 
     public String getUuid() {
         return uuid;
@@ -53,13 +51,5 @@ public class APIUpdateInterfaceMsg extends APIMessage {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
-    }
-
-    public Long getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(Long bandwidth) {
-        this.bandwidth = bandwidth;
     }
 }
