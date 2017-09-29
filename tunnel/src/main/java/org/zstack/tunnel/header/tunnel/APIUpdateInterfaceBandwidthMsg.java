@@ -1,6 +1,7 @@
 package org.zstack.tunnel.header.tunnel;
 
 import org.zstack.header.billing.ProductChargeModel;
+import org.zstack.header.billing.ProductPriceUnit;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIParam;
@@ -18,7 +19,7 @@ public class APIUpdateInterfaceBandwidthMsg extends APIMessage {
     @APIParam
     private Long bandwidth;
     @APIParam(nonempty = true)
-    private List<String> productPriceUnitUuids;
+    private List<ProductPriceUnit> units;
 
     public String getUuid() {
         return uuid;
@@ -48,11 +49,11 @@ public class APIUpdateInterfaceBandwidthMsg extends APIMessage {
         this.bandwidth = bandwidth;
     }
 
-    public List<String> getProductPriceUnitUuids() {
-        return productPriceUnitUuids;
+    public List<ProductPriceUnit> getUnits() {
+        return units;
     }
 
-    public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
-        this.productPriceUnitUuids = productPriceUnitUuids;
+    public void setUnits(List<ProductPriceUnit> units) {
+        this.units = units;
     }
 }
