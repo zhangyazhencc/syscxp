@@ -430,12 +430,19 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         BigDecimal dischargePrice = BigDecimal.ZERO;
         BigDecimal originalPrice = BigDecimal.ZERO;
 
-        List<String> productPriceUnitUuids = msg.getProductPriceUnitUuids();
-        for (String productPriceUnitUuid : productPriceUnitUuids) {
-            ProductPriceUnitVO productPriceUnitVO = dbf.findByUuid(productPriceUnitUuid, ProductPriceUnitVO.class);
+        List<ProductPriceUnit> units = msg.getUnits();
+        List<String> productPriceUnitUuids = new ArrayList<String>();
+        for (ProductPriceUnit unit : units) {
+            SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
+            q.add(ProductPriceUnitVO_.category, SimpleQuery.Op.EQ, unit.getCategory());
+            q.add(ProductPriceUnitVO_.productType, SimpleQuery.Op.EQ, unit.getProductType());
+            q.add(ProductPriceUnitVO_.config, SimpleQuery.Op.EQ, unit.getConfig());
+            ProductPriceUnitVO productPriceUnitVO = q.find();
             if (productPriceUnitVO == null) {
                 throw new IllegalArgumentException("price uuid is not valid");
             }
+            productPriceUnitUuids.add(productPriceUnitVO.getUuid());
+
             SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
             qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategory());
             qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductType());
@@ -563,12 +570,18 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         BigDecimal dischargePrice = BigDecimal.ZERO;
         BigDecimal originalPrice = BigDecimal.ZERO;
 
-        List<String> productPriceUnitUuids = msg.getProductPriceUnitUuids();
-        for (String productPriceUnitUuid : productPriceUnitUuids) {
-            ProductPriceUnitVO productPriceUnitVO = dbf.findByUuid(productPriceUnitUuid, ProductPriceUnitVO.class);
+        List<ProductPriceUnit> units = msg.getUnits();
+        List<String> productPriceUnitUuids = new ArrayList<String>();
+        for (ProductPriceUnit unit : units) {
+            SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
+            q.add(ProductPriceUnitVO_.category, SimpleQuery.Op.EQ, unit.getCategory());
+            q.add(ProductPriceUnitVO_.productType, SimpleQuery.Op.EQ, unit.getProductType());
+            q.add(ProductPriceUnitVO_.config, SimpleQuery.Op.EQ, unit.getConfig());
+            ProductPriceUnitVO productPriceUnitVO = q.find();
             if (productPriceUnitVO == null) {
                 throw new IllegalArgumentException("price uuid is not valid");
             }
+            productPriceUnitUuids.add(productPriceUnitVO.getUuid());
             SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
             qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategory());
             qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductType());
