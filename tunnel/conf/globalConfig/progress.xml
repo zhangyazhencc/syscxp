@@ -5,14 +5,14 @@
         <name>progress.on</name>
         <description>Whether to turn on the progress feature</description>
         <defaultValue>true</defaultValue>
-        <type>java.lang.Boolean</type>
+        <ticketTypeCode>java.lang.Boolean</ticketTypeCode>
     </config>
 
     <config>
         <category>progress</category>
         <name>progress.ttl</name>
         <description>The max time the progress records to be kept in the database, in seconds</description>
-        <type>java.lang.Integer</type>
+        <ticketTypeCode>java.lang.Integer</ticketTypeCode>
         <defaultValue>86400</defaultValue>
     </config>
 
@@ -20,7 +20,7 @@
         <category>progress</category>
         <name>progress.cleanupThreadInterval</name>
         <description>The interval that the cleanup thread cleans up completed progress records, in seconds</description>
-        <type>java.lang.Integer</type>
+        <ticketTypeCode>java.lang.Integer</ticketTypeCode>
         <defaultValue>300</defaultValue>
     </config>
 </globalConfig>

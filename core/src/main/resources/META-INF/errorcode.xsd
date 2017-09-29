@@ -10,10 +10,10 @@
 				<xsd:element name="ErrorCode">
 					<xsd:complexType>
 						<xsd:sequence>
-							<xsd:element name="description" type="xsd:string"></xsd:element>
+							<xsd:element name="description" ticketTypeCode="xsd:string"></xsd:element>
 						</xsd:sequence>
-						<xsd:attribute name="name" type="xsd:string"></xsd:attribute>
-						<xsd:attribute name="code" type="xsd:string"></xsd:attribute>
+						<xsd:attribute name="name" ticketTypeCode="xsd:string"></xsd:attribute>
+						<xsd:attribute name="code" ticketTypeCode="xsd:string"></xsd:attribute>
 					</xsd:complexType>
 				</xsd:element>
 			</xsd:sequence>

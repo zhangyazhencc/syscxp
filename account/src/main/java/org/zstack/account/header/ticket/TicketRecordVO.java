@@ -23,7 +23,10 @@ public class TicketRecordVO {
 
     @Column
     @Enumerated(EnumType.STRING)
-    private BelongTo belongTo;
+    private RecordBy recordBy;
+
+    @Column
+    private String adminUserUuid;
 
     @Column
     private String content;
@@ -59,12 +62,12 @@ public class TicketRecordVO {
         this.ticketUuid = ticketUuid;
     }
 
-    public BelongTo getBelongTo() {
-        return belongTo;
+    public RecordBy getRecordBy() {
+        return recordBy;
     }
 
-    public void setBelongTo(BelongTo belongTo) {
-        this.belongTo = belongTo;
+    public void setRecordBy(RecordBy belongTo) {
+        this.recordBy = belongTo;
     }
 
     public String getContent() {
@@ -97,5 +100,13 @@ public class TicketRecordVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getAdminUserUuid() {
+        return adminUserUuid;
+    }
+
+    public void setAdminUserUuid(String adminUserUuid) {
+        this.adminUserUuid = adminUserUuid;
     }
 }

@@ -30,16 +30,22 @@ public class TicketVO {
     private String adminUserUuid;
 
     @Column
-    private String type;
+    private String ticketTypeCode;
 
     @Column
     private String content;
+
+    @Column
+    private String contentExtra;
 
     @Column
     private String phone;
 
     @Column
     private String email;
+
+    @Column
+    private TicketFrom ticketFrom;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -84,12 +90,12 @@ public class TicketVO {
         this.userUuid = userUuid;
     }
 
-    public String getType() {
-        return type;
+    public String getTicketTypeCode() {
+        return ticketTypeCode;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setTicketTypeCode(String ticketTypeCode) {
+        this.ticketTypeCode = ticketTypeCode;
     }
 
     public String getContent() {
@@ -154,5 +160,21 @@ public class TicketVO {
 
     public List<TicketRecordVO> getTicketRecordVOS() {
         return ticketRecordVOS;
+    }
+
+    public String getContentExtra() {
+        return contentExtra;
+    }
+
+    public void setContentExtra(String contentExtra) {
+        this.contentExtra = contentExtra;
+    }
+
+    public TicketFrom getTicketFrom() {
+        return ticketFrom;
+    }
+
+    public void setTicketFrom(TicketFrom ticketFrom) {
+        this.ticketFrom = ticketFrom;
     }
 }

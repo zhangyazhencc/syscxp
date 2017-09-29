@@ -15,9 +15,11 @@ public class TicketInventory {
     private String userUuid;
     private String AdminUserUuid;
 
-    private String type;
+    private String ticketTypeCode;
     private String content;
+    private String contentExtra;
     private String status;
+    private String ticketFrom;
 
     private Timestamp createDate;
     private Timestamp lastOpDate;
@@ -29,7 +31,9 @@ public class TicketInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setUserUuid(vo.getUserUuid());
         inv.setAdminUserUuid(vo.getAdminUserUuid());
-        inv.setType(vo.getType());
+        inv.setContentExtra(vo.getContentExtra());
+        inv.setTicketFrom(vo.getTicketFrom().toString());
+        inv.setTicketTypeCode(vo.getTicketTypeCode());
         inv.setContent(vo.getContent());
         inv.setStatus(vo.getStatus().toString());
         inv.setCreateDate(vo.getCreateDate());
@@ -69,12 +73,28 @@ public class TicketInventory {
         this.userUuid = userUuid;
     }
 
-    public String getType() {
-        return type;
+    public String getTicketTypeCode() {
+        return ticketTypeCode;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setTicketTypeCode(String ticketTypeCode) {
+        this.ticketTypeCode = ticketTypeCode;
+    }
+
+    public String getContentExtra() {
+        return contentExtra;
+    }
+
+    public void setContentExtra(String contentExtra) {
+        this.contentExtra = contentExtra;
+    }
+
+    public String getTicketFrom() {
+        return ticketFrom;
+    }
+
+    public void setTicketFrom(String ticketFrom) {
+        this.ticketFrom = ticketFrom;
     }
 
     public String getContent() {
@@ -116,4 +136,6 @@ public class TicketInventory {
     public void setAdminUserUuid(String adminUserUuid) {
         AdminUserUuid = adminUserUuid;
     }
+
+
 }
