@@ -16,6 +16,7 @@ import org.zstack.core.db.UpdateQuery;
 import org.zstack.core.errorcode.ErrorFacade;
 import org.zstack.core.identity.InnerMessageHelper;
 import org.zstack.core.rest.RESTApiDecoder;
+import org.zstack.core.rest.RESTFacadeImpl;
 import org.zstack.core.thread.PeriodicTask;
 import org.zstack.core.thread.Task;
 import org.zstack.core.thread.ThreadFacade;
@@ -601,5 +602,4 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     "The Vpn[name:%s] is already exist.", msg.getName()
             ));
     }
-
 }

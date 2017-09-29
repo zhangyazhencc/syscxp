@@ -10,7 +10,7 @@ import java.util.List;
 @Action(category = BillingConstant.ACTION_CATEGORY_ORDER)
 public class APICreateBuyOrderMsg extends APICreateOrderMsg {
     @APIParam(nonempty = true)
-    private List<String> productPriceUnitUuids;
+    private List<ProductPriceUnit> units;
 
     @APIParam(emptyString = false)
     private String productName;
@@ -39,12 +39,12 @@ public class APICreateBuyOrderMsg extends APICreateOrderMsg {
         this.productDescription = productDescription;
     }
 
-    public List<String> getProductPriceUnitUuids() {
-        return productPriceUnitUuids;
+    public List<ProductPriceUnit> getUnits() {
+        return units;
     }
 
-    public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
-        this.productPriceUnitUuids = productPriceUnitUuids;
+    public void setUnits(List<ProductPriceUnit> units) {
+        this.units = units;
     }
 
     public String getProductName() {
