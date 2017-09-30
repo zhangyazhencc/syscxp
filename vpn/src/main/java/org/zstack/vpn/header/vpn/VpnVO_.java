@@ -22,6 +22,7 @@ public class VpnVO_ {
     public static volatile SingularAttribute<VpnVO, Integer> maxModifies;
     public static volatile SingularAttribute<VpnVO, String> sid;
     public static volatile SingularAttribute<VpnVO, String> certKey;
+    public static volatile SingularAttribute<VpnVO, String> memo;
     public static volatile SingularAttribute<VpnVO, Payment> payment;
     public static volatile SingularAttribute<VpnVO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<VpnVO, Timestamp> createDate;

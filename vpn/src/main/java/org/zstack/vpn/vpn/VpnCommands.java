@@ -1,6 +1,5 @@
 package org.zstack.vpn.vpn;
 
-import org.zstack.header.rest.RestAPIState;
 import org.zstack.header.vpn.VpnAgentCommand;
 import org.zstack.header.vpn.VpnAgentResponse;
 import org.zstack.utils.CollectionUtils;
@@ -193,15 +192,6 @@ public class VpnCommands {
     }
 
     public static class CreateVpnResponse extends VpnAgentResponse {
-        private String task_uuid;
-
-        public String getTaskUuid() {
-            return task_uuid;
-        }
-
-        public void setTaskUuid(String taskUuid) {
-            this.task_uuid = taskUuid;
-        }
     }
 
 
@@ -300,22 +290,22 @@ public class VpnCommands {
      * 修改VPN网段
      */
     public static class UpdateVpnCidrCmd extends VpnAgentCommand {
-        private String vpnCidr;
+        private String cidr;
 
         public static UpdateVpnCidrCmd valueOf(VpnVO vo) {
             UpdateVpnCidrCmd cmd = new UpdateVpnCidrCmd();
             cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setVpnUuid(vo.getUuid());
-            cmd.setVpnCidr(vo.getVpnCidr());
+            cmd.setCidr(vo.getVpnCidr());
             return cmd;
         }
 
-        public String getVpnCidr() {
-            return vpnCidr;
+        public String getCidr() {
+            return cidr;
         }
 
-        public void setVpnCidr(String vpnCidr) {
-            this.vpnCidr = vpnCidr;
+        public void setCidr(String cidr) {
+            this.cidr = cidr;
         }
     }
 
@@ -486,6 +476,8 @@ public class VpnCommands {
      * 重置证书：/vpn/reset-cert
      */
     public static class ResetCertificateCmd extends VpnAgentCommand {
+        private String cidr;
+        private Long bandwidth;
 
 
         public static ResetCertificateCmd valueOf(VpnVO vo) {
@@ -493,6 +485,8 @@ public class VpnCommands {
             cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setVpnUuid(vo.getUuid());
             cmd.setPort(vo.getPort());
+            cmd.setBandwidth(vo.getBandwidth());
+            cmd.setCidr(vo.getVpnCidr());
             return cmd;
         }
 
@@ -502,6 +496,21 @@ public class VpnCommands {
             return cmds;
         }
 
+        public String getCidr() {
+            return cidr;
+        }
+
+        public void setCidr(String cidr) {
+            this.cidr = cidr;
+        }
+
+        public Long getBandwidth() {
+            return bandwidth;
+        }
+
+        public void setBandwidth(Long bandwidth) {
+            this.bandwidth = bandwidth;
+        }
     }
 
     public static class ResetCertificateResponse extends VpnAgentResponse {

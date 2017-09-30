@@ -1,7 +1,6 @@
 package org.zstack.header.vpn;
 
 import org.springframework.http.HttpStatus;
-import org.zstack.header.agent.AgentResponse;
 import org.zstack.header.rest.RestAPIState;
 
 /**
@@ -39,11 +38,11 @@ public class VpnAgentResponse {
         private String message;
         private boolean success = true;
 
-        public String getError() {
+        public String getMessage() {
             return message;
         }
 
-        public void setError(String message) {
+        public void setMessage(String message) {
             this.message = message;
         }
 

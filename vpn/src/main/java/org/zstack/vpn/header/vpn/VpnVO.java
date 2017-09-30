@@ -59,6 +59,16 @@ public class VpnVO {
     private Payment payment;
     @Column
     private Integer maxModifies;
+    @Column
+    private String memo;
+
+    public String getMemo() {
+        return memo;
+    }
+
+    public void setMemo(String memo) {
+        this.memo = memo;
+    }
 
     public Integer getMaxModifies() {
         return maxModifies;

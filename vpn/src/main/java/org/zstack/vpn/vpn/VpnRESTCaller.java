@@ -20,6 +20,7 @@ import org.zstack.header.rest.RestAPIResponse;
 import org.zstack.header.rest.RestAPIState;
 import org.zstack.header.vpn.VpnAgentCommand;
 import org.zstack.header.vpn.VpnAgentResponse;
+import org.zstack.header.vpn.VpnAgentResponse.*;
 import org.zstack.utils.URLBuilder;
 import org.zstack.utils.Utils;
 import org.zstack.utils.gson.JSONObjectUtil;
@@ -27,8 +28,9 @@ import org.zstack.utils.logging.CLogger;
 import org.zstack.vpn.vpn.VpnCommands.*;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.concurrent.TimeUnit;
+
+import static org.zstack.core.Platform.operr;
 
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
@@ -67,17 +69,26 @@ public class VpnRESTCaller {
         return rsp;
     }
 
-    public CheckStatusResponse asyncCheckState(String path, VpnAgentCommand cmd) throws InterruptedException {
+    public CheckStatusResponse asyncCheckState(String path, VpnAgentCommand cmd) {
         return asyncCheckState(path, cmd, 1, TimeUnit.MINUTES.toSeconds(10));
     }
 
 
     public CheckStatusResponse checkState(String path, VpnAgentCommand cmd) {
-        return syncPostForVpn(path, cmd, CheckStatusResponse.class);
+        return syncPost(path, cmd, CheckStatusResponse.class);
     }
 
-
     public <T extends VpnAgentResponse> T syncPostForVpn(String path, VpnAgentCommand cmd, Class<T> rspClass) {
+
+        T rsp = syncPost(path, cmd, rspClass);
+        if (rsp.getStatusCode() != HttpStatus.OK){
+            throw new OperationFailureException(operr("failed to post to %s, status code: %s, result: %s",
+                    path, rsp.getStatusCode(), rsp.getResult()));
+        }
+        return rsp;
+    }
+
+    public <T extends VpnAgentResponse> T syncPost(String path, VpnAgentCommand cmd, Class<T> rspClass) {
         String body = JSONObjectUtil.toJsonString(cmd);
         String url = buildUrl(path);
 
@@ -119,7 +130,7 @@ public class VpnRESTCaller {
         InnerMessageHelper.setMD5(innerMsg);
 
         RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
-        return  (APIReply) RESTApiDecoder.loads(rsp.getResult());
+        return (APIReply) RESTApiDecoder.loads(rsp.getResult());
     }
 
 }
