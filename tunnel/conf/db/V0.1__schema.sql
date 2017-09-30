@@ -380,3 +380,45 @@ VIEW `syscxp_tunnel`.`HostVO` AS
         (`syscxp_tunnel`.`HostEO`.`deleted` = 0);
 
 alter table syscxp_tunnel.HostEO add nodeUuid varchar(32) comment '节点ID(NodeEO.uuid)' after uuid;
+
+
+##阿里云边界路由器
+CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterEO` (
+  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `tunnelUuid` VARCHAR(32) NOT NULL COMMENT '云专线id',
+  `aliAccountUuid` VARCHAR(64) NOT NULL COMMENT '阿里云用户id',
+  `aliRegionId` VARCHAR(64) NOT NULL COMMENT '阿里云区域',
+  `name` varchar(128) NOT NULL COMMENT '边界路由器名字',
+  `description` varchar(255) DEFAULT NULL COMMENT '描述',
+  `vbrUuid` varchar(64) DEFAULT NULL COMMENT '虚拟边界路由器id',
+  `physicalLineUuid` varchar(32) DEFAULT NULL COMMENT '物理专线id',
+  `vlan` int(11) NOT NULL COMMENT '端口号',
+  `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+CREATE VIEW `syscxp_tunnel`.`ali_edge_routerVO` AS SELECT uuid, tunnelid, aliuuid, area, name, description, vbrid, physicalid, vlanid, lastOpDate, createDate
+                                        FROM `ali_edge_routerEO` WHERE deleted = 0;
+
+##配置表
+CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterConfigVO` (
+  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `aliRegionId` VARCHAR(32) NOT NULL COMMENT '区域id',
+  `physicalLineUuid` varchar(32) DEFAULT NULL COMMENT '物理专线id',
+  `switchportid` VARCHAR(32) NOT NULL COMMENT '交换机接口id',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+##用户表
+CREATE TABLE `syscxp_tunnel`.`AliUser` (
+  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `AccountUuid` VARCHAR(32) NOT NULL COMMENT '账户id',
+  `AliAccessKeyID` varchar(32) DEFAULT NULL COMMENT 'AliAccessKeyID',
+  `AliAccessKeySecret` VARCHAR(32) NOT NULL COMMENT 'AliAccessKeySecret',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
