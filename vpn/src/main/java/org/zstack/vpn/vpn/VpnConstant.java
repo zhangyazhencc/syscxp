@@ -4,13 +4,13 @@ public interface VpnConstant {
 
     public static final String SERVICE_ID = "vpn";
 
-    public static final Integer MAX_MOTIFIES = 5;
+
 
     public static final String ACTION_CATEGORY_VPN = "vpn";
 
     public static final String VPN_ROOT_PATH = "vpn";
 
-    public static final String CREATE_VPN_PATH = "/init-vpn";
+    public static final String INIT_VPN_PATH = "/init-vpn";
 
     public static final String DELETE_VPN_PATH = "/destroy-vpn";
 
@@ -18,7 +18,7 @@ public interface VpnConstant {
 
     public static final String START_VPN_PATH = "/start-vpn";
 
-    public static final String UPDATE_VPN_CIDR_PATH = "/createvpn";
+    public static final String UPDATE_VPN_CIDR_PATH = "";
 
     public static final String UPDATE_VPN_BANDWIDTH_PATH = "/update-bandwith";
 
@@ -30,13 +30,13 @@ public interface VpnConstant {
 
     public static final String DELETE_VPN_ROUTE_PATH = "/del-route";
 
-    public static final String CHECK_VPN_STATE_PATH = "/createvpn";
+    public static final String CHECK_VPN_STATUS_PATH = "/vpn-status";
 
     public static final String RECONNECT_VPN_PATH = "/reconnect-vpn";
 
-    public static final String CHECK_CREATE_STATE_PATH = "/check-state";
+    public static final String CHECK_CREATE_STATE_PATH = "/result";
 
-    public static final String DOWNLOAD_CERTIFICATE_PATH = "/createvpn";
+    public static final String DOWNLOAD_CERTIFICATE_PATH = "/client-conf";
 
-    public static final String RESET_CERTIFICATE_PATH = "/createvpn";
+    public static final String RESET_CERTIFICATE_PATH = "/reset-cert";
 }

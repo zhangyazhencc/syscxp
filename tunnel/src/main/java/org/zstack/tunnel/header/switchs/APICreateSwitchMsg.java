@@ -21,8 +21,6 @@ public class APICreateSwitchMsg extends APIMessage {
     private String name;
     @APIParam(emptyString = false,maxLength = 32,resourceType = PhysicalSwitchVO.class)
     private String physicalSwitchUuid;
-    @APIParam(emptyString = false,validValues = {"FABRIC", "INTERNET"})
-    private SwitchUpperType upperType;
     @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
 
@@ -56,14 +54,6 @@ public class APICreateSwitchMsg extends APIMessage {
 
     public void setPhysicalSwitchUuid(String physicalSwitchUuid) {
         this.physicalSwitchUuid = physicalSwitchUuid;
-    }
-
-    public SwitchUpperType getUpperType() {
-        return upperType;
-    }
-
-    public void setUpperType(SwitchUpperType upperType) {
-        this.upperType = upperType;
     }
 
     public String getDescription() {

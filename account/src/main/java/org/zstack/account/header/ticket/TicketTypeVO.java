@@ -18,10 +18,13 @@ public class TicketTypeVO {
     private long id;
 
     @Column
-    private String typeValue;
+    private String code;
 
     @Column
-    private String typeName;
+    private String name;
+
+    @Column
+    private String category;
 
     @Column
     private Timestamp createDate;
@@ -42,20 +45,20 @@ public class TicketTypeVO {
         this.id = id;
     }
 
-    public String getTypeValue() {
-        return typeValue;
+    public String getCode() {
+        return code;
     }
 
-    public void setTypeValue(String typeValue) {
-        this.typeValue = typeValue;
+    public void setCode(String typeValue) {
+        this.code = typeValue;
     }
 
-    public String getTypeName() {
-        return typeName;
+    public String getName() {
+        return name;
     }
 
-    public void setTypeName(String typeName) {
-        this.typeName = typeName;
+    public void setName(String typeName) {
+        this.name = typeName;
     }
 
     public Timestamp getCreateDate() {
@@ -72,5 +75,13 @@ public class TicketTypeVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 }

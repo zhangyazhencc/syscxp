@@ -204,9 +204,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     @Transactional
     private void handle(APICreateInterfaceMsg msg){
 
-        //TODO 账户金额是否充足
-
-        //金额充足，则创建物理接口
         InterfaceVO vo = new InterfaceVO();
 
         //策略分配端口

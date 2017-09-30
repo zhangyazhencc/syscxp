@@ -1,9 +1,6 @@
 package org.zstack.account.header.ticket;
 
 import org.zstack.account.header.account.AccountConstant;
-import org.zstack.account.header.account.AccountGrade;
-import org.zstack.account.header.account.AccountMessage;
-import org.zstack.account.header.account.AccountVO;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
@@ -17,7 +14,7 @@ import org.zstack.header.notification.ApiNotification;
 public class APICreateTicketMsg  extends APIMessage {
 
     @APIParam(maxLength = 128)
-    private String type;
+    private String ticketTypeCode;
 
     @APIParam(maxLength = 2048)
     private String content;
@@ -28,12 +25,35 @@ public class APICreateTicketMsg  extends APIMessage {
     @APIParam(maxLength = 32)
     private String email;
 
-    public String getType() {
-        return type;
+    @APIParam(maxLength = 32)
+    private TicketFrom ticketFrom;
+
+    @APIParam(maxLength = 2048, required = false)
+    private String contentExtra;
+
+
+    public TicketFrom getTicketFrom() {
+        return ticketFrom;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setTicketFrom(TicketFrom ticketFrom) {
+        this.ticketFrom = ticketFrom;
+    }
+
+    public String getContentExtra() {
+        return contentExtra;
+    }
+
+    public void setContentExtra(String contentExtra) {
+        this.contentExtra = contentExtra;
+    }
+
+    public String getTicketTypeCode() {
+        return ticketTypeCode;
+    }
+
+    public void setTicketTypeCode(String ticketTypeCode) {
+        this.ticketTypeCode = ticketTypeCode;
     }
 
     public String getContent() {

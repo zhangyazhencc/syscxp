@@ -52,6 +52,9 @@ public class TunnelAO {
     private ProductChargeModel productChargeModel;
 
     @Column
+    private Integer maxModifies;
+
+    @Column
     private String description;
 
     @Column
@@ -186,5 +189,13 @@ public class TunnelAO {
 
     public void setProductChargeModel(ProductChargeModel productChargeModel) {
         this.productChargeModel = productChargeModel;
+    }
+
+    public Integer getMaxModifies() {
+        return maxModifies;
+    }
+
+    public void setMaxModifies(Integer maxModifies) {
+        this.maxModifies = maxModifies;
     }
 }

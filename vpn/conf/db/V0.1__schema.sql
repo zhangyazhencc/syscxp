@@ -136,6 +136,15 @@ CREATE TABLE  `syscxp_vpn`.`HostInterfaceVO` (
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE  `syscxp_vpn`.`VpnMotifyRecordVO` (
+	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+	`vpnUuid` varchar(32) NOT NULL COMMENT 'vpnUuid',
+	`motifyType` varchar(32) NOT NULL COMMENT '升级、降级',
+	`opAccountUuid` varchar(32) NOT NULL UNIQUE COMMENT '操作人',
+	`createDate` timestamp,
+	PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 
 ALTER TABLE VpnHostVO ADD CONSTRAINT fkVpnHostVOZoneVO FOREIGN KEY (zoneUuid) REFERENCES ZoneVO (uuid) ON DELETE RESTRICT;
 ALTER TABLE HostInterfaceVO ADD CONSTRAINT fkHostInterfaceVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE CASCADE;

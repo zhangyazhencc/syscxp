@@ -8,23 +8,17 @@ import org.zstack.tunnel.manage.SwitchConstant;
 /**
  * Created by DCY on 2017-09-06
  */
-
 @Action(category = SwitchConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
-
 public class APIUpdatePhysicalSwitchMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = PhysicalSwitchVO.class)
     private String uuid;
-    @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = SwitchModelVO.class)
-    private String switchModelUuid;
     @APIParam(emptyString = false,required = false,maxLength = 128)
     private String code;
     @APIParam(emptyString = false,required = false,maxLength = 128)
     private String name;
     @APIParam(emptyString = false,required = false,maxLength = 128)
     private String owner;
-    @APIParam(emptyString = false,required = false,validValues = {"ACCESS", "TRANSPORT","BOTH"})
-    private PhysicalSwitchType type;
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String rack;
     @APIParam(emptyString = false,required = false,maxLength = 128)
@@ -102,14 +96,6 @@ public class APIUpdatePhysicalSwitchMsg extends APIMessage {
         this.password = password;
     }
 
-    public String getSwitchModelUuid() {
-        return switchModelUuid;
-    }
-
-    public void setSwitchModelUuid(String switchModelUuid) {
-        this.switchModelUuid = switchModelUuid;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -124,13 +110,5 @@ public class APIUpdatePhysicalSwitchMsg extends APIMessage {
 
     public void setLocalIP(String localIP) {
         this.localIP = localIP;
-    }
-
-    public PhysicalSwitchType getType() {
-        return type;
-    }
-
-    public void setType(PhysicalSwitchType type) {
-        this.type = type;
     }
 }

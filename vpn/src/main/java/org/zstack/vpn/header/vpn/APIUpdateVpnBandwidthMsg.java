@@ -1,5 +1,6 @@
 package org.zstack.vpn.header.vpn;
 
+import org.zstack.header.billing.ProductPriceUnit;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
@@ -15,15 +16,15 @@ public class APIUpdateVpnBandwidthMsg extends APIVpnMassage {
     private String uuid;
     @APIParam
     private Long bandwidth;
-    @APIParam
-    private List<String> productPriceUnitUuids;
+    @APIParam(nonempty = true)
+    private List<ProductPriceUnit> units;
 
-    public List<String> getProductPriceUnitUuids() {
-        return productPriceUnitUuids;
+    public List<ProductPriceUnit> getUnits() {
+        return units;
     }
 
-    public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
-        this.productPriceUnitUuids = productPriceUnitUuids;
+    public void setUnits(List<ProductPriceUnit> units) {
+        this.units = units;
     }
 
     public String getUuid() {

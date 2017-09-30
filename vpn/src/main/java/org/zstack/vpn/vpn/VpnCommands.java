@@ -1,5 +1,6 @@
 package org.zstack.vpn.vpn;
 
+import org.zstack.header.rest.RestAPIState;
 import org.zstack.header.vpn.VpnAgentCommand;
 import org.zstack.header.vpn.VpnAgentResponse;
 import org.zstack.utils.CollectionUtils;
@@ -10,8 +11,13 @@ import org.zstack.vpn.header.vpn.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * VPN接口参数
+ */
 public class VpnCommands {
-    
+    /**
+     * 查询物理机状态：/vpn/agent-status
+     */
     public static class CheckVpnHostStatusCmd extends VpnAgentCommand {
         public static CheckVpnHostStatusCmd valueOf(VpnHostVO vo) {
             CheckVpnHostStatusCmd cmd = new CheckVpnHostStatusCmd();
@@ -20,6 +26,39 @@ public class VpnCommands {
         }
     }
 
+    public static class CheckStatusResponse extends VpnAgentResponse {
+        private RestAPIState state;
+        private RunStatus status;
+        private TaskResult result;
+
+        public TaskResult getResult() {
+            return result;
+        }
+
+        public void setResult(TaskResult result) {
+            this.result = result;
+        }
+
+        public RestAPIState getState() {
+            return state;
+        }
+
+        public void setState(RestAPIState state) {
+            this.state = state;
+        }
+
+        public RunStatus getStatus() {
+            return status;
+        }
+
+        public void setStatus(RunStatus status) {
+            this.status = status;
+        }
+    }
+
+    /**
+     * 添加物理机：/vpn/add-host
+     */
     public static class AddVpnHostCmd extends VpnAgentCommand {
 
         public static AddVpnHostCmd valueOf(VpnHostVO vo) {
@@ -28,9 +67,14 @@ public class VpnCommands {
             return cmd;
         }
     }
+
     public static class AddVpnHostResponse extends VpnAgentResponse {
 
     }
+
+    /**
+     * 删除物理机：
+     */
     public static class DeleteVpnHostCmd extends VpnAgentCommand {
 
         public static DeleteVpnHostCmd valueOf(VpnHostVO vo) {
@@ -39,9 +83,14 @@ public class VpnCommands {
             return cmd;
         }
     }
+
     public static class DeleteVpnHostResponse extends VpnAgentResponse {
 
     }
+
+    /**
+     * 物理机重连：/vpn/recconnect
+     */
     public static class ReconnectVpnHostCmd extends VpnAgentCommand {
 
         public static ReconnectVpnHostCmd valueOf(VpnHostVO vo) {
@@ -50,10 +99,14 @@ public class VpnCommands {
             return cmd;
         }
     }
+
     public static class ReconnectVpnHostResponse extends VpnAgentResponse {
 
     }
 
+    /**
+     * 查询VPN状态：/vpn/vpn-status
+     */
     public static class CheckVpnStatusCmd extends VpnAgentCommand {
 
         public static CheckVpnStatusCmd valueOf(VpnVO vo) {
@@ -64,9 +117,10 @@ public class VpnCommands {
         }
 
     }
-    public static class CheckStatusResponse extends VpnAgentResponse {
 
-    }
+    /**
+     * VPN重连：
+     */
     public static class ReconnectVpnCmd extends VpnAgentCommand {
 
         public static ReconnectVpnCmd valueOf(VpnVO vo) {
@@ -76,12 +130,17 @@ public class VpnCommands {
             return cmd;
         }
     }
+
     public static class ReconnectVpnResponse extends VpnAgentResponse {
 
     }
 
+    /**
+     * 创建VPN：/vpn/init-vpn
+     * /vpn/start-vpn
+     */
     public static class CreateVpnCmd extends VpnAgentCommand {
-
+        private String public_ip;
         private String cidr;
         private Long bandwidth;
         private Integer duration;
@@ -99,6 +158,14 @@ public class VpnCommands {
             cmd.setVpnInterfaceCmds(VpnInterfaceCmd.valueOf(cmd.getHostIp(), vo.getVpnInterfaces()));
             cmd.setVpnRouteCmds(VpnRouteCmd.valueOf(cmd.getHostIp(), vo.getVpnRoutes()));
             return cmd;
+        }
+
+        public String getPublicIp() {
+            return public_ip;
+        }
+
+        public void setPublicIp(String publicIp) {
+            this.public_ip = publicIp;
         }
 
         public List<VpnInterfaceCmd> getVpnInterfaceCmds() {
@@ -143,14 +210,26 @@ public class VpnCommands {
     }
 
     public static class CreateVpnResponse extends VpnAgentResponse {
+        private String task_uuid;
 
+        public String getTaskUuid() {
+            return task_uuid;
+        }
+
+        public void setTaskUuid(String taskUuid) {
+            this.task_uuid = taskUuid;
+        }
     }
 
-    public static class UpdateVpnStateCmd extends VpnAgentCommand {
+
+    /**
+     * 关闭VPN：/vpn/close-vpn
+     */
+    public static class StopVpnCmd extends VpnAgentCommand {
         private List<String> vlan_list;
 
-        public static UpdateVpnStateCmd valueOf(VpnVO vo) {
-            UpdateVpnStateCmd cmd = new UpdateVpnStateCmd();
+        public static StopVpnCmd valueOf(VpnVO vo) {
+            StopVpnCmd cmd = new StopVpnCmd();
             cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setVpnUuid(vo.getUuid());
             cmd.setVlans(CollectionUtils.transformToList(vo.getVpnInterfaces(), new Function<String, VpnInterfaceVO>() {
@@ -171,9 +250,13 @@ public class VpnCommands {
         }
     }
 
-    public static class UpdateVpnStateResponse extends VpnAgentResponse {
+    public static class StopVpnResponse extends VpnAgentResponse {
 
     }
+
+    /**
+     * 删除VPN：/vpn/destroy-vpn
+     */
     public static class DeleteVpnCmd extends VpnAgentCommand {
         private List<String> vlan_list;
 
@@ -203,6 +286,9 @@ public class VpnCommands {
 
     }
 
+    /**
+     * 修改VPN带宽：
+     */
     public static class UpdateVpnBandWidthCmd extends VpnAgentCommand {
         private Long bandwidth;
 
@@ -213,6 +299,7 @@ public class VpnCommands {
             cmd.setBandwidth(vo.getBandwidth());
             return cmd;
         }
+
         public Long getBandwidth() {
             return bandwidth;
         }
@@ -226,6 +313,9 @@ public class VpnCommands {
 
     }
 
+    /**
+     * 修改VPN网段
+     */
     public static class UpdateVpnCidrCmd extends VpnAgentCommand {
         private String vpnCidr;
 
@@ -250,14 +340,14 @@ public class VpnCommands {
 
     }
 
+    /**
+     * 添加VPN接口：/vpn/add-ddn-if
+     * 删除VPN接口：/vpn/del-ddn-if
+     */
     public static class VpnInterfaceCmd extends VpnAgentCommand {
         private String local_ip;
         private String netmask;
         private String vlan;
-
-        VpnInterfaceCmd(String hostIp) {
-            this.setHostIp(hostIp);
-        }
 
         public String getLocalIp() {
             return local_ip;
@@ -284,7 +374,9 @@ public class VpnCommands {
         }
 
         public static VpnInterfaceCmd valueOf(String hostIp, VpnInterfaceVO vo) {
-            VpnInterfaceCmd cmd = new VpnInterfaceCmd(hostIp);
+            VpnInterfaceCmd cmd = new VpnInterfaceCmd();
+            cmd.setHostIp(hostIp);
+            cmd.setVpnUuid(vo.getVpnUuid());
             cmd.setLocalIp(vo.getLocalIp());
             cmd.setNetmask(vo.getNetmask());
             cmd.setVlan(vo.getVlan());
@@ -302,12 +394,18 @@ public class VpnCommands {
 
     }
 
+    /**
+     * 添加VPN路由：/vpn/add-route
+     * 删除VPN路由：/vpn/del-route
+     */
     public static class VpnRouteCmd extends VpnAgentCommand {
         private List<String> next_ip;
         private String dest_cidr;
 
         public static VpnRouteCmd valueOf(String hostIp, VpnRouteVO vo) {
-            VpnRouteCmd cmd = new VpnRouteCmd(hostIp);
+            VpnRouteCmd cmd = new VpnRouteCmd();
+            cmd.setHostIp(hostIp);
+            cmd.setVpnUuid(vo.getVpnUuid());
             cmd.setNextIface(vo.getNextInterface());
             cmd.setTargetCidr(vo.getTargetCidr());
             return cmd;
@@ -317,10 +415,6 @@ public class VpnCommands {
             List<VpnRouteCmd> cmds = new ArrayList<>();
             vos.forEach(vo -> cmds.add(VpnRouteCmd.valueOf(hostIp, vo)));
             return cmds;
-        }
-
-        VpnRouteCmd(String hostIp) {
-            this.setHostIp(hostIp);
         }
 
         public List<String> getNextIface() {
@@ -344,4 +438,120 @@ public class VpnCommands {
 
     }
 
+    /**
+     * 下载client证书：/vpn/client-conf
+     */
+    public static class DownloadCertificateCmd extends VpnAgentCommand {
+
+
+        public static DownloadCertificateCmd valueOf(VpnVO vo) {
+            DownloadCertificateCmd cmd = new DownloadCertificateCmd();
+            cmd.setHostIp(vo.getVpnHost().getManageIp());
+            cmd.setVpnUuid(vo.getUuid());
+            return cmd;
+        }
+
+        public static List<VpnRouteCmd> valueOf(String hostIp, List<VpnRouteVO> vos) {
+            List<VpnRouteCmd> cmds = new ArrayList<>();
+            vos.forEach(vo -> cmds.add(VpnRouteCmd.valueOf(hostIp, vo)));
+            return cmds;
+        }
+
+    }
+
+    public static class DownloadCertificateResponse extends VpnAgentResponse {
+        private String client_cert;
+        private String client_key;
+        private String ca_cert;
+        private String client_conf;
+
+        public String getClientCert() {
+            return client_cert;
+        }
+
+        public void setClientCert(String clientCert) {
+            this.client_cert = clientCert;
+        }
+
+        public String getClientKey() {
+            return client_key;
+        }
+
+        public void setClientKey(String clientKey) {
+            this.client_key = clientKey;
+        }
+
+        public String getCaCert() {
+            return ca_cert;
+        }
+
+        public void setCaCert(String caCert) {
+            this.ca_cert = caCert;
+        }
+
+        public String getClientConf() {
+            return client_conf;
+        }
+
+        public void setClientConf(String clientConf) {
+            this.client_conf = clientConf;
+        }
+
+    }
+
+    /**
+     * 重置证书：/vpn/reset-cert
+     */
+    public static class ResetCertificateCmd extends VpnAgentCommand {
+
+
+        public static ResetCertificateCmd valueOf(VpnVO vo) {
+            ResetCertificateCmd cmd = new ResetCertificateCmd();
+            cmd.setHostIp(vo.getVpnHost().getManageIp());
+            cmd.setVpnUuid(vo.getUuid());
+            cmd.setPort(vo.getPort());
+            return cmd;
+        }
+
+        public static List<VpnRouteCmd> valueOf(String hostIp, List<VpnRouteVO> vos) {
+            List<VpnRouteCmd> cmds = new ArrayList<>();
+            vos.forEach(vo -> cmds.add(VpnRouteCmd.valueOf(hostIp, vo)));
+            return cmds;
+        }
+
+    }
+
+    public static class ResetCertificateResponse extends VpnAgentResponse {
+
+    }
+
+    public static class TaskResult {
+        private String message;
+        private boolean success = true;
+
+        public String getError() {
+            return message;
+        }
+
+        public void setError(String message) {
+            this.message = message;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
+    }
+
+    /**
+     * 物理机或VPN运行状态
+     */
+    public enum RunStatus {
+        DOWN,
+        UP,
+        UNKOWN
+    }
 }

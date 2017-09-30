@@ -1,5 +1,6 @@
 package org.zstack.vpn.header.vpn;
 
+import org.zstack.header.billing.ProductPriceUnit;
 import org.zstack.header.identity.Action;
 import org.zstack.header.message.APIEvent;
 import org.zstack.header.message.APIMessage;
@@ -33,16 +34,15 @@ public class APICreateVpnMsg extends APIVpnMassage {
     private String netmask;
     @APIParam
     private String vlan;
-
     @APIParam
-    private List<String> productPriceUnitUuids;
+    private List<ProductPriceUnit> productPriceUnits;
 
-    public List<String> getProductPriceUnitUuids() {
-        return productPriceUnitUuids;
+    public List<ProductPriceUnit> getProductPriceUnits() {
+        return productPriceUnits;
     }
 
-    public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
-        this.productPriceUnitUuids = productPriceUnitUuids;
+    public void setProductPriceUnits(List<ProductPriceUnit> productPriceUnits) {
+        this.productPriceUnits = productPriceUnits;
     }
 
     public String getNetworkUuid() {

@@ -17,7 +17,7 @@ public class APICreateTicketRecordMsg extends APIMessage {
     private String ticketUuid;
 
     @APIParam(maxLength = 32)
-    private BelongTo belongto;
+    private RecordBy recordBy;
 
     @APIParam(maxLength = 2048)
     private String content;
@@ -33,12 +33,12 @@ public class APICreateTicketRecordMsg extends APIMessage {
         this.ticketUuid = ticketUuid;
     }
 
-    public BelongTo getBelongto() {
-        return belongto;
+    public RecordBy getRecordBy() {
+        return recordBy;
     }
 
-    public void setBelongto(BelongTo belongto) {
-        this.belongto = belongto;
+    public void setRecordBy(RecordBy recordBy) {
+        this.recordBy = recordBy;
     }
 
     public String getContent() {

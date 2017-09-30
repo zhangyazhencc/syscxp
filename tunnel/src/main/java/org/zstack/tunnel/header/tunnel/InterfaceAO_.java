@@ -21,6 +21,7 @@ public class InterfaceAO_ {
     public static volatile SingularAttribute<InterfaceAO, InterfaceState> state;
     public static volatile SingularAttribute<InterfaceAO, Integer> duration;
     public static volatile SingularAttribute<InterfaceAO, ProductChargeModel> productChargeModel;
+    public static volatile SingularAttribute<InterfaceAO, Integer> maxModifies;
     public static volatile SingularAttribute<InterfaceAO, Timestamp> expiredDate;
     public static volatile SingularAttribute<InterfaceAO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<InterfaceAO, Timestamp> createDate;

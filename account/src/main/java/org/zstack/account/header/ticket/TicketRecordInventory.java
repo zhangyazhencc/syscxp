@@ -12,7 +12,9 @@ public class TicketRecordInventory {
 
     private String uuid;
     private String ticketUuid;
-    private String belongTo;
+    private String recordBy;
+    private String adminUserUuid;
+
     private String content;
     private String status;
     private Timestamp createDate;
@@ -23,7 +25,8 @@ public class TicketRecordInventory {
         TicketRecordInventory inv = new TicketRecordInventory();
         inv.setUuid(vo.getUuid());
         inv.setTicketUuid(vo.getTicketUuid());
-        inv.setBelongTo(vo.getBelongTo().toString());
+        inv.setRecordBy(vo.getRecordBy().toString());
+        inv.setAdminUserUuid(vo.getAdminUserUuid());
         inv.setContent(vo.getContent());
         inv.setStatus(vo.getStatus().toString());
         inv.setCreateDate(vo.getCreateDate());
@@ -55,12 +58,20 @@ public class TicketRecordInventory {
         this.ticketUuid = ticketUuid;
     }
 
-    public String getBelongTo() {
-        return belongTo;
+    public String getRecordBy() {
+        return recordBy;
     }
 
-    public void setBelongTo(String belongTo) {
-        this.belongTo = belongTo;
+    public String getAdminUserUuid() {
+        return adminUserUuid;
+    }
+
+    public void setAdminUserUuid(String adminUserUuid) {
+        this.adminUserUuid = adminUserUuid;
+    }
+
+    public void setRecordBy(String recordBy) {
+        this.recordBy = recordBy;
     }
 
     public String getContent() {
