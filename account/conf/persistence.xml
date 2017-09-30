@@ -24,5 +24,10 @@
         <class>org.zstack.sms.header.SmsVO</class>
         <class>org.zstack.account.header.log.AlarmContactVO</class>
         <class>org.zstack.core.notification.NotificationVO</class>
+
+        <class>org.zstack.account.header.ticket.TicketVO</class>
+        <class>org.zstack.account.header.ticket.TicketRecordVO</class>
+        <class>org.zstack.account.header.ticket.TicketTypeVO</class>
+
     </persistence-unit>
 </persistence>
