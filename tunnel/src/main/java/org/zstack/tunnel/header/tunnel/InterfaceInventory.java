@@ -26,6 +26,7 @@ public class InterfaceInventory {
     private InterfaceState state;
     private Integer duration;
     private ProductChargeModel productChargeModel;
+    private Integer maxModifies;
     private Timestamp expiredDate;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -43,6 +44,7 @@ public class InterfaceInventory {
         inv.setState(vo.getState());
         inv.setDuration(vo.getDuration());
         inv.setProductChargeModel(vo.getProductChargeModel());
+        inv.setMaxModifies(vo.getMaxModifies());
         inv.setExpiredDate(vo.getExpiredDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -167,5 +169,13 @@ public class InterfaceInventory {
 
     public void setState(InterfaceState state) {
         this.state = state;
+    }
+
+    public Integer getMaxModifies() {
+        return maxModifies;
+    }
+
+    public void setMaxModifies(Integer maxModifies) {
+        this.maxModifies = maxModifies;
     }
 }

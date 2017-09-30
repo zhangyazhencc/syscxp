@@ -31,10 +31,6 @@ public class SwitchAO {
     private String physicalSwitchUuid;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private SwitchUpperType upperType;
-
-    @Column
     private String description;
 
     @Column
@@ -94,14 +90,6 @@ public class SwitchAO {
 
     public void setPhysicalSwitchUuid(String physicalSwitchUuid) {
         this.physicalSwitchUuid = physicalSwitchUuid;
-    }
-
-    public SwitchUpperType getUpperType() {
-        return upperType;
-    }
-
-    public void setUpperType(SwitchUpperType upperType) {
-        this.upperType = upperType;
     }
 
     public String getDescription() {

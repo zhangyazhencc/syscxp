@@ -49,6 +49,9 @@ public class InterfaceAO {
     private ProductChargeModel productChargeModel;
 
     @Column
+    private Integer maxModifies;
+
+    @Column
     private Timestamp expiredDate;
 
     @Column
@@ -164,5 +167,13 @@ public class InterfaceAO {
 
     public void setState(InterfaceState state) {
         this.state = state;
+    }
+
+    public Integer getMaxModifies() {
+        return maxModifies;
+    }
+
+    public void setMaxModifies(Integer maxModifies) {
+        this.maxModifies = maxModifies;
     }
 }

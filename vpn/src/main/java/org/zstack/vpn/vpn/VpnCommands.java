@@ -27,25 +27,8 @@ public class VpnCommands {
     }
 
     public static class CheckStatusResponse extends VpnAgentResponse {
-        private RestAPIState state;
         private RunStatus status;
-        private TaskResult result;
 
-        public TaskResult getResult() {
-            return result;
-        }
-
-        public void setResult(TaskResult result) {
-            this.result = result;
-        }
-
-        public RestAPIState getState() {
-            return state;
-        }
-
-        public void setState(RestAPIState state) {
-            this.state = state;
-        }
 
         public RunStatus getStatus() {
             return status;
@@ -525,26 +508,6 @@ public class VpnCommands {
 
     }
 
-    public static class TaskResult {
-        private String message;
-        private boolean success = true;
-
-        public String getError() {
-            return message;
-        }
-
-        public void setError(String message) {
-            this.message = message;
-        }
-
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public void setSuccess(boolean success) {
-            this.success = success;
-        }
-    }
 
     /**
      * 物理机或VPN运行状态

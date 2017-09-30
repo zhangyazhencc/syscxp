@@ -204,9 +204,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     @Transactional
     private void handle(APICreateInterfaceMsg msg){
 
-        //TODO 账户金额是否充足
-
-        //金额充足，则创建物理接口
         InterfaceVO vo = new InterfaceVO();
 
         //策略分配端口
@@ -227,7 +224,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setDescription(msg.getDescription());
 
 
-        //TODO 调用支付
+        //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
         orderMsg.setProductName(vo.getName());
         orderMsg.setProductUuid(vo.getUuid());
