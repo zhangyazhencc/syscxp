@@ -25,7 +25,7 @@ import org.zstack.tunnel.header.tunnel.NetworkVO;
 import org.zstack.tunnel.header.tunnel.TunnelInterfaceVO;
 import org.zstack.tunnel.header.tunnel.TunnelInterfaceVO_;
 import org.zstack.tunnel.header.tunnel.TunnelVO;
-import org.zstack.tunnel.sdk.sdn.service.RyuControllerService;
+import org.zstack.tunnel.sdk.sdn.service.RyuRestService;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
 import org.zstack.utils.network.NetworkUtils;
@@ -60,6 +60,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private ThreadFacade thdf;
     @Autowired
     private RESTFacade evtf;
+/*    @Autowired
+    private RyuRestService ryuRestService;*/
 
     @Override
     @MessageSafe
@@ -212,8 +214,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         tunnelMonitorVO.setUuid(Platform.getUuid());
         tunnelMonitorVO.setTunnelUuid(Platform.getUuid());
 
-        RyuControllerService ryuControllerService = new RyuControllerService();
-        ryuControllerService.tunnelMonitorIssue(tunnelMonitorVO.getUuid(),evtf);
+        RyuRestService ryuRestService = new RyuRestService();
+        ryuRestService.tunnelMonitorIssue(tunnelMonitorVO.getUuid());
 
         APICreateTunnelMonitorEvent event = new APICreateTunnelMonitorEvent(msg.getId());
         event.setInventory(TunnelMonitorInventory.valueOf(tunnelMonitorVO));
