@@ -224,7 +224,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setDescription(msg.getDescription());
 
 
-        //TODO 调用支付
+        //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
         orderMsg.setProductName(vo.getName());
         orderMsg.setProductUuid(vo.getUuid());
