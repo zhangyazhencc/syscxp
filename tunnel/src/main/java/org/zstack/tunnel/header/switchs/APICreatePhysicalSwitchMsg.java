@@ -37,6 +37,15 @@ public class APICreatePhysicalSwitchMsg extends APIMessage {
     @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
 
+    @APIParam(emptyString = false,required = false,validValues = {"SDN", "MPLS"})
+    private PhysicalSwitchAccessType accessType;
+    @APIParam(emptyString = false,required = false,maxLength = 128)
+    private String portName;
+    @APIParam(emptyString = false,required = false,maxLength = 32)
+    private String uplinkPhysicalSwitchUuid;
+    @APIParam(emptyString = false,required = false,maxLength = 128)
+    private String uplinkPhysicalSwitchPortName;
+
     public String getCode() {
         return code;
     }
@@ -131,5 +140,37 @@ public class APICreatePhysicalSwitchMsg extends APIMessage {
 
     public void setLocalIP(String localIP) {
         this.localIP = localIP;
+    }
+
+    public PhysicalSwitchAccessType getAccessType() {
+        return accessType;
+    }
+
+    public void setAccessType(PhysicalSwitchAccessType accessType) {
+        this.accessType = accessType;
+    }
+
+    public String getPortName() {
+        return portName;
+    }
+
+    public void setPortName(String portName) {
+        this.portName = portName;
+    }
+
+    public String getUplinkPhysicalSwitchUuid() {
+        return uplinkPhysicalSwitchUuid;
+    }
+
+    public void setUplinkPhysicalSwitchUuid(String uplinkPhysicalSwitchUuid) {
+        this.uplinkPhysicalSwitchUuid = uplinkPhysicalSwitchUuid;
+    }
+
+    public String getUplinkPhysicalSwitchPortName() {
+        return uplinkPhysicalSwitchPortName;
+    }
+
+    public void setUplinkPhysicalSwitchPortName(String uplinkPhysicalSwitchPortName) {
+        this.uplinkPhysicalSwitchPortName = uplinkPhysicalSwitchPortName;
     }
 }

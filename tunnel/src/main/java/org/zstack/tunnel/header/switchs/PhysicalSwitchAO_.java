@@ -15,6 +15,7 @@ public class PhysicalSwitchAO_ {
     public static volatile SingularAttribute<PhysicalSwitchAO, String> code;
     public static volatile SingularAttribute<PhysicalSwitchAO, String> name;
     public static volatile SingularAttribute<PhysicalSwitchAO, PhysicalSwitchType> type;
+    public static volatile SingularAttribute<PhysicalSwitchAO, PhysicalSwitchAccessType> accessType;
     public static volatile SingularAttribute<PhysicalSwitchAO, String> owner;
     public static volatile SingularAttribute<PhysicalSwitchAO, String> rack;
     public static volatile SingularAttribute<PhysicalSwitchAO, String> description;

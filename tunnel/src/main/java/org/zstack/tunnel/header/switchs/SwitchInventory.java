@@ -21,7 +21,6 @@ public class SwitchInventory {
     private String name;
     private String physicalSwitchUuid;
     private PhysicalSwitchInventory physicalSwitch;
-    private SwitchUpperType upperType;
     private String description;
     private SwitchState state;
     private SwitchStatus status;
@@ -38,7 +37,6 @@ public class SwitchInventory {
         inv.setName(vo.getName());
         inv.setPhysicalSwitchUuid(vo.getPhysicalSwitchUuid());
         inv.setPhysicalSwitch(PhysicalSwitchInventory.valueOf(vo.getPhysicalSwitch()));
-        inv.setUpperType(vo.getUpperType());
         inv.setDescription(vo.getDescription());
         inv.setState(vo.getState());
         inv.setStatus(vo.getStatus());
@@ -102,14 +100,6 @@ public class SwitchInventory {
 
     public void setPhysicalSwitchUuid(String physicalSwitchUuid) {
         this.physicalSwitchUuid = physicalSwitchUuid;
-    }
-
-    public SwitchUpperType getUpperType() {
-        return upperType;
-    }
-
-    public void setUpperType(SwitchUpperType upperType) {
-        this.upperType = upperType;
     }
 
     public String getDescription() {

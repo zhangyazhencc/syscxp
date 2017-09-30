@@ -165,7 +165,8 @@ CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchEO` (
   `code` varchar(128) NOT NULL COMMENT '交换机编号',
   `name` varchar(128) NOT NULL COMMENT '交换机名称',
   `owner` varchar(128) NOT NULL COMMENT '交换机属主',
-  `type` varchar(32) NOT NULL COMMENT '交换机类型：接入还是输出',
+  `type` varchar(32) NOT NULL COMMENT '交换机类型：接入还是传输',
+  `accessType` varchar(32) DEFAULT NULL COMMENT '接入类型：SDN还是MPLS',
   `rack` varchar(32) NOT NULL COMMENT '交换机位置',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `mIP` varchar(128) NOT NULL COMMENT '管理IP',
@@ -178,8 +179,20 @@ CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, nodeUuid, switchModelUuid, name, code,  owner, type, rack, description, mIP, localIP, username, password, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, nodeUuid, switchModelUuid, name, code,  owner, type, accessType, rack, description, mIP, localIP, username, password, lastOpDate, createDate
                                           FROM `PhysicalSwitchEO` WHERE deleted = 0;
+
+##物理交换机上联
+CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchUpLinkRefVO` (
+  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `physicalSwitchUuid` varchar(32) NOT NULL COMMENT '目标物理交换机',
+  `portName` varchar(128) NOT NULL COMMENT '目标交换机端口名称',
+  `uplinkPhysicalSwitchUuid` varchar(32) NOT NULL COMMENT '上联物理交换机',
+  `uplinkPhysicalSwitchPortName` varchar(128) NOT NULL COMMENT '上联交换机端口名称',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##交换机(虚拟交换机)
 CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
@@ -188,7 +201,6 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
   `endpointUuid` varchar(32) NOT NULL COMMENT '连接点UUID',
   `code` varchar(128) NOT NULL COMMENT '交换机编号',
   `name` varchar(128) NOT NULL COMMENT '交换机名称',
-  `upperType` varchar(32) NOT NULL COMMENT '上联类型：物理专线/互联网',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `state` varchar(32) NOT NULL DEFAULT 'Enabled' COMMENT '状况',
   `status` varchar(32) NOT NULL DEFAULT 'Connected' COMMENT '状态',
@@ -198,7 +210,7 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, physicalSwitchUuid, endpointUuid, name, code, upperType, description, state, status, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, physicalSwitchUuid, endpointUuid, name, code, description, state, status, lastOpDate, createDate
                                             FROM `SwitchEO` WHERE deleted = 0;
 
 
