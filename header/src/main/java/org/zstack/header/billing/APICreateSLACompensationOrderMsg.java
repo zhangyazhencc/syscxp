@@ -3,6 +3,9 @@ package org.zstack.header.billing;
 import org.zstack.header.identity.Action;
 import org.zstack.header.identity.InnerCredentialCheck;
 import org.zstack.header.message.APIParam;
+
+import java.sql.Timestamp;
+
 @InnerCredentialCheck
 @Action(category = BillingConstant.ACTION_CATEGORY_ORDER)
 public class APICreateSLACompensationOrderMsg extends APICreateOrderMsg {
@@ -20,6 +23,27 @@ public class APICreateSLACompensationOrderMsg extends APICreateOrderMsg {
     private String productDescription;
     @APIParam
     private int duration;
+
+    @APIParam
+    private Timestamp startTime;
+    @APIParam
+    private Timestamp expiredTime;
+
+    public Timestamp getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(Timestamp startTime) {
+        this.startTime = startTime;
+    }
+
+    public Timestamp getExpiredTime() {
+        return expiredTime;
+    }
+
+    public void setExpiredTime(Timestamp expiredTime) {
+        this.expiredTime = expiredTime;
+    }
 
     public String getProductName() {
         return productName;
