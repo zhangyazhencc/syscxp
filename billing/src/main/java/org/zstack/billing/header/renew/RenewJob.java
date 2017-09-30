@@ -40,7 +40,7 @@ public class RenewJob extends QuartzJobBean {
             List<RenewVO> renewVOs = q.list();
             logger.info(renewVOs.toString());
             for (RenewVO renewVO : renewVOs) {
-                Timestamp expiredTimestamp = currentTimestamp;//todo get from product by productUuid
+                Timestamp expiredTimestamp =renewVO.getExpiredTime();
                 if(currentTimestamp.getTime()-expiredTimestamp.getTime()>7*24*60*60*1000l){
                     databaseFacade.getEntityManager().remove(renewVO);
                     databaseFacade.getEntityManager().flush();
@@ -176,15 +176,14 @@ public class RenewJob extends QuartzJobBean {
                     orderVo.setType(OrderType.RENEW);
                     orderVo.setOriginalPrice(originalPrice);
                     orderVo.setPrice(dischargePrice);
-                    //todo modify product from tunel
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTime(currentTimestamp);
                     calendar.add(Calendar.MONTH, duration.intValue());
                     orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
+                    orderVo.setProductEffectTimeStart(currentTimestamp);
 
 
-                    Timestamp startTime = new Timestamp(currentTimestamp.getTime() - 30 * 24 * 60 * 60 * 1000);//todo this would get from product
-                    Timestamp endTime = new Timestamp(currentTimestamp.getTime() + 30 * 24 * 60 * 60 * 1000);//todo this would get from product
+                    Timestamp endTime = new Timestamp(calendar.getTime().getTime());
                     long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
                     renewVO.setPricePerDay(renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays)).add(dischargePrice).divide(BigDecimal.valueOf(notUseDays).add(duration),4,BigDecimal.ROUND_HALF_EVEN));
                     databaseFacade.getEntityManager().merge(renewVO);

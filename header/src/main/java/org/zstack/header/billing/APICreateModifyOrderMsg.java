@@ -4,6 +4,7 @@ import org.zstack.header.identity.Action;
 import org.zstack.header.identity.InnerCredentialCheck;
 import org.zstack.header.message.APIParam;
 
+import java.sql.Timestamp;
 import java.util.List;
 
 @Action(category = BillingConstant.ACTION_CATEGORY_ORDER)
@@ -23,6 +24,27 @@ public class APICreateModifyOrderMsg extends APICreateOrderMsg {
 
     @APIParam
     private String productDescription;
+
+    @APIParam
+    private Timestamp startTime;
+    @APIParam
+    private Timestamp expiredTime;
+
+    public Timestamp getExpiredTime() {
+        return expiredTime;
+    }
+
+    public void setExpiredTime(Timestamp expiredTime) {
+        this.expiredTime = expiredTime;
+    }
+
+    public Timestamp getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(Timestamp startTime) {
+        this.startTime = startTime;
+    }
 
     public String getProductName() {
         return productName;
