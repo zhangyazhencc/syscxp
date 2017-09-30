@@ -267,7 +267,7 @@ CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `duration` int(11) NOT NULL COMMENT '最近一次购买时长',
   `productChargeModel` varchar(32) NOT NULL COMMENT '产品付费方式',
   `maxModifies` int(11) NOT NULL COMMENT '最大调整次数',
-  `expiredDate` timestamp NOT NULL COMMENT '截止时间',
+  `expiredDate` timestamp COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
@@ -291,7 +291,7 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `duration` int(11) NOT NULL COMMENT '最近一次购买时长',
   `productChargeModel` varchar(32) NOT NULL COMMENT '产品付费方式',
   `maxModifies` int(11) NOT NULL COMMENT '最大调整次数',
-  `expiredDate` timestamp NOT NULL COMMENT '截止时间',
+  `expiredDate` timestamp COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)

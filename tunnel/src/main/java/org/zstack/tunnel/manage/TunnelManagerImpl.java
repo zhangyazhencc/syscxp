@@ -222,7 +222,10 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDescription(msg.getDescription());
-
+        vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now()));
+        vo.setState(InterfaceState.Unpaid);
+        vo.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
+        vo = dbf.persistAndRefresh(vo);
 
         //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
@@ -231,24 +234,25 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setProductType(ProductType.PORT);
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
-        orderMsg.setProductDescription("dingchunyu");
+        if(msg.getDescription() == null){
+            orderMsg.setProductDescription(msg.getDescription());
+        }else{
+            orderMsg.setProductDescription("no description");
+        }
         orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         RestAPIResponse rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
         APIReply apiReply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
-        if (!apiReply.isSuccess()) {
-            throw new OperationFailureException(apiReply.getError());
+        if (apiReply.isSuccess()) {
+            vo.setState(InterfaceState.paid);
+            if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration(), ChronoUnit.MONTHS)));
+            }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+            }
+            dbf.getEntityManager().merge(vo);
         }
-
-        vo.setState(InterfaceState.paid);
-        if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-            vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration(), ChronoUnit.MONTHS)));
-        }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-            vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
-        }
-        vo.setEndpointVO(dbf.findByUuid(msg.getEndpointUuid(),EndpointVO.class));
-        dbf.getEntityManager().persist(vo);
 
         APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
         evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -258,9 +262,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     @Transactional
     private void handle(APICreateInterfaceManualMsg msg){
 
-        //TODO 账户金额是否充足
-
-        //金额充足，则创建物理接口
         InterfaceVO vo = new InterfaceVO();
 
         vo.setUuid(Platform.getUuid());
@@ -272,32 +273,37 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDescription(msg.getDescription());
+        vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now()));
+        vo.setState(InterfaceState.Unpaid);
+        vo.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
+        vo = dbf.persistAndRefresh(vo);
 
-        //TODO 调用支付
+        //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
         orderMsg.setProductName(vo.getName());
         orderMsg.setProductUuid(vo.getUuid());
         orderMsg.setProductType(ProductType.PORT);
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
-        orderMsg.setProductDescription("dingchunyu");
+        if(msg.getDescription() == null){
+            orderMsg.setProductDescription(msg.getDescription());
+        }else{
+            orderMsg.setProductDescription("no description");
+        }
         orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         RestAPIResponse rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
         APIReply apiReply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
-        if (!apiReply.isSuccess()) {
-            throw new OperationFailureException(apiReply.getError());
+        if (apiReply.isSuccess()) {
+            vo.setState(InterfaceState.paid);
+            if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration(), ChronoUnit.MONTHS)));
+            }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+            }
+            dbf.getEntityManager().merge(vo);
         }
-
-        vo.setState(InterfaceState.paid);
-        if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-            vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration(), ChronoUnit.MONTHS)));
-        }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-            vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
-        }
-        vo.setEndpointVO(dbf.findByUuid(msg.getEndpointUuid(),EndpointVO.class));
-        dbf.getEntityManager().persist(vo);
 
         APICreateInterfaceManualEvent evt = new APICreateInterfaceManualEvent(msg.getId());
         evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -326,7 +332,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     @Transactional
     private void handle(APIUpdateInterfaceBandwidthMsg msg){
-        //TODO 账户金额是否充足
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(),InterfaceVO.class);
 
