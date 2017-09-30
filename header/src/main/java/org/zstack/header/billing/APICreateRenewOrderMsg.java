@@ -4,6 +4,8 @@ import org.zstack.header.identity.Action;
 import org.zstack.header.identity.InnerCredentialCheck;
 import org.zstack.header.message.APIParam;
 
+import java.sql.Timestamp;
+
 @Action(category = BillingConstant.ACTION_CATEGORY_ORDER)
 @InnerCredentialCheck
 public class APICreateRenewOrderMsg  extends APICreateOrderMsg {
@@ -16,6 +18,19 @@ public class APICreateRenewOrderMsg  extends APICreateOrderMsg {
 
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private int duration;
+
+    @APIParam
+    private Timestamp startTime;
+    @APIParam
+    private Timestamp expiredTime;
+
+    public Timestamp getExpiredTime() {
+        return expiredTime;
+    }
+
+    public void setExpiredTime(Timestamp expiredTime) {
+        this.expiredTime = expiredTime;
+    }
 
     public ProductChargeModel getProductChargeModel() {
         return productChargeModel;
@@ -39,5 +54,13 @@ public class APICreateRenewOrderMsg  extends APICreateOrderMsg {
 
     public void setProductUuid(String productUuid) {
         this.productUuid = productUuid;
+    }
+
+    public Timestamp getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(Timestamp startTime) {
+        this.startTime = startTime;
     }
 }
