@@ -266,12 +266,13 @@ CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `duration` int(11) NOT NULL COMMENT '最近一次购买时长',
   `productChargeModel` varchar(32) NOT NULL COMMENT '产品付费方式',
+  `maxModifies` int(11) NOT NULL COMMENT '最大调整次数',
   `expiredDate` timestamp NOT NULL COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, name, switchPortUuid, endpointUuid, bandwidth, description, state, duration, productChargeModel, expiredDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, name, switchPortUuid, endpointUuid, bandwidth, description, state, duration, productChargeModel, maxModifies, expiredDate, lastOpDate, createDate
                                           FROM `InterfaceEO` WHERE deleted = 0;
 
 ##云专线
@@ -289,13 +290,32 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `duration` int(11) NOT NULL COMMENT '最近一次购买时长',
   `productChargeModel` varchar(32) NOT NULL COMMENT '产品付费方式',
+  `maxModifies` int(11) NOT NULL COMMENT '最大调整次数',
   `expiredDate` timestamp NOT NULL COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, networkUuid, name, bandwidth, distance, state, status, monitorState, description, duration, productChargeModel, expiredDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, networkUuid, name, bandwidth, distance, state, status, monitorState, description, duration, productChargeModel, maxModifies, expiredDate, lastOpDate, createDate
                                         FROM `TunnelEO` WHERE deleted = 0;
+
+CREATE TABLE  `syscxp_tunnel`.`InterfaceMotifyRecordVO` (
+  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `interfaceUuid` varchar(32) NOT NULL COMMENT '物理接口Uuid',
+  `motifyType` varchar(32) NOT NULL COMMENT '升级、降级',
+  `opAccountUuid` varchar(32) NOT NULL UNIQUE COMMENT '操作人',
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  `syscxp_tunnel`.`TunnelMotifyRecordVO` (
+  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `tunnelUuid` varchar(32) NOT NULL COMMENT '通道Uuid',
+  `motifyType` varchar(32) NOT NULL COMMENT '升级、降级',
+  `opAccountUuid` varchar(32) NOT NULL UNIQUE COMMENT '操作人',
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##监控网段字典表
 CREATE TABLE `syscxp_tunnel`.`MonitorCidrVO` (
