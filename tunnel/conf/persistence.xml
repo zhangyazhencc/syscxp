@@ -19,6 +19,7 @@
         <class>org.zstack.tunnel.header.switchs.SwitchEO</class>
         <class>org.zstack.tunnel.header.switchs.PhysicalSwitchVO</class>
         <class>org.zstack.tunnel.header.switchs.PhysicalSwitchEO</class>
+        <class>org.zstack.tunnel.header.switchs.PhysicalSwitchUpLinkRefVO</class>
         <class>org.zstack.tunnel.header.switchs.SwitchModelVO</class>
         <class>org.zstack.tunnel.header.switchs.SwitchPortVO</class>
         <class>org.zstack.tunnel.header.switchs.SwitchVlanVO</class>
@@ -26,8 +27,10 @@
         <class>org.zstack.tunnel.header.tunnel.NetworkVO</class>
         <class>org.zstack.tunnel.header.tunnel.InterfaceVO</class>
         <class>org.zstack.tunnel.header.tunnel.InterfaceEO</class>
+        <class>org.zstack.tunnel.header.tunnel.InterfaceMotifyRecordVO</class>
         <class>org.zstack.tunnel.header.tunnel.TunnelVO</class>
         <class>org.zstack.tunnel.header.tunnel.TunnelEO</class>
+        <class>org.zstack.tunnel.header.tunnel.TunnelMotifyRecordVO</class>
         <class>org.zstack.tunnel.header.tunnel.QinqVO</class>
         <class>org.zstack.tunnel.header.tunnel.TunnelInterfaceVO</class>
         <class>org.zstack.tunnel.header.monitor.MonitorCidrVO</class>

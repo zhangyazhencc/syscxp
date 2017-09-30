@@ -33,6 +33,9 @@ import org.zstack.utils.logging.CLogger;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -98,7 +101,18 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         orderVO.setProductEffectTimeStart(msg.getStartTime());
         orderVO.setProductEffectTimeEnd(msg.getEndTime());
         orderVO.setProductStatus(1);
-        dbf.updateAndRefresh(orderVO);
+
+        SimpleQuery<RenewVO> queryRenew = dbf.createQuery(RenewVO.class);
+        queryRenew.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
+        queryRenew.add(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
+        RenewVO renewVO = queryRenew.find();
+        if (renewVO == null) {
+            throw new IllegalArgumentException("could not find the product purchased history ");
+        }
+        renewVO.setExpiredTime(msg.getEndTime());
+        dbf.getEntityManager().merge(renewVO);
+        dbf.getEntityManager().persist(orderVO);
+        dbf.getEntityManager().flush();
         APIUpdateOrderExpiredTimeEvent event = new APIUpdateOrderExpiredTimeEvent();
         event.setInventory(OrderInventory.valueOf(orderVO));
         bus.publish(event);
@@ -265,15 +279,15 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         orderVo.setType(OrderType.RENEW);
         orderVo.setOriginalPrice(originalPrice);
         orderVo.setPrice(dischargePrice);
-        //todo modify product from tunel
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentTimestamp);
         calendar.add(Calendar.MONTH, duration.intValue());
-        orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
-        orderVo.setProductEffectTimeStart(currentTimestamp);
+        orderVo.setProductEffectTimeEnd( msg.getStartTime());
 
-        Timestamp startTime = new Timestamp(currentTimestamp.getTime() - 30 * 24 * 60 * 60 * 1000);//todo this would get from product
-        Timestamp endTime = new Timestamp(currentTimestamp.getTime() + 30 * 24 * 60 * 60 * 1000);//todo this would get from product
+        LocalDateTime localDateTime =  msg.getExpiredTime().toLocalDateTime();
+        localDateTime.plusMonths(duration.intValue());
+        Timestamp endTime = Timestamp.valueOf(localDateTime);
+        orderVo.setProductEffectTimeStart( endTime);
         long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
 
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
@@ -322,10 +336,10 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         orderVo.setType(OrderType.SLA_COMPENSATION);
         orderVo.setOriginalPrice(BigDecimal.ZERO);
         orderVo.setPrice(BigDecimal.ZERO);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(currentTimestamp);
-        calendar.add(Calendar.DAY_OF_YEAR, msg.getDuration());
-        orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
+        orderVo.setProductEffectTimeStart(msg.getStartTime());
+        LocalDateTime localDateTime = msg.getExpiredTime().toLocalDateTime();
+        localDateTime.plusDays(msg.getDuration());
+        orderVo.setProductEffectTimeEnd(Timestamp.valueOf(localDateTime));
         orderVo.setProductStatus(1);
 
         dbf.getEntityManager().persist(orderVo);
@@ -359,11 +373,8 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         orderVo.setPayTime(currentTimestamp);
         orderVo.setProductUuid(msg.getProductUuid());
 
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.MONTH, -1);
-        Timestamp startTime = new Timestamp(c.getTime().getTime());
-        c.add(Calendar.MONTH, 2);
-        Timestamp endTime = new Timestamp(c.getTime().getTime());
+        Timestamp startTime = msg.getStartTime();
+        Timestamp endTime = msg.getExpiredTime();
         long useDays = Math.abs(currentTimestamp.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
         long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
         long days = Math.abs(endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
@@ -475,11 +486,9 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         orderVo.setProductDescription(msg.getProductDescription());
         orderVo.setProductUuid(msg.getProductUuid());
 
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.MONTH, -1);
-        Timestamp startTime = new Timestamp(c.getTime().getTime());
-        c.add(Calendar.MONTH, 2);
-        Timestamp endTime = new Timestamp(c.getTime().getTime());
+
+        Timestamp startTime = msg.getStartTime();
+        Timestamp endTime = msg.getExpiredTime();
         long useDays = Math.abs(currentTimestamp.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
         long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
         long days = Math.abs(endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
@@ -503,7 +512,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
             orderVo.setType(OrderType.UPGRADE);
             orderVo.setOriginalPrice(needPayOriginMoney.subtract(remainMoney));
             orderVo.setPrice(subMoney);
-            orderVo.setProductEffectTimeStart(startTime);
+            orderVo.setProductEffectTimeStart(currentTimestamp);
             orderVo.setProductEffectTimeEnd(endTime);
             payMethod(msg, orderVo, abvo, subMoney, currentTimestamp);
 
@@ -517,7 +526,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
             orderVo.setPayPresent(BigDecimal.ZERO);
             orderVo.setOriginalPrice(subMoney);
             orderVo.setPrice(subMoney);
-            orderVo.setProductEffectTimeStart(startTime);
+            orderVo.setProductEffectTimeStart(currentTimestamp);
             orderVo.setProductEffectTimeEnd(endTime);
             BigDecimal remainCash = abvo.getCashBalance().add(subMoney.negate());
             abvo.setCashBalance(remainCash);

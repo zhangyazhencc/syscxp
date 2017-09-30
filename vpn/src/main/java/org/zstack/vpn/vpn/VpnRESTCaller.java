@@ -62,7 +62,7 @@ public class VpnRESTCaller {
         while ((rsp.getStatusCode() != HttpStatus.OK || rsp.getState() == RestAPIState.Processing) && curr < timeout);
 
         if (curr >= timeout) {
-            throw new CloudRuntimeException(String.format("timeout after %s ms, error", curr, rsp.getError()));
+            throw new CloudRuntimeException(String.format("timeout after %s ms, error", curr, rsp.getResult()));
         }
         return rsp;
     }

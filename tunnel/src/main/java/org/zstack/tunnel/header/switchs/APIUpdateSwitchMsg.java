@@ -20,8 +20,6 @@ public class APIUpdateSwitchMsg extends APIMessage {
     private String name;
     @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = PhysicalSwitchVO.class)
     private String physicalSwitchUuid;
-    @APIParam(emptyString = false,required = false,validValues = {"FABRIC", "INTERNET"})
-    private SwitchUpperType upperType;
     @APIParam(emptyString = false,required = false,validValues = {"Enabled", "Disabled","PreMaintenance","Maintenance"})
     private SwitchState state;
     @APIParam(emptyString = false,required = false,validValues = {"Connecting", "Connected","Disconnected"})
@@ -59,14 +57,6 @@ public class APIUpdateSwitchMsg extends APIMessage {
 
     public void setPhysicalSwitchUuid(String physicalSwitchUuid) {
         this.physicalSwitchUuid = physicalSwitchUuid;
-    }
-
-    public SwitchUpperType getUpperType() {
-        return upperType;
-    }
-
-    public void setUpperType(SwitchUpperType upperType) {
-        this.upperType = upperType;
     }
 
     public SwitchStatus getStatus() {

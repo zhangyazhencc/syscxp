@@ -25,6 +25,7 @@ public class TunnelInventory {
     private TunnelMonitorState monitorState;
     private Integer duration;
     private ProductChargeModel productChargeModel;
+    private Integer maxModifies;
     private String description;
     private Timestamp expiredDate;
     private Timestamp lastOpDate;
@@ -45,6 +46,7 @@ public class TunnelInventory {
         inv.setMonitorState(vo.getMonitorState());
         inv.setDuration(vo.getDuration());
         inv.setProductChargeModel(vo.getProductChargeModel());
+        inv.setMaxModifies(vo.getMaxModifies());
         inv.setDescription(vo.getDescription());
         inv.setExpiredDate(vo.getExpiredDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -194,5 +196,13 @@ public class TunnelInventory {
 
     public void setProductChargeModel(ProductChargeModel productChargeModel) {
         this.productChargeModel = productChargeModel;
+    }
+
+    public Integer getMaxModifies() {
+        return maxModifies;
+    }
+
+    public void setMaxModifies(Integer maxModifies) {
+        this.maxModifies = maxModifies;
     }
 }

@@ -1,6 +1,7 @@
 package org.zstack.tunnel.manage;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.zstack.core.Platform;
 import org.zstack.core.cloudbus.CloudBus;
 import org.zstack.core.cloudbus.EventFacade;
@@ -19,6 +20,8 @@ import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.Message;
 import org.zstack.tunnel.header.endpoint.EndpointVO;
 import org.zstack.tunnel.header.endpoint.EndpointVO_;
+import org.zstack.tunnel.header.monitor.HostSwitchMonitorVO;
+import org.zstack.tunnel.header.monitor.HostSwitchMonitorVO_;
 import org.zstack.tunnel.header.node.NodeVO;
 import org.zstack.tunnel.header.node.NodeVO_;
 import org.zstack.tunnel.header.switchs.*;
@@ -133,9 +136,10 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         bus.publish(evt);
     }
 
+    @Transactional
     private void handle(APICreatePhysicalSwitchMsg msg){
-        PhysicalSwitchVO vo = new PhysicalSwitchVO();
 
+        PhysicalSwitchVO vo = new PhysicalSwitchVO();
         vo.setUuid(Platform.getUuid());
         vo.setNodeUuid(msg.getNodeUuid());
         vo.setSwitchModelUuid(msg.getSwitchModelUuid());
@@ -143,14 +147,30 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         vo.setName(msg.getName());
         vo.setOwner(msg.getOwner());
         vo.setType(msg.getType());
+        vo.setAccessType(msg.getAccessType());
         vo.setRack(msg.getRack());
         vo.setmIP(msg.getmIP());
         vo.setLocalIP(msg.getLocalIP());
         vo.setUsername(msg.getUsername());
         vo.setPassword(msg.getPassword());
         vo.setDescription(msg.getDescription());
+        vo.setNode(dbf.findByUuid(msg.getNodeUuid(),NodeVO.class));
+        vo.setSwitchModel(dbf.findByUuid(msg.getSwitchModelUuid(),SwitchModelVO.class));
 
-        vo = dbf.persistAndRefresh(vo);
+        //如果为SDN接入交换机，则存入上联表
+        if(msg.getAccessType() != null){
+            if(msg.getType() != PhysicalSwitchType.TRANSPORT && msg.getAccessType() == PhysicalSwitchAccessType.SDN ){
+                PhysicalSwitchUpLinkRefVO voref = new PhysicalSwitchUpLinkRefVO();
+                voref.setUuid(Platform.getUuid());
+                voref.setPhysicalSwitchUuid(vo.getUuid());
+                voref.setPortName(msg.getPortName());
+                voref.setUplinkPhysicalSwitchUuid(msg.getUplinkPhysicalSwitchUuid());
+                voref.setUplinkPhysicalSwitchPortName(msg.getUplinkPhysicalSwitchPortName());
+                dbf.getEntityManager().persist(voref);
+            }
+        }
+
+        dbf.getEntityManager().persist(vo);
 
         APICreatePhysicalSwitchEvent evt = new APICreatePhysicalSwitchEvent(msg.getId());
         evt.setInventory(PhysicalSwitchInventory.valueOf(vo));
@@ -161,10 +181,6 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         PhysicalSwitchVO vo = dbf.findByUuid(msg.getUuid(),PhysicalSwitchVO.class);
         boolean update = false;
 
-        if(msg.getSwitchModelUuid() != null){
-            vo.setSwitchModelUuid(msg.getSwitchModelUuid());
-            update = true;
-        }
         if(msg.getCode() != null){
             vo.setCode(msg.getCode());
             update = true;
@@ -175,10 +191,6 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         }
         if(msg.getOwner() != null){
             vo.setOwner(msg.getOwner());
-            update = true;
-        }
-        if(msg.getType() != null){
-            vo.setType(msg.getType());
             update = true;
         }
         if(msg.getRack() != null){
@@ -214,13 +226,25 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         bus.publish(evt);
     }
 
+    @Transactional
     private void handle(APIDeletePhysicalSwitchMsg msg){
         PhysicalSwitchEO eo = dbf.findByUuid(msg.getUuid(),PhysicalSwitchEO.class);
         PhysicalSwitchVO vo = dbf.findByUuid(msg.getUuid(),PhysicalSwitchVO.class);
 
         eo.setDeleted(1);
 
-        eo = dbf.updateAndRefresh(eo);
+        eo = dbf.getEntityManager().merge(eo);
+
+        //删除物理交换机对应的上联表
+        String physicalSwitchUuid = msg.getUuid();
+        SimpleQuery<PhysicalSwitchUpLinkRefVO> q = dbf.createQuery(PhysicalSwitchUpLinkRefVO.class);
+        q.add(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, physicalSwitchUuid);
+        List<PhysicalSwitchUpLinkRefVO> psuList = q.list();
+        if (psuList.size() > 0) {
+            for(PhysicalSwitchUpLinkRefVO psu : psuList){
+                dbf.getEntityManager().remove(psu);
+            }
+        }
 
         APIDeletePhysicalSwitchEvent evt = new APIDeletePhysicalSwitchEvent(msg.getId());
         evt.setInventory(PhysicalSwitchInventory.valueOf(vo));
@@ -235,7 +259,6 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         vo.setCode(msg.getCode());
         vo.setName(msg.getName());
         vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
-        vo.setUpperType(msg.getUpperType());
         vo.setState(SwitchState.Enabled);
         vo.setStatus(SwitchStatus.Connected);
         vo.setDescription(msg.getDescription());
@@ -261,10 +284,6 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         }
         if(msg.getPhysicalSwitchUuid() != null){
             vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
-            update = true;
-        }
-        if(msg.getUpperType() != null){
-            vo.setUpperType(msg.getUpperType());
             update = true;
         }
         if(msg.getState() != null){
@@ -470,6 +489,39 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         if(q3.isExists()){
             throw new ApiMessageInterceptionException(argerr("PhysicalSwitch's localIp %s is already exist ",msg.getLocalIP()));
         }
+        //如果是SDN接入
+        if(msg.getAccessType() != null){
+            if(msg.getType() != PhysicalSwitchType.TRANSPORT && msg.getAccessType() == PhysicalSwitchAccessType.SDN ){
+                //判断传输端口名称在一个物理交换机的业务端口下是否存在
+                String sql = "select count(b.uuid) from SwitchVO a,SwitchPortVO b " +
+                        "where a.uuid = b.switchUuid " +
+                        "and c.portName = :portName " +
+                        "and a.physicalSwitchUuid = :physicalSwitchUuid ";
+                TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
+                vq.setParameter("portName",msg.getUplinkPhysicalSwitchPortName());
+                vq.setParameter("physicalSwitchUuid",msg.getUplinkPhysicalSwitchUuid());
+                Long count = vq.getSingleResult();
+                if(count>0){
+                    throw new ApiMessageInterceptionException(argerr("portName %s is already exist ",msg.getUplinkPhysicalSwitchPortName()));
+                }
+                //判断传输端口名称在一个物理交换机的传输端口下是否存在
+                SimpleQuery<PhysicalSwitchUpLinkRefVO> q4 = dbf.createQuery(PhysicalSwitchUpLinkRefVO.class);
+                q4.add(PhysicalSwitchUpLinkRefVO_.uplinkPhysicalSwitchUuid, SimpleQuery.Op.EQ, msg.getUplinkPhysicalSwitchUuid());
+                q4.add(PhysicalSwitchUpLinkRefVO_.uplinkPhysicalSwitchPortName, SimpleQuery.Op.EQ, msg.getUplinkPhysicalSwitchPortName());
+                if(q4.isExists()){
+                    throw new ApiMessageInterceptionException(argerr("portName %s is already exist ",msg.getUplinkPhysicalSwitchPortName()));
+                }
+                //判断传输端口名称在一个物理交换机的监控端口下是否存在
+                SimpleQuery<HostSwitchMonitorVO> q5 = dbf.createQuery(HostSwitchMonitorVO.class);
+                q5.add(HostSwitchMonitorVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, msg.getUplinkPhysicalSwitchUuid());
+                q5.add(HostSwitchMonitorVO_.physicalSwitchPortName, SimpleQuery.Op.EQ, msg.getUplinkPhysicalSwitchPortName());
+                if(q5.isExists()){
+                    throw new ApiMessageInterceptionException(argerr("portName %s is already exist ",msg.getUplinkPhysicalSwitchPortName()));
+                }
+            }
+
+        }
+
 
     }
 
@@ -513,6 +565,13 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("cannot delete,PhysicalSwitch is being used!"));
         }
+        //判断该物理交换机下是否有监控
+        SimpleQuery<HostSwitchMonitorVO> q2 = dbf.createQuery(HostSwitchMonitorVO.class);
+        q2.add(HostSwitchMonitorVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, msg.getUuid());
+        if (q2.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("cannot delete,PhysicalSwitch is being used!"));
+        }
+
     }
 
     private void validate(APICreateSwitchMsg msg){

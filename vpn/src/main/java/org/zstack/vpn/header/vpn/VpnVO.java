@@ -53,8 +53,9 @@ public class VpnVO {
     @Column
     private String sid;
     @Column
-    private String key;
+    private String certKey;
     @Column
+    @Enumerated(EnumType.STRING)
     private Payment payment;
     @Column
     private Integer maxModifies;
@@ -67,12 +68,12 @@ public class VpnVO {
         this.maxModifies = maxModifies;
     }
 
-    public String getKey() {
-        return key;
+    public String getCertKey() {
+        return certKey;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setCertKey(String certKey) {
+        this.certKey = certKey;
     }
 
     public Payment getPayment() {

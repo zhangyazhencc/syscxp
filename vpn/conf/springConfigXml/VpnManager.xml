@@ -29,6 +29,7 @@
         <zstack:plugin>
             <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
             <zstack:extension interface="org.zstack.header.Service"/>
+            <zstack:extension interface="org.zstack.header.Component" />
         </zstack:plugin>
 
     </bean>
@@ -37,6 +38,7 @@
         <zstack:plugin>
             <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
             <zstack:extension interface="org.zstack.header.Service"/>
+            <zstack:extension interface="org.zstack.header.Component" />
         </zstack:plugin>
 
     </bean>

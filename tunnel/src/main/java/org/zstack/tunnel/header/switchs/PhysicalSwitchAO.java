@@ -37,6 +37,10 @@ public class PhysicalSwitchAO {
     private PhysicalSwitchType type;
 
     @Column
+    @Enumerated(EnumType.STRING)
+    private PhysicalSwitchAccessType accessType;
+
+    @Column
     private String rack;
 
     @Column
@@ -183,5 +187,13 @@ public class PhysicalSwitchAO {
 
     public void setLocalIP(String localIP) {
         this.localIP = localIP;
+    }
+
+    public PhysicalSwitchAccessType getAccessType() {
+        return accessType;
+    }
+
+    public void setAccessType(PhysicalSwitchAccessType accessType) {
+        this.accessType = accessType;
     }
 }
