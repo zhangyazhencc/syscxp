@@ -25,14 +25,14 @@ import org.zstack.header.identity.AccountType;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIReply;
 import org.zstack.header.message.Message;
-import org.zstack.header.rest.RESTFacade;
 import org.zstack.header.query.QueryOp;
+import org.zstack.header.rest.RESTFacade;
 import org.zstack.utils.CollectionDSL;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
+import org.zstack.vpn.header.host.*;
 import org.zstack.vpn.header.vpn.*;
 import org.zstack.vpn.vpn.VpnCommands.*;
-import org.zstack.vpn.header.host.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDate;
@@ -531,6 +531,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             if (vpn.getVpnHost().getStatus() == HostStatus.Disconnected) {
                 return false;
             }
+            //Todo VPN重连
             ReconnectVpnCmd cmd = ReconnectVpnCmd.valueOf(vpn);
             new VpnRESTCaller().syncPostForVpn(VpnConstant.RECONNECT_VPN_PATH, cmd, ReconnectVpnResponse.class);
 
@@ -551,7 +552,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 } else {
                     CheckVpnStatusCmd cmd = CheckVpnStatusCmd.valueOf(vo);
                     CheckStatusResponse rsp = new VpnRESTCaller().checkState(VpnConstant.CHECK_VPN_STATUS_PATH, cmd);
-                    if (rsp.getStatusCode() != HttpStatus.OK || rsp.getStatus() == RunStatus.DOWN) {
+                    if (rsp.getStatusCode() != HttpStatus.OK || rsp.getStatus() != RunStatus.UP) {
                         flag = reconnectVpn(vo);
                     }
                 }
@@ -617,7 +618,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void validate(APIUpdateVpnBandwidthMsg msg) {
         LocalDateTime dateTime = LocalDate.now()
-                .withDayOfMonth(1)
+                .withDayOfMonth(LocalDate.MIN.getDayOfMonth())
                 .atTime(LocalTime.MIN);
         Long times = Q.New(VpnMotifyRecordVO.class)
                 .eq(VpnMotifyRecordVO_.vpnUuid, msg.getUuid())
@@ -663,6 +664,17 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         if (q.isExists())
             throw new ApiMessageInterceptionException(argerr(
                     "The Vpn[name:%s] is already exist.", msg.getName()
+            ));
+
+        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+        priceMsg.setAccountUuid(msg.getAccountUuid());
+        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
+        priceMsg.setDuration(msg.getDuration());
+        priceMsg.setUnits(msg.getProductPriceUnits());
+        APIGetProductPriceReply rsp = (APIGetProductPriceReply) new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+        if (!rsp.isPayable())
+            throw new ApiMessageInterceptionException(argerr(
+                    "The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()
             ));
     }
 }
