@@ -54,6 +54,12 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "vpnManagerUrl", defaultValue = "http://192.168.211.200:8080")
     public static String VPN_BASE_URL;
 
-    @GlobalProperty(name = "billingServerUrl", defaultValue = "http://192.168.211.99:8082/billing")
+    @GlobalProperty(name = "billingServerUrl", defaultValue = "http://192.168.211.99:8082")
     public static String BILLING_SERVER_URL;
+
+    @GlobalProperty(name = "vpnServerUrl", defaultValue = "http://192.168.211.113:8080")
+    public static String VPN_SERVER_URL;
+
+    @GlobalProperty(name = "vpnMaxMotifies", defaultValue = "5")
+    public static Integer VPN_MAX_MOTIFIES;
 }

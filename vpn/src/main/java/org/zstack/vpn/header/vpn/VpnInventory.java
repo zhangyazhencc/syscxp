@@ -24,7 +24,7 @@ public class VpnInventory {
     private Timestamp expiredDate;
     private Integer maxModifies;
     private String sid;
-    private String key;
+    private String certKey;
     private Payment payment;
     private List<VpnInterfaceInventory> interfaceInventories;
     private List<VpnRouteInventory> routeInventories;
@@ -48,7 +48,7 @@ public class VpnInventory {
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         inv.setSid(vo.getSid());
-        inv.setKey(vo.getKey());
+        inv.setCertKey(vo.getCertKey());
         inv.setMaxModifies(vo.getMaxModifies());
         inv.setPayment(vo.getPayment());
         inv.setInterfaceInventories(VpnInterfaceInventory.valueOf(vo.getVpnInterfaces()));
@@ -73,12 +73,12 @@ public class VpnInventory {
         this.maxModifies = maxModifies;
     }
 
-    public String getKey() {
-        return key;
+    public String getCertKey() {
+        return certKey;
     }
 
-    public void setKey(String key) {
-        this.key = key;
+    public void setCertKey(String certKey) {
+        this.certKey = certKey;
     }
 
     public Payment getPayment() {

@@ -18,6 +18,7 @@ import org.zstack.core.thread.PeriodicTask;
 import org.zstack.core.thread.Task;
 import org.zstack.core.thread.ThreadFacade;
 import org.zstack.header.AbstractService;
+import org.zstack.header.agent.OrderCallbackCmd;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.billing.*;
@@ -27,6 +28,7 @@ import org.zstack.header.message.APIReply;
 import org.zstack.header.message.Message;
 import org.zstack.header.query.QueryOp;
 import org.zstack.header.rest.RESTFacade;
+import org.zstack.header.rest.SyncHttpCallHandler;
 import org.zstack.utils.CollectionDSL;
 import org.zstack.utils.Utils;
 import org.zstack.utils.logging.CLogger;
@@ -105,7 +107,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APIResetCertificateMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         vpn.setSid(Platform.getUuid());
-        vpn.setKey(Platform.getUuid());
+        vpn.setCertKey(Platform.getUuid());
 
         ResetCertificateCmd cmd = ResetCertificateCmd.valueOf(vpn);
         ResetCertificateResponse rsp = new VpnRESTCaller()
@@ -124,7 +126,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         DownloadCertificateCmd cmd = DownloadCertificateCmd.valueOf(vpn);
         DownloadCertificateResponse rsp = new VpnRESTCaller()
-                .syncPostForVpn(VpnConstant.DOWNLOAD_CERTIFICATE_PATH, cmd, DownloadCertificateResponse.class);
+                .syncPostForVpn(VpnConstant.DOWNLOAD_CERTIFICATE_PATH, cmd,
+                        DownloadCertificateResponse.class);
 
         CertificateInventory inv = new CertificateInventory();
         inv.setCaCert(rsp.getCaCert());
@@ -137,7 +140,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     }
 
-
     private void handle(APIGetVpnMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
 
@@ -148,29 +150,28 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         bus.reply(msg, reply);
     }
 
-
-    @Transactional
     public void handle(APICreateVpnMsg msg) {
-        final VpnVO vpn = new VpnVO();
+        VpnVO vpn = new VpnVO();
         vpn.setUuid(Platform.getUuid());
         vpn.setSid(Platform.getUuid());
-        vpn.setKey(Platform.getUuid());
-        vpn.setMaxModifies(VpnConstant.MAX_MOTIFIES);
+        vpn.setCertKey(Platform.getUuid());
+        vpn.setMaxModifies(CoreGlobalProperty.VPN_MAX_MOTIFIES);
         vpn.setAccountUuid(msg.getAccountUuid());
         vpn.setDescription(msg.getDescription());
         vpn.setName(msg.getName());
         vpn.setVpnCidr(msg.getVpnCidr());
         vpn.setBandwidth(msg.getBandwidth());
         vpn.setEndpointUuid(msg.getEndpointUuid());
+        vpn.setPayment(Payment.UNPAID);
         vpn.setState(VpnState.Creating);
         vpn.setStatus(VpnStatus.Connecting);
         vpn.setDuration(msg.getDuration());
-        vpn.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
+
         vpn.setPort(generatePort(msg.getHostUuid()));
         vpn.setHostUuid(msg.getHostUuid());
         vpn.setVpnHost(dbf.findByUuid(msg.getHostUuid(), VpnHostVO.class));
 
-        final VpnInterfaceVO vpnIface = new VpnInterfaceVO();
+        VpnInterfaceVO vpnIface = new VpnInterfaceVO();
         vpnIface.setUuid(Platform.getUuid());
         vpnIface.setName(msg.getName() + msg.getVlan());
         vpnIface.setVpnUuid(vpn.getUuid());
@@ -179,6 +180,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpnIface.setVlan(msg.getVlan());
         vpnIface.setNetworkUuid(msg.getNetworkUuid());
         vpn.setVpnInterfaces(CollectionDSL.list(vpnIface));
+
+        vpn = dbf.persistAndRefresh(vpn);
+        dbf.persistAndRefresh(vpnIface);
 
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
         orderMsg.setProductName(vpn.getName());
@@ -190,11 +194,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         orderMsg.setUnits(msg.getProductPriceUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
-        createOrder(orderMsg);
+        if (createOrder(orderMsg)) {
+            vpn.setPayment(Payment.PAID);
+            vpn.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
+        }
 
         //保存vpn
-        dbf.getEntityManager().persist(vpn);
-        dbf.getEntityManager().persist(vpnIface);
+        dbf.getEntityManager().merge(vpn);
 
         CreateVpnCmd cmd = CreateVpnCmd.valueOf(vpn);
         CreateVpnResponse rsp = new VpnRESTCaller()
@@ -208,8 +214,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         bus.publish(evt);
     }
 
-    private void createOrder(APICreateOrderMsg orderMsg) {
-        APIReply rsp = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+    private boolean createOrder(APICreateOrderMsg orderMsg) {
+        APIReply rsp =
+                new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+        return rsp.isSuccess();
     }
 
     private void checkVpnCreateState(CreateVpnCmd cmd) {
@@ -218,7 +226,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
             @Override
             public Object call() throws Exception {
-                CheckStatusResponse rsp = new VpnRESTCaller().asyncCheckState(VpnConstant.CHECK_CREATE_STATE_PATH, cmd);
+                CheckStatusResponse rsp =
+                        new VpnRESTCaller().asyncCheckState(VpnConstant.CHECK_CREATE_STATE_PATH, cmd);
                 VpnVO vpnVO = dbf.findByUuid(cmd.getVpnUuid(), VpnVO.class);
                 if (rsp.getResult().isSuccess()) {
                     vpnVO.setState(VpnState.Enabled);
@@ -241,11 +250,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     // 生成端口号，规则：从30000开始，当前主机存在的vpn服务端口号+1
     private Integer generatePort(String hostUuid) {
-        Q q = Q.New(VpnVO.class)
-                .eq(VpnVO_.hostUuid, hostUuid)
-                .orderBy(VpnVO_.port, SimpleQuery.Od.DESC)
-                .limit(1)
-                .select(VpnVO_.port);
+        Q q = Q.New(VpnVO.class).eq(VpnVO_.hostUuid, hostUuid)
+                .orderBy(VpnVO_.port, SimpleQuery.Od.DESC).limit(1).select(VpnVO_.port);
         boolean flag = q.isExists();
         if (!flag)
             return 30000;
@@ -265,11 +271,14 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 renewOrderMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
                 renewOrderMsg.setAccountUuid(msg.getAccountUuid());
                 renewOrderMsg.setOpAccountUuid(msg.getOpAccountUuid());
+                renewOrderMsg.setStartTime(vpn.getCreateDate());
+                renewOrderMsg.setExpiredTime(vpn.getExpireDate());
                 createOrder(renewOrderMsg);
                 newTime = newTime.plusMonths(msg.getDuration());
                 break;
             case SLA_COMPENSATION:
-                APICreateSLACompensationOrderMsg slaCompensationOrderMsg = new APICreateSLACompensationOrderMsg();
+                APICreateSLACompensationOrderMsg slaCompensationOrderMsg =
+                        new APICreateSLACompensationOrderMsg();
                 slaCompensationOrderMsg.setProductUuid(vpn.getUuid());
                 slaCompensationOrderMsg.setProductName(vpn.getName());
                 slaCompensationOrderMsg.setProductDescription(vpn.getDescription());
@@ -277,6 +286,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 slaCompensationOrderMsg.setDuration(msg.getDuration());
                 slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
                 slaCompensationOrderMsg.setOpAccountUuid(msg.getOpAccountUuid());
+                slaCompensationOrderMsg.setStartTime(vpn.getCreateDate());
+                slaCompensationOrderMsg.setExpiredTime(vpn.getExpireDate());
                 createOrder(slaCompensationOrderMsg);
                 newTime = newTime.plusDays(msg.getDuration());
                 break;
@@ -298,7 +309,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         record.setUuid(Platform.getUuid());
         record.setVpnUuid(vpn.getUuid());
         record.setOpAccountUuid(msg.getOpAccountUuid());
-        record.setMotifyType(msg.getBandwidth() > vpn.getBandwidth() ? MotifyType.UPGRADE : MotifyType.DEMOTION);
+        record.setMotifyType(
+                msg.getBandwidth() > vpn.getBandwidth() ? MotifyType.UPGRADE : MotifyType.DEMOTION);
         dbf.getEntityManager().persist(record);
 
         vpn.setBandwidth(msg.getBandwidth());
@@ -311,11 +323,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
         orderMsg.setUnits(msg.getUnits());
+        orderMsg.setStartTime(vpn.getCreateDate());
+        orderMsg.setExpiredTime(vpn.getExpireDate());
         createOrder(orderMsg);
         vpn = dbf.getEntityManager().merge(vpn);
 
         UpdateVpnBandWidthCmd cmd = UpdateVpnBandWidthCmd.valueOf(vpn);
-        UpdateVpnBandWidthResponse rsp = new VpnRESTCaller().syncPostForVpn(VpnConstant.UPDATE_VPN_BANDWIDTH_PATH, cmd, UpdateVpnBandWidthResponse.class);
+        UpdateVpnBandWidthResponse rsp = new VpnRESTCaller()
+                .syncPostForVpn(VpnConstant.UPDATE_VPN_BANDWIDTH_PATH, cmd,
+                        UpdateVpnBandWidthResponse.class);
 
         APIUpdateVpnEvent evt = new APIUpdateVpnEvent(msg.getId());
         evt.setInventory(VpnInventory.valueOf(vpn));
@@ -354,11 +370,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             switch (msg.getState()) {
                 case Enabled:
                     CreateVpnCmd createVpnCmd = CreateVpnCmd.valueOf(vpn);
-                    new VpnRESTCaller().syncPostForVpn(VpnConstant.START_VPN_PATH, createVpnCmd, CreateVpnResponse.class);
+                    new VpnRESTCaller().syncPostForVpn(VpnConstant.START_VPN_PATH, createVpnCmd,
+                            CreateVpnResponse.class);
                     break;
                 case Disabled:
                     StopVpnCmd stopVpnCmd = StopVpnCmd.valueOf(vpn);
-                    new VpnRESTCaller().syncPostForVpn(VpnConstant.STOP_VPN_PATH, stopVpnCmd, StopVpnResponse.class);
+                    new VpnRESTCaller().syncPostForVpn(VpnConstant.STOP_VPN_PATH, stopVpnCmd,
+                            StopVpnResponse.class);
                     break;
                 default:
                     break;
@@ -376,7 +394,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setVpnCidr(msg.getVpnCidr());
 
         UpdateVpnCidrCmd cmd = UpdateVpnCidrCmd.valueOf(vpn);
-        new VpnRESTCaller().syncPostForVpn(VpnConstant.UPDATE_VPN_CIDR_PATH, cmd, UpdateVpnCidrResponse.class);
+        new VpnRESTCaller()
+                .syncPostForVpn(VpnConstant.UPDATE_VPN_CIDR_PATH, cmd, UpdateVpnCidrResponse.class);
 
 
         vpn = dbf.getEntityManager().merge(vpn);
@@ -396,11 +415,14 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         orderMsg.setProductName(vpn.getName());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
+        orderMsg.setStartTime(vpn.getCreateDate());
+        orderMsg.setExpiredTime(vpn.getExpireDate());
         createOrder(orderMsg);
 
 
         DeleteVpnCmd cmd = DeleteVpnCmd.valueOf(vpn);
-        DeleteVpnResponse rsp = new VpnRESTCaller().syncPostForVpn(VpnConstant.DELETE_VPN_PATH, cmd, DeleteVpnResponse.class);
+        DeleteVpnResponse rsp = new VpnRESTCaller()
+                .syncPostForVpn(VpnConstant.DELETE_VPN_PATH, cmd, DeleteVpnResponse.class);
 
         dbf.removeByPrimaryKey(msg.getUuid(), VpnVO.class);
         APIDeleteVpnHostEvent evt = new APIDeleteVpnHostEvent(msg.getId());
@@ -418,7 +440,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         iface.setNetmask(msg.getNetmask());
 
         VpnInterfaceCmd cmd = VpnInterfaceCmd.valueOf(msg.getLocalIP(), iface);
-        new VpnRESTCaller().syncPostForVpn(VpnConstant.ADD_VPN_INTERFACE_PATH, cmd, VpnInterfaceResponse.class);
+        new VpnRESTCaller()
+                .syncPostForVpn(VpnConstant.ADD_VPN_INTERFACE_PATH, cmd, VpnInterfaceResponse.class);
 
 
         iface = dbf.persistAndRefresh(iface);
@@ -433,7 +456,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         VpnVO vpn = dbf.findByUuid(iface.getVpnUuid(), VpnVO.class);
         VpnInterfaceCmd cmd = VpnInterfaceCmd.valueOf(vpn.getVpnHost().getManageIp(), iface);
-        new VpnRESTCaller().syncPostForVpn(VpnConstant.DELETE_VPN_INTERFACE_PATH, cmd, VpnInterfaceResponse.class);
+        new VpnRESTCaller()
+                .syncPostForVpn(VpnConstant.DELETE_VPN_INTERFACE_PATH, cmd, VpnInterfaceResponse.class);
 
         dbf.removeByPrimaryKey(msg.getUuid(), VpnInterfaceVO.class);
         APIDeleteVpnInterfaceEvent evt = new APIDeleteVpnInterfaceEvent(msg.getId());
@@ -450,7 +474,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         VpnVO vpn = dbf.findByUuid(msg.getVpnUuid(), VpnVO.class);
         VpnRouteCmd cmd = VpnRouteCmd.valueOf(vpn.getVpnHost().getManageIp(), route);
-        new VpnRESTCaller().syncPostForVpn(VpnConstant.ADD_VPN_ROUTE_PATH, cmd, VpnRouteResponse.class);
+        new VpnRESTCaller()
+                .syncPostForVpn(VpnConstant.ADD_VPN_ROUTE_PATH, cmd, VpnRouteResponse.class);
 
         route = dbf.persistAndRefresh(route);
         APICreateVpnRouteEvent evt = new APICreateVpnRouteEvent(msg.getId());
@@ -464,7 +489,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         VpnVO vpn = dbf.findByUuid(route.getVpnUuid(), VpnVO.class);
         VpnRouteCmd cmd = VpnRouteCmd.valueOf(vpn.getVpnHost().getManageIp(), route);
-        new VpnRESTCaller().syncPostForVpn(VpnConstant.DELETE_VPN_ROUTE_PATH, cmd, VpnRouteResponse.class);
+        new VpnRESTCaller()
+                .syncPostForVpn(VpnConstant.DELETE_VPN_ROUTE_PATH, cmd, VpnRouteResponse.class);
 
         dbf.removeByPrimaryKey(msg.getUuid(), VpnVO.class);
         APIDeleteVpnRouteEvent evt = new APIDeleteVpnRouteEvent(msg.getId());
@@ -485,7 +511,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void startFailureHostCopingThread() {
         hostCheckThread = thdf.submitPeriodicTask(new VpnStatusCheckWorker());
-        logger.debug(String.format("security group failureHostCopingThread starts[failureHostWorkerInterval: %ss]", vpnStatusCheckWorkerInterval));
+        logger.debug(String
+                .format("security group failureHostCopingThread starts[failureHostWorkerInterval: %ss]",
+                        vpnStatusCheckWorkerInterval));
     }
 
     private void restartFailureHostCopingThread() {
@@ -496,7 +524,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void prepareGlobalConfig() {
-        vpnStatusCheckWorkerInterval = VpnGlobalConfig.STATUS_CHECK_WORKER_INTERVAL.value(Integer.class);
+        vpnStatusCheckWorkerInterval =
+                VpnGlobalConfig.STATUS_CHECK_WORKER_INTERVAL.value(Integer.class);
 
         GlobalConfigUpdateExtensionPoint onUpdate = new GlobalConfigUpdateExtensionPoint() {
             @Override
@@ -515,16 +544,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         @Transactional
         private List<VpnVO> getAllVpns() {
 
-            return Q.New(VpnVO.class)
-                    .eq(VpnVO_.state, VpnState.Enabled)
-                    .list();
+            return Q.New(VpnVO.class).eq(VpnVO_.state, VpnState.Enabled).list();
         }
 
         private void updateVpnStatus(List<String> vpnUuids) {
-            UpdateQuery.New(VpnVO.class)
-                    .in(VpnVO_.uuid, vpnUuids)
-                    .set(VpnVO_.status, VpnStatus.Disconnected)
-                    .update();
+            UpdateQuery.New(VpnVO.class).in(VpnVO_.uuid, vpnUuids)
+                    .set(VpnVO_.status, VpnStatus.Disconnected).update();
         }
 
         private boolean reconnectVpn(VpnVO vpn) {
@@ -533,7 +558,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             }
             //Todo VPN重连
             ReconnectVpnCmd cmd = ReconnectVpnCmd.valueOf(vpn);
-            new VpnRESTCaller().syncPostForVpn(VpnConstant.RECONNECT_VPN_PATH, cmd, ReconnectVpnResponse.class);
+            new VpnRESTCaller()
+                    .syncPostForVpn(VpnConstant.RECONNECT_VPN_PATH, cmd, ReconnectVpnResponse.class);
 
             return true;
         }
@@ -551,7 +577,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     flag = reconnectVpn(vo);
                 } else {
                     CheckVpnStatusCmd cmd = CheckVpnStatusCmd.valueOf(vo);
-                    CheckStatusResponse rsp = new VpnRESTCaller().checkState(VpnConstant.CHECK_VPN_STATUS_PATH, cmd);
+                    CheckStatusResponse rsp =
+                            new VpnRESTCaller().checkState(VpnConstant.CHECK_VPN_STATUS_PATH, cmd);
                     if (rsp.getStatusCode() != HttpStatus.OK || rsp.getStatus() != RunStatus.UP) {
                         flag = reconnectVpn(vo);
                     }
@@ -581,6 +608,19 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     public boolean start() {
         prepareGlobalConfig();
+        restf.registerSyncHttpCallHandler(ProductType.VPN.toString(), OrderCallbackCmd.class,
+                new SyncHttpCallHandler<OrderCallbackCmd>() {
+                    @Override
+                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
+                        VpnVO vpn = dbf.findByUuid(cmd.getPorductUuid(), VpnVO.class);
+                        if (vpn.getPayment() == Payment.UNPAID)
+                            vpn.setPayment(Payment.PAID);
+                        if (cmd.getExpireDate() != null)
+                            vpn.setExpireDate(cmd.getExpireDate());
+                        dbf.updateAndRefresh(vpn);
+                        return null;
+                    }
+                });
         return true;
     }
 
@@ -604,77 +644,69 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APIDownloadCertificateMsg msg) {
-        boolean exists = Q.New(VpnVO.class)
-                .eq(VpnVO_.uuid, msg.getUuid())
-                .eq(VpnVO_.sid, msg.getSid())
-                .eq(VpnVO_.key, msg.getKey())
-                .isExists();
+        boolean exists =
+                Q.New(VpnVO.class).eq(VpnVO_.uuid, msg.getUuid()).eq(VpnVO_.sid, msg.getSid())
+                        .eq(VpnVO_.certKey, msg.getKey()).isExists();
         if (!exists) {
-            throw new ApiMessageInterceptionException(argerr(
-                    "Vpn[uuid:%s, sid:%s, key:%s]验证不通过.", msg.getUuid(), msg.getSid(), msg.getKey()
-            ));
+            throw new ApiMessageInterceptionException(
+                    argerr("Vpn[uuid:%s, sid:%s, key:%s]验证不通过.", msg.getUuid(), msg.getSid(),
+                            msg.getKey()));
         }
     }
 
     private void validate(APIUpdateVpnBandwidthMsg msg) {
-        LocalDateTime dateTime = LocalDate.now()
-                .withDayOfMonth(LocalDate.MIN.getDayOfMonth())
-                .atTime(LocalTime.MIN);
-        Long times = Q.New(VpnMotifyRecordVO.class)
-                .eq(VpnMotifyRecordVO_.vpnUuid, msg.getUuid())
+        LocalDateTime dateTime =
+                LocalDate.now().withDayOfMonth(LocalDate.MIN.getDayOfMonth()).atTime(LocalTime.MIN);
+        Long times = Q.New(VpnMotifyRecordVO.class).eq(VpnMotifyRecordVO_.vpnUuid, msg.getUuid())
                 .gte(VpnMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime))
-                .lt(VpnMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime.plusMonths(1)))
-                .count();
-        Integer maxModifies = Q.New(VpnVO.class)
-                .eq(VpnVO_.uuid, msg.getUuid())
-                .select(VpnVO_.maxModifies)
-                .findValue();
+                .lt(VpnMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime.plusMonths(1))).count();
+        Integer maxModifies =
+                Q.New(VpnVO.class).eq(VpnVO_.uuid, msg.getUuid()).select(VpnVO_.maxModifies)
+                        .findValue();
 
         if (times >= maxModifies) {
-            throw new ApiMessageInterceptionException(argerr(
-                    "The Vpn[uuid:%s] has motified %s times.", msg.getUuid(), times
-            ));
+            throw new ApiMessageInterceptionException(
+                    argerr("The Vpn[uuid:%s] has motified %s times.", msg.getUuid(), times));
         }
     }
 
 
     private void validate(APIUpdateVpnMsg msg) {
-        Q q = Q.New(VpnVO.class)
-                .eq(VpnVO_.name, msg.getName());
+        Q q = Q.New(VpnVO.class).eq(VpnVO_.name, msg.getName());
         if (q.isExists())
-            throw new ApiMessageInterceptionException(argerr(
-                    "The Vpn[name:%s] is already exist.", msg.getName()
-            ));
+            throw new ApiMessageInterceptionException(
+                    argerr("The Vpn[name:%s] is already exist.", msg.getName()));
     }
 
     private void validate(APIQueryVpnMsg msg) {
         if (msg.getSession().getType() != AccountType.SystemAdmin) {
-            msg.addQueryCondition(VpnVO_.accountUuid.toString(), QueryOp.EQ, msg.getSession().getAccountUuid());
+            msg.addQueryCondition(VpnVO_.accountUuid.toString(), QueryOp.EQ,
+                    msg.getSession().getAccountUuid());
         }
     }
 
     private void validate(APICreateVpnMsg msg) {
-        if (msg.getSession().getType() == AccountType.Normal && StringUtils.isEmpty(msg.getAccountUuid())) {
-            throw new ApiMessageInterceptionException(argerr(
-                    "The Account[uuid:%s] is not a admin or proxy.", msg.getSession().getAccountUuid()
-            ));
+        if (msg.getSession().getType() == AccountType.Normal && StringUtils
+                .isEmpty(msg.getAccountUuid())) {
+            throw new ApiMessageInterceptionException(
+                    argerr("The Account[uuid:%s] is not a admin or proxy.",
+                            msg.getSession().getAccountUuid()));
         }
-        Q q = Q.New(VpnVO.class)
-                .eq(VpnVO_.name, msg.getName());
+        Q q = Q.New(VpnVO.class).eq(VpnVO_.name, msg.getName());
         if (q.isExists())
-            throw new ApiMessageInterceptionException(argerr(
-                    "The Vpn[name:%s] is already exist.", msg.getName()
-            ));
+            throw new ApiMessageInterceptionException(
+                    argerr("The Vpn[name:%s] is already exist.", msg.getName()));
 
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(msg.getProductPriceUnits());
-        APIGetProductPriceReply rsp = (APIGetProductPriceReply) new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+        APIGetProductPriceReply rsp =
+                (APIGetProductPriceReply) new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL)
+                        .syncJsonPost(priceMsg);
         if (!rsp.isPayable())
-            throw new ApiMessageInterceptionException(argerr(
-                    "The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()
-            ));
+            throw new ApiMessageInterceptionException(
+                    argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
     }
 }
