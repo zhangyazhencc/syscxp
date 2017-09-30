@@ -62,4 +62,10 @@ public class CoreGlobalProperty {
 
     @GlobalProperty(name = "vpnMaxMotifies", defaultValue = "5")
     public static Integer VPN_MAX_MOTIFIES;
+
+    @GlobalProperty(name = "interfaceMaxMotifies", defaultValue = "5")
+    public static Integer INTERFACE_MAX_MOTIFIES;
+
+    @GlobalProperty(name = "tunnelMaxMotifies", defaultValue = "5")
+    public static Integer TUNNEL_MAX_MOTIFIES;
 }
