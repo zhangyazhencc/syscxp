@@ -22,6 +22,7 @@ import org.zstack.header.agent.OrderCallbackCmd;
 import org.zstack.header.apimediator.ApiMessageInterceptionException;
 import org.zstack.header.apimediator.ApiMessageInterceptor;
 import org.zstack.header.billing.*;
+import org.zstack.header.exception.CloudRuntimeException;
 import org.zstack.header.identity.AccountType;
 import org.zstack.header.message.APIMessage;
 import org.zstack.header.message.APIReply;
@@ -197,10 +198,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         if (createOrder(orderMsg)) {
             vpn.setPayment(Payment.PAID);
             vpn.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
+            dbf.getEntityManager().merge(vpn);
         }
-
-        //保存vpn
-        dbf.getEntityManager().merge(vpn);
 
         CreateVpnCmd cmd = CreateVpnCmd.valueOf(vpn);
         CreateVpnResponse rsp = new VpnRESTCaller()
@@ -217,6 +216,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private boolean createOrder(APICreateOrderMsg orderMsg) {
         APIReply rsp =
                 new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+        if (rsp.isSuccess())
+            throw new CloudRuntimeException("测试");
         return rsp.isSuccess();
     }
 
