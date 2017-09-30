@@ -18,7 +18,7 @@ public interface VpnConstant {
 
     public static final String START_VPN_PATH = "/start-vpn";
 
-    public static final String UPDATE_VPN_CIDR_PATH = "/createvpn";
+    public static final String UPDATE_VPN_CIDR_PATH = "";
 
     public static final String UPDATE_VPN_BANDWIDTH_PATH = "/update-bandwith";
 
@@ -30,13 +30,13 @@ public interface VpnConstant {
 
     public static final String DELETE_VPN_ROUTE_PATH = "/del-route";
 
-    public static final String CHECK_VPN_STATE_PATH = "/createvpn";
+    public static final String CHECK_VPN_STATUS_PATH = "/vpn-status";
 
     public static final String RECONNECT_VPN_PATH = "/reconnect-vpn";
 
-    public static final String CHECK_CREATE_STATE_PATH = "/check-state";
+    public static final String CHECK_CREATE_STATE_PATH = "/result";
 
-    public static final String DOWNLOAD_CERTIFICATE_PATH = "/createvpn";
+    public static final String DOWNLOAD_CERTIFICATE_PATH = "/client-conf";
 
-    public static final String RESET_CERTIFICATE_PATH = "/createvpn";
+    public static final String RESET_CERTIFICATE_PATH = "/reset-cert";
 }

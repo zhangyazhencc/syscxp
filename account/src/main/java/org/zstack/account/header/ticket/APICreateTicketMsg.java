@@ -14,7 +14,7 @@ import org.zstack.header.notification.ApiNotification;
 public class APICreateTicketMsg  extends APIMessage {
 
     @APIParam(maxLength = 128)
-    private String type;
+    private String ticketTypeCode;
 
     @APIParam(maxLength = 2048)
     private String content;
@@ -48,12 +48,12 @@ public class APICreateTicketMsg  extends APIMessage {
         this.contentExtra = contentExtra;
     }
 
-    public String getType() {
-        return type;
+    public String getTicketTypeCode() {
+        return ticketTypeCode;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setTicketTypeCode(String ticketTypeCode) {
+        this.ticketTypeCode = ticketTypeCode;
     }
 
     public String getContent() {
