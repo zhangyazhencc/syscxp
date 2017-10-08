@@ -1,64 +1,64 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service xmlns="http://zstack.org/schema/zstack">
+<service xmlns="http://syscxp.com/schema/syscxp">
     <id>balance</id>
     <interceptor>BalanceManager</interceptor>
 
     <message>
-        <name>org.zstack.billing.header.balance.APIGetAccountBalanceMsg</name>
+        <name>com.syscxp.billing.header.balance.APIGetAccountBalanceMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.balance.APIGetAccountBalanceListMsg</name>
+        <name>com.syscxp.billing.header.balance.APIGetAccountBalanceListMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.balance.APIUpdateAccountBalanceMsg</name>
+        <name>com.syscxp.billing.header.balance.APIUpdateAccountBalanceMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.balance.APIGetExpenseGrossMonthMsg</name>
+        <name>com.syscxp.billing.header.balance.APIGetExpenseGrossMonthMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.balance.APIRechargeMsg</name>
+        <name>com.syscxp.billing.header.balance.APIRechargeMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.balance.APIUpdateAccountDischargeMsg</name>
+        <name>com.syscxp.billing.header.balance.APIUpdateAccountDischargeMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.balance.APICreateAccountDischargeMsg</name>
+        <name>com.syscxp.billing.header.balance.APICreateAccountDischargeMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.balance.APIDeleteAccountDischargeMsg</name>
+        <name>com.syscxp.billing.header.balance.APIDeleteAccountDischargeMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.balance.APIGetAccountDischargeCategoryMsg</name>
+        <name>com.syscxp.billing.header.balance.APIGetAccountDischargeCategoryMsg</name>
     </message>
 
 
     <message>
-        <name>org.zstack.header.alipay.APIVerifyReturnMsg</name>
+        <name>com.syscxp.header.alipay.APIVerifyReturnMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.header.alipay.APIVerifyNotifyMsg</name>
+        <name>com.syscxp.header.alipay.APIVerifyNotifyMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.header.billing.APIGetProductPriceMsg</name>
+        <name>com.syscxp.header.billing.APIGetProductPriceMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.balance.APIQueryAccountDischargeMsg</name>
+        <name>com.syscxp.billing.header.balance.APIQueryAccountDischargeMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.balance.APIQueryDealDetailMsg</name>
+        <name>com.syscxp.billing.header.balance.APIQueryDealDetailMsg</name>
         <serviceId>query</serviceId>
     </message>
 

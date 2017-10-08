@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
-       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:zstack="http://zstack.org/schema/zstack"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:syscxp="http://syscxp.com/schema/syscxp"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
          http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
          http://www.springframework.org/schema/aop
          http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
          http://www.springframework.org/schema/tx
          http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
-         http://zstack.org/schema/zstack
-         http://zstack.org/schema/zstack/plugin.xsd"
+         http://syscxp.com/schema/syscxp
+         http://syscxp.com/schema/syscxp/plugin.xsd"
        default-init-method="init" default-destroy-method="destroy">
 
-    <bean id="IdentityInterceptor" class="org.zstack.vpn.identity.IdentityInterceptor">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.apimediator.GlobalApiMessageInterceptor"/>
-            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
-        </zstack:plugin>
+    <bean id="IdentityInterceptor" class="com.syscxp.vpn.identity.IdentityInterceptor">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.apimediator.GlobalApiMessageInterceptor"/>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+        </syscxp:plugin>
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>org.zstack.vpn.header.vpn.VpnVO</value>
+                <value>com.syscxp.vpn.header.vpn.VpnVO</value>
             </list>
         </property>
     </bean>
 
-    <bean id="VpnManager" class="org.zstack.vpn.vpn.VpnManagerImpl">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
-            <zstack:extension interface="org.zstack.header.Service"/>
-            <zstack:extension interface="org.zstack.header.Component" />
-        </zstack:plugin>
+    <bean id="VpnManager" class="com.syscxp.vpn.vpn.VpnManagerImpl">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+            <syscxp:extension interface="com.syscxp.header.Service"/>
+            <syscxp:extension interface="com.syscxp.header.Component" />
+        </syscxp:plugin>
 
     </bean>
 
-    <bean id="HostManager" class="org.zstack.vpn.host.HostManagerImpl">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
-            <zstack:extension interface="org.zstack.header.Service"/>
-            <zstack:extension interface="org.zstack.header.Component" />
-        </zstack:plugin>
+    <bean id="HostManager" class="com.syscxp.vpn.host.HostManagerImpl">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+            <syscxp:extension interface="com.syscxp.header.Service"/>
+            <syscxp:extension interface="com.syscxp.header.Component" />
+        </syscxp:plugin>
 
     </bean>
 

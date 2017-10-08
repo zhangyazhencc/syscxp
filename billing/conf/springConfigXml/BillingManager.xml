@@ -1,92 +1,92 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
-       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:zstack="http://zstack.org/schema/zstack"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:syscxp="http://syscxp.com/schema/syscxp"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
          http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
          http://www.springframework.org/schema/aop
          http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
          http://www.springframework.org/schema/tx
          http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
-         http://zstack.org/schema/zstack
-         http://zstack.org/schema/zstack/plugin.xsd"
+         http://syscxp.com/schema/syscxp
+         http://syscxp.com/schema/syscxp/plugin.xsd"
        default-init-method="init" default-destroy-method="destroy">
 
-    <bean id="IdentiyInterceptor" class="org.zstack.billing.identity.IdentityInterceptor">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.apimediator.GlobalApiMessageInterceptor"/>
-            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
-        </zstack:plugin>
+    <bean id="IdentiyInterceptor" class="com.syscxp.billing.identity.IdentityInterceptor">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.apimediator.GlobalApiMessageInterceptor"/>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+        </syscxp:plugin>
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>org.zstack.header.billing.AccountBalanceVO</value>
-                <value>org.zstack.header.billing.OrderVO</value>
-                <value>org.zstack.billing.header.bill.BillVO</value>
-                <value>org.zstack.billing.header.renew.RenewVO</value>
-                <value>org.zstack.billing.header.receipt.ReceiptPostAddressVO</value>
-                <value>org.zstack.billing.header.receipt.ReceiptVO</value>
-                <value>org.zstack.billing.header.receipt.ReceiptInfoVO</value>
-                <value>org.zstack.billing.header.balance.DealDetailVO</value>
-                <value>org.zstack.billing.header.sla.SLACompensateVO</value>
-                <value>org.zstack.billing.header.balance.AccountDischargeVO</value>
+                <value>com.syscxp.header.billing.AccountBalanceVO</value>
+                <value>com.syscxp.header.billing.OrderVO</value>
+                <value>com.syscxp.billing.header.bill.BillVO</value>
+                <value>com.syscxp.billing.header.renew.RenewVO</value>
+                <value>com.syscxp.billing.header.receipt.ReceiptPostAddressVO</value>
+                <value>com.syscxp.billing.header.receipt.ReceiptVO</value>
+                <value>com.syscxp.billing.header.receipt.ReceiptInfoVO</value>
+                <value>com.syscxp.billing.header.balance.DealDetailVO</value>
+                <value>com.syscxp.billing.header.sla.SLACompensateVO</value>
+                <value>com.syscxp.billing.header.balance.AccountDischargeVO</value>
             </list>
         </property>
     </bean>
 
-    <bean id="BalanceManager" class="org.zstack.billing.balance.BalanceManagerImpl">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.Component"/>
-            <zstack:extension interface="org.zstack.header.Service"/>
-            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
-        </zstack:plugin>
+    <bean id="BalanceManager" class="com.syscxp.billing.balance.BalanceManagerImpl">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.Component"/>
+            <syscxp:extension interface="com.syscxp.header.Service"/>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+        </syscxp:plugin>
 
     </bean>
 
-    <bean id="OrderManager" class="org.zstack.billing.order.OrderManagerImpl">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.Component"/>
-            <zstack:extension interface="org.zstack.header.Service"/>
-            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
-        </zstack:plugin>
+    <bean id="OrderManager" class="com.syscxp.billing.order.OrderManagerImpl">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.Component"/>
+            <syscxp:extension interface="com.syscxp.header.Service"/>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+        </syscxp:plugin>
     </bean>
 
-    <bean id="BillManager" class="org.zstack.billing.bill.BillManagerImpl">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.Component"/>
-            <zstack:extension interface="org.zstack.header.Service"/>
-            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
-        </zstack:plugin>
+    <bean id="BillManager" class="com.syscxp.billing.bill.BillManagerImpl">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.Component"/>
+            <syscxp:extension interface="com.syscxp.header.Service"/>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+        </syscxp:plugin>
     </bean>
 
-    <bean id="SlaManager" class="org.zstack.billing.sla.SlaManagerImpl">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.Component"/>
-            <zstack:extension interface="org.zstack.header.Service"/>
-            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
-        </zstack:plugin>
+    <bean id="SlaManager" class="com.syscxp.billing.sla.SlaManagerImpl">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.Component"/>
+            <syscxp:extension interface="com.syscxp.header.Service"/>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+        </syscxp:plugin>
     </bean>
 
-    <bean id="RenewManager" class="org.zstack.billing.renew.RenewManagerImpl">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.Component"/>
-            <zstack:extension interface="org.zstack.header.Service"/>
-            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
-        </zstack:plugin>
+    <bean id="RenewManager" class="com.syscxp.billing.renew.RenewManagerImpl">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.Component"/>
+            <syscxp:extension interface="com.syscxp.header.Service"/>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+        </syscxp:plugin>
     </bean>
 
-    <bean id="ReceiptManager" class="org.zstack.billing.receipt.ReceiptManagerImpl">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.Component"/>
-            <zstack:extension interface="org.zstack.header.Service"/>
-            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
-        </zstack:plugin>
+    <bean id="ReceiptManager" class="com.syscxp.billing.receipt.ReceiptManagerImpl">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.Component"/>
+            <syscxp:extension interface="com.syscxp.header.Service"/>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+        </syscxp:plugin>
     </bean>
 
-    <bean id="BillingSubQueryExtension" class="org.zstack.billing.BillingSubQueryExtension">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.query.MysqlQuerySubQueryExtension"/>
-        </zstack:plugin>
+    <bean id="BillingSubQueryExtension" class="com.syscxp.billing.identity.BillingSubQueryExtension">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.query.MysqlQuerySubQueryExtension"/>
+        </syscxp:plugin>
     </bean>
 
 </beans>

@@ -2,9 +2,9 @@
 
 base_dir=`dirname $0`/../
 build_dir=$base_dir/build
-zstack_dir=`find $build_dir -name zstack`
-jar_dir=$zstack_dir/lib
-conf_dir=$zstack_dir/conf
+syscxp_dir=`find $build_dir -name syscxp`
+jar_dir=$syscxp_dir/lib
+conf_dir=$syscxp_dir/conf
 classpath=
 is_suspend="$1"
 
@@ -31,11 +31,11 @@ build_classpath() {
 }
 
 debug() {
-    java $java_optitons -cp $classpath com.zstack.server.Main
+    java $java_optitons -cp $classpath com.syscxp.server.Main
 }
 
 main() {
-    [ x"$zstack_dir" == x"" ] && error_exit "Cannot find zstack dir under $build_dir, please run 'mvn package' before 'mvn exec:exec -Ddebug'"
+    [ x"$syscxp_dir" == x"" ] && error_exit "Cannot find syscxp dir under $build_dir, please run 'mvn package' before 'mvn exec:exec -Ddebug'"
     build_classpath
     debug
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<requirementCategory xmlns="http://zstack.org/schema/zstack">
+<requirementCategory xmlns="http://syscxp.com/schema/syscxp">
     <documentId>policy</documentId>
     <title>Policy</title>
     <scope>all Policy related functionalities. Policy is logic resource that is the first level resource which has multiple sub resources</scope>
@@ -8,8 +8,8 @@
         <goal>create Policy</goal>
         <title>create</title>
         <api>
-            <requestClass>org.zstack.header.Policy.APICreatePolicyMsg</requestClass>
-            <responseClass>org.zstack.header.Policy.APICreatePolicyEvent</responseClass>
+            <requestClass>com.syscxp.header.Policy.APICreatePolicyMsg</requestClass>
+            <responseClass>com.syscxp.header.Policy.APICreatePolicyEvent</responseClass>
         </api>
     </req>
 
@@ -20,8 +20,8 @@
             deleting a Policy will cause its all sub-resources to be deleted as well. it may fail if any sub-resources in the state that cannot be deleted
         </details>
         <api>
-            <requestClass>org.zstack.account.header.identity.APIDeletePolicyMsg</requestClass>
-            <responseClass>org.zstack.account.header.identity.APIDeletePolicyEvent</responseClass>
+            <requestClass>APIDeletePolicyMsg</requestClass>
+            <responseClass>APIDeletePolicyEvent</responseClass>
         </api>
     </req>
 
@@ -37,8 +37,8 @@
             changed, ancestral state changing of Policy will fail
         </details>
         <api>
-            <requestClass>org.zstack.account.header.identity.APIUpdatePolicyMsg</requestClass>
-            <responseClass>org.zstack.account.header.identity.APIUpdatePolicyEvent</responseClass>
+            <requestClass>APIUpdatePolicyMsg</requestClass>
+            <responseClass>APIUpdatePolicyEvent</responseClass>
         </api>
     </req>
 

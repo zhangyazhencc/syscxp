@@ -1,42 +1,42 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service xmlns="http://zstack.org/schema/zstack">
+<service xmlns="http://syscxp.com/schema/syscxp">
     <id>generate</id>
 
     <message>
-        <name>org.zstack.header.configuration.APIGenerateApiJsonTemplateMsg</name>
+        <name>com.syscxp.header.configuration.APIGenerateApiJsonTemplateMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.header.configuration.APIGenerateApiTypeScriptDefinitionMsg</name>
+        <name>com.syscxp.header.configuration.APIGenerateApiTypeScriptDefinitionMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.header.configuration.APIGenerateGroovyClassMsg</name>
+        <name>com.syscxp.header.configuration.APIGenerateGroovyClassMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.header.configuration.APIGenerateSqlForeignKeyMsg</name>
+        <name>com.syscxp.header.configuration.APIGenerateSqlForeignKeyMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.header.configuration.APIGenerateSqlIndexMsg</name>
+        <name>com.syscxp.header.configuration.APIGenerateSqlIndexMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.header.configuration.APIGenerateTestLinkDocumentMsg</name>
+        <name>com.syscxp.header.configuration.APIGenerateTestLinkDocumentMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.header.configuration.APIGenerateSqlVOViewMsg</name>
+        <name>com.syscxp.header.configuration.APIGenerateSqlVOViewMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.header.query.APIGenerateInventoryQueryDetailsMsg</name>
+        <name>com.syscxp.header.query.APIGenerateInventoryQueryDetailsMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.header.query.APIGenerateQueryableFieldsMsg</name>
+        <name>com.syscxp.header.query.APIGenerateQueryableFieldsMsg</name>
         <serviceId>query</serviceId>
     </message>
 

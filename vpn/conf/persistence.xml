@@ -1,20 +1,20 @@
 <persistence xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
              version="2.0">
-    <persistence-unit name="zstack.jpa" transaction-type="RESOURCE_LOCAL">
+    <persistence-unit name="syscxp.jpa" transaction-type="RESOURCE_LOCAL">
         <mapping-file>persistence-mapping.xml</mapping-file>
 
-        <class>org.zstack.core.config.GlobalConfigVO</class>
-        <class>org.zstack.header.managementnode.ManagementNodeVO</class>
-        <class>org.zstack.core.job.JobQueueVO</class>
-        <class>org.zstack.core.job.JobQueueEntryVO</class>
-        <class>org.zstack.core.notification.NotificationVO</class>
+        <class>com.syscxp.core.config.GlobalConfigVO</class>
+        <class>com.syscxp.header.managementnode.ManagementNodeVO</class>
+        <class>com.syscxp.core.job.JobQueueVO</class>
+        <class>com.syscxp.core.job.JobQueueEntryVO</class>
+        <class>com.syscxp.core.notification.NotificationVO</class>
 
-        <class>org.zstack.vpn.header.vpn.VpnVO</class>
-        <class>org.zstack.vpn.header.vpn.VpnRouteVO</class>
-        <class>org.zstack.vpn.header.vpn.VpnInterfaceVO</class>
-        <class>org.zstack.vpn.header.host.VpnHostVO</class>
-        <class>org.zstack.vpn.header.host.ZoneVO</class>
-        <class>org.zstack.vpn.header.host.HostInterfaceVO</class>
+        <class>com.syscxp.vpn.header.vpn.VpnVO</class>
+        <class>com.syscxp.vpn.header.vpn.VpnRouteVO</class>
+        <class>com.syscxp.vpn.header.vpn.VpnInterfaceVO</class>
+        <class>com.syscxp.vpn.header.host.VpnHostVO</class>
+        <class>com.syscxp.vpn.header.host.ZoneVO</class>
+        <class>com.syscxp.vpn.header.host.HostInterfaceVO</class>
     </persistence-unit>
 </persistence>

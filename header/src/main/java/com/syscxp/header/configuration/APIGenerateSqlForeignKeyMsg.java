@@ -1,0 +1,36 @@
+package com.syscxp.header.configuration;
+
+import com.syscxp.header.message.APIMessage;
+
+import java.util.List;
+
+/**
+ */
+public class APIGenerateSqlForeignKeyMsg extends APIMessage {
+    private String outputPath;
+    private List<String> basePackageNames;
+
+    public String getOutputPath() {
+        return outputPath;
+    }
+
+    public void setOutputPath(String outputPath) {
+        this.outputPath = outputPath;
+    }
+
+    public List<String> getBasePackageNames() {
+        return basePackageNames;
+    }
+
+    public void setBasePackageNames(List<String> basePackageNames) {
+        this.basePackageNames = basePackageNames;
+    }
+ 
+    public static APIGenerateSqlForeignKeyMsg __example__() {
+        APIGenerateSqlForeignKeyMsg msg = new APIGenerateSqlForeignKeyMsg();
+
+
+        return msg;
+    }
+
+}

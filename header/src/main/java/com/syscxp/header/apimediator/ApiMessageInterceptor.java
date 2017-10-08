@@ -1,0 +1,13 @@
+package com.syscxp.header.apimediator;
+
+import com.syscxp.header.message.APIMessage;
+
+/**
+ * Created with IntelliJ IDEA.
+ * User: frank
+ * Time: 11:37 PM
+ * To change this template use File | Settings | File Templates.
+ */
+public interface ApiMessageInterceptor {
+    APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException;
+}

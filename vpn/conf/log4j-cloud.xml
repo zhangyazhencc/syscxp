@@ -17,7 +17,7 @@
         <rollingPolicy name="FILE"
                        class="org.apache.log4j.rolling.TimeBasedRollingPolicy">
             <paramIn name="FileNamePattern" value="management-server.%d{yyyy-MM-dd}.gz"/>
-            <paramIn name="ActiveFileName" value="/var/log/zstack/management-server.log"/>
+            <paramIn name="ActiveFileName" value="/var/log/syscxp/management-server.log"/>
         </rollingPolicy>
         <layout class="org.apache.log4j.EnhancedPatternLayout">
             <paramIn name="ConversionPattern" value="%d{ISO8601} %-5p [%c{3}] (%t) %m%n"/>
@@ -32,23 +32,23 @@
         </layout>
     </appender>
 
-    <logger name="org.zstack">
+    <logger name="com.syscxp">
         <level value="DEBUG"/>
     </logger>
 
-    <logger name="org.zstack.utils">
+    <logger name="com.syscxp.utils">
         <level value="TRACE"/>
     </logger>
 
-    <logger name="org.zstack.core.rest">
+    <logger name="com.syscxp.core.rest">
         <level value="TRACE"/>
     </logger>
 
-    <logger name="org.zstack.core.cloudbus">
+    <logger name="com.syscxp.core.cloudbus">
         <level value="TRACE"/>
     </logger>
 
-    <logger name="org.zstack.search">
+    <logger name="com.syscxp.search">
         <level value="DEBUG"/>
     </logger>
 

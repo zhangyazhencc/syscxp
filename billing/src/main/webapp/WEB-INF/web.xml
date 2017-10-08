@@ -67,7 +67,7 @@
     <!-- NOTE: this listener must be put as the first listener to execute, don't change the order !!! -->
     <listener>
         <listener-class>
-            org.zstack.portal.managementnode.BootstrapWebListener
+            com.syscxp.portal.managementnode.BootstrapWebListener
         </listener-class>
     </listener>
 
@@ -79,7 +79,7 @@
 
     <listener>
         <listener-class>
-            org.zstack.portal.managementnode.ComponentLoaderWebListener
+            com.syscxp.portal.managementnode.ComponentLoaderWebListener
         </listener-class>
     </listener>
 

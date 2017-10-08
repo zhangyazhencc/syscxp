@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service xmlns="http://zstack.org/schema/zstack">
+<service xmlns="http://syscxp.com/schema/syscxp">
     <id>node</id>
     <interceptor>NodeManager</interceptor>
 
     <!--NODE-->
     <message>
-        <name>org.zstack.tunnel.header.node.APICreateNodeMsg</name>
+        <name>com.syscxp.tunnel.header.node.APICreateNodeMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.node.APIUpdateNodeMsg</name>
+        <name>com.syscxp.tunnel.header.node.APIUpdateNodeMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.node.APIDeleteNodeMsg</name>
+        <name>com.syscxp.tunnel.header.node.APIDeleteNodeMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.node.APIQueryNodeMsg</name>
+        <name>com.syscxp.tunnel.header.node.APIQueryNodeMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.node.APIGetDistinctNodeCityMsg</name>
+        <name>com.syscxp.tunnel.header.node.APIGetDistinctNodeCityMsg</name>
     </message>
 
     <!--ENDPOINT-->
     <message>
-        <name>org.zstack.tunnel.header.endpoint.APICreateEndpointMsg</name>
+        <name>com.syscxp.tunnel.header.endpoint.APICreateEndpointMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.endpoint.APIUpdateEndpointMsg</name>
+        <name>com.syscxp.tunnel.header.endpoint.APIUpdateEndpointMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.endpoint.APIDeleteEndpointMsg</name>
+        <name>com.syscxp.tunnel.header.endpoint.APIDeleteEndpointMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.endpoint.APIQueryEndpointMsg</name>
+        <name>com.syscxp.tunnel.header.endpoint.APIQueryEndpointMsg</name>
         <serviceId>query</serviceId>
     </message>
 

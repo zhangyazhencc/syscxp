@@ -6,7 +6,7 @@
     <bean name="billJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="name" value="bill_job"/>
         <property name="group" value="bill_group"/>
-        <property name="jobClass" value="org.zstack.billing.header.bill.BillJob"/>
+        <property name="jobClass" value="com.syscxp.billing.header.bill.BillJob"/>
         <property name="jobDataAsMap">
             <map>
                 <entry key="databaseFacade" value-ref="databaseFacade" ></entry>
@@ -37,7 +37,7 @@
     <bean name="renewJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
         <property name="name" value="renew_job"/>
         <property name="group" value="renew_group"/>
-        <property name="jobClass" value="org.zstack.billing.header.renew.RenewJob"/>
+        <property name="jobClass" value="com.syscxp.billing.header.renew.RenewJob"/>
         <property name="jobDataAsMap">
             <map>
                 <entry key="databaseFacade" value-ref="databaseFacade"/>

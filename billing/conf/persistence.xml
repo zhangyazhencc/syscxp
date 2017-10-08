@@ -1,25 +1,25 @@
 <persistence xmlns="http://java.sun.com/xml/ns/persistence" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
              xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
              version="2.0">
-    <persistence-unit name="zstack.jpa" transaction-type="RESOURCE_LOCAL">
+    <persistence-unit name="syscxp.jpa" transaction-type="RESOURCE_LOCAL">
         <mapping-file>persistence-mapping.xml</mapping-file>
 
-        <class>org.zstack.core.config.GlobalConfigVO</class>
-        <class>org.zstack.header.managementnode.ManagementNodeVO</class>
-        <class>org.zstack.core.job.JobQueueVO</class>
-        <class>org.zstack.core.job.JobQueueEntryVO</class>
+        <class>com.syscxp.core.config.GlobalConfigVO</class>
+        <class>com.syscxp.header.managementnode.ManagementNodeVO</class>
+        <class>com.syscxp.core.job.JobQueueVO</class>
+        <class>com.syscxp.core.job.JobQueueEntryVO</class>
 
-        <class>org.zstack.header.billing.AccountBalanceVO</class>
-        <class>org.zstack.header.billing.OrderVO</class>
-        <class>org.zstack.billing.header.bill.BillVO</class>
-        <class>org.zstack.billing.header.renew.RenewVO</class>
-        <class>org.zstack.billing.header.renew.PriceRefRenewVO</class>
-        <class>org.zstack.billing.header.receipt.ReceiptPostAddressVO</class>
-        <class>org.zstack.billing.header.receipt.ReceiptVO</class>
-        <class>org.zstack.billing.header.receipt.ReceiptInfoVO</class>
-        <class>org.zstack.billing.header.balance.DealDetailVO</class>
-        <class>org.zstack.billing.header.sla.SLACompensateVO</class>
-        <class>org.zstack.billing.header.balance.AccountDischargeVO</class>
-        <class>org.zstack.header.billing.ProductPriceUnitVO</class>
+        <class>com.syscxp.header.billing.AccountBalanceVO</class>
+        <class>com.syscxp.header.billing.OrderVO</class>
+        <class>com.syscxp.billing.header.bill.BillVO</class>
+        <class>com.syscxp.billing.header.renew.RenewVO</class>
+        <class>com.syscxp.billing.header.renew.PriceRefRenewVO</class>
+        <class>com.syscxp.billing.header.receipt.ReceiptPostAddressVO</class>
+        <class>com.syscxp.billing.header.receipt.ReceiptVO</class>
+        <class>com.syscxp.billing.header.receipt.ReceiptInfoVO</class>
+        <class>com.syscxp.billing.header.balance.DealDetailVO</class>
+        <class>com.syscxp.billing.header.sla.SLACompensateVO</class>
+        <class>com.syscxp.billing.header.balance.AccountDischargeVO</class>
+        <class>com.syscxp.header.billing.ProductPriceUnitVO</class>
     </persistence-unit>
 </persistence>

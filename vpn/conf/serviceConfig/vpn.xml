@@ -1,47 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service xmlns="http://zstack.org/schema/zstack">
+<service xmlns="http://syscxp.com/schema/syscxp">
     <id>vpn</id>
     <interceptor>VpnManager</interceptor>
     <message>
-        <name>org.zstack.vpn.header.vpn.APICreateVpnMsg</name>
+        <name>com.syscxp.vpn.header.vpn.APICreateVpnMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.vpn.APIUpdateVpnMsg</name>
+        <name>com.syscxp.vpn.header.vpn.APIUpdateVpnMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.vpn.APIDeleteVpnMsg</name>
+        <name>com.syscxp.vpn.header.vpn.APIDeleteVpnMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.vpn.APIUpdateVpnBandwidthMsg</name>
+        <name>com.syscxp.vpn.header.vpn.APIUpdateVpnBandwidthMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.vpn.APIUpdateVpnExpireDateMsg</name>
+        <name>com.syscxp.vpn.header.vpn.APIUpdateVpnExpireDateMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.vpn.APIUpdateVpnCidrMsg</name>
+        <name>com.syscxp.vpn.header.vpn.APIUpdateVpnCidrMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.vpn.APIUpdateVpnStateMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.vpn.header.vpn.APICreateVpnInterfaceMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.vpn.header.vpn.APIDeleteVpnInterfaceMsg</name>
+        <name>com.syscxp.vpn.header.vpn.APIUpdateVpnStateMsg</name>
     </message>
 
-
     <message>
-        <name>org.zstack.vpn.header.vpn.APICreateVpnRouteMsg</name>
+        <name>com.syscxp.vpn.header.vpn.APICreateVpnInterfaceMsg</name>
     </message>
     <message>
-        <name>org.zstack.vpn.header.vpn.APIDeleteVpnRouteMsg</name>
+        <name>com.syscxp.vpn.header.vpn.APIDeleteVpnInterfaceMsg</name>
     </message>
 
 
     <message>
-        <name>org.zstack.vpn.header.vpn.APIQueryVpnMsg</name>
+        <name>com.syscxp.vpn.header.vpn.APICreateVpnRouteMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.vpn.header.vpn.APIDeleteVpnRouteMsg</name>
+    </message>
+
+
+    <message>
+        <name>com.syscxp.vpn.header.vpn.APIQueryVpnMsg</name>
         <serviceId>query</serviceId>
     </message>
 

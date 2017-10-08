@@ -1,200 +1,200 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service xmlns="http://zstack.org/schema/zstack">
+<service xmlns="http://syscxp.com/schema/syscxp">
     <id>identity</id>
     <interceptor>AccountManager</interceptor>
 
     <message>
-        <name>org.zstack.account.header.account.APICreateAccountMsg</name>
+        <name>com.syscxp.account.header.account.APICreateAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.account.APIUpdateAccountMsg</name>
+        <name>com.syscxp.account.header.account.APIUpdateAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APILogInByAccountMsg</name>
+        <name>com.syscxp.account.header.identity.APILogInByAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APILogInByUserMsg</name>
+        <name>com.syscxp.account.header.identity.APILogInByUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APILogOutMsg</name>
+        <name>com.syscxp.account.header.identity.APILogOutMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIValidateSessionMsg</name>
+        <name>com.syscxp.account.header.identity.APIValidateSessionMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.header.identity.APIGetSessionPolicyMsg</name>
+        <name>com.syscxp.header.identity.APIGetSessionPolicyMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.user.APICreateUserMsg</name>
+        <name>com.syscxp.account.header.user.APICreateUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.user.APIUpdateUserMsg</name>
+        <name>com.syscxp.account.header.user.APIUpdateUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.user.APIDeleteUserMsg</name>
+        <name>com.syscxp.account.header.user.APIDeleteUserMsg</name>
     </message>
     <message>
-        <name>org.zstack.header.account.APIValidateAccountMsg</name>
+        <name>com.syscxp.header.account.APIValidateAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.user.APIQueryUserMsg</name>
+        <name>com.syscxp.account.header.user.APIQueryUserMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.account.APIQueryAccountMsg</name>
+        <name>com.syscxp.account.header.account.APIQueryAccountMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIQueryRoleMsg</name>
+        <name>com.syscxp.account.header.identity.APIQueryRoleMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.identity.APIQueryPolicyMsg</name>
+        <name>com.syscxp.account.header.identity.APIQueryPolicyMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.account.APIQueryAccountApiSecurityMsg</name>
+        <name>com.syscxp.account.header.account.APIQueryAccountApiSecurityMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.account.APIQueryAccountExtraInfoMsg</name>
+        <name>com.syscxp.account.header.account.APIQueryAccountExtraInfoMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>org.zstack.account.header.account.APIQueryAccountContactsMsg</name>
+        <name>com.syscxp.account.header.account.APIQueryAccountContactsMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APICheckApiPermissionMsg</name>
+        <name>com.syscxp.account.header.identity.APICheckApiPermissionMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.user.APIUpdateUserPWDMsg</name>
+        <name>com.syscxp.account.header.user.APIUpdateUserPWDMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.account.APIUpdateAccountPWDMsg</name>
+        <name>com.syscxp.account.header.account.APIUpdateAccountPWDMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.account.APIUpdateAccountPhoneMsg</name>
+        <name>com.syscxp.account.header.account.APIUpdateAccountPhoneMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.user.APIUpdateUserPhoneMsg</name>
+        <name>com.syscxp.account.header.user.APIUpdateUserPhoneMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.account.APIUpdateAccountEmailMsg</name>
+        <name>com.syscxp.account.header.account.APIUpdateAccountEmailMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.user.APIUpdateUserEmailMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.account.header.user.APIAttachPolicyToUserMsg</name>
+        <name>com.syscxp.account.header.user.APIUpdateUserEmailMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIDeleteRoleMsg</name>
+        <name>com.syscxp.account.header.user.APIAttachPolicyToUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreateRoleMsg</name>
+        <name>com.syscxp.account.header.identity.APIDeleteRoleMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.user.APIDetachPolicyFromUserMsg</name>
+        <name>com.syscxp.account.header.identity.APICreateRoleMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APICreatePolicyMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.account.header.identity.APIUpdatePolicyMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.account.header.identity.APIDeletePolicyMsg</name>
+        <name>com.syscxp.account.header.user.APIDetachPolicyFromUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.account.APIAccountPhoneAuthenticationMsg</name>
+        <name>com.syscxp.account.header.identity.APICreatePolicyMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.account.header.identity.APIUpdatePolicyMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.account.header.identity.APIDeletePolicyMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.user.APIUserPhoneAuthenticationMsg</name>
+        <name>com.syscxp.account.header.account.APIAccountPhoneAuthenticationMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.account.APIUpdateAccountContactsMsg</name>
+        <name>com.syscxp.account.header.user.APIUserPhoneAuthenticationMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.account.APICreateAccountContactsMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.account.header.account.APIDeleteAccountContactsMsg</name>
+        <name>com.syscxp.account.header.account.APIUpdateAccountContactsMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.account.APIResetAccountPWDMsg</name>
+        <name>com.syscxp.account.header.account.APICreateAccountContactsMsg</name>
     </message>
     <message>
-        <name>org.zstack.account.header.account.APIResetAccountApiSecurityMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.account.header.account.APIUpdateApiAllowIPMsg</name>
-    </message>
-    <message>
-        <name>org.zstack.account.header.account.APIGetAccountApiKeyMsg</name>
+        <name>com.syscxp.account.header.account.APIDeleteAccountContactsMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.account.APIRegisterAccountMsg</name>
+        <name>com.syscxp.account.header.account.APIResetAccountPWDMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.account.header.account.APIResetAccountApiSecurityMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.account.header.account.APIUpdateApiAllowIPMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.account.header.account.APIGetAccountApiKeyMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.account.APIGetAccountMsg</name>
+        <name>com.syscxp.account.header.account.APIRegisterAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.user.APIGetUserMsg</name>
+        <name>com.syscxp.account.header.account.APIGetAccountMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.account.APIAccountPWDBackMsg</name>
+        <name>com.syscxp.account.header.user.APIGetUserMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.user.APIUserPWDBackMsg</name>
+        <name>com.syscxp.account.header.account.APIAccountPWDBackMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.user.APIResetUserPWDMsg</name>
+        <name>com.syscxp.account.header.user.APIUserPWDBackMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIVerifyRepetitionMsg</name>
+        <name>com.syscxp.account.header.user.APIResetUserPWDMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.identity.APIUpdateRoleMsg</name>
+        <name>com.syscxp.account.header.identity.APIVerifyRepetitionMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.account.APIDeleteProxyAccountRefMsg</name>
+        <name>com.syscxp.account.header.identity.APIUpdateRoleMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.account.APIQueryProxyAccountMsg</name>
+        <name>com.syscxp.account.header.account.APIDeleteProxyAccountRefMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.account.header.account.APIQueryProxyAccountMsg</name>
         <serviceId>query</serviceId>
     </message>
 
