@@ -506,6 +506,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setTunnelInterfaceVO(tivo);
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setMonitorState(TunnelMonitorState.Disabled);
+        vo.setMaxModifies(CoreGlobalProperty.TUNNEL_MAX_MOTIFIES);
         dbf.getEntityManager().persist(vo);
 
         //调用支付
@@ -818,17 +819,20 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     private void validate(APICreateInterfaceMsg msg){
         //判断账户金额是否充足
-        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+        /*APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(msg.getUnits());
-        APIGetProductPriceReply rsp =
-                (APIGetProductPriceReply) new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL)
-                        .syncJsonPost(priceMsg);
-        if (!rsp.isPayable())
+        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL)
+                .syncJsonPost(priceMsg);
+        if (!rsp.isSuccess())
             throw new ApiMessageInterceptionException(
-                    argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
+                    argerr("查询价格失败.", msg.getAccountUuid()));
+        APIGetProductPriceReply reply = (APIGetProductPriceReply) rsp;
+        if (!reply.isPayable())
+            throw new ApiMessageInterceptionException(
+                    argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));*/
 
         //判断同一个用户的接口名称是否已经存在
         SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
@@ -841,17 +845,20 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     private void validate(APICreateInterfaceManualMsg msg){
         //判断账户金额是否充足
-        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+        /*APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(msg.getUnits());
-        APIGetProductPriceReply rsp =
-                (APIGetProductPriceReply) new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL)
-                        .syncJsonPost(priceMsg);
-        if (!rsp.isPayable())
+        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL)
+                .syncJsonPost(priceMsg);
+        if (!rsp.isSuccess())
             throw new ApiMessageInterceptionException(
-                    argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
+                    argerr("查询价格失败.", msg.getAccountUuid()));
+        APIGetProductPriceReply reply = (APIGetProductPriceReply) rsp;
+        if (!reply.isPayable())
+            throw new ApiMessageInterceptionException(
+                    argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));*/
 
         //判断同一个用户的接口名称是否已经存在
         SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
