@@ -32,7 +32,7 @@ CREATE TABLE `SpeedRecordsVO` (
   UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='监控测速纪录';
 
-CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`HostSwitchMonitorAO` (
+CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`HostSwitchMonitorEO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `hostUuid` varchar(32) NOT NULL COMMENT '主机UUID(HostEO.uuid)',
   `physicalSwitchUuid` VARCHAR(32) NOT NULL COMMENT '物理交换机UUID(PhysicalSwitchVO.uuid)',
@@ -51,7 +51,6 @@ create view syscxp_tunnel.HostSwitchMonitorVO as
 select uuid,hostUuid,physicalSwitchUuid,physicalSwitchPortName,interfaceName,lastOpDate,createDate
   from syscxp_tunnel.HostSwitchMonitorEO
  where deleted = 0;
-
 
 #######################################################################################################
 use syscxp_tunnel;
