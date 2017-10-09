@@ -1,41 +1,41 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service xmlns="http://zstack.org/schema/zstack">
+<service xmlns="http://syscxp.com/schema/syscxp">
     <id>notice</id>
     <interceptor>NoticeManager</interceptor>
 
     <message>
-        <name>org.zstack.account.header.log.APIQueryNoticeMsg</name>
+        <name>com.syscxp.account.header.log.APIQueryNoticeMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.account.header.log.APIUpdateNoticeMsg</name>
+        <name>com.syscxp.account.header.log.APIUpdateNoticeMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.log.APICreateNoticeMsg</name>
+        <name>com.syscxp.account.header.log.APICreateNoticeMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.log.APIDeleteNoticeMsg</name>
+        <name>com.syscxp.account.header.log.APIDeleteNoticeMsg</name>
     </message>
 
 
     <message>
-        <name>org.zstack.account.header.log.APIQueryAlarmContactMsg</name>
+        <name>com.syscxp.account.header.log.APIQueryAlarmContactMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.account.header.log.APIUpdateAlarmContactMsg</name>
+        <name>com.syscxp.account.header.log.APIUpdateAlarmContactMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.log.APICreateAlarmContactMsg</name>
+        <name>com.syscxp.account.header.log.APICreateAlarmContactMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.account.header.log.APIDeleteAlarmContactMsg</name>
+        <name>com.syscxp.account.header.log.APIDeleteAlarmContactMsg</name>
     </message>
 
 </service>

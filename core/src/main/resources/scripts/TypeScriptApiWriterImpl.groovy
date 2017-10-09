@@ -2,18 +2,17 @@ package scripts
 
 import org.apache.commons.io.FileUtils
 import org.apache.commons.lang.StringUtils
-import org.zstack.core.generate.TypeScriptApiWriter
-import org.zstack.header.exception.CloudRuntimeException
-import org.zstack.header.message.APIMessage
-import org.zstack.header.message.Message
-import org.zstack.header.query.Unqueryable
-import org.zstack.header.rest.APINoSee
-import org.zstack.header.search.Inventory
-import org.zstack.utils.BeanUtils
-import org.zstack.utils.FieldUtils
-import org.zstack.utils.TypeUtils
-import org.zstack.utils.Utils
-import org.zstack.utils.logging.CLogger
+import com.syscxp.core.generate.TypeScriptApiWriter
+import com.syscxp.header.exception.CloudRuntimeException
+import com.syscxp.header.message.APIMessage
+import com.syscxp.header.query.Unqueryable
+import com.syscxp.header.rest.APINoSee
+import com.syscxp.header.search.Inventory
+import com.syscxp.utils.BeanUtils
+import com.syscxp.utils.FieldUtils
+import com.syscxp.utils.TypeUtils
+import com.syscxp.utils.Utils
+import com.syscxp.utils.logging.CLogger
 
 import java.lang.reflect.Field
 import java.lang.reflect.Type
@@ -193,7 +192,7 @@ export var ${inventoryClass.getSimpleName()}Queryable = ${ret};
             dir.mkdirs()
         }
 
-        List<Class> inventories = BeanUtils.scanClass("org.zstack", Inventory.class);
+        List<Class> inventories = BeanUtils.scanClass("com.syscxp", Inventory.class);
         inventories.each {
             buildQueryable(it);
             Inventory inventory = it.getAnnotation(Inventory.class);

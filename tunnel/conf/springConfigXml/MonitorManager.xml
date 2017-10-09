@@ -1,38 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
-       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:zstack="http://zstack.org/schema/zstack"
+       xmlns:tx="http://www.springframework.org/schema/tx" xmlns:syscxp="http://syscxp.com/schema/syscxp"
        xsi:schemaLocation="http://www.springframework.org/schema/beans
     http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
     http://www.springframework.org/schema/aop
     http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
     http://www.springframework.org/schema/tx
     http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
-    http://zstack.org/schema/zstack
-    http://zstack.org/schema/zstack/plugin.xsd"
+    http://syscxp.com/schema/syscxp
+    http://syscxp.com/schema/syscxp/plugin.xsd"
        default-init-method="init" default-destroy-method="destroy">
 
-<!--    <bean id="IdentiyInterceptor" class="org.zstack.tunnel.identity.IdentityInterceptor">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.apimediator.GlobalApiMessageInterceptor"/>
-            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
-        </zstack:plugin>
+<!--    <bean id="IdentiyInterceptor" class="IdentityInterceptor">
+        <syscxp:plugin>
+            <syscxp:extension interface="GlobalApiMessageInterceptor"/>
+            <syscxp:extension interface="ApiMessageInterceptor"/>
+        </syscxp:plugin>
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>org.zstack.tunnel.header.monitor.TunnelMonitorVO</value>
-                <value>org.zstack.tunnel.header.monitor.SpeedRecordsVO</value>
-                <value>org.zstack.tunnel.header.monitor.HostSwitchMonitorVO</value>
+                <value>TunnelMonitorVO</value>
+                <value>SpeedRecordsVO</value>
+                <value>HostSwitchMonitorVO</value>
             </list>
         </property>
     </bean>-->
 
-    <bean id="MonitorManager" class="org.zstack.tunnel.manage.MonitorManagerImpl">
-        <zstack:plugin>
-            <zstack:extension interface="org.zstack.header.Component"/>
-            <zstack:extension interface="org.zstack.header.Service"/>
-            <zstack:extension interface="org.zstack.header.apimediator.ApiMessageInterceptor"/>
-        </zstack:plugin>
+    <bean id="MonitorManager" class="com.syscxp.tunnel.manage.MonitorManagerImpl">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.Component"/>
+            <syscxp:extension interface="com.syscxp.header.Service"/>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+        </syscxp:plugin>
     </bean>
 
 

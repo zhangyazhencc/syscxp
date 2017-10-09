@@ -1,55 +1,55 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service xmlns="http://zstack.org/schema/zstack">
+<service xmlns="http://syscxp.com/schema/syscxp">
     <id>receipt</id>
     <interceptor>ReceiptManager</interceptor>
 
     <message>
-        <name>org.zstack.billing.header.receipt.APIGetValuebleReceiptMsg</name>
+        <name>com.syscxp.billing.header.receipt.APIGetValuebleReceiptMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.receipt.APICreateReceiptPostAddressMsg</name>
+        <name>com.syscxp.billing.header.receipt.APICreateReceiptPostAddressMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.receipt.APIUpdateReceiptPostAddressMsg</name>
+        <name>com.syscxp.billing.header.receipt.APIUpdateReceiptPostAddressMsg</name>
     </message>
     <message>
-        <name>org.zstack.billing.header.receipt.APIDeleteReceiptPostAddressMsg</name>
-    </message>
-
-    <message>
-        <name>org.zstack.billing.header.receipt.APICreateReceiptInfoMsg</name>
+        <name>com.syscxp.billing.header.receipt.APIDeleteReceiptPostAddressMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.receipt.APIUpdateReceiptInfoMsg</name>
+        <name>com.syscxp.billing.header.receipt.APICreateReceiptInfoMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.receipt.APIDeleteReceiptInfoMsg</name>
+        <name>com.syscxp.billing.header.receipt.APIUpdateReceiptInfoMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.receipt.APICreateReceiptMsg</name>
+        <name>com.syscxp.billing.header.receipt.APIDeleteReceiptInfoMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.receipt.APIUpdateReceiptMsg</name>
+        <name>com.syscxp.billing.header.receipt.APICreateReceiptMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.billing.header.receipt.APIUpdateReceiptMsg</name>
     </message>
     
     <message>
-        <name>org.zstack.billing.header.receipt.APIQueryReceiptPostAddressMsg</name>
+        <name>com.syscxp.billing.header.receipt.APIQueryReceiptPostAddressMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.receipt.APIQueryReceiptInfoMsg</name>
+        <name>com.syscxp.billing.header.receipt.APIQueryReceiptInfoMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.receipt.APIQueryReceiptMsg</name>
+        <name>com.syscxp.billing.header.receipt.APIQueryReceiptMsg</name>
         <serviceId>query</serviceId>
     </message>
 

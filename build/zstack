@@ -20,7 +20,7 @@ buildClassPath() {
 }
 
 run() {
-    java -cp $classPath org.zstack.portal.main.Main "$@"
+    java -cp $classPath com.syscxp.portal.main.Main "$@"
 }
 
 main() {

@@ -1,74 +1,74 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service xmlns="http://zstack.org/schema/zstack">
+<service xmlns="http://syscxp.com/schema/syscxp">
     <id>monitor</id>
     <interceptor>MonitorManager</interceptor>
 
     <!--HOST-->
     <message>
-        <name>org.zstack.tunnel.header.host.APICreateHostMsg</name>
+        <name>com.syscxp.tunnel.header.host.APICreateHostMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.host.APIUpdateHostMsg</name>
+        <name>com.syscxp.tunnel.header.host.APIUpdateHostMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.host.APIDeleteHostMsg</name>
+        <name>com.syscxp.tunnel.header.host.APIDeleteHostMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.monitor.APICreateHostSwitchMonitorMsg</name>
+        <name>com.syscxp.tunnel.header.monitor.APICreateHostSwitchMonitorMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.monitor.APIUpdateHostSwitchMonitorMsg</name>
+        <name>com.syscxp.tunnel.header.monitor.APIUpdateHostSwitchMonitorMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.monitor.APIDeleteHostSwitchMonitorMsg</name>
+        <name>com.syscxp.tunnel.header.monitor.APIDeleteHostSwitchMonitorMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.monitor.APICreateTunnelMonitorMsg</name>
+        <name>com.syscxp.tunnel.header.monitor.APICreateTunnelMonitorMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.monitor.APIUpdateTunnelMonitorMsg</name>
+        <name>com.syscxp.tunnel.header.monitor.APIUpdateTunnelMonitorMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.monitor.APIDeleteTunnelMonitorMsg</name>
+        <name>com.syscxp.tunnel.header.monitor.APIDeleteTunnelMonitorMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.monitor.APICreateSpeedRecordsMsg</name>
+        <name>com.syscxp.tunnel.header.monitor.APICreateSpeedRecordsMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.monitor.APIUpdateSpeedRecordsMsg</name>
+        <name>com.syscxp.tunnel.header.monitor.APIUpdateSpeedRecordsMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.monitor.APICreateMonitorCidrMsg</name>
+        <name>com.syscxp.tunnel.header.monitor.APICreateMonitorCidrMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.host.APIQueryHostMsg</name>
+        <name>com.syscxp.tunnel.header.host.APIQueryHostMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.monitor.APIQuerySpeedRecordsMsg</name>
+        <name>com.syscxp.tunnel.header.monitor.APIQuerySpeedRecordsMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.monitor.APIQueryTunnelMonitorMsg</name>
+        <name>com.syscxp.tunnel.header.monitor.APIQueryTunnelMonitorMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>org.zstack.tunnel.header.monitor.APIQueryHostSwitchMonitorMsg</name>
+        <name>com.syscxp.tunnel.header.monitor.APIQueryHostSwitchMonitorMsg</name>
         <serviceId>query</serviceId>
     </message>
 </service>

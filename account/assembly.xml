@@ -2,12 +2,12 @@
 	xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.2 http://maven.apache.org/xsd/assembly-1.1.2.xsd">
-	<id>zstack</id>
+	<id>syscxp</id>
 	<formats>
 		<format>dir</format>
 	</formats>
 
-	<baseDirectory>zstack</baseDirectory>
+	<baseDirectory>syscxp</baseDirectory>
 	<dependencySets>
 		<dependencySet>
 			<outputDirectory>lib</outputDirectory>
@@ -36,12 +36,12 @@
 	</fileSets>
 	<files>
 		<file>
-			<source>zstack</source>
+			<source>syscxp</source>
 			<fileMode>755</fileMode>
 			<lineEnding>unix</lineEnding>
 		</file>
 		<file>
-			<source>zstack-debug</source>
+			<source>syscxp-debug</source>
 			<fileMode>755</fileMode>
 			<lineEnding>unix</lineEnding>
 		</file>

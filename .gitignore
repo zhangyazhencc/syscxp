@@ -10,7 +10,7 @@ management-server*.gz
 *.swp
 target/
 *loop.sh
-*zstack-api-cli.log
+*syscxp-api-cli.log
 test/UnitTestSuiteReport/*
 test/unitTestSuiteReport/*
 *.iml
@@ -25,9 +25,9 @@ premium/
 .project
 .settings
 .vscode/
-test-premium/zstack-integration-test-result/
+test-premium/syscxp-integration-test-result/
 envDSLTree
-test/zstack-integration-test-result/
+test/syscxp-integration-test-result/
 */container_settings.json
 
 

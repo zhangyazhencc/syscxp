@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xsd:schema xmlns="http://zstack.org/schema/zstack"
+<xsd:schema xmlns="http://syscxp.com/schema/syscxp"
             xmlns:xsd="http://www.w3.org/2001/XMLSchema"
-            targetNamespace="http://zstack.org/schema/zstack" elementFormDefault="qualified"
+            targetNamespace="http://syscxp.com/schema/syscxp" elementFormDefault="qualified"
             attributeFormDefault="unqualified">
 
 	<xsd:element name="globalConfig">

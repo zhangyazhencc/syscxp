@@ -6,7 +6,7 @@
     <persistence-unit-metadata>
         <persistence-unit-defaults>
             <entity-listeners>
-                <entity-listener class="org.zstack.core.db.JPADeletionListener" />
+                <entity-listener class="com.syscxp.core.db.JPADeletionListener" />
             </entity-listeners>
         </persistence-unit-defaults>
     </persistence-unit-metadata>

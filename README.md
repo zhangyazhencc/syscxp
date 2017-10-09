@@ -1,28 +1,28 @@
-# ZStack: the IaaS software you have been looking for. [http://zstack.org](http://zstack.org)
+# syscxp: the IaaS software you have been looking for. [http://syscxp.com](http://syscxp.com)
 
-ZStack is open source IaaS(infrastructure as a service) software aiming to automate datacenters, managing resources of compute, storage,
-and networking all by APIs. Users can setup ZStack environments in a download-and-run manner, spending 5 minutes building a POC environment
+syscxp is open source IaaS(infrastructure as a service) software aiming to automate datacenters, managing resources of compute, storage,
+and networking all by APIs. Users can setup syscxp environments in a download-and-run manner, spending 5 minutes building a POC environment
 all on a single Linux machine, or 30 minutes building a multi-node production environment that can scale to hundreds of thousands of physical servers.
 
-ZStack provides the capability of managing everything in a datacenter by APIs, fulfilling the goal of software-defined
-datacenter. Users control their clouds using either web UI or command line tool both of which interact with ZStack
+syscxp provides the capability of managing everything in a datacenter by APIs, fulfilling the goal of software-defined
+datacenter. Users control their clouds using either web UI or command line tool both of which interact with syscxp
 management nodes; **NO** scattered configurations, dependent software installation, services HA, and thirdparty monitoring
-are needed, all of them are taken care of by ZStack itself, which provides a great simplicity for stable long-term operation.
+are needed, all of them are taken care of by syscxp itself, which provides a great simplicity for stable long-term operation.
 
-## Why ZStack?
+## Why syscxp?
 
-ZStack is designed to tackle two problems -- complexity and stability -- that users building clouds based on open source
+syscxp is designed to tackle two problems -- complexity and stability -- that users building clouds based on open source
 IaaS software have been suffered for a long time.
 
-In terms of complexity, ZStack sticks to the design principles of APIs managing everything, full automation, self-managed services,
+In terms of complexity, syscxp sticks to the design principles of APIs managing everything, full automation, self-managed services,
 no hardware lockin, and user-friendly query APIs, providing a software easy to setup and long-term operation.
 
-In terms of stability, ZStack was born with a plugin system that adding or removing features will not impact existing codes,
+In terms of stability, syscxp was born with a plugin system that adding or removing features will not impact existing codes,
 a workflow engine that can rollback completed changes on error, a cascade framework that can spread an operation from
 a resource to dependent resources, and three rigorous automated testing systems that guard every single feature,
 solving the stability issue in architectural designs.
 
-Besides, ZStack is extremely scalable that a single management node is capable of managing hundreds of thousands of
+Besides, syscxp is extremely scalable that a single management node is capable of managing hundreds of thousands of
 physical servers, managing millions of virtual machines, and serving tens of thousands of concurrent API requests,
 particular suitable for building large-scale public clouds.
 
@@ -88,7 +88,7 @@ Installation and upgrade are as simple as deploying a **Java WAR file**. A POC e
 a bootstrap script; A multi-node production environment can be deployed in **30 minutes** including the time you read the
 documentation.
 
-     >> [root@localhost ~]# curl http://download.zstack.org/install.sh |  bash -s -- -a
+     >> [root@localhost ~]# curl http://download.syscxp.com/install.sh |  bash -s -- -a
      
 #### Full automation
 
@@ -97,7 +97,7 @@ Ansible liberates you from installing, configuring, and upgrading agents on mass
  
 #### Versatile plugin system
 
-The core orchestration is built on an Eclipse and OSGI like **plugin system** that everything is a plugin. ZStack affirms
+The core orchestration is built on an Eclipse and OSGI like **plugin system** that everything is a plugin. syscxp affirms
 that adding or removing features will not impact the core orchestration, promising a robust software the cloud users deserve.
 
 #### Rigorous testing system
@@ -107,104 +107,104 @@ that adding or removing features will not impact the core orchestration, promisi
 
 ## Installation
 
-Installation of ZStack is super easy; users can choose different methods depending on their needs to install the first
-ZStack environment:
+Installation of syscxp is super easy; users can choose different methods depending on their needs to install the first
+syscxp environment:
 
-* For users wanting to try out quickly, see [Quick Installation](http://zstack.org/installation/index.html).
+* For users wanting to try out quickly, see [Quick Installation](http://syscxp.com/installation/index.html).
 
-* For users wanting to deploy a production environment, see [Manual Installation](http://zstack.org/installation/manual.html).
+* For users wanting to deploy a production environment, see [Manual Installation](http://syscxp.com/installation/manual.html).
 
-* For users wanting to deploy a multi-node environment, see [Multi-node Installation](http://zstack.org/installation/multi-node.html).
+* For users wanting to deploy a multi-node environment, see [Multi-node Installation](http://syscxp.com/installation/multi-node.html).
 
 Once the installation is done, users can follow one of getting started guides:
 
-* [Getting Started With Quick Installation](http://zstack.org/documentation/getstart-quick.html).
+* [Getting Started With Quick Installation](http://syscxp.com/documentation/getstart-quick.html).
 
-* [Getting Started With Manual Installation](http://zstack.org/documentation/getstart-manual.html).
+* [Getting Started With Manual Installation](http://syscxp.com/documentation/getstart-manual.html).
 
-* [Getting Started With Multi-node Installation](http://zstack.org/documentation/getstart-multi.html).
+* [Getting Started With Multi-node Installation](http://syscxp.com/documentation/getstart-multi.html).
 
 ## Tutorials
 
-Six tutorials are prepared for your first journey in ZStack, building classic cloud deployments all on one single Linux machine:
+Six tutorials are prepared for your first journey in syscxp, building classic cloud deployments all on one single Linux machine:
 
 ##### Amazon EC2 classic EIP zone:
 
-* [Web UI](http://zstack.org/tutorials/ec2-ui.html)
-* [Command Line Tool](http://zstack.org/tutorials/ec2-cli.html)
+* [Web UI](http://syscxp.com/tutorials/ec2-ui.html)
+* [Command Line Tool](http://syscxp.com/tutorials/ec2-cli.html)
 
 ##### Flat Network:
 
-* [Web UI](http://zstack.org/tutorials/flat-network-ui.html)
-* [Command Line Tool](http://zstack.org/tutorials/flat-network-cli.html)
+* [Web UI](http://syscxp.com/tutorials/flat-network-ui.html)
+* [Command Line Tool](http://syscxp.com/tutorials/flat-network-cli.html)
 
 ##### Three Tiered Network:
 
-* [Web UI](http://zstack.org/tutorials/three-tiered-ui.html)
-* [Command Line Tool](http://zstack.org/tutorials/three-tiered-cli.html)
+* [Web UI](http://syscxp.com/tutorials/three-tiered-ui.html)
+* [Command Line Tool](http://syscxp.com/tutorials/three-tiered-cli.html)
 
 ##### Security Group:
 
-* [Web UI](http://zstack.org/tutorials/security-group-ui.html)
-* [Command Line Tool](http://zstack.org/tutorials/security-group-cli.html)
+* [Web UI](http://syscxp.com/tutorials/security-group-ui.html)
+* [Command Line Tool](http://syscxp.com/tutorials/security-group-cli.html)
 
 ##### Elastic Port Forwarding:
 
-* [Web UI](http://zstack.org/tutorials/elastic-port-forwarding-ui.html)
-* [Command Line Tool](http://zstack.org/tutorials/elastic-port-forwarding-cli.html)
+* [Web UI](http://syscxp.com/tutorials/elastic-port-forwarding-ui.html)
+* [Command Line Tool](http://syscxp.com/tutorials/elastic-port-forwarding-cli.html)
 
 ##### Snapshots:
 
-* [Web UI](http://zstack.org/tutorials/snapshot-ui.html)
-* [Command Line Tool](http://zstack.org/tutorials/snapshot-cli.html)
+* [Web UI](http://syscxp.com/tutorials/snapshot-ui.html)
+* [Command Line Tool](http://syscxp.com/tutorials/snapshot-cli.html)
 
 ## Under the hood 
 
-Under the hood, ZStack is built on an architecture explained by following articles:
+Under the hood, syscxp is built on an architecture explained by following articles:
 
 ##### Scalability:
 
-[ZStack's Scalability Secrets Part 1: Asynchronous Architecture](http://zstack.org/blog/asynchronous-architecture.html)
+[syscxp's Scalability Secrets Part 1: Asynchronous Architecture](http://syscxp.com/blog/asynchronous-architecture.html)
 
-[ZStack's Scalability Secrets Part 2: Stateless Services](http://zstack.org/blog/stateless-clustering.html)
+[syscxp's Scalability Secrets Part 2: Stateless Services](http://syscxp.com/blog/stateless-clustering.html)
 
-[ZStack's Scalability Secrets Part 3: Lock-free Architecture](http://zstack.org/blog/lock-free.html)
+[syscxp's Scalability Secrets Part 3: Lock-free Architecture](http://syscxp.com/blog/lock-free.html)
 
 ##### Plugin Architecture:
 
-[The In-Process Microservices Architecture](http://zstack.org/blog/microservices.html)
+[The In-Process Microservices Architecture](http://syscxp.com/blog/microservices.html)
 
-[The Versatile Plugin System](http://zstack.org/blog/plugin.html)
+[The Versatile Plugin System](http://syscxp.com/blog/plugin.html)
 
-[The Tag System](http://zstack.org/blog/tag.html)
+[The Tag System](http://syscxp.com/blog/tag.html)
 
-[The Workflow Engine](http://zstack.org/blog/workflow.html)
+[The Workflow Engine](http://syscxp.com/blog/workflow.html)
 
-[The Cascade Framework](http://zstack.org/blog/cascade.html)
+[The Cascade Framework](http://syscxp.com/blog/cascade.html)
 
 ##### Query API:
 
-[The Query API](http://zstack.org/blog/query.html)
+[The Query API](http://syscxp.com/blog/query.html)
 
 ##### Automation:
 
-[Full Automation By Ansible](http://zstack.org/blog/ansible.html)
+[Full Automation By Ansible](http://syscxp.com/blog/ansible.html)
 
 ##### Storage And Network:
 
-[Networking Model 1: L2 and L3 Network](http://zstack.org/blog/network-l2.html)
+[Networking Model 1: L2 and L3 Network](http://syscxp.com/blog/network-l2.html)
 
-[Networking Model 2: Virtual Router Network Service Provider](http://zstack.org/blog/virtual-router.html)
+[Networking Model 2: Virtual Router Network Service Provider](http://syscxp.com/blog/virtual-router.html)
 
-[Storage Model: Primary Storage and Backup Storage](http://zstack.org/blog/storage.html)
+[Storage Model: Primary Storage and Backup Storage](http://syscxp.com/blog/storage.html)
 
 ##### Testing:
 
-[The Automation Testing System 1: Integration Testing](http://zstack.org/blog/integration-testing.html)
+[The Automation Testing System 1: Integration Testing](http://syscxp.com/blog/integration-testing.html)
 
-[The Automation Testing System 2: System Testing](http://zstack.org/blog/system-testing.html)
+[The Automation Testing System 2: System Testing](http://syscxp.com/blog/system-testing.html)
 
-[The Automation Testing System 3: Model-based Testing](http://zstack.org/blog/model-based-testing.html)
+[The Automation Testing System 3: Model-based Testing](http://syscxp.com/blog/model-based-testing.html)
 
 ## License
 

@@ -6,8 +6,8 @@ mvn -DskipTests clean install
 cd -
 
 ### mvn war:war
-### rm -rf $CATALINA_HOME/webapps/zstack
-### rm -f $CATALINA_HOME/webapps/zstack.war
-### cp target/zstack.war $CATALINA_HOME/webapps/zstack.war
+### rm -rf $CATALINA_HOME/webapps/syscxp
+### rm -f $CATALINA_HOME/webapps/syscxp.war
+### cp target/syscxp.war $CATALINA_HOME/webapps/syscxp.war
 
-echo "Deployed zstack.war to $CATALINA_HOME/webapps/zstack.war, run 'mvn -pl build -P debug exec:exec -Ddebug' to start"
+echo "Deployed syscxp.war to $CATALINA_HOME/webapps/syscxp.war, run 'mvn -pl build -P debug exec:exec -Ddebug' to start"

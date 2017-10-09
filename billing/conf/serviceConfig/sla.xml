@@ -1,26 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service xmlns="http://zstack.org/schema/zstack">
+<service xmlns="http://syscxp.com/schema/syscxp">
     <id>sla</id>
     <interceptor>SlaManager</interceptor>
 
     <message>
-        <name>org.zstack.billing.header.sla.APICreateSLACompensateMsg</name>
+        <name>com.syscxp.billing.header.sla.APICreateSLACompensateMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.sla.APIUpdateSLACompensateMsg</name>
+        <name>com.syscxp.billing.header.sla.APIUpdateSLACompensateMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.sla.APIUpdateSLACompensateStateMsg</name>
+        <name>com.syscxp.billing.header.sla.APIUpdateSLACompensateStateMsg</name>
     </message>
 
    <message>
-        <name>org.zstack.billing.header.sla.APIDeleteSLACompensateMsg</name>
+        <name>com.syscxp.billing.header.sla.APIDeleteSLACompensateMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.billing.header.sla.APIQuerySLACompensateMsg</name>
+        <name>com.syscxp.billing.header.sla.APIQuerySLACompensateMsg</name>
         <serviceId>query</serviceId>
     </message>
 

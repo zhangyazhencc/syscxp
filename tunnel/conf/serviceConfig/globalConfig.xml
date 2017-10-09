@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<service xmlns="http://zstack.org/schema/zstack">
+<service xmlns="http://syscxp.com/schema/syscxp">
     <id>globalConfig</id>
     <interceptor>GlobalConfigApiInterceptor</interceptor>
 
     <message>
-        <name>org.zstack.core.config.APIListGlobalConfigMsg</name>
+        <name>com.syscxp.core.config.APIListGlobalConfigMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.core.config.APIUpdateGlobalConfigMsg</name>
+        <name>com.syscxp.core.config.APIUpdateGlobalConfigMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.core.config.APIGetGlobalConfigMsg</name>
+        <name>com.syscxp.core.config.APIGetGlobalConfigMsg</name>
     </message>
 
     <message>
-        <name>org.zstack.core.config.APIQueryGlobalConfigMsg</name>
+        <name>com.syscxp.core.config.APIQueryGlobalConfigMsg</name>
         <serviceId>query</serviceId>
     </message>
 

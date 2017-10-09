@@ -1,6 +1,6 @@
 import org.json.JSONException;
 import org.junit.Test;
-import org.zstack.header.search.InventoryDoc;
+import com.syscxp.header.search.InventoryDoc;
 
 import java.io.IOException;
 import java.util.ArrayList;
