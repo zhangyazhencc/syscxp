@@ -76,14 +76,14 @@ public class VpnRESTCaller {
         return syncPost(path, cmd, VpnCommands.CheckStatusResponse.class);
     }
 
-    public <T extends VpnAgentResponse> T syncPostForVpn(String path, VpnAgentCommand cmd, Class<T> rspClass) {
+    public VpnAgentResponse.VpnTaskResult syncPostForResult(String path, VpnAgentCommand cmd) {
 
-        T rsp = syncPost(path, cmd, rspClass);
+        VpnAgentResponse rsp = syncPost(path, cmd, VpnAgentResponse.class);
         if (rsp.getStatusCode() != HttpStatus.OK){
             throw new OperationFailureException(operr("failed to post to %s, status code: %s, result: %s",
                     path, rsp.getStatusCode(), rsp.getResult()));
         }
-        return rsp;
+        return rsp.getResult();
     }
 
     public <T extends VpnAgentResponse> T syncPost(String path, VpnAgentCommand cmd, Class<T> rspClass) {
