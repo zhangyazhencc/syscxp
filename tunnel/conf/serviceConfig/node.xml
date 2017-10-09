@@ -43,5 +43,21 @@
         <serviceId>query</serviceId>
     </message>
 
+    <message>
+        <name>com.syscxp.tunnel.header.node.APICreateNodeExtensionInfoMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.node.APIGetNodeExtensionInfoMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.node.APIDeleteNodeExtensionInfoMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.node.APIUpdateNodeExtensionInfoMsg</name>
+    </message>
+
 
 </service>
