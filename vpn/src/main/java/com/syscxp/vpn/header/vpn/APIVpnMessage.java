@@ -3,12 +3,12 @@ package com.syscxp.vpn.header.vpn;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-public class APIVpnMassage extends APIMessage {
+public class APIVpnMessage extends APIMessage {
     @APIParam(required = false)
     private String accountUuid;
 
     public String getAccountUuid() {
-        if (accountUuid == null || accountUuid.equals(""))
+        if (accountUuid == null || accountUuid.isEmpty())
             return getOpAccountUuid();
         return accountUuid;
     }

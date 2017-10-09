@@ -12,6 +12,17 @@ public class APICreateOrderMsg extends APISyncCallMessage {
     @APIParam(emptyString = false,required = false)
     private String opAccountUuid;
 
+    @APIParam(emptyString = false,required = true)
+    private String notifyUrl;
+
+    public String getNotifyUrl() {
+        return notifyUrl;
+    }
+
+    public void setNotifyUrl(String notifyUrl) {
+        this.notifyUrl = notifyUrl;
+    }
+
     public String getAccountUuid() {
         return accountUuid;
     }
