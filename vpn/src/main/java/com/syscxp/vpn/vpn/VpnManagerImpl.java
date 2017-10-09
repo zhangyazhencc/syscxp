@@ -20,13 +20,14 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.errorcode.OperationFailureException;
-import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.query.QueryOp;
+import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.rest.RestAPIState;
 import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.header.vpn.VpnAgentCommand;
 import com.syscxp.header.vpn.VpnAgentResponse;
@@ -42,7 +43,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
+import org.springframework.web.client.ResourceAccessException;
+import org.springframework.web.client.RestClientException;
 
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -71,6 +75,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private ThreadFacade thdf;
     @Autowired
     private EventFacade evtf;
+
+    public final String VPN_CALL_BACK_URL = URLBuilder.buildUrlFromBase(CoreGlobalProperty.VPN_SERVER_URL,
+                                                     VpnConstant.VPN_ROOT_PATH, RESTConstant.CALLBACK_PATH);
 
     public void handleMessage(Message msg) {
         if (msg instanceof APIMessage) {
@@ -142,9 +149,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnCommands.DownloadCertificateResponse rsp = new VpnRESTCaller()
                 .syncPost(VpnConstant.DOWNLOAD_CERTIFICATE_PATH, cmd,
                         VpnCommands.DownloadCertificateResponse.class);
-        if (rsp.getStatusCode() != HttpStatus.OK){
-            throw new OperationFailureException(operr("failed to post to %s, status code: %s, result: %s",
-                    VpnConstant.DOWNLOAD_CERTIFICATE_PATH, rsp.getStatusCode(), rsp.getResult()));
+        if (rsp.getState() == RestAPIState.Processing) {
+            throw new OperationFailureException(operr("failed to post to %s, result: %s",
+                    VpnConstant.DOWNLOAD_CERTIFICATE_PATH, rsp.getResult()));
         }
         CertificateInventory inv = new CertificateInventory();
         inv.setCaCert(rsp.getCaCert());
@@ -212,6 +219,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         orderMsg.setUnits(msg.getProductPriceUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
+
         if (!createOrder(orderMsg)) {
             evt.setError(errf.stringToOperationError("付款失败"));
             evt.setInventory(VpnInventory.valueOf(vpn));
@@ -219,26 +227,28 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             return;
         }
         vpn.setPayment(Payment.PAID);
-        dbf.getEntityManager().merge(vpn);
+        dbf.updateAndRefresh(vpn);
 
         VpnCommands.CreateVpnCmd cmd = VpnCommands.CreateVpnCmd.valueOf(vpn);
-        VpnCommands.CreateVpnResponse rsp = new VpnRESTCaller()
-                .syncPost(VpnConstant.INIT_VPN_PATH, cmd, VpnCommands.CreateVpnResponse.class);
-        if (rsp.getStatusCode() == HttpStatus.OK && rsp.getResult().isSuccess()) {
-            checkVpnCreateState(cmd);
-        } else {
+        try {
+            VpnAgentResponse.VpnTaskResult result = new VpnRESTCaller()
+                    .syncPostForResult(VpnConstant.INIT_VPN_PATH, cmd);
+            if (result.isSuccess()) {
+                checkVpnCreateState(cmd);
+            }
+        } catch (OperationFailureException | RestClientException e){
+            e.printStackTrace();
             evt.setError(errf.stringToOperationError("VPN创建失败"));
         }
-
         evt.setInventory(VpnInventory.valueOf(vpn));
         bus.publish(evt);
     }
 
     private boolean createOrder(APICreateOrderMsg orderMsg) {
+        orderMsg.setNotifyUrl(VPN_CALL_BACK_URL);
         APIReply rsp =
                 new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
-        if (rsp.isSuccess())
-            throw new CloudRuntimeException("测试");
+
         return rsp.isSuccess();
     }
 
@@ -299,6 +309,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 renewOrderMsg.setOpAccountUuid(msg.getOpAccountUuid());
                 renewOrderMsg.setStartTime(vpn.getCreateDate());
                 renewOrderMsg.setExpiredTime(vpn.getExpireDate());
+                renewOrderMsg.setNotifyUrl(VPN_CALL_BACK_URL);
                 success = createOrder(renewOrderMsg);
                 newTime = newTime.plusMonths(msg.getDuration());
                 break;
@@ -314,6 +325,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 slaCompensationOrderMsg.setOpAccountUuid(msg.getOpAccountUuid());
                 slaCompensationOrderMsg.setStartTime(vpn.getCreateDate());
                 slaCompensationOrderMsg.setExpiredTime(vpn.getExpireDate());
+                slaCompensationOrderMsg.setNotifyUrl(VPN_CALL_BACK_URL);
                 success = createOrder(slaCompensationOrderMsg);
                 newTime = newTime.plusDays(msg.getDuration());
                 break;
@@ -644,7 +656,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     VpnCommands.CheckVpnStatusCmd cmd = VpnCommands.CheckVpnStatusCmd.valueOf(vo);
                     VpnCommands.CheckStatusResponse rsp =
                             new VpnRESTCaller().checkState(VpnConstant.CHECK_VPN_STATUS_PATH, cmd);
-                    if (rsp.getStatusCode() != HttpStatus.OK || rsp.getStatus() != VpnCommands.RunStatus.UP) {
+                    if (rsp.getState() == RestAPIState.Processing || rsp.getStatus() != VpnCommands.RunStatus.UP) {
                         flag = reconnectVpn(vo);
                     }
                 }
@@ -695,7 +707,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
         if (msg instanceof APICreateVpnMsg) {
-            validate((APICreateVpnMsg) msg);
+//            validate((APICreateVpnMsg) msg);
         } else if (msg instanceof APIQueryVpnMsg) {
             validate((APIQueryVpnMsg) msg);
         } else if (msg instanceof APIUpdateVpnMsg) {
@@ -767,10 +779,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(msg.getProductPriceUnits());
-        APIGetProductPriceReply rsp =
-                (APIGetProductPriceReply) new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL)
-                        .syncJsonPost(priceMsg);
-        if (!rsp.isPayable())
+        APIReply rsp = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL)
+                .syncJsonPost(priceMsg);
+        if (!rsp.isSuccess())
+            throw new ApiMessageInterceptionException(
+                    argerr("查询价格失败.", msg.getAccountUuid()));
+        APIGetProductPriceReply reply = (APIGetProductPriceReply) rsp;
+        if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
     }
