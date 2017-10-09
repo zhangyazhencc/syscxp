@@ -10,12 +10,11 @@
           http://www.springframework.org/schema/beans
           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 
-    <!-- 加载mongodb的属性配置文件 -->
+    <!-- mongo单机配置 -->
+
     <context:property-placeholder location="classpath:mongodb.properties" />
 
-    <!-- 定义mongo对象，对应的是mongodb官方jar包中的Mongo，replica-set设置集群副本的ip地址和端口 -->
-    <mongo:mongo id="mongo" replica-set="${mongo.hostport}">
-        <!-- 一些连接属性的设置 -->
+    <mongo:mongo id="mongo" replica-set="${mongo.hostPort}">
         <mongo:options
                 connections-per-host="${mongo.connectionsPerHost}"
                 threads-allowed-to-block-for-connection-multiplier="${mongo.threadsAllowedToBlockForConnectionMultiplier}"
@@ -34,9 +33,8 @@
 
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
         <constructor-arg ref="mongo" />
-        <constructor-arg name="databaseName" value="db_mongo" />
+        <constructor-arg name="databaseName" value="${mongo.dbName}" />
     </bean>
-
 
 
 </beans>
