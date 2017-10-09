@@ -6,7 +6,6 @@ import org.springframework.http.HttpStatus;
 /**
  */
 public class VpnAgentResponse {
-    private HttpStatus statusCode;
     private RestAPIState state;
     private VpnTaskResult result;
 
@@ -26,17 +25,9 @@ public class VpnAgentResponse {
         this.state = state;
     }
 
-    public HttpStatus getStatusCode() {
-        return statusCode;
-    }
-
-    public void setStatusCode(HttpStatus statusCode) {
-        this.statusCode = statusCode;
-    }
-
     public static class VpnTaskResult {
         private String message;
-        private boolean success = true;
+        private boolean success = false;
 
         public String getMessage() {
             return message;

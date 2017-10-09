@@ -1,5 +1,6 @@
 package com.syscxp.vpn.host;
 
+import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.vpn.VpnAgentResponse;
 import com.syscxp.vpn.header.host.*;
 import com.syscxp.vpn.vpn.VpnCommands;
@@ -347,9 +348,12 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             }
             for (VpnHostVO vo : vos) {
                 VpnCommands.CheckVpnHostStatusCmd cmd = VpnCommands.CheckVpnHostStatusCmd.valueOf(vo);
-                VpnCommands.CheckStatusResponse rsp = new VpnRESTCaller().checkState(HostConstant.CHECK_HOST_STATUS_PATH, cmd);
-                if (rsp.getStatusCode() != HttpStatus.OK || rsp.getStatus() != VpnCommands.RunStatus.UP)
-                    disconnectedHosts.add(vo.getUuid());
+                VpnCommands.CheckStatusResponse rsp = null;
+                try {
+                    rsp = new VpnRESTCaller().checkState(HostConstant.CHECK_HOST_STATUS_PATH, cmd);
+                    if (rsp.getStatus() != VpnCommands.RunStatus.UP)
+                        disconnectedHosts.add(vo.getUuid());
+                }catch (OperationFailureException e){}
             }
 
             updateHostStatus();
