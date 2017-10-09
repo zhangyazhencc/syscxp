@@ -388,9 +388,6 @@ CREATE TABLE `HostEO` (
   UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '监控主机';
 
-
-ALTER TABLE HostEO CHANGE ip hostIp VARCHAR(128);
-
 CREATE OR REPLACE
 VIEW `syscxp_tunnel`.`HostVO` AS
     SELECT
