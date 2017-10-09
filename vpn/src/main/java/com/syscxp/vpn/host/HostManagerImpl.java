@@ -1,5 +1,6 @@
 package com.syscxp.vpn.host;
 
+import com.syscxp.header.vpn.VpnAgentResponse;
 import com.syscxp.vpn.header.host.*;
 import com.syscxp.vpn.vpn.VpnCommands;
 import com.syscxp.vpn.vpn.VpnGlobalConfig;
@@ -86,12 +87,14 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
 
     private void handle(APIReconnectVpnHostMsg msg) {
+        APIReconnectVpnHostEvent evt = new APIReconnectVpnHostEvent(msg.getId());
         VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
 
         VpnCommands.ReconnectVpnHostCmd cmd = VpnCommands.ReconnectVpnHostCmd.valueOf(host);
-        new VpnRESTCaller().syncPostForResult(HostConstant.RECONNECT_HOST_PATH, cmd, VpnCommands.ReconnectVpnHostResponse.class);
-
-        APIReconnectVpnHostEvent evt = new APIReconnectVpnHostEvent(msg.getId());
+        VpnAgentResponse.VpnTaskResult result = new VpnRESTCaller().syncPostForResult(HostConstant.RECONNECT_HOST_PATH, cmd);
+        if (!result.isSuccess()) {
+            evt.setError(errf.stringToOperationError(result.getMessage()));
+        }
         bus.publish(evt);
     }
 
@@ -178,13 +181,15 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
 
     private void handle(APIDeleteVpnHostMsg msg) {
+        APIDeleteVpnHostEvent evt = new APIDeleteVpnHostEvent(msg.getId());
 
         VpnCommands.DeleteVpnHostCmd cmd = VpnCommands.DeleteVpnHostCmd.valueOf(dbf.findByUuid(msg.getUuid(), VpnHostVO.class));
-        new VpnRESTCaller().syncPostForResult(HostConstant.Delete_HOST_PATH, cmd, VpnCommands.DeleteVpnHostResponse.class);
-
-        dbf.removeByPrimaryKey(msg.getUuid(), VpnHostVO.class);
-
-        APIDeleteVpnHostEvent evt = new APIDeleteVpnHostEvent(msg.getId());
+        VpnAgentResponse.VpnTaskResult result = new VpnRESTCaller().syncPostForResult(HostConstant.Delete_HOST_PATH, cmd);
+        if (result.isSuccess()) {
+            dbf.removeByPrimaryKey(msg.getUuid(), VpnHostVO.class);
+        } else {
+            evt.setError(errf.stringToOperationError(result.getMessage()));
+        }
         bus.publish(evt);
     }
 
@@ -248,14 +253,18 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         host.setSshPort(msg.getSshPort());
         host.setUsername(msg.getUsername());
         host.setPassword(msg.getPassword());
-        host.setState(HostState.Enabled);
-        host.setStatus(HostStatus.Connected);
+        host.setState(HostState.Disabled);
+        host.setStatus(HostStatus.Connecting);
 
 
         VpnCommands.AddVpnHostCmd cmd = VpnCommands.AddVpnHostCmd.valueOf(host);
-        new VpnRESTCaller().syncPostForResult(HostConstant.ADD_HOST_PATH, cmd, VpnCommands.UpdateVpnBandWidthResponse.class);
-
-
+        VpnAgentResponse.VpnTaskResult result = new VpnRESTCaller().syncPostForResult(HostConstant.ADD_HOST_PATH, cmd);
+        if (result.isSuccess()) {
+            host.setState(HostState.Enabled);
+            host.setStatus(HostStatus.Connected);
+        } else {
+            host.setStatus(HostStatus.Disconnected);
+        }
         host = dbf.persistAndRefresh(host);
         APICreateVpnHostEvent evt = new APICreateVpnHostEvent(msg.getId());
         evt.setInventory(VpnHostInventory.valueOf(host));

@@ -3,6 +3,7 @@ package com.syscxp.vpn.vpn;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.core.cloudbus.EventFacade;
 import com.syscxp.core.config.GlobalConfig;
 import com.syscxp.core.config.GlobalConfigUpdateExtensionPoint;
 import com.syscxp.core.db.DatabaseFacade;
@@ -68,6 +69,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private ErrorFacade errf;
     @Autowired
     private ThreadFacade thdf;
+    @Autowired
+    private EventFacade evtf;
 
     public void handleMessage(Message msg) {
         if (msg instanceof APIMessage) {
@@ -120,7 +123,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         VpnCommands.ResetCertificateCmd cmd = VpnCommands.ResetCertificateCmd.valueOf(vpn);
         VpnAgentResponse.VpnTaskResult result = new VpnRESTCaller()
-                .syncPostForResult(VpnConstant.INIT_VPN_PATH, cmd);
+                .syncPostForResult(VpnConstant.RESET_CERTIFICATE_PATH, cmd);
         if (result.isSuccess()) {
             dbf.updateAndRefresh(vpn);
             evt.setInventory(VpnInventory.valueOf(vpn));
