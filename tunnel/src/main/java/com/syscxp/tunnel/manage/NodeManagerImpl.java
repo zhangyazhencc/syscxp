@@ -31,6 +31,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 
+
 import javax.persistence.TypedQuery;
 
 import java.util.List;
@@ -111,6 +112,10 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     }
 
     private void handle(APIUpdateNodeExtensionInfoMsg msg) {
+
+        APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent();
+
+        bus.publish(event);
 
     }
 
