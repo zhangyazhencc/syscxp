@@ -6,6 +6,7 @@ import com.syscxp.billing.header.renew.PriceRefRenewVO;
 import com.syscxp.billing.header.renew.PriceRefRenewVO_;
 import com.syscxp.billing.header.renew.RenewVO;
 import com.syscxp.billing.header.renew.RenewVO_;
+import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.retry.Retry;
 import com.syscxp.core.retry.RetryCondition;
 import com.syscxp.core.thread.CancelablePeriodicTask;
@@ -70,8 +71,11 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
     private RESTFacade restf;
     @Autowired
     private ThreadFacade threadFacade;
-    @Autowired
     private TimeoutRestTemplate template;
+
+    public OrderManagerImpl(){
+        template = RESTFacade.createRestTemplate(CoreGlobalProperty.REST_FACADE_READ_TIMEOUT, CoreGlobalProperty.REST_FACADE_CONNECT_TIMEOUT);
+    }
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
