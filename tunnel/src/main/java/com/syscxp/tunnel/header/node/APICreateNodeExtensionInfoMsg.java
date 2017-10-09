@@ -13,7 +13,7 @@ import com.syscxp.tunnel.manage.NodeConstant;
 
 public class APICreateNodeExtensionInfoMsg extends APIMessage {
 
-    @APIParam(emptyString = false,maxLength = 255)
+    @APIParam(emptyString = false)
     private String nodeExtensionInfo;
 
     public String getNodeExtensionInfo() {

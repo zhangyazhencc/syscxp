@@ -5,6 +5,7 @@ import com.syscxp.tunnel.header.node.*;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO_;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -26,12 +27,18 @@ import com.syscxp.tunnel.header.endpoint.*;
 import com.syscxp.tunnel.header.node.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.core.query.Query;
+
 
 import javax.persistence.TypedQuery;
 
 import java.util.List;
 
 import static com.syscxp.core.Platform.argerr;
+
+import java.util.Map;
 
 /**
  * Created by DCY on 2017-09-07
@@ -57,7 +64,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     @Autowired
     private EventFacade evtf;
 
-
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
 
     @Override
@@ -92,14 +100,47 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIDeleteEndpointMsg) msg);
         } else if (msg instanceof APICreateNodeExtensionInfoMsg) {
             handle((APICreateNodeExtensionInfoMsg) msg);
+        } else if (msg instanceof APIGetNodeExtensionInfoMsg) {
+            handle((APIGetNodeExtensionInfoMsg) msg);
+        } else if (msg instanceof APIDeleteNodeExtensionInfoMsg) {
+            handle((APIDeleteNodeExtensionInfoMsg) msg);
+        } else if (msg instanceof APIUpdateNodeExtensionInfoMsg) {
+            handle((APIUpdateNodeExtensionInfoMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
+    private void handle(APIUpdateNodeExtensionInfoMsg msg) {
+
+        APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent();
+
+        bus.publish(event);
+
+    }
+
+    private void handle(APIDeleteNodeExtensionInfoMsg msg) {
+        mongoTemplate.remove(new Query(Criteria.where("node_id").is(msg.getNodeId())),Object.class);
+        APIDeleteNodeExtensionInfoEvent event = new APIDeleteNodeExtensionInfoEvent();
+        bus.publish(event);
+    }
+
+    private void handle(APIGetNodeExtensionInfoMsg msg) {
+
+
+        APIGetNodeExtensionInfoReply reply = new APIGetNodeExtensionInfoReply();
+        reply.setNodeExtensionInfo(JSONObjectUtil.toJsonString(
+                mongoTemplate.find(new Query(Criteria.where("node_id").is(msg.getNodeId())),Object.class)
+        ));
+        bus.reply(msg,reply);
+    }
+
     private void handle(APICreateNodeExtensionInfoMsg msg) {
 
-
+        mongoTemplate.insert(msg.getNodeExtensionInfo());
+        APICreateNodeExtensionInfoEvent event = new APICreateNodeExtensionInfoEvent();
+        event.setInventory(msg.getNodeExtensionInfo());
+        bus.publish(event);
 
     }
 
