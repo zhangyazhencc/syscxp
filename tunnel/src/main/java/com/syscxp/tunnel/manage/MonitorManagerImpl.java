@@ -206,18 +206,20 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     @Transactional
     private void handle(APICreateTunnelMonitorMsg msg) {
 
-        /*
+
         TunnelMonitorVO tunnelMonitorVO = createTunnelMonitorHandle(msg);
         RyuRestService ryuRestService = new RyuRestService();
         ryuRestService.tunnelMonitorIssue(tunnelMonitorVO.getUuid());
-        */
+
 
         // 测试
+        /*
         TunnelMonitorVO tunnelMonitorVO = new TunnelMonitorVO();
         tunnelMonitorVO.setUuid(Platform.getUuid());
         tunnelMonitorVO.setTunnelUuid(Platform.getUuid());
         RyuRestService ryuRestService = new RyuRestService();
         ryuRestService.restTest(tunnelMonitorVO.getTunnelUuid(),msg);
+        */
 
         APICreateTunnelMonitorEvent event = new APICreateTunnelMonitorEvent(msg.getId());
         event.setInventory(TunnelMonitorInventory.valueOf(tunnelMonitorVO));
