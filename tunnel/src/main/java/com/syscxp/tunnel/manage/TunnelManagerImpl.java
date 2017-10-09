@@ -434,14 +434,12 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     @Transactional
     private void handle(APICreateTunnelMsg msg){
-        //TODO 账户金额是否充足
 
-        //金额充足，则创建通道
-        TunnelVO vo = new TunnelVO();
-        vo.setUuid(Platform.getUuid());
-
-        //启用策略
+        APICreateTunnelEvent evt = new APICreateTunnelEvent(msg.getId());
         TunnelStrategy ts = new TunnelStrategy();
+        TunnelVO vo = new TunnelVO();
+
+        vo.setUuid(Platform.getUuid());
 
         //给A端口分配外部vlan,并创建TunnelInterface
         Integer vlanA = ts.getInnerVlanByStrategy(msg.getNetworkUuid() ,msg.getInterfaceAUuid());
@@ -507,21 +505,41 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivo.add(tivoZ);
         vo.setTunnelInterfaceVO(tivo);
         vo.setProductChargeModel(msg.getProductChargeModel());
+        vo.setMonitorState(TunnelMonitorState.Disabled);
+        dbf.getEntityManager().persist(vo);
 
-        //Todo 支付
+        //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
         orderMsg.setProductName(vo.getName());
         orderMsg.setProductUuid(vo.getUuid());
         orderMsg.setProductType(ProductType.TUNNEL);
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
-        orderMsg.setProductDescription(vo.getDescription());
+        if(msg.getDescription() == null){
+            orderMsg.setProductDescription(msg.getDescription());
+        }else{
+            orderMsg.setProductDescription("no description");
+        }
         orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        //createOrder(orderMsg);
+        if (!createOrder(orderMsg)) {
+            evt.setError(errf.stringToOperationError("付款失败"));
+            evt.setInventory(TunnelInventory.valueOf(vo));
+            bus.publish(evt);
+            return;
+        }else{
+            vo.setState(TunnelState.Closed);
+            dbf.getEntityManager().merge(vo);
+        }
 
-        //支付成功后默认给创建的通道开启监控
+        //TODO 支付成功后下发控制器
+
+
+
+
+        //下发成功后默认给创建的通道开启监控
+        vo.setState(TunnelState.Opened);
         try{
             MonitorManagerImpl monitorManager = new MonitorManagerImpl();
             APICreateTunnelMonitorMsg apiCreateTunnelMonitorMsg = new APICreateTunnelMonitorMsg();
@@ -536,9 +554,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             vo.setMonitorState(TunnelMonitorState.Disabled);
         }
 
-        dbf.getEntityManager().persist(vo);
-
-        APICreateTunnelEvent evt = new APICreateTunnelEvent(msg.getId());
+        dbf.getEntityManager().merge(vo);
         evt.setInventory(TunnelInventory.valueOf(vo));
         bus.publish(evt);
     }

@@ -174,7 +174,8 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
     private void handle(APIGetProductPriceMsg msg) {
         List<ProductPriceUnit> units = msg.getUnits();
         List<ProductPriceUnitInventory> productPriceUnits = new ArrayList<>();
-        AccountBalanceVO accountBalanceVO = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+
+        AccountBalanceVO accountBalanceVO = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
 
         BigDecimal dischargePrice = BigDecimal.ZERO;
         BigDecimal originalPrice = BigDecimal.ZERO;
@@ -192,7 +193,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
             SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
             qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, unit.getCategory());
             qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, unit.getProductType());
-            qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
+            qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
             AccountDischargeVO accountDischargeVO = qDischarge.find();
             int discharge = 100;
             if (accountDischargeVO != null) {
