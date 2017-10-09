@@ -2,7 +2,6 @@ package com.syscxp.tunnel.manage;
 
 import com.syscxp.core.db.*;
 import com.syscxp.header.billing.*;
-import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.tunnel.header.switchs.SwitchVlanVO;
 import com.syscxp.tunnel.header.tunnel.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +14,6 @@ import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.cloudbus.ResourceDestinationMaker;
 import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
@@ -23,12 +21,9 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
-import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.tunnel.header.monitor.APICreateTunnelMonitorMsg;
 import com.syscxp.tunnel.header.monitor.TunnelMonitorVO;
 import com.syscxp.tunnel.header.node.NodeVO;
-import com.syscxp.tunnel.header.switchs.*;
-import com.syscxp.tunnel.header.tunnel.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
@@ -208,6 +203,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     @Transactional
     private void handle(APICreateInterfaceMsg msg){
+        APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
 
         InterfaceVO vo = new InterfaceVO();
 
@@ -256,15 +252,17 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
             }
             dbf.getEntityManager().merge(vo);
+            evt.setInventory(InterfaceInventory.valueOf(vo));
+        }else{
+            evt.setError(errf.stringToOperationError("付款失败"));
+            evt.setInventory(InterfaceInventory.valueOf(vo));
         }
-
-        APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
-        evt.setInventory(InterfaceInventory.valueOf(vo));
         bus.publish(evt);
     }
 
     @Transactional
     private void handle(APICreateInterfaceManualMsg msg){
+        APICreateInterfaceManualEvent evt = new APICreateInterfaceManualEvent(msg.getId());
 
         InterfaceVO vo = new InterfaceVO();
 
@@ -306,10 +304,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
             }
             dbf.getEntityManager().merge(vo);
+            evt.setInventory(InterfaceInventory.valueOf(vo));
+        }else{
+            evt.setError(errf.stringToOperationError("付款失败"));
+            evt.setInventory(InterfaceInventory.valueOf(vo));
         }
-
-        APICreateInterfaceManualEvent evt = new APICreateInterfaceManualEvent(msg.getId());
-        evt.setInventory(InterfaceInventory.valueOf(vo));
         bus.publish(evt);
     }
 
@@ -335,6 +334,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     @Transactional
     private void handle(APIUpdateInterfaceBandwidthMsg msg){
+        APIUpdateInterfaceBandwidthEvent evt = new APIUpdateInterfaceBandwidthEvent(msg.getId());
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(),InterfaceVO.class);
 
@@ -359,18 +359,20 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setStartTime(vo.getCreateDate());
         orderMsg.setExpiredTime(vo.getExpiredDate());
 
-        createOrder(orderMsg);
+        if(createOrder(orderMsg)){
+            vo = dbf.getEntityManager().merge(vo);
+            dbf.getEntityManager().persist(record);
+            evt.setInventory(InterfaceInventory.valueOf(vo));
+        }else{
+            evt.setError(errf.stringToOperationError("订单操作失败"));
+        }
 
-        vo = dbf.getEntityManager().merge(vo);
-        dbf.getEntityManager().persist(record);
-
-        APIUpdateInterfaceBandwidthEvent evt = new APIUpdateInterfaceBandwidthEvent(msg.getId());
-        evt.setInventory(InterfaceInventory.valueOf(vo));
         bus.publish(evt);
     }
 
     @Transactional
     private void handle(APIUpdateInterfaceExpireDateMsg msg){
+        APIUpdateInterfaceExpireDateEvent evt = new APIUpdateInterfaceExpireDateEvent(msg.getId());
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(),InterfaceVO.class);
         LocalDateTime newTime = vo.getExpiredDate().toLocalDateTime();
@@ -385,24 +387,27 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         renewOrderMsg.setStartTime(vo.getCreateDate());
         renewOrderMsg.setExpiredTime(vo.getExpiredDate());
 
-        createOrder(renewOrderMsg);
-
-        vo.setDuration(msg.getDuration());
-        vo.setProductChargeModel(msg.getProductChargeModel());
-        if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-            vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration(), ChronoUnit.MONTHS)));
-        }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-            vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+        if(createOrder(renewOrderMsg)){
+            vo.setDuration(msg.getDuration());
+            vo.setProductChargeModel(msg.getProductChargeModel());
+            if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+                vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration(), ChronoUnit.MONTHS)));
+            }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+                vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+            }
+            vo = dbf.getEntityManager().merge(vo);
+            evt.setInventory(InterfaceInventory.valueOf(vo));
+        }else{
+            evt.setError(errf.stringToOperationError("订单操作失败"));
         }
-        vo = dbf.getEntityManager().merge(vo);
 
-        APIUpdateInterfaceExpireDateEvent evt = new APIUpdateInterfaceExpireDateEvent(msg.getId());
-        evt.setInventory(InterfaceInventory.valueOf(vo));
         bus.publish(evt);
     }
 
     @Transactional
     private void handle(APIDeleteInterfaceMsg msg){
+        APIDeleteInterfaceEvent evt = new APIDeleteInterfaceEvent(msg.getId());
+
         InterfaceEO eo = dbf.findByUuid(msg.getUuid(),InterfaceEO.class);
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(),InterfaceVO.class);
 
@@ -416,14 +421,14 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setStartTime(vo.getCreateDate());
         orderMsg.setExpiredTime(vo.getExpiredDate());
 
-        createOrder(orderMsg);
+        if(createOrder(orderMsg)){
+            eo.setDeleted(1);
+            eo = dbf.getEntityManager().merge(eo);
+            evt.setInventory(InterfaceInventory.valueOf(vo));
+        }else{
+            evt.setError(errf.stringToOperationError("退订失败"));
+        }
 
-        eo.setDeleted(1);
-
-        eo = dbf.getEntityManager().merge(eo);
-
-        APIDeleteInterfaceEvent evt = new APIDeleteInterfaceEvent(msg.getId());
-        evt.setInventory(InterfaceInventory.valueOf(vo));
         bus.publish(evt);
     }
 
