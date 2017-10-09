@@ -26,7 +26,6 @@ import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import com.syscxp.vpn.header.host.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -90,7 +89,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
 
         VpnCommands.ReconnectVpnHostCmd cmd = VpnCommands.ReconnectVpnHostCmd.valueOf(host);
-        new VpnRESTCaller().syncPostForVpn(HostConstant.RECONNECT_HOST_PATH, cmd, VpnCommands.ReconnectVpnHostResponse.class);
+        new VpnRESTCaller().syncPostForResult(HostConstant.RECONNECT_HOST_PATH, cmd, VpnCommands.ReconnectVpnHostResponse.class);
 
         APIReconnectVpnHostEvent evt = new APIReconnectVpnHostEvent(msg.getId());
         bus.publish(evt);
@@ -181,7 +180,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
     private void handle(APIDeleteVpnHostMsg msg) {
 
         VpnCommands.DeleteVpnHostCmd cmd = VpnCommands.DeleteVpnHostCmd.valueOf(dbf.findByUuid(msg.getUuid(), VpnHostVO.class));
-        new VpnRESTCaller().syncPostForVpn(HostConstant.Delete_HOST_PATH, cmd, VpnCommands.DeleteVpnHostResponse.class);
+        new VpnRESTCaller().syncPostForResult(HostConstant.Delete_HOST_PATH, cmd, VpnCommands.DeleteVpnHostResponse.class);
 
         dbf.removeByPrimaryKey(msg.getUuid(), VpnHostVO.class);
 
@@ -254,7 +253,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
 
         VpnCommands.AddVpnHostCmd cmd = VpnCommands.AddVpnHostCmd.valueOf(host);
-        new VpnRESTCaller().syncPostForVpn(HostConstant.ADD_HOST_PATH, cmd, VpnCommands.UpdateVpnBandWidthResponse.class);
+        new VpnRESTCaller().syncPostForResult(HostConstant.ADD_HOST_PATH, cmd, VpnCommands.UpdateVpnBandWidthResponse.class);
 
 
         host = dbf.persistAndRefresh(host);
