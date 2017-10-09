@@ -4,7 +4,7 @@ import com.syscxp.tunnel.header.host.*;
 import com.syscxp.tunnel.header.monitor.*;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
 import com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO_;
-import com.syscxp.tunnel.sdk.sdn.service.RyuControllerService;
+import com.syscxp.tunnel.sdk.sdn.service.RyuRestService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.Platform;
@@ -23,8 +23,6 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.tunnel.header.host.*;
-import com.syscxp.tunnel.header.monitor.*;
 import com.syscxp.tunnel.header.tunnel.NetworkVO;
 import com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO;
 import com.syscxp.tunnel.header.tunnel.TunnelVO;
@@ -208,14 +206,18 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     @Transactional
     private void handle(APICreateTunnelMonitorMsg msg) {
 
-        // TunnelMonitorVO tunnelMonitorVO = createTunnelMonitorHandle(msg);
+        /*
+        TunnelMonitorVO tunnelMonitorVO = createTunnelMonitorHandle(msg);
+        RyuRestService ryuRestService = new RyuRestService();
+        ryuRestService.tunnelMonitorIssue(tunnelMonitorVO.getUuid());
+        */
 
+        // 测试
         TunnelMonitorVO tunnelMonitorVO = new TunnelMonitorVO();
         tunnelMonitorVO.setUuid(Platform.getUuid());
         tunnelMonitorVO.setTunnelUuid(Platform.getUuid());
-
-        RyuControllerService ryuControllerService = new RyuControllerService();
-        ryuControllerService.tunnelMonitorIssue(tunnelMonitorVO.getUuid(),evtf);
+        RyuRestService ryuRestService = new RyuRestService();
+        ryuRestService.restTest(tunnelMonitorVO.getTunnelUuid(),msg);
 
         APICreateTunnelMonitorEvent event = new APICreateTunnelMonitorEvent(msg.getId());
         event.setInventory(TunnelMonitorInventory.valueOf(tunnelMonitorVO));
@@ -398,7 +400,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @return 监控列表
      */
     private List<TunnelMonitorInterfaceVO> getExistedMonitor(String tunnelUuid) {
-        String sql = "select c from tunnelvo a,tunnelinterfacevo b,tunnelmonitorinterfacevo c\n" +
+        String sql = "select c from TunnelVO a,TunnelInterfaceVO b,TunnelMonitorInterfaceVO c\n" +
                 "where a.uuid = :tunnelUuid\n" +
                 "and b.tunnelUuid = a.uuid\n" +
                 "and c.interfaceUuid = b.interfaceUuid";

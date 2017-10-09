@@ -8,7 +8,7 @@ import java.util.List;
  * @Description: RYU 控制器监控下发信息.
  */
 //@Inventory(mappingVOClass = TunnelMonitorVO.class)
-public class TunnelMonitorIssueVO {
+public class SdnConfigIssueVO {
 
     private Integer vlan_id;
     private String m_ip;
