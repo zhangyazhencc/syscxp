@@ -30,10 +30,6 @@ public class TunnelRESTCaller {
         this.baseUrl = baseUrl;
     }
 
-    public TunnelRESTCaller() {
-        this(CoreGlobalProperty.VPN_BASE_URL);
-    }
-
     public APIReply syncJsonPost(APIMessage innerMsg) {
         String url = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL);
         InnerMessageHelper.setMD5(innerMsg);

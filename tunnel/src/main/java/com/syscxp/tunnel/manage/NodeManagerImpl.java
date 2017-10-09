@@ -26,7 +26,6 @@ import com.syscxp.tunnel.header.endpoint.*;
 import com.syscxp.tunnel.header.node.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import org.springframework.data.mongodb.core.MongoTemplate;
 
 import javax.persistence.TypedQuery;
 
@@ -58,8 +57,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     @Autowired
     private EventFacade evtf;
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+
 
 
     @Override
