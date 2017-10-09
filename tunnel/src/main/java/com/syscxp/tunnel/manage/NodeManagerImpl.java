@@ -26,6 +26,7 @@ import com.syscxp.tunnel.header.endpoint.*;
 import com.syscxp.tunnel.header.node.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.data.mongodb.core.MongoTemplate;
 
 import javax.persistence.TypedQuery;
 
@@ -56,6 +57,9 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     private ThreadFacade thdf;
     @Autowired
     private EventFacade evtf;
+
+    @Autowired
+    private MongoTemplate mongoTemplate;
 
 
     @Override
@@ -88,9 +92,17 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIUpdateEndpointMsg) msg);
         } else if (msg instanceof APIDeleteEndpointMsg) {
             handle((APIDeleteEndpointMsg) msg);
+        } else if (msg instanceof APICreateNodeExtensionInfoMsg) {
+            handle((APICreateNodeExtensionInfoMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APICreateNodeExtensionInfoMsg msg) {
+
+
+
     }
 
     private void handle(APICreateNodeMsg msg) {

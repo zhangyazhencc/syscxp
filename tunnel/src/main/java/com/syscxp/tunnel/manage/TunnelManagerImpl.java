@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.manage;
 
+import com.syscxp.core.db.*;
 import com.syscxp.header.billing.*;
 import com.syscxp.tunnel.header.switchs.SwitchVlanVO;
 import com.syscxp.tunnel.header.tunnel.*;
@@ -12,12 +13,7 @@ import com.syscxp.core.cloudbus.EventFacade;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.cloudbus.ResourceDestinationMaker;
 import com.syscxp.core.componentloader.PluginRegistry;
-import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.DbEntityLister;
-import com.syscxp.core.db.GLock;
-import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
@@ -25,19 +21,18 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
-import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.tunnel.header.monitor.APICreateTunnelMonitorMsg;
 import com.syscxp.tunnel.header.monitor.TunnelMonitorVO;
 import com.syscxp.tunnel.header.node.NodeVO;
-import com.syscxp.tunnel.header.switchs.*;
-import com.syscxp.tunnel.header.tunnel.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
 import javax.persistence.TypedQuery;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -201,8 +196,14 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         bus.publish(evt);
     }
 
+    private boolean createOrder(APICreateOrderMsg orderMsg) {
+        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+        return rsp.isSuccess();
+    }
+
     @Transactional
     private void handle(APICreateInterfaceMsg msg){
+        APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
 
         InterfaceVO vo = new InterfaceVO();
 
@@ -242,9 +243,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        RestAPIResponse rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
-        APIReply apiReply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
-        if (apiReply.isSuccess()) {
+
+        if (createOrder(orderMsg)) {
             vo.setState(InterfaceState.paid);
             if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
                 vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration(), ChronoUnit.MONTHS)));
@@ -252,15 +252,17 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
             }
             dbf.getEntityManager().merge(vo);
+            evt.setInventory(InterfaceInventory.valueOf(vo));
+        }else{
+            evt.setError(errf.stringToOperationError("付款失败"));
+            evt.setInventory(InterfaceInventory.valueOf(vo));
         }
-
-        APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
-        evt.setInventory(InterfaceInventory.valueOf(vo));
         bus.publish(evt);
     }
 
     @Transactional
     private void handle(APICreateInterfaceManualMsg msg){
+        APICreateInterfaceManualEvent evt = new APICreateInterfaceManualEvent(msg.getId());
 
         InterfaceVO vo = new InterfaceVO();
 
@@ -293,9 +295,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        RestAPIResponse rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
-        APIReply apiReply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
-        if (apiReply.isSuccess()) {
+
+        if (createOrder(orderMsg)) {
             vo.setState(InterfaceState.paid);
             if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
                 vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration(), ChronoUnit.MONTHS)));
@@ -303,10 +304,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
             }
             dbf.getEntityManager().merge(vo);
+            evt.setInventory(InterfaceInventory.valueOf(vo));
+        }else{
+            evt.setError(errf.stringToOperationError("付款失败"));
+            evt.setInventory(InterfaceInventory.valueOf(vo));
         }
-
-        APICreateInterfaceManualEvent evt = new APICreateInterfaceManualEvent(msg.getId());
-        evt.setInventory(InterfaceInventory.valueOf(vo));
         bus.publish(evt);
     }
 
@@ -332,12 +334,20 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     @Transactional
     private void handle(APIUpdateInterfaceBandwidthMsg msg){
+        APIUpdateInterfaceBandwidthEvent evt = new APIUpdateInterfaceBandwidthEvent(msg.getId());
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(),InterfaceVO.class);
 
+        //调整次数记录表
+        InterfaceMotifyRecordVO record = new InterfaceMotifyRecordVO();
+        record.setUuid(Platform.getUuid());
+        record.setInterfaceUuid(vo.getUuid());
+        record.setOpAccountUuid(msg.getSession().getAccountUuid());
+        record.setMotifyType(msg.getBandwidth() > vo.getBandwidth() ? MotifyType.UPGRADE : MotifyType.DEMOTION);
+
         vo.setBandwidth(msg.getBandwidth());
 
-        //TODO 调用支付-调整带宽
+        //调用支付-调整带宽
         APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg();
         orderMsg.setProductUuid(vo.getUuid());
         orderMsg.setProductName(vo.getName());
@@ -346,65 +356,79 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setProductType(ProductType.PORT);
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        //createOrder(orderMsg);
+        orderMsg.setStartTime(vo.getCreateDate());
+        orderMsg.setExpiredTime(vo.getExpiredDate());
 
-        vo = dbf.getEntityManager().merge(vo);
+        if(createOrder(orderMsg)){
+            vo = dbf.getEntityManager().merge(vo);
+            dbf.getEntityManager().persist(record);
+            evt.setInventory(InterfaceInventory.valueOf(vo));
+        }else{
+            evt.setError(errf.stringToOperationError("订单操作失败"));
+        }
 
-        APIUpdateInterfaceBandwidthEvent evt = new APIUpdateInterfaceBandwidthEvent(msg.getId());
-        evt.setInventory(InterfaceInventory.valueOf(vo));
         bus.publish(evt);
     }
 
     @Transactional
     private void handle(APIUpdateInterfaceExpireDateMsg msg){
-        //TODO 账户金额是否充足
+        APIUpdateInterfaceExpireDateEvent evt = new APIUpdateInterfaceExpireDateEvent(msg.getId());
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(),InterfaceVO.class);
         LocalDateTime newTime = vo.getExpiredDate().toLocalDateTime();
 
-        //TODO 调用支付-续费
+        //调用支付-续费
         APICreateRenewOrderMsg renewOrderMsg = new APICreateRenewOrderMsg();
         renewOrderMsg.setProductUuid(vo.getUuid());
         renewOrderMsg.setDuration(msg.getDuration());
         renewOrderMsg.setProductChargeModel(msg.getProductChargeModel());
         renewOrderMsg.setAccountUuid(msg.getAccountUuid());
         renewOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        //createOrder(renewOrderMsg);
+        renewOrderMsg.setStartTime(vo.getCreateDate());
+        renewOrderMsg.setExpiredTime(vo.getExpiredDate());
 
-        vo.setDuration(msg.getDuration());
-        vo.setProductChargeModel(msg.getProductChargeModel());
-        if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-            vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration(), ChronoUnit.MONTHS)));
-        }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-            vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+        if(createOrder(renewOrderMsg)){
+            vo.setDuration(msg.getDuration());
+            vo.setProductChargeModel(msg.getProductChargeModel());
+            if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+                vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration(), ChronoUnit.MONTHS)));
+            }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+                vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+            }
+            vo = dbf.getEntityManager().merge(vo);
+            evt.setInventory(InterfaceInventory.valueOf(vo));
+        }else{
+            evt.setError(errf.stringToOperationError("订单操作失败"));
         }
-        vo = dbf.getEntityManager().merge(vo);
 
-        APIUpdateInterfaceExpireDateEvent evt = new APIUpdateInterfaceExpireDateEvent(msg.getId());
-        evt.setInventory(InterfaceInventory.valueOf(vo));
         bus.publish(evt);
     }
 
     @Transactional
     private void handle(APIDeleteInterfaceMsg msg){
+        APIDeleteInterfaceEvent evt = new APIDeleteInterfaceEvent(msg.getId());
+
         InterfaceEO eo = dbf.findByUuid(msg.getUuid(),InterfaceEO.class);
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(),InterfaceVO.class);
 
-        //TODO 调用退订
+        //调用退订
         APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
         orderMsg.setProductUuid(vo.getUuid());
         orderMsg.setProductType(ProductType.PORT);
         orderMsg.setProductName(vo.getName());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        //createOrder(orderMsg);
+        orderMsg.setStartTime(vo.getCreateDate());
+        orderMsg.setExpiredTime(vo.getExpiredDate());
 
-        eo.setDeleted(1);
+        if(createOrder(orderMsg)){
+            eo.setDeleted(1);
+            eo = dbf.getEntityManager().merge(eo);
+            evt.setInventory(InterfaceInventory.valueOf(vo));
+        }else{
+            evt.setError(errf.stringToOperationError("退订失败"));
+        }
 
-        eo = dbf.getEntityManager().merge(eo);
-
-        APIDeleteInterfaceEvent evt = new APIDeleteInterfaceEvent(msg.getId());
-        evt.setInventory(InterfaceInventory.valueOf(vo));
         bus.publish(evt);
     }
 
@@ -777,6 +801,19 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     private void validate(APICreateInterfaceMsg msg){
+        //判断账户金额是否充足
+        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+        priceMsg.setAccountUuid(msg.getAccountUuid());
+        priceMsg.setProductChargeModel(msg.getProductChargeModel());
+        priceMsg.setDuration(msg.getDuration());
+        priceMsg.setUnits(msg.getUnits());
+        APIGetProductPriceReply rsp =
+                (APIGetProductPriceReply) new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL)
+                        .syncJsonPost(priceMsg);
+        if (!rsp.isPayable())
+            throw new ApiMessageInterceptionException(
+                    argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
+
         //判断同一个用户的接口名称是否已经存在
         SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
         q.add(InterfaceVO_.name, SimpleQuery.Op.EQ, msg.getName());
@@ -787,6 +824,19 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     private void validate(APICreateInterfaceManualMsg msg){
+        //判断账户金额是否充足
+        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+        priceMsg.setAccountUuid(msg.getAccountUuid());
+        priceMsg.setProductChargeModel(msg.getProductChargeModel());
+        priceMsg.setDuration(msg.getDuration());
+        priceMsg.setUnits(msg.getUnits());
+        APIGetProductPriceReply rsp =
+                (APIGetProductPriceReply) new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL)
+                        .syncJsonPost(priceMsg);
+        if (!rsp.isPayable())
+            throw new ApiMessageInterceptionException(
+                    argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
+
         //判断同一个用户的接口名称是否已经存在
         SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
         q.add(InterfaceVO_.name, SimpleQuery.Op.EQ, msg.getName());
@@ -810,7 +860,22 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     }
 
-    private void validate(APIUpdateInterfaceBandwidthMsg msg){ }
+    private void validate(APIUpdateInterfaceBandwidthMsg msg){
+        //调整次数当月是否达到上限
+        LocalDateTime dateTime =
+                LocalDate.now().withDayOfMonth(LocalDate.MIN.getDayOfMonth()).atTime(LocalTime.MIN);
+        Long times = Q.New(InterfaceMotifyRecordVO.class).eq(InterfaceMotifyRecordVO_.interfaceUuid, msg.getUuid())
+                .gte(InterfaceMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime))
+                .lt(InterfaceMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime.plusMonths(1))).count();
+        Integer maxModifies =
+                Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).select(InterfaceVO_.maxModifies)
+                        .findValue();
+
+        if (times >= maxModifies) {
+            throw new ApiMessageInterceptionException(
+                    argerr("The Interface[uuid:%s] has motified %s times.", msg.getUuid(), times));
+        }
+    }
 
     private void validate(APIUpdateInterfaceExpireDateMsg msg){ }
 

@@ -11,7 +11,7 @@ import com.syscxp.vpn.vpn.VpnConstant;
 import java.util.List;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
-public class APICreateVpnMsg extends APIVpnMassage {
+public class APICreateVpnMsg extends APIVpnMessage {
     @APIParam(emptyString = false)
     private String name;
     @APIParam(required = false)

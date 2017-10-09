@@ -8,7 +8,7 @@ import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.vpn.vpn.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"delete"}, adminOnly = true)
-public class APIDeleteVpnMsg extends APIVpnMassage {
+public class APIDeleteVpnMsg extends APIVpnMessage {
     @APIParam(resourceType = VpnVO.class)
     private String uuid;
 

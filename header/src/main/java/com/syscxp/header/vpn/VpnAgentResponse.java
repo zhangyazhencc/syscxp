@@ -8,13 +8,13 @@ import org.springframework.http.HttpStatus;
 public class VpnAgentResponse {
     private HttpStatus statusCode;
     private RestAPIState state;
-    private TaskResult result;
+    private VpnTaskResult result;
 
-    public TaskResult getResult() {
+    public VpnTaskResult getResult() {
         return result;
     }
 
-    public void setResult(TaskResult result) {
+    public void setResult(VpnTaskResult result) {
         this.result = result;
     }
 
@@ -34,7 +34,7 @@ public class VpnAgentResponse {
         this.statusCode = statusCode;
     }
 
-    public static class TaskResult {
+    public static class VpnTaskResult {
         private String message;
         private boolean success = true;
 
