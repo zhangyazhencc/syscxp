@@ -99,6 +99,8 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         SmsVO sms = sendMsg(msg.getSession(), msg.getPhone(), SmsGlobalProperty.SMS_VERIFICATION_CODE_APPID, SmsGlobalProperty.SMS_VERIFICATION_CODE_TEMPLATEID
                 , new String[]{code, "10"}, msg.getIp());
 
+        logger.debug("发送验证码：" + sms.getStatusCode()+sms.getStatusMsg() +
+                "[手机号码:"+msg.getPhone()+",验证码:"+code+"]");
         VerificationCode verificationCode = sessions.get(msg.getPhone());
         long expiredTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60 * 10);   // 10 minute
         if (verificationCode == null){

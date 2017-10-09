@@ -6,8 +6,20 @@ import com.syscxp.billing.header.renew.PriceRefRenewVO;
 import com.syscxp.billing.header.renew.PriceRefRenewVO_;
 import com.syscxp.billing.header.renew.RenewVO;
 import com.syscxp.billing.header.renew.RenewVO_;
+import com.syscxp.core.CoreGlobalProperty;
+import com.syscxp.core.retry.Retry;
+import com.syscxp.core.retry.RetryCondition;
+import com.syscxp.core.thread.CancelablePeriodicTask;
+import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.core.Completion;
+import com.syscxp.header.errorcode.OperationFailureException;
+import com.syscxp.header.rest.RESTConstant;
+import com.syscxp.header.rest.TimeoutRestTemplate;
+import com.syscxp.utils.DebugUtils;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.billing.header.balance.*;
@@ -33,12 +45,15 @@ import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.web.client.RestClientException;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 public class OrderManagerImpl  extends AbstractService implements  ApiMessageInterceptor {
 
@@ -54,10 +69,13 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
     private ErrorFacade errf;
     @Autowired
     private RESTFacade restf;
-
     @Autowired
     private ThreadFacade threadFacade;
+    private TimeoutRestTemplate template;
 
+    public OrderManagerImpl(){
+        template = RESTFacade.createRestTemplate(CoreGlobalProperty.REST_FACADE_READ_TIMEOUT, CoreGlobalProperty.REST_FACADE_CONNECT_TIMEOUT);
+    }
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
@@ -680,8 +698,11 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         OrderInventory inventory = OrderInventory.valueOf(orderVo);
         APICreateOrderReply reply = new APICreateOrderReply();
         reply.setInventory(inventory);
-        //todo notify
-//        threadFacade.submitCancelablePeriodicTask();
+        OrderCallbackCmd orderCallbackCmd = new OrderCallbackCmd();
+        orderCallbackCmd.setExpireDate(orderVo.getProductEffectTimeEnd());
+        orderCallbackCmd.setPorductUuid(msg.getProductUuid());
+        orderCallbackCmd.setType(OrderType.BUY);
+        echo(msg.getNotifyUrl(),msg.getProductType().toString(),orderCallbackCmd,10,24*60);
         bus.reply(msg,reply);
 
     }
@@ -741,6 +762,82 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
 
     private void validate(APICreateOrderMsg msg) {
 
+    }
+
+
+    public void echo(final String url, String command,OrderCallbackCmd orderCallbackCmd, final long interval, final long timeout) {
+        class Notify implements CancelablePeriodicTask {
+            private long count;
+
+            Notify() {
+                this.count = timeout / interval;
+                DebugUtils.Assert(count != 0, String.format("invalid timeout[%s], interval[%s]", timeout, interval));
+            }
+
+            @Override
+            public boolean run() {
+                try {
+                    Map<String,String> header = new HashMap<>();
+                    header.put(RESTConstant.COMMAND_PATH,command);
+                    String body = JSONObjectUtil.toJsonString(orderCallbackCmd);
+                    return syncJsonPost(url, body, header);
+                } catch (Exception e) {
+                    if (--count <= 0) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+
+            @Override
+            public TimeUnit getTimeUnit() {
+                return TimeUnit.MINUTES;
+            }
+
+            @Override
+            public long getInterval() {
+                return interval;
+            }
+
+            @Override
+            public String getName() {
+                return "Notify order";
+            }
+        }
+
+            threadFacade.submitCancelablePeriodicTask(new Notify());
+    }
+
+
+    public boolean syncJsonPost(String url, String body, Map<String, String> headers) {
+        body = body == null ? "" : body;
+
+        HttpHeaders requestHeaders = new HttpHeaders();
+        if (headers != null) {
+            requestHeaders.setAll(headers);
+        }
+        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+        requestHeaders.setContentLength(body.length());
+        HttpEntity<String> req = new HttpEntity<String>(body, requestHeaders);
+        if (logger.isTraceEnabled()) {
+            logger.trace(String.format("json post[%s], %s", url, req.toString()));
+        }
+
+
+        ResponseEntity<String> rsp = new Retry<ResponseEntity<String>>() {
+            @Override
+            @RetryCondition(onExceptions = {IOException.class, RestClientException.class})
+            protected ResponseEntity<String> call() {
+                return template.exchange(url, HttpMethod.POST, req, String.class);
+            }
+        }.run();
+
+        if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
+           return false;
+        }
+
+        return true;
     }
 
 }
