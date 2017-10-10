@@ -76,8 +76,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     @Autowired
     private ThreadFacade thdf;
 
-    public final String VPN_CALL_BACK_URL = URLBuilder.buildUrlFromBase(CoreGlobalProperty.VPN_SERVER_URL,
-            VpnConstant.VPN_ROOT_PATH, RESTConstant.COMMAND_CHANNEL_PATH);
+    public final String VPN_CALL_BACK_URL = restf != null ? restf.getSendCommandUrl() : null;
 
     public void handleMessage(Message msg) {
         if (msg instanceof APIMessage) {
@@ -255,7 +254,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private boolean createOrder(APICreateOrderMsg orderMsg) {
-        orderMsg.setNotifyUrl(VPN_CALL_BACK_URL);
+        orderMsg.setNotifyUrl(restf.getSendCommandUrl());
         APIReply reply;
         try {
             reply = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
@@ -316,7 +315,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 renewOrderMsg.setOpAccountUuid(msg.getOpAccountUuid());
                 renewOrderMsg.setStartTime(vpn.getCreateDate());
                 renewOrderMsg.setExpiredTime(vpn.getExpireDate());
-                renewOrderMsg.setNotifyUrl(VPN_CALL_BACK_URL);
                 success = createOrder(renewOrderMsg);
                 newTime = newTime.plusMonths(msg.getDuration());
                 break;
@@ -332,7 +330,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 slaCompensationOrderMsg.setOpAccountUuid(msg.getOpAccountUuid());
                 slaCompensationOrderMsg.setStartTime(vpn.getCreateDate());
                 slaCompensationOrderMsg.setExpiredTime(vpn.getExpireDate());
-                slaCompensationOrderMsg.setNotifyUrl(VPN_CALL_BACK_URL);
                 success = createOrder(slaCompensationOrderMsg);
                 newTime = newTime.plusDays(msg.getDuration());
                 break;

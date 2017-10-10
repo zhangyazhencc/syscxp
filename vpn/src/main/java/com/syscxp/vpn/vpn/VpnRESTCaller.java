@@ -19,7 +19,6 @@ import com.syscxp.header.message.APIReply;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
-import com.syscxp.header.rest.RestAPIState;
 import com.syscxp.header.vpn.VpnAgentCommand;
 import com.syscxp.header.vpn.VpnAgentResponse;
 import com.syscxp.header.vpn.VpnAgentResponse.TaskResult;

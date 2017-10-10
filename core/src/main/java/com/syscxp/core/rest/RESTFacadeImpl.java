@@ -107,7 +107,8 @@ public class RESTFacadeImpl implements RESTFacade {
         ub = UriComponentsBuilder.fromHttpUrl(url);
         ub.path(RESTConstant.COMMAND_CHANNEL_PATH);
         sendCommandUrl = ub.build().toUriString();
-
+        logger.debug(String.format("RESTFacade built baseUrl url: %s", baseUrl));
+        logger.debug(String.format("RESTFacade built sendCommand url: %s", sendCommandUrl));
         logger.debug(String.format("RESTFacade built callback url: %s", callbackUrl));
         template = RESTFacade.createRestTemplate(CoreGlobalProperty.REST_FACADE_READ_TIMEOUT, CoreGlobalProperty.REST_FACADE_CONNECT_TIMEOUT);
     }
