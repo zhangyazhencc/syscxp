@@ -15,7 +15,7 @@
     <context:property-placeholder location="classpath:syscxp.properties" />
 
     <mongo:mongo id="mongo" replica-set="${mongo.hostPort}">
-        <mongo:options
+<!--        <mongo:options
                 connections-per-host="${mongo.connectionsPerHost}"
                 threads-allowed-to-block-for-connection-multiplier="${mongo.threadsAllowedToBlockForConnectionMultiplier}"
                 connect-timeout="${mongo.connectTimeout}"
@@ -26,14 +26,13 @@
                 slave-ok="${mongo.slaveOk}"
                 write-number="1"
                 write-timeout="0"
-                write-fsync="true"/>
+                write-fsync="true"
+        />-->
     </mongo:mongo>
 
     <mongo:db-factory id="mongoDbFactory" dbname="${mongo.dbName}" mongo-ref="mongo" />
 
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
-        <!--<constructor-arg ref="mongo" />-->
-        <!--<constructor-arg name="databaseName" value="${mongo.dbName}" />-->
         <constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
     </bean>
 
