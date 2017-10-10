@@ -12,7 +12,7 @@
 
     <!-- mongo单机配置 -->
 
-    <context:property-placeholder location="classpath:mongodb.properties" />
+    <context:property-placeholder location="classpath:syscxp.properties" />
 
     <mongo:mongo id="mongo" replica-set="${mongo.hostPort}">
         <mongo:options
