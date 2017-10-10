@@ -43,7 +43,7 @@ public class TunnelMonitorVO {
     //private List<TunnelMonitorInterfaceVO> tunnelMonitorInterfaceVOList;
 
     @OneToMany
-    @JoinColumn(name = "tunnelMonitorUuid", insertable = false, updatable = false)
+    @JoinColumn(name = "tunnelMonitorUuid")
     private List<TunnelMonitorInterfaceVO> tunnelMonitorInterfaceVOList = new ArrayList<TunnelMonitorInterfaceVO>();
 
     @PreUpdate

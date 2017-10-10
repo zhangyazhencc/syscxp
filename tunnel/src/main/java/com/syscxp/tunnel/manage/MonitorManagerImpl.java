@@ -203,14 +203,12 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         bus.publish(event);
     }
 
-    @Transactional
     private void handle(APICreateTunnelMonitorMsg msg) {
-
-
         TunnelMonitorVO tunnelMonitorVO = createTunnelMonitorHandle(msg);
-        RyuRestService ryuRestService = new RyuRestService();
-        ryuRestService.tunnelMonitorIssue(tunnelMonitorVO.getUuid());
 
+        // 下发监控通道配置
+        RyuRestService ryuRestService = new RyuRestService();
+        ryuRestService.tunnelMonitorIssue(tunnelMonitorVO.getTunnelUuid(),msg);
 
         // 测试
         /*
@@ -339,6 +337,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param msg
      * @return：创建的监控通道
      */
+    @Transactional
     public TunnelMonitorVO createTunnelMonitorHandle(APICreateTunnelMonitorMsg msg) {
         // TunnelMonitorVO
         TunnelMonitorVO tunnelMonitorVO = new TunnelMonitorVO();
@@ -381,16 +380,12 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         interfaceZ.setUuid(Platform.getUuid());
         interfaceZ.setInterfaceType(InterfaceType.Z);
         interfaceZ.setTunnelMonitorUuid(tunnelMonitorVO.getUuid());
-        interfaceA.setInterfaceUuid(tunnelInterfaces.get(InterfaceType.Z.toString()));
+        interfaceZ.setInterfaceUuid(tunnelInterfaces.get(InterfaceType.Z.toString()));
         interfaceZ.setHostUuid(monitorHosts.get(InterfaceType.Z.toString()));
         interfaceZ.setMonitorIp(monitorIps.get(InterfaceType.Z.toString()));
         dbf.getEntityManager().persist(interfaceZ);
 
-        // 下发监控通道配置
-        // result = ryuController.tunnelMonitorIssue(tunnelMonitorVO.getTunnelUuid(),tunnelMonitorVO.getUuid());
-        // 成功 返回
-        // 失败 报错
-
+        dbf.getEntityManager().flush();
 
         return tunnelMonitorVO;
     }
@@ -526,7 +521,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                         qHostUuid.setParameter("physicalSwitchUuid", physicalSwitchUuid);
 
                         List<String> hostUuidlist = qHostUuid.getResultList();
-
+                        if(hostUuidlist.size()<=0){
+                            throw new IllegalArgumentException("no host releated to physical switch!");
+                        }
                         // 物理监控机对应多台监控机，则随机分配一台
                         int index = (int) (Math.random() * hostUuidlist.size());
                         String hostUuid = hostUuidlist.get(index);
@@ -610,6 +607,12 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         return result;
     }
 
+    /**
+     * 随机产生指定范围内1个数
+     *
+     * @param min 指定范围最小值
+     * @param max 指定范围最大值
+     */
     public int randonCommon(int min, int max) {
         if (min > max) {
             throw new IllegalArgumentException("max must grater than or equal to min！");
