@@ -29,11 +29,12 @@
                 write-fsync="true"/>
     </mongo:mongo>
 
-    <mongo:db-factory dbname="database" mongo-ref="mongo" />
+    <mongo:db-factory id="mongoDbFactory" dbname="${mongo.dbName}" mongo-ref="mongo" />
 
     <bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
-        <constructor-arg ref="mongo" />
-        <constructor-arg name="databaseName" value="${mongo.dbName}" />
+        <!--<constructor-arg ref="mongo" />-->
+        <!--<constructor-arg name="databaseName" value="${mongo.dbName}" />-->
+        <constructor-arg name="mongoDbFactory" ref="mongoDbFactory" />
     </bean>
 
 
