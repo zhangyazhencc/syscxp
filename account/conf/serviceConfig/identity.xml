@@ -198,4 +198,9 @@
         <serviceId>query</serviceId>
     </message>
 
+    <message>
+        <name>com.syscxp.account.header.account.APIAccountMailAuthenticationMsg</name>
+    </message>
+
+
 </service>

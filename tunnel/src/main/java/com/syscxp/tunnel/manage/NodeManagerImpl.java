@@ -1,11 +1,13 @@
 package com.syscxp.tunnel.manage;
 
+import com.mongodb.util.JSON;
 import com.syscxp.tunnel.header.endpoint.*;
 import com.syscxp.tunnel.header.node.*;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO_;
 import com.syscxp.utils.gson.JSONObjectUtil;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -39,6 +41,7 @@ import java.util.List;
 import static com.syscxp.core.Platform.argerr;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by DCY on 2017-09-07
@@ -112,6 +115,34 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     }
 
     private void handle(APIUpdateNodeExtensionInfoMsg msg) {
+
+        com.alibaba.fastjson.JSONObject newInfo = com.alibaba.fastjson.JSONObject.
+                parseObject(msg.getNewNodeExtensionInfo());
+
+        com.alibaba.fastjson.JSONObject oldInfo = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
+                newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),com.alibaba.fastjson.JSONObject.class);
+
+
+        Set<Map.Entry<String, Object>> result =  oldInfo.getJSONObject("nodeExtensionInfo").entrySet();
+        for(Map.Entry<String, Object>  oldent : result){
+            String oldkey = oldent.getKey();
+            String oldvalue = oldent.getValue().toString();
+            for(Map.Entry<String, Object>  newent : newInfo.getJSONObject("nodeExtensionInfo").entrySet()){
+                if(newent.getKey().equals(oldkey)){
+                    if(oldvalue.substring(0,1).equals("{")){
+                        System.out.println(oldvalue);
+                        System.out.println("第一层，没到底");
+
+                    }else{
+                        System.out.println(oldvalue);
+                        System.out.println("第一层，到底了");
+
+                    }
+                }
+            }
+
+        }
+
 
         APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent();
 
