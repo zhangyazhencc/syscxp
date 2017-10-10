@@ -56,6 +56,14 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIUpdateTunnelBandwidthMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIUpdateTunnelExpireDateMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.tunnel.header.tunnel.APIDeleteTunnelMsg</name>
     </message>
 

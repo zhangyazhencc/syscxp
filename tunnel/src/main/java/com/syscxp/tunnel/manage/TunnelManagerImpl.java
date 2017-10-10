@@ -2,8 +2,11 @@ package com.syscxp.tunnel.manage;
 
 import com.syscxp.core.db.*;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.rest.RESTConstant;
+import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.tunnel.header.switchs.SwitchVlanVO;
 import com.syscxp.tunnel.header.tunnel.*;
+import com.syscxp.utils.URLBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.CoreGlobalProperty;
@@ -11,8 +14,6 @@ import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.EventFacade;
 import com.syscxp.core.cloudbus.MessageSafe;
-import com.syscxp.core.cloudbus.ResourceDestinationMaker;
-import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
@@ -51,17 +52,16 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     @Autowired
     private DatabaseFacade dbf;
     @Autowired
-    private PluginRegistry pluginRgty;
-    @Autowired
-    private DbEntityLister dl;
+    private RESTFacade restf;
     @Autowired
     private ErrorFacade errf;
-    @Autowired
-    private ResourceDestinationMaker destMaker;
     @Autowired
     private ThreadFacade thdf;
     @Autowired
     private EventFacade evtf;
+
+    public final String TUNNEL_CALL_BACK_URL = URLBuilder.buildUrlFromBase(CoreGlobalProperty.TUNNEL_SERVER_URL,
+            TunnelConstant.TUNNEL_ROOT_PATH, RESTConstant.CALLBACK_PATH);
 
 
     @Override
@@ -106,6 +106,10 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             handle((APICreateTunnelManualMsg) msg);
         }else if(msg instanceof APIUpdateTunnelMsg){
             handle((APIUpdateTunnelMsg) msg);
+        }else if(msg instanceof APIUpdateTunnelBandwidthMsg){
+            handle((APIUpdateTunnelBandwidthMsg) msg);
+        }else if(msg instanceof APIUpdateTunnelExpireDateMsg){
+            handle((APIUpdateTunnelExpireDateMsg) msg);
         }else if(msg instanceof APIDeleteTunnelMsg){
             handle((APIDeleteTunnelMsg) msg);
         } else {
@@ -197,6 +201,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     private boolean createOrder(APICreateOrderMsg orderMsg) {
+        orderMsg.setNotifyUrl(TUNNEL_CALL_BACK_URL);
         APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
         return rsp.isSuccess();
     }
@@ -562,12 +567,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     @Transactional
     private void handle(APICreateTunnelManualMsg msg){
-        TunnelVO vo = new TunnelVO();
-        vo.setUuid(Platform.getUuid());
 
-        vo.setAccountUuid(msg.getAccountUuid());
-        vo.setNetworkUuid(msg.getNetworkUuid());
-        vo.setName(msg.getName());
+        APICreateTunnelManualEvent evt = new APICreateTunnelManualEvent(msg.getId());
+        TunnelVO vo = new TunnelVO();
+
+        vo.setUuid(Platform.getUuid());
 
         TunnelInterfaceVO tivoA = new TunnelInterfaceVO();
         tivoA.setUuid(Platform.getUuid());
@@ -576,8 +580,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivoA.setVlan(msg.getaVlan());
         tivoA.setSortTag("A");
         tivoA.setQinqState(msg.getQinqStateA());
-        dbf.getEntityManager().persist(tivoA);
         tivoA.setInterfaceVO(dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class));
+        dbf.getEntityManager().persist(tivoA);
 
         TunnelInterfaceVO tivoZ = new TunnelInterfaceVO();
         tivoZ.setUuid(Platform.getUuid());
@@ -586,14 +590,14 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivoZ.setVlan(msg.getzVlan());
         tivoZ.setSortTag("Z");
         tivoZ.setQinqState(msg.getQinqStateZ());
-        dbf.getEntityManager().persist(tivoZ);
         tivoZ.setInterfaceVO(dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class));
+        dbf.getEntityManager().persist(tivoZ);
+
 
         //如果开启Qinq,需要指定内部vlan段
         //在同一个专有网络下，该端口没有被使用过，才会让用户选择是否开启Qinq,否则是否开启属性和同一个端口一致
         if(msg.getQinqStateA() == TunnelQinqState.Enabled || msg.getQinqStateZ() == TunnelQinqState.Enabled){
             List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
-
             for(InnerVlanSegment vlanSegment:vlanSegments){
                 QinqVO qvo = new QinqVO();
                 qvo.setUuid(Platform.getUuid());
@@ -604,30 +608,78 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             }
         }
 
-        vo.setDuration(msg.getDuration());
-        vo.setProductChargeModel(msg.getProductChargeModel());
-        vo.setBandwidth(msg.getBandwidth());
 
         //根据经纬度算距离
         NodeVO nvoA = dbf.findByUuid(msg.getNodeAUuid(),NodeVO.class);
         NodeVO nvoZ = dbf.findByUuid(msg.getNodeZUuid(),NodeVO.class);
         vo.setDistance(Distance.getDistance(nvoA.getLongtitude(),nvoA.getLatitude(),nvoZ.getLongtitude(),nvoZ.getLatitude()));
 
+        vo.setAccountUuid(msg.getAccountUuid());
+        vo.setNetworkUuid(msg.getNetworkUuid());
+        vo.setName(msg.getName());
+        vo.setDuration(msg.getDuration());
+        vo.setBandwidth(msg.getBandwidth());
         vo.setState(TunnelState.Unpaid);
         vo.setStatus(TunnelStatus.Disconnected);
-        vo.setMonitorState(TunnelMonitorState.Disabled);
         vo.setExpiredDate(dbf.getCurrentSqlTime());
         vo.setDescription(msg.getDescription());
-
-        dbf.getEntityManager().persist(vo);
-
         vo.setNetworkVO(dbf.findByUuid(msg.getNetworkUuid(),NetworkVO.class));
         List<TunnelInterfaceVO> tivo = new ArrayList<TunnelInterfaceVO>();
         tivo.add(tivoA);
         tivo.add(tivoZ);
         vo.setTunnelInterfaceVO(tivo);
+        vo.setProductChargeModel(msg.getProductChargeModel());
+        vo.setMonitorState(TunnelMonitorState.Disabled);
+        vo.setMaxModifies(CoreGlobalProperty.TUNNEL_MAX_MOTIFIES);
+        dbf.getEntityManager().persist(vo);
 
-        APICreateTunnelManualEvent evt = new APICreateTunnelManualEvent(msg.getId());
+        //调用支付
+        APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
+        orderMsg.setProductName(vo.getName());
+        orderMsg.setProductUuid(vo.getUuid());
+        orderMsg.setProductType(ProductType.TUNNEL);
+        orderMsg.setProductChargeModel(vo.getProductChargeModel());
+        orderMsg.setDuration(vo.getDuration());
+        if(msg.getDescription() == null){
+            orderMsg.setProductDescription(msg.getDescription());
+        }else{
+            orderMsg.setProductDescription("no description");
+        }
+        orderMsg.setUnits(msg.getUnits());
+        orderMsg.setAccountUuid(msg.getAccountUuid());
+        orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+        if (!createOrder(orderMsg)) {
+            evt.setError(errf.stringToOperationError("付款失败"));
+            evt.setInventory(TunnelInventory.valueOf(vo));
+            bus.publish(evt);
+            return;
+        }else{
+            vo.setState(TunnelState.Closed);
+            dbf.getEntityManager().merge(vo);
+        }
+
+        //TODO 支付成功后下发控制器
+
+
+
+
+        //下发成功后默认给创建的通道开启监控
+        vo.setState(TunnelState.Opened);
+        try{
+            MonitorManagerImpl monitorManager = new MonitorManagerImpl();
+            APICreateTunnelMonitorMsg apiCreateTunnelMonitorMsg = new APICreateTunnelMonitorMsg();
+            apiCreateTunnelMonitorMsg.setTunnelUuid(vo.getUuid());
+            TunnelMonitorVO tunnelMonitorVO = monitorManager.createTunnelMonitorHandle(apiCreateTunnelMonitorMsg);
+            if(tunnelMonitorVO != null){
+                vo.setMonitorState(TunnelMonitorState.Enabled);
+            }else{
+                vo.setMonitorState(TunnelMonitorState.Disabled);
+            }
+        }catch(Exception e){
+            vo.setMonitorState(TunnelMonitorState.Disabled);
+        }
+
+        dbf.getEntityManager().merge(vo);
         evt.setInventory(TunnelInventory.valueOf(vo));
         bus.publish(evt);
     }
@@ -682,41 +734,128 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     @Transactional
-    private void handle(APIDeleteTunnelMsg msg){
-        TunnelEO eo = dbf.findByUuid(msg.getUuid(),TunnelEO.class);
+    private void handle(APIUpdateTunnelBandwidthMsg msg){
+        APIUpdateTunnelBandwidthEvent evt = new APIUpdateTunnelBandwidthEvent(msg.getId());
+
         TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
 
-        eo.setDeleted(1);
+        //调整次数记录表
+        TunnelMotifyRecordVO record = new TunnelMotifyRecordVO();
+        record.setUuid(Platform.getUuid());
+        record.setTunnelUuid(vo.getUuid());
+        record.setOpAccountUuid(msg.getSession().getAccountUuid());
+        record.setMotifyType(msg.getBandwidth() > vo.getBandwidth() ? MotifyType.UPGRADE : MotifyType.DEMOTION);
 
-        eo = dbf.getEntityManager().merge(eo);
+        vo.setBandwidth(msg.getBandwidth());
 
-        String tunnelUuid = msg.getUuid();
+        //调用支付-调整带宽
+        APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg();
+        orderMsg.setProductUuid(vo.getUuid());
+        orderMsg.setProductName(vo.getName());
+        orderMsg.setProductDescription(vo.getDescription());
+        orderMsg.setUnits(msg.getUnits());
+        orderMsg.setProductType(ProductType.TUNNEL);
+        orderMsg.setAccountUuid(msg.getAccountUuid());
+        orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+        orderMsg.setStartTime(vo.getCreateDate());
+        orderMsg.setExpiredTime(vo.getExpiredDate());
 
-        //删除对应的 TunnelInterfaceVO 和 QingqVO
-        SimpleQuery<TunnelInterfaceVO> q = dbf.createQuery(TunnelInterfaceVO.class);
-        q.add(TunnelInterfaceVO_.tunnelUuid, SimpleQuery.Op.EQ, tunnelUuid);
-        List<TunnelInterfaceVO> tivList = q.list();
-        if (tivList.size() > 0) {
-            for(TunnelInterfaceVO tiv : tivList){
-                dbf.getEntityManager().remove(tiv);
-            }
+        if(createOrder(orderMsg)){
+            vo = dbf.getEntityManager().merge(vo);
+            dbf.getEntityManager().persist(record);
+            evt.setInventory(TunnelInventory.valueOf(vo));
+
+            //TODO 下发控制器
+        }else{
+            evt.setError(errf.stringToOperationError("订单操作失败"));
         }
-        SimpleQuery<QinqVO> q2 = dbf.createQuery(QinqVO.class);
-        q2.add(QinqVO_.tunnelUuid, SimpleQuery.Op.EQ, tunnelUuid);
-        List<QinqVO> qinqList = q2.list();
-        if (qinqList.size() > 0) {
-            for(QinqVO qv : qinqList){
-                dbf.getEntityManager().remove(qv);
-            }
-        }
-        APIDeleteTunnelEvent evt = new APIDeleteTunnelEvent(msg.getId());
-        evt.setInventory(TunnelInventory.valueOf(vo));
+
         bus.publish(evt);
     }
 
+    @Transactional
+    private void handle(APIUpdateTunnelExpireDateMsg msg){
+        APIUpdateTunnelExpireDateEvent evt = new APIUpdateTunnelExpireDateEvent(msg.getId());
 
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+        LocalDateTime newTime = vo.getExpiredDate().toLocalDateTime();
 
+        //调用支付-续费
+        APICreateRenewOrderMsg renewOrderMsg = new APICreateRenewOrderMsg();
+        renewOrderMsg.setProductUuid(vo.getUuid());
+        renewOrderMsg.setDuration(msg.getDuration());
+        renewOrderMsg.setProductChargeModel(msg.getProductChargeModel());
+        renewOrderMsg.setAccountUuid(msg.getAccountUuid());
+        renewOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+        renewOrderMsg.setStartTime(vo.getCreateDate());
+        renewOrderMsg.setExpiredTime(vo.getExpiredDate());
 
+        if(createOrder(renewOrderMsg)){
+            vo.setDuration(msg.getDuration());
+            vo.setProductChargeModel(msg.getProductChargeModel());
+            if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+                vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration(), ChronoUnit.MONTHS)));
+            }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+                vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+            }
+            vo = dbf.getEntityManager().merge(vo);
+            evt.setInventory(TunnelInventory.valueOf(vo));
+        }else{
+            evt.setError(errf.stringToOperationError("订单操作失败"));
+        }
+
+        bus.publish(evt);
+    }
+
+    @Transactional
+    private void handle(APIDeleteTunnelMsg msg){
+        APIDeleteTunnelEvent evt = new APIDeleteTunnelEvent(msg.getId());
+
+        TunnelEO eo = dbf.findByUuid(msg.getUuid(),TunnelEO.class);
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+
+        //调用退订
+        APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
+        orderMsg.setProductUuid(vo.getUuid());
+        orderMsg.setProductType(ProductType.TUNNEL);
+        orderMsg.setProductName(vo.getName());
+        orderMsg.setAccountUuid(msg.getAccountUuid());
+        orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+        orderMsg.setStartTime(vo.getCreateDate());
+        orderMsg.setExpiredTime(vo.getExpiredDate());
+
+        if(createOrder(orderMsg)){
+            eo.setDeleted(1);
+            eo = dbf.getEntityManager().merge(eo);
+            String tunnelUuid = msg.getUuid();
+
+            //删除对应的 TunnelInterfaceVO 和 QingqVO
+            SimpleQuery<TunnelInterfaceVO> q = dbf.createQuery(TunnelInterfaceVO.class);
+            q.add(TunnelInterfaceVO_.tunnelUuid, SimpleQuery.Op.EQ, tunnelUuid);
+            List<TunnelInterfaceVO> tivList = q.list();
+            if (tivList.size() > 0) {
+                for(TunnelInterfaceVO tiv : tivList){
+                    dbf.getEntityManager().remove(tiv);
+                }
+            }
+            SimpleQuery<QinqVO> q2 = dbf.createQuery(QinqVO.class);
+            q2.add(QinqVO_.tunnelUuid, SimpleQuery.Op.EQ, tunnelUuid);
+            List<QinqVO> qinqList = q2.list();
+            if (qinqList.size() > 0) {
+                for(QinqVO qv : qinqList){
+                    dbf.getEntityManager().remove(qv);
+                }
+            }
+
+            evt.setInventory(TunnelInventory.valueOf(vo));
+
+            //TODO 下发控制器
+        }else{
+            evt.setError(errf.stringToOperationError("退订失败"));
+        }
+
+        bus.publish(evt);
+    }
 
     @Override
     public boolean start() {
@@ -761,6 +900,10 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             validate((APICreateTunnelManualMsg) msg);
         }else if(msg instanceof APIUpdateTunnelMsg){
             validate((APIUpdateTunnelMsg) msg);
+        }else if(msg instanceof APIUpdateTunnelBandwidthMsg){
+            validate((APIUpdateTunnelBandwidthMsg) msg);
+        }else if(msg instanceof APIUpdateTunnelExpireDateMsg){
+            validate((APIUpdateTunnelExpireDateMsg) msg);
         }else if(msg instanceof APIDeleteTunnelMsg){
             validate((APIDeleteTunnelMsg) msg);
         }
@@ -1096,6 +1239,25 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
 
     }
+
+    private void validate(APIUpdateTunnelBandwidthMsg msg){
+        //调整次数当月是否达到上限
+        LocalDateTime dateTime =
+                LocalDate.now().withDayOfMonth(LocalDate.MIN.getDayOfMonth()).atTime(LocalTime.MIN);
+        Long times = Q.New(TunnelMotifyRecordVO.class).eq(TunnelMotifyRecordVO_.tunnelUuid, msg.getUuid())
+                .gte(TunnelMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime))
+                .lt(TunnelMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime.plusMonths(1))).count();
+        Integer maxModifies =
+                Q.New(TunnelVO.class).eq(TunnelVO_.uuid, msg.getUuid()).select(TunnelVO_.maxModifies)
+                        .findValue();
+
+        if (times >= maxModifies) {
+            throw new ApiMessageInterceptionException(
+                    argerr("The Tunnel[uuid:%s] has motified %s times.", msg.getUuid(), times));
+        }
+    }
+
+    private void validate(APIUpdateTunnelExpireDateMsg msg){ }
 
     private void validate(APIDeleteTunnelMsg msg){ }
 }
