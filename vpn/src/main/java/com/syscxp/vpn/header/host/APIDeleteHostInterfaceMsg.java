@@ -4,11 +4,13 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIDeleteMessage;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
+import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.vpn.vpn.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"delete"}, adminOnly = true)
 public class APIDeleteHostInterfaceMsg extends APIDeleteMessage {
+    @APIParam(resourceType = HostInterfaceVO.class)
     private String uuid;
 
     public String getUuid() {

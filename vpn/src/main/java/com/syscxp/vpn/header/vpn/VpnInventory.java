@@ -1,6 +1,7 @@
 package com.syscxp.vpn.header.vpn;
 
 import com.syscxp.header.search.Inventory;
+import com.syscxp.vpn.header.host.VpnHostInventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class VpnInventory {
     private String sid;
     private String certKey;
     private Payment payment;
+    private VpnHostInventory hostInventory;
     private List<VpnInterfaceInventory> interfaceInventories;
     private List<VpnRouteInventory> routeInventories;
     private Timestamp lastOpDate;
@@ -51,6 +53,7 @@ public class VpnInventory {
         inv.setCertKey(vo.getCertKey());
         inv.setMaxModifies(vo.getMaxModifies());
         inv.setPayment(vo.getPayment());
+        inv.setHostInventory(VpnHostInventory.valueOf(vo.getVpnHost()));
         inv.setInterfaceInventories(VpnInterfaceInventory.valueOf(vo.getVpnInterfaces()));
         inv.setRouteInventories(VpnRouteInventory.valueOf(vo.getVpnRoutes()));
         return inv;
@@ -63,6 +66,14 @@ public class VpnInventory {
         }
 
         return invs;
+    }
+
+    public VpnHostInventory getHostInventory() {
+        return hostInventory;
+    }
+
+    public void setHostInventory(VpnHostInventory hostInventory) {
+        this.hostInventory = hostInventory;
     }
 
     public Integer getMaxModifies() {

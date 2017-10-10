@@ -125,7 +125,6 @@ public class VpnCommands {
      * /vpn/start-vpn
      */
     public static class CreateVpnCmd extends VpnAgentCommand {
-        private String public_ip;
         private String cidr;
         private Long bandwidth;
         private Integer duration;
@@ -143,14 +142,6 @@ public class VpnCommands {
             cmd.setVpnInterfaceCmds(VpnInterfaceCmd.valueOf(cmd.getHostIp(), vo.getVpnInterfaces()));
             cmd.setVpnRouteCmds(VpnRouteCmd.valueOf(cmd.getHostIp(), vo.getVpnRoutes()));
             return cmd;
-        }
-
-        public String getPublicIp() {
-            return public_ip;
-        }
-
-        public void setPublicIp(String publicIp) {
-            this.public_ip = publicIp;
         }
 
         public List<VpnInterfaceCmd> getVpnInterfaceCmds() {
@@ -427,12 +418,6 @@ public class VpnCommands {
             return cmd;
         }
 
-        public static List<VpnRouteCmd> valueOf(String hostIp, List<VpnRouteVO> vos) {
-            List<VpnRouteCmd> cmds = new ArrayList<>();
-            vos.forEach(vo -> cmds.add(VpnRouteCmd.valueOf(hostIp, vo)));
-            return cmds;
-        }
-
     }
 
     public static class DownloadCertificateResponse extends VpnAgentResponse {
@@ -491,12 +476,6 @@ public class VpnCommands {
             cmd.setBandwidth(vo.getBandwidth());
             cmd.setCidr(vo.getVpnCidr());
             return cmd;
-        }
-
-        public static List<VpnRouteCmd> valueOf(String hostIp, List<VpnRouteVO> vos) {
-            List<VpnRouteCmd> cmds = new ArrayList<>();
-            vos.forEach(vo -> cmds.add(VpnRouteCmd.valueOf(hostIp, vo)));
-            return cmds;
         }
 
         public String getCidr() {
