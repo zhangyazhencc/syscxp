@@ -414,6 +414,7 @@ alter table syscxp_tunnel.HostEO add nodeUuid varchar(32) comment '节点ID(Node
 CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterEO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `tunnelUuid` VARCHAR(32) NOT NULL COMMENT '云专线id',
+  `accountUuid` VARCHAR(32) NOT NULL COMMENT '所属账户',
   `aliAccountUuid` VARCHAR(64) NOT NULL COMMENT '阿里云用户id',
   `aliRegionId` VARCHAR(64) NOT NULL COMMENT '阿里云区域',
   `name` varchar(128) NOT NULL COMMENT '边界路由器名字',
@@ -441,7 +442,7 @@ CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterConfigVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##用户表
-CREATE TABLE `syscxp_tunnel`.`AliUser` (
+CREATE TABLE `syscxp_tunnel`.`AliUserVO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `AccountUuid` VARCHAR(32) NOT NULL COMMENT '账户id',
   `AliAccessKeyID` varchar(32) DEFAULT NULL COMMENT 'AliAccessKeyID',

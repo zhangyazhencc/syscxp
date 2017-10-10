@@ -23,7 +23,6 @@
                 max-wait-time="${mongo.maxWaitTime}"
                 socket-keep-alive="${mongo.socketKeepAlive}"
                 socket-timeout="${mongo.socketTimeout}"
-                description="${mongo.description}"
                 max-connection-idle-time="${mongo.maxConnectionIdleTime}"
                 max-connection-life-time="${mongo.maxConnectionLifeTime}"
                 heartbeat-socket-timeout="${mongo.heartbeatSocketTimeout}"
