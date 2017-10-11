@@ -313,9 +313,18 @@ public class VpnCommands {
      * 删除VPN接口：/vpn/del-ddn-if
      */
     public static class VpnInterfaceCmd extends VpnAgentCommand {
+        private String interface_name;
         private String local_ip;
         private String netmask;
         private String vlan;
+
+        public String getName() {
+            return interface_name;
+        }
+
+        public void setName(String name) {
+            this.interface_name = name;
+        }
 
         public String getLocalIp() {
             return local_ip;
@@ -344,6 +353,7 @@ public class VpnCommands {
         public static VpnInterfaceCmd valueOf(String hostIp, VpnInterfaceVO vo) {
             VpnInterfaceCmd cmd = new VpnInterfaceCmd();
             cmd.setHostIp(hostIp);
+            cmd.setName(vo.getName());
             cmd.setVpnUuid(vo.getVpnUuid());
             cmd.setLocalIp(vo.getLocalIp());
             cmd.setNetmask(vo.getNetmask());

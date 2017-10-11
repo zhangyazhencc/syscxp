@@ -193,7 +193,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         VpnInterfaceVO vpnIface = new VpnInterfaceVO();
         vpnIface.setUuid(Platform.getUuid());
-        vpnIface.setName(msg.getName() + msg.getVlan());
+        vpnIface.setName(msg.getInterfaceName());
         vpnIface.setVpnUuid(vpn.getUuid());
         vpnIface.setLocalIp(msg.getLocalIp());
         vpnIface.setNetmask(msg.getNetmask());
