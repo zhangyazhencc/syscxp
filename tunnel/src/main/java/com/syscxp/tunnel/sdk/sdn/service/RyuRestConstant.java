@@ -6,6 +6,9 @@ package com.syscxp.tunnel.sdk.sdn.service;
  * @Description: .
  */
 public interface RyuRestConstant {
-    static final String TEST_URL = "http://localhost:8088/demo/call";
-    static final String MONITOR_CONFIG_ISSUE = "http://192.168.211.224:8080/tunnel/start_monitor";
+    // 测试接口
+    static final String TEST_URL = "http://localhost:8088/demo/test";
+
+    // 监控通道配置下发接口
+    static final String MONITOR_CONFIG_START = "http://192.168.211.224:8080/tunnel_monitor/start";
 }

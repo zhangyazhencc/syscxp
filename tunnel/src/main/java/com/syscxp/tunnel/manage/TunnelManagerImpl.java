@@ -1,12 +1,11 @@
 package com.syscxp.tunnel.manage;
 
+
 import com.syscxp.core.db.*;
 import com.syscxp.header.billing.*;
-import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.tunnel.header.switchs.SwitchVlanVO;
 import com.syscxp.tunnel.header.tunnel.*;
-import com.syscxp.utils.URLBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.CoreGlobalProperty;
@@ -34,7 +33,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,8 +58,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     @Autowired
     private EventFacade evtf;
 
-    public final String TUNNEL_CALL_BACK_URL = URLBuilder.buildUrlFromBase(CoreGlobalProperty.TUNNEL_SERVER_URL,
-            TunnelConstant.TUNNEL_ROOT_PATH, RESTConstant.CALLBACK_PATH);
+    public final String TUNNEL_CALL_BACK_URL = restf != null ? restf.getSendCommandUrl() : null;
 
 
     @Override
@@ -112,6 +109,12 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             handle((APIUpdateTunnelExpireDateMsg) msg);
         }else if(msg instanceof APIDeleteTunnelMsg){
             handle((APIDeleteTunnelMsg) msg);
+        }else if(msg instanceof APIDeleteForciblyTunnelMsg){
+            handle((APIDeleteForciblyTunnelMsg) msg);
+        }else if(msg instanceof APICreateInnerVlanMsg){
+            handle((APICreateInnerVlanMsg) msg);
+        }else if(msg instanceof APIDeleteInnerVlanMsg){
+            handle((APIDeleteInnerVlanMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -201,9 +204,14 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     private boolean createOrder(APICreateOrderMsg orderMsg) {
-        orderMsg.setNotifyUrl(TUNNEL_CALL_BACK_URL);
-        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
-        return rsp.isSuccess();
+        orderMsg.setNotifyUrl(restf.getSendCommandUrl());
+        APIReply reply;
+        try {
+            reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+        } catch (Exception e) {
+            return false;
+        }
+        return reply.isSuccess();
     }
 
     @Transactional
@@ -252,9 +260,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if (createOrder(orderMsg)) {
             vo.setState(InterfaceState.paid);
             if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration(), ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
             }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
             }
             dbf.getEntityManager().merge(vo);
             evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -304,9 +312,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if (createOrder(orderMsg)) {
             vo.setState(InterfaceState.paid);
             if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration(), ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
             }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
             }
             dbf.getEntityManager().merge(vo);
             evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -396,9 +404,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             vo.setDuration(msg.getDuration());
             vo.setProductChargeModel(msg.getProductChargeModel());
             if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration(), ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
             }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
             }
             vo = dbf.getEntityManager().merge(vo);
             evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -536,16 +544,24 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             return;
         }else{
             vo.setState(TunnelState.Closed);
+            vo.setStatus(TunnelStatus.Connecting);
             dbf.getEntityManager().merge(vo);
         }
 
         //TODO 支付成功后下发控制器
 
-
-
-
         //下发成功后默认给创建的通道开启监控
-        vo.setState(TunnelState.Opened);
+        //vo.setState(TunnelState.Opened);
+        //vo.setStatus(TunnelStatus.Connected);
+        //if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+        //    vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
+        //}else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+        //    vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
+        //}
+
+        //下发失败
+        //vo.setState(TunnelState.Closed);
+        //vo.setStatus(TunnelStatus.Disconnected);
         try{
             MonitorManagerImpl monitorManager = new MonitorManagerImpl();
             APICreateTunnelMonitorMsg apiCreateTunnelMonitorMsg = new APICreateTunnelMonitorMsg();
@@ -655,16 +671,24 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             return;
         }else{
             vo.setState(TunnelState.Closed);
+            vo.setStatus(TunnelStatus.Connecting);
             dbf.getEntityManager().merge(vo);
         }
 
         //TODO 支付成功后下发控制器
 
-
-
-
         //下发成功后默认给创建的通道开启监控
-        vo.setState(TunnelState.Opened);
+        //vo.setState(TunnelState.Opened);
+        //vo.setStatus(TunnelStatus.Connected);
+        //if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+        //    vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
+        //}else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+        //    vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
+        //}
+
+        //下发失败
+        //vo.setState(TunnelState.Closed);
+        //vo.setStatus(TunnelStatus.Disconnected);
         try{
             MonitorManagerImpl monitorManager = new MonitorManagerImpl();
             APICreateTunnelMonitorMsg apiCreateTunnelMonitorMsg = new APICreateTunnelMonitorMsg();
@@ -794,9 +818,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             vo.setDuration(msg.getDuration());
             vo.setProductChargeModel(msg.getProductChargeModel());
             if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration(), ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
             }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
             }
             vo = dbf.getEntityManager().merge(vo);
             evt.setInventory(TunnelInventory.valueOf(vo));
@@ -805,6 +829,27 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
 
         bus.publish(evt);
+    }
+
+    @Transactional
+    private void handle(APIUpdateTunnelStateMsg msg){
+        APIUpdateTunnelStateEvent evt = new APIUpdateTunnelStateEvent(msg.getId());
+
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+
+        //TODO 下发控制器
+
+        vo.setState(msg.getState());
+        if(msg.getState() == TunnelState.Opened){
+            vo.setStatus(TunnelStatus.Connected);
+        }else if(msg.getState() == TunnelState.Closed){
+            vo.setStatus(TunnelStatus.Disconnected);
+        }
+
+        vo = dbf.getEntityManager().merge(vo);
+        evt.setInventory(TunnelInventory.valueOf(vo));
+        bus.publish(evt);
+
     }
 
     @Transactional
@@ -857,8 +902,76 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         bus.publish(evt);
     }
 
+    @Transactional
+    private void handle(APIDeleteForciblyTunnelMsg msg){
+        APIDeleteForciblyTunnelEvent evt = new APIDeleteForciblyTunnelEvent(msg.getId());
+
+        TunnelEO eo = dbf.findByUuid(msg.getUuid(),TunnelEO.class);
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+
+        eo.setDeleted(1);
+        eo = dbf.getEntityManager().merge(eo);
+        String tunnelUuid = msg.getUuid();
+
+        //删除对应的 TunnelInterfaceVO 和 QingqVO
+        SimpleQuery<TunnelInterfaceVO> q = dbf.createQuery(TunnelInterfaceVO.class);
+        q.add(TunnelInterfaceVO_.tunnelUuid, SimpleQuery.Op.EQ, tunnelUuid);
+        List<TunnelInterfaceVO> tivList = q.list();
+        if (tivList.size() > 0) {
+            for(TunnelInterfaceVO tiv : tivList){
+                dbf.getEntityManager().remove(tiv);
+            }
+        }
+        SimpleQuery<QinqVO> q2 = dbf.createQuery(QinqVO.class);
+        q2.add(QinqVO_.tunnelUuid, SimpleQuery.Op.EQ, tunnelUuid);
+        List<QinqVO> qinqList = q2.list();
+        if (qinqList.size() > 0) {
+            for(QinqVO qv : qinqList){
+                dbf.getEntityManager().remove(qv);
+            }
+        }
+
+        evt.setInventory(TunnelInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APICreateInnerVlanMsg msg){
+        QinqVO vo = new QinqVO();
+
+        //TODO 下发控制器
+
+        vo.setUuid(Platform.getUuid());
+        vo.setTunnelUuid(msg.getTunnelUuid());
+        vo.setStartVlan(msg.getStartVlan());
+        vo.setEndVlan(msg.getEndVlan());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateInnerVlanEvent evt = new APICreateInnerVlanEvent(msg.getId());
+        evt.setInventory(QinqInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIDeleteInnerVlanMsg msg){
+        String uuid = msg.getUuid();
+        QinqVO vo = dbf.findByUuid(uuid,QinqVO.class);
+
+        //TODO 下发控制器
+
+        if (vo != null) {
+            dbf.remove(vo);
+        }
+
+        APIDeleteInnerVlanEvent evt = new APIDeleteInnerVlanEvent(msg.getId());
+        evt.setInventory(QinqInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+
+
     @Override
     public boolean start() {
+
         return true;
     }
 
@@ -904,8 +1017,16 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             validate((APIUpdateTunnelBandwidthMsg) msg);
         }else if(msg instanceof APIUpdateTunnelExpireDateMsg){
             validate((APIUpdateTunnelExpireDateMsg) msg);
+        }else if(msg instanceof APIUpdateTunnelStateMsg){
+            validate((APIUpdateTunnelStateMsg) msg);
         }else if(msg instanceof APIDeleteTunnelMsg){
             validate((APIDeleteTunnelMsg) msg);
+        }else if(msg instanceof APIDeleteForciblyTunnelMsg){
+            validate((APIDeleteForciblyTunnelMsg) msg);
+        }else if(msg instanceof APICreateInnerVlanMsg){
+            validate((APICreateInnerVlanMsg) msg);
+        }else if(msg instanceof APIDeleteInnerVlanMsg){
+            validate((APIDeleteInnerVlanMsg) msg);
         }
         return msg;
     }
@@ -1259,5 +1380,44 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     private void validate(APIUpdateTunnelExpireDateMsg msg){ }
 
+    private void validate(APIUpdateTunnelStateMsg msg){ }
+
     private void validate(APIDeleteTunnelMsg msg){ }
+
+    private void validate(APIDeleteForciblyTunnelMsg msg){ }
+
+    private void validate(APIDeleteInnerVlanMsg msg){ }
+
+    private void validate(APICreateInnerVlanMsg msg){
+
+        //判断同一个switchPort下内部VLAN段是否有重叠
+        String sql = "select count(a.uuid) from QinqVO a " +
+                "where a.tunnelUuid in (select b.tunnelUuid from TunnelInterfaceVO b where b.interfaceUuid = :interfaceUuid and b.qinqState = 'Enabled') " +
+                "and ((a.startVlan between :startVlan and :endVlan) " +
+                "or (a.endVlan between :startVlan and :endVlan) " +
+                "or (:startVlan between a.startVlan and a.endVlan) " +
+                "or (:endVlan between a.startVlan and a.endVlan))";
+
+        SimpleQuery<TunnelInterfaceVO> q = dbf.createQuery(TunnelInterfaceVO.class);
+        q.add(TunnelInterfaceVO_.tunnelUuid, SimpleQuery.Op.EQ, msg.getTunnelUuid());
+        List<TunnelInterfaceVO> tivList = q.list();
+        if (tivList.size() > 0) {
+            for(TunnelInterfaceVO tiv : tivList){
+                if(tiv.getQinqState() == TunnelQinqState.Enabled){
+                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
+                    vq.setParameter("interfaceUuid",tiv.getInterfaceUuid());
+                    vq.setParameter("startVlan",msg.getStartVlan());
+                    vq.setParameter("endVlan",msg.getEndVlan());
+                    Long count = vq.getSingleResult();
+                    if(count > 0){
+                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+                    }
+                }
+            }
+        }
+
+
+
+    }
+
 }
