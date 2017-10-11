@@ -37,15 +37,8 @@ public class OrderNotifyJob {
     private static final CLogger logger = Utils.getLogger(OrderNotifyJob.class);
 
     @Autowired
-    private CloudBus bus;
-    @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
-    private RESTFacade restf;
+
     @Autowired
     private ThreadFacade threadFacade;
     private TimeoutRestTemplate template;
@@ -54,17 +47,17 @@ public class OrderNotifyJob {
         template = RESTFacade.createRestTemplate(CoreGlobalProperty.REST_FACADE_READ_TIMEOUT, CoreGlobalProperty.REST_FACADE_CONNECT_TIMEOUT);
     }
 
-    @Scheduled(cron="0 0/1 * * * ? ")
-    public void scheduleMethod(){
+    @Scheduled(cron = "0 0/1 * * * ? ")
+    public void scheduleMethod() {
         SimpleQuery<NotifyOrderVO> qNotifyOrder = dbf.createQuery(NotifyOrderVO.class);
         qNotifyOrder.add(NotifyOrderVO_.status, SimpleQuery.Op.NOT_EQ, NotifyOrderStatus.SUCCESS);
         List<NotifyOrderVO> notifyOrderVOs = qNotifyOrder.list();
 
-        for(NotifyOrderVO notifyOrderVO: notifyOrderVOs){
-            NotifyOrderVO notifyOrderVO1 = dbf.findByUuid(notifyOrderVO.getUuid(),NotifyOrderVO.class);
-            if(notifyOrderVO1.getStatus()!= NotifyOrderStatus.FAILURE) continue;
+        for (NotifyOrderVO notifyOrderVO : notifyOrderVOs) {
+            NotifyOrderVO notifyOrderVO1 = dbf.findByUuid(notifyOrderVO.getUuid(), NotifyOrderVO.class);
+            if (notifyOrderVO1.getStatus() != NotifyOrderStatus.FAILURE) continue;
             notifyOrderVO1.setStatus(NotifyOrderStatus.PROCESSING);
-            if(dbf.updateAndRefresh(notifyOrderVO1)==null)  continue;
+            if (dbf.updateAndRefresh(notifyOrderVO1) == null) continue;
             String orderUuid = notifyOrderVO1.getOrderUuid();
             OrderVO orderVO = dbf.findByUuid(orderUuid, OrderVO.class);
             OrderCallbackCmd orderCallbackCmd = OrderCallbackCmd.valueOf(orderVO);
@@ -75,24 +68,33 @@ public class OrderNotifyJob {
                     header.put(RESTConstant.COMMAND_PATH, orderVO.getProductType().toString());
                     String body = JSONObjectUtil.toJsonString(orderCallbackCmd);
                     try {
-                        syncJsonPost(notifyOrderVO1.getUrl(), body, header);
-                        notifyOrderVO1.setStatus(NotifyOrderStatus.SUCCESS);
-                        notifyOrderVO1.setNotifyTimes(notifyOrderVO1.getNotifyTimes()+1);
-                        dbf.updateAndRefresh(notifyOrderVO1);
-                    }catch (Exception e){
-                        logger.error(e.getMessage());
-                        int times = notifyOrderVO1.getNotifyTimes()+1;
+                        boolean flag = syncJsonPost(notifyOrderVO1.getUrl(), body, header);
+                        int times = notifyOrderVO1.getNotifyTimes() + 1;
+                        if (flag) {
+                            notifyOrderVO1.setStatus(NotifyOrderStatus.SUCCESS);
+                        } else {
+                            if (times > 10) {
+                                notifyOrderVO1.setStatus(NotifyOrderStatus.TERMINAL);
+                            } else {
+                                notifyOrderVO1.setStatus(NotifyOrderStatus.FAILURE);
+                            }
+                        }
                         notifyOrderVO1.setNotifyTimes(times);
-                        if(times >10){
+                        dbf.updateAndRefresh(notifyOrderVO1);
+                    } catch (Exception e) {
+                        logger.error(e.getMessage());
+                        int times = notifyOrderVO1.getNotifyTimes() + 1;
+                        notifyOrderVO1.setNotifyTimes(times);
+                        if (times > 10) {
                             notifyOrderVO1.setStatus(NotifyOrderStatus.TERMINAL);
-                        }else{
+                        } else {
                             notifyOrderVO1.setStatus(NotifyOrderStatus.FAILURE);
                         }
                         dbf.updateAndRefresh(notifyOrderVO1);
                     }
                     return true;
                 }
-            },TimeUnit.MINUTES, NotifyOrderInterval.getMinutes(notifyOrderVO.getNotifyTimes()));
+            }, TimeUnit.MINUTES, NotifyOrderInterval.getMinutes(notifyOrderVO.getNotifyTimes()));
         }
 
     }
