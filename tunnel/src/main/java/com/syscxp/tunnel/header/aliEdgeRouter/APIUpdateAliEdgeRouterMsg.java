@@ -8,11 +8,11 @@ import com.syscxp.tunnel.header.tunnel.TunnelVO;
 public class APIUpdateAliEdgeRouterMsg extends APIMessage{
     @APIParam(checkAccount = true,resourceType = TunnelVO.class)
     private String uuid;
-    @APIParam(emptyString = false,required = false,maxLength = 32)
+    @APIParam(required = false,maxLength = 32)
     private String accountUuid;
-    @APIParam(emptyString = false,required = false,maxLength = 128)
+    @APIParam(required = false,maxLength = 128)
     private String name;
-    @APIParam(emptyString = false,required = false,maxLength = 255)
+    @APIParam(required = false,maxLength = 255)
     private String description;
     @APIParam(emptyString = false,required = false)
     private String LocalGatewayIp;
@@ -20,6 +20,7 @@ public class APIUpdateAliEdgeRouterMsg extends APIMessage{
     private String PeerGatewayIp;
     @APIParam(emptyString = false,required = false)
     private String PeeringSubnetMask;
+
 
     public String getUuid() {
         return uuid;
