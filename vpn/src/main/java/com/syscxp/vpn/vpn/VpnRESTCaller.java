@@ -1,28 +1,29 @@
 package com.syscxp.vpn.vpn;
 
+import com.syscxp.core.Platform;
+import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.thread.CancelablePeriodicTask;
+import com.syscxp.core.thread.ThreadFacade;
+import com.syscxp.header.core.Completion;
+import com.syscxp.header.core.ReturnValueCompletion;
+import com.syscxp.utils.DebugUtils;
+import com.syscxp.vpn.exception.VpnServiceException;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.http.*;
-import org.springframework.web.client.RestClientException;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
-import com.syscxp.core.retry.Retry;
-import com.syscxp.core.retry.RetryCondition;
-import com.syscxp.header.errorcode.OperationFailureException;
-import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIReply;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
-import com.syscxp.header.rest.RestAPIState;
 import com.syscxp.header.vpn.VpnAgentCommand;
 import com.syscxp.header.vpn.VpnAgentResponse;
+import com.syscxp.header.vpn.VpnAgentResponse.TaskResult;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
-import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 
 import java.util.concurrent.TimeUnit;
@@ -33,6 +34,10 @@ public class VpnRESTCaller {
     private static final CLogger logger = Utils.getLogger(VpnRESTCaller.class);
     @Autowired
     private RESTFacade restf;
+    @Autowired
+    private ThreadFacade thdf;
+    @Autowired
+    private ErrorFacade errf;
 
     private String baseUrl;
 
@@ -44,58 +49,81 @@ public class VpnRESTCaller {
         this(CoreGlobalProperty.VPN_BASE_URL);
     }
 
-    public VpnCommands.CheckStatusResponse asyncCheckState(String path, VpnAgentCommand cmd, long interval, long timeout) {
-        long curr = 0;
-        VpnCommands.CheckStatusResponse rsp = null;
-        boolean flag = true;
-        do {
-            try {
-                TimeUnit.SECONDS.sleep(interval);
-            } catch (InterruptedException e) {
-                logger.debug(String.format("fail to get result[uuid: %s] from Url[%s]", cmd.getVpnUuid(), path));
-            }
-            try {
-                rsp = checkState(path, cmd);
-                flag = rsp.getState() == RestAPIState.Processing;
-            } catch (OperationFailureException ignored){
-            }
-
-            curr += interval;
-        }
-        while (flag && curr < timeout);
-
-        if (curr >= timeout) {
-            throw new CloudRuntimeException(String.format("timeout after %s ms, error %s", curr, rsp.getResult()));
-        }
-        return rsp;
-    }
-
-    public VpnCommands.CheckStatusResponse asyncCheckState(String path, VpnAgentCommand cmd) {
-        return asyncCheckState(path, cmd, 1, TimeUnit.MINUTES.toSeconds(10));
-    }
-
-
-    public VpnCommands.CheckStatusResponse checkState(String path, VpnAgentCommand cmd) {
-        return syncPost(path, cmd, VpnCommands.CheckStatusResponse.class);
-    }
-
-    public VpnAgentResponse.VpnTaskResult syncPostForResult(String path, VpnAgentCommand cmd) {
-
-        VpnAgentResponse rsp = syncPost(path, cmd, VpnAgentResponse.class);
-
-        return rsp.getResult();
-    }
-
-    public <T extends VpnAgentResponse> T syncPost(String path, VpnAgentCommand cmd, Class<T> rspClass) {
-        String body = JSONObjectUtil.toJsonString(cmd);
+    public void checkStatus(final String path, final VpnAgentCommand cmd,
+                            final ReturnValueCompletion<VpnAgentResponse> completion, final long interval, final long timeout) {
         String url = buildUrl(path);
-        return restf.syncJsonPost(url, body, rspClass);
+        class CheckStatus implements CancelablePeriodicTask {
+            private long count;
+
+            CheckStatus() {
+                this.count = timeout / interval;
+                DebugUtils.Assert(count != 0, String.format("invalid timeout[%s], interval[%s]", timeout, interval));
+            }
+
+            @Override
+            public boolean run() {
+                try {
+                    VpnAgentResponse rsp = restf.syncJsonPost(url, cmd, VpnAgentResponse.class);
+                    logger.debug(String.format("successfully post %s", url));
+                    completion.success(rsp);
+                    return true;
+                } catch (Exception e) {
+                    String info = String.format("still unable to post %s, will try %s times. %s", url, count, e.getMessage());
+                    logger.debug(info);
+                    if (--count <= 0) {
+                        completion.fail(Platform.operr("unable to post %s in %sms", url, timeout));
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+            }
+
+            @Override
+            public TimeUnit getTimeUnit() {
+                return TimeUnit.MILLISECONDS;
+            }
+
+            @Override
+            public long getInterval() {
+                return interval;
+            }
+
+            @Override
+            public String getName() {
+                return "CheckStatus";
+            }
+        }
+
+        thdf.submitCancelablePeriodicTask(new CheckStatus());
     }
 
+
+    public void checkStatus(String path, VpnAgentCommand cmd, ReturnValueCompletion<VpnAgentResponse> completion) {
+        checkStatus(path, cmd, completion, TimeUnit.SECONDS.toMillis(5), TimeUnit.MINUTES.toMillis(5));
+    }
+
+    /**
+     * 获取任务处理结果
+     */
+    public TaskResult syncPostForResult(String path, VpnAgentCommand cmd) {
+        return syncPostForVPN(path, cmd).getResult();
+    }
+
+    public VpnAgentResponse syncPostForVPN(String path, VpnAgentCommand cmd) {
+        return restf.syncJsonPost(buildUrl(path), cmd, VpnAgentResponse.class);
+    }
+
+    /**
+     * 生成URL
+     */
     private String buildUrl(String path) {
         return URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.VPN_ROOT_PATH, path);
     }
 
+    /**
+     * http调用内部服务
+     */
     public APIReply syncJsonPost(APIMessage innerMsg) {
         String url = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL);
         InnerMessageHelper.setMD5(innerMsg);
@@ -104,5 +132,20 @@ public class VpnRESTCaller {
         return (APIReply) RESTApiDecoder.loads(rsp.getResult());
     }
 
+    public void sendCommand(String path, VpnAgentCommand cmd, final Completion completion) {
+        try {
+            TaskResult result = syncPostForResult(path, cmd);
+            logger.debug(String.format("successfully post %s", path));
+            if (result.isSuccess()) {
+                completion.success();
+            } else {
+                completion.fail(Platform.operr("failed to execute the command[%s]. %s", path, result.getMessage()));
+            }
+        } catch (Exception e) {
+            String info = String.format("unable to post %s. %s", path, e.getMessage());
+            logger.debug(info);
+            completion.fail(Platform.operr("unable to post %s. %s", path, e.getMessage()));
+        }
+    }
 }
 

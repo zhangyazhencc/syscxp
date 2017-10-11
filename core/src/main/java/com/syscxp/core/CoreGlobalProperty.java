@@ -60,6 +60,9 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "vpnServerUrl", defaultValue = "http://192.168.211.113:8080")
     public static String VPN_SERVER_URL;
 
+    @GlobalProperty(name = "tunnelServerUrl", defaultValue = "http://192.168.211.97:8888")
+    public static String TUNNEL_SERVER_URL;
+
     @GlobalProperty(name = "vpnMaxMotifies", defaultValue = "5")
     public static Integer VPN_MAX_MOTIFIES;
 
