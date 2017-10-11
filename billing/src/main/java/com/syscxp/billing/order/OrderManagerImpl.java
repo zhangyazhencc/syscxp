@@ -314,6 +314,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         dbf.getEntityManager().merge(abvo);
         dbf.getEntityManager().persist(orderVo);
+        saveNotifyOrderVO(msg, orderVo.getUuid());
         dbf.getEntityManager().flush();
         APICreateOrderReply reply = new APICreateOrderReply();
         reply.setInventory(OrderInventory.valueOf(orderVo));
@@ -348,6 +349,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductStatus(1);
 
         dbf.getEntityManager().persist(orderVo);
+        saveNotifyOrderVO(msg, orderVo.getUuid());
         dbf.getEntityManager().flush();
 
         OrderInventory inventory = OrderInventory.valueOf(orderVo);
@@ -427,7 +429,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         List<PriceRefRenewVO> renewVOs = q.list();
         dbf.removeCollection(renewVOs, PriceRefRenewVO.class);
 
-
+        saveNotifyOrderVO(msg, orderVo.getUuid());
         dbf.getEntityManager().merge(abvo);
         dbf.getEntityManager().persist(orderVo);
         dbf.getEntityManager().flush();
@@ -564,6 +566,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             priceRefRenewVO.setRenewUuid(renewVO.getUuid());
             dbf.getEntityManager().persist(priceRefRenewVO);
         }
+        saveNotifyOrderVO(msg, orderVo.getUuid());
 
         dbf.getEntityManager().merge(abvo);
         dbf.getEntityManager().persist(orderVo);
@@ -574,6 +577,17 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         reply.setInventory(inventory);
         bus.reply(msg, reply);
 
+    }
+
+    @Transactional
+    private void saveNotifyOrderVO(APICreateOrderMsg msg, String uuid2) {
+        NotifyOrderVO notifyOrderVO = new NotifyOrderVO();
+        notifyOrderVO.setUuid(Platform.getUuid());
+        notifyOrderVO.setUrl(msg.getNotifyUrl());
+        notifyOrderVO.setOrderUuid(uuid2);
+        notifyOrderVO.setStatus(NotifyOrderStatus.FAILURE);
+        notifyOrderVO.setNotifyTimes(0);
+        dbf.getEntityManager().persist(notifyOrderVO);
     }
 
 
@@ -676,11 +690,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             dbf.getEntityManager().persist(priceRefRenewVO);
         }
 
-        NotifyOrderVO notifyOrderVO = new NotifyOrderVO();
-        notifyOrderVO.setUuid(Platform.getUuid());
-        notifyOrderVO.setUrl(msg.getNotifyUrl());
-        notifyOrderVO.setOrderUuid(orderVo.getUuid());
-        dbf.getEntityManager().persist(notifyOrderVO);
+        saveNotifyOrderVO(msg, orderVo.getUuid());
 
         dbf.getEntityManager().merge(abvo);
         dbf.getEntityManager().persist(orderVo);
