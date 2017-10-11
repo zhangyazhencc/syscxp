@@ -1,12 +1,11 @@
 package com.syscxp.tunnel.manage;
 
+
 import com.syscxp.core.db.*;
 import com.syscxp.header.billing.*;
-import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.tunnel.header.switchs.SwitchVlanVO;
 import com.syscxp.tunnel.header.tunnel.*;
-import com.syscxp.utils.URLBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.CoreGlobalProperty;
@@ -34,7 +33,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -60,8 +58,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     @Autowired
     private EventFacade evtf;
 
-    public final String TUNNEL_CALL_BACK_URL = URLBuilder.buildUrlFromBase(CoreGlobalProperty.TUNNEL_SERVER_URL,
-            TunnelConstant.TUNNEL_ROOT_PATH, RESTConstant.CALLBACK_PATH);
+    public final String TUNNEL_CALL_BACK_URL = restf != null ? restf.getSendCommandUrl() : null;
 
 
     @Override
@@ -207,9 +204,14 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     private boolean createOrder(APICreateOrderMsg orderMsg) {
-        orderMsg.setNotifyUrl(TUNNEL_CALL_BACK_URL);
-        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
-        return rsp.isSuccess();
+        orderMsg.setNotifyUrl(restf.getSendCommandUrl());
+        APIReply reply;
+        try {
+            reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+        } catch (Exception e) {
+            return false;
+        }
+        return reply.isSuccess();
     }
 
     @Transactional
@@ -258,9 +260,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if (createOrder(orderMsg)) {
             vo.setState(InterfaceState.paid);
             if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration(), ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
             }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
             }
             dbf.getEntityManager().merge(vo);
             evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -310,9 +312,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if (createOrder(orderMsg)) {
             vo.setState(InterfaceState.paid);
             if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration(), ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
             }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
             }
             dbf.getEntityManager().merge(vo);
             evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -402,9 +404,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             vo.setDuration(msg.getDuration());
             vo.setProductChargeModel(msg.getProductChargeModel());
             if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration(), ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
             }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
             }
             vo = dbf.getEntityManager().merge(vo);
             evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -542,16 +544,24 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             return;
         }else{
             vo.setState(TunnelState.Closed);
+            vo.setStatus(TunnelStatus.Connecting);
             dbf.getEntityManager().merge(vo);
         }
 
         //TODO 支付成功后下发控制器
 
-
-
-
         //下发成功后默认给创建的通道开启监控
-        vo.setState(TunnelState.Opened);
+        //vo.setState(TunnelState.Opened);
+        //vo.setStatus(TunnelStatus.Connected);
+        //if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+        //    vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
+        //}else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+        //    vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
+        //}
+
+        //下发失败
+        //vo.setState(TunnelState.Closed);
+        //vo.setStatus(TunnelStatus.Disconnected);
         try{
             MonitorManagerImpl monitorManager = new MonitorManagerImpl();
             APICreateTunnelMonitorMsg apiCreateTunnelMonitorMsg = new APICreateTunnelMonitorMsg();
@@ -661,16 +671,24 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             return;
         }else{
             vo.setState(TunnelState.Closed);
+            vo.setStatus(TunnelStatus.Connecting);
             dbf.getEntityManager().merge(vo);
         }
 
         //TODO 支付成功后下发控制器
 
-
-
-
         //下发成功后默认给创建的通道开启监控
-        vo.setState(TunnelState.Opened);
+        //vo.setState(TunnelState.Opened);
+        //vo.setStatus(TunnelStatus.Connected);
+        //if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+        //    vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
+        //}else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+        //    vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
+        //}
+
+        //下发失败
+        //vo.setState(TunnelState.Closed);
+        //vo.setStatus(TunnelStatus.Disconnected);
         try{
             MonitorManagerImpl monitorManager = new MonitorManagerImpl();
             APICreateTunnelMonitorMsg apiCreateTunnelMonitorMsg = new APICreateTunnelMonitorMsg();
@@ -800,9 +818,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             vo.setDuration(msg.getDuration());
             vo.setProductChargeModel(msg.getProductChargeModel());
             if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration(), ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
             }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                vo.setExpiredDate(Timestamp.valueOf(newTime.plus(msg.getDuration()*12, ChronoUnit.MONTHS)));
+                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
             }
             vo = dbf.getEntityManager().merge(vo);
             evt.setInventory(TunnelInventory.valueOf(vo));
@@ -949,8 +967,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         bus.publish(evt);
     }
 
+
+
     @Override
     public boolean start() {
+
         return true;
     }
 
