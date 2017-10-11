@@ -11,7 +11,7 @@ import java.util.List;
  * Create by DCY on 2017/10/10
  */
 public class APIUpdateTunnelBandwidthMsg extends APIMessage {
-    @APIParam(emptyString = false,resourceType = TunnelVO.class)
+    @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;

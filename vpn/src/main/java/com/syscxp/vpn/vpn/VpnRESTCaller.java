@@ -133,18 +133,19 @@ public class VpnRESTCaller {
     }
 
     public void sendCommand(String path, VpnAgentCommand cmd, final Completion completion) {
+        String url = buildUrl(path);
         try {
             TaskResult result = syncPostForResult(path, cmd);
-            logger.debug(String.format("successfully post %s", path));
+            logger.debug(String.format("successfully post %s", url));
             if (result.isSuccess()) {
                 completion.success();
             } else {
-                completion.fail(Platform.operr("failed to execute the command[%s]. %s", path, result.getMessage()));
+                completion.fail(Platform.operr("failed to execute the command[%s]. %s", url, result.getMessage()));
             }
         } catch (Exception e) {
-            String info = String.format("unable to post %s. %s", path, e.getMessage());
+            String info = String.format("unable to post %s. %s", url, e.getMessage());
             logger.debug(info);
-            completion.fail(Platform.operr("unable to post %s. %s", path, e.getMessage()));
+            completion.fail(Platform.operr("unable to post %s. %s", url, e.getMessage()));
         }
     }
 }

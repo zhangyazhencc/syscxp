@@ -208,7 +208,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         // 下发监控通道配置
         RyuRestService ryuRestService = new RyuRestService();
-        ryuRestService.tunnelMonitorIssue(tunnelMonitorVO.getTunnelUuid(),msg);
+        ryuRestService.tunnelMonitorStart(tunnelMonitorVO.getTunnelUuid(),msg);
 
         // 测试
         /*

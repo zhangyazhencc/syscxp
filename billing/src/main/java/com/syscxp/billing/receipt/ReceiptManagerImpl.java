@@ -136,11 +136,16 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         bus.publish(evt);
     }
 
-
     private void handle(APIDeleteReceiptInfoMsg msg) {
         String uuid = msg.getUuid();
         ReceiptInfoVO vo = dbf.findByUuid(msg.getUuid(), ReceiptInfoVO.class);
         if (vo != null) {
+            SimpleQuery<ReceiptVO> q = dbf.createQuery(ReceiptVO.class);
+            q.add(ReceiptVO_.receiptInfoUuid, SimpleQuery.Op.EQ, vo.getUuid());
+            List<ReceiptVO> receiptVOS = q.list();
+            if(receiptVOS.size()>0){
+                throw new RuntimeException("there have a reference of this receiptInfo,can not be deleted");
+            }
             dbf.remove(vo);
         }
         ReceiptInfoInventory ri = ReceiptInfoInventory.valueOf(vo);
@@ -223,6 +228,12 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         String uuid = msg.getUuid();
         ReceiptPostAddressVO vo = dbf.findByUuid(msg.getUuid(), ReceiptPostAddressVO.class);
         if (vo != null) {
+            SimpleQuery<ReceiptVO> q = dbf.createQuery(ReceiptVO.class);
+            q.add(ReceiptVO_.receiptAddressUuid, SimpleQuery.Op.EQ, vo.getUuid());
+            List<ReceiptVO> receiptVOS = q.list();
+            if(receiptVOS.size()>0){
+                throw new RuntimeException("there have a reference of this receiptInfo,can not be deleted");
+            }
             dbf.removeByPrimaryKey(uuid, ReceiptPostAddressVO.class);
         }
         ReceiptPostAddressInventory ri = ReceiptPostAddressInventory.valueOf(vo);

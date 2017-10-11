@@ -10,7 +10,7 @@ import java.sql.Timestamp;
  * Created by DCY on 2017-09-17
  */
 public class APIUpdateTunnelMsg extends APIMessage {
-    @APIParam(emptyString = false,resourceType = TunnelVO.class)
+    @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
