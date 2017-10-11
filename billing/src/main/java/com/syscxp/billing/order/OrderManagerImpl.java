@@ -7,24 +7,12 @@ import com.syscxp.billing.header.renew.PriceRefRenewVO_;
 import com.syscxp.billing.header.renew.RenewVO;
 import com.syscxp.billing.header.renew.RenewVO_;
 import com.syscxp.core.CoreGlobalProperty;
-import com.syscxp.core.retry.Retry;
-import com.syscxp.core.retry.RetryCondition;
-import com.syscxp.core.thread.CancelablePeriodicTask;
-import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.billing.*;
-import com.syscxp.header.core.Completion;
-import com.syscxp.header.errorcode.OperationFailureException;
-import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.TimeoutRestTemplate;
-import com.syscxp.utils.DebugUtils;
-import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.*;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import com.syscxp.billing.header.balance.*;
 import com.syscxp.billing.header.order.APIUpdateOrderExpiredTimeMsg;
-import com.syscxp.billing.header.renew.*;
 import com.syscxp.billing.BillingErrors;
 import com.syscxp.billing.BillingServiceException;
 import com.syscxp.core.Platform;
@@ -45,17 +33,14 @@ import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import org.springframework.web.client.RestClientException;
 
-import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
-public class OrderManagerImpl  extends AbstractService implements  ApiMessageInterceptor {
+public class OrderManagerImpl extends AbstractService implements ApiMessageInterceptor {
 
     private static final CLogger logger = Utils.getLogger(OrderManagerImpl.class);
 
@@ -73,9 +58,10 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
     private ThreadFacade threadFacade;
     private TimeoutRestTemplate template;
 
-    public OrderManagerImpl(){
+    public OrderManagerImpl() {
         template = RESTFacade.createRestTemplate(CoreGlobalProperty.REST_FACADE_READ_TIMEOUT, CoreGlobalProperty.REST_FACADE_CONNECT_TIMEOUT);
     }
+
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
@@ -92,7 +78,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
     }
 
     private void handleApiMessage(APIMessage msg) {
-        if(msg instanceof APICreateBuyOrderMsg) {
+        if (msg instanceof APICreateBuyOrderMsg) {
             handle((APICreateBuyOrderMsg) msg);
         } else if (msg instanceof APICreateRenewOrderMsg) {
             handle((APICreateRenewOrderMsg) msg);
@@ -102,9 +88,9 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
             handle((APICreateUnsubcribeOrderMsg) msg);
         } else if (msg instanceof APICreateModifyOrderMsg) {
             handle((APICreateModifyOrderMsg) msg);
-        }  else if (msg instanceof APIUpdateOrderExpiredTimeMsg) {
+        } else if (msg instanceof APIUpdateOrderExpiredTimeMsg) {
             handle((APIUpdateOrderExpiredTimeMsg) msg);
-        }  else {
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -141,7 +127,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
     private void payMethod(APIMessage msg, OrderVO orderVo, AccountBalanceVO abvo, BigDecimal total, Timestamp currentTimeStamp) {
         String accountUuid = null;
         String opAccountUuid = null;
-        if(msg instanceof APICreateOrderMsg){
+        if (msg instanceof APICreateOrderMsg) {
             accountUuid = ((APICreateOrderMsg) msg).getAccountUuid();
             opAccountUuid = ((APICreateOrderMsg) msg).getOpAccountUuid();
         }
@@ -230,9 +216,9 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         }
     }
 
-    private BigDecimal getValue(String s,List<ExpenseGross> vos){
-        for(ExpenseGross e : vos){
-            if(s.equals(e.getMon())){
+    private BigDecimal getValue(String s, List<ExpenseGross> vos) {
+        for (ExpenseGross e : vos) {
+            if (s.equals(e.getMon())) {
                 return e.getTotal();
             }
         }
@@ -301,12 +287,12 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentTimestamp);
         calendar.add(Calendar.MONTH, duration.intValue());
-        orderVo.setProductEffectTimeEnd( msg.getStartTime());
+        orderVo.setProductEffectTimeEnd(msg.getStartTime());
 
-        LocalDateTime localDateTime =  msg.getExpiredTime().toLocalDateTime();
+        LocalDateTime localDateTime = msg.getExpiredTime().toLocalDateTime();
         localDateTime.plusMonths(duration.intValue());
         Timestamp endTime = Timestamp.valueOf(localDateTime);
-        orderVo.setProductEffectTimeStart( endTime);
+        orderVo.setProductEffectTimeStart(endTime);
         long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
 
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
@@ -331,7 +317,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         dbf.getEntityManager().flush();
         APICreateOrderReply reply = new APICreateOrderReply();
         reply.setInventory(OrderInventory.valueOf(orderVo));
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
     }
 
     @Transactional
@@ -367,7 +353,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         OrderInventory inventory = OrderInventory.valueOf(orderVo);
         APICreateOrderReply reply = new APICreateOrderReply();
         reply.setInventory(inventory);
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
 
     }
 
@@ -426,16 +412,16 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         dVO.setUuid(Platform.getUuid());
         dVO.setAccountUuid(msg.getAccountUuid());
         dVO.setDealWay(DealWay.CASH_BILL);
-        dVO.setIncome(remainMoney==null?BigDecimal.ZERO:remainMoney);
+        dVO.setIncome(remainMoney == null ? BigDecimal.ZERO : remainMoney);
         dVO.setExpend(BigDecimal.ZERO);
         dVO.setFinishTime(currentTimestamp);
         dVO.setType(DealType.REFUND);
         dVO.setState(DealState.SUCCESS);
-        dVO.setBalance(remainCash==null?BigDecimal.ZERO:remainCash);
+        dVO.setBalance(remainCash == null ? BigDecimal.ZERO : remainCash);
         dVO.setOutTradeNO(orderVo.getUuid());
         dVO.setOpAccountUuid(msg.getOpAccountUuid());
         dbf.getEntityManager().persist(dVO);
-        dbf.getEntityManager().remove(dbf.getEntityManager().find(RenewVO.class,renewVO.getUuid()));
+        dbf.getEntityManager().remove(dbf.getEntityManager().find(RenewVO.class, renewVO.getUuid()));
         SimpleQuery<PriceRefRenewVO> q = dbf.createQuery(PriceRefRenewVO.class);
         q.add(PriceRefRenewVO_.renewUuid, SimpleQuery.Op.EQ, renewVO.getUuid());
         List<PriceRefRenewVO> renewVOs = q.list();
@@ -449,7 +435,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         OrderInventory inventory = OrderInventory.valueOf(orderVo);
         APICreateOrderReply reply = new APICreateOrderReply();
         reply.setInventory(inventory);
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
 
     }
 
@@ -559,7 +545,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
             dVO.setFinishTime(currentTimestamp);
             dVO.setType(DealType.REFUND);
             dVO.setState(DealState.SUCCESS);
-            dVO.setBalance(remainCash==null?BigDecimal.ZERO:remainCash);
+            dVO.setBalance(remainCash == null ? BigDecimal.ZERO : remainCash);
             dVO.setOutTradeNO(orderVo.getUuid());
             dVO.setOpAccountUuid(msg.getOpAccountUuid());
             dbf.getEntityManager().persist(dVO);
@@ -586,7 +572,7 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         OrderInventory inventory = OrderInventory.valueOf(orderVo);
         APICreateOrderReply reply = new APICreateOrderReply();
         reply.setInventory(inventory);
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
 
     }
 
@@ -690,6 +676,11 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
             dbf.getEntityManager().persist(priceRefRenewVO);
         }
 
+        NotifyOrderVO notifyOrderVO = new NotifyOrderVO();
+        notifyOrderVO.setUuid(Platform.getUuid());
+        notifyOrderVO.setUrl(msg.getNotifyUrl());
+        notifyOrderVO.setOrderUuid(orderVo.getUuid());
+        dbf.getEntityManager().persist(notifyOrderVO);
 
         dbf.getEntityManager().merge(abvo);
         dbf.getEntityManager().persist(orderVo);
@@ -698,16 +689,12 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
         OrderInventory inventory = OrderInventory.valueOf(orderVo);
         APICreateOrderReply reply = new APICreateOrderReply();
         reply.setInventory(inventory);
-        OrderCallbackCmd orderCallbackCmd = new OrderCallbackCmd();
-        orderCallbackCmd.setExpireDate(orderVo.getProductEffectTimeEnd());
-        orderCallbackCmd.setPorductUuid(msg.getProductUuid());
-        orderCallbackCmd.setType(OrderType.BUY);
-        echo(msg.getNotifyUrl(),msg.getProductType().toString(),orderCallbackCmd,10,24*60);
-        bus.reply(msg,reply);
+
+        bus.reply(msg, reply);
 
     }
 
-    @Transactional(readOnly=true)
+    @Transactional(readOnly = true)
     private BigDecimal getValueblePayCash(String accountUuid, String productUuid) {
         BigDecimal total = BigDecimal.ZERO;
         SimpleQuery<OrderVO> query = dbf.createQuery(OrderVO.class);
@@ -765,79 +752,5 @@ public class OrderManagerImpl  extends AbstractService implements  ApiMessageInt
     }
 
 
-    public void echo(final String url, String command,OrderCallbackCmd orderCallbackCmd, final long interval, final long timeout) {
-        class Notify implements CancelablePeriodicTask {
-            private long count;
-
-            Notify() {
-                this.count = timeout / interval;
-                DebugUtils.Assert(count != 0, String.format("invalid timeout[%s], interval[%s]", timeout, interval));
-            }
-
-            @Override
-            public boolean run() {
-                try {
-                    Map<String,String> header = new HashMap<>();
-                    header.put(RESTConstant.COMMAND_PATH,command);
-                    String body = JSONObjectUtil.toJsonString(orderCallbackCmd);
-                    return syncJsonPost(url, body, header);
-                } catch (Exception e) {
-                    if (--count <= 0) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-            }
-
-            @Override
-            public TimeUnit getTimeUnit() {
-                return TimeUnit.MINUTES;
-            }
-
-            @Override
-            public long getInterval() {
-                return interval;
-            }
-
-            @Override
-            public String getName() {
-                return "Notify order";
-            }
-        }
-
-            threadFacade.submitCancelablePeriodicTask(new Notify());
-    }
-
-
-    public boolean syncJsonPost(String url, String body, Map<String, String> headers) {
-        body = body == null ? "" : body;
-
-        HttpHeaders requestHeaders = new HttpHeaders();
-        if (headers != null) {
-            requestHeaders.setAll(headers);
-        }
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        requestHeaders.setContentLength(body.length());
-        HttpEntity<String> req = new HttpEntity<String>(body, requestHeaders);
-        if (logger.isTraceEnabled()) {
-            logger.trace(String.format("json post[%s], %s", url, req.toString()));
-        }
-
-
-        ResponseEntity<String> rsp = new Retry<ResponseEntity<String>>() {
-            @Override
-            @RetryCondition(onExceptions = {IOException.class, RestClientException.class})
-            protected ResponseEntity<String> call() {
-                return template.exchange(url, HttpMethod.POST, req, String.class);
-            }
-        }.run();
-
-        if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
-           return false;
-        }
-
-        return true;
-    }
 
 }
