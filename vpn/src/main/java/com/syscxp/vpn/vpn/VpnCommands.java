@@ -192,62 +192,27 @@ public class VpnCommands {
 
     /**
      * 关闭VPN：/vpn/close-vpn
-     */
-    public static class StopVpnCmd extends VpnAgentCommand {
-        private List<String> vlan_list;
-
-        public static StopVpnCmd valueOf(VpnVO vo) {
-            StopVpnCmd cmd = new StopVpnCmd();
-            cmd.setHostIp(vo.getVpnHost().getManageIp());
-            cmd.setVpnUuid(vo.getUuid());
-            cmd.setVlans(CollectionUtils.transformToList(vo.getVpnInterfaces(), new Function<String, VpnInterfaceVO>() {
-                @Override
-                public String call(VpnInterfaceVO arg) {
-                    return arg.getVlan();
-                }
-            }));
-            return cmd;
-        }
-
-        public List<String> getVlans() {
-            return vlan_list;
-        }
-
-        public void setVlans(List<String> vlans) {
-            this.vlan_list = vlans;
-        }
-    }
-
-    public static class StopVpnResponse extends VpnAgentResponse {
-
-    }
-
-    /**
      * 删除VPN：/vpn/destroy-vpn
      */
     public static class DeleteVpnCmd extends VpnAgentCommand {
-        private List<String> vlan_list;
+        private List<VpnInterfaceCmd> ddn_if_list;
 
         public static DeleteVpnCmd valueOf(VpnVO vo) {
             DeleteVpnCmd cmd = new DeleteVpnCmd();
             cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setVpnUuid(vo.getUuid());
-            cmd.setVlans(CollectionUtils.transformToList(vo.getVpnInterfaces(), new Function<String, VpnInterfaceVO>() {
-                @Override
-                public String call(VpnInterfaceVO arg) {
-                    return arg.getVlan();
-                }
-            }));
+            cmd.setVpnInterfaceCmds(VpnInterfaceCmd.valueOf(cmd.getHostIp(), vo.getVpnInterfaces()));
             return cmd;
         }
 
-        public List<String> getVlans() {
-            return vlan_list;
+        public List<VpnInterfaceCmd> getVpnInterfaceCmds() {
+            return ddn_if_list;
         }
 
-        public void setVlans(List<String> vlans) {
-            this.vlan_list = vlans;
+        public void setVpnInterfaceCmds(List<VpnInterfaceCmd> vpnInterfaceCmds) {
+            this.ddn_if_list = vpnInterfaceCmds;
         }
+
     }
 
     public static class DeleteVpnResponse extends VpnAgentResponse {

@@ -410,7 +410,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 path = VpnConstant.START_VPN_PATH;
                 break;
             case Disabled:
-                cmd = StopVpnCmd.valueOf(vpn);
+                cmd = DeleteVpnCmd.valueOf(vpn);
                 path = VpnConstant.STOP_VPN_PATH;
                 break;
         }
@@ -731,10 +731,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
                         logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
                         VpnVO vpn = updateVpnFromOrder(cmd);
-                        if (vpn == null)
-                            return null;
-                        dbf.updateAndRefresh(vpn);
-                        if (vpn.getStatus() == VpnStatus.Connecting)
+                        if (vpn != null && vpn.getStatus() == VpnStatus.Connecting)
                             new VpnRESTCaller().syncPostForResult(VpnConstant.INIT_VPN_PATH,
                                     CreateVpnCmd.valueOf(vpn));
 
@@ -763,9 +760,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
                         logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
 
-                        VpnVO vpn = updateVpnFromOrder(cmd);
-                        if (vpn != null)
-                            dbf.updateAndRefresh(vpn);
+                        updateVpnFromOrder(cmd);
                         return null;
                     }
                 });
@@ -774,9 +769,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
                         logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
-                        VpnVO vpn = updateVpnFromOrder(cmd);
-                        if (vpn != null)
-                            dbf.updateAndRefresh(vpn);
+                        updateVpnFromOrder(cmd);
                         return null;
                     }
                 });
@@ -785,9 +778,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
                         logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
-                        VpnVO vpn = updateVpnFromOrder(cmd);
-                        if (vpn != null)
-                            dbf.updateAndRefresh(vpn);
+                        updateVpnFromOrder(cmd);
                         return null;
                     }
                 });
@@ -807,7 +798,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             vpn.setExpireDate(cmd.getExpireDate());
             update = true;
         }
-        return update ? vpn : null;
+        return update ? dbf.updateAndRefresh(vpn) : null;
     }
 
     public boolean stop() {
