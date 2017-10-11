@@ -222,8 +222,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             bus.publish(evt);
             return;
         }
-        // 测试
-//        vpn.setPayment(Payment.PAID);
+
+        vpn.setPayment(Payment.PAID);
         final VpnVO vo = dbf.updateAndRefresh(vpn);
 
         CreateVpnCmd cmd = CreateVpnCmd.valueOf(vo);
