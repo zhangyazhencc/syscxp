@@ -343,13 +343,13 @@ CREATE TABLE `SLACompensateVO` (
 
 DROP TABLE IF EXISTS `NotifyOrderVO`;
 create table `NotifyOrderVO` (
-	`uuid` varchar (96),
-	`orderUuid` varchar (96),
-	`status` varchar (765),
+	`uuid` varchar (32),
+	`orderUuid` varchar (32),
+	`status` varchar (255),
 	`notifyTimes` tinyint (2),
 	`createDate` timestamp ,
 	`lastOpDate` timestamp ,
-	`url` varchar (765)
+	`url` varchar (255)
 );
 
 
