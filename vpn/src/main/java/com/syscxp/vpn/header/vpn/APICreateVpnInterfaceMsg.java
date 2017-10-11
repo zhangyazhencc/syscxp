@@ -19,6 +19,16 @@ public class APICreateVpnInterfaceMsg extends APIMessage {
     private String localIP;
     @APIParam(emptyString = false)
     private String netmask;
+    @APIParam(emptyString = false)
+    private String vlan;
+
+    public String getVlan() {
+        return vlan;
+    }
+
+    public void setVlan(String vlan) {
+        this.vlan = vlan;
+    }
 
     public String getName() {
         return name;

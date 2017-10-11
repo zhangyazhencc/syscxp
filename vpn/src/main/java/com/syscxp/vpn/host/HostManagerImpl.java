@@ -2,11 +2,12 @@ package com.syscxp.vpn.host;
 
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.errorcode.ErrorCode;
-import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.vpn.VpnAgentResponse;
+import com.syscxp.header.vpn.VpnAgentResponse.TaskResult;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.vpn.header.host.*;
-import com.syscxp.vpn.vpn.VpnCommands;
-import com.syscxp.vpn.vpn.VpnConstant;
+import com.syscxp.vpn.header.vpn.VpnStatus;
+import com.syscxp.vpn.vpn.VpnCommands.*;
 import com.syscxp.vpn.vpn.VpnGlobalConfig;
 import com.syscxp.vpn.vpn.VpnRESTCaller;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,7 +31,6 @@ import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import org.springframework.web.client.RestClientException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -94,11 +94,19 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         APIReconnectVpnHostEvent evt = new APIReconnectVpnHostEvent(msg.getId());
         VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
 
-        VpnCommands.ReconnectVpnHostCmd cmd = VpnCommands.ReconnectVpnHostCmd.valueOf(host);
-        VpnAgentResponse.TaskResult result = new VpnRESTCaller().syncPostForResult(HostConstant.RECONNECT_HOST_PATH, cmd);
-        if (!result.isSuccess()) {
-            evt.setError(errf.stringToOperationError(result.getMessage()));
-        }
+        ReconnectVpnHostCmd cmd = ReconnectVpnHostCmd.valueOf(host);
+        new VpnRESTCaller().sendCommand(HostConstant.RECONNECT_HOST_PATH, cmd, new Completion(evt) {
+            @Override
+            public void success() {
+                host.setStatus(HostStatus.Connected);
+                dbf.persistAndRefresh(host);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                evt.setError(errorCode);
+            }
+        });
         bus.publish(evt);
     }
 
@@ -189,7 +197,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         APIDeleteVpnHostEvent evt = new APIDeleteVpnHostEvent(msg.getId());
         VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
 
-        VpnCommands.DeleteVpnHostCmd cmd = VpnCommands.DeleteVpnHostCmd.valueOf(host);
+        DeleteVpnHostCmd cmd = DeleteVpnHostCmd.valueOf(host);
         new VpnRESTCaller().sendCommand(HostConstant.Delete_HOST_PATH, cmd, new Completion(evt) {
             @Override
             public void success() {
@@ -272,9 +280,9 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         host.setStatus(HostStatus.Connecting);
 
 
-        VpnCommands.AddVpnHostCmd cmd = VpnCommands.AddVpnHostCmd.valueOf(host);
+        AddVpnHostCmd cmd = AddVpnHostCmd.valueOf(host);
 
-        new VpnRESTCaller().sendCommand(HostConstant.Delete_HOST_PATH, cmd, new Completion(evt) {
+        new VpnRESTCaller().sendCommand(HostConstant.ADD_HOST_PATH, cmd, new Completion(evt) {
             @Override
             public void success() {
                 host.setStatus(HostStatus.Connected);
@@ -352,6 +360,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         }
 
         private void updateHostStatus(List<String> disconnectedHosts) {
+            logger.debug(String.format("update host status Disconnected, uuid in %s", JSONObjectUtil.toJsonString(disconnectedHosts)));
             UpdateQuery.New(VpnHostVO.class)
                     .in(VpnHostVO_.uuid, disconnectedHosts)
                     .set(VpnHostVO_.status, HostStatus.Disconnected)
@@ -365,14 +374,19 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
         @Override
         public void run() {
+            logger.debug("start check host status");
             disconnectedHosts.clear();
             List<VpnHostVO> vos = getAllHosts();
             if (vos.isEmpty()) {
                 return;
             }
             for (VpnHostVO vo : vos) {
-                VpnCommands.CheckVpnHostStatusCmd cmd = VpnCommands.CheckVpnHostStatusCmd.valueOf(vo);
-                VpnAgentResponse rsp = null;
+                if (vo.getStatus() == HostStatus.Disconnected){
+                    disconnectedHosts.add(vo.getUuid());
+                    continue;
+                }
+                CheckVpnHostStatusCmd cmd = CheckVpnHostStatusCmd.valueOf(vo);
+                VpnAgentResponse rsp;
                 try {
                     rsp = new VpnRESTCaller().syncPostForVPN(HostConstant.CHECK_HOST_STATUS_PATH, cmd);
                     if (rsp.getStatus() == VpnAgentResponse.RunStatus.UP)

@@ -38,7 +38,7 @@ public class RyuControllerService extends AbstractService {
         issueVO.setNw_src("192.168.211.25");
         issueVO.setNw_dst("192.168.211.26");
         issueVO.setVlan_id(200);
-        issueVO.setOut_port("eth-0-3");
+        issueVO.setUplink("eth-0-3");
         issueVO.setBandwidth(1000);
 
         List<SdnConfigIssueVO> list = new ArrayList<>();

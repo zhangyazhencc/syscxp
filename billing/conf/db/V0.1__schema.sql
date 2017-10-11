@@ -341,6 +341,17 @@ CREATE TABLE `SLACompensateVO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `NotifyOrderVO`;
+create table `NotifyOrderVO` (
+	`uuid` varchar (96),
+	`orderUuid` varchar (96),
+	`status` varchar (765),
+	`notifyTimes` tinyint (2),
+	`createDate` timestamp ,
+	`lastOpDate` timestamp ,
+	`url` varchar (765)
+);
+
 
 
 

@@ -17,14 +17,14 @@ public class APIUpdateVpnBandwidthMsg extends APIVpnMessage {
     @APIParam
     private Long bandwidth;
     @APIParam(nonempty = true)
-    private List<ProductPriceUnit> units;
+    private List<ProductPriceUnit> productPriceUnits;
 
-    public List<ProductPriceUnit> getUnits() {
-        return units;
+    public List<ProductPriceUnit> getProductPriceUnits() {
+        return productPriceUnits;
     }
 
-    public void setUnits(List<ProductPriceUnit> units) {
-        this.units = units;
+    public void setProductPriceUnits(List<ProductPriceUnit> productPriceUnits) {
+        this.productPriceUnits = productPriceUnits;
     }
 
     public String getUuid() {

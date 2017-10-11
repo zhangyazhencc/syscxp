@@ -140,7 +140,7 @@ CREATE TABLE  `syscxp_vpn`.`VpnMotifyRecordVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`vpnUuid` varchar(32) NOT NULL COMMENT 'vpnUuid',
 	`motifyType` varchar(32) NOT NULL COMMENT '升级、降级',
-	`opAccountUuid` varchar(32) NOT NULL UNIQUE COMMENT '操作人',
+	`opAccountUuid` varchar(32) NOT NULL COMMENT '操作人',
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

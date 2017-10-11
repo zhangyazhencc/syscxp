@@ -1,16 +1,16 @@
 package com.syscxp.billing.order;
 
 public enum NotifyOrderInterval {
-    FIRST(1,0),
-    SECOND(2,1),
-    THIRD(3,3),
-    FOURTH(4,5),
-    FIFTH(5,10),
-    SIXTH(6,60),
-    SEVENTH(7,180),
-    EIGHTH(8,300),
-    NINTH(9,420),
-    TENTH(10,600);
+    FIRST(0,0),
+    SECOND(1,1),
+    THIRD(2,3),
+    FOURTH(3,5),
+    FIFTH(4,10),
+    SIXTH(5,60),
+    SEVENTH(6,180),
+    EIGHTH(7,300),
+    NINTH(8,420),
+    TENTH(9,600);
 
     NotifyOrderInterval(int times,int minutes){
         this.times = times;
