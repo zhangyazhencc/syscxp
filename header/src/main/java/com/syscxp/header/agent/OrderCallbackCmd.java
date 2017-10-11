@@ -2,11 +2,13 @@ package com.syscxp.header.agent;
 
 import com.syscxp.header.billing.OrderVO;
 import com.syscxp.header.billing.OrderType;
+import com.syscxp.header.billing.ProductType;
 
 import java.sql.Timestamp;
 
 public class OrderCallbackCmd {
     private String porductUuid;
+    private ProductType productType;
     private OrderType type;
     private Timestamp expireDate;
 
@@ -14,8 +16,17 @@ public class OrderCallbackCmd {
         OrderCallbackCmd cmd = new OrderCallbackCmd();
         cmd.setPorductUuid(order.getProductUuid());
         cmd.setType(order.getType());
+        cmd.setProductType(order.getProductType());
         cmd.setExpireDate(order.getProductEffectTimeEnd());
         return cmd;
+    }
+
+    public ProductType getProductType() {
+        return productType;
+    }
+
+    public void setProductType(ProductType productType) {
+        this.productType = productType;
     }
 
     public String getPorductUuid() {
