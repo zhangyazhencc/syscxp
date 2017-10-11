@@ -75,9 +75,18 @@ public class OrderNotifyJob {
                     header.put(RESTConstant.COMMAND_PATH, orderVO.getProductType().toString());
                     String body = JSONObjectUtil.toJsonString(orderCallbackCmd);
                     try {
-                        syncJsonPost(notifyOrderVO1.getUrl(), body, header);
-                        notifyOrderVO1.setStatus(NotifyOrderStatus.SUCCESS);
-                        notifyOrderVO1.setNotifyTimes(notifyOrderVO1.getNotifyTimes()+1);
+                        boolean flag = syncJsonPost(notifyOrderVO1.getUrl(), body, header);
+                        int times = notifyOrderVO1.getNotifyTimes()+1;
+                        if(flag){
+                            notifyOrderVO1.setStatus(NotifyOrderStatus.SUCCESS);
+                        } else{
+                            if(times >10){
+                                notifyOrderVO1.setStatus(NotifyOrderStatus.TERMINAL);
+                            }else{
+                                notifyOrderVO1.setStatus(NotifyOrderStatus.FAILURE);
+                            }
+                        }
+                        notifyOrderVO1.setNotifyTimes(times);
                         dbf.updateAndRefresh(notifyOrderVO1);
                     }catch (Exception e){
                         logger.error(e.getMessage());
