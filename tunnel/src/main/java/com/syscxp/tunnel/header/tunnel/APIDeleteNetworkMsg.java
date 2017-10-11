@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIParam;
  * Created by DCY on 2017-09-14
  */
 public class APIDeleteNetworkMsg extends APIMessage {
-    @APIParam(emptyString = false, resourceType = NetworkVO.class)
+    @APIParam(emptyString = false, resourceType = NetworkVO.class, checkAccount = true)
     private String uuid;
 
     public String getUuid() {

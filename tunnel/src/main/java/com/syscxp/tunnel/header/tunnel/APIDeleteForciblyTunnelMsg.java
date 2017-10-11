@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIParam;
  * Create by DCY on 2017/10/11
  */
 public class APIDeleteForciblyTunnelMsg extends APIMessage {
-    @APIParam(emptyString = false,resourceType = TunnelVO.class)
+    @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
 
     public String getUuid() {

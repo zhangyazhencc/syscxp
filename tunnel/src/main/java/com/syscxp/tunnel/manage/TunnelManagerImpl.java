@@ -389,28 +389,48 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(),InterfaceVO.class);
         LocalDateTime newTime = vo.getExpiredDate().toLocalDateTime();
+        boolean success = false;
+        switch (msg.getType()) {
+            case RENEW://续费
+                APICreateRenewOrderMsg renewOrderMsg = new APICreateRenewOrderMsg();
+                renewOrderMsg.setProductUuid(vo.getUuid());
+                renewOrderMsg.setDuration(msg.getDuration());
+                renewOrderMsg.setProductChargeModel(msg.getProductChargeModel());
+                renewOrderMsg.setAccountUuid(msg.getAccountUuid());
+                renewOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+                renewOrderMsg.setStartTime(vo.getCreateDate());
+                renewOrderMsg.setExpiredTime(vo.getExpiredDate());
+                success = createOrder(renewOrderMsg);
+                if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+                    newTime = newTime.plusMonths(msg.getDuration());
+                }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+                    newTime = newTime.plusYears(msg.getDuration());
+                }
+                break;
+            case SLA_COMPENSATION://赔偿
+                APICreateSLACompensationOrderMsg slaCompensationOrderMsg =
+                        new APICreateSLACompensationOrderMsg();
+                slaCompensationOrderMsg.setProductUuid(vo.getUuid());
+                slaCompensationOrderMsg.setProductName(vo.getName());
+                slaCompensationOrderMsg.setProductDescription(vo.getDescription());
+                slaCompensationOrderMsg.setProductType(ProductType.PORT);
+                slaCompensationOrderMsg.setDuration(msg.getDuration());
+                slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
+                slaCompensationOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+                slaCompensationOrderMsg.setStartTime(vo.getCreateDate());
+                slaCompensationOrderMsg.setExpiredTime(vo.getExpiredDate());
+                success = createOrder(slaCompensationOrderMsg);
+                newTime = newTime.plusDays(msg.getDuration());
+                break;
+        }
 
-        //调用支付-续费
-        APICreateRenewOrderMsg renewOrderMsg = new APICreateRenewOrderMsg();
-        renewOrderMsg.setProductUuid(vo.getUuid());
-        renewOrderMsg.setDuration(msg.getDuration());
-        renewOrderMsg.setProductChargeModel(msg.getProductChargeModel());
-        renewOrderMsg.setAccountUuid(msg.getAccountUuid());
-        renewOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        renewOrderMsg.setStartTime(vo.getCreateDate());
-        renewOrderMsg.setExpiredTime(vo.getExpiredDate());
-
-        if(createOrder(renewOrderMsg)){
+        if (success) {
             vo.setDuration(msg.getDuration());
             vo.setProductChargeModel(msg.getProductChargeModel());
-            if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
-            }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
-            }
+            vo.setExpiredDate(Timestamp.valueOf(newTime));
             vo = dbf.getEntityManager().merge(vo);
             evt.setInventory(InterfaceInventory.valueOf(vo));
-        }else{
+        } else {
             evt.setError(errf.stringToOperationError("订单操作失败"));
         }
 
@@ -803,28 +823,48 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
         LocalDateTime newTime = vo.getExpiredDate().toLocalDateTime();
+        boolean success = false;
+        switch (msg.getType()) {
+            case RENEW://续费
+                APICreateRenewOrderMsg renewOrderMsg = new APICreateRenewOrderMsg();
+                renewOrderMsg.setProductUuid(vo.getUuid());
+                renewOrderMsg.setDuration(msg.getDuration());
+                renewOrderMsg.setProductChargeModel(msg.getProductChargeModel());
+                renewOrderMsg.setAccountUuid(msg.getAccountUuid());
+                renewOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+                renewOrderMsg.setStartTime(vo.getCreateDate());
+                renewOrderMsg.setExpiredTime(vo.getExpiredDate());
+                success = createOrder(renewOrderMsg);
+                if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+                    newTime = newTime.plusMonths(msg.getDuration());
+                }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+                    newTime = newTime.plusYears(msg.getDuration());
+                }
+                break;
+            case SLA_COMPENSATION://赔偿
+                APICreateSLACompensationOrderMsg slaCompensationOrderMsg =
+                        new APICreateSLACompensationOrderMsg();
+                slaCompensationOrderMsg.setProductUuid(vo.getUuid());
+                slaCompensationOrderMsg.setProductName(vo.getName());
+                slaCompensationOrderMsg.setProductDescription(vo.getDescription());
+                slaCompensationOrderMsg.setProductType(ProductType.TUNNEL);
+                slaCompensationOrderMsg.setDuration(msg.getDuration());
+                slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
+                slaCompensationOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+                slaCompensationOrderMsg.setStartTime(vo.getCreateDate());
+                slaCompensationOrderMsg.setExpiredTime(vo.getExpiredDate());
+                success = createOrder(slaCompensationOrderMsg);
+                newTime = newTime.plusDays(msg.getDuration());
+                break;
+        }
 
-        //调用支付-续费
-        APICreateRenewOrderMsg renewOrderMsg = new APICreateRenewOrderMsg();
-        renewOrderMsg.setProductUuid(vo.getUuid());
-        renewOrderMsg.setDuration(msg.getDuration());
-        renewOrderMsg.setProductChargeModel(msg.getProductChargeModel());
-        renewOrderMsg.setAccountUuid(msg.getAccountUuid());
-        renewOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        renewOrderMsg.setStartTime(vo.getCreateDate());
-        renewOrderMsg.setExpiredTime(vo.getExpiredDate());
-
-        if(createOrder(renewOrderMsg)){
+        if (success) {
             vo.setDuration(msg.getDuration());
             vo.setProductChargeModel(msg.getProductChargeModel());
-            if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
-            }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                vo.setExpiredDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
-            }
+            vo.setExpiredDate(Timestamp.valueOf(newTime));
             vo = dbf.getEntityManager().merge(vo);
             evt.setInventory(TunnelInventory.valueOf(vo));
-        }else{
+        } else {
             evt.setError(errf.stringToOperationError("订单操作失败"));
         }
 
