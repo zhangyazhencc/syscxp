@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<globalConfig xmlns="http://syscxp.com/schema/syscxp">
+    <config>
+        <name>vpn.hostStatusCheckWorkerInterval</name>
+        <description>The vpn agent check host status, in seconds</description>
+        <defaultValue>60</defaultValue>
+        <category>vpn</category>
+        <type>java.lang.Integer</type>
+    </config>
+
+    <config>
+        <name>vpn.vpnStatusCheckWorkerInterval</name>
+        <description>The vpn server check host status, in seconds</description>
+        <defaultValue>60</defaultValue>
+        <category>vpn</category>
+        <type>java.lang.Integer</type>
+    </config>
+</globalConfig>

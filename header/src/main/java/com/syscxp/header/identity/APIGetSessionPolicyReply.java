@@ -7,6 +7,8 @@ public class APIGetSessionPolicyReply extends APIReply {
 
     private boolean validSession;
 
+    private String accountName;
+
     private SessionInventory sessionInventory;
 
     public boolean isValidSession() {
@@ -15,6 +17,14 @@ public class APIGetSessionPolicyReply extends APIReply {
 
     public void setValidSession(boolean validSession) {
         this.validSession = validSession;
+    }
+
+    public String getAccountName() {
+        return accountName;
+    }
+
+    public void setAccountName(String accountName) {
+        this.accountName = accountName;
     }
 
     public SessionInventory getSessionInventory() {

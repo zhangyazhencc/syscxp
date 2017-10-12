@@ -7,11 +7,19 @@ import com.syscxp.header.message.APIParam;
 @SuppressCredentialCheck
 public class APILogInByUserMsg extends APISessionMessage {
     @APIParam(required = false)
-    private String accountUuid;
-    @APIParam(required = false)
     private String accountName;
-    @APIParam
+    @APIParam(required = false)
+    private String accountPhone;
+    @APIParam(required = false)
+    private String accountEmail;
+
+    @APIParam(required = false)
     private String userName;
+    @APIParam(required = false)
+    private String userPhone;
+    @APIParam(required = false)
+    private String userEmail;
+
     @APIParam
     private String password;
 
@@ -23,12 +31,38 @@ public class APILogInByUserMsg extends APISessionMessage {
         this.accountName = accountName;
     }
 
-    public String getAccountUuid() {
-        return accountUuid;
+    public String getAccountPhone() {
+        return accountPhone;
     }
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+
+    public void setAccountPhone(String accountPhone) {
+        this.accountPhone = accountPhone;
     }
+
+    public String getAccountEmail() {
+        return accountEmail;
+    }
+
+    public void setAccountEmail(String accountEmail) {
+        this.accountEmail = accountEmail;
+    }
+
+    public String getUserPhone() {
+        return userPhone;
+    }
+
+    public void setUserPhone(String userPhone) {
+        this.userPhone = userPhone;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
+
     public String getUserName() {
         return userName;
     }
