@@ -1,18 +1,17 @@
-package com.syscxp.tunnel.header.tunnel;
+package com.syscxp.tunnel.header.aliEdgeRouter;
 
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-/**
- * Created by DCY on 2017-09-17
- */
-public class APIDeleteTunnelMsg extends APIMessage {
-    @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
-    private String uuid;
+public class APIDeleteAliUserMsg extends APIMessage{
 
-    @APIParam(emptyString = false,required = false,maxLength = 32)
+    @APIParam(checkAccount = true,resourceType = AliUserVO.class)
+    private String uuid;
+    @APIParam(required = false,maxLength = 32)
     private String accountUuid;
+    @APIParam(maxLength = 32)
+    private String aliAccountUuid;
 
     public String getUuid() {
         return uuid;
@@ -32,5 +31,13 @@ public class APIDeleteTunnelMsg extends APIMessage {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public String getAliAccountUuid() {
+        return aliAccountUuid;
+    }
+
+    public void setAliAccountUuid(String aliAccountUuid) {
+        this.aliAccountUuid = aliAccountUuid;
     }
 }

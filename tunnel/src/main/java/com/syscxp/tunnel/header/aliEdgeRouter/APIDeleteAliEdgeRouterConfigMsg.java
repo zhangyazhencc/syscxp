@@ -1,13 +1,10 @@
-package com.syscxp.tunnel.header.tunnel;
+package com.syscxp.tunnel.header.aliEdgeRouter;
 
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-/**
- * Created by DCY on 2017-09-14
- */
-public class APIDeleteNetworkMsg extends APIMessage {
-    @APIParam(emptyString = false, resourceType = NetworkVO.class, checkAccount = true)
+public class APIDeleteAliEdgeRouterConfigMsg extends APIMessage {
+    @APIParam(checkAccount = true,resourceType = AliUserVO.class)
     private String uuid;
 
     public String getUuid() {

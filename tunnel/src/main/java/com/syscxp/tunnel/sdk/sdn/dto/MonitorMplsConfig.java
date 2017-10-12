@@ -1,11 +1,11 @@
-package com.syscxp.tunnel.sdk.sdn.vo;
+package com.syscxp.tunnel.sdk.sdn.dto;
 
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-09-26.
  * @Description: RYU 控制器监控下发信息.
  */
-public class MplsConfigIssueVO {
+public class MonitorMplsConfig {
 
     private String switch_type;
     private String sub_type;
@@ -82,7 +82,7 @@ public class MplsConfigIssueVO {
 
     @Override
     public String toString() {
-        return "MplsConfigIssueVO{" +
+        return "MonitorMplsConfig{" +
                 "switch_type='" + switch_type + '\'' +
                 ", sub_type='" + sub_type + '\'' +
                 ", port_name='" + port_name + '\'' +
