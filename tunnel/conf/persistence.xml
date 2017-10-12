@@ -44,5 +44,10 @@
         <class>com.syscxp.tunnel.header.monitor.TunnelMonitorVO</class>
         <class>com.syscxp.tunnel.header.monitor.SpeedRecordsVO</class>
 
+        <class>com.syscxp.tunnel.header.aliEdgeRouter.AliEdgeRouterEO</class>
+        <class>com.syscxp.tunnel.header.aliEdgeRouter.AliEdgeRouterVO</class>
+        <class>com.syscxp.tunnel.header.aliEdgeRouter.AliUserVO</class>
+        <class>com.syscxp.tunnel.header.aliEdgeRouter.AliEdgeRouterConfigVO</class>
+
     </persistence-unit>
 </persistence>
