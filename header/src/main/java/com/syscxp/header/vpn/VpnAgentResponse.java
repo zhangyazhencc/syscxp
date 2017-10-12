@@ -1,19 +1,30 @@
 package com.syscxp.header.vpn;
 
 import com.syscxp.header.rest.RestAPIState;
-import org.springframework.http.HttpStatus;
 
 /**
  */
 public class VpnAgentResponse {
+    // 任务完成状态
     private RestAPIState state;
-    private VpnTaskResult result;
+    // 任务结果
+    private TaskResult result;
+    // 运行状态
+    private RunStatus status;
 
-    public VpnTaskResult getResult() {
+    public RunStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(RunStatus status) {
+        this.status = status;
+    }
+
+    public TaskResult getResult() {
         return result;
     }
 
-    public void setResult(VpnTaskResult result) {
+    public void setResult(TaskResult result) {
         this.result = result;
     }
 
@@ -25,7 +36,7 @@ public class VpnAgentResponse {
         this.state = state;
     }
 
-    public static class VpnTaskResult {
+    public static class TaskResult {
         private String message;
         private boolean success = false;
 
@@ -46,4 +57,12 @@ public class VpnAgentResponse {
         }
     }
 
+    /**
+     * 物理机或VPN运行状态
+     */
+    public enum RunStatus {
+        DOWN,
+        UP,
+        UNKOWN
+    }
 }

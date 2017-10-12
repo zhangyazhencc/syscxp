@@ -1,6 +1,7 @@
 package com.syscxp.tunnel.header.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
+import com.syscxp.header.billing.ProductPriceUnit;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.tunnel.header.node.NodeVO;
@@ -46,7 +47,7 @@ public class APICreateTunnelManualMsg extends APIMessage {
     @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
     private ProductChargeModel productChargeModel;
     @APIParam(nonempty = true)
-    private List<String> productPriceUnitUuids;
+    private List<ProductPriceUnit> units;
     @APIParam(emptyString = false,required = false)
     private String description;
     @APIParam(required = false)
@@ -196,11 +197,11 @@ public class APICreateTunnelManualMsg extends APIMessage {
         this.productChargeModel = productChargeModel;
     }
 
-    public List<String> getProductPriceUnitUuids() {
-        return productPriceUnitUuids;
+    public List<ProductPriceUnit> getUnits() {
+        return units;
     }
 
-    public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
-        this.productPriceUnitUuids = productPriceUnitUuids;
+    public void setUnits(List<ProductPriceUnit> units) {
+        this.units = units;
     }
 }

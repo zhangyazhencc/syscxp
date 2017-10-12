@@ -125,7 +125,6 @@ public class VpnCommands {
      * /vpn/start-vpn
      */
     public static class CreateVpnCmd extends VpnAgentCommand {
-        private String public_ip;
         private String cidr;
         private Long bandwidth;
         private Integer duration;
@@ -136,6 +135,7 @@ public class VpnCommands {
             CreateVpnCmd cmd = new CreateVpnCmd();
             cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setVpnUuid(vo.getUuid());
+            cmd.setPublicIp(vo.getVpnHost().getPublicIp());
             cmd.setPort(vo.getPort());
             cmd.setVpnCidr(vo.getVpnCidr());
             cmd.setBandwidth(vo.getBandwidth());
@@ -143,14 +143,6 @@ public class VpnCommands {
             cmd.setVpnInterfaceCmds(VpnInterfaceCmd.valueOf(cmd.getHostIp(), vo.getVpnInterfaces()));
             cmd.setVpnRouteCmds(VpnRouteCmd.valueOf(cmd.getHostIp(), vo.getVpnRoutes()));
             return cmd;
-        }
-
-        public String getPublicIp() {
-            return public_ip;
-        }
-
-        public void setPublicIp(String publicIp) {
-            this.public_ip = publicIp;
         }
 
         public List<VpnInterfaceCmd> getVpnInterfaceCmds() {
@@ -423,14 +415,9 @@ public class VpnCommands {
         public static DownloadCertificateCmd valueOf(VpnVO vo) {
             DownloadCertificateCmd cmd = new DownloadCertificateCmd();
             cmd.setHostIp(vo.getVpnHost().getManageIp());
+            cmd.setPublicIp(vo.getVpnHost().getPublicIp());
             cmd.setVpnUuid(vo.getUuid());
             return cmd;
-        }
-
-        public static List<VpnRouteCmd> valueOf(String hostIp, List<VpnRouteVO> vos) {
-            List<VpnRouteCmd> cmds = new ArrayList<>();
-            vos.forEach(vo -> cmds.add(VpnRouteCmd.valueOf(hostIp, vo)));
-            return cmds;
         }
 
     }
@@ -486,17 +473,12 @@ public class VpnCommands {
         public static ResetCertificateCmd valueOf(VpnVO vo) {
             ResetCertificateCmd cmd = new ResetCertificateCmd();
             cmd.setHostIp(vo.getVpnHost().getManageIp());
+            cmd.setPublicIp(vo.getVpnHost().getPublicIp());
             cmd.setVpnUuid(vo.getUuid());
             cmd.setPort(vo.getPort());
             cmd.setBandwidth(vo.getBandwidth());
             cmd.setCidr(vo.getVpnCidr());
             return cmd;
-        }
-
-        public static List<VpnRouteCmd> valueOf(String hostIp, List<VpnRouteVO> vos) {
-            List<VpnRouteCmd> cmds = new ArrayList<>();
-            vos.forEach(vo -> cmds.add(VpnRouteCmd.valueOf(hostIp, vo)));
-            return cmds;
         }
 
         public String getCidr() {

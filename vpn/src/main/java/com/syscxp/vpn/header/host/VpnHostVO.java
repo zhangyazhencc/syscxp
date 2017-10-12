@@ -38,11 +38,22 @@ public class VpnHostVO {
     @Column
     private Timestamp createDate;
 
-    @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="zoneUuid", insertable=false, updatable=false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "zoneUuid", insertable = false, updatable = false)
     private ZoneVO zone;
 
-    @OneToMany
+    @Column
+    private String zoneUuid;
+
+    public String getZoneUuid() {
+        return zoneUuid;
+    }
+
+    public void setZoneUuid(String zoneUuid) {
+        this.zoneUuid = zoneUuid;
+    }
+
+    @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "hostUuid", insertable = false, updatable = false)
     private List<HostInterfaceVO> hostInterfaces;
 

@@ -1,11 +1,13 @@
 package com.syscxp.tunnel.manage;
 
+import com.mongodb.util.JSON;
 import com.syscxp.tunnel.header.endpoint.*;
 import com.syscxp.tunnel.header.node.*;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO_;
 import com.syscxp.utils.gson.JSONObjectUtil;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -39,6 +41,7 @@ import java.util.List;
 import static com.syscxp.core.Platform.argerr;
 
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by DCY on 2017-09-07
@@ -113,8 +116,67 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIUpdateNodeExtensionInfoMsg msg) {
 
-        APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent();
+        com.alibaba.fastjson.JSONObject newInfo = com.alibaba.fastjson.JSONObject.
+                parseObject(msg.getNewNodeExtensionInfo());
 
+        com.alibaba.fastjson.JSONObject oldInfo = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
+                newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),com.alibaba.fastjson.JSONObject.class);
+
+
+        Map<String,Object> oldmap = oldInfo;
+        Map<String,Object> newmap = newInfo;
+        Set<String> keySet = oldmap.keySet();
+        for (String key : keySet) {
+            if(newmap.containsKey(key)){
+                if(oldmap.get(key) instanceof JSONObject){
+                    Map<String,Object> oldmap1 = (Map)oldmap.get(key);
+                    Map<String,Object> newmap1 = (Map)newmap.get(key);
+                    Set<String> keySet1 = oldmap1.keySet();
+                    for (String key1 : keySet1) {
+                        if(newmap1.containsKey(key1)){
+                            if(oldmap1.get(key1) instanceof JSONObject){
+                                Map<String,Object> oldmap2 = (Map)oldmap1.get(key1);
+                                Map<String,Object> newmap2 = (Map)newmap1.get(key1);
+                                Set<String> keySet2 = oldmap2.keySet();
+                                for (String key2 : keySet2) {
+                                    if(newmap2.containsKey(key2)){
+                                        if(oldmap2.get(key2) instanceof JSONObject){
+                                            Map<String,Object> oldmap3 = (Map)oldmap2.get(key2);
+                                            Map<String,Object> newmap3 = (Map)newmap2.get(key2);
+                                            Set<String> keySet3 = oldmap3.keySet();
+                                            for (String key3 : keySet3) {
+                                                if(newmap3.containsKey(key3)){
+                                                    if(oldmap3.get(key3) instanceof JSONObject){
+                                                        System.out.println("");
+                                                    }else{
+                                                        oldmap3.put(key3, newmap3.get(key3));
+                                                    }
+                                                }
+                                            }
+                                            oldmap2.put(key2, oldmap3);
+                                        }else{
+                                            oldmap2.put(key2, newmap2.get(key2));
+                                        }
+                                    }
+                                }
+                                oldmap1.put(key1, oldmap2);
+                            }else{
+                                oldmap1.put(key1, newmap1.get(key1));
+                            }
+                        }
+                    }
+                    oldmap.put(key,oldmap1);
+                }else{
+                    oldmap.put(key,newmap.get(key));
+                }
+
+            }
+        }
+
+
+        APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent();
+        mongoTemplate.save(oldmap);
+        event.setInventory(oldmap.toString());
         bus.publish(event);
 
     }

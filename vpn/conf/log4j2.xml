@@ -1,6 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="warn">
     <Appenders>
+        <console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="[%d{HH:mm:ss:SSS}] [%p] - %l - %m%n"/>
+        </console>
+
         <RollingFile name="RollingFile" fileName="${sys:catalina.home}/logs/vpn.log"
                      filePattern="${sys:catalina.home}/logs/management-server-vpn-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
@@ -85,6 +89,7 @@
 
         <Root level="warn" additivity="false">
             <AppenderRef ref="Async"/>
+            <AppenderRef ref="Console" />
         </Root>
     </Loggers>
 </Configuration>

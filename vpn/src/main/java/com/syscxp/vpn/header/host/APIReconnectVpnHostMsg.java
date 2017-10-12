@@ -9,7 +9,7 @@ import com.syscxp.vpn.vpn.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
 public class APIReconnectVpnHostMsg extends APIMessage {
-    @APIParam(emptyString = false)
+    @APIParam(resourceType = VpnHostVO.class)
     private String uuid;
 
     public String getUuid() {
