@@ -139,6 +139,7 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
             VerificationCode vcode = new VerificationCode();
             vcode.code = code;
             vcode.expiredDate = new Timestamp(expiredTime);
+            verificationCode.isValidate = false;
             sessions.put(msg.getMail(), vcode);
         }else{
             verificationCode.code = code;
