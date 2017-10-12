@@ -71,4 +71,5 @@ public class APIVerifyRepetitionReply extends APIReply {
     public void setUserName(boolean userName) {
         this.userName = userName;
     }
+
 }
