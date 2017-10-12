@@ -690,7 +690,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateAccountPWDMsg msg) {
-        if(!msg.getPhone().equals(dbf.findByUuid(msg.getAccountUuid(),
+        if(msg.getPhone() != null && !msg.getPhone().equals(dbf.findByUuid(msg.getAccountUuid(),
                 AccountVO.class).getPhone())){
             throw new ApiMessageInterceptionException(argerr("Wrong Old Phone"));
         }
