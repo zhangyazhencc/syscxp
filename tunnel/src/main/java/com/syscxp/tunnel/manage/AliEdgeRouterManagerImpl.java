@@ -437,7 +437,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
 
     @Override
     public String getId() {
-        return null;
+        return bus.makeLocalServiceId(AliEdgeRouterConstant.SERVICE_ID);
     }
 
     @Override
