@@ -11,9 +11,9 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.tunnel.header.monitor.*;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchAccessType;
 import com.syscxp.tunnel.header.tunnel.QinqVO_;
-import com.syscxp.tunnel.sdk.sdn.vo.MplsConfigIssueVO;
-import com.syscxp.tunnel.sdk.sdn.vo.SdnConfigIssueVO;
-import com.syscxp.tunnel.sdk.sdn.vo.SdnRestResponse;
+import com.syscxp.tunnel.sdk.sdn.dto.MonitorMplsConfig;
+import com.syscxp.tunnel.sdk.sdn.dto.MonitorSdnConfig;
+import com.syscxp.tunnel.sdk.sdn.dto.SdnRestResponse;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -67,21 +67,25 @@ public class RyuRestService extends AbstractService {
 
         SdnRestResponse restResponse = evtf.syncJsonPost(RyuRestConstant.SYNC_TEST_URL, jsonString,SdnRestResponse.class);
         if(restResponse != null){
+            SimpleQuery<TunnelMonitorVO> q = dbf.createQuery(TunnelMonitorVO.class);
+            q.add(QinqVO_.tunnelUuid, SimpleQuery.Op.EQ, tunnelUuid);
+            TunnelMonitorVO vo = (TunnelMonitorVO)q.list().get(0);
+
             if("0".equals(restResponse.getCode())){
                 // 执行成功
                 logger.info("配置下发成功！");
 
-                SimpleQuery<TunnelMonitorVO> q = dbf.createQuery(TunnelMonitorVO.class);
-                q.add(QinqVO_.tunnelUuid, SimpleQuery.Op.EQ, tunnelUuid);
-                TunnelMonitorVO vo = (TunnelMonitorVO)q.list().get(0);
                 if(vo != null){
                     vo.setStatus(TunnelMonitorStatus.NORMAL);
                     dbf.updateAndRefresh(vo);
                 }
             }else{
                 // TODO: 执行失败
-
                 logger.error(restResponse.toString());
+                if(vo != null){
+                    vo.setMsg(restResponse.toString());
+                    dbf.updateAndRefresh(vo);
+                }
             }
         }
 
@@ -110,8 +114,8 @@ public class RyuRestService extends AbstractService {
     }
 
     private Map getTunnelMonitorConfigInfo(String tunnelUuid) {
-        List<MplsConfigIssueVO> mplsList = new ArrayList<>();
-        List<SdnConfigIssueVO> sdnList = new ArrayList<>();
+        List<MonitorMplsConfig> mplsList = new ArrayList<>();
+        List<MonitorSdnConfig> sdnList = new ArrayList<>();
 
         // 获取两端监控IP与端口
         Map<String,String> monitorIp = new HashMap<>();
@@ -149,7 +153,7 @@ public class RyuRestService extends AbstractService {
             tunnelQ.setParameter("sortTag",monitor.get(0).toString());
             Tuple tunnel = tunnelQ.getResultList().get(0);
 
-            MplsConfigIssueVO mpls = new MplsConfigIssueVO();
+            MonitorMplsConfig mpls = new MonitorMplsConfig();
             if(PhysicalSwitchAccessType.MPLS.toString().equals(host.get(0).toString())){
                 mpls.setM_ip(host.get(1).toString());
                 mpls.setUsername(host.get(2).toString());
@@ -183,7 +187,7 @@ public class RyuRestService extends AbstractService {
 
                 mplsList.add(mpls);
 
-                SdnConfigIssueVO sdn = new SdnConfigIssueVO();
+                MonitorSdnConfig sdn = new MonitorSdnConfig();
                 sdn.setM_ip(host.get(1,String.class));
                 if(monitor.get(0).toString().equals(InterfaceType.A.toString())){
                     sdn.setNw_src(monitorIp.get(InterfaceType.A.toString()));
