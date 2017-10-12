@@ -588,20 +588,20 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         return bus.makeLocalServiceId(VpnConstant.SERVICE_ID);
     }
 
-    private Future<Void> hostCheckThread;
+    private Future<Void> vpnCheckThread;
     private int vpnStatusCheckWorkerInterval;
     private List<String> disconnectedVpn = new ArrayList<>();
 
     private void startFailureHostCopingThread() {
-        hostCheckThread = thdf.submitPeriodicTask(new VpnStatusCheckWorker());
+        vpnCheckThread = thdf.submitPeriodicTask(new VpnStatusCheckWorker());
         logger.debug(String
                 .format("security group failureHostCopingThread starts[failureHostWorkerInterval: %ss]",
                         vpnStatusCheckWorkerInterval));
     }
 
     private void restartFailureHostCopingThread() {
-        if (hostCheckThread != null) {
-            hostCheckThread.cancel(true);
+        if (vpnCheckThread != null) {
+            vpnCheckThread.cancel(true);
         }
         startFailureHostCopingThread();
     }
@@ -619,7 +619,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 }
             }
         };
-
+        restartFailureHostCopingThread();
         VpnGlobalConfig.VPN_STATUS_CHECK_WORKER_INTERVAL.installUpdateExtension(onUpdate);
     }
 
@@ -660,7 +660,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         @Override
         public void run() {
-            logger.debug("start check vpn status");
+            logger.debug(getName() + ": start check host status");
+            System.out.println("start check vpn status");
             disconnectedVpn.clear();
             List<VpnVO> vos = getAllVpns();
             if (vos.isEmpty()) {
@@ -681,6 +682,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 }
             }
             updateVpnStatus(disconnectedVpn);
+            logger.debug(getName() + ": end check host status");
         }
 
         @Override

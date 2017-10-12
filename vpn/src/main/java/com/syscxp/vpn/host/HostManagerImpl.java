@@ -418,7 +418,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
                 }
             }
         };
-
+        restartFailureHostCopingThread();
         VpnGlobalConfig.HOST_STATUS_CHECK_WORKER_INTERVAL.installUpdateExtension(onUpdate);
     }
 
@@ -447,7 +447,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
         @Override
         public void run() {
-            logger.debug("start check host status");
+            logger.debug(getName() + ": start check host status");
             System.out.println("start check host status");
             disconnectedHosts.clear();
             List<VpnHostVO> vos = getAllHosts();
@@ -468,6 +468,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             }
 
             updateHostStatus(disconnectedHosts);
+            logger.debug(getName() + ": end check host status");
         }
 
 
