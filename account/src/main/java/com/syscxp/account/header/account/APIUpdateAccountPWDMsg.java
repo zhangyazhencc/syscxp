@@ -12,8 +12,11 @@ import com.syscxp.header.notification.ApiNotification;
 @Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, accountOnly = true)
 public class APIUpdateAccountPWDMsg extends APIMessage implements AccountMessage {
 
-    @APIParam
+    @APIParam(required = false)
     private String phone;
+
+    @APIParam(required = false)
+    private String email;
 
     @APIParam
     private String code;
@@ -54,6 +57,14 @@ public class APIUpdateAccountPWDMsg extends APIMessage implements AccountMessage
 
     public void setPhone(String phone) {
         this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     @Override
