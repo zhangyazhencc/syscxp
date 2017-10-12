@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.sdk.sdn.vo;
+package com.syscxp.tunnel.sdk.sdn.dto;
 
 /**
  * @Author: sunxuelong.
@@ -6,7 +6,7 @@ package com.syscxp.tunnel.sdk.sdn.vo;
  * @Description: RYU 控制器监控下发信息.
  */
 //@Inventory(mappingVOClass = TunnelMonitorVO.class)
-public class SdnConfigIssueVO {
+public class MonitorSdnConfig {
 
     private Integer vlan_id;
     private String m_ip;

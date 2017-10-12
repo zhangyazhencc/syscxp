@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.sdk.sdn.vo;
+package com.syscxp.tunnel.sdk.sdn.dto;
 
 /**
  * @Author: sunxuelong.
