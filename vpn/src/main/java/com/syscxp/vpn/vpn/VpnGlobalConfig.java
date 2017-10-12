@@ -9,6 +9,9 @@ public class VpnGlobalConfig {
     public static final String CATEGORY = "vpn";
 
     @GlobalConfigValidation(numberGreaterThan = 0)
-    public static GlobalConfig STATUS_CHECK_WORKER_INTERVAL = new GlobalConfig(CATEGORY, "vpn.statusCheckWorkerInterval");
+    public static GlobalConfig VPN_STATUS_CHECK_WORKER_INTERVAL = new GlobalConfig(CATEGORY, "vpn.vpnStatusCheckWorkerInterval");
+
+    @GlobalConfigValidation(numberGreaterThan = 0)
+    public static GlobalConfig HOST_STATUS_CHECK_WORKER_INTERVAL = new GlobalConfig(CATEGORY, "vpn.hostStatusCheckWorkerInterval");
 
 }
