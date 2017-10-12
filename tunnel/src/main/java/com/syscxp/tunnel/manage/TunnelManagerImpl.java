@@ -2,8 +2,10 @@ package com.syscxp.tunnel.manage;
 
 
 import com.syscxp.core.db.*;
+import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.tunnel.header.switchs.SwitchVlanVO;
 import com.syscxp.tunnel.header.tunnel.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1007,11 +1009,135 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         bus.publish(evt);
     }
 
+    private Object updateTunnelFromOrder(OrderCallbackCmd cmd) {
+        if(cmd.getProductType() == ProductType.PORT){
+            InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
+            boolean update = false;
+            if (vo.getState() == InterfaceState.Unpaid) {
+                vo.setState(InterfaceState.paid);
+                update = true;
+            }
+            if (cmd.getExpireDate() != null) {
+                vo.setExpiredDate(cmd.getExpireDate());
+                update = true;
+            }
+            return update ? vo : null;
+        }else if(cmd.getProductType() == ProductType.TUNNEL){
+            TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
+            boolean update = false;
+            if (vo.getState() == TunnelState.Unpaid) {
+                vo.setState(TunnelState.Closed);
+                update = true;
+            }
+            if (cmd.getExpireDate() != null) {
+                vo.setExpiredDate(cmd.getExpireDate());
+                update = true;
+            }
+            return update ? vo : null;
+        }else{
+            return null;
+        }
 
+    }
 
     @Override
     public boolean start() {
+        restf.registerSyncHttpCallHandler(OrderType.BUY.toString(), OrderCallbackCmd.class,
+                new SyncHttpCallHandler<OrderCallbackCmd>() {
+                    @Override
+                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
+                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
+                        if(cmd.getProductType() == ProductType.PORT){
+                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }else if(cmd.getProductType() == ProductType.TUNNEL){
+                            TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }
+                        return null;
+                    }
+                });
+        restf.registerSyncHttpCallHandler(OrderType.UN_SUBCRIBE.toString(), OrderCallbackCmd.class,
+                new SyncHttpCallHandler<OrderCallbackCmd>() {
+                    @Override
+                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
+                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
+                        if(cmd.getProductType() == ProductType.PORT){
+                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.remove(vo);
+                            }
+                        }else if(cmd.getProductType() == ProductType.TUNNEL){
+                            TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.remove(vo);
+                            }
+                        }
+                        return null;
+                    }
+                });
 
+        restf.registerSyncHttpCallHandler(OrderType.RENEW.toString(), OrderCallbackCmd.class,
+                new SyncHttpCallHandler<OrderCallbackCmd>() {
+                    @Override
+                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
+                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
+                        if(cmd.getProductType() == ProductType.PORT){
+                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }else if(cmd.getProductType() == ProductType.TUNNEL){
+                            TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }
+                        return null;
+                    }
+                });
+        restf.registerSyncHttpCallHandler(OrderType.SLA_COMPENSATION.toString(), OrderCallbackCmd.class,
+                new SyncHttpCallHandler<OrderCallbackCmd>() {
+                    @Override
+                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
+                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
+                        if(cmd.getProductType() == ProductType.PORT){
+                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }else if(cmd.getProductType() == ProductType.TUNNEL){
+                            TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }
+                        return null;
+                    }
+                });
+        restf.registerSyncHttpCallHandler(OrderType.MODIFY.toString(), OrderCallbackCmd.class,
+                new SyncHttpCallHandler<OrderCallbackCmd>() {
+                    @Override
+                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
+                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
+                        if(cmd.getProductType() == ProductType.PORT){
+                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }else if(cmd.getProductType() == ProductType.TUNNEL){
+                            TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }
+                        return null;
+                    }
+                });
         return true;
     }
 
