@@ -266,7 +266,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
     @Transactional
     public void handle(APICreateVpnHostMsg msg) {
-       final APICreateVpnHostEvent evt = new APICreateVpnHostEvent(msg.getId());
+        final APICreateVpnHostEvent evt = new APICreateVpnHostEvent(msg.getId());
 //        VpnHostVO host = new VpnHostVO();
 //        host.setUuid(Platform.getUuid());
 //        host.setName(msg.getName());
@@ -316,8 +316,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
     }
 
-    private void doAddHost(final APICreateVpnHostMsg msg, ReturnValueCompletion<VpnHostInventory > completion) {
-        final APICreateVpnHostEvent evt = new APICreateVpnHostEvent(msg.getId());
+    private void doAddHost(final APICreateVpnHostMsg msg, ReturnValueCompletion<VpnHostInventory> completion) {
         final VpnHostVO host = new VpnHostVO();
         host.setUuid(Platform.getUuid());
         host.setName(msg.getName());
@@ -333,7 +332,6 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         host.setStatus(HostStatus.Connecting);
 
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
-        final VpnHostInventory inv = VpnHostInventory.valueOf(host);
         chain.setName(String.format("add-host-%s", host.getUuid()));
 
         chain.then(new NoRollbackFlow() {
@@ -408,19 +406,19 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
     }
 
     private void prepareGlobalConfig() {
-        hostStatusCheckWorkerInterval = VpnGlobalConfig.STATUS_CHECK_WORKER_INTERVAL.value(Integer.class);
+        hostStatusCheckWorkerInterval = VpnGlobalConfig.HOST_STATUS_CHECK_WORKER_INTERVAL.value(Integer.class);
 
         GlobalConfigUpdateExtensionPoint onUpdate = new GlobalConfigUpdateExtensionPoint() {
             @Override
             public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
-                if (VpnGlobalConfig.STATUS_CHECK_WORKER_INTERVAL.isMe(newConfig)) {
+                if (VpnGlobalConfig.HOST_STATUS_CHECK_WORKER_INTERVAL.isMe(newConfig)) {
                     hostStatusCheckWorkerInterval = newConfig.value(Integer.class);
                     restartFailureHostCopingThread();
                 }
             }
         };
 
-        VpnGlobalConfig.STATUS_CHECK_WORKER_INTERVAL.installUpdateExtension(onUpdate);
+        VpnGlobalConfig.HOST_STATUS_CHECK_WORKER_INTERVAL.installUpdateExtension(onUpdate);
     }
 
     private class HostStatusCheckWorker implements PeriodicTask {
@@ -449,6 +447,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         @Override
         public void run() {
             logger.debug("start check host status");
+            System.out.println("start check host status");
             disconnectedHosts.clear();
             List<VpnHostVO> vos = getAllHosts();
             if (vos.isEmpty()) {
@@ -513,6 +512,8 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             validate((APIDeleteZoneMsg) msg);
         } else if (msg instanceof APIDeleteHostInterfaceMsg) {
             validate((APIDeleteHostInterfaceMsg) msg);
+        } else if (msg instanceof APIDeleteVpnHostMsg){
+            validate((APIDeleteVpnHostMsg) msg);
         }
         return msg;
     }

@@ -628,19 +628,19 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void prepareGlobalConfig() {
         vpnStatusCheckWorkerInterval =
-                VpnGlobalConfig.STATUS_CHECK_WORKER_INTERVAL.value(Integer.class);
+                VpnGlobalConfig.VPN_STATUS_CHECK_WORKER_INTERVAL.value(Integer.class);
 
         GlobalConfigUpdateExtensionPoint onUpdate = new GlobalConfigUpdateExtensionPoint() {
             @Override
             public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
-                if (VpnGlobalConfig.STATUS_CHECK_WORKER_INTERVAL.isMe(newConfig)) {
+                if (VpnGlobalConfig.VPN_STATUS_CHECK_WORKER_INTERVAL.isMe(newConfig)) {
                     vpnStatusCheckWorkerInterval = newConfig.value(Integer.class);
                     restartFailureHostCopingThread();
                 }
             }
         };
 
-        VpnGlobalConfig.STATUS_CHECK_WORKER_INTERVAL.installUpdateExtension(onUpdate);
+        VpnGlobalConfig.VPN_STATUS_CHECK_WORKER_INTERVAL.installUpdateExtension(onUpdate);
     }
 
     private class VpnStatusCheckWorker implements PeriodicTask {
