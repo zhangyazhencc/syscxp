@@ -28,7 +28,7 @@ import com.syscxp.header.query.QueryOp;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.header.vpn.VpnAgentCommand;
-import com.syscxp.header.vpn.VpnAgentResponse;
+import com.syscxp.header.vpn.VpnAgentResponse.*;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
@@ -664,7 +664,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             }
             //Todo VPN重连
             ReconnectVpnCmd cmd = ReconnectVpnCmd.valueOf(vo);
-            VpnAgentResponse.TaskResult result;
+            TaskResult result;
             try {
                 result = new VpnRESTCaller()
                         .syncPostForResult(VpnConstant.RECONNECT_VPN_PATH, cmd);
@@ -692,13 +692,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     continue;
                 }
                 CheckVpnStatusCmd cmd = CheckVpnStatusCmd.valueOf(vo);
-                VpnAgentResponse rsp;
-                try {
-                    rsp = new VpnRESTCaller().syncPostForVPN(VpnConstant.CHECK_VPN_STATUS_PATH, cmd);
-                    if (rsp.getStatus() == VpnAgentResponse.RunStatus.UP && vo.getStatus() == VpnStatus.Connected)
+                RunStatus status =  new VpnRESTCaller().checkStatus(VpnConstant.CHECK_VPN_STATUS_PATH, cmd);
+
+                if (status == RunStatus.UP && vo.getStatus() == VpnStatus.Connected)
                         continue;
-                } catch (Exception ignored) {
-                }
                 if (!reconnectVpn(vo)) {
                     disconnectedVpn.add(vo.getUuid());
                 }

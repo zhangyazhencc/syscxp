@@ -477,13 +477,4 @@ public class VpnCommands {
 
     }
 
-
-    /**
-     * 物理机或VPN运行状态
-     */
-    public enum RunStatus {
-        DOWN,
-        UP,
-        UNKOWN
-    }
 }

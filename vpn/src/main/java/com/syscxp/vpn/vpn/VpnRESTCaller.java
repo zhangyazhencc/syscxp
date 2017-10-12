@@ -2,12 +2,10 @@ package com.syscxp.vpn.vpn;
 
 import com.syscxp.core.Platform;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.thread.CancelablePeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.ReturnValueCompletion;
-import com.syscxp.utils.DebugUtils;
-import com.syscxp.vpn.exception.VpnServiceException;
+import com.syscxp.header.errorcode.ErrorCode;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -21,13 +19,10 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.vpn.VpnAgentCommand;
 import com.syscxp.header.vpn.VpnAgentResponse;
-import com.syscxp.header.vpn.VpnAgentResponse.TaskResult;
+import com.syscxp.header.vpn.VpnAgentResponse.*;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-
-import java.util.concurrent.TimeUnit;
-
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class VpnRESTCaller {
@@ -49,74 +44,36 @@ public class VpnRESTCaller {
         this(CoreGlobalProperty.VPN_BASE_URL);
     }
 
-    public void checkStatus(final String path, final VpnAgentCommand cmd,
-                            final ReturnValueCompletion<VpnAgentResponse> completion, final long interval, final long timeout) {
-        String url = buildUrl(path);
-        class CheckStatus implements CancelablePeriodicTask {
-            private long count;
-
-            CheckStatus() {
-                this.count = timeout / interval;
-                DebugUtils.Assert(count != 0, String.format("invalid timeout[%s], interval[%s]", timeout, interval));
-            }
-
-            @Override
-            public boolean run() {
-                try {
-                    VpnAgentResponse rsp = restf.syncJsonPost(url, cmd, VpnAgentResponse.class);
-                    logger.debug(String.format("successfully post %s", url));
-                    completion.success(rsp);
-                    return true;
-                } catch (Exception e) {
-                    String info = String.format("still unable to post %s, will try %s times. %s", url, count, e.getMessage());
-                    logger.debug(info);
-                    if (--count <= 0) {
-                        completion.fail(Platform.operr("unable to post %s in %sms", url, timeout));
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-            }
-
-            @Override
-            public TimeUnit getTimeUnit() {
-                return TimeUnit.MILLISECONDS;
-            }
-
-            @Override
-            public long getInterval() {
-                return interval;
-            }
-
-            @Override
-            public String getName() {
-                return "CheckStatus";
-            }
-        }
-
-        thdf.submitCancelablePeriodicTask(new CheckStatus());
-    }
-
-
-    public void checkStatus(String path, VpnAgentCommand cmd, ReturnValueCompletion<VpnAgentResponse> completion) {
-        checkStatus(path, cmd, completion, TimeUnit.SECONDS.toMillis(5), TimeUnit.MINUTES.toMillis(5));
-    }
-
     /**
      * 获取任务处理结果
      */
     public TaskResult syncPostForResult(String path, VpnAgentCommand cmd) {
-        return syncPostForVPN(path, cmd).getResult();
+        return syncPostForResponse(path, cmd).getResult();
     }
 
-    public VpnAgentResponse syncPostForVPN(String path, VpnAgentCommand cmd) {
+    /**
+     * 获取返回结果
+     */
+    public VpnAgentResponse syncPostForResponse(String path, VpnAgentCommand cmd) {
         return restf.syncJsonPost(buildUrl(path), cmd, VpnAgentResponse.class);
     }
 
     /**
-     * 生成URL
+     * 检查状态
      */
+    public RunStatus checkStatus(String path, VpnAgentCommand cmd) {
+        String url = buildUrl(path);
+        try {
+            VpnAgentResponse response = syncPostForResponse(url, cmd);
+            logger.debug(String.format("successfully post %s", url));
+            return response.getStatus();
+        } catch (Exception e) {
+            logger.debug(String.format("unable to post %s. %s", url, e.getMessage()));
+            return RunStatus.UNKOWN;
+        }
+
+    }
+
     private String buildUrl(String path) {
         return URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.VPN_ROOT_PATH, path);
     }
@@ -134,19 +91,37 @@ public class VpnRESTCaller {
 
     public void sendCommand(String path, VpnAgentCommand cmd, final Completion completion) {
         String url = buildUrl(path);
-        try {
-            TaskResult result = syncPostForResult(path, cmd);
-            logger.debug(String.format("successfully post %s", url));
-            if (result.isSuccess()) {
-                completion.success();
-            } else {
-                completion.fail(Platform.operr("failed to execute the command[%s]. %s", url, result.getMessage()));
+        sendCommandForResponce(url, cmd, new ReturnValueCompletion<VpnAgentResponse>(completion) {
+            @Override
+            public void success(VpnAgentResponse returnValue) {
+                TaskResult result = returnValue.getResult();
+                logger.debug(String.format("successfully post %s", url));
+                if (result.isSuccess()) {
+                    completion.success();
+                } else {
+                    completion.fail(Platform.operr("failed to execute the command[%s]. %s", url, result.getMessage()));
+                }
             }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                completion.fail(errorCode);
+            }
+        });
+    }
+
+    public void sendCommandForResponce(String url, VpnAgentCommand cmd,
+                                       final ReturnValueCompletion<VpnAgentResponse> completion) {
+        try {
+            VpnAgentResponse response = syncPostForResponse(url, cmd);
+            logger.debug(String.format("successfully post %s", url));
+            completion.success(response);
         } catch (Exception e) {
-            String info = String.format("unable to post %s. %s", url, e.getMessage());
-            logger.debug(info);
+            logger.debug(String.format("unable to post %s. %s", url, e.getMessage()));
             completion.fail(Platform.operr("unable to post %s. %s", url, e.getMessage()));
         }
     }
+
+
 }
 

@@ -5,7 +5,7 @@ import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
-import com.syscxp.header.vpn.VpnAgentResponse;
+import com.syscxp.header.vpn.VpnAgentResponse.*;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.vpn.header.host.*;
 import com.syscxp.vpn.vpn.VpnCommands.*;
@@ -267,52 +267,51 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
     @Transactional
     public void handle(APICreateVpnHostMsg msg) {
         final APICreateVpnHostEvent evt = new APICreateVpnHostEvent(msg.getId());
-//        VpnHostVO host = new VpnHostVO();
-//        host.setUuid(Platform.getUuid());
-//        host.setName(msg.getName());
-//        host.setDescription(msg.getDescription());
-//        host.setPublicInterface(msg.getPublicInterface());
-//        host.setPublicIp(msg.getPublicIp());
-//        host.setZoneUuid(msg.getZoneUuid());
-//        host.setManageIp(msg.getManageIp());
-//        host.setSshPort(msg.getSshPort());
-//        host.setUsername(msg.getUsername());
-//        host.setPassword(msg.getPassword());
-//        host.setState(HostState.Enabled);
-//        host.setStatus(HostStatus.Connecting);
-//
-//
-//        AddVpnHostCmd cmd = AddVpnHostCmd.valueOf(host);
-//
-//        new VpnRESTCaller().sendCommand(HostConstant.ADD_HOST_PATH, cmd, new Completion(evt) {
-//            @Override
-//            public void success() {
-//                host.setStatus(HostStatus.Connected);
-//            }
-//
-//            @Override
-//            public void fail(ErrorCode errorCode) {
-//                host.setStatus(HostStatus.Disconnected);
-//                evt.setError(errorCode);
-//            }
-//        });
-//
-//        evt.setInventory(VpnHostInventory.valueOf(dbf.persistAndRefresh(host)));
-//        bus.publish(evt);
+        VpnHostVO host = new VpnHostVO();
+        host.setUuid(Platform.getUuid());
+        host.setName(msg.getName());
+        host.setDescription(msg.getDescription());
+        host.setPublicInterface(msg.getPublicInterface());
+        host.setPublicIp(msg.getPublicIp());
+        host.setZoneUuid(msg.getZoneUuid());
+        host.setManageIp(msg.getManageIp());
+        host.setSshPort(msg.getSshPort());
+        host.setUsername(msg.getUsername());
+        host.setPassword(msg.getPassword());
+        host.setState(HostState.Enabled);
+        host.setStatus(HostStatus.Connecting);
 
-        doAddHost(msg, new ReturnValueCompletion<VpnHostInventory>(msg) {
+        AddVpnHostCmd cmd = AddVpnHostCmd.valueOf(host);
+
+        new VpnRESTCaller().sendCommand(HostConstant.ADD_HOST_PATH, cmd, new Completion(evt) {
             @Override
-            public void success(VpnHostInventory returnValue) {
-                evt.setInventory(returnValue);
-                bus.publish(evt);
+            public void success() {
+                host.setStatus(HostStatus.Connected);
             }
 
             @Override
             public void fail(ErrorCode errorCode) {
+                host.setStatus(HostStatus.Disconnected);
                 evt.setError(errorCode);
-                bus.publish(evt);
             }
         });
+//
+//        evt.setInventory(VpnHostInventory.valueOf(dbf.persistAndRefresh(host)));
+//        bus.publish(evt);
+
+//        doAddHost(msg, new ReturnValueCompletion<VpnHostInventory>(msg) {
+//            @Override
+//            public void success(VpnHostInventory returnValue) {
+//                evt.setInventory(returnValue);
+//                bus.publish(evt);
+//            }
+//
+//            @Override
+//            public void fail(ErrorCode errorCode) {
+//                evt.setError(errorCode);
+//                bus.publish(evt);
+//            }
+//        });
 
     }
 
@@ -459,13 +458,9 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
                     continue;
                 }
                 CheckVpnHostStatusCmd cmd = CheckVpnHostStatusCmd.valueOf(vo);
-                VpnAgentResponse rsp;
-                try {
-                    rsp = new VpnRESTCaller().syncPostForVPN(HostConstant.CHECK_HOST_STATUS_PATH, cmd);
-                    if (rsp.getStatus() == VpnAgentResponse.RunStatus.UP)
-                        continue;
-                } catch (Exception ignored) {
-                }
+                RunStatus status =  new VpnRESTCaller().checkStatus(HostConstant.CHECK_HOST_STATUS_PATH, cmd);
+                if (status == RunStatus.UP &&  vo.getStatus() == HostStatus.Connected)
+                    continue;
                 if (!reconnectHost(vo))
                     disconnectedHosts.add(vo.getUuid());
             }
