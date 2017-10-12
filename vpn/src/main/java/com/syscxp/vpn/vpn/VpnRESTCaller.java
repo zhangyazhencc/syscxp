@@ -2,10 +2,14 @@ package com.syscxp.vpn.vpn;
 
 import com.syscxp.core.Platform;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.retry.Retry;
+import com.syscxp.core.retry.RetryCondition;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.errorcode.ErrorCode;
+import com.syscxp.header.errorcode.OperationFailureException;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -23,6 +27,11 @@ import com.syscxp.header.vpn.VpnAgentResponse.*;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.http.*;
+import org.springframework.web.client.RestClientException;
+
+import java.io.IOException;
+import java.util.Map;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class VpnRESTCaller {
@@ -56,6 +65,30 @@ public class VpnRESTCaller {
      */
     public VpnAgentResponse syncPostForResponse(String path, VpnAgentCommand cmd) {
         return restf.syncJsonPost(buildUrl(path), cmd, VpnAgentResponse.class);
+    }
+
+    public VpnAgentResponse syncPostForResponseNoretry(String url, VpnAgentCommand cmd) {
+        String body = JSONObjectUtil.toJsonString(cmd);
+
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+        requestHeaders.setContentLength(body.length());
+        HttpEntity<String> req = new HttpEntity<String>(body, requestHeaders);
+        if (logger.isTraceEnabled()) {
+            logger.trace(String.format("json post[%s], %s", url, req.toString()));
+        }
+
+        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
+
+        if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
+            throw new OperationFailureException(Platform.operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
+        }
+
+        if (logger.isTraceEnabled()) {
+            logger.trace(String.format("[http response(url: %s)] %s", url, rsp.getBody()));
+        }
+        return JSONObjectUtil.toObject(rsp.getBody(), VpnAgentResponse.class);
+
     }
 
     /**
@@ -113,7 +146,7 @@ public class VpnRESTCaller {
     public void sendCommandForResponce(String url, VpnAgentCommand cmd,
                                        final ReturnValueCompletion<VpnAgentResponse> completion) {
         try {
-            VpnAgentResponse response = syncPostForResponse(url, cmd);
+            VpnAgentResponse response = syncPostForResponseNoretry(url, cmd);
             logger.debug(String.format("successfully post %s", url));
             completion.success(response);
         } catch (Exception e) {

@@ -295,9 +295,9 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
                 evt.setError(errorCode);
             }
         });
-//
-//        evt.setInventory(VpnHostInventory.valueOf(dbf.persistAndRefresh(host)));
-//        bus.publish(evt);
+
+        evt.setInventory(VpnHostInventory.valueOf(dbf.persistAndRefresh(host)));
+        bus.publish(evt);
 
 //        doAddHost(msg, new ReturnValueCompletion<VpnHostInventory>(msg) {
 //            @Override
@@ -329,6 +329,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         host.setPassword(msg.getPassword());
         host.setState(HostState.Enabled);
         host.setStatus(HostStatus.Connecting);
+        dbf.persistAndRefresh(host);
 
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
         chain.setName(String.format("add-host-%s", host.getUuid()));
@@ -340,6 +341,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
                 new VpnRESTCaller().sendCommand(HostConstant.ADD_HOST_PATH, cmd, new Completion(trigger) {
                     @Override
                     public void success() {
+
                         host.setStatus(HostStatus.Connected);
                         dbf.persistAndRefresh(host);
                         trigger.next();
@@ -458,8 +460,8 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
                     continue;
                 }
                 CheckVpnHostStatusCmd cmd = CheckVpnHostStatusCmd.valueOf(vo);
-                RunStatus status =  new VpnRESTCaller().checkStatus(HostConstant.CHECK_HOST_STATUS_PATH, cmd);
-                if (status == RunStatus.UP &&  vo.getStatus() == HostStatus.Connected)
+                RunStatus status = new VpnRESTCaller().checkStatus(HostConstant.CHECK_HOST_STATUS_PATH, cmd);
+                if (status == RunStatus.UP && vo.getStatus() == HostStatus.Connected)
                     continue;
                 if (!reconnectHost(vo))
                     disconnectedHosts.add(vo.getUuid());
@@ -507,7 +509,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             validate((APIDeleteZoneMsg) msg);
         } else if (msg instanceof APIDeleteHostInterfaceMsg) {
             validate((APIDeleteHostInterfaceMsg) msg);
-        } else if (msg instanceof APIDeleteVpnHostMsg){
+        } else if (msg instanceof APIDeleteVpnHostMsg) {
             validate((APIDeleteVpnHostMsg) msg);
         }
         return msg;
@@ -563,5 +565,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             ));
     }
 
-
+    private VpnHostVO getVpnHostVO(String uuid) {
+        return dbf.findByUuid(uuid, VpnHostVO.class);
+    }
 }
