@@ -194,7 +194,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             }
         }
 
-
         if(msg.getRoleName() != null){
             SimpleQuery<RoleVO> q = dbf.createQuery(RoleVO.class);
             q.add(RoleVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());

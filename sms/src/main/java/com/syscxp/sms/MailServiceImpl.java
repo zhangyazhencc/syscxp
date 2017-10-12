@@ -44,6 +44,7 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
     class VerificationCode {
         String code;
         Timestamp expiredDate;
+        boolean isValidate;
     }
 
     private Map<String, VerificationCode> sessions = new ConcurrentHashMap<>();
@@ -76,14 +77,15 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
         if (verificationCode == null){
         }else{
             Timestamp curr = new Timestamp(System.currentTimeMillis());
-            if (curr.before(verificationCode.expiredDate) && msg.getCode().equals(verificationCode.code)) {
+            if (!verificationCode.isValidate && curr.before(verificationCode.expiredDate)
+                    && msg.getCode().equals(verificationCode.code)) {
                 valid = true;
             }else{
             }
         }
-
         reply.setValid(valid);
-
+        verificationCode.isValidate = true;
+        sessions.put(msg.getMail(),verificationCode);
         bus.reply(msg, reply);
     }
 
