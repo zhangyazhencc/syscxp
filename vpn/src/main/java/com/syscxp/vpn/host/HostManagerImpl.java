@@ -1,12 +1,13 @@
 package com.syscxp.vpn.host;
 
+import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.core.Completion;
+import com.syscxp.header.core.ReturnValueCompletion;
+import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.vpn.VpnAgentResponse;
-import com.syscxp.header.vpn.VpnAgentResponse.TaskResult;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.vpn.header.host.*;
-import com.syscxp.vpn.header.vpn.VpnStatus;
 import com.syscxp.vpn.vpn.VpnCommands.*;
 import com.syscxp.vpn.vpn.VpnGlobalConfig;
 import com.syscxp.vpn.vpn.VpnRESTCaller;
@@ -34,6 +35,7 @@ import com.syscxp.utils.logging.CLogger;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -264,8 +266,59 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
     @Transactional
     public void handle(APICreateVpnHostMsg msg) {
-        APICreateVpnHostEvent evt = new APICreateVpnHostEvent(msg.getId());
-        VpnHostVO host = new VpnHostVO();
+       final APICreateVpnHostEvent evt = new APICreateVpnHostEvent(msg.getId());
+//        VpnHostVO host = new VpnHostVO();
+//        host.setUuid(Platform.getUuid());
+//        host.setName(msg.getName());
+//        host.setDescription(msg.getDescription());
+//        host.setPublicInterface(msg.getPublicInterface());
+//        host.setPublicIp(msg.getPublicIp());
+//        host.setZoneUuid(msg.getZoneUuid());
+//        host.setManageIp(msg.getManageIp());
+//        host.setSshPort(msg.getSshPort());
+//        host.setUsername(msg.getUsername());
+//        host.setPassword(msg.getPassword());
+//        host.setState(HostState.Enabled);
+//        host.setStatus(HostStatus.Connecting);
+//
+//
+//        AddVpnHostCmd cmd = AddVpnHostCmd.valueOf(host);
+//
+//        new VpnRESTCaller().sendCommand(HostConstant.ADD_HOST_PATH, cmd, new Completion(evt) {
+//            @Override
+//            public void success() {
+//                host.setStatus(HostStatus.Connected);
+//            }
+//
+//            @Override
+//            public void fail(ErrorCode errorCode) {
+//                host.setStatus(HostStatus.Disconnected);
+//                evt.setError(errorCode);
+//            }
+//        });
+//
+//        evt.setInventory(VpnHostInventory.valueOf(dbf.persistAndRefresh(host)));
+//        bus.publish(evt);
+
+        doAddHost(msg, new ReturnValueCompletion<VpnHostInventory>(msg) {
+            @Override
+            public void success(VpnHostInventory returnValue) {
+                evt.setInventory(returnValue);
+                bus.publish(evt);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                evt.setError(errorCode);
+                bus.publish(evt);
+            }
+        });
+
+    }
+
+    private void doAddHost(final APICreateVpnHostMsg msg, ReturnValueCompletion<VpnHostInventory > completion) {
+        final APICreateVpnHostEvent evt = new APICreateVpnHostEvent(msg.getId());
+        final VpnHostVO host = new VpnHostVO();
         host.setUuid(Platform.getUuid());
         host.setName(msg.getName());
         host.setDescription(msg.getDescription());
@@ -279,24 +332,45 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         host.setState(HostState.Enabled);
         host.setStatus(HostStatus.Connecting);
 
+        FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
+        final VpnHostInventory inv = VpnHostInventory.valueOf(host);
+        chain.setName(String.format("add-host-%s", host.getUuid()));
 
-        AddVpnHostCmd cmd = AddVpnHostCmd.valueOf(host);
-
-        new VpnRESTCaller().sendCommand(HostConstant.ADD_HOST_PATH, cmd, new Completion(evt) {
+        chain.then(new NoRollbackFlow() {
             @Override
-            public void success() {
-                host.setStatus(HostStatus.Connected);
-            }
+            public void run(final FlowTrigger trigger, Map data) {
+                AddVpnHostCmd cmd = AddVpnHostCmd.valueOf(host);
+                new VpnRESTCaller().sendCommand(HostConstant.ADD_HOST_PATH, cmd, new Completion(trigger) {
+                    @Override
+                    public void success() {
+                        host.setStatus(HostStatus.Connected);
+                        dbf.persistAndRefresh(host);
+                        trigger.next();
+                    }
 
+                    @Override
+                    public void fail(ErrorCode errorCode) {
+                        host.setStatus(HostStatus.Disconnected);
+                        dbf.persistAndRefresh(host);
+                        trigger.fail(errorCode);
+                    }
+                });
+            }
+        }).done(new FlowDoneHandler(msg) {
             @Override
-            public void fail(ErrorCode errorCode) {
-                host.setStatus(HostStatus.Disconnected);
-                evt.setError(errorCode);
+            public void handle(Map data) {
+                VpnHostVO vpnHost = dbf.findByUuid(host.getUuid(), VpnHostVO.class);
+                logger.debug(String.format("successfully added host[name:%s, uuid:%s]", host.getName(), host.getUuid()));
+                VpnHostInventory inv = VpnHostInventory.valueOf(vpnHost);
+                completion.success(inv);
             }
-        });
+        }).error(new FlowErrorHandler(msg) {
+            @Override
+            public void handle(ErrorCode errCode, Map data) {
+                completion.fail(errCode);
+            }
+        }).start();
 
-        evt.setInventory(VpnHostInventory.valueOf(dbf.persistAndRefresh(host)));
-        bus.publish(evt);
     }
 
     private void handleLocalMessage(Message msg) {
@@ -381,7 +455,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
                 return;
             }
             for (VpnHostVO vo : vos) {
-                if (vo.getStatus() == HostStatus.Disconnected){
+                if (vo.getStatus() == HostStatus.Disconnected) {
                     disconnectedHosts.add(vo.getUuid());
                     continue;
                 }

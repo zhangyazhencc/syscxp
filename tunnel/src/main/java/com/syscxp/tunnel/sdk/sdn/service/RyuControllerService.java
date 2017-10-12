@@ -1,6 +1,6 @@
 package com.syscxp.tunnel.sdk.sdn.service;
 
-import com.syscxp.tunnel.sdk.sdn.vo.SdnConfigIssueVO;
+import com.syscxp.tunnel.sdk.sdn.dto.MonitorSdnConfig;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -32,7 +32,7 @@ public class RyuControllerService extends AbstractService {
     public void tunnelMonitorIssue(String tunnelUuid, RESTFacade evtf){
         RestTemplate restTemplate = evtf.getRESTTemplate();
 
-        SdnConfigIssueVO issueVO = new SdnConfigIssueVO();
+        MonitorSdnConfig issueVO = new MonitorSdnConfig();
         issueVO.setM_ip("192.168.211.17");
         issueVO.setIn_port("eth-0-31");
         issueVO.setNw_src("192.168.211.25");
@@ -41,7 +41,7 @@ public class RyuControllerService extends AbstractService {
         issueVO.setUplink("eth-0-3");
         issueVO.setBandwidth(1000);
 
-        List<SdnConfigIssueVO> list = new ArrayList<>();
+        List<MonitorSdnConfig> list = new ArrayList<>();
         list.add(issueVO);
 
         Map<String, Object> urlVariables = new HashMap<String, Object>();
@@ -90,7 +90,7 @@ public class RyuControllerService extends AbstractService {
         resultDetailInventories.add(detailInventoryA);
         resultDetailInventories.add(detailInventoryZ);
 
-        SdnConfigIssueVO issueInventory = new SdnConfigIssueVO();
+        MonitorSdnConfig issueInventory = new MonitorSdnConfig();
         issueInventory.setTunnel_uuid(tunnelUuid);
         issueInventory.setDetailInventories(resultDetailInventories);
         System.out.println(JSONObjectUtil.toJsonString(vq));*/

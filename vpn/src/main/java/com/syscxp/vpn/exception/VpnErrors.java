@@ -2,7 +2,9 @@ package com.syscxp.vpn.exception;
 
 public enum VpnErrors {
 
-    INSUFFICIENT_BALANCE(2000);
+    UNPAYABLE(1001),
+    BILLING_ERROR(1002),
+    VPN_CONTROLLER_ERROR(1003);
 
     private String code;
 

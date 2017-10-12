@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.sdk.sdn.vo;
+package com.syscxp.tunnel.sdk.sdn.dto;
 
 import java.util.Arrays;
 
@@ -7,23 +7,14 @@ import java.util.Arrays;
  * @Cretion Date: 2017-10-11.
  * @Description: .
  */
-public class RestResult {
+public class RyuRestResult {
     private Boolean success;
     private Error error;
 
     class Error{
-        private String[] causes;
         private String code;
         private String description;
         private String details;
-
-        public String[] getCauses() {
-            return causes;
-        }
-
-        public void setCauses(String[] causes) {
-            this.causes = causes;
-        }
 
         public String getCode() {
             return code;
@@ -52,7 +43,6 @@ public class RestResult {
         @Override
         public String toString() {
             return "Error{" +
-                    "causes=" + Arrays.toString(causes) +
                     ", code='" + code + '\'' +
                     ", description='" + description + '\'' +
                     ", details='" + details + '\'' +
@@ -78,7 +68,7 @@ public class RestResult {
 
     @Override
     public String toString() {
-        return "RestResult{" +
+        return "RyuRestResult{" +
                 "success=" + success +
                 ", error=" + error.toString() +
                 '}';

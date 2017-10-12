@@ -29,6 +29,8 @@ public class APICreateVpnMsg extends APIVpnMessage {
     @APIParam(emptyString = false)
     private String networkUuid;
     @APIParam(emptyString = false)
+    private String interfaceName;
+    @APIParam(emptyString = false)
     private String localIp;
     @APIParam(emptyString = false)
     private String netmask;
@@ -59,6 +61,14 @@ public class APICreateVpnMsg extends APIVpnMessage {
 
     public void setLocalIp(String localIp) {
         this.localIp = localIp;
+    }
+
+    public String getInterfaceName() {
+        return interfaceName;
+    }
+
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
     }
 
     public String getNetmask() {

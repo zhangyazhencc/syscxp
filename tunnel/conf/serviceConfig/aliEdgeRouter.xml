@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://syscxp.com/schema/syscxp">
+    <id>aliEdgeRouter</id>
+    <interceptor>aliEdegeRouterManager</interceptor>
+
+    <message>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.APICreateAliEdgeRouterMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.APIUpdateAliEdgeRouterMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.APIDeleteAliEdgeRouterMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.APIQueryAliEdgeRouterMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+    <message>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.APISaveAliUserMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.APIUpdateAliUserMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.APIQueryAliUserMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+</service>
