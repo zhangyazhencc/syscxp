@@ -1,8 +1,8 @@
 package com.syscxp.tunnel.sdk.sdn.service;
 
-import com.google.gson.Gson;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.Message;
@@ -10,19 +10,17 @@ import com.syscxp.header.rest.AsyncRESTCallback;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.tunnel.header.monitor.*;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchAccessType;
+import com.syscxp.tunnel.header.tunnel.QinqVO_;
 import com.syscxp.tunnel.sdk.sdn.vo.MplsConfigIssueVO;
-import com.syscxp.tunnel.sdk.sdn.vo.RestResult;
 import com.syscxp.tunnel.sdk.sdn.vo.SdnConfigIssueVO;
+import com.syscxp.tunnel.sdk.sdn.vo.SdnRestResponse;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.http.HttpEntity;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
@@ -54,20 +52,43 @@ public class RyuRestService extends AbstractService {
      * @param tunnelUuid
      */
     public void tunnelMonitorStart(String tunnelUuid,Message msg){
-        Map configMap = getConfigInfo(tunnelUuid);
+        Map configMap = getTunnelMonitorConfigInfo(tunnelUuid);
         String jsonString = JSONObjectUtil.toJsonString(configMap);
         logger.info(jsonString);
 
         // 同步执行
-        RestTemplate restTemplate = evtf.getRESTTemplate();
-        String responseString = restTemplate.postForEntity(RyuRestConstant.TEST_URL, jsonString, String.class).getBody();
-        System.out.println("执行结果："+responseString);
 
-        RestResult restResult2 = JSONObjectUtil.toObject(responseString,RestResult.class);
-        System.out.println(restResult2.toString());
+        //RestTemplate restTemplate = evtf.getRESTTemplate();
+        //String responseString = restTemplate.postForEntity(RyuRestConstant.SYNC_TEST_URL, jsonString, String.class).getBody();
+        //System.out.println("执行结果："+responseString);
+
+        //SdnRestResponse restR = JSONObjectUtil.fromTypedJsonString(responseString);
+        //System.out.println(restR.toString());
+
+        SdnRestResponse restResponse = evtf.syncJsonPost(RyuRestConstant.SYNC_TEST_URL, jsonString,SdnRestResponse.class);
+        if(restResponse != null){
+            if("0".equals(restResponse.getCode())){
+                // 执行成功
+                logger.info("配置下发成功！");
+
+                SimpleQuery<TunnelMonitorVO> q = dbf.createQuery(TunnelMonitorVO.class);
+                q.add(QinqVO_.tunnelUuid, SimpleQuery.Op.EQ, tunnelUuid);
+                TunnelMonitorVO vo = (TunnelMonitorVO)q.list().get(0);
+                if(vo != null){
+                    vo.setStatus(TunnelMonitorStatus.NORMAL);
+                    dbf.updateAndRefresh(vo);
+                }
+            }else{
+                // TODO: 执行失败
+
+                logger.error(restResponse.toString());
+            }
+        }
+
+
 
         // 异步执行
-        /*evtf.asyncJsonPost(RyuRestConstant.TEST_URL, jsonString, new AsyncRESTCallback(msg) {
+        /*evtf.asyncJsonPost(RyuRestConstant.ASYNC_TEST_URL, jsonString, new AsyncRESTCallback(msg) {
             @Override
             public void fail(ErrorCode err) {
                 logger.error("配置下发失败！");
@@ -85,11 +106,10 @@ public class RyuRestService extends AbstractService {
             }
         });
 
-        logger.info("监控配置下发中！");
-*/
+        logger.info("监控配置下发中！");*/
     }
 
-    private Map getConfigInfo(String tunnelUuid) {
+    private Map getTunnelMonitorConfigInfo(String tunnelUuid) {
         List<MplsConfigIssueVO> mplsList = new ArrayList<>();
         List<SdnConfigIssueVO> sdnList = new ArrayList<>();
 
