@@ -147,7 +147,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                                             for (String key3 : keySet3) {
                                                 if(newmap3.containsKey(key3)){
                                                     if(oldmap3.get(key3) instanceof JSONObject){
-                                                        /**底层*/
+                                                        System.out.println("");
                                                     }else{
                                                         oldmap3.put(key3, newmap3.get(key3));
                                                     }
@@ -157,15 +157,15 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                                         }else{
                                             oldmap2.put(key2, newmap2.get(key2));
                                         }
-                                        oldmap1.put(key1, oldmap2);
                                     }
                                 }
+                                oldmap1.put(key1, oldmap2);
                             }else{
                                 oldmap1.put(key1, newmap1.get(key1));
                             }
-                            ((Map<String,Object>)(oldmap.get(key))).put(key1,oldmap1);
                         }
                     }
+                    oldmap.put(key,oldmap1);
                 }else{
                     oldmap.put(key,newmap.get(key));
                 }
