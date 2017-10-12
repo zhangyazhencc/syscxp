@@ -12,7 +12,7 @@ import com.syscxp.tunnel.manage.TunnelConstant;
 @Action(category = TunnelConstant.ACTION_CATEGORY)
 public class APIUpdateNetworkMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = NetworkVO.class)
+    @APIParam(emptyString = false,resourceType = NetworkVO.class, checkAccount = true)
     private String uuid;
 
     @APIParam(emptyString = false,required = false,maxLength = 32)

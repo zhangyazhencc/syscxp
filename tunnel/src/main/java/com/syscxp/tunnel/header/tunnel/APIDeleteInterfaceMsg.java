@@ -8,7 +8,7 @@ import com.syscxp.header.message.APIParam;
  * Created by DCY on 2017-09-14
  */
 public class APIDeleteInterfaceMsg extends APIMessage {
-    @APIParam(emptyString = false,resourceType = InterfaceVO.class)
+    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String uuid;
 
     @APIParam(emptyString = false,required = false,maxLength = 32)

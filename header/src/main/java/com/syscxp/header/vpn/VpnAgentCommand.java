@@ -4,6 +4,7 @@ public class VpnAgentCommand {
     private String host_ip;
     private String uuid;
     private Integer port;
+    private String public_ip;
 
     public Integer getPort() {
         return port;
@@ -27,5 +28,13 @@ public class VpnAgentCommand {
 
     public void setVpnUuid(String vpnUuid) {
         this.uuid = vpnUuid;
+    }
+
+    public String getPublicIp() {
+        return public_ip;
+    }
+
+    public void setPublicIp(String publicIp) {
+        this.public_ip = publicIp;
     }
 }

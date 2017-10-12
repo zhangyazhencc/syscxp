@@ -112,11 +112,11 @@ public class VpnVO {
 
     @OneToMany(fetch= FetchType.EAGER)
     @JoinColumn(name = "vpnUuid", insertable = false, updatable = false)
-    private List<VpnInterfaceVO> vpnInterfaces = new ArrayList<>();
+    private List<VpnInterfaceVO> vpnInterfaces;
 
     @OneToMany(fetch= FetchType.EAGER)
     @JoinColumn(name = "vpnUuid", insertable = false, updatable = false)
-    private List<VpnRouteVO> vpnRoutes = new ArrayList<>();
+    private List<VpnRouteVO> vpnRoutes;
 
     public VpnHostVO getVpnHost() {
         return vpnHost;

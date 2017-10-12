@@ -11,7 +11,7 @@ import java.util.List;
  * Create by DCY on 2017/9/28
  */
 public class APIUpdateInterfaceBandwidthMsg extends APIMessage {
-    @APIParam(emptyString = false,resourceType = InterfaceVO.class)
+    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String uuid;
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;

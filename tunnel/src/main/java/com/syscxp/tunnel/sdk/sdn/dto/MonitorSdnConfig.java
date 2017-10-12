@@ -1,6 +1,4 @@
-package com.syscxp.tunnel.sdk.sdn.vo;
-
-import java.util.List;
+package com.syscxp.tunnel.sdk.sdn.dto;
 
 /**
  * @Author: sunxuelong.
@@ -8,14 +6,14 @@ import java.util.List;
  * @Description: RYU 控制器监控下发信息.
  */
 //@Inventory(mappingVOClass = TunnelMonitorVO.class)
-public class SdnConfigIssueVO {
+public class MonitorSdnConfig {
 
     private Integer vlan_id;
     private String m_ip;
     private String in_port;
     private String nw_src;
     private String nw_dst;
-    private String out_port;
+    private String uplink;
     private Integer bandwidth;
 
     public Integer getVlan_id() {
@@ -58,12 +56,12 @@ public class SdnConfigIssueVO {
         this.nw_dst = nw_dst;
     }
 
-    public String getOut_port() {
-        return out_port;
+    public String getUplink() {
+        return uplink;
     }
 
-    public void setOut_port(String out_port) {
-        this.out_port = out_port;
+    public void setUplink(String uplink) {
+        this.uplink = uplink;
     }
 
     public Integer getBandwidth() {

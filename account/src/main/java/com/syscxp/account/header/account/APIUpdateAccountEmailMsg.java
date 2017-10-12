@@ -15,7 +15,7 @@ public class APIUpdateAccountEmailMsg extends APIMessage implements AccountMessa
     private String OldEmail;
 
     @APIParam
-    private String OldCode;
+    private String oldCode;
 
     @APIParam
     private String newEmail;
@@ -32,11 +32,11 @@ public class APIUpdateAccountEmailMsg extends APIMessage implements AccountMessa
     }
 
     public String getOldCode() {
-        return OldCode;
+        return oldCode;
     }
 
     public void setOldCode(String oldCode) {
-        OldCode = oldCode;
+        this.oldCode = oldCode;
     }
 
     public String getNewEmail() {

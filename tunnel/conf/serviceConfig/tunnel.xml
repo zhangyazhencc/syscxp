@@ -56,6 +56,30 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIUpdateTunnelBandwidthMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIUpdateTunnelExpireDateMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIUpdateTunnelStateMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIDeleteForciblyTunnelMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APICreateInnerVlanMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIDeleteInnerVlanMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.tunnel.header.tunnel.APIDeleteTunnelMsg</name>
     </message>
 

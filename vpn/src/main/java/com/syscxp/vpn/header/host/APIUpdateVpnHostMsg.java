@@ -9,7 +9,7 @@ import com.syscxp.vpn.vpn.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"}, adminOnly = true)
 public class APIUpdateVpnHostMsg extends APIMessage{
-    @APIParam
+    @APIParam(resourceType = VpnHostVO.class)
     private String uuid;
     @APIParam(required = false)
     private String name;
