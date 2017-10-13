@@ -1609,8 +1609,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         TunnelSdnConfig tscZ = null;
 
 
-        tmcA = getTunnelMplsConfig(tunnelVO,tunnelInterfaceA,qinqVOs);
-        tmcZ = getTunnelMplsConfig(tunnelVO,tunnelInterfaceZ,qinqVOs);
+        tmcA = getTunnelMplsConfig(tunnelVO,tunnelInterfaceA,tunnelInterfaceZ,qinqVOs);
+        tmcZ = getTunnelMplsConfig(tunnelVO,tunnelInterfaceZ,tunnelInterfaceA,qinqVOs);
         tscA = getTunnelSdnConfig(tunnelVO,tunnelInterfaceA,qinqVOs);
         tscZ = getTunnelSdnConfig(tunnelVO,tunnelInterfaceZ,qinqVOs);
 
@@ -1645,26 +1645,28 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         return jsonString;
     }
 
-    private TunnelMplsConfig getTunnelMplsConfig(TunnelVO tunnelVO, TunnelInterfaceVO tunnelInterfaceVO, List<QinqVO> qinqVOs){
+    private TunnelMplsConfig getTunnelMplsConfig(TunnelVO tunnelVO, TunnelInterfaceVO tunnelInterfaceVO, TunnelInterfaceVO remoteInterfaceVO, List<QinqVO> qinqVOs){
         TunnelMplsConfig tmc = new TunnelMplsConfig();
         NetworkVO networkVO = dbf.findByUuid(tunnelVO.getNetworkUuid(),NetworkVO.class);
         SwitchPortVO switchPortVO = getSwitchPort(tunnelInterfaceVO.getInterfaceUuid());
         PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitch(switchPortVO);
 
         if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.SDN){   //SDN接入
+
             //找到SDN交换机的上联传输交换机
             PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
                     .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchVO.getUuid())
                     .find();
             PhysicalSwitchVO mplsPhysicalSwitch = dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
-
             SwitchModelVO mplsSwitchModel = dbf.findByUuid(mplsPhysicalSwitch.getSwitchModelUuid(),SwitchModelVO.class);
+
+            PhysicalSwitchVO remoteMplsPhysicalSwitch = getRemotePhysicalSwitch(remoteInterfaceVO);
 
             tmc.setUuid(mplsPhysicalSwitch.getUuid());
             tmc.setSwitch_type(mplsSwitchModel.getModel());
             tmc.setSub_type(mplsSwitchModel.getSubModel());
             tmc.setVni(networkVO.getVsi());
-            tmc.setRemote_ip(mplsPhysicalSwitch.getLocalIP());
+            tmc.setRemote_ip(remoteMplsPhysicalSwitch.getLocalIP());
             tmc.setPort_name(switchPortVO.getPortName());
             tmc.setVlan_id(tunnelInterfaceVO.getVlan());
             tmc.setM_ip(mplsPhysicalSwitch.getmIP());
@@ -1675,11 +1677,13 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }else if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.MPLS){  //Mpls接入
             SwitchModelVO switchModel = dbf.findByUuid(physicalSwitchVO.getSwitchModelUuid(),SwitchModelVO.class);
 
+            PhysicalSwitchVO remoteMplsPhysicalSwitch = getRemotePhysicalSwitch(remoteInterfaceVO);
+
             tmc.setUuid(physicalSwitchVO.getUuid());
             tmc.setSwitch_type(switchModel.getModel());
             tmc.setSub_type(switchModel.getSubModel());
             tmc.setVni(networkVO.getVsi());
-            tmc.setRemote_ip(physicalSwitchVO.getLocalIP());
+            tmc.setRemote_ip(remoteMplsPhysicalSwitch.getLocalIP());
             tmc.setPort_name(switchPortVO.getPortName());
             tmc.setVlan_id(tunnelInterfaceVO.getVlan());
             tmc.setM_ip(physicalSwitchVO.getmIP());
@@ -1723,6 +1727,22 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             tsc = null;
         }
         return tsc;
+    }
+
+    /**根据 interfaceUuid 获取对端MPLS交换机 */
+    private PhysicalSwitchVO getRemotePhysicalSwitch(TunnelInterfaceVO tunnelInterfaceVO){
+        SwitchPortVO switchPortVO = getSwitchPort(tunnelInterfaceVO.getInterfaceUuid());
+        PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitch(switchPortVO);
+        if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.SDN) {   //SDN接入
+            //找到SDN交换机的上联传输交换机
+            PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchVO.getUuid())
+                    .find();
+            PhysicalSwitchVO mplsPhysicalSwitch = dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+            physicalSwitchVO = mplsPhysicalSwitch;
+        }
+
+        return physicalSwitchVO;
     }
 
     /**内部VLAN段拼接成字符串 */
