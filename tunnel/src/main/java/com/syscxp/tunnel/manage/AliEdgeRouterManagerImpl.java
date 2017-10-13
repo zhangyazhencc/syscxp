@@ -22,13 +22,11 @@ import com.syscxp.header.message.Message;
 import com.syscxp.tunnel.header.aliEdgeRouter.*;
 import com.syscxp.tunnel.header.endpoint.EndpointVO;
 import com.syscxp.tunnel.header.node.NodeVO;
-import com.syscxp.tunnel.header.tunnel.InterfaceVO;
-import com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO;
-import com.syscxp.tunnel.header.tunnel.TunnelVO;
-import com.syscxp.tunnel.header.tunnel.TunnelVO_;
+import com.syscxp.tunnel.header.tunnel.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import java.sql.Timestamp;
@@ -99,39 +97,53 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
     }
 
+
     private void handle(TunnelQueryMsg msg){
         TunnelQueryInventory inventory = new TunnelQueryInventory();
-        List<TunnelQueryInventory> TunnelQueryList = null;
+        List<TunnelQueryInventory> TunnelQueryList = new ArrayList<TunnelQueryInventory>();
 
         SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
         q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
         List<TunnelVO> tunnels = q.list();
         for(TunnelVO tunnel:tunnels){
-            List<TunnelInterfaceVO> TunnelInterfaceVOList = tunnel.getTunnelInterfaceVO();
-            for(TunnelInterfaceVO tunnelInterfaceVO :TunnelInterfaceVOList){
-                InterfaceVO interfaceVO = tunnelInterfaceVO.getInterfaceVO();
-                EndpointVO endpointVO = interfaceVO.getEndpointVO();
-                NodeVO nodeVO = endpointVO.getNodeVO();
-                String region = nodeVO.getCity();
 
-                if(msg.getAliRegionId().equals(region)){//msg.getAliRegionId 数据的定义
+            if((tunnel.getState().equals("normal"))&&(tunnel.getStatus().equals("normal"))){
 
-                    SimpleQuery<AliEdgeRouterConfigVO> q1 = dbf.createQuery(AliEdgeRouterConfigVO.class);
-                    q1.add(AliEdgeRouterConfigVO_.aliRegionId, SimpleQuery.Op.EQ,msg.getAliRegionId());
-                    List<AliEdgeRouterConfigVO> AliEdgeRouterConfigs = q1.list();
+                SimpleQuery<TunnelInterfaceVO> query = dbf.createQuery(TunnelInterfaceVO.class);
+                query.add(TunnelInterfaceVO_.tunnelUuid, SimpleQuery.Op.EQ,tunnel.getUuid());
+                List<TunnelInterfaceVO> TunnelInterfaceVOList = query.list();
 
-                    for(AliEdgeRouterConfigVO aliEdgeRouterConfigVO :AliEdgeRouterConfigs){
-                        if(aliEdgeRouterConfigVO.getSwitchPortUuid() == interfaceVO.getSwitchPortUuid() ){
-                            inventory.setTunnelUuid(tunnel.getUuid());
-                            inventory.setTunnelName(tunnel.getName());
-                            inventory.setAliRegionId(msg.getAliRegionId());
-                            inventory.setSwitchPortUuid(interfaceVO.getSwitchPortUuid());
-                            inventory.setPhysicalLineUuid(aliEdgeRouterConfigVO.getPhysicalLineUuid());
-                            TunnelQueryList.add(inventory);
+//            List<TunnelInterfaceVO> TunnelInterfaceVOList = tunnel.getTunnelInterfaceVO();
+                for(TunnelInterfaceVO tunnelInterfaceVO :TunnelInterfaceVOList){
+                    InterfaceVO interfaceVO = tunnelInterfaceVO.getInterfaceVO();
+                    EndpointVO endpointVO = interfaceVO.getEndpointVO();
+                    NodeVO nodeVO = endpointVO.getNodeVO();
+                    String region = nodeVO.getCity();
+
+                    if(msg.getAliRegionId().equals(region)){//msg.getAliRegionId 数据的定义
+
+                        SimpleQuery<AliEdgeRouterConfigVO> q1 = dbf.createQuery(AliEdgeRouterConfigVO.class);
+                        q1.add(AliEdgeRouterConfigVO_.aliRegionId, SimpleQuery.Op.EQ,msg.getAliRegionId());
+                        List<AliEdgeRouterConfigVO> AliEdgeRouterConfigs = q1.list();
+
+                        for(AliEdgeRouterConfigVO aliEdgeRouterConfigVO :AliEdgeRouterConfigs){
+                            if(aliEdgeRouterConfigVO.getSwitchPortUuid().toString().equals(interfaceVO.getSwitchPortUuid().toString())){
+                                inventory.setTunnelUuid(tunnel.getUuid());
+                                inventory.setTunnelName(tunnel.getName());
+                                inventory.setAliRegionId(msg.getAliRegionId());
+                                inventory.setSwitchPortUuid(interfaceVO.getSwitchPortUuid());
+                                inventory.setPhysicalLineUuid(aliEdgeRouterConfigVO.getPhysicalLineUuid());
+                                Integer vlan = tunnelInterfaceVO.getVlan();
+                                inventory.setVlan(vlan);
+                                TunnelQueryList.add(inventory);
+                            }
                         }
                     }
                 }
+
             }
+
+
         }
 
         TunnelQueryReply reply = new TunnelQueryReply();
