@@ -5,8 +5,6 @@ import com.syscxp.header.rest.RestAPIState;
 /**
  */
 public class VpnAgentResponse {
-    // 任务完成状态
-    private RestAPIState state;
     // 任务结果
     private TaskResult result;
     // 运行状态
@@ -26,14 +24,6 @@ public class VpnAgentResponse {
 
     public void setResult(TaskResult result) {
         this.result = result;
-    }
-
-    public RestAPIState getState() {
-        return state;
-    }
-
-    public void setState(RestAPIState state) {
-        this.state = state;
     }
 
     public static class TaskResult {

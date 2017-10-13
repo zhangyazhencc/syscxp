@@ -413,15 +413,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void success() {
                 evt.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vpn)));
+                bus.publish(evt);
             }
 
             @Override
             public void fail(ErrorCode errorCode) {
                 evt.setError(errorCode);
+                bus.publish(evt);
             }
         });
-
-        bus.publish(evt);
     }
 
     public void handle(APIUpdateVpnCidrMsg msg) {
@@ -633,7 +633,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         @Transactional
         private List<VpnVO> getAllVpns() {
             return Q.New(VpnVO.class)
-                    .eq(VpnVO_.state, VpnState.Enabled)
                     .notEq(VpnVO_.status, VpnStatus.Connecting)
                     .list();
         }
@@ -646,26 +645,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     .set(VpnVO_.status, status).update();
         }
 
-        private boolean reconnectVpn(VpnVO vo) {
-            if (vo.getVpnHost().getStatus() == HostStatus.Disconnected) {
-                return false;
-            }
-            //Todo VPN重连
-            ReconnectVpnCmd cmd = ReconnectVpnCmd.valueOf(vo);
-            TaskResult result;
-            try {
-                result = new VpnRESTCaller()
-                        .syncPostForResult(VpnConstant.RECONNECT_VPN_PATH, cmd);
-                if (result.isSuccess()) {
-                    UpdateQuery.New(VpnVO.class).eq(VpnVO_.uuid, vo.getUuid())
-                            .set(VpnVO_.status, VpnStatus.Connected).update();
-                }
-            } catch (Exception e) {
-                return false;
-            }
-            return result.isSuccess();
-        }
-
         @Override
         public void run() {
 
@@ -676,6 +655,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 return;
             }
             for (VpnVO vo : vos) {
+                if (vo.getStatus() == VpnStatus.Connected && vo.getState() == VpnState.Disabled) {
+                    deleteVpn(vo);
+
+                }
                 CheckVpnStatusCmd cmd = CheckVpnStatusCmd.valueOf(vo);
                 RunStatus status = new VpnRESTCaller().checkStatus(VpnConstant.CHECK_VPN_STATUS_PATH, cmd);
 
@@ -684,6 +667,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                         updateVpnStatus(Collections.singletonList(vo.getUuid()), VpnStatus.Connected);
                     continue;
                 }
+
                 if (!reconnectVpn(vo)) {
                     disconnectedVpn.add(vo.getUuid());
                 }
@@ -717,9 +701,19 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                         logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         VpnVO vpn = updateVpnFromOrder(cmd);
                         if (vpn != null && vpn.getStatus() == VpnStatus.Connecting)
-                            new VpnRESTCaller().syncPostForResult(VpnConstant.INIT_VPN_PATH,
-                                    CreateVpnCmd.valueOf(vpn));
+                            new VpnRESTCaller().sendCommand(VpnConstant.INIT_VPN_PATH, CreateVpnCmd.valueOf(vpn),
+                                    new Completion(null) {
+                                        @Override
+                                        public void success() {
+                                            vpn.setStatus(VpnStatus.Connected);
+                                        }
 
+                                        @Override
+                                        public void fail(ErrorCode errorCode) {
+                                            vpn.setStatus(VpnStatus.Disconnected);
+
+                                        }
+                                    });
                         return null;
                     }
                 });
@@ -731,9 +725,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
                         VpnVO vpn = dbf.findByUuid(cmd.getPorductUuid(), VpnVO.class);
                         if (vpn != null) {
-                            dbf.remove(vpn);
-                            new VpnRESTCaller().syncPostForResult(VpnConstant.DELETE_VPN_PATH,
-                                    CreateVpnCmd.valueOf(vpn));
+                            deleteVpn(vpn);
                         }
                         return null;
                     }
@@ -764,8 +756,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                         logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         VpnVO vpn = updateVpnFromOrder(cmd);
                         if (vpn != null && vpn.getStatus() == VpnStatus.Disconnected)
-                            new VpnRESTCaller().syncPostForResult(VpnConstant.UPDATE_VPN_BANDWIDTH_PATH,
-                                    CreateVpnCmd.valueOf(vpn));
+                            reconnectVpn(vpn);
                         return null;
                     }
                 });
@@ -902,5 +893,46 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
+    }
+
+    private boolean reconnectVpn(VpnVO vo) {
+        if (vo.getVpnHost().getStatus() == HostStatus.Disconnected) {
+            return false;
+        }
+        //Todo VPN重连
+        ReconnectVpnCmd cmd = ReconnectVpnCmd.valueOf(vo);
+        TaskResult result;
+        try {
+            result = new VpnRESTCaller()
+                    .syncPostForResult(VpnConstant.RECONNECT_VPN_PATH, cmd);
+            if (result.isSuccess()) {
+                UpdateQuery.New(VpnVO.class).eq(VpnVO_.uuid, vo.getUuid())
+                        .set(VpnVO_.status, VpnStatus.Connected).update();
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return result.isSuccess();
+    }
+
+    private boolean deleteVpn(VpnVO vo) {
+        if (vo.getVpnHost().getStatus() == HostStatus.Disconnected) {
+            return false;
+        }
+        TaskResult result;
+        try {
+            result = new VpnRESTCaller()
+                    .syncPostForResult(VpnConstant.DELETE_VPN_PATH, DeleteVpnCmd.valueOf(vo));
+            if (result.isSuccess()) {
+                dbf.removeByPrimaryKey(vo.getUuid(), VpnVO.class);
+            } else {
+                UpdateQuery.New(VpnVO.class).eq(VpnVO_.uuid, vo.getUuid())
+                        .set(VpnVO_.state, VpnState.Disabled).update();
+            }
+        } catch (Exception e) {
+            return false;
+        }
+
+        return result.isSuccess();
     }
 }
