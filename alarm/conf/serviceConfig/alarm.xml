@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://syscxp.com/schema/syscxp">
+    <id>alarm</id>
+    <interceptor>AlarmManager</interceptor>
+
+    <message>
+        <name>com.syscxp.billing.header.balance.APIGetAccountBalanceMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.billing.header.balance.APIGetAccountBalanceListMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.billing.header.balance.APIUpdateAccountBalanceMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.billing.header.balance.APIGetExpenseGrossMonthMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.billing.header.balance.APIRechargeMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.billing.header.balance.APIUpdateAccountDischargeMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.billing.header.balance.APICreateAccountDischargeMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.billing.header.balance.APIDeleteAccountDischargeMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.billing.header.balance.APIGetAccountDischargeCategoryMsg</name>
+    </message>
+
+
+    <message>
+        <name>com.syscxp.header.alipay.APIVerifyReturnMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.alipay.APIVerifyNotifyMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.billing.APIGetProductPriceMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.billing.header.balance.APIQueryAccountDischargeMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.billing.header.balance.APIQueryDealDetailMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+</service>

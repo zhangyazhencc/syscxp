@@ -41,7 +41,7 @@ public class APICreatePhysicalSwitchMsg extends APIMessage {
     private PhysicalSwitchAccessType accessType;
     @APIParam(emptyString = false,required = false,maxLength = 128)
     private String portName;
-    @APIParam(emptyString = false,required = false,maxLength = 32)
+    @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = PhysicalSwitchVO.class)
     private String uplinkPhysicalSwitchUuid;
     @APIParam(emptyString = false,required = false,maxLength = 128)
     private String uplinkPhysicalSwitchPortName;

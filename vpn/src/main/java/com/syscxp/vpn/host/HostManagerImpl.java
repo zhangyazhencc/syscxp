@@ -6,6 +6,7 @@ import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.vpn.VpnAgentResponse.*;
+import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.TimeUtils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.vpn.header.host.*;
@@ -34,9 +35,7 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -433,11 +432,13 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
                     .list();
         }
 
-        private void updateHostStatus(List<String> disconnectedHosts) {
+        private void updateHostStatus(List<String> disconnectedHosts, HostStatus status) {
+            if (disconnectedHosts.isEmpty())
+                return;
             logger.debug(String.format("update host status Disconnected, uuid in %s", JSONObjectUtil.toJsonString(disconnectedHosts)));
             UpdateQuery.New(VpnHostVO.class)
                     .in(VpnHostVO_.uuid, disconnectedHosts)
-                    .set(VpnHostVO_.status, HostStatus.Disconnected)
+                    .set(VpnHostVO_.status, status)
                     .update();
         }
 
@@ -456,18 +457,17 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
                 return;
             }
             for (VpnHostVO vo : vos) {
-                if (vo.getStatus() == HostStatus.Disconnected) {
-                    continue;
-                }
                 CheckVpnHostStatusCmd cmd = CheckVpnHostStatusCmd.valueOf(vo);
                 RunStatus status = new VpnRESTCaller().checkStatus(HostConstant.CHECK_HOST_STATUS_PATH, cmd);
-                if (status == RunStatus.UP && vo.getStatus() == HostStatus.Connected)
+                if (status == RunStatus.UP) {
+                    if (vo.getStatus() == HostStatus.Disconnected)
+                        updateHostStatus(Collections.singletonList(vo.getUuid()), HostStatus.Connected);
                     continue;
+                }
                 if (!reconnectHost(vo))
                     disconnectedHosts.add(vo.getUuid());
             }
-            if (!disconnectedHosts.isEmpty())
-                updateHostStatus(disconnectedHosts);
+            updateHostStatus(disconnectedHosts, HostStatus.Disconnected);
             logger.debug(getName() + ": end check host status");
         }
 

@@ -1,11 +1,12 @@
-package com.syscxp.tunnel.sdk.sdn.dto;
+package com.syscxp.tunnel.header.controller;
 
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-10-11.
  * @Description: .
  */
-public class SdnRestResponse {
+public class ControllerRestResponse {
+    private boolean success;
     private String code;
     private Msg msg;
 
@@ -34,6 +35,11 @@ public class SdnRestResponse {
 
     public void setCode(String code) {
         this.code = code;
+
+        if("0".equals(this.code))
+            this.success = true;
+        else
+            this.success = false;
     }
 
     public Msg getMsg() {
@@ -44,10 +50,19 @@ public class SdnRestResponse {
         this.msg = msg;
     }
 
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
     @Override
     public String toString() {
-        return "SdnRestResponse{" +
-                "code='" + code + '\'' +
+        return "ControllerRestResponse{" +
+                "success=" + success +
+                ", code='" + code + '\'' +
                 ", msg=" + msg +
                 '}';
     }

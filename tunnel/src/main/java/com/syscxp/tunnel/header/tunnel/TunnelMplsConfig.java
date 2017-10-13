@@ -1,20 +1,30 @@
-package com.syscxp.tunnel.sdk.sdn.dto;
+package com.syscxp.tunnel.header.tunnel;
 
 /**
- * @Author: sunxuelong.
- * @Cretion Date: 2017-09-26.
- * @Description: RYU 控制器监控下发信息.
+ * Create by DCY on 2017/10/12
  */
-public class MonitorMplsConfig {
-
+public class TunnelMplsConfig {
+    private String uuid;
     private String switch_type;
     private String sub_type;
+    private Integer vni;
+    private String remote_ip;
     private String port_name;
     private Integer vlan_id;
+    private String inner_vlan_id;
     private String m_ip;
     private String username;
     private String password;
-    private Integer bandwidth;
+    private String network_type;
+    private Long bandwidth;
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
 
     public String getSwitch_type() {
         return switch_type;
@@ -30,6 +40,22 @@ public class MonitorMplsConfig {
 
     public void setSub_type(String sub_type) {
         this.sub_type = sub_type;
+    }
+
+    public Integer getVni() {
+        return vni;
+    }
+
+    public void setVni(Integer vni) {
+        this.vni = vni;
+    }
+
+    public String getRemote_ip() {
+        return remote_ip;
+    }
+
+    public void setRemote_ip(String remote_ip) {
+        this.remote_ip = remote_ip;
     }
 
     public String getPort_name() {
@@ -72,26 +98,27 @@ public class MonitorMplsConfig {
         this.password = password;
     }
 
-    public Integer getBandwidth() {
+    public String getNetwork_type() {
+        return network_type;
+    }
+
+    public void setNetwork_type(String network_type) {
+        this.network_type = network_type;
+    }
+
+    public Long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Integer bandwidth) {
+    public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
 
-    @Override
-    public String toString() {
-        return "MonitorMplsConfig{" +
-                "switch_type='" + switch_type + '\'' +
-                ", sub_type='" + sub_type + '\'' +
-                ", port_name='" + port_name + '\'' +
-                ", vlan_id=" + vlan_id +
-                ", m_ip='" + m_ip + '\'' +
-                ", username='" + username + '\'' +
-                ", password='" + password + '\'' +
-                ", bandwidth=" + bandwidth +
-                '}';
+    public String getInner_vlan_id() {
+        return inner_vlan_id;
+    }
+
+    public void setInner_vlan_id(String inner_vlan_id) {
+        this.inner_vlan_id = inner_vlan_id;
     }
 }
-

@@ -71,4 +71,7 @@ public class CoreGlobalProperty {
 
     @GlobalProperty(name = "tunnelMaxMotifies", defaultValue = "5")
     public static Integer TUNNEL_MAX_MOTIFIES;
+
+    @GlobalProperty(name = "controllerManagerUrl", defaultValue = "http://192.168.211.224:8080")
+    public static String CONTROLLER_MANAGER_URL;
 }

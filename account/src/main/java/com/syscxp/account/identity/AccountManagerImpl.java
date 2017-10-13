@@ -438,7 +438,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
         q.add(UserVO_.accountUuid, Op.EQ, account.getUuid());
         q.add(UserVO_.password, Op.EQ, msg.getPassword());
-        q.add(UserVO_.status, Op.EQ, AccountStatus.Available);
         if(msg.getUserName() != null){
             q.add(UserVO_.name, Op.EQ, msg.getUserName());
         }else if(msg.getUserPhone() != null){
@@ -450,7 +449,13 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
         if (user == null) {
             reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
-                    "wrong account or username or password or frozen user"
+                    "wrong account or username or password "
+            ));
+            bus.reply(msg, reply);
+            return;
+        }else if(user.getStatus() == AccountStatus.Disabled){
+            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
+                    "frozen user"
             ));
             bus.reply(msg, reply);
             return;
@@ -478,11 +483,15 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
         q.add(AccountVO_.password, Op.EQ, msg.getPassword());
-        q.add(AccountVO_.status,Op.EQ,AccountStatus.Available);
         AccountVO vo = q.find();
         if (vo == null) {
             reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
-                    "wrong account name or password or frozen user"));
+                    "wrong account name or password"));
+            bus.reply(msg, reply);
+            return;
+        } else if(vo.getStatus() == AccountStatus.Disabled){
+            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
+                    "frozen account"));
             bus.reply(msg, reply);
             return;
         }
