@@ -329,7 +329,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
         String AliAccessKeyId ;
         String AliAccessKeySecret ;
 
-        if(msg.getFlag() == true){
+        if(msg.getFlag() == true && msg.getAliAccessKeyID() == null && msg.getAliAccessKeySecret() == null){
             SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
             q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
             q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,vo.getAliAccountUuid());
@@ -338,7 +338,11 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
             AliAccessKeyId = user.getAliAccessKeyID();
             AliAccessKeySecret = user.getAliAccessKeySecret();
 
-        }else{
+        }else if(msg.getFlag() == true && msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null){
+            AliAccessKeyId = msg.getAliAccessKeyID();
+            AliAccessKeySecret = msg.getAliAccessKeySecret();
+        }
+        else{
             SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
             q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,"admin");
             q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,"admin");
@@ -388,15 +392,25 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
             vo.setDescription(msg.getDescription());
             update = true;
         }
+        String AliAccessKeyId;
+        String AliAccessKeySecret;
 
-        SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-        q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
-        q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,vo.getAliAccountUuid());
-        AliUserVO user = q.find();
+        if(msg.getAliAccessKeyID()!= null && msg.getAliAccessKeySecret() != null){
+            AliAccessKeyId = msg.getAliAccessKeyID();
+            AliAccessKeySecret = msg.getAliAccessKeySecret();
+        }else{
+            SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
+            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
+            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,vo.getAliAccountUuid());
+            AliUserVO user = q.find();
+
+            AliAccessKeyId = user.getAliAccessKeyID();
+            AliAccessKeySecret = user.getAliAccessKeySecret();
+        }
+
 
         String RegionId = vo.getAliRegionId();
-        String AliAccessKeyId = user.getAliAccessKeyID();
-        String AliAccessKeySecret = user.getAliAccessKeySecret();
+
 
         // 创建DefaultAcsClient实例并初始化
         DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);
