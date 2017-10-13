@@ -14,16 +14,16 @@ public class APIUpdateEndpointMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
     private String uuid;
 
-    @APIParam(emptyString = false,maxLength = 255)
+    @APIParam(required = false,emptyString = false,maxLength = 255)
     private String name;
 
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(required = false,emptyString = false,maxLength = 128)
     private String code;
 
-    @APIParam(emptyString = false,validValues = {"Enable","Disable"})
+    @APIParam(required = false,emptyString = false,validValues = {"Enable","Disable"})
     private EndpointState state;
 
-    @APIParam(emptyString = false,validValues = {"Open","Close"})
+    @APIParam(required = false,emptyString = false,validValues = {"Open","Close"})
     private EndpointStatus status;
 
     @APIParam(required = false,maxLength = 255)

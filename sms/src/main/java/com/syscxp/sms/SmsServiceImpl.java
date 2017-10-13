@@ -97,7 +97,6 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
             if (!verificationCode.isValidate && curr.before(verificationCode.expiredDate)
                     && code.equals(verificationCode.code)) {
                 verificationCode.isValidate = true;
-                sessions.put(phone,verificationCode);
                 return true;
             }else{
                 return false;
@@ -125,6 +124,7 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
             VerificationCode vcode = new VerificationCode();
             vcode.code = code;
             vcode.expiredDate = new Timestamp(expiredTime);
+            sessions.put(msg.getPhone(), vcode);
         }else{
             verificationCode.code = code;
             verificationCode.expiredDate = new Timestamp(expiredTime);
