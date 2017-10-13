@@ -303,6 +303,8 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         map.put("Value",list1);
         list.add(map);
 
+        System.out.println(list);
+
         request.setFilters(list);
 
         DescribeVirtualBorderRoutersResponse response ;
@@ -380,7 +382,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         try{
             response = client.getAcsResponse(request);
             eo.setDeleted(1);
-            eo = dbf.getEntityManager().merge(eo);
+            dbf.updateAndRefresh(eo);
 
         }catch (Exception e){
             e.printStackTrace();
