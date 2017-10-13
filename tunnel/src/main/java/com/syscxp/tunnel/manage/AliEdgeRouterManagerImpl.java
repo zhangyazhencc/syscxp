@@ -36,7 +36,7 @@ import java.util.*;
 
 import static com.syscxp.core.Platform.argerr;
 
-public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelManager,ApiMessageInterceptor {
+public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdgeRouterManager,ApiMessageInterceptor {
 
     private static final CLogger logger = Utils.getLogger(AliEdgeRouterManagerImpl.class);
 
@@ -114,7 +114,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
                 NodeVO nodeVO = endpointVO.getNodeVO();
                 String region = nodeVO.getCity();
 
-                if(msg.getAliRegionId() == region){//msg.getAliRegionId 数据的定义
+                if(msg.getAliRegionId().equals(region)){//msg.getAliRegionId 数据的定义
 
                     SimpleQuery<AliEdgeRouterConfigVO> q1 = dbf.createQuery(AliEdgeRouterConfigVO.class);
                     q1.add(AliEdgeRouterConfigVO_.aliRegionId, SimpleQuery.Op.EQ,msg.getAliRegionId());
@@ -147,7 +147,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
             dbf.remove(vo);
         }
 
-        APICreateAliEdgeRouterConfigEvent evt = new APICreateAliEdgeRouterConfigEvent();
+        APICreateAliEdgeRouterConfigEvent evt = new APICreateAliEdgeRouterConfigEvent(msg.getId());
         evt.setInventory(AliEdgeRouterConfigInventory.valueOf(vo));
         bus.publish(evt);
     }
@@ -173,7 +173,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
         if(update)
             vo = dbf.updateAndRefresh(vo);
 
-        APICreateAliEdgeRouterConfigEvent evt = new APICreateAliEdgeRouterConfigEvent();
+        APICreateAliEdgeRouterConfigEvent evt = new APICreateAliEdgeRouterConfigEvent(msg.getId());
         evt.setInventory(AliEdgeRouterConfigInventory.valueOf(vo));
         bus.publish(evt);
 
@@ -185,11 +185,13 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
         vo.setUuid(Platform.getUuid());
         vo.setAliRegionId(msg.getAliRegionId());
         vo.setPhysicalLineUuid(msg.getPhysicalLineUuid());
-        vo.setSwitchPortUuid(msg.getSwitchportUuid());
+        vo.setSwitchPortUuid(msg.getSwitchPortUuid());
 
-        dbf.getEntityManager().merge(vo);
+        dbf.persistAndRefresh(vo);
 
-        APICreateAliEdgeRouterConfigEvent evt = new APICreateAliEdgeRouterConfigEvent();
+
+
+        APICreateAliEdgeRouterConfigEvent evt = new APICreateAliEdgeRouterConfigEvent(msg.getId());
         evt.setInventory(AliEdgeRouterConfigInventory.valueOf(vo));
         bus.publish(evt);
     }
@@ -199,7 +201,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
         if(vo != null){
             dbf.remove(vo);
         }
-        APIDeleteAliUserEvent evt = new APIDeleteAliUserEvent();
+        APIDeleteAliUserEvent evt = new APIDeleteAliUserEvent(msg.getId());
         evt.setInventory(AliUserInventory.valueOf(vo));
         bus.publish(evt);
 
@@ -223,7 +225,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
         if(update)
             vo = dbf.updateAndRefresh(vo);
 
-        APIUpdateAliUserEvent evt =  new APIUpdateAliUserEvent();
+        APIUpdateAliUserEvent evt =  new APIUpdateAliUserEvent(msg.getId());
         evt.setInventory(AliUserInventory.valueOf(vo));
         bus.publish(evt);
 
@@ -237,7 +239,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
         q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,msg.getAliAccountUuid());
         AliUserVO user = q.find();
 
-        if(user.getAliAccessKeyID() != null && user.getAliAccessKeySecret() != null){
+        if(user != null){
             dbf.remove(user);
         }
 
@@ -247,9 +249,9 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
         vo.setAliAccessKeyID(msg.getAliAccessKeyID());
         vo.setAliAccessKeySecret(msg.getAliAccessKeySecret());
 
-        dbf.getEntityManager().merge(vo);
+        dbf.persistAndRefresh(vo);
 
-        APISaveAliUserEvent evt = new APISaveAliUserEvent();
+        APISaveAliUserEvent evt = new APISaveAliUserEvent(msg.getId());
         evt.setInventory(AliUserInventory.valueOf(vo));
         bus.publish(evt);
 
@@ -478,7 +480,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
         try{
             response = client.getAcsResponse(VBR);
             vo.setVbrUuid(response.getVbrId());
-            dbf.getEntityManager().merge(vo);
+            dbf.persistAndRefresh(vo);
         }catch(Exception e){
             e.printStackTrace();
             throw new ApiMessageInterceptionException(argerr(e.getMessage()));
@@ -502,16 +504,16 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
 
     @Override
     public boolean start() {
-        return false;
+        return true;
     }
 
     @Override
     public boolean stop() {
-        return false;
+        return true;
     }
 
     @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        return null;
+        return msg;
     }
 }
