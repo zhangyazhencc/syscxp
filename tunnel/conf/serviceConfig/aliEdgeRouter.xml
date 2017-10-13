@@ -23,8 +23,32 @@
         <name>com.syscxp.tunnel.header.aliEdgeRouter.APIUpdateAliUserMsg</name>
     </message>
     <message>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.APIDeleteAliUserMsg</name>
+    </message>
+    <message>
         <name>com.syscxp.tunnel.header.aliEdgeRouter.APIQueryAliUserMsg</name>
         <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.APICreateAliEdgeRouterConfigMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.APIDeleteAliEdgeRouterConfigMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.APIUpdateAliEdgeRouterConfigMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.APIQueryAliEdgeRouterConfigMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.TunnelQueryMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.AliEdgeRouterInformationMsg</name>
     </message>
 
 </service>

@@ -33,9 +33,7 @@ import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
-import com.syscxp.vpn.header.host.APIDeleteVpnHostEvent;
-import com.syscxp.vpn.header.host.HostStatus;
-import com.syscxp.vpn.header.host.VpnHostVO;
+import com.syscxp.vpn.header.host.*;
 import com.syscxp.vpn.header.vpn.*;
 import com.syscxp.vpn.vpn.VpnCommands.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -593,7 +591,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private List<String> disconnectedVpn = new ArrayList<>();
 
     private void startFailureHostCopingThread() {
-        vpnCheckThread = thdf.submitPeriodicTask(new VpnStatusCheckWorker());
+        vpnCheckThread = thdf.submitPeriodicTask(new VpnStatusCheckWorker(), 60);
         logger.debug(String
                 .format("security group failureHostCopingThread starts[failureHostWorkerInterval: %ss]",
                         vpnStatusCheckWorkerInterval));
@@ -681,7 +679,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     disconnectedVpn.add(vo.getUuid());
                 }
             }
-            updateVpnStatus(disconnectedVpn);
+            if (!disconnectedVpn.isEmpty())
+                updateVpnStatus(disconnectedVpn);
             logger.debug(getName() + ": end check host status");
         }
 
@@ -852,7 +851,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     argerr("The Account[uuid:%s] is not a admin or proxy.",
                             msg.getSession().getAccountUuid()));
         }
-        Q q = Q.New(VpnVO.class).eq(VpnVO_.name, msg.getName());
+        Q q = Q.New(VpnHostVO.class)
+                .eq(VpnHostVO_.uuid, msg.getHostUuid())
+                .eq(VpnHostVO_.state, HostState.Enabled)
+                .eq(VpnHostVO_.status, HostStatus.Connected);
         if (q.isExists())
             throw new ApiMessageInterceptionException(
                     argerr("The Vpn[name:%s] is already exist.", msg.getName()));

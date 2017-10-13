@@ -1,6 +1,5 @@
 package com.syscxp.account.header.identity;
 
-import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APIReply;
 
 /**
