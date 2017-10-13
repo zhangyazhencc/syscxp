@@ -46,6 +46,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -630,10 +632,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     .list();
         }
 
-        private void updateVpnStatus(List<String> vpnUuids) {
+        private void updateVpnStatus(List<String> vpnUuids, VpnStatus status) {
+            if (vpnUuids.isEmpty())
+                return;
             logger.debug(String.format("update vpn status Disconnected, uuid in %s", JSONObjectUtil.toJsonString(vpnUuids)));
             UpdateQuery.New(VpnVO.class).in(VpnVO_.uuid, vpnUuids)
-                    .set(VpnVO_.status, VpnStatus.Disconnected).update();
+                    .set(VpnVO_.status, status).update();
         }
 
         private boolean reconnectVpn(VpnVO vo) {
@@ -666,21 +670,19 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 return;
             }
             for (VpnVO vo : vos) {
-                if (vo.getStatus() == VpnStatus.Disconnected) {
-                    disconnectedVpn.add(vo.getUuid());
-                    continue;
-                }
                 CheckVpnStatusCmd cmd = CheckVpnStatusCmd.valueOf(vo);
                 RunStatus status = new VpnRESTCaller().checkStatus(VpnConstant.CHECK_VPN_STATUS_PATH, cmd);
 
-                if (status == RunStatus.UP && vo.getStatus() == VpnStatus.Connected)
+                if (status == RunStatus.UP) {
+                    if (vo.getStatus() == VpnStatus.Disconnected)
+                        updateVpnStatus(Collections.singletonList(vo.getUuid()), VpnStatus.Connected);
                     continue;
+                }
                 if (!reconnectVpn(vo)) {
                     disconnectedVpn.add(vo.getUuid());
                 }
             }
-            if (!disconnectedVpn.isEmpty())
-                updateVpnStatus(disconnectedVpn);
+            updateVpnStatus(disconnectedVpn, VpnStatus.Disconnected);
             logger.debug(getName() + ": end check host status");
         }
 
@@ -855,7 +857,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 .eq(VpnHostVO_.uuid, msg.getHostUuid())
                 .eq(VpnHostVO_.state, HostState.Enabled)
                 .eq(VpnHostVO_.status, HostStatus.Connected);
-        if (q.isExists())
+        if (!q.isExists())
             throw new ApiMessageInterceptionException(
                     argerr("The Vpn[name:%s] is already exist.", msg.getName()));
 
