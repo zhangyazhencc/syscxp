@@ -14,27 +14,29 @@ public class APIUpdateNodeMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = NodeVO.class)
     private String uuid;
-    @APIParam(emptyString = false,maxLength = 255)
+    @APIParam(required = false,emptyString = false,maxLength = 255)
     private String name;
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(required = false,emptyString = false,maxLength = 128)
     private String code;
     @APIParam(required = false,maxLength = 255)
     private String description;
+    @APIParam(required = false)
     private Double longtitude;
+    @APIParam(required = false)
     private Double latitude;
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(required = false,emptyString = false,maxLength = 128)
     private String property;
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(required = false,emptyString = false,maxLength = 128)
     private String province;
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(required = false,emptyString = false,maxLength = 128)
     private String city;
-    @APIParam(emptyString = false,maxLength = 256)
+    @APIParam(required = false,emptyString = false,maxLength = 256)
     private String address;
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(required = false,emptyString = false,maxLength = 128)
     private String contact;
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(required = false,emptyString = false,maxLength = 32)
     private String telephone;
-    @APIParam(emptyString = false,validValues = {"CLOSE", "OPEN","AVAILABLE"})
+    @APIParam(required = false,emptyString = false,validValues = {"CLOSE", "OPEN","AVAILABLE"})
     private NodeStatus status;
     @APIParam(required = false,maxLength = 32)
     private String extensionInfoUuid;

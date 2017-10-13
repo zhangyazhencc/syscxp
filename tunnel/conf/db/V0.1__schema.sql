@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS TunnelMonitorInterfaceVO (
   `interfaceType` VARCHAR(32) NOT NULL COMMENT '类型("A","Z")',
   `hostUuid` VARCHAR(32) NOT NULL COMMENT '监控主机UUID(HostVO.uuid)',
   `monitorIp` VARCHAR(64) NOT NULL COMMENT '监控IP(NetworkVO.monitorCidr)',
-  `lastOpDate` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `uuid` (`uuid`))
 ENGINE = InnoDB DEFAULT CHARSET = utf8 COMMENT '监控通道两端信息表';
@@ -26,8 +26,8 @@ CREATE TABLE `SpeedRecordsVO` (
   `maxSpeed` int(11) DEFAULT '0' COMMENT '最大速度(k/s)',
   `minSpeed` int(11) DEFAULT '0' COMMENT '最小速度(k/s)',
   `completed` tinyint(1) NOT NULL DEFAULT '0' COMMENT '完成标识 0:未完成 1:已完成',
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='监控测速纪录';
@@ -39,8 +39,8 @@ CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`HostSwitchMonitorEO` (
   `physicalSwitchPortName` VARCHAR(128) NOT NULL COMMENT '物理交换机端口名称',
   `interfaceName` VARCHAR(128) NOT NULL COMMENT '网卡名称',
   `deleted` INT(11) NOT NULL DEFAULT '0',
-  `lastOpDate` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE current_timestamp COMMENT '最后一次操作时间',
-  `createDate` TIMESTAMP NULL DEFAULT '0000-00-00 00:00:00' COMMENT '创建时间',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
   PRIMARY KEY (`uuid`)
   )
 ENGINE = InnoDB
@@ -117,8 +117,8 @@ CREATE TABLE `NodeEO` (
   `status` varchar(16) NOT NULL COMMENT '是否开放',
   `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `extensionInfoUuid` varchar(32) DEFAULT NULL COMMENT '节点额外信息',
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '网络节点';
