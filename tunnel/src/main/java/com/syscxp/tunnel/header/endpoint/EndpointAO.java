@@ -32,10 +32,12 @@ public class EndpointAO {
     private EndpointType endpointType;
 
     @Column
-    private Integer enabled;
+    @Enumerated(EnumType.STRING)
+    private EndpointState state;
 
     @Column
-    private Integer openToCustomers;
+    @Enumerated(EnumType.STRING)
+    private EndpointStatus status;
 
     @Column
     private String description;
@@ -83,23 +85,6 @@ public class EndpointAO {
         this.code = code;
     }
 
-    public Integer getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Integer enabled) {
-        this.enabled = enabled;
-    }
-
-    public Integer getOpenToCustomers() {
-        return openToCustomers;
-    }
-
-    public void setOpenToCustomers(Integer openToCustomers) {
-        this.openToCustomers = openToCustomers;
-    }
-
-
     public String getDescription() {
         return description;
     }
@@ -130,5 +115,21 @@ public class EndpointAO {
 
     public void setEndpointType(EndpointType endpointType) {
         this.endpointType = endpointType;
+    }
+
+    public EndpointState getState() {
+        return state;
+    }
+
+    public void setState(EndpointState state) {
+        this.state = state;
+    }
+
+    public EndpointStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(EndpointStatus status) {
+        this.status = status;
     }
 }
