@@ -10,7 +10,7 @@ public class VpnRouteVO_ {
     public static volatile SingularAttribute<VpnRouteVO, String> uuid;
     public static volatile SingularAttribute<VpnRouteVO, String> vpnUuid;
     public static volatile SingularAttribute<VpnRouteVO, RouteType> routeType;
-    public static volatile SingularAttribute<VpnRouteVO, List> nextIface;
+    public static volatile SingularAttribute<VpnRouteVO, List> nextInterface;
     public static volatile SingularAttribute<VpnRouteVO, String> targetCidr;
     public static volatile SingularAttribute<VpnRouteVO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<VpnRouteVO, Timestamp> createDate;

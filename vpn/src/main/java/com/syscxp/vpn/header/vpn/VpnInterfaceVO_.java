@@ -11,10 +11,10 @@ public class VpnInterfaceVO_ {
     public static volatile SingularAttribute<VpnInterfaceVO, String> hostUuid;
     public static volatile SingularAttribute<VpnInterfaceVO, String> name;
     public static volatile SingularAttribute<VpnInterfaceVO, String> description;
-    public static volatile SingularAttribute<VpnInterfaceVO, String> tunnel;
+    public static volatile SingularAttribute<VpnInterfaceVO, String> networkUuid;
     public static volatile SingularAttribute<VpnInterfaceVO, String> localIp;
     public static volatile SingularAttribute<VpnInterfaceVO, String> vlan;
-    public static volatile SingularAttribute<VpnInterfaceVO, String> mask;
+    public static volatile SingularAttribute<VpnInterfaceVO, String> netmask;
     public static volatile SingularAttribute<VpnInterfaceVO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<VpnInterfaceVO, Timestamp> createDate;
 }

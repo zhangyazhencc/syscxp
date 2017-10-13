@@ -53,6 +53,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.argerr;
+import static com.syscxp.core.Platform.inerr;
 import static com.syscxp.core.Platform.operr;
 
 @Component
@@ -399,10 +400,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             return;
         }
         vpn.setState(next);
-
+        vpn.setStatus(VpnStatus.Connected);
         VpnAgentCommand cmd = CreateVpnCmd.valueOf(vpn);
         String path = VpnConstant.START_VPN_PATH;
         if (next == VpnState.Disabled) {
+            vpn.setStatus(VpnStatus.Disconnected);
             cmd = DeleteVpnCmd.valueOf(vpn);
             path = VpnConstant.STOP_VPN_PATH;
         }
@@ -433,15 +435,17 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void success() {
                 evt.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vpn)));
+                bus.publish(evt);
             }
 
             @Override
             public void fail(ErrorCode errorCode) {
                 evt.setError(errorCode);
+                bus.publish(evt);
             }
         });
 
-        bus.publish(evt);
+
     }
 
     public void handle(APIDeleteVpnMsg msg) {
@@ -664,10 +668,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         @Override
         public void run() {
-            logger.debug(getName() + ": start check host status");
-            System.out.println("start check vpn status");
+
             disconnectedVpn.clear();
             List<VpnVO> vos = getAllVpns();
+            logger.debug("start check vpn status.");
             if (vos.isEmpty()) {
                 return;
             }
@@ -685,7 +689,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 }
             }
             updateVpnStatus(disconnectedVpn, VpnStatus.Disconnected);
-            logger.debug(getName() + ": end check host status");
         }
 
         @Override
@@ -711,7 +714,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
+                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         VpnVO vpn = updateVpnFromOrder(cmd);
                         if (vpn != null && vpn.getStatus() == VpnStatus.Connecting)
                             new VpnRESTCaller().syncPostForResult(VpnConstant.INIT_VPN_PATH,
@@ -724,7 +727,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
+                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
 
                         VpnVO vpn = dbf.findByUuid(cmd.getPorductUuid(), VpnVO.class);
                         if (vpn != null) {
@@ -740,8 +743,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
-
+                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         updateVpnFromOrder(cmd);
                         return null;
                     }
@@ -750,7 +752,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
+                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         updateVpnFromOrder(cmd);
                         return null;
                     }
@@ -759,7 +761,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
+                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         VpnVO vpn = updateVpnFromOrder(cmd);
                         if (vpn != null && vpn.getStatus() == VpnStatus.Disconnected)
                             new VpnRESTCaller().syncPostForResult(VpnConstant.UPDATE_VPN_BANDWIDTH_PATH,
@@ -801,8 +803,24 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             validate((APIUpdateVpnBandwidthMsg) msg);
         } else if (msg instanceof APIDownloadCertificateMsg) {
             validate((APIDownloadCertificateMsg) msg);
+        } else if (msg instanceof APICreateVpnInterfaceMsg) {
+            validate((APICreateVpnInterfaceMsg) msg);
         }
         return msg;
+    }
+
+    private void validate(APICreateVpnInterfaceMsg msg) {
+        String hostUuid = Q.New(VpnVO.class)
+                .eq(VpnVO_.uuid, msg.getVpnUuid())
+                .select(VpnVO_.hostUuid)
+                .findValue();
+        // 接口Vlan检查
+        Q q = Q.New(VpnInterfaceVO.class)
+                .eq(VpnInterfaceVO_.vlan, msg.getVlan())
+                .eq(VpnInterfaceVO_.hostUuid, hostUuid);
+        if (q.isExists())
+            throw new ApiMessageInterceptionException(
+                    argerr("The Vlan[:%s] of Host[uuid:%s] is already exist.", msg.getVlan(), hostUuid));
     }
 
     private void validate(APIDownloadCertificateMsg msg) {

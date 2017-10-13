@@ -449,8 +449,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
         @Override
         public void run() {
-            logger.debug(getName() + ": start check host status");
-            System.out.println("start check host status");
+            logger.debug("start check host status. ");
             disconnectedHosts.clear();
             List<VpnHostVO> vos = getAllHosts();
             if (vos.isEmpty()) {
@@ -468,7 +467,6 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
                     disconnectedHosts.add(vo.getUuid());
             }
             updateHostStatus(disconnectedHosts, HostStatus.Disconnected);
-            logger.debug(getName() + ": end check host status");
         }
 
 

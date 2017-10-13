@@ -196,7 +196,7 @@ public class VpnCommands {
      * 删除VPN：/vpn/destroy-vpn
      */
     public static class DeleteVpnCmd extends VpnAgentCommand {
-        private List<VpnInterfaceCmd> ddn_if_list;
+        private List<VpnInterfaceCmd> vlan_list;
 
         public static DeleteVpnCmd valueOf(VpnVO vo) {
             DeleteVpnCmd cmd = new DeleteVpnCmd();
@@ -207,11 +207,11 @@ public class VpnCommands {
         }
 
         public List<VpnInterfaceCmd> getVpnInterfaceCmds() {
-            return ddn_if_list;
+            return vlan_list;
         }
 
         public void setVpnInterfaceCmds(List<VpnInterfaceCmd> vpnInterfaceCmds) {
-            this.ddn_if_list = vpnInterfaceCmds;
+            this.vlan_list = vpnInterfaceCmds;
         }
 
     }

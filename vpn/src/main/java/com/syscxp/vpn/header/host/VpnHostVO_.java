@@ -10,7 +10,7 @@ public class VpnHostVO_ {
     public static volatile SingularAttribute<VpnHostVO, String> name;
     public static volatile SingularAttribute<VpnHostVO, String> description;
     public static volatile SingularAttribute<VpnHostVO, String> zoneUuid;
-    public static volatile SingularAttribute<VpnHostVO, String> publicIface;
+    public static volatile SingularAttribute<VpnHostVO, String> publicInterface;
     public static volatile SingularAttribute<VpnHostVO, String> publicIp;
     public static volatile SingularAttribute<VpnHostVO, HostState> state;
     public static volatile SingularAttribute<VpnHostVO, HostStatus> status;
