@@ -174,16 +174,19 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         }
 
 
-        APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent();
+
+
+        APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent(msg.getId());
         mongoTemplate.save(oldmap);
         event.setInventory(oldmap.toString());
+
         bus.publish(event);
 
     }
 
     private void handle(APIDeleteNodeExtensionInfoMsg msg) {
         mongoTemplate.remove(new Query(Criteria.where("node_id").is(msg.getNodeId())),Object.class);
-        APIDeleteNodeExtensionInfoEvent event = new APIDeleteNodeExtensionInfoEvent();
+        APIDeleteNodeExtensionInfoEvent event = new APIDeleteNodeExtensionInfoEvent(msg.getId());
         bus.publish(event);
     }
 
@@ -200,7 +203,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     private void handle(APICreateNodeExtensionInfoMsg msg) {
 
         mongoTemplate.insert(msg.getNodeExtensionInfo());
-        APICreateNodeExtensionInfoEvent event = new APICreateNodeExtensionInfoEvent();
+        APICreateNodeExtensionInfoEvent event = new APICreateNodeExtensionInfoEvent(msg.getId());
         event.setInventory(msg.getNodeExtensionInfo());
         bus.publish(event);
 
