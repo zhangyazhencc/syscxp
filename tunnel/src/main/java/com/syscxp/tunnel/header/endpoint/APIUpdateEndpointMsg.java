@@ -20,11 +20,11 @@ public class APIUpdateEndpointMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 128)
     private String code;
 
-    @APIParam(emptyString = false,maxLength = 1)
-    private Integer enabled;
+    @APIParam(emptyString = false,validValues = {"Enable","Disable"})
+    private EndpointState state;
 
-    @APIParam(emptyString = false,maxLength = 1)
-    public Integer openToCustomers;
+    @APIParam(emptyString = false,validValues = {"Open","Close"})
+    private EndpointStatus status;
 
     @APIParam(required = false,maxLength = 255)
     private String description;
@@ -54,27 +54,27 @@ public class APIUpdateEndpointMsg extends APIMessage {
         this.code = code;
     }
 
-    public Integer getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Integer enabled) {
-        this.enabled = enabled;
-    }
-
-    public Integer getOpenToCustomers() {
-        return openToCustomers;
-    }
-
-    public void setOpenToCustomers(Integer openToCustomers) {
-        this.openToCustomers = openToCustomers;
-    }
-
     public String getDescription() {
         return description;
     }
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public EndpointState getState() {
+        return state;
+    }
+
+    public void setState(EndpointState state) {
+        this.state = state;
+    }
+
+    public EndpointStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(EndpointStatus status) {
+        this.status = status;
     }
 }

@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIParam;
 @Action(category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"delete"})
 public class APIDeleteReceiptInfoMsg  extends APIMessage {
 
-    @APIParam(emptyString = false, resourceType = ReceiptInfoVO.class, checkAccount = true)
+    @APIParam(emptyString = false, resourceType = ReceiptInfoVO.class)
     private String uuid;
 
     public String getUuid() {

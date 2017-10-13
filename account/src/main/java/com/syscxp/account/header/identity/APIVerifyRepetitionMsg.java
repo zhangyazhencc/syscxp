@@ -13,15 +13,20 @@ public class APIVerifyRepetitionMsg extends APISyncCallMessage {
 
     @APIParam(maxLength = 128, required = false)
     private String accountName;
-
     @APIParam(maxLength = 128, required = false)
     private String accountEmail;
-
     @APIParam(maxLength = 32, required = false)
     private String accountPhone;
 
     @APIParam(maxLength = 128, required = false)
     private String userName;
+    @APIParam(maxLength = 128, required = false)
+    private String userEmail;
+    @APIParam(maxLength = 128, required = false)
+    private String userPhone;
+
+    @APIParam(maxLength = 128, required = false)
+    private String roleName;
 
     public String getAccountName() {
         return accountName;
@@ -45,6 +50,30 @@ public class APIVerifyRepetitionMsg extends APISyncCallMessage {
 
     public void setAccountPhone(String accountPhone) {
         this.accountPhone = accountPhone;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
+    }
+
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
+
+    public String getUserPhone() {
+        return userPhone;
+    }
+
+    public void setUserPhone(String userPhone) {
+        this.userPhone = userPhone;
     }
 
     public String getUserName() {

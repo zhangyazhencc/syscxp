@@ -11,6 +11,9 @@ public class APIVerifyRepetitionReply extends APIReply {
     private boolean accountEmail;
     private boolean accountPhone;
     private boolean userName;
+    private boolean userEmail;
+    private boolean userPhone;
+    private boolean roleName;
 
     public boolean isAccountName() {
         return accountName;
@@ -28,6 +31,30 @@ public class APIVerifyRepetitionReply extends APIReply {
         this.accountEmail = accountEmail;
     }
 
+    public boolean isUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(boolean userEmail) {
+        this.userEmail = userEmail;
+    }
+
+    public boolean isUserPhone() {
+        return userPhone;
+    }
+
+    public void setUserPhone(boolean userPhone) {
+        this.userPhone = userPhone;
+    }
+
+    public boolean isRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(boolean roleName) {
+        this.roleName = roleName;
+    }
+
     public boolean isAccountPhone() {
         return accountPhone;
     }
@@ -43,4 +70,5 @@ public class APIVerifyRepetitionReply extends APIReply {
     public void setUserName(boolean userName) {
         this.userName = userName;
     }
+
 }

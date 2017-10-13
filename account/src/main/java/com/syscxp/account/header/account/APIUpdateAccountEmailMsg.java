@@ -12,7 +12,7 @@ import com.syscxp.header.notification.ApiNotification;
 @Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"}, accountOnly = true)
 public class APIUpdateAccountEmailMsg extends APIMessage implements AccountMessage{
     @APIParam
-    private String OldEmail;
+    private String oldEmail;
 
     @APIParam
     private String oldCode;
@@ -24,11 +24,11 @@ public class APIUpdateAccountEmailMsg extends APIMessage implements AccountMessa
     private String newCode;
 
     public String getOldEmail() {
-        return OldEmail;
+        return oldEmail;
     }
 
     public void setOldEmail(String oldEmail) {
-        OldEmail = oldEmail;
+        this.oldEmail = oldEmail;
     }
 
     public String getOldCode() {

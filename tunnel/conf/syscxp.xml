@@ -54,5 +54,6 @@
     <import resource="springConfigXml/SwitchManager.xml"/>
     <import resource="springConfigXml/MonitorManager.xml"/>
     <import resource="springConfigXml/MongodbFacade.xml"/>
+    <import resource="springConfigXml/AliEdgeRouterManager.xml"/>
 
 </beans>

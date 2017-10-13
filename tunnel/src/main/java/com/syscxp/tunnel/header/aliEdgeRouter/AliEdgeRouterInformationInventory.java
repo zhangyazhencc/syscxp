@@ -14,7 +14,7 @@ public class AliEdgeRouterInformationInventory {
     private String LocalGatewayIp;
     private String PeerGatewayIp;
     private String PeeringSubnetMask;
-    private String vlan;
+    private Integer vlan;
     private Timestamp createDate;
 
     public String getName() {
@@ -97,11 +97,11 @@ public class AliEdgeRouterInformationInventory {
         PeeringSubnetMask = peeringSubnetMask;
     }
 
-    public String getVlan() {
+    public Integer getVlan() {
         return vlan;
     }
 
-    public void setVlan(String vlan) {
+    public void setVlan(Integer vlan) {
         this.vlan = vlan;
     }
 

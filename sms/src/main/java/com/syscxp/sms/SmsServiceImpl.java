@@ -46,6 +46,7 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
     class VerificationCode {
         String code;
         Timestamp expiredDate;
+        boolean isValidate;
     }
 
     private Map<String, VerificationCode> sessions = new ConcurrentHashMap<>();
@@ -87,9 +88,26 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         }
     }
 
+    public boolean msgValidateCode(String phone, String code) {
+        VerificationCode verificationCode = sessions.get(phone);
+        if (verificationCode == null){
+            return false;
+        }else{
+            Timestamp curr = new Timestamp(System.currentTimeMillis());
+            if (!verificationCode.isValidate && curr.before(verificationCode.expiredDate)
+                    && code.equals(verificationCode.code)) {
+                verificationCode.isValidate = true;
+                sessions.put(phone,verificationCode);
+                return true;
+            }else{
+                return false;
+            }
+        }
+    }
+
     private void  handle(APIValidateVerificationCodeMsg msg){
         APIValidateVerificationCodeReply reply = new APIValidateVerificationCodeReply();
-        reply.setValid(validateVerificationCode(msg.getPhone(), msg.getCode()));
+        reply.setValid(msgValidateCode(msg.getPhone(), msg.getCode()));
 
         bus.reply(msg, reply);
     }
@@ -111,6 +129,7 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         }else{
             verificationCode.code = code;
             verificationCode.expiredDate = new Timestamp(expiredTime);
+            verificationCode.isValidate = false;
         }
 
         APIGetVerificationCodeReply reply = new APIGetVerificationCodeReply();
