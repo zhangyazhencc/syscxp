@@ -423,18 +423,18 @@ CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterEO` (
   `accountUuid` VARCHAR(32) NOT NULL COMMENT '所属账户',
   `aliAccountUuid` VARCHAR(64) NOT NULL COMMENT '阿里云用户id',
   `aliRegionId` VARCHAR(64) NOT NULL COMMENT '阿里云区域',
-  `name` varchar(128) NOT NULL COMMENT '边界路由器名字',
+  `name` varchar(128) DEFAULT NULL COMMENT '边界路由器名字',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
-  `vbrUuid` varchar(64) DEFAULT NULL COMMENT '虚拟边界路由器id',
-  `physicalLineUuid` varchar(32) DEFAULT NULL COMMENT '物理专线id',
+  `vbrUuid` varchar(64) NOT NULL COMMENT '虚拟边界路由器id',
+  `physicalLineUuid` varchar(32) NOT NULL COMMENT '物理专线id',
   `vlan` int(11) NOT NULL COMMENT '端口号',
   `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`ali_edge_routerVO` AS SELECT uuid, tunnelid, aliuuid, area, name, description, vbrid, physicalid, vlanid, lastOpDate, createDate
-                                        FROM `ali_edge_routerEO` WHERE deleted = 0;
+CREATE VIEW `syscxp_tunnel`.`AliEdgeRouterVO` AS SELECT uuid, tunnelUuid, accountUuid, aliAccountUuid, aliRegionId, name, description, vbrUuid, physicalLineUuid, vlan, lastOpDate, createDate
+                                        FROM `AliEdgeRouterEO` WHERE deleted = 0;
 
 ##配置表
 CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterConfigVO` (
@@ -458,3 +458,4 @@ CREATE TABLE `syscxp_tunnel`.`AliUserVO` (
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
