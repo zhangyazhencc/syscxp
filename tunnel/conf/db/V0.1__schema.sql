@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS TunnelMonitorInterfaceVO (
   UNIQUE KEY `uuid` (`uuid`))
 ENGINE = InnoDB DEFAULT CHARSET = utf8 COMMENT '监控通道两端信息表';
 
-ALTER TABLE TunnelMonitorInterfaceVO ADD interfaceUuid varchar(32) COMMENT '' AFTER interfaceType;
+ALTER TABLE TunnelMonitorInterfaceVO ADD interfaceUuid varchar(32) COMMENT '物理接口uuid InterfaceVO.uuid' AFTER interfaceType;
 
 CREATE TABLE `SpeedRecordsVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'uuid',
@@ -142,9 +142,15 @@ CREATE TABLE  `syscxp_tunnel`.`EndpointEO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`EndpointVO` AS SELECT uuid, nodeUuid, name, code, endpointType, enabled, openToCustomers, description, lastOpDate, createDate
-                            FROM `EndpointEO` WHERE deleted = 0;
 
+ALTER TABLE EndpointEO ADD state varchar(32) COMMENT '启用|禁用 Enable|Disable' AFTER endpointType ;
+ALTER TABLE EndpointEO ADD status varchar(32) COMMENT '开发|未开放 Open|Close' AFTER state ;
+ALTER TABLE EndpointEO DROP COLUMN enabled;
+ALTER TABLE EndpointEO DROP COLUMN openToCustomers;
+
+
+CREATE OR REPLACE VIEW `syscxp_tunnel`.`EndpointVO` AS SELECT uuid, nodeUuid, name, code, endpointType, state, status, description, lastOpDate, createDate
+                            FROM `EndpointEO` WHERE deleted = 0;
 ##交换机型号
 CREATE TABLE  `syscxp_tunnel`.`SwitchModelVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
