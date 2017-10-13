@@ -125,7 +125,6 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
             VerificationCode vcode = new VerificationCode();
             vcode.code = code;
             vcode.expiredDate = new Timestamp(expiredTime);
-            sessions.put(msg.getPhone(), vcode);
         }else{
             verificationCode.code = code;
             verificationCode.expiredDate = new Timestamp(expiredTime);
