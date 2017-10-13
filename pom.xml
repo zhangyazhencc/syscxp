@@ -29,6 +29,7 @@
         <module>build</module>
         <module>sms</module>
         <module>vpn</module>
+        <module>alarm</module>
     </modules>
 
     <dependencyManagement>

@@ -20,16 +20,19 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.tunnel.header.aliEdgeRouter.*;
+import com.syscxp.tunnel.header.endpoint.EndpointVO;
+import com.syscxp.tunnel.header.node.NodeVO;
+import com.syscxp.tunnel.header.tunnel.InterfaceVO;
+import com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO;
+import com.syscxp.tunnel.header.tunnel.TunnelVO;
+import com.syscxp.tunnel.header.tunnel.TunnelVO_;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.syscxp.core.Platform.argerr;
 
@@ -87,10 +90,53 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
             handle((APIUpdateAliEdgeRouterConfigMsg) msg);
         }else if(msg instanceof APIDeleteAliEdgeRouterConfigMsg){
             handle((APIDeleteAliEdgeRouterConfigMsg) msg);
+        } else if(msg instanceof TunnelQueryMsg){
+            handle((TunnelQueryMsg) msg);
         }
         else {
             bus.dealWithUnknownMessage(msg);
         }
+
+    }
+
+    private void handle(TunnelQueryMsg msg){
+        TunnelQueryInventory inventory = new TunnelQueryInventory();
+        List<TunnelQueryInventory> TunnelQueryList = null;
+
+        SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
+        q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
+        List<TunnelVO> tunnels = q.list();
+        for(TunnelVO tunnel:tunnels){
+            List<TunnelInterfaceVO> TunnelInterfaceVOList = tunnel.getTunnelInterfaceVO();
+            for(TunnelInterfaceVO tunnelInterfaceVO :TunnelInterfaceVOList){
+                InterfaceVO interfaceVO = tunnelInterfaceVO.getInterfaceVO();
+                EndpointVO endpointVO = interfaceVO.getEndpointVO();
+                NodeVO nodeVO = endpointVO.getNodeVO();
+                String region = nodeVO.getCity();
+
+                if(msg.getAliRegionId() == region){//msg.getAliRegionId 数据的定义
+
+                    SimpleQuery<AliEdgeRouterConfigVO> q1 = dbf.createQuery(AliEdgeRouterConfigVO.class);
+                    q1.add(AliEdgeRouterConfigVO_.aliRegionId, SimpleQuery.Op.EQ,msg.getAliRegionId());
+                    List<AliEdgeRouterConfigVO> AliEdgeRouterConfigs = q1.list();
+
+                    for(AliEdgeRouterConfigVO aliEdgeRouterConfigVO :AliEdgeRouterConfigs){
+                        if(aliEdgeRouterConfigVO.getSwitchPortUuid() == interfaceVO.getSwitchPortUuid() ){
+                            inventory.setTunnelUuid(tunnel.getUuid());
+                            inventory.setTunnelName(tunnel.getName());
+                            inventory.setAliRegionId(msg.getAliRegionId());
+                            inventory.setSwitchPortUuid(interfaceVO.getSwitchPortUuid());
+                            inventory.setPhysicalLineUuid(aliEdgeRouterConfigVO.getPhysicalLineUuid());
+                            TunnelQueryList.add(inventory);
+                        }
+                    }
+                }
+            }
+        }
+
+        TunnelQueryReply reply = new TunnelQueryReply();
+        reply.setInventory(TunnelQueryList);
+        bus.reply(msg,reply);
 
     }
 
@@ -283,7 +329,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
         String AliAccessKeyId ;
         String AliAccessKeySecret ;
 
-        if(msg.getFlag() == true){
+        if(msg.getFlag() == true && msg.getAliAccessKeyID() == null && msg.getAliAccessKeySecret() == null){
             SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
             q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
             q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,vo.getAliAccountUuid());
@@ -292,7 +338,11 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
             AliAccessKeyId = user.getAliAccessKeyID();
             AliAccessKeySecret = user.getAliAccessKeySecret();
 
-        }else{
+        }else if(msg.getFlag() == true && msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null){
+            AliAccessKeyId = msg.getAliAccessKeyID();
+            AliAccessKeySecret = msg.getAliAccessKeySecret();
+        }
+        else{
             SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
             q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,"admin");
             q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,"admin");
@@ -342,15 +392,25 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
             vo.setDescription(msg.getDescription());
             update = true;
         }
+        String AliAccessKeyId;
+        String AliAccessKeySecret;
 
-        SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-        q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
-        q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,vo.getAliAccountUuid());
-        AliUserVO user = q.find();
+        if(msg.getAliAccessKeyID()!= null && msg.getAliAccessKeySecret() != null){
+            AliAccessKeyId = msg.getAliAccessKeyID();
+            AliAccessKeySecret = msg.getAliAccessKeySecret();
+        }else{
+            SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
+            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
+            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,vo.getAliAccountUuid());
+            AliUserVO user = q.find();
+
+            AliAccessKeyId = user.getAliAccessKeyID();
+            AliAccessKeySecret = user.getAliAccessKeySecret();
+        }
+
 
         String RegionId = vo.getAliRegionId();
-        String AliAccessKeyId = user.getAliAccessKeyID();
-        String AliAccessKeySecret = user.getAliAccessKeySecret();
+
 
         // 创建DefaultAcsClient实例并初始化
         DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);

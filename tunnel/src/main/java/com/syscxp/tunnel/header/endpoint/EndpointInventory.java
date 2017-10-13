@@ -20,8 +20,8 @@ public class EndpointInventory {
     private String name;
     private String code;
     private EndpointType endpointType;
-    private Integer enabled;
-    private Integer openToCustomers;
+    private EndpointState endpointState;
+    private EndpointStatus endpointStatus;
     private String description;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -34,8 +34,8 @@ public class EndpointInventory {
         inv.setName(vo.getName());
         inv.setCode(vo.getCode());
         inv.setEndpointType(vo.getEndpointType());
-        inv.setEnabled(vo.getEnabled());
-        inv.setOpenToCustomers(vo.getOpenToCustomers());
+        inv.setEndpointState(vo.getState());
+        inv.setEndpointStatus(vo.getStatus());
         inv.setDescription(vo.getDescription());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -82,22 +82,6 @@ public class EndpointInventory {
         this.code = code;
     }
 
-    public Integer getEnabled() {
-        return enabled;
-    }
-
-    public void setEnabled(Integer enabled) {
-        this.enabled = enabled;
-    }
-
-    public Integer getOpenToCustomers() {
-        return openToCustomers;
-    }
-
-    public void setOpenToCustomers(Integer openToCustomers) {
-        this.openToCustomers = openToCustomers;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -136,5 +120,21 @@ public class EndpointInventory {
 
     public void setNode(NodeInventory node) {
         this.node = node;
+    }
+
+    public EndpointState getEndpointState() {
+        return endpointState;
+    }
+
+    public void setEndpointState(EndpointState endpointState) {
+        this.endpointState = endpointState;
+    }
+
+    public EndpointStatus getEndpointStatus() {
+        return endpointStatus;
+    }
+
+    public void setEndpointStatus(EndpointStatus endpointStatus) {
+        this.endpointStatus = endpointStatus;
     }
 }

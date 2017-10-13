@@ -6,6 +6,7 @@ import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.vpn.VpnAgentResponse.*;
+import com.syscxp.utils.TimeUtils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.vpn.header.host.*;
 import com.syscxp.vpn.vpn.VpnCommands.*;
@@ -395,7 +396,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
     }
 
     private void startFailureHostCopingThread() {
-        hostCheckThread = thdf.submitPeriodicTask(new HostStatusCheckWorker());
+        hostCheckThread = thdf.submitPeriodicTask(new HostStatusCheckWorker(), 60);
         logger.debug(String.format("security group failureHostCopingThread starts[failureHostWorkerInterval: %ss]", hostStatusCheckWorkerInterval));
     }
 
@@ -456,7 +457,6 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             }
             for (VpnHostVO vo : vos) {
                 if (vo.getStatus() == HostStatus.Disconnected) {
-                    disconnectedHosts.add(vo.getUuid());
                     continue;
                 }
                 CheckVpnHostStatusCmd cmd = CheckVpnHostStatusCmd.valueOf(vo);
@@ -466,8 +466,8 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
                 if (!reconnectHost(vo))
                     disconnectedHosts.add(vo.getUuid());
             }
-
-            updateHostStatus(disconnectedHosts);
+            if (!disconnectedHosts.isEmpty())
+                updateHostStatus(disconnectedHosts);
             logger.debug(getName() + ": end check host status");
         }
 

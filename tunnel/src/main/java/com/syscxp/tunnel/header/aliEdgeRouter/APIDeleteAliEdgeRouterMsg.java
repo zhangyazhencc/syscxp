@@ -15,6 +15,27 @@ public class APIDeleteAliEdgeRouterMsg extends APIMessage {
     @APIParam(required = false)
     private Boolean Flag;
 
+    @APIParam(emptyString = false,required = false,maxLength = 32)
+    private String AliAccessKeyID;
+    @APIParam(emptyString = false,required = false,maxLength = 32)
+    private String AliAccessKeySecret;
+
+    public String getAliAccessKeyID() {
+        return AliAccessKeyID;
+    }
+
+    public void setAliAccessKeyID(String aliAccessKeyID) {
+        AliAccessKeyID = aliAccessKeyID;
+    }
+
+    public String getAliAccessKeySecret() {
+        return AliAccessKeySecret;
+    }
+
+    public void setAliAccessKeySecret(String aliAccessKeySecret) {
+        AliAccessKeySecret = aliAccessKeySecret;
+    }
+
     public String getUuid() {
         return uuid;
     }

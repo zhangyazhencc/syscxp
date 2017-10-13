@@ -2,10 +2,15 @@ package com.syscxp.tunnel.manage;
 
 
 import com.syscxp.core.db.*;
+import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.tunnel.header.switchs.SwitchVlanVO;
+import com.syscxp.header.rest.SyncHttpCallHandler;
+import com.syscxp.tunnel.header.switchs.*;
 import com.syscxp.tunnel.header.tunnel.*;
+import com.syscxp.tunnel.sdk.sdn.dto.TunnelMplsConfig;
+import com.syscxp.tunnel.sdk.sdn.dto.TunnelSdnConfig;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.CoreGlobalProperty;
@@ -34,7 +39,9 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.syscxp.core.Platform.argerr;
 
@@ -570,6 +577,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         //TODO 支付成功后下发控制器
 
+
+
         //下发成功后默认给创建的通道开启监控
         //vo.setState(TunnelState.Opened);
         //vo.setStatus(TunnelStatus.Connected);
@@ -1007,11 +1016,135 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         bus.publish(evt);
     }
 
+    private Object updateTunnelFromOrder(OrderCallbackCmd cmd) {
+        if(cmd.getProductType() == ProductType.PORT){
+            InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
+            boolean update = false;
+            if (vo.getState() == InterfaceState.Unpaid) {
+                vo.setState(InterfaceState.paid);
+                update = true;
+            }
+            if (cmd.getExpireDate() != null) {
+                vo.setExpiredDate(cmd.getExpireDate());
+                update = true;
+            }
+            return update ? vo : null;
+        }else if(cmd.getProductType() == ProductType.TUNNEL){
+            TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
+            boolean update = false;
+            if (vo.getState() == TunnelState.Unpaid) {
+                vo.setState(TunnelState.Closed);
+                update = true;
+            }
+            if (cmd.getExpireDate() != null) {
+                vo.setExpiredDate(cmd.getExpireDate());
+                update = true;
+            }
+            return update ? vo : null;
+        }else{
+            return null;
+        }
 
+    }
 
     @Override
     public boolean start() {
+        restf.registerSyncHttpCallHandler(OrderType.BUY.toString(), OrderCallbackCmd.class,
+                new SyncHttpCallHandler<OrderCallbackCmd>() {
+                    @Override
+                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
+                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
+                        if(cmd.getProductType() == ProductType.PORT){
+                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }else if(cmd.getProductType() == ProductType.TUNNEL){
+                            TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }
+                        return null;
+                    }
+                });
+        restf.registerSyncHttpCallHandler(OrderType.UN_SUBCRIBE.toString(), OrderCallbackCmd.class,
+                new SyncHttpCallHandler<OrderCallbackCmd>() {
+                    @Override
+                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
+                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
+                        if(cmd.getProductType() == ProductType.PORT){
+                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.remove(vo);
+                            }
+                        }else if(cmd.getProductType() == ProductType.TUNNEL){
+                            TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.remove(vo);
+                            }
+                        }
+                        return null;
+                    }
+                });
 
+        restf.registerSyncHttpCallHandler(OrderType.RENEW.toString(), OrderCallbackCmd.class,
+                new SyncHttpCallHandler<OrderCallbackCmd>() {
+                    @Override
+                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
+                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
+                        if(cmd.getProductType() == ProductType.PORT){
+                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }else if(cmd.getProductType() == ProductType.TUNNEL){
+                            TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }
+                        return null;
+                    }
+                });
+        restf.registerSyncHttpCallHandler(OrderType.SLA_COMPENSATION.toString(), OrderCallbackCmd.class,
+                new SyncHttpCallHandler<OrderCallbackCmd>() {
+                    @Override
+                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
+                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
+                        if(cmd.getProductType() == ProductType.PORT){
+                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }else if(cmd.getProductType() == ProductType.TUNNEL){
+                            TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }
+                        return null;
+                    }
+                });
+        restf.registerSyncHttpCallHandler(OrderType.MODIFY.toString(), OrderCallbackCmd.class,
+                new SyncHttpCallHandler<OrderCallbackCmd>() {
+                    @Override
+                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
+                        logger.debug(String.format("from %s call back.", CoreGlobalProperty.BILLING_SERVER_URL));
+                        if(cmd.getProductType() == ProductType.PORT){
+                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }else if(cmd.getProductType() == ProductType.TUNNEL){
+                            TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
+                            if (vo != null) {
+                                dbf.updateAndRefresh(vo);
+                            }
+                        }
+                        return null;
+                    }
+                });
         return true;
     }
 
@@ -1455,9 +1588,186 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 }
             }
         }
+    }
+
+    /**
+     *  获取控制器下发配置
+     */
+    private String getTunnelConfigInfo(TunnelVO tunnelVO, TunnelInterfaceVO tunnelInterfaceA, TunnelInterfaceVO tunnelInterfaceZ, List<QinqVO> qinqVOs){
+        Map<String,Object> configMap = new HashMap<String, Object>();
+        Map<String,Object> configTunnelMap = new HashMap<String, Object>();
+        Map configConnectionsMap=new HashMap();
+
+        List<Map> tunnelList = new ArrayList<>();
+        List<Map> connectionsList = new ArrayList<>();
+        List<TunnelMplsConfig> mplsList = new ArrayList<>();
+        List<TunnelSdnConfig> sdnList = new ArrayList<>();
+
+        TunnelMplsConfig tmcA = null;
+        TunnelMplsConfig tmcZ = null;
+        TunnelSdnConfig tscA = null;
+        TunnelSdnConfig tscZ = null;
 
 
+        tmcA = getTunnelMplsConfig(tunnelVO,tunnelInterfaceA,qinqVOs);
+        tmcZ = getTunnelMplsConfig(tunnelVO,tunnelInterfaceZ,qinqVOs);
+        tscA = getTunnelSdnConfig(tunnelVO,tunnelInterfaceA,qinqVOs);
+        tscZ = getTunnelSdnConfig(tunnelVO,tunnelInterfaceZ,qinqVOs);
 
+        mplsList.add(tmcA);
+        mplsList.add(tmcZ);
+        if(tscA != null){
+            sdnList.add(tscA);
+            configConnectionsMap.put("sdn_interface_A",tscA.getUuid());
+        }
+        if(tscZ != null){
+            sdnList.add(tscZ);
+            configConnectionsMap.put("sdn_interface_Z",tscZ.getUuid());
+        }
+
+        configTunnelMap.put("tunnel_id",tunnelVO.getUuid());
+        configTunnelMap.put("mpls_interfaces",mplsList);
+        configConnectionsMap.put("tunnel_id",tunnelVO.getUuid());
+        configConnectionsMap.put("mpls_interface_A",tmcA.getUuid());
+        configConnectionsMap.put("mpls_interface_Z",tmcZ.getUuid());
+        if(sdnList.size()>0){
+            configTunnelMap.put("sdn_interfaces",sdnList);
+        }
+
+        tunnelList.add(configTunnelMap);
+        connectionsList.add(configConnectionsMap);
+
+        configMap.put("tunnel",tunnelList);
+        configMap.put("connections",connectionsList);
+
+        String jsonString = JSONObjectUtil.toJsonString(configMap);
+
+        return jsonString;
+    }
+
+    private TunnelMplsConfig getTunnelMplsConfig(TunnelVO tunnelVO, TunnelInterfaceVO tunnelInterfaceVO, List<QinqVO> qinqVOs){
+        TunnelMplsConfig tmc = new TunnelMplsConfig();
+        NetworkVO networkVO = dbf.findByUuid(tunnelVO.getNetworkUuid(),NetworkVO.class);
+        SwitchPortVO switchPortVO = getSwitchPort(tunnelInterfaceVO.getInterfaceUuid());
+        PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitch(switchPortVO);
+
+        if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.SDN){   //SDN接入
+            //找到SDN交换机的上联传输交换机
+            PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchVO.getUuid())
+                    .find();
+            PhysicalSwitchVO mplsPhysicalSwitch = dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+
+            SwitchModelVO mplsSwitchModel = dbf.findByUuid(mplsPhysicalSwitch.getSwitchModelUuid(),SwitchModelVO.class);
+
+            tmc.setUuid(mplsPhysicalSwitch.getUuid());
+            tmc.setSwitch_type(mplsSwitchModel.getModel());
+            tmc.setSub_type(mplsSwitchModel.getSubModel());
+            tmc.setVni(networkVO.getVsi());
+            tmc.setRemote_ip(mplsPhysicalSwitch.getLocalIP());
+            tmc.setPort_name(switchPortVO.getPortName());
+            tmc.setVlan_id(tunnelInterfaceVO.getVlan());
+            tmc.setM_ip(mplsPhysicalSwitch.getmIP());
+            tmc.setUsername(mplsPhysicalSwitch.getUsername());
+            tmc.setPassword(mplsPhysicalSwitch.getPassword());
+            tmc.setNetwork_type("TRUNK");
+
+        }else if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.MPLS){  //Mpls接入
+            SwitchModelVO switchModel = dbf.findByUuid(physicalSwitchVO.getSwitchModelUuid(),SwitchModelVO.class);
+
+            tmc.setUuid(physicalSwitchVO.getUuid());
+            tmc.setSwitch_type(switchModel.getModel());
+            tmc.setSub_type(switchModel.getSubModel());
+            tmc.setVni(networkVO.getVsi());
+            tmc.setRemote_ip(physicalSwitchVO.getLocalIP());
+            tmc.setPort_name(switchPortVO.getPortName());
+            tmc.setVlan_id(tunnelInterfaceVO.getVlan());
+            tmc.setM_ip(physicalSwitchVO.getmIP());
+            tmc.setUsername(physicalSwitchVO.getUsername());
+            tmc.setPassword(physicalSwitchVO.getPassword());
+            if(tunnelInterfaceVO.getQinqState() == TunnelQinqState.Enabled){
+                tmc.setNetwork_type("QINQ");
+                tmc.setInner_vlan_id(getInnerVlanToString(qinqVOs));
+            }else{
+                tmc.setNetwork_type("TRUNK");
+            }
+            tmc.setBandwidth(tunnelVO.getBandwidth());
+        }
+
+        return tmc;
+    }
+
+    private TunnelSdnConfig getTunnelSdnConfig(TunnelVO tunnelVO, TunnelInterfaceVO tunnelInterfaceVO, List<QinqVO> qinqVOs){
+        TunnelSdnConfig tsc = new TunnelSdnConfig();
+        SwitchPortVO switchPortVO = getSwitchPort(tunnelInterfaceVO.getInterfaceUuid());
+        PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitch(switchPortVO);
+        if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.SDN){   //SDN接入
+            //找到SDN交换机的上联传输交换机
+            PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchVO.getUuid())
+                    .find();
+            tsc.setUuid(physicalSwitchVO.getUuid());
+            tsc.setM_ip(physicalSwitchVO.getmIP());
+            tsc.setVlan_id(tunnelInterfaceVO.getVlan());
+            tsc.setIn_port(physicalSwitchUpLinkRefVO.getPortName());
+            tsc.setUplink(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchPortName());
+            tsc.setBandwidth(tunnelVO.getBandwidth());
+            if(tunnelInterfaceVO.getQinqState() == TunnelQinqState.Enabled){
+                tsc.setNetwork_type("QINQ");
+                tsc.setInner_vlan_id(getInnerVlanToString(qinqVOs));
+            }else{
+                tsc.setNetwork_type("TRUNK");
+            }
+
+        }else if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.MPLS){  //Mpls接入
+            tsc = null;
+        }
+        return tsc;
+    }
+
+    /**内部VLAN段拼接成字符串 */
+    private String getInnerVlanToString(List<QinqVO> qinqVOs){
+        StringBuffer buf=new StringBuffer();
+        for(int i=0;i<qinqVOs.size();i++){
+            QinqVO qinqVO = qinqVOs.get(i);
+            if(i == (qinqVOs.size()-1)){
+                if(qinqVO.getStartVlan() == qinqVO.getEndVlan()){
+                    buf.append(qinqVO.getStartVlan().toString());
+                }else{
+                    buf.append(qinqVO.getStartVlan().toString());
+                    buf.append(" to ");
+                    buf.append(qinqVO.getEndVlan().toString());
+                }
+            }else{
+                if(qinqVO.getStartVlan() == qinqVO.getEndVlan()){
+                    buf.append(qinqVO.getStartVlan().toString());
+                    buf.append(",");
+                }else{
+                    buf.append(qinqVO.getStartVlan().toString());
+                    buf.append(" to ");
+                    buf.append(qinqVO.getEndVlan().toString());
+                    buf.append(",");
+                }
+            }
+        }
+        String d=buf.toString();
+        return d;
+    }
+
+    /**根据 interfaceUuid 找出对应的 SwitchPort */
+    private SwitchPortVO getSwitchPort(String interfaceUuid){
+        String sql ="select a from SwitchPortVO a, InterfaceVO b where a.uuid = b.switchPortUuid and b.uuid = :interfaceUuid ";
+        TypedQuery<SwitchPortVO> tq= dbf.getEntityManager().createQuery(sql, SwitchPortVO.class);
+        tq.setParameter("interfaceUuid",interfaceUuid);
+        SwitchPortVO vo = tq.getSingleResult();
+        return vo;
+    }
+
+    /**根据 switchPort 找出所属的 PhysicalSwitch */
+    private PhysicalSwitchVO getPhysicalSwitch(SwitchPortVO switchPortVO){
+        SwitchVO switchVO = dbf.findByUuid(switchPortVO.getSwitchUuid(),SwitchVO.class);
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(switchVO.getPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+        return physicalSwitchVO;
     }
 
 }

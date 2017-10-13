@@ -87,6 +87,8 @@ public class VpnRESTCaller {
         if (logger.isTraceEnabled()) {
             logger.trace(String.format("[http response(url: %s)] %s", url, rsp.getBody()));
         }
+        logger.debug(String.format("[http response(url: %s)] %s", url, rsp.getBody()));
+
         return JSONObjectUtil.toObject(rsp.getBody(), VpnAgentResponse.class);
 
     }
@@ -97,7 +99,7 @@ public class VpnRESTCaller {
     public RunStatus checkStatus(String path, VpnAgentCommand cmd) {
         String url = buildUrl(path);
         try {
-            VpnAgentResponse response = syncPostForResponse(url, cmd);
+            VpnAgentResponse response = syncPostForResponseNoretry(url, cmd);
             logger.debug(String.format("successfully post %s", url));
             return response.getStatus();
         } catch (Exception e) {
@@ -128,9 +130,9 @@ public class VpnRESTCaller {
             @Override
             public void success(VpnAgentResponse returnValue) {
                 TaskResult result = returnValue.getResult();
-                logger.debug(String.format("successfully post %s", url));
                 if (result.isSuccess()) {
                     completion.success();
+                    logger.debug(String.format("successfully execute the command[%s].", url));
                 } else {
                     completion.fail(Platform.operr("failed to execute the command[%s]. %s", url, result.getMessage()));
                 }
