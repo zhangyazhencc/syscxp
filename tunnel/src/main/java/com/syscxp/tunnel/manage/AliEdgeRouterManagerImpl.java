@@ -20,12 +20,19 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.tunnel.header.aliEdgeRouter.*;
+import com.syscxp.tunnel.header.endpoint.EndpointVO;
+import com.syscxp.tunnel.header.node.NodeVO;
+import com.syscxp.tunnel.header.tunnel.InterfaceVO;
+import com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO;
+import com.syscxp.tunnel.header.tunnel.TunnelVO;
+import com.syscxp.tunnel.header.tunnel.TunnelVO_;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import org.aspectj.util.LangUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.rmi.ServerException;
+
+import java.sql.Timestamp;
+import java.util.*;
 
 import static com.syscxp.core.Platform.argerr;
 
@@ -69,12 +76,250 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
             handle((APIUpdateAliEdgeRouterMsg) msg);
         }else if(msg instanceof APIDeleteAliEdgeRouterMsg){
             handle((APIDeleteAliEdgeRouterMsg) msg);
+        }else if(msg instanceof AliEdgeRouterInformationMsg){
+            handle((AliEdgeRouterInformationMsg) msg);
+        }else if(msg instanceof APISaveAliUserMsg){
+            handle((APISaveAliUserMsg) msg);
+        }else if(msg instanceof APIUpdateAliUserMsg){
+            handle((APIUpdateAliUserMsg) msg);
+        }else if(msg instanceof APIDeleteAliUserMsg){
+            handle((APIDeleteAliUserMsg) msg);
+        }else if(msg instanceof APICreateAliEdgeRouterConfigMsg){
+            handle((APICreateAliEdgeRouterConfigMsg) msg);
+        }else if(msg instanceof APIUpdateAliEdgeRouterConfigMsg){
+            handle((APIUpdateAliEdgeRouterConfigMsg) msg);
+        }else if(msg instanceof APIDeleteAliEdgeRouterConfigMsg){
+            handle((APIDeleteAliEdgeRouterConfigMsg) msg);
+        } else if(msg instanceof TunnelQueryMsg){
+            handle((TunnelQueryMsg) msg);
         }
         else {
             bus.dealWithUnknownMessage(msg);
         }
 
     }
+
+    private void handle(TunnelQueryMsg msg){
+        TunnelQueryInventory inventory = new TunnelQueryInventory();
+        List<TunnelQueryInventory> TunnelQueryList = null;
+
+        SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
+        q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
+        List<TunnelVO> tunnels = q.list();
+        for(TunnelVO tunnel:tunnels){
+            List<TunnelInterfaceVO> TunnelInterfaceVOList = tunnel.getTunnelInterfaceVO();
+            for(TunnelInterfaceVO tunnelInterfaceVO :TunnelInterfaceVOList){
+                InterfaceVO interfaceVO = tunnelInterfaceVO.getInterfaceVO();
+                EndpointVO endpointVO = interfaceVO.getEndpointVO();
+                NodeVO nodeVO = endpointVO.getNodeVO();
+                String region = nodeVO.getCity();
+
+                if(msg.getAliRegionId() == region){//msg.getAliRegionId 数据的定义
+
+                    SimpleQuery<AliEdgeRouterConfigVO> q1 = dbf.createQuery(AliEdgeRouterConfigVO.class);
+                    q1.add(AliEdgeRouterConfigVO_.aliRegionId, SimpleQuery.Op.EQ,msg.getAliRegionId());
+                    List<AliEdgeRouterConfigVO> AliEdgeRouterConfigs = q1.list();
+
+                    for(AliEdgeRouterConfigVO aliEdgeRouterConfigVO :AliEdgeRouterConfigs){
+                        if(aliEdgeRouterConfigVO.getSwitchPortUuid() == interfaceVO.getSwitchPortUuid() ){
+                            inventory.setTunnelUuid(tunnel.getUuid());
+                            inventory.setTunnelName(tunnel.getName());
+                            inventory.setAliRegionId(msg.getAliRegionId());
+                            inventory.setSwitchPortUuid(interfaceVO.getSwitchPortUuid());
+                            inventory.setPhysicalLineUuid(aliEdgeRouterConfigVO.getPhysicalLineUuid());
+                            TunnelQueryList.add(inventory);
+                        }
+                    }
+                }
+            }
+        }
+
+        TunnelQueryReply reply = new TunnelQueryReply();
+        reply.setInventory(TunnelQueryList);
+        bus.reply(msg,reply);
+
+    }
+
+    private void handle(APIDeleteAliEdgeRouterConfigMsg msg){
+        AliEdgeRouterConfigVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterConfigVO.class);
+
+        if(vo !=null){
+            dbf.remove(vo);
+        }
+
+        APICreateAliEdgeRouterConfigEvent evt = new APICreateAliEdgeRouterConfigEvent();
+        evt.setInventory(AliEdgeRouterConfigInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIUpdateAliEdgeRouterConfigMsg msg){
+        AliEdgeRouterConfigVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterConfigVO.class);
+        Boolean update = false;
+        if(msg.getAliRegionId() != null){
+            vo.setAliRegionId(msg.getAliRegionId());
+            update = true;
+        }
+
+        if(msg.getPhysicalLineUuid()!= null){
+            vo.setPhysicalLineUuid(msg.getPhysicalLineUuid());
+            update = true;
+        }
+
+        if(msg.getSwitchPortUuid() != null){
+            vo.setSwitchPortUuid(msg.getSwitchPortUuid());
+            update = true;
+        }
+
+        if(update)
+            vo = dbf.updateAndRefresh(vo);
+
+        APICreateAliEdgeRouterConfigEvent evt = new APICreateAliEdgeRouterConfigEvent();
+        evt.setInventory(AliEdgeRouterConfigInventory.valueOf(vo));
+        bus.publish(evt);
+
+    }
+
+    private void handle(APICreateAliEdgeRouterConfigMsg msg){
+        AliEdgeRouterConfigVO vo = new AliEdgeRouterConfigVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setAliRegionId(msg.getAliRegionId());
+        vo.setPhysicalLineUuid(msg.getPhysicalLineUuid());
+        vo.setSwitchPortUuid(msg.getSwitchportUuid());
+
+        dbf.getEntityManager().merge(vo);
+
+        APICreateAliEdgeRouterConfigEvent evt = new APICreateAliEdgeRouterConfigEvent();
+        evt.setInventory(AliEdgeRouterConfigInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIDeleteAliUserMsg msg){
+        AliUserVO vo = dbf.findByUuid(msg.getUuid(),AliUserVO.class);
+        if(vo != null){
+            dbf.remove(vo);
+        }
+        APIDeleteAliUserEvent evt = new APIDeleteAliUserEvent();
+        evt.setInventory(AliUserInventory.valueOf(vo));
+        bus.publish(evt);
+
+    }
+
+
+    private void handle(APIUpdateAliUserMsg msg){
+        AliUserVO vo = dbf.findByUuid(msg.getUuid(),AliUserVO.class);
+        boolean update = false;
+
+        if(msg.getAliAccessKeyID() != null){
+            vo.setAliAccessKeyID(msg.getAliAccessKeyID());
+            update = true;
+        }
+
+        if(msg.getAliAccessKeySecret() != null){
+            vo.setAliAccessKeySecret(msg.getAliAccessKeySecret());
+            update = true;
+        }
+
+        if(update)
+            vo = dbf.updateAndRefresh(vo);
+
+        APIUpdateAliUserEvent evt =  new APIUpdateAliUserEvent();
+        evt.setInventory(AliUserInventory.valueOf(vo));
+        bus.publish(evt);
+
+    }
+
+    private void handle(APISaveAliUserMsg msg){
+        AliUserVO vo = new AliUserVO();
+
+        SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
+        q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
+        q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,msg.getAliAccountUuid());
+        AliUserVO user = q.find();
+
+        if(user.getAliAccessKeyID() != null && user.getAliAccessKeySecret() != null){
+            dbf.remove(user);
+        }
+
+        vo.setUuid(Platform.getUuid());
+        vo.setAccountUuid(msg.getAccountUuid());
+        vo.setAliAccountUuid(msg.getAliAccountUuid());
+        vo.setAliAccessKeyID(msg.getAliAccessKeyID());
+        vo.setAliAccessKeySecret(msg.getAliAccessKeySecret());
+
+        dbf.getEntityManager().merge(vo);
+
+        APISaveAliUserEvent evt = new APISaveAliUserEvent();
+        evt.setInventory(AliUserInventory.valueOf(vo));
+        bus.publish(evt);
+
+    }
+
+    private void handle(AliEdgeRouterInformationMsg msg){
+
+        AliEdgeRouterInformationInventory inventory = new AliEdgeRouterInformationInventory();
+        String AliAccessKeyId ;
+        String AliAccessKeySecret ;
+
+
+        if(msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null){
+            AliAccessKeyId = msg.getAliAccessKeyID();
+            AliAccessKeySecret = msg.getAliAccessKeySecret();
+        }else{
+            SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
+            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,msg.getAliAccountUuid());
+            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
+            AliUserVO user = q.find();
+            AliAccessKeyId = user.getAliAccessKeyID();
+            AliAccessKeySecret = user.getAliAccessKeySecret();
+        }
+
+        // 创建DefaultAcsClient实例并初始化
+        DefaultProfile profile = DefaultProfile.getProfile(msg.getAliRegionId(),AliAccessKeyId,AliAccessKeySecret);
+        IAcsClient client = new DefaultAcsClient(profile);
+
+        // 创建API请求并设置参数
+        DescribeVirtualBorderRoutersRequest request = new DescribeVirtualBorderRoutersRequest();
+        //组装filter数据
+        List list = new ArrayList();
+        List list1 = new ArrayList();
+        Map map = new HashMap();
+        map.put("Key","VbrId");
+        list1.add(msg.getVbrUuid());
+        map.put("Value",list1);
+        list.add(map);
+
+        request.setFilters(list);
+
+        DescribeVirtualBorderRoutersResponse response ;
+        try{
+            response = client.getAcsResponse(request);
+            response.getVirtualBorderRouterSet();
+            inventory.setName(response.getVirtualBorderRouterSet().get(0).getName());
+            inventory.setVbrUuid(response.getVirtualBorderRouterSet().get(0).getVbrId());
+            inventory.setAccessPoint(response.getVirtualBorderRouterSet().get(0).getAccessPointId());
+            inventory.setStatus(response.getVirtualBorderRouterSet().get(0).getStatus());
+            inventory.setDescription(response.getVirtualBorderRouterSet().get(0).getDescription());
+            inventory.setCreateDate(Timestamp.valueOf(response.getVirtualBorderRouterSet().get(0).getCreationTime()));
+            inventory.setPhysicalLineUuid(response.getVirtualBorderRouterSet().get(0).getPhysicalConnectionId());
+            inventory.setPhysicalLineOwerUuid(response.getVirtualBorderRouterSet().get(0).getPhysicalConnectionOwnerUid());
+            inventory.setLocalGatewayIp(response.getVirtualBorderRouterSet().get(0).getLocalGatewayIp());
+            inventory.setPeerGatewayIp(response.getVirtualBorderRouterSet().get(0).getPeerGatewayIp());
+            inventory.setPeeringSubnetMask(response.getVirtualBorderRouterSet().get(0).getPeeringSubnetMask());
+            inventory.setVlan(response.getVirtualBorderRouterSet().get(0).getVlanId());
+
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+        }
+
+        AliEdgeRouterInformationReply reply = new AliEdgeRouterInformationReply();
+        reply.setInventory(inventory);
+        bus.reply(msg,reply);
+
+
+    }
+
 
     private void handle(APIDeleteAliEdgeRouterMsg msg){
         AliEdgeRouterEO eo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterEO.class);
@@ -238,7 +483,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements TunnelM
 
     @Override
     public String getId() {
-        return null;
+        return bus.makeLocalServiceId(AliEdgeRouterConstant.SERVICE_ID);
     }
 
     @Override

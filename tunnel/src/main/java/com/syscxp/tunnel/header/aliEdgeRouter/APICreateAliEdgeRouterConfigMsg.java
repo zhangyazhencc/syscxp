@@ -9,7 +9,7 @@ public class APICreateAliEdgeRouterConfigMsg extends APIMessage {
     @APIParam(maxLength = 32)
     private String physicalLineUuid;
     @APIParam(maxLength = 32)
-    private String switchportid;
+    private String switchportUuid;
 
     public String getAliRegionId() {
         return aliRegionId;
@@ -27,14 +27,11 @@ public class APICreateAliEdgeRouterConfigMsg extends APIMessage {
         this.physicalLineUuid = physicalLineUuid;
     }
 
-    public String getSwitchportid() {
-        return switchportid;
+    public String getSwitchportUuid() {
+        return switchportUuid;
     }
 
-    public void setSwitchportid(String switchportid) {
-        this.switchportid = switchportid;
+    public void setSwitchportUuid(String switchportUuid) {
+        this.switchportUuid = switchportUuid;
     }
-
-
-
 }

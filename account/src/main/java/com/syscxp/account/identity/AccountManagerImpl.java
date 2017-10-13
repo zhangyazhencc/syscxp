@@ -154,7 +154,6 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 reply.setAccountName(true);
             }
         }
-
         if(msg.getAccountEmail() != null){
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.email, Op.EQ, msg.getAccountEmail());
@@ -169,6 +168,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 reply.setAccountPhone(true);
             }
         }
+
         if(msg.getUserName() != null){
             SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
             q.add(UserVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
@@ -177,6 +177,32 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 reply.setUserName(true);
             }
         }
+        if(msg.getUserEmail() != null){
+            SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
+            q.add(UserVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
+            q.add(UserVO_.email, Op.EQ, msg.getUserEmail());
+            if(q.isExists()){
+                reply.setUserEmail(true);
+            }
+        }
+        if(msg.getUserPhone() != null){
+            SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
+            q.add(UserVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
+            q.add(UserVO_.phone, Op.EQ, msg.getUserPhone());
+            if(q.isExists()){
+                reply.setUserPhone(true);
+            }
+        }
+
+        if(msg.getRoleName() != null){
+            SimpleQuery<RoleVO> q = dbf.createQuery(RoleVO.class);
+            q.add(RoleVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
+            q.add(RoleVO_.name, Op.EQ, msg.getRoleName());
+            if(q.isExists()){
+                reply.setRoleName(true);
+            }
+        }
+
         bus.reply(msg, reply);
     }
 

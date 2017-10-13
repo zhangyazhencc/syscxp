@@ -1,11 +1,10 @@
 package com.syscxp.tunnel.header.aliEdgeRouter;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
-@MappedSuperclass
+@Entity
+@Table
 public class AliUserVO {
     @Id
     @Column
