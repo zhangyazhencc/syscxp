@@ -224,17 +224,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         vo.setContact(msg.getContact());
         vo.setTelephone(msg.getTelephone());
         vo.setStatus(msg.getStatus());
-        if (msg.getExtensionInfoUuid() != null) {
-            vo.setExtensionInfoUuid(msg.getExtensionInfoUuid());
-        } else {
-            vo.setExtensionInfoUuid(null);
-        }
-        if (msg.getDescription() != null) {
-            vo.setDescription(msg.getDescription());
-        } else {
-            vo.setDescription(null);
-        }
-
+        vo.setExtensionInfoUuid(msg.getExtensionInfoUuid());
+        vo.setDescription(msg.getDescription());
         vo = dbf.persistAndRefresh(vo);
 
         APICreateNodeEvent evt = new APICreateNodeEvent(msg.getId());
@@ -244,30 +235,62 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIUpdateNodeMsg msg) {
         NodeVO vo = dbf.findByUuid(msg.getUuid(), NodeVO.class);
-
-        vo.setCode(msg.getCode());
-        vo.setName(msg.getName());
-        vo.setLongtitude(msg.getLongtitude());
-        vo.setLatitude(msg.getLatitude());
-        vo.setProperty(msg.getProperty());
-        vo.setProvince(msg.getProvince());
-        vo.setCity(msg.getCity());
-        vo.setAddress(msg.getAddress());
-        vo.setContact(msg.getContact());
-        vo.setTelephone(msg.getTelephone());
-        vo.setStatus(msg.getStatus());
+        boolean update = false;
+        if(msg.getCode() != null){
+            vo.setCode(msg.getCode());
+            update = true;
+        }
+        if(msg.getName() != null){
+            vo.setName(msg.getName());
+            update = true;
+        }
+        if(msg.getLongtitude() != null){
+            vo.setLongtitude(msg.getLongtitude());
+            update = true;
+        }
+        if(msg.getLatitude() != null){
+            vo.setLatitude(msg.getLatitude());
+            update = true;
+        }
+        if(msg.getProperty() != null){
+            vo.setProperty(msg.getProperty());
+            update = true;
+        }
+        if(msg.getProvince() != null){
+            vo.setProvince(msg.getProvince());
+            update = true;
+        }
+        if(msg.getCity() != null){
+            vo.setCity(msg.getCity());
+            update = true;
+        }
+        if(msg.getAddress() != null){
+            vo.setAddress(msg.getAddress());
+            update = true;
+        }
+        if(msg.getContact() != null){
+            vo.setContact(msg.getContact());
+            update = true;
+        }
+        if(msg.getTelephone() != null){
+            vo.setTelephone(msg.getTelephone());
+            update = true;
+        }
+        if(msg.getStatus() != null){
+            vo.setStatus(msg.getStatus());
+            update = true;
+        }
         if (msg.getExtensionInfoUuid() != null) {
             vo.setExtensionInfoUuid(msg.getExtensionInfoUuid());
-        } else {
-            vo.setExtensionInfoUuid(null);
+            update = true;
         }
         if (msg.getDescription() != null) {
             vo.setDescription(msg.getDescription());
-        } else {
-            vo.setDescription(null);
+            update = true;
         }
 
-        vo = dbf.updateAndRefresh(vo);
+        if (update)
+            vo = dbf.updateAndRefresh(vo);
 
         APIUpdateNodeEvent evt = new APIUpdateNodeEvent(msg.getId());
         evt.setInventory(NodeInventory.valueOf(vo));
@@ -309,11 +332,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         vo.setEndpointType(msg.getEndpointType());
         vo.setState(EndpointState.Enable);
         vo.setStatus(EndpointStatus.Close);
-        if (msg.getDescription() != null) {
-            vo.setDescription(msg.getDescription());
-        } else {
-            vo.setDescription(null);
-        }
+        vo.setDescription(msg.getDescription());
 
         vo = dbf.persistAndRefresh(vo);
 
@@ -324,13 +343,31 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIUpdateEndpointMsg msg) {
         EndpointVO vo = dbf.findByUuid(msg.getUuid(), EndpointVO.class);
+        boolean update = false;
 
-        vo.setName(msg.getName());
-        vo.setCode(msg.getCode());
-        vo.setState(msg.getState());
-        vo.setStatus(msg.getStatus());
+        if(msg.getName() != null){
+            vo.setName(msg.getName());
+            update = true;
+        }
+        if(msg.getCode() != null){
+            vo.setCode(msg.getCode());
+            update = true;
+        }
+        if(msg.getState() != null){
+            vo.setState(msg.getState());
+            update = true;
+        }
+        if(msg.getStatus() != null){
+            vo.setStatus(msg.getStatus());
+            update = true;
+        }
+        if (msg.getDescription() != null) {
+            vo.setDescription(msg.getDescription());
+            update = true;
+        }
 
-        vo = dbf.updateAndRefresh(vo);
+        if (update)
+            vo = dbf.updateAndRefresh(vo);
 
         APIUpdateEndpointEvent evt = new APIUpdateEndpointEvent(msg.getId());
         evt.setInventory(EndpointInventory.valueOf(vo));
