@@ -11,6 +11,7 @@ import java.util.List;
 public class VpnInterfaceInventory {
     private String uuid;
     private String vpnUuid;
+    private String hostUuid;
     private String name;
     private String tunnelUuid;
     private String vlan;
@@ -24,6 +25,7 @@ public class VpnInterfaceInventory {
         inv.setUuid(vo.getUuid());
         inv.setVpnUuid(vo.getVpnUuid());
         inv.setName(vo.getName());
+        inv.setHostUuid(vo.getHostUuid());
         inv.setTunnelUuid(vo.getNetworkUuid());
         inv.setVlan(vo.getVlan());
         inv.setNetmask(vo.getNetmask());
@@ -41,6 +43,15 @@ public class VpnInterfaceInventory {
 
         return invs;
     }
+
+    public String getHostUuid() {
+        return hostUuid;
+    }
+
+    public void setHostUuid(String hostUuid) {
+        this.hostUuid = hostUuid;
+    }
+
     public String getUuid() {
         return uuid;
     }

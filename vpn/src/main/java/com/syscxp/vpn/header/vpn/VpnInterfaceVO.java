@@ -16,6 +16,8 @@ public class VpnInterfaceVO {
     @ForeignKey(parentEntityClass = VpnVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
     private String vpnUuid;
     @Column
+    private String hostUuid;
+    @Column
     private String name;
     @Column
     private String networkUuid;
@@ -29,6 +31,14 @@ public class VpnInterfaceVO {
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
+
+    public String getHostUuid() {
+        return hostUuid;
+    }
+
+    public void setHostUuid(String hostUuid) {
+        this.hostUuid = hostUuid;
+    }
 
     public String getUuid() {
         return uuid;

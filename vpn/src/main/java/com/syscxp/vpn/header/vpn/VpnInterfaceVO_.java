@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 public class VpnInterfaceVO_ {
     public static volatile SingularAttribute<VpnInterfaceVO, String> uuid;
     public static volatile SingularAttribute<VpnInterfaceVO, String> vpnUuid;
+    public static volatile SingularAttribute<VpnInterfaceVO, String> hostUuid;
     public static volatile SingularAttribute<VpnInterfaceVO, String> name;
     public static volatile SingularAttribute<VpnInterfaceVO, String> description;
     public static volatile SingularAttribute<VpnInterfaceVO, String> tunnel;

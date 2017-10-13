@@ -75,6 +75,7 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 CREATE TABLE  `syscxp_vpn`.VpnInterfaceVO (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`vpnUuid` VARCHAR(32) NOT NULL COMMENT 'VPN网关',
+	`hostUuid` VARCHAR(32) NOT NULL COMMENT '主机UUID',
 	`name` varchar(255) NOT NULL COMMENT '名称',
 	`networkUuid` VARCHAR(128) NOT NULL COMMENT '专线网络uuid',
 	`localIp` varchar(128) NOT NULL COMMENT '接口地址',

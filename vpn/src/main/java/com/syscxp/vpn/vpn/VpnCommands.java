@@ -96,6 +96,7 @@ public class VpnCommands {
 
         public static CheckVpnStatusCmd valueOf(VpnVO vo) {
             CheckVpnStatusCmd cmd = new CheckVpnStatusCmd();
+            cmd.setVpnUuid(vo.getUuid());
             cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setPort(vo.getPort());
             return cmd;

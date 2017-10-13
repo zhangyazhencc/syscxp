@@ -435,7 +435,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         private void updateHostStatus(List<String> disconnectedHosts, HostStatus status) {
             if (disconnectedHosts.isEmpty())
                 return;
-            logger.debug(String.format("update host status Disconnected, uuid in %s", JSONObjectUtil.toJsonString(disconnectedHosts)));
+            logger.debug(String.format("update host status %s, uuid in %s", status, JSONObjectUtil.toJsonString(disconnectedHosts)));
             UpdateQuery.New(VpnHostVO.class)
                     .in(VpnHostVO_.uuid, disconnectedHosts)
                     .set(VpnHostVO_.status, status)

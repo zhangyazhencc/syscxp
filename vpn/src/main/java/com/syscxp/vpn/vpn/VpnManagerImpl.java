@@ -194,6 +194,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnInterfaceVO vpnIface = new VpnInterfaceVO();
         vpnIface.setUuid(Platform.getUuid());
         vpnIface.setName(msg.getInterfaceName());
+        vpnIface.setHostUuid(msg.getHostUuid());
         vpnIface.setVpnUuid(vpn.getUuid());
         vpnIface.setLocalIp(msg.getLocalIp());
         vpnIface.setNetmask(msg.getNetmask());
@@ -486,6 +487,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnInterfaceVO iface = new VpnInterfaceVO();
         iface.setUuid(Platform.getUuid());
         iface.setVpnUuid(msg.getVpnUuid());
+        iface.setHostUuid(vpn.getHostUuid());
         iface.setName(msg.getName());
         iface.setVlan(msg.getVlan());
         iface.setNetworkUuid(msg.getTunnelUuid());
@@ -635,7 +637,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         private void updateVpnStatus(List<String> vpnUuids, VpnStatus status) {
             if (vpnUuids.isEmpty())
                 return;
-            logger.debug(String.format("update vpn status Disconnected, uuid in %s", JSONObjectUtil.toJsonString(vpnUuids)));
+            logger.debug(String.format("update vpn status %s, uuid in %s", status, JSONObjectUtil.toJsonString(vpnUuids)));
             UpdateQuery.New(VpnVO.class).in(VpnVO_.uuid, vpnUuids)
                     .set(VpnVO_.status, status).update();
         }
@@ -847,20 +849,28 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APICreateVpnMsg msg) {
+        // 区分管理员账户
         if (msg.getSession().getType() == AccountType.Normal && StringUtils
                 .isEmpty(msg.getAccountUuid())) {
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] is not a admin or proxy.",
                             msg.getSession().getAccountUuid()));
         }
+        // 物理机状态检查
         Q q = Q.New(VpnHostVO.class)
                 .eq(VpnHostVO_.uuid, msg.getHostUuid())
                 .eq(VpnHostVO_.state, HostState.Enabled)
                 .eq(VpnHostVO_.status, HostStatus.Connected);
         if (!q.isExists())
             throw new ApiMessageInterceptionException(
-                    argerr("The Vpn[name:%s] is already exist.", msg.getName()));
-
+                    argerr("The Host[uuid:%s] does not exist.", msg.getHostUuid()));
+        // 接口Vlan检查
+        q = Q.New(VpnInterfaceVO.class)
+                .eq(VpnInterfaceVO_.vlan, msg.getVlan())
+                .eq(VpnInterfaceVO_.hostUuid, msg.getHostUuid());
+        if (q.isExists())
+            throw new ApiMessageInterceptionException(
+                    argerr("The Vlan[:%s] of Host[uuid:%s] is already exist.", msg.getVlan(), msg.getHostUuid()));
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
