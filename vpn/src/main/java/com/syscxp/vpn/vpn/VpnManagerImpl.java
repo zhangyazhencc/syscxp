@@ -876,10 +876,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         // 接口Vlan检查
         q = Q.New(VpnInterfaceVO.class)
                 .eq(VpnInterfaceVO_.vlan, msg.getVlan())
-                .eq(VpnInterfaceVO_.hostUuid, msg.getHostUuid());
+                .eq(VpnInterfaceVO_.name, msg.getInterfaceName());
         if (q.isExists())
             throw new ApiMessageInterceptionException(
-                    argerr("The Vlan[:%s] of Host[uuid:%s] is already exist.", msg.getVlan(), msg.getHostUuid()));
+                    argerr("The Vlan[:%s] of VpnInterface[uuid:%s] is already exist.", msg.getVlan(), msg.getHostUuid()));
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
