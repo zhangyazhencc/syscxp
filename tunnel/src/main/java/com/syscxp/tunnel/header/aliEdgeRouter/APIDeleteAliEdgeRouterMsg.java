@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.tunnel.header.tunnel.TunnelVO;
 
 public class APIDeleteAliEdgeRouterMsg extends APIMessage {
-    @APIParam(checkAccount = true, resourceType = TunnelVO.class)
+    @APIParam(checkAccount = true, resourceType = AliEdgeRouterVO.class)
     private String uuid;
 
     @APIParam(emptyString = false,required = false,maxLength = 32)

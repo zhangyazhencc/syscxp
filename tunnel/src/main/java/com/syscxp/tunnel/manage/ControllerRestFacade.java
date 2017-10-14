@@ -69,9 +69,8 @@ public class ControllerRestFacade {
                                        final ReturnValueCompletion<ControllerRestResponse> completion) {
         try {
             ControllerRestResponse response = syncPostForResponseNoretry(url, commandParam);
-            logger.info("response: "+response.toString());
-            boolean isSuccess = "0".equals(response.getCode())?true:false;
-            logger.info("result: "+isSuccess);
+            logger.info("response: " + response.toString());
+            logger.info("result: " + "0".equals(response.getCode()));
             logger.debug(String.format("successfully post %s", url));
             completion.success(response);
         } catch (Exception e) {
