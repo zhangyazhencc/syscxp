@@ -16,7 +16,7 @@
     <context:annotation-config/>
     <context:spring-configured/>
     <aop:aspectj-autoproxy proxy-target-class="true"/>
-    <context:load-time-weaver/>
+    <!--<context:load-time-weaver/>-->
     <tx:annotation-driven transaction-manager="transactionManager" mode="aspectj"/>
 
     <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
@@ -53,7 +53,7 @@
     <import resource="springConfigXml/NodeManager.xml"/>
     <import resource="springConfigXml/SwitchManager.xml"/>
     <import resource="springConfigXml/MonitorManager.xml"/>
-    <import resource="springConfigXml/MongodbFacade.xml"/>
+    <!--<import resource="springConfigXml/MongodbFacade.xml"/>-->
     <import resource="springConfigXml/AliEdgeRouterManager.xml"/>
 
 </beans>

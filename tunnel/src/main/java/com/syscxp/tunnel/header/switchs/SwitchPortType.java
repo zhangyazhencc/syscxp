@@ -6,5 +6,5 @@ package com.syscxp.tunnel.header.switchs;
 public enum SwitchPortType {
     RJ45,
     SFP_1G,
-    SFG_10G
+    SFP_10G
 }

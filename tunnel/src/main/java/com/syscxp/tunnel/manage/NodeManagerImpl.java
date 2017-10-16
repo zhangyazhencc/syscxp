@@ -1,6 +1,6 @@
 package com.syscxp.tunnel.manage;
 
-import com.mongodb.util.JSON;
+/*import com.mongodb.util.JSON;*/
 import com.syscxp.tunnel.header.endpoint.*;
 import com.syscxp.tunnel.header.node.*;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
@@ -29,9 +29,9 @@ import com.syscxp.tunnel.header.endpoint.*;
 import com.syscxp.tunnel.header.node.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import org.springframework.data.mongodb.core.MongoTemplate;
+/*import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Query;*/
 
 
 import javax.persistence.TypedQuery;
@@ -67,8 +67,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     @Autowired
     private EventFacade evtf;
 
-    @Autowired
-    private MongoTemplate mongoTemplate;
+    /*@Autowired
+    private MongoTemplate mongoTemplate;*/
 
 
     @Override
@@ -119,11 +119,11 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         com.alibaba.fastjson.JSONObject newInfo = com.alibaba.fastjson.JSONObject.
                 parseObject(msg.getNewNodeExtensionInfo());
 
-        com.alibaba.fastjson.JSONObject oldInfo = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
-                newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),com.alibaba.fastjson.JSONObject.class);
+        /*com.alibaba.fastjson.JSONObject oldInfo = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
+                newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),com.alibaba.fastjson.JSONObject.class);*/
 
 
-        Map<String,Object> oldmap = oldInfo;
+        /*Map<String,Object> oldmap = oldInfo;
         Map<String,Object> newmap = newInfo;
         Set<String> keySet = oldmap.keySet();
         for (String key : keySet) {
@@ -171,21 +171,21 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                 }
 
             }
-        }
+        }*/
 
 
 
 
         APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent(msg.getId());
-        mongoTemplate.save(oldmap);
-        event.setInventory(oldmap.toString());
+        /*mongoTemplate.save(oldmap);*/
+        /*event.setInventory(oldmap.toString());*/
 
         bus.publish(event);
 
     }
 
     private void handle(APIDeleteNodeExtensionInfoMsg msg) {
-        mongoTemplate.remove(new Query(Criteria.where("node_id").is(msg.getNodeId())),Object.class);
+        /*mongoTemplate.remove(new Query(Criteria.where("node_id").is(msg.getNodeId())),Object.class);*/
         APIDeleteNodeExtensionInfoEvent event = new APIDeleteNodeExtensionInfoEvent(msg.getId());
         bus.publish(event);
     }
@@ -194,15 +194,15 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
 
         APIGetNodeExtensionInfoReply reply = new APIGetNodeExtensionInfoReply();
-        reply.setNodeExtensionInfo(JSONObjectUtil.toJsonString(
+        /*reply.setNodeExtensionInfo(JSONObjectUtil.toJsonString(
                 mongoTemplate.find(new Query(Criteria.where("node_id").is(msg.getNodeId())),Object.class)
-        ));
+        ));*/
         bus.reply(msg,reply);
     }
 
     private void handle(APICreateNodeExtensionInfoMsg msg) {
 
-        mongoTemplate.insert(msg.getNodeExtensionInfo());
+        /*mongoTemplate.insert(msg.getNodeExtensionInfo());*/
         APICreateNodeExtensionInfoEvent event = new APICreateNodeExtensionInfoEvent(msg.getId());
         event.setInventory(msg.getNodeExtensionInfo());
         bus.publish(event);
