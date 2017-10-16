@@ -1,6 +1,6 @@
 package com.syscxp.tunnel.manage;
 
-import com.aliyuncs.auth.STSAssumeRoleSessionCredentialsProvider;
+
 
 /**
  * @Author: sunxuelong.
