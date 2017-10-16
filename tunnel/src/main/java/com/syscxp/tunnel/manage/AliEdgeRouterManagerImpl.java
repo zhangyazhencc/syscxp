@@ -107,7 +107,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         List<TunnelVO> tunnels = q.list();
         for(TunnelVO tunnel:tunnels){
 
-            if((tunnel.getState().equals("normal"))&&(tunnel.getStatus().equals("normal"))){
+            if((tunnel.getState().equals("Opened"))&&(tunnel.getStatus().equals("Connected"))){
 
                 SimpleQuery<TunnelInterfaceVO> query = dbf.createQuery(TunnelInterfaceVO.class);
                 query.add(TunnelInterfaceVO_.tunnelUuid, SimpleQuery.Op.EQ,tunnel.getUuid());
