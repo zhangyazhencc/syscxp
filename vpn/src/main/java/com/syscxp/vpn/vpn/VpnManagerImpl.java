@@ -182,7 +182,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setUuid(Platform.getUuid());
         vpn.setSid(Platform.getUuid());
         vpn.setCertKey(generateCertKey(msg.getAccountUuid(), vpn.getSid()));
-        vpn.setMaxModifies(CoreGlobalProperty.VPN_MAX_MOTIFIES);
+        vpn.setMaxModifies(VpnGlobalProperty.VPN_MAX_MOTIFIES);
         vpn.setAccountUuid(msg.getAccountUuid());
         vpn.setDescription(msg.getDescription());
         vpn.setName(msg.getName());
@@ -259,7 +259,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         orderMsg.setNotifyUrl(restf.getSendCommandUrl());
         APIReply reply;
         try {
-            reply = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+            reply = new VpnRESTCaller(VpnGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
         } catch (Exception e) {
             return false;
         }
@@ -702,7 +702,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         VpnVO vpn = updateVpnFromOrder(cmd);
                         if (vpn != null && vpn.getStatus() == VpnStatus.Connecting)
                             new VpnRESTCaller().sendCommand(VpnConstant.INIT_VPN_PATH, CreateVpnCmd.valueOf(vpn),
@@ -725,7 +724,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
 
                         VpnVO vpn = dbf.findByUuid(cmd.getPorductUuid(), VpnVO.class);
                         if (vpn != null) {
@@ -739,7 +737,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         updateVpnFromOrder(cmd);
                         return null;
                     }
@@ -748,7 +745,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         updateVpnFromOrder(cmd);
                         return null;
                     }
@@ -757,7 +753,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         VpnVO vpn = updateVpnFromOrder(cmd);
                         if (vpn != null && vpn.getStatus() == VpnStatus.Disconnected)
                             reconnectVpn(vpn);
@@ -889,7 +884,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(msg.getProductPriceUnits());
-        APIReply rsp = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+        APIReply rsp = new VpnRESTCaller(VpnGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!rsp.isSuccess())
             throw new ApiMessageInterceptionException(
                     argerr("查询价格失败.", msg.getAccountUuid()));

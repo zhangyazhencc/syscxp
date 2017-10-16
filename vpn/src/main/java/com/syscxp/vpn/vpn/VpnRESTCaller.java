@@ -50,7 +50,7 @@ public class VpnRESTCaller {
     }
 
     public VpnRESTCaller() {
-        this(CoreGlobalProperty.VPN_BASE_URL);
+        this(VpnGlobalProperty.VPN_BASE_URL);
     }
 
     /**
