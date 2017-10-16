@@ -493,7 +493,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
                 //判断传输端口名称在一个物理交换机的业务端口下是否存在
                 String sql = "select count(b.uuid) from SwitchVO a,SwitchPortVO b " +
                         "where a.uuid = b.switchUuid " +
-                        "and c.portName = :portName " +
+                        "and b.portName = :portName " +
                         "and a.physicalSwitchUuid = :physicalSwitchUuid ";
                 TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
                 vq.setParameter("portName",msg.getUplinkPhysicalSwitchPortName());

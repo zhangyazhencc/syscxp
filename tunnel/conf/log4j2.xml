@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="warn">
     <Appenders>
-        <RollingFile name="RollingFile" fileName="${sys:catalina.home}/logs/management-server.log"
-                     filePattern="${sys:catalina.home}/logs/management-server-%d{yyyy-MM-dd}-%i.log">
+        <RollingFile name="RollingFile" fileName="${sys:catalina.home}/logs/tunnel.log"
+                     filePattern="${sys:catalina.home}/logs/management-server-tunnel%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
                 <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c{1}] %X{api,} %m%n</pattern>
             </PatternLayout>

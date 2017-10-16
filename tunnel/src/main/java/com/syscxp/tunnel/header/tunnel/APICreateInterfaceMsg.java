@@ -29,7 +29,7 @@ public class APICreateInterfaceMsg extends APIMessage {
     private Long bandwidth;
     @APIParam(emptyString = false,validValues = {"Exclusive", "Shared"})
     private SwitchPortAttribute portAttribute;
-    @APIParam(emptyString = false,required = false,validValues = {"RJ45", "SFP_1G","SFG_10G"})
+    @APIParam(emptyString = false,required = false,validValues = {"RJ45", "SFP_1G","SFP_10G"})
     private SwitchPortType portType;
     @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;

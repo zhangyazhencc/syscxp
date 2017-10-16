@@ -54,7 +54,7 @@
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-mongodb</artifactId>
-            <version>1.8.0.RELEASE</version>
+            <version>1.7.0.RELEASE</version>
         </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.aliyun/aliyun-java-sdk-vpc -->
