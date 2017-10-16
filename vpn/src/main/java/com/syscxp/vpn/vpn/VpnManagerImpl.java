@@ -33,9 +33,11 @@ import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
+import com.syscxp.vpn.exception.VpnServiceException;
 import com.syscxp.vpn.header.host.*;
 import com.syscxp.vpn.header.vpn.*;
 import com.syscxp.vpn.vpn.VpnCommands.*;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,7 +120,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         vpn.setSid(Platform.getUuid());
-        vpn.setCertKey(Platform.getUuid());
+        vpn.setCertKey(generateCertKey(msg.getAccountUuid(), vpn.getSid()));
 
         ResetCertificateCmd cmd = ResetCertificateCmd.valueOf(vpn);
 
@@ -170,12 +172,16 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         bus.reply(msg, reply);
     }
 
+    private String generateCertKey(String accountUuid, String sid) {
+        return DigestUtils.md5Hex(accountUuid + sid + VpnConstant.GENERATE_KEY);
+    }
+
     private void handle(APICreateVpnMsg msg) {
         APICreateVpnEvent evt = new APICreateVpnEvent(msg.getId());
         VpnVO vpn = new VpnVO();
         vpn.setUuid(Platform.getUuid());
         vpn.setSid(Platform.getUuid());
-        vpn.setCertKey(Platform.getUuid());
+        vpn.setCertKey(generateCertKey(msg.getAccountUuid(), vpn.getSid()));
         vpn.setMaxModifies(CoreGlobalProperty.VPN_MAX_MOTIFIES);
         vpn.setAccountUuid(msg.getAccountUuid());
         vpn.setDescription(msg.getDescription());
@@ -541,6 +547,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         APICreateVpnRouteEvent evt = new APICreateVpnRouteEvent(msg.getId());
 
         VpnRouteVO route = new VpnRouteVO();
+        route.setUuid(Platform.getUuid());
         route.setVpnUuid(msg.getVpnUuid());
         route.setRouteType(msg.getRouteType());
         route.setNextInterface(msg.getNextIface());
@@ -571,7 +578,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnVO vpn = dbf.findByUuid(route.getVpnUuid(), VpnVO.class);
         VpnRouteCmd cmd = VpnRouteCmd.valueOf(vpn.getVpnHost().getManageIp(), route);
 
-        new VpnRESTCaller().sendCommand(VpnConstant.ADD_VPN_ROUTE_PATH, cmd, new Completion(evt) {
+        new VpnRESTCaller().sendCommand(VpnConstant.DELETE_VPN_ROUTE_PATH, cmd, new Completion(evt) {
             @Override
             public void success() {
                 dbf.remove(route);
@@ -633,6 +640,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         @Transactional
         private List<VpnVO> getAllVpns() {
             return Q.New(VpnVO.class)
+                    .eq(VpnVO_.state, VpnState.Enabled)
                     .notEq(VpnVO_.status, VpnStatus.Connecting)
                     .list();
         }
@@ -655,10 +663,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 return;
             }
             for (VpnVO vo : vos) {
-                if (vo.getStatus() == VpnStatus.Connected && vo.getState() == VpnState.Disabled) {
-                    deleteVpn(vo);
-
-                }
                 CheckVpnStatusCmd cmd = CheckVpnStatusCmd.valueOf(vo);
                 RunStatus status = new VpnRESTCaller().checkStatus(VpnConstant.CHECK_VPN_STATUS_PATH, cmd);
 
@@ -815,14 +819,14 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APIDownloadCertificateMsg msg) {
+
         Q q = Q.New(VpnVO.class)
                 .eq(VpnVO_.uuid, msg.getUuid())
-                .eq(VpnVO_.sid, msg.getSid())
-                .eq(VpnVO_.certKey, msg.getKey());
+                .eq(VpnVO_.sid, msg.getSid());
+
         if (!q.isExists()) {
             throw new ApiMessageInterceptionException(
-                    argerr("Vpn[uuid:%s, sid:%s, key:%s]验证不通过.", msg.getUuid(), msg.getSid(),
-                            msg.getKey()));
+                    argerr("Vpn[uuid:%s, sid:%s]验证不通过.", msg.getUuid(), msg.getSid()));
         }
     }
 
@@ -896,29 +900,36 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private boolean reconnectVpn(VpnVO vo) {
-        if (vo.getVpnHost().getStatus() == HostStatus.Disconnected) {
+        if (vo.getVpnHost().getStatus() == HostStatus.Disconnected ||
+                vo.getState() == VpnState.Disabled) {
             return false;
         }
-        //Todo VPN重连
-        ReconnectVpnCmd cmd = ReconnectVpnCmd.valueOf(vo);
-        TaskResult result;
+        CreateVpnCmd cmd = CreateVpnCmd.valueOf(vo);
         try {
-            result = new VpnRESTCaller()
-                    .syncPostForResult(VpnConstant.RECONNECT_VPN_PATH, cmd);
-            if (result.isSuccess()) {
-                UpdateQuery.New(VpnVO.class).eq(VpnVO_.uuid, vo.getUuid())
-                        .set(VpnVO_.status, VpnStatus.Connected).update();
-            }
-        } catch (Exception e) {
+            new VpnRESTCaller().sendCommand(VpnConstant.START_VPN_PATH, cmd, new Completion(null) {
+                @Override
+                public void success() {
+                    if (vo.getStatus() != VpnStatus.Connected)
+                        UpdateQuery.New(VpnVO.class).eq(VpnVO_.uuid, vo.getUuid())
+                                .set(VpnVO_.status, VpnStatus.Connected).update();
+                }
+
+                @Override
+                public void fail(ErrorCode errorCode) {
+                    if (vo.getStatus() != VpnStatus.Disconnected)
+                        UpdateQuery.New(VpnVO.class).eq(VpnVO_.uuid, vo.getUuid())
+                                .set(VpnVO_.status, VpnStatus.Disconnected).update();
+                    throw new VpnServiceException(errorCode);
+                }
+            });
+        } catch (VpnServiceException e) {
+            logger.info(e.getMessage());
             return false;
         }
-        return result.isSuccess();
+        return true;
     }
 
     private boolean deleteVpn(VpnVO vo) {
-        if (vo.getVpnHost().getStatus() == HostStatus.Disconnected) {
-            return false;
-        }
         TaskResult result;
         try {
             result = new VpnRESTCaller()

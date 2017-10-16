@@ -13,8 +13,6 @@ public class APIDownloadCertificateMsg extends APIVpnMessage {
     private String uuid;
     @APIParam
     private String sid;
-    @APIParam
-    private String key;
 
     public String getUuid() {
         return uuid;
@@ -30,14 +28,6 @@ public class APIDownloadCertificateMsg extends APIVpnMessage {
 
     public void setSid(String sid) {
         this.sid = sid;
-    }
-
-    public String getKey() {
-        return key;
-    }
-
-    public void setKey(String key) {
-        this.key = key;
     }
 
     public ApiNotification __notification__() {

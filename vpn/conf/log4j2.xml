@@ -2,6 +2,7 @@
 <Configuration status="warn">
     <Appenders>
         <console name="Console" target="SYSTEM_OUT">
+            <ThresholdFilter level="INFO" onMatch="ACCEPT" onMismatch="DENY"/>
             <PatternLayout pattern="[%d{HH:mm:ss:SSS}] [%p] - %l - %m%n"/>
         </console>
 
@@ -81,15 +82,11 @@
 
         <Logger name="com.syscxp.core.workflow" level="TRACE"/>
 
-        <!--
-                <Logger name="com.syscxp.billing" level="TRACE" />
-        -->
-
         <Logger name="org.hibernate" level="warn"/>
 
         <Root level="warn" additivity="false">
             <AppenderRef ref="Async"/>
-            <AppenderRef ref="Console" level="info"/>
+            <AppenderRef ref="Console"/>
         </Root>
     </Loggers>
 </Configuration>

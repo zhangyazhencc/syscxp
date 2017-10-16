@@ -45,17 +45,17 @@
         </dependency>
 
         <!--mongodb-->
-        <!--<dependency>
+        <dependency>
             <groupId>org.mongodb</groupId>
             <artifactId>mongo-java-driver</artifactId>
-            <version>3.2.2</version>
+            <version>3.0.3</version>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.data</groupId>
             <artifactId>spring-data-mongodb</artifactId>
-            <version>1.9.2.RELEASE</version>
-        </dependency>-->
+            <version>1.8.0.RELEASE</version>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/com.aliyun/aliyun-java-sdk-vpc -->
         <dependency>

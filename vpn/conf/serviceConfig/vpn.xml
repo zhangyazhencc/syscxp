@@ -23,6 +23,12 @@
     <message>
         <name>com.syscxp.vpn.header.vpn.APIUpdateVpnStateMsg</name>
     </message>
+    <message>
+        <name>com.syscxp.vpn.header.vpn.APIDownloadCertificateMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.vpn.header.vpn.APIResetCertificateMsg</name>
+    </message>
 
     <message>
         <name>com.syscxp.vpn.header.vpn.APICreateVpnInterfaceMsg</name>
