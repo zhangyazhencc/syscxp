@@ -1,0 +1,39 @@
+DB.url=jdbc:mysql://##mysql_host##:##mysql_port##/syscxp_tunnel?autoReconnectForPools=true&amp;useUnicode=true&amp;characterEncoding=utf8
+DB.restUrl=jdbc:mysql://##mysql_host##:##mysql_port##/syscxp_tunnel_rest?autoReconnectForPools=true&amp;useUnicode=true&amp;characterEncoding=utf8
+DB.user=##mysql_user##
+DB.password=##mysql_pwd##
+
+RESTFacade.hostname=AUTO
+ApiMediator.apiWorkerNum=50
+
+CloudBus.serverIp.0 = ##mq_host##
+CloudBus.rabbitmqUsername = ##mq_user##
+CloudBus.rabbitmqPassword = ##mq_pwd##
+
+org.jboss.logging.provider=slf4j
+DbFacadeDataSource.testConnectionOnCheckout = true
+
+accountServerUrl = ##account_api_url##
+billingServerUrl = ##billing_api_url##
+
+controllerManagerUrl = ##controllerManagerUrl##
+
+#mongodb
+mongo.host=192.168.211.5
+mongo.port=27017
+mongo.dbName=nodeExtensionInfo
+mongo.connectionsPerHost=10
+mongo.threadsAllowedToBlockForConnectionMultiplier=5
+mongo.minConnectionsPerHost=5
+mongo.connectTimeout=10000
+mongo.maxWaitTime=120000
+mongo.socketTimeout=0
+mongo.socketKeepAlive=true
+mongo.maxConnectionIdleTime=1500
+mongo.maxConnectionLifeTime=0
+mongo.heartbeatSocketTimeout=1000
+mongo.heartbeatConnectTimeout=1500
+mongo.minHeartbeatFrequency=5
+mongo.heartbeatFrequency=10
+
+pidFilePath = /var/syscxp/tunnel_server.pid

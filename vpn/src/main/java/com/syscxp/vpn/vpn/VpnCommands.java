@@ -48,6 +48,7 @@ public class VpnCommands {
 
         public static AddVpnHostCmd valueOf(VpnHostVO vo) {
             AddVpnHostCmd cmd = new AddVpnHostCmd();
+            cmd.setPublicIp(vo.getPublicIp());
             cmd.setHostIp(vo.getManageIp());
             return cmd;
         }
@@ -64,6 +65,7 @@ public class VpnCommands {
 
         public static DeleteVpnHostCmd valueOf(VpnHostVO vo) {
             DeleteVpnHostCmd cmd = new DeleteVpnHostCmd();
+            cmd.setPublicIp(vo.getPublicIp());
             cmd.setHostIp(vo.getManageIp());
             return cmd;
         }
@@ -80,6 +82,7 @@ public class VpnCommands {
 
         public static ReconnectVpnHostCmd valueOf(VpnHostVO vo) {
             ReconnectVpnHostCmd cmd = new ReconnectVpnHostCmd();
+            cmd.setPublicIp(vo.getPublicIp());
             cmd.setHostIp(vo.getManageIp());
             return cmd;
         }
@@ -449,7 +452,6 @@ public class VpnCommands {
         public static ResetCertificateCmd valueOf(VpnVO vo) {
             ResetCertificateCmd cmd = new ResetCertificateCmd();
             cmd.setHostIp(vo.getVpnHost().getManageIp());
-            cmd.setPublicIp(vo.getVpnHost().getPublicIp());
             cmd.setVpnUuid(vo.getUuid());
             cmd.setPort(vo.getPort());
             cmd.setBandwidth(vo.getBandwidth());
