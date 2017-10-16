@@ -4,7 +4,7 @@ public interface VpnConstant {
 
     public static final String SERVICE_ID = "vpn";
 
-
+    public static final String GENERATE_KEY = "asdjhsajfhasowjl234jhfv";
 
     public static final String ACTION_CATEGORY_VPN = "vpn";
 

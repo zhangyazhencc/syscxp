@@ -15,7 +15,7 @@ public class AliEdgeRouterInformationInventory {
     private String PeerGatewayIp;
     private String PeeringSubnetMask;
     private Integer vlan;
-    private Timestamp createDate;
+    private String createDate;
 
     public String getName() {
         return name;
@@ -105,11 +105,11 @@ public class AliEdgeRouterInformationInventory {
         this.vlan = vlan;
     }
 
-    public Timestamp getCreateDate() {
+    public String getCreateDate() {
         return createDate;
     }
 
-    public void setCreateDate(Timestamp createDate) {
+    public void setCreateDate(String createDate) {
         this.createDate = createDate;
     }
 }
