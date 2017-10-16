@@ -108,32 +108,15 @@ public class VpnCommands {
     }
 
     /**
-     * VPN重连：
-     */
-    public static class ReconnectVpnCmd extends VpnAgentCommand {
-
-        public static ReconnectVpnCmd valueOf(VpnVO vo) {
-            ReconnectVpnCmd cmd = new ReconnectVpnCmd();
-            cmd.setHostIp(vo.getVpnHost().getManageIp());
-            cmd.setVpnUuid(vo.getUuid());
-            return cmd;
-        }
-    }
-
-    public static class ReconnectVpnResponse extends VpnAgentResponse {
-
-    }
-
-    /**
      * 创建VPN：/vpn/init-vpn
-     * /vpn/start-vpn
+     * VPN重连:/vpn/start-vpn
      */
     public static class CreateVpnCmd extends VpnAgentCommand {
         private String cidr;
         private Long bandwidth;
         private Integer duration;
         private List<VpnInterfaceCmd> ddn_if_list;
-        private List<VpnRouteCmd> vpnRouteCmds;
+        private List<VpnRouteCmd> route_list;
 
         public static CreateVpnCmd valueOf(VpnVO vo) {
             CreateVpnCmd cmd = new CreateVpnCmd();
@@ -158,11 +141,11 @@ public class VpnCommands {
         }
 
         public List<VpnRouteCmd> getVpnRouteCmds() {
-            return vpnRouteCmds;
+            return route_list;
         }
 
         public void setVpnRouteCmds(List<VpnRouteCmd> vpnRouteCmds) {
-            this.vpnRouteCmds = vpnRouteCmds;
+            this.route_list = vpnRouteCmds;
         }
 
         public String getVpnCidr() {
@@ -255,13 +238,24 @@ public class VpnCommands {
      */
     public static class UpdateVpnCidrCmd extends VpnAgentCommand {
         private String cidr;
+        private Long bandwidth;
 
         public static UpdateVpnCidrCmd valueOf(VpnVO vo) {
             UpdateVpnCidrCmd cmd = new UpdateVpnCidrCmd();
             cmd.setHostIp(vo.getVpnHost().getManageIp());
             cmd.setVpnUuid(vo.getUuid());
+            cmd.setBandwidth(vo.getBandwidth());
             cmd.setCidr(vo.getVpnCidr());
+            cmd.setPort(vo.getPort());
             return cmd;
+        }
+
+        public Long getBandwidth() {
+            return bandwidth;
+        }
+
+        public void setBandwidth(Long bandwidth) {
+            this.bandwidth = bandwidth;
         }
 
         public String getCidr() {
