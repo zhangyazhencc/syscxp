@@ -294,30 +294,36 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         // 创建API请求并设置参数
         DescribeVirtualBorderRoutersRequest request = new DescribeVirtualBorderRoutersRequest();
-        //组装filter数据
-        List list = new ArrayList();
-        List list1 = new ArrayList();
-        Map map = new HashMap();
-        map.put("Key","VbrId");
-        list1.add(msg.getVbrUuid());
-        map.put("Value",list1);
-        list.add(map);
 
-        System.out.println(list);
+        List<DescribeVirtualBorderRoutersRequest.Filter> list = new ArrayList<DescribeVirtualBorderRoutersRequest.Filter>();
+        DescribeVirtualBorderRoutersRequest.Filter filter = new DescribeVirtualBorderRoutersRequest.Filter();
+        filter.setKey("VbrId");
+        List list1 = new ArrayList();
+        list1.add(msg.getVbrUuid());
+        filter.setValues(list1);
+        list.add(filter);
 
         request.setFilters(list);
+        //组装filter数据
+//        List list = new ArrayList();
+//        List list1 = new ArrayList();
+//        Map map = new Hashtable();
+//        map.put("key","VbrId");
+//        list1.add(msg.getVbrUuid());
+//        map.put("values",list1);
+//        list.add(map);
+//
+//        System.out.println(list);
 
         DescribeVirtualBorderRoutersResponse response ;
         try{
             response = client.getAcsResponse(request);
-            response.getVirtualBorderRouterSet();
             inventory.setName(response.getVirtualBorderRouterSet().get(0).getName());
             inventory.setVbrUuid(response.getVirtualBorderRouterSet().get(0).getVbrId());
             inventory.setAccessPoint(response.getVirtualBorderRouterSet().get(0).getAccessPointId());
             inventory.setStatus(response.getVirtualBorderRouterSet().get(0).getStatus());
             inventory.setDescription(response.getVirtualBorderRouterSet().get(0).getDescription());
-            inventory.setCreateDate(Timestamp.valueOf(response.getVirtualBorderRouterSet().get(0).getCreationTime()));
-            inventory.setPhysicalLineUuid(response.getVirtualBorderRouterSet().get(0).getPhysicalConnectionId());
+            inventory.setCreateDate(response.getVirtualBorderRouterSet().get(0).getCreationTime());
             inventory.setPhysicalLineOwerUuid(response.getVirtualBorderRouterSet().get(0).getPhysicalConnectionOwnerUid());
             inventory.setLocalGatewayIp(response.getVirtualBorderRouterSet().get(0).getLocalGatewayIp());
             inventory.setPeerGatewayIp(response.getVirtualBorderRouterSet().get(0).getPeerGatewayIp());
