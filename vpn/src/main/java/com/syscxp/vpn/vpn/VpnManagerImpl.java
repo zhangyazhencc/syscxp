@@ -259,7 +259,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         orderMsg.setNotifyUrl(restf.getSendCommandUrl());
         APIReply reply;
         try {
-            reply = new VpnRESTCaller(VpnGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+            reply = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
         } catch (Exception e) {
             return false;
         }
@@ -881,10 +881,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     argerr("The Vlan[:%s] of VpnInterface[uuid:%s] is already exist.", msg.getVlan(), msg.getHostUuid()));
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
         priceMsg.setAccountUuid(msg.getAccountUuid());
-        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
+        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH
+        );
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(msg.getProductPriceUnits());
-        APIReply rsp = new VpnRESTCaller(VpnGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+        APIReply rsp = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!rsp.isSuccess())
             throw new ApiMessageInterceptionException(
                     argerr("查询价格失败.", msg.getAccountUuid()));

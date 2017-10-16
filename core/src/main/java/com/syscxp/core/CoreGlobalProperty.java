@@ -48,6 +48,9 @@ public class CoreGlobalProperty {
 
     public static int SESSION_CLEANUP_INTERVAL = 3600;
 
+    @GlobalProperty(name = "billingServerUrl", defaultValue = "http://192.168.211.99:8082")
+    public static String BILLING_SERVER_URL;
+
     @GlobalProperty(name = "interfaceMaxMotifies", defaultValue = "5")
     public static Integer INTERFACE_MAX_MOTIFIES;
 
