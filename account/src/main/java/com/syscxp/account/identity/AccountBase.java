@@ -508,8 +508,9 @@ public class AccountBase extends AbstractAccount {
             update = true;
         }
 
-        if (msg.getSession().getType() == AccountType.SystemAdmin) {
-            if (msg.getStatus() != null) {
+//        if (msg.getSession().getType() == AccountType.SystemAdmin) {
+        if (msg.getSession().getType().toString().equals(AccountType.SystemAdmin.toString())) {
+             if (msg.getStatus() != null) {
                 account.setStatus(msg.getStatus());
                 update = true;
             }
@@ -600,6 +601,7 @@ public class AccountBase extends AbstractAccount {
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
         evt.setInventory(UserInventory.valueOf(user));
         bus.publish(evt);
+
     }
 
     private void handle(APIDeleteUserMsg msg) {
