@@ -30,6 +30,9 @@
     <message>
         <name>com.syscxp.vpn.header.host.APIDeleteHostInterfaceMsg</name>
     </message>
+    <message>
+        <name>com.syscxp.vpn.header.host.APIReconnectVpnHostMsg</name>
+    </message>
 
 
     <message>

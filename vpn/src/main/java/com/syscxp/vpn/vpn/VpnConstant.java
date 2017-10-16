@@ -20,7 +20,7 @@ public interface VpnConstant {
 
     public static final String UPDATE_VPN_CIDR_PATH = "/reset-vpn-cidr/";
 
-    public static final String UPDATE_VPN_BANDWIDTH_PATH = "/update-bandwith/";
+    public static final String UPDATE_VPN_BANDWIDTH_PATH = "/reset-bandwidth/";
 
     public static final String ADD_VPN_INTERFACE_PATH = "/add-ddn-if/";
 
@@ -31,10 +31,6 @@ public interface VpnConstant {
     public static final String DELETE_VPN_ROUTE_PATH = "/del-route/";
 
     public static final String CHECK_VPN_STATUS_PATH = "/vpn-status/";
-
-    public static final String RECONNECT_VPN_PATH = "/reconnect/";
-
-    public static final String CHECK_CREATE_STATE_PATH = "/result/";
 
     public static final String DOWNLOAD_CERTIFICATE_PATH = "/client-conf/";
 

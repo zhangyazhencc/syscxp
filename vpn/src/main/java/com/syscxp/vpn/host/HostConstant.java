@@ -12,6 +12,6 @@ public interface HostConstant {
 
     public static final String Delete_HOST_PATH = "/del-host/";
 
-    public static final String RECONNECT_HOST_PATH = "/reconnect-host/";
+    public static final String RECONNECT_HOST_PATH = "/reconnect/";
 
 }

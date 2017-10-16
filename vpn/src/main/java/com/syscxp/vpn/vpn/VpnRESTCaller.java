@@ -57,7 +57,7 @@ public class VpnRESTCaller {
      * 获取任务处理结果
      */
     public TaskResult syncPostForResult(String path, VpnAgentCommand cmd) {
-        return syncPostForResponse(path, cmd).getResult();
+        return syncPostForResponseNoretry(path, cmd).getResult();
     }
 
     /**

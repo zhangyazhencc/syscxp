@@ -11,5 +11,4 @@ public class APIDeleteNodeExtensionInfoEvent extends APIEvent {
     }
 
     public APIDeleteNodeExtensionInfoEvent(String apiId){super(apiId);}
-
 }
