@@ -8,5 +8,6 @@ import com.syscxp.header.message.APIEvent;
 public class APIDeleteNodeExtensionInfoEvent extends APIEvent {
 
     public APIDeleteNodeExtensionInfoEvent(String apiId){super(apiId);}
+    public APIDeleteNodeExtensionInfoEvent(){}
 
 }
