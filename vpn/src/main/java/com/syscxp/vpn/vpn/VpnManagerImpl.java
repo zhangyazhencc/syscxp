@@ -36,6 +36,7 @@ import com.syscxp.utils.logging.CLogger;
 import com.syscxp.vpn.header.host.*;
 import com.syscxp.vpn.header.vpn.*;
 import com.syscxp.vpn.vpn.VpnCommands.*;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -118,7 +119,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         vpn.setSid(Platform.getUuid());
-        vpn.setCertKey(Platform.getUuid());
+        vpn.setCertKey(generateCertKey(msg.getAccountUuid(), vpn.getSid()));
 
         ResetCertificateCmd cmd = ResetCertificateCmd.valueOf(vpn);
 
@@ -170,12 +171,16 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         bus.reply(msg, reply);
     }
 
+    private String generateCertKey(String accountUuid, String sid) {
+        return DigestUtils.md5Hex(accountUuid + sid + VpnConstant.GENERATE_KEY);
+    }
+
     private void handle(APICreateVpnMsg msg) {
         APICreateVpnEvent evt = new APICreateVpnEvent(msg.getId());
         VpnVO vpn = new VpnVO();
         vpn.setUuid(Platform.getUuid());
         vpn.setSid(Platform.getUuid());
-        vpn.setCertKey(Platform.getUuid());
+        vpn.setCertKey(generateCertKey(msg.getAccountUuid(), vpn.getSid()));
         vpn.setMaxModifies(CoreGlobalProperty.VPN_MAX_MOTIFIES);
         vpn.setAccountUuid(msg.getAccountUuid());
         vpn.setDescription(msg.getDescription());
@@ -815,14 +820,14 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APIDownloadCertificateMsg msg) {
+
         Q q = Q.New(VpnVO.class)
                 .eq(VpnVO_.uuid, msg.getUuid())
-                .eq(VpnVO_.sid, msg.getSid())
-                .eq(VpnVO_.certKey, msg.getKey());
+                .eq(VpnVO_.sid, msg.getSid());
+
         if (!q.isExists()) {
             throw new ApiMessageInterceptionException(
-                    argerr("Vpn[uuid:%s, sid:%s, key:%s]验证不通过.", msg.getUuid(), msg.getSid(),
-                            msg.getKey()));
+                    argerr("Vpn[uuid:%s, sid:%s]验证不通过.", msg.getUuid(), msg.getSid()));
         }
     }
 
