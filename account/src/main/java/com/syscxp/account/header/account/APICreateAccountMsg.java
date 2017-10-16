@@ -17,8 +17,8 @@ public class APICreateAccountMsg  extends APIMessage implements AccountMessage{
     @APIParam(maxLength = 32)
     private String phone;
     @APIParam(maxLength = 128, required = false)
-    private String trueName;
-    @APIParam(maxLength = 128, required = false)
+    private String trueName; 
+    @APIParam(maxLength = 128)
     private String company;
 
     @APIParam(maxLength = 128, required = false)
