@@ -48,23 +48,8 @@ public class CoreGlobalProperty {
 
     public static int SESSION_CLEANUP_INTERVAL = 3600;
 
-    @GlobalProperty(name = "accountServerUrl", defaultValue = "http://192.168.211.99:8081/api")
-    public static String ACCOUNT_SERVER_URL;
-
-    @GlobalProperty(name = "vpnManagerUrl", defaultValue = "http://192.168.3.93:8000")
-    public static String VPN_BASE_URL;
-
     @GlobalProperty(name = "billingServerUrl", defaultValue = "http://192.168.211.99:8082")
     public static String BILLING_SERVER_URL;
-
-    @GlobalProperty(name = "vpnServerUrl", defaultValue = "http://192.168.211.113:8080")
-    public static String VPN_SERVER_URL;
-
-    @GlobalProperty(name = "tunnelServerUrl", defaultValue = "http://192.168.211.97:8888")
-    public static String TUNNEL_SERVER_URL;
-
-    @GlobalProperty(name = "vpnMaxMotifies", defaultValue = "5")
-    public static Integer VPN_MAX_MOTIFIES;
 
     @GlobalProperty(name = "interfaceMaxMotifies", defaultValue = "5")
     public static Integer INTERFACE_MAX_MOTIFIES;

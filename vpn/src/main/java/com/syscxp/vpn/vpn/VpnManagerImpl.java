@@ -182,7 +182,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setUuid(Platform.getUuid());
         vpn.setSid(Platform.getUuid());
         vpn.setCertKey(generateCertKey(msg.getAccountUuid(), vpn.getSid()));
-        vpn.setMaxModifies(CoreGlobalProperty.VPN_MAX_MOTIFIES);
+        vpn.setMaxModifies(VpnGlobalProperty.VPN_MAX_MOTIFIES);
         vpn.setAccountUuid(msg.getAccountUuid());
         vpn.setDescription(msg.getDescription());
         vpn.setName(msg.getName());
@@ -702,7 +702,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         VpnVO vpn = updateVpnFromOrder(cmd);
                         if (vpn != null && vpn.getStatus() == VpnStatus.Connecting)
                             new VpnRESTCaller().sendCommand(VpnConstant.INIT_VPN_PATH, CreateVpnCmd.valueOf(vpn),
@@ -725,7 +724,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
 
                         VpnVO vpn = dbf.findByUuid(cmd.getPorductUuid(), VpnVO.class);
                         if (vpn != null) {
@@ -739,7 +737,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         updateVpnFromOrder(cmd);
                         return null;
                     }
@@ -748,7 +745,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         updateVpnFromOrder(cmd);
                         return null;
                     }
@@ -757,7 +753,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 new SyncHttpCallHandler<OrderCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.info(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         VpnVO vpn = updateVpnFromOrder(cmd);
                         if (vpn != null && vpn.getStatus() == VpnStatus.Disconnected)
                             reconnectVpn(vpn);
@@ -886,7 +881,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     argerr("The Vlan[:%s] of VpnInterface[uuid:%s] is already exist.", msg.getVlan(), msg.getHostUuid()));
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
         priceMsg.setAccountUuid(msg.getAccountUuid());
-        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
+        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH
+        );
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(msg.getProductPriceUnits());
         APIReply rsp = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
