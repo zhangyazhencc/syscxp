@@ -272,7 +272,7 @@ CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `duration` int(11) NOT NULL COMMENT '最近一次购买时长',
   `productChargeModel` varchar(32) NOT NULL COMMENT '产品付费方式',
   `maxModifies` int(11) NOT NULL COMMENT '最大调整次数',
-  `expiredDate` timestamp COMMENT '截止时间',
+  `expiredDate` timestamp NULL DEFAULT NULL COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
@@ -412,9 +412,6 @@ VIEW `syscxp_tunnel`.`HostVO` AS
         `syscxp_tunnel`.`HostEO`
     WHERE
         (`syscxp_tunnel`.`HostEO`.`deleted` = 0);
-
-alter table syscxp_tunnel.HostEO add nodeUuid varchar(32) comment '节点ID(NodeEO.uuid)' after uuid;
-
 
 ##阿里云边界路由器
 CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterEO` (
