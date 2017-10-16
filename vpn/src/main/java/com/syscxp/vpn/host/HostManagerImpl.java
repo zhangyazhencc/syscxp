@@ -9,8 +9,13 @@ import com.syscxp.header.vpn.VpnAgentResponse.*;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.TimeUtils;
 import com.syscxp.utils.gson.JSONObjectUtil;
+import com.syscxp.vpn.exception.VpnServiceException;
 import com.syscxp.vpn.header.host.*;
+import com.syscxp.vpn.header.vpn.VpnStatus;
+import com.syscxp.vpn.header.vpn.VpnVO;
+import com.syscxp.vpn.header.vpn.VpnVO_;
 import com.syscxp.vpn.vpn.VpnCommands.*;
+import com.syscxp.vpn.vpn.VpnConstant;
 import com.syscxp.vpn.vpn.VpnGlobalConfig;
 import com.syscxp.vpn.vpn.VpnRESTCaller;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -199,6 +204,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         APIDeleteVpnHostEvent evt = new APIDeleteVpnHostEvent(msg.getId());
         VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
 
+        /*
         DeleteVpnHostCmd cmd = DeleteVpnHostCmd.valueOf(host);
         new VpnRESTCaller().sendCommand(HostConstant.Delete_HOST_PATH, cmd, new Completion(evt) {
             @Override
@@ -210,7 +216,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             public void fail(ErrorCode errorCode) {
                 evt.setError(errorCode);
             }
-        });
+        }); */
 
         bus.publish(evt);
     }
@@ -444,7 +450,33 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
         // Host重连
         private boolean reconnectHost(VpnHostVO vo) {
-            return false;
+            if (vo.getState() == HostState.Disabled) {
+                return false;
+            }
+            ReconnectVpnHostCmd cmd = ReconnectVpnHostCmd.valueOf(vo);
+            try {
+                new VpnRESTCaller().sendCommand(HostConstant.RECONNECT_HOST_PATH, cmd, new Completion(null) {
+                    @Override
+                    public void success() {
+                        if (vo.getStatus() != HostStatus.Connected)
+                            UpdateQuery.New(VpnHostVO.class).eq(VpnHostVO_.uuid, vo.getUuid())
+                                    .set(VpnHostVO_.status, HostStatus.Connected).update();
+                    }
+
+                    @Override
+                    public void fail(ErrorCode errorCode) {
+                        if (vo.getStatus() != HostStatus.Disconnected)
+                            UpdateQuery.New(VpnHostVO.class).eq(VpnHostVO_.uuid, vo.getUuid())
+                                    .set(VpnHostVO_.status, HostStatus.Disconnected).update();
+                        throw new VpnServiceException(errorCode);
+                    }
+                });
+            } catch (VpnServiceException e) {
+                logger.info(e.getMessage());
+                return false;
+            }
+
+            return true;
         }
 
         @Override
