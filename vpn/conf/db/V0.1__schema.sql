@@ -43,7 +43,7 @@ CREATE TABLE  `syscxp_vpn`.`JobQueueEntryVO` (
     `issuerManagementNodeId` varchar(32) DEFAULT NULL,
     `restartable` tinyint(1) unsigned NOT NULL DEFAULT 0,
     `inDate` timestamp DEFAULT CURRENT_TIMESTAMP,
-    `doneDate` timestamp NULL,
+    `doneDate` timestamp,
     `errText` text DEFAULT NULL,
     PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
@@ -66,7 +66,7 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`sid` varchar(32) NOT NULL COMMENT 'SID',
 	`certKey` VARCHAR(32) NOT NULL COMMENT 'cert-key',
 	`payment` VARCHAR(32) NOT NULL COMMENT '支付状态',
-	`expireDate` timestamp COMMENT '截止时间',
+	`expireDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '截止时间',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)

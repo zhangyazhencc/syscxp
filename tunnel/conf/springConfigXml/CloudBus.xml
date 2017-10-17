@@ -15,7 +15,8 @@
     <bean id="TimeoutManager" class="com.syscxp.core.timeout.ApiTimeoutManagerImpl" />
 
     <bean id="CloudBus" class = "com.syscxp.core.cloudbus.CloudBusImpl2" depends-on="ThreadFacade,ThreadAspectj">
-    	<syscxp:plugin>
+		<property name="busProjectId" value="tunnel" />
+		<syscxp:plugin>
 			<syscxp:extension interface="com.syscxp.header.managementnode.ManagementNodeChangeListener" order="9999"/>
 		</syscxp:plugin>
     </bean>

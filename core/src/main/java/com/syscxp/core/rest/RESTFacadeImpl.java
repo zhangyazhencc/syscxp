@@ -159,7 +159,7 @@ public class RESTFacadeImpl implements RESTFacade {
                 logger.warn(String.format("Received a command, but no handler found for the path[%s]. request body: %s", commandPath, entity.getBody()));
                 return;
             }
-
+            logger.info(String.format("from %s call back. body: %s", req.getRequestURL().toString(), entity.getBody()));
             String ret = handler.handle(entity);
             if (ret == null) {
                 rsp.setStatus(HttpStatus.SC_OK);
