@@ -107,7 +107,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         List<TunnelVO> tunnels = q.list();
         for(TunnelVO tunnel:tunnels){
 
-            if((tunnel.getState().equals("Opened"))&&(tunnel.getStatus().equals("Connected"))){
+            if((tunnel.getState().equals(TunnelState.Opened))&&(tunnel.getStatus().equals(TunnelStatus.Connected))){
 
                 SimpleQuery<TunnelInterfaceVO> query = dbf.createQuery(TunnelInterfaceVO.class);
                 query.add(TunnelInterfaceVO_.tunnelUuid, SimpleQuery.Op.EQ,tunnel.getUuid());
@@ -297,7 +297,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         List<DescribeVirtualBorderRoutersRequest.Filter> list = new ArrayList<DescribeVirtualBorderRoutersRequest.Filter>();
         DescribeVirtualBorderRoutersRequest.Filter filter = new DescribeVirtualBorderRoutersRequest.Filter();
-        filter.setKey("VbrId");
+        filter.setKey(AliEdgeRouterConstant.FILTER_KEY);
         List list1 = new ArrayList();
         list1.add(msg.getVbrUuid());
         filter.setValues(list1);
@@ -366,8 +366,8 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         }
         else{
             SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,"admin");
-            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,"admin");
+            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,AliEdgeRouterConstant.ACCOUNTUUID);
+            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,AliEdgeRouterConstant.ALIACCOUNTUUID);
             AliUserVO user = q.find();
 
             AliAccessKeyId = user.getAliAccessKeyID();
@@ -476,8 +476,8 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         vo.setVlan(msg.getVlan());
 
         SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-        q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,"admin");
-        q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,"admin");
+        q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,AliEdgeRouterConstant.ACCOUNTUUID);
+        q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,AliEdgeRouterConstant.ALIACCOUNTUUID);
         AliUserVO user = q.find();
 
 
