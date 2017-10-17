@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="warn">
     <Appenders>
-        <RollingFile name="RollingFile" fileName="${sys:catalina.home}/logs/billing.log"
-                     filePattern="${sys:catalina.home}/logs/billing-%d{yyyy-MM-dd}-%i.log">
+        <RollingFile name="RollingFile" fileName="${sys:catalina.home}/logs/alarm.log"
+                     filePattern="${sys:catalina.home}/logs/alarm-%d{yyyy-MM-dd}-%i.log">
             <PatternLayout>
                 <pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%c{1}] %X{api,} %m%n</pattern>
             </PatternLayout>
@@ -50,6 +50,13 @@
         <Async name="Async" ignoreExceptions="false" bufferSize="512">
             <AppenderRef ref="RollingFile"/>
         </Async>
+
+        <Console name="console_out_appender" target="SYSTEM_OUT">
+            <ThresholdFilter level="DEBUG" onMatch="ACCEPT"
+                             onMismatch="DENY" />
+            <PatternLayout pattern="%5p [%t] %d{yyyy-MM-dd HH:mm:ss} (%F:%L) %m%n" />
+        </Console>
+
     </Appenders>
 
     <Loggers>

@@ -12,7 +12,7 @@
          http://syscxp.com/schema/syscxp/plugin.xsd"
        default-init-method="init" default-destroy-method="destroy">
 
-    <bean id="IdentiyInterceptor" class="com.syscxp.billing.identity.IdentityInterceptor">
+    <bean id="IdentiyInterceptor" class="com.syscxp.alarm.identity.IdentityInterceptor">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.header.apimediator.GlobalApiMessageInterceptor"/>
             <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
@@ -20,12 +20,12 @@
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>com.syscxp.header.billing.AccountBalanceVO</value>
+                <value>com.syscxp.alarm.header.resourcePolicy.ResourceVO</value>
             </list>
         </property>
     </bean>
 
-    <bean id="BalanceManager" class="com.syscxp.alarm.AlarmManagerImpl">
+    <bean id="ContactManager" class="com.syscxp.alarm.contact.ContactManagerImpl">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.header.Component"/>
             <syscxp:extension interface="com.syscxp.header.Service"/>
