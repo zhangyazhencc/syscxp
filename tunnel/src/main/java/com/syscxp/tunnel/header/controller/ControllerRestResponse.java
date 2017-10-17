@@ -37,9 +37,9 @@ public class ControllerRestResponse {
         this.code = code;
 
         if("0".equals(this.code))
-            this.success = true;
+            this.setSuccess(true);
         else
-            this.success = false;
+            this.setSuccess(false);
     }
 
     public Msg getMsg() {
