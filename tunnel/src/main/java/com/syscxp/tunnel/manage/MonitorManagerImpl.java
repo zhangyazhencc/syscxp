@@ -2,13 +2,13 @@ package com.syscxp.tunnel.manage;
 
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.errorcode.ErrorCode;
+import com.syscxp.tunnel.header.controller.TunnelMonitorMpls;
 import com.syscxp.tunnel.header.host.*;
 import com.syscxp.tunnel.header.monitor.*;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchAccessType;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
 import com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO_;
-import com.syscxp.tunnel.header.controller.MonitorMplsConfig;
-import com.syscxp.tunnel.header.controller.MonitorSdnConfig;
+import com.syscxp.tunnel.header.controller.TunnelMonitorSdn;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -213,8 +213,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         TunnelMonitorVO tunnelMonitorVO = createTunnelMonitorHandle(msg);
 
         // 下发监控通道配置
-        Map configMap = getTunnelMonitorConfigInfo(tunnelMonitorVO.getTunnelUuid());
-        String command = JSONObjectUtil.toJsonString(configMap);
+        ControllerCommands.TunnelMonitorCommand cmd= getTunnelMonitorCommand(tunnelMonitorVO.getTunnelUuid());
+        String command = JSONObjectUtil.toJsonString(cmd);
 
         APICreateTunnelMonitorEvent event = new APICreateTunnelMonitorEvent(msg.getId());
         ControllerRestFacade crf = new ControllerRestFacade();
@@ -760,6 +760,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             throw new ApiMessageInterceptionException(argerr("Illegal monitor IP %s！", msg.getMonitorZIp()));
     }
 
+    /**
+     * 验证监控主机IP合法性
+     * @param hostIp：监控主机IP
+     */
     private void validateHostIp(String hostIp) {
         String ip = "";
         int port = -1;
@@ -786,9 +790,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             return false;
     }
 
-    public Map getTunnelMonitorConfigInfo(String tunnelUuid) {
-        List<MonitorMplsConfig> mplsList = new ArrayList<>();
-        List<MonitorSdnConfig> sdnList = new ArrayList<>();
+    /**
+     * 获取监控下发controller命令
+     * @param tunnelUuid
+     * @return
+     */
+    public ControllerCommands.TunnelMonitorCommand getTunnelMonitorCommand(String tunnelUuid) {
+        List<TunnelMonitorMpls> mplsList = new ArrayList<>();
+        List<TunnelMonitorSdn> sdnList = new ArrayList<>();
 
         // 获取两端监控IP与端口
         Map<String,String> monitorIp = new HashMap<>();
@@ -826,7 +835,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             tunnelQ.setParameter("sortTag",monitor.get(0).toString());
             Tuple tunnel = tunnelQ.getResultList().get(0);
 
-            MonitorMplsConfig mpls = new MonitorMplsConfig();
+            TunnelMonitorMpls mpls = new TunnelMonitorMpls();
             if(PhysicalSwitchAccessType.MPLS.toString().equals(host.get(0).toString())){
                 mpls.setM_ip(host.get(1).toString());
                 mpls.setUsername(host.get(2).toString());
@@ -860,7 +869,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
                 mplsList.add(mpls);
 
-                MonitorSdnConfig sdn = new MonitorSdnConfig();
+                TunnelMonitorSdn sdn = new TunnelMonitorSdn();
                 sdn.setM_ip(host.get(1,String.class));
                 if(monitor.get(0).toString().equals(InterfaceType.A.toString())){
                     sdn.setNw_src(monitorIp.get(InterfaceType.A.toString()));
@@ -881,16 +890,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             }
         }
 
-        Map<String,Object> configMap = new HashMap<String, Object>();
-        configMap.put("tunnel_id",tunnelUuid);
-        if(mplsList.size()>0){
-            configMap.put("mpls_interfaces",mplsList);
-        }
-        if(sdnList.size()>0){
-            configMap.put("sdn_interfaces",sdnList);
-        }
-
-        return configMap;
+        return ControllerCommands.TunnelMonitorCommand.valueOf(sdnList,mplsList);
     }
 
     /**
