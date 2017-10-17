@@ -2,13 +2,11 @@ package com.syscxp.tunnel.manage;
 
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.errorcode.ErrorCode;
-import com.syscxp.tunnel.header.controller.TunnelMonitorMpls;
 import com.syscxp.tunnel.header.host.*;
 import com.syscxp.tunnel.header.monitor.*;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchAccessType;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
 import com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO_;
-import com.syscxp.tunnel.header.controller.TunnelMonitorSdn;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -796,8 +794,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @return
      */
     public ControllerCommands.TunnelMonitorCommand getTunnelMonitorCommand(String tunnelUuid) {
-        List<TunnelMonitorMpls> mplsList = new ArrayList<>();
-        List<TunnelMonitorSdn> sdnList = new ArrayList<>();
+        List<ControllerCommands.TunnelMonitorMpls> mplsList = new ArrayList<>();
+        List<ControllerCommands.TunnelMonitorSdn> sdnList = new ArrayList<>();
 
         // 获取两端监控IP与端口
         Map<String,String> monitorIp = new HashMap<>();
@@ -835,7 +833,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             tunnelQ.setParameter("sortTag",monitor.get(0).toString());
             Tuple tunnel = tunnelQ.getResultList().get(0);
 
-            TunnelMonitorMpls mpls = new TunnelMonitorMpls();
+            ControllerCommands.TunnelMonitorMpls mpls = new ControllerCommands.TunnelMonitorMpls();
             if(PhysicalSwitchAccessType.MPLS.toString().equals(host.get(0).toString())){
                 mpls.setM_ip(host.get(1).toString());
                 mpls.setUsername(host.get(2).toString());
@@ -869,7 +867,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
                 mplsList.add(mpls);
 
-                TunnelMonitorSdn sdn = new TunnelMonitorSdn();
+                ControllerCommands.TunnelMonitorSdn sdn = new ControllerCommands.TunnelMonitorSdn();
                 sdn.setM_ip(host.get(1,String.class));
                 if(monitor.get(0).toString().equals(InterfaceType.A.toString())){
                     sdn.setNw_src(monitorIp.get(InterfaceType.A.toString()));
