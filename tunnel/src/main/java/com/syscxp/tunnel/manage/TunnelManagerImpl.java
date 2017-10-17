@@ -272,17 +272,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             evt.setInventory(InterfaceInventory.valueOf(vo));
         }
 
-        /*if (!createOrder(orderMsg)) {
-            evt.setError(errf.stringToOperationError("付款失败"));
-            vo = dbf.reload(vo);
-            evt.setInventory(InterfaceInventory.valueOf(vo));
-            bus.publish(evt);
-            return;
-        }
-
-        vo.setState(InterfaceState.paid);
-        dbf.updateAndRefresh(vo);
-        evt.setInventory(InterfaceInventory.valueOf(vo));*/
         bus.publish(evt);
     }
 
