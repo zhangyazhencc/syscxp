@@ -8,6 +8,14 @@
     </message>
 
     <message>
+        <name>com.syscxp.alarm.header.contact.APIDeleteContactMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.contact.APIUpdateContactMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.alarm.header.contact.APIQueryContactMsg</name>
         <serviceId>query</serviceId>
     </message>

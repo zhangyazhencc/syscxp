@@ -5,6 +5,7 @@ import com.syscxp.header.rest.RestResponse;
 
 @RestResponse(allTo = "inventory")
 public class APICreateAliEdgeRouterEvent extends APIEvent{
+
     private AliEdgeRouterInventory inventory;
 
     public APICreateAliEdgeRouterEvent(){}
