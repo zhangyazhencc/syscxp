@@ -402,15 +402,18 @@ public class AccountBase extends AbstractAccount {
 
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
         UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
-        if (user.getPhone().equals(msg.getPhone())) {
+        if ((msg.getPhone() != null && user.getPhone().equals(msg.getPhone()))
+            ||(msg.getEmail() != null && user.getEmail().equals(msg.getEmail()))) {
+
             if (user.getPassword().equals(msg.getOldpassword())) {
                 user.setPassword(msg.getNewpassword());
                 evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
             } else {
                 throw new CloudRuntimeException("bad old passwords");
             }
-        } else {
+        } else{
             throw new ApiMessageInterceptionException(argerr("wrong phone"));
+
         }
 
         bus.publish(evt);
