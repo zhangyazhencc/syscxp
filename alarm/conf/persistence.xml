@@ -8,6 +8,9 @@
         <class>com.syscxp.header.managementnode.ManagementNodeVO</class>
         <class>com.syscxp.core.job.JobQueueVO</class>
         <class>com.syscxp.core.job.JobQueueEntryVO</class>
+        <class>com.syscxp.alarm.header.contact.ContactVO</class>
+        <class>com.syscxp.alarm.header.contact.NotifyWayVO</class>
+        <class>com.syscxp.alarm.header.contact.ContactNotifyWayRefVO</class>
 
     </persistence-unit>
 </persistence>

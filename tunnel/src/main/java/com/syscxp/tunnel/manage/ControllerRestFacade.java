@@ -7,7 +7,6 @@ import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.tunnel.header.controller.ControllerRestResponse;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -22,7 +21,7 @@ import org.springframework.http.ResponseEntity;
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-10-13.
- * @Description: .
+ * @Description: 控制器命令下发.
  */
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class ControllerRestFacade {

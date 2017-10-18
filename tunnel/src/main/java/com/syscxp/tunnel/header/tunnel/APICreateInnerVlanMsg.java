@@ -1,11 +1,14 @@
 package com.syscxp.tunnel.header.tunnel;
 
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.tunnel.manage.TunnelConstant;
 
 /**
  * Create by DCY on 2017/10/11
  */
+@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateInnerVlanMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32,resourceType = TunnelVO.class)

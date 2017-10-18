@@ -14,7 +14,7 @@ import java.util.List;
 /**
  * Created by DCY on 2017-09-11
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY)
+@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreateInterfaceManualMsg extends APIMessage {
 
 
