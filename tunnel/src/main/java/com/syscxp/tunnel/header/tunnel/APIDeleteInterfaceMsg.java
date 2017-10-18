@@ -1,12 +1,15 @@
 package com.syscxp.tunnel.header.tunnel;
 
 import com.syscxp.header.identity.AccountType;
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.tunnel.manage.TunnelConstant;
 
 /**
  * Created by DCY on 2017-09-14
  */
+@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"delete"})
 public class APIDeleteInterfaceMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String uuid;

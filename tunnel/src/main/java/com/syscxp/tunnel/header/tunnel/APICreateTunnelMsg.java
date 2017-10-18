@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Created by DCY on 2017-09-11
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY)
+@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateTunnelMsg extends APIMessage {
 
     @APIParam(emptyString = false,required = false,maxLength = 32)

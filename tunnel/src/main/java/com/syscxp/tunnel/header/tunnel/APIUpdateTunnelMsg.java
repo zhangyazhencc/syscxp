@@ -1,14 +1,17 @@
 package com.syscxp.tunnel.header.tunnel;
 
 import com.syscxp.header.identity.AccountType;
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.tunnel.manage.TunnelConstant;
 
 import java.sql.Timestamp;
 
 /**
  * Created by DCY on 2017-09-17
  */
+@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
 public class APIUpdateTunnelMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;

@@ -9,7 +9,7 @@ import com.syscxp.tunnel.manage.TunnelConstant;
 /**
  * Created by DCY on 2017-09-07
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY)
+@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateNetworkMsg extends APIMessage {
 
     @APIParam(emptyString = false,required = false,maxLength = 32)
