@@ -2,8 +2,17 @@ package com.syscxp.tunnel.header.aliEdgeRouter;
 
 import com.syscxp.header.query.APIQueryReply;
 
-public class AliEdgeRouterInformationReply extends APIQueryReply {
+public class APIGetAliEdgeRouterReply extends APIQueryReply {
     private AliEdgeRouterInformationInventory inventory;
+    private AliEdgeRouterInventory routerInventory;
+
+    public AliEdgeRouterInventory getRouterInventory() {
+        return routerInventory;
+    }
+
+    public void setRouterInventory(AliEdgeRouterInventory routerInventory) {
+        this.routerInventory = routerInventory;
+    }
 
     public AliEdgeRouterInformationInventory getInventory() {
         return inventory;

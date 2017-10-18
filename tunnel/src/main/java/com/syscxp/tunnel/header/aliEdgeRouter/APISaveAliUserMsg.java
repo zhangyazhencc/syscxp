@@ -10,9 +10,9 @@ public class APISaveAliUserMsg extends APIMessage {
     @APIParam(maxLength = 64)
     private String aliAccountUuid;
     @APIParam(maxLength = 32)
-    private String AliAccessKeyID;
+    private String aliAccessKeyID;
     @APIParam(maxLength = 32)
-    private String AliAccessKeySecret;
+    private String aliAccessKeySecret;
 
     public String getAccountUuid() {
         if(getSession().getType() == AccountType.SystemAdmin){
@@ -35,18 +35,18 @@ public class APISaveAliUserMsg extends APIMessage {
     }
 
     public String getAliAccessKeyID() {
-        return AliAccessKeyID;
+        return aliAccessKeyID;
     }
 
     public void setAliAccessKeyID(String aliAccessKeyID) {
-        AliAccessKeyID = aliAccessKeyID;
+        this.aliAccessKeyID = aliAccessKeyID;
     }
 
     public String getAliAccessKeySecret() {
-        return AliAccessKeySecret;
+        return aliAccessKeySecret;
     }
 
     public void setAliAccessKeySecret(String aliAccessKeySecret) {
-        AliAccessKeySecret = aliAccessKeySecret;
+        this.aliAccessKeySecret = aliAccessKeySecret;
     }
 }
