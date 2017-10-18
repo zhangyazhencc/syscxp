@@ -45,7 +45,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.aliEdgeRouter.TunnelQueryMsg</name>
+        <name>com.syscxp.tunnel.header.aliEdgeRouter.APIListAliTunnelMsg</name>
     </message>
     <message>
         <name>com.syscxp.tunnel.header.aliEdgeRouter.AliEdgeRouterInformationMsg</name>
