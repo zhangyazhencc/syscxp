@@ -20,6 +20,7 @@ public class VpnHostInventory {
     private String status;
     private String username;
     private String password;
+    private String vpnInterfaceName;
     private ZoneInventory zoneInventory;
     private List<HostInterfaceInventory> hostInterfaceInventories;
     private Timestamp lastOpDate;
@@ -40,6 +41,7 @@ public class VpnHostInventory {
         inv.setStatus(vo.getStatus().toString());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
+        inv.setVpnInterfaceName(vo.getVpnInterfaceName());
         inv.setZoneInventory(ZoneInventory.valueOf(vo.getZone()));
         inv.setHostInterfaceInventories(HostInterfaceInventory.valueOf(vo.getHostInterfaces()));
         return inv;
@@ -51,6 +53,14 @@ public class VpnHostInventory {
             invs.add(VpnHostInventory.valueOf(vo));
         }
         return invs;
+    }
+
+    public String getVpnInterfaceName() {
+        return vpnInterfaceName;
+    }
+
+    public void setVpnInterfaceName(String vpnInterfaceName) {
+        this.vpnInterfaceName = vpnInterfaceName;
     }
 
     public List<HostInterfaceInventory> getHostInterfaceInventories() {

@@ -284,6 +284,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         host.setSshPort(msg.getSshPort());
         host.setUsername(msg.getUsername());
         host.setPassword(msg.getPassword());
+        host.setVpnInterfaceName(msg.getVpnInterfaceName());
         host.setState(HostState.Enabled);
         host.setStatus(HostStatus.Connecting);
 

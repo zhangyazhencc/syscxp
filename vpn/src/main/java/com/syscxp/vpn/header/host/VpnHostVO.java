@@ -34,6 +34,8 @@ public class VpnHostVO {
     @Column
     private String password;
     @Column
+    private String vpnInterfaceName;
+    @Column
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
@@ -44,6 +46,14 @@ public class VpnHostVO {
 
     @Column
     private String zoneUuid;
+
+    public String getVpnInterfaceName() {
+        return vpnInterfaceName;
+    }
+
+    public void setVpnInterfaceName(String vpnInterfaceName) {
+        this.vpnInterfaceName = vpnInterfaceName;
+    }
 
     public String getZoneUuid() {
         return zoneUuid;

@@ -18,6 +18,7 @@ public class VpnHostVO_ {
     public static volatile SingularAttribute<VpnHostVO, String> sshPort;
     public static volatile SingularAttribute<VpnHostVO, String> username;
     public static volatile SingularAttribute<VpnHostVO, String> password;
+    public static volatile SingularAttribute<VpnHostVO, String> vpnInterfaceName;
     public static volatile SingularAttribute<VpnHostVO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<VpnHostVO, Timestamp> createDate;
 }
