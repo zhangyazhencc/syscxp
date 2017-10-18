@@ -84,173 +84,6 @@ public class ControllerCommands {
      * @Cretion Date: 2017-09-26.
      * @Description: RYU 控制器监控下发信息.
      */
-    public static class MonitorMplsConfig {
-
-        private String switch_type;
-        private String sub_type;
-        private String port_name;
-        private Integer vlan_id;
-        private String m_ip;
-        private String username;
-        private String password;
-        private Integer bandwidth;
-
-        public String getSwitch_type() {
-            return switch_type;
-        }
-
-        public void setSwitch_type(String switch_type) {
-            this.switch_type = switch_type;
-        }
-
-        public String getSub_type() {
-            return sub_type;
-        }
-
-        public void setSub_type(String sub_type) {
-            this.sub_type = sub_type;
-        }
-
-        public String getPort_name() {
-            return port_name;
-        }
-
-        public void setPort_name(String port_name) {
-            this.port_name = port_name;
-        }
-
-        public Integer getVlan_id() {
-            return vlan_id;
-        }
-
-        public void setVlan_id(Integer vlan_id) {
-            this.vlan_id = vlan_id;
-        }
-
-        public String getM_ip() {
-            return m_ip;
-        }
-
-        public void setM_ip(String m_ip) {
-            this.m_ip = m_ip;
-        }
-
-        public String getUsername() {
-            return username;
-        }
-
-        public void setUsername(String username) {
-            this.username = username;
-        }
-
-        public String getPassword() {
-            return password;
-        }
-
-        public void setPassword(String password) {
-            this.password = password;
-        }
-
-        public Integer getBandwidth() {
-            return bandwidth;
-        }
-
-        public void setBandwidth(Integer bandwidth) {
-            this.bandwidth = bandwidth;
-        }
-
-        @Override
-        public String toString() {
-            return "MonitorMplsConfig{" +
-                    "switch_type='" + switch_type + '\'' +
-                    ", sub_type='" + sub_type + '\'' +
-                    ", port_name='" + port_name + '\'' +
-                    ", vlan_id=" + vlan_id +
-                    ", m_ip='" + m_ip + '\'' +
-                    ", username='" + username + '\'' +
-                    ", password='" + password + '\'' +
-                    ", bandwidth=" + bandwidth +
-                    '}';
-        }
-    }
-
-    /**
-     * @Author: sunxuelong.
-     * @Cretion Date: 2017-09-26.
-     * @Description: RYU 控制器监控下发信息.
-     */
-    public static class MonitorSdnConfig {
-
-        private Integer vlan_id;
-        private String m_ip;
-        private String in_port;
-        private String nw_src;
-        private String nw_dst;
-        private String uplink;
-        private Integer bandwidth;
-
-        public Integer getVlan_id() {
-            return vlan_id;
-        }
-
-        public void setVlan_id(Integer vlan_id) {
-            this.vlan_id = vlan_id;
-        }
-
-        public String getM_ip() {
-            return m_ip;
-        }
-
-        public void setM_ip(String m_ip) {
-            this.m_ip = m_ip;
-        }
-
-        public String getIn_port() {
-            return in_port;
-        }
-
-        public void setIn_port(String in_port) {
-            this.in_port = in_port;
-        }
-
-        public String getNw_src() {
-            return nw_src;
-        }
-
-        public void setNw_src(String nw_src) {
-            this.nw_src = nw_src;
-        }
-
-        public String getNw_dst() {
-            return nw_dst;
-        }
-
-        public void setNw_dst(String nw_dst) {
-            this.nw_dst = nw_dst;
-        }
-
-        public String getUplink() {
-            return uplink;
-        }
-
-        public void setUplink(String uplink) {
-            this.uplink = uplink;
-        }
-
-        public Integer getBandwidth() {
-            return bandwidth;
-        }
-
-        public void setBandwidth(Integer bandwidth) {
-            this.bandwidth = bandwidth;
-        }
-    }
-
-    /**
-     * @Author: sunxuelong.
-     * @Cretion Date: 2017-09-26.
-     * @Description: RYU 控制器监控下发信息.
-     */
     public static class TunnelMonitorMpls {
 
         private String switch_type;
@@ -324,20 +157,6 @@ public class ControllerCommands {
 
         public void setBandwidth(Integer bandwidth) {
             this.bandwidth = bandwidth;
-        }
-
-        @Override
-        public String toString() {
-            return "TunnelMonitorMpls{" +
-                    "switch_type='" + switch_type + '\'' +
-                    ", sub_type='" + sub_type + '\'' +
-                    ", port_name='" + port_name + '\'' +
-                    ", vlan_id=" + vlan_id +
-                    ", m_ip='" + m_ip + '\'' +
-                    ", username='" + username + '\'' +
-                    ", password='" + password + '\'' +
-                    ", bandwidth=" + bandwidth +
-                    '}';
         }
     }
 
@@ -702,4 +521,62 @@ public class ControllerCommands {
         }
     }
 
+    /**
+     * @Author: sunxuelong.
+     * @Cretion Date: 2017-10-11.
+     * @Description: RYU控制器返回.
+     */
+    public static class ControllerRestResponse {
+        private boolean success;
+        private String code;
+        private Msg msg;
+
+        class Msg{
+            private String details;
+
+            public String getDetails() {
+                return details;
+            }
+
+            public void setDetails(String details) {
+                this.details = details;
+            }
+
+            @Override
+            public String toString() {
+                return "msg{" +
+                        "details='" + details + '\'' +
+                        '}';
+            }
+        }
+
+        public String getCode() {
+            return code;
+        }
+
+        public void setCode(String code) {
+            this.code = code;
+
+            if("0".equals(this.code))
+                this.setSuccess(true);
+            else
+                this.setSuccess(false);
+        }
+
+        public Msg getMsg() {
+            return msg;
+        }
+
+        public void setMsg(Msg msg) {
+            this.msg = msg;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
+    }
 }

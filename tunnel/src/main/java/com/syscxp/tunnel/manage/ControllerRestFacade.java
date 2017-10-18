@@ -43,13 +43,11 @@ public class ControllerRestFacade {
     public void sendCommand(String commandName, String commandParam, Completion completion) {
         String url = SERVER_URL + commandName;
 
-        sendCommandForResponce(url, commandParam, new ReturnValueCompletion<ControllerRestResponse>(completion) {
+        sendCommandForResponce(url, commandParam, new ReturnValueCompletion<ControllerCommands.ControllerRestResponse>(completion) {
             @Override
-            public void success(ControllerRestResponse returnValue) {
-                //  TaskResult result = returnValue.getResult();
+            public void success(ControllerCommands.ControllerRestResponse returnValue) {
 
-                boolean isSuccess = "0".equals(returnValue.getCode());
-                if (isSuccess) {
+                if (returnValue.isSuccess()) {
                     completion.success();
                     logger.debug(String.format("successfully execute the command[%s].", url));
                 } else {
@@ -65,9 +63,9 @@ public class ControllerRestFacade {
     }
 
     public void sendCommandForResponce(String url, String commandParam,
-                                       final ReturnValueCompletion<ControllerRestResponse> completion) {
+                                       final ReturnValueCompletion<ControllerCommands.ControllerRestResponse> completion) {
         try {
-            ControllerRestResponse response = syncPostForResponseNoretry(url, commandParam);
+            ControllerCommands.ControllerRestResponse response = syncPostForResponseNoretry(url, commandParam);
             logger.info("response: " + response.toString());
             logger.info("result: " + "0".equals(response.getCode()));
             logger.debug(String.format("successfully post %s", url));
@@ -79,7 +77,7 @@ public class ControllerRestFacade {
     }
 
     // syncHttpRequest
-    private ControllerRestResponse syncPostForResponseNoretry(String url, String commandParam) {
+    private ControllerCommands.ControllerRestResponse syncPostForResponseNoretry(String url, String commandParam) {
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setContentLength(commandParam.length());
@@ -105,6 +103,6 @@ public class ControllerRestFacade {
             throw new OperationFailureException(Platform.operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
         }
 
-        return JSONObjectUtil.toObject(rsp.getBody(), ControllerRestResponse.class);
+        return JSONObjectUtil.toObject(rsp.getBody(), ControllerCommands.ControllerRestResponse.class);
     }
 }
