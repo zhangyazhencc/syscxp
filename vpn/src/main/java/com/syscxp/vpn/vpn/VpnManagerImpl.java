@@ -49,7 +49,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -195,7 +194,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setStatus(VpnStatus.Connecting);
         vpn.setDuration(msg.getDuration());
         vpn.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
-        vpn.setPort(generatePort(msg.getHostUuid()));
+        vpn.setPort(generatePort(host));
         vpn.setHostUuid(msg.getHostUuid());
 
         VpnInterfaceVO vpnIface = new VpnInterfaceVO();
@@ -263,13 +262,16 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         return reply.isSuccess();
     }
 
-    private Integer generatePort(String hostUuid) {
-        Q q = Q.New(VpnVO.class).eq(VpnVO_.hostUuid, hostUuid)
-                .orderBy(VpnVO_.port, SimpleQuery.Od.DESC).limit(1).select(VpnVO_.port);
-        boolean flag = q.isExists();
-        if (!flag)
-            return 30000;
-        return (Integer) q.findValue() + 1;
+    private Integer generatePort(VpnHostVO host) {
+        VpnVO vpn = Q.New(VpnVO.class).eq(VpnVO_.hostUuid, host.getUuid())
+                .orderBy(VpnVO_.port, SimpleQuery.Od.DESC).limit(1).find();
+        if (vpn == null)
+            return host.getStartPort();
+        if (vpn.getPort() >= host.getEndPort()){
+            throw new VpnServiceException(
+                    argerr("All port in the host[uuid:%s] already used.", host.getUuid()));
+        }
+        return vpn.getPort() + 1;
     }
 
 
