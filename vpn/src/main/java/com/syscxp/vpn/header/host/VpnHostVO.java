@@ -22,7 +22,7 @@ public class VpnHostVO {
     @Column
     private String manageIp;
     @Column
-    private String sshPort;
+    private Integer sshPort;
     @Column
     @Enumerated(EnumType.STRING)
     private HostState state;
@@ -34,6 +34,12 @@ public class VpnHostVO {
     @Column
     private String password;
     @Column
+    private Integer startPort;
+    @Column
+    private Integer endPort;
+    @Column
+    private String vpnInterfaceName;
+    @Column
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
@@ -44,6 +50,35 @@ public class VpnHostVO {
 
     @Column
     private String zoneUuid;
+
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
+
+    public String getVpnInterfaceName() {
+        return vpnInterfaceName;
+    }
+
+    public Integer getEndPort() {
+        return endPort;
+    }
+
+    public void setEndPort(Integer endPort) {
+        this.endPort = endPort;
+    }
+
+    public Integer getStartPort() {
+        return startPort;
+    }
+
+    public void setStartPort(Integer startPort) {
+        this.startPort = startPort;
+    }
+
+    public void setVpnInterfaceName(String vpnInterfaceName) {
+        this.vpnInterfaceName = vpnInterfaceName;
+    }
 
     public String getZoneUuid() {
         return zoneUuid;
@@ -137,11 +172,11 @@ public class VpnHostVO {
         this.manageIp = manageIp;
     }
 
-    public String getSshPort() {
+    public Integer getSshPort() {
         return sshPort;
     }
 
-    public void setSshPort(String sshPort) {
+    public void setSshPort(Integer sshPort) {
         this.sshPort = sshPort;
     }
 

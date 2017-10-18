@@ -119,7 +119,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         vo.setHostIp(msg.getHostIp());
         vo.setUsername(msg.getUsername());
         vo.setPassword(msg.getPassword());
-        vo.setState(HostState.Undeployed);
+        vo.setState(HostState.Disabled);
         vo.setStatus(HostStatus.Connected);
 
         vo = dbf.persistAndRefresh(vo);
@@ -345,7 +345,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         TunnelMonitorVO tunnelMonitorVO = new TunnelMonitorVO();
         tunnelMonitorVO.setUuid(Platform.getUuid());
         tunnelMonitorVO.setTunnelUuid(msg.getTunnelUuid());
-        tunnelMonitorVO.setStatus(TunnelMonitorStatus.APPLYING);
+        tunnelMonitorVO.setStatus(TunnelMonitorStatus.Connecting);
         tunnelMonitorVO.setMsg(msg.getMsg());
         dbf.getEntityManager().persist(tunnelMonitorVO);
 

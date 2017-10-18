@@ -15,9 +15,12 @@ public class VpnHostVO_ {
     public static volatile SingularAttribute<VpnHostVO, HostState> state;
     public static volatile SingularAttribute<VpnHostVO, HostStatus> status;
     public static volatile SingularAttribute<VpnHostVO, String> manageIp;
-    public static volatile SingularAttribute<VpnHostVO, String> sshPort;
+    public static volatile SingularAttribute<VpnHostVO, Integer> sshPort;
     public static volatile SingularAttribute<VpnHostVO, String> username;
     public static volatile SingularAttribute<VpnHostVO, String> password;
+    public static volatile SingularAttribute<VpnHostVO, String> vpnInterfaceName;
+    public static volatile SingularAttribute<VpnHostVO, Integer> startPort;
+    public static volatile SingularAttribute<VpnHostVO, Integer> endPort;
     public static volatile SingularAttribute<VpnHostVO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<VpnHostVO, Timestamp> createDate;
 }

@@ -1,4 +1,4 @@
-use syscxp_billing_rest;
+use syscxp_alarm_rest;
 
 CREATE TABLE  `syscxp_alarm_rest`.`RestAPIVO` (
     `uuid` varchar(32) NOT NULL UNIQUE,

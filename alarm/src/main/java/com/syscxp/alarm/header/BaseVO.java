@@ -3,6 +3,7 @@ package com.syscxp.alarm.header;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.PreUpdate;
 import java.sql.Timestamp;
 
 @MappedSuperclass
@@ -41,4 +42,10 @@ public class BaseVO {
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
     }
+
+    @PreUpdate
+    void preUpdate() {
+        lastOpDate = null;
+    }
+
 }

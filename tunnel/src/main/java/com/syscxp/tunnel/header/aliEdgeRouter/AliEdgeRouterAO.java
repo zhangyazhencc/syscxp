@@ -7,6 +7,7 @@ import com.syscxp.tunnel.header.tunnel.TunnelVO;
 import javax.persistence.Column;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.PreUpdate;
 import java.sql.Timestamp;
 
 @MappedSuperclass
@@ -47,6 +48,11 @@ public class AliEdgeRouterAO {
 
     @Column
     private Timestamp createDate;
+
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
 
     public String getUuid() {
         return uuid;

@@ -28,6 +28,11 @@ public class AliUserVO {
     @Column
     private Timestamp createDate;
 
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
+
     public String getUuid() {
         return uuid;
     }

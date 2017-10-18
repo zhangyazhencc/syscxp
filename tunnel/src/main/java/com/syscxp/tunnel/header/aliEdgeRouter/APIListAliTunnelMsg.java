@@ -4,8 +4,8 @@ import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
-public class TunnelQueryMsg extends APISyncCallMessage {
-    @APIParam(emptyString = false,required = false,maxLength = 32)
+public class APIListAliTunnelMsg extends APISyncCallMessage {
+    @APIParam(required = false, maxLength = 32)
     private String accountUuid;
     @APIParam(maxLength = 128)
     private String aliRegionId;

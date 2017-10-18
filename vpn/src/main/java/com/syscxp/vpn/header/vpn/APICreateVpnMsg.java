@@ -17,8 +17,6 @@ public class APICreateVpnMsg extends APIVpnMessage {
     @APIParam(required = false)
     private String description;
     @APIParam(emptyString = false)
-    private String hostUuid;
-    @APIParam(emptyString = false)
     private String vpnCidr;
     @APIParam
     private Long bandwidth;
@@ -28,8 +26,6 @@ public class APICreateVpnMsg extends APIVpnMessage {
     private Integer duration;
     @APIParam(emptyString = false)
     private String networkUuid;
-    @APIParam(emptyString = false)
-    private String interfaceName;
     @APIParam(emptyString = false)
     private String localIp;
     @APIParam(emptyString = false)
@@ -63,14 +59,6 @@ public class APICreateVpnMsg extends APIVpnMessage {
         this.localIp = localIp;
     }
 
-    public String getInterfaceName() {
-        return interfaceName;
-    }
-
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
-    }
-
     public String getNetmask() {
         return netmask;
     }
@@ -101,14 +89,6 @@ public class APICreateVpnMsg extends APIVpnMessage {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getHostUuid() {
-        return hostUuid;
-    }
-
-    public void setHostUuid(String hostUuid) {
-        this.hostUuid = hostUuid;
     }
 
     public String getVpnCidr() {

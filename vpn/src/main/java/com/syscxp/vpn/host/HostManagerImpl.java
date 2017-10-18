@@ -256,10 +256,6 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             host.setPassword(msg.getPassword());
             update = true;
         }
-        if (!StringUtils.isEmpty(msg.getZoneUuid())) {
-            host.setZone(dbf.findByUuid(msg.getZoneUuid(), ZoneVO.class));
-            update = true;
-        }
 
         if (update)
             dbf.updateAndRefresh(host);
@@ -284,6 +280,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         host.setSshPort(msg.getSshPort());
         host.setUsername(msg.getUsername());
         host.setPassword(msg.getPassword());
+        host.setVpnInterfaceName(msg.getVpnInterfaceName());
         host.setState(HostState.Enabled);
         host.setStatus(HostStatus.Connecting);
 
