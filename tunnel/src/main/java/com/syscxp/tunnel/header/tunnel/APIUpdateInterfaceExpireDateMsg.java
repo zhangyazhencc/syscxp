@@ -3,12 +3,15 @@ package com.syscxp.tunnel.header.tunnel;
 import com.syscxp.header.billing.OrderType;
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.AccountType;
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.tunnel.manage.TunnelConstant;
 
 /**
  * Create by DCY on 2017/9/28
  */
+@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
 public class APIUpdateInterfaceExpireDateMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String uuid;

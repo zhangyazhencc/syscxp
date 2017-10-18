@@ -9,7 +9,7 @@ import com.syscxp.tunnel.manage.TunnelConstant;
 /**
  * Created by DCY on 2017-09-07
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY)
+@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
 public class APIUpdateNetworkMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = NetworkVO.class, checkAccount = true)
