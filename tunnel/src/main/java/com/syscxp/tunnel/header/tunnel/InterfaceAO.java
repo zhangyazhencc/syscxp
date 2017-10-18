@@ -31,14 +31,15 @@ public class InterfaceAO {
     private String endpointUuid;
 
     @Column
-    private Long bandwidth;
-
-    @Column
     private String description;
 
     @Column
     @Enumerated(EnumType.STRING)
     private InterfaceState state;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private NetworkType type;
 
     @Column
     private Integer duration;
@@ -51,7 +52,7 @@ public class InterfaceAO {
     private Integer maxModifies;
 
     @Column
-    private Timestamp expiredDate;
+    private Timestamp expireDate;
 
     @Column
     private Timestamp lastOpDate;
@@ -112,14 +113,6 @@ public class InterfaceAO {
         this.description = description;
     }
 
-    public Timestamp getExpiredDate() {
-        return expiredDate;
-    }
-
-    public void setExpiredDate(Timestamp expiredDate) {
-        this.expiredDate = expiredDate;
-    }
-
     public Timestamp getLastOpDate() {
         return lastOpDate;
     }
@@ -134,14 +127,6 @@ public class InterfaceAO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
-    }
-
-    public Long getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(Long bandwidth) {
-        this.bandwidth = bandwidth;
     }
 
     public Integer getDuration() {
@@ -174,5 +159,21 @@ public class InterfaceAO {
 
     public void setMaxModifies(Integer maxModifies) {
         this.maxModifies = maxModifies;
+    }
+
+    public NetworkType getType() {
+        return type;
+    }
+
+    public void setType(NetworkType type) {
+        this.type = type;
+    }
+
+    public Timestamp getExpireDate() {
+        return expireDate;
+    }
+
+    public void setExpireDate(Timestamp expireDate) {
+        this.expireDate = expireDate;
     }
 }

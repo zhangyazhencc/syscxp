@@ -20,8 +20,10 @@ public class TunnelAO {
     private String accountUuid;
 
     @Column
-    @ForeignKey(parentEntityClass = NetworkVO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
-    private String networkUuid;
+    private Integer vsi;
+
+    @Column
+    private String monitorCidr;
 
     @Column
     private String name;
@@ -58,7 +60,7 @@ public class TunnelAO {
     private String description;
 
     @Column
-    private Timestamp expiredDate;
+    private Timestamp expireDate;
 
     @Column
     private Timestamp lastOpDate;
@@ -85,14 +87,6 @@ public class TunnelAO {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
-    }
-
-    public String getNetworkUuid() {
-        return networkUuid;
-    }
-
-    public void setNetworkUuid(String networkUuid) {
-        this.networkUuid = networkUuid;
     }
 
     public String getName() {
@@ -151,14 +145,6 @@ public class TunnelAO {
         this.description = description;
     }
 
-    public Timestamp getExpiredDate() {
-        return expiredDate;
-    }
-
-    public void setExpiredDate(Timestamp expiredDate) {
-        this.expiredDate = expiredDate;
-    }
-
     public Timestamp getLastOpDate() {
         return lastOpDate;
     }
@@ -197,5 +183,29 @@ public class TunnelAO {
 
     public void setMaxModifies(Integer maxModifies) {
         this.maxModifies = maxModifies;
+    }
+
+    public Integer getVsi() {
+        return vsi;
+    }
+
+    public void setVsi(Integer vsi) {
+        this.vsi = vsi;
+    }
+
+    public String getMonitorCidr() {
+        return monitorCidr;
+    }
+
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
+    }
+
+    public Timestamp getExpireDate() {
+        return expireDate;
+    }
+
+    public void setExpireDate(Timestamp expireDate) {
+        this.expireDate = expireDate;
     }
 }

@@ -26,7 +26,6 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.tunnel.header.tunnel.NetworkVO;
 import com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO;
 import com.syscxp.tunnel.header.tunnel.TunnelVO;
 import com.syscxp.utils.Utils;
@@ -150,12 +149,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     private void handle(APIDeleteHostMsg msg) {
-        String uuid = msg.getUuid();
-        HostVO vo = dbf.findByUuid(uuid, HostVO.class);
+        HostVO vo = dbf.findByUuid(msg.getUuid(), HostVO.class);
 
-        HostEO hostEO = dbf.findByUuid(uuid, HostEO.class);
-        hostEO.setDeleted(1);
-        dbf.update(hostEO);
+        dbf.remove(vo);
 
         APIDeleteHostEvent event = new APIDeleteHostEvent(msg.getId());
         event.setInventory(HostInventory.valueOf(vo));
@@ -194,12 +190,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     private void handle(APIDeleteHostSwitchMonitorMsg msg) {
-        String uuid = msg.getUuid();
-        HostSwitchMonitorVO vo = dbf.findByUuid(uuid, HostSwitchMonitorVO.class);
 
-        HostSwitchMonitorEO eo = dbf.findByUuid(uuid, HostSwitchMonitorEO.class);
-        eo.setDeleted(1);
-        dbf.update(eo);
+        HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
+
+        dbf.remove(vo);
 
         APIDeleteHostSwitchMonitorEvent event = new APIDeleteHostSwitchMonitorEvent(msg.getId());
         event.setInventory(HostSwitchMonitorInventory.valueOf(vo));

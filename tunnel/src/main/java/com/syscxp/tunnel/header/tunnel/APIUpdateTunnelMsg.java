@@ -17,13 +17,15 @@ public class APIUpdateTunnelMsg extends APIMessage {
     private String uuid;
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
-    @APIParam(emptyString = false,required = false,resourceType = NetworkVO.class, checkAccount = true)
-    private String networkUuid;
+    @APIParam(required = false)
+    private Integer vsi;
+    @APIParam(emptyString = false,required = false,maxLength = 32)
+    private String monitorCidr;
     @APIParam(emptyString = false,required = false,maxLength = 128)
     private String name;
     @APIParam(required = false)
     private Double distance;
-    @APIParam(emptyString = false,required = false,validValues = {"Opened", "Closed","Unpaid"})
+    @APIParam(emptyString = false,required = false,validValues = {"Enabled", "Disabled","Unpaid"})
     private TunnelState state;
     @APIParam(emptyString = false,required = false,validValues = {"Connecting", "Connected","Disconnected"})
     private TunnelStatus status;
@@ -32,7 +34,7 @@ public class APIUpdateTunnelMsg extends APIMessage {
     @APIParam(emptyString = false,required = false)
     private String description;
     @APIParam(required = false)
-    private Timestamp expiredDate;
+    private Timestamp expireDate;
     @APIParam(required = false)
     private Long bandwidth;
 
@@ -62,14 +64,6 @@ public class APIUpdateTunnelMsg extends APIMessage {
 
     public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
-    }
-
-    public String getNetworkUuid() {
-        return networkUuid;
-    }
-
-    public void setNetworkUuid(String networkUuid) {
-        this.networkUuid = networkUuid;
     }
 
     public String getName() {
@@ -120,11 +114,27 @@ public class APIUpdateTunnelMsg extends APIMessage {
         this.description = description;
     }
 
-    public Timestamp getExpiredDate() {
-        return expiredDate;
+    public Integer getVsi() {
+        return vsi;
     }
 
-    public void setExpiredDate(Timestamp expiredDate) {
-        this.expiredDate = expiredDate;
+    public void setVsi(Integer vsi) {
+        this.vsi = vsi;
+    }
+
+    public String getMonitorCidr() {
+        return monitorCidr;
+    }
+
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
+    }
+
+    public Timestamp getExpireDate() {
+        return expireDate;
+    }
+
+    public void setExpireDate(Timestamp expireDate) {
+        this.expireDate = expireDate;
     }
 }
