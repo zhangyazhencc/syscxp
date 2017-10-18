@@ -6,7 +6,7 @@ package com.syscxp.tunnel.header.monitor;
  * @Description: 通道监控状态.
  */
 public enum TunnelMonitorStatus {
-    NORMAL,
-    APPLYING,
-    TERMINATED,
+    Connecting,
+    Connected,
+    Disconnected
 }

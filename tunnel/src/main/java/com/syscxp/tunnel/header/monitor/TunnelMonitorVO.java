@@ -31,6 +31,10 @@ public class TunnelMonitorVO {
     @Enumerated(EnumType.STRING)
     private TunnelMonitorStatus status;
 
+
+    HostState,
+    state   enable, disable
+
     @Column
     private String msg;
 
