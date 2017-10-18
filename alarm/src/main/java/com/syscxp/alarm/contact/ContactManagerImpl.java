@@ -7,6 +7,7 @@ import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.alarm.AlarmConstant;
@@ -59,9 +60,64 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateContactMsg) {
             handle((APICreateContactMsg) msg);
+        }else if(msg instanceof  APIDeleteContactMsg){
+            handle((APIDeleteContactMsg) msg);
+        }else if(msg instanceof  APIUpdateContactMsg){
+            handle((APIUpdateContactMsg) msg);
         }else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    @Transactional
+    private void handle(APIUpdateContactMsg msg) {
+
+        String uuid = msg.getUuid();
+        ContactVO vo = dbf.getEntityManager().find(ContactVO.class, uuid);
+        if(vo!=null){
+            if(msg.getEmail()!=null){
+                vo.setEmail(msg.getEmail());
+            }
+            if(msg.getName()!=null){
+                vo.setName(msg.getName());
+            }
+            if(msg.getMobile()!=null){
+                vo.setMobile(msg.getMobile());
+            }
+            dbf.getEntityManager().merge(vo);
+            dbf.getEntityManager().flush();
+            dbf.getEntityManager().refresh(vo);
+            UpdateQuery q = UpdateQuery.New(ContactNotifyWayRefVO.class);
+            q.condAnd(ContactNotifyWayRefVO_.contactUuid, SimpleQuery.Op.EQ, vo.getUuid());
+            q.delete();
+            List<String> codes = msg.getWays();
+            if(codes == null || codes.size()==0){
+                persistNotifyWay(vo.getUuid(),"mobile");
+            }else {
+                for(String code: codes){
+                    persistNotifyWay(vo.getUuid(),code);
+                }
+            }
+            dbf.getEntityManager().flush();
+        }
+        APIUpdateContactEvent event = new APIUpdateContactEvent(msg.getId());
+        event.setInventory(ContactInventory.valueOf(vo));
+        bus.publish(event);
+    }
+
+    @Transactional
+    private void handle(APIDeleteContactMsg msg) {
+        String uuid =  msg.getUuid();
+        ContactVO vo = dbf.findByUuid(uuid, ContactVO.class);
+        if(vo != null){
+            dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
+            UpdateQuery q = UpdateQuery.New(ContactNotifyWayRefVO.class);
+            q.condAnd(ContactNotifyWayRefVO_.contactUuid, SimpleQuery.Op.EQ, vo.getUuid());
+            q.delete();
+        }
+        APIDeleteContactEvent event = new APIDeleteContactEvent(msg.getId());
+        event.setInventory(ContactInventory.valueOf(vo));
+        bus.publish(event);
     }
 
 
@@ -85,6 +141,7 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
 
         dbf.getEntityManager().flush();
         APICreateContactEvent evt = new APICreateContactEvent(msg.getId());
+        evt.setInventory(ContactInventory.valueOf(vo));
         bus.publish(evt);
     }
 
