@@ -351,7 +351,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         TunnelMonitorVO tunnelMonitorVO = new TunnelMonitorVO();
         tunnelMonitorVO.setUuid(Platform.getUuid());
         tunnelMonitorVO.setTunnelUuid(msg.getTunnelUuid());
-        tunnelMonitorVO.setStatus(TunnelMonitorStatus.APPLYING);
+        tunnelMonitorVO.setStatus(TunnelMonitorStatus.Connecting);
         tunnelMonitorVO.setMsg(msg.getMsg());
         dbf.getEntityManager().persist(tunnelMonitorVO);
 
