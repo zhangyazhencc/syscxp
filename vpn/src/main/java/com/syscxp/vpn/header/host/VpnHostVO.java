@@ -51,6 +51,11 @@ public class VpnHostVO {
     @Column
     private String zoneUuid;
 
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
+
     public String getVpnInterfaceName() {
         return vpnInterfaceName;
     }

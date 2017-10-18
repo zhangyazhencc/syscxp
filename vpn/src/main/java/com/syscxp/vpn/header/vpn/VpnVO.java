@@ -61,6 +61,10 @@ public class VpnVO {
     private Integer maxModifies;
     @Column
     private String memo;
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
 
     public String getMemo() {
         return memo;

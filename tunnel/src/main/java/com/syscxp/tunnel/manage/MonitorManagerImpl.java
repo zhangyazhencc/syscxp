@@ -120,7 +120,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         vo.setHostIp(msg.getHostIp());
         vo.setUsername(msg.getUsername());
         vo.setPassword(msg.getPassword());
-        vo.setState(HostState.Undeployed);
+        vo.setState(HostState.Disabled);
         vo.setStatus(HostStatus.Connected);
 
         vo = dbf.persistAndRefresh(vo);
