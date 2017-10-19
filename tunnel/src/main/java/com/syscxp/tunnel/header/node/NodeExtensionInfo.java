@@ -10,12 +10,12 @@ public class NodeExtensionInfo {
     Object code;
     Object collingAndFireControl;
     String created_at;
-    String cabinetInfo;
-    String electricSystem;
+    Object cabinetInfo;
+    Object electricSystem;
     String node_id;
-    String machineRoomInfo;
-    String property;
-    String roomNOC;
+    Object machineRoomInfo;
+    Object property;
+    Object roomNOC;
     String updated_at;
     Object images_url;
 
@@ -91,19 +91,19 @@ public class NodeExtensionInfo {
         this.created_at = created_at;
     }
 
-    public String getCabinetInfo() {
+    public Object getCabinetInfo() {
         return cabinetInfo;
     }
 
-    public void setCabinetInfo(String cabinetInfo) {
+    public void setCabinetInfo(Object cabinetInfo) {
         this.cabinetInfo = cabinetInfo;
     }
 
-    public String getElectricSystem() {
+    public Object getElectricSystem() {
         return electricSystem;
     }
 
-    public void setElectricSystem(String electricSystem) {
+    public void setElectricSystem(Object electricSystem) {
         this.electricSystem = electricSystem;
     }
 
@@ -115,24 +115,28 @@ public class NodeExtensionInfo {
         this.node_id = node_id;
     }
 
-    public String getMachineRoomInfo() {
+    public Object getMachineRoomInfo() {
         return machineRoomInfo;
     }
 
-    public void setMachineRoomInfo(String machineRoomInfo) {
+    public void setMachineRoomInfo(Object machineRoomInfo) {
         this.machineRoomInfo = machineRoomInfo;
     }
 
-    public String getProperty() {
+    public Object getProperty() {
         return property;
     }
 
-    public void setProperty(String property) {
+    public void setProperty(Object property) {
         this.property = property;
     }
 
-    public String getRoomNOC() {
+    public Object getRoomNOC() {
         return roomNOC;
+    }
+
+    public void setRoomNOC(Object roomNOC) {
+        this.roomNOC = roomNOC;
     }
 
     public void setRoomNOC(String roomNOC) {
