@@ -92,13 +92,11 @@ public class RESTFacadeImpl implements RESTFacade {
         }
 
         String url;
-        /*if ("".equals(path) || path == null) {
+        if ("".equals(path) || path == null) {
             url = String.format("http://%s:%s", hname, port);
         } else {
             url = String.format("http://%s:%s/%s", hname, port, path);
-        }*/
-        url = String.format("http://%s:%s", hname, port);
-
+        }
         UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(url);
         ub.path(RESTConstant.CALLBACK_PATH);
         callbackUrl = ub.build().toUriString();
