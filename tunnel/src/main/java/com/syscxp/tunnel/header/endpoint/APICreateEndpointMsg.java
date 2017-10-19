@@ -22,7 +22,7 @@ public class APICreateEndpointMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 128)
     private String code;
 
-    @APIParam(emptyString = false,validValues = {"CLOUD", "ACCESSIN"})
+    @APIParam(emptyString = false,validValues = {"CLOUD","ACCESSIN","INTERCONNECTED"})
     private EndpointType endpointType;
 
     @APIParam(required = false,maxLength = 255)
