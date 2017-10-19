@@ -16,6 +16,5 @@ public class TunnelMonitorVO_ {
     public static volatile SingularAttribute<TunnelMonitorVO, String> monitorAIp;
     public static volatile SingularAttribute<TunnelMonitorVO, String> hostZUuid;
     public static volatile SingularAttribute<TunnelMonitorVO, String> monitorZIp;
-    public static volatile SingularAttribute<TunnelMonitorVO, TunnelMonitorStatus> status;
     public static volatile SingularAttribute<TunnelMonitorVO, String> msg;
 }

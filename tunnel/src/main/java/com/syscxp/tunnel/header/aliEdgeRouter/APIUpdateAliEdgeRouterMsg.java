@@ -15,32 +15,17 @@ public class APIUpdateAliEdgeRouterMsg extends APIMessage{
     @APIParam(required = false,maxLength = 255)
     private String description;
     @APIParam(emptyString = false,required = false)
-    private String LocalGatewayIp;
+    private String localGatewayIp;
     @APIParam(emptyString = false,required = false)
-    private String PeerGatewayIp;
+    private String peerGatewayIp;
     @APIParam(emptyString = false,required = false)
-    private String PeeringSubnetMask;
+    private String peeringSubnetMask;
     @APIParam(emptyString = false,required = false,maxLength = 32)
-    private String AliAccessKeyID;
+    private String aliAccessKeyID;
     @APIParam(emptyString = false,required = false,maxLength = 32)
-    private String AliAccessKeySecret;
+    private String aliAccessKeySecret;
 
-    public String getAliAccessKeyID() {
-        return AliAccessKeyID;
-    }
-
-    public void setAliAccessKeyID(String aliAccessKeyID) {
-        AliAccessKeyID = aliAccessKeyID;
-    }
-
-    public String getAliAccessKeySecret() {
-        return AliAccessKeySecret;
-    }
-
-    public void setAliAccessKeySecret(String aliAccessKeySecret) {
-        AliAccessKeySecret = aliAccessKeySecret;
-    }
-
+    
     public String getUuid() {
         return uuid;
     }
@@ -78,26 +63,42 @@ public class APIUpdateAliEdgeRouterMsg extends APIMessage{
     }
 
     public String getLocalGatewayIp() {
-        return LocalGatewayIp;
+        return localGatewayIp;
     }
 
     public void setLocalGatewayIp(String localGatewayIp) {
-        LocalGatewayIp = localGatewayIp;
+        this.localGatewayIp = localGatewayIp;
     }
 
     public String getPeerGatewayIp() {
-        return PeerGatewayIp;
+        return peerGatewayIp;
     }
 
     public void setPeerGatewayIp(String peerGatewayIp) {
-        PeerGatewayIp = peerGatewayIp;
+        this.peerGatewayIp = peerGatewayIp;
     }
 
     public String getPeeringSubnetMask() {
-        return PeeringSubnetMask;
+        return peeringSubnetMask;
     }
 
     public void setPeeringSubnetMask(String peeringSubnetMask) {
-        PeeringSubnetMask = peeringSubnetMask;
+        this.peeringSubnetMask = peeringSubnetMask;
+    }
+
+    public String getAliAccessKeyID() {
+        return aliAccessKeyID;
+    }
+
+    public void setAliAccessKeyID(String aliAccessKeyID) {
+        this.aliAccessKeyID = aliAccessKeyID;
+    }
+
+    public String getAliAccessKeySecret() {
+        return aliAccessKeySecret;
+    }
+
+    public void setAliAccessKeySecret(String aliAccessKeySecret) {
+        this.aliAccessKeySecret = aliAccessKeySecret;
     }
 }

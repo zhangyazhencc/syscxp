@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIParam;
 
 public class APIDeleteAliUserMsg extends APIMessage{
 
-    @APIParam(checkAccount = true,resourceType = AliUserVO.class)
+    @APIParam(resourceType = AliUserVO.class)
     private String uuid;
     @APIParam(required = false,maxLength = 32)
     private String accountUuid;

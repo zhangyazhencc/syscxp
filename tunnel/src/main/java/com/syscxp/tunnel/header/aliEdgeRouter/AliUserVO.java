@@ -17,10 +17,10 @@ public class AliUserVO {
     private String aliAccountUuid;
 
     @Column
-    private String AliAccessKeyID;
+    private String aliAccessKeyID;
 
     @Column
-    private String AliAccessKeySecret;
+    private String aliAccessKeySecret;
 
     @Column
     private Timestamp lastOpDate;
@@ -58,19 +58,19 @@ public class AliUserVO {
     }
 
     public String getAliAccessKeyID() {
-        return AliAccessKeyID;
+        return aliAccessKeyID;
     }
 
     public void setAliAccessKeyID(String aliAccessKeyID) {
-        AliAccessKeyID = aliAccessKeyID;
+        this.aliAccessKeyID = aliAccessKeyID;
     }
 
     public String getAliAccessKeySecret() {
-        return AliAccessKeySecret;
+        return aliAccessKeySecret;
     }
 
     public void setAliAccessKeySecret(String aliAccessKeySecret) {
-        AliAccessKeySecret = aliAccessKeySecret;
+        this.aliAccessKeySecret = aliAccessKeySecret;
     }
 
     public Timestamp getLastOpDate() {
