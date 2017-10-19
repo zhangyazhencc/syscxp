@@ -20,13 +20,13 @@ public class InterfaceInventory {
     private String switchPortUuid;
     private String endpointUuid;
     private EndpointInventory endpoint;
-    private Long bandwidth;
     private String description;
     private InterfaceState state;
+    private NetworkType type;
     private Integer duration;
     private ProductChargeModel productChargeModel;
     private Integer maxModifies;
-    private Timestamp expiredDate;
+    private Timestamp expireDate;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -38,13 +38,13 @@ public class InterfaceInventory {
         inv.setSwitchPortUuid(vo.getSwitchPortUuid());
         inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpointVO()));
         inv.setEndpointUuid(vo.getEndpointUuid());
-        inv.setBandwidth(vo.getBandwidth());
         inv.setDescription(vo.getDescription());
         inv.setState(vo.getState());
+        inv.setType(vo.getType());
         inv.setDuration(vo.getDuration());
         inv.setProductChargeModel(vo.getProductChargeModel());
         inv.setMaxModifies(vo.getMaxModifies());
-        inv.setExpiredDate(vo.getExpiredDate());
+        inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
@@ -106,14 +106,6 @@ public class InterfaceInventory {
         this.description = description;
     }
 
-    public Timestamp getExpiredDate() {
-        return expiredDate;
-    }
-
-    public void setExpiredDate(Timestamp expiredDate) {
-        this.expiredDate = expiredDate;
-    }
-
     public Timestamp getLastOpDate() {
         return lastOpDate;
     }
@@ -128,14 +120,6 @@ public class InterfaceInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
-    }
-
-    public Long getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(Long bandwidth) {
-        this.bandwidth = bandwidth;
     }
 
     public EndpointInventory getEndpoint() {
@@ -176,5 +160,21 @@ public class InterfaceInventory {
 
     public void setMaxModifies(Integer maxModifies) {
         this.maxModifies = maxModifies;
+    }
+
+    public NetworkType getType() {
+        return type;
+    }
+
+    public void setType(NetworkType type) {
+        this.type = type;
+    }
+
+    public Timestamp getExpireDate() {
+        return expireDate;
+    }
+
+    public void setExpireDate(Timestamp expireDate) {
+        this.expireDate = expireDate;
     }
 }

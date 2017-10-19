@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`HostSwitchMonitorEO` (
   `physicalSwitchUuid` VARCHAR(32) NOT NULL COMMENT '物理交换机UUID(PhysicalSwitchVO.uuid)',
   `physicalSwitchPortName` VARCHAR(128) NOT NULL COMMENT '物理交换机端口名称',
   `interfaceName` VARCHAR(128) NOT NULL COMMENT '网卡名称',
-  `deleted` INT(11) NOT NULL DEFAULT '0',
+  `deleted` varchar(255) DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
@@ -50,7 +50,7 @@ COMMENT '监控主机与交换机接口映射';
 create view syscxp_tunnel.HostSwitchMonitorVO as
 select uuid,hostUuid,physicalSwitchUuid,physicalSwitchPortName,interfaceName,lastOpDate,createDate
   from syscxp_tunnel.HostSwitchMonitorEO
- where deleted = 0;
+ where deleted IS NULL;
 
 #######################################################################################################
 use syscxp_tunnel;
@@ -115,7 +115,7 @@ CREATE TABLE `NodeEO` (
   `latitude` double(11,6) NOT NULL COMMENT '纬度',
   `property` varchar(128) NOT NULL COMMENT '节点类型',
   `status` varchar(16) NOT NULL COMMENT '是否开放',
-  `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+  `deleted` varchar(255) DEFAULT NULL,
   `extensionInfoUuid` varchar(32) DEFAULT NULL COMMENT '节点额外信息',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
@@ -124,7 +124,7 @@ CREATE TABLE `NodeEO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '网络节点';
 
 CREATE VIEW `syscxp_tunnel`.`NodeVO` AS SELECT uuid, name, code, description, contact, telephone, province, city, address, longtitude, latitude, property, status, extensionInfoUuid, lastOpDate, createDate
-                        FROM `NodeEO` WHERE deleted = 0;
+                        FROM `NodeEO` WHERE deleted IS NULL;
 
 ## 连接点
 CREATE TABLE  `syscxp_tunnel`.`EndpointEO` (
@@ -136,7 +136,7 @@ CREATE TABLE  `syscxp_tunnel`.`EndpointEO` (
   `enabled` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT '是否启用',
   `openToCustomers` TINYINT(1)  NOT NULL DEFAULT '0' COMMENT '是否对外开放',
   `description` varchar(255)  DEFAULT NULL COMMENT '描述',
-  `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+  `deleted` varchar(255) DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
@@ -150,7 +150,7 @@ ALTER TABLE EndpointEO DROP COLUMN openToCustomers;
 
 
 CREATE OR REPLACE VIEW `syscxp_tunnel`.`EndpointVO` AS SELECT uuid, nodeUuid, name, code, endpointType, state, status, description, lastOpDate, createDate
-                            FROM `EndpointEO` WHERE deleted = 0;
+                            FROM `EndpointEO` WHERE deleted IS NULL;
 ##交换机型号
 CREATE TABLE  `syscxp_tunnel`.`SwitchModelVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
@@ -178,14 +178,14 @@ CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchEO` (
   `localIP` varchar(128) NOT NULL COMMENT '本地IP',
   `username` varchar(128) NOT NULL COMMENT '用户名',
   `password` varchar(128) NOT NULL COMMENT '密码',
-  `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+  `deleted` varchar(255) DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE VIEW `syscxp_tunnel`.`PhysicalSwitchVO` AS SELECT uuid, nodeUuid, switchModelUuid, name, code,  owner, type, accessType, rack, description, mIP, localIP, username, password, lastOpDate, createDate
-                                          FROM `PhysicalSwitchEO` WHERE deleted = 0;
+                                          FROM `PhysicalSwitchEO` WHERE deleted IS NULL;
 
 ##物理交换机上联
 CREATE TABLE  `syscxp_tunnel`.`PhysicalSwitchUpLinkRefVO` (
@@ -209,14 +209,14 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `state` varchar(32) NOT NULL DEFAULT 'Enabled' COMMENT '状况',
   `status` varchar(32) NOT NULL DEFAULT 'Connected' COMMENT '状态',
-  `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+  `deleted` varchar(255) DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, physicalSwitchUuid, endpointUuid, name, code, description, state, status, lastOpDate, createDate
-                                            FROM `SwitchEO` WHERE deleted = 0;
+                                            FROM `SwitchEO` WHERE deleted IS NULL;
 
 
 ##交换机端口
@@ -245,19 +245,6 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchVlanVO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-##专有网络
-CREATE TABLE  `syscxp_tunnel`.`NetworkVO` (
-  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `accountUuid` varchar(32) NOT NULL COMMENT '所属账户',
-  `name` varchar(128) NOT NULL COMMENT '网络名称',
-  `vsi` INT(11) NOT NULL COMMENT 'VSI',
-  `monitorCidr` varchar(32) NOT NULL COMMENT '监控网段',
-  `description` varchar(255) DEFAULT NULL COMMENT '描述',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  PRIMARY KEY  (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 ##物理接口
 CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
@@ -265,44 +252,45 @@ CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `name` varchar(128) NOT NULL COMMENT '接口名称',
   `switchPortUuid` varchar(32) NOT NULL COMMENT '对应交换机端口',
   `endpointUuid` varchar(32) NOT NULL COMMENT '对应连接点',
-  `bandwidth` BIGINT NOT NULL COMMENT '带宽',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `state` varchar(32) NOT NULL DEFAULT 'Unpaid' COMMENT '状况:已支付,未支付',
-  `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+  `type` varchar(32) NOT NULL DEFAULT 'TRUNK' COMMENT '用途:TRUNK,ACCESS,QINQ',
+  `deleted` varchar(255) DEFAULT NULL,
   `duration` int(11) NOT NULL COMMENT '最近一次购买时长',
   `productChargeModel` varchar(32) NOT NULL COMMENT '产品付费方式',
   `maxModifies` int(11) NOT NULL COMMENT '最大调整次数',
-  `expiredDate` timestamp NULL DEFAULT NULL COMMENT '截止时间',
+  `expireDate` timestamp NULL DEFAULT NULL COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, name, switchPortUuid, endpointUuid, bandwidth, description, state, duration, productChargeModel, maxModifies, expiredDate, lastOpDate, createDate
-                                          FROM `InterfaceEO` WHERE deleted = 0;
+CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, name, switchPortUuid, endpointUuid, description, state, type, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate
+                                          FROM `InterfaceEO` WHERE deleted IS NULL;
 
 ##云专线
 CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `accountUuid` VARCHAR(32) NOT NULL COMMENT '所属账户',
-  `networkUuid` VARCHAR(32) NOT NULL COMMENT '所属专有网络',
+  `vsi` INT(11) NOT NULL COMMENT 'VSI',
+  `monitorCidr` varchar(32) NOT NULL COMMENT '监控网段',
   `name` varchar(128) NOT NULL COMMENT '通道名称',
   `bandwidth` BIGINT NOT NULL COMMENT '带宽',
   `distance` decimal(10,2) NOT NULL COMMENT '距离',
   `state` varchar(32) NOT NULL DEFAULT 'Unpaid' COMMENT '状况:开通，未开通,未支付',
   `status` varchar(32) NOT NULL DEFAULT 'Disconnected' COMMENT '状态',
   `monitorState` varchar(32) NOT NULL DEFAULT 'Disabled' COMMENT '是否开启监控',
-  `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+  `deleted` varchar(255) DEFAULT NULL,
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `duration` int(11) NOT NULL COMMENT '最近一次购买时长',
   `productChargeModel` varchar(32) NOT NULL COMMENT '产品付费方式',
   `maxModifies` int(11) NOT NULL COMMENT '最大调整次数',
-  `expiredDate` timestamp COMMENT '截止时间',
+  `expireDate` timestamp NULL DEFAULT NULL COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, networkUuid, name, bandwidth, distance, state, status, monitorState, description, duration, productChargeModel, maxModifies, expiredDate, lastOpDate, createDate
-                                        FROM `TunnelEO` WHERE deleted = 0;
+CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, vsi, monitorCidr, name, bandwidth, distance, state, status, monitorState, description, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate
+                                        FROM `TunnelEO` WHERE deleted IS NULL;
 
 CREATE TABLE  `syscxp_tunnel`.`InterfaceMotifyRecordVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
@@ -387,7 +375,7 @@ CREATE TABLE `HostEO` (
   `password` varchar(128) NOT NULL COMMENT '密码',
   `state` varchar(32) NOT NULL DEFAULT 'Undeployed' COMMENT '监控状况：已部署，未部署',
   `status` varchar(32) NOT NULL DEFAULT 'Connected' COMMENT '监控状态',
-  `deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+  `deleted` varchar(255) DEFAULT NULL,
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`uuid`),
@@ -411,7 +399,7 @@ VIEW `syscxp_tunnel`.`HostVO` AS
     FROM
         `syscxp_tunnel`.`HostEO`
     WHERE
-        (`syscxp_tunnel`.`HostEO`.`deleted` = 0);
+        (`syscxp_tunnel`.`HostEO`.deleted IS NULL);
 
 ##阿里云边界路由器
 CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterEO` (

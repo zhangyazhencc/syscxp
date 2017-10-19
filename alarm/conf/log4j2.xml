@@ -84,9 +84,6 @@
 
         <Logger name="com.syscxp.core.workflow" level="TRACE"/>
 
-        <!--
-                <Logger name="com.syscxp.billing" level="TRACE" />
-        -->
 
         <Logger name="org.hibernate" level="warn"/>
 

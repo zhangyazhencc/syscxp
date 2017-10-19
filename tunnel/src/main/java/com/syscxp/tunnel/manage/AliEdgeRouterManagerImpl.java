@@ -23,13 +23,15 @@ import com.syscxp.tunnel.header.aliEdgeRouter.*;
 import com.syscxp.tunnel.header.endpoint.EndpointVO;
 import com.syscxp.tunnel.header.node.NodeVO;
 import com.syscxp.tunnel.header.tunnel.*;
+import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
+import com.syscxp.utils.function.Function;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Transactional;
 
 
-import java.sql.Timestamp;
+import javax.persistence.Tuple;
+import javax.persistence.TypedQuery;
 import java.util.*;
 
 import static com.syscxp.core.Platform.argerr;
@@ -88,8 +90,8 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             handle((APIUpdateAliEdgeRouterConfigMsg) msg);
         }else if(msg instanceof APIDeleteAliEdgeRouterConfigMsg){
             handle((APIDeleteAliEdgeRouterConfigMsg) msg);
-        } else if(msg instanceof TunnelQueryMsg){
-            handle((TunnelQueryMsg) msg);
+        } else if(msg instanceof APIListAliTunnelMsg){
+            handle((APIListAliTunnelMsg) msg);
         }
         else {
             bus.dealWithUnknownMessage(msg);
@@ -98,56 +100,53 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     }
 
 
-    private void handle(TunnelQueryMsg msg){
-        TunnelQueryInventory inventory = new TunnelQueryInventory();
-        List<TunnelQueryInventory> TunnelQueryList = new ArrayList<TunnelQueryInventory>();
+    private void handle(APIListAliTunnelMsg msg){
+        List<AliTunnelInventory> tunnelQueryList = new ArrayList<AliTunnelInventory>();
 
-        SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
-        q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
-        List<TunnelVO> tunnels = q.list();
-        for(TunnelVO tunnel:tunnels){
+        String sql = "select ac from AliEdgeRouterConfigVO ac where ac.aliRegionId = :aliRegionId";
+        TypedQuery<AliEdgeRouterConfigVO> configq = dbf.getEntityManager().createQuery(sql, AliEdgeRouterConfigVO.class);
+        configq.setParameter("aliRegionId", msg.getAliRegionId());
+        List<AliEdgeRouterConfigVO> acs = configq.getResultList();
 
-            if((tunnel.getState().equals(TunnelState.Opened))&&(tunnel.getStatus().equals(TunnelStatus.Connected))){
-
-                SimpleQuery<TunnelInterfaceVO> query = dbf.createQuery(TunnelInterfaceVO.class);
-                query.add(TunnelInterfaceVO_.tunnelUuid, SimpleQuery.Op.EQ,tunnel.getUuid());
-                List<TunnelInterfaceVO> TunnelInterfaceVOList = query.list();
-
-//            List<TunnelInterfaceVO> TunnelInterfaceVOList = tunnel.getTunnelInterfaceVO();
-                for(TunnelInterfaceVO tunnelInterfaceVO :TunnelInterfaceVOList){
-                    InterfaceVO interfaceVO = tunnelInterfaceVO.getInterfaceVO();
-                    EndpointVO endpointVO = interfaceVO.getEndpointVO();
-                    NodeVO nodeVO = endpointVO.getNodeVO();
-                    String region = nodeVO.getCity();
-
-                    if(msg.getAliRegionId().equals(region)){//msg.getAliRegionId 数据的定义
-
-                        SimpleQuery<AliEdgeRouterConfigVO> q1 = dbf.createQuery(AliEdgeRouterConfigVO.class);
-                        q1.add(AliEdgeRouterConfigVO_.aliRegionId, SimpleQuery.Op.EQ,msg.getAliRegionId());
-                        List<AliEdgeRouterConfigVO> AliEdgeRouterConfigs = q1.list();
-
-                        for(AliEdgeRouterConfigVO aliEdgeRouterConfigVO :AliEdgeRouterConfigs){
-                            if(aliEdgeRouterConfigVO.getSwitchPortUuid().toString().equals(interfaceVO.getSwitchPortUuid().toString())){
-                                inventory.setTunnelUuid(tunnel.getUuid());
-                                inventory.setTunnelName(tunnel.getName());
-                                inventory.setAliRegionId(msg.getAliRegionId());
-                                inventory.setSwitchPortUuid(interfaceVO.getSwitchPortUuid());
-                                inventory.setPhysicalLineUuid(aliEdgeRouterConfigVO.getPhysicalLineUuid());
-                                Integer vlan = tunnelInterfaceVO.getVlan();
-                                inventory.setVlan(vlan);
-                                TunnelQueryList.add(inventory);
-                            }
-                        }
-                    }
-                }
-
+        List<String> switchPortUuids = CollectionUtils.transformToList(acs, new Function<String, AliEdgeRouterConfigVO>() {
+            @Override
+            public String call(AliEdgeRouterConfigVO arg) {
+                return arg.getSwitchPortUuid();
             }
+        });
 
+        sql = "select t.name, t.uuid, tf.vlan, i.switchPortUuid from InterfaceVO i, TunnelInterfaceVO tf, TunnelVO t where i.uuid = tf.interfaceUuid" +
+                " and t.uuid = tf.tunnelUuid" +
+                " and t.accountUuid = :accountUuid and t.state = :state" +
+                " and i.switchPortUuid in (:switchPortUuids)";
 
+        TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+        tfq.setParameter("accountUuid", msg.getAccountUuid());
+        tfq.setParameter("state", TunnelState.Opened);
+        tfq.setParameter("switchPortUuid", switchPortUuids);
+        List<Tuple> ts = tfq.getResultList();
+        for (Tuple t : ts) {
+            AliTunnelInventory inventory = new AliTunnelInventory();
+            inventory.setTunnelName(t.get(0, String.class));
+            inventory.setTunnelUuid(t.get(1, String.class));
+            inventory.setVlan(t.get(2, Integer.class));
+
+            String plineUuid = CollectionUtils.find(acs, new Function<String, AliEdgeRouterConfigVO>() {
+                @Override
+                public String call(AliEdgeRouterConfigVO arg) {
+                    if (arg.getSwitchPortUuid().equals(t.get(3, String.class))) {
+                        return arg.getPhysicalLineUuid();
+                    }
+                    return null;
+                }
+            });
+            inventory.setPhysicalLineUuid(plineUuid);
+
+            tunnelQueryList.add(inventory);
         }
 
         TunnelQueryReply reply = new TunnelQueryReply();
-        reply.setInventory(TunnelQueryList);
+        reply.setInventory(tunnelQueryList);
         bus.reply(msg,reply);
 
     }
@@ -363,8 +362,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         }else if(msg.getFlag() == true && msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null){
             AliAccessKeyId = msg.getAliAccessKeyID();
             AliAccessKeySecret = msg.getAliAccessKeySecret();
-        }
-        else{
+        } else{
             SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
             q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,AliEdgeRouterConstant.ACCOUNTUUID);
             q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,AliEdgeRouterConstant.ALIACCOUNTUUID);
@@ -414,20 +412,22 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             vo.setDescription(msg.getDescription());
             update = true;
         }
-        String AliAccessKeyId;
-        String AliAccessKeySecret;
+        String AliAccessKeyId = null;
+        String AliAccessKeySecret = null;
 
         if(msg.getAliAccessKeyID()!= null && msg.getAliAccessKeySecret() != null){
             AliAccessKeyId = msg.getAliAccessKeyID();
             AliAccessKeySecret = msg.getAliAccessKeySecret();
         }else{
             SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
-            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,vo.getAliAccountUuid());
+            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ, vo.getAliAccountUuid());
             AliUserVO user = q.find();
 
-            AliAccessKeyId = user.getAliAccessKeyID();
-            AliAccessKeySecret = user.getAliAccessKeySecret();
+            if (user != null) {
+                AliAccessKeyId = user.getAliAccessKeyID();
+                AliAccessKeySecret = user.getAliAccessKeySecret();
+            }
         }
 
 
@@ -435,7 +435,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
 
         // 创建DefaultAcsClient实例并初始化
-        DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);
+        DefaultProfile profile = DefaultProfile.getProfile(RegionId, AliAccessKeyId, AliAccessKeySecret);
         IAcsClient client = new DefaultAcsClient(profile);
 
         // 创建API请求并设置参数

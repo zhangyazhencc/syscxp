@@ -77,7 +77,6 @@ public class VpnRESTCaller {
         if (logger.isTraceEnabled()) {
             logger.trace(String.format("json post[%s], %s", url, req.toString()));
         }
-        logger.info(String.format("json post[%s], %s", url, body));
 
         ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
 

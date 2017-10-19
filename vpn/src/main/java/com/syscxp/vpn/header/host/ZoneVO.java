@@ -1,9 +1,6 @@
 package com.syscxp.vpn.header.host;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
@@ -24,6 +21,11 @@ public class ZoneVO {
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
+
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
 
     public String getUuid() {
         return uuid;

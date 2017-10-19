@@ -5,13 +5,13 @@ import com.syscxp.header.query.APIQueryReply;
 import java.util.List;
 
 public class TunnelQueryReply extends APIQueryReply {
-    private List<TunnelQueryInventory> inventory;
+    private List<AliTunnelInventory> inventory;
 
-    public List<TunnelQueryInventory> getInventory() {
+    public List<AliTunnelInventory> getInventory() {
         return inventory;
     }
 
-    public void setInventory(List<TunnelQueryInventory> inventory) {
+    public void setInventory(List<AliTunnelInventory> inventory) {
         this.inventory = inventory;
     }
 }

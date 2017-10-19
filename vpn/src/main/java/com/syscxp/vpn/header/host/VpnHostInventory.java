@@ -15,11 +15,14 @@ public class VpnHostInventory {
     private String publicIface;
     private String publicIp;
     private String manageIp;
-    private String sshPort;
+    private Integer sshPort;
     private String state;
     private String status;
     private String username;
     private String password;
+    private String vpnInterfaceName;
+    private Integer startPort;
+    private Integer endPort;
     private ZoneInventory zoneInventory;
     private List<HostInterfaceInventory> hostInterfaceInventories;
     private Timestamp lastOpDate;
@@ -40,6 +43,9 @@ public class VpnHostInventory {
         inv.setStatus(vo.getStatus().toString());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
+        inv.setVpnInterfaceName(vo.getVpnInterfaceName());
+        inv.setStartPort(vo.getStartPort());
+        inv.setEndPort(vo.getEndPort());
         inv.setZoneInventory(ZoneInventory.valueOf(vo.getZone()));
         inv.setHostInterfaceInventories(HostInterfaceInventory.valueOf(vo.getHostInterfaces()));
         return inv;
@@ -51,6 +57,30 @@ public class VpnHostInventory {
             invs.add(VpnHostInventory.valueOf(vo));
         }
         return invs;
+    }
+
+    public Integer getStartPort() {
+        return startPort;
+    }
+
+    public void setStartPort(Integer startPort) {
+        this.startPort = startPort;
+    }
+
+    public Integer getEndPort() {
+        return endPort;
+    }
+
+    public void setEndPort(Integer endPort) {
+        this.endPort = endPort;
+    }
+
+    public String getVpnInterfaceName() {
+        return vpnInterfaceName;
+    }
+
+    public void setVpnInterfaceName(String vpnInterfaceName) {
+        this.vpnInterfaceName = vpnInterfaceName;
     }
 
     public List<HostInterfaceInventory> getHostInterfaceInventories() {
@@ -133,11 +163,11 @@ public class VpnHostInventory {
         this.manageIp = manageIp;
     }
 
-    public String getSshPort() {
+    public Integer getSshPort() {
         return sshPort;
     }
 
-    public void setSshPort(String sshPort) {
+    public void setSshPort(Integer sshPort) {
         this.sshPort = sshPort;
     }
 

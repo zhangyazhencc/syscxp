@@ -299,11 +299,9 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIDeleteNodeMsg msg) {
         String uuid = msg.getUuid();
-        NodeVO vo = dbf.findByUuid(uuid,NodeVO.class);
 
-        NodeEO eo = dbf.findByUuid(uuid, NodeEO.class);
-        eo.setDeleted(1);
-        dbf.update(eo);
+        NodeVO vo = dbf.findByUuid(uuid,NodeVO.class);
+        dbf.remove(vo);
 
         APIDeleteNodeEvent event = new APIDeleteNodeEvent(msg.getId());
         NodeInventory inventory = NodeInventory.valueOf(vo);
@@ -376,11 +374,9 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIDeleteEndpointMsg msg) {
         String uuid = msg.getUuid();
-        EndpointVO vo = dbf.findByUuid(uuid,EndpointVO.class);
 
-        EndpointEO eo = dbf.findByUuid(uuid, EndpointEO.class);
-        eo.setDeleted(1);
-        dbf.update(eo);
+        EndpointVO vo = dbf.findByUuid(uuid,EndpointVO.class);
+        dbf.remove(vo);
 
         APIDeleteEndpointEvent event = new APIDeleteEndpointEvent(msg.getId());
         EndpointInventory inventory = EndpointInventory.valueOf(vo);

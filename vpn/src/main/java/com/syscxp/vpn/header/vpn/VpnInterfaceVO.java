@@ -31,6 +31,10 @@ public class VpnInterfaceVO {
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
 
     public String getHostUuid() {
         return hostUuid;

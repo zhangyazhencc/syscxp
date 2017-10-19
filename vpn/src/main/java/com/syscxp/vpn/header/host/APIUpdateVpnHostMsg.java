@@ -22,20 +22,30 @@ public class APIUpdateVpnHostMsg extends APIMessage{
     @APIParam(required = false)
     private String manageIp;
     @APIParam(required = false)
-    private String sshPort;
+    private Integer sshPort;
     @APIParam(required = false)
     private String username;
     @APIParam(required = false)
     private String password;
-    @APIParam(required = false)
-    private String zoneUuid;
+    @APIParam
+    private Integer startPort;
+    @APIParam
+    private Integer endPort;
 
-    public String getZoneUuid() {
-        return zoneUuid;
+    public Integer getStartPort() {
+        return startPort;
     }
 
-    public void setZoneUuid(String zoneUuid) {
-        this.zoneUuid = zoneUuid;
+    public void setStartPort(Integer startPort) {
+        this.startPort = startPort;
+    }
+
+    public Integer getEndPort() {
+        return endPort;
+    }
+
+    public void setEndPort(Integer endPort) {
+        this.endPort = endPort;
     }
 
     public String getUuid() {
@@ -86,11 +96,11 @@ public class APIUpdateVpnHostMsg extends APIMessage{
         this.manageIp = manageIp;
     }
 
-    public String getSshPort() {
+    public Integer getSshPort() {
         return sshPort;
     }
 
-    public void setSshPort(String sshPort) {
+    public void setSshPort(Integer sshPort) {
         this.sshPort = sshPort;
     }
 
