@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://syscxp.com/schema/syscxp">
+    <id>resourcePolice</id>
+    <interceptor>ResourcePolicyManager</interceptor>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APICreatePolicyMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APICreateRegulationMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIGetRegulationByPolicyMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIUpdateRegulationMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIDeleteRegulationMsg</name>
+    </message>
+
+</service>

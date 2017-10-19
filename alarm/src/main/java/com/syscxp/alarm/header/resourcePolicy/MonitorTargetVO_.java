@@ -11,4 +11,5 @@ public class MonitorTargetVO_  extends BaseVO_{
 
     public static volatile SingularAttribute<ResourceVO, ProductType> productType;
     public static volatile SingularAttribute<ResourceVO, String> targetName;
+    public static volatile SingularAttribute<ResourceVO, String> targetValue;
 }
