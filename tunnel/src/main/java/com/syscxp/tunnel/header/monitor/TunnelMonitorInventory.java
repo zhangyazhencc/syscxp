@@ -19,8 +19,6 @@ public class TunnelMonitorInventory {
 
     private String tunnelUuid;
 
-    private TunnelMonitorStatus status;
-
     private String msg;
 
     private Timestamp lastOpDate;
@@ -33,7 +31,6 @@ public class TunnelMonitorInventory {
         TunnelMonitorInventory inventory = new TunnelMonitorInventory();
         inventory.setUuid(vo.getUuid());
         inventory.setTunnelUuid(vo.getTunnelUuid());
-        inventory.setStatus(vo.getStatus());
         inventory.setMsg(vo.getMsg());
         inventory.setLastOpDate(vo.getLastOpDate());
         inventory.setCreateDate(vo.getCreateDate());
@@ -65,14 +62,6 @@ public class TunnelMonitorInventory {
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
-    }
-
-    public TunnelMonitorStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TunnelMonitorStatus status) {
-        this.status = status;
     }
 
     public String getMsg() {
