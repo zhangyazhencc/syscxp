@@ -5,13 +5,13 @@ import com.syscxp.header.query.APIQueryReply;
 public class APIGetAliEdgeRouterReply extends APIQueryReply {
     private AliEdgeRouterInformationInventory inventory;
     private AliEdgeRouterInventory routerInventory;
-    private String AliIdentityFlag;
+    private Boolean AliIdentityFlag;
 
-    public String getAliIdentityFlag() {
+    public Boolean getAliIdentityFlag() {
         return AliIdentityFlag;
     }
 
-    public void setAliIdentityFlag(String aliIdentityFlag) {
+    public void setAliIdentityFlag(Boolean aliIdentityFlag) {
         AliIdentityFlag = aliIdentityFlag;
     }
 

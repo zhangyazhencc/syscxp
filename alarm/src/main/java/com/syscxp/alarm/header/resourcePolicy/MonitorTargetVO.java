@@ -18,6 +18,8 @@ public class MonitorTargetVO extends BaseVO{
 
     @Column
     private String targetName;
+    @Column
+    private String targetValue;
 
     public ProductType getProductType() {
         return productType;
@@ -33,5 +35,13 @@ public class MonitorTargetVO extends BaseVO{
 
     public void setTargetName(String targetName) {
         this.targetName = targetName;
+    }
+
+    public String getTargetValue() {
+        return targetValue;
+    }
+
+    public void setTargetValue(String targetValue) {
+        this.targetValue = targetValue;
     }
 }

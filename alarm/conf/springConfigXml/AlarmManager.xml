@@ -34,6 +34,15 @@
 
     </bean>
 
+    <bean id="ResourcePolicyManager" class="com.syscxp.alarm.resourcePolicy.ResourcePolicyManagerImpl">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.Component"/>
+            <syscxp:extension interface="com.syscxp.header.Service"/>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+        </syscxp:plugin>
+
+    </bean>
+
 
     <bean id="AlarmSubQueryExtension" class="com.syscxp.alarm.identity.AlarmSubQueryExtension">
         <syscxp:plugin>
