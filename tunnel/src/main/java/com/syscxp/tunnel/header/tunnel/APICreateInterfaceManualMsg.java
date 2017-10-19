@@ -26,8 +26,8 @@ public class APICreateInterfaceManualMsg extends APIMessage {
     private String switchPortUuid;
     @APIParam(emptyString = false,maxLength = 32,resourceType = EndpointVO.class)
     private String endpointUuid;
-    @APIParam
-    private Long bandwidth;
+    @APIParam(emptyString = false,required = false,validValues = {"TRUNK", "ACCESS","QINQ"})
+    private NetworkType type;
     @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
     @APIParam
@@ -77,14 +77,6 @@ public class APICreateInterfaceManualMsg extends APIMessage {
         this.description = description;
     }
 
-    public Long getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(Long bandwidth) {
-        this.bandwidth = bandwidth;
-    }
-
     public Integer getDuration() {
         return duration;
     }
@@ -107,5 +99,13 @@ public class APICreateInterfaceManualMsg extends APIMessage {
 
     public void setUnits(List<ProductPriceUnit> units) {
         this.units = units;
+    }
+
+    public NetworkType getType() {
+        return type;
+    }
+
+    public void setType(NetworkType type) {
+        this.type = type;
     }
 }

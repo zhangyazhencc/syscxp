@@ -226,17 +226,13 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
 
     @Transactional
     private void handle(APIDeletePhysicalSwitchMsg msg){
-        PhysicalSwitchEO eo = dbf.findByUuid(msg.getUuid(),PhysicalSwitchEO.class);
+
         PhysicalSwitchVO vo = dbf.findByUuid(msg.getUuid(),PhysicalSwitchVO.class);
-
-        eo.setDeleted(1);
-
-        eo = dbf.getEntityManager().merge(eo);
+        dbf.getEntityManager().remove(vo);
 
         //删除物理交换机对应的上联表
-        String physicalSwitchUuid = msg.getUuid();
         SimpleQuery<PhysicalSwitchUpLinkRefVO> q = dbf.createQuery(PhysicalSwitchUpLinkRefVO.class);
-        q.add(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, physicalSwitchUuid);
+        q.add(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, msg.getUuid());
         List<PhysicalSwitchUpLinkRefVO> psuList = q.list();
         if (psuList.size() > 0) {
             for(PhysicalSwitchUpLinkRefVO psu : psuList){
@@ -305,12 +301,9 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
     }
 
     private void handle(APIDeleteSwitchMsg msg){
-        SwitchEO eo = dbf.findByUuid(msg.getUuid(),SwitchEO.class);
+
         SwitchVO vo = dbf.findByUuid(msg.getUuid(),SwitchVO.class);
-
-        eo.setDeleted(1);
-
-        eo = dbf.updateAndRefresh(eo);
+        dbf.remove(vo);
 
         APIDeleteSwitchEvent evt = new APIDeleteSwitchEvent(msg.getId());
         evt.setInventory(SwitchInventory.valueOf(vo));
