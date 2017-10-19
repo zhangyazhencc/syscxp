@@ -6,9 +6,9 @@ import com.syscxp.header.message.APISyncCallMessage;
 
 public class AliEdgeRouterInformationMsg extends APISyncCallMessage{
     @APIParam(emptyString = false,required = false,maxLength = 32)
-    private String AliAccessKeyID;
+    private String aliAccessKeyID;
     @APIParam(emptyString = false,required = false,maxLength = 32)
-    private String AliAccessKeySecret;
+    private String aliAccessKeySecret;
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
     @APIParam(maxLength = 64)
@@ -19,19 +19,19 @@ public class AliEdgeRouterInformationMsg extends APISyncCallMessage{
     private String vbrUuid;
 
     public String getAliAccessKeyID() {
-        return AliAccessKeyID;
+        return aliAccessKeyID;
     }
 
     public void setAliAccessKeyID(String aliAccessKeyID) {
-        AliAccessKeyID = aliAccessKeyID;
+        this.aliAccessKeyID = aliAccessKeyID;
     }
 
     public String getAliAccessKeySecret() {
-        return AliAccessKeySecret;
+        return aliAccessKeySecret;
     }
 
     public void setAliAccessKeySecret(String aliAccessKeySecret) {
-        AliAccessKeySecret = aliAccessKeySecret;
+        this.aliAccessKeySecret = aliAccessKeySecret;
     }
 
     public String getAccountUuid() {

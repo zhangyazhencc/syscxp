@@ -12,8 +12,8 @@ public class AliUserInventory {
     private String uuid;
     private String accountUuid;
     private String aliAccountUuid;
-    private String AliAccessKeyID;
-    private String AliAccessKeySecret;
+    private String aliAccessKeyID;
+    private String aliAccessKeySecret;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -63,19 +63,19 @@ public class AliUserInventory {
     }
 
     public String getAliAccessKeyID() {
-        return AliAccessKeyID;
+        return aliAccessKeyID;
     }
 
     public void setAliAccessKeyID(String aliAccessKeyID) {
-        AliAccessKeyID = aliAccessKeyID;
+        this.aliAccessKeyID = aliAccessKeyID;
     }
 
     public String getAliAccessKeySecret() {
-        return AliAccessKeySecret;
+        return aliAccessKeySecret;
     }
 
     public void setAliAccessKeySecret(String aliAccessKeySecret) {
-        AliAccessKeySecret = aliAccessKeySecret;
+        this.aliAccessKeySecret = aliAccessKeySecret;
     }
 
     public Timestamp getLastOpDate() {

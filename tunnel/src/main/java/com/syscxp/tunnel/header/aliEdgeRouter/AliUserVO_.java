@@ -9,8 +9,8 @@ public class AliUserVO_ {
     public static volatile SingularAttribute<AliUserVO,String> uuid;
     public static volatile SingularAttribute<AliUserVO,String> accountUuid;
     public static volatile SingularAttribute<AliUserVO,String> aliAccountUuid;
-    public static volatile SingularAttribute<AliUserVO,String> AliAccessKeyID;
-    public static volatile SingularAttribute<AliUserVO,String> AliAccessKeySecret;
+    public static volatile SingularAttribute<AliUserVO,String> aliAccessKeyID;
+    public static volatile SingularAttribute<AliUserVO,String> aliAccessKeySecret;
     public static volatile SingularAttribute<AliUserVO,Timestamp> lastOpDate;
     public static volatile SingularAttribute<AliUserVO,Timestamp> createDate;
 

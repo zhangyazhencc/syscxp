@@ -4,65 +4,33 @@ import java.sql.Timestamp;
 
 public class AliEdgeRouterInformationInventory {
 
-    private String name;
-    private String VbrUuid;
-    private String AccessPoint;
-    private String Status;
-    private String description;
-    private String physicalLineUuid;
+//    private String name;
+//    private String vbrUuid;
+    private String accessPoint;
+    private String status;
+//    private String description;
+//    private String physicalLineUuid;
     private String physicalLineOwerUuid;
-    private String LocalGatewayIp;
-    private String PeerGatewayIp;
-    private String PeeringSubnetMask;
-    private Integer vlan;
-    private String createDate;
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getVbrUuid() {
-        return VbrUuid;
-    }
-
-    public void setVbrUuid(String vbrUuid) {
-        VbrUuid = vbrUuid;
-    }
+    private String localGatewayIp;
+    private String peerGatewayIp;
+    private String peeringSubnetMask;
+//    private Integer vlan;
+//    private String createDate;
 
     public String getAccessPoint() {
-        return AccessPoint;
+        return accessPoint;
     }
 
     public void setAccessPoint(String accessPoint) {
-        AccessPoint = accessPoint;
+        this.accessPoint = accessPoint;
     }
 
     public String getStatus() {
-        return Status;
+        return status;
     }
 
     public void setStatus(String status) {
-        Status = status;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getPhysicalLineUuid() {
-        return physicalLineUuid;
-    }
-
-    public void setPhysicalLineUuid(String physicalLineUuid) {
-        this.physicalLineUuid = physicalLineUuid;
+        this.status = status;
     }
 
     public String getPhysicalLineOwerUuid() {
@@ -74,42 +42,27 @@ public class AliEdgeRouterInformationInventory {
     }
 
     public String getLocalGatewayIp() {
-        return LocalGatewayIp;
+        return localGatewayIp;
     }
 
     public void setLocalGatewayIp(String localGatewayIp) {
-        LocalGatewayIp = localGatewayIp;
+        this.localGatewayIp = localGatewayIp;
     }
 
     public String getPeerGatewayIp() {
-        return PeerGatewayIp;
+        return peerGatewayIp;
     }
 
     public void setPeerGatewayIp(String peerGatewayIp) {
-        PeerGatewayIp = peerGatewayIp;
+        this.peerGatewayIp = peerGatewayIp;
     }
 
     public String getPeeringSubnetMask() {
-        return PeeringSubnetMask;
+        return peeringSubnetMask;
     }
 
     public void setPeeringSubnetMask(String peeringSubnetMask) {
-        PeeringSubnetMask = peeringSubnetMask;
+        this.peeringSubnetMask = peeringSubnetMask;
     }
 
-    public Integer getVlan() {
-        return vlan;
-    }
-
-    public void setVlan(Integer vlan) {
-        this.vlan = vlan;
-    }
-
-    public String getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(String createDate) {
-        this.createDate = createDate;
-    }
 }

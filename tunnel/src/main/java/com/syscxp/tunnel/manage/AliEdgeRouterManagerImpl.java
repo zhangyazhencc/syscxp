@@ -20,8 +20,6 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.tunnel.header.aliEdgeRouter.*;
-import com.syscxp.tunnel.header.endpoint.EndpointVO;
-import com.syscxp.tunnel.header.node.NodeVO;
 import com.syscxp.tunnel.header.tunnel.*;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
@@ -76,8 +74,8 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             handle((APIUpdateAliEdgeRouterMsg) msg);
         }else if(msg instanceof APIDeleteAliEdgeRouterMsg){
             handle((APIDeleteAliEdgeRouterMsg) msg);
-        }else if(msg instanceof AliEdgeRouterInformationMsg){
-            handle((AliEdgeRouterInformationMsg) msg);
+        }else if(msg instanceof APIGetAliEdgeRouterMsg){
+            handle((APIGetAliEdgeRouterMsg) msg);
         }else if(msg instanceof APISaveAliUserMsg){
             handle((APISaveAliUserMsg) msg);
         }else if(msg instanceof APIUpdateAliUserMsg){
@@ -122,7 +120,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
         tfq.setParameter("accountUuid", msg.getAccountUuid());
-        tfq.setParameter("state", TunnelState.Opened);
+        tfq.setParameter("state", TunnelState.Enabled);
         tfq.setParameter("switchPortUuid", switchPortUuids);
         List<Tuple> ts = tfq.getResultList();
         for (Tuple t : ts) {
@@ -268,9 +266,12 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
     }
 
-    private void handle(AliEdgeRouterInformationMsg msg){
+    private void handle(APIGetAliEdgeRouterMsg msg){
 
         AliEdgeRouterInformationInventory inventory = new AliEdgeRouterInformationInventory();
+        AliEdgeRouterInventory routerInventory = new AliEdgeRouterInventory();
+        AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
+
         String AliAccessKeyId ;
         String AliAccessKeySecret ;
 
@@ -280,62 +281,64 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             AliAccessKeySecret = msg.getAliAccessKeySecret();
         }else{
             SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,msg.getAliAccountUuid());
-            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
+            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ, vo.getAccountUuid());
+            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ, vo.getAliAccountUuid());
             AliUserVO user = q.find();
             AliAccessKeyId = user.getAliAccessKeyID();
             AliAccessKeySecret = user.getAliAccessKeySecret();
         }
 
         // 创建DefaultAcsClient实例并初始化
-        DefaultProfile profile = DefaultProfile.getProfile(msg.getAliRegionId(),AliAccessKeyId,AliAccessKeySecret);
+        DefaultProfile profile = DefaultProfile.getProfile(vo.getAliRegionId(),AliAccessKeyId,AliAccessKeySecret);
         IAcsClient client = new DefaultAcsClient(profile);
 
         // 创建API请求并设置参数
         DescribeVirtualBorderRoutersRequest request = new DescribeVirtualBorderRoutersRequest();
 
+        //组装filter数据
         List<DescribeVirtualBorderRoutersRequest.Filter> list = new ArrayList<DescribeVirtualBorderRoutersRequest.Filter>();
         DescribeVirtualBorderRoutersRequest.Filter filter = new DescribeVirtualBorderRoutersRequest.Filter();
         filter.setKey(AliEdgeRouterConstant.FILTER_KEY);
         List list1 = new ArrayList();
-        list1.add(msg.getVbrUuid());
+        list1.add(vo.getVbrUuid());
         filter.setValues(list1);
         list.add(filter);
 
         request.setFilters(list);
-        //组装filter数据
-//        List list = new ArrayList();
-//        List list1 = new ArrayList();
-//        Map map = new Hashtable();
-//        map.put("key","VbrId");
-//        list1.add(msg.getVbrUuid());
-//        map.put("values",list1);
-//        list.add(map);
-//
-//        System.out.println(list);
+
 
         DescribeVirtualBorderRoutersResponse response ;
         try{
             response = client.getAcsResponse(request);
-            inventory.setName(response.getVirtualBorderRouterSet().get(0).getName());
-            inventory.setVbrUuid(response.getVirtualBorderRouterSet().get(0).getVbrId());
-            inventory.setAccessPoint(response.getVirtualBorderRouterSet().get(0).getAccessPointId());
-            inventory.setStatus(response.getVirtualBorderRouterSet().get(0).getStatus());
-            inventory.setDescription(response.getVirtualBorderRouterSet().get(0).getDescription());
-            inventory.setCreateDate(response.getVirtualBorderRouterSet().get(0).getCreationTime());
-            inventory.setPhysicalLineOwerUuid(response.getVirtualBorderRouterSet().get(0).getPhysicalConnectionOwnerUid());
-            inventory.setLocalGatewayIp(response.getVirtualBorderRouterSet().get(0).getLocalGatewayIp());
-            inventory.setPeerGatewayIp(response.getVirtualBorderRouterSet().get(0).getPeerGatewayIp());
-            inventory.setPeeringSubnetMask(response.getVirtualBorderRouterSet().get(0).getPeeringSubnetMask());
-            inventory.setVlan(response.getVirtualBorderRouterSet().get(0).getVlanId());
+
+            DescribeVirtualBorderRoutersResponse.VirtualBorderRouterType virtualBorderRouterType = new DescribeVirtualBorderRoutersResponse.VirtualBorderRouterType();
+            virtualBorderRouterType = response.getVirtualBorderRouterSet().get(0);
+
+            routerInventory.setName(virtualBorderRouterType.getName());
+            routerInventory.setVbrUuid(virtualBorderRouterType.getVbrId());
+            routerInventory.setDescription(virtualBorderRouterType.getDescription());
+            routerInventory.setCreateDate(vo.getCreateDate());
+            routerInventory.setVlan(vo.getVlan());
+            routerInventory.setAliAccountUuid(vo.getAliAccountUuid());
+            routerInventory.setAliRegionId(vo.getAliRegionId());
+
+
+            inventory.setAccessPoint(virtualBorderRouterType.getAccessPointId());
+            inventory.setStatus(virtualBorderRouterType.getStatus());
+            inventory.setPhysicalLineOwerUuid(virtualBorderRouterType.getPhysicalConnectionOwnerUid());
+            inventory.setLocalGatewayIp(virtualBorderRouterType.getLocalGatewayIp());
+            inventory.setPeerGatewayIp(virtualBorderRouterType.getPeerGatewayIp());
+            inventory.setPeeringSubnetMask(virtualBorderRouterType.getPeeringSubnetMask());
+
 
         }catch (Exception e){
             e.printStackTrace();
             throw new ApiMessageInterceptionException(argerr(e.getMessage()));
         }
 
-        AliEdgeRouterInformationReply reply = new AliEdgeRouterInformationReply();
+        APIGetAliEdgeRouterReply reply = new APIGetAliEdgeRouterReply();
         reply.setInventory(inventory);
+        reply.setRouterInventory(routerInventory);
         bus.reply(msg,reply);
 
 
@@ -343,14 +346,13 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
 
     private void handle(APIDeleteAliEdgeRouterMsg msg){
-        AliEdgeRouterEO eo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterEO.class);
         AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
 
         String RegionId = vo.getAliRegionId();
         String AliAccessKeyId ;
         String AliAccessKeySecret ;
 
-        if(msg.getFlag() == true && msg.getAliAccessKeyID() == null && msg.getAliAccessKeySecret() == null){
+        if(msg.getHaveConnectIpFlag() == true && msg.getAliAccessKeyID() == null && msg.getAliAccessKeySecret() == null){
             SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
             q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
             q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,vo.getAliAccountUuid());
@@ -359,17 +361,12 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             AliAccessKeyId = user.getAliAccessKeyID();
             AliAccessKeySecret = user.getAliAccessKeySecret();
 
-        }else if(msg.getFlag() == true && msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null){
+        }else if(msg.getHaveConnectIpFlag() == true && msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null){
             AliAccessKeyId = msg.getAliAccessKeyID();
             AliAccessKeySecret = msg.getAliAccessKeySecret();
         } else{
-            SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,AliEdgeRouterConstant.ACCOUNTUUID);
-            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,AliEdgeRouterConstant.ALIACCOUNTUUID);
-            AliUserVO user = q.find();
-
-            AliAccessKeyId = user.getAliAccessKeyID();
-            AliAccessKeySecret = user.getAliAccessKeySecret();
+            AliAccessKeyId = AliUserGlobalProperty.ALI_VALUE;
+            AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
 
         }
 
@@ -385,8 +382,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         try{
             response = client.getAcsResponse(request);
-            eo.setDeleted(1);
-            dbf.updateAndRefresh(eo);
+            dbf.remove(vo);
 
         }catch (Exception e){
             e.printStackTrace();
@@ -475,15 +471,9 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         vo.setPhysicalLineUuid(msg.getPhysicalLineUuid());
         vo.setVlan(msg.getVlan());
 
-        SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-        q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,AliEdgeRouterConstant.ACCOUNTUUID);
-        q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,AliEdgeRouterConstant.ALIACCOUNTUUID);
-        AliUserVO user = q.find();
-
-
         String RegionId = msg.getAliRegionId();
-        String AliAccessKeyId = user.getAliAccessKeyID();
-        String AliAccessKeySecret = user.getAliAccessKeySecret();
+        String AliAccessKeyId = AliUserGlobalProperty.ALI_KEY;
+        String AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
 
 
         // 创建DefaultAcsClient实例并初始化
