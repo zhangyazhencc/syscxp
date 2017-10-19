@@ -1,7 +1,7 @@
 package com.syscxp.header.rest;
 
 public interface RESTConstant {
-    static final String CALLBACK_PATH = "/asyncrest/callback";
+    static final String CALLBACK_PATH = "syscxp/asyncrest/callback";
     static final String COMMAND_CHANNEL_PATH = "/asyncrest/sendcommand";
     public static final String TASK_UUID = "taskuuid";
     public static final String CALLBACK_URL = "callbackurl";

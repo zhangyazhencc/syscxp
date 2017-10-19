@@ -230,7 +230,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         TunnelMonitorVO tunnelMonitorVO = dbf.findByUuid(msg.getUuid(), TunnelMonitorVO.class);
 
         tunnelMonitorVO.setTunnelUuid(msg.getTunnelUuid());
-        tunnelMonitorVO.setStatus(msg.getStatus());
         if (msg.getMsg() != null) {
             tunnelMonitorVO.setMsg(msg.getMsg());
         }
@@ -345,7 +344,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         TunnelMonitorVO tunnelMonitorVO = new TunnelMonitorVO();
         tunnelMonitorVO.setUuid(Platform.getUuid());
         tunnelMonitorVO.setTunnelUuid(msg.getTunnelUuid());
-        tunnelMonitorVO.setStatus(TunnelMonitorStatus.Connecting);
         tunnelMonitorVO.setMsg(msg.getMsg());
         dbf.getEntityManager().persist(tunnelMonitorVO);
 

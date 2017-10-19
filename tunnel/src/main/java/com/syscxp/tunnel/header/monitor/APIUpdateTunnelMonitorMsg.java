@@ -30,9 +30,6 @@ public class APIUpdateTunnelMonitorMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 64)
     private String monitorZIp;
 
-    @APIParam(emptyString = false,validValues = { "NORMAL","APPLYING","TERMINATED"})
-    private TunnelMonitorStatus status;
-
     @APIParam(required = false,maxLength = 1024)
     private String msg;
 
@@ -82,14 +79,6 @@ public class APIUpdateTunnelMonitorMsg extends APIMessage {
 
     public void setMonitorZIp(String monitorZIp) {
         this.monitorZIp = monitorZIp;
-    }
-
-    public TunnelMonitorStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TunnelMonitorStatus status) {
-        this.status = status;
     }
 
     public String getMsg() {

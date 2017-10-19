@@ -28,10 +28,6 @@ public class TunnelMonitorVO {
     private String tunnelUuid;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private TunnelMonitorStatus status;
-
-    @Column
     private String msg;
 
     @Column
@@ -65,14 +61,6 @@ public class TunnelMonitorVO {
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
-    }
-
-    public TunnelMonitorStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TunnelMonitorStatus status) {
-        this.status = status;
     }
 
     public String getMsg() {
