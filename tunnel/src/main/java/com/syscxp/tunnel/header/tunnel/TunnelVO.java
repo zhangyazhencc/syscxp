@@ -14,27 +14,17 @@ import java.util.List;
 @EO(EOClazz = TunnelEO.class)
 public class TunnelVO extends TunnelAO{
 
-    @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="networkUuid", insertable=false, updatable=false)
-    private NetworkVO networkVO;
 
     @OneToMany
     @JoinColumn(name = "tunnelUuid", insertable = false, updatable = false)
-    private List<TunnelInterfaceVO> tunnelInterfaceVO = new ArrayList<TunnelInterfaceVO>();
+    private List<TunnelInterfaceVO> tunnelInterfaceVOs = new ArrayList<TunnelInterfaceVO>();
 
-    public NetworkVO getNetworkVO() {
-        return networkVO;
+
+    public List<TunnelInterfaceVO> getTunnelInterfaceVOs() {
+        return tunnelInterfaceVOs;
     }
 
-    public void setNetworkVO(NetworkVO networkVO) {
-        this.networkVO = networkVO;
-    }
-
-    public List<TunnelInterfaceVO> getTunnelInterfaceVO() {
-        return tunnelInterfaceVO;
-    }
-
-    public void setTunnelInterfaceVO(List<TunnelInterfaceVO> tunnelInterfaceVO) {
-        this.tunnelInterfaceVO = tunnelInterfaceVO;
+    public void setTunnelInterfaceVOs(List<TunnelInterfaceVO> tunnelInterfaceVOs) {
+        this.tunnelInterfaceVOs = tunnelInterfaceVOs;
     }
 }

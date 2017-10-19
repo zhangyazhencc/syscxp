@@ -16,13 +16,13 @@ public class InterfaceAO_ {
     public static volatile SingularAttribute<InterfaceAO, String> name;
     public static volatile SingularAttribute<InterfaceAO, String> switchPortUuid;
     public static volatile SingularAttribute<InterfaceAO, String> endpointUuid;
-    public static volatile SingularAttribute<InterfaceAO, Long> bandwidth;
     public static volatile SingularAttribute<InterfaceAO, String> description;
     public static volatile SingularAttribute<InterfaceAO, InterfaceState> state;
+    public static volatile SingularAttribute<InterfaceAO, NetworkType> type;
     public static volatile SingularAttribute<InterfaceAO, Integer> duration;
     public static volatile SingularAttribute<InterfaceAO, ProductChargeModel> productChargeModel;
     public static volatile SingularAttribute<InterfaceAO, Integer> maxModifies;
-    public static volatile SingularAttribute<InterfaceAO, Timestamp> expiredDate;
+    public static volatile SingularAttribute<InterfaceAO, Timestamp> expireDate;
     public static volatile SingularAttribute<InterfaceAO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<InterfaceAO, Timestamp> createDate;
 }

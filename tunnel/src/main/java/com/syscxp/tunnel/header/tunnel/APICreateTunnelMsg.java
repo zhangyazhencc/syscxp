@@ -20,8 +20,8 @@ public class APICreateTunnelMsg extends APIMessage {
 
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
-    @APIParam(emptyString = false,resourceType = NetworkVO.class, checkAccount = true)
-    private String networkUuid;
+    @APIParam(emptyString = false,maxLength = 32)
+    private String monitorCidr;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
     @APIParam
@@ -57,14 +57,6 @@ public class APICreateTunnelMsg extends APIMessage {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
-    }
-
-    public String getNetworkUuid() {
-        return networkUuid;
-    }
-
-    public void setNetworkUuid(String networkUuid) {
-        this.networkUuid = networkUuid;
     }
 
     public String getName() {
@@ -161,5 +153,13 @@ public class APICreateTunnelMsg extends APIMessage {
 
     public void setUnits(List<ProductPriceUnit> units) {
         this.units = units;
+    }
+
+    public String getMonitorCidr() {
+        return monitorCidr;
+    }
+
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
     }
 }

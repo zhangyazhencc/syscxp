@@ -78,7 +78,7 @@ public class TunnelStrategy  {
     }
 
     //策略分配外部VLAN
-    public Integer getInnerVlanByStrategy(String networkUuid ,String interfaceUuid){
+    public Integer getInnerVlanByStrategy(String interfaceUuid){
         Integer vlan = null;
 
         //查询该TUNNEL的物理接口所属的虚拟交换机
@@ -88,19 +88,11 @@ public class TunnelStrategy  {
         //查询该虚拟交换机下已经分配的Vlan
         List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
 
-
-        //同一个VSI下同一个物理接口不用分配vlan，他们vlan一样
-        vlan = findVlanForSameVsiAndInterface(networkUuid, interfaceUuid);
-        if(vlan != -1){
-            return vlan;
+        if(allocatedVlans.isEmpty()){
+            return vlanList.get(0).getStartVlan();
         }else{
-            if(allocatedVlans.isEmpty()){
-                return vlanList.get(0).getStartVlan();
-            }else{
-                vlan = allocateVlan(vlanList, allocatedVlans);
-                return vlan;
-            }
-
+            vlan = allocateVlan(vlanList, allocatedVlans);
+            return vlan;
         }
     }
 
@@ -137,17 +129,7 @@ public class TunnelStrategy  {
         return allocatedVlans;
     }
 
-    //查询该端口在同一个VSI下有否存在，如果存在，直接使用该端口的vlan即可
-    public Integer findVlanForSameVsiAndInterface(String networkUuid, String interfaceUuid){
-        String sql = "select b from TunnelVO a,TunnelInterfaceVO b where a.uuid = b.tunnelUuid " +
-                "and a.networkUuid = :networkUuid and b.interfaceUuid = :interfaceUuid ";
-        TypedQuery<TunnelInterfaceVO> vlanq = dbf.getEntityManager().createQuery(sql,TunnelInterfaceVO.class);
-        vlanq.setParameter("networkUuid",networkUuid);
-        vlanq.setParameter("interfaceUuid",interfaceUuid);
 
-        List<TunnelInterfaceVO> list = vlanq.getResultList();
-        return list.isEmpty() ? -1 : list.get(0).getVlan();
-    }
 
     //分配可用VLAN
     public int allocateVlan(List<SwitchVlanVO> vlanList, List<Integer> allocatedVlans){
