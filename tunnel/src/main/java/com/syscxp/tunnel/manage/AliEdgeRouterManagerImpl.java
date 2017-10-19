@@ -120,7 +120,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
         tfq.setParameter("accountUuid", msg.getAccountUuid());
-        tfq.setParameter("state", TunnelState.Opened);
+        tfq.setParameter("state", TunnelState.Enabled);
         tfq.setParameter("switchPortUuid", switchPortUuids);
         List<Tuple> ts = tfq.getResultList();
         for (Tuple t : ts) {
@@ -352,7 +352,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         String AliAccessKeyId ;
         String AliAccessKeySecret ;
 
-        if(msg.getFlag() == true && msg.getAliAccessKeyID() == null && msg.getAliAccessKeySecret() == null){
+        if(msg.getHaveConnectIpFlag() == true && msg.getAliAccessKeyID() == null && msg.getAliAccessKeySecret() == null){
             SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
             q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
             q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,vo.getAliAccountUuid());
@@ -361,17 +361,12 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             AliAccessKeyId = user.getAliAccessKeyID();
             AliAccessKeySecret = user.getAliAccessKeySecret();
 
-        }else if(msg.getFlag() == true && msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null){
+        }else if(msg.getHaveConnectIpFlag() == true && msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null){
             AliAccessKeyId = msg.getAliAccessKeyID();
             AliAccessKeySecret = msg.getAliAccessKeySecret();
         } else{
-            SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,AliEdgeRouterConstant.ACCOUNTUUID);
-            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,AliEdgeRouterConstant.ALIACCOUNTUUID);
-            AliUserVO user = q.find();
-
-            AliAccessKeyId = user.getAliAccessKeyID();
-            AliAccessKeySecret = user.getAliAccessKeySecret();
+            AliAccessKeyId = AliUserGlobalProperty.ALI_VALUE;
+            AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
 
         }
 
@@ -476,15 +471,9 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         vo.setPhysicalLineUuid(msg.getPhysicalLineUuid());
         vo.setVlan(msg.getVlan());
 
-        SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-        q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,AliEdgeRouterConstant.ACCOUNTUUID);
-        q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,AliEdgeRouterConstant.ALIACCOUNTUUID);
-        AliUserVO user = q.find();
-
-
         String RegionId = msg.getAliRegionId();
-        String AliAccessKeyId = user.getAliAccessKeyID();
-        String AliAccessKeySecret = user.getAliAccessKeySecret();
+        String AliAccessKeyId = AliUserGlobalProperty.ALI_KEY;
+        String AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
 
 
         // 创建DefaultAcsClient实例并初始化
