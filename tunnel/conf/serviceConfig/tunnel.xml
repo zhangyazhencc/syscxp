@@ -4,22 +4,6 @@
     <interceptor>TunnelManager</interceptor>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APICreateNetworkMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.tunnel.header.tunnel.APICreateNetworkManualMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIUpdateNetworkMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIDeleteNetworkMsg</name>
-    </message>
-
-    <message>
         <name>com.syscxp.tunnel.header.tunnel.APICreateInterfaceMsg</name>
     </message>
 
@@ -29,10 +13,6 @@
 
     <message>
         <name>com.syscxp.tunnel.header.tunnel.APIUpdateInterfaceMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIUpdateInterfaceBandwidthMsg</name>
     </message>
 
     <message>
@@ -81,12 +61,6 @@
 
     <message>
         <name>com.syscxp.tunnel.header.tunnel.APIDeleteTunnelMsg</name>
-    </message>
-
-
-    <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIQueryNetworkMsg</name>
-        <serviceId>query</serviceId>
     </message>
 
     <message>

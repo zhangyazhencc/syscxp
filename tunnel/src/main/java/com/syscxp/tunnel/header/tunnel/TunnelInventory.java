@@ -14,9 +14,9 @@ public class TunnelInventory {
 
     private String uuid;
     private String accountUuid;
-    private String networkUuid;
-    private NetworkInventory network;
-    private List<TunnelInterfaceInventory> tunnelInterface = new ArrayList<TunnelInterfaceInventory>();
+    private Integer vsi;
+    private String monitorCidr;
+    private List<TunnelInterfaceInventory> tunnelInterfaces = new ArrayList<TunnelInterfaceInventory>();
     private String name;
     private Long bandwidth;
     private Double distance;
@@ -27,7 +27,7 @@ public class TunnelInventory {
     private ProductChargeModel productChargeModel;
     private Integer maxModifies;
     private String description;
-    private Timestamp expiredDate;
+    private Timestamp expireDate;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -35,9 +35,9 @@ public class TunnelInventory {
         TunnelInventory inv = new TunnelInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
-        inv.setNetworkUuid(vo.getNetworkUuid());
-        inv.setNetwork(NetworkInventory.valueOf(vo.getNetworkVO()));
-        inv.setTunnelInterface(TunnelInterfaceInventory.valueOf(vo.getTunnelInterfaceVO()));
+        inv.setVsi(vo.getVsi());
+        inv.setMonitorCidr(vo.getMonitorCidr());
+        inv.setTunnelInterfaces(TunnelInterfaceInventory.valueOf(vo.getTunnelInterfaceVOs()));
         inv.setName(vo.getName());
         inv.setBandwidth(vo.getBandwidth());
         inv.setDistance(vo.getDistance());
@@ -48,7 +48,7 @@ public class TunnelInventory {
         inv.setProductChargeModel(vo.getProductChargeModel());
         inv.setMaxModifies(vo.getMaxModifies());
         inv.setDescription(vo.getDescription());
-        inv.setExpiredDate(vo.getExpiredDate());
+        inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
@@ -76,22 +76,6 @@ public class TunnelInventory {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
-    }
-
-    public String getNetworkUuid() {
-        return networkUuid;
-    }
-
-    public void setNetworkUuid(String networkUuid) {
-        this.networkUuid = networkUuid;
-    }
-
-    public NetworkInventory getNetwork() {
-        return network;
-    }
-
-    public void setNetwork(NetworkInventory network) {
-        this.network = network;
     }
 
     public String getName() {
@@ -150,14 +134,6 @@ public class TunnelInventory {
         this.description = description;
     }
 
-    public Timestamp getExpiredDate() {
-        return expiredDate;
-    }
-
-    public void setExpiredDate(Timestamp expiredDate) {
-        this.expiredDate = expiredDate;
-    }
-
     public Timestamp getLastOpDate() {
         return lastOpDate;
     }
@@ -172,14 +148,6 @@ public class TunnelInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
-    }
-
-    public List<TunnelInterfaceInventory> getTunnelInterface() {
-        return tunnelInterface;
-    }
-
-    public void setTunnelInterface(List<TunnelInterfaceInventory> tunnelInterface) {
-        this.tunnelInterface = tunnelInterface;
     }
 
     public Integer getDuration() {
@@ -204,5 +172,37 @@ public class TunnelInventory {
 
     public void setMaxModifies(Integer maxModifies) {
         this.maxModifies = maxModifies;
+    }
+
+    public Integer getVsi() {
+        return vsi;
+    }
+
+    public void setVsi(Integer vsi) {
+        this.vsi = vsi;
+    }
+
+    public String getMonitorCidr() {
+        return monitorCidr;
+    }
+
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
+    }
+
+    public List<TunnelInterfaceInventory> getTunnelInterfaces() {
+        return tunnelInterfaces;
+    }
+
+    public void setTunnelInterfaces(List<TunnelInterfaceInventory> tunnelInterfaces) {
+        this.tunnelInterfaces = tunnelInterfaces;
+    }
+
+    public Timestamp getExpireDate() {
+        return expireDate;
+    }
+
+    public void setExpireDate(Timestamp expireDate) {
+        this.expireDate = expireDate;
     }
 }

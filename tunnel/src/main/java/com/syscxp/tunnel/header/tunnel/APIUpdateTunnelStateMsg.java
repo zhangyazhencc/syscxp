@@ -12,7 +12,7 @@ import com.syscxp.tunnel.manage.TunnelConstant;
 public class APIUpdateTunnelStateMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
-    @APIParam(emptyString = false,validValues = {"Opened", "Closed","Unpaid"})
+    @APIParam(emptyString = false,validValues = {"Enabled", "Disabled","Unpaid"})
     private TunnelState state;
 
     public String getUuid() {

@@ -256,10 +256,6 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             host.setPassword(msg.getPassword());
             update = true;
         }
-        if (!StringUtils.isEmpty(msg.getZoneUuid())) {
-            host.setZone(dbf.findByUuid(msg.getZoneUuid(), ZoneVO.class));
-            update = true;
-        }
 
         if (update)
             dbf.updateAndRefresh(host);
