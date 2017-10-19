@@ -9,7 +9,7 @@ import com.syscxp.vpn.vpn.VpnConstant;
 
 import java.util.List;
 
-@Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
+@Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"})
 public class APICreateVpnRouteMsg extends APIMessage {
     @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String vpnUuid;
