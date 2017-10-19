@@ -13,7 +13,7 @@ public class APIDeleteAliEdgeRouterMsg extends APIMessage {
     private String accountUuid;
 
     @APIParam(required = false)
-    private Boolean Flag;
+    private Boolean haveConnectIpFlag;
 
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String aliAccessKeyID;
@@ -56,11 +56,11 @@ public class APIDeleteAliEdgeRouterMsg extends APIMessage {
         this.accountUuid = accountUuid;
     }
 
-    public Boolean getFlag() {
-        return Flag;
+    public Boolean getHaveConnectIpFlag() {
+        return haveConnectIpFlag;
     }
 
-    public void setFlag(Boolean flag) {
-        Flag = flag;
+    public void setHaveConnectIpFlag(Boolean haveConnectIpFlag) {
+        this.haveConnectIpFlag = haveConnectIpFlag;
     }
 }

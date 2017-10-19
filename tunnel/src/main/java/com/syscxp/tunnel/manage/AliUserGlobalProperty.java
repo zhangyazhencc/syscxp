@@ -6,6 +6,9 @@ import com.syscxp.core.GlobalPropertyDefinition;
 @GlobalPropertyDefinition
 public class AliUserGlobalProperty {
 
-    @GlobalProperty(name = "vpnManagerUrl", defaultValue = "http://192.168.3.93:8000")
-    public static String VPN_BASE_URL;
+    @GlobalProperty(name = "aliAccessKeyID", defaultValue = "LTAIpgzez4CnzZFX")
+    public static String ALI_KEY;
+
+    @GlobalProperty(name = "aliAccessKeySecret", defaultValue = "jPwmElULsvAyZpfqRYOeZrlEr4567s")
+    public static String ALI_VALUE;
 }

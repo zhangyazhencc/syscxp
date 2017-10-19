@@ -5,6 +5,15 @@ import com.syscxp.header.query.APIQueryReply;
 public class APIGetAliEdgeRouterReply extends APIQueryReply {
     private AliEdgeRouterInformationInventory inventory;
     private AliEdgeRouterInventory routerInventory;
+    private String AliIdentityFlag;
+
+    public String getAliIdentityFlag() {
+        return AliIdentityFlag;
+    }
+
+    public void setAliIdentityFlag(String aliIdentityFlag) {
+        AliIdentityFlag = aliIdentityFlag;
+    }
 
     public AliEdgeRouterInventory getRouterInventory() {
         return routerInventory;
