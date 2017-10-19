@@ -7,15 +7,15 @@ import com.syscxp.header.rest.RestResponse;
 public class APIDeleteAliEdgeRouterEvent extends APIEvent{
     private AliEdgeRouterInventory inventory;
 
-    private String AliIdentityFlag;
+    private Boolean AliIdentityFlag;
 
     public APIDeleteAliEdgeRouterEvent(){}
 
-    public String getAliIdentityFlag() {
+    public Boolean getAliIdentityFlag() {
         return AliIdentityFlag;
     }
 
-    public void setAliIdentityFlag(String aliIdentityFlag) {
+    public void setAliIdentityFlag(Boolean aliIdentityFlag) {
         AliIdentityFlag = aliIdentityFlag;
     }
 
