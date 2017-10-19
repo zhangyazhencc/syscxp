@@ -9,9 +9,6 @@ public class APIDeleteAliEdgeRouterMsg extends APIMessage {
     @APIParam(emptyString = false, checkAccount = true, resourceType = AliEdgeRouterVO.class)
     private String uuid;
 
-    @APIParam(emptyString = false,required = false,maxLength = 32)
-    private String accountUuid;
-
     @APIParam(required = false)
     private Boolean haveConnectIpFlag;
 
@@ -42,18 +39,6 @@ public class APIDeleteAliEdgeRouterMsg extends APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public String getAccountUuid() {
-        if(getSession().getType() == AccountType.SystemAdmin){
-            return accountUuid;
-        }else{
-            return getSession().getAccountUuid();
-        }
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
     }
 
     public Boolean getHaveConnectIpFlag() {
