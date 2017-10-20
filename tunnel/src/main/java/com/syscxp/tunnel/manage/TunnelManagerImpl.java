@@ -1044,9 +1044,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
                         logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                        if(cmd.getProductType() == ProductType.PORT){
-                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
-                        }else if(cmd.getProductType() == ProductType.TUNNEL){
+                        if(cmd.getProductType() == ProductType.TUNNEL){
                             TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
                             if (vo != null) {
                                 dbf.updateAndRefresh(vo);
@@ -1060,9 +1058,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
                         logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                        if(cmd.getProductType() == ProductType.PORT){
-                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
-                        }else if(cmd.getProductType() == ProductType.TUNNEL){
+                        if(cmd.getProductType() == ProductType.TUNNEL){
                             TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
                             if (vo != null) {
                                 dbf.updateAndRefresh(vo);
