@@ -3,6 +3,7 @@ package com.syscxp.tunnel.manage;
 import com.aliyuncs.DefaultAcsClient;
 import com.aliyuncs.IAcsClient;
 import com.aliyuncs.ecs.model.v20140526.*;
+import com.aliyuncs.exceptions.ClientException;
 import com.aliyuncs.profile.DefaultProfile;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -121,7 +122,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
         tfq.setParameter("accountUuid", msg.getAccountUuid());
         tfq.setParameter("state", TunnelState.Enabled);
-        tfq.setParameter("switchPortUuid", switchPortUuids);
+        tfq.setParameter("switchPortUuids", switchPortUuids);
         List<Tuple> ts = tfq.getResultList();
         for (Tuple t : ts) {
             AliTunnelInventory inventory = new AliTunnelInventory();
@@ -272,8 +273,9 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         AliEdgeRouterInventory routerInventory = new AliEdgeRouterInventory();
         AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
 
-        String AliAccessKeyId ;
-        String AliAccessKeySecret ;
+        String AliAccessKeyId = null;
+        String AliAccessKeySecret = null;
+        Boolean flag = true;
 
 
         if(msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null){
@@ -281,11 +283,15 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             AliAccessKeySecret = msg.getAliAccessKeySecret();
         }else{
             SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ, vo.getAccountUuid());
-            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ, vo.getAliAccountUuid());
+            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ, vo.getAliAccountUuid());
+            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ, vo.getAccountUuid());
             AliUserVO user = q.find();
-            AliAccessKeyId = user.getAliAccessKeyID();
-            AliAccessKeySecret = user.getAliAccessKeySecret();
+
+            if(user != null){
+                AliAccessKeyId = user.getAliAccessKeyID();
+                AliAccessKeySecret = user.getAliAccessKeySecret();
+            }
+
         }
 
         // 创建DefaultAcsClient实例并初始化
@@ -331,14 +337,24 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             inventory.setPeeringSubnetMask(virtualBorderRouterType.getPeeringSubnetMask());
 
 
-        }catch (Exception e){
+        }catch (ClientException e){
             e.printStackTrace();
-            throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
+                flag = false;
+            }else{
+                throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+            }
+
         }
 
         APIGetAliEdgeRouterReply reply = new APIGetAliEdgeRouterReply();
-        reply.setInventory(inventory);
-        reply.setRouterInventory(routerInventory);
+
+        if(flag){
+            reply.setInventory(inventory);
+            reply.setRouterInventory(routerInventory);
+        }else {
+            reply.setAliIdentityFlag(false);
+        }
         bus.reply(msg,reply);
 
 
@@ -348,18 +364,22 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     private void handle(APIDeleteAliEdgeRouterMsg msg){
         AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
 
+        Boolean flag = true;
         String RegionId = vo.getAliRegionId();
-        String AliAccessKeyId ;
-        String AliAccessKeySecret ;
+        String AliAccessKeyId = null;
+        String AliAccessKeySecret = null;
 
         if(msg.getHaveConnectIpFlag() == true && msg.getAliAccessKeyID() == null && msg.getAliAccessKeySecret() == null){
             SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
-            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ,vo.getAliAccountUuid());
+            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ, vo.getAccountUuid());
+            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ, vo.getAliAccountUuid());
             AliUserVO user = q.find();
 
-            AliAccessKeyId = user.getAliAccessKeyID();
-            AliAccessKeySecret = user.getAliAccessKeySecret();
+            if(user != null){
+                AliAccessKeyId = user.getAliAccessKeyID();
+                AliAccessKeySecret = user.getAliAccessKeySecret();
+            }
+
 
         }else if(msg.getHaveConnectIpFlag() == true && msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null){
             AliAccessKeyId = msg.getAliAccessKeyID();
@@ -384,19 +404,31 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             response = client.getAcsResponse(request);
             dbf.remove(vo);
 
-        }catch (Exception e){
+        }catch (ClientException e){
             e.printStackTrace();
-            throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
+                flag = false;
+            }else{
+                throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+            }
         }
 
         APIDeleteAliEdgeRouterEvent evt = new APIDeleteAliEdgeRouterEvent(msg.getId());
-        evt.setInventory(AliEdgeRouterInventory.valueOf(vo));
+        if(flag){
+            evt.setInventory(AliEdgeRouterInventory.valueOf(vo));
+        }else {
+            evt.setAliIdentityFlag(false);
+        }
+
         bus.publish(evt);
 
     }
 
     private void handle(APIUpdateAliEdgeRouterMsg msg){
         AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
+        Boolean flag = true;
+
+        APICreateAliEdgeRouterEvent evt = new APICreateAliEdgeRouterEvent(msg.getId());
         boolean update = false;
 
         if(msg.getName() !=null){
@@ -449,13 +481,25 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             if (update)
                 vo = dbf.updateAndRefresh(vo);
 
-        }catch (Exception e){
+        }catch (ClientException e){
             e.printStackTrace();
-            throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+
+            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
+
+                flag = false;
+            }else{
+                throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+            }
+
+
         }
 
-        APICreateAliEdgeRouterEvent evt = new APICreateAliEdgeRouterEvent(msg.getId());
-        evt.setInventory(AliEdgeRouterInventory.valueOf(vo));
+        if(flag){
+            evt.setInventory(AliEdgeRouterInventory.valueOf(vo));
+        }else {
+            evt.setAliIdentityFlag(false);
+        }
+
         bus.publish(evt);
 
     }

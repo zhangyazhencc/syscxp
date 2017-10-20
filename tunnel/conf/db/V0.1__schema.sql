@@ -121,10 +121,27 @@ CREATE TABLE `NodeEO` (
   `createDate` timestamp,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `uuid` (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '网络节点';
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE VIEW `syscxp_tunnel`.`NodeVO` AS SELECT uuid, name, code, description, contact, telephone, province, city, address, longtitude, latitude, property, status, extensionInfoUuid, lastOpDate, createDate
                         FROM `NodeEO` WHERE deleted IS NULL;
+
+## 区域字典表
+CREATE TABLE `ZoneVO` (
+  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+  `code` varchar(128) NOT NULL COMMENT '区域代码',
+  `name` varchar(128) NOT NULL COMMENT '区域名称',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+##节点区域关系表
+CREATE TABLE `ZoneNodeRefVO` (
+  `nodeUuid` varchar(32) NOT NULL COMMENT '节点UUID',
+  `zoneUuid` varchar(32) NOT NULL COMMENT '区域UUID',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ## 连接点
 CREATE TABLE  `syscxp_tunnel`.`EndpointEO` (

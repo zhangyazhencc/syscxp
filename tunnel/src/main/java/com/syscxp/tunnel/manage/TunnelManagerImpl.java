@@ -112,6 +112,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
     }
 
+    /**
+     * 自动获取 VSI
+     */
     private Integer getVsiAuto(){
 
         GLock glock = new GLock("maxvsi", 120);
@@ -134,6 +137,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         return vsi;
     }
 
+    /**
+     * 调用支付
+     */
     private boolean createOrder(APICreateOrderMsg orderMsg) {
         orderMsg.setNotifyUrl(restf.getSendCommandUrl());
         APIReply reply;
@@ -166,11 +172,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDescription(msg.getDescription());
-        if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-            vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
-        }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-            vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
-        }
+        vo.setExpireDate(null);
         vo.setState(InterfaceState.Unpaid);
         vo.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
         vo = dbf.persistAndRefresh(vo);
@@ -193,6 +195,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         if (createOrder(orderMsg)) {
             vo.setState(InterfaceState.Paid);
+            if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+                vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
+            }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+                vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
+            }
             vo = dbf.updateAndRefresh(vo);
             evt.setInventory(InterfaceInventory.valueOf(vo));
         }else{
@@ -221,11 +228,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDescription(msg.getDescription());
-        if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-            vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
-        }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-            vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
-        }
+        vo.setExpireDate(null);
         vo.setState(InterfaceState.Unpaid);
         vo.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
         vo = dbf.persistAndRefresh(vo);
@@ -248,6 +251,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         if (createOrder(orderMsg)) {
             vo.setState(InterfaceState.Paid);
+            if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+                vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
+            }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+                vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
+            }
             vo = dbf.updateAndRefresh(vo);
             evt.setInventory(InterfaceInventory.valueOf(vo));
         }else{
@@ -925,6 +933,54 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     }
 
+    private void updateTunnelFromOrderRenewOrSla(OrderCallbackCmd cmd) {
+        if(cmd.getProductType() == ProductType.PORT){
+            InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
+            boolean update = false;
+            if (cmd.getExpireDate() != null) {
+                vo.setExpireDate(cmd.getExpireDate());
+                update = true;
+            }
+            if(update)
+                dbf.updateAndRefresh(vo);
+        }else if(cmd.getProductType() == ProductType.TUNNEL){
+            TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
+            boolean update = false;
+            if (cmd.getExpireDate() != null) {
+                vo.setExpireDate(cmd.getExpireDate());
+                update = true;
+            }
+            if(update)
+                dbf.updateAndRefresh(vo);
+        }
+    }
+
+    private Object updateTunnelFromOrderBuy(OrderCallbackCmd cmd) {
+        if(cmd.getProductType() == ProductType.PORT){
+            InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
+            boolean update = false;
+            if (vo.getState() == InterfaceState.Unpaid) {
+                vo.setState(InterfaceState.Paid);
+                vo.setExpireDate(cmd.getExpireDate());
+                update = true;
+            }
+            return update ? dbf.updateAndRefresh(vo) : null;
+        }else if(cmd.getProductType() == ProductType.TUNNEL){
+            TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
+            boolean update = false;
+            if (vo.getState() == TunnelState.Unpaid) {
+                vo.setState(TunnelState.Enabled);
+                vo.setStatus(TunnelStatus.Connecting);
+                update = true;
+            }
+            return update ? dbf.updateAndRefresh(vo) : null;
+        }else{
+            return null;
+        }
+    }
+
+
+
     @Override
     public boolean start() {
         restf.registerSyncHttpCallHandler(OrderType.BUY.toString(), OrderCallbackCmd.class,
@@ -933,11 +989,11 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
                         logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         if(cmd.getProductType() == ProductType.PORT){
-                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
+                            updateTunnelFromOrderBuy(cmd);
                         }else if(cmd.getProductType() == ProductType.TUNNEL){
-                            TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
+                            TunnelVO vo = (TunnelVO)updateTunnelFromOrderBuy(cmd);
                             if (vo != null && vo.getStatus() == TunnelStatus.Connecting) {
-                                //todo 重新下发
+                                //todo 重新下发 下发成功设置到期时间
 
                             }
                         }
@@ -957,6 +1013,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                         }else if(cmd.getProductType() == ProductType.TUNNEL){
                             TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
                             if (vo != null) {
+                                //todo 下发删除
                                 dbf.remove(vo);
                             }
                         }
@@ -969,14 +1026,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
                         logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                        if(cmd.getProductType() == ProductType.PORT){
-                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
-                        }else if(cmd.getProductType() == ProductType.TUNNEL){
-                            TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
-                            if (vo != null) {
-                                dbf.updateAndRefresh(vo);
-                            }
-                        }
+                        updateTunnelFromOrderRenewOrSla(cmd);
                         return null;
                     }
                 });
@@ -985,14 +1035,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
                         logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                        if(cmd.getProductType() == ProductType.PORT){
-                            InterfaceVO vo = (InterfaceVO)updateTunnelFromOrder(cmd);
-                        }else if(cmd.getProductType() == ProductType.TUNNEL){
-                            TunnelVO vo = (TunnelVO)updateTunnelFromOrder(cmd);
-                            if (vo != null) {
-                                dbf.updateAndRefresh(vo);
-                            }
-                        }
+                        updateTunnelFromOrderRenewOrSla(cmd);
                         return null;
                     }
                 });

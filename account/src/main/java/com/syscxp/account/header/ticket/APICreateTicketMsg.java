@@ -1,7 +1,6 @@
 package com.syscxp.account.header.ticket;
 
-import com.syscxp.account.header.account.AccountConstant;
-import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -10,7 +9,7 @@ import com.syscxp.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/9/26.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
+@SuppressCredentialCheck
 public class APICreateTicketMsg  extends APIMessage {
 
     @APIParam(maxLength = 128)

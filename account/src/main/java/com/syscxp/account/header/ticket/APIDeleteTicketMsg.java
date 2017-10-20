@@ -2,6 +2,7 @@ package com.syscxp.account.header.ticket;
 
 import com.syscxp.account.header.account.AccountConstant;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIDeleteMessage;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -11,7 +12,7 @@ import com.syscxp.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/09/26.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
+@SuppressCredentialCheck
 public class APIDeleteTicketMsg extends APIDeleteMessage {
 
     private String uuid;

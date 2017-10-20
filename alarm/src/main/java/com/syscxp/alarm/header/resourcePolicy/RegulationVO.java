@@ -2,19 +2,22 @@ package com.syscxp.alarm.header.resourcePolicy;
 
 import com.syscxp.alarm.header.BaseVO;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Table
 @Entity
 public class RegulationVO  extends BaseVO{
 
     @Column
-    private String comparisonRuleUuid;
+    private String policyUuid;
 
-    @Column
-    private String monitorTargetUuid;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name="comparisonRuleUuid")
+    private ComparisonRuleVO comparisonRuleVO;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name="monitorTargetUuid")
+    private MonitorTargetVO monitorTargetVO;
 
     @Column
     private int alarmThreshold;
@@ -24,22 +27,6 @@ public class RegulationVO  extends BaseVO{
 
     @Column
     private int triggerPeriod;
-
-    public String getComparisonRuleUuid() {
-        return comparisonRuleUuid;
-    }
-
-    public void setComparisonRuleUuid(String comparisonRuleUuid) {
-        this.comparisonRuleUuid = comparisonRuleUuid;
-    }
-
-    public String getMonitorTargetUuid() {
-        return monitorTargetUuid;
-    }
-
-    public void setMonitorTargetUuid(String monitorTargetUuid) {
-        this.monitorTargetUuid = monitorTargetUuid;
-    }
 
     public int getAlarmThreshold() {
         return alarmThreshold;
@@ -63,5 +50,29 @@ public class RegulationVO  extends BaseVO{
 
     public void setTriggerPeriod(int triggerPeriod) {
         this.triggerPeriod = triggerPeriod;
+    }
+
+    public String getPolicyUuid() {
+        return policyUuid;
+    }
+
+    public void setPolicyUuid(String policyUuid) {
+        this.policyUuid = policyUuid;
+    }
+
+    public ComparisonRuleVO getComparisonRuleVO() {
+        return comparisonRuleVO;
+    }
+
+    public void setComparisonRuleVO(ComparisonRuleVO comparisonRuleVO) {
+        this.comparisonRuleVO = comparisonRuleVO;
+    }
+
+    public MonitorTargetVO getMonitorTargetVO() {
+        return monitorTargetVO;
+    }
+
+    public void setMonitorTargetVO(MonitorTargetVO monitorTargetVO) {
+        this.monitorTargetVO = monitorTargetVO;
     }
 }

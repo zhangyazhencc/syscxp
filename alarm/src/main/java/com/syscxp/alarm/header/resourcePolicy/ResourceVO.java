@@ -5,6 +5,7 @@ import com.syscxp.header.billing.ProductType;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Set;
 
 @Table
 @Entity
@@ -28,6 +29,13 @@ public class ResourceVO  extends BaseVO{
 
     @Column
     private String networkSegmentB;
+
+    @ManyToMany(fetch =FetchType.EAGER)
+    @JoinTable(name="ResourcePolicyRefVO",
+            joinColumns={@JoinColumn(name="resourceUuid",referencedColumnName="uuid")},
+            inverseJoinColumns={@JoinColumn(name="policyUuid",referencedColumnName="uuid")}
+    )
+    private Set<PolicyVO> policyVOSet;
 
     public ProductType getProductType() {
         return productType;
@@ -77,4 +85,11 @@ public class ResourceVO  extends BaseVO{
         this.networkSegmentB = networkSegmentB;
     }
 
+    public Set<PolicyVO> getPolicyVOSet() {
+        return policyVOSet;
+    }
+
+    public void setPolicyVOSet(Set<PolicyVO> policyVOSet) {
+        this.policyVOSet = policyVOSet;
+    }
 }
