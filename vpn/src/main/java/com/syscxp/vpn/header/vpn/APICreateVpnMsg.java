@@ -32,16 +32,6 @@ public class APICreateVpnMsg extends APIVpnMessage {
     private String netmask;
     @APIParam
     private String vlan;
-    @APIParam
-    private List<ProductPriceUnit> productPriceUnits;
-
-    public List<ProductPriceUnit> getProductPriceUnits() {
-        return productPriceUnits;
-    }
-
-    public void setProductPriceUnits(List<ProductPriceUnit> productPriceUnits) {
-        this.productPriceUnits = productPriceUnits;
-    }
 
     public String getNetworkUuid() {
         return networkUuid;
