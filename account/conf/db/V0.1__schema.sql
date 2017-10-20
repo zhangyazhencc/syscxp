@@ -289,7 +289,7 @@ CREATE TABLE `TicketVO` (
   `accountUuid` varchar(32) COMMENT '创建账户',
   `userUuid` varchar(32) COMMENT '创建用户/账户',
   `adminUserUuid` varchar(32) COMMENT '工单处理人(管理员为空)',
-  `type` varchar(128) NOT NULL COMMENT '工单类型(数据字典)',
+  `ticketTypeCode` varchar(128) NOT NULL COMMENT '工单类型(数据字典)',
   `content` text NOT NULL COMMENT '工单内容',
   `contentExtra` text COMMENT '工单json数据',
   `status` varchar(32) NOT NULL COMMENT '工单最新状态(枚举)',
