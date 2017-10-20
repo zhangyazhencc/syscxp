@@ -179,6 +179,9 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
             vo.setContentExtra(msg.getContentExtra());
         }
 
+        vo.setEmail(msg.getEmail());
+        vo.setPhone(msg.getPhone());
+
         vo.setTicketFrom(msg.getTicketFrom());
         vo.setContent(msg.getContent());
         vo.setStatus(TicketStatus.untreated);
