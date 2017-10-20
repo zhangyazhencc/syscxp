@@ -905,10 +905,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
         priceMsg.setAccountUuid(msg.getAccountUuid());
-        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH
-        );
+        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
         priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(CollectionDSL.list());
+        priceMsg.setUnits(generateUnits(msg.getBandwidth()));
         APIReply rsp = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!rsp.isSuccess())
             throw new ApiMessageInterceptionException(
