@@ -17,7 +17,7 @@ public class PolicyInventory {
     private ProductType productType;
     private String name;
     private String description;
-    private int bindResources;
+    private Long bindResources;
     private Timestamp createDate;
     private Timestamp lastOpDate;
     private Set<RegulationVO> regulationVOS;
@@ -77,11 +77,11 @@ public class PolicyInventory {
         this.description = description;
     }
 
-    public int getBindResources() {
+    public Long getBindResources() {
         return bindResources;
     }
 
-    public void setBindResources(int bindResources) {
+    public void setBindResources(Long bindResources) {
         this.bindResources = bindResources;
     }
 
