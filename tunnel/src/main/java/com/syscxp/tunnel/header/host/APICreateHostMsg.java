@@ -27,6 +27,9 @@ public class APICreateHostMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 128)
     private String password;
 
+    @APIParam(required = false,maxLength = 256)
+    private String position;
+
     public String getNodeUuid() {
         return nodeUuid;
     }
@@ -73,5 +76,13 @@ public class APICreateHostMsg extends APIMessage {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
     }
 }

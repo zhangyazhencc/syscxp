@@ -30,7 +30,10 @@ public class APIUpdateHostMsg extends APIMessage {
     @APIParam(emptyString = false, maxLength = 128)
     private String password;
 
-    @APIParam(emptyString = false,validValues = {"Deployed","Undeployed"})
+    @APIParam(required = false, maxLength = 256)
+    private String position;
+
+    @APIParam(emptyString = false,validValues = {"Enabled","Disabled","PreMaintenance","Maintenance"})
     private HostState state;
 
     @APIParam(emptyString = false,validValues = {"Connecting","Connected","Disconnected"})
@@ -106,5 +109,13 @@ public class APIUpdateHostMsg extends APIMessage {
 
     public void setStatus(HostStatus status) {
         this.status = status;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
     }
 }

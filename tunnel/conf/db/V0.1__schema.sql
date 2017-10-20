@@ -390,6 +390,7 @@ CREATE TABLE `HostEO` (
   `hostIp` varchar(128) DEFAULT NULL,
   `username` varchar(128) NOT NULL COMMENT '用户名',
   `password` varchar(128) NOT NULL COMMENT '密码',
+  `position` varchar(256) NOT NULL COMMENT '位置',
   `state` varchar(32) NOT NULL DEFAULT 'Undeployed' COMMENT '监控状况：已部署，未部署',
   `status` varchar(32) NOT NULL DEFAULT 'Connected' COMMENT '监控状态',
   `deleted` varchar(255) DEFAULT NULL,
