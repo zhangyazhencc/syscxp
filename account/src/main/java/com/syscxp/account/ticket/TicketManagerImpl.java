@@ -220,6 +220,7 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
 
     private void validate(APICreateTicketMsg msg) {
         List<TicketTypeVO> list =  dbf.createQuery(TicketTypeVO.class).list();
+
         boolean is = false;
         for(TicketTypeVO vo : list){
             if(vo.getCode().equals(msg.getTicketTypeCode())){
@@ -234,7 +235,7 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
     }
 
     private void setServiceId(APIMessage msg) {
-      bus.makeTargetServiceIdByResourceUuid(msg, AccountConstant.SERVICE_ID, "");
+      bus.makeTargetServiceIdByResourceUuid(msg, TicketConstant.SERVICE_ID, "");
     }
 
 }
