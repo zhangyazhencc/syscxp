@@ -121,6 +121,8 @@ CREATE TABLE  `syscxp_vpn`.`VpnHostVO` (
 	`sshPort` VARCHAR(10) NOT NULL COMMENT 'ssh端口',
 	`username` VARCHAR(255) NOT NULL COMMENT '用户名',
 	`password` VARCHAR(255) NOT NULL COMMENT '密码',
+	`startPort` INT COMMENT '起始端口',
+	`endPort` INT COMMENT '末尾端口',
 	`vpnInterfaceName` VARCHAR(30) NOT NULL COMMENT 'VPN借口名称',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,
