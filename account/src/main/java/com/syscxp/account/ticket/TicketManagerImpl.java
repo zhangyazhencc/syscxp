@@ -164,6 +164,8 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
     private void handle(APICreateTicketMsg msg) {
 
         TicketVO vo =  new TicketVO();
+        vo.setCreateDate(dbf.getCurrentSqlTime());
+        vo.setLastOpDate(dbf.getCurrentSqlTime());
         vo.setUuid(Platform.getUuid());
         if(!msg.getTicketFrom().toString().equals(TicketFrom.apply.toString())){
             vo.setAccountUuid(msg.getSession().getAccountUuid());
