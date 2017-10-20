@@ -30,6 +30,7 @@ import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.header.vpn.VpnAgentCommand;
 import com.syscxp.header.vpn.VpnAgentResponse.*;
 import com.syscxp.utils.CollectionDSL;
+import com.syscxp.utils.StringDSL;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.data.ArrayHelper;
 import com.syscxp.utils.gson.JSONObjectUtil;
@@ -220,7 +221,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         orderMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
         orderMsg.setDuration(vpn.getDuration());
         orderMsg.setProductDescription(vpn.getDescription());
-        orderMsg.setUnits(msg.getProductPriceUnits());
+        orderMsg.setUnits(generateUnits(msg.getBandwidth()));
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
 
@@ -251,6 +252,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         evt.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vo)));
         bus.publish(evt);
+    }
+    private List<ProductPriceUnit> generateUnits(Long bandwidth){
+
+        ProductPriceUnit unit = new ProductPriceUnit();
+        unit.setCategory(Category.VPN);
+        unit.setProductType(ProductType.VPN);
+        unit.setConfig(String.valueOf(bandwidth) + VpnConstant.BANDWIDTH_UNIT);
+
+        return CollectionDSL.list(unit);
     }
 
     private boolean createOrder(APICreateOrderMsg orderMsg) {
@@ -344,7 +354,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         orderMsg.setProductType(ProductType.VPN);
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
-        orderMsg.setUnits(msg.getProductPriceUnits());
+        orderMsg.setUnits(generateUnits(msg.getBandwidth()));
         orderMsg.setStartTime(vpn.getCreateDate());
         orderMsg.setExpiredTime(vpn.getExpireDate());
 
