@@ -328,8 +328,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         vo.setName(msg.getName());
         vo.setCode(msg.getCode());
         vo.setEndpointType(msg.getEndpointType());
-        vo.setState(EndpointState.Enable);
-        vo.setStatus(EndpointStatus.Close);
+        vo.setState(msg.getState());
+        vo.setStatus(msg.getStatus());
         vo.setDescription(msg.getDescription());
 
         vo = dbf.persistAndRefresh(vo);

@@ -91,9 +91,21 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             handle((APIUpdateZoneMsg) msg);
         } else if (msg instanceof APIReconnectVpnHostMsg) {
             handle((APIReconnectVpnHostMsg) msg);
-        } else {
+        } else if(msg instanceof APIUpdateVpnHostPortMsg){
+            handle((APIUpdateVpnHostPortMsg) msg);
+        }else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIUpdateVpnHostPortMsg msg) {
+        APIUpdateVpnHostPortEvent evt = new APIUpdateVpnHostPortEvent(msg.getId());
+        VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
+        host.setStartPort(msg.getStartPort());
+        host.setEndPort(msg.getEndPort());
+
+        evt.setInventory(VpnHostInventory.valueOf(dbf.updateAndRefresh(host)));
+        bus.publish(evt);
     }
 
 
@@ -302,19 +314,19 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         evt.setInventory(VpnHostInventory.valueOf(dbf.persistAndRefresh(host)));
         bus.publish(evt);
 
-//        doAddHost(msg, new ReturnValueCompletion<VpnHostInventory>(msg) {
-//            @Override
-//            public void success(VpnHostInventory returnValue) {
-//                evt.setInventory(returnValue);
-//                bus.publish(evt);
-//            }
-//
-//            @Override
-//            public void fail(ErrorCode errorCode) {
-//                evt.setError(errorCode);
-//                bus.publish(evt);
-//            }
-//        });
+        /*doAddHost(msg, new ReturnValueCompletion<VpnHostInventory>(msg) {
+            @Override
+            public void success(VpnHostInventory returnValue) {
+                evt.setInventory(returnValue);
+                bus.publish(evt);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                evt.setError(errorCode);
+                bus.publish(evt);
+            }
+        });*/
 
     }
 

@@ -22,8 +22,14 @@ public class APICreateEndpointMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 128)
     private String code;
 
-    @APIParam(emptyString = false,validValues = {"CLOUD", "ACCESSIN"})
+    @APIParam(emptyString = false,validValues = {"CLOUD","ACCESSIN","INTERCONNECTED"})
     private EndpointType endpointType;
+
+    @APIParam(emptyString = false,validValues = {"Disabled","Enabled"})
+    private EndpointState state;
+
+    @APIParam(emptyString = false,validValues = {"Open","Close"})
+    private EndpointStatus status;
 
     @APIParam(required = false,maxLength = 255)
     private String description;
@@ -66,5 +72,21 @@ public class APICreateEndpointMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public EndpointState getState() {
+        return state;
+    }
+
+    public void setState(EndpointState state) {
+        this.state = state;
+    }
+
+    public EndpointStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(EndpointStatus status) {
+        this.status = status;
     }
 }

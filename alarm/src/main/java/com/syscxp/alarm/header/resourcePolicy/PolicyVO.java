@@ -5,6 +5,7 @@ import com.syscxp.header.billing.ProductType;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Set;
 
 @Table
 @Entity
@@ -22,6 +23,10 @@ public class PolicyVO extends BaseVO {
 
     @Column
     private int bindResources;
+
+    @OneToMany(fetch =FetchType.EAGER)
+    @JoinColumn(name="policyUuid")
+    private Set<RegulationVO> regulationVOSet;
 
     public ProductType getProductType() {
         return productType;
@@ -55,4 +60,11 @@ public class PolicyVO extends BaseVO {
         this.bindResources = bindResources;
     }
 
+    public Set<RegulationVO> getRegulationVOSet() {
+        return regulationVOSet;
+    }
+
+    public void setRegulationVOSet(Set<RegulationVO> regulationVOSet) {
+        this.regulationVOSet = regulationVOSet;
+    }
 }

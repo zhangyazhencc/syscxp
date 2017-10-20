@@ -20,7 +20,7 @@ public class APIUpdateEndpointMsg extends APIMessage {
     @APIParam(required = false,emptyString = false,maxLength = 128)
     private String code;
 
-    @APIParam(required = false,emptyString = false,validValues = {"Enable","Disable"})
+    @APIParam(required = false,emptyString = false,validValues = {"Enabled","Disabled"})
     private EndpointState state;
 
     @APIParam(required = false,emptyString = false,validValues = {"Open","Close"})
