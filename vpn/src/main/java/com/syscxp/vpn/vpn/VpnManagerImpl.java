@@ -31,6 +31,7 @@ import com.syscxp.header.vpn.VpnAgentCommand;
 import com.syscxp.header.vpn.VpnAgentResponse.*;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.Utils;
+import com.syscxp.utils.data.ArrayHelper;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.vpn.exception.VpnServiceException;
@@ -49,6 +50,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -140,7 +142,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void handle(APIDownloadCertificateMsg msg) {
         final APIDownloadCertificateEvent evt = new APIDownloadCertificateEvent(msg.getId());
-        VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+        VpnVO vpn = Q.New(VpnVO.class).eq(VpnVO_.sid, msg.getSid()).find();
 
         DownloadCertificateCmd cmd = DownloadCertificateCmd.valueOf(vpn);
         try {
@@ -267,7 +269,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 .orderBy(VpnVO_.port, SimpleQuery.Od.DESC).limit(1).find();
         if (vpn == null)
             return host.getStartPort();
-        if (vpn.getPort() >= host.getEndPort()){
+        if (vpn.getPort() >= host.getEndPort()) {
             throw new VpnServiceException(
                     argerr("All port in the host[uuid:%s] already used.", host.getUuid()));
         }
@@ -833,14 +835,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void validate(APIDownloadCertificateMsg msg) {
 
-        Q q = Q.New(VpnVO.class)
-                .eq(VpnVO_.uuid, msg.getUuid())
-                .eq(VpnVO_.sid, msg.getSid());
+        VpnVO vpn = Q.New(VpnVO.class).eq(VpnVO_.sid, msg.getSid()).find();
 
-        if (!q.isExists()) {
+        byte[] bytes = (vpn.getAccountUuid() + vpn.getSid() + vpn.getCertKey() + msg.getTimestamp()).getBytes();
+
+        Arrays.sort(bytes);
+
+        if (!DigestUtils.md5Hex(bytes).equals(msg.getSignature()))
             throw new ApiMessageInterceptionException(
-                    argerr("Vpn[uuid:%s, sid:%s]验证不通过.", msg.getUuid(), msg.getSid()));
-        }
+                    argerr("The Vpn[sid:%s]验证不通过.", msg.getSid()));
     }
 
     private void validate(APIUpdateVpnBandwidthMsg msg) {

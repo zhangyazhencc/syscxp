@@ -1,26 +1,20 @@
 package com.syscxp.vpn.header.vpn;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.vpn.vpn.VpnConstant;
 
+@SuppressCredentialCheck
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN)
-public class APIDownloadCertificateMsg extends APIVpnMessage {
-    @APIParam(resourceType = VpnVO.class, checkAccount = true)
-    private String uuid;
-    @APIParam
+public class APIDownloadCertificateMsg extends APIMessage {
+    @APIParam(resourceType = VpnVO.class)
     private String sid;
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
+    @APIParam
+    private long timestamp;
 
     public String getSid() {
         return sid;
@@ -30,6 +24,14 @@ public class APIDownloadCertificateMsg extends APIVpnMessage {
         this.sid = sid;
     }
 
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
+
     public ApiNotification __notification__() {
         final APIMessage that = this;
 
@@ -37,7 +39,7 @@ public class APIDownloadCertificateMsg extends APIVpnMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Download certificate")
-                        .resource(uuid, VpnVO.class.getSimpleName())
+                        .resource(sid, VpnVO.class.getSimpleName())
                         .messageAndEvent(that, evt).done();
             }
         };
