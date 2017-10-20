@@ -20,6 +20,7 @@ public class HostInventory {
     private String hostIp;
     private String username;
     private String password;
+    private String position;
     private HostState state;
     private HostStatus status;
     private Timestamp lastOpDate;

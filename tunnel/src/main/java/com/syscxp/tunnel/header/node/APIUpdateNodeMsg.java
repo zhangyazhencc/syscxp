@@ -36,7 +36,7 @@ public class APIUpdateNodeMsg extends APIMessage {
     private String contact;
     @APIParam(required = false,emptyString = false,maxLength = 32)
     private String telephone;
-    @APIParam(required = false,emptyString = false,validValues = {"CLOSE", "OPEN","AVAILABLE"})
+    @APIParam(required = false,emptyString = false,validValues = {"Close", "Open"})
     private NodeStatus status;
     @APIParam(required = false,maxLength = 32)
     private String extensionInfoUuid;

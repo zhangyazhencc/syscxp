@@ -8,6 +8,7 @@ import com.syscxp.tunnel.header.switchs.PhysicalSwitchAccessType;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
 import com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO_;
 import com.syscxp.utils.gson.JSONObjectUtil;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.Platform;
@@ -121,6 +122,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         vo.setPassword(msg.getPassword());
         vo.setState(HostState.Disabled);
         vo.setStatus(HostStatus.Connected);
+        if(StringUtils.isNotEmpty(msg.getPosition())){
+            vo.setPosition(msg.getPosition());
+        }
 
         vo = dbf.persistAndRefresh(vo);
 
@@ -140,6 +144,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         vo.setPassword(msg.getPassword());
         vo.setState(msg.getState());
         vo.setStatus(msg.getStatus());
+        if(StringUtils.isNotEmpty(msg.getPosition())){
+            vo.setPosition(msg.getPosition());
+        }
 
         vo = dbf.updateAndRefresh(vo);
 

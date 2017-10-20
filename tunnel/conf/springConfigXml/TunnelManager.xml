@@ -20,7 +20,6 @@
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>com.syscxp.tunnel.header.tunnel.NetworkVO</value>
                 <value>com.syscxp.tunnel.header.tunnel.InterfaceVO</value>
                 <value>com.syscxp.tunnel.header.tunnel.TunnelVO</value>
             </list>
