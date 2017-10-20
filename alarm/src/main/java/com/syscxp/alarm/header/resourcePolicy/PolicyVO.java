@@ -21,12 +21,18 @@ public class PolicyVO extends BaseVO {
     @Column
     private String description;
 
-    @Column
-    private int bindResources;
+    private Long bindResources;
 
-    @OneToMany(fetch =FetchType.EAGER)
+    @OneToMany(fetch =FetchType.EAGER,cascade = CascadeType.REMOVE)
     @JoinColumn(name="policyUuid")
     private Set<RegulationVO> regulationVOSet;
+
+//    @ManyToMany(fetch =FetchType.EAGER)
+//    @JoinTable(name="ResourcePolicyRefVO",
+//            joinColumns={@JoinColumn(name="resourceUuid",referencedColumnName="uuid")},
+//            inverseJoinColumns={@JoinColumn(name="policyUuid",referencedColumnName="uuid")}
+//    )
+//    private Set<ResourceVO> resourceVOS;
 
     public ProductType getProductType() {
         return productType;
@@ -52,11 +58,11 @@ public class PolicyVO extends BaseVO {
         this.description = description;
     }
 
-    public int getBindResources() {
+    public Long getBindResources() {
         return bindResources;
     }
 
-    public void setBindResources(int bindResources) {
+    public void setBindResources(Long bindResources) {
         this.bindResources = bindResources;
     }
 
@@ -67,4 +73,12 @@ public class PolicyVO extends BaseVO {
     public void setRegulationVOSet(Set<RegulationVO> regulationVOSet) {
         this.regulationVOSet = regulationVOSet;
     }
+
+//    public Set<ResourceVO> getResourceVOS() {
+//        return resourceVOS;
+//    }
+//
+//    public void setResourceVOS(Set<ResourceVO> resourceVOS) {
+//        this.resourceVOS = resourceVOS;
+//    }
 }
