@@ -164,6 +164,8 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
     private void handle(APICreateTicketMsg msg) {
 
         TicketVO vo =  new TicketVO();
+        vo.setCreateDate(dbf.getCurrentSqlTime());
+        vo.setLastOpDate(dbf.getCurrentSqlTime());
         vo.setUuid(Platform.getUuid());
         if(!msg.getTicketFrom().toString().equals(TicketFrom.apply.toString())){
             vo.setAccountUuid(msg.getSession().getAccountUuid());
@@ -218,6 +220,7 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
 
     private void validate(APICreateTicketMsg msg) {
         List<TicketTypeVO> list =  dbf.createQuery(TicketTypeVO.class).list();
+
         boolean is = false;
         for(TicketTypeVO vo : list){
             if(vo.getCode().equals(msg.getTicketTypeCode())){
@@ -232,7 +235,7 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
     }
 
     private void setServiceId(APIMessage msg) {
-      bus.makeTargetServiceIdByResourceUuid(msg, AccountConstant.SERVICE_ID, "");
+      bus.makeTargetServiceIdByResourceUuid(msg, TicketConstant.SERVICE_ID, "");
     }
 
 }
