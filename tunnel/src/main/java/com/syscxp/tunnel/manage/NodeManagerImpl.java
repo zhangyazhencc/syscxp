@@ -120,7 +120,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                 parseObject(msg.getNewNodeExtensionInfo());
 
 
-        String oldmogo = "{" +"\"nodeExtensionInfo:\"" + com.alibaba.fastjson.JSONObject.toJSONString(mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
+        String oldmogo = "{" +"\"nodeExtensionInfo\":" + com.alibaba.fastjson.JSONObject.toJSONString(mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
                 newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class)) +"}";
 
         com.alibaba.fastjson.JSONObject oldInfo = com.alibaba.fastjson.JSONObject.parseObject(oldmogo);
