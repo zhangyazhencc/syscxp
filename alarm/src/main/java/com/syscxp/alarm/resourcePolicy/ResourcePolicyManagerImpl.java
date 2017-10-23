@@ -25,10 +25,9 @@ import com.syscxp.header.query.QueryCondition;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
-import com.syscxp.header.tunnel.APIQueryTunnelForBillingMsg;
-import com.syscxp.header.tunnel.APIQueryTunnelForBillingReply;
-import com.syscxp.header.tunnel.TunnelForBillingInventory;
-import com.syscxp.utils.FieldUtils;
+import com.syscxp.header.tunnel.APIQueryTunnelForAlarmMsg;
+import com.syscxp.header.tunnel.APIQueryTunnelForAlarmReply;
+import com.syscxp.header.tunnel.TunnelForAlarmInventory;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,10 +35,9 @@ import org.springframework.util.StringUtils;
 
 import javax.persistence.Query;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static com.syscxp.header.billing.ProductType.*;
 
 public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMessageInterceptor {
 
@@ -100,11 +98,8 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         }
     }
 
-    private void handle(APIGetResourcesByProductTypeMsg msg) {
-
-        ProductType productType = msg.getProductType();
+    private String getProductUrl(ProductType productType){
         String productServerUrl = AlarmGlobalProperty.TUNNEL_SERVER_RUL;
-
         switch (productType){
             case TUNNEL:
                 productServerUrl = AlarmGlobalProperty.TUNNEL_SERVER_RUL;
@@ -113,9 +108,72 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
                 productServerUrl = "";
                 break;
         }
+        return productServerUrl;
+    }
 
-        APIQueryTunnelForBillingMsg aMsg = new APIQueryTunnelForBillingMsg();
-        List<TunnelForBillingInventory> inventories = null;
+    private void handle(APIGetResourcesBindByPolicyMsg msg) {
+        PolicyVO policyVo = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
+        String productServerUrl = getProductUrl( policyVo.getProductType());
+
+        SimpleQuery.Op op = SimpleQuery.Op.IN;
+        if(!msg.isBind()){
+            op = SimpleQuery.Op.NOT_IN;
+        }
+
+        SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
+        query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
+        List<ResourcePolicyRefVO> resourcePolicyRefVOS =query.list();
+        String[] values = new String[resourcePolicyRefVOS.size()];
+        for(int i = 0; i<resourcePolicyRefVOS.size();i++){
+            values[i] = resourcePolicyRefVOS.get(i).getPolicyUuid();
+        }
+
+        if (policyVo.getProductType()==ProductType.TUNNEL){
+            APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
+            List<TunnelForAlarmInventory> inventories = null;
+            long count = 0;
+            QueryCondition condition = new QueryCondition();
+            condition.setName("status");
+            condition.setOp("=");
+            condition.setValue("Connected");
+            QueryCondition condition2 = new QueryCondition();
+            condition2.setName("uuid");
+            condition2.setOp(op.name());
+            condition2.setValues( values);
+            List<QueryCondition> conditions = new ArrayList<>();
+            conditions.add(condition);
+            conditions.add(condition2);
+            aMsg.setLimit(msg.getLimit());
+            aMsg.setStart(msg.getStart());
+            aMsg.setConditions(conditions);
+            aMsg.setReplyWithCount(true);
+            aMsg.setCount(false);
+            InnerMessageHelper.setMD5(aMsg);
+            String gstr = RESTApiDecoder.dump(aMsg);
+            RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
+            if (rsp.getState().equals(RestAPIState.Done.toString())) {
+                APIQueryTunnelForAlarmReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
+                if(productReply instanceof  APIQueryTunnelForAlarmReply){
+                    inventories = productReply.getInventories();
+                    count = productReply.getTotal();
+                }
+            }
+            APIGetResourcesBindByPolicyReply reply = new APIGetResourcesBindByPolicyReply();
+            reply.setCount(count);
+            reply.setInventories(inventories);
+            bus.reply(msg,reply);
+        } else if(policyVo.getProductType()==ProductType.VPN){
+
+        }
+
+    }
+
+    private void handle(APIGetResourcesByProductTypeMsg msg) {
+
+        String productServerUrl = getProductUrl( msg.getProductType());
+
+        APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
+        List<TunnelForAlarmInventory> inventories = null;
         QueryCondition condition = new QueryCondition();
         condition.setName("status");
         condition.setOp("=");
@@ -127,8 +185,8 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         String gstr = RESTApiDecoder.dump(aMsg);
         RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
         if (rsp.getState().equals(RestAPIState.Done.toString())) {
-            APIQueryTunnelForBillingReply productReply = (APIQueryTunnelForBillingReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
-            if(productReply instanceof  APIQueryTunnelForBillingReply)inventories = productReply.getInventories();
+            APIQueryTunnelForAlarmReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
+            if(productReply instanceof  APIQueryTunnelForAlarmReply)inventories = productReply.getInventories();
         }
         APIGetResourcesByProductTypeReply reply = new APIGetResourcesByProductTypeReply();
         reply.setInventories(inventories);
@@ -185,32 +243,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
 
     }
 
-    private void handle(APIGetResourcesBindByPolicyMsg msg) {
-        SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
 
-        SimpleQuery.Op op = SimpleQuery.Op.IN;
-        if(!msg.isBind()){
-            op = SimpleQuery.Op.NOT_IN;
-        }
-        query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
-        List<ResourcePolicyRefVO> resourcePolicyRefVOS =query.list();
-        List<String> bindResourceUuids = new ArrayList<>();
-        for(ResourcePolicyRefVO resourcePolicyRefVO: resourcePolicyRefVOS){
-            bindResourceUuids.add(resourcePolicyRefVO.getResourceUuid());
-        }
-        SimpleQuery<ResourceVO> queryResource = dbf.createQuery(ResourceVO.class);
-        queryResource.add(ResourceVO_.uuid, op, bindResourceUuids);
-        Long count = queryResource.count();
-        queryResource.setStart(msg.getStart());
-        queryResource.setLimit(msg.getLimit());
-        List<ResourceVO> resourceVOS = queryResource.list();
-        APIGetResourcesBindByPolicyReply reply = new APIGetResourcesBindByPolicyReply();
-        reply.setCount(count);
-        reply.setInventories(ResourceInventory.valueOf(resourceVOS));
-        bus.reply(msg,reply);
-
-
-    }
 
     private void handle(APIDeletePolicyMsg msg) {
         PolicyVO vo = dbf.findByUuid(msg.getUuid(),PolicyVO.class);
