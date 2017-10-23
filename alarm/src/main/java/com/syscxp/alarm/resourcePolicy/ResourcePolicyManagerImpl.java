@@ -1,5 +1,6 @@
 package com.syscxp.alarm.resourcePolicy;
 
+import com.syscxp.alarm.AlarmGlobalProperty;
 import com.syscxp.alarm.header.contact.ContactNotifyWayRefVO;
 import com.syscxp.alarm.header.contact.ContactNotifyWayRefVO_;
 import com.syscxp.alarm.header.resourcePolicy.*;
@@ -11,14 +12,22 @@ import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.identity.InnerMessageHelper;
+import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.alarm.AlarmConstant;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
+import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.query.QueryCondition;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.rest.RestAPIResponse;
+import com.syscxp.header.rest.RestAPIState;
+import com.syscxp.header.tunnel.APIQueryTunnelForBillingMsg;
+import com.syscxp.header.tunnel.APIQueryTunnelForBillingReply;
+import com.syscxp.header.tunnel.TunnelForBillingInventory;
 import com.syscxp.utils.FieldUtils;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -29,6 +38,8 @@ import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static com.syscxp.header.billing.ProductType.*;
 
 public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMessageInterceptor {
 
@@ -91,8 +102,38 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
 
     private void handle(APIGetResourcesByProductTypeMsg msg) {
 
-      
-    }
+        ProductType productType = msg.getProductType();
+        String productServerUrl = AlarmGlobalProperty.TUNNEL_SERVER_RUL;
+
+        switch (productType){
+            case TUNNEL:
+                productServerUrl = AlarmGlobalProperty.TUNNEL_SERVER_RUL;
+                break;
+            case VPN:
+                productServerUrl = "";
+                break;
+        }
+
+        APIQueryTunnelForBillingMsg aMsg = new APIQueryTunnelForBillingMsg();
+        List<TunnelForBillingInventory> inventories = null;
+        QueryCondition condition = new QueryCondition();
+        condition.setName("status");
+        condition.setOp("=");
+        condition.setValue("Connected");
+        List<QueryCondition> conditions = new ArrayList<>();
+        conditions.add(condition);
+        aMsg.setConditions(conditions);
+        InnerMessageHelper.setMD5(aMsg);
+        String gstr = RESTApiDecoder.dump(aMsg);
+        RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
+        if (rsp.getState().equals(RestAPIState.Done.toString())) {
+            APIQueryTunnelForBillingReply productReply = (APIQueryTunnelForBillingReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
+            if(productReply instanceof  APIQueryTunnelForBillingReply)inventories = productReply.getInventories();
+        }
+        APIGetResourcesByProductTypeReply reply = new APIGetResourcesByProductTypeReply();
+        reply.setInventories(inventories);
+        bus.reply(msg,reply);
+        }
 
     private void handle(APIAttachPolicyByResourceMsg msg) {
         List<ResourcePolicyRefInventory> list = new ArrayList<>();
