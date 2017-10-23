@@ -30,9 +30,7 @@ import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.header.vpn.VpnAgentCommand;
 import com.syscxp.header.vpn.VpnAgentResponse.*;
 import com.syscxp.utils.CollectionDSL;
-import com.syscxp.utils.StringDSL;
 import com.syscxp.utils.Utils;
-import com.syscxp.utils.data.ArrayHelper;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.vpn.exception.VpnServiceException;
@@ -43,7 +41,6 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
@@ -253,7 +250,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         evt.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vo)));
         bus.publish(evt);
     }
-    private List<ProductPriceUnit> generateUnits(Long bandwidth){
+
+    private List<ProductPriceUnit> generateUnits(Long bandwidth) {
 
         ProductPriceUnit unit = new ProductPriceUnit();
         unit.setCategory(Category.VPN);
@@ -896,21 +894,20 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                             msg.getSession().getAccountUuid()));
         }
         // 物理机
-        List<String> hostUuids = Q.New(HostInterfaceVO.class)
+        String hostUuid = Q.New(HostInterfaceVO.class)
                 .eq(HostInterfaceVO_.endpointUuid, msg.getEndpointUuid())
-                .select(HostInterfaceVO_.hostUuid).listValues();
+                .select(HostInterfaceVO_.hostUuid).findValue();
 
-        if (CollectionUtils.isEmpty(hostUuids))
+        if (hostUuid == null)
             throw new ApiMessageInterceptionException(
                     argerr("The Host of the endpoint[uuid:%s] does not exist.", msg.getEndpointUuid()));
-        msg.setHostUuid(hostUuids.get(0));
+        msg.setHostUuid(hostUuid);
 
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
         priceMsg.setAccountUuid(msg.getAccountUuid());
-        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH
-        );
+        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
         priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(CollectionDSL.list());
+        priceMsg.setUnits(generateUnits(msg.getBandwidth()));
         APIReply rsp = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!rsp.isSuccess())
             throw new ApiMessageInterceptionException(

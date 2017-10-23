@@ -12,5 +12,4 @@ public class PolicyVO_  extends BaseVO_ {
     public static volatile SingularAttribute<ResourceVO, ProductType> productType;
     public static volatile SingularAttribute<ResourceVO, String> name;
     public static volatile SingularAttribute<ResourceVO, String> description;
-    public static volatile SingularAttribute<ResourceVO, Integer> bindResources;
 }

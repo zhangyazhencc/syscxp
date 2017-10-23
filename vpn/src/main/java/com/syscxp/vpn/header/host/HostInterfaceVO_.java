@@ -7,10 +7,9 @@ import java.sql.Timestamp;
 @StaticMetamodel(HostInterfaceVO.class)
 public class HostInterfaceVO_ {
     public static volatile SingularAttribute<HostInterfaceVO, String> uuid;
-    public static volatile SingularAttribute<HostInterfaceVO, String> name;
+    public static volatile SingularAttribute<HostInterfaceVO, String> interfaceName;
     public static volatile SingularAttribute<HostInterfaceVO, String> hostUuid;
     public static volatile SingularAttribute<HostInterfaceVO, String> endpointUuid;
-    public static volatile SingularAttribute<HostInterfaceVO, String> interfaceUuid;
     public static volatile SingularAttribute<HostInterfaceVO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<HostInterfaceVO, Timestamp> createDate;
 }
