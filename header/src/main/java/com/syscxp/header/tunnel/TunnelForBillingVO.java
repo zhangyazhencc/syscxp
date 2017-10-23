@@ -9,7 +9,7 @@ import java.sql.Timestamp;
  * Create by DCY on 2017/10/23
  */
 @Entity
-@Table
+@Table(name = "TunnelVO")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class TunnelForBillingVO {
     @Id
