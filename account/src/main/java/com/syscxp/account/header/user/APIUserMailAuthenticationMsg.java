@@ -4,6 +4,7 @@ import com.syscxp.account.header.account.AccountConstant;
 import com.syscxp.account.header.account.AccountMessage;
 import com.syscxp.account.header.account.AccountVO;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.SuppressUserCredentialCheck;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -12,7 +13,8 @@ import com.syscxp.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/10/23.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT,names = {"update"})
+@SuppressUserCredentialCheck
+@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
 public class APIUserMailAuthenticationMsg extends APIMessage implements AccountMessage {
 
     @APIParam
