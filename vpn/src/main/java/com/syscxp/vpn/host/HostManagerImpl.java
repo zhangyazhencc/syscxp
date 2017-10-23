@@ -6,16 +6,13 @@ import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.vpn.VpnAgentResponse.*;
-import com.syscxp.utils.CollectionUtils;
-import com.syscxp.utils.TimeUtils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.vpn.exception.VpnServiceException;
 import com.syscxp.vpn.header.host.*;
-import com.syscxp.vpn.header.vpn.VpnStatus;
+import com.syscxp.vpn.header.vpn.VpnState;
 import com.syscxp.vpn.header.vpn.VpnVO;
 import com.syscxp.vpn.header.vpn.VpnVO_;
 import com.syscxp.vpn.vpn.VpnCommands.*;
-import com.syscxp.vpn.vpn.VpnConstant;
 import com.syscxp.vpn.vpn.VpnGlobalConfig;
 import com.syscxp.vpn.vpn.VpnRESTCaller;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -199,10 +196,9 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
     private void handle(APICreateHostInterfaceMsg msg) {
         HostInterfaceVO iface = new HostInterfaceVO();
         iface.setUuid(Platform.getUuid());
-        iface.setName(msg.getName());
+        iface.setInterfaceName(msg.getInterfaceName());
         iface.setHostUuid(msg.getHostUuid());
         iface.setEndpointUuid(msg.getEndpointUuid());
-        iface.setInterfaceUuid(msg.getInterfaceUuid());
 
         iface = dbf.persistAndRefresh(iface);
 
@@ -216,8 +212,8 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         APIDeleteVpnHostEvent evt = new APIDeleteVpnHostEvent(msg.getId());
         VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
 
-        /*
-        DeleteVpnHostCmd cmd = DeleteVpnHostCmd.valueOf(host);
+
+        /*DeleteVpnHostCmd cmd = DeleteVpnHostCmd.valueOf(host);
         new VpnRESTCaller().sendCommand(HostConstant.Delete_HOST_PATH, cmd, new Completion(evt) {
             @Override
             public void success() {
@@ -229,7 +225,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
                 evt.setError(errorCode);
             }
         }); */
-
+        dbf.remove(host);
         bus.publish(evt);
     }
 
@@ -344,6 +340,8 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         host.setSshPort(msg.getSshPort());
         host.setUsername(msg.getUsername());
         host.setPassword(msg.getPassword());
+        host.setStartPort(msg.getStartPort());
+        host.setEndPort(msg.getEndPort());
         host.setState(HostState.Enabled);
         host.setStatus(HostStatus.Connecting);
         dbf.persistAndRefresh(host);
@@ -571,8 +569,9 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
     }
 
     private void validate(APIDeleteVpnHostMsg msg) {
-        Q q = Q.New(VpnHostVO.class)
-                .eq(VpnHostVO_.zoneUuid, msg.getUuid());
+        Q q = Q.New(VpnVO.class)
+                .eq(VpnVO_.hostUuid, msg.getUuid())
+                .notEq(VpnVO_.state, VpnState.Disabled);
         if (q.isExists())
             throw new ApiMessageInterceptionException(argerr(
                     "The VpnHostVO[uuid:%s] has at least one vpn instance, can not delete.", msg.getUuid()

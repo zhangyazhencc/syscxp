@@ -10,9 +10,8 @@ import java.util.List;
 @Inventory(mappingVOClass = HostInterfaceVO.class)
 public class HostInterfaceInventory {
     private String uuid;
-    private String name;
+    private String interfaceName;
     private String hostUuid;
-    private String interfaceUuid;
     private String endpointUuid;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -20,7 +19,7 @@ public class HostInterfaceInventory {
     public static HostInterfaceInventory valueOf(HostInterfaceVO vo){
         HostInterfaceInventory inv = new HostInterfaceInventory();
         inv.setUuid(vo.getUuid());
-        inv.setName(vo.getName());
+        inv.setInterfaceName(vo.getInterfaceName());
         inv.setHostUuid(vo.getHostUuid());
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setCreateDate(vo.getCreateDate());
@@ -44,12 +43,12 @@ public class HostInterfaceInventory {
         this.uuid = uuid;
     }
 
-    public String getName() {
-        return name;
+    public String getInterfaceName() {
+        return interfaceName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
     }
 
     public String getHostUuid() {
