@@ -195,14 +195,14 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
         APIGetNodeExtensionInfoReply reply = new APIGetNodeExtensionInfoReply();
         reply.setNodeExtensionInfo(JSONObjectUtil.toJsonString(
-                mongoTemplate.find(new Query(Criteria.where("node_id").is(msg.getNodeId())),NodeExtensionInfo.class)
+                mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),NodeExtensionInfo.class)
         ));
         bus.reply(msg,reply);
     }
 
     private void handle(APICreateNodeExtensionInfoMsg msg) {
 
-        mongoTemplate.insert(msg.getNodeExtensionInfo());
+        mongoTemplate.insert(JSON.parse(msg.getNodeExtensionInfo()));
         APICreateNodeExtensionInfoEvent event = new APICreateNodeExtensionInfoEvent(msg.getId());
         event.setInventory(msg.getNodeExtensionInfo());
         bus.publish(event);
