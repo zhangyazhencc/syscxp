@@ -82,9 +82,16 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             handle((APIAttachResourceByPolicyMsg) msg);
         }else if (msg instanceof APIAttachPolicyByResourceMsg) {
             handle((APIAttachPolicyByResourceMsg) msg);
+        }else if (msg instanceof APIGetResourcesByProductTypeMsg) {
+            handle((APIGetResourcesByProductTypeMsg) msg);
         }else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetResourcesByProductTypeMsg msg) {
+
+      
     }
 
     private void handle(APIAttachPolicyByResourceMsg msg) {
