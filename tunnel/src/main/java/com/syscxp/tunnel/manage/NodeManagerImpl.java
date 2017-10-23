@@ -202,7 +202,9 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APICreateNodeExtensionInfoMsg msg) {
 
-        mongoTemplate.insert(JSONObjectUtil.toObject(msg.getNodeExtensionInfo(),NodeExtensionInfo.class));
+        com.alibaba.fastjson.JSONObject json = com.alibaba.fastjson.JSONObject.parseObject(msg.getNodeExtensionInfo());
+
+        mongoTemplate.insert(json.get("nodeExtensionInfo"));
         APICreateNodeExtensionInfoEvent event = new APICreateNodeExtensionInfoEvent(msg.getId());
         event.setInventory(msg.getNodeExtensionInfo());
         bus.publish(event);
