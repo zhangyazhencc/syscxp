@@ -262,21 +262,6 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchVlanVO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-##产品日志表
-CREATE TABLE  `syscxp_tunnel`.`ProductsLogVO` (
-  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `productUuid` varchar(32) NOT NULL COMMENT '产品uuid',
-  `accountUuid` varchar(32) NOT NULL COMMENT '产品所属账户',
-  `opAccountUuid` varchar(32) NOT NULL COMMENT '操作账户',
-  `type` varchar(32) NOT NULL COMMENT '类型：购买，续费，赔偿...',
-  `statue` varchar(32) NOT NULL COMMENT '状态：完成，未完成',
-  `duration` int(11) NOT NULL COMMENT '购买时长',
-  `productChargeModel` varchar(32) NOT NULL COMMENT '产品付费方式',
-  `expireDate` timestamp NULL DEFAULT NULL COMMENT '截止时间',
-  `createDate` timestamp,
-  PRIMARY KEY  (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 ##物理接口
 CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
