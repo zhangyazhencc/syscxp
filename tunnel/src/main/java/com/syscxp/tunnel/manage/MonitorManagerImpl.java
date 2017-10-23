@@ -633,8 +633,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             validate((APICreateHostMsg) msg);
         } else if (msg instanceof APIUpdateHostMsg) {
             validate((APIUpdateHostMsg) msg);
-        } else if (msg instanceof APIDeleteHostMsg) {
-            validate((APIDeleteHostMsg) msg);
         } else if (msg instanceof APIUpdateTunnelMonitorMsg) {
             validate((APIUpdateTunnelMonitorMsg) msg);
         } else if (msg instanceof APICreateMonitorCidrMsg) {
