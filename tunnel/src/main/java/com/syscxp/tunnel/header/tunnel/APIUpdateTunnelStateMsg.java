@@ -3,7 +3,8 @@ package com.syscxp.tunnel.header.tunnel;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.tunnel.manage.TunnelConstant;
+import com.syscxp.header.tunnel.TunnelState;
+import com.syscxp.header.tunnel.TunnelConstant;
 
 /**
  * Create by DCY on 2017/10/11

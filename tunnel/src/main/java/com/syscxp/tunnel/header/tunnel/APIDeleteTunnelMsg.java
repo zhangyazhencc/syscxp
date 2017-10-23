@@ -4,7 +4,7 @@ import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.tunnel.manage.TunnelConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
 /**
  * Created by DCY on 2017-09-17
