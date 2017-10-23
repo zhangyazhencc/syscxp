@@ -1,6 +1,9 @@
 package com.syscxp.tunnel.header.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
+import com.syscxp.header.tunnel.TunnelMonitorState;
+import com.syscxp.header.tunnel.TunnelState;
+import com.syscxp.header.tunnel.TunnelStatus;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;

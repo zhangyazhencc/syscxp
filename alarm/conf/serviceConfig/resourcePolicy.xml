@@ -23,4 +23,35 @@
         <name>com.syscxp.alarm.header.resourcePolicy.APIDeleteRegulationMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIGetPoliciesMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIUpdatePolicyMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIDeletePolicyMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIGetResourcesBindByPolicyMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIAttachResourceByPolicyMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIAttachPolicyByResourceMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIGetResourcesByProductTypeMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIQueryResourceMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
 </service>

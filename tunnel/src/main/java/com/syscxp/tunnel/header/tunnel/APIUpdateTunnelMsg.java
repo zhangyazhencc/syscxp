@@ -4,7 +4,10 @@ import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.tunnel.manage.TunnelConstant;
+import com.syscxp.header.tunnel.TunnelMonitorState;
+import com.syscxp.header.tunnel.TunnelState;
+import com.syscxp.header.tunnel.TunnelStatus;
+import com.syscxp.header.tunnel.TunnelConstant;
 
 import java.sql.Timestamp;
 

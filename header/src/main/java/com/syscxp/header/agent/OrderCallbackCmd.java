@@ -2,6 +2,7 @@ package com.syscxp.header.agent;
 
 import com.syscxp.header.billing.OrderVO;
 import com.syscxp.header.billing.OrderType;
+import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.billing.ProductType;
 
 import java.sql.Timestamp;
@@ -11,6 +12,9 @@ public class OrderCallbackCmd {
     private ProductType productType;
     private OrderType type;
     private Timestamp expireDate;
+    private int duration;
+    private ProductChargeModel productChargeModel;
+    private String productDescription;
 
     public static OrderCallbackCmd valueOf(OrderVO order){
         OrderCallbackCmd cmd = new OrderCallbackCmd();
@@ -18,6 +22,9 @@ public class OrderCallbackCmd {
         cmd.setType(order.getType());
         cmd.setProductType(order.getProductType());
         cmd.setExpireDate(order.getProductEffectTimeEnd());
+        cmd.setDuration(order.getDuration());
+        cmd.setProductChargeModel(order.getProductChargeModel());
+        cmd.setProductDescription(order.getProductDescription());
         return cmd;
     }
 
@@ -51,5 +58,29 @@ public class OrderCallbackCmd {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+    }
+
+    public int getDuration() {
+        return duration;
+    }
+
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    public ProductChargeModel getProductChargeModel() {
+        return productChargeModel;
+    }
+
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
+        this.productChargeModel = productChargeModel;
+    }
+
+    public String getProductDescription() {
+        return productDescription;
+    }
+
+    public void setProductDescription(String productDescription) {
+        this.productDescription = productDescription;
     }
 }

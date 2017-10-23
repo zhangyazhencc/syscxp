@@ -156,6 +156,8 @@ public class AccountBase extends AbstractAccount {
             handle((APIAccountMailAuthenticationMsg) msg);
         } else if (msg instanceof APIDeleteProxyAccountRefMsg) {
             handle((APIDeleteProxyAccountRefMsg) msg);
+        } else if (msg instanceof APIUserMailAuthenticationMsg) {
+            handle((APIUserMailAuthenticationMsg)msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -374,6 +376,27 @@ public class AccountBase extends AbstractAccount {
         }
 
         evt.setMail(account.getEmail());
+
+        bus.publish(evt);
+    }
+
+    private void handle(APIUserMailAuthenticationMsg msg) {
+
+        UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(), UserVO.class);
+
+        if (!mailService.ValidateMailCode(msg.getMail(), msg.getCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
+                    msg.getSession().getAccountUuid()));
+        }else{
+            if (user.getEmailStatus() == ValidateStatus.Unvalidated) {
+                user.setEmailStatus(ValidateStatus.Validated);
+                user.setEmail(msg.getMail());
+                dbf.updateAndRefresh(user);
+            }
+        }
+
+        APIUserMailAuthenticationEvent evt = new APIUserMailAuthenticationEvent(msg.getId());
+        evt.setMail(user.getEmail());
 
         bus.publish(evt);
     }

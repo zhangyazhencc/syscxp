@@ -90,5 +90,8 @@
         <Root level="warn" additivity="false">
             <AppenderRef ref="Async"/>
         </Root>
+        <Root level="debug">
+            <AppenderRef ref="console_out_appender"/>
+        </Root>
     </Loggers>
 </Configuration>

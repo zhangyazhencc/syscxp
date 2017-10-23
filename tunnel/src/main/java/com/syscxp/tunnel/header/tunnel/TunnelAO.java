@@ -1,7 +1,9 @@
 package com.syscxp.tunnel.header.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
-import com.syscxp.header.vo.ForeignKey;
+import com.syscxp.header.tunnel.TunnelMonitorState;
+import com.syscxp.header.tunnel.TunnelState;
+import com.syscxp.header.tunnel.TunnelStatus;
 
 import javax.persistence.*;
 import java.sql.Timestamp;

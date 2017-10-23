@@ -9,7 +9,7 @@ import com.syscxp.header.message.APIParam;
  * @Description: .
  */
 public class APIDeleteHostMsg extends APIMessage {
-    @APIParam(emptyString = false,checkAccount = true,resourceType = HostEO.class)
+    @APIParam(emptyString = false,resourceType = HostVO.class)
     private String uuid;
 
     public String getUuid() {
