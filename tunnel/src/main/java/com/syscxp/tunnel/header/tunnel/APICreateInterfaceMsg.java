@@ -9,7 +9,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.tunnel.header.endpoint.EndpointVO;
 import com.syscxp.tunnel.header.switchs.SwitchPortAttribute;
 import com.syscxp.tunnel.header.switchs.SwitchPortType;
-import com.syscxp.tunnel.manage.TunnelConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
 import java.util.List;
 

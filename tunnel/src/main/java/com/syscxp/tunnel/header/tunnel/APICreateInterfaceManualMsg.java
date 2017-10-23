@@ -5,7 +5,7 @@ import com.syscxp.header.billing.ProductPriceUnit;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.tunnel.manage.TunnelConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.tunnel.header.endpoint.EndpointVO;
 import com.syscxp.tunnel.header.switchs.SwitchPortVO;
 

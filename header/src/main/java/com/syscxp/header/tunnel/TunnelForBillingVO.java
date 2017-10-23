@@ -1,19 +1,17 @@
-package com.syscxp.tunnel.header.tunnel;
+package com.syscxp.header.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
-import com.syscxp.header.tunnel.TunnelMonitorState;
-import com.syscxp.header.tunnel.TunnelState;
-import com.syscxp.header.tunnel.TunnelStatus;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
 
 /**
- * Created by DCY on 2017-09-11
+ * Create by DCY on 2017/10/23
  */
-@MappedSuperclass
-public class TunnelAO {
-
+@Entity
+@Table(name = "TunnelVO")
+@Inheritance(strategy = InheritanceType.JOINED)
+public class TunnelForBillingVO {
     @Id
     @Column
     private String uuid;
@@ -70,11 +68,6 @@ public class TunnelAO {
     @Column
     private Timestamp createDate;
 
-    @PreUpdate
-    private void preUpdate() {
-        lastOpDate = null;
-    }
-
     public String getUuid() {
         return uuid;
     }
@@ -89,6 +82,22 @@ public class TunnelAO {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public Integer getVsi() {
+        return vsi;
+    }
+
+    public void setVsi(Integer vsi) {
+        this.vsi = vsi;
+    }
+
+    public String getMonitorCidr() {
+        return monitorCidr;
+    }
+
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
     }
 
     public String getName() {
@@ -139,30 +148,6 @@ public class TunnelAO {
         this.monitorState = monitorState;
     }
 
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Timestamp getLastOpDate() {
-        return lastOpDate;
-    }
-
-    public void setLastOpDate(Timestamp lastOpDate) {
-        this.lastOpDate = lastOpDate;
-    }
-
-    public Timestamp getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Timestamp createDate) {
-        this.createDate = createDate;
-    }
-
     public Integer getDuration() {
         return duration;
     }
@@ -187,20 +172,12 @@ public class TunnelAO {
         this.maxModifies = maxModifies;
     }
 
-    public Integer getVsi() {
-        return vsi;
+    public String getDescription() {
+        return description;
     }
 
-    public void setVsi(Integer vsi) {
-        this.vsi = vsi;
-    }
-
-    public String getMonitorCidr() {
-        return monitorCidr;
-    }
-
-    public void setMonitorCidr(String monitorCidr) {
-        this.monitorCidr = monitorCidr;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public Timestamp getExpireDate() {
@@ -209,5 +186,21 @@ public class TunnelAO {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+    }
+
+    public Timestamp getLastOpDate() {
+        return lastOpDate;
+    }
+
+    public void setLastOpDate(Timestamp lastOpDate) {
+        this.lastOpDate = lastOpDate;
+    }
+
+    public Timestamp getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
     }
 }

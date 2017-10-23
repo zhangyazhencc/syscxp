@@ -32,6 +32,9 @@ public class HostAO {
     private String password;
 
     @Column
+    private String position;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private HostState state;
 
@@ -104,6 +107,14 @@ public class HostAO {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getPosition() {
+        return position;
+    }
+
+    public void setPosition(String position) {
+        this.position = position;
     }
 
     public HostState getState() {

@@ -1,3 +1,9 @@
+
+
+/**
+*5.5.56-MariaDB*
+*/
+
 use syscxp_account;
 
 CREATE TABLE  `syscxp_account`.`ManagementNodeVO` (
@@ -283,15 +289,15 @@ CREATE TABLE `TicketVO` (
   `accountUuid` varchar(32) COMMENT '创建账户',
   `userUuid` varchar(32) COMMENT '创建用户/账户',
   `adminUserUuid` varchar(32) COMMENT '工单处理人(管理员为空)',
-  `type` varchar(128) NOT NULL COMMENT '工单类型(数据字典)',
+  `ticketTypeCode` varchar(128) NOT NULL COMMENT '工单类型(数据字典)',
   `content` text NOT NULL COMMENT '工单内容',
   `contentExtra` text COMMENT '工单json数据',
   `status` varchar(32) NOT NULL COMMENT '工单最新状态(枚举)',
   `phone` varchar(32) NOT NULL COMMENT '手机',
   `email` varchar(32) NOT NULL COMMENT '邮箱',
   `ticketFrom` varchar(32) NOT NULL COMMENT '来源',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp ,
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -302,8 +308,8 @@ CREATE TABLE `TicketRecordVO` (
   `adminUserUuid` varchar(32) COMMENT '创建用户(管理员为空)',
   `content` text NOT NULL COMMENT '沟通内容',
   `status` text NOT NULL COMMENT '当前工单状态(枚举)',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -312,8 +318,8 @@ CREATE TABLE `TicketTypeVO` (
   `code` varchar(50) NOT NULL COMMENT '枚举值',
   `name` varchar(36) NOT NULL COMMENT '枚举值名称',
   `category` varchar(36) NOT NULL COMMENT '枚举值分类',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp DEFAULT CURRENT_TIMESTAMP,
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

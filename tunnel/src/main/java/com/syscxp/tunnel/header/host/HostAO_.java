@@ -16,6 +16,7 @@ public class HostAO_ {
     public static volatile SingularAttribute<HostAO, String> hostIp;
     public static volatile SingularAttribute<HostAO, String> username;
     public static volatile SingularAttribute<HostAO, String> password;
+    public static volatile SingularAttribute<HostAO, String> position;
     public static volatile SingularAttribute<HostAO, HostState> state;
     public static volatile SingularAttribute<HostAO, HostStatus> status;
     public static volatile SingularAttribute<HostAO, Timestamp> createDate;

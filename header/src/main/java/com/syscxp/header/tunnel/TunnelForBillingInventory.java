@@ -1,78 +1,65 @@
-package com.syscxp.tunnel.header.tunnel;
+package com.syscxp.header.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
-import com.syscxp.header.tunnel.TunnelMonitorState;
-import com.syscxp.header.tunnel.TunnelState;
-import com.syscxp.header.tunnel.TunnelStatus;
+import com.syscxp.header.search.Inventory;
 
-import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by DCY on 2017-09-11
  */
-@MappedSuperclass
-public class TunnelAO {
+@Inventory(mappingVOClass = TunnelForBillingVO.class)
+public class TunnelForBillingInventory {
 
-    @Id
-    @Column
     private String uuid;
-
-    @Column
     private String accountUuid;
-
-    @Column
     private Integer vsi;
-
-    @Column
     private String monitorCidr;
-
-    @Column
     private String name;
-
-    @Column
     private Long bandwidth;
-
-    @Column
     private Double distance;
-
-    @Column
-    @Enumerated(EnumType.STRING)
     private TunnelState state;
-
-    @Column
-    @Enumerated(EnumType.STRING)
     private TunnelStatus status;
-
-    @Column
-    @Enumerated(EnumType.STRING)
     private TunnelMonitorState monitorState;
-
-    @Column
     private Integer duration;
-
-    @Column
-    @Enumerated(EnumType.STRING)
     private ProductChargeModel productChargeModel;
-
-    @Column
     private Integer maxModifies;
-
-    @Column
     private String description;
-
-    @Column
     private Timestamp expireDate;
-
-    @Column
     private Timestamp lastOpDate;
-
-    @Column
     private Timestamp createDate;
 
-    @PreUpdate
-    private void preUpdate() {
-        lastOpDate = null;
+    public static TunnelForBillingInventory valueOf(TunnelForBillingVO vo){
+        TunnelForBillingInventory inv = new TunnelForBillingInventory();
+        inv.setUuid(vo.getUuid());
+        inv.setAccountUuid(vo.getAccountUuid());
+        inv.setVsi(vo.getVsi());
+        inv.setMonitorCidr(vo.getMonitorCidr());
+        inv.setName(vo.getName());
+        inv.setBandwidth(vo.getBandwidth());
+        inv.setDistance(vo.getDistance());
+        inv.setState(vo.getState());
+        inv.setStatus(vo.getStatus());
+        inv.setMonitorState(vo.getMonitorState());
+        inv.setDuration(vo.getDuration());
+        inv.setProductChargeModel(vo.getProductChargeModel());
+        inv.setMaxModifies(vo.getMaxModifies());
+        inv.setDescription(vo.getDescription());
+        inv.setExpireDate(vo.getExpireDate());
+        inv.setLastOpDate(vo.getLastOpDate());
+        inv.setCreateDate(vo.getCreateDate());
+        return inv;
+    }
+
+    public static List<TunnelForBillingInventory> valueOf(Collection<TunnelForBillingVO> vos) {
+        List<TunnelForBillingInventory> lst = new ArrayList<TunnelForBillingInventory>(vos.size());
+        for (TunnelForBillingVO vo : vos) {
+            lst.add(TunnelForBillingInventory.valueOf(vo));
+        }
+        return lst;
     }
 
     public String getUuid() {

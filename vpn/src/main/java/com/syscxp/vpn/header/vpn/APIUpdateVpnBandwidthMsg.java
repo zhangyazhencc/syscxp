@@ -16,16 +16,6 @@ public class APIUpdateVpnBandwidthMsg extends APIVpnMessage {
     private String uuid;
     @APIParam
     private Long bandwidth;
-    @APIParam(nonempty = true)
-    private List<ProductPriceUnit> productPriceUnits;
-
-    public List<ProductPriceUnit> getProductPriceUnits() {
-        return productPriceUnits;
-    }
-
-    public void setProductPriceUnits(List<ProductPriceUnit> productPriceUnits) {
-        this.productPriceUnits = productPriceUnits;
-    }
 
     public String getUuid() {
         return uuid;
