@@ -12,7 +12,7 @@ import com.syscxp.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/10/23.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, accountOnly = true)
+@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT,names = {"update"})
 public class APIUserMailAuthenticationMsg extends APIMessage implements AccountMessage {
 
     @APIParam
