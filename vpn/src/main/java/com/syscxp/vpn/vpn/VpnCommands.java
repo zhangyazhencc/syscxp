@@ -1,7 +1,5 @@
 package com.syscxp.vpn.vpn;
 
-import com.syscxp.header.vpn.VpnAgentCommand;
-import com.syscxp.header.vpn.VpnAgentResponse;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.function.Function;
 import com.syscxp.vpn.header.host.VpnHostVO;
@@ -18,6 +16,97 @@ import java.util.List;
  * VPN接口参数
  */
 public class VpnCommands {
+    public static class VpnAgentCommand {
+        private String host_ip;
+        private String uuid;
+        private Integer port;
+        private String public_ip;
+
+        public Integer getPort() {
+            return port;
+        }
+
+        public void setPort(Integer port) {
+            this.port = port;
+        }
+
+        public String getHostIp() {
+            return host_ip;
+        }
+
+        public void setHostIp(String hostIp) {
+            this.host_ip = hostIp;
+        }
+
+        public String getVpnUuid() {
+            return uuid;
+        }
+
+        public void setVpnUuid(String vpnUuid) {
+            this.uuid = vpnUuid;
+        }
+
+        public String getPublicIp() {
+            return public_ip;
+        }
+
+        public void setPublicIp(String publicIp) {
+            this.public_ip = publicIp;
+        }
+    }
+
+    public static class VpnAgentResponse {
+        // 任务结果
+        private TaskResult result;
+        // 运行状态
+        private RunStatus status;
+
+        public RunStatus getStatus() {
+            return status;
+        }
+
+        public void setStatus(RunStatus status) {
+            this.status = status;
+        }
+
+        public TaskResult getResult() {
+            return result;
+        }
+
+        public void setResult(TaskResult result) {
+            this.result = result;
+        }
+
+
+    }
+    public static class TaskResult {
+        private String message;
+        private boolean success = false;
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
+    }
+    /**
+     * 物理机或VPN运行状态
+     */
+    public enum RunStatus {
+        DOWN,
+        UP,
+        UNKOWN
+    }
     /**
      * 查询物理机状态：/vpn/agent-status
      */
