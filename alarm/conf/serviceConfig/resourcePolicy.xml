@@ -47,6 +47,9 @@
         <name>com.syscxp.alarm.header.resourcePolicy.APIAttachPolicyByResourceMsg</name>
     </message>
     <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIGetResourcesByProductTypeMsg</name>
+    </message>
+    <message>
         <name>com.syscxp.alarm.header.resourcePolicy.APIQueryResourceMsg</name>
         <serviceId>query</serviceId>
     </message>
