@@ -9,7 +9,7 @@ import com.syscxp.header.query.AutoQuery;
  * Created by DCY on 2017-09-17
  */
 @Action(category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
-@AutoQuery(replyClass = APIQueryTunnelForBillingReply.class, inventoryClass = TunnelForBillingInventory.class)
+@AutoQuery(replyClass = APIQueryTunnelForAlarmReply.class, inventoryClass = TunnelForAlarmInventory.class)
 @InnerCredentialCheck
-public class APIQueryTunnelForBillingMsg extends APIQueryMessage {
+public class APIQueryTunnelForAlarmMsg extends APIQueryMessage {
 }
