@@ -24,6 +24,8 @@
         <class>com.syscxp.tunnel.header.switchs.SwitchPortVO</class>
         <class>com.syscxp.tunnel.header.switchs.SwitchVlanVO</class>
 
+        <class>com.syscxp.tunnel.header.tunnel.ProductsLogVO</class>
+
         <class>com.syscxp.tunnel.header.tunnel.InterfaceVO</class>
         <class>com.syscxp.tunnel.header.tunnel.InterfaceEO</class>
         <class>com.syscxp.tunnel.header.tunnel.InterfaceMotifyRecordVO</class>

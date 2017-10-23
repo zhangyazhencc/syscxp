@@ -389,7 +389,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }
 
         //支付成功修改状态
-        vo.setState(TunnelState.Disabled);
+        vo.setState(TunnelState.Enabled);
         vo.setStatus(TunnelStatus.Connecting);
         final TunnelVO tunnelVO = dbf.updateAndRefresh(vo);
 
@@ -403,16 +403,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 logger.info("下发创建成功！");
                 tunnelVO.setState(TunnelState.Enabled);
                 tunnelVO.setStatus(TunnelStatus.Connected);
-
-                //开通监控
-                APICreateTunnelMonitorMsg apiCreateTunnelMonitorMsg = new APICreateTunnelMonitorMsg();
-                apiCreateTunnelMonitorMsg.setTunnelUuid(tunnelVO.getUuid());
-                TunnelMonitorVO tunnelMonitorVO = monitorManagerImpl.createTunnelMonitorHandle(apiCreateTunnelMonitorMsg);
-                if(tunnelMonitorVO != null){
-                    tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
-                }else{
-                    tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
-                }
 
                 evt.setInventory(TunnelInventory.valueOf(dbf.updateAndRefresh(tunnelVO)));
                 bus.publish(evt);
@@ -477,16 +467,19 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setDistance(Distance.getDistance(nvoA.getLongtitude(),nvoA.getLatitude(),nvoZ.getLongtitude(),nvoZ.getLatitude()));
 
         vo.setAccountUuid(msg.getAccountUuid());
+        vo.setVsi(getVsiAuto());
+        vo.setMonitorCidr(msg.getMonitorCidr());
         vo.setName(msg.getName());
-        vo.setDuration(msg.getDuration());
         vo.setBandwidth(msg.getBandwidth());
+        vo.setDuration(msg.getDuration());
         vo.setState(TunnelState.Unpaid);
         vo.setStatus(TunnelStatus.Disconnected);
-        if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+        vo.setExpireDate(null);
+        /*if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
             vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
         }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
             vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
-        }
+        }*/
         vo.setDescription(msg.getDescription());
         List<TunnelInterfaceVO> tivo = new ArrayList<TunnelInterfaceVO>();
         tivo.add(tivoA);
@@ -1452,6 +1445,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
         }else if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.MPLS){  //Mpls接入
             SwitchModelVO switchModel = dbf.findByUuid(physicalSwitchVO.getSwitchModelUuid(),SwitchModelVO.class);
+            InterfaceVO interfaceVO = dbf.findByUuid(tunnelInterfaceVO.getInterfaceUuid(),InterfaceVO.class);
 
             PhysicalSwitchVO remoteMplsPhysicalSwitch = getRemotePhysicalSwitch(remoteInterfaceVO);
 
@@ -1465,11 +1459,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             tmc.setM_ip(physicalSwitchVO.getmIP());
             tmc.setUsername(physicalSwitchVO.getUsername());
             tmc.setPassword(physicalSwitchVO.getPassword());
-            if(tunnelInterfaceVO.getQinqState() == TunnelQinqState.Enabled){
-                tmc.setNetwork_type("QINQ");
+            tmc.setNetwork_type(interfaceVO.getType().toString());
+            if(interfaceVO.getType() == NetworkType.QINQ){
                 tmc.setInner_vlan_id(getInnerVlanToString(qinqVOs));
-            }else{
-                tmc.setNetwork_type("TRUNK");
             }
             tmc.setBandwidth(tunnelVO.getBandwidth());
         }
@@ -1482,6 +1474,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
      */
     private ControllerCommands.TunnelSdnConfig getTunnelSdnConfig(TunnelVO tunnelVO, TunnelInterfaceVO tunnelInterfaceVO, List<QinqVO> qinqVOs){
         ControllerCommands.TunnelSdnConfig tsc = new ControllerCommands.TunnelSdnConfig();
+        InterfaceVO interfaceVO = dbf.findByUuid(tunnelInterfaceVO.getInterfaceUuid(),InterfaceVO.class);
         SwitchPortVO switchPortVO = getSwitchPort(tunnelInterfaceVO.getInterfaceUuid());
         PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitch(switchPortVO);
         if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.SDN){   //SDN接入
@@ -1495,11 +1488,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             tsc.setIn_port(physicalSwitchUpLinkRefVO.getPortName());
             tsc.setUplink(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchPortName());
             tsc.setBandwidth(tunnelVO.getBandwidth());
-            if(tunnelInterfaceVO.getQinqState() == TunnelQinqState.Enabled){
-                tsc.setNetwork_type("QINQ");
+            if(interfaceVO.getType() == NetworkType.QINQ){
                 tsc.setInner_vlan_id(getInnerVlanToString(qinqVOs));
-            }else{
-                tsc.setNetwork_type("TRUNK");
             }
 
         }else if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.MPLS){  //Mpls接入

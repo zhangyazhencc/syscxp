@@ -6,5 +6,7 @@ package com.syscxp.tunnel.header.tunnel;
 public enum TunnelState {
     Enabled,
     Disabled,
-    Unpaid
+    Unpaid,
+    Undeployed,
+    Failure
 }
