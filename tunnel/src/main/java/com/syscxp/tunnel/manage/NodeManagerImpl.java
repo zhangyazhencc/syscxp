@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.manage;
 
+import com.mongodb.DBObject;
 import com.mongodb.util.JSON;
 import com.syscxp.tunnel.header.endpoint.*;
 import com.syscxp.tunnel.header.node.*;
@@ -203,8 +204,14 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     private void handle(APICreateNodeExtensionInfoMsg msg) {
 
         com.alibaba.fastjson.JSONObject json = com.alibaba.fastjson.JSONObject.parseObject(msg.getNodeExtensionInfo());
+        DBObject bson = (DBObject)JSON.parse(json.getString("nodeExtensionInfo"));
+        logger.debug(">>>>>>>>>>>>>>>>>>"+json.getString("nodeExtensionInfo"));
+        if(bson != null){
+            mongoTemplate.insert(bson);
+        }else{
+            throw new ApiMessageInterceptionException(argerr("jsonString is null"+json.getString("nodeExtensionInfo")));
+        }
 
-        mongoTemplate.insert(json.get("nodeExtensionInfo"));
         APICreateNodeExtensionInfoEvent event = new APICreateNodeExtensionInfoEvent(msg.getId());
         event.setInventory(msg.getNodeExtensionInfo());
         bus.publish(event);
