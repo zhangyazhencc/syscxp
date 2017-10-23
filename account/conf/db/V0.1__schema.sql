@@ -328,10 +328,10 @@ INSERT INTO TicketTypeVO (code, name, category) VALUES ('CloudServer','云服务
 INSERT INTO TicketTypeVO (code, name, category) VALUES ('VPN','VPN网关', 'cxp');
 INSERT INTO TicketTypeVO (code, name, category) VALUES ('Account','账户', 'cxp');
 INSERT INTO TicketTypeVO (code, name, category) VALUES ('Billing','账务', 'cxp');
-INSERT INTO TicketTypeVO (code, name, category) VALUES ('CloudLine','申请云专线工单','apply');
-INSERT INTO TicketTypeVO (code, name, category) VALUES ('Trustee','申请托管工单','apply');
-INSERT INTO TicketTypeVO (code, name, category) VALUES ('LeadCable','申请引接缆工单','apply');
-INSERT INTO TicketTypeVO (code, name, category) VALUES ('CrossConnection','申请交叉互联工单','apply');
-INSERT INTO TicketTypeVO (code, name, category) VALUES ('InternetEntrance','申请互联网工单','apply');
-INSERT INTO TicketTypeVO (code, name, category) VALUES ('CloudTransmission','申请云传输工单','apply');
-INSERT INTO TicketTypeVO (code, name, category) VALUES ('Others','其他','');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('cloudLine','申请云专线工单','apply');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('trustee','申请托管工单','apply');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('leadCable','申请引接缆工单','apply');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('crossConnection','申请交叉互联工单','apply');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('internetEntrance','申请互联网工单','apply');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('cloudTransmission','申请云传输工单','apply');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('others','其他','');
