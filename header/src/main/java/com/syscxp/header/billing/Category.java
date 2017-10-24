@@ -6,5 +6,6 @@ public enum Category {
     ALIBABA,
     LONG,
     SHORT,
-    VPN
+    VPN,
+    DEFAULT
 }

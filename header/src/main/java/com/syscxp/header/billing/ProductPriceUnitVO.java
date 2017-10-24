@@ -18,24 +18,39 @@ public class ProductPriceUnitVO {
     private String uuid;
 
     @Column
-    private String productName;
+    @Enumerated(EnumType.STRING)
+    private ProductType productTypeCode;
+
+    @Column
+    private String productTypeName;
 
     @Column
     @Enumerated(EnumType.STRING)
-    private ProductType productType;
+    private Category categoryCode;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private Category category;
+    private String categoryName;
 
     @Column
-    private String config;
+    private String areaCode;
 
     @Column
-    private Integer priceUnit;
+    private String areaName;
 
     @Column
-    private String comment;
+    private String lineCode;
+
+    @Column
+    private String lineName;
+
+    @Column
+    private String configCode;
+
+    @Column
+    private String configName;
+
+    @Column
+    private int unitPrice;
 
     @Column
     private Timestamp createDate;
@@ -43,14 +58,37 @@ public class ProductPriceUnitVO {
     @Column
     private Timestamp lastOpDate;
 
-    @Column
-    private String productTypeName;
 
-    @Column
-    private String categoryName;
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public ProductType getProductTypeCode() {
+        return productTypeCode;
+    }
+
+    public void setProductTypeCode(ProductType productTypeCode) {
+        this.productTypeCode = productTypeCode;
+    }
 
     public String getProductTypeName() {
         return productTypeName;
+    }
+
+    public void setProductTypeName(String productTypeName) {
+        this.productTypeName = productTypeName;
+    }
+
+    public Category getCategoryCode() {
+        return categoryCode;
+    }
+
+    public void setCategoryCode(Category categoryCode) {
+        this.categoryCode = categoryCode;
     }
 
     public String getCategoryName() {
@@ -61,64 +99,52 @@ public class ProductPriceUnitVO {
         this.categoryName = categoryName;
     }
 
-    public void setProductTypeName(String productTypeName) {
-        this.productTypeName = productTypeName;
+    public String getAreaCode() {
+        return areaCode;
     }
 
-    public String getUuid() {
-        return uuid;
+    public void setAreaCode(String areaCode) {
+        this.areaCode = areaCode;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public String getAreaName() {
+        return areaName;
     }
 
-    public String getProductName() {
-        return productName;
+    public void setAreaName(String areaName) {
+        this.areaName = areaName;
     }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
+    public String getLineCode() {
+        return lineCode;
     }
 
-    public ProductType getProductType() {
-        return productType;
+    public void setLineCode(String lineCode) {
+        this.lineCode = lineCode;
     }
 
-    public void setProductType(ProductType productType) {
-        this.productType = productType;
+    public String getLineName() {
+        return lineName;
     }
 
-    public Category getCategory() {
-        return category;
+    public void setLineName(String lineName) {
+        this.lineName = lineName;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public String getConfigCode() {
+        return configCode;
     }
 
-    public String getConfig() {
-        return config;
+    public void setConfigCode(String configCode) {
+        this.configCode = configCode;
     }
 
-    public void setConfig(String config) {
-        this.config = config;
+    public String getConfigName() {
+        return configName;
     }
 
-    public Integer getPriceUnit() {
-        return priceUnit;
-    }
-
-    public void setPriceUnit(Integer priceUnit) {
-        this.priceUnit = priceUnit;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
+    public void setConfigName(String configName) {
+        this.configName = configName;
     }
 
     public Timestamp getCreateDate() {
@@ -135,6 +161,14 @@ public class ProductPriceUnitVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public int getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(int unitPrice) {
+        this.unitPrice = unitPrice;
     }
 
     @PreUpdate

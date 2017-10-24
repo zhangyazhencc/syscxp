@@ -229,6 +229,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             }
         });
 
+
+
         event.setInventory(TunnelMonitorInventory.valueOf(tunnelMonitorVO));
         bus.publish(event);
     }

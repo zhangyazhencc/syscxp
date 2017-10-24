@@ -2,35 +2,53 @@ package com.syscxp.header.billing;
 
 public class ProductPriceUnit {
 
-    private String uuid;
+    private ProductType productTypeCode;
 
-    private ProductType productType;
+    private Category categoryCode;
 
-    private Category category;
+    private String areaCode;
 
-    private String config;
+    private String lineCode;
 
-    public ProductType getProductType() {
-        return productType;
+    private String configCode;
+
+    public ProductType getProductTypeCode() {
+        return productTypeCode;
     }
 
-    public void setProductType(ProductType productType) {
-        this.productType = productType;
+    public void setProductTypeCode(ProductType productTypeCode) {
+        this.productTypeCode = productTypeCode;
     }
 
-    public Category getCategory() {
-        return category;
+    public Category getCategoryCode() {
+        return categoryCode;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setCategoryCode(Category categoryCode) {
+        this.categoryCode = categoryCode;
     }
 
-    public String getConfig() {
-        return config;
+    public String getAreaCode() {
+        return areaCode;
     }
 
-    public void setConfig(String config) {
-        this.config = config;
+    public void setAreaCode(String areaCode) {
+        this.areaCode = areaCode;
+    }
+
+    public String getLineCode() {
+        return lineCode;
+    }
+
+    public void setLineCode(String lineCode) {
+        this.lineCode = lineCode;
+    }
+
+    public String getConfigCode() {
+        return configCode;
+    }
+
+    public void setConfigCode(String configCode) {
+        this.configCode = configCode;
     }
 }

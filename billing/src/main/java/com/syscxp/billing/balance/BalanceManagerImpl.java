@@ -113,7 +113,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
 
     private void handle(APIGetAccountDischargeCategoryMsg msg) {
         SimpleQuery<ProductPriceUnitVO> query = dbf.createQuery(ProductPriceUnitVO.class);
-        query.groupBy(ProductPriceUnitVO_.category);
+        query.groupBy(ProductPriceUnitVO_.categoryCode);
         List<ProductPriceUnitVO> categories = query.list();
         APIGetAccountDischargeCategoryReply reply = new APIGetAccountDischargeCategoryReply();
         reply.setInventories(ProductPriceUnitInventory.valueOf(categories));
@@ -139,9 +139,20 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
         if (exists) {
             throw new IllegalArgumentException("the account has the discharge");
         }
+        APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
+        aMsg.setUuid(msg.getAccountUuid());
+        InnerMessageHelper.setMD5(aMsg);
+        String gstr = RESTApiDecoder.dump(aMsg);
+        RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
+        if (rsp.getState().equals(RestAPIState.Done.toString())) {
+            APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
+            if (!replay.isNormalAccountHasProxy()) {
+                throw new IllegalArgumentException("the account has proxy, must let agency set the discharge");
+            }
+        }
         SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-        q.add(ProductPriceUnitVO_.category, SimpleQuery.Op.EQ,msg.getCategory());
-        q.groupBy(ProductPriceUnitVO_.category);
+        q.add(ProductPriceUnitVO_.categoryCode, SimpleQuery.Op.EQ,msg.getCategory());
+        q.groupBy(ProductPriceUnitVO_.categoryCode);
         ProductPriceUnitVO productPriceUnitVO = q.find();
 
         AccountDischargeVO accountDischargeVO = new AccountDischargeVO();
@@ -151,7 +162,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
         accountDischargeVO.setDisCharge(msg.getDisCharge());
         accountDischargeVO.setCategoryName(productPriceUnitVO.getCategoryName());
         accountDischargeVO.setProductTypeName(productPriceUnitVO.getProductTypeName());
-        accountDischargeVO.setProductType(productPriceUnitVO.getProductType());
+        accountDischargeVO.setProductType(productPriceUnitVO.getProductTypeCode());
         dbf.persistAndRefresh(accountDischargeVO);
         APICreateAccountDischargeEvent event = new APICreateAccountDischargeEvent(msg.getId());
         event.setInventory(AccountDischargeInventory.valueOf(accountDischargeVO));
@@ -182,25 +193,27 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
 
         for (ProductPriceUnit unit : units) {
             SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-            q.add(ProductPriceUnitVO_.category, SimpleQuery.Op.EQ, unit.getCategory());
-            q.add(ProductPriceUnitVO_.productType, SimpleQuery.Op.EQ, unit.getProductType());
-            q.add(ProductPriceUnitVO_.config, SimpleQuery.Op.EQ, unit.getConfig());
+            q.add(ProductPriceUnitVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
+            q.add(ProductPriceUnitVO_.categoryCode, SimpleQuery.Op.EQ, unit.getCategoryCode());
+            q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, unit.getAreaCode());
+            q.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, unit.getLineCode());
+            q.add(ProductPriceUnitVO_.configCode, SimpleQuery.Op.EQ, unit.getConfigCode());
             ProductPriceUnitVO productPriceUnitVO = q.find();
             if (productPriceUnitVO == null) {
                 throw new IllegalArgumentException("please check the argurment");
             }
             ProductPriceUnitInventory inventory = ProductPriceUnitInventory.valueOf(productPriceUnitVO);
             SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
-            qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, unit.getCategory());
-            qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, unit.getProductType());
+            qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, unit.getCategoryCode());
+            qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, unit.getProductTypeCode());
             qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
             AccountDischargeVO accountDischargeVO = qDischarge.find();
             int discharge = 100;
             if (accountDischargeVO != null) {
                 discharge = accountDischargeVO.getDisCharge() == 0 ? 100 : accountDischargeVO.getDisCharge();
             }
-            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()));
-            BigDecimal currentDischarge = BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(BigDecimal.valueOf(discharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
+            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
+            BigDecimal currentDischarge = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(discharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
             dischargePrice = dischargePrice.add(currentDischarge);
             inventory.setDischarge(discharge);
             productPriceUnits.add(inventory);
@@ -241,10 +254,17 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
             q.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, accountDischargeVO.getProductType());
             q.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, accountDischargeVO.getCategory());
             AccountDischargeVO adVO = q.find();
-            int disCharge = adVO.getDisCharge();
-            if(msg.getDischarge()>disCharge){
-                throw new IllegalArgumentException("cannot give a discharge large than self");
+            if(adVO != null){
+                int disCharge = adVO.getDisCharge();
+                if(msg.getDischarge()>disCharge){
+                    throw new IllegalArgumentException("cannot give a discharge large than self");
+                }
+            }else{
+                if(msg.getDischarge()!=100){
+                    throw new IllegalArgumentException("just can be set 100");
+                }
             }
+
         }
         if(msg.getSession().getType() == AccountType.Normal){
             throw new IllegalArgumentException("you are not permit");

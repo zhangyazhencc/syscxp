@@ -2,8 +2,6 @@ package com.syscxp.vpn.vpn;
 
 import com.syscxp.core.Platform;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.retry.Retry;
-import com.syscxp.core.retry.RetryCondition;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.ReturnValueCompletion;
@@ -13,7 +11,6 @@ import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
-import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.message.APIMessage;
@@ -21,17 +18,11 @@ import com.syscxp.header.message.APIReply;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
-import com.syscxp.header.vpn.VpnAgentCommand;
-import com.syscxp.header.vpn.VpnAgentResponse;
-import com.syscxp.header.vpn.VpnAgentResponse.*;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.http.*;
-import org.springframework.web.client.RestClientException;
-
-import java.io.IOException;
-import java.util.Map;
+import com.syscxp.vpn.vpn.VpnCommands.*;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class VpnRESTCaller {
