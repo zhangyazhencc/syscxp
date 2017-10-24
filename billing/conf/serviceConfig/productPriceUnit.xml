@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://syscxp.com/schema/syscxp">
+    <id>productPriceUnit</id>
+    <interceptor>PriceManager</interceptor>
+
+    <message>
+        <name>com.syscxp.billing.header.price.APICreateTunnelProductPriceUnitMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.billing.header.price.APICreateVHostProductPriceUnitMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.billing.header.price.APIDeleteProductPriceUnitMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.billing.header.price.APIUpdateProductPriceUnitMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.billing.header.price.APIQueryProductPriceUnitMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+
+</service>
