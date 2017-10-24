@@ -18,6 +18,10 @@ public class NodeExtensionInfo {
     Object roomNOC;
     String updated_at;
     Object images_url;
+    String image_pro;
+    String image_limit;
+    String image_upload;
+
 
     public String get_id() {
         return _id;
@@ -157,5 +161,29 @@ public class NodeExtensionInfo {
 
     public void setImages_url(Object images_url) {
         this.images_url = images_url;
+    }
+
+    public String getImage_pro() {
+        return image_pro;
+    }
+
+    public void setImage_pro(String image_pro) {
+        this.image_pro = image_pro;
+    }
+
+    public String getImage_limit() {
+        return image_limit;
+    }
+
+    public void setImage_limit(String image_limit) {
+        this.image_limit = image_limit;
+    }
+
+    public String getImage_upload() {
+        return image_upload;
+    }
+
+    public void setImage_upload(String image_upload) {
+        this.image_upload = image_upload;
     }
 }
