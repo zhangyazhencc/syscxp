@@ -45,8 +45,8 @@ public class RenewJob extends QuartzJobBean {
                 if(currentTimestamp.getTime()-expiredTimestamp.getTime()>7*24*60*60*1000l){
                     databaseFacade.getEntityManager().remove(renewVO);
                     databaseFacade.getEntityManager().flush();
+                    continue;
                 }
-                if (expiredTimestamp.getTime() <= currentTimestamp.getTime()) {
 
                     BigDecimal dischargePrice = BigDecimal.ZERO;
                     BigDecimal originalPrice = BigDecimal.ZERO;
@@ -60,16 +60,16 @@ public class RenewJob extends QuartzJobBean {
                             throw new IllegalArgumentException("price uuid is not valid");
                         }
                         SimpleQuery<AccountDischargeVO> qDischarge = databaseFacade.createQuery(AccountDischargeVO.class);
-                        qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategory());
-                        qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductType());
+                        qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
+                        qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
                         qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, renewVO.getAccountUuid());
                         AccountDischargeVO accountDischargeVO = qDischarge.find();
                         int productDisCharge = 100;
                         if (accountDischargeVO != null) {
                             productDisCharge = accountDischargeVO.getDisCharge() == 0 ? 100 : accountDischargeVO.getDisCharge();
                         }
-                        originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()));
-                        dischargePrice = dischargePrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));
+                        originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
+                        dischargePrice = dischargePrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));
 
                     }
 
@@ -203,7 +203,6 @@ public class RenewJob extends QuartzJobBean {
                     databaseFacade.getEntityManager().merge(abvo);
                     databaseFacade.getEntityManager().persist(orderVo);
                     databaseFacade.getEntityManager().flush();
-                }
             }
 
         } finally {

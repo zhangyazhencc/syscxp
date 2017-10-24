@@ -113,7 +113,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
 
     private void handle(APIGetAccountDischargeCategoryMsg msg) {
         SimpleQuery<ProductPriceUnitVO> query = dbf.createQuery(ProductPriceUnitVO.class);
-        query.groupBy(ProductPriceUnitVO_.category);
+        query.groupBy(ProductPriceUnitVO_.categoryCode);
         List<ProductPriceUnitVO> categories = query.list();
         APIGetAccountDischargeCategoryReply reply = new APIGetAccountDischargeCategoryReply();
         reply.setInventories(ProductPriceUnitInventory.valueOf(categories));
@@ -151,8 +151,8 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
             }
         }
         SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-        q.add(ProductPriceUnitVO_.category, SimpleQuery.Op.EQ,msg.getCategory());
-        q.groupBy(ProductPriceUnitVO_.category);
+        q.add(ProductPriceUnitVO_.categoryCode, SimpleQuery.Op.EQ,msg.getCategory());
+        q.groupBy(ProductPriceUnitVO_.categoryCode);
         ProductPriceUnitVO productPriceUnitVO = q.find();
 
         AccountDischargeVO accountDischargeVO = new AccountDischargeVO();
@@ -162,7 +162,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
         accountDischargeVO.setDisCharge(msg.getDisCharge());
         accountDischargeVO.setCategoryName(productPriceUnitVO.getCategoryName());
         accountDischargeVO.setProductTypeName(productPriceUnitVO.getProductTypeName());
-        accountDischargeVO.setProductType(productPriceUnitVO.getProductType());
+        accountDischargeVO.setProductType(productPriceUnitVO.getProductTypeCode());
         dbf.persistAndRefresh(accountDischargeVO);
         APICreateAccountDischargeEvent event = new APICreateAccountDischargeEvent(msg.getId());
         event.setInventory(AccountDischargeInventory.valueOf(accountDischargeVO));
@@ -193,25 +193,27 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
 
         for (ProductPriceUnit unit : units) {
             SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-            q.add(ProductPriceUnitVO_.category, SimpleQuery.Op.EQ, unit.getCategory());
-            q.add(ProductPriceUnitVO_.productType, SimpleQuery.Op.EQ, unit.getProductType());
-            q.add(ProductPriceUnitVO_.config, SimpleQuery.Op.EQ, unit.getConfig());
+            q.add(ProductPriceUnitVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
+            q.add(ProductPriceUnitVO_.categoryCode, SimpleQuery.Op.EQ, unit.getCategoryCode());
+            q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, unit.getAreaCode());
+            q.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, unit.getLineCode());
+            q.add(ProductPriceUnitVO_.configCode, SimpleQuery.Op.EQ, unit.getConfigCode());
             ProductPriceUnitVO productPriceUnitVO = q.find();
             if (productPriceUnitVO == null) {
                 throw new IllegalArgumentException("please check the argurment");
             }
             ProductPriceUnitInventory inventory = ProductPriceUnitInventory.valueOf(productPriceUnitVO);
             SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
-            qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, unit.getCategory());
-            qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, unit.getProductType());
+            qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, unit.getCategoryCode());
+            qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, unit.getProductTypeCode());
             qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
             AccountDischargeVO accountDischargeVO = qDischarge.find();
             int discharge = 100;
             if (accountDischargeVO != null) {
                 discharge = accountDischargeVO.getDisCharge() == 0 ? 100 : accountDischargeVO.getDisCharge();
             }
-            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()));
-            BigDecimal currentDischarge = BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(BigDecimal.valueOf(discharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
+            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
+            BigDecimal currentDischarge = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(discharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
             dischargePrice = dischargePrice.add(currentDischarge);
             inventory.setDischarge(discharge);
             productPriceUnits.add(inventory);
