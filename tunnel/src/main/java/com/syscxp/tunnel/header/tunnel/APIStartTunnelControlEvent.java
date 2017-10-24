@@ -4,15 +4,15 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.rest.RestResponse;
 
 /**
- * Create by DCY on 2017/10/11
+ * Create by DCY on 2017/10/24
  */
 @RestResponse(allTo = "inventory")
-public class APIUpdateTunnelStateEvent extends APIEvent {
+public class APIStartTunnelControlEvent extends APIEvent {
     private TunnelInventory inventory;
 
-    public APIUpdateTunnelStateEvent(){}
+    public APIStartTunnelControlEvent(){}
 
-    public APIUpdateTunnelStateEvent(String apiId){super(apiId);}
+    public APIStartTunnelControlEvent(String apiId){super(apiId);}
 
     public TunnelInventory getInventory() {
         return inventory;

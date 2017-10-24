@@ -27,8 +27,6 @@ import com.syscxp.header.tunnel.TunnelMonitorState;
 import com.syscxp.header.tunnel.TunnelState;
 import com.syscxp.header.tunnel.TunnelStatus;
 import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.tunnel.header.monitor.APICreateTunnelMonitorMsg;
-import com.syscxp.tunnel.header.monitor.TunnelMonitorVO;
 import com.syscxp.tunnel.header.node.NodeVO;
 import com.syscxp.tunnel.header.switchs.*;
 import com.syscxp.tunnel.header.tunnel.*;
@@ -107,10 +105,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             handle((APIDeleteTunnelMsg) msg);
         }else if(msg instanceof APIDeleteForciblyTunnelMsg){
             handle((APIDeleteForciblyTunnelMsg) msg);
-        }else if(msg instanceof APICreateInnerVlanMsg){
-            handle((APICreateInnerVlanMsg) msg);
-        }else if(msg instanceof APIDeleteInnerVlanMsg){
-            handle((APIDeleteInnerVlanMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -397,43 +391,12 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             bus.publish(evt);
             return;
         }
-
         //支付成功修改状态
         vo.setState(TunnelState.Enabled);
         vo.setStatus(TunnelStatus.Connecting);
-        final TunnelVO tunnelVO = dbf.updateAndRefresh(vo);
+        vo = dbf.updateAndRefresh(vo);
 
-        //开始下发
-        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
-        String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
-        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
-        crf.sendCommand(ControllerRestConstant.START_TUNNEL, command, new Completion(evt) {
-            @Override
-            public void success() {
-                logger.info("下发创建成功！");
-
-                tunnelVO.setStatus(TunnelStatus.Connected);
-                if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                    tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
-                }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                    tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
-                }
-
-                evt.setInventory(TunnelInventory.valueOf(dbf.updateAndRefresh(tunnelVO)));
-            }
-
-            @Override
-            public void fail(ErrorCode errorCode) {
-                logger.info("下发创建失败！");
-
-                tunnelVO.setState(TunnelState.Undeployed);
-                tunnelVO.setStatus(TunnelStatus.Disconnected);
-
-                evt.setError(errorCode);
-                evt.setInventory(TunnelInventory.valueOf(dbf.updateAndRefresh(tunnelVO)));
-
-            }
-        });
+        evt.setInventory(TunnelInventory.valueOf(vo));
         bus.publish(evt);
     }
 
@@ -462,39 +425,132 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         //支付成功修改状态
         vo.setState(TunnelState.Enabled);
         vo.setStatus(TunnelStatus.Connecting);
-        final TunnelVO tunnelVO = dbf.updateAndRefresh(vo);
+        vo = dbf.updateAndRefresh(vo);
 
-        //开始下发
+        evt.setInventory(TunnelInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APIStartTunnelControlMsg msg){
+        APIStartTunnelControlEvent evt = new APIStartTunnelControlEvent(msg.getId());
+        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+
+        if(msg.getUpdateBandwidth() != null){
+            tunnelVO.setBandwidth(msg.getUpdateBandwidth());
+        }
+
         ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
         String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
         ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
-        crf.sendCommand(ControllerRestConstant.START_TUNNEL, command, new Completion(evt) {
-            @Override
-            public void success() {
-                logger.info("下发创建成功！");
 
-                tunnelVO.setStatus(TunnelStatus.Connected);
-                if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                    tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
-                }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                    tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
+        if(msg.getTunnelAction() == TunnelAction.Create){
+            crf.sendCommand(ControllerRestConstant.START_TUNNEL, command, new Completion(evt) {
+                @Override
+                public void success() {
+                    logger.info("下发创建成功！");
+
+                    tunnelVO.setStatus(TunnelStatus.Connected);
+                    if(tunnelVO.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+                        tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(tunnelVO.getDuration())));
+                    }else if(tunnelVO.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+                        tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(tunnelVO.getDuration())));
+                    }
+
+                    evt.setInventory(TunnelInventory.valueOf(dbf.updateAndRefresh(tunnelVO)));
                 }
 
-                evt.setInventory(TunnelInventory.valueOf(dbf.updateAndRefresh(tunnelVO)));
-            }
+                @Override
+                public void fail(ErrorCode errorCode) {
+                    logger.info("下发创建失败！");
 
-            @Override
-            public void fail(ErrorCode errorCode) {
-                logger.info("下发创建失败！");
+                    tunnelVO.setState(TunnelState.Undeployed);
+                    tunnelVO.setStatus(TunnelStatus.Disconnected);
 
-                tunnelVO.setState(TunnelState.Undeployed);
-                tunnelVO.setStatus(TunnelStatus.Disconnected);
+                    evt.setError(errorCode);
+                    evt.setInventory(TunnelInventory.valueOf(dbf.updateAndRefresh(tunnelVO)));
 
-                evt.setError(errorCode);
-                evt.setInventory(TunnelInventory.valueOf(dbf.updateAndRefresh(tunnelVO)));
+                }
+            });
+        }else if(msg.getTunnelAction() == TunnelAction.Enabled){
+            crf.sendCommand(ControllerRestConstant.START_TUNNEL, command, new Completion(evt) {
+                @Override
+                public void success() {
+                    logger.info("下发启用成功！");
 
-            }
-        });
+                    tunnelVO.setState(TunnelState.Enabled);
+                    tunnelVO.setStatus(TunnelStatus.Connected);
+
+                    evt.setInventory(TunnelInventory.valueOf(dbf.updateAndRefresh(tunnelVO)));
+                }
+
+                @Override
+                public void fail(ErrorCode errorCode) {
+                    logger.info("下发启用失败！");
+
+                    tunnelVO.setState(TunnelState.Failure);
+                    evt.setError(errorCode);
+                    evt.setInventory(TunnelInventory.valueOf(dbf.updateAndRefresh(tunnelVO)));
+                }
+            });
+        }else if(msg.getTunnelAction() == TunnelAction.Disabled){
+            crf.sendCommand(ControllerRestConstant.STOP_TUNNEL, command, new Completion(evt) {
+                @Override
+                public void success() {
+                    logger.info("下发禁用成功！");
+
+                    deleteTunnel(tunnelVO);
+
+                    evt.setInventory(TunnelInventory.valueOf(tunnelVO));
+                }
+
+                @Override
+                public void fail(ErrorCode errorCode) {
+                    logger.info("下发禁用失败！");
+
+                    evt.setError(errorCode);
+                    evt.setInventory(TunnelInventory.valueOf(tunnelVO));
+                }
+            });
+        }else if(msg.getTunnelAction() == TunnelAction.ModifyBandwidth){
+            crf.sendCommand(ControllerRestConstant.MODIFY_TUNNEL_BANDWIDTH, command, new Completion(evt) {
+                @Override
+                public void success() {
+                    logger.info("下发调整带宽成功！");
+
+                    evt.setInventory(TunnelInventory.valueOf(dbf.updateAndRefresh(tunnelVO)));
+                }
+
+                @Override
+                public void fail(ErrorCode errorCode) {
+                    logger.info("下发调整带宽失败！");
+
+                    evt.setError(errorCode);
+                    evt.setInventory(TunnelInventory.valueOf(tunnelVO));
+                }
+            });
+        }else if(msg.getTunnelAction() == TunnelAction.Delete){
+            crf.sendCommand(ControllerRestConstant.STOP_TUNNEL, command, new Completion(evt) {
+                @Override
+                public void success() {
+                    logger.info("下发删除成功！");
+
+                    deleteTunnel(tunnelVO);
+
+                    evt.setInventory(TunnelInventory.valueOf(tunnelVO));
+                }
+
+                @Override
+                public void fail(ErrorCode errorCode) {
+                    logger.info("下发删除失败！");
+
+                    evt.setError(errorCode);
+                    evt.setInventory(TunnelInventory.valueOf(tunnelVO));
+                }
+            });
+        }else{
+            evt.setError(errf.stringToOperationError("无此下发动作！"));
+        }
+
         bus.publish(evt);
     }
 
@@ -712,28 +768,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setExpiredTime(vo.getExpireDate());
 
         if(createOrder(orderMsg)){
-
-            //开始下发
-            ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(vo);
-            String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
-            ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
-            crf.sendCommand(ControllerRestConstant.MODIFY_TUNNEL_BANDWIDTH, command, new Completion(null) {
-                @Override
-                public void success() {
-                    logger.info("下发调整带宽成功！");
-
-                    vo.setBandwidth(msg.getBandwidth());
-                    dbf.updateAndRefresh(vo);
-                    dbf.getEntityManager().persist(record);
-                    evt.setInventory(TunnelInventory.valueOf(vo));
-                }
-
-                @Override
-                public void fail(ErrorCode errorCode) {
-                    logger.info("下发调整带宽失败！");
-                    evt.setError(errf.stringToOperationError("下发调整带宽失败"));
-                }
-            });
+            dbf.getEntityManager().persist(record);
+            evt.setInventory(TunnelInventory.valueOf(vo));
         }else{
             evt.setError(errf.stringToOperationError("订单操作失败"));
         }
@@ -796,27 +832,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     }
 
     @Transactional
-    private void handle(APIUpdateTunnelStateMsg msg){
-        APIUpdateTunnelStateEvent evt = new APIUpdateTunnelStateEvent(msg.getId());
-
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
-
-        //TODO 下发控制器
-
-        vo.setState(msg.getState());
-        if(msg.getState() == TunnelState.Enabled){
-            vo.setStatus(TunnelStatus.Connected);
-        }else if(msg.getState() == TunnelState.Disabled){
-            vo.setStatus(TunnelStatus.Disconnected);
-        }
-
-        vo = dbf.getEntityManager().merge(vo);
-        evt.setInventory(TunnelInventory.valueOf(vo));
-        bus.publish(evt);
-
-    }
-
-    @Transactional
     private void handle(APIDeleteTunnelMsg msg){
         APIDeleteTunnelEvent evt = new APIDeleteTunnelEvent(msg.getId());
 
@@ -854,8 +869,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             }
 
             evt.setInventory(TunnelInventory.valueOf(vo));
-
-            //TODO 下发控制器
         }else{
             evt.setError(errf.stringToOperationError("退订失败"));
         }
@@ -895,38 +908,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 dbf.getEntityManager().remove(qv);
             }
         }
-    }
-
-    private void handle(APICreateInnerVlanMsg msg){
-        QinqVO vo = new QinqVO();
-
-        //TODO 下发控制器
-
-        vo.setUuid(Platform.getUuid());
-        vo.setTunnelUuid(msg.getTunnelUuid());
-        vo.setStartVlan(msg.getStartVlan());
-        vo.setEndVlan(msg.getEndVlan());
-
-        vo = dbf.persistAndRefresh(vo);
-
-        APICreateInnerVlanEvent evt = new APICreateInnerVlanEvent(msg.getId());
-        evt.setInventory(QinqInventory.valueOf(vo));
-        bus.publish(evt);
-    }
-
-    private void handle(APIDeleteInnerVlanMsg msg){
-        String uuid = msg.getUuid();
-        QinqVO vo = dbf.findByUuid(uuid,QinqVO.class);
-
-        //TODO 下发控制器
-
-        if (vo != null) {
-            dbf.remove(vo);
-        }
-
-        APIDeleteInnerVlanEvent evt = new APIDeleteInnerVlanEvent(msg.getId());
-        evt.setInventory(QinqInventory.valueOf(vo));
-        bus.publish(evt);
     }
 
     private void updateTunnelFromOrderRenewOrSla(OrderCallbackCmd cmd) {
@@ -1175,16 +1156,10 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             validate((APIUpdateTunnelBandwidthMsg) msg);
         }else if(msg instanceof APIUpdateTunnelExpireDateMsg){
             validate((APIUpdateTunnelExpireDateMsg) msg);
-        }else if(msg instanceof APIUpdateTunnelStateMsg){
-            validate((APIUpdateTunnelStateMsg) msg);
         }else if(msg instanceof APIDeleteTunnelMsg){
             validate((APIDeleteTunnelMsg) msg);
         }else if(msg instanceof APIDeleteForciblyTunnelMsg){
             validate((APIDeleteForciblyTunnelMsg) msg);
-        }else if(msg instanceof APICreateInnerVlanMsg){
-            validate((APICreateInnerVlanMsg) msg);
-        }else if(msg instanceof APIDeleteInnerVlanMsg){
-            validate((APIDeleteInnerVlanMsg) msg);
         }
         return msg;
     }
@@ -1409,42 +1384,9 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     private void validate(APIUpdateTunnelExpireDateMsg msg){ }
 
-    private void validate(APIUpdateTunnelStateMsg msg){ }
-
     private void validate(APIDeleteTunnelMsg msg){ }
 
     private void validate(APIDeleteForciblyTunnelMsg msg){ }
-
-    private void validate(APIDeleteInnerVlanMsg msg){ }
-
-    private void validate(APICreateInnerVlanMsg msg){
-
-        //判断同一个switchPort下内部VLAN段是否有重叠
-        String sql = "select count(a.uuid) from QinqVO a " +
-                "where a.tunnelUuid in (select b.tunnelUuid from TunnelInterfaceVO b where b.interfaceUuid = :interfaceUuid and b.qinqState = 'Enabled') " +
-                "and ((a.startVlan between :startVlan and :endVlan) " +
-                "or (a.endVlan between :startVlan and :endVlan) " +
-                "or (:startVlan between a.startVlan and a.endVlan) " +
-                "or (:endVlan between a.startVlan and a.endVlan))";
-
-        SimpleQuery<TunnelInterfaceVO> q = dbf.createQuery(TunnelInterfaceVO.class);
-        q.add(TunnelInterfaceVO_.tunnelUuid, SimpleQuery.Op.EQ, msg.getTunnelUuid());
-        List<TunnelInterfaceVO> tivList = q.list();
-        if (tivList.size() > 0) {
-            for(TunnelInterfaceVO tiv : tivList){
-                if(tiv.getQinqState() == TunnelQinqState.Enabled){
-                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-                    vq.setParameter("interfaceUuid",tiv.getInterfaceUuid());
-                    vq.setParameter("startVlan",msg.getStartVlan());
-                    vq.setParameter("endVlan",msg.getEndVlan());
-                    Long count = vq.getSingleResult();
-                    if(count > 0){
-                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
-                    }
-                }
-            }
-        }
-    }
 
     /**
      *  获取控制器下发配置
@@ -1557,7 +1499,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             if(interfaceVO.getType() == NetworkType.QINQ){
                 tmc.setInner_vlan_id(getInnerVlanToString(qinqVOs));
             }
-            tmc.setBandwidth(tunnelVO.getBandwidth());
+            tmc.setBandwidth(tunnelVO.getBandwidth()*1024);
         }
 
         return tmc;
@@ -1581,7 +1523,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             tsc.setVlan_id(tunnelInterfaceVO.getVlan());
             tsc.setIn_port(physicalSwitchUpLinkRefVO.getPortName());
             tsc.setUplink(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchPortName());
-            tsc.setBandwidth(tunnelVO.getBandwidth());
+            tsc.setBandwidth(tunnelVO.getBandwidth()*1024);
             if(interfaceVO.getType() == NetworkType.QINQ){
                 tsc.setInner_vlan_id(getInnerVlanToString(qinqVOs));
             }
