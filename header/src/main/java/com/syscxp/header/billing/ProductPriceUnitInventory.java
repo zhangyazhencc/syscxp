@@ -12,37 +12,48 @@ public class ProductPriceUnitInventory {
 
     private String uuid;
 
-    private String productName;
+    private ProductType productTypeCode;
 
-    private ProductType productType;
+    private String productTypeName;
 
-    private Category category;
+    private Category categoryCode;
 
-    private String config;
+    private String categoryName;
 
-    private Integer priceUnit;
+    private String areaCode;
 
-    private String comment;
+    private String areaName;
+
+    private String lineCode;
+
+    private String lineName;
+
+    private String configCode;
+
+    private String configName;
+
+    private int unitPrice;
 
     private Timestamp createDate;
 
     private Timestamp lastOpDate;
 
-    private Integer discharge  =100;
-
-    private String categoryName;
-
-    private String productTypeName;
+    private int discharge;
 
     public static ProductPriceUnitInventory valueOf(ProductPriceUnitVO vo) {
         ProductPriceUnitInventory inv = new ProductPriceUnitInventory();
         inv.setUuid(vo.getUuid());
-        inv.setProductName(vo.getProductName());
-        inv.setProductType(vo.getProductType());
-        inv.setCategory(vo.getCategory());
-        inv.setPriceUnit(vo.getPriceUnit());
-        inv.setConfig(vo.getConfig());
-        inv.setComment(vo.getComment());
+        inv.setProductTypeCode(vo.getProductTypeCode());
+        inv.setProductTypeName(vo.getProductTypeName());
+        inv.setCategoryCode(vo.getCategoryCode());
+        inv.setCategoryName(vo.getCategoryName());
+        inv.setAreaCode(vo.getAreaCode());
+        inv.setAreaName(vo.getAreaName());
+        inv.setLineCode(vo.getLineCode());
+        inv.setLineName(vo.getLineName());
+        inv.setConfigCode(vo.getConfigCode());
+        inv.setConfigName(vo.getConfigName());
+        inv.setUnitPrice(vo.getUnitPrice());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCategoryName(vo.getCategoryName());
@@ -67,68 +78,12 @@ public class ProductPriceUnitInventory {
         this.uuid = uuid;
     }
 
-    public String getProductName() {
-        return productName;
+    public ProductType getProductTypeCode() {
+        return productTypeCode;
     }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
-
-    public ProductType getProductType() {
-        return productType;
-    }
-
-    public void setProductType(ProductType productType) {
-        this.productType = productType;
-    }
-
-    public Category getCategory() {
-        return category;
-    }
-
-    public void setCategory(Category category) {
-        this.category = category;
-    }
-
-    public String getConfig() {
-        return config;
-    }
-
-    public void setConfig(String config) {
-        this.config = config;
-    }
-
-    public Integer getPriceUnit() {
-        return priceUnit;
-    }
-
-    public void setPriceUnit(Integer priceUnit) {
-        this.priceUnit = priceUnit;
-    }
-
-    public String getComment() {
-        return comment;
-    }
-
-    public void setComment(String comment) {
-        this.comment = comment;
-    }
-
-    public Timestamp getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Timestamp createDate) {
-        this.createDate = createDate;
-    }
-
-    public Integer getDischarge() {
-        return discharge;
-    }
-
-    public void setDischarge(Integer discharge) {
-        this.discharge = discharge;
+    public void setProductTypeCode(ProductType productTypeCode) {
+        this.productTypeCode = productTypeCode;
     }
 
     public String getProductTypeName() {
@@ -139,6 +94,14 @@ public class ProductPriceUnitInventory {
         this.productTypeName = productTypeName;
     }
 
+    public Category getCategoryCode() {
+        return categoryCode;
+    }
+
+    public void setCategoryCode(Category categoryCode) {
+        this.categoryCode = categoryCode;
+    }
+
     public String getCategoryName() {
         return categoryName;
     }
@@ -147,8 +110,80 @@ public class ProductPriceUnitInventory {
         this.categoryName = categoryName;
     }
 
+    public String getAreaCode() {
+        return areaCode;
+    }
+
+    public void setAreaCode(String areaCode) {
+        this.areaCode = areaCode;
+    }
+
+    public String getAreaName() {
+        return areaName;
+    }
+
+    public void setAreaName(String areaName) {
+        this.areaName = areaName;
+    }
+
+    public String getLineCode() {
+        return lineCode;
+    }
+
+    public void setLineCode(String lineCode) {
+        this.lineCode = lineCode;
+    }
+
+    public String getLineName() {
+        return lineName;
+    }
+
+    public void setLineName(String lineName) {
+        this.lineName = lineName;
+    }
+
+    public String getConfigCode() {
+        return configCode;
+    }
+
+    public void setConfigCode(String configCode) {
+        this.configCode = configCode;
+    }
+
+    public String getConfigName() {
+        return configName;
+    }
+
+    public void setConfigName(String configName) {
+        this.configName = configName;
+    }
+
+    public int getUnitPrice() {
+        return unitPrice;
+    }
+
+    public void setUnitPrice(int unitPrice) {
+        this.unitPrice = unitPrice;
+    }
+
+    public Timestamp getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
+    }
+
     public Timestamp getLastOpDate() {
         return lastOpDate;
+    }
+
+    public int getDischarge() {
+        return discharge;
+    }
+
+    public void setDischarge(int discharge) {
+        this.discharge = discharge;
     }
 
     public void setLastOpDate(Timestamp lastOpDate) {
