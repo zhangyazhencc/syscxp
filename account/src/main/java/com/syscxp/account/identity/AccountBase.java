@@ -300,6 +300,13 @@ public class AccountBase extends AbstractAccount {
         acvo.setNoticeWay(msg.getNoticeWay());
 
         APICreateAccountContactsEvent evt = new APICreateAccountContactsEvent(msg.getId());
+
+        if((msg.getNoticeWay() == NoticeWay.phone && msg.getPhone() == null)
+            ||(msg.getNoticeWay() == NoticeWay.email && msg.getEmail() == null)
+                ||(msg.getNoticeWay() == NoticeWay.all && (msg.getEmail() == null || msg.getPhone() == null))){
+            evt.setError(errf.stringToOperationError("Information mismatch"));
+        }
+
         evt.setInventory(AccountContactsInventory.valueOf(dbf.persistAndRefresh(acvo)));
         bus.publish(evt);
     }
