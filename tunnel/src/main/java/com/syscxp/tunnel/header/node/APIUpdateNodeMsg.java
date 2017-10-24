@@ -27,6 +27,8 @@ public class APIUpdateNodeMsg extends APIMessage {
     @APIParam(required = false,emptyString = false,maxLength = 128)
     private String property;
     @APIParam(required = false,emptyString = false,maxLength = 128)
+    private String country;
+    @APIParam(required = false,emptyString = false,maxLength = 128)
     private String province;
     @APIParam(required = false,emptyString = false,maxLength = 128)
     private String city;
@@ -151,5 +153,13 @@ public class APIUpdateNodeMsg extends APIMessage {
 
     public void setExtensionInfoUuid(String extensionInfoUuid) {
         this.extensionInfoUuid = extensionInfoUuid;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 }

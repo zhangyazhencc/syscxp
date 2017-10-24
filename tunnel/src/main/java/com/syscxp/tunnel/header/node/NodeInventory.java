@@ -20,6 +20,7 @@ public class NodeInventory {
     private String description;
     private String contact;
     private String telephone;
+    private String country;
     private String province;
     private String city;
     private String address;
@@ -39,6 +40,7 @@ public class NodeInventory {
         inv.setDescription(vo.getDescription());
         inv.setContact(vo.getContact());
         inv.setTelephone(vo.getTelephone());
+        inv.setCountry(vo.getCountry());
         inv.setProvince(vo.getProvince());
         inv.setCity(vo.getCity());
         inv.setAddress(vo.getAddress());
@@ -185,5 +187,13 @@ public class NodeInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 }
