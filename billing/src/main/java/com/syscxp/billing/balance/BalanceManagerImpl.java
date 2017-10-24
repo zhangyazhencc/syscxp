@@ -139,6 +139,17 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
         if (exists) {
             throw new IllegalArgumentException("the account has the discharge");
         }
+        APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
+        aMsg.setUuid(msg.getAccountUuid());
+        InnerMessageHelper.setMD5(aMsg);
+        String gstr = RESTApiDecoder.dump(aMsg);
+        RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
+        if (rsp.getState().equals(RestAPIState.Done.toString())) {
+            APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
+            if (!replay.isNormalAccountHasProxy()) {
+                throw new IllegalArgumentException("the account has proxy, must let agency set the discharge");
+            }
+        }
         SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
         q.add(ProductPriceUnitVO_.category, SimpleQuery.Op.EQ,msg.getCategory());
         q.groupBy(ProductPriceUnitVO_.category);
@@ -241,10 +252,17 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
             q.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, accountDischargeVO.getProductType());
             q.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, accountDischargeVO.getCategory());
             AccountDischargeVO adVO = q.find();
-            int disCharge = adVO.getDisCharge();
-            if(msg.getDischarge()>disCharge){
-                throw new IllegalArgumentException("cannot give a discharge large than self");
+            if(adVO != null){
+                int disCharge = adVO.getDisCharge();
+                if(msg.getDischarge()>disCharge){
+                    throw new IllegalArgumentException("cannot give a discharge large than self");
+                }
+            }else{
+                if(msg.getDischarge()!=100){
+                    throw new IllegalArgumentException("just can be set 100");
+                }
             }
+
         }
         if(msg.getSession().getType() == AccountType.Normal){
             throw new IllegalArgumentException("you are not permit");
