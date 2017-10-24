@@ -249,16 +249,16 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 throw new IllegalArgumentException("price uuid is not valid");
             }
             SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
-            qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategory());
-            qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductType());
+            qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
+            qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
             qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
             AccountDischargeVO accountDischargeVO = qDischarge.find();
             int productDisCharge = 100;
             if (accountDischargeVO != null) {
                 productDisCharge = accountDischargeVO.getDisCharge() == 0 ? 100 : accountDischargeVO.getDisCharge();
             }
-            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()));
-            dischargePrice = dischargePrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));
+            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
+            dischargePrice = dischargePrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));
 
         }
         int originDuration = msg.getDuration();
@@ -287,13 +287,20 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentTimestamp);
         calendar.add(Calendar.MONTH, duration.intValue());
-        orderVo.setProductEffectTimeEnd(msg.getStartTime());
+        if(msg.getStartTime().getTime()<msg.getExpiredTime().getTime()){
+            orderVo.setProductEffectTimeStart(msg.getStartTime());
+        }else{
+            orderVo.setProductEffectTimeStart(msg.getExpiredTime());
+            msg.setExpiredTime(msg.getStartTime());
+        }
+
 
         LocalDateTime localDateTime = msg.getExpiredTime().toLocalDateTime();
         localDateTime.plusMonths(duration.intValue());
         Timestamp endTime = Timestamp.valueOf(localDateTime);
-        orderVo.setProductEffectTimeStart(endTime);
-        long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
+        orderVo.setProductEffectTimeEnd(endTime);
+        long notUseDays = (endTime.getTime() - currentTimestamp.getTime()) /( 1000 * 60 * 60 * 24);
+        notUseDays = notUseDays<0?0:notUseDays;
 
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
         renewVO.setProductChargeModel(msg.getProductChargeModel());
@@ -452,9 +459,11 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         List<String> productPriceUnitUuids = new ArrayList<String>();
         for (ProductPriceUnit unit : units) {
             SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-            q.add(ProductPriceUnitVO_.category, SimpleQuery.Op.EQ, unit.getCategory());
-            q.add(ProductPriceUnitVO_.productType, SimpleQuery.Op.EQ, unit.getProductType());
-            q.add(ProductPriceUnitVO_.config, SimpleQuery.Op.EQ, unit.getConfig());
+            q.add(ProductPriceUnitVO_.categoryCode, SimpleQuery.Op.EQ, unit.getCategoryCode());
+            q.add(ProductPriceUnitVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
+            q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, unit.getAreaCode());
+            q.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, unit.getLineCode());
+            q.add(ProductPriceUnitVO_.configCode, SimpleQuery.Op.EQ, unit.getConfigCode());
             ProductPriceUnitVO productPriceUnitVO = q.find();
             if (productPriceUnitVO == null) {
                 throw new IllegalArgumentException("price uuid is not valid");
@@ -462,16 +471,16 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             productPriceUnitUuids.add(productPriceUnitVO.getUuid());
 
             SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
-            qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategory());
-            qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductType());
+            qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
+            qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
             qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
             AccountDischargeVO accountDischargeVO = qDischarge.find();
             int productDisCharge = 100;
             if (accountDischargeVO != null) {
                 productDisCharge = accountDischargeVO.getDisCharge() <= 0 ? 100 : accountDischargeVO.getDisCharge();
             }
-            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()));
-            BigDecimal currentDischarge = BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
+            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
+            BigDecimal currentDischarge = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
             dischargePrice = dischargePrice.add(currentDischarge);
 
         }
@@ -602,25 +611,27 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         List<String> productPriceUnitUuids = new ArrayList<String>();
         for (ProductPriceUnit unit : units) {
             SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-            q.add(ProductPriceUnitVO_.category, SimpleQuery.Op.EQ, unit.getCategory());
-            q.add(ProductPriceUnitVO_.productType, SimpleQuery.Op.EQ, unit.getProductType());
-            q.add(ProductPriceUnitVO_.config, SimpleQuery.Op.EQ, unit.getConfig());
+            q.add(ProductPriceUnitVO_.categoryCode, SimpleQuery.Op.EQ, unit.getConfigCode());
+            q.add(ProductPriceUnitVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
+            q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, unit.getAreaCode());
+            q.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, unit.getLineCode());
+            q.add(ProductPriceUnitVO_.configCode, SimpleQuery.Op.EQ, unit.getConfigCode());
             ProductPriceUnitVO productPriceUnitVO = q.find();
             if (productPriceUnitVO == null) {
                 throw new IllegalArgumentException("price uuid is not valid");
             }
             productPriceUnitUuids.add(productPriceUnitVO.getUuid());
             SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
-            qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategory());
-            qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductType());
+            qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
+            qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
             qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
             AccountDischargeVO accountDischargeVO = qDischarge.find();
             int productDisCharge = 100;
             if (accountDischargeVO != null) {
                 productDisCharge = accountDischargeVO.getDisCharge() <= 0 ? 100 : accountDischargeVO.getDisCharge();
             }
-            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()));
-            BigDecimal currentDischarge = BigDecimal.valueOf(productPriceUnitVO.getPriceUnit()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
+            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
+            BigDecimal currentDischarge = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
             dischargePrice = dischargePrice.add(currentDischarge);
 
         }

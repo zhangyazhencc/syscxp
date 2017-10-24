@@ -108,6 +108,7 @@ CREATE TABLE `NodeEO` (
   `description` varchar(255) DEFAULT NULL COMMENT '节点描述',
   `contact` varchar(128) NOT NULL COMMENT '联系人',
   `telephone` varchar(32) NOT NULL COMMENT '联系人电话',
+  `country` varchar(128) NOT NULL COMMENT '国家',
   `province` varchar(128) NOT NULL COMMENT '省',
   `city` varchar(128) NOT NULL COMMENT '市',
   `address` varchar(256) NOT NULL COMMENT '地址',
@@ -123,7 +124,7 @@ CREATE TABLE `NodeEO` (
   UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`NodeVO` AS SELECT uuid, name, code, description, contact, telephone, province, city, address, longtitude, latitude, property, status, extensionInfoUuid, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`NodeVO` AS SELECT uuid, name, code, description, contact, telephone, country, province, city, address, longtitude, latitude, property, status, extensionInfoUuid, lastOpDate, createDate
                         FROM `NodeEO` WHERE deleted IS NULL;
 
 ## 区域字典表
@@ -258,21 +259,6 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchVlanVO` (
   `startVlan` INT(11) NOT NULL COMMENT '起始VLAN',
   `endVlan` INT(11) NOT NULL COMMENT '结束VLAN',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  PRIMARY KEY  (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-##产品日志表
-CREATE TABLE  `syscxp_tunnel`.`ProductsLogVO` (
-  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `productUuid` varchar(32) NOT NULL COMMENT '产品uuid',
-  `accountUuid` varchar(32) NOT NULL COMMENT '产品所属账户',
-  `opAccountUuid` varchar(32) NOT NULL COMMENT '操作账户',
-  `type` varchar(32) NOT NULL COMMENT '类型：购买，续费，赔偿...',
-  `statue` varchar(32) NOT NULL COMMENT '状态：完成，未完成',
-  `duration` int(11) NOT NULL COMMENT '购买时长',
-  `productChargeModel` varchar(32) NOT NULL COMMENT '产品付费方式',
-  `expireDate` timestamp NULL DEFAULT NULL COMMENT '截止时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

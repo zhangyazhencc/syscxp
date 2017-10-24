@@ -16,6 +16,7 @@ public class NodeAO_ {
     public static volatile SingularAttribute<NodeAO, String> description;
     public static volatile SingularAttribute<NodeAO, String> contact;
     public static volatile SingularAttribute<NodeAO, String> telephone;
+    public static volatile SingularAttribute<NodeAO, String> country;
     public static volatile SingularAttribute<NodeAO, String> province;
     public static volatile SingularAttribute<NodeAO, String> city;
     public static volatile SingularAttribute<NodeAO, String> address;

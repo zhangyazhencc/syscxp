@@ -8,12 +8,17 @@ import java.sql.Timestamp;
 public class ProductPriceUnitVO_ {
 
     public static volatile SingularAttribute<ProductPriceUnitVO, String> uuid;
-    public static volatile SingularAttribute<ProductPriceUnitVO, String> productName;
-    public static volatile SingularAttribute<ProductPriceUnitVO, ProductType> productType;
-    public static volatile SingularAttribute<ProductPriceUnitVO, Category> category;
-    public static volatile SingularAttribute<ProductPriceUnitVO, String> config;
-    public static volatile SingularAttribute<ProductPriceUnitVO, Integer> priceUnit;
-    public static volatile SingularAttribute<ProductPriceUnitVO, String> comment;
+    public static volatile SingularAttribute<ProductPriceUnitVO, ProductType> productTypeCode;
+    public static volatile SingularAttribute<ProductPriceUnitVO, Category> categoryCode;
+    public static volatile SingularAttribute<ProductPriceUnitVO, String> productTypeName;
+    public static volatile SingularAttribute<ProductPriceUnitVO, String> categoryName;
+    public static volatile SingularAttribute<ProductPriceUnitVO, String> areaCode;
+    public static volatile SingularAttribute<ProductPriceUnitVO, String> areaName;
+    public static volatile SingularAttribute<ProductPriceUnitVO, String> lineCode;
+    public static volatile SingularAttribute<ProductPriceUnitVO, String> lineName;
+    public static volatile SingularAttribute<ProductPriceUnitVO, String> configCode;
+    public static volatile SingularAttribute<ProductPriceUnitVO, String> configName;
+    public static volatile SingularAttribute<ProductPriceUnitVO, Integer> unitPrice;
     public static volatile SingularAttribute<ProductPriceUnitVO, Timestamp> createDate;
     public static volatile SingularAttribute<ProductPriceUnitVO, Timestamp> lastOpDate;
 }

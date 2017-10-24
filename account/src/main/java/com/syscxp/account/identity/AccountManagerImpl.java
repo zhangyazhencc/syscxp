@@ -140,6 +140,14 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         APIValidateAccountReply reply = new APIValidateAccountReply();
         if(accountVO!=null){
             reply.setValidAccount(true);
+            if(accountVO.getType() == AccountType.Normal){
+                SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
+                q.add(ProxyAccountRefVO_.customerAccountUuid, Op.EQ, accountVO.getUuid());
+                List<ProxyAccountRefVO> proxyAccountRefVOS = q.list();
+                if(proxyAccountRefVOS!=null && proxyAccountRefVOS.size()>0){
+                    reply.setNormalAccountHasProxy(true);
+                }
+            }
         }
         bus.reply(msg, reply);
     }
