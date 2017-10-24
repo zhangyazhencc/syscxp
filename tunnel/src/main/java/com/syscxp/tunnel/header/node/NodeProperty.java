@@ -9,5 +9,5 @@ public enum NodeProperty {
     IDC,
     VPN,
     ECP,
-    EXCHANGE,
+    EXCHANGE
 }

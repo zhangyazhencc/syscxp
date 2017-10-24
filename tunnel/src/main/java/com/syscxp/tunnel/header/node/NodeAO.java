@@ -32,6 +32,9 @@ public class NodeAO {
     private String telephone;
 
     @Column
+    private String country;
+
+    @Column
     private String province;
 
     @Column
@@ -190,5 +193,13 @@ public class NodeAO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public String getCountry() {
+        return country;
+    }
+
+    public void setCountry(String country) {
+        this.country = country;
     }
 }

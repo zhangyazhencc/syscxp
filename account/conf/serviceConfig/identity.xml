@@ -202,5 +202,8 @@
         <name>com.syscxp.account.header.account.APIAccountMailAuthenticationMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.account.header.user.APIUserMailAuthenticationMsg</name>
+    </message>
 
 </service>

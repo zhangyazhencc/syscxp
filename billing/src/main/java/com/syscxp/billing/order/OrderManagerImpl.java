@@ -287,13 +287,20 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentTimestamp);
         calendar.add(Calendar.MONTH, duration.intValue());
-        orderVo.setProductEffectTimeEnd(msg.getStartTime());
+        if(msg.getStartTime().getTime()<msg.getExpiredTime().getTime()){
+            orderVo.setProductEffectTimeStart(msg.getStartTime());
+        }else{
+            orderVo.setProductEffectTimeStart(msg.getExpiredTime());
+            msg.setExpiredTime(msg.getStartTime());
+        }
+
 
         LocalDateTime localDateTime = msg.getExpiredTime().toLocalDateTime();
         localDateTime.plusMonths(duration.intValue());
         Timestamp endTime = Timestamp.valueOf(localDateTime);
-        orderVo.setProductEffectTimeStart(endTime);
-        long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
+        orderVo.setProductEffectTimeEnd(endTime);
+        long notUseDays = (endTime.getTime() - currentTimestamp.getTime()) /( 1000 * 60 * 60 * 24);
+        notUseDays = notUseDays<0?0:notUseDays;
 
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
         renewVO.setProductChargeModel(msg.getProductChargeModel());

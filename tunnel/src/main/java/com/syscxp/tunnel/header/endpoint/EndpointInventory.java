@@ -20,8 +20,8 @@ public class EndpointInventory {
     private String name;
     private String code;
     private EndpointType endpointType;
-    private EndpointState endpointState;
-    private EndpointStatus endpointStatus;
+    private EndpointState state;
+    private EndpointStatus status;
     private String description;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -34,8 +34,8 @@ public class EndpointInventory {
         inv.setName(vo.getName());
         inv.setCode(vo.getCode());
         inv.setEndpointType(vo.getEndpointType());
-        inv.setEndpointState(vo.getState());
-        inv.setEndpointStatus(vo.getStatus());
+        inv.setState(vo.getState());
+        inv.setStatus(vo.getStatus());
         inv.setDescription(vo.getDescription());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -122,19 +122,19 @@ public class EndpointInventory {
         this.node = node;
     }
 
-    public EndpointState getEndpointState() {
-        return endpointState;
+    public EndpointState getState() {
+        return state;
     }
 
-    public void setEndpointState(EndpointState endpointState) {
-        this.endpointState = endpointState;
+    public void setState(EndpointState state) {
+        this.state = state;
     }
 
-    public EndpointStatus getEndpointStatus() {
-        return endpointStatus;
+    public EndpointStatus getStatus() {
+        return status;
     }
 
-    public void setEndpointStatus(EndpointStatus endpointStatus) {
-        this.endpointStatus = endpointStatus;
+    public void setStatus(EndpointStatus status) {
+        this.status = status;
     }
 }
