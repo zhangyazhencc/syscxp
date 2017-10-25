@@ -138,7 +138,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
 
     private void handle(APIDeleteReceiptInfoMsg msg) {
         ReceiptInfoVO vo = dbf.findByUuid(msg.getUuid(), ReceiptInfoVO.class);
-        if(vo!=null)validReference(vo.getUuid());
+        if(vo!=null)validReference(vo.getUuid(),true);
         dbf.remove(vo);
         ReceiptInfoInventory ri = ReceiptInfoInventory.valueOf(vo);
         APIDeleteReceiptInfoEvent evt = new APIDeleteReceiptInfoEvent(msg.getId());
@@ -219,7 +219,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
     private void handle(APIDeleteReceiptPostAddressMsg msg) {
         String uuid = msg.getUuid();
         ReceiptPostAddressVO vo = dbf.findByUuid(msg.getUuid(), ReceiptPostAddressVO.class);
-        if(vo!=null)validReference(vo.getUuid());
+        if(vo!=null)validReference(vo.getUuid(),false);
         dbf.remove(vo);
         ReceiptPostAddressInventory ri = ReceiptPostAddressInventory.valueOf(vo);
         APIDeleteReceiptPostAddressEvent evt = new APIDeleteReceiptPostAddressEvent(msg.getId());
@@ -227,13 +227,18 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         bus.publish(evt);
     }
 
-    private void validReference(String uuid) {
-            List<ReceiptVO> receiptVOS = dbf.listAll(ReceiptVO.class);
-            for(ReceiptVO receiptVO : receiptVOS){
-                if(receiptVO.getReceiptInfoVO().getUuid().equals(uuid)){
-                    throw new RuntimeException("there have a reference of this receiptInfo,can not be deleted");
-                }
-            }
+    private void validReference(String uuid,boolean isInfo) {
+        SimpleQuery<ReceiptVO> q = dbf.createQuery(ReceiptVO.class);
+        if(isInfo){
+            q.add(ReceiptVO_.receiptInfoUuid, SimpleQuery.Op.EQ, uuid);
+        } else {
+            q.add(ReceiptVO_.receiptAddressUuid, SimpleQuery.Op.EQ, uuid);
+        }
+
+        List<ReceiptVO> all = q.list();
+        if(all != null && all.size()>0){
+            throw new RuntimeException("there have a reference of this receiptInfo,can not be deleted");
+        }
     }
 
     private void handle(APIUpdateReceiptPostAddressMsg msg) {

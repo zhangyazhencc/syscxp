@@ -59,5 +59,10 @@
         <name>com.syscxp.tunnel.header.node.APIUpdateNodeExtensionInfoMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.tunnel.header.node.APIGetImageUploadInfoMsg</name>
+    </message>
+
+
 
 </service>
