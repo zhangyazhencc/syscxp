@@ -196,7 +196,7 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
         }
         vo.setTicketTypeCode(msg.getTicketTypeCode());
 
-        if(vo.getContentExtra() != null){
+        if(msg.getContentExtra() != null){
             vo.setContentExtra(msg.getContentExtra());
         }
 
@@ -206,7 +206,6 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
         vo.setTicketFrom(msg.getTicketFrom());
         vo.setContent(msg.getContent());
         vo.setStatus(TicketStatus.untreated);
-
         APICreateTicketEvent evt = new APICreateTicketEvent(msg.getId());
         evt.setInventory(TicketInventory.valueOf(dbf.persistAndRefresh(vo)));
         bus.publish(evt);
