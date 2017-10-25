@@ -217,8 +217,6 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
             validate((APICreateTicketMsg)msg);
 
         }
-        setServiceId(msg);
-
         return msg;
     }
 
@@ -234,13 +232,6 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
         if(!is){
             throw new ApiMessageInterceptionException(argerr("value[%s] of type is not exist",
                     msg.getTicketTypeCode()));
-        }
-
-    }
-
-    private void setServiceId(APIMessage msg) {
-        if (!(msg instanceof APIQueryMessage)) {
-            bus.makeTargetServiceIdByResourceUuid(msg, TicketConstant.SERVICE_ID, "");
         }
 
     }
