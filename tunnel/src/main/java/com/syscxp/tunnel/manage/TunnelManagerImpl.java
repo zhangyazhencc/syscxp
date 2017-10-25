@@ -463,7 +463,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 public void fail(ErrorCode errorCode) {
                     logger.info("下发创建失败！");
 
-                    tunnelVO.setState(TunnelState.Undeployed);
+                    tunnelVO.setState(TunnelState.Deployfailure);
                     tunnelVO.setStatus(TunnelStatus.Disconnected);
 
                     evt.setError(errorCode);
@@ -487,7 +487,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 public void fail(ErrorCode errorCode) {
                     logger.info("下发启用失败！");
 
-                    tunnelVO.setState(TunnelState.Failure);
+                    tunnelVO.setState(TunnelState.Disabled);
                     evt.setError(errorCode);
                     evt.setInventory(TunnelInventory.valueOf(dbf.updateAndRefresh(tunnelVO)));
                 }
@@ -991,7 +991,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                                     public void fail(ErrorCode errorCode) {
                                         logger.info("下发创建失败！");
 
-                                        vo.setState(TunnelState.Undeployed);
+                                        vo.setState(TunnelState.Deployfailure);
                                         vo.setStatus(TunnelStatus.Disconnected);
                                         dbf.updateAndRefresh(vo);
                                     }

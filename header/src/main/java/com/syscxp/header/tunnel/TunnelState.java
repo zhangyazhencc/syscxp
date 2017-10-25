@@ -9,5 +9,5 @@ public enum TunnelState {
     Deployfailure,
     Unsupport,
     Enabled,
-    Disabled,
+    Disabled
 }
