@@ -288,15 +288,15 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         calendar.setTime(currentTimestamp);
         calendar.add(Calendar.MONTH, duration.intValue());
         if(msg.getStartTime().getTime()<msg.getExpiredTime().getTime()){
-            orderVo.setProductEffectTimeStart(msg.getStartTime());
-        }else{
             orderVo.setProductEffectTimeStart(msg.getExpiredTime());
+        }else{
+            orderVo.setProductEffectTimeStart(msg.getStartTime());
             msg.setExpiredTime(msg.getStartTime());
         }
 
 
         LocalDateTime localDateTime = msg.getExpiredTime().toLocalDateTime();
-        localDateTime.plusMonths(duration.intValue());
+        localDateTime = localDateTime.plusMonths(duration.intValue());
         Timestamp endTime = Timestamp.valueOf(localDateTime);
         orderVo.setProductEffectTimeEnd(endTime);
         long notUseDays = (endTime.getTime() - currentTimestamp.getTime()) /( 1000 * 60 * 60 * 24);
@@ -349,9 +349,14 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setType(OrderType.SLA_COMPENSATION);
         orderVo.setOriginalPrice(BigDecimal.ZERO);
         orderVo.setPrice(BigDecimal.ZERO);
-        orderVo.setProductEffectTimeStart(msg.getStartTime());
+        if(msg.getStartTime().getTime()<msg.getExpiredTime().getTime()){
+            orderVo.setProductEffectTimeStart(msg.getExpiredTime());
+        }else{
+            orderVo.setProductEffectTimeStart(msg.getStartTime());
+            msg.setExpiredTime(msg.getStartTime());
+        }
         LocalDateTime localDateTime = msg.getExpiredTime().toLocalDateTime();
-        localDateTime.plusDays(msg.getDuration());
+        localDateTime = localDateTime.plusDays(msg.getDuration());
         orderVo.setProductEffectTimeEnd(Timestamp.valueOf(localDateTime));
         orderVo.setProductStatus(1);
 
