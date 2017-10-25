@@ -8,6 +8,8 @@ import com.syscxp.header.query.AutoQuery;
 public class APIQuerySwitchPortAvailableMsg extends APISyncCallMessage {
     @APIParam
     private String uuid;
+    @APIParam(required = false)
+    private String portName;
 
     public String getUuid() {
         return uuid;
@@ -15,5 +17,13 @@ public class APIQuerySwitchPortAvailableMsg extends APISyncCallMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getPortName() {
+        return portName;
+    }
+
+    public void setPortName(String portName) {
+        this.portName = portName;
     }
 }

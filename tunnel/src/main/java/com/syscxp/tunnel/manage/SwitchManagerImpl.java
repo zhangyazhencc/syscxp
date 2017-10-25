@@ -3,6 +3,7 @@ package com.syscxp.tunnel.manage;
 import com.syscxp.header.tunnel.TunnelState;
 import com.syscxp.tunnel.header.switchs.*;
 import com.syscxp.tunnel.header.tunnel.InterfaceState;
+import com.syscxp.utils.TagUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.Platform;
@@ -37,7 +38,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.syscxp.core.Platform.argerr;
-
 /**
  * Created by DCY on 2017-09-07
  */
@@ -114,24 +114,48 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
 
     private void handle(APIQuerySwitchPortAvailableMsg msg) {
         List<SwitchPortAvailableInventory> switchPortAvailableInventoryList = new ArrayList<SwitchPortAvailableInventory>();
+        if(msg.getPortName() != null){
+            String sql = "select s.code, sp.portName from SwitchVO s, SwitchPortVO sp " +
+                    "where s.uuid = sp.switchUuid and sp.state = :spstate " +
+                    "and sp.uuid not in( select switchPortUuid from InterfaceVO i where i.state = :istate and sp.portAttribute = :portAttribute) " +
+                    " and s.uuid = :uuid and sp.portName like :portName";
 
-        String sql = "select s.code, sp.portName from SwitchVO s, SwitchPortVO sp " +
-                "where s.uuid = sp.switchUuid and sp.state = :spstate " +
-                "and sp.uuid not in( select switchPortUuid from InterfaceVO i where i.state = :istate and sp.portAttribute = :portAttribute) " +
-                " and s.uuid = :uuid";
+            TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+            tfq.setParameter("uuid", msg.getUuid());
+            tfq.setParameter("spstate", SwitchPortState.Enabled);
+            tfq.setParameter("istate", InterfaceState.Paid);
+            tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
+            tfq.setParameter("portName",  "%"+msg.getPortName()+"%");
 
-        TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
-        tfq.setParameter("uuid", msg.getUuid());
-        tfq.setParameter("spstate", SwitchPortState.Enabled);
-        tfq.setParameter("istate", InterfaceState.Paid);
-        tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
-        List<Tuple> ts = tfq.getResultList();
-        for (Tuple t : ts) {
-            SwitchPortAvailableInventory inventory = new SwitchPortAvailableInventory();
-            inventory.setCode(t.get(0, String.class));
-            inventory.setPortName(t.get(1, String.class));
-            switchPortAvailableInventoryList.add(inventory);
+
+            List<Tuple> ts = tfq.getResultList();
+            for (Tuple t : ts) {
+                SwitchPortAvailableInventory inventory = new SwitchPortAvailableInventory();
+                inventory.setCode(t.get(0, String.class));
+                inventory.setPortName(t.get(1, String.class));
+                switchPortAvailableInventoryList.add(inventory);
+            }
+        }else{
+            String sql = "select s.code, sp.portName from SwitchVO s, SwitchPortVO sp " +
+                    "where s.uuid = sp.switchUuid and sp.state = :spstate " +
+                    "and sp.uuid not in( select switchPortUuid from InterfaceVO i where i.state = :istate and sp.portAttribute = :portAttribute) " +
+                    " and s.uuid = :uuid";
+
+            TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+            tfq.setParameter("uuid", msg.getUuid());
+            tfq.setParameter("spstate", SwitchPortState.Enabled);
+            tfq.setParameter("istate", InterfaceState.Paid);
+            tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
+            List<Tuple> ts = tfq.getResultList();
+            for (Tuple t : ts) {
+                SwitchPortAvailableInventory inventory = new SwitchPortAvailableInventory();
+                inventory.setCode(t.get(0, String.class));
+                inventory.setPortName(t.get(1, String.class));
+                switchPortAvailableInventoryList.add(inventory);
+            }
         }
+
+
         APIQuerySwitchPortAvailableReply reply = new APIQuerySwitchPortAvailableReply();
         reply.setInventories(switchPortAvailableInventoryList);
         bus.reply(msg,reply);
