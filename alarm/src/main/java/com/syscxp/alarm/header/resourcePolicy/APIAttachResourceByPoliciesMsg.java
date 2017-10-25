@@ -5,25 +5,19 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
+import java.util.List;
+
 @Action(adminOnly = true,category = AlarmConstant.ACTION_CATEGORY_RESOURCE_POLICY)
-public class APIAttachResourceByPolicyMsg extends APIMessage{
+public class APIAttachResourceByPoliciesMsg extends APIMessage{
 
-    @APIParam(emptyString = false,resourceType = PolicyVO.class)
-    private String policyUuid;
-
-    @APIParam(emptyString = false,resourceType = ResourceVO.class)
+    @APIParam(emptyString = false)
     private String resourceUuid;
+
+    @APIParam(nonempty = false)
+    private List<String> policyUuids;
 
     @APIParam
     private boolean isAttach;
-
-    public String getPolicyUuid() {
-        return policyUuid;
-    }
-
-    public void setPolicyUuid(String policyUuid) {
-        this.policyUuid = policyUuid;
-    }
 
     public String getResourceUuid() {
         return resourceUuid;
@@ -31,6 +25,14 @@ public class APIAttachResourceByPolicyMsg extends APIMessage{
 
     public void setResourceUuid(String resourceUuid) {
         this.resourceUuid = resourceUuid;
+    }
+
+    public List<String> getPolicyUuids() {
+        return policyUuids;
+    }
+
+    public void setPolicyUuids(List<String> policyUuids) {
+        this.policyUuids = policyUuids;
     }
 
     public boolean isAttach() {

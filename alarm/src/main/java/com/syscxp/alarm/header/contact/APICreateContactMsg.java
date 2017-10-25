@@ -8,7 +8,7 @@ import com.syscxp.header.message.APIParam;
 
 import java.util.List;
 
-@Action(adminOnly = true,category = AlarmConstant.ACTION_CATEGORY_CONTACT)
+@Action(category = AlarmConstant.ACTION_CATEGORY_CONTACT)
 public class APICreateContactMsg extends APIMessage{
 
     @APIParam(emptyString = false)
