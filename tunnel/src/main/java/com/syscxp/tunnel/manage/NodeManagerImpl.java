@@ -8,6 +8,7 @@ import com.syscxp.tunnel.header.node.*;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO_;
+import com.syscxp.utils.Digest;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,9 +113,29 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIDeleteNodeExtensionInfoMsg) msg);
         } else if (msg instanceof APIUpdateNodeExtensionInfoMsg) {
             handle((APIUpdateNodeExtensionInfoMsg) msg);
+        } else if (msg instanceof APIGetImageUploadInfoMsg) {
+            handle((APIGetImageUploadInfoMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetImageUploadInfoMsg msg) {
+        APIGetImageUploadInfoReply reply = new APIGetImageUploadInfoReply();
+
+        reply.setUpload_url(ImageUploadInfoConstant.upload_url);
+        reply.setDelete_url(ImageUploadInfoConstant.delete_url);
+        reply.setImage_url_prefix(ImageUploadInfoConstant.image_url_prefix);
+        reply.setFileNumLimit(ImageUploadInfoConstant.fileNumLimit);
+
+
+        String timestamp = String.valueOf(System.currentTimeMillis()/1000);
+        String md5 = Digest.getMD5(msg.getNodeId() + timestamp + ImageUploadInfoConstant.upload_key);
+
+        reply.setNodeId(msg.getNodeId());
+        reply.setTimestamp(timestamp);
+        reply.setMd5(md5);
+        bus.reply(msg,reply);
     }
 
     private void handle(APIUpdateNodeExtensionInfoMsg msg) {
@@ -197,7 +218,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIGetNodeExtensionInfoMsg msg) {
 
-
         APIGetNodeExtensionInfoReply reply = new APIGetNodeExtensionInfoReply();
         reply.setNodeExtensionInfo(JSONObjectUtil.toJsonString(
                 mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),NodeExtensionInfo.class,"nodeExtensionInfo")
@@ -208,6 +228,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     private void handle(APICreateNodeExtensionInfoMsg msg) {
 
         com.alibaba.fastjson.JSONObject json = com.alibaba.fastjson.JSONObject.parseObject(msg.getNodeExtensionInfo());
+
         if(json.get("nodeExtensionInfo") != null && !"".equals(json.get("nodeExtensionInfo"))){
             mongoTemplate.insert(json.get("nodeExtensionInfo"),"nodeExtensionInfo");
         }else{
