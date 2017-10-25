@@ -6,6 +6,6 @@ import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.AutoQuery;
 
 @Action(category = AlarmConstant.ACTION_CATEGORY_CONTACT)
-@AutoQuery(replyClass = APIQueryContactReply.class, inventoryClass = ContactInventory.class)
-public class APIQueryContactMsg extends APIQueryMessage {
+@AutoQuery(replyClass = APIQueryContactGroupReply.class, inventoryClass = ContactGroupInventory.class)
+public class APIQueryContactGroupMsg extends APIQueryMessage {
 }

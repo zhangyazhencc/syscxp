@@ -128,7 +128,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         reply.setImage_url_prefix(ImageUploadInfoConstant.image_url_prefix);
         reply.setFileNumLimit(ImageUploadInfoConstant.fileNumLimit);
 
-
         String timestamp = String.valueOf(System.currentTimeMillis()/1000);
         String md5 = Digest.getMD5(msg.getNodeId() + timestamp + ImageUploadInfoConstant.upload_key);
 
