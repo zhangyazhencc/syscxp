@@ -157,7 +157,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
             //分配资源:策略分配端口
         TunnelStrategy ts = new TunnelStrategy();
-        String switchPortUuid = ts.getSwitchPortByStrategy(msg.getEndpointUuid() ,msg.getPortAttribute() ,msg.getPortType());
+        String switchPortUuid = ts.getSwitchPortByStrategy(msg.getEndpointUuid(), msg.getPortAttribute(), msg.getPortType());
         if(switchPortUuid == null){
             throw new ApiMessageInterceptionException(argerr("该连接点下无可用的端口"));
         }
