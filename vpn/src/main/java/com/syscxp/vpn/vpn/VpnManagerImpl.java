@@ -251,12 +251,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private List<ProductPriceUnit> generateUnits(Long bandwidth) {
 
-        ProductPriceUnit unit = new ProductPriceUnit();
-        unit.setCategory(Category.VPN);
-        unit.setProductType(ProductType.VPN);
-        unit.setConfig(String.valueOf(bandwidth) + VpnConstant.BANDWIDTH_UNIT);
-
-        return CollectionDSL.list(unit);
+        return CollectionDSL.list(ProductPriceUnitFactory
+                .createVpnPriceUnit(String.valueOf(bandwidth) + VpnConstant.BANDWIDTH_UNIT));
     }
 
     private boolean createOrder(APICreateOrderMsg orderMsg) {
