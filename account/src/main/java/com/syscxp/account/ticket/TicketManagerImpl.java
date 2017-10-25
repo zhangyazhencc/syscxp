@@ -2,6 +2,7 @@ package com.syscxp.account.ticket;
 
 import com.syscxp.account.header.account.AccountConstant;
 import com.syscxp.account.header.ticket.*;
+import com.syscxp.header.query.APIQueryMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.account.header.account.*;
@@ -238,7 +239,10 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
     }
 
     private void setServiceId(APIMessage msg) {
-      bus.makeTargetServiceIdByResourceUuid(msg, TicketConstant.SERVICE_ID, "");
+        if (!(msg instanceof APIQueryMessage)) {
+            bus.makeTargetServiceIdByResourceUuid(msg, TicketConstant.SERVICE_ID, "");
+        }
+
     }
 
 }
