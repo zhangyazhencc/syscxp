@@ -2,7 +2,9 @@ package com.syscxp.account.ticket;
 
 import com.syscxp.account.header.account.AccountConstant;
 import com.syscxp.account.header.ticket.*;
+import com.syscxp.account.header.user.UserVO;
 import com.syscxp.header.query.APIQueryMessage;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.account.header.account.*;
@@ -169,10 +171,28 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
         vo.setLastOpDate(dbf.getCurrentSqlTime());
         vo.setUuid(Platform.getUuid());
         if(!msg.getTicketFrom().toString().equals(TicketFrom.apply.toString())){
+            class ContentExtra{
+                ContentExtra(String name,String company){
+                    this.name = name;
+                    this.company = company;
+                }
+                String name;
+                String company;
+            }
             vo.setAccountUuid(msg.getSession().getAccountUuid());
             if(!msg.getSession().getAccountUuid().equals(msg.getSession().getUserUuid())){
                 vo.setUserUuid(msg.getSession().getUserUuid());
+                UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(),UserVO.class);
+                AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(),AccountVO.class);
+                vo.setContentExtra(JSONObjectUtil.toJsonString(
+                        new ContentExtra(user.getName(),account.getCompany())));
+            }else{
+                AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(),AccountVO.class);
+                vo.setContentExtra(JSONObjectUtil.toJsonString(
+                        new ContentExtra(account.getName(),account.getCompany())));
+
             }
+
         }
         vo.setTicketTypeCode(msg.getTicketTypeCode());
 
