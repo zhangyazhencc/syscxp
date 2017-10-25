@@ -56,10 +56,10 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
     private String publicKey;
     private String privateKey;
 
-    private void placePip703() {
-        File pip = PathUtil.findFileOnClassPath("tools/pip-7.0.3.tar.gz");
+    private void placePip901() {
+        File pip = PathUtil.findFileOnClassPath("tools/pip-9.0.1.tar.gz");
         if (pip == null) {
-            throw new CloudRuntimeException(String.format("cannot find tools/pip-7.0.3.tar.gz on classpath"));
+            throw new CloudRuntimeException(String.format("cannot find tools/pip-9.0.1.tar.gz on classpath"));
         }
 
         File root = new File(filesDir);
@@ -135,7 +135,7 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
                 logger.debug(String.format("discovered ansible variable[%s=%s]", key, e.getValue()));
             }
 
-            placePip703();
+            placePip901();
             placeAnsible196();
 
             ShellUtils.run(String.format("if ! ansible --version | grep -q 1.9.6; then " +
@@ -190,8 +190,8 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
                     arguments.putAll(msg.getArguments());
                 }
                 arguments.put("host", msg.getTargetIp());
-                arguments.put("syscxp_root", AnsibleGlobalProperty.syscxp_ROOT);
-                arguments.put("pkg_syscxplib", AnsibleGlobalProperty.syscxpLIB_PACKAGE_NAME);
+                arguments.put("syscxp_root", AnsibleGlobalProperty.SYSCXP_ROOT);
+                arguments.put("pkg_syscxplib", AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME);
                 arguments.putAll(getVariables());
                 String playBookPath = msg.getPlayBookPath();
                 if ( ! playBookPath.contains("py")) {
@@ -212,15 +212,15 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
                     String output;
                     if (AnsibleGlobalProperty.DEBUG_MODE2) {
                         output = ShellUtils.run(String.format("PYTHONPATH=%s %s %s -i %s -vvvv --private-key %s -e '%s' | tee -a %s",
-                                        AnsibleConstant.syscxpLIB_ROOT, executable, playBookPath, AnsibleConstant.INVENTORY_FILE, msg.getPrivateKeyFile(), JSONObjectUtil.toJsonString(arguments), AnsibleConstant.LOG_PATH),
+                                        AnsibleConstant.SYSCXPLIB_ROOT, executable, playBookPath, AnsibleConstant.INVENTORY_FILE, msg.getPrivateKeyFile(), JSONObjectUtil.toJsonString(arguments), AnsibleConstant.LOG_PATH),
                                 AnsibleConstant.ROOT_DIR);
                     } else if (AnsibleGlobalProperty.DEBUG_MODE) {
                         output = ShellUtils.run(String.format("PYTHONPATH=%s %s %s -i %s -vvvv --private-key %s -e '%s'",
-                                        AnsibleConstant.syscxpLIB_ROOT, executable, playBookPath, AnsibleConstant.INVENTORY_FILE, msg.getPrivateKeyFile(), JSONObjectUtil.toJsonString(arguments)),
+                                        AnsibleConstant.SYSCXPLIB_ROOT, executable, playBookPath, AnsibleConstant.INVENTORY_FILE, msg.getPrivateKeyFile(), JSONObjectUtil.toJsonString(arguments)),
                                 AnsibleConstant.ROOT_DIR);
                     } else {
                         output = ShellUtils.run(String.format("PYTHONPATH=%s %s %s -i %s --private-key %s -e '%s'",
-                                        AnsibleConstant.syscxpLIB_ROOT, executable, playBookPath, AnsibleConstant.INVENTORY_FILE, msg.getPrivateKeyFile(), JSONObjectUtil.toJsonString(arguments)),
+                                        AnsibleConstant.SYSCXPLIB_ROOT, executable, playBookPath, AnsibleConstant.INVENTORY_FILE, msg.getPrivateKeyFile(), JSONObjectUtil.toJsonString(arguments)),
                                 AnsibleConstant.ROOT_DIR);
                     }
 
