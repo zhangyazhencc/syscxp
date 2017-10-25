@@ -7,5 +7,10 @@ public enum Category {
     LONG,
     SHORT,
     VPN,
-    DEFAULT
+    DEFAULT,
+    AREA,
+    ABROAD,
+    BANDWIDTH,
+    HOST,
+    DISK
 }
