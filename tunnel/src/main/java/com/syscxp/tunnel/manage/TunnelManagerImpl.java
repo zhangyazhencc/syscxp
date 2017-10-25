@@ -848,7 +848,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setExpiredTime(vo.getExpireDate());
 
         if(createOrder(orderMsg)){
-            dbf.getEntityManager().remove(vo);
+            dbf.remove(vo);
 
             //删除对应的 TunnelInterfaceVO 和 QingqVO
             SimpleQuery<TunnelInterfaceVO> q = dbf.createQuery(TunnelInterfaceVO.class);
@@ -856,7 +856,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             List<TunnelInterfaceVO> tivList = q.list();
             if (tivList.size() > 0) {
                 for(TunnelInterfaceVO tiv : tivList){
-                    dbf.getEntityManager().remove(tiv);
+                    dbf.remove(tiv);
                 }
             }
             SimpleQuery<QinqVO> q2 = dbf.createQuery(QinqVO.class);
@@ -864,7 +864,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             List<QinqVO> qinqList = q2.list();
             if (qinqList.size() > 0) {
                 for(QinqVO qv : qinqList){
-                    dbf.getEntityManager().remove(qv);
+                    dbf.remove(qv);
                 }
             }
 
@@ -889,7 +889,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
 
     @Transactional
     private void deleteTunnel(TunnelVO vo){
-        dbf.getEntityManager().remove(vo);
+        dbf.remove(vo);
 
         //删除对应的 TunnelInterfaceVO 和 QingqVO
         SimpleQuery<TunnelInterfaceVO> q = dbf.createQuery(TunnelInterfaceVO.class);
@@ -897,7 +897,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         List<TunnelInterfaceVO> tivList = q.list();
         if (tivList.size() > 0) {
             for(TunnelInterfaceVO tiv : tivList){
-                dbf.getEntityManager().remove(tiv);
+                dbf.remove(tiv);
             }
         }
         SimpleQuery<QinqVO> q2 = dbf.createQuery(QinqVO.class);
@@ -905,7 +905,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         List<QinqVO> qinqList = q2.list();
         if (qinqList.size() > 0) {
             for(QinqVO qv : qinqList){
-                dbf.getEntityManager().remove(qv);
+                dbf.remove(qv);
             }
         }
     }
