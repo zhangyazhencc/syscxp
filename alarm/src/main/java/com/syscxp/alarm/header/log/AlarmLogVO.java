@@ -41,6 +41,17 @@ public class AlarmLogVO extends BaseVO {
     @Enumerated(EnumType.STRING)
     private AlarmStatus status;
 
+    @Column
+    private String accountUuid;
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
+
     public String getProductUuid() {
         return productUuid;
     }
