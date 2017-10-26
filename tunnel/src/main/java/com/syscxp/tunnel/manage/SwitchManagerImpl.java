@@ -1,9 +1,6 @@
 package com.syscxp.tunnel.manage;
 
-import com.syscxp.header.tunnel.TunnelState;
 import com.syscxp.tunnel.header.switchs.*;
-import com.syscxp.tunnel.header.tunnel.InterfaceState;
-import com.syscxp.utils.TagUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.Platform;
@@ -25,7 +22,6 @@ import com.syscxp.header.message.Message;
 import com.syscxp.tunnel.header.monitor.HostSwitchMonitorVO;
 import com.syscxp.tunnel.header.monitor.HostSwitchMonitorVO_;
 import com.syscxp.tunnel.header.node.NodeVO;
-import com.syscxp.tunnel.header.switchs.*;
 import com.syscxp.tunnel.header.tunnel.InterfaceVO;
 import com.syscxp.tunnel.header.tunnel.InterfaceVO_;
 import com.syscxp.utils.Utils;
@@ -107,15 +103,15 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             handle((APIDeleteSwitchVlanMsg) msg);
         }else if(msg instanceof APIQuerySwitchPortAvailableMsg){
             handle((APIQuerySwitchPortAvailableMsg) msg);
-        }else if(msg instanceof APIQuerySwitchPortUsedMsg){
-            handle((APIQuerySwitchPortUsedMsg) msg);
+        }else if(msg instanceof APIQueryVlanUsedMsg){
+            handle((APIQueryVlanUsedMsg) msg);
         }else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APIQuerySwitchPortUsedMsg msg) {
-        List<SwitchPortUsedInventory> switchPortUsedInventoryList = new ArrayList<SwitchPortUsedInventory>();
+    private void handle(APIQueryVlanUsedMsg msg) {
+        List<VlanUsedInventory> switchPortUsedInventoryList = new ArrayList<VlanUsedInventory>();
         String sql = "select s.code, sp.portName, ti.vlan " +
                 "from SwitchVO s, SwitchPortVO sp, InterfaceVO i,TunnelInterfaceVO ti " +
                 "where s.uuid = sp.switchUuid and sp.uuid = i.switchPortUuid and ti.interfaceUuid = i.uuid " +
@@ -126,13 +122,13 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
 
         List<Tuple> ts = tfq.getResultList();
         for (Tuple t : ts) {
-            SwitchPortUsedInventory inventory = new SwitchPortUsedInventory();
+            VlanUsedInventory inventory = new VlanUsedInventory();
             inventory.setCode(t.get(0, String.class));
             inventory.setPortName(t.get(1, String.class));
             switchPortUsedInventoryList.add(inventory);
         }
 
-        APIQuerySwitchPortUsedReply reply = new APIQuerySwitchPortUsedReply();
+        APIQueryVlanUsedReply reply = new APIQueryVlanUsedReply();
         reply.setInventories(switchPortUsedInventoryList);
         bus.reply(msg, reply);
     }

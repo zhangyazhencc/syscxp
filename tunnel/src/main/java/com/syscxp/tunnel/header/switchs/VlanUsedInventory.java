@@ -1,6 +1,6 @@
 package com.syscxp.tunnel.header.switchs;
 
-public class SwitchPortUsedInventory {
+public class VlanUsedInventory {
     private String code;
 
     private String portName;

@@ -88,7 +88,7 @@
         <name>com.syscxp.tunnel.header.switchs.APIQuerySwitchPortAvailableMsg</name>
     </message>
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIQuerySwitchPortUsedMsg</name>
+        <name>com.syscxp.tunnel.header.switchs.APIQueryVlanUsedMsg</name>
     </message>
 
 

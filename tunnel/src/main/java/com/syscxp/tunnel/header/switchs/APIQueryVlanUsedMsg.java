@@ -4,8 +4,8 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.query.AutoQuery;
 
-@AutoQuery(replyClass = APIQuerySwitchPortUsedReply.class, inventoryClass = SwitchPortUsedInventory.class)
-public class APIQuerySwitchPortUsedMsg extends APISyncCallMessage {
+@AutoQuery(replyClass = APIQueryVlanUsedReply.class, inventoryClass = VlanUsedInventory.class)
+public class APIQueryVlanUsedMsg extends APISyncCallMessage {
     @APIParam
     private String uuid;
 
