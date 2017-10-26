@@ -6,7 +6,7 @@ import com.syscxp.header.query.AutoQuery;
 
 @AutoQuery(replyClass = APIQuerySwitchPortAvailableReply.class, inventoryClass = SwitchPortAvailableInventory.class)
 public class APIQuerySwitchPortAvailableMsg extends APISyncCallMessage {
-    @APIParam
+    @APIParam(required = false)
     private String uuid;
     @APIParam(required = false)
     private String portName;

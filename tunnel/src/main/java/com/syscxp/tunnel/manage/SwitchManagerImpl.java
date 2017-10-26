@@ -157,10 +157,9 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             String sql = "select s.code, sp.portName from SwitchVO s, SwitchPortVO sp " +
                     "where s.uuid = sp.switchUuid and sp.state = :spstate " +
                     "and sp.uuid not in( select switchPortUuid from InterfaceVO i where  sp.portAttribute = :portAttribute) " +
-                    " and s.uuid = :uuid and sp.portAttribute = :portAttributeCheck";
+                    " and sp.portAttribute = :portAttributeCheck";
 
             TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
-            tfq.setParameter("uuid", msg.getUuid());
             tfq.setParameter("spstate", SwitchPortState.Enabled);
             tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
             tfq.setParameter("portAttributeCheck",  msg.getPortAttribute());
@@ -169,10 +168,9 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             String sql = "select s.code, sp.portName from SwitchVO s, SwitchPortVO sp " +
                     "where s.uuid = sp.switchUuid and sp.state = :spstate " +
                     "and sp.uuid not in( select switchPortUuid from InterfaceVO i where  sp.portAttribute = :portAttribute) " +
-                    " and s.uuid = :uuid and sp.portAttribute = :portAttributeCheck and sp.portType = :portType";
+                    " and sp.portAttribute = :portAttributeCheck and sp.portType = :portType";
 
             TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
-            tfq.setParameter("uuid", msg.getUuid());
             tfq.setParameter("spstate", SwitchPortState.Enabled);
             tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
             tfq.setParameter("portAttributeCheck",  msg.getPortAttribute());
