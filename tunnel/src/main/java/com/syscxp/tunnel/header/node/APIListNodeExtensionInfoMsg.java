@@ -1,0 +1,95 @@
+package com.syscxp.tunnel.header.node;
+
+import com.syscxp.header.identity.SuppressCredentialCheck;
+import com.syscxp.header.message.APIParam;
+import com.syscxp.header.message.APISyncCallMessage;
+
+/**
+ * Created by wangwg on 2017/10/26
+ */
+@SuppressCredentialCheck
+public class APIListNodeExtensionInfoMsg extends APISyncCallMessage {
+
+    @APIParam(emptyString = false)
+    private int page_no = 1;
+
+    @APIParam(emptyString = false)
+    private int page_size = 15;
+
+    @APIParam(emptyString = false)
+    private String operatorCategory;
+
+    @APIParam(emptyString = false)
+    private String province;
+
+    @APIParam(emptyString = false)
+    private String roomLevel;
+
+    @APIParam(emptyString = false)
+    private String orderBy;
+
+    @APIParam(emptyString = false)
+    private String property = "idc_node";
+
+    @APIParam(emptyString = false)
+    private String orderPolicy = "desc";
+
+    @APIParam(emptyString = false)
+    private String pageNo;
+
+    public String getOperatorCategory() {
+        return operatorCategory;
+    }
+
+    public void setOperatorCategory(String operatorCategory) {
+        this.operatorCategory = operatorCategory;
+    }
+
+    public String getProvince() {
+        return province;
+    }
+
+    public void setProvince(String province) {
+        this.province = province;
+    }
+
+    public String getRoomLevel() {
+        return roomLevel;
+    }
+
+    public void setRoomLevel(String roomLevel) {
+        this.roomLevel = roomLevel;
+    }
+
+    public String getOrderBy() {
+        return orderBy;
+    }
+
+    public void setOrderBy(String orderBy) {
+        this.orderBy = orderBy;
+    }
+
+    public String getProperty() {
+        return property;
+    }
+
+    public void setProperty(String property) {
+        this.property = property;
+    }
+
+    public String getOrderPolicy() {
+        return orderPolicy;
+    }
+
+    public void setOrderPolicy(String orderPolicy) {
+        this.orderPolicy = orderPolicy;
+    }
+
+    public String getPageNo() {
+        return pageNo;
+    }
+
+    public void setPageNo(String pageNo) {
+        this.pageNo = pageNo;
+    }
+}
