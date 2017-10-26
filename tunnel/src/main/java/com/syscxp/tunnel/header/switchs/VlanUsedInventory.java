@@ -1,17 +1,11 @@
 package com.syscxp.tunnel.header.switchs;
 
-public class SwitchPortAvailableInventory {
-    private String switchPortUuid;
+public class VlanUsedInventory {
     private String code;
+
     private String portName;
 
-    public String getSwitchPortUuid() {
-        return switchPortUuid;
-    }
-
-    public void setSwitchPortUuid(String switchPortUuid) {
-        this.switchPortUuid = switchPortUuid;
-    }
+    private Integer vlan;
 
     public String getCode() {
         return code;
@@ -29,5 +23,11 @@ public class SwitchPortAvailableInventory {
         this.portName = portName;
     }
 
+    public Integer getVlan() {
+        return vlan;
+    }
 
+    public void setVlan(Integer vlan) {
+        this.vlan = vlan;
+    }
 }

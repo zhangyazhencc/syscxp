@@ -1,7 +1,9 @@
 package com.syscxp.tunnel.header.node;
 
+import org.bson.types.ObjectId;
+
 public class NodeExtensionInfo {
-    String _id;
+    ObjectId _id;
     String province;
     String status;
     Object networkInfo;
@@ -19,11 +21,11 @@ public class NodeExtensionInfo {
     String updated_at;
     Object images_url;
 
-    public String get_id() {
+    public ObjectId get_id() {
         return _id;
     }
 
-    public void set_id(String _id) {
+    public void set_id(ObjectId _id) {
         this._id = _id;
     }
 

@@ -9,6 +9,7 @@ import com.syscxp.tunnel.header.switchs.SwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO_;
 import com.syscxp.utils.Digest;
 import com.syscxp.utils.gson.JSONObjectUtil;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
@@ -139,11 +140,9 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         com.alibaba.fastjson.JSONObject newInfo = com.alibaba.fastjson.JSONObject.
                 parseObject(msg.getNewNodeExtensionInfo());
 
+        NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class);
 
-        String oldmogo = "{" +"\"nodeExtensionInfo\":" + com.alibaba.fastjson.JSONObject.toJSONString(mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
-                newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class)) +"}";
-
-
+        String oldmogo = "{" +"\"nodeExtensionInfo\":" + JSONObjectUtil.toJsonString(node) +"}";
         com.alibaba.fastjson.JSONObject oldInfo = com.alibaba.fastjson.JSONObject.parseObject(oldmogo);
 
         Map<String,Object> oldmap = oldInfo;
@@ -151,25 +150,25 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         Set<String> keySet = oldmap.keySet();
         for (String key : keySet) {
             if(newmap.containsKey(key)){
-                if(oldmap.get(key) instanceof JSONObject){
+                if(newmap.get(key) instanceof com.alibaba.fastjson.JSONObject){
                     Map<String,Object> oldmap1 = (Map)oldmap.get(key);
                     Map<String,Object> newmap1 = (Map)newmap.get(key);
                     Set<String> keySet1 = oldmap1.keySet();
-                    for (String key1 : keySet1) {
+                    for (String key1 : keySet1) {  //node_id
                         if(newmap1.containsKey(key1)){
-                            if(oldmap1.get(key1) instanceof JSONObject){
+                            if(oldmap1.get(key1) instanceof com.alibaba.fastjson.JSONObject){
                                 Map<String,Object> oldmap2 = (Map)oldmap1.get(key1);
                                 Map<String,Object> newmap2 = (Map)newmap1.get(key1);
                                 Set<String> keySet2 = oldmap2.keySet();
                                 for (String key2 : keySet2) {
                                     if(newmap2.containsKey(key2)){
-                                        if(oldmap2.get(key2) instanceof JSONObject){
+                                        if(oldmap2.get(key2) instanceof com.alibaba.fastjson.JSONObject){
                                             Map<String,Object> oldmap3 = (Map)oldmap2.get(key2);
                                             Map<String,Object> newmap3 = (Map)newmap2.get(key2);
                                             Set<String> keySet3 = oldmap3.keySet();
                                             for (String key3 : keySet3) {
                                                 if(newmap3.containsKey(key3)){
-                                                    if(oldmap3.get(key3) instanceof JSONObject){
+                                                    if(oldmap3.get(key3) instanceof com.alibaba.fastjson.JSONObject){
                                                         System.out.println("");
                                                     }else{
                                                         oldmap3.put(key3, newmap3.get(key3));
@@ -188,16 +187,17 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                             }
                         }
                     }
+                    oldmap1.put("_id",node.get_id());
                     oldmap.put(key,oldmap1);
                 }else{
                     oldmap.put(key,newmap.get(key));
                 }
-
             }
         }
 
         APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent(msg.getId());
-        mongoTemplate.save(oldmap.get("nodeExtensionInfo"),"nodeExtensionInfo");
+
+        mongoTemplate.save(((com.alibaba.fastjson.JSONObject)oldmap).get("nodeExtensionInfo"),"nodeExtensionInfo");
         event.setInventory(oldmap.toString());
 
         bus.publish(event);
@@ -215,6 +215,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         APIGetNodeExtensionInfoReply reply = new APIGetNodeExtensionInfoReply();
         reply.setNodeExtensionInfo(JSONObjectUtil.toJsonString(
                 mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),NodeExtensionInfo.class,"nodeExtensionInfo")
+//                mongoTemplate.findById(msg.getNodeId(),NodeExtensionInfo.class,"nodeExtensionInfo")
         ));
         bus.reply(msg,reply);
     }
@@ -232,7 +233,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         APICreateNodeExtensionInfoEvent event = new APICreateNodeExtensionInfoEvent(msg.getId());
         event.setInventory(msg.getNodeExtensionInfo());
         bus.publish(event);
-
     }
 
     private void handle(APICreateNodeMsg msg) {
