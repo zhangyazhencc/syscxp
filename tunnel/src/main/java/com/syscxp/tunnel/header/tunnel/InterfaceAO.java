@@ -52,6 +52,9 @@ public class InterfaceAO {
     private Integer maxModifies;
 
     @Column
+    private Integer isBilling;
+
+    @Column
     private Timestamp expireDate;
 
     @Column
@@ -175,5 +178,13 @@ public class InterfaceAO {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+    }
+
+    public Integer getIsBilling() {
+        return isBilling;
+    }
+
+    public void setIsBilling(Integer isBilling) {
+        this.isBilling = isBilling;
     }
 }

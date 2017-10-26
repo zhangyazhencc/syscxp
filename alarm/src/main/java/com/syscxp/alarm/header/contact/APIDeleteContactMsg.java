@@ -5,7 +5,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-@Action(adminOnly = true,category = AlarmConstant.ACTION_CATEGORY_CONTACT)
+@Action(category = AlarmConstant.ACTION_CATEGORY_CONTACT)
 public class APIDeleteContactMsg extends APIMessage{
 
     @APIParam(emptyString = false,resourceType=ContactVO.class)

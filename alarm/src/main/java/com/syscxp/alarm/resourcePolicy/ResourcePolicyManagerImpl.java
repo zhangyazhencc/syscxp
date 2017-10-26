@@ -1,8 +1,6 @@
 package com.syscxp.alarm.resourcePolicy;
 
 import com.syscxp.alarm.AlarmGlobalProperty;
-import com.syscxp.alarm.header.contact.ContactNotifyWayRefVO;
-import com.syscxp.alarm.header.contact.ContactNotifyWayRefVO_;
 import com.syscxp.alarm.header.resourcePolicy.*;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -10,7 +8,6 @@ import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
-import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
@@ -31,11 +28,11 @@ import com.syscxp.header.tunnel.TunnelForAlarmInventory;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.Query;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -87,10 +84,10 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             handle((APIDeletePolicyMsg) msg);
         }else if (msg instanceof APIGetResourcesBindByPolicyMsg) {
             handle((APIGetResourcesBindByPolicyMsg) msg);
-        }else if (msg instanceof APIAttachResourceByPolicyMsg) {
-            handle((APIAttachResourceByPolicyMsg) msg);
-        }else if (msg instanceof APIAttachPolicyByResourceMsg) {
-            handle((APIAttachPolicyByResourceMsg) msg);
+        }else if (msg instanceof APIAttachPolicyByResourcesMsg) {
+            handle((APIAttachPolicyByResourcesMsg) msg);
+        }else if (msg instanceof APIAttachResourceByPoliciesMsg) {
+            handle((APIAttachResourceByPoliciesMsg) msg);
         }else if (msg instanceof APIGetResourcesByProductTypeMsg) {
             handle((APIGetResourcesByProductTypeMsg) msg);
         }else {
@@ -193,7 +190,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         bus.reply(msg,reply);
         }
 
-    private void handle(APIAttachPolicyByResourceMsg msg) {
+    private void handle(APIAttachResourceByPoliciesMsg msg) {
         List<ResourcePolicyRefInventory> list = new ArrayList<>();
         if(msg.isAttach()){
            for(String policyUuid : msg.getPolicyUuids()){
@@ -201,7 +198,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
                query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, policyUuid);
                query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ,msg.getResourceUuid());
                ResourcePolicyRefVO resourcePolicyRefVO = query.find();
-               dbf.persistAndRefresh(resourcePolicyRefVO);
+               dbf.getEntityManager().persist(resourcePolicyRefVO);
                list.add(ResourcePolicyRefInventory.valueOf(resourcePolicyRefVO));
            }
         }else {
@@ -210,35 +207,43 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             }
 
         }
-        APIAttachPolicyByResourceEvent event = new APIAttachPolicyByResourceEvent(msg.getId());
+        dbf.getEntityManager().flush();
+        APIAttachResourceByPoliciesEvent event = new APIAttachResourceByPoliciesEvent(msg.getId());
         event.setInventory(list);
         bus.publish(event);
     }
 
+    @Transactional
     private ResourcePolicyRefVO deleteResourcePolicyRef(String policyUuid,String resourceUuid){
         SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
         query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, policyUuid);
         query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ,resourceUuid);
         ResourcePolicyRefVO resourcePolicyRefVO = query.find();
         if(resourcePolicyRefVO!=null){
-            dbf.remove(resourcePolicyRefVO);
+            dbf.getEntityManager().remove(resourcePolicyRefVO);
         }
         return resourcePolicyRefVO;
     }
 
-    private void handle(APIAttachResourceByPolicyMsg msg) {
-        ResourcePolicyRefVO resourcePolicyRefVO = null;
+    @Transactional
+    private void handle(APIAttachPolicyByResourcesMsg msg) {
+        List<ResourcePolicyRefInventory> list = new ArrayList<>();
         if(msg.isAttach()){
-            resourcePolicyRefVO = new ResourcePolicyRefVO();
-            resourcePolicyRefVO.setUuid(Platform.getUuid());
-            resourcePolicyRefVO.setPolicyUuid(msg.getPolicyUuid());
-            resourcePolicyRefVO.setResourceUuid(msg.getResourceUuid());
-            dbf.persistAndRefresh(resourcePolicyRefVO);
+            for(String resourceUuid : msg.getResourceUuids()) {
+                ResourcePolicyRefVO resourcePolicyRefVO = new ResourcePolicyRefVO();
+                resourcePolicyRefVO.setUuid(Platform.getUuid());
+                resourcePolicyRefVO.setPolicyUuid(msg.getPolicyUuid());
+                resourcePolicyRefVO.setResourceUuid(resourceUuid);
+                dbf.getEntityManager().persist(resourcePolicyRefVO);
+                list.add(ResourcePolicyRefInventory.valueOf(resourcePolicyRefVO));
+            }
         } else{
-            deleteResourcePolicyRef(msg.getPolicyUuid(),msg.getResourceUuid());
+            for(String resourceUuid : msg.getResourceUuids()) {
+                list.add(ResourcePolicyRefInventory.valueOf(deleteResourcePolicyRef(msg.getPolicyUuid(), resourceUuid)));
+            }
         }
-        APIAttachResourceByPolicyEvent event = new APIAttachResourceByPolicyEvent(msg.getId());
-        event.setInventory(ResourcePolicyRefInventory.valueOf(resourcePolicyRefVO));
+        APIAttachPolicyByResourcesEvent event = new APIAttachPolicyByResourcesEvent(msg.getId());
+        event.setInventories(list);
         bus.publish(event);
 
     }

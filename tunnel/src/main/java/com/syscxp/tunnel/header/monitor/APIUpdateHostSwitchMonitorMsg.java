@@ -2,7 +2,7 @@ package com.syscxp.tunnel.header.monitor;
 
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.tunnel.header.host.HostVO;
+import com.syscxp.tunnel.header.host.MonitorHostVO;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
 
 /**
@@ -15,7 +15,7 @@ public class APIUpdateHostSwitchMonitorMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = HostSwitchMonitorVO.class)
     private String uuid;
 
-    @APIParam(emptyString = false,resourceType = HostVO.class)
+    @APIParam(emptyString = false,resourceType = MonitorHostVO.class)
     private String hostUuid;
 
     @APIParam(emptyString = false,resourceType = PhysicalSwitchVO.class)

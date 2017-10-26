@@ -16,7 +16,33 @@
     </message>
 
     <message>
+        <name>com.syscxp.alarm.header.contact.APICreateContactGroupMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.contact.APIUpdateContactGroupMsg</name>
+    </message>
+
+
+    <message>
+        <name>com.syscxp.alarm.header.contact.APIDeleteContactGroupMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.contact.APIAttachGroupByContactsMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.contact.APIAttachContactByGroupsMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.alarm.header.contact.APIQueryContactMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.contact.APIQueryContactGroupMsg</name>
         <serviceId>query</serviceId>
     </message>
 

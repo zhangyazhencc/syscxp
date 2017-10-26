@@ -1,9 +1,8 @@
 package com.syscxp.tunnel.manage;
 
-import com.mongodb.util.JSON;
 import com.syscxp.tunnel.header.endpoint.*;
-import com.syscxp.tunnel.header.host.HostVO;
-import com.syscxp.tunnel.header.host.HostVO_;
+import com.syscxp.tunnel.header.host.MonitorHostVO;
+import com.syscxp.tunnel.header.host.MonitorHostVO_;
 import com.syscxp.tunnel.header.node.*;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO;
@@ -28,8 +27,6 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.tunnel.header.endpoint.*;
-import com.syscxp.tunnel.header.node.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -502,8 +499,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         }
 
         //判断是否被监控机关联
-        SimpleQuery<HostVO> queryMonitorHost = dbf.createQuery(HostVO.class);
-        queryMonitorHost.add(HostVO_.nodeUuid,SimpleQuery.Op.EQ,msg.getUuid());
+        SimpleQuery<MonitorHostVO> queryMonitorHost = dbf.createQuery(MonitorHostVO.class);
+        queryMonitorHost.add(MonitorHostVO_.nodeUuid,SimpleQuery.Op.EQ,msg.getUuid());
         if (queryMonitorHost.isExists()) {
             throw new ApiMessageInterceptionException(argerr("Monitor host exist,cannot be deleted!"));
         }
