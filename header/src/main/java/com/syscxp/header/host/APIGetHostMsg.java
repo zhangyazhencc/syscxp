@@ -5,7 +5,7 @@ import com.syscxp.header.message.APISyncCallMessage;
 
 public class APIGetHostMsg extends APISyncCallMessage {
 
-    @APIParam
+    @APIParam(resourceType = HostVO.class)
     private String uuid;
 
     public String getUuid() {
