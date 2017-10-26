@@ -60,9 +60,108 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
             handle((APIDeleteContactMsg) msg);
         }else if(msg instanceof  APIUpdateContactMsg){
             handle((APIUpdateContactMsg) msg);
+        }else if(msg instanceof  APICreateContactGroupMsg){
+            handle((APICreateContactGroupMsg) msg);
+        }else if(msg instanceof  APIUpdateContactGroupMsg){
+            handle((APIUpdateContactGroupMsg) msg);
+        }else if(msg instanceof  APIDeleteContactGroupMsg){
+            handle((APIDeleteContactGroupMsg) msg);
+        }else if(msg instanceof APIAttachGroupByContactsMsg){
+            handle((APIAttachGroupByContactsMsg) msg);
+        }else if(msg instanceof APIAttachContactByGroupsMsg){
+            handle((APIAttachContactByGroupsMsg) msg);
         }else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    @Transactional
+    private void handle(APIAttachContactByGroupsMsg msg) {
+        if(msg.isAttach()){
+            for(String groupUuid: msg.getGroupUuids()){
+                ContactGroupRefVO contactGroupRefVO = new ContactGroupRefVO();
+                contactGroupRefVO.setUuid(Platform.getUuid());
+                contactGroupRefVO.setContactUuid(msg.getContactUuid());
+                contactGroupRefVO.setGroupUuid(groupUuid);
+                dbf.getEntityManager().persist(contactGroupRefVO);
+            }
+        }else{
+            for(String groupUuid: msg.getGroupUuids()){
+                SimpleQuery<ContactGroupRefVO> query = dbf.createQuery(ContactGroupRefVO.class);
+                query.add(ContactGroupRefVO_.contactUuid, SimpleQuery.Op.EQ, msg.getContactUuid());
+                query.add(ContactGroupRefVO_.groupUuid, SimpleQuery.Op.EQ,groupUuid);
+                ContactGroupRefVO contactGroupRefVO = query.find();
+                if(contactGroupRefVO!=null){
+                    dbf.getEntityManager().remove(contactGroupRefVO);
+                }
+            }
+        }
+        dbf.getEntityManager().flush();
+        ContactVO contactVO = dbf.findByUuid(msg.getContactUuid(),ContactVO.class);
+        APIAttachContactByGroupsEvent event = new APIAttachContactByGroupsEvent(msg.getId());
+        event.setInventory(ContactInventory.valueOf(contactVO));
+        bus.publish(event);
+    }
+
+    @Transactional
+    private void handle(APIAttachGroupByContactsMsg msg) {
+        if(msg.isAttach()){
+            for(String contactUuid: msg.getContactUuids()){
+                ContactGroupRefVO contactGroupRefVO = new ContactGroupRefVO();
+                contactGroupRefVO.setUuid(Platform.getUuid());
+                contactGroupRefVO.setContactUuid(contactUuid);
+                contactGroupRefVO.setGroupUuid(msg.getGroupUuid());
+                dbf.getEntityManager().persist(contactGroupRefVO);
+            }
+        } else{
+            for(String contactUuid: msg.getContactUuids()){
+                SimpleQuery<ContactGroupRefVO> query = dbf.createQuery(ContactGroupRefVO.class);
+                query.add(ContactGroupRefVO_.groupUuid, SimpleQuery.Op.EQ, msg.getGroupUuid());
+                query.add(ContactGroupRefVO_.contactUuid, SimpleQuery.Op.EQ,contactUuid);
+                ContactGroupRefVO contactGroupRefVO = query.find();
+                if(contactGroupRefVO!=null){
+                    dbf.getEntityManager().remove(contactGroupRefVO);
+                }
+            }
+        }
+        dbf.getEntityManager().flush();
+        ContactGroupVO contactGroupVO = dbf.findByUuid(msg.getGroupUuid(),ContactGroupVO.class);
+        APIAttachGroupByContactsEvent event = new APIAttachGroupByContactsEvent(msg.getId());
+        event.setInventory(ContactGroupInventory.valueOf(contactGroupVO));
+        bus.publish(event);
+    }
+
+    private void handle(APIDeleteContactGroupMsg msg) {
+        ContactGroupVO contactGroupVO = dbf.findByUuid(msg.getUuid(),ContactGroupVO.class);
+        dbf.remove(contactGroupVO);
+        APIDeleteContactGroupEvent event = new APIDeleteContactGroupEvent(msg.getId());
+        event.setInventory(ContactGroupInventory.valueOf(contactGroupVO));
+        bus.publish(event);
+    }
+
+    private void handle(APIUpdateContactGroupMsg msg) {
+        ContactGroupVO contactGroupVO = dbf.findByUuid(msg.getUuid(),ContactGroupVO.class);
+        if(msg.getGroupCode()!=null){
+            contactGroupVO.setGroupCode(msg.getGroupCode());
+        }
+        if(msg.getGroupName()!=null){
+            contactGroupVO.setGroupName(contactGroupVO.getGroupName());
+        }
+        dbf.updateAndRefresh(contactGroupVO);
+        APIUpdateContactGroupEvent event = new APIUpdateContactGroupEvent(msg.getId());
+        event.setInventory(ContactGroupInventory.valueOf(contactGroupVO));
+        bus.publish(event);
+    }
+
+    private void handle(APICreateContactGroupMsg msg) {
+        ContactGroupVO contactGroupVO = new ContactGroupVO();
+        contactGroupVO.setUuid(Platform.getUuid());
+        contactGroupVO.setGroupCode(msg.getGroupCode());
+        contactGroupVO.setGroupName(msg.getGroupName());
+        dbf.persistAndRefresh(contactGroupVO);
+        APICreateContactGroupEvent event = new APICreateContactGroupEvent(msg.getId());
+        event.setInventory(ContactGroupInventory.valueOf(contactGroupVO));
+        bus.publish(event);
     }
 
     @Transactional

@@ -80,5 +80,10 @@
         <serviceId>query</serviceId>
     </message>
 
+    <message>
+        <name>com.syscxp.tunnel.header.switchs.APIQueryPhysicalSwitchUpLinkRefMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
 
 </service>
