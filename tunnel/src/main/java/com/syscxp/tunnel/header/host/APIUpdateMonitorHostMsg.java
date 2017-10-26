@@ -9,14 +9,15 @@ import com.syscxp.tunnel.header.node.NodeVO;
  */
 public class APIUpdateMonitorHostMsg extends APIUpdateHostMsg {
 
-    @APIParam(emptyString = false, resourceType = NodeVO.class)
+    @APIParam(required = false, emptyString = false, resourceType = NodeVO.class)
     private String nodeUuid;
     @APIParam(maxLength = 255, required = false, emptyString = false)
     private String username;
     @APIParam(maxLength = 255, required = false, emptyString = false)
     private String password;
-    @APIParam(numberRange = {1,65535})
+    @APIParam(numberRange = {1, 65535})
     private Integer sshPort;
+
     public String getNodeUuid() {
         return nodeUuid;
     }
