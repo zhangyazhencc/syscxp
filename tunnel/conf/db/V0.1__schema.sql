@@ -266,7 +266,8 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchVlanVO` (
 ##物理接口
 CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `accountUuid` varchar(32) NOT NULL COMMENT '所属账户',
+  `accountUuid` VARCHAR(32) COMMENT '分配账户',
+  `ownerAccountUuid` VARCHAR(32) NOT NULL COMMENT '所属账户',
   `name` varchar(128) NOT NULL COMMENT '接口名称',
   `switchPortUuid` varchar(32) NOT NULL COMMENT '对应交换机端口',
   `endpointUuid` varchar(32) NOT NULL COMMENT '对应连接点',
@@ -283,7 +284,7 @@ CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, name, switchPortUuid, endpointUuid, description, state, type, duration, productChargeModel, maxModifies,isBilling, expireDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, ownerAccountUuid, name, switchPortUuid, endpointUuid, description, state, type, duration, productChargeModel, maxModifies,isBilling, expireDate, lastOpDate, createDate
                                           FROM `InterfaceEO` WHERE deleted IS NULL;
 
 ##云专线
