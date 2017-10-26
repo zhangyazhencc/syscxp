@@ -40,11 +40,11 @@
     </message>
 
     <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIAttachResourceByPolicyMsg</name>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIAttachPolicyByResourcesMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIAttachPolicyByResourceMsg</name>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIAttachResourceByPoliciesMsg</name>
     </message>
     <message>
         <name>com.syscxp.alarm.header.resourcePolicy.APIGetResourcesByProductTypeMsg</name>

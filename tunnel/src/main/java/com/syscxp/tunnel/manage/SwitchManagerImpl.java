@@ -228,7 +228,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
     private void handle(APIDeletePhysicalSwitchMsg msg){
 
         PhysicalSwitchVO vo = dbf.findByUuid(msg.getUuid(),PhysicalSwitchVO.class);
-        dbf.getEntityManager().remove(vo);
+        dbf.remove(vo);
 
         //删除物理交换机对应的上联表
         SimpleQuery<PhysicalSwitchUpLinkRefVO> q = dbf.createQuery(PhysicalSwitchUpLinkRefVO.class);
@@ -236,7 +236,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         List<PhysicalSwitchUpLinkRefVO> psuList = q.list();
         if (psuList.size() > 0) {
             for(PhysicalSwitchUpLinkRefVO psu : psuList){
-                dbf.getEntityManager().remove(psu);
+                dbf.remove(psu);
             }
         }
 
