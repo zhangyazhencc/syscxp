@@ -1,9 +1,17 @@
 package com.syscxp.tunnel.header.switchs;
 
 public class SwitchPortAvailableInventory {
+    private String switchPortUuid;
     private String code;
-
     private String portName;
+
+    public String getSwitchPortUuid() {
+        return switchPortUuid;
+    }
+
+    public void setSwitchPortUuid(String switchPortUuid) {
+        this.switchPortUuid = switchPortUuid;
+    }
 
     public String getCode() {
         return code;

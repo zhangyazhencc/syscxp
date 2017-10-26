@@ -6,7 +6,7 @@ import com.syscxp.header.host.HostType;
 import com.syscxp.header.message.Message;
 
 public interface HostManager {
-    HostFactory getHypervisorFactory(HostType type);
+    HostFactory getHostFactory(HostType type);
     
 	void handleMessage(Message msg);
 

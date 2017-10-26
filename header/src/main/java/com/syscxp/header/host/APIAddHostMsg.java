@@ -32,7 +32,6 @@ public abstract class APIAddHostMsg extends APICreateMessage implements AddHostM
     public APIAddHostMsg() {
     }
 
-    @Override
     public String getCode() {
         return code;
     }
@@ -65,17 +64,4 @@ public abstract class APIAddHostMsg extends APICreateMessage implements AddHostM
         this.hostIp = hostIp;
     }
 
-    public ApiNotification __notification__() {
-        APIMessage that = this;
-
-        return new ApiNotification() {
-            @Override
-            public void after(APIEvent evt) {
-                if (evt.isSuccess()) {
-                    ntfy("Added").resource(((APIAddHostEvent)evt).getInventory().getUuid(), HostVO.class.getSimpleName())
-                            .messageAndEvent(that, evt).done();
-                }
-            }
-        };
-    }
 }

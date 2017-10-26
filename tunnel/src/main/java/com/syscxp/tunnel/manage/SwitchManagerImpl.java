@@ -1,9 +1,6 @@
 package com.syscxp.tunnel.manage;
 
-import com.syscxp.header.tunnel.TunnelState;
 import com.syscxp.tunnel.header.switchs.*;
-import com.syscxp.tunnel.header.tunnel.InterfaceState;
-import com.syscxp.utils.TagUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.Platform;
@@ -25,7 +22,6 @@ import com.syscxp.header.message.Message;
 import com.syscxp.tunnel.header.monitor.HostSwitchMonitorVO;
 import com.syscxp.tunnel.header.monitor.HostSwitchMonitorVO_;
 import com.syscxp.tunnel.header.node.NodeVO;
-import com.syscxp.tunnel.header.switchs.*;
 import com.syscxp.tunnel.header.tunnel.InterfaceVO;
 import com.syscxp.tunnel.header.tunnel.InterfaceVO_;
 import com.syscxp.utils.Utils;
@@ -107,15 +103,15 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             handle((APIDeleteSwitchVlanMsg) msg);
         }else if(msg instanceof APIQuerySwitchPortAvailableMsg){
             handle((APIQuerySwitchPortAvailableMsg) msg);
-        }else if(msg instanceof APIQuerySwitchPortUsedMsg){
-            handle((APIQuerySwitchPortUsedMsg) msg);
+        }else if(msg instanceof APIQueryVlanUsedMsg){
+            handle((APIQueryVlanUsedMsg) msg);
         }else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APIQuerySwitchPortUsedMsg msg) {
-        List<SwitchPortUsedInventory> switchPortUsedInventoryList = new ArrayList<SwitchPortUsedInventory>();
+    private void handle(APIQueryVlanUsedMsg msg) {
+        List<VlanUsedInventory> switchPortUsedInventoryList = new ArrayList<VlanUsedInventory>();
         String sql = "select s.code, sp.portName, ti.vlan " +
                 "from SwitchVO s, SwitchPortVO sp, InterfaceVO i,TunnelInterfaceVO ti " +
                 "where s.uuid = sp.switchUuid and sp.uuid = i.switchPortUuid and ti.interfaceUuid = i.uuid " +
@@ -126,13 +122,13 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
 
         List<Tuple> ts = tfq.getResultList();
         for (Tuple t : ts) {
-            SwitchPortUsedInventory inventory = new SwitchPortUsedInventory();
+            VlanUsedInventory inventory = new VlanUsedInventory();
             inventory.setCode(t.get(0, String.class));
             inventory.setPortName(t.get(1, String.class));
             switchPortUsedInventoryList.add(inventory);
         }
 
-        APIQuerySwitchPortUsedReply reply = new APIQuerySwitchPortUsedReply();
+        APIQueryVlanUsedReply reply = new APIQueryVlanUsedReply();
         reply.setInventories(switchPortUsedInventoryList);
         bus.reply(msg, reply);
     }
@@ -141,7 +137,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         List<SwitchPortAvailableInventory> switchPortAvailableInventoryList = new ArrayList<SwitchPortAvailableInventory>();
         List<Tuple> ts;
         if(msg.getPortName() != null){
-            String sql = "select s.code, sp.portName from SwitchVO s, SwitchPortVO sp " +
+            String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
                     "where s.uuid = sp.switchUuid and sp.state = :spstate " +
                     "and sp.uuid not in( select switchPortUuid from InterfaceVO i where  sp.portAttribute = :portAttribute) " +
                     " and s.uuid = :uuid and sp.portName like :portName";
@@ -154,32 +150,30 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             ts = tfq.getResultList();
 
         }else if(msg.getPortType() == null && msg.getPortAttribute() != null){
-            String sql = "select s.code, sp.portName from SwitchVO s, SwitchPortVO sp " +
+            String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
                     "where s.uuid = sp.switchUuid and sp.state = :spstate " +
                     "and sp.uuid not in( select switchPortUuid from InterfaceVO i where  sp.portAttribute = :portAttribute) " +
-                    " and s.uuid = :uuid and sp.portAttribute = :portAttributeCheck";
+                    " and sp.portAttribute = :portAttributeCheck";
 
             TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
-            tfq.setParameter("uuid", msg.getUuid());
             tfq.setParameter("spstate", SwitchPortState.Enabled);
             tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
             tfq.setParameter("portAttributeCheck",  msg.getPortAttribute());
             ts = tfq.getResultList();
         }else if(msg.getPortType() != null && msg.getPortAttribute() != null){
-            String sql = "select s.code, sp.portName from SwitchVO s, SwitchPortVO sp " +
+            String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
                     "where s.uuid = sp.switchUuid and sp.state = :spstate " +
                     "and sp.uuid not in( select switchPortUuid from InterfaceVO i where  sp.portAttribute = :portAttribute) " +
-                    " and s.uuid = :uuid and sp.portAttribute = :portAttributeCheck and sp.portType = :portType";
+                    " and sp.portAttribute = :portAttributeCheck and sp.portType = :portType";
 
             TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
-            tfq.setParameter("uuid", msg.getUuid());
             tfq.setParameter("spstate", SwitchPortState.Enabled);
             tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
             tfq.setParameter("portAttributeCheck",  msg.getPortAttribute());
             tfq.setParameter("portType",  msg.getPortType());
             ts = tfq.getResultList();
         }else{
-            String sql = "select s.code, sp.portName from SwitchVO s, SwitchPortVO sp " +
+            String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
                     "where s.uuid = sp.switchUuid and sp.state = :spstate " +
                     "and sp.uuid not in( select switchPortUuid from InterfaceVO i where sp.portAttribute = :portAttribute) " +
                     " and s.uuid = :uuid";
@@ -195,6 +189,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             SwitchPortAvailableInventory inventory = new SwitchPortAvailableInventory();
             inventory.setCode(t.get(0, String.class));
             inventory.setPortName(t.get(1, String.class));
+            inventory.setSwitchPortUuid(t.get(2, String.class));
             switchPortAvailableInventoryList.add(inventory);
         }
 

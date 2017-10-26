@@ -6,14 +6,21 @@ import com.syscxp.header.message.NoJsonSchema;
 import com.syscxp.header.rest.APINoSee;
 import com.syscxp.header.search.Inventory;
 import com.syscxp.header.search.Parent;
+import com.syscxp.header.vo.NoView;
+import com.syscxp.tunnel.header.node.NodeVO;
 
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+
 @Inventory(mappingVOClass = MonitorHostVO.class, collectionValueOfMethod = "valueOf1",
         parent = {@Parent(inventoryClass = HostInventory.class, type = MonitorConstant.HOST_TYPE)})
 public class MonitorHostInventory extends HostInventory {
+
     private String username;
     @GsonTransient
     @APINoSee
@@ -22,11 +29,22 @@ public class MonitorHostInventory extends HostInventory {
 
     private Integer sshPort;
 
+    private NodeVO node;
+
+    public NodeVO getNode() {
+        return node;
+    }
+
+    public void setNode(NodeVO node) {
+        this.node = node;
+    }
+
     protected MonitorHostInventory(MonitorHostVO vo) {
         super(vo);
         this.setUsername(vo.getUsername());
         this.setPassword(vo.getPassword());
         this.setSshPort(vo.getSshPort());
+        this.setNode(vo.getNode());
     }
 
     public static MonitorHostInventory valueOf(MonitorHostVO vo) {
@@ -34,7 +52,7 @@ public class MonitorHostInventory extends HostInventory {
     }
 
     public static List<MonitorHostInventory> valueOf1(Collection<MonitorHostVO> vos) {
-        List<MonitorHostInventory> invs = new ArrayList<MonitorHostInventory>();
+        List<MonitorHostInventory> invs = new ArrayList<>();
         for (MonitorHostVO vo : vos) {
             invs.add(valueOf(vo));
         }
@@ -56,6 +74,7 @@ public class MonitorHostInventory extends HostInventory {
     public void setPassword(String password) {
         this.password = password;
     }
+
     public Integer getSshPort() {
         return sshPort;
     }
