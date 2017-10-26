@@ -9,6 +9,7 @@ import com.syscxp.tunnel.header.switchs.SwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO_;
 import com.syscxp.utils.Digest;
 import com.syscxp.utils.gson.JSONObjectUtil;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
@@ -215,6 +216,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         APIGetNodeExtensionInfoReply reply = new APIGetNodeExtensionInfoReply();
         reply.setNodeExtensionInfo(JSONObjectUtil.toJsonString(
                 mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),NodeExtensionInfo.class,"nodeExtensionInfo")
+//                mongoTemplate.findById(msg.getNodeId(),NodeExtensionInfo.class,"nodeExtensionInfo")
         ));
         bus.reply(msg,reply);
     }
@@ -232,7 +234,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         APICreateNodeExtensionInfoEvent event = new APICreateNodeExtensionInfoEvent(msg.getId());
         event.setInventory(msg.getNodeExtensionInfo());
         bus.publish(event);
-
     }
 
     private void handle(APICreateNodeMsg msg) {
