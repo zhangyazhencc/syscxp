@@ -9,6 +9,7 @@ import com.syscxp.tunnel.header.switchs.SwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO_;
 import com.syscxp.utils.Digest;
 import com.syscxp.utils.gson.JSONObjectUtil;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
@@ -37,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.TypedQuery;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static com.syscxp.core.Platform.argerr;
@@ -112,9 +114,47 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIUpdateNodeExtensionInfoMsg) msg);
         } else if (msg instanceof APIGetImageUploadInfoMsg) {
             handle((APIGetImageUploadInfoMsg) msg);
-        } else {
+        }  else if (msg instanceof APIListNodeExtensionInfoMsg) {
+            handle((APIListNodeExtensionInfoMsg) msg);
+        }  else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIListNodeExtensionInfoMsg msg) {
+        Map<String, Object> result = new HashMap<>();
+
+        Query query = new Query();
+        if(msg.getOperatorCategory() != null){
+            query.addCriteria(Criteria.where("operatorCategory").is(msg.getOperatorCategory()));
+        }
+        if(msg.getProvince() != null){
+            query.addCriteria(Criteria.where("province").is(msg.getProvince()));
+        }
+        if(msg.getProvince() != null){
+            query.addCriteria(Criteria.where("roomLevel").is(msg.getProvince()));
+        }
+        if(msg.getProvince() != null){
+            query.addCriteria(Criteria.where("orderPolicy").is(msg.getProvince()));
+        }
+
+        Long count = mongoTemplate.count(query,"nodeExtensionInfo");
+
+        if(msg.getPageNo() != null){
+            query.skip(Integer.valueOf(msg.getPage_size())*(Integer.valueOf(msg.getPageNo())-1));
+        }
+        query.limit(Integer.valueOf(msg.getPage_size()));
+        Long total = mongoTemplate.count(query,"nodeExtensionInfo");
+        List<NodeExtensionInfo> list = mongoTemplate.find(query,NodeExtensionInfo.class,"nodeExtensionInfo");
+        result.put("page_no",msg.getPageNo());
+        result.put("page_size",msg.getPage_size()==null?"15":msg.getPage_size());
+        result.put("total",total);
+        result.put("count",count);
+        result.put("nodeExtensionInfos",JSONObjectUtil.toJsonString(list));
+
+        APIListNodeExtensionInfoReply reply = new APIListNodeExtensionInfoReply();
+        reply.setNodeExtensionInfoList(JSONObjectUtil.toJsonString(result));
+        bus.reply(msg,reply);
     }
 
     private void handle(APIGetImageUploadInfoMsg msg) {
@@ -131,6 +171,14 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         reply.setNodeId(msg.getNodeId());
         reply.setTimestamp(timestamp);
         reply.setMd5(md5);
+
+        NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),
+                NodeExtensionInfo.class,"nodeExtensionInfo");
+
+        if(node.getImages_url() != null){
+            reply.setImages_url(node.getImages_url().toString());
+        }
+
         bus.reply(msg,reply);
     }
 
@@ -139,10 +187,10 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         com.alibaba.fastjson.JSONObject newInfo = com.alibaba.fastjson.JSONObject.
                 parseObject(msg.getNewNodeExtensionInfo());
 
+        NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
+                newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class,"nodeExtensionInfo");
 
-        String oldmogo = "{" +"\"nodeExtensionInfo\":" + com.alibaba.fastjson.JSONObject.toJSONString(mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
-                newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class)) +"}";
-
+        String oldmogo = "{" +"\"nodeExtensionInfo\":" + JSONObjectUtil.toJsonString(node) +"}";
         com.alibaba.fastjson.JSONObject oldInfo = com.alibaba.fastjson.JSONObject.parseObject(oldmogo);
 
         Map<String,Object> oldmap = oldInfo;
@@ -150,25 +198,25 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         Set<String> keySet = oldmap.keySet();
         for (String key : keySet) {
             if(newmap.containsKey(key)){
-                if(oldmap.get(key) instanceof JSONObject){
+                if(newmap.get(key) instanceof com.alibaba.fastjson.JSONObject){
                     Map<String,Object> oldmap1 = (Map)oldmap.get(key);
                     Map<String,Object> newmap1 = (Map)newmap.get(key);
                     Set<String> keySet1 = oldmap1.keySet();
-                    for (String key1 : keySet1) {
+                    for (String key1 : keySet1) {  //node_id
                         if(newmap1.containsKey(key1)){
-                            if(oldmap1.get(key1) instanceof JSONObject){
+                            if(oldmap1.get(key1) instanceof com.alibaba.fastjson.JSONObject){
                                 Map<String,Object> oldmap2 = (Map)oldmap1.get(key1);
                                 Map<String,Object> newmap2 = (Map)newmap1.get(key1);
                                 Set<String> keySet2 = oldmap2.keySet();
                                 for (String key2 : keySet2) {
                                     if(newmap2.containsKey(key2)){
-                                        if(oldmap2.get(key2) instanceof JSONObject){
+                                        if(oldmap2.get(key2) instanceof com.alibaba.fastjson.JSONObject){
                                             Map<String,Object> oldmap3 = (Map)oldmap2.get(key2);
                                             Map<String,Object> newmap3 = (Map)newmap2.get(key2);
                                             Set<String> keySet3 = oldmap3.keySet();
                                             for (String key3 : keySet3) {
                                                 if(newmap3.containsKey(key3)){
-                                                    if(oldmap3.get(key3) instanceof JSONObject){
+                                                    if(oldmap3.get(key3) instanceof com.alibaba.fastjson.JSONObject){
                                                         System.out.println("");
                                                     }else{
                                                         oldmap3.put(key3, newmap3.get(key3));
@@ -187,19 +235,17 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                             }
                         }
                     }
+                    oldmap1.put("_id",node.get_id());
                     oldmap.put(key,oldmap1);
                 }else{
                     oldmap.put(key,newmap.get(key));
                 }
-
             }
         }
 
-
-
-
         APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent(msg.getId());
-        mongoTemplate.save(oldmap,"nodeExtensionInfo");
+
+        mongoTemplate.save(((com.alibaba.fastjson.JSONObject)oldmap).get("nodeExtensionInfo"),"nodeExtensionInfo");
         event.setInventory(oldmap.toString());
 
         bus.publish(event);
@@ -217,6 +263,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         APIGetNodeExtensionInfoReply reply = new APIGetNodeExtensionInfoReply();
         reply.setNodeExtensionInfo(JSONObjectUtil.toJsonString(
                 mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),NodeExtensionInfo.class,"nodeExtensionInfo")
+//                mongoTemplate.findById(msg.getNodeId(),NodeExtensionInfo.class,"nodeExtensionInfo")
         ));
         bus.reply(msg,reply);
     }
@@ -234,7 +281,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         APICreateNodeExtensionInfoEvent event = new APICreateNodeExtensionInfoEvent(msg.getId());
         event.setInventory(msg.getNodeExtensionInfo());
         bus.publish(event);
-
     }
 
     private void handle(APICreateNodeMsg msg) {

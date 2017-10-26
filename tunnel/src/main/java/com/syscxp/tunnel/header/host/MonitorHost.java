@@ -9,7 +9,9 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.host.HostBase;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.core.workflow.ShareFlow;
+import com.syscxp.header.core.AsyncLatch;
 import com.syscxp.header.core.Completion;
+import com.syscxp.header.core.NoErrorCompletion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
@@ -29,10 +31,12 @@ import com.syscxp.utils.ssh.SshShell;
 import com.syscxp.tunnel.header.host.MonitorAgentCommands.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -88,7 +92,7 @@ public class MonitorHost extends HostBase implements Host {
     @Override
     protected void pingHook(final Completion completion) {
         FlowChain chain = FlowChainBuilder.newShareFlowChain();
-        chain.setName(String.format("ping-kvm-host-%s", self.getUuid()));
+        chain.setName(String.format("ping-monitor-host-%s", self.getUuid()));
         chain.then(new ShareFlow() {
             @Override
             public void setup() {
@@ -126,8 +130,10 @@ public class MonitorHost extends HostBase implements Host {
                                 if (ret.isSuccess()) {
                                     if (!self.getUuid().equals(ret.getHostUuid())) {
                                         afterDone.add(() -> {
-                                            String info = String.format("detected abnormal status[host uuid change, expected: %s but: %s] of monitoragent," +
-                                                    "it's mainly caused by monitoragent restarts behind syscxp management server. Report this to ping task, it will issue a reconnect soon", self.getUuid(), ret.getHostUuid());
+                                            String info = String.format("detected abnormal status[host uuid change, " +
+                                                    "expected: %s but: %s] of monitoragent, it's mainly caused by monitoragent " +
+                                                    "restarts behind syscxp management server. Report this to ping task, " +
+                                                    "it will issue a reconnect soon", self.getUuid(), ret.getHostUuid());
                                             logger.warn(info);
                                             ReconnectHostMsg rmsg = new ReconnectHostMsg();
                                             rmsg.setHostUuid(self.getUuid());
@@ -156,12 +162,13 @@ public class MonitorHost extends HostBase implements Host {
                     }
                 });
 
-               /* flow(new NoRollbackFlow() {
+                flow(new NoRollbackFlow() {
                     String __name__ = "call-ping-no-failure-plugins";
 
                     @Override
                     public void run(FlowTrigger trigger, Map data) {
-                        List<KVMPingAgentNoFailureExtensionPoint> exts = pluginRgty.getExtensionList(KVMPingAgentNoFailureExtensionPoint.class);
+                        List<MonitorPingAgentNoFailureExtensionPoint> exts = pluginRgty.getExtensionList
+                                (MonitorPingAgentNoFailureExtensionPoint.class);
                         if (exts.isEmpty()) {
                             trigger.next();
                             return;
@@ -174,9 +181,9 @@ public class MonitorHost extends HostBase implements Host {
                             }
                         });
 
-                        VpnHostInventory inv = (VpnHostInventory) getSelfInventory();
-                        for (KVMPingAgentNoFailureExtensionPoint ext : exts) {
-                            ext.kvmPingAgentNoFailure(inv, new NoErrorCompletion(latch) {
+                        MonitorHostInventory inv = (MonitorHostInventory) getSelfInventory();
+                        for (MonitorPingAgentNoFailureExtensionPoint ext : exts) {
+                            ext.monitorPingAgentNoFailure(inv, new NoErrorCompletion(latch) {
                                 @Override
                                 public void done() {
                                     latch.ack();
@@ -184,27 +191,27 @@ public class MonitorHost extends HostBase implements Host {
                             });
                         }
                     }
-                });*/
+                });
 
-               /* flow(new NoRollbackFlow() {
+                flow(new NoRollbackFlow() {
                     String __name__ = "call-ping-plugins";
 
                     @Override
                     public void run(FlowTrigger trigger, Map data) {
-                        List<KVMPingAgentExtensionPoint> exts = pluginRgty.getExtensionList(KVMPingAgentExtensionPoint.class);
-                        Iterator<KVMPingAgentExtensionPoint> it = exts.iterator();
+                        List<MonitorPingAgentExtensionPoint> exts = pluginRgty.getExtensionList(MonitorPingAgentExtensionPoint.class);
+                        Iterator<MonitorPingAgentExtensionPoint> it = exts.iterator();
                         callPlugin(it, trigger);
                     }
 
-                    private void callPlugin(Iterator<KVMPingAgentExtensionPoint> it, FlowTrigger trigger) {
+                    private void callPlugin(Iterator<MonitorPingAgentExtensionPoint> it, FlowTrigger trigger) {
                         if (!it.hasNext()) {
                             trigger.next();
                             return;
                         }
 
-                        KVMPingAgentExtensionPoint ext = it.next();
+                        MonitorPingAgentExtensionPoint ext = it.next();
                         logger.debug(String.format("calling KVMPingAgentExtensionPoint[%s]", ext.getClass()));
-                        ext.kvmPingAgent((VpnHostInventory) getSelfInventory(), new Completion(trigger) {
+                        ext.monitorPingAgent((MonitorHostInventory) getSelfInventory(), new Completion(trigger) {
                             @Override
                             public void success() {
                                 callPlugin(it, trigger);
@@ -216,7 +223,7 @@ public class MonitorHost extends HostBase implements Host {
                             }
                         });
                     }
-                });*/
+                });
 
                 done(new FlowDoneHandler(completion) {
                     @Override
@@ -368,7 +375,7 @@ public class MonitorHost extends HostBase implements Host {
                 done(new FlowDoneHandler(complete) {
                     @Override
                     public void handle(Map data) {
-                        continueConnect();
+                        continueConnect(info.isNewAdded(), complete);
                     }
                 });
             }
@@ -381,7 +388,7 @@ public class MonitorHost extends HostBase implements Host {
             ConnectCmd cmd = new ConnectCmd();
             cmd.setHostUuid(self.getUuid());
             cmd.setSendCommandUrl(restf.getSendCommandUrl());
-//            cmd.setIptablesRules(VpnGlobalProperty.IPTABLES_RULES);
+            cmd.setIptablesRules(MonitorGlobalProperty.IPTABLES_RULES);
             ConnectResponse rsp = restf.syncJsonPost(connectPath, cmd, ConnectResponse.class);
             if (!rsp.isSuccess() || !rsp.isIptablesSucc()) {
                 errCode = operr("unable to connect to host[uuid:%s, ip:%s, url:%s], because %s", self.getUuid(), self.getHostIp(), connectPath,
@@ -398,12 +405,37 @@ public class MonitorHost extends HostBase implements Host {
         return errCode;
     }
 
-    private void continueConnect() {
+    private void continueConnect(final boolean newAdded, final Completion completion) {
         ErrorCode errCode = connectToAgent();
         if (errCode != null) {
             throw new OperationFailureException(errCode);
         }
+
+        FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
+        chain.setName(String.format("continue-connecting-host-%s-%s", self.getHostIp(), self.getUuid()));
+        for (MonitorHostConnectExtensionPoint extp : factory.getConnectExtensions()) {
+            MonitorHostConnectedContext ctx = new MonitorHostConnectedContext();
+            ctx.setInventory((MonitorHostInventory) getSelfInventory());
+            ctx.setNewAddedHost(newAdded);
+
+            chain.then(extp.createHostConnectingFlow(ctx));
+        }
+        chain.allowEmptyFlow();
+        chain.done(new FlowDoneHandler(completion) {
+            @Override
+            public void handle(Map data) {
+                completion.success();
+            }
+        }).error(new FlowErrorHandler(completion) {
+            @Override
+            public void handle(ErrorCode errCode, Map data) {
+                String err = String.format("connection error for monitor host[uuid:%s, ip:%s]", self.getUuid(),
+                        self.getHostIp());
+                completion.fail(errf.instantiateErrorCode(HostErrors.CONNECTION_ERROR, err, errCode));
+            }
+        }).start();
     }
+
     private String buildUrl(String path) {
         UriComponentsBuilder ub = UriComponentsBuilder.newInstance();
         ub.scheme(MonitorGlobalProperty.AGENT_URL_SCHEME);
@@ -415,10 +447,12 @@ public class MonitorHost extends HostBase implements Host {
         ub.path(path);
         return ub.build().toUriString();
     }
+
     @Override
     protected HostInventory getSelfInventory() {
         return MonitorHostInventory.valueOf(getSelf());
     }
+
     @Override
     protected void deleteHook() {
         logger.debug(String.format("Host: %s is being deleted", self.getName()));
@@ -447,8 +481,14 @@ public class MonitorHost extends HostBase implements Host {
         if (umsg.getNodeUuid() != null) {
             vo.setNodeUuid(umsg.getNodeUuid());
         }
-        if (msg.getSshPort() != null && msg.getSshPort() > 0 && msg.getSshPort() <= 65535) {
-            vo.setSshPort(msg.getSshPort());
+        if (umsg.getUsername() != null) {
+            vo.setUsername(umsg.getUsername());
+        }
+        if (umsg.getPassword() != null) {
+            vo.setPassword(umsg.getPassword());
+        }
+        if (umsg.getSshPort() != null && umsg.getSshPort() > 0 && umsg.getSshPort() <= 65535) {
+            vo.setSshPort(umsg.getSshPort());
         }
         return vo;
     }

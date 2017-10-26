@@ -402,7 +402,6 @@ COMMENT '通道监控';
 ##监控机
 CREATE TABLE `HostEO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
-  `nodeUuid` varchar(32) DEFAULT NULL COMMENT '节点ID(NodeEO.uuid)',
   `name` varchar(128) NOT NULL COMMENT '监控机名称',
   `code` varchar(128) NOT NULL COMMENT '监控机编号',
   `hostIp` varchar(128) DEFAULT NULL,
@@ -421,7 +420,6 @@ CREATE OR REPLACE
 VIEW `syscxp_tunnel`.`HostVO` AS
     SELECT
         `syscxp_tunnel`.`HostEO`.`uuid` AS `uuid`,
-        `syscxp_tunnel`.`HostEO`.`nodeUuid` AS `nodeUuid`,
         `syscxp_tunnel`.`HostEO`.`name` AS `name`,
         `syscxp_tunnel`.`HostEO`.`code` AS `code`,
         `syscxp_tunnel`.`HostEO`.`hostIp` AS `hostIp`,
@@ -488,6 +486,7 @@ CREATE TABLE `syscxp_tunnel`.`ResourceVO` (
 
 CREATE TABLE  `syscxp_tunnel`.`MonitorHostVO` (
     `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'host uuid',
+    `nodeUuid` varchar(32) DEFAULT NULL COMMENT '节点ID(NodeEO.uuid)',
 	`username` varchar(128) NOT NULL COMMENT '用户名',
 	`password` varchar(128) NOT NULL COMMENT '密码',
 	`sshPort` INT NOT NULL DEFAULT 22 COMMENT 'ssh端口',

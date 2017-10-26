@@ -140,6 +140,10 @@ public abstract class HostBase extends AbstractHost {
             self.setHostIp(msg.getHostIp());
             update = true;
         }
+        if (msg.getPosition() != null) {
+            self.setPosition(msg.getPosition());
+            update = true;
+        }
         return update ? self : null;
     }
 
@@ -681,20 +685,15 @@ public abstract class HostBase extends AbstractHost {
         logger.debug(String.format("Host %s [uuid:%s] changed connection state from %s to %s",
                 self.getName(), self.getUuid(), before, next));
 
-        HostStatusChangedData data = new HostStatusChangedData();
-        data.setHostUuid(self.getUuid());
-        data.setNewStatus(next.toString());
-        data.setOldStatus(before.toString());
-        data.setInventory(HostInventory.valueOf(self));
-        evtf.fire(HostCanonicalEvents.HOST_STATUS_CHANGED_PATH, data);
+//        HostStatusChangedData data = new HostStatusChangedData();
+//        data.setHostUuid(self.getUuid());
+//        data.setNewStatus(next.toString());
+//        data.setOldStatus(before.toString());
+//        data.setInventory(HostInventory.valueOf(self));
+//        evtf.fire(HostCanonicalEvents.HOST_STATUS_CHANGED_PATH, data);
 
         CollectionUtils.safeForEach(pluginRgty.getExtensionList(AfterChangeHostStatusExtensionPoint.class),
-                new ForEachFunction<AfterChangeHostStatusExtensionPoint>() {
-                    @Override
-                    public void run(AfterChangeHostStatusExtensionPoint arg) {
-                        arg.afterChangeHostStatus(self.getUuid(), before, next);
-                    }
-                });
+                arg -> arg.afterChangeHostStatus(self.getUuid(), before, next));
         return true;
     }
 
@@ -771,12 +770,7 @@ public abstract class HostBase extends AbstractHost {
                                 tracker.trackHost(self.getUuid());
 
                                 CollectionUtils.safeForEach(pluginRgty.getExtensionList(HostAfterConnectedExtensionPoint.class),
-                                        new ForEachFunction<HostAfterConnectedExtensionPoint>() {
-                                            @Override
-                                            public void run(HostAfterConnectedExtensionPoint ext) {
-                                                ext.afterHostConnected(getSelfInventory());
-                                            }
-                                        });
+                                        ext -> ext.afterHostConnected(getSelfInventory()));
 
                                 bus.reply(msg, reply);
                             }
