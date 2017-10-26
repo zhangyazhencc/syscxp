@@ -13,7 +13,6 @@ import java.util.List;
 @Inventory(mappingVOClass = HostVO.class)
 public class HostInventory implements Serializable {
     private String uuid;
-    private String nodeUuid;
     private String name;
     private String code;
     private String hostIp;
@@ -35,7 +34,6 @@ public class HostInventory implements Serializable {
         this.setState(vo.getState().toString());
         this.setUuid(vo.getUuid());
         this.setCode(vo.getCode());
-        this.setNodeUuid(vo.getNodeUuid());
         this.setPosition(vo.getPosition());
     }
 
@@ -52,14 +50,6 @@ public class HostInventory implements Serializable {
             invs.add(HostInventory.valueOf(vo));
         }
         return invs;
-    }
-
-    public String getNodeUuid() {
-        return nodeUuid;
-    }
-
-    public void setNodeUuid(String nodeUuid) {
-        this.nodeUuid = nodeUuid;
     }
 
     public String getPosition() {

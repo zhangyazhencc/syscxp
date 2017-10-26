@@ -116,7 +116,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
 
     @Override
     public HostInventory getHostInventory(String uuid) {
-        HostVO vo = dbf.findByUuid(uuid, HostVO.class);
+        MonitorHostVO vo = dbf.findByUuid(uuid, MonitorHostVO.class);
         return vo == null ? null : MonitorHostInventory.valueOf(vo);
     }
 

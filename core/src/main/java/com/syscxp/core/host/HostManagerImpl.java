@@ -94,8 +94,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
     }
 
     private void handle(APIGetHostMsg msg) {
-        HostVO host = Q.New(HostVO.class)
-                .eq(HostVO_.uuid, msg.getUuid()).find();
+        HostVO host = Q.New(HostVO.class).eq(HostVO_.uuid, msg.getUuid()).find();
 
         HostInventory inv = getHostFactory(HostType.valueOf(host.getHostType())).getHostInventory(host);
 

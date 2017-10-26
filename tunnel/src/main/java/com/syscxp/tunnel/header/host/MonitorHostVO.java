@@ -5,6 +5,8 @@ import com.syscxp.header.core.encrypt.ENCRYPTParam;
 import com.syscxp.header.host.HostEO;
 import com.syscxp.header.vo.EO;
 import com.syscxp.header.host.HostVO;
+import com.syscxp.header.vo.NoView;
+import com.syscxp.tunnel.header.node.NodeVO;
 
 import javax.persistence.*;
 
@@ -22,6 +24,22 @@ public class MonitorHostVO extends HostVO {
 
     @Column
     private Integer sshPort;
+
+    @Column
+    private String nodeUuid;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "nodeUuid", insertable = false, updatable = false)
+    @NoView
+    private NodeVO node;
+
+    public NodeVO getNode() {
+        return node;
+    }
+
+    public void setNode(NodeVO node) {
+        this.node = node;
+    }
 
     public MonitorHostVO() {
     }
@@ -55,6 +73,14 @@ public class MonitorHostVO extends HostVO {
 
     public void setSshPort(Integer sshPort) {
         this.sshPort = sshPort;
+    }
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 }
 

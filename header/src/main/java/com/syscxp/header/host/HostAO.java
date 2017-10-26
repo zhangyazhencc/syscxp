@@ -11,9 +11,6 @@ import java.sql.Timestamp;
 public class HostAO extends ResourceVO {
 
     @Column
-    private String nodeUuid;
-
-    @Column
     private String name;
 
     @Column
@@ -52,7 +49,6 @@ public class HostAO extends ResourceVO {
 
     public HostAO(HostAO ao) {
         this.setUuid(ao.getUuid());
-        this.setNodeUuid(ao.getNodeUuid());
         this.setPosition(ao.getPosition());
         this.setName(ao.getName());
         this.setCode(ao.getCode());
@@ -71,14 +67,6 @@ public class HostAO extends ResourceVO {
 
     public void setPosition(String position) {
         this.position = position;
-    }
-
-    public String getNodeUuid() {
-        return nodeUuid;
-    }
-
-    public void setNodeUuid(String nodeUuid) {
-        this.nodeUuid = nodeUuid;
     }
 
     public String getUuid() {
