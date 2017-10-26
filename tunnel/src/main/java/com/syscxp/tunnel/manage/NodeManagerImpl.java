@@ -38,6 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.TypedQuery;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static com.syscxp.core.Platform.argerr;
@@ -113,9 +114,47 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIUpdateNodeExtensionInfoMsg) msg);
         } else if (msg instanceof APIGetImageUploadInfoMsg) {
             handle((APIGetImageUploadInfoMsg) msg);
-        } else {
+        }  else if (msg instanceof APIListNodeExtensionInfoMsg) {
+            handle((APIListNodeExtensionInfoMsg) msg);
+        }  else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIListNodeExtensionInfoMsg msg) {
+        Map<String, Object> result = new HashMap<>();
+
+        Query query = new Query();
+        if(msg.getOperatorCategory() != null){
+            query.addCriteria(Criteria.where("operatorCategory").is(msg.getOperatorCategory()));
+        }
+        if(msg.getProvince() != null){
+            query.addCriteria(Criteria.where("province").is(msg.getProvince()));
+        }
+        if(msg.getProvince() != null){
+            query.addCriteria(Criteria.where("roomLevel").is(msg.getProvince()));
+        }
+        if(msg.getProvince() != null){
+            query.addCriteria(Criteria.where("orderPolicy").is(msg.getProvince()));
+        }
+
+        Long count = mongoTemplate.count(query,"nodeExtensionInfo");
+
+        if(msg.getPageNo() != null){
+            query.skip(Integer.valueOf(msg.getPage_size())*(Integer.valueOf(msg.getPageNo())-1));
+        }
+        query.limit(Integer.valueOf(msg.getPage_size()));
+        Long total = mongoTemplate.count(query,"nodeExtensionInfo");
+        List<NodeExtensionInfo> list = mongoTemplate.find(query,NodeExtensionInfo.class,"nodeExtensionInfo");
+        result.put("page_no",msg.getPageNo());
+        result.put("page_size",msg.getPage_size()==null?"15":msg.getPage_size());
+        result.put("total",total);
+        result.put("count",count);
+        result.put("nodeExtensionInfos",JSONObjectUtil.toJsonString(list));
+
+        APIListNodeExtensionInfoReply reply = new APIListNodeExtensionInfoReply();
+        reply.setNodeExtensionInfoList(JSONObjectUtil.toJsonString(result));
+        bus.reply(msg,reply);
     }
 
     private void handle(APIGetImageUploadInfoMsg msg) {
@@ -132,6 +171,15 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         reply.setNodeId(msg.getNodeId());
         reply.setTimestamp(timestamp);
         reply.setMd5(md5);
+
+        NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),
+                NodeExtensionInfo.class,"nodeExtensionInfo");
+
+        if(node.getImages_url() != null){
+            reply.setImages_url(node.getImages_url());
+        }
+
+
         bus.reply(msg,reply);
     }
 
@@ -140,7 +188,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         com.alibaba.fastjson.JSONObject newInfo = com.alibaba.fastjson.JSONObject.
                 parseObject(msg.getNewNodeExtensionInfo());
 
-        NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class);
+        NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
+                newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class,"nodeExtensionInfo");
 
         String oldmogo = "{" +"\"nodeExtensionInfo\":" + JSONObjectUtil.toJsonString(node) +"}";
         com.alibaba.fastjson.JSONObject oldInfo = com.alibaba.fastjson.JSONObject.parseObject(oldmogo);
