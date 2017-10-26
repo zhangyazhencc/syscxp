@@ -12,4 +12,5 @@ public interface TunnelConstant {
     String SERVICE_ID = "tunnel";
     String ACTION_CATEGORY = "tunnel";
     String TUNNEL_ROOT_PATH = "tunnel";
+    String NOTIFYURL = "http://192.168.211.97:8888/tunnel/asyncrest/sendcommand";
 }

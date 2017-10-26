@@ -59,6 +59,9 @@ public class TunnelAO {
     private Integer maxModifies;
 
     @Column
+    private Integer isBilling;
+
+    @Column
     private String description;
 
     @Column
@@ -209,5 +212,13 @@ public class TunnelAO {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+    }
+
+    public Integer getIsBilling() {
+        return isBilling;
+    }
+
+    public void setIsBilling(Integer isBilling) {
+        this.isBilling = isBilling;
     }
 }

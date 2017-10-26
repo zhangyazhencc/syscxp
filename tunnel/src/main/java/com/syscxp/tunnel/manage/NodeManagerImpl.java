@@ -143,6 +143,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         String oldmogo = "{" +"\"nodeExtensionInfo\":" + com.alibaba.fastjson.JSONObject.toJSONString(mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
                 newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class)) +"}";
 
+
         com.alibaba.fastjson.JSONObject oldInfo = com.alibaba.fastjson.JSONObject.parseObject(oldmogo);
 
         Map<String,Object> oldmap = oldInfo;
@@ -195,11 +196,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             }
         }
 
-
-
-
         APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent(msg.getId());
-        mongoTemplate.save(oldmap,"nodeExtensionInfo");
+        mongoTemplate.save(oldmap.get("nodeExtensionInfo"),"nodeExtensionInfo");
         event.setInventory(oldmap.toString());
 
         bus.publish(event);
