@@ -1,5 +1,5 @@
 
-CREATE TABLE IF NOT EXISTS TunnelMonitorInterfaceVO (
+CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`TunnelMonitorInterfaceVO` (
   `uuid` VARCHAR(32) NOT NULL COMMENT '主键',
   `TunnelMonitorUuid` VARCHAR(32) NOT NULL COMMENT '监控通道uuid(TunnelMonitorVO.uuid)',
   `interfaceType` VARCHAR(32) NOT NULL COMMENT '类型("A","Z")',
@@ -11,9 +11,9 @@ CREATE TABLE IF NOT EXISTS TunnelMonitorInterfaceVO (
   UNIQUE KEY `uuid` (`uuid`))
 ENGINE = InnoDB DEFAULT CHARSET = utf8 COMMENT '监控通道两端信息表';
 
-ALTER TABLE TunnelMonitorInterfaceVO ADD interfaceUuid varchar(32) COMMENT '物理接口uuid InterfaceVO.uuid' AFTER interfaceType;
+ALTER TABLE `syscxp_tunnel`.`TunnelMonitorInterfaceVO` ADD interfaceUuid varchar(32) COMMENT '物理接口uuid InterfaceVO.uuid' AFTER interfaceType;
 
-CREATE TABLE `SpeedRecordsVO` (
+CREATE TABLE `syscxp_tunnel`.`SpeedRecordsVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'uuid',
   `tunnelUuid` varchar(32) NOT NULL COMMENT 'TunnelVO.uuid',
   `srcHostUuid` varchar(32) NOT NULL COMMENT '源监控机uuid',
@@ -101,7 +101,7 @@ CREATE TABLE  `syscxp_tunnel`.`JobQueueEntryVO` (
 #########################################################################################
 
 ## 节点
-CREATE TABLE `NodeEO` (
+CREATE TABLE `syscxp_tunnel`.`NodeEO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `name` varchar(255) NOT NULL COMMENT '节点名称',
   `code` varchar(128) NOT NULL COMMENT '节点编号',
@@ -128,7 +128,7 @@ CREATE VIEW `syscxp_tunnel`.`NodeVO` AS SELECT uuid, name, code, description, co
                         FROM `NodeEO` WHERE deleted IS NULL;
 
 ## 区域字典表
-CREATE TABLE `ZoneVO` (
+CREATE TABLE `syscxp_tunnel`.`ZoneVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `code` varchar(128) NOT NULL COMMENT '区域代码',
   `name` varchar(128) NOT NULL COMMENT '区域名称',
@@ -137,7 +137,7 @@ CREATE TABLE `ZoneVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##节点区域关系表
-CREATE TABLE `ZoneNodeRefVO` (
+CREATE TABLE `syscxp_tunnel`.`ZoneNodeRefVO` (
   `nodeUuid` varchar(32) NOT NULL COMMENT '节点UUID',
   `zoneUuid` varchar(32) NOT NULL COMMENT '区域UUID',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
@@ -405,10 +405,9 @@ CREATE TABLE `HostEO` (
   `name` varchar(128) NOT NULL COMMENT '监控机名称',
   `code` varchar(128) NOT NULL COMMENT '监控机编号',
   `hostIp` varchar(128) DEFAULT NULL,
-  `username` varchar(128) NOT NULL COMMENT '用户名',
-  `password` varchar(128) NOT NULL COMMENT '密码',
+  `hostType` VARCHAR(128) NOT NULL COMMENT 'host类型',
   `position` varchar(256) NOT NULL COMMENT '位置',
-  `state` varchar(32) NOT NULL DEFAULT 'Undeployed' COMMENT '监控状况：已部署，未部署',
+  `state` varchar(32) NOT NULL DEFAULT 'Disable' COMMENT '监控状况：已部署，未部署',
   `status` varchar(32) NOT NULL DEFAULT 'Connected' COMMENT '监控状态',
   `deleted` varchar(255) DEFAULT NULL,
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
@@ -425,8 +424,8 @@ VIEW `syscxp_tunnel`.`HostVO` AS
         `syscxp_tunnel`.`HostEO`.`name` AS `name`,
         `syscxp_tunnel`.`HostEO`.`code` AS `code`,
         `syscxp_tunnel`.`HostEO`.`hostIp` AS `hostIp`,
-        `syscxp_tunnel`.`HostEO`.`username` AS `username`,
-        `syscxp_tunnel`.`HostEO`.`password` AS `password`,
+        `syscxp_tunnel`.`HostEO`.`position` AS `position`,
+        `syscxp_tunnel`.`HostEO`.`hostType` AS `hostType`,
         `syscxp_tunnel`.`HostEO`.`state` AS `state`,
         `syscxp_tunnel`.`HostEO`.`status` AS `status`,
         `syscxp_tunnel`.`HostEO`.`lastOpDate` AS `lastOpDate`,
@@ -438,19 +437,19 @@ VIEW `syscxp_tunnel`.`HostVO` AS
 
 ##阿里云边界路由器
 CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterEO` (
-  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `tunnelUuid` VARCHAR(32) NOT NULL COMMENT '云专线id',
-  `accountUuid` VARCHAR(32) NOT NULL COMMENT '所属账户',
-  `aliAccountUuid` VARCHAR(64) NOT NULL COMMENT '阿里云用户id',
-  `aliRegionId` VARCHAR(64) NOT NULL COMMENT '阿里云区域',
-  `name` varchar(128) DEFAULT NULL COMMENT '边界路由器名字',
-  `description` varchar(255) DEFAULT NULL COMMENT '描述',
-  `vbrUuid` varchar(64) NOT NULL COMMENT '虚拟边界路由器id',
-  `physicalLineUuid` varchar(32) NOT NULL COMMENT '物理专线id',
-  `vlan` int(11) NOT NULL COMMENT '端口号',
-  `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
+	  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+	  `tunnelUuid` VARCHAR(32) NOT NULL COMMENT '云专线id',
+	  `accountUuid` VARCHAR(32) NOT NULL COMMENT '所属账户',
+	  `aliAccountUuid` VARCHAR(64) NOT NULL COMMENT '阿里云用户id',
+	  `aliRegionId` VARCHAR(64) NOT NULL COMMENT '阿里云区域',
+	  `name` varchar(128) DEFAULT NULL COMMENT '边界路由器名字',
+	  `description` varchar(255) DEFAULT NULL COMMENT '描述',
+	  `vbrUuid` varchar(64) NOT NULL COMMENT '虚拟边界路由器id',
+	  `physicalLineUuid` varchar(32) NOT NULL COMMENT '物理专线id',
+	  `vlan` int(11) NOT NULL COMMENT '端口号',
+	  `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+	  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+	  `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE VIEW `syscxp_tunnel`.`AliEdgeRouterVO` AS SELECT uuid, tunnelUuid, accountUuid, aliAccountUuid, aliRegionId, name, description, vbrUuid, physicalLineUuid, vlan, lastOpDate, createDate
@@ -479,3 +478,19 @@ CREATE TABLE `syscxp_tunnel`.`AliUserVO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `syscxp_tunnel`.`ResourceVO` (
+	`uuid` varchar(32) NOT NULL UNIQUE,
+	`resourceName` varchar(255) DEFAULT NULL,
+	`resourceType` varchar(255) DEFAULT NULL,
+	PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  `syscxp_tunnel`.`MonitorHostVO` (
+    `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'host uuid',
+	`username` varchar(128) NOT NULL COMMENT '用户名',
+	`password` varchar(128) NOT NULL COMMENT '密码',
+	`sshPort` INT NOT NULL DEFAULT 22 COMMENT 'ssh端口',
+    PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+ALTER TABLE MonitorHostVO ADD CONSTRAINT fkMonitorHostVOHostEO FOREIGN KEY (uuid) REFERENCES HostEO (uuid) ON UPDATE RESTRICT ON DELETE CASCADE;

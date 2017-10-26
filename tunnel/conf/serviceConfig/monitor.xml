@@ -3,19 +3,6 @@
     <id>monitor</id>
     <interceptor>MonitorManager</interceptor>
 
-    <!--HOST-->
-    <message>
-        <name>com.syscxp.tunnel.header.host.APICreateHostMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.tunnel.header.host.APIUpdateHostMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.tunnel.header.host.APIDeleteHostMsg</name>
-    </message>
-
     <message>
         <name>com.syscxp.tunnel.header.monitor.APICreateHostSwitchMonitorMsg</name>
     </message>
@@ -50,11 +37,6 @@
 
     <message>
         <name>com.syscxp.tunnel.header.monitor.APICreateMonitorCidrMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.tunnel.header.host.APIQueryHostMsg</name>
-        <serviceId>query</serviceId>
     </message>
 
     <message>

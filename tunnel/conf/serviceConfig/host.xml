@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://syscxp.com/schema/syscxp">
+    <id>host</id>
+    <interceptor>HostApiInterceptor</interceptor>
+
+    <message>
+        <name>com.syscxp.header.host.APIAddHostMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.host.APIChangeHostStateMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.host.APIDeleteHostMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.host.APIReconnectHostMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.host.APIGetHostMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.host.APIQueryHostMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.host.APIGetHostTypesMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.host.APIUpdateHostMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.host.APICreateMonitorHostMsg</name>
+        <interceptor>MonitorApiInterceptor</interceptor>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.host.APIUpdateMonitorHostMsg</name>
+        <interceptor>MonitorApiInterceptor</interceptor>
+    </message>
+
+</service>

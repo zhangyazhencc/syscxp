@@ -41,5 +41,18 @@
         </syscxp:plugin>
     </bean>
 
+    <bean id="MonitorHostFactory" class="com.syscxp.tunnel.header.host.MonitorHostFactory">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.host.HostFactory" />
+            <syscxp:extension interface="com.syscxp.header.Component" />
+            <syscxp:extension interface="com.syscxp.header.Service" />
+            <syscxp:extension interface="com.syscxp.header.managementnode.ManagementNodeReadyExtensionPoint" />
+        </syscxp:plugin>
+    </bean>
 
+    <bean id="MonitorApiInterceptor" class="com.syscxp.tunnel.header.host.MonitorApiInterceptor">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+        </syscxp:plugin>
+    </bean>
 </beans>
