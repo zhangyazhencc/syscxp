@@ -58,14 +58,6 @@ public class HostApiInterceptor implements ApiMessageInterceptor {
     }
 
     private void validate(APIUpdateHostMsg msg) {
-        if (msg.getHostIp() != null) {
-            SimpleQuery<HostVO> q = dbf.createQuery(HostVO.class);
-            q.add(HostVO_.hostIp, Op.EQ, msg.getHostIp());
-            if (q.isExists()) {
-                throw new ApiMessageInterceptionException(argerr("there has been a host having managementIp[%s]", msg.getHostIp()));
-            }
-        }
-
         HostStatus hostStatus = Q.New(HostVO.class)
                 .select(HostVO_.status)
                 .eq(HostVO_.uuid,msg.getHostUuid())
