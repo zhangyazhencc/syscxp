@@ -3,6 +3,7 @@ package com.syscxp.core.ansible;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.header.rest.RESTFacade;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.DirectoryWalker;
 import org.apache.commons.io.FileUtils;
@@ -52,6 +53,8 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
     private ErrorFacade errf;
     @Autowired
     private ThreadFacade thdf;
+    @Autowired
+    private RESTFacade restf;
 
     private String publicKey;
     private String privateKey;
@@ -135,18 +138,18 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
                 logger.debug(String.format("discovered ansible variable[%s=%s]", key, e.getValue()));
             }
 
-            placePip901();
-            placeAnsible196();
+//            placePip901();
+//            placeAnsible196();
 
-            ShellUtils.run(String.format("if ! ansible --version | grep -q 1.9.6; then " +
-                    "if grep -i -s centos /etc/system-release; then " +
-                    "sudo yum remove -y ansible; " +
-                    "elif grep -i -s ubuntu /etc/issue; then " +
-                    "sudo apt-get --assume-yes remove ansible; " +
-                    "else echo \"Warning: can't remove ansible from unknown platform\"; " +
-                    "fi; " +
-                    "sudo pip install -i http://localhost:8080/%s --trusted-host localhost -I ansible==1.9.6; " +
-                    "fi", AnsibleConstant.PYPI_REPO), false);
+//            ShellUtils.run(String.format("if ! ansible --version | grep -q 1.9.6; then " +
+//                    "if grep -i -s centos /etc/system-release; then " +
+//                    "sudo yum remove -y ansible; " +
+//                    "elif grep -i -s ubuntu /etc/issue; then " +
+//                    "sudo apt-get --assume-yes remove ansible; " +
+//                    "else echo \"Warning: can't remove ansible from unknown platform\"; " +
+//                    "fi; " +
+//                    "sudo pip install -i http://localhost:8080/%s --trusted-host localhost -I ansible==1.9.6; " +
+//                    "fi", AnsibleConstant.PYPI_REPO), false);
 
             deployModule("ansible/syscxplib", "syscxplib.py");
         } catch (IOException e) {
