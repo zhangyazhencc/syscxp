@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+
 @Inventory(mappingVOClass = MonitorHostVO.class, collectionValueOfMethod = "valueOf1",
         parent = {@Parent(inventoryClass = HostInventory.class, type = MonitorConstant.HOST_TYPE)})
 public class MonitorHostInventory extends HostInventory {
@@ -34,7 +35,7 @@ public class MonitorHostInventory extends HostInventory {
     }
 
     public static List<MonitorHostInventory> valueOf1(Collection<MonitorHostVO> vos) {
-        List<MonitorHostInventory> invs = new ArrayList<MonitorHostInventory>();
+        List<MonitorHostInventory> invs = new ArrayList<>();
         for (MonitorHostVO vo : vos) {
             invs.add(valueOf(vo));
         }
@@ -56,6 +57,7 @@ public class MonitorHostInventory extends HostInventory {
     public void setPassword(String password) {
         this.password = password;
     }
+
     public Integer getSshPort() {
         return sshPort;
     }

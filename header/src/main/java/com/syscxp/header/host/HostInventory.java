@@ -20,19 +20,19 @@ public class HostInventory implements Serializable {
     @TypeField
     private String hostType;
     private String position;
-    private HostState state;
-    private HostStatus status;
+    private String state;
+    private String status;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
     protected HostInventory(HostAO vo) {
-        this.setStatus(vo.getStatus());
+        this.setStatus(vo.getStatus().toString());
         this.setCreateDate(vo.getCreateDate());
         this.setHostType(vo.getHostType());
         this.setLastOpDate(vo.getLastOpDate());
         this.setHostIp(vo.getHostIp());
         this.setName(vo.getName());
-        this.setState(vo.getState());
+        this.setState(vo.getState().toString());
         this.setUuid(vo.getUuid());
         this.setCode(vo.getCode());
         this.setNodeUuid(vo.getNodeUuid());
@@ -110,19 +110,19 @@ public class HostInventory implements Serializable {
         this.hostType = hostType;
     }
 
-    public HostState getState() {
+    public String getState() {
         return state;
     }
 
-    public void setState(HostState state) {
+    public void setState(String state) {
         this.state = state;
     }
 
-    public HostStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(HostStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
