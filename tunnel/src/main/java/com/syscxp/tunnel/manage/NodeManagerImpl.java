@@ -198,7 +198,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         }
 
         APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent(msg.getId());
-        oldmap.put("_id",new ObjectId(oldmap.get("_id").toString()));
         mongoTemplate.save(oldmap.get("nodeExtensionInfo"),"nodeExtensionInfo");
         event.setInventory(oldmap.toString());
 
