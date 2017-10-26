@@ -15,12 +15,6 @@ public class APIUpdateHostMsg extends APIMessage implements HostMessage {
     private String code;
     @APIParam(maxLength = 255, required = false, emptyString = false)
     private String hostIp;
-    @APIParam(maxLength = 255, required = false, emptyString = false)
-    private String username;
-    @APIParam(maxLength = 255, required = false, emptyString = false)
-    private String password;
-    @APIParam(numberRange = {1,65535})
-    private Integer sshPort;
     @APIParam(required = false, maxLength = 256)
     private String position;
 
@@ -38,30 +32,6 @@ public class APIUpdateHostMsg extends APIMessage implements HostMessage {
 
     public void setPosition(String position) {
         this.position = position;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
-    public Integer getSshPort() {
-        return sshPort;
-    }
-
-    public void setSshPort(Integer sshPort) {
-        this.sshPort = sshPort;
     }
 
     public String getHostIp() {

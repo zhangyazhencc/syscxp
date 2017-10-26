@@ -9,8 +9,13 @@ public class APIListNodeExtensionInfoReply extends APIReply {
 
     private String nodeExtensionInfoList;
 
+    public String getNodeExtensionInfoList() {
+        return nodeExtensionInfoList;
+    }
 
-
+    public void setNodeExtensionInfoList(String nodeExtensionInfoList) {
+        this.nodeExtensionInfoList = nodeExtensionInfoList;
+    }
 }
 
 

@@ -114,7 +114,7 @@ public class HostExtensionPointEmitter implements Component {
 
     public void connectionReestablished(HostType hvType, HostInventory host) throws HostException {
         for (HostConnectionReestablishExtensionPoint ext : connetionReestablishExts) {
-            if (ext.getHypervisorTypeForReestablishExtensionPoint().equals(hvType)) {
+            if (ext.getHostTypeForReestablishExtensionPoint().equals(hvType)) {
                 try {
                     ext.connectionReestablished(host);
                 } catch (HostException he) {

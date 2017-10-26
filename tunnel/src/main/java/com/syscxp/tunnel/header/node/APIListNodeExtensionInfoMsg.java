@@ -11,12 +11,6 @@ import com.syscxp.header.message.APISyncCallMessage;
 public class APIListNodeExtensionInfoMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false)
-    private int page_no = 1;
-
-    @APIParam(emptyString = false)
-    private int page_size = 15;
-
-    @APIParam(emptyString = false)
     private String operatorCategory;
 
     @APIParam(emptyString = false)
@@ -36,6 +30,9 @@ public class APIListNodeExtensionInfoMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false)
     private String pageNo;
+
+    @APIParam(emptyString = false)
+    private String page_size;
 
     public String getOperatorCategory() {
         return operatorCategory;
@@ -91,5 +88,13 @@ public class APIListNodeExtensionInfoMsg extends APISyncCallMessage {
 
     public void setPageNo(String pageNo) {
         this.pageNo = pageNo;
+    }
+
+    public String getPage_size() {
+        return page_size;
+    }
+
+    public void setPage_size(String page_size) {
+        this.page_size = page_size;
     }
 }

@@ -1,6 +1,5 @@
 package com.syscxp.core.host;
 
-import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
@@ -64,7 +63,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
     private Map<Class, HostBaseExtensionFactory> hostBaseExtensionFactories = new HashMap<>();
 
 
-    private Map<String, HostFactory> hypervisorFactories = Collections.synchronizedMap(new HashMap<String, HostFactory>());
+    private Map<String, HostFactory> hostFactoryMap = Collections.synchronizedMap(new HashMap<String, HostFactory>());
     private static final Set<Class> allowedMessageAfterSoftDeletion = new HashSet<>();
 
     static {
@@ -95,11 +94,12 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
     }
 
     private void handle(APIGetHostMsg msg) {
-        HostVO host = Q.New(HostVO.class)
-                .eq(HostVO_.uuid, msg.getId()).find();
-        HostInventory inv = HostInventory.valueOf(host);
+        HostVO host = Q.New(HostVO.class).eq(HostVO_.uuid, msg.getUuid()).find();
+
+        HostInventory inv = getHostFactory(HostType.valueOf(host.getHostType())).getHostInventory(host);
+
         APIGetHostReply reply = new APIGetHostReply();
-        reply.setInventory(JSONObjectUtil.toJsonString(inv));
+        reply.setInventory(inv);
         bus.reply(msg, reply);
     }
 
@@ -117,7 +117,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
             return;
         }
 
-        HostFactory factory = this.getHypervisorFactory(HostType.valueOf(vo.getHostType()));
+        HostFactory factory = this.getHostFactory(HostType.valueOf(vo.getHostType()));
         Host host = factory.getHost(vo);
         host.handleMessage((Message) msg);
     }
@@ -203,7 +203,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
         hvo.setStatus(HostStatus.Connecting);
         hvo.setState(HostState.Enabled);
 
-        final HostFactory factory = getHypervisorFactory(HostType.valueOf(msg.getHostType()));
+        final HostFactory factory = getHostFactory(HostType.valueOf(msg.getHostType()));
         final HostVO vo = factory.createHost(hvo, msg);
         final AddHostMsg amsg = getAddHostMsg(msg);
 
@@ -352,12 +352,12 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
 
     private void populateExtensions() {
         for (HostFactory f : pluginRgty.getExtensionList(HostFactory.class)) {
-            HostFactory old = hypervisorFactories.get(f.getHostType().toString());
+            HostFactory old = hostFactoryMap.get(f.getHostType().toString());
             if (old != null) {
                 throw new CloudRuntimeException(String.format("duplicate HypervisorFactory[%s, %s] for hypervisor type[%s]",
                         old.getClass().getName(), f.getClass().getName(), f.getHostType()));
             }
-            hypervisorFactories.put(f.getHostType().toString(), f);
+            hostFactoryMap.put(f.getHostType().toString(), f);
         }
 
         for (HostBaseExtensionFactory ext : pluginRgty.getExtensionList(HostBaseExtensionFactory.class)) {
@@ -484,8 +484,8 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
     }
 
 
-    public HostFactory getHypervisorFactory(HostType type) {
-        HostFactory factory = hypervisorFactories.get(type.toString());
+    public HostFactory getHostFactory(HostType type) {
+        HostFactory factory = hostFactoryMap.get(type.toString());
         if (factory == null) {
             throw new CloudRuntimeException("No factory for hypervisor: " + type + " found, check your HypervisorManager.xml");
         }

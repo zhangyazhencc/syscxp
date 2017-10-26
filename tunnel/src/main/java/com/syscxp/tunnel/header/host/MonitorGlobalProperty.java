@@ -21,4 +21,6 @@ public class MonitorGlobalProperty {
     public static int AGENT_SERVER_PORT;
     @GlobalProperty(name="MonitorHost.iptables.rule.", defaultValue = "")
     public static List<String> IPTABLES_RULES;
+    @GlobalProperty(name="MonitorAgent.syncOnHostPing", defaultValue = "true")
+    public static Boolean AGENT_SYNC_ON_HOST_PING;
 }

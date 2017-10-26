@@ -14,6 +14,7 @@ import com.syscxp.core.notification.N;
 import com.syscxp.core.thread.AsyncThread;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.Component;
+import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.host.*;
 import com.syscxp.header.host.HostInventory;
 import com.syscxp.header.host.HostStatus;
@@ -39,6 +40,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
     private static final CLogger logger = Utils.getLogger(MonitorHostFactory.class);
 
     public static final HostType hostType = new HostType(MonitorConstant.HOST_TYPE);
+    private List<MonitorHostConnectExtensionPoint> connectExtensions = new ArrayList<>();
 
     @Autowired
     private DatabaseFacade dbf;
@@ -109,13 +111,13 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
     @Override
     public HostInventory getHostInventory(HostVO vo) {
         MonitorHostVO host = vo instanceof MonitorHostVO ? (MonitorHostVO) vo : dbf.findByUuid(vo.getUuid(), MonitorHostVO.class);
-        return HostInventory.valueOf(host);
+        return MonitorHostInventory.valueOf(host);
     }
 
     @Override
     public HostInventory getHostInventory(String uuid) {
-        HostVO vo = dbf.findByUuid(uuid, HostVO.class);
-        return vo == null ? null : HostInventory.valueOf(vo);
+        MonitorHostVO vo = dbf.findByUuid(uuid, MonitorHostVO.class);
+        return vo == null ? null : MonitorHostInventory.valueOf(vo);
     }
 
     private void deployAnsibleModule() {
@@ -126,21 +128,29 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
         asf.deployModule(MonitorConstant.ANSIBLE_MODULE_PATH, MonitorConstant.ANSIBLE_PLAYBOOK_NAME);
     }
 
+    private void populateExtensions() {
+        connectExtensions = pluginRgty.getExtensionList(MonitorHostConnectExtensionPoint.class);
+    }
+
+    public List<MonitorHostConnectExtensionPoint> getConnectExtensions() {
+        return connectExtensions;
+    }
+
     @Override
     public boolean start() {
         deployAnsibleModule();
+        populateExtensions();
 
-        restf.registerSyncHttpCallHandler(MonitorConstant.AGENT_RECONNECT_ME, ReconnectMeCmd.class, new SyncHttpCallHandler<ReconnectMeCmd>() {
-            @Override
-            public String handleSyncHttpCall(MonitorAgentCommands.ReconnectMeCmd cmd) {
-                N.New(HostVO.class, cmd.hostUuid).info_("the kvm host[uuid:%s] asks the management server to reconnect it for %s", cmd.hostUuid, cmd.reason);
-                ReconnectHostMsg msg = new ReconnectHostMsg();
-                msg.setHostUuid(cmd.hostUuid);
-                bus.makeTargetServiceIdByResourceUuid(msg, MonitorConstant.SERVICE_ID, cmd.hostUuid);
-                bus.send(msg);
-                return null;
-            }
-        });
+        restf.registerSyncHttpCallHandler(MonitorConstant.AGENT_RECONNECT_ME, ReconnectMeCmd.class,
+                cmd -> {
+                    N.New(HostVO.class, cmd.hostUuid).info_("the monitor host[uuid:%s] asks the management server to " +
+                            "reconnect it for %s", cmd.hostUuid, cmd.reason);
+                    ReconnectHostMsg msg = new ReconnectHostMsg();
+                    msg.setHostUuid(cmd.hostUuid);
+                    bus.makeTargetServiceIdByResourceUuid(msg, MonitorConstant.SERVICE_ID, cmd.hostUuid);
+                    bus.send(msg);
+                    return null;
+                });
 
         return true;
     }
