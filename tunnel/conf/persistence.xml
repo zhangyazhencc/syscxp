@@ -36,8 +36,9 @@
 
         <class>com.syscxp.header.tunnel.TunnelForAlarmVO</class>
 
-        <class>com.syscxp.tunnel.header.host.HostVO</class>
-        <class>com.syscxp.tunnel.header.host.HostEO</class>
+        <class>com.syscxp.header.host.HostVO</class>
+        <class>com.syscxp.header.host.HostEO</class>
+        <class>com.syscxp.tunnel.header.host.MonitorHostVO</class>
 
         <class>com.syscxp.tunnel.header.monitor.HostSwitchMonitorVO</class>
         <class>com.syscxp.tunnel.header.monitor.HostSwitchMonitorEO</class>

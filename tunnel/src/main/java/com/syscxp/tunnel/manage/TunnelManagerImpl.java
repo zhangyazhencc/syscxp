@@ -139,7 +139,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
      * 调用支付
      */
     private boolean createOrder(APICreateOrderMsg orderMsg) {
-        orderMsg.setNotifyUrl(restf.getSendCommandUrl());
+        //orderMsg.setNotifyUrl(restf.getSendCommandUrl());
+        orderMsg.setNotifyUrl(TunnelConstant.NOTIFYURL);
         APIReply reply;
         try {
             reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
@@ -174,6 +175,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setExpireDate(null);
         vo.setState(InterfaceState.Unpaid);
         vo.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
+        vo.setIsBilling(0);
+
         vo = dbf.persistAndRefresh(vo);
 
         //调用支付
@@ -197,6 +200,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
                 vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
             }
+            vo.setIsBilling(1);
             vo = dbf.updateAndRefresh(vo);
 
             evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -231,6 +235,8 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setExpireDate(null);
         vo.setState(InterfaceState.Unpaid);
         vo.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
+        vo.setIsBilling(0);
+
         vo = dbf.persistAndRefresh(vo);
 
         //调用支付
@@ -254,6 +260,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             }else if(msg.getProductChargeModel() == ProductChargeModel.BY_YEAR){
                 vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
             }
+            vo.setIsBilling(1);
             vo = dbf.updateAndRefresh(vo);
 
             evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -299,7 +306,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 renewOrderMsg.setProductChargeModel(msg.getProductChargeModel());
                 renewOrderMsg.setAccountUuid(msg.getAccountUuid());
                 renewOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-                renewOrderMsg.setStartTime(vo.getCreateDate());
+                renewOrderMsg.setStartTime(dbf.getCurrentSqlTime());
                 renewOrderMsg.setExpiredTime(vo.getExpireDate());
                 success = createOrder(renewOrderMsg);
                 if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
@@ -318,7 +325,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 slaCompensationOrderMsg.setDuration(msg.getDuration());
                 slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
                 slaCompensationOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-                slaCompensationOrderMsg.setStartTime(vo.getCreateDate());
+                slaCompensationOrderMsg.setStartTime(dbf.getCurrentSqlTime());
                 slaCompensationOrderMsg.setExpiredTime(vo.getExpireDate());
                 success = createOrder(slaCompensationOrderMsg);
                 newTime = newTime.plusDays(msg.getDuration());
@@ -331,6 +338,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
             vo.setDuration(msg.getDuration());
             vo.setProductChargeModel(msg.getProductChargeModel());
             vo.setExpireDate(Timestamp.valueOf(newTime));
+            vo.setIsBilling(1);
             vo = dbf.updateAndRefresh(vo);
 
             evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -354,7 +362,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setProductName(vo.getName());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        orderMsg.setStartTime(vo.getCreateDate());
+        orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
 
         if(createOrder(orderMsg)){
@@ -616,6 +624,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setMonitorState(TunnelMonitorState.Disabled);
         vo.setMaxModifies(CoreGlobalProperty.TUNNEL_MAX_MOTIFIES);
+        vo.setIsBilling(0);
         dbf.getEntityManager().persist(vo);
 
         dbf.getEntityManager().flush();
@@ -687,6 +696,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setMonitorState(TunnelMonitorState.Disabled);
         vo.setMaxModifies(CoreGlobalProperty.TUNNEL_MAX_MOTIFIES);
+        vo.setIsBilling(0);
         dbf.getEntityManager().persist(vo);
 
         dbf.getEntityManager().flush();
@@ -764,7 +774,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setProductType(ProductType.TUNNEL);
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        orderMsg.setStartTime(vo.getCreateDate());
+        orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
 
         if(createOrder(orderMsg)){
@@ -792,7 +802,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 renewOrderMsg.setProductChargeModel(msg.getProductChargeModel());
                 renewOrderMsg.setAccountUuid(msg.getAccountUuid());
                 renewOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-                renewOrderMsg.setStartTime(vo.getCreateDate());
+                renewOrderMsg.setStartTime(dbf.getCurrentSqlTime());
                 renewOrderMsg.setExpiredTime(vo.getExpireDate());
                 success = createOrder(renewOrderMsg);
                 if(msg.getProductChargeModel() == ProductChargeModel.BY_MONTH){
@@ -811,7 +821,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
                 slaCompensationOrderMsg.setDuration(msg.getDuration());
                 slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
                 slaCompensationOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-                slaCompensationOrderMsg.setStartTime(vo.getCreateDate());
+                slaCompensationOrderMsg.setStartTime(dbf.getCurrentSqlTime());
                 slaCompensationOrderMsg.setExpiredTime(vo.getExpireDate());
                 success = createOrder(slaCompensationOrderMsg);
                 newTime = newTime.plusDays(msg.getDuration());
@@ -844,7 +854,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         orderMsg.setProductName(vo.getName());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        orderMsg.setStartTime(vo.getCreateDate());
+        orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
 
         if(createOrder(orderMsg)){
@@ -914,10 +924,13 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if(cmd.getProductType() == ProductType.PORT){
             InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
             boolean update = false;
-            if (cmd.getExpireDate() != null) {
+            if (vo.getIsBilling() == 0) {
                 vo.setExpireDate(cmd.getExpireDate());
                 vo.setDuration(cmd.getDuration());
                 vo.setProductChargeModel(cmd.getProductChargeModel());
+                update = true;
+            }else{
+                vo.setIsBilling(0);
                 update = true;
             }
             if(update)
@@ -925,10 +938,13 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         }else if(cmd.getProductType() == ProductType.TUNNEL){
             TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
             boolean update = false;
-            if (cmd.getExpireDate() != null) {
+            if (vo.getIsBilling() == 0) {
                 vo.setExpireDate(cmd.getExpireDate());
                 vo.setDuration(cmd.getDuration());
                 vo.setProductChargeModel(cmd.getProductChargeModel());
+                update = true;
+            }else{
+                vo.setIsBilling(0);
                 update = true;
             }
             if(update)
@@ -940,18 +956,24 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         if(cmd.getProductType() == ProductType.PORT){
             InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
             boolean update = false;
-            if (vo.getState() == InterfaceState.Unpaid) {
+            if (vo.getIsBilling() == 0) {
                 vo.setState(InterfaceState.Paid);
                 vo.setExpireDate(cmd.getExpireDate());
+                update = true;
+            }else{
+                vo.setIsBilling(0);
                 update = true;
             }
             return update ? dbf.updateAndRefresh(vo) : null;
         }else if(cmd.getProductType() == ProductType.TUNNEL){
             TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
             boolean update = false;
-            if (vo.getState() == TunnelState.Unpaid) {
+            if (vo.getIsBilling() == 0) {
                 vo.setState(TunnelState.Enabled);
                 vo.setStatus(TunnelStatus.Connecting);
+                update = true;
+            }else{
+                vo.setIsBilling(0);
                 update = true;
             }
             return update ? dbf.updateAndRefresh(vo) : null;

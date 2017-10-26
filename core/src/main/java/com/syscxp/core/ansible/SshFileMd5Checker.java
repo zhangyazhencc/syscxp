@@ -33,7 +33,7 @@ public class SshFileMd5Checker implements AnsibleChecker {
         String destPath;
     }
 
-    public static final String syscxpLIB_SRC_PATH = PathUtil.findFileOnClassPath(String.format("ansible/syscxplib/%s", AnsibleGlobalProperty.syscxpLIB_PACKAGE_NAME), true).getAbsolutePath();
+    public static final String SYSCXPLIB_SRC_PATH = PathUtil.findFileOnClassPath(String.format("ansible/syscxplib/%s", AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME), true).getAbsolutePath();
 
     @Override
     public boolean needDeploy() {

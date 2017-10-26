@@ -2,7 +2,7 @@ package com.syscxp.tunnel.header.monitor;
 
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.tunnel.header.host.HostEO;
+import com.syscxp.tunnel.header.host.MonitorHostVO;
 import com.syscxp.tunnel.header.tunnel.TunnelEO;
 
 /**
@@ -18,13 +18,13 @@ public class APIUpdateTunnelMonitorMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelEO.class)
     private String tunnelUuid;
 
-    @APIParam(emptyString = false,resourceType = HostEO.class)
+    @APIParam(emptyString = false,resourceType = MonitorHostVO.class)
     private String hostAUuid;
 
     @APIParam(emptyString = false,maxLength = 64)
     private String monitorAIp;
 
-    @APIParam(emptyString = false,resourceType = HostEO.class)
+    @APIParam(emptyString = false,resourceType = MonitorHostVO.class)
     private String hostZUuid;
 
     @APIParam(emptyString = false,maxLength = 64)
