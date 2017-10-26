@@ -137,7 +137,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         List<SwitchPortAvailableInventory> switchPortAvailableInventoryList = new ArrayList<SwitchPortAvailableInventory>();
         List<Tuple> ts;
         if(msg.getPortName() != null){
-            String sql = "select s.code, sp.portName from SwitchVO s, SwitchPortVO sp " +
+            String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
                     "where s.uuid = sp.switchUuid and sp.state = :spstate " +
                     "and sp.uuid not in( select switchPortUuid from InterfaceVO i where  sp.portAttribute = :portAttribute) " +
                     " and s.uuid = :uuid and sp.portName like :portName";
@@ -150,7 +150,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             ts = tfq.getResultList();
 
         }else if(msg.getPortType() == null && msg.getPortAttribute() != null){
-            String sql = "select s.code, sp.portName from SwitchVO s, SwitchPortVO sp " +
+            String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
                     "where s.uuid = sp.switchUuid and sp.state = :spstate " +
                     "and sp.uuid not in( select switchPortUuid from InterfaceVO i where  sp.portAttribute = :portAttribute) " +
                     " and sp.portAttribute = :portAttributeCheck";
@@ -161,7 +161,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             tfq.setParameter("portAttributeCheck",  msg.getPortAttribute());
             ts = tfq.getResultList();
         }else if(msg.getPortType() != null && msg.getPortAttribute() != null){
-            String sql = "select s.code, sp.portName from SwitchVO s, SwitchPortVO sp " +
+            String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
                     "where s.uuid = sp.switchUuid and sp.state = :spstate " +
                     "and sp.uuid not in( select switchPortUuid from InterfaceVO i where  sp.portAttribute = :portAttribute) " +
                     " and sp.portAttribute = :portAttributeCheck and sp.portType = :portType";
@@ -173,7 +173,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             tfq.setParameter("portType",  msg.getPortType());
             ts = tfq.getResultList();
         }else{
-            String sql = "select s.code, sp.portName from SwitchVO s, SwitchPortVO sp " +
+            String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
                     "where s.uuid = sp.switchUuid and sp.state = :spstate " +
                     "and sp.uuid not in( select switchPortUuid from InterfaceVO i where sp.portAttribute = :portAttribute) " +
                     " and s.uuid = :uuid";
@@ -189,6 +189,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             SwitchPortAvailableInventory inventory = new SwitchPortAvailableInventory();
             inventory.setCode(t.get(0, String.class));
             inventory.setPortName(t.get(1, String.class));
+            inventory.setSwitchPortUuid(t.get(2, String.class));
             switchPortAvailableInventoryList.add(inventory);
         }
 
