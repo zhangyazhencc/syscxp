@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://syscxp.com/schema/syscxp">
+    <id>alarmLog</id>
+    <interceptor>AlarmLogManager</interceptor>
+
+    <message>
+        <name>com.syscxp.alarm.header.log.APICreateAlarmLogMsg</name>
+    </message>
+
+</service>

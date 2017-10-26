@@ -12,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 public class AlarmLogVO_  extends BaseVO_ {
     public static volatile SingularAttribute<AlarmLogVO, String> productUuid;
     public static volatile SingularAttribute<AlarmLogVO, String> productName;
+    public static volatile SingularAttribute<AlarmLogVO, String> accountUuid;
     public static volatile SingularAttribute<AlarmLogVO, ProductType> productType;
     public static volatile SingularAttribute<AlarmLogVO, Timestamp> alarmTime;
     public static volatile SingularAttribute<AlarmLogVO, Integer> duration;

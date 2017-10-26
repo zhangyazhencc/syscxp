@@ -16,6 +16,9 @@ public class ContactGroupVO extends BaseVO {
     @Column
     private String groupName;
 
+    @Column
+    private String accountUuid;
+
     public String getGroupCode() {
         return groupCode;
     }
@@ -26,6 +29,14 @@ public class ContactGroupVO extends BaseVO {
             inverseJoinColumns={@JoinColumn(name="groupUuid",referencedColumnName="uuid")}
     )
     private Set<ContactVO> contactVOList;
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
 
     public Set<ContactVO> getContactVOList() {
         return contactVOList;

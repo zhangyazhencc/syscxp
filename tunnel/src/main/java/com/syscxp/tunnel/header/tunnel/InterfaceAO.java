@@ -21,6 +21,9 @@ public class InterfaceAO {
     private String accountUuid;
 
     @Column
+    private String ownerAccountUuid;
+
+    @Column
     private String name;
 
     @Column
@@ -186,5 +189,13 @@ public class InterfaceAO {
 
     public void setIsBilling(Integer isBilling) {
         this.isBilling = isBilling;
+    }
+
+    public String getOwnerAccountUuid() {
+        return ownerAccountUuid;
+    }
+
+    public void setOwnerAccountUuid(String ownerAccountUuid) {
+        this.ownerAccountUuid = ownerAccountUuid;
     }
 }

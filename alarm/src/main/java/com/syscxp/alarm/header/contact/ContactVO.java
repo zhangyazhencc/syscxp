@@ -18,6 +18,9 @@ public class ContactVO extends BaseVO{
     @Column
     private String mobile;
 
+//    @Column
+//    private String accountUuid;
+
     @OneToMany(fetch =FetchType.EAGER)
     @JoinTable(name="ContactNotifyWayRefVO",
             joinColumns={@JoinColumn(name="contactUuid",referencedColumnName="uuid")},
@@ -35,6 +38,8 @@ public class ContactVO extends BaseVO{
 //    @ManyToOne(targetEntity = ContactGroupVO.class)
 //    @JoinColumn(name="groupCode")
 //    private ContactGroupVO groupVO;
+
+
 
     public String getName() {
         return name;

@@ -22,6 +22,9 @@ public class TunnelAO {
     private String accountUuid;
 
     @Column
+    private String ownerAccountUuid;
+
+    @Column
     private Integer vsi;
 
     @Column
@@ -220,5 +223,13 @@ public class TunnelAO {
 
     public void setIsBilling(Integer isBilling) {
         this.isBilling = isBilling;
+    }
+
+    public String getOwnerAccountUuid() {
+        return ownerAccountUuid;
+    }
+
+    public void setOwnerAccountUuid(String ownerAccountUuid) {
+        this.ownerAccountUuid = ownerAccountUuid;
     }
 }

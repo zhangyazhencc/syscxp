@@ -8,6 +8,11 @@ import com.syscxp.header.query.AutoQuery;
 public class APIQueryVlanUsedMsg extends APISyncCallMessage {
     @APIParam
     private String uuid;
+    @APIParam
+    private Integer start = 0;
+
+    @APIParam
+    private Integer limit;
 
     public String getUuid() {
         return uuid;
@@ -17,4 +22,19 @@ public class APIQueryVlanUsedMsg extends APISyncCallMessage {
         this.uuid = uuid;
     }
 
+    public Integer getStart() {
+        return start;
+    }
+
+    public void setStart(Integer start) {
+        this.start = start;
+    }
+
+    public Integer getLimit() {
+        return limit;
+    }
+
+    public void setLimit(Integer limit) {
+        this.limit = limit;
+    }
 }
