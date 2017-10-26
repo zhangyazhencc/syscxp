@@ -69,21 +69,25 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
 
             if (!r.isNoReconnect()) {
                 boolean needReconnect = false;
-                if (!r.isConnected() && HostStatus.Connected.toString().equals(r.getCurrentHostStatus()) && HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.value(Boolean.class)) {
+                if (!r.isConnected() && HostStatus.Connected.toString().equals(r.getCurrentHostStatus())
+                        && HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.value(Boolean.class)) {
                     // cannot ping, but host is in Connected status
                     needReconnect = true;
-                } else if (r.isConnected() && HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.value(Boolean.class) && HostStatus.Disconnected.toString().equals(r.getCurrentHostStatus())) {
+                } else if (r.isConnected() && HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.value(Boolean.class)
+                        && HostStatus.Disconnected.toString().equals(r.getCurrentHostStatus())) {
                     // can ping, but host is in Disconnected status
                     needReconnect = true;
                 } else if (!r.isConnected()) {
-                    logger.debug(String.format("[Host Tracker]: detected host[uuid:%s] connection lost, but connection.autoReconnectOnError is set to false, no reconnect will issue", hostUuid));
+                    logger.debug(String.format("[Host Tracker]: detected host[uuid:%s] connection lost, " +
+                            "but connection.autoReconnectOnError is set to false, no reconnect will issue", hostUuid));
                 }
 
                 //TODO: implement stopping PING after failing specific times
 
                 if (needReconnect && !inReconnectingHost.contains(hostUuid)) {
                     inReconnectingHost.add(hostUuid);
-                    logger.debug(String.format("[Host Tracker]: detected host[uuid:%s] connection lost, issue a reconnect because %s is set to true",
+                    logger.debug(String.format("[Host Tracker]: detected host[uuid:%s] connection lost, " +
+                                    "issue a reconnect because %s is set to true",
                             hostUuid, HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.getCanonicalName()));
                     ReconnectHostMsg msg = new ReconnectHostMsg();
                     msg.setHostUuid(hostUuid);
@@ -95,7 +99,8 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                             inReconnectingHost.remove(hostUuid);
 
                             if (!reply.isSuccess()) {
-                                logger.warn(String.format("host[uuid:%s] failed to reconnect, %s", hostUuid, reply.getError()));
+                                logger.warn(String.format("host[uuid:%s] failed to reconnect, %s",
+                                        hostUuid, reply.getError()));
                             }
                         }
                     });
@@ -235,13 +240,10 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
     private void setupTracker() {
         startTracker();
 
-        HostGlobalConfig.PING_HOST_INTERVAL.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
-            @Override
-            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
-                logger.debug(String.format("%s change from %s to %s, restart tracker thread",
-                        oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
-                startTracker();
-            }
+        HostGlobalConfig.PING_HOST_INTERVAL.installUpdateExtension((oldConfig, newConfig) -> {
+            logger.debug(String.format("%s change from %s to %s, restart tracker thread",
+                    oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
+            startTracker();
         });
     }
 

@@ -65,7 +65,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
 
 
     private Map<String, HostFactory> hypervisorFactories = Collections.synchronizedMap(new HashMap<String, HostFactory>());
-    private static final Set<Class> allowedMessageAfterSoftDeletion = new HashSet<Class>();
+    private static final Set<Class> allowedMessageAfterSoftDeletion = new HashSet<>();
 
     static {
         allowedMessageAfterSoftDeletion.add(HostDeletionMsg.class);
