@@ -22,11 +22,7 @@ import java.util.List;
 public class MonitorHostInventory extends HostInventory {
 
     private String username;
-    @GsonTransient
-    @APINoSee
-    @NoJsonSchema
     private String password;
-
     private Integer sshPort;
 
     private NodeVO node;

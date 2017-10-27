@@ -160,6 +160,10 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
                     " and s.uuid = :uuid and sp.portName like :portName";
 
             TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+            if(msg.getStart() != null && msg.getLimit() != null ){
+                tfq.setFirstResult(msg.getStart());
+                tfq.setMaxResults(msg.getStart()+msg.getLimit());
+            }
             tfq.setParameter("uuid", msg.getUuid());
             tfq.setParameter("spstate", SwitchPortState.Enabled);
             tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
@@ -173,6 +177,10 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
                     " and sp.portAttribute = :portAttributeCheck";
 
             TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+            if(msg.getStart() != null && msg.getLimit() != null ){
+                tfq.setFirstResult(msg.getStart());
+                tfq.setMaxResults(msg.getStart()+msg.getLimit());
+            }
             tfq.setParameter("spstate", SwitchPortState.Enabled);
             tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
             tfq.setParameter("portAttributeCheck",  msg.getPortAttribute());
@@ -184,6 +192,10 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
                     " and sp.portAttribute = :portAttributeCheck and sp.portType = :portType";
 
             TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+            if(msg.getStart() != null && msg.getLimit() != null ){
+                tfq.setFirstResult(msg.getStart());
+                tfq.setMaxResults(msg.getStart()+msg.getLimit());
+            }
             tfq.setParameter("spstate", SwitchPortState.Enabled);
             tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
             tfq.setParameter("portAttributeCheck",  msg.getPortAttribute());
@@ -196,6 +208,10 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
                     " and s.uuid = :uuid";
 
             TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+            if(msg.getStart() != null && msg.getLimit() != null ){
+                tfq.setFirstResult(msg.getStart());
+                tfq.setMaxResults(msg.getStart()+msg.getLimit());
+            }
             tfq.setParameter("uuid", msg.getUuid());
             tfq.setParameter("spstate", SwitchPortState.Enabled);
             tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);

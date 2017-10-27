@@ -14,6 +14,10 @@ public class APIQuerySwitchPortAvailableMsg extends APISyncCallMessage {
     private SwitchPortAttribute portAttribute;
     @APIParam(required = false)
     private SwitchPortType portType;
+    @APIParam(required = false)
+    private Integer start;
+    @APIParam(required = false)
+    private Integer limit;
 
     public String getUuid() {
         return uuid;
@@ -45,5 +49,21 @@ public class APIQuerySwitchPortAvailableMsg extends APISyncCallMessage {
 
     public void setPortType(SwitchPortType portType) {
         this.portType = portType;
+    }
+
+    public Integer getLimit() {
+        return limit;
+    }
+
+    public void setLimit(Integer limit) {
+        this.limit = limit;
+    }
+
+    public Integer getStart() {
+        return start;
+    }
+
+    public void setStart(Integer start) {
+        this.start = start;
     }
 }

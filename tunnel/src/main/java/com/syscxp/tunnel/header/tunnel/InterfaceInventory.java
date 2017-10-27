@@ -16,6 +16,7 @@ import java.util.List;
 public class InterfaceInventory {
     private String uuid;
     private String accountUuid;
+    private String ownerAccountUuid;
     private String name;
     private String switchPortUuid;
     private String endpointUuid;
@@ -35,6 +36,7 @@ public class InterfaceInventory {
         InterfaceInventory inv = new InterfaceInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
+        inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
         inv.setName(vo.getName());
         inv.setSwitchPortUuid(vo.getSwitchPortUuid());
         inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpointVO()));
@@ -186,5 +188,13 @@ public class InterfaceInventory {
 
     public void setIsBilling(Integer isBilling) {
         this.isBilling = isBilling;
+    }
+
+    public String getOwnerAccountUuid() {
+        return ownerAccountUuid;
+    }
+
+    public void setOwnerAccountUuid(String ownerAccountUuid) {
+        this.ownerAccountUuid = ownerAccountUuid;
     }
 }
