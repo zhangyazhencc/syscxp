@@ -238,8 +238,8 @@ public class ControllerCommands {
      */
     public static class TunnelConfig{
         private String tunnel_id;
-        private List<TunnelMplsConfig> mpls_interfaces;
-        private List<TunnelSdnConfig> sdn_interfaces;
+        private List<TunnelMplsConfig> mpls_switches;
+        private List<TunnelSdnConfig> sdn_switches;
 
         public String getTunnel_id() {
             return tunnel_id;
@@ -249,20 +249,20 @@ public class ControllerCommands {
             this.tunnel_id = tunnel_id;
         }
 
-        public List<TunnelMplsConfig> getMpls_interfaces() {
-            return mpls_interfaces;
+        public List<TunnelMplsConfig> getMpls_switches() {
+            return mpls_switches;
         }
 
-        public void setMpls_interfaces(List<TunnelMplsConfig> mpls_interfaces) {
-            this.mpls_interfaces = mpls_interfaces;
+        public void setMpls_switches(List<TunnelMplsConfig> mpls_switches) {
+            this.mpls_switches = mpls_switches;
         }
 
-        public List<TunnelSdnConfig> getSdn_interfaces() {
-            return sdn_interfaces;
+        public List<TunnelSdnConfig> getSdn_switches() {
+            return sdn_switches;
         }
 
-        public void setSdn_interfaces(List<TunnelSdnConfig> sdn_interfaces) {
-            this.sdn_interfaces = sdn_interfaces;
+        public void setSdn_switches(List<TunnelSdnConfig> sdn_switches) {
+            this.sdn_switches = sdn_switches;
         }
     }
 
@@ -527,7 +527,6 @@ public class ControllerCommands {
      * @Description: RYU控制器返回.
      */
     public static class ControllerRestResponse {
-        private boolean success;
         private String code;
         private Msg msg;
 
@@ -556,11 +555,6 @@ public class ControllerCommands {
 
         public void setCode(String code) {
             this.code = code;
-
-            if("0".equals(this.code))
-                this.setSuccess(true);
-            else
-                this.setSuccess(false);
         }
 
         public Msg getMsg() {
@@ -572,11 +566,11 @@ public class ControllerCommands {
         }
 
         public boolean isSuccess() {
-            return success;
+            if("0".equals(this.code))
+                return true;
+            else
+                return false;
         }
 
-        public void setSuccess(boolean success) {
-            this.success = success;
-        }
     }
 }

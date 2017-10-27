@@ -6,14 +6,14 @@ import java.util.List;
 
 public class APIQueryVlanUsedReply extends APIQueryReply {
     private List<VlanUsedInventory> inventories;
-    private String count;
+    private Integer count;
 
 
-    public String getCount() {
+    public Integer getCount() {
         return count;
     }
 
-    public void setCount(String count) {
+    public void setCount(Integer count) {
         this.count = count;
     }
 

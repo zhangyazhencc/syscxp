@@ -165,7 +165,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         NodeExtensionInfoList nodes = new NodeExtensionInfoList();
         nodes.setPage_no(msg.getPageNo());
         nodes.setCount(String.valueOf(count));
-        nodes.setNodeExtensionInfos(list);
+        nodes.setNodeExtensionInfos(JSONObjectUtil.toJsonString(list));
         nodes.setTotal(String.valueOf(total));
         nodes.setPage_size(msg.getPage_size());
 
@@ -278,10 +278,10 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     private void handle(APIGetNodeExtensionInfoMsg msg) {
 
         APIGetNodeExtensionInfoReply reply = new APIGetNodeExtensionInfoReply();
-        reply.setNodeExtensionInfo(
+        reply.setNodeExtensionInfo(JSONObjectUtil.toJsonString(
                 mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),NodeExtensionInfo.class,"nodeExtensionInfo")
 //                mongoTemplate.findById(msg.getNodeId(),NodeExtensionInfo.class,"nodeExtensionInfo")
-        );
+        ));
         bus.reply(msg,reply);
     }
 

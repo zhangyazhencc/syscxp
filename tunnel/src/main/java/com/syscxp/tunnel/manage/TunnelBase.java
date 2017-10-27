@@ -78,6 +78,7 @@ public class TunnelBase extends AbstractTunnel{
 
         ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
         String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
+        System.out.println("！！！！！！！！！！！下发参数"+command);
         ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
 
         crf.sendCommand(ControllerRestConstant.START_TUNNEL, command, new Completion(null) {
@@ -312,9 +313,9 @@ public class TunnelBase extends AbstractTunnel{
 
 
         tunnelConfig.setTunnel_id(tunnelVO.getUuid());
-        tunnelConfig.setMpls_interfaces(mplsList);
+        tunnelConfig.setMpls_switches(mplsList);
         if(sdnList.size()>0){
-            tunnelConfig.setSdn_interfaces(sdnList);
+            tunnelConfig.setSdn_switches(sdnList);
         }
 
         connectionsConfig.setTunnel_id(tunnelVO.getUuid());
@@ -351,7 +352,7 @@ public class TunnelBase extends AbstractTunnel{
             tmc.setSub_type(mplsSwitchModel.getSubModel());
             tmc.setVni(tunnelVO.getVsi());
             tmc.setRemote_ip(remoteMplsPhysicalSwitch.getLocalIP());
-            tmc.setPort_name(physicalSwitchUpLinkRefVO.getPortName());
+            tmc.setPort_name(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchPortName());/////?????
             tmc.setVlan_id(tunnelInterfaceVO.getVlan());
             tmc.setM_ip(mplsPhysicalSwitch.getmIP());
             tmc.setUsername(mplsPhysicalSwitch.getUsername());
@@ -400,9 +401,10 @@ public class TunnelBase extends AbstractTunnel{
             tsc.setUuid(physicalSwitchVO.getUuid());
             tsc.setM_ip(physicalSwitchVO.getmIP());
             tsc.setVlan_id(tunnelInterfaceVO.getVlan());
-            tsc.setIn_port(physicalSwitchUpLinkRefVO.getPortName());
-            tsc.setUplink(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchPortName());
+            tsc.setIn_port(switchPortVO.getPortName());
+            tsc.setUplink(physicalSwitchUpLinkRefVO.getPortName());
             tsc.setBandwidth(tunnelVO.getBandwidth()*1024);
+            tsc.setNetwork_type(interfaceVO.getType().toString());
             if(interfaceVO.getType() == NetworkType.QINQ){
                 tsc.setInner_vlan_id(getInnerVlanToString(qinqVOs));
             }
