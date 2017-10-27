@@ -17,6 +17,7 @@ public class TunnelAO_ {
 
     public static volatile SingularAttribute<TunnelAO, String> uuid;
     public static volatile SingularAttribute<TunnelAO, String> accountUuid;
+    public static volatile SingularAttribute<TunnelAO, String> ownerAccountUuid;
     public static volatile SingularAttribute<TunnelAO, Integer> vsi;
     public static volatile SingularAttribute<TunnelAO, String> monitorCidr;
     public static volatile SingularAttribute<TunnelAO, String> name;
@@ -28,6 +29,7 @@ public class TunnelAO_ {
     public static volatile SingularAttribute<TunnelAO, Integer> duration;
     public static volatile SingularAttribute<TunnelAO, ProductChargeModel> productChargeModel;
     public static volatile SingularAttribute<TunnelAO, Integer> maxModifies;
+    public static volatile SingularAttribute<TunnelAO, Integer> isBilling;
     public static volatile SingularAttribute<TunnelAO, String> description;
     public static volatile SingularAttribute<TunnelAO, Timestamp> expiredDate;
     public static volatile SingularAttribute<TunnelAO, Timestamp> lastOpDate;

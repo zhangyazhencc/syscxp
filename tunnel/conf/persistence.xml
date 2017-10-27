@@ -29,6 +29,7 @@
         <class>com.syscxp.tunnel.header.tunnel.InterfaceMotifyRecordVO</class>
         <class>com.syscxp.tunnel.header.tunnel.TunnelVO</class>
         <class>com.syscxp.tunnel.header.tunnel.TunnelEO</class>
+        <class>com.syscxp.tunnel.header.tunnel.TaskResourceVO</class>
         <class>com.syscxp.tunnel.header.tunnel.TunnelMotifyRecordVO</class>
         <class>com.syscxp.tunnel.header.tunnel.QinqVO</class>
         <class>com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO</class>
@@ -36,8 +37,9 @@
 
         <class>com.syscxp.header.tunnel.TunnelForAlarmVO</class>
 
-        <class>com.syscxp.tunnel.header.host.HostVO</class>
-        <class>com.syscxp.tunnel.header.host.HostEO</class>
+        <class>com.syscxp.header.host.HostVO</class>
+        <class>com.syscxp.header.host.HostEO</class>
+        <class>com.syscxp.tunnel.header.host.MonitorHostVO</class>
 
         <class>com.syscxp.tunnel.header.monitor.HostSwitchMonitorVO</class>
         <class>com.syscxp.tunnel.header.monitor.HostSwitchMonitorEO</class>

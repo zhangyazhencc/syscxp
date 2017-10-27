@@ -570,9 +570,9 @@ public class Platform {
             return ip;
         }
 
-        ip = System.getenv("syscxp_MANAGEMENT_SERVER_IP");
+        ip = System.getenv("SYSCXP_MANAGEMENT_SERVER_IP");
         if (ip != null) {
-            logger.info(String.format("get management IP[%s] from environment variable[syscxp_MANAGEMENT_SERVER_IP]", ip));
+            logger.info(String.format("get management IP[%s] from environment variable[SYSCXP_MANAGEMENT_SERVER_IP]", ip));
             return ip;
         }
 

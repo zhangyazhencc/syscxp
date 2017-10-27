@@ -17,6 +17,7 @@ public class TunnelInventory {
 
     private String uuid;
     private String accountUuid;
+    private String ownerAccountUuid;
     private Integer vsi;
     private String monitorCidr;
     private List<TunnelInterfaceInventory> tunnelInterfaces = new ArrayList<TunnelInterfaceInventory>();
@@ -29,6 +30,7 @@ public class TunnelInventory {
     private Integer duration;
     private ProductChargeModel productChargeModel;
     private Integer maxModifies;
+    private Integer isBilling;
     private String description;
     private Timestamp expireDate;
     private Timestamp lastOpDate;
@@ -38,6 +40,7 @@ public class TunnelInventory {
         TunnelInventory inv = new TunnelInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
+        inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
         inv.setVsi(vo.getVsi());
         inv.setMonitorCidr(vo.getMonitorCidr());
         inv.setTunnelInterfaces(TunnelInterfaceInventory.valueOf(vo.getTunnelInterfaceVOs()));
@@ -50,6 +53,7 @@ public class TunnelInventory {
         inv.setDuration(vo.getDuration());
         inv.setProductChargeModel(vo.getProductChargeModel());
         inv.setMaxModifies(vo.getMaxModifies());
+        inv.setIsBilling(vo.getIsBilling());
         inv.setDescription(vo.getDescription());
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -207,5 +211,21 @@ public class TunnelInventory {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+    }
+
+    public Integer getIsBilling() {
+        return isBilling;
+    }
+
+    public void setIsBilling(Integer isBilling) {
+        this.isBilling = isBilling;
+    }
+
+    public String getOwnerAccountUuid() {
+        return ownerAccountUuid;
+    }
+
+    public void setOwnerAccountUuid(String ownerAccountUuid) {
+        this.ownerAccountUuid = ownerAccountUuid;
     }
 }

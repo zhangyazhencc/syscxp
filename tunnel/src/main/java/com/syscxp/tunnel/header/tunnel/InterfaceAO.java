@@ -21,6 +21,9 @@ public class InterfaceAO {
     private String accountUuid;
 
     @Column
+    private String ownerAccountUuid;
+
+    @Column
     private String name;
 
     @Column
@@ -50,6 +53,9 @@ public class InterfaceAO {
 
     @Column
     private Integer maxModifies;
+
+    @Column
+    private Integer isBilling;
 
     @Column
     private Timestamp expireDate;
@@ -175,5 +181,21 @@ public class InterfaceAO {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+    }
+
+    public Integer getIsBilling() {
+        return isBilling;
+    }
+
+    public void setIsBilling(Integer isBilling) {
+        this.isBilling = isBilling;
+    }
+
+    public String getOwnerAccountUuid() {
+        return ownerAccountUuid;
+    }
+
+    public void setOwnerAccountUuid(String ownerAccountUuid) {
+        this.ownerAccountUuid = ownerAccountUuid;
     }
 }

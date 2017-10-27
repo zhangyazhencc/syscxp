@@ -2,6 +2,8 @@ package com.syscxp.tunnel.header.node;
 
 import com.syscxp.header.message.APIReply;
 
+import java.util.List;
+
 /**
  * Created by wangwg on 2017/10/09
  */
@@ -15,6 +17,8 @@ public class APIGetImageUploadInfoReply extends APIReply {
     String md5;
     String fileNumLimit;
     String nodeId;
+
+    List<String> images_url;
 
 
     public String getUpload_url() {
@@ -71,6 +75,14 @@ public class APIGetImageUploadInfoReply extends APIReply {
 
     public void setNodeId(String nodeId) {
         this.nodeId = nodeId;
+    }
+
+    public List<String> getImages_url() {
+        return images_url;
+    }
+
+    public void setImages_url(List<String> images_url) {
+        this.images_url = images_url;
     }
 }
 

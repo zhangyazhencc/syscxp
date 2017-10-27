@@ -906,7 +906,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         if (!rsp.isSuccess())
             throw new ApiMessageInterceptionException(
                     argerr("查询价格失败.", msg.getAccountUuid()));
-        APIGetProductPriceReply reply = (APIGetProductPriceReply) rsp;
+        APIGetProductPriceReply reply = rsp.castReply();
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));

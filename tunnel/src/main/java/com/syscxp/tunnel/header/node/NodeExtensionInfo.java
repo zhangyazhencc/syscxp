@@ -1,7 +1,11 @@
 package com.syscxp.tunnel.header.node;
 
+import org.bson.types.ObjectId;
+
+import java.util.List;
+
 public class NodeExtensionInfo {
-    String _id;
+    ObjectId _id;
     String province;
     String status;
     Object networkInfo;
@@ -17,13 +21,13 @@ public class NodeExtensionInfo {
     Object property;
     Object roomNOC;
     String updated_at;
-    Object images_url;
+    List<String> images_url;
 
-    public String get_id() {
+    public ObjectId get_id() {
         return _id;
     }
 
-    public void set_id(String _id) {
+    public void set_id(ObjectId _id) {
         this._id = _id;
     }
 
@@ -151,11 +155,11 @@ public class NodeExtensionInfo {
         this.updated_at = updated_at;
     }
 
-    public Object getImages_url() {
+    public List<String> getImages_url() {
         return images_url;
     }
 
-    public void setImages_url(Object images_url) {
+    public void setImages_url(List<String> images_url) {
         this.images_url = images_url;
     }
 }

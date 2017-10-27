@@ -1,5 +1,6 @@
 package com.syscxp.core.ansible;
 
+import com.syscxp.header.rest.RESTFacade;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +43,8 @@ public class AnsibleRunner {
     private AnsibleFacade asf;
     @Autowired
     private CloudBus bus;
+    @Autowired
+    private RESTFacade restf;
 
     private static String privKeyFile;
     private List<AnsibleChecker> checkers = new ArrayList<AnsibleChecker>();
@@ -322,7 +325,7 @@ public class AnsibleRunner {
 
             logger.debug(String.format("agent port[%s] on target ip[%s] is opened, ansible module[%s] is not changed, skip to run ansible", agentPort, targetIp, playBookName));
             return false;
-        } else if ( ignoreAgentPortModule.contains(playBookName) ) {
+        } else if (ignoreAgentPortModule.contains(playBookName)) {
             logger.debug(String.format("module %s will not check agent port, only check md5sum", playBookName));
             if (runChecker()) {
                 logger.debug(String.format("module %s md5sum changed, run ansible", playBookName));
@@ -351,7 +354,7 @@ public class AnsibleRunner {
                 return;
             }
 
-            putArgument("pip_url", String.format("http://%s:8080/syscxp/static/pypi/simple", Platform.getManagementServerIp()));
+            putArgument("pip_url", getPipUrl());
             putArgument("trusted_host", Platform.getManagementServerIp());
             putArgument("yum_server", String.format("%s:8080", Platform.getManagementServerIp()));
             putArgument("remote_user", username);
@@ -375,5 +378,11 @@ public class AnsibleRunner {
 
     public void installChecker(AnsibleChecker checker) {
         checkers.add(checker);
+    }
+
+    public String getPipUrl(){
+
+        return  restf.getBaseUrl() + AnsibleConstant.PIP_URL;
+
     }
 }

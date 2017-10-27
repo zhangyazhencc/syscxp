@@ -13,6 +13,7 @@ import java.sql.Timestamp;
 public class InterfaceAO_ {
     public static volatile SingularAttribute<InterfaceAO, String> uuid;
     public static volatile SingularAttribute<InterfaceAO, String> accountUuid;
+    public static volatile SingularAttribute<InterfaceAO, String> ownerAccountUuid;
     public static volatile SingularAttribute<InterfaceAO, String> name;
     public static volatile SingularAttribute<InterfaceAO, String> switchPortUuid;
     public static volatile SingularAttribute<InterfaceAO, String> endpointUuid;
@@ -22,6 +23,7 @@ public class InterfaceAO_ {
     public static volatile SingularAttribute<InterfaceAO, Integer> duration;
     public static volatile SingularAttribute<InterfaceAO, ProductChargeModel> productChargeModel;
     public static volatile SingularAttribute<InterfaceAO, Integer> maxModifies;
+    public static volatile SingularAttribute<InterfaceAO, Integer> isBilling;
     public static volatile SingularAttribute<InterfaceAO, Timestamp> expireDate;
     public static volatile SingularAttribute<InterfaceAO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<InterfaceAO, Timestamp> createDate;

@@ -9,11 +9,11 @@ import com.syscxp.utils.path.PathUtil;
 public class AgentConstant {
     public static final String SERVICE_ID = "agent";
 
-    public static final String ANSIBLE_PLAYBOOK_NAME = "agent.yaml";
-    public static final String ANSIBLE_MODULE_PATH = "ansible/syscxp-agent";
+    public static final String ANSIBLE_PLAYBOOK_NAME = "monitor.yaml";
+    public static final String ANSIBLE_MODULE_PATH = "ansible/monitor";
 
-    public static final String SRC_ANSIBLE_ROOT = PathUtil.join(AnsibleConstant.ROOT_DIR, "syscxp-agent");
-    public static final String DST_ANSIBLE_ROOT = "/var/lib/syscxp/ansible/syscxp-agent";
+    public static final String SRC_ANSIBLE_ROOT = PathUtil.join(AnsibleConstant.ROOT_DIR, "files");
+    public static final String DST_ANSIBLE_ROOT = "/var/lib/syscxp/agent/package";
 
     public static final int AGENT_PORT = 10001;
 

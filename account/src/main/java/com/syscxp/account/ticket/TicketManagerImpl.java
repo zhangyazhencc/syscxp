@@ -1,6 +1,7 @@
 package com.syscxp.account.ticket;
 
 import com.syscxp.account.header.account.AccountConstant;
+import com.syscxp.account.header.identity.SessionVO;
 import com.syscxp.account.header.ticket.*;
 import com.syscxp.account.header.user.UserVO;
 import com.syscxp.header.query.APIQueryMessage;
@@ -24,7 +25,9 @@ import com.syscxp.header.message.Message;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.syscxp.core.Platform.argerr;
 import static com.syscxp.core.Platform.operr;
@@ -171,26 +174,27 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
         vo.setLastOpDate(dbf.getCurrentSqlTime());
         vo.setUuid(Platform.getUuid());
         if(!msg.getTicketFrom().toString().equals(TicketFrom.apply.toString())){
-            class ContentExtra{
-                ContentExtra(String name,String company){
-                    this.name = name;
-                    this.company = company;
-                }
-                String name;
-                String company;
+            if(msg.getSession().getUuid() == null){
+                throw new ApiMessageInterceptionException(argerr("uuid of session is null"));
             }
-            vo.setAccountUuid(msg.getSession().getAccountUuid());
-            if(!msg.getSession().getAccountUuid().equals(msg.getSession().getUserUuid())){
-                vo.setUserUuid(msg.getSession().getUserUuid());
-                UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(),UserVO.class);
-                AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(),AccountVO.class);
-                vo.setContentExtra(JSONObjectUtil.toJsonString(
-                        new ContentExtra(user.getName(),account.getCompany())));
+            SessionVO svo = dbf.findByUuid(msg.getSession().getUuid(), SessionVO.class);
+            if(svo==null){
+                throw new ApiMessageInterceptionException(argerr("not login"));
+            }
+            Map<String, Object> contentExtra = new HashMap<>();
+            vo.setAccountUuid(svo.getAccountUuid());
+            if(!svo.getAccountUuid().equals(svo.getUserUuid())){
+                vo.setUserUuid(svo.getUserUuid());
+                UserVO user = dbf.findByUuid(svo.getUserUuid(),UserVO.class);
+                AccountVO account = dbf.findByUuid(svo.getAccountUuid(),AccountVO.class);
+                contentExtra.put("name",user.getName());
+                contentExtra.put("company",account.getCompany());
+                vo.setContentExtra(JSONObjectUtil.toJsonString(contentExtra));
             }else{
-                AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(),AccountVO.class);
-                vo.setContentExtra(JSONObjectUtil.toJsonString(
-                        new ContentExtra(account.getName(),account.getCompany())));
-
+                AccountVO account = dbf.findByUuid(svo.getAccountUuid(),AccountVO.class);
+                contentExtra.put("name",account.getName());
+                contentExtra.put("company",account.getCompany());
+                vo.setContentExtra(JSONObjectUtil.toJsonString(contentExtra));
             }
 
         }

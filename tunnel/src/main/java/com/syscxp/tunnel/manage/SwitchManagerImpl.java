@@ -22,18 +22,18 @@ import com.syscxp.header.message.Message;
 import com.syscxp.tunnel.header.monitor.HostSwitchMonitorVO;
 import com.syscxp.tunnel.header.monitor.HostSwitchMonitorVO_;
 import com.syscxp.tunnel.header.node.NodeVO;
-import com.syscxp.tunnel.header.switchs.*;
 import com.syscxp.tunnel.header.tunnel.InterfaceVO;
 import com.syscxp.tunnel.header.tunnel.InterfaceVO_;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
+import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.syscxp.core.Platform.argerr;
-
 /**
  * Created by DCY on 2017-09-07
  */
@@ -101,9 +101,126 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             handle((APICreateSwitchVlanMsg) msg);
         }else if(msg instanceof APIDeleteSwitchVlanMsg){
             handle((APIDeleteSwitchVlanMsg) msg);
-        } else {
+        }else if(msg instanceof APIQuerySwitchPortAvailableMsg){
+            handle((APIQuerySwitchPortAvailableMsg) msg);
+        }else if(msg instanceof APIQueryVlanUsedMsg){
+            handle((APIQueryVlanUsedMsg) msg);
+        }else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIQueryVlanUsedMsg msg) {
+        List<VlanUsedInventory> switchPortUsedInventoryList = new ArrayList<VlanUsedInventory>();
+        APIQueryVlanUsedReply reply = new APIQueryVlanUsedReply();
+        String sql = "select s.code, sp.portName, ti.vlan " +
+                "from SwitchVO s, SwitchPortVO sp, InterfaceVO i,TunnelInterfaceVO ti " +
+                "where s.uuid = sp.switchUuid and sp.uuid = i.switchPortUuid and ti.interfaceUuid = i.uuid " +
+                " and s.uuid = :uuid ORDER BY ti.createDate";
+
+        TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+        tfq.setFirstResult(msg.getStart());
+        tfq.setMaxResults(msg.getStart()+msg.getLimit());
+        tfq.setParameter("uuid", msg.getUuid());
+
+        List<Tuple> ts = tfq.getResultList();
+        reply.setCount(ts.size());
+        for (Tuple t : ts) {
+            VlanUsedInventory inventory = new VlanUsedInventory();
+            inventory.setCode(t.get(0, String.class));
+            inventory.setPortName(t.get(1, String.class));
+            switchPortUsedInventoryList.add(inventory);
+        }
+
+        reply.setInventories(switchPortUsedInventoryList);
+        bus.reply(msg, reply);
+    }
+    @Transactional
+    private void handle(APIQuerySwitchPortAvailableMsg msg) {
+        List<SwitchPortAvailableInventory> switchPortAvailableInventoryList = new ArrayList<SwitchPortAvailableInventory>();
+        APIQuerySwitchPortAvailableReply reply = new APIQuerySwitchPortAvailableReply();
+        List<Tuple> ts;
+        String count = null;
+        if(msg.getPortName() != null){
+            String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
+                    "where s.uuid = sp.switchUuid and sp.state = :spstate " +
+                    "and sp.uuid not in( select switchPortUuid from InterfaceVO i where  sp.portAttribute = :portAttribute) " +
+                    " and s.uuid = :uuid and sp.portName like :portName";
+
+            TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+            if(msg.getStart() != null && msg.getLimit() != null ){
+                tfq.setFirstResult(msg.getStart());
+                tfq.setMaxResults(msg.getStart()+msg.getLimit());
+            }
+            tfq.setParameter("uuid", msg.getUuid());
+            tfq.setParameter("spstate", SwitchPortState.Enabled);
+            tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
+            tfq.setParameter("portName",  "%"+msg.getPortName()+"%");
+            ts = tfq.getResultList();
+
+
+
+        }else if(msg.getPortType() == null && msg.getPortAttribute() != null){
+            String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
+                    "where s.uuid = sp.switchUuid and sp.state = :spstate " +
+                    "and sp.uuid not in( select switchPortUuid from InterfaceVO i where  sp.portAttribute = :portAttribute) " +
+                    " and sp.portAttribute = :portAttributeCheck";
+
+            TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+            if(msg.getStart() != null && msg.getLimit() != null ){
+                tfq.setFirstResult(msg.getStart());
+                tfq.setMaxResults(msg.getStart()+msg.getLimit());
+            }
+            tfq.setParameter("spstate", SwitchPortState.Enabled);
+            tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
+            tfq.setParameter("portAttributeCheck",  msg.getPortAttribute());
+            ts = tfq.getResultList();
+        }else if(msg.getPortType() != null && msg.getPortAttribute() != null){
+            String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
+                    "where s.uuid = sp.switchUuid and sp.state = :spstate " +
+                    "and sp.uuid not in( select switchPortUuid from InterfaceVO i where  sp.portAttribute = :portAttribute) " +
+                    " and sp.portAttribute = :portAttributeCheck and sp.portType = :portType";
+
+            TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+            if(msg.getStart() != null && msg.getLimit() != null ){
+                tfq.setFirstResult(msg.getStart());
+                tfq.setMaxResults(msg.getStart()+msg.getLimit());
+            }
+            tfq.setParameter("spstate", SwitchPortState.Enabled);
+            tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
+            tfq.setParameter("portAttributeCheck",  msg.getPortAttribute());
+            tfq.setParameter("portType",  msg.getPortType());
+            ts = tfq.getResultList();
+        }else{
+            String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
+                    "where s.uuid = sp.switchUuid and sp.state = :spstate " +
+                    "and sp.uuid not in( select switchPortUuid from InterfaceVO i where sp.portAttribute = :portAttribute) " +
+                    " and s.uuid = :uuid";
+
+            TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+            if(msg.getStart() != null && msg.getLimit() != null ){
+                tfq.setFirstResult(msg.getStart());
+                tfq.setMaxResults(msg.getStart()+msg.getLimit());
+            }
+            tfq.setParameter("uuid", msg.getUuid());
+            tfq.setParameter("spstate", SwitchPortState.Enabled);
+            tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
+            ts = tfq.getResultList();
+
+
+
+        }
+        reply.setCount(ts.size());
+        for (Tuple t : ts) {
+            SwitchPortAvailableInventory inventory = new SwitchPortAvailableInventory();
+            inventory.setCode(t.get(0, String.class));
+            inventory.setPortName(t.get(1, String.class));
+            inventory.setSwitchPortUuid(t.get(2, String.class));
+            switchPortAvailableInventoryList.add(inventory);
+        }
+
+        reply.setInventories(switchPortAvailableInventoryList);
+        bus.reply(msg,reply);
     }
 
     private void handle(APICreateSwitchModelMsg msg){

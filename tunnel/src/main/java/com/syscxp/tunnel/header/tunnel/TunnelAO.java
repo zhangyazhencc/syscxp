@@ -22,6 +22,9 @@ public class TunnelAO {
     private String accountUuid;
 
     @Column
+    private String ownerAccountUuid;
+
+    @Column
     private Integer vsi;
 
     @Column
@@ -57,6 +60,9 @@ public class TunnelAO {
 
     @Column
     private Integer maxModifies;
+
+    @Column
+    private Integer isBilling;
 
     @Column
     private String description;
@@ -209,5 +215,21 @@ public class TunnelAO {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+    }
+
+    public Integer getIsBilling() {
+        return isBilling;
+    }
+
+    public void setIsBilling(Integer isBilling) {
+        this.isBilling = isBilling;
+    }
+
+    public String getOwnerAccountUuid() {
+        return ownerAccountUuid;
+    }
+
+    public void setOwnerAccountUuid(String ownerAccountUuid) {
+        this.ownerAccountUuid = ownerAccountUuid;
     }
 }

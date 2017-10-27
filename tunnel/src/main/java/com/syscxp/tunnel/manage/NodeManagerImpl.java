@@ -1,15 +1,15 @@
 package com.syscxp.tunnel.manage;
 
-import com.mongodb.util.JSON;
 import com.syscxp.tunnel.header.endpoint.*;
-import com.syscxp.tunnel.header.host.HostVO;
-import com.syscxp.tunnel.header.host.HostVO_;
+import com.syscxp.tunnel.header.host.MonitorHostVO;
+import com.syscxp.tunnel.header.host.MonitorHostVO_;
 import com.syscxp.tunnel.header.node.*;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO_;
 import com.syscxp.utils.Digest;
 import com.syscxp.utils.gson.JSONObjectUtil;
+import org.bson.types.ObjectId;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
@@ -28,10 +28,9 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.tunnel.header.endpoint.*;
-import com.syscxp.tunnel.header.node.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -40,6 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.TypedQuery;
 
+import java.util.HashMap;
 import java.util.List;
 
 import static com.syscxp.core.Platform.argerr;
@@ -115,9 +115,63 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIUpdateNodeExtensionInfoMsg) msg);
         } else if (msg instanceof APIGetImageUploadInfoMsg) {
             handle((APIGetImageUploadInfoMsg) msg);
-        } else {
+        }  else if (msg instanceof APIListNodeExtensionInfoMsg) {
+            handle((APIListNodeExtensionInfoMsg) msg);
+        }  else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIListNodeExtensionInfoMsg msg) {
+
+        Query query = new Query();
+        if(msg.getOperatorCategory() != null){
+            query.addCriteria(Criteria.where("operatorCategory").is(msg.getOperatorCategory()));
+        }
+        if(msg.getProvince() != null){
+            query.addCriteria(Criteria.where("province").is(msg.getProvince()));
+        }
+        if(msg.getRoomLevel() != null){
+            query.addCriteria(Criteria.where("roomLevel").is(msg.getRoomLevel()));
+        }
+        if(msg.getProperty() != null){
+            query.addCriteria(Criteria.where("property").is(msg.getProperty()));
+        }else{
+            query.addCriteria(Criteria.where("property").is("idc_node"));
+
+        }
+
+        Long count = mongoTemplate.count(query,"nodeExtensionInfo");
+
+
+        if(msg.getOrderBy() != null && msg.getOrderPolicy() != null){
+            query.with(new Sort(new Sort.Order("DESC".equals(
+                    msg.getOrderPolicy().toUpperCase())?Sort.Direction.DESC:
+                    Sort.Direction.ASC,msg.getOrderBy())));
+        }
+
+        if(msg.getPageNo() == null){
+            msg.setPageNo("1");
+        }
+        if(msg.getPage_size() == null){
+            msg.setPage_size("15");
+        }
+
+        query.skip(Integer.valueOf(msg.getPage_size())*(Integer.valueOf(msg.getPageNo())-1));
+        query.limit(Integer.valueOf(msg.getPage_size()));
+        Long total = mongoTemplate.count(query,"nodeExtensionInfo");
+
+        List<NodeExtensionInfo> list = mongoTemplate.find(query,NodeExtensionInfo.class,"nodeExtensionInfo");
+        NodeExtensionInfoList nodes = new NodeExtensionInfoList();
+        nodes.setPage_no(msg.getPageNo());
+        nodes.setCount(String.valueOf(count));
+        nodes.setNodeExtensionInfos(JSONObjectUtil.toJsonString(list));
+        nodes.setTotal(String.valueOf(total));
+        nodes.setPage_size(msg.getPage_size());
+
+        APIListNodeExtensionInfoReply reply = new APIListNodeExtensionInfoReply();
+        reply.setNodeExtensionInfoList(nodes);
+        bus.reply(msg,reply);
     }
 
     private void handle(APIGetImageUploadInfoMsg msg) {
@@ -134,6 +188,14 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         reply.setNodeId(msg.getNodeId());
         reply.setTimestamp(timestamp);
         reply.setMd5(md5);
+
+        NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),
+                NodeExtensionInfo.class,"nodeExtensionInfo");
+
+        if(node.getImages_url() != null){
+            reply.setImages_url(node.getImages_url());
+        }
+
         bus.reply(msg,reply);
     }
 
@@ -142,10 +204,10 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         com.alibaba.fastjson.JSONObject newInfo = com.alibaba.fastjson.JSONObject.
                 parseObject(msg.getNewNodeExtensionInfo());
 
+        NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
+                newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class,"nodeExtensionInfo");
 
-        String oldmogo = "{" +"\"nodeExtensionInfo\":" + com.alibaba.fastjson.JSONObject.toJSONString(mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
-                newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class)) +"}";
-
+        String oldmogo = "{" +"\"nodeExtensionInfo\":" + JSONObjectUtil.toJsonString(node) +"}";
         com.alibaba.fastjson.JSONObject oldInfo = com.alibaba.fastjson.JSONObject.parseObject(oldmogo);
 
         Map<String,Object> oldmap = oldInfo;
@@ -153,25 +215,25 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         Set<String> keySet = oldmap.keySet();
         for (String key : keySet) {
             if(newmap.containsKey(key)){
-                if(oldmap.get(key) instanceof JSONObject){
+                if(newmap.get(key) instanceof com.alibaba.fastjson.JSONObject){
                     Map<String,Object> oldmap1 = (Map)oldmap.get(key);
                     Map<String,Object> newmap1 = (Map)newmap.get(key);
                     Set<String> keySet1 = oldmap1.keySet();
-                    for (String key1 : keySet1) {
+                    for (String key1 : keySet1) {  //node_id
                         if(newmap1.containsKey(key1)){
-                            if(oldmap1.get(key1) instanceof JSONObject){
+                            if(oldmap1.get(key1) instanceof com.alibaba.fastjson.JSONObject){
                                 Map<String,Object> oldmap2 = (Map)oldmap1.get(key1);
                                 Map<String,Object> newmap2 = (Map)newmap1.get(key1);
                                 Set<String> keySet2 = oldmap2.keySet();
                                 for (String key2 : keySet2) {
                                     if(newmap2.containsKey(key2)){
-                                        if(oldmap2.get(key2) instanceof JSONObject){
+                                        if(oldmap2.get(key2) instanceof com.alibaba.fastjson.JSONObject){
                                             Map<String,Object> oldmap3 = (Map)oldmap2.get(key2);
                                             Map<String,Object> newmap3 = (Map)newmap2.get(key2);
                                             Set<String> keySet3 = oldmap3.keySet();
                                             for (String key3 : keySet3) {
                                                 if(newmap3.containsKey(key3)){
-                                                    if(oldmap3.get(key3) instanceof JSONObject){
+                                                    if(oldmap3.get(key3) instanceof com.alibaba.fastjson.JSONObject){
                                                         System.out.println("");
                                                     }else{
                                                         oldmap3.put(key3, newmap3.get(key3));
@@ -190,19 +252,17 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                             }
                         }
                     }
+                    oldmap1.put("_id",node.get_id());
                     oldmap.put(key,oldmap1);
                 }else{
                     oldmap.put(key,newmap.get(key));
                 }
-
             }
         }
 
-
-
-
         APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent(msg.getId());
-        mongoTemplate.save(oldmap,"nodeExtensionInfo");
+
+        mongoTemplate.save(((com.alibaba.fastjson.JSONObject)oldmap).get("nodeExtensionInfo"),"nodeExtensionInfo");
         event.setInventory(oldmap.toString());
 
         bus.publish(event);
@@ -220,6 +280,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         APIGetNodeExtensionInfoReply reply = new APIGetNodeExtensionInfoReply();
         reply.setNodeExtensionInfo(JSONObjectUtil.toJsonString(
                 mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),NodeExtensionInfo.class,"nodeExtensionInfo")
+//                mongoTemplate.findById(msg.getNodeId(),NodeExtensionInfo.class,"nodeExtensionInfo")
         ));
         bus.reply(msg,reply);
     }
@@ -237,7 +298,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         APICreateNodeExtensionInfoEvent event = new APICreateNodeExtensionInfoEvent(msg.getId());
         event.setInventory(msg.getNodeExtensionInfo());
         bus.publish(event);
-
     }
 
     private void handle(APICreateNodeMsg msg) {
@@ -502,8 +562,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         }
 
         //判断是否被监控机关联
-        SimpleQuery<HostVO> queryMonitorHost = dbf.createQuery(HostVO.class);
-        queryMonitorHost.add(HostVO_.nodeUuid,SimpleQuery.Op.EQ,msg.getUuid());
+        SimpleQuery<MonitorHostVO> queryMonitorHost = dbf.createQuery(MonitorHostVO.class);
+        queryMonitorHost.add(MonitorHostVO_.nodeUuid,SimpleQuery.Op.EQ,msg.getUuid());
         if (queryMonitorHost.isExists()) {
             throw new ApiMessageInterceptionException(argerr("Monitor host exist,cannot be deleted!"));
         }
