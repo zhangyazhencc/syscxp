@@ -15,9 +15,6 @@ public class APIUpdateHostSwitchMonitorMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = HostSwitchMonitorVO.class)
     private String uuid;
 
-    @APIParam(emptyString = false,resourceType = MonitorHostVO.class)
-    private String hostUuid;
-
     @APIParam(emptyString = false,resourceType = PhysicalSwitchVO.class)
     private String physicalSwitchUuid;
 
@@ -33,14 +30,6 @@ public class APIUpdateHostSwitchMonitorMsg extends APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public String getHostUuid() {
-        return hostUuid;
-    }
-
-    public void setHostUuid(String hostUuid) {
-        this.hostUuid = hostUuid;
     }
 
     public String getPhysicalSwitchUuid() {
