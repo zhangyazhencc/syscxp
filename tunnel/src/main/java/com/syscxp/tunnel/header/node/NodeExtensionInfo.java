@@ -4,22 +4,22 @@ import org.bson.types.ObjectId;
 
 import java.util.List;
 
-public class NodeExtensionInfo {
+public class NodeExtensionInfo<T> {
     ObjectId _id;
     String province;
     String status;
-    Object networkInfo;
-    Object en;
-    Object BCI;
-    Object code;
-    Object collingAndFireControl;
+    T networkInfo;
+    T en;
+    T BCI;
+    T code;
+    T collingAndFireControl;
     String created_at;
-    Object cabinetInfo;
-    Object electricSystem;
+    T cabinetInfo;
+    T electricSystem;
     String node_id;
-    Object machineRoomInfo;
-    Object property;
-    Object roomNOC;
+    T machineRoomInfo;
+    T property;
+    T roomNOC;
     String updated_at;
     List<String> images_url;
 
@@ -47,43 +47,43 @@ public class NodeExtensionInfo {
         this.status = status;
     }
 
-    public Object getNetworkInfo() {
+    public T getNetworkInfo() {
         return networkInfo;
     }
 
-    public void setNetworkInfo(Object networkInfo) {
+    public void setNetworkInfo(T networkInfo) {
         this.networkInfo = networkInfo;
     }
 
-    public Object getEn() {
+    public T getEn() {
         return en;
     }
 
-    public void setEn(Object en) {
+    public void setEn(T en) {
         this.en = en;
     }
 
-    public Object getBCI() {
+    public T getBCI() {
         return BCI;
     }
 
-    public void setBCI(Object BCI) {
+    public void setBCI(T BCI) {
         this.BCI = BCI;
     }
 
-    public Object getCode() {
+    public T getCode() {
         return code;
     }
 
-    public void setCode(Object code) {
+    public void setCode(T code) {
         this.code = code;
     }
 
-    public Object getCollingAndFireControl() {
+    public T getCollingAndFireControl() {
         return collingAndFireControl;
     }
 
-    public void setCollingAndFireControl(Object collingAndFireControl) {
+    public void setCollingAndFireControl(T collingAndFireControl) {
         this.collingAndFireControl = collingAndFireControl;
     }
 
@@ -95,19 +95,19 @@ public class NodeExtensionInfo {
         this.created_at = created_at;
     }
 
-    public Object getCabinetInfo() {
+    public T getCabinetInfo() {
         return cabinetInfo;
     }
 
-    public void setCabinetInfo(Object cabinetInfo) {
+    public void setCabinetInfo(T cabinetInfo) {
         this.cabinetInfo = cabinetInfo;
     }
 
-    public Object getElectricSystem() {
+    public T getElectricSystem() {
         return electricSystem;
     }
 
-    public void setElectricSystem(Object electricSystem) {
+    public void setElectricSystem(T electricSystem) {
         this.electricSystem = electricSystem;
     }
 
@@ -119,31 +119,27 @@ public class NodeExtensionInfo {
         this.node_id = node_id;
     }
 
-    public Object getMachineRoomInfo() {
+    public T getMachineRoomInfo() {
         return machineRoomInfo;
     }
 
-    public void setMachineRoomInfo(Object machineRoomInfo) {
+    public void setMachineRoomInfo(T machineRoomInfo) {
         this.machineRoomInfo = machineRoomInfo;
     }
 
-    public Object getProperty() {
+    public T getProperty() {
         return property;
     }
 
-    public void setProperty(Object property) {
+    public void setProperty(T property) {
         this.property = property;
     }
 
-    public Object getRoomNOC() {
+    public T getRoomNOC() {
         return roomNOC;
     }
 
-    public void setRoomNOC(Object roomNOC) {
-        this.roomNOC = roomNOC;
-    }
-
-    public void setRoomNOC(String roomNOC) {
+    public void setRoomNOC(T roomNOC) {
         this.roomNOC = roomNOC;
     }
 
