@@ -90,9 +90,17 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             handle((APICreateModifyOrderMsg) msg);
         } else if (msg instanceof APIUpdateOrderExpiredTimeMsg) {
             handle((APIUpdateOrderExpiredTimeMsg) msg);
+        } else if (msg instanceof APIGetHasNotifyMsg) {
+            handle((APIGetHasNotifyMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetHasNotifyMsg msg) {
+        APIGetHasNotifyReply reply = new APIGetHasNotifyReply();
+        reply.setInventory(hasFailureNotify(msg.getAccountUuid(), msg.getProductUuid()));
+        bus.reply(msg,reply);
     }
 
     private void handle(APIUpdateOrderExpiredTimeMsg msg) {
@@ -227,7 +235,6 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
     @Transactional
     private void handle(APICreateRenewOrderMsg msg) {
-
         SimpleQuery<RenewVO> qRenew = dbf.createQuery(RenewVO.class);
         qRenew.add(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
         qRenew.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
@@ -236,6 +243,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         if (renewVO == null) {
             throw new IllegalArgumentException("please input the correct value");
         }
+
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         BigDecimal dischargePrice = BigDecimal.ZERO;
         BigDecimal originalPrice = BigDecimal.ZERO;
@@ -373,6 +381,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
     @Transactional
     private void handle(APICreateUnsubcribeOrderMsg msg) {
+
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
         BigDecimal dischargePrice = BigDecimal.ZERO;
@@ -594,14 +603,34 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     }
 
     @Transactional
-    private void saveNotifyOrderVO(APICreateOrderMsg msg, String uuid2) {
+    private void saveNotifyOrderVO(APICreateOrderMsg msg, String orderUuid) {
         NotifyOrderVO notifyOrderVO = new NotifyOrderVO();
         notifyOrderVO.setUuid(Platform.getUuid());
         notifyOrderVO.setUrl(msg.getNotifyUrl());
-        notifyOrderVO.setOrderUuid(uuid2);
+        notifyOrderVO.setOrderUuid(orderUuid);
         notifyOrderVO.setStatus(NotifyOrderStatus.FAILURE);
         notifyOrderVO.setNotifyTimes(0);
+        notifyOrderVO.setAccountUuid(msg.getAccountUuid());
+        if(msg instanceof APICreateRenewOrderMsg){
+            notifyOrderVO.setProductUuid(((APICreateRenewOrderMsg) msg).getProductUuid());
+        } else if(msg instanceof  APICreateModifyOrderMsg){
+            notifyOrderVO.setProductUuid(((APICreateRenewOrderMsg) msg).getProductUuid());
+        } else if(msg instanceof APICreateUnsubcribeOrderMsg){
+            notifyOrderVO.setProductUuid(((APICreateRenewOrderMsg) msg).getProductUuid());
+        }
         dbf.getEntityManager().persist(notifyOrderVO);
+    }
+
+    private boolean hasFailureNotify(String accountUuid,String productUuid){
+        SimpleQuery<NotifyOrderVO> q = dbf.createQuery(NotifyOrderVO.class);
+        q.add(NotifyOrderVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
+        q.add(NotifyOrderVO_.productUuid, SimpleQuery.Op.EQ, productUuid);
+        q.add(NotifyOrderVO_.status, SimpleQuery.Op.EQ, NotifyOrderStatus.FAILURE);
+        List<NotifyOrderVO> notifyOrderVOS = q.list();
+        if(notifyOrderVOS!=null && notifyOrderVOS.size()>0){
+            return true;
+        }
+        return false;
     }
 
 

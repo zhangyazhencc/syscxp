@@ -22,6 +22,9 @@
     <message>
         <name>com.syscxp.header.billing.APICreateSLACompensationOrderMsg</name>
     </message>
+    <message>
+        <name>com.syscxp.header.billing.APIGetHasNotifyMsg</name>
+    </message>
 
    <message>
         <name>com.syscxp.billing.header.order.APIUpdateOrderExpiredTimeMsg</name>

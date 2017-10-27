@@ -1,9 +1,6 @@
 package com.syscxp.alarm.log;
 
-import com.syscxp.alarm.header.contact.ContactGroupVO;
-import com.syscxp.alarm.header.contact.ContactGroupVO_;
-import com.syscxp.alarm.header.contact.ContactVO;
-import com.syscxp.alarm.header.contact.ContactVO_;
+import com.syscxp.alarm.header.contact.*;
 import com.syscxp.alarm.header.log.APICreateAlarmLogMsg;
 import com.syscxp.alarm.header.log.AlarmLogVO;
 import com.syscxp.alarm.header.log.AlarmStatus;
@@ -28,6 +25,7 @@ import javax.persistence.Tuple;
 import javax.persistence.metamodel.SingularAttribute;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 public class ALARMLOGManagerImpl  extends AbstractService implements ApiMessageInterceptor {
@@ -79,6 +77,14 @@ public class ALARMLOGManagerImpl  extends AbstractService implements ApiMessageI
         SimpleQuery<ContactGroupVO> query = dbf.createQuery(ContactGroupVO.class);
         query.add(ContactGroupVO_.accountUuid, SimpleQuery.Op.EQ,msg.getUser_id());
         List<ContactGroupVO> groups = query.list();
+        for(ContactGroupVO contactGroupVO : groups){
+            for(ContactVO contactVO: contactGroupVO.getContactVOList()){
+                Set<NotifyWayVO> notifyWayVOs = contactVO.getNotifyWayVOs();
+                for(NotifyWayVO notifyWayVO: notifyWayVOs){
+
+                }
+            }
+        }
         //foreach发送短信和邮件
 
 

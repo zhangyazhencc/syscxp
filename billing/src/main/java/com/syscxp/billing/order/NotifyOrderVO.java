@@ -25,6 +25,12 @@ public class NotifyOrderVO {
     private String url;
 
     @Column
+    private String accountUuid;
+
+    @Column
+    private String productUuid;
+
+    @Column
     private Timestamp createDate;
 
     @Column
@@ -84,6 +90,22 @@ public class NotifyOrderVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public String getProductUuid() {
+        return productUuid;
+    }
+
+    public void setProductUuid(String productUuid) {
+        this.productUuid = productUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 
     @PreUpdate
