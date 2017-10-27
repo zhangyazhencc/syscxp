@@ -7,13 +7,13 @@ import com.syscxp.header.message.APIReply;
  */
 public class APIGetNodeExtensionInfoReply extends APIReply {
 
-    private String nodeExtensionInfo;
+    private NodeExtensionInfo nodeExtensionInfo;
 
-    public String getNodeExtensionInfo() {
+    public NodeExtensionInfo getNodeExtensionInfo() {
         return nodeExtensionInfo;
     }
 
-    public void setNodeExtensionInfo(String nodeExtensionInfo) {
+    public void setNodeExtensionInfo(NodeExtensionInfo nodeExtensionInfo) {
         this.nodeExtensionInfo = nodeExtensionInfo;
     }
 }
