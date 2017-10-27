@@ -21,6 +21,7 @@ public class TaskResourceVO {
     private String resourceType;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private TaskType taskType;
 
     @Column
@@ -30,6 +31,7 @@ public class TaskResourceVO {
     private String result;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private TaskStatus status;
 
     @Column
