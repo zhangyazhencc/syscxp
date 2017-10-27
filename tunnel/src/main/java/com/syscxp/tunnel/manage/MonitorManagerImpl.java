@@ -123,7 +123,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private void handle(APIUpdateHostSwitchMonitorMsg msg) {
         HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
 
-        vo.setHostUuid(msg.getHostUuid());
         vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
         vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
         vo.setInterfaceName(msg.getInterfaceName());
