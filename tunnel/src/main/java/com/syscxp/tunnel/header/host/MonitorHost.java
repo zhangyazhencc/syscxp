@@ -436,18 +436,6 @@ public class MonitorHost extends HostBase implements Host {
         }).start();
     }
 
-    private String buildUrl(String path) {
-        UriComponentsBuilder ub = UriComponentsBuilder.newInstance();
-        ub.scheme(MonitorGlobalProperty.AGENT_URL_SCHEME);
-        ub.host(self.getHostIp());
-        ub.port(MonitorGlobalProperty.AGENT_PORT);
-        if (!"".equals(MonitorGlobalProperty.AGENT_URL_ROOT_PATH)) {
-            ub.path(MonitorGlobalProperty.AGENT_URL_ROOT_PATH);
-        }
-        ub.path(path);
-        return ub.build().toUriString();
-    }
-
     @Override
     protected HostInventory getSelfInventory() {
         return MonitorHostInventory.valueOf(getSelf());
@@ -456,6 +444,7 @@ public class MonitorHost extends HostBase implements Host {
     @Override
     protected void deleteHook() {
         logger.debug(String.format("Host: %s is being deleted", self.getName()));
+        dbf.removeByPrimaryKey(self.getUuid(), MonitorHostVO.class);
     }
 
     private SshResult runShell(String script) {
@@ -487,7 +476,7 @@ public class MonitorHost extends HostBase implements Host {
         if (umsg.getPassword() != null) {
             vo.setPassword(umsg.getPassword());
         }
-        if (umsg.getSshPort() != null && umsg.getSshPort() > 0 && umsg.getSshPort() <= 65535) {
+        if (umsg.getSshPort() != null && NetworkUtils.isLegalPort(umsg.getSshPort())) {
             vo.setSshPort(umsg.getSshPort());
         }
         return vo;

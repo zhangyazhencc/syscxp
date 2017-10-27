@@ -30,6 +30,7 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -122,7 +123,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     }
 
     private void handle(APIListNodeExtensionInfoMsg msg) {
-        Map<String, Object> result = new HashMap<>();
 
         Query query = new Query();
         if(msg.getOperatorCategory() != null){
@@ -131,29 +131,46 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         if(msg.getProvince() != null){
             query.addCriteria(Criteria.where("province").is(msg.getProvince()));
         }
-        if(msg.getProvince() != null){
-            query.addCriteria(Criteria.where("roomLevel").is(msg.getProvince()));
+        if(msg.getRoomLevel() != null){
+            query.addCriteria(Criteria.where("roomLevel").is(msg.getRoomLevel()));
         }
-        if(msg.getProvince() != null){
-            query.addCriteria(Criteria.where("orderPolicy").is(msg.getProvince()));
+        if(msg.getProperty() != null){
+            query.addCriteria(Criteria.where("property").is(msg.getProperty()));
+        }else{
+            query.addCriteria(Criteria.where("property").is("idc_node"));
+
         }
 
         Long count = mongoTemplate.count(query,"nodeExtensionInfo");
 
-        if(msg.getPageNo() != null){
-            query.skip(Integer.valueOf(msg.getPage_size())*(Integer.valueOf(msg.getPageNo())-1));
+
+        if(msg.getOrderBy() != null && msg.getOrderPolicy() != null){
+            query.with(new Sort(new Sort.Order("DESC".equals(
+                    msg.getOrderPolicy().toUpperCase())?Sort.Direction.DESC:
+                    Sort.Direction.ASC,msg.getOrderBy())));
         }
+
+        if(msg.getPageNo() == null){
+            msg.setPageNo("1");
+        }
+        if(msg.getPage_size() == null){
+            msg.setPage_size("15");
+        }
+
+        query.skip(Integer.valueOf(msg.getPage_size())*(Integer.valueOf(msg.getPageNo())-1));
         query.limit(Integer.valueOf(msg.getPage_size()));
         Long total = mongoTemplate.count(query,"nodeExtensionInfo");
+
         List<NodeExtensionInfo> list = mongoTemplate.find(query,NodeExtensionInfo.class,"nodeExtensionInfo");
-        result.put("page_no",msg.getPageNo());
-        result.put("page_size",msg.getPage_size()==null?"15":msg.getPage_size());
-        result.put("total",total);
-        result.put("count",count);
-        result.put("nodeExtensionInfos",JSONObjectUtil.toJsonString(list));
+        NodeExtensionInfoList nodes = new NodeExtensionInfoList();
+        nodes.setPage_no(msg.getPageNo());
+        nodes.setCount(String.valueOf(count));
+        nodes.setNodeExtensionInfos(JSONObjectUtil.toJsonString(list));
+        nodes.setTotal(String.valueOf(total));
+        nodes.setPage_size(msg.getPage_size());
 
         APIListNodeExtensionInfoReply reply = new APIListNodeExtensionInfoReply();
-        reply.setNodeExtensionInfoList(JSONObjectUtil.toJsonString(result));
+        reply.setNodeExtensionInfoList(nodes);
         bus.reply(msg,reply);
     }
 
@@ -176,7 +193,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                 NodeExtensionInfo.class,"nodeExtensionInfo");
 
         if(node.getImages_url() != null){
-            reply.setImages_url(node.getImages_url().toString());
+            reply.setImages_url(node.getImages_url());
         }
 
         bus.reply(msg,reply);

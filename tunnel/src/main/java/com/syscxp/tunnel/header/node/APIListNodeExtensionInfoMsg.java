@@ -10,28 +10,29 @@ import com.syscxp.header.message.APISyncCallMessage;
 @SuppressCredentialCheck
 public class APIListNodeExtensionInfoMsg extends APISyncCallMessage {
 
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false,required = false)
     private String operatorCategory;
 
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false,required = false)
     private String province;
 
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false,required = false)
     private String roomLevel;
 
-    @APIParam(emptyString = false)
-    private String orderBy;
-
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false,required = false)
     private String property = "idc_node";
 
-    @APIParam(emptyString = false)
-    private String orderPolicy = "desc";
 
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false,required = false)
+    private String orderBy;
+
+    @APIParam(emptyString = false,required = false)
+    private String orderPolicy;
+
+    @APIParam(emptyString = false,required = false)
     private String pageNo;
 
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false,required = false)
     private String page_size;
 
     public String getOperatorCategory() {
