@@ -152,7 +152,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         }
 
         if(msg.getPageNo() == null){
-            msg.setPage_size("1");
+            msg.setPageNo("1");
         }
         if(msg.getPage_size() == null){
             msg.setPage_size("15");
