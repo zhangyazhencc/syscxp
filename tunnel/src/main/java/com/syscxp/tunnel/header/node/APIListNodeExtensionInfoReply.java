@@ -7,15 +7,13 @@ import com.syscxp.header.message.APIReply;
  */
 public class APIListNodeExtensionInfoReply extends APIReply {
 
-    private String nodeExtensionInfoList;
+    private NodeExtensionInfoList nodeExtensionInfoList;
 
-    public String getNodeExtensionInfoList() {
+    public NodeExtensionInfoList getNodeExtensionInfoList() {
         return nodeExtensionInfoList;
     }
 
-    public void setNodeExtensionInfoList(String nodeExtensionInfoList) {
+    public void setNodeExtensionInfoList(NodeExtensionInfoList nodeExtensionInfoList) {
         this.nodeExtensionInfoList = nodeExtensionInfoList;
     }
 }
-
-

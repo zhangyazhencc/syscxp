@@ -123,7 +123,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     }
 
     private void handle(APIListNodeExtensionInfoMsg msg) {
-        Map<String, Object> result = new HashMap<>();
 
         Query query = new Query();
         if(msg.getOperatorCategory() != null){
@@ -161,15 +160,17 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         query.skip(Integer.valueOf(msg.getPage_size())*(Integer.valueOf(msg.getPageNo())-1));
         query.limit(Integer.valueOf(msg.getPage_size()));
         Long total = mongoTemplate.count(query,"nodeExtensionInfo");
+
         List<NodeExtensionInfo> list = mongoTemplate.find(query,NodeExtensionInfo.class,"nodeExtensionInfo");
-        result.put("page_no",msg.getPageNo());
-        result.put("page_size",msg.getPage_size());
-        result.put("total",total);
-        result.put("count",count);
-        result.put("nodeExtensionInfos",JSONObjectUtil.toJsonString(list));
+        NodeExtensionInfoList nodes = new NodeExtensionInfoList();
+        nodes.setPage_no(msg.getPageNo());
+        nodes.setCount(String.valueOf(count));
+        nodes.setNodeExtensionInfos(list);
+        nodes.setTotal(String.valueOf(total));
+        nodes.setPage_size(msg.getPage_size());
 
         APIListNodeExtensionInfoReply reply = new APIListNodeExtensionInfoReply();
-        reply.setNodeExtensionInfoList(JSONObjectUtil.toJsonString(result));
+        reply.setNodeExtensionInfoList(nodes);
         bus.reply(msg,reply);
     }
 
@@ -277,10 +278,10 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     private void handle(APIGetNodeExtensionInfoMsg msg) {
 
         APIGetNodeExtensionInfoReply reply = new APIGetNodeExtensionInfoReply();
-        reply.setNodeExtensionInfo(JSONObjectUtil.toJsonString(
+        reply.setNodeExtensionInfo(
                 mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),NodeExtensionInfo.class,"nodeExtensionInfo")
 //                mongoTemplate.findById(msg.getNodeId(),NodeExtensionInfo.class,"nodeExtensionInfo")
-        ));
+        );
         bus.reply(msg,reply);
     }
 
