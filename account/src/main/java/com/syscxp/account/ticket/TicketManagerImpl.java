@@ -1,6 +1,7 @@
 package com.syscxp.account.ticket;
 
 import com.syscxp.account.header.account.AccountConstant;
+import com.syscxp.account.header.identity.SessionVO;
 import com.syscxp.account.header.ticket.*;
 import com.syscxp.account.header.user.UserVO;
 import com.syscxp.header.query.APIQueryMessage;
@@ -173,17 +174,24 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
         vo.setLastOpDate(dbf.getCurrentSqlTime());
         vo.setUuid(Platform.getUuid());
         if(!msg.getTicketFrom().toString().equals(TicketFrom.apply.toString())){
+            if(msg.getSession().getUuid() == null){
+                throw new ApiMessageInterceptionException(argerr("uuid of session is null"));
+            }
+            SessionVO svo = dbf.findByUuid(msg.getSession().getUuid(), SessionVO.class);
+            if(svo==null){
+                throw new ApiMessageInterceptionException(argerr("not login"));
+            }
             Map<String, Object> contentExtra = new HashMap<>();
-            vo.setAccountUuid(msg.getSession().getAccountUuid());
-            if(!msg.getSession().getAccountUuid().equals(msg.getSession().getUserUuid())){
-                vo.setUserUuid(msg.getSession().getUserUuid());
-                UserVO user = dbf.findByUuid(msg.getSession().getUserUuid(),UserVO.class);
-                AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(),AccountVO.class);
+            vo.setAccountUuid(svo.getAccountUuid());
+            if(!svo.getAccountUuid().equals(svo.getUserUuid())){
+                vo.setUserUuid(svo.getUserUuid());
+                UserVO user = dbf.findByUuid(svo.getUserUuid(),UserVO.class);
+                AccountVO account = dbf.findByUuid(svo.getAccountUuid(),AccountVO.class);
                 contentExtra.put("name",user.getName());
                 contentExtra.put("company",account.getCompany());
                 vo.setContentExtra(JSONObjectUtil.toJsonString(contentExtra));
             }else{
-                AccountVO account = dbf.findByUuid(msg.getSession().getAccountUuid(),AccountVO.class);
+                AccountVO account = dbf.findByUuid(svo.getAccountUuid(),AccountVO.class);
                 contentExtra.put("name",account.getName());
                 contentExtra.put("company",account.getCompany());
                 vo.setContentExtra(JSONObjectUtil.toJsonString(contentExtra));
