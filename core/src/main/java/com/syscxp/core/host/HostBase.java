@@ -250,67 +250,39 @@ public abstract class HostBase extends AbstractHost {
         HostInventory hinv = HostInventory.valueOf(self);
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
         chain.setName(String.format("delete-host-%s", msg.getUuid()));
-        if (msg.getDeletionMode() == APIDeleteMessage.DeletionMode.Permissive) {
             chain.then(new NoRollbackFlow() {
+                String __name__ = "stop-monitor-agent";
+
                 @Override
                 public void run(final FlowTrigger trigger, Map data) {
-                    casf.asyncCascade(CascadeConstant.DELETION_CHECK_CODE, issuer, ctx, new Completion(trigger) {
-                        @Override
-                        public void success() {
-                            trigger.next();
-                        }
-
-                        @Override
-                        public void fail(ErrorCode errorCode) {
-                            trigger.fail(errorCode);
-                        }
-                    });
+                    //Todo stop monitor agent
+                    trigger.next();
                 }
             }).then(new NoRollbackFlow() {
+                String __name__ = "send-delete-host-message";
+
                 @Override
                 public void run(final FlowTrigger trigger, Map data) {
-                    casf.asyncCascade(CascadeConstant.DELETION_DELETE_CODE, issuer, ctx, new Completion(trigger) {
+                    DeleteHostMsg deleteHostMsg = new DeleteHostMsg(hinv.getUuid());
+                    bus.makeTargetServiceIdByResourceUuid(deleteHostMsg, HostConstant.SERVICE_ID, hinv.getUuid());
+                    bus.send(deleteHostMsg, new CloudBusCallBack(trigger) {
                         @Override
-                        public void success() {
-                            trigger.next();
-                        }
-
-                        @Override
-                        public void fail(ErrorCode errorCode) {
-                            trigger.fail(errorCode);
+                        public void run(MessageReply reply) {
+                            if (reply.isSuccess()) {
+                                trigger.next();
+                            } else {
+                                trigger.fail(reply.getError());
+                            }
                         }
                     });
                 }
             });
-        } else {
-            chain.then(new NoRollbackFlow() {
-                @Override
-                public void run(final FlowTrigger trigger, Map data) {
-                    casf.asyncCascade(CascadeConstant.DELETION_FORCE_DELETE_CODE, issuer, ctx, new Completion(trigger) {
-                        @Override
-                        public void success() {
-                            trigger.next();
-                        }
 
-                        @Override
-                        public void fail(ErrorCode errorCode) {
-                            trigger.fail(errorCode);
-                        }
-                    });
-                }
-            });
-        }
 
         chain.done(new FlowDoneHandler(msg) {
             @Override
             public void handle(Map data) {
-                casf.asyncCascadeFull(CascadeConstant.DELETION_CLEANUP_CODE, issuer, ctx, new NopeCompletion());
                 bus.publish(evt);
-
-                HostDeletedData d = new HostDeletedData();
-                d.setInventory(HostInventory.valueOf(self));
-                d.setHostUuid(self.getUuid());
-                evtf.fire(HostCanonicalEvents.HOST_DELETED_PATH, d);
             }
         }).error(new FlowErrorHandler(msg) {
             @Override

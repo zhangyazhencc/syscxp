@@ -7,6 +7,8 @@ import com.syscxp.header.vo.EO;
 import com.syscxp.header.host.HostVO;
 import com.syscxp.header.vo.NoView;
 import com.syscxp.tunnel.header.node.NodeVO;
+import com.syscxp.header.vo.ForeignKey;
+import com.syscxp.header.vo.ForeignKey.ReferenceOption;
 
 import javax.persistence.*;
 
@@ -26,6 +28,7 @@ public class MonitorHostVO extends HostVO {
     private Integer sshPort;
 
     @Column
+    @ForeignKey(parentEntityClass = NodeVO.class, onDeleteAction = ReferenceOption.RESTRICT)
     private String nodeUuid;
 
     @OneToOne(fetch = FetchType.EAGER)
