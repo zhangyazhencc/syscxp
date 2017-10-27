@@ -146,19 +146,24 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
 
         if(msg.getOrderBy() != null && msg.getOrderPolicy() != null){
-
             query.with(new Sort(new Sort.Order("DESC".equals(
                     msg.getOrderPolicy().toUpperCase())?Sort.Direction.DESC:
                     Sort.Direction.ASC,msg.getOrderBy())));
         }
-        if(msg.getPageNo() != null){
-            query.skip(Integer.valueOf(msg.getPage_size())*(Integer.valueOf(msg.getPageNo())-1));
+
+        if(msg.getPageNo() == null){
+            msg.setPage_size("1");
         }
+        if(msg.getPage_size() == null){
+            msg.setPage_size("15");
+        }
+
+        query.skip(Integer.valueOf(msg.getPage_size())*(Integer.valueOf(msg.getPageNo())-1));
         query.limit(Integer.valueOf(msg.getPage_size()));
         Long total = mongoTemplate.count(query,"nodeExtensionInfo");
         List<NodeExtensionInfo> list = mongoTemplate.find(query,NodeExtensionInfo.class,"nodeExtensionInfo");
         result.put("page_no",msg.getPageNo());
-        result.put("page_size",msg.getPage_size()==null?"15":msg.getPage_size());
+        result.put("page_size",msg.getPage_size());
         result.put("total",total);
         result.put("count",count);
         result.put("nodeExtensionInfos",JSONObjectUtil.toJsonString(list));
@@ -187,7 +192,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                 NodeExtensionInfo.class,"nodeExtensionInfo");
 
         if(node.getImages_url() != null){
-            reply.setImages_url(node.getImages_url().toString());
+            reply.setImages_url(node.getImages_url());
         }
 
         bus.reply(msg,reply);
