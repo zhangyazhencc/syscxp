@@ -176,9 +176,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                 NodeExtensionInfo.class,"nodeExtensionInfo");
 
         if(node.getImages_url() != null){
-            reply.setImages_url(node.getImages_url());
+            reply.setImages_url(node.getImages_url().toString());
         }
-
 
         bus.reply(msg,reply);
     }

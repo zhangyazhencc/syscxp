@@ -18,7 +18,7 @@ public class APIGetImageUploadInfoReply extends APIReply {
     String fileNumLimit;
     String nodeId;
 
-    Object images_url;
+    String images_url;
 
 
     public String getUpload_url() {
@@ -77,11 +77,11 @@ public class APIGetImageUploadInfoReply extends APIReply {
         this.nodeId = nodeId;
     }
 
-    public Object getImages_url() {
+    public String getImages_url() {
         return images_url;
     }
 
-    public void setImages_url(Object images_url) {
+    public void setImages_url(String images_url) {
         this.images_url = images_url;
     }
 }

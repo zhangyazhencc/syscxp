@@ -17,6 +17,7 @@ public class TunnelInventory {
 
     private String uuid;
     private String accountUuid;
+    private String ownerAccountUuid;
     private Integer vsi;
     private String monitorCidr;
     private List<TunnelInterfaceInventory> tunnelInterfaces = new ArrayList<TunnelInterfaceInventory>();
@@ -39,6 +40,7 @@ public class TunnelInventory {
         TunnelInventory inv = new TunnelInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
+        inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
         inv.setVsi(vo.getVsi());
         inv.setMonitorCidr(vo.getMonitorCidr());
         inv.setTunnelInterfaces(TunnelInterfaceInventory.valueOf(vo.getTunnelInterfaceVOs()));
@@ -217,5 +219,13 @@ public class TunnelInventory {
 
     public void setIsBilling(Integer isBilling) {
         this.isBilling = isBilling;
+    }
+
+    public String getOwnerAccountUuid() {
+        return ownerAccountUuid;
+    }
+
+    public void setOwnerAccountUuid(String ownerAccountUuid) {
+        this.ownerAccountUuid = ownerAccountUuid;
     }
 }
