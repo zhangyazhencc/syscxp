@@ -244,9 +244,6 @@ public abstract class HostBase extends AbstractHost {
     private void deleteHostByApiMessage(APIDeleteHostMsg msg) {
         final APIDeleteHostEvent evt = new APIDeleteHostEvent(msg.getId());
 
-        final String issuer = HostVO.class.getSimpleName();
-        final List<HostInventory> ctx = Arrays.asList(HostInventory.valueOf(self));
-
         HostInventory hinv = HostInventory.valueOf(self);
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
         chain.setName(String.format("delete-host-%s", msg.getUuid()));
@@ -263,9 +260,11 @@ public abstract class HostBase extends AbstractHost {
 
                 @Override
                 public void run(final FlowTrigger trigger, Map data) {
-                    DeleteHostMsg deleteHostMsg = new DeleteHostMsg(hinv.getUuid());
-                    bus.makeTargetServiceIdByResourceUuid(deleteHostMsg, HostConstant.SERVICE_ID, hinv.getUuid());
-                    bus.send(deleteHostMsg, new CloudBusCallBack(trigger) {
+                    HostDeletionMsg msg = new HostDeletionMsg();
+                    msg.setForceDelete(true);
+                    msg.setHostUuid(hinv.getUuid());
+                    bus.makeTargetServiceIdByResourceUuid(msg, HostConstant.SERVICE_ID, hinv.getUuid());
+                    bus.send(msg, new CloudBusCallBack(trigger) {
                         @Override
                         public void run(MessageReply reply) {
                             if (reply.isSuccess()) {
