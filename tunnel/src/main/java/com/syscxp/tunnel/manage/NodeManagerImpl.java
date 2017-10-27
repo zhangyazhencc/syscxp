@@ -30,6 +30,7 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -131,15 +132,25 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         if(msg.getProvince() != null){
             query.addCriteria(Criteria.where("province").is(msg.getProvince()));
         }
-        if(msg.getProvince() != null){
-            query.addCriteria(Criteria.where("roomLevel").is(msg.getProvince()));
+        if(msg.getRoomLevel() != null){
+            query.addCriteria(Criteria.where("roomLevel").is(msg.getRoomLevel()));
         }
-        if(msg.getProvince() != null){
-            query.addCriteria(Criteria.where("orderPolicy").is(msg.getProvince()));
+        if(msg.getProperty() != null){
+            query.addCriteria(Criteria.where("property").is(msg.getProperty()));
+        }else{
+            query.addCriteria(Criteria.where("property").is("idc_node"));
+
         }
 
         Long count = mongoTemplate.count(query,"nodeExtensionInfo");
 
+
+        if(msg.getOrderBy() != null && msg.getOrderPolicy() != null){
+
+            query.with(new Sort(new Sort.Order("DESC".equals(
+                    msg.getOrderPolicy().toUpperCase())?Sort.Direction.DESC:
+                    Sort.Direction.ASC,msg.getOrderBy())));
+        }
         if(msg.getPageNo() != null){
             query.skip(Integer.valueOf(msg.getPage_size())*(Integer.valueOf(msg.getPageNo())-1));
         }

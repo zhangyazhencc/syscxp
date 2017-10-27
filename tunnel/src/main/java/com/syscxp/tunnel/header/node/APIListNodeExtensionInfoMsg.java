@@ -20,13 +20,14 @@ public class APIListNodeExtensionInfoMsg extends APISyncCallMessage {
     private String roomLevel;
 
     @APIParam(emptyString = false)
+    private String property = "idc_node";
+
+
+    @APIParam(emptyString = false)
     private String orderBy;
 
     @APIParam(emptyString = false)
-    private String property = "idc_node";
-
-    @APIParam(emptyString = false)
-    private String orderPolicy = "desc";
+    private String orderPolicy;
 
     @APIParam(emptyString = false)
     private String pageNo;
