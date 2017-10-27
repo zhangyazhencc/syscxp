@@ -17,3 +17,5 @@ public class APIListNodeExtensionInfoReply extends APIReply {
         this.nodeExtensionInfoList = nodeExtensionInfoList;
     }
 }
+
+

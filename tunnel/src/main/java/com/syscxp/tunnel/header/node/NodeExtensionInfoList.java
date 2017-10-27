@@ -1,14 +1,12 @@
 package com.syscxp.tunnel.header.node;
 
-import java.util.List;
-
 public class NodeExtensionInfoList {
 
     private String page_no;
     private String page_size;
     private String total;
     private String count;
-    private List<NodeExtensionInfo> nodeExtensionInfos;
+    private String nodeExtensionInfos;
 
     public String getPage_no() {
         return page_no;
@@ -42,11 +40,11 @@ public class NodeExtensionInfoList {
         this.count = count;
     }
 
-    public List<NodeExtensionInfo> getNodeExtensionInfos() {
+    public String getNodeExtensionInfos() {
         return nodeExtensionInfos;
     }
 
-    public void setNodeExtensionInfos(List<NodeExtensionInfo> nodeExtensionInfos) {
+    public void setNodeExtensionInfos(String nodeExtensionInfos) {
         this.nodeExtensionInfos = nodeExtensionInfos;
     }
 }
