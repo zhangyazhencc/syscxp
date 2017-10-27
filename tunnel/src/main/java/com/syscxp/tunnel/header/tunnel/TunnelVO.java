@@ -15,7 +15,7 @@ import java.util.List;
 public class TunnelVO extends TunnelAO{
 
 
-    @OneToMany
+    @OneToMany(fetch= FetchType.EAGER)
     @JoinColumn(name = "tunnelUuid", insertable = false, updatable = false)
     private List<TunnelInterfaceVO> tunnelInterfaceVOs = new ArrayList<TunnelInterfaceVO>();
 

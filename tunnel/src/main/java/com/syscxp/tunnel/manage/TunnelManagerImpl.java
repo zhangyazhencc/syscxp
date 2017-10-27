@@ -33,6 +33,7 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.TypedQuery;
@@ -510,7 +511,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivoA.setSortTag("A");
         tivoA.setQinqState(TunnelQinqState.Disabled);
         tivoA.setInterfaceVO(dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class));
-        dbf.getEntityManager().persist(tivoA);
+
 
         //给Z端口分配外部vlan,并创建TunnelInterface
         Integer vlanZ = ts.getInnerVlanByStrategy(msg.getInterfaceZUuid());
@@ -525,7 +526,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivoZ.setSortTag("Z");
         tivoZ.setQinqState(TunnelQinqState.Disabled);
         tivoZ.setInterfaceVO(dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class));
-        dbf.getEntityManager().persist(tivoZ);
+
 
         //根据经纬度算距离
         NodeVO nvoA = dbf.findByUuid(msg.getNodeAUuid(),NodeVO.class);
@@ -542,7 +543,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setState(TunnelState.Unpaid);
         vo.setStatus(TunnelStatus.Disconnected);
         vo.setExpireDate(null);
-
         vo.setDescription(msg.getDescription());
         List<TunnelInterfaceVO> tivo = new ArrayList<TunnelInterfaceVO>();
         tivo.add(tivoA);
@@ -552,10 +552,10 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setMonitorState(TunnelMonitorState.Disabled);
         vo.setMaxModifies(CoreGlobalProperty.TUNNEL_MAX_MOTIFIES);
         vo.setIsBilling(0);
-        dbf.getEntityManager().persist(vo);
 
-        dbf.getEntityManager().flush();
-        vo = dbf.findByUuid(vo.getUuid(),TunnelVO.class);
+        tivoA = dbf.persistAndRefresh(tivoA);
+        tivoZ = dbf.persistAndRefresh(tivoZ);
+        vo = dbf.persistAndRefresh(vo);
 
         afterCreateTunnel( msg, vo);
 
@@ -578,7 +578,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivoA.setSortTag("A");
         tivoA.setQinqState(msg.getQinqStateA());
         tivoA.setInterfaceVO(dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class));
-        dbf.getEntityManager().persist(tivoA);
 
         TunnelInterfaceVO tivoZ = new TunnelInterfaceVO();
         tivoZ.setUuid(Platform.getUuid());
@@ -588,7 +587,6 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         tivoZ.setSortTag("Z");
         tivoZ.setQinqState(msg.getQinqStateZ());
         tivoZ.setInterfaceVO(dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class));
-        dbf.getEntityManager().persist(tivoZ);
 
         //如果开启Qinq,需要指定内部vlan段
         if(msg.getQinqStateA() == TunnelQinqState.Enabled || msg.getQinqStateZ() == TunnelQinqState.Enabled){
@@ -625,10 +623,10 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
         vo.setMonitorState(TunnelMonitorState.Disabled);
         vo.setMaxModifies(CoreGlobalProperty.TUNNEL_MAX_MOTIFIES);
         vo.setIsBilling(0);
-        dbf.getEntityManager().persist(vo);
 
-        dbf.getEntityManager().flush();
-        vo = dbf.findByUuid(vo.getUuid(),TunnelVO.class);
+        tivoA = dbf.persistAndRefresh(tivoA);
+        tivoZ = dbf.persistAndRefresh(tivoZ);
+        vo = dbf.persistAndRefresh(vo);
 
         afterCreateTunnelManual( msg, vo);
 
@@ -902,6 +900,7 @@ public class TunnelManagerImpl  extends AbstractService implements TunnelManager
     private void updateTunnelFromOrderBuy(OrderCallbackCmd cmd) {
         if(cmd.getProductType() == ProductType.PORT){
             InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
+
             if (vo.getIsBilling() == 0) {
                 vo.setAccountUuid(vo.getOwnerAccountUuid());
                 vo.setState(InterfaceState.Paid);
