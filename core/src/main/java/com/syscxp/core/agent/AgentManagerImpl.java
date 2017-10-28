@@ -56,10 +56,10 @@ public class AgentManagerImpl extends AbstractService implements AgentManager {
     private Map<String, Map<String, AgentStruct>> agents = new HashMap<String, Map<String, AgentStruct>>();
     private String srcRootFolder;
 
-    public static final String ECHO_PATH = "/server/echo";
-    public static final String INIT_PATH = "/server/init";
+    public static final String ECHO_PATH = "/host/echo";
+    public static final String INIT_PATH = "/host/init";
 
-    public static final class InitAgentServerCmd {
+    public static final class InitAgentHostCmd {
         public Map<String, Object> Config = new HashMap<String, Object>();
     }
 
@@ -81,14 +81,14 @@ public class AgentManagerImpl extends AbstractService implements AgentManager {
         ShellUtils.run(String.format("mkdir -p %s", AgentConstant.SRC_ANSIBLE_ROOT), false);
         File srcFolder = PathUtil.findFolderOnClassPath(AgentConstant.ANSIBLE_MODULE_PATH, true);
         srcRootFolder = srcFolder.getAbsolutePath();
-        ShellUtils.run(String.format("yes | cp -r %s/server %s", srcRootFolder, AgentConstant.SRC_ANSIBLE_ROOT), false);
+        ShellUtils.run(String.format("yes | cp -r %s %s", srcRootFolder, AgentConstant.SRC_ANSIBLE_ROOT), false);
     }
 
     private void handle(final DeployAgentMsg msg) {
         thdf.chainSubmit(new ChainTask(msg) {
             @Override
             public String getSyncSignature() {
-                return String.format("deploy-agent-to-server-%s", msg.getIp());
+                return String.format("deploy-agent-to-host-%s", msg.getIp());
             }
 
             @Override
@@ -110,7 +110,7 @@ public class AgentManagerImpl extends AbstractService implements AgentManager {
 
     private void connect(final DeployAgentMsg msg, final Completion completion) {
         FlowChain chain = FlowChainBuilder.newShareFlowChain();
-        chain.setName(String.format("continue-connect-agent-server-%s:%s", msg.getIp(), msg.getAgentPort()));
+        chain.setName(String.format("continue-connect-agent-host-%s:%s", msg.getIp(), msg.getAgentPort()));
         chain.then(new ShareFlow() {
             private String url(String path) {
                 return String.format("http://%s:%s%s", msg.getIp(), msg.getAgentPort(), path);
@@ -119,7 +119,7 @@ public class AgentManagerImpl extends AbstractService implements AgentManager {
             @Override
             public void setup() {
                 flow(new NoRollbackFlow() {
-                    String __name__ = "echo-server";
+                    String __name__ = "echo-host";
 
                     @Override
                     public void run(final FlowTrigger trigger, Map data) {
@@ -138,7 +138,7 @@ public class AgentManagerImpl extends AbstractService implements AgentManager {
                 });
 
                 flow(new NoRollbackFlow() {
-                    String __name__= "init-server";
+                    String __name__= "init-host";
 
                     @Override
                     public void run(FlowTrigger trigger, Map data) {
@@ -148,7 +148,7 @@ public class AgentManagerImpl extends AbstractService implements AgentManager {
                             config.putAll(msg.getConfig());
                         }
 
-                        InitAgentServerCmd cmd = new InitAgentServerCmd();
+                        InitAgentHostCmd cmd = new InitAgentHostCmd();
                         cmd.Config = config;
 
                         restf.syncJsonPost(url(INIT_PATH), cmd, Void.class);
