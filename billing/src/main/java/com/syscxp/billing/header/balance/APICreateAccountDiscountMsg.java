@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
 @Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT)
-public class APICreateAccountDischargeMsg extends APIMessage {
+public class APICreateAccountDiscountMsg extends APIMessage {
 
     @APIParam(emptyString = false)
     private String accountUuid;
@@ -16,7 +16,7 @@ public class APICreateAccountDischargeMsg extends APIMessage {
     private Category category;
 
     @APIParam(numberRange = {1,100})
-    private int  disCharge;
+    private int  discount;
 
     public String getAccountUuid() {
         return accountUuid;
@@ -34,11 +34,11 @@ public class APICreateAccountDischargeMsg extends APIMessage {
         this.category = category;
     }
 
-    public int getDisCharge() {
-        return disCharge;
+    public int getDiscount() {
+        return discount;
     }
 
-    public void setDisCharge(int disCharge) {
-        this.disCharge = disCharge;
+    public void setDiscount(int discount) {
+        this.discount = discount;
     }
 }
