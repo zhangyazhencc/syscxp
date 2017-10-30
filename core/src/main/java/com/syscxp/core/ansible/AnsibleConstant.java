@@ -15,6 +15,6 @@ public interface AnsibleConstant {
     public static String IMPORT_PUBLIC_KEY_SCRIPT_PATH = "ansible/import_public_key.sh";
     public static String RSA_PUBLIC_KEY = "ansible/rsaKeys/id_rsa.pub";
     public static String RSA_PRIVATE_KEY = "ansible/rsaKeys/id_rsa";
-    public static String PIP_URL = "http://10.88.248.5/simple";
-    public static String TRUSTED_HOST = "10.88.248.5";
+    public static String PIP_URL = "http://pypi.syscloud.cn/simple";
+    public static String TRUSTED_HOST = "pypi.syscloud.cn";
 }

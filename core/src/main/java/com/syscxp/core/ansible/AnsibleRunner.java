@@ -1,5 +1,6 @@
 package com.syscxp.core.ansible;
 
+import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.rest.RESTFacade;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowire;
@@ -45,6 +46,8 @@ public class AnsibleRunner {
     private CloudBus bus;
     @Autowired
     private RESTFacade restf;
+    @Autowired
+    private ErrorFacade errf;
 
     private static String privKeyFile;
     private List<AnsibleChecker> checkers = new ArrayList<AnsibleChecker>();
@@ -368,7 +371,7 @@ public class AnsibleRunner {
             setupPublicKey();
             callAnsible(completion);
         } catch (Exception e) {
-            throw new CloudRuntimeException(e);
+            completion.fail(errf.stringToOperationError(e.getMessage()));
         }
     }
 

@@ -26,6 +26,7 @@ import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
 import com.syscxp.utils.path.PathUtil;
 import com.syscxp.utils.ssh.Ssh;
+import com.syscxp.utils.ssh.SshException;
 import com.syscxp.utils.ssh.SshResult;
 import com.syscxp.utils.ssh.SshShell;
 import com.syscxp.tunnel.header.host.MonitorAgentCommands.*;
@@ -274,10 +275,11 @@ public class MonitorHost extends HostBase implements Host {
                         SshResult ret = sshShell.runCommand(String.format("curl --connect-timeout 10 %s", restf.getCallbackUrl()));
 
                         if (ret.isSshFailure()) {
-                            throw new OperationFailureException(operr("unable to connect to Host[ip:%s, username:%s, sshPort:%d] to check the management node connectivity," +
-                                    "please check if username/password is wrong; %s", self.getHostIp(), getSelf().getUsername(), getSelf().getSshPort(), ret.getExitErrorMessage()));
+                            trigger.fail(operr("unable to connect to Host[ip:%s, username:%s, sshPort:%d] to check " +
+                                    "the management node connectivity,please check if username/password is wrong; %s",
+                                    self.getHostIp(), getSelf().getUsername(), getSelf().getSshPort(), ret.getExitErrorMessage()));
                         } else if (ret.getReturnCode() != 0) {
-                            throw new OperationFailureException(operr("the host[ip:%s] cannot access the management node's callback url. It seems" +
+                            trigger.fail(operr("the host[ip:%s] cannot access the management node's callback url. It seems" +
                                             " that the host cannot reach the management IP[%s]. %s %s", self.getHostIp(), Platform.getManagementServerIp(),
                                     ret.getStderr(), ret.getExitErrorMessage()));
                         }
@@ -293,13 +295,13 @@ public class MonitorHost extends HostBase implements Host {
                     public void run(final FlowTrigger trigger, Map data) {
                         String srcPath = PathUtil.findFileOnClassPath(String.format("ansible/monitor/%s", agentPackageName),
                                 true).getAbsolutePath();
-                        String destPath = String.format("/var/lib/syscxp/agent/package/%s", agentPackageName);
+                        String destPath = String.format("/var/lib/syscxp/monitor/package/%s", agentPackageName);
                         SshFileMd5Checker checker = new SshFileMd5Checker();
                         checker.setUsername(getSelf().getUsername());
                         checker.setPassword(getSelf().getPassword());
                         checker.setSshPort(getSelf().getSshPort());
                         checker.setTargetIp(getSelf().getHostIp());
-                        checker.addSrcDestPair(SshFileMd5Checker.SYSCXPLIB_SRC_PATH, String.format("/var/lib/syscxp/agent/package/%s",
+                        checker.addSrcDestPair(SshFileMd5Checker.SYSCXPLIB_SRC_PATH, String.format("/var/lib/syscxp/monitor/package/%s",
                                 AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME));
                         checker.addSrcDestPair(srcPath, destPath);
 
@@ -362,7 +364,11 @@ public class MonitorHost extends HostBase implements Host {
                     @Override
                     public void run(FlowTrigger trigger, Map data) {
                         String script = "which iptables > /dev/null && iptables -C FORWARD -j REJECT --reject-with icmp-host-prohibited > /dev/null 2>&1 && iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited > /dev/null 2>&1 || true";
-                        runShell(script);
+                        try {
+                            runShell(script);
+                        }catch (Exception e){
+                            trigger.fail(errf.instantiateErrorCode(HostErrors.CONNECTION_ERROR, e.getMessage()));
+                        }
                         trigger.next();
                     }
                 });

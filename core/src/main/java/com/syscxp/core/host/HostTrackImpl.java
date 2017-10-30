@@ -44,7 +44,7 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
     private ThreadFacade thdf;
 
     public void count(String hostUuid) {
-        if (reconnectTimes.getOrDefault(hostUuid, 0) <= CoreGlobalProperty.MAX_RECONNECT_TIMES) {
+        if (reconnectTimes.get(hostUuid) <= HostGlobalProperty.MAX_RECONNECT_TIMES) {
             reconnectTimes.computeIfPresent(hostUuid, (v, i) -> i + 1);
         } else {
             untrackHost(hostUuid);
@@ -60,7 +60,7 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
 
         @Override
         public long getInterval() {
-            return HostGlobalConfig.PING_HOST_INTERVAL.value(Long.class);
+            return HostGlobalProperty.PING_HOST_INTERVAL;
         }
 
         @Override
@@ -69,6 +69,9 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
         }
 
         private void handleReply(final String hostUuid, MessageReply reply) {
+
+            reconnectTimes.putIfAbsent(hostUuid, 0);
+
             if (!reply.isSuccess()) {
                 logger.warn(String.format("[Host Tracker]: unable track host[uuid:%s], %s", hostUuid, reply.getError()));
                 count(hostUuid);
@@ -80,10 +83,10 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
             if (!r.isNoReconnect()) {
                 boolean needReconnect = false;
                 if (!r.isConnected() && HostStatus.Connected.toString().equals(r.getCurrentHostStatus())
-                        && HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.value(Boolean.class)) {
+                        && HostGlobalProperty.AUTO_RECONNECT_ON_ERROR) {
                     // cannot ping, but host is in Connected status
                     needReconnect = true;
-                } else if (r.isConnected() && HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.value(Boolean.class)
+                } else if (r.isConnected() && HostGlobalProperty.AUTO_RECONNECT_ON_ERROR
                         && HostStatus.Disconnected.toString().equals(r.getCurrentHostStatus())) {
                     // can ping, but host is in Disconnected status
                     needReconnect = true;
@@ -92,11 +95,13 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                             "but connection.autoReconnectOnError is set to false, no reconnect will issue", hostUuid));
                 }
 
-                if (needReconnect && reconnectTimes.putIfAbsent(hostUuid, 0) <= CoreGlobalProperty
-                        .MAX_RECONNECT_TIMES) {
+                System.out.println(hostUuid + "=====" +reconnectTimes.get(hostUuid));
+
+                if (needReconnect && !inReconnectingHost.contains(hostUuid) &&
+                        reconnectTimes.get(hostUuid) <= HostGlobalProperty.MAX_RECONNECT_TIMES) {
                     logger.debug(String.format("[Host Tracker]: detected host[uuid:%s] connection lost, " +
                                     "issue a reconnect because %s is set to true",
-                            hostUuid, HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.getCanonicalName()));
+                            hostUuid, HostGlobalProperty.AUTO_RECONNECT_ON_ERROR.toString()));
                     ReconnectHostMsg msg = new ReconnectHostMsg();
                     msg.setHostUuid(hostUuid);
                     msg.setSkipIfHostConnected(true);
@@ -104,12 +109,13 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                     bus.send(msg, new CloudBusCallBack(null) {
                         @Override
                         public void run(MessageReply reply) {
-                            reconnectTimes.remove(hostUuid);
-
+                            inReconnectingHost.remove(hostUuid);
                             if (!reply.isSuccess()) {
                                 logger.warn(String.format("host[uuid:%s] failed to reconnect, %s",
                                         hostUuid, reply.getError()));
                                 count(hostUuid);
+                            } else {
+                                reconnectTimes.remove(hostUuid);
                             }
                         }
                     });
@@ -140,7 +146,7 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                     return;
                 }
 
-                bus.send(msgs, HostGlobalConfig.HOST_TRACK_PARALLELISM_DEGREE.value(Integer.class),
+                bus.send(msgs, HostGlobalProperty.HOST_TRACK_PARALLELISM_DEGREE,
                         new CloudBusSteppingCallback(null) {
                             @Override
                             public void run(NeedReplyMessage msg, MessageReply reply) {
@@ -248,12 +254,6 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
 
     private void setupTracker() {
         startTracker();
-
-        HostGlobalConfig.PING_HOST_INTERVAL.installUpdateExtension((oldConfig, newConfig) -> {
-            logger.debug(String.format("%s change from %s to %s, restart tracker thread",
-                    oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
-            startTracker();
-        });
     }
 
     @Override
