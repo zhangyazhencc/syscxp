@@ -410,11 +410,13 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
     public boolean isModuleChanged(String playbookName) {
         String moduleName = StringDSL.stripEnd(playbookName, ".py");
         Boolean ret = moduleChanges.get(moduleName);
-        DebugUtils.Assert(ret != null, String.format("cannot find ansible module name[%s]", moduleName));
-        if (ret) {
+//        DebugUtils.Assert(ret != null, String.format("cannot find ansible module name[%s]", moduleName));
+//        if (ret) {
             // we only need to deploy once
             moduleChanges.put(moduleName, false);
-        }
+//        }
+        if (ret == null)
+            return true;
         return ret;
     }
 

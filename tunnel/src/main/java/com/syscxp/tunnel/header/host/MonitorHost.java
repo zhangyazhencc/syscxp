@@ -291,14 +291,16 @@ public class MonitorHost extends HostBase implements Host {
 
                     @Override
                     public void run(final FlowTrigger trigger, Map data) {
-                        String srcPath = PathUtil.findFileOnClassPath(String.format("ansible/monitor/%s", agentPackageName), true).getAbsolutePath();
+                        String srcPath = PathUtil.findFileOnClassPath(String.format("ansible/monitor/%s", agentPackageName),
+                                true).getAbsolutePath();
                         String destPath = String.format("/var/lib/syscxp/agent/package/%s", agentPackageName);
                         SshFileMd5Checker checker = new SshFileMd5Checker();
                         checker.setUsername(getSelf().getUsername());
                         checker.setPassword(getSelf().getPassword());
                         checker.setSshPort(getSelf().getSshPort());
                         checker.setTargetIp(getSelf().getHostIp());
-                        checker.addSrcDestPair(SshFileMd5Checker.SYSCXPLIB_SRC_PATH, String.format("/var/lib/syscxp/agent/package/%s", AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME));
+                        checker.addSrcDestPair(SshFileMd5Checker.SYSCXPLIB_SRC_PATH, String.format("/var/lib/syscxp/agent/package/%s",
+                                AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME));
                         checker.addSrcDestPair(srcPath, destPath);
 
                         AnsibleRunner runner = new AnsibleRunner();
