@@ -11,6 +11,7 @@ public class ProductPriceUnitVO_ {
     public static volatile SingularAttribute<ProductPriceUnitVO, ProductType> productTypeCode;
     public static volatile SingularAttribute<ProductPriceUnitVO, Category> categoryCode;
     public static volatile SingularAttribute<ProductPriceUnitVO, String> productTypeName;
+    public static volatile SingularAttribute<ProductPriceUnitVO, String> productCategoryUuid;
     public static volatile SingularAttribute<ProductPriceUnitVO, String> categoryName;
     public static volatile SingularAttribute<ProductPriceUnitVO, String> areaCode;
     public static volatile SingularAttribute<ProductPriceUnitVO, String> areaName;

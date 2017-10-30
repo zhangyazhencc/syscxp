@@ -32,7 +32,6 @@ import java.util.concurrent.TimeUnit;
 public class ALARMLOGManagerImpl  extends AbstractService implements ApiMessageInterceptor {
 
     private static final CLogger logger = Utils.getLogger(ALARMLOGManagerImpl.class);
-
     @Autowired
     private CloudBus bus;
     @Autowired
