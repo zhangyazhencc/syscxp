@@ -33,16 +33,16 @@ CREATE TABLE `AccountBalanceVO` (
 
 /*Data for the table `AccountBalanceVO` */
 
-/*Table structure for table `AccountDischargeVO` */
+/*Table structure for table `AccountDiscountVO` */
 
-DROP TABLE IF EXISTS `AccountDischargeVO`;
+DROP TABLE IF EXISTS `AccountDiscountVO`;
 
-CREATE TABLE `AccountDischargeVO` (
+CREATE TABLE `AccountDiscountVO` (
   `uuid` varchar(32) NOT NULL COMMENT '主键',
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户id',
   `productType` varchar(50) DEFAULT NULL COMMENT '产品类型',
   `category` varchar(50) DEFAULT NULL COMMENT '产品小分类',
-  `disCharge` tinyint(3) unsigned DEFAULT 100 COMMENT '折扣',
+  `discount` tinyint(3) unsigned DEFAULT 100 COMMENT '折扣',
   `lastOpDate` timestamp NOT NULL  DEFAULT current_timestamp(),
   `createDate` timestamp  ,
   `categoryName` varchar(256) DEFAULT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE `AccountDischargeVO` (
   KEY `Uni_accountUuid_productType` (`accountUuid`,`productType`,`category`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-/*Data for the table `AccountDischargeVO` */
+/*Data for the table `AccountDiscountVO` */
 
 /*Table structure for table `BillVO` */
 

@@ -245,7 +245,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         }
 
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
-        BigDecimal dischargePrice = BigDecimal.ZERO;
+        BigDecimal discountPrice = BigDecimal.ZERO;
         BigDecimal originalPrice = BigDecimal.ZERO;
         SimpleQuery<PriceRefRenewVO> queryPriceRefRenewVO = dbf.createQuery(PriceRefRenewVO.class);
         queryPriceRefRenewVO.add(PriceRefRenewVO_.renewUuid, SimpleQuery.Op.EQ, renewVO.getUuid());
@@ -256,17 +256,17 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             if (productPriceUnitVO == null) {
                 throw new IllegalArgumentException("price uuid is not valid");
             }
-            SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
-            qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
-            qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
-            qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-            AccountDischargeVO accountDischargeVO = qDischarge.find();
-            int productDisCharge = 100;
-            if (accountDischargeVO != null) {
-                productDisCharge = accountDischargeVO.getDisCharge() == 0 ? 100 : accountDischargeVO.getDisCharge();
+            SimpleQuery<AccountDiscountVO> qDiscount = dbf.createQuery(AccountDiscountVO.class);
+            qDiscount.add(AccountDiscountVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
+            qDiscount.add(AccountDiscountVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
+            qDiscount.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+            AccountDiscountVO accountDiscountVO = qDiscount.find();
+            int productDiscount = 100;
+            if (accountDiscountVO != null) {
+                productDiscount = accountDiscountVO.getDiscount() == 0 ? 100 : accountDiscountVO.getDiscount();
             }
             originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
-            dischargePrice = dischargePrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));
+            discountPrice = discountPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));
 
         }
         int originDuration = msg.getDuration();
@@ -284,14 +284,14 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         OrderVO orderVo = new OrderVO();
 
         originalPrice = originalPrice.multiply(duration);
-        dischargePrice = dischargePrice.multiply(duration);
+        discountPrice = discountPrice.multiply(duration);
         if (originalPrice.compareTo(mayPayTotal) > 0) {
             return;
         }
-        payMethod(msg, orderVo, abvo, dischargePrice, currentTimestamp);
+        payMethod(msg, orderVo, abvo, discountPrice, currentTimestamp);
         orderVo.setType(OrderType.RENEW);
         orderVo.setOriginalPrice(originalPrice);
-        orderVo.setPrice(dischargePrice);
+        orderVo.setPrice(discountPrice);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentTimestamp);
         calendar.add(Calendar.MONTH, duration.intValue());
@@ -313,7 +313,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
         renewVO.setProductChargeModel(msg.getProductChargeModel());
 
-        renewVO.setPricePerDay(renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays)).add(dischargePrice).divide(BigDecimal.valueOf(notUseDays).add(duration), 4, BigDecimal.ROUND_HALF_EVEN));
+        renewVO.setPricePerDay(renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays)).add(discountPrice).divide(BigDecimal.valueOf(notUseDays).add(duration), 4, BigDecimal.ROUND_HALF_EVEN));
         dbf.getEntityManager().merge(renewVO);
 
         orderVo.setUuid(Platform.getUuid());
@@ -384,7 +384,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
-        BigDecimal dischargePrice = BigDecimal.ZERO;
+        BigDecimal discountPrice = BigDecimal.ZERO;
         BigDecimal originalPrice = BigDecimal.ZERO;
 
         AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
@@ -466,7 +466,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     private void handle(APICreateModifyOrderMsg msg) {
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
-        BigDecimal dischargePrice = BigDecimal.ZERO;
+        BigDecimal discountPrice = BigDecimal.ZERO;
         BigDecimal originalPrice = BigDecimal.ZERO;
 
         List<ProductPriceUnit> units = msg.getUnits();
@@ -484,18 +484,18 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             }
             productPriceUnitUuids.add(productPriceUnitVO.getUuid());
 
-            SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
-            qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
-            qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
-            qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-            AccountDischargeVO accountDischargeVO = qDischarge.find();
-            int productDisCharge = 100;
-            if (accountDischargeVO != null) {
-                productDisCharge = accountDischargeVO.getDisCharge() <= 0 ? 100 : accountDischargeVO.getDisCharge();
+            SimpleQuery<AccountDiscountVO> qDiscount = dbf.createQuery(AccountDiscountVO.class);
+            qDiscount.add(AccountDiscountVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
+            qDiscount.add(AccountDiscountVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
+            qDiscount.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+            AccountDiscountVO accountDiscountVO = qDiscount.find();
+            int productDiscount = 100;
+            if (accountDiscountVO != null) {
+                productDiscount = accountDiscountVO.getDiscount() <= 0 ? 100 : accountDiscountVO.getDiscount();
             }
             originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
-            BigDecimal currentDischarge = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
-            dischargePrice = dischargePrice.add(currentDischarge);
+            BigDecimal currentDiscount = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
+            discountPrice = discountPrice.add(currentDiscount);
 
         }
 
@@ -532,7 +532,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         }
 
         BigDecimal remainMoney = renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays));
-        BigDecimal needPayMoney = dischargePrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal needPayMoney = discountPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal needPayOriginMoney = originalPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal subMoney = needPayMoney.subtract(remainMoney);
         if (subMoney.compareTo(BigDecimal.ZERO) >= 0) { //upgrade
@@ -575,7 +575,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             dVO.setOpAccountUuid(msg.getOpAccountUuid());
             dbf.getEntityManager().persist(dVO);
         }
-        renewVO.setPricePerDay(dischargePrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN));
+        renewVO.setPricePerDay(discountPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN));
         dbf.getEntityManager().merge(renewVO);
         SimpleQuery<PriceRefRenewVO> q = dbf.createQuery(PriceRefRenewVO.class);
         q.add(PriceRefRenewVO_.renewUuid, SimpleQuery.Op.EQ, renewVO.getUuid());
@@ -638,7 +638,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     private void handle(APICreateBuyOrderMsg msg) {
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
-        BigDecimal dischargePrice = BigDecimal.ZERO;
+        BigDecimal discountPrice = BigDecimal.ZERO;
         BigDecimal originalPrice = BigDecimal.ZERO;
 
         List<ProductPriceUnit> units = msg.getUnits();
@@ -655,18 +655,18 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 throw new IllegalArgumentException("price uuid is not valid");
             }
             productPriceUnitUuids.add(productPriceUnitVO.getUuid());
-            SimpleQuery<AccountDischargeVO> qDischarge = dbf.createQuery(AccountDischargeVO.class);
-            qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
-            qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
-            qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-            AccountDischargeVO accountDischargeVO = qDischarge.find();
-            int productDisCharge = 100;
-            if (accountDischargeVO != null) {
-                productDisCharge = accountDischargeVO.getDisCharge() <= 0 ? 100 : accountDischargeVO.getDisCharge();
+            SimpleQuery<AccountDiscountVO> qDiscount = dbf.createQuery(AccountDiscountVO.class);
+            qDiscount.add(AccountDiscountVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
+            qDiscount.add(AccountDiscountVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
+            qDiscount.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+            AccountDiscountVO accountDiscountVO = qDiscount.find();
+            int productDiscount = 100;
+            if (accountDiscountVO != null) {
+                productDiscount = accountDiscountVO.getDiscount() <= 0 ? 100 : accountDiscountVO.getDiscount();
             }
             originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
-            BigDecimal currentDischarge = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
-            dischargePrice = dischargePrice.add(currentDischarge);
+            BigDecimal currentDiscount = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
+            discountPrice = discountPrice.add(currentDiscount);
 
         }
 
@@ -695,18 +695,18 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setDuration(msg.getDuration());
 
         originalPrice = originalPrice.multiply(duration);
-        dischargePrice = dischargePrice.multiply(duration);
+        discountPrice = discountPrice.multiply(duration);
 
-        if (dischargePrice.compareTo(mayPayTotal) > 0) {
+        if (discountPrice.compareTo(mayPayTotal) > 0) {
             throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
         }
         orderVo.setOriginalPrice(originalPrice);
-        orderVo.setPrice(dischargePrice);
+        orderVo.setPrice(discountPrice);
         orderVo.setType(OrderType.BUY);
         if (msg.getProductType() == ProductType.TUNNEL) {
             orderVo.setProductStatus(0);
         }
-        payMethod(msg, orderVo, abvo, dischargePrice, currentTimestamp);
+        payMethod(msg, orderVo, abvo, discountPrice, currentTimestamp);
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(currentTimestamp);
         calendar.add(Calendar.MONTH, duration.intValue());
@@ -723,7 +723,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         renewVO.setProductDescription(orderVo.getProductDescription());
         renewVO.setRenewAuto(true);
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
-        renewVO.setPricePerDay(dischargePrice.divide(BigDecimal.valueOf(30).multiply(duration), 4, BigDecimal.ROUND_HALF_EVEN));
+        renewVO.setPricePerDay(discountPrice.divide(BigDecimal.valueOf(30).multiply(duration), 4, BigDecimal.ROUND_HALF_EVEN));
         dbf.getEntityManager().persist(renewVO);
 
         for (String productPriceUnitUuid : productPriceUnitUuids) {

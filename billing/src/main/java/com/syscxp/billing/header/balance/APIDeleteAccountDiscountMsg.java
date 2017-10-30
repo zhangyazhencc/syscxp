@@ -6,9 +6,9 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
 @Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT)
-public class APIDeleteAccountDischargeMsg extends APIMessage{
+public class APIDeleteAccountDiscountMsg extends APIMessage{
 
-    @APIParam(emptyString = false,resourceType = AccountDischargeVO.class)
+    @APIParam(emptyString = false,resourceType = AccountDiscountVO.class)
     private String uuid;
 
     public String getUuid() {

@@ -8,6 +8,7 @@ import com.syscxp.header.billing.ProductType;
 import java.sql.Timestamp;
 
 public class OrderCallbackCmd {
+    private String orderUuid;
     private String porductUuid;
     private ProductType productType;
     private OrderType type;
@@ -18,6 +19,7 @@ public class OrderCallbackCmd {
 
     public static OrderCallbackCmd valueOf(OrderVO order){
         OrderCallbackCmd cmd = new OrderCallbackCmd();
+        cmd.setOrderUuid(order.getUuid());
         cmd.setPorductUuid(order.getProductUuid());
         cmd.setType(order.getType());
         cmd.setProductType(order.getProductType());
@@ -82,5 +84,13 @@ public class OrderCallbackCmd {
 
     public void setProductDescription(String productDescription) {
         this.productDescription = productDescription;
+    }
+
+    public String getOrderUuid() {
+        return orderUuid;
+    }
+
+    public void setOrderUuid(String orderUuid) {
+        this.orderUuid = orderUuid;
     }
 }
