@@ -234,7 +234,19 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                                             for (String key3 : keySet3) {
                                                 if(newmap3.containsKey(key3)){
                                                     if(oldmap3.get(key3) instanceof com.alibaba.fastjson.JSONObject){
-                                                        System.out.println("");
+                                                        Map<String,Object> oldmap4 = (Map)oldmap3.get(key3);
+                                                        Map<String,Object> newmap4 = (Map)newmap3.get(key3);
+                                                        Set<String> keySet4 = oldmap4.keySet();
+                                                        for (String key4 : keySet4) {
+                                                            if(newmap4.containsKey(key4)){
+                                                                if(oldmap4.get(key4) instanceof com.alibaba.fastjson.JSONObject){
+                                                                    System.out.println("/");
+                                                                }else{
+                                                                    oldmap4.put(key4, newmap4.get(key4));
+                                                                }
+                                                            }
+                                                        }
+                                                        oldmap3.put(key3, oldmap4);
                                                     }else{
                                                         oldmap3.put(key3, newmap3.get(key3));
                                                     }
@@ -259,6 +271,67 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                 }
             }
         }
+
+
+        Set<String> keySett = newmap.keySet();
+        for (String key : keySett) {
+            if(oldmap.containsKey(key)){
+                if(newmap.get(key) instanceof com.alibaba.fastjson.JSONObject){
+                    Map<String,Object> oldmap1 = (Map)oldmap.get(key);
+                    Map<String,Object> newmap1 = (Map)newmap.get(key);
+                    Set<String> keySet1 = newmap1.keySet();
+                    for (String key1 : keySet1) {
+                        if(oldmap1.containsKey(key1)){
+                            if(newmap1.get(key1) instanceof com.alibaba.fastjson.JSONObject){
+                                Map<String,Object> oldmap2 = (Map)oldmap1.get(key1);
+                                Map<String,Object> newmap2 = (Map)newmap1.get(key1);
+                                Set<String> keySet2 = newmap2.keySet();
+                                for (String key2 : keySet2) {
+                                    if(oldmap2.containsKey(key2)){
+                                        if(newmap2.get(key2) instanceof com.alibaba.fastjson.JSONObject){
+                                            Map<String,Object> oldmap3 = (Map)oldmap2.get(key2);
+                                            Map<String,Object> newmap3 = (Map)newmap2.get(key2);
+                                            Set<String> keySet3 = newmap3.keySet();
+                                            for (String key3 : keySet3) {
+                                                if(oldmap3.containsKey(key3)){
+                                                    if(newmap3.get(key3) instanceof com.alibaba.fastjson.JSONObject){
+                                                        Map<String,Object> oldmap4 = (Map)oldmap3.get(key3);
+                                                        Map<String,Object> newmap4 = (Map)newmap3.get(key3);
+                                                        Set<String> keySet4 = newmap4.keySet();
+                                                        for (String key4 : keySet4) {
+                                                            if(oldmap4.containsKey(key4)){
+                                                                if(newmap4.get(key4) instanceof com.alibaba.fastjson.JSONObject){
+                                                                    System.out.println("/");
+                                                                }
+                                                            }else{
+                                                                oldmap4.put(key4, newmap4.get(key4));
+                                                            }
+                                                        }
+                                                        oldmap3.put(key3, oldmap4);
+                                                    }
+                                                }else{
+                                                    oldmap3.put(key3, newmap3.get(key3));
+                                                }
+                                            }
+                                            oldmap2.put(key2, oldmap3);
+                                        }
+                                    }else{
+                                        oldmap2.put(key2, newmap2.get(key2));
+                                    }
+                                }
+                                oldmap1.put(key1, oldmap2);
+                            }
+                        }else{
+                            oldmap1.put(key1, newmap1.get(key1));
+                        }
+                    }
+                    oldmap.put(key, oldmap1);
+                }
+            }else{
+                oldmap.put(key, newmap.get(key));
+            }
+        }
+
 
         APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent(msg.getId());
 

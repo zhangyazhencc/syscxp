@@ -1,6 +1,7 @@
 package com.syscxp.header.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
+import com.syscxp.header.identity.UserPolicyInventory;
 import com.syscxp.header.search.Inventory;
 
 import java.sql.Timestamp;

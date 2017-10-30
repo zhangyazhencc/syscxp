@@ -145,7 +145,8 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         bus.publish(evt);
     }
 
-    private SmsVO sendMsg(SessionInventory session, String phone, String appId, String templateId, String[] datas, String ip){
+    @Override
+    public SmsVO sendMsg(SessionInventory session, String phone, String appId, String templateId, String[] datas, String ip){
         //初始化短信接口平台
         CCPRestSDK restAPI = new CCPRestSDK();
         restAPI.init(SmsGlobalProperty.SMS_YUNTONGXUN_SERVER, SmsGlobalProperty.SMS_YUNTONGXUN_PORT);// 初始化服务器地址和端口，格式如下，服务器地址不需要写https://
