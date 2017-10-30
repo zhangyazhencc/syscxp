@@ -278,13 +278,12 @@ CREATE TABLE  `syscxp_tunnel`.`InterfaceEO` (
   `duration` int(11) NOT NULL COMMENT '最近一次购买时长',
   `productChargeModel` varchar(32) NOT NULL COMMENT '产品付费方式',
   `maxModifies` int(11) NOT NULL COMMENT '最大调整次数',
-  `isBilling` tinyint(1) NOT NULL DEFAULT '0' COMMENT '同步调用billing是否成功',
   `expireDate` timestamp NULL DEFAULT NULL COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, ownerAccountUuid, name, switchPortUuid, endpointUuid, description, state, type, duration, productChargeModel, maxModifies,isBilling, expireDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`InterfaceVO` AS SELECT uuid, accountUuid, ownerAccountUuid, name, switchPortUuid, endpointUuid, description, state, type, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate
                                           FROM `InterfaceEO` WHERE deleted IS NULL;
 
 ##云专线
@@ -305,14 +304,22 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `duration` int(11) NOT NULL COMMENT '最近一次购买时长',
   `productChargeModel` varchar(32) NOT NULL COMMENT '产品付费方式',
   `maxModifies` int(11) NOT NULL COMMENT '最大调整次数',
-  `isBilling` tinyint(1) NOT NULL DEFAULT '0' COMMENT '同步调用billing是否成功',
   `expireDate` timestamp NULL DEFAULT NULL COMMENT '截止时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, ownerAccountUuid, vsi, monitorCidr, name, bandwidth, distance, state, status, monitorState, description, duration, productChargeModel, maxModifies,isBilling, expireDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, ownerAccountUuid, vsi, monitorCidr, name, bandwidth, distance, state, status, monitorState, description, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate
                                         FROM `TunnelEO` WHERE deleted IS NULL;
+
+CREATE TABLE `syscxp_tunnel`.`ResourceOrderEffectiveVO` (
+  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `resourceUuid` varchar(32) NOT NULL COMMENT '产品UUID',
+  `resourceType` varchar(255) NOT NULL COMMENT '产品表名',
+  `orderUuid` varchar(255) NOT NULL COMMENT '订单UUID',
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `syscxp_tunnel`.`TaskResourceVO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
