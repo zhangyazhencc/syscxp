@@ -8,11 +8,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = ResourceVO.class)
 public class ResourceInventory {
 
     private String uuid;
     private ProductType productType;
+
+    private String accountUuid;
 
     private String productUuid;
 
@@ -20,36 +21,13 @@ public class ResourceInventory {
 
     private String description;
 
-    private String networkSegmentA;
+    private String monitorNetworkSegment;
 
-    private String networkSegmentB;
+    private List<PolicyInventory> policies;
+
 
     private Timestamp createDate;
     private Timestamp lastOpDate;
-
-    public static ResourceInventory valueOf(ResourceVO vo) {
-        ResourceInventory inv = new ResourceInventory();
-        inv.setUuid(vo.getUuid());
-        inv.setDescription(vo.getDescription());
-        inv.setNetworkSegmentA(vo.getNetworkSegmentA());
-        inv.setNetworkSegmentB(vo.getNetworkSegmentB());
-        inv.setProductName(vo.getProductName());
-        inv.setProductType(vo.getProductType());
-        inv.setProductUuid(vo.getProductUuid());
-        inv.setCreateDate(vo.getCreateDate());
-        inv.setLastOpDate(vo.getLastOpDate());
-
-        return inv;
-    }
-
-    public static List<ResourceInventory> valueOf(Collection<ResourceVO> vos) {
-        List<ResourceInventory> lst = new ArrayList<>(vos.size());
-        for (ResourceVO vo : vos) {
-            lst.add(ResourceInventory.valueOf(vo));
-        }
-        return lst;
-    }
-
 
 
     public String getUuid() {
@@ -92,20 +70,12 @@ public class ResourceInventory {
         this.description = description;
     }
 
-    public String getNetworkSegmentA() {
-        return networkSegmentA;
+    public String getMonitorNetworkSegment() {
+        return monitorNetworkSegment;
     }
 
-    public void setNetworkSegmentA(String networkSegmentA) {
-        this.networkSegmentA = networkSegmentA;
-    }
-
-    public String getNetworkSegmentB() {
-        return networkSegmentB;
-    }
-
-    public void setNetworkSegmentB(String networkSegmentB) {
-        this.networkSegmentB = networkSegmentB;
+    public void setMonitorNetworkSegment(String monitorNetworkSegment) {
+        this.monitorNetworkSegment = monitorNetworkSegment;
     }
 
     public Timestamp getCreateDate() {
@@ -122,5 +92,21 @@ public class ResourceInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
+
+    public List<PolicyInventory> getPolicies() {
+        return policies;
+    }
+
+    public void setPolicies(List<PolicyInventory> policies) {
+        this.policies = policies;
     }
 }
