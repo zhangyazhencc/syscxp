@@ -112,6 +112,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
 
     private void handle(APIQueryVlanUsedMsg msg) {
         List<VlanUsedInventory> switchPortUsedInventoryList = new ArrayList<VlanUsedInventory>();
+        APIQueryVlanUsedReply reply = new APIQueryVlanUsedReply();
         String sql = "select s.code, sp.portName, ti.vlan " +
                 "from SwitchVO s, SwitchPortVO sp, InterfaceVO i,TunnelInterfaceVO ti " +
                 "where s.uuid = sp.switchUuid and sp.uuid = i.switchPortUuid and ti.interfaceUuid = i.uuid " +
@@ -123,6 +124,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         tfq.setParameter("uuid", msg.getUuid());
 
         List<Tuple> ts = tfq.getResultList();
+        reply.setCount(ts.size());
         for (Tuple t : ts) {
             VlanUsedInventory inventory = new VlanUsedInventory();
             inventory.setCode(t.get(0, String.class));
@@ -130,29 +132,15 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             switchPortUsedInventoryList.add(inventory);
         }
 
-        String sqlCount ="select count(*) " +
-                "from SwitchVO s, SwitchPortVO sp, InterfaceVO i,TunnelInterfaceVO ti " +
-                "where s.uuid = sp.switchUuid and sp.uuid = i.switchPortUuid and ti.interfaceUuid = i.uuid " +
-                " and s.uuid = :uuid ";
-
-        TypedQuery<Tuple> tfqCount = dbf.getEntityManager().createQuery(sql, Tuple.class);
-        tfqCount.setParameter("uuid", msg.getUuid());
-        List<Tuple> tsCount = tfqCount.getResultList();
-        String count = null;
-        for (Tuple t : tsCount) {
-           count = t.get(0, String.class);
-        }
-
-
-        APIQueryVlanUsedReply reply = new APIQueryVlanUsedReply();
         reply.setInventories(switchPortUsedInventoryList);
-        reply.setCount(count);
         bus.reply(msg, reply);
     }
-
+    @Transactional
     private void handle(APIQuerySwitchPortAvailableMsg msg) {
         List<SwitchPortAvailableInventory> switchPortAvailableInventoryList = new ArrayList<SwitchPortAvailableInventory>();
+        APIQuerySwitchPortAvailableReply reply = new APIQuerySwitchPortAvailableReply();
         List<Tuple> ts;
+        String count = null;
         if(msg.getPortName() != null){
             String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
                     "where s.uuid = sp.switchUuid and sp.state = :spstate " +
@@ -169,6 +157,8 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
             tfq.setParameter("portName",  "%"+msg.getPortName()+"%");
             ts = tfq.getResultList();
+
+
 
         }else if(msg.getPortType() == null && msg.getPortAttribute() != null){
             String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
@@ -217,7 +207,10 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             tfq.setParameter("portAttribute", SwitchPortAttribute.Exclusive);
             ts = tfq.getResultList();
 
+
+
         }
+        reply.setCount(ts.size());
         for (Tuple t : ts) {
             SwitchPortAvailableInventory inventory = new SwitchPortAvailableInventory();
             inventory.setCode(t.get(0, String.class));
@@ -226,8 +219,6 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
             switchPortAvailableInventoryList.add(inventory);
         }
 
-
-        APIQuerySwitchPortAvailableReply reply = new APIQuerySwitchPortAvailableReply();
         reply.setInventories(switchPortAvailableInventoryList);
         bus.reply(msg,reply);
     }

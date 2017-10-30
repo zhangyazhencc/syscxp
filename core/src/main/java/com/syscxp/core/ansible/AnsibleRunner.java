@@ -354,7 +354,7 @@ public class AnsibleRunner {
                 return;
             }
 
-            putArgument("pip_url", getPipUrl());
+            putArgument("pip_url", AnsibleConstant.PIP_URL);
             putArgument("trusted_host", Platform.getManagementServerIp());
             putArgument("yum_server", String.format("%s:8080", Platform.getManagementServerIp()));
             putArgument("remote_user", username);

@@ -151,7 +151,7 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
 //                    "sudo pip install -i http://localhost/%s --trusted-host localhost -I ansible==1.9.6; " +
 //                    "fi", AnsibleConstant.PYPI_REPO), false);
 
-            deployModule("ansible/syscxplib", "syscxplib.py");
+//            deployModule("ansible/syscxplib", "syscxplib.py");
         } catch (IOException e) {
             throw new CloudRuntimeException(e);
         }

@@ -12,7 +12,7 @@ public class APIGetProductPriceReply extends APIReply {
     private AccountBalanceInventory accountBalanceInventory;
 
     private BigDecimal originalPrice;
-    private BigDecimal dischargePrice;
+    private BigDecimal discountPrice;
 
     private BigDecimal mayPayTotal;
 
@@ -42,12 +42,12 @@ public class APIGetProductPriceReply extends APIReply {
         this.originalPrice = originalPrice;
     }
 
-    public BigDecimal getDischargePrice() {
-        return dischargePrice;
+    public BigDecimal getDiscountPrice() {
+        return discountPrice;
     }
 
-    public void setDischargePrice(BigDecimal dischargePrice) {
-        this.dischargePrice = dischargePrice;
+    public void setDiscountPrice(BigDecimal discountPrice) {
+        this.discountPrice = discountPrice;
     }
 
     public BigDecimal getMayPayTotal() {

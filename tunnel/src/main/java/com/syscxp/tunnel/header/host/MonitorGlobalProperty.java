@@ -15,7 +15,7 @@ public class MonitorGlobalProperty {
     public static String AGENT_URL_ROOT_PATH;
     @GlobalProperty(name="MonitorAgent.agentUrlScheme", defaultValue = "http")
     public static String AGENT_URL_SCHEME;
-    @GlobalProperty(name="MonitorAgent.port", defaultValue = "7070")
+    @GlobalProperty(name="MonitorAgent.port", defaultValue = "7079")
     public static int AGENT_PORT;
     @GlobalProperty(name="MonitorAgentServer.port", defaultValue = "10001")
     public static int AGENT_SERVER_PORT;
