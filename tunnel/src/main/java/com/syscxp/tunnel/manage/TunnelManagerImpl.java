@@ -1268,7 +1268,18 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void validate(APIUpdateInterfaceExpireDateMsg msg) {
         //判断该产品是否有未完成订单
-        
+        APIGetHasNotifyMsg apiGetHasNotifyMsg = new APIGetHasNotifyMsg();
+        apiGetHasNotifyMsg.setAccountUuid(msg.getAccountUuid());
+        apiGetHasNotifyMsg.setProductUuid(msg.getUuid());
+
+        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
+        if (!rsp.isSuccess())
+            throw new ApiMessageInterceptionException(
+                    argerr("查询订单失败.", msg.getAccountUuid()));
+        APIGetHasNotifyReply reply = (APIGetHasNotifyReply) rsp;
+        if (reply.isInventory())
+            throw new ApiMessageInterceptionException(
+                    argerr("该订单[uuid:%s] 有未完成操作，请稍等！", msg.getUuid()));
     }
 
     private void validate(APIDeleteInterfaceMsg msg) {
@@ -1407,6 +1418,20 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APIUpdateTunnelBandwidthMsg msg) {
+        //判断该产品是否有未完成订单
+        APIGetHasNotifyMsg apiGetHasNotifyMsg = new APIGetHasNotifyMsg();
+        apiGetHasNotifyMsg.setAccountUuid(msg.getAccountUuid());
+        apiGetHasNotifyMsg.setProductUuid(msg.getUuid());
+
+        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
+        if (!rsp.isSuccess())
+            throw new ApiMessageInterceptionException(
+                    argerr("查询订单失败.", msg.getAccountUuid()));
+        APIGetHasNotifyReply reply = (APIGetHasNotifyReply) rsp;
+        if (reply.isInventory())
+            throw new ApiMessageInterceptionException(
+                    argerr("该订单[uuid:%s] 有未完成操作，请稍等！", msg.getUuid()));
+
         //调整次数当月是否达到上限
         LocalDateTime dateTime =
                 LocalDate.now().withDayOfMonth(LocalDate.MIN.getDayOfMonth()).atTime(LocalTime.MIN);
@@ -1424,6 +1449,19 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APIUpdateTunnelExpireDateMsg msg) {
+        //判断该产品是否有未完成订单
+        APIGetHasNotifyMsg apiGetHasNotifyMsg = new APIGetHasNotifyMsg();
+        apiGetHasNotifyMsg.setAccountUuid(msg.getAccountUuid());
+        apiGetHasNotifyMsg.setProductUuid(msg.getUuid());
+
+        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
+        if (!rsp.isSuccess())
+            throw new ApiMessageInterceptionException(
+                    argerr("查询订单失败.", msg.getAccountUuid()));
+        APIGetHasNotifyReply reply = (APIGetHasNotifyReply) rsp;
+        if (reply.isInventory())
+            throw new ApiMessageInterceptionException(
+                    argerr("该订单[uuid:%s] 有未完成操作，请稍等！", msg.getUuid()));
     }
 
     private void validate(APIDeleteTunnelMsg msg) {
