@@ -370,6 +370,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         regulationVO.setPolicyUuid(msg.getPolicyUuid());
         regulationVO.setTriggerPeriod(msg.getTriggerPeriod());
         dbf.persistAndRefresh(regulationVO);
+
         APICreateRegulationEvent event = new APICreateRegulationEvent(msg.getId());
         event.setInventory(RegulationInventory.valueOf(regulationVO));
         bus.publish(event);
