@@ -30,7 +30,6 @@ public class TunnelInventory {
     private Integer duration;
     private ProductChargeModel productChargeModel;
     private Integer maxModifies;
-    private Integer isBilling;
     private String description;
     private Timestamp expireDate;
     private Timestamp lastOpDate;
@@ -53,7 +52,6 @@ public class TunnelInventory {
         inv.setDuration(vo.getDuration());
         inv.setProductChargeModel(vo.getProductChargeModel());
         inv.setMaxModifies(vo.getMaxModifies());
-        inv.setIsBilling(vo.getIsBilling());
         inv.setDescription(vo.getDescription());
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -211,14 +209,6 @@ public class TunnelInventory {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
-    }
-
-    public Integer getIsBilling() {
-        return isBilling;
-    }
-
-    public void setIsBilling(Integer isBilling) {
-        this.isBilling = isBilling;
     }
 
     public String getOwnerAccountUuid() {

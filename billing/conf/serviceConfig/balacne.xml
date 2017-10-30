@@ -24,19 +24,19 @@
     </message>
 
     <message>
-        <name>com.syscxp.billing.header.balance.APIUpdateAccountDischargeMsg</name>
+        <name>com.syscxp.billing.header.balance.APIUpdateAccountDiscountMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.billing.header.balance.APICreateAccountDischargeMsg</name>
+        <name>com.syscxp.billing.header.balance.APICreateAccountDiscountMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.billing.header.balance.APIDeleteAccountDischargeMsg</name>
+        <name>com.syscxp.billing.header.balance.APIDeleteAccountDiscountMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.billing.header.balance.APIGetAccountDischargeCategoryMsg</name>
+        <name>com.syscxp.billing.header.balance.APIGetAccountDiscountCategoryMsg</name>
     </message>
 
 
@@ -53,7 +53,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.billing.header.balance.APIQueryAccountDischargeMsg</name>
+        <name>com.syscxp.billing.header.balance.APIQueryAccountDiscountMsg</name>
         <serviceId>query</serviceId>
     </message>
 

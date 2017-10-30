@@ -38,7 +38,7 @@ public class ProductPriceUnitInventory {
 
     private Timestamp lastOpDate;
 
-    private int discharge;
+    private int discount;
 
     public static ProductPriceUnitInventory valueOf(ProductPriceUnitVO vo) {
         ProductPriceUnitInventory inv = new ProductPriceUnitInventory();
@@ -178,12 +178,12 @@ public class ProductPriceUnitInventory {
         return lastOpDate;
     }
 
-    public int getDischarge() {
-        return discharge;
+    public int getDiscount() {
+        return discount;
     }
 
-    public void setDischarge(int discharge) {
-        this.discharge = discharge;
+    public void setDiscount(int discount) {
+        this.discount = discount;
     }
 
     public void setLastOpDate(Timestamp lastOpDate) {
