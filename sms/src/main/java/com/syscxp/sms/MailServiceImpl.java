@@ -84,7 +84,9 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
             }
         }
         reply.setValid(valid);
-        verificationCode.isValidate = true;
+        if(valid){
+            verificationCode.isValidate = true;
+        }
         sessions.put(msg.getMail(),verificationCode);
         bus.reply(msg, reply);
     }
