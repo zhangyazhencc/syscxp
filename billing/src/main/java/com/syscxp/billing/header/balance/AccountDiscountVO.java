@@ -23,12 +23,7 @@ public class AccountDiscountVO {
     private String accountUuid;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private ProductType productType;
-
-    @Column
-    @Enumerated(EnumType.STRING)
-    private Category category;
+    private String productCategoryUuid;
 
     @Column
     private int discount;
@@ -38,28 +33,6 @@ public class AccountDiscountVO {
 
     @Column
     private Timestamp lastOpDate;
-
-    @Column
-    private String categoryName;
-
-    @Column
-    private String productTypeName;
-
-    public String getCategoryName() {
-        return categoryName;
-    }
-
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
-    }
-
-    public String getProductTypeName() {
-        return productTypeName;
-    }
-
-    public void setProductTypeName(String productTypeName) {
-        this.productTypeName = productTypeName;
-    }
 
     public String getUuid() {
         return uuid;
@@ -75,14 +48,6 @@ public class AccountDiscountVO {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
-    }
-
-    public ProductType getProductType() {
-        return productType;
-    }
-
-    public void setProductType(ProductType productType) {
-        this.productType = productType;
     }
 
     public int getDiscount() {
@@ -114,11 +79,11 @@ public class AccountDiscountVO {
         this.lastOpDate = lastOpDate;
     }
 
-    public Category getCategory() {
-        return category;
+    public String getProductCategoryUuid() {
+        return productCategoryUuid;
     }
 
-    public void setCategory(Category category) {
-        this.category = category;
+    public void setProductCategoryUuid(String productCategoryUuid) {
+        this.productCategoryUuid = productCategoryUuid;
     }
 }

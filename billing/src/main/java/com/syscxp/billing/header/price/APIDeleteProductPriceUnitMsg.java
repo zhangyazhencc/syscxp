@@ -1,9 +1,12 @@
 package com.syscxp.billing.header.price;
 
+import com.syscxp.header.billing.BillingConstant;
 import com.syscxp.header.billing.ProductPriceUnitVO;
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
+@Action(category = BillingConstant.ACTION_CATEGORY_PRICE)
 public class APIDeleteProductPriceUnitMsg extends APIMessage{
     @APIParam(required = false, resourceType = ProductPriceUnitVO.class)
     private String uuid;

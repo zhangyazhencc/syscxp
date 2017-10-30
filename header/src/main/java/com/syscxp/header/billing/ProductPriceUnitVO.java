@@ -18,18 +18,7 @@ public class ProductPriceUnitVO {
     private String uuid;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private ProductType productTypeCode;
-
-    @Column
-    private String productTypeName;
-
-    @Column
-    @Enumerated(EnumType.STRING)
-    private Category categoryCode;
-
-    @Column
-    private String categoryName;
+    private String productCategoryUuid;
 
     @Column
     private String areaCode;
@@ -67,36 +56,12 @@ public class ProductPriceUnitVO {
         this.uuid = uuid;
     }
 
-    public ProductType getProductTypeCode() {
-        return productTypeCode;
+    public String getProductCategoryUuid() {
+        return productCategoryUuid;
     }
 
-    public void setProductTypeCode(ProductType productTypeCode) {
-        this.productTypeCode = productTypeCode;
-    }
-
-    public String getProductTypeName() {
-        return productTypeName;
-    }
-
-    public void setProductTypeName(String productTypeName) {
-        this.productTypeName = productTypeName;
-    }
-
-    public Category getCategoryCode() {
-        return categoryCode;
-    }
-
-    public void setCategoryCode(Category categoryCode) {
-        this.categoryCode = categoryCode;
-    }
-
-    public String getCategoryName() {
-        return categoryName;
-    }
-
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
+    public void setProductCategoryUuid(String productCategoryUuid) {
+        this.productCategoryUuid = productCategoryUuid;
     }
 
     public String getAreaCode() {
