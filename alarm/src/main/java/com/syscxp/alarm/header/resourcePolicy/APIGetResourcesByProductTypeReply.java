@@ -6,13 +6,13 @@ import com.syscxp.header.tunnel.TunnelForAlarmInventory;
 import java.util.List;
 
 public class APIGetResourcesByProductTypeReply extends APIReply{
-    List<TunnelForAlarmInventory> inventories;
+    List<ResourceInventory> inventories;
 
-    public List<TunnelForAlarmInventory> getInventories() {
+    public List<ResourceInventory> getInventories() {
         return inventories;
     }
 
-    public void setInventories(List<TunnelForAlarmInventory> inventories) {
+    public void setInventories(List<ResourceInventory> inventories) {
         this.inventories = inventories;
     }
 }

@@ -146,7 +146,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
         RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
         if (rsp.getState().equals(RestAPIState.Done.toString())) {
             APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
-            if (!replay.isNormalAccountHasProxy()) {
+            if (replay.isNormalAccountHasProxy()) {
                 throw new IllegalArgumentException("the account has proxy, must let agency set the discount");
             }
         }

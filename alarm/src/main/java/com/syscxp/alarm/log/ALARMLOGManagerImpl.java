@@ -14,6 +14,7 @@ import com.syscxp.header.AbstractService;
 import com.syscxp.header.alarm.AlarmConstant;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
+import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
@@ -70,7 +71,7 @@ public class ALARMLOGManagerImpl  extends AbstractService implements ApiMessageI
         alarmLogVO.setAlarmTime(msg.getCreated());
         alarmLogVO.setStatus(AlarmStatus.nameOf(msg.getStatus()));
         alarmLogVO.setAccountUuid(msg.getUser_id());
-        alarmLogVO.setProductType(null);//todo  where should acquire
+        alarmLogVO.setProductType(ProductType.TUNNEL);//todo  where should acquire
         //alarmLogVO.setDuration(0);//持续时间
         //alarmLogVO.setDurationTimeUnit(TimeUnit.MILLISECONDS);
         dbf.persistAndRefresh(alarmLogVO);
@@ -81,7 +82,7 @@ public class ALARMLOGManagerImpl  extends AbstractService implements ApiMessageI
             for(ContactVO contactVO: contactGroupVO.getContactVOList()){
                 Set<NotifyWayVO> notifyWayVOs = contactVO.getNotifyWayVOs();
                 for(NotifyWayVO notifyWayVO: notifyWayVOs){
-
+                    notifyWayVO.getCode().equals("email");
                 }
             }
         }
