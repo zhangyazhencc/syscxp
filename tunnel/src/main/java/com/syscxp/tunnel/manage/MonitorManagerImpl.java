@@ -715,7 +715,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             hostQ.setParameter("hostUuid", monitor.get(1).toString());
             Tuple host = hostQ.getResultList().get(0);
 
-            String tunnelSql = "select g.bandwidth,h.vlan,j.portName \n" +
+            String tunnelSql = "select g.bandwidth,h.vlan,j.portName,g.vsi \n" +
                     "from TunnelVO g, TunnelInterfaceVO h, InterfaceVO i, SwitchPortVO j\n" +
                     "where h.tunnelUuid = g.uuid\n" +
                     "and h.sortTag = :sortTag\n" +
@@ -737,7 +737,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 mpls.setVlan_id(Integer.valueOf(tunnel.get(1).toString()) + 1);
                 mpls.setPort_name(tunnel.get(2, String.class));
                 mpls.setBandwidth(Integer.valueOf(tunnel.get(0).toString()));
-
+                mpls.setVni(Integer.valueOf(tunnel.get(3).toString()));
                 mplsList.add(mpls);
             } else if (PhysicalSwitchAccessType.SDN.toString().equals(host.get(0).toString())) {
                 // 获取上联口对应的物理交换机作为mpls数据
