@@ -5,7 +5,7 @@ import com.syscxp.header.message.APIReply;
 
 import java.util.List;
 
-public class APIGetAccountDischargeCategoryReply extends APIReply {
+public class APIGetAccountDiscountCategoryReply extends APIReply {
 
     private List<ProductPriceUnitInventory> inventories;
 

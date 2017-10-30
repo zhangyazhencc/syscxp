@@ -48,7 +48,7 @@ public class RenewJob extends QuartzJobBean {
                     continue;
                 }
 
-                    BigDecimal dischargePrice = BigDecimal.ZERO;
+                    BigDecimal discountPrice = BigDecimal.ZERO;
                     BigDecimal originalPrice = BigDecimal.ZERO;
                     SimpleQuery<PriceRefRenewVO> queryPriceRefRenewVO = databaseFacade.createQuery(PriceRefRenewVO.class);
                     queryPriceRefRenewVO.add(PriceRefRenewVO_.renewUuid, SimpleQuery.Op.EQ, renewVO.getUuid());
@@ -59,17 +59,17 @@ public class RenewJob extends QuartzJobBean {
                         if (productPriceUnitVO == null) {
                             throw new IllegalArgumentException("price uuid is not valid");
                         }
-                        SimpleQuery<AccountDischargeVO> qDischarge = databaseFacade.createQuery(AccountDischargeVO.class);
-                        qDischarge.add(AccountDischargeVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
-                        qDischarge.add(AccountDischargeVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
-                        qDischarge.add(AccountDischargeVO_.accountUuid, SimpleQuery.Op.EQ, renewVO.getAccountUuid());
-                        AccountDischargeVO accountDischargeVO = qDischarge.find();
-                        int productDisCharge = 100;
-                        if (accountDischargeVO != null) {
-                            productDisCharge = accountDischargeVO.getDisCharge() == 0 ? 100 : accountDischargeVO.getDisCharge();
+                        SimpleQuery<AccountDiscountVO> qDiscount = databaseFacade.createQuery(AccountDiscountVO.class);
+                        qDiscount.add(AccountDiscountVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
+                        qDiscount.add(AccountDiscountVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
+                        qDiscount.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, renewVO.getAccountUuid());
+                        AccountDiscountVO accountDiscountVO = qDiscount.find();
+                        int productDiscount = 100;
+                        if (accountDiscountVO != null) {
+                            productDiscount = accountDiscountVO.getDiscount() == 0 ? 100 : accountDiscountVO.getDiscount();
                         }
                         originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
-                        dischargePrice = dischargePrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDisCharge)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));
+                        discountPrice = discountPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));
 
                     }
 
@@ -87,7 +87,7 @@ public class RenewJob extends QuartzJobBean {
                     OrderVO orderVo = new OrderVO();
 
                     originalPrice = originalPrice.multiply(duration);
-                    dischargePrice = dischargePrice.multiply(duration);
+                    discountPrice = discountPrice.multiply(duration);
                     if (originalPrice.compareTo(mayPayTotal) > 0) {
                         return;
                     }
@@ -97,17 +97,17 @@ public class RenewJob extends QuartzJobBean {
                     }
                     String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
                     if (abvo.getPresentBalance().compareTo(BigDecimal.ZERO) > 0) {
-                        if (abvo.getPresentBalance().compareTo(dischargePrice) > 0) {
-                            BigDecimal presentNow = abvo.getPresentBalance().subtract(dischargePrice);
+                        if (abvo.getPresentBalance().compareTo(discountPrice) > 0) {
+                            BigDecimal presentNow = abvo.getPresentBalance().subtract(discountPrice);
                             abvo.setPresentBalance(presentNow);
-                            orderVo.setPayPresent(dischargePrice);
+                            orderVo.setPayPresent(discountPrice);
                             orderVo.setPayCash(BigDecimal.ZERO);
                             DealDetailVO dealDetailVO = new DealDetailVO();
                             dealDetailVO.setUuid(Platform.getUuid());
                             dealDetailVO.setAccountUuid(renewVO.getAccountUuid());
                             dealDetailVO.setDealWay(DealWay.PRESENT_BILL);
                             dealDetailVO.setIncome(BigDecimal.ZERO);
-                            dealDetailVO.setExpend(dischargePrice.negate());
+                            dealDetailVO.setExpend(discountPrice.negate());
                             dealDetailVO.setFinishTime(currentTimestamp);
                             dealDetailVO.setType(DealType.DEDUCTION);
                             dealDetailVO.setState(DealState.SUCCESS);
@@ -118,7 +118,7 @@ public class RenewJob extends QuartzJobBean {
 
                         } else {
                             BigDecimal payPresent = abvo.getPresentBalance();
-                            BigDecimal payCash = dischargePrice.subtract(payPresent);
+                            BigDecimal payCash = discountPrice.subtract(payPresent);
                             BigDecimal remainCash = abvo.getCashBalance().subtract(payCash);
                             abvo.setCashBalance(remainCash);
                             abvo.setPresentBalance(BigDecimal.ZERO);
@@ -155,17 +155,17 @@ public class RenewJob extends QuartzJobBean {
                             databaseFacade.getEntityManager().persist(dVO);
                         }
                     } else {
-                        BigDecimal remainCashBalance = abvo.getCashBalance().subtract(dischargePrice);
+                        BigDecimal remainCashBalance = abvo.getCashBalance().subtract(discountPrice);
                         abvo.setCashBalance(remainCashBalance);
                         orderVo.setPayPresent(BigDecimal.ZERO);
-                        orderVo.setPayCash(dischargePrice);
+                        orderVo.setPayCash(discountPrice);
 
                         DealDetailVO dVO = new DealDetailVO();
                         dVO.setUuid(Platform.getUuid());
                         dVO.setAccountUuid(renewVO.getAccountUuid());
                         dVO.setDealWay(DealWay.CASH_BILL);
                         dVO.setIncome(BigDecimal.ZERO);
-                        dVO.setExpend(dischargePrice.negate());
+                        dVO.setExpend(discountPrice.negate());
                         dVO.setFinishTime(currentTimestamp);
                         dVO.setType(DealType.DEDUCTION);
                         dVO.setState(DealState.SUCCESS);
@@ -176,7 +176,7 @@ public class RenewJob extends QuartzJobBean {
                     }
                     orderVo.setType(OrderType.RENEW);
                     orderVo.setOriginalPrice(originalPrice);
-                    orderVo.setPrice(dischargePrice);
+                    orderVo.setPrice(discountPrice);
                     Calendar calendar = Calendar.getInstance();
                     calendar.setTime(currentTimestamp);
                     calendar.add(Calendar.MONTH, duration.intValue());
@@ -186,7 +186,7 @@ public class RenewJob extends QuartzJobBean {
 
                     Timestamp endTime = new Timestamp(calendar.getTime().getTime());
                     long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
-                    renewVO.setPricePerDay(renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays)).add(dischargePrice).divide(BigDecimal.valueOf(notUseDays).add(duration),4,BigDecimal.ROUND_HALF_EVEN));
+                    renewVO.setPricePerDay(renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays)).add(discountPrice).divide(BigDecimal.valueOf(notUseDays).add(duration),4,BigDecimal.ROUND_HALF_EVEN));
                     databaseFacade.getEntityManager().merge(renewVO);
 
                     orderVo.setUuid(Platform.getUuid());

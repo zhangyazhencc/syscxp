@@ -3,6 +3,7 @@ package com.syscxp.tunnel.header.monitor;
 import com.syscxp.header.host.HostVO;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.tunnel.header.host.MonitorHostVO;
 import com.syscxp.tunnel.header.tunnel.TunnelVO;
 
 /**
@@ -15,13 +16,13 @@ public class APICreateSpeedRecordsMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class)
     private String tunnelUuid;
 
-    @APIParam(emptyString = false,resourceType = HostVO.class)
+    @APIParam(emptyString = false,resourceType = MonitorHostVO.class)
     private String srcHostUuid;
 
     @APIParam(emptyString = false,maxLength = 64)
     private String srcMonitorIp;
 
-    @APIParam(emptyString = false,resourceType = HostVO.class)
+    @APIParam(emptyString = false,resourceType = MonitorHostVO.class)
     private String dstHostUuid;
 
     @APIParam(emptyString = false,maxLength = 64)

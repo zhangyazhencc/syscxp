@@ -27,7 +27,6 @@ public class InterfaceInventory {
     private Integer duration;
     private ProductChargeModel productChargeModel;
     private Integer maxModifies;
-    private Integer isBilling;
     private Timestamp expireDate;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -47,7 +46,6 @@ public class InterfaceInventory {
         inv.setDuration(vo.getDuration());
         inv.setProductChargeModel(vo.getProductChargeModel());
         inv.setMaxModifies(vo.getMaxModifies());
-        inv.setIsBilling(vo.getIsBilling());
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -180,14 +178,6 @@ public class InterfaceInventory {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
-    }
-
-    public Integer getIsBilling() {
-        return isBilling;
-    }
-
-    public void setIsBilling(Integer isBilling) {
-        this.isBilling = isBilling;
     }
 
     public String getOwnerAccountUuid() {
