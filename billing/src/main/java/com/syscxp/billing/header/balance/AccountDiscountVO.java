@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 @Inheritance(strategy = InheritanceType.JOINED)
 @TriggerIndex
 @SqlTrigger
-public class AccountDischargeVO {
+public class AccountDiscountVO {
 
     @Id
     @Column
@@ -31,7 +31,7 @@ public class AccountDischargeVO {
     private Category category;
 
     @Column
-    private int disCharge;
+    private int discount;
 
     @Column
     private Timestamp createDate;
@@ -85,12 +85,12 @@ public class AccountDischargeVO {
         this.productType = productType;
     }
 
-    public int getDisCharge() {
-        return disCharge;
+    public int getDiscount() {
+        return discount;
     }
 
-    public void setDisCharge(int disCharge) {
-        this.disCharge = Math.abs(disCharge);
+    public void setDiscount(int discount) {
+        this.discount = Math.abs(discount);
     }
 
     public Timestamp getCreateDate() {

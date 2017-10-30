@@ -5,6 +5,6 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APISyncCallMessage;
 
 @Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
-public class APIGetAccountDischargeCategoryMsg extends APISyncCallMessage {
+public class APIGetAccountDiscountCategoryMsg extends APISyncCallMessage {
 
 }

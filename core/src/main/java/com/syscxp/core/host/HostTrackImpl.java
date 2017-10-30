@@ -1,13 +1,12 @@
 package com.syscxp.core.host;
 
+import com.syscxp.core.CoreGlobalProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.cloudbus.CloudBusSteppingCallback;
 import com.syscxp.core.cloudbus.ResourceDestinationMaker;
-import com.syscxp.core.config.GlobalConfig;
-import com.syscxp.core.config.GlobalConfigUpdateExtensionPoint;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.thread.PeriodicTask;
@@ -33,6 +32,7 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
     private Set<String> hostInTracking = Collections.synchronizedSet(new HashSet<String>());
     private Future<Void> trackerThread = null;
     private final List<String> inReconnectingHost = Collections.synchronizedList(new ArrayList<String>());
+    private final Map<String, Integer> reconnectTimes = Collections.synchronizedMap(new HashMap<>());
 
     @Autowired
     private DatabaseFacade dbf;
@@ -42,6 +42,15 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
     private CloudBus bus;
     @Autowired
     private ThreadFacade thdf;
+
+    public void count(String hostUuid) {
+        if (reconnectTimes.getOrDefault(hostUuid, 0) <= CoreGlobalProperty.MAX_RECONNECT_TIMES) {
+            reconnectTimes.computeIfPresent(hostUuid, (v, i) -> i + 1);
+        } else {
+            untrackHost(hostUuid);
+            reconnectTimes.remove(hostUuid);
+        }
+    }
 
     private class Tracker implements PeriodicTask {
         @Override
@@ -62,6 +71,7 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
         private void handleReply(final String hostUuid, MessageReply reply) {
             if (!reply.isSuccess()) {
                 logger.warn(String.format("[Host Tracker]: unable track host[uuid:%s], %s", hostUuid, reply.getError()));
+                count(hostUuid);
                 return;
             }
 
@@ -82,10 +92,8 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                             "but connection.autoReconnectOnError is set to false, no reconnect will issue", hostUuid));
                 }
 
-                //TODO: implement stopping PING after failing specific times
-
-                if (needReconnect && !inReconnectingHost.contains(hostUuid)) {
-                    inReconnectingHost.add(hostUuid);
+                if (needReconnect && reconnectTimes.putIfAbsent(hostUuid, 0) <= CoreGlobalProperty
+                        .MAX_RECONNECT_TIMES) {
                     logger.debug(String.format("[Host Tracker]: detected host[uuid:%s] connection lost, " +
                                     "issue a reconnect because %s is set to true",
                             hostUuid, HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.getCanonicalName()));
@@ -96,11 +104,12 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                     bus.send(msg, new CloudBusCallBack(null) {
                         @Override
                         public void run(MessageReply reply) {
-                            inReconnectingHost.remove(hostUuid);
+                            reconnectTimes.remove(hostUuid);
 
                             if (!reply.isSuccess()) {
                                 logger.warn(String.format("host[uuid:%s] failed to reconnect, %s",
                                         hostUuid, reply.getError()));
+                                count(hostUuid);
                             }
                         }
                     });
@@ -133,13 +142,13 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
 
                 bus.send(msgs, HostGlobalConfig.HOST_TRACK_PARALLELISM_DEGREE.value(Integer.class),
                         new CloudBusSteppingCallback(null) {
-                    @Override
-                    public void run(NeedReplyMessage msg, MessageReply reply) {
-                        PingHostMsg pmsg = (PingHostMsg)msg;
-                        handleReply(pmsg.getHostUuid(), reply);
-                        hostInTracking.remove(pmsg.getHostUuid());
-                    }
-                });
+                            @Override
+                            public void run(NeedReplyMessage msg, MessageReply reply) {
+                                PingHostMsg pmsg = (PingHostMsg) msg;
+                                handleReply(pmsg.getHostUuid(), reply);
+                                hostInTracking.remove(pmsg.getHostUuid());
+                            }
+                        });
             } catch (Throwable t) {
                 logger.warn("unhandled exception", t);
             }
@@ -190,9 +199,9 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
             hostUuids.clear();
 
             long count = dbf.count(HostVO.class);
-            int times = (int)count / 10000 + (count%10000 == 0 ? 0 : 1);
+            int times = (int) count / 10000 + (count % 10000 == 0 ? 0 : 1);
             int offset = 0;
-            for (int i=0; i<times; i++) {
+            for (int i = 0; i < times; i++) {
                 SimpleQuery<HostVO> q = dbf.createQuery(HostVO.class);
                 q.select(HostVO_.uuid);
                 q.setStart(offset);
