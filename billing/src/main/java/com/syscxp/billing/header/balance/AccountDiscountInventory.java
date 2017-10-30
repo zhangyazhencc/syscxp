@@ -8,8 +8,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = AccountDischargeVO.class)
-public class AccountDischargeInventory {
+@Inventory(mappingVOClass = AccountDiscountVO.class)
+public class AccountDiscountInventory {
 
     private String uuid;
 
@@ -17,7 +17,7 @@ public class AccountDischargeInventory {
 
     private ProductType productType;
 
-    private int disCharge;
+    private int discount;
 
     private Category category;
 
@@ -29,11 +29,11 @@ public class AccountDischargeInventory {
 
     private String productTypeName;
 
-    public static AccountDischargeInventory valueOf(AccountDischargeVO vo) {
-        AccountDischargeInventory inv = new AccountDischargeInventory();
+    public static AccountDiscountInventory valueOf(AccountDiscountVO vo) {
+        AccountDiscountInventory inv = new AccountDiscountInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
-        inv.setDisCharge(vo.getDisCharge());
+        inv.setDiscount(vo.getDiscount());
         inv.setProductType(vo.getProductType());
         inv.setCategory(vo.getCategory());
         inv.setCreateDate(vo.getCreateDate());
@@ -43,10 +43,10 @@ public class AccountDischargeInventory {
         return inv;
     }
 
-    public static List<AccountDischargeInventory> valueOf(Collection<AccountDischargeVO> vos) {
-        List<AccountDischargeInventory> lst = new ArrayList<AccountDischargeInventory>(vos.size());
-        for (AccountDischargeVO vo : vos) {
-            lst.add(AccountDischargeInventory.valueOf(vo));
+    public static List<AccountDiscountInventory> valueOf(Collection<AccountDiscountVO> vos) {
+        List<AccountDiscountInventory> lst = new ArrayList<AccountDiscountInventory>(vos.size());
+        for (AccountDiscountVO vo : vos) {
+            lst.add(AccountDiscountInventory.valueOf(vo));
         }
         return lst;
     }
@@ -76,12 +76,12 @@ public class AccountDischargeInventory {
         this.productType = productType;
     }
 
-    public int getDisCharge() {
-        return disCharge;
+    public int getDiscount() {
+        return discount;
     }
 
-    public void setDisCharge(int disCharge) {
-        this.disCharge = disCharge;
+    public void setDiscount(int discount) {
+        this.discount = discount;
     }
 
     public Timestamp getCreateDate() {

@@ -6,6 +6,6 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.query.AutoQuery;
 
 @Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
-@AutoQuery(replyClass = APIQueryAccountDischargeReply.class, inventoryClass = AccountDischargeInventory.class)
-public class APIQueryAccountDischargeMsg extends APIQueryExpendMessage {
+@AutoQuery(replyClass = APIQueryAccountDiscountReply.class, inventoryClass = AccountDiscountInventory.class)
+public class APIQueryAccountDiscountMsg extends APIQueryExpendMessage {
 }

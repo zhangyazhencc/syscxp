@@ -6,13 +6,13 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
 @Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"})
-public class APIUpdateAccountDischargeMsg extends APIMessage{
+public class APIUpdateAccountDiscountMsg extends APIMessage{
 
-    @APIParam(emptyString = false, resourceType = AccountDischargeVO.class)
+    @APIParam(emptyString = false, resourceType = AccountDiscountVO.class)
     private String uuid;
 
     @APIParam(numberRange = {1, 100})
-    private int discharge;
+    private int discount;
 
     public String getUuid() {
         return uuid;
@@ -22,11 +22,11 @@ public class APIUpdateAccountDischargeMsg extends APIMessage{
         this.uuid = uuid;
     }
 
-    public int getDischarge() {
-        return discharge;
+    public int getDiscount() {
+        return discount;
     }
 
-    public void setDischarge(int discharge) {
-        this.discharge = discharge;
+    public void setDiscount(int discount) {
+        this.discount = discount;
     }
 }
