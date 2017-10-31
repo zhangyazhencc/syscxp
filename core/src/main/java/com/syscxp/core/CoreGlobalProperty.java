@@ -42,7 +42,7 @@ public class CoreGlobalProperty {
     public static int CONSOLE_PROXY_PORT;
 
 
-    @GlobalProperty(name = "cleanExpiredProductInterval", defaultValue = "1")
+    @GlobalProperty(name = "cleanExpiredProductInterval", defaultValue = "7")
     public static int CLEAN_EXPIRED_PRODUCT_INTERVAL;
 
     @GlobalProperty(name = "innerMessageMD5Key", defaultValue = "asfdsghajsdgkasg")

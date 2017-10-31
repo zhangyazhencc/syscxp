@@ -304,7 +304,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                         new APICreateSLACompensationOrderMsg();
                 slaCompensationOrderMsg.setProductUuid(vpn.getUuid());
                 slaCompensationOrderMsg.setProductName(vpn.getName());
-                slaCompensationOrderMsg.setProductDescription(vpn.getDescription());
+                slaCompensationOrderMsg.setDescriptionData(vpn.getDescription());
                 slaCompensationOrderMsg.setProductType(ProductType.VPN);
                 slaCompensationOrderMsg.setDuration(msg.getDuration());
                 slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
@@ -342,7 +342,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg();
         orderMsg.setProductUuid(vpn.getUuid());
         orderMsg.setProductName(vpn.getName());
-        orderMsg.setProductDescription(vpn.getDescription());
+        orderMsg.setDescriptionData(vpn.getDescription());
         orderMsg.setProductType(ProductType.VPN);
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
@@ -903,9 +903,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(generateUnits(msg.getBandwidth()));
         APIReply rsp = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
-        if (!rsp.isSuccess())
-            throw new ApiMessageInterceptionException(
-                    argerr("查询价格失败.", msg.getAccountUuid()));
         APIGetProductPriceReply reply = rsp.castReply();
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
