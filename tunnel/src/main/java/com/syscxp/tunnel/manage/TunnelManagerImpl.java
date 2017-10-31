@@ -16,6 +16,7 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
@@ -151,10 +152,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         try {
             APICreateOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
 
-            return reply.getInventory();
+            if (reply.isOrderSuccess()) {
+                return reply.getInventory();
+            }
         } catch (Exception e) {
-            return null;
+            logger.error(String.format("无法创建订单, %s", e.getMessage()), e);
         }
+        return null;
     }
 
     private void handle(APICreateInterfaceMsg msg) {
@@ -194,7 +198,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setExpireDate(null);
         vo.setState(InterfaceState.Unpaid);
         vo.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
-
+        vo.setExpireDate(dbf.getCurrentSqlTime());
         vo = dbf.persistAndRefresh(vo);
 
         //调用支付
