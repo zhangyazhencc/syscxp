@@ -1,29 +1,37 @@
 package com.syscxp.billing.header.price;
 
+import com.syscxp.billing.header.balance.AccountDiscountVO;
+import com.syscxp.header.billing.Category;
+import com.syscxp.header.billing.ProductType;
+import com.syscxp.header.search.SqlTrigger;
+import com.syscxp.header.search.TriggerIndex;
 import com.syscxp.header.vo.EO;
+import com.syscxp.header.vo.ForeignKey;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Table
 @Entity
-public class ProductCategoryEO{
+@Inheritance(strategy = InheritanceType.JOINED)
+@TriggerIndex
+@SqlTrigger(foreignVOClass = AccountDiscountVO.class, foreignVOJoinColumn = "uuid")
+public class ProductCategoryVO{
 
     @Id
     @Column
     private String uuid;
 
     @Column
-    private String code;
+    @Enumerated(EnumType.STRING)
+    private Category code;
 
     @Column
     private String name;
 
     @Column
-    private String productTypeCode;
+    @Enumerated(EnumType.STRING)
+    private ProductType productTypeCode;
 
     @Column
     private String productTypeName;
@@ -42,11 +50,11 @@ public class ProductCategoryEO{
         this.uuid = uuid;
     }
 
-    public String getCode() {
+    public Category getCode() {
         return code;
     }
 
-    public void setCode(String code) {
+    public void setCode(Category code) {
         this.code = code;
     }
 
@@ -58,11 +66,11 @@ public class ProductCategoryEO{
         this.name = name;
     }
 
-    public String getProductTypeCode() {
+    public ProductType getProductTypeCode() {
         return productTypeCode;
     }
 
-    public void setProductTypeCode(String productTypeCode) {
+    public void setProductTypeCode(ProductType productTypeCode) {
         this.productTypeCode = productTypeCode;
     }
 

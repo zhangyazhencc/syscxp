@@ -273,6 +273,26 @@ CREATE TABLE `ResourceVO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `SmsVO`;
+
+CREATE TABLE `SmsVO` (
+  `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
+  `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户UUID',
+  `userUuid` varchar(32) DEFAULT NULL COMMENT '用户UUID',
+  `ip` varchar(30) DEFAULT NULL,
+  `phone` varchar(512) DEFAULT NULL,
+  `templateId` varchar(20) DEFAULT NULL,
+  `appId` varchar(255) DEFAULT NULL,
+  `data` varchar(1024) DEFAULT NULL,
+  `statusCode` varchar(20) DEFAULT NULL,
+  `statusMsg` varchar(255) DEFAULT NULL,
+  `dateCreated` varchar(20) DEFAULT NULL,
+  `smsMessagesId` varchar(255) DEFAULT NULL,
+  `msgEntrance` int(10) DEFAULT NULL,
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*Data for the table `ResourceVO` */
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
