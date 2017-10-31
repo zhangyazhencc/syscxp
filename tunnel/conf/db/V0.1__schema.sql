@@ -311,7 +311,29 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, ownerAccountUuid, vsi, monitorCidr, name, bandwidth, distance, state, status, monitorState, description, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate
                                         FROM `TunnelEO` WHERE deleted IS NULL;
+##带宽配置表
+CREATE TABLE `syscxp_tunnel`.`BandwidthOfferingVO` (
+  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'uuid',
+  `name` varchar(255) NOT NULL UNIQUE COMMENT 'bandwidth offering name',
+  `description` varchar(255) DEFAULT NULL COMMENT '描述',
+  `bandwidth` BIGINT NOT NULL COMMENT '带宽',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+##端口配置表
+CREATE TABLE `syscxp_tunnel`.`PortOfferingVO` (
+  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'uuid',
+  `name` varchar(255) NOT NULL UNIQUE COMMENT 'port offering name',
+  `type` varchar(255) NOT NULL COMMENT '描述',
+  `description` varchar(255) DEFAULT NULL COMMENT '描述',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+##产品订单生效表
 CREATE TABLE `syscxp_tunnel`.`ResourceOrderEffectiveVO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `resourceUuid` varchar(32) NOT NULL COMMENT '产品UUID',
@@ -321,6 +343,7 @@ CREATE TABLE `syscxp_tunnel`.`ResourceOrderEffectiveVO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+##产品下发任务表
 CREATE TABLE `syscxp_tunnel`.`TaskResourceVO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `resourceUuid` varchar(32) NOT NULL COMMENT '产品UUID',

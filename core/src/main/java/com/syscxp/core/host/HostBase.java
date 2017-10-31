@@ -247,35 +247,35 @@ public abstract class HostBase extends AbstractHost {
         HostInventory hinv = HostInventory.valueOf(self);
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
         chain.setName(String.format("delete-host-%s", msg.getUuid()));
-            chain.then(new NoRollbackFlow() {
-                String __name__ = "stop-monitor-agent";
+        chain.then(new NoRollbackFlow() {
+            String __name__ = "stop-monitor-agent";
 
-                @Override
-                public void run(final FlowTrigger trigger, Map data) {
-                    //Todo stop monitor agent
-                    trigger.next();
-                }
-            }).then(new NoRollbackFlow() {
-                String __name__ = "send-delete-host-message";
+            @Override
+            public void run(final FlowTrigger trigger, Map data) {
+                //Todo stop monitor agent
+                trigger.next();
+            }
+        }).then(new NoRollbackFlow() {
+            String __name__ = "send-delete-host-message";
 
-                @Override
-                public void run(final FlowTrigger trigger, Map data) {
-                    HostDeletionMsg msg = new HostDeletionMsg();
-                    msg.setForceDelete(true);
-                    msg.setHostUuid(hinv.getUuid());
-                    bus.makeTargetServiceIdByResourceUuid(msg, HostConstant.SERVICE_ID, hinv.getUuid());
-                    bus.send(msg, new CloudBusCallBack(trigger) {
-                        @Override
-                        public void run(MessageReply reply) {
-                            if (reply.isSuccess()) {
-                                trigger.next();
-                            } else {
-                                trigger.fail(reply.getError());
-                            }
+            @Override
+            public void run(final FlowTrigger trigger, Map data) {
+                HostDeletionMsg msg = new HostDeletionMsg();
+                msg.setForceDelete(true);
+                msg.setHostUuid(hinv.getUuid());
+                bus.makeTargetServiceIdByResourceUuid(msg, HostConstant.SERVICE_ID, hinv.getUuid());
+                bus.send(msg, new CloudBusCallBack(trigger) {
+                    @Override
+                    public void run(MessageReply reply) {
+                        if (reply.isSuccess()) {
+                            trigger.next();
+                        } else {
+                            trigger.fail(reply.getError());
                         }
-                    });
-                }
-            });
+                    }
+                });
+            }
+        });
 
 
         chain.done(new FlowDoneHandler(msg) {

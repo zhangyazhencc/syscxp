@@ -151,7 +151,7 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
 //                    "sudo pip install -i http://localhost/%s --trusted-host localhost -I ansible==1.9.6; " +
 //                    "fi", AnsibleConstant.PYPI_REPO), false);
 
-//            deployModule("ansible/syscxplib", "syscxplib.py");
+            deployModule("ansible/syscxplib", "syscxplib.py");
         } catch (IOException e) {
             throw new CloudRuntimeException(e);
         }
@@ -231,9 +231,9 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
                         throw new OperationFailureException(operr(output));
                     }
 
-                } catch (ShellException se) {
+                } catch (Exception se) {
                     logger.warn(se.getMessage(), se);
-                    throw new OperationFailureException(operr(se.getMessage()));
+                    completion.fail(operr(se.getMessage()));
                 }
 
                 completion.success();
@@ -412,7 +412,7 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
         Boolean ret = moduleChanges.get(moduleName);
         DebugUtils.Assert(ret != null, String.format("cannot find ansible module name[%s]", moduleName));
         if (ret) {
-            // we only need to deploy once
+//             we only need to deploy once
             moduleChanges.put(moduleName, false);
         }
         return ret;

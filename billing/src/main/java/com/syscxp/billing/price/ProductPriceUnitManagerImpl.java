@@ -1,5 +1,7 @@
 package com.syscxp.billing.price;
 
+import com.syscxp.billing.header.balance.AccountDiscountVO;
+import com.syscxp.billing.header.balance.AccountDiscountVO_;
 import com.syscxp.billing.header.price.*;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -63,10 +65,31 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             handle((APIDeleteProductPriceUnitMsg) msg);
         }else if(msg instanceof APIUpdateProductPriceUnitMsg){
             handle((APIUpdateProductPriceUnitMsg) msg);
-        }
-        else{
+        }else if(msg instanceof APIGetProductCategoryListMsg){
+            handle((APIGetProductCategoryListMsg) msg);
+        }else{
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetProductCategoryListMsg msg) {
+        SimpleQuery<ProductCategoryEO> q = dbf.createQuery(ProductCategoryEO.class);
+        q.groupBy(ProductCategoryEO_.productTypeCode);
+        List<ProductCategoryEO> adVO = q.list();
+        List<ProductDataDictionary> productTypes = new ArrayList<>();
+        for(ProductCategoryEO eo: adVO){
+            ProductDataDictionary dictionary = new ProductDataDictionary();
+            dictionary.setCode(eo.getProductTypeCode());
+            dictionary.setName(eo.getProductTypeName());
+            SimpleQuery<ProductCategoryEO> query = dbf.createQuery(ProductCategoryEO.class);
+            query.add(ProductCategoryEO_.productTypeCode, SimpleQuery.Op.EQ, eo.getProductTypeCode());
+            List<ProductCategoryEO> pcVOs = query.list();
+            dictionary.setCategories(ProductCategoryInventory.valueOf(pcVOs));
+            productTypes.add(dictionary);
+        }
+        APIGetProductCategoryListReply reply = new APIGetProductCategoryListReply();
+        reply.setInventories(productTypes);
+        bus.reply(msg,reply);
     }
 
     private void handle(APIUpdateProductPriceUnitMsg msg) {
@@ -106,10 +129,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         ProductPriceUnitVO vo = new ProductPriceUnitVO();
 
         vo.setUuid(Platform.getUuid());
-        vo.setProductTypeCode(ProductType.VHOST);
-        vo.setProductTypeName("互联云");
-        vo.setCategoryName(msg.getCategoryName());
-        vo.setCategoryCode(msg.getCategoryCode());
+        vo.setProductCategoryUuid(msg.getProductCategoryUuid());
         vo.setAreaCode(msg.getAreaName());
         vo.setAreaName(msg.getAreaName());
         vo.setLineCode(msg.getLineName());
@@ -137,10 +157,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             Map.Entry entry = (Map.Entry) entries.next();
 
             vo.setUuid(Platform.getUuid());
-            vo.setProductTypeCode(ProductType.TUNNEL);
-            vo.setProductTypeName("专线");
-            vo.setCategoryCode(Category.ABROAD);
-            vo.setCategoryName("跨国");
+            vo.setProductCategoryUuid(msg.getProductCategoryUuid());
             vo.setAreaCode(msg.getAreaCode());
             vo.setAreaName(msg.getAreaName());
             vo.setLineCode(msg.getLineName());

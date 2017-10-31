@@ -41,9 +41,6 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "consoleProxyPort", defaultValue = "4900")
     public static int CONSOLE_PROXY_PORT;
 
-    @GlobalProperty(name = "maxReconnectTimes", defaultValue = "5")
-    public static int MAX_RECONNECT_TIMES;
-
     @GlobalProperty(name = "innerMessageMD5Key", defaultValue = "asfdsghajsdgkasg")
     public static String INNER_MESSAGE_MD5_KEY;
     @GlobalProperty(name = "innerMessageExpire", defaultValue = "600")
