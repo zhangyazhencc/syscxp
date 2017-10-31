@@ -205,6 +205,12 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
                     SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
                     query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ,inventory.getUuid());
                     List<ResourcePolicyRefVO> resourcePolicyRefVOS = query.list();
+                    List<PolicyInventory> policyInventories = new ArrayList<>();
+                    for(ResourcePolicyRefVO resourcePolicyRefVO: resourcePolicyRefVOS){
+                        policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(),PolicyVO.class)));
+                    }
+                    resourceInventory.setPolicies(policyInventories);
+                    inventories.add(resourceInventory);
                 }
 
             }

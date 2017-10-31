@@ -65,6 +65,8 @@ public class TunnelBase extends AbstractTunnel{
             handle((DisabledTunnelMsg) msg);
         }else if(msg instanceof ModifyTunnelBandwidthMsg){
             handle((ModifyTunnelBandwidthMsg) msg);
+        }else if(msg instanceof ModifyTunnelPortsMsg){
+            handle((ModifyTunnelPortsMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
@@ -236,6 +238,36 @@ public class TunnelBase extends AbstractTunnel{
             @Override
             public void fail(ErrorCode errorCode) {
                 logger.info("下发调整带宽失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+            }
+        });
+    }
+
+    private void handle(ModifyTunnelPortsMsg msg){
+        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
+        String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.MODIFY_TUNNEL_PORTS, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发更改端口成功！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发更改端口失败！");
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
