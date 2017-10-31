@@ -50,5 +50,7 @@
     <import resource="springConfigXml/RESTFacade.xml"/>
     <import resource="springConfigXml/ThreadFacade.xml"/>
     <import resource="springConfigXml/validation.xml"/>
+    <import resource="springConfigXml/Sms.xml"/>
+    <import resource="springConfigXml/Mail.xml"/>
 
 </beans>
