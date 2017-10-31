@@ -25,10 +25,8 @@ public class APICreateInterfaceMsg extends APIMessage {
     private String name;
     @APIParam(emptyString = false,maxLength = 32,resourceType = EndpointVO.class)
     private String endpointUuid;
-    @APIParam(emptyString = false,validValues = {"Exclusive", "Shared"})
-    private SwitchPortAttribute portAttribute;
-    @APIParam(emptyString = false,required = false,validValues = {"RJ45", "SFP_1G","SFP_10G"})
-    private SwitchPortType portType;
+    @APIParam(emptyString = false,maxLength = 32,resourceType = PortOfferingVO.class)
+    private String portOfferingUuid;
     @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
     @APIParam
@@ -62,14 +60,6 @@ public class APICreateInterfaceMsg extends APIMessage {
         this.description = description;
     }
 
-    public SwitchPortType getPortType() {
-        return portType;
-    }
-
-    public void setPortType(SwitchPortType portType) {
-        this.portType = portType;
-    }
-
     public String getAccountUuid() {
         if(getSession().getType() == AccountType.SystemAdmin){
             return accountUuid;
@@ -80,14 +70,6 @@ public class APICreateInterfaceMsg extends APIMessage {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
-    }
-
-    public SwitchPortAttribute getPortAttribute() {
-        return portAttribute;
-    }
-
-    public void setPortAttribute(SwitchPortAttribute portAttribute) {
-        this.portAttribute = portAttribute;
     }
 
     public ProductChargeModel getProductChargeModel() {
@@ -112,5 +94,13 @@ public class APICreateInterfaceMsg extends APIMessage {
 
     public void setUnits(List<ProductPriceUnit> units) {
         this.units = units;
+    }
+
+    public String getPortOfferingUuid() {
+        return portOfferingUuid;
+    }
+
+    public void setPortOfferingUuid(String portOfferingUuid) {
+        this.portOfferingUuid = portOfferingUuid;
     }
 }

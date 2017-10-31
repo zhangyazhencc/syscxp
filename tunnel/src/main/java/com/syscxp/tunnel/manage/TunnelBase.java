@@ -78,7 +78,7 @@ public class TunnelBase extends AbstractTunnel{
 
         ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
         String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
-        System.out.println("！！！！！！！！！！！下发参数"+command);
+        //System.out.println("！！！！！！！！！！！下发参数"+command);
         ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
 
         crf.sendCommand(ControllerRestConstant.START_TUNNEL, command, new Completion(null) {

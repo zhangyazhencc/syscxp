@@ -62,6 +62,16 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIQueryPortOfferingMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIQueryBandwidthOfferingMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.APIQueryTunnelForAlarmMsg</name>
         <serviceId>query</serviceId>
     </message>
