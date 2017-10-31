@@ -394,6 +394,16 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         regulationVO.setTriggerPeriod(msg.getTriggerPeriod());
         dbf.persistAndRefresh(regulationVO);
 
+        SimpleQuery<ResourcePolicyRefVO> rpr = dbf.createQuery(ResourcePolicyRefVO.class);
+        rpr.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
+        if(rpr.isExists()){
+            TunnelParameter tp = new TunnelParameter();
+            List<ResourcePolicyRefVO> list = rpr.list();
+
+
+            
+        }
+
         APICreateRegulationEvent event = new APICreateRegulationEvent(msg.getId());
         event.setInventory(RegulationInventory.valueOf(regulationVO));
         bus.publish(event);
