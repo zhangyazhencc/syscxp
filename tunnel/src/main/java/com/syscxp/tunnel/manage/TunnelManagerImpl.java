@@ -1296,12 +1296,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(msg.getUnits());
-        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
-        if (!rsp.isSuccess())
-            throw new ApiMessageInterceptionException(
-                    argerr("查询价格失败.", msg.getAccountUuid()));
-        APIGetProductPriceReply reply = (APIGetProductPriceReply) rsp;
-        if (!reply.isPayable())
+        APIGetProductPriceReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+        if (!rsp.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
 
@@ -1321,12 +1317,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(msg.getUnits());
-        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
-        if (!rsp.isSuccess())
-            throw new ApiMessageInterceptionException(
-                    argerr("查询价格失败.", msg.getAccountUuid()));
-        APIGetProductPriceReply reply = (APIGetProductPriceReply) rsp;
-        if (!reply.isPayable())
+        APIGetProductPriceReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+        if (!rsp.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
 
