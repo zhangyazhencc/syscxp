@@ -322,7 +322,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductType(renewVO.getProductType());
         orderVo.setProductChargeModel(renewVO.getProductChargeModel());
         orderVo.setPayTime(currentTimestamp);
-        orderVo.setDescriptionData(renewVO.getProductDescription());
+        orderVo.setDescriptionData(renewVO.getDescriptionData());
         orderVo.setProductUuid(renewVO.getProductUuid());
         orderVo.setDuration(originDuration);
 
@@ -347,7 +347,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductType(msg.getProductType());
         orderVo.setProductChargeModel(ProductChargeModel.BY_DAY);
         orderVo.setPayTime(currentTimestamp);
-        orderVo.setDescriptionData(msg.getProductDescription());
+        orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(msg.getProductUuid());
         orderVo.setDuration(msg.getDuration());
 
@@ -399,7 +399,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductType(msg.getProductType());
         orderVo.setPayTime(currentTimestamp);
         orderVo.setProductUuid(msg.getProductUuid());
-        orderVo.setDescriptionData(msg.getProductDescription());
+        orderVo.setDescriptionData(msg.getDescriptionData());
 
         Timestamp startTime = msg.getStartTime();
         Timestamp endTime = msg.getExpiredTime();
@@ -512,7 +512,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setState(OrderState.PAID);
         orderVo.setProductType(msg.getProductType());
         orderVo.setPayTime(currentTimestamp);
-        orderVo.setDescriptionData(msg.getProductDescription());
+        orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(msg.getProductUuid());
 
 
@@ -718,7 +718,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         renewVO.setAccountUuid(orderVo.getAccountUuid());
         renewVO.setProductName(orderVo.getProductName());
         renewVO.setProductType(orderVo.getProductType());
-        renewVO.setProductDescription(orderVo.getDescriptionData());
+        renewVO.setDescriptionData(orderVo.getDescriptionData());
         renewVO.setRenewAuto(true);
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
         renewVO.setPricePerDay(discountPrice.divide(BigDecimal.valueOf(30).multiply(duration), 4, BigDecimal.ROUND_HALF_EVEN));
