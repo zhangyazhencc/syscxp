@@ -18,6 +18,10 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.message.*;
+import com.syscxp.header.core.ReturnValueCompletion;
+import com.syscxp.header.message.APIMessage;
+import com.syscxp.header.message.APIReply;
+import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.header.tunnel.TunnelConstant;
@@ -150,10 +154,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         try {
             APICreateOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
 
-            return reply.getInventory();
+            if (reply.isOrderSuccess()) {
+                return reply.getInventory();
+            }
         } catch (Exception e) {
-            return null;
+            logger.error(String.format("无法创建订单, %s", e.getMessage()), e);
         }
+        return null;
     }
 
     private void handle(APICreateInterfaceMsg msg) {
@@ -193,7 +200,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setExpireDate(null);
         vo.setState(InterfaceState.Unpaid);
         vo.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
-
+        vo.setExpireDate(dbf.getCurrentSqlTime());
         vo = dbf.persistAndRefresh(vo);
 
         //调用支付
@@ -204,7 +211,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
         orderMsg.setDescriptionData("no description");
-        orderMsg.setUnits(msg.getUnits());
+        orderMsg.setCallBackData("null");
+        orderMsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
 
@@ -260,7 +268,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setState(InterfaceState.Unpaid);
         vo.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
 
-
         vo = dbf.persistAndRefresh(vo);
 
         //调用支付
@@ -271,7 +278,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
         orderMsg.setDescriptionData("no description");
-        orderMsg.setUnits(msg.getUnits());
+        orderMsg.setCallBackData("null");
+        orderMsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
 
@@ -287,11 +295,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             //状态修改已支付，生成到期时间
             vo.setAccountUuid(vo.getOwnerAccountUuid());
             vo.setState(InterfaceState.Paid);
-            if (msg.getProductChargeModel() == ProductChargeModel.BY_MONTH) {
-                vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
-            } else if (msg.getProductChargeModel() == ProductChargeModel.BY_YEAR) {
-                vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
-            }
+            vo.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), msg.getProductChargeModel(), msg.getDuration()));
 
             vo = dbf.updateAndRefresh(vo);
 
@@ -1014,19 +1018,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
     }
 
-    private Timestamp getExpireDate(Timestamp oldTime, ProductChargeModel chargeModel, int duration) {
-        Timestamp newTime = oldTime;
-        if (chargeModel == ProductChargeModel.BY_MONTH) {
-            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusMonths(duration));
-        } else if (chargeModel == ProductChargeModel.BY_YEAR) {
-            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusYears(duration));
-        } else if (chargeModel == ProductChargeModel.BY_DAY) {
-            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusDays(duration));
-        }
-        return newTime;
-    }
-
-
     private void updateTunnelFromOrderBuy(OrderCallbackCmd cmd) {
         if (cmd.getProductType() == ProductType.PORT) {
             InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
@@ -1181,6 +1172,30 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         return taskResourceVO;
     }
 
+    private Timestamp getExpireDate(Timestamp oldTime, ProductChargeModel chargeModel, int duration) {
+        Timestamp newTime = oldTime;
+        if (chargeModel == ProductChargeModel.BY_MONTH) {
+            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusMonths(duration));
+        } else if (chargeModel == ProductChargeModel.BY_YEAR) {
+            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusYears(duration));
+        } else if (chargeModel == ProductChargeModel.BY_DAY) {
+            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusDays(duration));
+        }
+        return newTime;
+    }
+
+    private List<ProductPriceUnit> getInterfacePriceUnit(String portOfferingUuid){
+        List<ProductPriceUnit> units = new ArrayList<ProductPriceUnit>();
+        ProductPriceUnit unit = new ProductPriceUnit();
+        unit.setProductTypeCode(ProductType.PORT);
+        unit.setCategoryCode(Category.DEFAULT);
+        unit.setAreaCode("DEFAULT");
+        unit.setLineCode("DEFAULT");
+        unit.setConfigCode(portOfferingUuid);
+        units.add(unit);
+        return units;
+    }
+
     private Future<Void> cleanExpiredProductThread = null;
     private int cleanExpiredProductInterval;
 
@@ -1301,38 +1316,58 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         return msg;
     }
 
+    private void checkOrderNoPay(String accountUuid, String productUuid) {
+        //判断该产品是否有未完成订单
+        APIGetHasNotifyMsg apiGetHasNotifyMsg = new APIGetHasNotifyMsg();
+        apiGetHasNotifyMsg.setAccountUuid(accountUuid);
+        apiGetHasNotifyMsg.setProductUuid(productUuid);
 
-    private void checkAccountBalance(String accountUuid, Integer duration) {
-        //判断账户金额是否充足
-        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
-        priceMsg.setAccountUuid(accountUuid);
-        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
-        priceMsg.setDuration(duration);
-//        priceMsg.setUnits(msg.getUnits());
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
-        if (!reply.isPayable())
+        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
+        APIGetHasNotifyReply reply = (APIGetHasNotifyReply) rsp;
+        if (reply.isInventory())
             throw new ApiMessageInterceptionException(
-                    argerr("The Account[uuid:%s] has no money to pay.", accountUuid));
-    }
+                    argerr("该订单[uuid:%s] 有未完成操作，请稍等！", productUuid));
 
-    private void checkInterfaceName(String accountUuid, String name) {
-        //判断同一个用户的接口名称是否已经存在
-        SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
-        q.add(InterfaceVO_.name, SimpleQuery.Op.EQ, name);
-        q.add(InterfaceVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
-        if (q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("Interface's name %s is already exist ", name));
-        }
     }
 
     private void validate(APICreateInterfaceMsg msg) {
-        checkAccountBalance(msg.getAccountUuid(), msg.getDuration());
-        checkInterfaceName(msg.getAccountUuid(), msg.getName());
+        //判断账户金额是否充足
+        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+        priceMsg.setAccountUuid(msg.getAccountUuid());
+        priceMsg.setProductChargeModel(msg.getProductChargeModel());
+        priceMsg.setDuration(msg.getDuration());
+        priceMsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
+        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+        if (!reply.isPayable())
+            throw new ApiMessageInterceptionException(
+                    argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
+        //判断同一个用户的接口名称是否已经存在
+        SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
+        q.add(InterfaceVO_.name, SimpleQuery.Op.EQ, msg.getName());
+        q.add(InterfaceVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        if (q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("Interface's name %s is already exist ", msg.getName()));
+        }
     }
 
     private void validate(APICreateInterfaceManualMsg msg) {
-        checkAccountBalance(msg.getAccountUuid(), msg.getDuration());
-        checkInterfaceName(msg.getAccountUuid(), msg.getName());
+        //判断账户金额是否充足
+        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+        priceMsg.setAccountUuid(msg.getAccountUuid());
+        priceMsg.setProductChargeModel(msg.getProductChargeModel());
+        priceMsg.setDuration(msg.getDuration());
+        priceMsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
+        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+        if (!reply.isPayable())
+            throw new ApiMessageInterceptionException(
+                    argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
+        //判断同一个用户的接口名称是否已经存在
+        SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
+        q.add(InterfaceVO_.name, SimpleQuery.Op.EQ, msg.getName());
+        q.add(InterfaceVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        if (q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("Interface's name %s is already exist ", msg.getName()));
+        }
     }
 
     private void validate(APIUpdateInterfaceMsg msg) {
@@ -1380,6 +1415,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             throw new ApiMessageInterceptionException(argerr("cannot delete,interface is being used!"));
         }
 
+        //判断该产品是否有未完成订单
+        APIGetHasNotifyMsg apiGetHasNotifyMsg = new APIGetHasNotifyMsg();
+        apiGetHasNotifyMsg.setAccountUuid(msg.getAccountUuid());
+        apiGetHasNotifyMsg.setProductUuid(msg.getUuid());
+
+        APIGetHasNotifyReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
+        if (reply.isInventory())
+            throw new ApiMessageInterceptionException(
+                    argerr("该订单[uuid:%s] 有未完成操作，请稍等！", msg.getUuid()));
         checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
     }
 
@@ -1504,11 +1548,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         apiGetHasNotifyMsg.setAccountUuid(msg.getAccountUuid());
         apiGetHasNotifyMsg.setProductUuid(msg.getUuid());
 
-        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
-        if (!rsp.isSuccess())
-            throw new ApiMessageInterceptionException(
-                    argerr("查询订单失败.", msg.getAccountUuid()));
-        APIGetHasNotifyReply reply = (APIGetHasNotifyReply) rsp;
+        APIGetHasNotifyReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
         if (reply.isInventory())
             throw new ApiMessageInterceptionException(
                     argerr("该订单[uuid:%s] 有未完成操作，请稍等！", msg.getUuid()));

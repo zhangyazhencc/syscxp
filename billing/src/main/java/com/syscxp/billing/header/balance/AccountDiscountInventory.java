@@ -1,5 +1,6 @@
 package com.syscxp.billing.header.balance;
-import com.syscxp.billing.header.price.ProductCategoryEO;
+import com.syscxp.billing.header.price.ProductCategoryVO;
+import com.syscxp.billing.header.price.ProductCategoryInventory;
 import com.syscxp.header.billing.Category;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.search.Inventory;
@@ -30,6 +31,8 @@ public class AccountDiscountInventory {
 
     private String productTypeName;
 
+    private ProductCategoryInventory productCategoryInventory;
+
     public static AccountDiscountInventory valueOf(AccountDiscountVO vo) {
         AccountDiscountInventory inv = new AccountDiscountInventory();
         inv.setUuid(vo.getUuid());
@@ -37,6 +40,8 @@ public class AccountDiscountInventory {
         inv.setDiscount(vo.getDiscount());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        if(vo.getProductCategoryVO()!=null)
+        inv.setProductCategoryInventory(ProductCategoryInventory.valueOf(vo.getProductCategoryVO()));
         return inv;
     }
 
@@ -119,5 +124,13 @@ public class AccountDiscountInventory {
 
     public void setProductTypeName(String productTypeName) {
         this.productTypeName = productTypeName;
+    }
+
+    public ProductCategoryInventory getProductCategoryInventory() {
+        return productCategoryInventory;
+    }
+
+    public void setProductCategoryInventory(ProductCategoryInventory productCategoryInventory) {
+        this.productCategoryInventory = productCategoryInventory;
     }
 }

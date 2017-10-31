@@ -2,7 +2,6 @@ package com.syscxp.billing.header.receipt;
 
 import com.syscxp.header.search.SqlTrigger;
 import com.syscxp.header.search.TriggerIndex;
-import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
 import java.math.BigDecimal;

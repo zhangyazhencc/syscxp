@@ -7,8 +7,8 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.syscxp.billing.AlipayGlobalProperty;
 import com.syscxp.billing.header.balance.*;
-import com.syscxp.billing.header.price.ProductCategoryEO;
-import com.syscxp.billing.header.price.ProductCategoryEO_;
+import com.syscxp.billing.header.price.ProductCategoryVO;
+import com.syscxp.billing.header.price.ProductCategoryVO_;
 import com.syscxp.header.billing.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -134,10 +134,10 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
     }
 
     private void handle(APICreateAccountDiscountMsg msg) {
-         SimpleQuery<ProductCategoryEO> queryEO = dbf.createQuery(ProductCategoryEO.class);
-         queryEO.add(ProductCategoryEO_.productTypeCode, SimpleQuery.Op.EQ, msg.getProductType());
-         queryEO.add(ProductCategoryEO_.code, SimpleQuery.Op.EQ, msg.getCategory());
-         ProductCategoryEO productCategoryEO = queryEO.find();
+         SimpleQuery<ProductCategoryVO> queryEO = dbf.createQuery(ProductCategoryVO.class);
+         queryEO.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ, msg.getProductType());
+         queryEO.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, msg.getCategory());
+         ProductCategoryVO productCategoryEO = queryEO.find();
          if(productCategoryEO == null){
              throw new IllegalArgumentException("check the input value");
          }
@@ -150,6 +150,21 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
         if (exists) {
             throw new IllegalArgumentException("the account has the discount");
         }
+        if(msg.getSession().getType().equals(AccountType.Proxy)){
+            SimpleQuery<AccountDiscountVO> q = dbf.createQuery(AccountDiscountVO.class);
+            q.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
+            q.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryEO.getUuid());
+            AccountDiscountVO accountDiscountVO = q.find();
+            if(accountDiscountVO != null){
+                if(accountDiscountVO.getDiscount()>msg.getDiscount()){
+                    throw new IllegalArgumentException("the discount must be less than yourself");
+                }
+            }else {
+                if(msg.getDiscount()!=100){
+                    throw new IllegalArgumentException("yourself do not have the discount so your customer must set to 100");
+                }
+            }
+        }
         APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
         aMsg.setUuid(msg.getAccountUuid());
         InnerMessageHelper.setMD5(aMsg);
@@ -157,8 +172,8 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
         RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
         if (rsp.getState().equals(RestAPIState.Done.toString())) {
             APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
-            if (replay.isNormalAccountHasProxy()) {
-                throw new IllegalArgumentException("the account has proxy, must let agency set the discount");
+            if (replay.isNormalAccountHasProxy() && msg.getSession().getType().equals(AccountType.SystemAdmin)) {
+                throw new IllegalArgumentException("the account has agency, must let agency set the discount");
             }
         }
 //        SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
@@ -174,9 +189,9 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
         dbf.persistAndRefresh(accountDiscountVO);
         APICreateAccountDiscountEvent event = new APICreateAccountDiscountEvent(msg.getId());
         AccountDiscountInventory inventory = AccountDiscountInventory.valueOf(accountDiscountVO);
-        inventory.setProductType(productCategoryEO.getProductTypeCode());
+        inventory.setProductType(productCategoryEO.getProductTypeCode().toString());
         inventory.setProductTypeName(productCategoryEO.getProductTypeName());
-        inventory.setCategory(productCategoryEO.getCode());
+        inventory.setCategory(productCategoryEO.getCode().toString());
         inventory.setCategoryName(productCategoryEO.getName());
         event.setInventory(inventory);
         bus.publish(event);
@@ -206,10 +221,10 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
 
         for (ProductPriceUnit unit : units) {
 
-            SimpleQuery<ProductCategoryEO> queryEO = dbf.createQuery(ProductCategoryEO.class);
-            queryEO.add(ProductCategoryEO_.productTypeCode, SimpleQuery.Op.EQ,  unit.getProductTypeCode());
-            queryEO.add(ProductCategoryEO_.code, SimpleQuery.Op.EQ, unit.getCategoryCode());
-            ProductCategoryEO productCategoryEO = queryEO.find();
+            SimpleQuery<ProductCategoryVO> queryEO = dbf.createQuery(ProductCategoryVO.class);
+            queryEO.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ,  unit.getProductTypeCode());
+            queryEO.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, unit.getCategoryCode());
+            ProductCategoryVO productCategoryEO = queryEO.find();
             if(productCategoryEO == null){
                 throw new IllegalArgumentException(" not fount this type product, check it");
             }
