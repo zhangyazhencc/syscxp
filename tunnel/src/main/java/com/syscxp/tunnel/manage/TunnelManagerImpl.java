@@ -1022,7 +1022,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void updateTunnelFromOrderModifyBandwidth(OrderCallbackCmd cmd) {
         TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
-        vo.setBandwidth(Long.valueOf(cmd.getProductDescription()));
+        vo.setBandwidth(Long.valueOf(cmd.getDescriptionData()));
         dbf.updateAndRefresh(vo);
 
         //创建任务
