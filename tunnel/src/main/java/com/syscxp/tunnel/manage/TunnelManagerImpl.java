@@ -204,7 +204,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setProductType(ProductType.PORT);
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
-        orderMsg.setProductDescription("no description");
+        orderMsg.setDescriptionData("no description");
         orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -271,7 +271,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setProductType(ProductType.PORT);
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
-        orderMsg.setProductDescription("no description");
+        orderMsg.setDescriptionData("no description");
         orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -356,7 +356,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         new APICreateSLACompensationOrderMsg();
                 slaCompensationOrderMsg.setProductUuid(vo.getUuid());
                 slaCompensationOrderMsg.setProductName(vo.getName());
-                slaCompensationOrderMsg.setProductDescription("no description");
+                slaCompensationOrderMsg.setDescriptionData("no description");
                 slaCompensationOrderMsg.setProductType(ProductType.PORT);
                 slaCompensationOrderMsg.setDuration(msg.getDuration());
                 slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
@@ -439,7 +439,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        orderMsg.setProductDescription("no description");
+        orderMsg.setDescriptionData("no description");
 
         OrderInventory orderInventory = createOrder(orderMsg);
 
@@ -494,7 +494,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        orderMsg.setProductDescription("no description");
+        orderMsg.setDescriptionData("no description");
 
         OrderInventory orderInventory = createOrder(orderMsg);
 
@@ -575,7 +575,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setAccountUuid(null);
         vo.setOwnerAccountUuid(msg.getAccountUuid());
         vo.setVsi(getVsiAuto());
-        vo.setMonitorCidr(msg.getMonitorCidr());
         vo.setName(msg.getName());
         vo.setBandwidth(msg.getBandwidth());
         vo.setDuration(msg.getDuration());
@@ -735,7 +734,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg();
         orderMsg.setProductUuid(vo.getUuid());
         orderMsg.setProductName(vo.getName());
-        orderMsg.setProductDescription(msg.getBandwidth().toString());
+        orderMsg.setDescriptionData(msg.getBandwidth().toString());
         orderMsg.setUnits(msg.getUnits());
         orderMsg.setProductType(ProductType.TUNNEL);
         orderMsg.setAccountUuid(msg.getAccountUuid());
@@ -797,7 +796,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         new APICreateSLACompensationOrderMsg();
                 slaCompensationOrderMsg.setProductUuid(vo.getUuid());
                 slaCompensationOrderMsg.setProductName(vo.getName());
-                slaCompensationOrderMsg.setProductDescription("no description");
+                slaCompensationOrderMsg.setDescriptionData("no description");
                 slaCompensationOrderMsg.setProductType(ProductType.TUNNEL);
                 slaCompensationOrderMsg.setDuration(msg.getDuration());
                 slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
@@ -842,6 +841,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
+        orderMsg.setDescriptionData("delete");
 
         OrderInventory orderInventory = createOrder(orderMsg);
         if (orderInventory != null) {
@@ -882,6 +882,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
+        orderMsg.setDescriptionData("forciblydelete");
 
         OrderInventory orderInventory = createOrder(orderMsg);
         if (orderInventory != null) {
@@ -1061,7 +1062,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             }
                         } else if (cmd.getProductType() == ProductType.TUNNEL) {
                             TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
-                            if (vo != null && vo.getAccountUuid() != null) {
+                            if (vo != null && vo.getAccountUuid() != null && cmd.getDescriptionData().equals("delete")) {
                                 vo.setAccountUuid(null);
                                 dbf.updateAndRefresh(vo);
 
@@ -1073,6 +1074,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                 deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
                                 bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
                                 bus.send(deleteTunnelMsg);
+                            }else if(vo != null && vo.getAccountUuid() != null && cmd.getDescriptionData().equals("forciblydelete")){
+                                deleteTunnel(vo);
                             }
                         }
                         return null;
@@ -1207,7 +1210,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     @Override
     public boolean stop() {
-        cleanExpiredProductThread.cancel(true);
         return true;
     }
 

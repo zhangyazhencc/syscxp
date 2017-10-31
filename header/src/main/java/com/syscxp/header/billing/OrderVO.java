@@ -61,7 +61,9 @@ public class OrderVO {
     private ProductChargeModel productChargeModel;
 
     @Column
-    private String productDescription;
+    private String descriptionData;
+    @Column
+    private String callBackData;;
 
     @Column
     private BigDecimal price;
@@ -190,12 +192,12 @@ public class OrderVO {
         this.productChargeModel = productChargeModel;
     }
 
-    public String getProductDescription() {
-        return productDescription;
+    public String getDescriptionData() {
+        return descriptionData;
     }
 
-    public void setProductDescription(String productDescription) {
-        this.productDescription = productDescription;
+    public void setDescriptionData(String descriptionData) {
+        this.descriptionData = descriptionData;
     }
 
     public BigDecimal getPrice() {
@@ -236,6 +238,14 @@ public class OrderVO {
 
     public void setProductStatus(int productStatus) {
         this.productStatus = productStatus;
+    }
+
+    public String getCallBackData() {
+        return callBackData;
+    }
+
+    public void setCallBackData(String callBackData) {
+        this.callBackData = callBackData;
     }
 
     @PreUpdate

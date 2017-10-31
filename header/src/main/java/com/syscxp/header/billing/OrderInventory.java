@@ -39,7 +39,8 @@ public class OrderInventory {
 
     private ProductChargeModel productChargeModel;
 
-    private String productDescription;
+    private String descriptionData;
+    private String callBackData;
 
     private String productUuid;
 
@@ -61,7 +62,7 @@ public class OrderInventory {
         inv.setType(vo.getType());
         inv.setPayTime(vo.getPayTime());
         inv.setProductChargeModel(vo.getProductChargeModel());
-        inv.setProductDescription(vo.getProductDescription());
+        inv.setDescriptionData(vo.getDescriptionData());
         inv.setProductEffectTimeEnd(vo.getProductEffectTimeEnd());
         inv.setProductEffectTimeStart(vo.getProductEffectTimeStart());
         inv.setProductName(vo.getProductName());
@@ -73,6 +74,7 @@ public class OrderInventory {
         inv.setProductUuid(vo.getProductUuid());
         inv.setDuration(vo.getDuration());
         inv.setProductStatus(vo.getProductStatus());
+        inv.setCallBackData(vo.getCallBackData());
         return inv;
     }
 
@@ -204,12 +206,12 @@ public class OrderInventory {
         this.productChargeModel = productChargeModel;
     }
 
-    public String getProductDescription() {
-        return productDescription;
+    public String getDescriptionData() {
+        return descriptionData;
     }
 
-    public void setProductDescription(String productDescription) {
-        this.productDescription = productDescription;
+    public void setDescriptionData(String descriptionData) {
+        this.descriptionData = descriptionData;
     }
 
     public String getProductUuid() {
@@ -244,4 +246,11 @@ public class OrderInventory {
         this.duration = duration;
     }
 
+    public String getCallBackData() {
+        return callBackData;
+    }
+
+    public void setCallBackData(String callBackData) {
+        this.callBackData = callBackData;
+    }
 }

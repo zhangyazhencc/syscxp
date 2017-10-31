@@ -28,9 +28,6 @@ public class TunnelAO {
     private Integer vsi;
 
     @Column
-    private String monitorCidr;
-
-    @Column
     private String name;
 
     @Column
@@ -196,14 +193,6 @@ public class TunnelAO {
 
     public void setVsi(Integer vsi) {
         this.vsi = vsi;
-    }
-
-    public String getMonitorCidr() {
-        return monitorCidr;
-    }
-
-    public void setMonitorCidr(String monitorCidr) {
-        this.monitorCidr = monitorCidr;
     }
 
     public Timestamp getExpireDate() {
