@@ -4,8 +4,7 @@ public enum BillingErrors {
 
     INSUFFICIENT_BALANCE(2000),
     NOT_PERMIT_UPDATE(2001),
-    NOT_VALID_VALUE(2002)
-    ;
+    NOT_VALID_VALUE(2002);
 
     private String code;
 

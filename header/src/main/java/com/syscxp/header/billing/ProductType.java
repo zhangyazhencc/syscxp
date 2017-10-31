@@ -2,7 +2,7 @@ package com.syscxp.header.billing;
 
 public enum ProductType {
     TUNNEL,
-    VHOST,
+    ECP,
     PORT,
     VPN
 }

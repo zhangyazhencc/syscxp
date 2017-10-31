@@ -169,6 +169,9 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         if (msg.getType() != null) {
             vo.setType(msg.getType());
         }
+        if (msg.getComment() != null) {
+            vo.setComment(msg.getComment());
+        }
         if (vo.isDefault() != msg.isDefault()) {
             vo.setDefault(msg.isDefault());
             SimpleQuery<ReceiptInfoVO> q = dbf.createQuery(ReceiptInfoVO.class);

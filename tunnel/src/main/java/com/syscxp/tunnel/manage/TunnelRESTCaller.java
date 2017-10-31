@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.manage;
 
+import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.APIReply;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,11 +31,25 @@ public class TunnelRESTCaller {
         this.baseUrl = baseUrl;
     }
 
-    public APIReply syncJsonPost(APIMessage innerMsg) {
+//    public APIReply syncJsonPost(APIMessage innerMsg) {
+//        String url = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL);
+//        InnerMessageHelper.setMD5(innerMsg);
+//
+//        RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
+//        return (APIReply) RESTApiDecoder.loads(rsp.getResult());
+//    }
+
+    public <T> T syncJsonPost(APIMessage innerMsg) {
         String url = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL);
         InnerMessageHelper.setMD5(innerMsg);
 
         RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
-        return (APIReply) RESTApiDecoder.loads(rsp.getResult());
+        APIReply reply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
+        if (!reply.isSuccess()){
+            throw new CloudRuntimeException(reply.getError().getDetails());
+        }else{
+            return (T) reply.castReply();
+        }
     }
+
 }

@@ -65,6 +65,8 @@ public class TunnelBase extends AbstractTunnel{
             handle((DisabledTunnelMsg) msg);
         }else if(msg instanceof ModifyTunnelBandwidthMsg){
             handle((ModifyTunnelBandwidthMsg) msg);
+        }else if(msg instanceof ModifyTunnelPortsMsg){
+            handle((ModifyTunnelPortsMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
@@ -78,7 +80,7 @@ public class TunnelBase extends AbstractTunnel{
 
         ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
         String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
-        System.out.println("！！！！！！！！！！！下发参数"+command);
+        //System.out.println("！！！！！！！！！！！下发参数"+command);
         ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
 
         crf.sendCommand(ControllerRestConstant.START_TUNNEL, command, new Completion(null) {
@@ -245,6 +247,36 @@ public class TunnelBase extends AbstractTunnel{
         });
     }
 
+    private void handle(ModifyTunnelPortsMsg msg){
+        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
+        String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.MODIFY_TUNNEL_PORTS, command, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发更改端口成功！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发更改端口失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+            }
+        });
+    }
+
     @Transactional
     private void deleteTunnel(TunnelVO vo){
         dbf.remove(vo);
@@ -352,7 +384,7 @@ public class TunnelBase extends AbstractTunnel{
             tmc.setSub_type(mplsSwitchModel.getSubModel());
             tmc.setVni(tunnelVO.getVsi());
             tmc.setRemote_ip(remoteMplsPhysicalSwitch.getLocalIP());
-            tmc.setPort_name(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchPortName());/////?????
+            tmc.setPort_name(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchPortName());
             tmc.setVlan_id(tunnelInterfaceVO.getVlan());
             tmc.setM_ip(mplsPhysicalSwitch.getmIP());
             tmc.setUsername(mplsPhysicalSwitch.getUsername());
@@ -379,7 +411,7 @@ public class TunnelBase extends AbstractTunnel{
             if(interfaceVO.getType() == NetworkType.QINQ){
                 tmc.setInner_vlan_id(getInnerVlanToString(qinqVOs));
             }
-            tmc.setBandwidth(tunnelVO.getBandwidth()*1024);
+            tmc.setBandwidth(tunnelVO.getBandwidth()/1024);
         }
 
         return tmc;
@@ -403,7 +435,7 @@ public class TunnelBase extends AbstractTunnel{
             tsc.setVlan_id(tunnelInterfaceVO.getVlan());
             tsc.setIn_port(switchPortVO.getPortName());
             tsc.setUplink(physicalSwitchUpLinkRefVO.getPortName());
-            tsc.setBandwidth(tunnelVO.getBandwidth()*1024);
+            tsc.setBandwidth(tunnelVO.getBandwidth()/1024);
             tsc.setNetwork_type(interfaceVO.getType().toString());
             if(interfaceVO.getType() == NetworkType.QINQ){
                 tsc.setInner_vlan_id(getInnerVlanToString(qinqVOs));

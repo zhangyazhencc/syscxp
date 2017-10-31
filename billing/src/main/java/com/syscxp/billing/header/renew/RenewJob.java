@@ -6,7 +6,6 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.transaction.annotation.Transactional;
-import com.syscxp.billing.header.balance.*;
 import com.syscxp.core.Platform;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.GLock;
@@ -60,8 +59,7 @@ public class RenewJob extends QuartzJobBean {
                             throw new IllegalArgumentException("price uuid is not valid");
                         }
                         SimpleQuery<AccountDiscountVO> qDiscount = databaseFacade.createQuery(AccountDiscountVO.class);
-                        qDiscount.add(AccountDiscountVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
-                        qDiscount.add(AccountDiscountVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
+                        qDiscount.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, productPriceUnitVO.getProductCategoryUuid());
                         qDiscount.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, renewVO.getAccountUuid());
                         AccountDiscountVO accountDiscountVO = qDiscount.find();
                         int productDiscount = 100;
@@ -196,7 +194,7 @@ public class RenewJob extends QuartzJobBean {
                     orderVo.setProductType(renewVO.getProductType());
                     orderVo.setProductChargeModel(renewVO.getProductChargeModel());
                     orderVo.setPayTime(currentTimestamp);
-                    orderVo.setProductDescription(renewVO.getProductDescription());
+                    orderVo.setDescriptionData(renewVO.getDescriptionData());
                     orderVo.setProductUuid(renewVO.getProductUuid());
                     orderVo.setDuration(1);
 

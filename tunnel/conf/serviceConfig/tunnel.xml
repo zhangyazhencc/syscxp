@@ -52,12 +52,34 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIUpdateTunnelStateMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APICreateQinqMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIDeleteQinqMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.tunnel.header.tunnel.APIQueryInterfaceMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
         <name>com.syscxp.tunnel.header.tunnel.APIQueryTunnelMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIQueryPortOfferingMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIQueryBandwidthOfferingMsg</name>
         <serviceId>query</serviceId>
     </message>
 

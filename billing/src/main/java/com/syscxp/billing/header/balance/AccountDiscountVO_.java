@@ -12,11 +12,8 @@ public class AccountDiscountVO_ {
 
     public static volatile SingularAttribute<AccountDiscountVO, String> uuid;
     public static volatile SingularAttribute<AccountDiscountVO, String> accountUuid;
-    public static volatile SingularAttribute<AccountDiscountVO, String> categoryName;
-    public static volatile SingularAttribute<AccountDiscountVO, String> productTypeName;
+    public static volatile SingularAttribute<AccountDiscountVO, String> productCategoryUuid;
     public static volatile SingularAttribute<AccountDiscountVO, Integer> discount;
-    public static volatile SingularAttribute<AccountDiscountVO, ProductType> productType;
-    public static volatile SingularAttribute<AccountDiscountVO, Category> category;
     public static volatile SingularAttribute<AccountDiscountVO, Timestamp> createDate;
     public static volatile SingularAttribute<AccountDiscountVO, Timestamp> lastOpDate;
 }

@@ -19,6 +19,9 @@ public class ResourceVO  extends BaseVO{
     private String productUuid;
 
     @Column
+    private String accountUuid;
+
+    @Column
     private String productName;
 
     @Column
@@ -91,5 +94,13 @@ public class ResourceVO  extends BaseVO{
 
     public void setPolicyVOSet(Set<PolicyVO> policyVOSet) {
         this.policyVOSet = policyVOSet;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

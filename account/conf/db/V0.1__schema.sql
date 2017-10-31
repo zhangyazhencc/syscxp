@@ -192,7 +192,8 @@ CREATE TABLE  `AlarmContactVO` (
 CREATE TABLE  `NotificationVO` (
     `uuid` VARCHAR(32) NOT NULL UNIQUE,
     `accountUuid` VARCHAR(32) DEFAULT NULL,
-    `userUuid` VARCHAR(32) DEFAULT NULL,
+    `opAccountUuid` VARCHAR(32) DEFAULT NULL ,
+    `opUserUuid` VARCHAR(32) DEFAULT NULL,
     `name` VARCHAR(255) DEFAULT NULL COMMENT '消息类型',
 	`category` VARCHAR(32) DEFAULT NULL,
     `content` VARCHAR(128) DEFAULT NULL,

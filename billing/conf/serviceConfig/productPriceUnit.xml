@@ -16,6 +16,9 @@
         <name>com.syscxp.billing.header.price.APIUpdateProductPriceUnitMsg</name>
     </message>
     <message>
+        <name>com.syscxp.billing.header.price.APIGetProductCategoryListMsg</name>
+    </message>
+    <message>
         <name>com.syscxp.billing.header.price.APIQueryProductPriceUnitMsg</name>
         <serviceId>query</serviceId>
     </message>

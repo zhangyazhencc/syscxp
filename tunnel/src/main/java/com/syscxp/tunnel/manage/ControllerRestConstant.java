@@ -13,9 +13,9 @@ public interface ControllerRestConstant {
     static final String ASYNC_TEST = "/demo/async";
 
     static final String START_TUNNEL = "/tunnel/create";
-    static final String MODIFY_TUNNEL_BANDWIDTH = "/tunnel_modify/bandwidth";
-    static final String MODIFY_TUNNEL_PORTS = "/tunnel_modify/ports";
-    static final String STOP_TUNNEL = "/tunnel/tunnel_stop";
+    static final String MODIFY_TUNNEL_BANDWIDTH = "/tunnel/bandwidth_modify";
+    static final String MODIFY_TUNNEL_PORTS = "/tunnel/ports_modify";
+    static final String STOP_TUNNEL = "/tunnel/delete";
 
     static final String START_TUNNEL_MONITOR = "/tunnel_monitor/start";
     static final String STOP_TUNNEL_MONITOR = "/tunnel_monitor/stop";

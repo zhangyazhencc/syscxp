@@ -23,7 +23,7 @@ public class RenewInventory {
 
     private ProductChargeModel productChargeModel;
 
-    private String productDescription;
+    private String descriptionData;
 
     private String productUuid;
 
@@ -50,7 +50,7 @@ public class RenewInventory {
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setProductUuid(vo.getProductUuid());
         inv.setPricePerDay(vo.getPricePerDay());
-        inv.setProductDescription(vo.getProductDescription());
+        inv.setDescriptionData(vo.getDescriptionData());
         inv.setRenewAuto(vo.isRenewAuto());
         inv.setExpiredTime(vo.getExpiredTime());
         return inv;
@@ -104,12 +104,12 @@ public class RenewInventory {
         this.productChargeModel = productChargeModel;
     }
 
-    public String getProductDescription() {
-        return productDescription;
+    public String getDescriptionData() {
+        return descriptionData;
     }
 
-    public void setProductDescription(String productDescription) {
-        this.productDescription = productDescription;
+    public void setDescriptionData(String descriptionData) {
+        this.descriptionData = descriptionData;
     }
 
     public String getProductUuid() {

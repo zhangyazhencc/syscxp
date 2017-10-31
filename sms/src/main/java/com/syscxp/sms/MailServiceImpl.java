@@ -84,7 +84,9 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
             }
         }
         reply.setValid(valid);
-        verificationCode.isValidate = true;
+        if(valid){
+            verificationCode.isValidate = true;
+        }
         sessions.put(msg.getMail(),verificationCode);
         bus.reply(msg, reply);
     }
@@ -106,13 +108,34 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
     private void  handle(APIMailCodeSendMsg msg) throws OperationFailureException {
 
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setTo(msg.getMail());
-        mailMessage.setFrom(MailGlobalProperty.FROM);
-        mailMessage.setSubject("验证码");
         String code = String.valueOf(new Random().nextInt(1000000));
-        mailMessage.setText(code);
+        boolean result = mailSend(msg.getMail(),"验证码", code);
+        if(result){
+            VerificationCode verificationCode = sessions.get(msg.getMail());
+            long expiredTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60 * 10);   // 10 minute
+            if (verificationCode == null){
+                VerificationCode vcode = new VerificationCode();
+                vcode.code = code;
+                vcode.expiredDate = new Timestamp(expiredTime);
+                vcode.isValidate = false;
+                sessions.put(msg.getMail(), vcode);
+            }else{
+                verificationCode.code = code;
+                verificationCode.isValidate = false;
+                verificationCode.expiredDate = new Timestamp(expiredTime);
+            }
+        }
 
+        APIMailCodeSendReply reply = new APIMailCodeSendReply();
+        bus.reply(msg, reply);
+    }
+
+    public boolean mailSend(String mail, String subject, String comtent){
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setTo(mail);
+        mailMessage.setFrom(MailGlobalProperty.FROM);
+        mailMessage.setSubject(subject);
+        mailMessage.setText(comtent);
         JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
         senderImpl.setHost(MailGlobalProperty.HOST);
         senderImpl.setPort(25);
@@ -123,34 +146,16 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
         prop.put(" mail.smtp.timeout ", "25000");
         senderImpl.setJavaMailProperties(prop);
 
-
         try{
             senderImpl.send(mailMessage);
-
         }catch(Exception e){
             e.printStackTrace();
             throw new OperationFailureException(operr("message:" + e.getMessage()));
         }
-
         logger.debug(">>>>>>>>>>>>>>>>>>发送成功<<<<<<<<<<<<<<<<<<<<<<");
-        VerificationCode verificationCode = sessions.get(msg.getMail());
-        long expiredTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60 * 10);   // 10 minute
-        if (verificationCode == null){
-            VerificationCode vcode = new VerificationCode();
-            vcode.code = code;
-            vcode.expiredDate = new Timestamp(expiredTime);
-            vcode.isValidate = false;
-            sessions.put(msg.getMail(), vcode);
-        }else{
-            verificationCode.code = code;
-            verificationCode.isValidate = false;
-            verificationCode.expiredDate = new Timestamp(expiredTime);
-        }
 
-        APIMailCodeSendReply reply = new APIMailCodeSendReply();
-        bus.reply(msg, reply);
+        return true;
     }
-
 
     public void init() {
         try {

@@ -10,15 +10,6 @@ import java.sql.Timestamp;
 @Action(category = BillingConstant.ACTION_CATEGORY_ORDER)
 public class APICreateUnsubcribeOrderMsg extends APICreateOrderMsg {
 
-    @APIParam(emptyString = false)
-    private ProductType productType;
-
-    @APIParam(emptyString = false)
-    private String productUuid;
-
-    @APIParam(emptyString = false)
-    private String productName;
-
     @APIParam
     private Timestamp startTime;
     @APIParam
@@ -40,27 +31,4 @@ public class APICreateUnsubcribeOrderMsg extends APICreateOrderMsg {
         this.expiredTime = expiredTime;
     }
 
-    public ProductType getProductType() {
-        return productType;
-    }
-
-    public void setProductType(ProductType productType) {
-        this.productType = productType;
-    }
-
-    public String getProductUuid() {
-        return productUuid;
-    }
-
-    public void setProductUuid(String productUuid) {
-        this.productUuid = productUuid;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
 }
