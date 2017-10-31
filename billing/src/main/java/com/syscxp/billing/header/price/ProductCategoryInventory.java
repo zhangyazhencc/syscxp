@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = ProductCategoryEO.class)
+@Inventory(mappingVOClass = ProductCategoryVO.class)
 public class ProductCategoryInventory {
 
     private String uuid;
@@ -26,12 +26,12 @@ public class ProductCategoryInventory {
     private Timestamp lastOpDate;
 
 
-    public static ProductCategoryInventory valueOf(ProductCategoryEO vo) {
+    public static ProductCategoryInventory valueOf(ProductCategoryVO vo) {
         ProductCategoryInventory inv = new ProductCategoryInventory();
         inv.setUuid(vo.getUuid());
-        inv.setCode(vo.getCode());
+        inv.setCode(vo.getCode().toString());
         inv.setName(vo.getName());
-        inv.setProductTypeCode(vo.getProductTypeCode());
+        inv.setProductTypeCode(vo.getProductTypeCode().toString());
         inv.setProductTypeName(vo.getProductTypeName());
         inv.setUuid(vo.getUuid());
         inv.setCreateDate(vo.getCreateDate());
@@ -39,9 +39,9 @@ public class ProductCategoryInventory {
         return inv;
     }
 
-    public static List<ProductCategoryInventory> valueOf(Collection<ProductCategoryEO> vos) {
+    public static List<ProductCategoryInventory> valueOf(Collection<ProductCategoryVO> vos) {
         List<ProductCategoryInventory> lst = new ArrayList<>(vos.size());
-        for (ProductCategoryEO vo : vos) {
+        for (ProductCategoryVO vo : vos) {
             lst.add(ProductCategoryInventory.valueOf(vo));
         }
         return lst;

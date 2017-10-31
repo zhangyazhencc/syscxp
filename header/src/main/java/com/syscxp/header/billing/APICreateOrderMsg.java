@@ -8,7 +8,7 @@ import java.util.List;
 
 public class APICreateOrderMsg extends APISyncCallMessage {
 
-    @APIParam
+    @APIParam(required = false)
     private List<ProductPriceUnit> units;
 
     @APIParam(emptyString = false)
@@ -20,10 +20,10 @@ public class APICreateOrderMsg extends APISyncCallMessage {
     @APIParam(emptyString = false)
     private String productUuid;
 
-    @APIParam
+    @APIParam(emptyString = false)
     private String descriptionData;
 
-    @APIParam
+    @APIParam(required = false)
     private String callBackData;
 
     @APIParam(emptyString = false)
@@ -32,7 +32,7 @@ public class APICreateOrderMsg extends APISyncCallMessage {
     @APIParam(emptyString = false,required = false)
     private String opAccountUuid;
 
-    @APIParam(emptyString = false,required = true)
+    @APIParam(emptyString = false)
     private String notifyUrl;
 
     public String getNotifyUrl() {
