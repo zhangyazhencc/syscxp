@@ -584,7 +584,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setAccountUuid(null);
         vo.setOwnerAccountUuid(msg.getAccountUuid());
         vo.setVsi(getVsiAuto());
-        vo.setMonitorCidr(msg.getMonitorCidr());
         vo.setName(msg.getName());
         vo.setBandwidth(msg.getBandwidth());
         vo.setDuration(msg.getDuration());
