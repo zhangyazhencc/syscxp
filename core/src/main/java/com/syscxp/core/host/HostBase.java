@@ -247,35 +247,35 @@ public abstract class HostBase extends AbstractHost {
         HostInventory hinv = HostInventory.valueOf(self);
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
         chain.setName(String.format("delete-host-%s", msg.getUuid()));
-            chain.then(new NoRollbackFlow() {
-                String __name__ = "stop-monitor-agent";
+        chain.then(new NoRollbackFlow() {
+            String __name__ = "stop-monitor-agent";
 
-                @Override
-                public void run(final FlowTrigger trigger, Map data) {
-                    //Todo stop monitor agent
-                    trigger.next();
-                }
-            }).then(new NoRollbackFlow() {
-                String __name__ = "send-delete-host-message";
+            @Override
+            public void run(final FlowTrigger trigger, Map data) {
+                //Todo stop monitor agent
+                trigger.next();
+            }
+        }).then(new NoRollbackFlow() {
+            String __name__ = "send-delete-host-message";
 
-                @Override
-                public void run(final FlowTrigger trigger, Map data) {
-                    HostDeletionMsg msg = new HostDeletionMsg();
-                    msg.setForceDelete(true);
-                    msg.setHostUuid(hinv.getUuid());
-                    bus.makeTargetServiceIdByResourceUuid(msg, HostConstant.SERVICE_ID, hinv.getUuid());
-                    bus.send(msg, new CloudBusCallBack(trigger) {
-                        @Override
-                        public void run(MessageReply reply) {
-                            if (reply.isSuccess()) {
-                                trigger.next();
-                            } else {
-                                trigger.fail(reply.getError());
-                            }
+            @Override
+            public void run(final FlowTrigger trigger, Map data) {
+                HostDeletionMsg msg = new HostDeletionMsg();
+                msg.setForceDelete(true);
+                msg.setHostUuid(hinv.getUuid());
+                bus.makeTargetServiceIdByResourceUuid(msg, HostConstant.SERVICE_ID, hinv.getUuid());
+                bus.send(msg, new CloudBusCallBack(trigger) {
+                    @Override
+                    public void run(MessageReply reply) {
+                        if (reply.isSuccess()) {
+                            trigger.next();
+                        } else {
+                            trigger.fail(reply.getError());
                         }
-                    });
-                }
-            });
+                    }
+                });
+            }
+        });
 
 
         chain.done(new FlowDoneHandler(msg) {
@@ -464,9 +464,10 @@ public abstract class HostBase extends AbstractHost {
                 reply.setSuccess(true);
 
                 Boolean noReconnect = (Boolean) errorCode.getFromOpaque(Opaque.NO_RECONNECT_AFTER_PING_FAILURE.toString());
-                reply.setNoReconnect(noReconnect != null && noReconnect);
 
+                reply.setNoReconnect(noReconnect != null && noReconnect);
                 if (!Q.New(HostVO.class).eq(HostVO_.uuid, msg.getHostUuid()).isExists()) {
+                    tracker.untrackHost(msg.getHostUuid());
                     reply.setNoReconnect(true);
                     bus.reply(msg, reply);
                     return;
@@ -656,13 +657,6 @@ public abstract class HostBase extends AbstractHost {
         logger.debug(String.format("Host %s [uuid:%s] changed connection state from %s to %s",
                 self.getName(), self.getUuid(), before, next));
 
-//        HostStatusChangedData data = new HostStatusChangedData();
-//        data.setHostUuid(self.getUuid());
-//        data.setNewStatus(next.toString());
-//        data.setOldStatus(before.toString());
-//        data.setInventory(HostInventory.valueOf(self));
-//        evtf.fire(HostCanonicalEvents.HOST_STATUS_CHANGED_PATH, data);
-
         CollectionUtils.safeForEach(pluginRgty.getExtensionList(AfterChangeHostStatusExtensionPoint.class),
                 arg -> arg.afterChangeHostStatus(self.getUuid(), before, next));
         return true;
@@ -704,35 +698,6 @@ public abstract class HostBase extends AbstractHost {
                                 });
                             }
                         });
-
-/*                        flow(new NoRollbackFlow() {
-                            String __name__ = "call-post-connect-extensions";
-
-                            @Override
-                            public void run(FlowTrigger trigger, Map data) {
-                                FlowChain postConnectChain = FlowChainBuilder.newSimpleFlowChain();
-                                postConnectChain.allowEmptyFlow();
-
-                                self = dbf.reload(self);
-                                HostInventory inv = getSelfInventory();
-
-                                for (PostHostConnectExtensionPoint p : pluginRgty.getExtensionList(PostHostConnectExtensionPoint.class)) {
-                                    postConnectChain.then(p.createPostHostConnectFlow(inv));
-                                }
-
-                                postConnectChain.done(new FlowDoneHandler(trigger) {
-                                    @Override
-                                    public void handle(Map data) {
-                                        trigger.next();
-                                    }
-                                }).error(new FlowErrorHandler(trigger) {
-                                    @Override
-                                    public void handle(ErrorCode errCode, Map data) {
-                                        trigger.fail(errCode);
-                                    }
-                                }).start();
-                            }
-                        });*/
 
                         done(new FlowDoneHandler(msg) {
                             @Override

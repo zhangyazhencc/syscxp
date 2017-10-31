@@ -105,7 +105,7 @@ public class HostExtensionPointEmitter implements Component {
         CollectionUtils.safeForEach(pingTaskExts, new ForEachFunction<HostPingTaskExtensionPoint>() {
             @Override
             public void run(HostPingTaskExtensionPoint ext) {
-                if (ext.getHypervisorType().equals(type)) {
+                if (ext.getHostType().equals(type)) {
                     ext.executeTaskAlongWithPingTask(inv);
                 }
             }
