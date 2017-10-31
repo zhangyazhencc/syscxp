@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.manage;
 
+import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.message.APIReply;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+
+import static com.syscxp.core.Platform.argerr;
 
 /**
  * Create by DCY on 2017/9/29
@@ -35,6 +38,10 @@ public class TunnelRESTCaller {
         InnerMessageHelper.setMD5(innerMsg);
 
         RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
-        return (APIReply) RESTApiDecoder.loads(rsp.getResult());
+        APIReply reply =(APIReply) RESTApiDecoder.loads(rsp.getResult());
+
+        if (!reply.isSuccess())
+            throw new ApiMessageInterceptionException(argerr("call url[%s] failed.", url));
+        return reply;
     }
 }
