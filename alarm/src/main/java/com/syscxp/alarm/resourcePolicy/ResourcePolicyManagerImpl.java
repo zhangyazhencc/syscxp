@@ -397,7 +397,10 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         SimpleQuery<ResourcePolicyRefVO> rpr = dbf.createQuery(ResourcePolicyRefVO.class);
         rpr.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
         if(rpr.isExists()){
+            TunnelParameter tp = new TunnelParameter();
             List<ResourcePolicyRefVO> list = rpr.list();
+
+
             
         }
 
