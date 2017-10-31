@@ -35,6 +35,8 @@ public class ReceiptInfoInventory {
 
     private Timestamp lastOpDate;
 
+    private String comment;
+
     public static ReceiptInfoInventory valueOf(ReceiptInfoVO vo) {
         ReceiptInfoInventory inv = new ReceiptInfoInventory();
         inv.setUuid(vo.getUuid());
@@ -49,6 +51,7 @@ public class ReceiptInfoInventory {
         inv.setIdentifyNumber(vo.getIdentifyNumber());
         inv.setTitle(vo.getTitle());
         inv.setType(vo.getType());
+        inv.setComment(vo.getComment());
 
         return inv;
     }
@@ -155,5 +158,13 @@ public class ReceiptInfoInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
     }
 }
