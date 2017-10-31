@@ -1,6 +1,5 @@
 package com.syscxp.core.host;
 
-import com.syscxp.core.CoreGlobalProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -51,6 +50,9 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
             reconnectTimes.remove(hostUuid);
         }
     }
+    public void initMap(String hostUuid) {
+        reconnectTimes.putIfAbsent(hostUuid, 0);
+    }
 
     private class Tracker implements PeriodicTask {
         @Override
@@ -70,7 +72,7 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
 
         private void handleReply(final String hostUuid, MessageReply reply) {
 
-            reconnectTimes.putIfAbsent(hostUuid, 0);
+            initMap(hostUuid);
 
             if (!reply.isSuccess()) {
                 logger.warn(String.format("[Host Tracker]: unable track host[uuid:%s], %s", hostUuid, reply.getError()));

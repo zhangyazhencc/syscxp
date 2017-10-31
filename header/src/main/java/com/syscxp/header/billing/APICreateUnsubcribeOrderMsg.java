@@ -19,6 +19,9 @@ public class APICreateUnsubcribeOrderMsg extends APICreateOrderMsg {
     @APIParam(emptyString = false)
     private String productName;
 
+    @APIParam(emptyString = false)
+    private String productDescription;
+
     @APIParam
     private Timestamp startTime;
     @APIParam
@@ -62,5 +65,13 @@ public class APICreateUnsubcribeOrderMsg extends APICreateOrderMsg {
 
     public void setProductName(String productName) {
         this.productName = productName;
+    }
+
+    public String getProductDescription() {
+        return productDescription;
+    }
+
+    public void setProductDescription(String productDescription) {
+        this.productDescription = productDescription;
     }
 }
