@@ -106,6 +106,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIDeleteTunnelMsg) msg);
         } else if (msg instanceof APIDeleteForciblyTunnelMsg) {
             handle((APIDeleteForciblyTunnelMsg) msg);
+        }else if (msg instanceof APIUpdateTunnelStateMsg) {
+            handle((APIUpdateTunnelStateMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -213,7 +215,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
             resourceOrderEffectiveVO.setUuid(Platform.getUuid());
             resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType("InterfaceVO");
+            resourceOrderEffectiveVO.setResourceType(InterfaceVO.class.getSimpleName());
             resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
             resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
             //状态修改已支付，生成到期时间
@@ -284,7 +286,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
             resourceOrderEffectiveVO.setUuid(Platform.getUuid());
             resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType("InterfaceVO");
+            resourceOrderEffectiveVO.setResourceType(InterfaceVO.class.getSimpleName());
             resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
             resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
             //状态修改已支付，生成到期时间
@@ -376,7 +378,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
             resourceOrderEffectiveVO.setUuid(Platform.getUuid());
             resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType("InterfaceVO");
+            resourceOrderEffectiveVO.setResourceType(InterfaceVO.class.getSimpleName());
             resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
             resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
             //更新到期时间
@@ -414,7 +416,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
             resourceOrderEffectiveVO.setUuid(Platform.getUuid());
             resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType("InterfaceVO");
+            resourceOrderEffectiveVO.setResourceType(InterfaceVO.class.getSimpleName());
             resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
             resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
             //删除产品
@@ -458,7 +460,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
         resourceOrderEffectiveVO.setUuid(Platform.getUuid());
         resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-        resourceOrderEffectiveVO.setResourceType("TunnelVO");
+        resourceOrderEffectiveVO.setResourceType(TunnelVO.class.getSimpleName());
         resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
         resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
 
@@ -471,7 +473,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TaskResourceVO taskResourceVO = new TaskResourceVO();
         taskResourceVO.setUuid(Platform.getUuid());
         taskResourceVO.setResourceUuid(vo.getUuid());
-        taskResourceVO.setResourceType("TunnelVO");
+        taskResourceVO.setResourceType(TunnelVO.class.getSimpleName());
         taskResourceVO.setTaskType(TaskType.Create);
         taskResourceVO.setBody(null);
         taskResourceVO.setResult(null);
@@ -518,7 +520,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
         resourceOrderEffectiveVO.setUuid(Platform.getUuid());
         resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-        resourceOrderEffectiveVO.setResourceType("TunnelVO");
+        resourceOrderEffectiveVO.setResourceType(TunnelVO.class.getSimpleName());
         resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
         resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
 
@@ -531,7 +533,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TaskResourceVO taskResourceVO = new TaskResourceVO();
         taskResourceVO.setUuid(Platform.getUuid());
         taskResourceVO.setResourceUuid(vo.getUuid());
-        taskResourceVO.setResourceType("TunnelVO");
+        taskResourceVO.setResourceType(TunnelVO.class.getSimpleName());
         taskResourceVO.setTaskType(TaskType.Create);
         taskResourceVO.setBody(null);
         taskResourceVO.setResult(null);
@@ -769,7 +771,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
             resourceOrderEffectiveVO.setUuid(Platform.getUuid());
             resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType("TunnelVO");
+            resourceOrderEffectiveVO.setResourceType(TunnelVO.class.getSimpleName());
             resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
             resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
 
@@ -780,7 +782,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             TaskResourceVO taskResourceVO = new TaskResourceVO();
             taskResourceVO.setUuid(Platform.getUuid());
             taskResourceVO.setResourceUuid(vo.getUuid());
-            taskResourceVO.setResourceType("TunnelVO");
+            taskResourceVO.setResourceType(TunnelVO.class.getSimpleName());
             taskResourceVO.setTaskType(TaskType.ModifyBandwidth);
             taskResourceVO.setBody(null);
             taskResourceVO.setResult(null);
@@ -848,7 +850,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
             resourceOrderEffectiveVO.setUuid(Platform.getUuid());
             resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType("TunnelVO");
+            resourceOrderEffectiveVO.setResourceType(TunnelVO.class.getSimpleName());
             resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
             resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
             //更新到期时间
@@ -887,7 +889,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
             resourceOrderEffectiveVO.setUuid(Platform.getUuid());
             resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType("TunnelVO");
+            resourceOrderEffectiveVO.setResourceType(TunnelVO.class.getSimpleName());
             resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
             resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
 
@@ -898,7 +900,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             TaskResourceVO taskResourceVO = new TaskResourceVO();
             taskResourceVO.setUuid(Platform.getUuid());
             taskResourceVO.setResourceUuid(vo.getUuid());
-            taskResourceVO.setResourceType("TunnelVO");
+            taskResourceVO.setResourceType(TunnelVO.class.getSimpleName());
             taskResourceVO.setTaskType(TaskType.Delete);
             taskResourceVO.setBody(null);
             taskResourceVO.setResult(null);
@@ -924,7 +926,64 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
-        deleteTunnel(vo);
+        //调用退订
+        APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
+        orderMsg.setProductUuid(vo.getUuid());
+        orderMsg.setProductType(ProductType.TUNNEL);
+        orderMsg.setProductName(vo.getName());
+        orderMsg.setAccountUuid(msg.getAccountUuid());
+        orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+        orderMsg.setStartTime(dbf.getCurrentSqlTime());
+        orderMsg.setExpiredTime(vo.getExpireDate());
+
+        OrderInventory orderInventory = createOrder(orderMsg);
+        if (orderInventory != null) {
+            //退订成功,记录生效订单
+            ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
+            resourceOrderEffectiveVO.setUuid(Platform.getUuid());
+            resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
+            resourceOrderEffectiveVO.setResourceType(TunnelVO.class.getSimpleName());
+            resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
+            resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
+
+            deleteTunnel(vo);
+
+            evt.setInventory(TunnelInventory.valueOf(vo));
+        } else {
+            evt.setError(errf.stringToOperationError("退订失败"));
+        }
+        bus.publish(evt);
+    }
+
+    private void handle(APIUpdateTunnelStateMsg msg) {
+        APIUpdateTunnelStateEvent evt = new APIUpdateTunnelStateEvent(msg.getId());
+
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        //创建任务
+        TaskResourceVO taskResourceVO = new TaskResourceVO();
+        taskResourceVO.setUuid(Platform.getUuid());
+        taskResourceVO.setResourceUuid(vo.getUuid());
+        taskResourceVO.setResourceType(TunnelVO.class.getSimpleName());
+        taskResourceVO.setTaskType(TaskType.valueOf(msg.getState().toString()));
+        taskResourceVO.setBody(null);
+        taskResourceVO.setResult(null);
+        taskResourceVO.setStatus(TaskStatus.Preexecute);
+        taskResourceVO = dbf.persistAndRefresh(taskResourceVO);
+
+        if(msg.getState() == TunnelState.Enabled){
+            EnabledTunnelMsg enabledTunnelMsg = new EnabledTunnelMsg();
+            enabledTunnelMsg.setTunnelUuid(vo.getUuid());
+            enabledTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+            bus.makeTargetServiceIdByResourceUuid(enabledTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+            bus.send(enabledTunnelMsg);
+        }else{
+            DisabledTunnelMsg disabledTunnelMsg = new DisabledTunnelMsg();
+            disabledTunnelMsg.setTunnelUuid(vo.getUuid());
+            disabledTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+            bus.makeTargetServiceIdByResourceUuid(disabledTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+            bus.send(disabledTunnelMsg);
+        }
 
         evt.setInventory(TunnelInventory.valueOf(vo));
         bus.publish(evt);
@@ -1019,7 +1078,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 TaskResourceVO taskResourceVO = new TaskResourceVO();
                 taskResourceVO.setUuid(Platform.getUuid());
                 taskResourceVO.setResourceUuid(vo.getUuid());
-                taskResourceVO.setResourceType("TunnelVO");
+                taskResourceVO.setResourceType(TunnelVO.class.getSimpleName());
                 taskResourceVO.setTaskType(TaskType.Create);
                 taskResourceVO.setBody(null);
                 taskResourceVO.setResult(null);
@@ -1071,7 +1130,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                 TaskResourceVO taskResourceVO = new TaskResourceVO();
                                 taskResourceVO.setUuid(Platform.getUuid());
                                 taskResourceVO.setResourceUuid(vo.getUuid());
-                                taskResourceVO.setResourceType("TunnelVO");
+                                taskResourceVO.setResourceType(TunnelVO.class.getSimpleName());
                                 taskResourceVO.setTaskType(TaskType.Delete);
                                 taskResourceVO.setBody(null);
                                 taskResourceVO.setResult(null);
@@ -1122,7 +1181,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             TaskResourceVO taskResourceVO = new TaskResourceVO();
                             taskResourceVO.setUuid(Platform.getUuid());
                             taskResourceVO.setResourceUuid(vo.getUuid());
-                            taskResourceVO.setResourceType("TunnelVO");
+                            taskResourceVO.setResourceType(TunnelVO.class.getSimpleName());
                             taskResourceVO.setTaskType(TaskType.ModifyBandwidth);
                             taskResourceVO.setBody(null);
                             taskResourceVO.setResult(null);
@@ -1153,7 +1212,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             TaskResourceVO taskResourceVO = new TaskResourceVO();
                             taskResourceVO.setUuid(Platform.getUuid());
                             taskResourceVO.setResourceUuid(vo.getUuid());
-                            taskResourceVO.setResourceType("TunnelVO");
+                            taskResourceVO.setResourceType(TunnelVO.class.getSimpleName());
                             taskResourceVO.setTaskType(TaskType.ModifyBandwidth);
                             taskResourceVO.setBody(null);
                             taskResourceVO.setResult(null);
@@ -1208,6 +1267,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             validate((APIDeleteTunnelMsg) msg);
         } else if (msg instanceof APIDeleteForciblyTunnelMsg) {
             validate((APIDeleteForciblyTunnelMsg) msg);
+        }else if (msg instanceof APIUpdateTunnelStateMsg) {
+            validate((APIUpdateTunnelStateMsg) msg);
         }
         return msg;
     }
@@ -1489,9 +1550,42 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APIDeleteTunnelMsg msg) {
+        //判断该产品是否有未完成订单
+        APIGetHasNotifyMsg apiGetHasNotifyMsg = new APIGetHasNotifyMsg();
+        apiGetHasNotifyMsg.setAccountUuid(msg.getAccountUuid());
+        apiGetHasNotifyMsg.setProductUuid(msg.getUuid());
+
+        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
+        if (!rsp.isSuccess())
+            throw new ApiMessageInterceptionException(
+                    argerr("查询订单失败.", msg.getAccountUuid()));
+        APIGetHasNotifyReply reply = (APIGetHasNotifyReply) rsp;
+        if (reply.isInventory())
+            throw new ApiMessageInterceptionException(
+                    argerr("该订单[uuid:%s] 有未完成操作，请稍等！", msg.getUuid()));
     }
 
     private void validate(APIDeleteForciblyTunnelMsg msg) {
+        //判断该产品是否有未完成订单
+        APIGetHasNotifyMsg apiGetHasNotifyMsg = new APIGetHasNotifyMsg();
+        apiGetHasNotifyMsg.setAccountUuid(msg.getAccountUuid());
+        apiGetHasNotifyMsg.setProductUuid(msg.getUuid());
+
+        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
+        if (!rsp.isSuccess())
+            throw new ApiMessageInterceptionException(
+                    argerr("查询订单失败.", msg.getAccountUuid()));
+        APIGetHasNotifyReply reply = (APIGetHasNotifyReply) rsp;
+        if (reply.isInventory())
+            throw new ApiMessageInterceptionException(
+                    argerr("该订单[uuid:%s] 有未完成操作，请稍等！", msg.getUuid()));
+    }
+
+    private void validate(APIUpdateTunnelStateMsg msg) {
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+        if(vo.getState() == msg.getState()){
+            throw new ApiMessageInterceptionException(argerr("该云专线[uuid:%s] 已是该状况，不可重复操作 ", msg.getUuid()));
+        }
     }
 
 }
