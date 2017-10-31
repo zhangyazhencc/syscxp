@@ -16,7 +16,8 @@ import java.util.Map;
 public class NotificationInventory {
     private String uuid;
     private String accountUuid;
-    private String userUuid;
+    private String opAccountUuid;
+    private String opUserUuid;
     private String name;
     private String content;
     private String category;
@@ -38,7 +39,8 @@ public class NotificationInventory {
         NotificationInventory inv = new NotificationInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
-        inv.setUserUuid(vo.getUserUuid());
+        inv.setOpAccountUuid(vo.getOpAccountUuid());
+        inv.setOpUserUuid(vo.getOpUserUuid());
         inv.setRemoteIp(vo.getRemoteIp());
         inv.setCategory(vo.getCategory());
         inv.setSuccess(vo.isSuccess());
@@ -68,6 +70,14 @@ public class NotificationInventory {
         return invs;
     }
 
+    public String getOpAccountUuid() {
+        return opAccountUuid;
+    }
+
+    public void setOpAccountUuid(String opAccountUuid) {
+        this.opAccountUuid = opAccountUuid;
+    }
+
     public String getAccountUuid() {
         return accountUuid;
     }
@@ -76,12 +86,12 @@ public class NotificationInventory {
         this.accountUuid = accountUuid;
     }
 
-    public String getUserUuid() {
-        return userUuid;
+    public String getOpUserUuid() {
+        return opUserUuid;
     }
 
-    public void setUserUuid(String userUuid) {
-        this.userUuid = userUuid;
+    public void setOpUserUuid(String opUserUuid) {
+        this.opUserUuid = opUserUuid;
     }
 
     public String getCategory() {

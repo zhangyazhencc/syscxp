@@ -130,7 +130,7 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
             try {
                 List<PingHostMsg> msgs;
                 synchronized (hostUuids) {
-                    msgs = new ArrayList<PingHostMsg>();
+                    msgs = new ArrayList<>();
                     for (String huuid : hostUuids) {
                         if (hostInTracking.contains(huuid)) {
                             continue;

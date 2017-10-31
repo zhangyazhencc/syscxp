@@ -146,6 +146,7 @@ public class NotificationManager extends AbstractService {
                         .content(inner.getContent())
                         .msgfields(b.message.getDeclaredFieldAndValues())
                         .category(aevt.getType().toString())
+                        .ower(inner.getAccountUuid())
                         .action(b.message.getIp(), aevt.isSuccess())
                         .name(b.message.getClass().getSimpleName())
                         .sender(NotificationConstant.API_SENDER)
@@ -269,50 +270,32 @@ public class NotificationManager extends AbstractService {
 
                     SessionInventory session = (SessionInventory) builder.opaque.get("session");
 
+                    APICreateNotificationMsg msg = new APICreateNotificationMsg();
+
+                    if (session != null) {
+                        msg.setOpAccountUuid(session.getAccountUuid());
+                        msg.setOpUserUuid(session.getUserUuid());
+                    }
+                    msg.setAccountUuid(builder.accountUuid);
+                    msg.setName(builder.notificationName);
+                    msg.setCategory(builder.category);
+                    msg.setSuccess(builder.success);
+                    msg.setRemoteIp(builder.remoteIp);
+                    msg.setMsgfields(builder.msgfields);
+                    msg.setContent(builder.content);
+                    msg.setResourceType(builder.resourceType);
+                    msg.setResourceUuid(builder.resourceUuid);
+                    msg.setSender(builder.sender);
+                    msg.setType(builder.type);
+                    msg.setOpaque(builder.opaque);
+
+                    InnerMessageHelper.setMD5(msg);
 
                     if (NotificationGlobalConfig.WEBHOOK_URL.value() != null && !NotificationGlobalConfig.WEBHOOK_URL.value().equals("null")) {
-
-                        APICreateNotificationMsg msg = new APICreateNotificationMsg();
-                        msg.setAccountUuid(session.getAccountUuid());
-                        msg.setUserUuid(session.getUserUuid());
-                        msg.setName(builder.notificationName);
-                        msg.setCategory(builder.category);
-                        msg.setSuccess(builder.success);
-                        msg.setRemoteIp(builder.remoteIp);
-                        msg.setMsgfields(builder.msgfields);
-                        msg.setContent(builder.content);
-                        msg.setResourceType(builder.resourceType);
-                        msg.setResourceUuid(builder.resourceUuid);
-                        msg.setSender(builder.sender);
-                        msg.setType(builder.type);
-                        msg.setOpaque(builder.opaque);
-
-                        InnerMessageHelper.setMD5(msg);
-
                         callWebhook(msg);
 
                     } else {
-                        NotificationVO vo = new NotificationVO();
-                        vo.setUuid(Platform.getUuid());
-                        vo.setName(builder.notificationName);
-                        if (session != null) {
-                            vo.setAccountUuid(session.getAccountUuid());
-                            vo.setUserUuid(session.getUserUuid());
-                        }
-                        vo.setCategory(builder.category);
-                        vo.setSuccess(builder.success);
-                        vo.setRemoteIp(builder.remoteIp);
-                        vo.setMsgfields(builder.msgfields);
-                        vo.setContent(builder.content);
-                        vo.setResourceType(builder.resourceType);
-                        vo.setResourceUuid(builder.resourceUuid);
-                        vo.setSender(builder.sender);
-                        vo.setStatus(NotificationStatus.Unread);
-                        vo.setType(builder.type);
-                        vo.setTime(System.currentTimeMillis());
-                        vo.setOpaque(builder.opaque);
-
-                        dbf.persistAndRefresh(vo);
+                        saveNotificationVO(msg);
                     }
                 }
 
@@ -356,12 +339,13 @@ public class NotificationManager extends AbstractService {
         }
     }
 
-    private void handle(APICreateNotificationMsg msg) {
+    private NotificationVO saveNotificationVO(APICreateNotificationMsg msg) {
         NotificationVO vo = new NotificationVO();
         vo.setUuid(Platform.getUuid());
         vo.setName(msg.getName());
         vo.setAccountUuid(msg.getAccountUuid());
-        vo.setUserUuid(msg.getUserUuid());
+        vo.setOpAccountUuid(msg.getOpAccountUuid());
+        vo.setOpUserUuid(msg.getOpUserUuid());
         vo.setCategory(msg.getCategory());
         vo.setSuccess(msg.getSuccess());
         vo.setRemoteIp(msg.getRemoteIp());
@@ -375,7 +359,11 @@ public class NotificationManager extends AbstractService {
         vo.setTime(System.currentTimeMillis());
         vo.setOpaque(msg.getOpaque());
 
-        vo = dbf.persistAndRefresh(vo);
+        return dbf.persistAndRefresh(vo);
+    }
+
+    private void handle(APICreateNotificationMsg msg) {
+        NotificationVO vo = saveNotificationVO(msg);
 
         APICreateNotificationsEvent evt = new APICreateNotificationsEvent(msg.getId());
         NotificationInventory inv = NotificationInventory.valueOf(vo);

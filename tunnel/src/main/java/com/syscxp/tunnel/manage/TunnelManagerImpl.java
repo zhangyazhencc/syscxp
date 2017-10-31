@@ -3,6 +3,7 @@ package com.syscxp.tunnel.manage;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.core.cloudbus.CloudBusSteppingCallback;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.GLock;
@@ -16,9 +17,7 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
-import com.syscxp.header.message.APIMessage;
-import com.syscxp.header.message.APIReply;
-import com.syscxp.header.message.Message;
+import com.syscxp.header.message.*;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.header.tunnel.TunnelConstant;
@@ -108,9 +107,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIDeleteForciblyTunnelMsg) msg);
         } else if (msg instanceof APIUpdateTunnelStateMsg) {
             handle((APIUpdateTunnelStateMsg) msg);
-        }else if (msg instanceof APICreateQinqMsg) {
+        } else if (msg instanceof APICreateQinqMsg) {
             handle((APICreateQinqMsg) msg);
-        }else if (msg instanceof APIDeleteQinqMsg) {
+        } else if (msg instanceof APIDeleteQinqMsg) {
             handle((APIDeleteQinqMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
@@ -951,7 +950,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void handle(APIDeleteQinqMsg msg) {
         APIDeleteQinqEvent evt = new APIDeleteQinqEvent(msg.getId());
-        QinqVO qinqVO = dbf.findByUuid(msg.getUuid(),QinqVO.class);
+        QinqVO qinqVO = dbf.findByUuid(msg.getUuid(), QinqVO.class);
         TunnelVO vo = dbf.findByUuid(qinqVO.getTunnelUuid(), TunnelVO.class);
         dbf.remove(qinqVO);
 
@@ -1109,7 +1108,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                 deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
                                 bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
                                 bus.send(deleteTunnelMsg);
-                            }else if(vo != null && vo.getAccountUuid() != null && cmd.getDescriptionData().equals("forciblydelete")){
+                            } else if (vo != null && vo.getAccountUuid() != null && cmd.getDescriptionData().equals("forciblydelete")) {
                                 deleteTunnel(vo);
                             }
                         }
@@ -1196,7 +1195,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .format("security group cleanExpiredProductThread starts[cleanExpiredProductInterval: %s day]", cleanExpiredProductInterval));
     }
 
-    private List<String> tunnelUuids = Collections.synchronizedList(new ArrayList<>());
+    private List<TunnelVO> tunnelVOs = new ArrayList<>();
 
     private class CleanExpiredProductThread implements PeriodicTask {
 
@@ -1216,27 +1215,40 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         @Transactional
-        private List<String> getTunnelUuids() {
+        private List<TunnelVO> getTunnels() {
             return Q.New(TunnelVO.class)
                     .lte(TunnelVO_.expiredDate, Timestamp.valueOf(LocalDateTime.now().plusDays(1)))
-                    .select(TunnelVO_.uuid).listValues();
+                    .list();
         }
 
 
         @Override
         public void run() {
             try {
-                tunnelUuids.clear();
-                tunnelUuids = getTunnelUuids();
-                logger.debug(String.format("delete expired tunnel, uuid in %s.",
-                        JSONObjectUtil.toJsonString(tunnelUuids)));
-                if (tunnelUuids.isEmpty())
+                tunnelVOs.clear();
+                tunnelVOs = getTunnels();
+                logger.debug("delete expired tunnel.");
+                if (tunnelVOs.isEmpty())
                     return;
-
-                for (String uuid : tunnelUuids) {
-                    deleteTunnel(dbf.findByUuid(uuid, TunnelVO.class));
+                List<DeleteTunnelMsg> msgs = new ArrayList<>();
+                for (TunnelVO vo : tunnelVOs) {
+                    if (vo.getState() == TunnelState.Unpaid) {
+                        deleteTunnel(vo);
+                    } else {
+                        TaskResourceVO task = newTaskResourceVO(vo, TaskType.Delete);
+                        DeleteTunnelMsg msg = new DeleteTunnelMsg();
+                        msg.setTaskUuid(task.getUuid());
+                        msg.setTunnelUuid(vo.getUuid());
+                        bus.makeTargetServiceIdByResourceUuid(msg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                        msgs.add(msg);
+                    }
+                    tunnelVOs.remove(vo);
                 }
 
+                if (msgs.isEmpty()) {
+                    return;
+                }
+                bus.send(msgs);
             } catch (Throwable t) {
                 logger.warn("unhandled exception", t);
             }
@@ -1281,9 +1293,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             validate((APIDeleteForciblyTunnelMsg) msg);
         } else if (msg instanceof APIUpdateTunnelStateMsg) {
             validate((APIUpdateTunnelStateMsg) msg);
-        }else if (msg instanceof APICreateQinqMsg) {
+        } else if (msg instanceof APICreateQinqMsg) {
             validate((APICreateQinqMsg) msg);
-        }else if (msg instanceof APIDeleteQinqMsg) {
+        } else if (msg instanceof APIDeleteQinqMsg) {
             validate((APIDeleteQinqMsg) msg);
         }
         return msg;
@@ -1326,13 +1338,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void validate(APIUpdateInterfaceMsg msg) {
         //判断同一个用户的网络名称是否已经存在
         if (msg.getName() != null) {
-            SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
-            q.add(InterfaceVO_.name, SimpleQuery.Op.EQ, msg.getName());
-            q.add(InterfaceVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-            q.add(InterfaceVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
-            if (q.isExists()) {
-                throw new ApiMessageInterceptionException(argerr("Interface's name %s is already exist ", msg.getName()));
-            }
+            checkInterfaceName(msg.getAccountUuid(), msg.getName());
         }
 
     }
@@ -1343,8 +1349,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         apiGetHasNotifyMsg.setAccountUuid(accountUuid);
         apiGetHasNotifyMsg.setProductUuid(productUuid);
 
-        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
-        APIGetHasNotifyReply reply = (APIGetHasNotifyReply) rsp;
+        APIGetHasNotifyReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL)
+                .syncJsonPost(apiGetHasNotifyMsg);
         if (reply.isInventory())
             throw new ApiMessageInterceptionException(
                     argerr("该订单[uuid:%s] 有未完成操作，请稍等！", productUuid));
@@ -1356,6 +1362,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
     }
 
+    private void checkTunnelName(String accountUuid, String name) {
+        //判断同一个用户的名称是否已经存在
+        SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
+        q.add(TunnelVO_.name, SimpleQuery.Op.EQ, name);
+        q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
+        if (q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ", name));
+        }
+    }
+
     private void validate(APIDeleteInterfaceMsg msg) {
         //判断云专线下是否有该物理接口
         SimpleQuery<TunnelInterfaceVO> q = dbf.createQuery(TunnelInterfaceVO.class);
@@ -1364,29 +1380,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             throw new ApiMessageInterceptionException(argerr("cannot delete,interface is being used!"));
         }
 
-        //判断该产品是否有未完成订单
-        APIGetHasNotifyMsg apiGetHasNotifyMsg = new APIGetHasNotifyMsg();
-        apiGetHasNotifyMsg.setAccountUuid(msg.getAccountUuid());
-        apiGetHasNotifyMsg.setProductUuid(msg.getUuid());
-
-        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
-        if (!rsp.isSuccess())
-            throw new ApiMessageInterceptionException(
-                    argerr("查询订单失败.", msg.getAccountUuid()));
-        APIGetHasNotifyReply reply = (APIGetHasNotifyReply) rsp;
-        if (reply.isInventory())
-            throw new ApiMessageInterceptionException(
-                    argerr("该订单[uuid:%s] 有未完成操作，请稍等！", msg.getUuid()));
+        checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
     }
 
     private void validate(APICreateTunnelMsg msg) {
-        //判断同一个用户的名称是否已经存在
-        SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
-        q.add(TunnelVO_.name, SimpleQuery.Op.EQ, msg.getName());
-        q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-        if (q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ", msg.getName()));
-        }
+        checkTunnelName(msg.getAccountUuid(), msg.getName());
+
         //判断通道两端的连接点是否相同，不允许相同
         if (Objects.equals(msg.getEndpointPointAUuid(), msg.getEndpointPointZUuid())) {
             throw new ApiMessageInterceptionException(argerr("通道两端不允许在同一个连接点 "));
@@ -1395,13 +1394,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void validate(APICreateTunnelManualMsg msg) {
 
-        //判断同一个用户的名称是否已经存在
-        SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
-        q.add(TunnelVO_.name, SimpleQuery.Op.EQ, msg.getName());
-        q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-        if (q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ", msg.getName()));
-        }
+        checkTunnelName(msg.getAccountUuid(), msg.getName());
 
         //判断通道两端的连接点是否相同，不允许相同
         if (Objects.equals(msg.getEndpointPointAUuid(), msg.getEndpointPointZUuid())) {
@@ -1565,12 +1558,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 "or (:startVlan between a.startVlan and a.endVlan) " +
                 "or (:endVlan between a.startVlan and a.endVlan))";
         TunnelInterfaceVO tunnelInterfaceA = Q.New(TunnelInterfaceVO.class)
-                .eq(TunnelInterfaceVO_.tunnelUuid,msg.getUuid())
-                .eq(TunnelInterfaceVO_.sortTag,"A")
+                .eq(TunnelInterfaceVO_.tunnelUuid, msg.getUuid())
+                .eq(TunnelInterfaceVO_.sortTag, "A")
                 .find();
         TunnelInterfaceVO tunnelInterfaceZ = Q.New(TunnelInterfaceVO.class)
-                .eq(TunnelInterfaceVO_.tunnelUuid,msg.getUuid())
-                .eq(TunnelInterfaceVO_.sortTag,"Z")
+                .eq(TunnelInterfaceVO_.tunnelUuid, msg.getUuid())
+                .eq(TunnelInterfaceVO_.sortTag, "Z")
                 .find();
         if (tunnelInterfaceA.getQinqState() == TunnelQinqState.Enabled) {
             TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
@@ -1596,11 +1589,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APIDeleteQinqMsg msg) {
-        QinqVO qinqVO = dbf.findByUuid(msg.getUuid(),QinqVO.class);
+        QinqVO qinqVO = dbf.findByUuid(msg.getUuid(), QinqVO.class);
         Long count = Q.New(QinqVO.class)
-                .eq(QinqVO_.tunnelUuid,qinqVO.getTunnelUuid())
+                .eq(QinqVO_.tunnelUuid, qinqVO.getTunnelUuid())
                 .count();
-        if(count==1){
+        if (count == 1) {
             throw new ApiMessageInterceptionException(argerr("该云专线[uuid:%s] 至少要有一个内部VLAN段，不能删！ ", qinqVO.getTunnelUuid()));
         }
     }

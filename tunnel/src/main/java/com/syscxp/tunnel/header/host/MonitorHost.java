@@ -117,13 +117,24 @@ public class MonitorHost extends HostBase implements Host {
                         restf.asyncJsonPost(pingPath, cmd, new JsonAsyncRESTCallback<PingResponse>(trigger) {
                             @Override
                             public void fail(ErrorCode err) {
-                                if (isSshPortOpen()) {
-                                    logger.debug(String.format("ssh port of host[uuid:%s, ip:%s] is open, ping success",
-                                            self.getUuid(), self.getHostIp()));
-                                    trigger.next();
-                                } else {
-                                    trigger.fail(err);
-                                }
+                                trigger.fail(err);
+//                                if (isSshPortOpen()) {
+//                                    logger.debug(String.format("ssh port of host[uuid:%s, ip:%s] is open, ping success",
+//                                            self.getUuid(), self.getHostIp()));
+//                                    afterDone.add(() -> {
+//                                        String info = String.format("ssh port of host[uuid:%s, ip:%s] is open, but " +
+//                                                        "monitoragent dead, it will issue a reconnect soon",
+//                                                self.getUuid(), self.getHostIp());
+//                                        logger.warn(info);
+//                                        ReconnectHostMsg rmsg = new ReconnectHostMsg();
+//                                        rmsg.setHostUuid(self.getUuid());
+//                                        bus.makeTargetServiceIdByResourceUuid(rmsg, MonitorConstant.SERVICE_ID, self.getUuid());
+//                                        bus.send(rmsg);
+//                                    });
+//                                    trigger.next();
+//                                } else {
+//                                    trigger.fail(err);
+//                                }
                             }
 
                             @Override
@@ -211,7 +222,7 @@ public class MonitorHost extends HostBase implements Host {
                         }
 
                         MonitorPingAgentExtensionPoint ext = it.next();
-                        logger.debug(String.format("calling KVMPingAgentExtensionPoint[%s]", ext.getClass()));
+                        logger.debug(String.format("calling MonitorHostPingAgentExtensionPoint[%s]", ext.getClass()));
                         ext.monitorPingAgent((MonitorHostInventory) getSelfInventory(), new Completion(trigger) {
                             @Override
                             public void success() {
@@ -272,16 +283,20 @@ public class MonitorHost extends HostBase implements Host {
                         sshShell.setPassword(getSelf().getPassword());
                         sshShell.setPort(getSelf().getSshPort());
                         ShellUtils.run(String.format("arp -d %s || true", getSelf().getSshPort()));
-                        SshResult ret = sshShell.runCommand(String.format("curl --connect-timeout 10 %s", restf.getCallbackUrl()));
-
-                        if (ret.isSshFailure()) {
-                            trigger.fail(operr("unable to connect to Host[ip:%s, username:%s, sshPort:%d] to check " +
-                                    "the management node connectivity,please check if username/password is wrong; %s",
-                                    self.getHostIp(), getSelf().getUsername(), getSelf().getSshPort(), ret.getExitErrorMessage()));
-                        } else if (ret.getReturnCode() != 0) {
-                            trigger.fail(operr("the host[ip:%s] cannot access the management node's callback url. It seems" +
-                                            " that the host cannot reach the management IP[%s]. %s %s", self.getHostIp(), Platform.getManagementServerIp(),
-                                    ret.getStderr(), ret.getExitErrorMessage()));
+                        try {
+                            SshResult ret = sshShell.runCommand(String.format("curl --connect-timeout 10 %s", restf
+                                    .getCallbackUrl()));
+                            if (ret.isSshFailure()) {
+                                trigger.fail(operr("unable to connect to Host[ip:%s, username:%s, sshPort:%d] to check " +
+                                                "the management node connectivity,please check if username/password is wrong; %s",
+                                        self.getHostIp(), getSelf().getUsername(), getSelf().getSshPort(), ret.getExitErrorMessage()));
+                            } else if (ret.getReturnCode() != 0) {
+                                trigger.fail(operr("the host[ip:%s] cannot access the management node's callback url. It seems" +
+                                                " that the host cannot reach the management IP[%s]. %s %s", self.getHostIp(), Platform.getManagementServerIp(),
+                                        ret.getStderr(), ret.getExitErrorMessage()));
+                            }
+                        } catch (Exception e) {
+                            trigger.fail(operr(e.getMessage()));
                         }
 
                         trigger.next();
@@ -366,7 +381,7 @@ public class MonitorHost extends HostBase implements Host {
                         String script = "which iptables > /dev/null && iptables -C FORWARD -j REJECT --reject-with icmp-host-prohibited > /dev/null 2>&1 && iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited > /dev/null 2>&1 || true";
                         try {
                             runShell(script);
-                        }catch (Exception e){
+                        } catch (Exception e) {
                             trigger.fail(errf.instantiateErrorCode(HostErrors.CONNECTION_ERROR, e.getMessage()));
                         }
                         trigger.next();
