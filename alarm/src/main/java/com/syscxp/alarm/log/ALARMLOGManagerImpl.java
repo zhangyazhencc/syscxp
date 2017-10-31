@@ -26,6 +26,7 @@ import com.syscxp.sms.SmsServiceImpl;
 import com.syscxp.sms.header.SmsVO;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import groovy.ui.SystemOutputInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Timestamp;
@@ -88,19 +89,22 @@ public class ALARMLOGManagerImpl  extends AbstractService implements ApiMessageI
         int countSize = alarmLogList.size();
         Timestamp time = null;
         for(AlarmLogVO vo: alarmLogList){
-          if(msg.getStatus().equals(AlarmStatus.RESUME)){
-              if(vo.getStatus().equals(AlarmStatus.RESUME)){
-                  if(time != null){
+            time = vo.getCreateDate();
+          if(msg.getStatus().equals("RESUME")){
+              if(vo.getStatus().equals("RESUME")&& time != null){
                       long times = time.getTime();
                       long currentTime = System.currentTimeMillis();
                       long diffTime = currentTime-times;
                       alarmLogVO.setDuration((int)diffTime/1000);
                       break;
-                  }
+              }
+              if(count == countSize-1){
+                  long diffTime = System.currentTimeMillis() - vo.getCreateDate().getTime();
+                  alarmLogVO.setDuration((int)diffTime/1000);
+              }
 
-              }
-          }else if(msg.getStatus().equals(AlarmStatus.ALARM)){
-              if(vo.getStatus().equals(AlarmStatus.RESUME)){
+          }else if(msg.getStatus().equals("ALARM")){
+              if(vo.getStatus().equals("RESUME")){
                   if(time != null){
                       long times = time.getTime();
                       long currentTime = System.currentTimeMillis();
@@ -109,12 +113,11 @@ public class ALARMLOGManagerImpl  extends AbstractService implements ApiMessageI
                       break;
                   }
               }
-              if(count+1 == countSize-1){
+              if(count == countSize-1){
                   long diffTime = System.currentTimeMillis() - vo.getCreateDate().getTime();
                   alarmLogVO.setDuration((int)diffTime/1000);
               }
           }
-          time = vo.getCreateDate();
           count++;
         }
 
@@ -142,9 +145,9 @@ public class ALARMLOGManagerImpl  extends AbstractService implements ApiMessageI
 
                     }
 
-                    if( notifyWayVO.getCode().equals("phone")){
+                    if( notifyWayVO.getCode().equals("mobile")){
                         String phone = contactVO.getMobile();
-                        SmsVO sms = smsService.sendMsg(msg.getSession(), phone, SmsGlobalProperty.SMS_VERIFICATION_CODE_APPID, SmsGlobalProperty.SMS_VERIFICATION_CODE_AlARM
+                        SmsVO sms = smsService.sendMsg(msg.getSession(), phone, SmsGlobalProperty.ALARM_VERIFICATION_CODE_APPID, SmsGlobalProperty.SMS_VERIFICATION_CODE_AlARM
                                 , new String[]{msg.getProblem(), "10"}, msg.getIp());
 //                        if(sms.getStatusCode() != "000000"){
 //                            //保存失败信息
