@@ -43,7 +43,7 @@ public class ProductPriceUnitInventory {
     public static ProductPriceUnitInventory valueOf(ProductPriceUnitVO vo) {
         ProductPriceUnitInventory inv = new ProductPriceUnitInventory();
         inv.setUuid(vo.getUuid());
-        
+
         inv.setAreaCode(vo.getAreaCode());
         inv.setAreaName(vo.getAreaName());
         inv.setLineCode(vo.getLineCode());
