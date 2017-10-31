@@ -1,7 +1,6 @@
 package com.syscxp.billing.header.balance;
 
-import com.syscxp.header.billing.Category;
-import com.syscxp.header.billing.ProductType;
+import com.syscxp.billing.header.price.ProductCategoryVO;
 import com.syscxp.header.search.SqlTrigger;
 import com.syscxp.header.search.TriggerIndex;
 
@@ -24,6 +23,10 @@ public class AccountDiscountVO {
 
     @Column
     private String productCategoryUuid;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name="productCategoryUuid",insertable = false,updatable = false)
+    private ProductCategoryVO productCategoryEO;
 
     @Column
     private int discount;
@@ -85,5 +88,13 @@ public class AccountDiscountVO {
 
     public void setProductCategoryUuid(String productCategoryUuid) {
         this.productCategoryUuid = productCategoryUuid;
+    }
+
+    public ProductCategoryVO getProductCategoryVO() {
+        return productCategoryEO;
+    }
+
+    public void setProductCategoryVO(ProductCategoryVO productCategoryEO) {
+        this.productCategoryEO = productCategoryEO;
     }
 }
