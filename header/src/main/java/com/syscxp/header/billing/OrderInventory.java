@@ -61,7 +61,7 @@ public class OrderInventory {
         inv.setType(vo.getType());
         inv.setPayTime(vo.getPayTime());
         inv.setProductChargeModel(vo.getProductChargeModel());
-        inv.setProductDescription(vo.getProductDescription());
+        inv.setProductDescription(vo.getDescriptionData());
         inv.setProductEffectTimeEnd(vo.getProductEffectTimeEnd());
         inv.setProductEffectTimeStart(vo.getProductEffectTimeStart());
         inv.setProductName(vo.getProductName());

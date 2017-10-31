@@ -3,8 +3,28 @@ package com.syscxp.header.billing;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
+import java.util.List;
+
 
 public class APICreateOrderMsg extends APISyncCallMessage {
+
+    @APIParam()
+    private List<ProductPriceUnit> units;
+
+    @APIParam(emptyString = false)
+    private String productName;
+
+    @APIParam(emptyString = false)
+    private ProductType productType;
+
+    @APIParam(emptyString = false)
+    private String productUuid;
+
+    @APIParam
+    private String descriptionData;
+
+    @APIParam
+    private String callBackData;
 
     @APIParam(emptyString = false)
     private String accountUuid;

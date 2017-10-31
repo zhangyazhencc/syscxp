@@ -26,7 +26,7 @@ public class OrderCallbackCmd {
         cmd.setExpireDate(order.getProductEffectTimeEnd());
         cmd.setDuration(order.getDuration());
         cmd.setProductChargeModel(order.getProductChargeModel());
-        cmd.setProductDescription(order.getProductDescription());
+        cmd.setProductDescription(order.getDescriptionData());
         return cmd;
     }
 

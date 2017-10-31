@@ -215,7 +215,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         orderMsg.setProductType(ProductType.VPN);
         orderMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
         orderMsg.setDuration(vpn.getDuration());
-        orderMsg.setProductDescription(vpn.getDescription());
+        orderMsg.setDescriptionData(vpn.getDescription());
         orderMsg.setUnits(generateUnits(msg.getBandwidth()));
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getOpAccountUuid());

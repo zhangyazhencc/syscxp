@@ -203,7 +203,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setProductType(ProductType.PORT);
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
-        orderMsg.setProductDescription("no description");
+        orderMsg.setDescriptionData("no description");
         orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -270,7 +270,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setProductType(ProductType.PORT);
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
-        orderMsg.setProductDescription("no description");
+        orderMsg.setDescriptionData("no description");
         orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -438,7 +438,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        orderMsg.setProductDescription("no description");
+        orderMsg.setDescriptionData("no description");
 
         OrderInventory orderInventory = createOrder(orderMsg);
 
@@ -498,7 +498,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setUnits(msg.getUnits());
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        orderMsg.setProductDescription("no description");
+        orderMsg.setDescriptionData("no description");
 
         OrderInventory orderInventory = createOrder(orderMsg);
 

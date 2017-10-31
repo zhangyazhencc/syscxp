@@ -6,7 +6,6 @@ import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.transaction.annotation.Transactional;
-import com.syscxp.billing.header.balance.*;
 import com.syscxp.core.Platform;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.GLock;
@@ -195,7 +194,7 @@ public class RenewJob extends QuartzJobBean {
                     orderVo.setProductType(renewVO.getProductType());
                     orderVo.setProductChargeModel(renewVO.getProductChargeModel());
                     orderVo.setPayTime(currentTimestamp);
-                    orderVo.setProductDescription(renewVO.getProductDescription());
+                    orderVo.setDescriptionData(renewVO.getProductDescription());
                     orderVo.setProductUuid(renewVO.getProductUuid());
                     orderVo.setDuration(1);
 

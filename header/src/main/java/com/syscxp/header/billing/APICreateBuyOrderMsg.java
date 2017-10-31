@@ -9,20 +9,7 @@ import java.util.List;
 @InnerCredentialCheck
 @Action(category = BillingConstant.ACTION_CATEGORY_ORDER)
 public class APICreateBuyOrderMsg extends APICreateOrderMsg {
-    @APIParam(nonempty = true)
-    private List<ProductPriceUnit> units;
 
-    @APIParam(emptyString = false)
-    private String productName;
-
-    @APIParam(emptyString = false)
-    private ProductType productType;
-
-    @APIParam(emptyString = false)
-    private String productUuid;
-
-    @APIParam
-    private String productDescription;
 
     @APIParam(emptyString = false)
     private ProductChargeModel productChargeModel;
@@ -31,12 +18,12 @@ public class APICreateBuyOrderMsg extends APICreateOrderMsg {
     private int duration;
 
 
-    public String getProductDescription() {
-        return productDescription;
+    public String getDescriptionData() {
+        return descriptionData;
     }
 
-    public void setProductDescription(String productDescription) {
-        this.productDescription = productDescription;
+    public void setDescriptionData(String descriptionData) {
+        this.descriptionData = descriptionData;
     }
 
     public List<ProductPriceUnit> getUnits() {
