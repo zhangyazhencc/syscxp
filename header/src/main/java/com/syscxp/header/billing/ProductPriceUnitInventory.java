@@ -43,10 +43,10 @@ public class ProductPriceUnitInventory {
     public static ProductPriceUnitInventory valueOf(ProductPriceUnitVO vo) {
         ProductPriceUnitInventory inv = new ProductPriceUnitInventory();
         inv.setUuid(vo.getUuid());
-        inv.setProductTypeCode(vo.getProductTypeCode());
-        inv.setProductTypeName(vo.getProductTypeName());
-        inv.setCategoryCode(vo.getCategoryCode());
-        inv.setCategoryName(vo.getCategoryName());
+//        inv.setProductTypeCode(vo.getProductTypeCode());
+//        inv.setProductTypeName(vo.getProductTypeName());
+//        inv.setCategoryCode(vo.getCategoryCode());
+//        inv.setCategoryName(vo.getCategoryName());
         inv.setAreaCode(vo.getAreaCode());
         inv.setAreaName(vo.getAreaName());
         inv.setLineCode(vo.getLineCode());
@@ -56,8 +56,8 @@ public class ProductPriceUnitInventory {
         inv.setUnitPrice(vo.getUnitPrice());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
-        inv.setCategoryName(vo.getCategoryName());
-        inv.setProductTypeName(vo.getProductTypeName());
+//        inv.setCategoryName(vo.getCategoryName());
+//        inv.setProductTypeName(vo.getProductTypeName());
         return inv;
     }
 

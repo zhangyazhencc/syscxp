@@ -9,14 +9,13 @@ import com.syscxp.core.db.GLock;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
-import com.syscxp.header.core.Completion;
-import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
@@ -33,7 +32,6 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.TypedQuery;
@@ -42,7 +40,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.argerr;
 
@@ -62,8 +63,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private ErrorFacade errf;
     @Autowired
     private ThreadFacade thdf;
-    @Autowired
-    private MonitorManagerImpl monitorManagerImpl;
 
     @Override
     @MessageSafe
@@ -78,7 +77,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void handleLocalMessage(Message msg) {
         TunnelBase base = new TunnelBase();
-        base.handleMessage((Message) msg);
+        base.handleMessage(msg);
     }
 
     private void handleApiMessage(APIMessage msg) {
@@ -219,11 +218,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             //状态修改已支付，生成到期时间
             vo.setAccountUuid(vo.getOwnerAccountUuid());
             vo.setState(InterfaceState.Paid);
-            if (msg.getProductChargeModel() == ProductChargeModel.BY_MONTH) {
-                vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
-            } else if (msg.getProductChargeModel() == ProductChargeModel.BY_YEAR) {
-                vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(msg.getDuration())));
-            }
+            vo.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), msg.getProductChargeModel(), msg.getDuration()));
 
             vo = dbf.updateAndRefresh(vo);
 
@@ -518,7 +513,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
         resourceOrderEffectiveVO.setUuid(Platform.getUuid());
         resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-        resourceOrderEffectiveVO.setResourceType("TunnelVO");
+        resourceOrderEffectiveVO.setResourceType(TunnelVO.class.getSimpleName());
         resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
         resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
 
@@ -528,15 +523,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo = dbf.updateAndRefresh(vo);
 
         //创建任务
-        TaskResourceVO taskResourceVO = new TaskResourceVO();
-        taskResourceVO.setUuid(Platform.getUuid());
-        taskResourceVO.setResourceUuid(vo.getUuid());
-        taskResourceVO.setResourceType("TunnelVO");
-        taskResourceVO.setTaskType(TaskType.Create);
-        taskResourceVO.setBody(null);
-        taskResourceVO.setResult(null);
-        taskResourceVO.setStatus(TaskStatus.Preexecute);
-        taskResourceVO = dbf.persistAndRefresh(taskResourceVO);
+        TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Create);
 
         CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
         createTunnelMsg.setTunnelUuid(vo.getUuid());
@@ -769,7 +756,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
             resourceOrderEffectiveVO.setUuid(Platform.getUuid());
             resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType("TunnelVO");
+            resourceOrderEffectiveVO.setResourceType(TunnelVO.class.getSimpleName());
             resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
             resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
 
@@ -777,15 +764,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo = dbf.updateAndRefresh(vo);
 
             //创建任务
-            TaskResourceVO taskResourceVO = new TaskResourceVO();
-            taskResourceVO.setUuid(Platform.getUuid());
-            taskResourceVO.setResourceUuid(vo.getUuid());
-            taskResourceVO.setResourceType("TunnelVO");
-            taskResourceVO.setTaskType(TaskType.ModifyBandwidth);
-            taskResourceVO.setBody(null);
-            taskResourceVO.setResult(null);
-            taskResourceVO.setStatus(TaskStatus.Preexecute);
-            taskResourceVO = dbf.persistAndRefresh(taskResourceVO);
+            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyBandwidth);
 
             ModifyTunnelBandwidthMsg modifyTunnelBandwidthMsg = new ModifyTunnelBandwidthMsg();
             modifyTunnelBandwidthMsg.setTunnelUuid(vo.getUuid());
@@ -848,7 +827,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
             resourceOrderEffectiveVO.setUuid(Platform.getUuid());
             resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType("TunnelVO");
+            resourceOrderEffectiveVO.setResourceType(TunnelVO.class.getSimpleName());
             resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
             resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
             //更新到期时间
@@ -887,7 +866,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
             resourceOrderEffectiveVO.setUuid(Platform.getUuid());
             resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType("TunnelVO");
+            resourceOrderEffectiveVO.setResourceType(TunnelVO.class.getSimpleName());
             resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
             resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
 
@@ -895,15 +874,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             dbf.updateAndRefresh(vo);
 
             //创建任务
-            TaskResourceVO taskResourceVO = new TaskResourceVO();
-            taskResourceVO.setUuid(Platform.getUuid());
-            taskResourceVO.setResourceUuid(vo.getUuid());
-            taskResourceVO.setResourceType("TunnelVO");
-            taskResourceVO.setTaskType(TaskType.Delete);
-            taskResourceVO.setBody(null);
-            taskResourceVO.setResult(null);
-            taskResourceVO.setStatus(TaskStatus.Preexecute);
-            taskResourceVO = dbf.persistAndRefresh(taskResourceVO);
+            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
 
             DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
             deleteTunnelMsg.setTunnelUuid(vo.getUuid());
@@ -953,9 +924,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
     }
 
-    private boolean orderIsExist(String orderUuid){
+    private boolean orderIsExist(String orderUuid) {
         return Q.New(ResourceOrderEffectiveVO.class)
-                .eq(ResourceOrderEffectiveVO_.orderUuid,orderUuid)
+                .eq(ResourceOrderEffectiveVO_.orderUuid, orderUuid)
                 .isExists();
     }
 
@@ -963,13 +934,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (cmd.getProductType() == ProductType.PORT) {
             if (!orderIsExist(cmd.getOrderUuid())) {
                 InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
-                if (cmd.getProductChargeModel() == ProductChargeModel.BY_MONTH) {
-                    vo.setExpireDate(Timestamp.valueOf(vo.getExpireDate().toLocalDateTime().plusMonths(cmd.getDuration())));
-                } else if (cmd.getProductChargeModel() == ProductChargeModel.BY_YEAR) {
-                    vo.setExpireDate(Timestamp.valueOf(vo.getExpireDate().toLocalDateTime().plusYears(cmd.getDuration())));
-                } else if(cmd.getProductChargeModel() == ProductChargeModel.BY_DAY){
-                    vo.setExpireDate(Timestamp.valueOf(vo.getExpireDate().toLocalDateTime().plusDays(cmd.getDuration())));
-                }
+                vo.setExpireDate(getExpireDate(vo.getExpireDate(), cmd.getProductChargeModel(), cmd.getDuration()));
 
                 vo.setDuration(cmd.getDuration());
                 vo.setProductChargeModel(cmd.getProductChargeModel());
@@ -979,19 +944,25 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         } else if (cmd.getProductType() == ProductType.TUNNEL) {
             if (!orderIsExist(cmd.getOrderUuid())) {
                 TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
-                if (cmd.getProductChargeModel() == ProductChargeModel.BY_MONTH) {
-                    vo.setExpireDate(Timestamp.valueOf(vo.getExpireDate().toLocalDateTime().plusMonths(cmd.getDuration())));
-                } else if (cmd.getProductChargeModel() == ProductChargeModel.BY_YEAR) {
-                    vo.setExpireDate(Timestamp.valueOf(vo.getExpireDate().toLocalDateTime().plusYears(cmd.getDuration())));
-                } else if(cmd.getProductChargeModel() == ProductChargeModel.BY_DAY){
-                    vo.setExpireDate(Timestamp.valueOf(vo.getExpireDate().toLocalDateTime().plusDays(cmd.getDuration())));
-                }
+                vo.setExpireDate(getExpireDate(vo.getExpireDate(), cmd.getProductChargeModel(), cmd.getDuration()));
                 vo.setDuration(cmd.getDuration());
                 vo.setProductChargeModel(cmd.getProductChargeModel());
                 dbf.updateAndRefresh(vo);
             }
         }
     }
+    private Timestamp getExpireDate(Timestamp oldTime, ProductChargeModel chargeModel, int duration){
+        Timestamp newTime = oldTime;
+        if (chargeModel== ProductChargeModel.BY_MONTH) {
+            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusMonths(duration));
+        } else if (chargeModel == ProductChargeModel.BY_YEAR) {
+            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusYears(duration));
+        } else if(chargeModel == ProductChargeModel.BY_DAY){
+            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusDays(duration));
+        }
+        return newTime;
+    }
+
 
     private void updateTunnelFromOrderBuy(OrderCallbackCmd cmd) {
         if (cmd.getProductType() == ProductType.PORT) {
@@ -1016,15 +987,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 dbf.updateAndRefresh(vo);
 
                 //创建任务
-                TaskResourceVO taskResourceVO = new TaskResourceVO();
-                taskResourceVO.setUuid(Platform.getUuid());
-                taskResourceVO.setResourceUuid(vo.getUuid());
-                taskResourceVO.setResourceType("TunnelVO");
-                taskResourceVO.setTaskType(TaskType.Create);
-                taskResourceVO.setBody(null);
-                taskResourceVO.setResult(null);
-                taskResourceVO.setStatus(TaskStatus.Preexecute);
-                taskResourceVO = dbf.persistAndRefresh(taskResourceVO);
+                TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Create);
 
                 CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
                 createTunnelMsg.setTunnelUuid(vo.getUuid());
@@ -1068,15 +1031,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                 dbf.updateAndRefresh(vo);
 
                                 //创建任务
-                                TaskResourceVO taskResourceVO = new TaskResourceVO();
-                                taskResourceVO.setUuid(Platform.getUuid());
-                                taskResourceVO.setResourceUuid(vo.getUuid());
-                                taskResourceVO.setResourceType("TunnelVO");
-                                taskResourceVO.setTaskType(TaskType.Delete);
-                                taskResourceVO.setBody(null);
-                                taskResourceVO.setResult(null);
-                                taskResourceVO.setStatus(TaskStatus.Preexecute);
-                                taskResourceVO = dbf.persistAndRefresh(taskResourceVO);
+                                TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
 
                                 DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
                                 deleteTunnelMsg.setTunnelUuid(vo.getUuid());
@@ -1119,15 +1074,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             dbf.updateAndRefresh(vo);
 
                             //创建任务
-                            TaskResourceVO taskResourceVO = new TaskResourceVO();
-                            taskResourceVO.setUuid(Platform.getUuid());
-                            taskResourceVO.setResourceUuid(vo.getUuid());
-                            taskResourceVO.setResourceType("TunnelVO");
-                            taskResourceVO.setTaskType(TaskType.ModifyBandwidth);
-                            taskResourceVO.setBody(null);
-                            taskResourceVO.setResult(null);
-                            taskResourceVO.setStatus(TaskStatus.Preexecute);
-                            taskResourceVO = dbf.persistAndRefresh(taskResourceVO);
+                            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyBandwidth);
 
                             ModifyTunnelBandwidthMsg modifyTunnelBandwidthMsg = new ModifyTunnelBandwidthMsg();
                             modifyTunnelBandwidthMsg.setTunnelUuid(vo.getUuid());
@@ -1150,15 +1097,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             dbf.updateAndRefresh(vo);
 
                             //创建任务
-                            TaskResourceVO taskResourceVO = new TaskResourceVO();
-                            taskResourceVO.setUuid(Platform.getUuid());
-                            taskResourceVO.setResourceUuid(vo.getUuid());
-                            taskResourceVO.setResourceType("TunnelVO");
-                            taskResourceVO.setTaskType(TaskType.ModifyBandwidth);
-                            taskResourceVO.setBody(null);
-                            taskResourceVO.setResult(null);
-                            taskResourceVO.setStatus(TaskStatus.Preexecute);
-                            taskResourceVO = dbf.persistAndRefresh(taskResourceVO);
+                            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyBandwidth);
 
                             ModifyTunnelBandwidthMsg modifyTunnelBandwidthMsg = new ModifyTunnelBandwidthMsg();
                             modifyTunnelBandwidthMsg.setTunnelUuid(vo.getUuid());
@@ -1172,8 +1111,83 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         return true;
     }
 
+    private TaskResourceVO newTaskResourceVO(TunnelVO vo, TaskType taskType) {
+        TaskResourceVO taskResourceVO = new TaskResourceVO();
+        taskResourceVO.setUuid(Platform.getUuid());
+        taskResourceVO.setResourceUuid(vo.getUuid());
+        taskResourceVO.setResourceType(TunnelVO.class.getSimpleName());
+        taskResourceVO.setTaskType(taskType);
+        taskResourceVO.setBody(null);
+        taskResourceVO.setResult(null);
+        taskResourceVO.setStatus(TaskStatus.Preexecute);
+        taskResourceVO = dbf.persistAndRefresh(taskResourceVO);
+        return taskResourceVO;
+    }
+
+    private Future<Void> cleanExpiredProductThread = null;
+    private int cleanExpiredProductInterval;
+
+    private void startCleanExpiredProduct() {
+        cleanExpiredProductInterval = CoreGlobalProperty.CLEAN_EXPIRED_PRODUCT_INTERVAL;
+        if (cleanExpiredProductThread != null) {
+            cleanExpiredProductThread.cancel(true);
+        }
+
+        cleanExpiredProductThread = thdf.submitPeriodicTask(new CleanExpiredProductThread(), TimeUnit.DAYS.toMillis(1));
+        logger.debug(String
+                .format("security group cleanExpiredProductThread starts[cleanExpiredProductInterval: %s day]", cleanExpiredProductInterval));
+    }
+
+    private List<String> tunnelUuids = Collections.synchronizedList(new ArrayList<>());
+
+    private class CleanExpiredProductThread implements PeriodicTask {
+
+        @Override
+        public TimeUnit getTimeUnit() {
+            return TimeUnit.DAYS;
+        }
+
+        @Override
+        public long getInterval() {
+            return cleanExpiredProductInterval;
+        }
+
+        @Override
+        public String getName() {
+            return "clean-expired-product-" + Platform.getManagementServerId();
+        }
+
+        @Transactional
+        private List<String> getTunnelUuids() {
+            return Q.New(TunnelVO.class)
+                    .lte(TunnelVO_.expiredDate, Timestamp.valueOf(LocalDateTime.now().plusDays(1)))
+                    .select(TunnelVO_.uuid).listValues();
+        }
+
+
+        @Override
+        public void run() {
+            try {
+                tunnelUuids.clear();
+                tunnelUuids = getTunnelUuids();
+                logger.debug(String.format("delete expired tunnel, uuid in %s.",
+                        JSONObjectUtil.toJsonString(tunnelUuids)));
+                if (tunnelUuids.isEmpty())
+                    return;
+
+                for (String uuid : tunnelUuids) {
+                    deleteTunnel(dbf.findByUuid(uuid, TunnelVO.class));
+                }
+
+            } catch (Throwable t) {
+                logger.warn("unhandled exception", t);
+            }
+        }
+    }
+
     @Override
     public boolean stop() {
+        cleanExpiredProductThread.cancel(true);
         return true;
     }
 
