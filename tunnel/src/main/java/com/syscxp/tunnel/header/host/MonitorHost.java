@@ -2,6 +2,7 @@ package com.syscxp.tunnel.header.host;
 
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
+import com.syscxp.core.ansible.AnsibleConstant;
 import com.syscxp.core.ansible.AnsibleGlobalProperty;
 import com.syscxp.core.ansible.AnsibleRunner;
 import com.syscxp.core.ansible.SshFileMd5Checker;
@@ -336,7 +337,8 @@ public class MonitorHost extends HostBase implements Host {
                         runner.putArgument("hostname", String.format("%s.syscxp.com", self.getHostIp().replaceAll("\\.", "-")));
 
                         UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(restf.getBaseUrl());
-                        ub.path(new StringBind(MonitorConstant.AGENT_ANSIBLE_LOG_PATH_FROMAT).bind("uuid", self.getUuid()).toString());
+                        ub.path(new StringBind(AnsibleConstant.AGENT_ANSIBLE_LOG_PATH_FROMAT).bind("uuid", self.getUuid()).toString
+                                ());
                         String postUrl = ub.build().toString();
 
                         runner.putArgument("post_url", postUrl);

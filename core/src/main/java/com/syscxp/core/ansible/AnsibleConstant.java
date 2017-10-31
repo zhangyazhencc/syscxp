@@ -17,4 +17,6 @@ public interface AnsibleConstant {
     public static String RSA_PRIVATE_KEY = "ansible/rsaKeys/id_rsa";
     public static String PIP_URL = "http://pypi.syscloud.cn/simple";
     public static String TRUSTED_HOST = "pypi.syscloud.cn";
+
+    public static String AGENT_ANSIBLE_LOG_PATH_FROMAT = "/agent/ansiblelog/{uuid}";
 }
