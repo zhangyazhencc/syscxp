@@ -202,7 +202,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
             resourceOrderEffectiveVO.setUuid(Platform.getUuid());
             resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType("InterfaceVO");
+            resourceOrderEffectiveVO.setResourceType(InterfaceVO.class.getSimpleName());
             resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
             resourceOrderEffectiveVO = dbf.persistAndRefresh(resourceOrderEffectiveVO);
             //状态修改已支付，生成到期时间
