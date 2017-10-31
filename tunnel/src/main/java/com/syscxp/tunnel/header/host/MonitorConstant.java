@@ -14,4 +14,5 @@ public interface MonitorConstant {
     String ANSIBLE_PLAYBOOK_NAME = "monitor.py";
     String ANSIBLE_MODULE_PATH = "ansible/monitor";
 
+    String AGENT_RECONNECT_ME = "/agent/reconnectme";
 }
