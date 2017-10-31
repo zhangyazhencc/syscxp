@@ -148,17 +148,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private OrderInventory createOrder(APICreateOrderMsg orderMsg) {
         //orderMsg.setNotifyUrl(restf.getSendCommandUrl());
         orderMsg.setNotifyUrl(TunnelConstant.NOTIFYURL);
-        APICreateOrderReply reply;
         try {
-            APIReply apiReply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
-            if (!apiReply.isSuccess())
-                return null;
-            reply = apiReply.castReply();
+            APICreateOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
 
+            return reply.getInventory();
         } catch (Exception e) {
             return null;
         }
-        return reply.getInventory();
     }
 
     private void handle(APICreateInterfaceMsg msg) {
