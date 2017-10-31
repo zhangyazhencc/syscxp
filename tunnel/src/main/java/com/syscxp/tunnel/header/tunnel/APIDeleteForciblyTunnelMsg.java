@@ -12,6 +12,8 @@ import com.syscxp.header.tunnel.TunnelConstant;
 public class APIDeleteForciblyTunnelMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
+    @APIParam(emptyString = false,maxLength = 32)
+    private String accountUuid;
 
     public String getUuid() {
         return uuid;
@@ -19,5 +21,13 @@ public class APIDeleteForciblyTunnelMsg extends APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

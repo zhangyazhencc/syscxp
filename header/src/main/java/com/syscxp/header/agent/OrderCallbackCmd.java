@@ -15,7 +15,7 @@ public class OrderCallbackCmd {
     private Timestamp expireDate;
     private int duration;
     private ProductChargeModel productChargeModel;
-    private String productDescription;
+    private String descriptionData;
 
     public static OrderCallbackCmd valueOf(OrderVO order){
         OrderCallbackCmd cmd = new OrderCallbackCmd();
@@ -26,7 +26,7 @@ public class OrderCallbackCmd {
         cmd.setExpireDate(order.getProductEffectTimeEnd());
         cmd.setDuration(order.getDuration());
         cmd.setProductChargeModel(order.getProductChargeModel());
-        cmd.setProductDescription(order.getProductDescription());
+        cmd.setDescriptionData(order.getDescriptionData());
         return cmd;
     }
 
@@ -78,12 +78,12 @@ public class OrderCallbackCmd {
         this.productChargeModel = productChargeModel;
     }
 
-    public String getProductDescription() {
-        return productDescription;
+    public String getDescriptionData() {
+        return descriptionData;
     }
 
-    public void setProductDescription(String productDescription) {
-        this.productDescription = productDescription;
+    public void setDescriptionData(String descriptionData) {
+        this.descriptionData = descriptionData;
     }
 
     public String getOrderUuid() {

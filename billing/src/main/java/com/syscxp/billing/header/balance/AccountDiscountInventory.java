@@ -1,4 +1,5 @@
 package com.syscxp.billing.header.balance;
+import com.syscxp.billing.header.price.ProductCategoryEO;
 import com.syscxp.header.billing.Category;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.search.Inventory;
@@ -15,11 +16,11 @@ public class AccountDiscountInventory {
 
     private String accountUuid;
 
-    private ProductType productType;
+    private String productType;
 
     private int discount;
 
-    private Category category;
+    private String category;
 
     private Timestamp createDate;
 
@@ -34,12 +35,8 @@ public class AccountDiscountInventory {
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setDiscount(vo.getDiscount());
-        inv.setProductType(vo.getProductType());
-        inv.setCategory(vo.getCategory());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
-        inv.setCategoryName(vo.getCategoryName());
-        inv.setProductTypeName(vo.getProductTypeName());
         return inv;
     }
 
@@ -68,11 +65,11 @@ public class AccountDiscountInventory {
         this.accountUuid = accountUuid;
     }
 
-    public ProductType getProductType() {
+    public String getProductType() {
         return productType;
     }
 
-    public void setProductType(ProductType productType) {
+    public void setProductType(String productType) {
         this.productType = productType;
     }
 
@@ -100,11 +97,11 @@ public class AccountDiscountInventory {
         this.lastOpDate = lastOpDate;
     }
 
-    public Category getCategory() {
+    public String getCategory() {
         return category;
     }
 
-    public void setCategory(Category category) {
+    public void setCategory(String category) {
         this.category = category;
     }
 

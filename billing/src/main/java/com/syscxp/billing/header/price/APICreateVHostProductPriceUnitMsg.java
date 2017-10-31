@@ -1,15 +1,15 @@
 package com.syscxp.billing.header.price;
 
+import com.syscxp.header.billing.BillingConstant;
 import com.syscxp.header.billing.Category;
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
+@Action(category = BillingConstant.ACTION_CATEGORY_PRICE)
 public class APICreateVHostProductPriceUnitMsg extends APIMessage{
     @APIParam(maxLength = 256,emptyString = false)
-    private Category categoryCode;
-
-    @APIParam( maxLength = 256,emptyString = false)
-    private String categoryName;
+    private String productCategoryUuid;
 
     @APIParam( maxLength = 256,emptyString = false)
     private String areaName;
@@ -23,21 +23,12 @@ public class APICreateVHostProductPriceUnitMsg extends APIMessage{
     @APIParam(maxLength = 256,emptyString = false)
     private Integer unitPrice;
 
-
-    public Category getCategoryCode() {
-        return categoryCode;
+    public String getProductCategoryUuid() {
+        return productCategoryUuid;
     }
 
-    public void setCategoryCode(Category categoryCode) {
-        this.categoryCode = categoryCode;
-    }
-
-    public String getCategoryName() {
-        return categoryName;
-    }
-
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
+    public void setProductCategoryUuid(String productCategoryUuid) {
+        this.productCategoryUuid = productCategoryUuid;
     }
 
     public String getAreaName() {

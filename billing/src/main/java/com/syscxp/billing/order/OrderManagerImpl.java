@@ -257,8 +257,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 throw new IllegalArgumentException("price uuid is not valid");
             }
             SimpleQuery<AccountDiscountVO> qDiscount = dbf.createQuery(AccountDiscountVO.class);
-            qDiscount.add(AccountDiscountVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
-            qDiscount.add(AccountDiscountVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
+            qDiscount.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, productPriceUnitVO.getProductCategoryUuid());
             qDiscount.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
             AccountDiscountVO accountDiscountVO = qDiscount.find();
             int productDiscount = 100;
@@ -323,7 +322,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductType(renewVO.getProductType());
         orderVo.setProductChargeModel(renewVO.getProductChargeModel());
         orderVo.setPayTime(currentTimestamp);
-        orderVo.setProductDescription(renewVO.getProductDescription());
+        orderVo.setDescriptionData(renewVO.getDescriptionData());
         orderVo.setProductUuid(renewVO.getProductUuid());
         orderVo.setDuration(originDuration);
 
@@ -348,7 +347,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductType(msg.getProductType());
         orderVo.setProductChargeModel(ProductChargeModel.BY_DAY);
         orderVo.setPayTime(currentTimestamp);
-        orderVo.setProductDescription(msg.getProductDescription());
+        orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(msg.getProductUuid());
         orderVo.setDuration(msg.getDuration());
 
@@ -400,6 +399,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductType(msg.getProductType());
         orderVo.setPayTime(currentTimestamp);
         orderVo.setProductUuid(msg.getProductUuid());
+        orderVo.setDescriptionData(msg.getDescriptionData());
 
         Timestamp startTime = msg.getStartTime();
         Timestamp endTime = msg.getExpiredTime();
@@ -485,8 +485,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             productPriceUnitUuids.add(productPriceUnitVO.getUuid());
 
             SimpleQuery<AccountDiscountVO> qDiscount = dbf.createQuery(AccountDiscountVO.class);
-            qDiscount.add(AccountDiscountVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
-            qDiscount.add(AccountDiscountVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
+            qDiscount.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, productPriceUnitVO.getProductCategoryUuid());
             qDiscount.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
             AccountDiscountVO accountDiscountVO = qDiscount.find();
             int productDiscount = 100;
@@ -513,7 +512,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setState(OrderState.PAID);
         orderVo.setProductType(msg.getProductType());
         orderVo.setPayTime(currentTimestamp);
-        orderVo.setProductDescription(msg.getProductDescription());
+        orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(msg.getProductUuid());
 
 
@@ -656,8 +655,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             }
             productPriceUnitUuids.add(productPriceUnitVO.getUuid());
             SimpleQuery<AccountDiscountVO> qDiscount = dbf.createQuery(AccountDiscountVO.class);
-            qDiscount.add(AccountDiscountVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
-            qDiscount.add(AccountDiscountVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
+            qDiscount.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, productPriceUnitVO.getProductCategoryUuid());
             qDiscount.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
             AccountDiscountVO accountDiscountVO = qDiscount.find();
             int productDiscount = 100;
@@ -690,7 +688,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductType(msg.getProductType());
         orderVo.setProductChargeModel(msg.getProductChargeModel());
         orderVo.setPayTime(currentTimestamp);
-        orderVo.setProductDescription(msg.getProductDescription());
+        orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(msg.getProductUuid());
         orderVo.setDuration(msg.getDuration());
 
@@ -720,7 +718,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         renewVO.setAccountUuid(orderVo.getAccountUuid());
         renewVO.setProductName(orderVo.getProductName());
         renewVO.setProductType(orderVo.getProductType());
-        renewVO.setProductDescription(orderVo.getProductDescription());
+        renewVO.setDescriptionData(orderVo.getDescriptionData());
         renewVO.setRenewAuto(true);
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
         renewVO.setPricePerDay(discountPrice.divide(BigDecimal.valueOf(30).multiply(duration), 4, BigDecimal.ROUND_HALF_EVEN));

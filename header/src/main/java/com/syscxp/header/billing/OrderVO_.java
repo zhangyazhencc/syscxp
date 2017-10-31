@@ -21,6 +21,7 @@ public class OrderVO_ {
     public static volatile SingularAttribute<OrderVO, String> productName;
     public static volatile SingularAttribute<OrderVO, ProductType> productType;
     public static volatile SingularAttribute<OrderVO, BigDecimal> productDiscount;
+    public static volatile SingularAttribute<OrderVO, BigDecimal> callBackData;
     public static volatile SingularAttribute<OrderVO, BigDecimal> price;
     public static volatile SingularAttribute<OrderVO, ProductChargeModel> productChargeModel;
     public static volatile SingularAttribute<OrderVO, BigDecimal> originalPrice;

@@ -2,6 +2,7 @@ package com.syscxp.billing.header.balance;
 
 import com.syscxp.header.billing.BillingConstant;
 import com.syscxp.header.billing.Category;
+import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -11,6 +12,9 @@ public class APICreateAccountDiscountMsg extends APIMessage {
 
     @APIParam(emptyString = false)
     private String accountUuid;
+
+    @APIParam(emptyString = false)
+    private ProductType productType;
 
     @APIParam
     private Category category;
@@ -40,5 +44,13 @@ public class APICreateAccountDiscountMsg extends APIMessage {
 
     public void setDiscount(int discount) {
         this.discount = discount;
+    }
+
+    public ProductType getProductType() {
+        return productType;
+    }
+
+    public void setProductType(ProductType productType) {
+        this.productType = productType;
     }
 }

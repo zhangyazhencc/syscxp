@@ -18,7 +18,7 @@ public class APICreateSwitchPortMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 128)
     private String portName;
 
-    @APIParam(emptyString = false,validValues = {"RJ45", "SFP_1G","SFP_10G"})
+    @APIParam(emptyString = false,validValues = {"RJ45_1G", "SFP_1G","SFP_10G"})
     private SwitchPortType portType;
 
     @APIParam(emptyString = false,validValues = {"Exclusive", "Shared"})

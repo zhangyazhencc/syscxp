@@ -14,9 +14,9 @@ public class APICreateAccountContactsMsg extends  APIMessage implements  Account
     private String accountUuid;
     @APIParam(maxLength = 128)
     private String name;
-    @APIParam(maxLength = 36)
+    @APIParam(maxLength = 36,required = false)
     private String phone;
-    @APIParam(maxLength = 36)
+    @APIParam(maxLength = 36,required = false)
     private String email;
     @APIParam(maxLength = 36)
     private NoticeWay noticeWay;

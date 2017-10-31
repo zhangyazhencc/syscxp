@@ -26,6 +26,7 @@ import com.syscxp.header.tunnel.APIQueryTunnelForAlarmMsg;
 import com.syscxp.header.tunnel.APIQueryTunnelForAlarmReply;
 import com.syscxp.header.tunnel.TunnelForAlarmInventory;
 import com.syscxp.utils.Utils;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -393,6 +394,50 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         regulationVO.setPolicyUuid(msg.getPolicyUuid());
         regulationVO.setTriggerPeriod(msg.getTriggerPeriod());
         dbf.persistAndRefresh(regulationVO);
+
+        SimpleQuery<ResourcePolicyRefVO> resourcepolicyrefvoquery = dbf.createQuery(ResourcePolicyRefVO.class);
+        resourcepolicyrefvoquery.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
+        if(resourcepolicyrefvoquery.isExists()){
+            TunnelParameter tunnelparameter = null;
+            Rule rule = null;
+            List<Rule> rulelist = null;
+            List<TunnelParameter> tunnelparameterlist = new ArrayList<>();
+            List<RegulationVO> regulationvolist = null;
+            List<ResourcePolicyRefVO> resourcepolicyrefvolist = resourcepolicyrefvoquery.list();
+
+            for(ResourcePolicyRefVO resourcepolicyrefvo : resourcepolicyrefvolist){
+                tunnelparameter = new TunnelParameter();
+                tunnelparameter.setTunnel_id(resourcepolicyrefvo.getResourceUuid());
+                /**
+                 * post获取tunnel信息
+                 * tunnelparameter.setEndpointA_ip();
+                 * tunnelparameter.setEndpointA_vlan();
+                 * tunnelparameter.setEndpointZ_ip();
+                 * tunnelparameter.setEndpointZ_vlan();
+                */
+                rulelist = new ArrayList<>();
+                SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
+                regulationvoquery.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ,msg.getPolicyUuid());
+                regulationvolist = regulationvoquery.list();
+                for(RegulationVO regulationvo : regulationvolist){
+                    rule = new Rule();
+                    rule.setRight_value(regulationvo.getAlarmThreshold());
+                    rule.setStay_time(regulationvo.getTriggerPeriod());
+                    rule.setOp(regulationvo.getComparisonRuleVO().getComparisonValue());
+                    rule.setStrategy_type(regulationvo.getMonitorTargetVO().getTargetValue());
+                    rulelist.add(rule);
+                }
+                tunnelparameter.setRules(rulelist);
+                tunnelparameterlist.add(tunnelparameter);
+            }
+
+            /**
+             * post 下发 python
+             * 参数: JSONObjectUtil.toJsonString(tunnelparameterlist)
+             */
+
+
+        }
 
         APICreateRegulationEvent event = new APICreateRegulationEvent(msg.getId());
         event.setInventory(RegulationInventory.valueOf(regulationVO));

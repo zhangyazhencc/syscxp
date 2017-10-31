@@ -1,12 +1,18 @@
 package com.syscxp.billing.header.price;
 
+import com.syscxp.header.billing.BillingConstant;
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import java.util.Map;
 
+@Action(category = BillingConstant.ACTION_CATEGORY_PRICE)
 public class APICreateTunnelProductPriceUnitMsg extends APIMessage{
     @APIParam(maxLength = 50)
     private String areaCode;
+
+    @APIParam(maxLength = 50)
+    private String productCategoryUuid;
 
     @APIParam(maxLength = 256)
     private String areaName;
@@ -47,5 +53,13 @@ public class APICreateTunnelProductPriceUnitMsg extends APIMessage{
 
     public void setConfigPrice(Map<String, Integer> configPrice) {
         this.configPrice = configPrice;
+    }
+
+    public String getProductCategoryUuid() {
+        return productCategoryUuid;
+    }
+
+    public void setProductCategoryUuid(String productCategoryUuid) {
+        this.productCategoryUuid = productCategoryUuid;
     }
 }
