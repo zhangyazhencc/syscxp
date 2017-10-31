@@ -62,6 +62,8 @@ public class OrderVO {
 
     @Column
     private String descriptionData;
+    @Column
+    private String callBackData;;
 
     @Column
     private BigDecimal price;
@@ -236,6 +238,14 @@ public class OrderVO {
 
     public void setProductStatus(int productStatus) {
         this.productStatus = productStatus;
+    }
+
+    public String getCallBackData() {
+        return callBackData;
+    }
+
+    public void setCallBackData(String callBackData) {
+        this.callBackData = callBackData;
     }
 
     @PreUpdate

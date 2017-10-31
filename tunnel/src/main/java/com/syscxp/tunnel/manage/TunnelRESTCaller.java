@@ -16,8 +16,6 @@ import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
-import java.util.Map;
-
 /**
  * Create by DCY on 2017/9/29
  */

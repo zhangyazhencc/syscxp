@@ -194,7 +194,7 @@ public class RenewJob extends QuartzJobBean {
                     orderVo.setProductType(renewVO.getProductType());
                     orderVo.setProductChargeModel(renewVO.getProductChargeModel());
                     orderVo.setPayTime(currentTimestamp);
-                    orderVo.setDescriptionData(renewVO.getProductDescription());
+                    orderVo.setDescriptionData(renewVO.getDescriptionData());
                     orderVo.setProductUuid(renewVO.getProductUuid());
                     orderVo.setDuration(1);
 

@@ -222,7 +222,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
     private void handle(APIDeleteReceiptPostAddressMsg msg) {
         String uuid = msg.getUuid();
         ReceiptPostAddressVO vo = dbf.findByUuid(msg.getUuid(), ReceiptPostAddressVO.class);
-
+        if(vo!=null)validReference(vo.getUuid(),false);
         dbf.remove(vo);
         ReceiptPostAddressInventory ri = ReceiptPostAddressInventory.valueOf(vo);
         APIDeleteReceiptPostAddressEvent evt = new APIDeleteReceiptPostAddressEvent(msg.getId());

@@ -47,7 +47,7 @@ public class RenewVO {
     private Timestamp lastOpDate;
 
     @Column
-    private String productDescription;
+    private String descriptionData;
 
     @Column
     private BigDecimal pricePerDay;
@@ -62,12 +62,12 @@ public class RenewVO {
         this.pricePerDay = pricePerDay;
     }
 
-    public String getProductDescription() {
-        return productDescription;
+    public String getDescriptionData() {
+        return descriptionData;
     }
 
-    public void setProductDescription(String productDescription) {
-        this.productDescription = productDescription;
+    public void setDescriptionData(String descriptionData) {
+        this.descriptionData = descriptionData;
     }
 
     public String getUuid() {

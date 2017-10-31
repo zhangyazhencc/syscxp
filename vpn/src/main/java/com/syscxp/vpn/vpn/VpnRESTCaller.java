@@ -3,6 +3,7 @@ package com.syscxp.vpn.vpn;
 import com.syscxp.core.Platform;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.ThreadFacade;
+import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.errorcode.ErrorCode;
@@ -23,6 +24,8 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.http.*;
 import com.syscxp.vpn.vpn.VpnCommands.*;
+
+import static com.syscxp.core.Platform.argerr;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class VpnRESTCaller {
@@ -112,7 +115,12 @@ public class VpnRESTCaller {
         InnerMessageHelper.setMD5(innerMsg);
 
         RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
-        return (APIReply) RESTApiDecoder.loads(rsp.getResult());
+
+        APIReply reply =(APIReply) RESTApiDecoder.loads(rsp.getResult());
+
+        if (!reply.isSuccess())
+            throw new ApiMessageInterceptionException(argerr("call url[%s] failed.", url));
+        return reply;
     }
 
     public void sendCommand(String path, VpnAgentCommand cmd, final Completion completion) {

@@ -56,6 +56,14 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.tunnel.APICreateQinqMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIDeleteQinqMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.tunnel.header.tunnel.APIQueryInterfaceMsg</name>
         <serviceId>query</serviceId>
     </message>
