@@ -442,7 +442,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
             hostsToLoad.addAll(connected);
             hostsToLoad.addAll(disconnected);
         } else {
-            if (HostGlobalConfig.RECONNECT_ALL_ON_BOOT.value(Boolean.class)) {
+            if (HostGlobalProperty.RECONNECT_ALL_ON_BOOT) {
                 hostsToLoad.addAll(connected);
                 hostsToLoad.addAll(disconnected);
             } else {
@@ -465,7 +465,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
             msgs.add(connectMsg);
         }
 
-        bus.send(msgs, HostGlobalConfig.HOST_LOAD_PARALLELISM_DEGREE.value(Integer.class),
+        bus.send(msgs, HostGlobalProperty.HOST_LOAD_PARALLELISM_DEGREE,
                 new CloudBusSteppingCallback(null) {
             @Override
             public void run(NeedReplyMessage msg, MessageReply reply) {
