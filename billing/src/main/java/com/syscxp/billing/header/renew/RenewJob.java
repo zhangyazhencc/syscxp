@@ -60,8 +60,7 @@ public class RenewJob extends QuartzJobBean {
                             throw new IllegalArgumentException("price uuid is not valid");
                         }
                         SimpleQuery<AccountDiscountVO> qDiscount = databaseFacade.createQuery(AccountDiscountVO.class);
-                        qDiscount.add(AccountDiscountVO_.category, SimpleQuery.Op.EQ, productPriceUnitVO.getCategoryCode());
-                        qDiscount.add(AccountDiscountVO_.productType, SimpleQuery.Op.EQ, productPriceUnitVO.getProductTypeCode());
+                        qDiscount.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, productPriceUnitVO.getProductCategoryUuid());
                         qDiscount.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, renewVO.getAccountUuid());
                         AccountDiscountVO accountDiscountVO = qDiscount.find();
                         int productDiscount = 100;
