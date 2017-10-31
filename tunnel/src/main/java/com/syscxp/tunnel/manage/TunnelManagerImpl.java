@@ -1316,19 +1316,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         return msg;
     }
 
-    private void checkOrderNoPay(String accountUuid, String productUuid) {
-        //判断该产品是否有未完成订单
-        APIGetHasNotifyMsg apiGetHasNotifyMsg = new APIGetHasNotifyMsg();
-        apiGetHasNotifyMsg.setAccountUuid(accountUuid);
-        apiGetHasNotifyMsg.setProductUuid(productUuid);
-
-        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
-        APIGetHasNotifyReply reply = (APIGetHasNotifyReply) rsp;
-        if (reply.isInventory())
-            throw new ApiMessageInterceptionException(
-                    argerr("该订单[uuid:%s] 有未完成操作，请稍等！", productUuid));
-
-    }
 
     private void validate(APICreateInterfaceMsg msg) {
         //判断账户金额是否充足
@@ -1341,13 +1328,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
-        //判断同一个用户的接口名称是否已经存在
-        SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
-        q.add(InterfaceVO_.name, SimpleQuery.Op.EQ, msg.getName());
-        q.add(InterfaceVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-        if (q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("Interface's name %s is already exist ", msg.getName()));
-        }
+
+        checkInterfaceName(msg.getAccountUuid(), msg.getName());
     }
 
     private void validate(APICreateInterfaceManualMsg msg) {
@@ -1361,13 +1343,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
-        //判断同一个用户的接口名称是否已经存在
-        SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
-        q.add(InterfaceVO_.name, SimpleQuery.Op.EQ, msg.getName());
-        q.add(InterfaceVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-        if (q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("Interface's name %s is already exist ", msg.getName()));
-        }
+
+        checkInterfaceName(msg.getAccountUuid(), msg.getName());
     }
 
     private void validate(APIUpdateInterfaceMsg msg) {
@@ -1376,6 +1353,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             checkInterfaceName(msg.getAccountUuid(), msg.getName());
         }
 
+    }
+
+    private void checkInterfaceName(String accountUuid, String name) {
+        //判断同一个用户的接口名称是否已经存在
+        SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
+        q.add(InterfaceVO_.name, SimpleQuery.Op.EQ, name);
+        q.add(InterfaceVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
+        if (q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("Interface's name %s is already exist ", name));
+        }
     }
 
     private void checkOrderNoPay(String accountUuid, String productUuid) {
