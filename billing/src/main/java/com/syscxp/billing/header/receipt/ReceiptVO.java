@@ -48,12 +48,33 @@ public class ReceiptVO {
     private String opMan;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="receiptInfoUuid")
+    @JoinColumn(name="receiptInfoUuid",insertable = false,updatable = false)
     private ReceiptInfoVO receiptInfoVO;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="receiptAddressUuid")
+    @JoinColumn(name="receiptAddressUuid",insertable = false,updatable = false)
     private ReceiptPostAddressVO receiptPostAddressVO;
+
+    @Column
+    private String receiptInfoUuid;
+    @Column
+    private String receiptAddressUuid;
+
+    public String getReceiptInfoUuid() {
+        return receiptInfoUuid;
+    }
+
+    public void setReceiptInfoUuid(String receiptInfoUuid) {
+        this.receiptInfoUuid = receiptInfoUuid;
+    }
+
+    public String getReceiptAddressUuid() {
+        return receiptAddressUuid;
+    }
+
+    public void setReceiptAddressUuid(String receiptAddressUuid) {
+        this.receiptAddressUuid = receiptAddressUuid;
+    }
 
     public String getUuid() {
         return uuid;
