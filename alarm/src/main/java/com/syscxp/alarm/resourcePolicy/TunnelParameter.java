@@ -1,8 +1,9 @@
-package com.syscxp.alarm.header.resourcePolicy;
+package com.syscxp.alarm.resourcePolicy;
 
 import java.util.List;
 
 public class TunnelParameter {
+
     private String tunnel_id;
     private String user_id;
     private String endpointA_vlan;
@@ -68,11 +69,11 @@ public class TunnelParameter {
     }
 }
 
-class Rule{
+class Rule {
     private String strategy_type;
     private String op;
-    private String right_value;
-    private String stay_time;
+    private int right_value;
+    private int stay_time;
 
     public String getStrategy_type() {
         return strategy_type;
@@ -90,19 +91,19 @@ class Rule{
         this.op = op;
     }
 
-    public String getRight_value() {
+    public int getRight_value() {
         return right_value;
     }
 
-    public void setRight_value(String right_value) {
+    public void setRight_value(int right_value) {
         this.right_value = right_value;
     }
 
-    public String getStay_time() {
+    public int getStay_time() {
         return stay_time;
     }
 
-    public void setStay_time(String stay_time) {
+    public void setStay_time(int stay_time) {
         this.stay_time = stay_time;
     }
 }

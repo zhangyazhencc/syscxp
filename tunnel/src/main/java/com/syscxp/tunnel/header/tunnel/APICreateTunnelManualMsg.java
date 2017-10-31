@@ -21,8 +21,6 @@ public class APICreateTunnelManualMsg extends APIMessage {
     private String accountUuid;
     @APIParam
     private Integer vsi;
-    @APIParam(emptyString = false,maxLength = 32)
-    private String monitorCidr;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
     @APIParam
@@ -208,13 +206,5 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     public void setVsi(Integer vsi) {
         this.vsi = vsi;
-    }
-
-    public String getMonitorCidr() {
-        return monitorCidr;
-    }
-
-    public void setMonitorCidr(String monitorCidr) {
-        this.monitorCidr = monitorCidr;
     }
 }

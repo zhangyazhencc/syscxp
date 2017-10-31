@@ -903,9 +903,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setUnits(generateUnits(msg.getBandwidth()));
         APIReply rsp = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
-        if (!rsp.isSuccess())
-            throw new ApiMessageInterceptionException(
-                    argerr("查询价格失败.", msg.getAccountUuid()));
         APIGetProductPriceReply reply = rsp.castReply();
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
