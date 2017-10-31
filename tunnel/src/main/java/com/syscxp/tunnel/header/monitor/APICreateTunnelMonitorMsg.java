@@ -2,6 +2,7 @@ package com.syscxp.tunnel.header.monitor;
 
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.tunnel.header.tunnel.TunnelVO;
 
 /**
  * @Author: sunxuelong.
@@ -10,9 +11,11 @@ import com.syscxp.header.message.APIParam;
  */
 public class APICreateTunnelMonitorMsg extends APIMessage {
 
-    // @APIParam(emptyString = false,resourceType = TunnelVO.class)
-    @APIParam(required = false,maxLength = 1024)
+    @APIParam(emptyString = false,resourceType = TunnelVO.class,maxLength = 32)
     private String tunnelUuid;
+
+    @APIParam(required = false,maxLength = 32)
+    private String accountUuid;
 
     @APIParam(required = false,maxLength = 1024)
     private String msg;
@@ -23,6 +26,14 @@ public class APICreateTunnelMonitorMsg extends APIMessage {
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 
     public String getMsg() {

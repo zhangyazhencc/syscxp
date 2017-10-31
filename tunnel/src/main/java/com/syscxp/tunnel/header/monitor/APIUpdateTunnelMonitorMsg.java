@@ -3,7 +3,7 @@ package com.syscxp.tunnel.header.monitor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.tunnel.header.host.MonitorHostVO;
-import com.syscxp.tunnel.header.tunnel.TunnelEO;
+import com.syscxp.tunnel.header.tunnel.TunnelVO;
 
 /**
  * @Author: sunxuelong.
@@ -12,11 +12,14 @@ import com.syscxp.tunnel.header.tunnel.TunnelEO;
  */
 public class APIUpdateTunnelMonitorMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = TunnelMonitorVO.class)
+    @APIParam(emptyString = false,resourceType = TunnelMonitorVO.class,checkAccount = true)
     private String uuid;
 
-    @APIParam(emptyString = false,resourceType = TunnelEO.class)
+    @APIParam(emptyString = false,resourceType = TunnelVO.class)
     private String tunnelUuid;
+
+    @APIParam(emptyString = false,maxLength = 32)
+    private String accountUuid;
 
     @APIParam(emptyString = false,resourceType = MonitorHostVO.class)
     private String hostAUuid;
@@ -87,5 +90,13 @@ public class APIUpdateTunnelMonitorMsg extends APIMessage {
 
     public void setMsg(String msg) {
         this.msg = msg;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

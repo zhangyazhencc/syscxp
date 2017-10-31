@@ -406,6 +406,8 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8
 COMMENT '通道监控';
 
+ALTER TABLE `syscxp_tunnel`.`TunnelMonitorVO` ADD accountUuid varchar(32) COMMENT 'accountUuid' AFTER tunnelUuid;
+
 ##监控机
 CREATE TABLE `HostEO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',

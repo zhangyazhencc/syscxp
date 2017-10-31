@@ -19,6 +19,8 @@ public class TunnelMonitorInventory {
 
     private String tunnelUuid;
 
+    private String accountUuid;
+
     private String msg;
 
     private Timestamp lastOpDate;
@@ -94,6 +96,14 @@ public class TunnelMonitorInventory {
 
     public void setTunnelMonitorInterfaceInventories(List<TunnelMonitorInterfaceInventory> tunnelMonitorInterfaceInventories) {
         this.tunnelMonitorInterfaceInventories = tunnelMonitorInterfaceInventories;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }
 
