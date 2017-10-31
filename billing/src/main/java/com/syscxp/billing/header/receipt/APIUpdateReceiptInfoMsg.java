@@ -34,6 +34,17 @@ public class APIUpdateReceiptInfoMsg extends APIMessage {
     @APIParam(required = false)
     private boolean isDefault;
 
+    @APIParam(required=false)
+    private String comment;
+
+    public String getComment() {
+        return comment;
+    }
+
+    public void setComment(String comment) {
+        this.comment = comment;
+    }
+
     public boolean isDefault() {
         return isDefault;
     }
