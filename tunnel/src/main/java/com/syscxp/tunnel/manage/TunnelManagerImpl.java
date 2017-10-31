@@ -882,6 +882,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
+        orderMsg.setProductDescription("delete");
 
         OrderInventory orderInventory = createOrder(orderMsg);
         if (orderInventory != null) {
@@ -935,6 +936,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
+        orderMsg.setProductDescription("forciblydelete");
 
         OrderInventory orderInventory = createOrder(orderMsg);
         if (orderInventory != null) {
@@ -1122,7 +1124,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             }
                         } else if (cmd.getProductType() == ProductType.TUNNEL) {
                             TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
-                            if (vo != null && vo.getAccountUuid() != null) {
+                            if (vo != null && vo.getAccountUuid() != null && cmd.getProductDescription().equals("delete")) {
                                 vo.setAccountUuid(null);
                                 dbf.updateAndRefresh(vo);
 
@@ -1142,6 +1144,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                 deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
                                 bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
                                 bus.send(deleteTunnelMsg);
+                            }else if(vo != null && vo.getAccountUuid() != null && cmd.getProductDescription().equals("forciblydelete")){
+                                deleteTunnel(vo);
                             }
                         }
                         return null;

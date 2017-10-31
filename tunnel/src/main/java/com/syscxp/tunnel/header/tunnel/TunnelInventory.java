@@ -19,7 +19,6 @@ public class TunnelInventory {
     private String accountUuid;
     private String ownerAccountUuid;
     private Integer vsi;
-    private String monitorCidr;
     private List<TunnelInterfaceInventory> tunnelInterfaces = new ArrayList<TunnelInterfaceInventory>();
     private String name;
     private Long bandwidth;
@@ -41,7 +40,6 @@ public class TunnelInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
         inv.setVsi(vo.getVsi());
-        inv.setMonitorCidr(vo.getMonitorCidr());
         inv.setTunnelInterfaces(TunnelInterfaceInventory.valueOf(vo.getTunnelInterfaceVOs()));
         inv.setName(vo.getName());
         inv.setBandwidth(vo.getBandwidth());
@@ -185,14 +183,6 @@ public class TunnelInventory {
 
     public void setVsi(Integer vsi) {
         this.vsi = vsi;
-    }
-
-    public String getMonitorCidr() {
-        return monitorCidr;
-    }
-
-    public void setMonitorCidr(String monitorCidr) {
-        this.monitorCidr = monitorCidr;
     }
 
     public List<TunnelInterfaceInventory> getTunnelInterfaces() {
