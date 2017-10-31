@@ -31,6 +31,9 @@ public class TunnelMonitorVO {
     private String accountUuid;
 
     @Column
+    private String monitorCidr;
+
+    @Column
     private String msg;
 
     @Column
@@ -104,5 +107,13 @@ public class TunnelMonitorVO {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public String getMonitorCidr() {
+        return monitorCidr;
+    }
+
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
     }
 }

@@ -17,6 +17,9 @@ public class APICreateTunnelMonitorMsg extends APIMessage {
     @APIParam(required = false,maxLength = 32)
     private String accountUuid;
 
+    @APIParam(required = true,maxLength = 32)
+    private String monitorCidr;
+
     @APIParam(required = false,maxLength = 1024)
     private String msg;
 
@@ -42,5 +45,13 @@ public class APICreateTunnelMonitorMsg extends APIMessage {
 
     public void setMsg(String msg) {
         this.msg = msg;
+    }
+
+    public String getMonitorCidr() {
+        return monitorCidr;
+    }
+
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
     }
 }
