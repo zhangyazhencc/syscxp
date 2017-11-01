@@ -22,6 +22,7 @@ public class PortOfferingVO {
     private String name;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private SwitchPortType type;
 
     @Column

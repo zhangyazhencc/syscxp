@@ -1335,7 +1335,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void validate(APICreateInterfaceMsg msg) {
         SwitchPortType type = Q.New(PortOfferingVO.class)
                 .eq(PortOfferingVO_.uuid, msg.getPortOfferingUuid())
-                .select(PortOfferingVO_.type).find();
+                .select(PortOfferingVO_.type).findValue();
         //类型是否支持
         List<SwitchPortType> types = getPortTypeByEndpoint(msg.getEndpointUuid());
         if (!types.contains(type))
