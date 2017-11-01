@@ -18,6 +18,7 @@
     <packaging>pom</packaging>
     <name>syscxp</name>
     <modules>
+        <module>build</module>
         <module>core</module>
         <module>utils</module>
         <module>header</module>
@@ -26,7 +27,6 @@
         <module>account</module>
         <module>billing</module>
         <module>tunnel</module>
-        <module>build</module>
         <module>sms</module>
         <module>vpn</module>
         <module>alarm</module>
