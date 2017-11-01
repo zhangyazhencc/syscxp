@@ -18,6 +18,8 @@ import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.host.*;
 import com.syscxp.header.host.HostVO;
+import com.syscxp.header.message.APIMessage;
+import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.JsonAsyncRESTCallback;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.ShellUtils;
@@ -472,6 +474,34 @@ public class MonitorHost extends HostBase implements Host {
         dbf.removeByPrimaryKey(self.getUuid(), MonitorHostVO.class);
     }
 
+    @Override
+    public void handleMessage(Message msg) {
+        try {
+            if (msg instanceof APIMessage) {
+                handleApiMessage((APIMessage) msg);
+            } else {
+                handleLocalMessage(msg);
+            }
+        } catch (Exception e) {
+            bus.logExceptionWithMessageDump(msg, e);
+            bus.replyErrorByMessageType(msg, e);
+        }
+    }
+
+    @Override
+    protected void handleApiMessage(APIMessage msg) {
+        super.handleApiMessage(msg);
+    }
+
+    @Override
+    protected void handleLocalMessage(Message msg) {
+        if (msg instanceof MonitorRunShellMsg) {
+            handle((MonitorRunShellMsg) msg);
+        }  else {
+            super.handleLocalMessage(msg);
+        }
+    }
+
     private SshResult runShell(String script) {
         Ssh ssh = new Ssh();
         ssh.setHostname(self.getHostIp());
@@ -480,6 +510,25 @@ public class MonitorHost extends HostBase implements Host {
         ssh.setPassword(getSelf().getPassword());
         ssh.shell(script);
         return ssh.runAndClose();
+    }
+
+    private void handle(MonitorRunShellMsg msg) {
+        SshResult result = runShell(msg.getScript());
+
+        MonitorRunShellReply reply = new MonitorRunShellReply();
+        if (result.isSshFailure()) {
+            reply.setError(errf.stringToOperationError(
+                    String.format("unable to connect to KVM[ip:%s, username:%s, sshPort:%d ] to do DNS check, please " +
+                            "check if username/password is wrong; %s", self.getHostIp(), getSelf().getUsername(), getSelf()
+                            .getSshPort(), result.getExitErrorMessage())
+            ));
+        } else {
+            reply.setStdout(result.getStdout());
+            reply.setStderr(result.getStderr());
+            reply.setReturnCode(result.getReturnCode());
+        }
+
+        bus.reply(msg, reply);
     }
 
     @Override

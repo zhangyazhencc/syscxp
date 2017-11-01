@@ -11,9 +11,12 @@
 
         <class>com.syscxp.tunnel.header.node.NodeVO</class>
         <class>com.syscxp.tunnel.header.node.NodeEO</class>
+        <class>com.syscxp.tunnel.header.node.ZoneVO</class>
+        <class>com.syscxp.tunnel.header.node.ZoneNodeRefVO</class>
 
         <class>com.syscxp.tunnel.header.endpoint.EndpointVO</class>
         <class>com.syscxp.tunnel.header.endpoint.EndpointEO</class>
+        <class>com.syscxp.tunnel.header.endpoint.InnerConnectedEndpointVO</class>
 
         <class>com.syscxp.tunnel.header.switchs.SwitchVO</class>
         <class>com.syscxp.tunnel.header.switchs.SwitchEO</class>
@@ -36,6 +39,7 @@
         <class>com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO</class>
         <class>com.syscxp.tunnel.header.tunnel.BandwidthOfferingVO</class>
         <class>com.syscxp.tunnel.header.tunnel.PortOfferingVO</class>
+
         <class>com.syscxp.tunnel.header.monitor.MonitorCidrVO</class>
 
         <class>com.syscxp.header.tunnel.TunnelForAlarmVO</class>

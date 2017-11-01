@@ -207,7 +207,6 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
                     resourceInventory.setProductName(inventory.getName());
                     resourceInventory.setCreateDate(inventory.getCreateDate());
                     resourceInventory.setLastOpDate(inventory.getLastOpDate());
-                    resourceInventory.setMonitorNetworkSegment(inventory.getMonitorCidr());
                     SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
                     query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, inventory.getUuid());
                     List<ResourcePolicyRefVO> resourcePolicyRefVOS = query.list();

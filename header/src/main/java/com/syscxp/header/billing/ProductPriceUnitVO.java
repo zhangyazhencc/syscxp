@@ -48,7 +48,7 @@ public class ProductPriceUnitVO {
     private Timestamp lastOpDate;
 
     @OneToOne
-    @JoinColumn(name="productCategoryUuid",referencedColumnName = "uuid")
+    @JoinColumn(name="productCategoryUuid",referencedColumnName = "uuid",insertable = false,updatable = false)
     private ProductCategoryVO productCategoryVO;
 
 

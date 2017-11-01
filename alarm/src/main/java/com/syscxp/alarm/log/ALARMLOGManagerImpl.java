@@ -124,11 +124,10 @@ public class ALARMLOGManagerImpl  extends AbstractService implements ApiMessageI
         //alarmLogVO.setDuration(0);//持续时间
         //alarmLogVO.setDurationTimeUnit(TimeUnit.MILLISECONDS);
         dbf.persistAndRefresh(alarmLogVO);
-        SimpleQuery<ContactGroupVO> query = dbf.createQuery(ContactGroupVO.class);
-        query.add(ContactGroupVO_.accountUuid, SimpleQuery.Op.EQ,msg.getUser_id());
-        List<ContactGroupVO> groups = query.list();
-         for(ContactGroupVO contactGroupVO : groups){
-            for(ContactVO contactVO: contactGroupVO.getContactVOList()){
+        SimpleQuery<ContactVO> query = dbf.createQuery(ContactVO.class);
+        query.add(ContactVO_.accountUuid, SimpleQuery.Op.EQ,msg.getUser_id());
+        List<ContactVO> groups = query.list();
+            for(ContactVO contactVO: groups){
                 Set<NotifyWayVO> notifyWayVOs = contactVO.getNotifyWayVOs();
                 for(NotifyWayVO notifyWayVO: notifyWayVOs){
                     if( notifyWayVO.getCode().equals("email")){
@@ -159,7 +158,6 @@ public class ALARMLOGManagerImpl  extends AbstractService implements ApiMessageI
 
                 }
             }
-        }
         //foreach发送短信和邮件
         APICreateALarmLogEvent evt = new APICreateALarmLogEvent(msg.getId());
         evt.setInventory(AlarmLogInventory.valueOf(alarmLogVO));

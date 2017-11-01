@@ -27,6 +27,10 @@ public class SwitchAO {
     private String name;
 
     @Column
+    @Enumerated(EnumType.STRING)
+    private SwitchType type;
+
+    @Column
     @ForeignKey(parentEntityClass = PhysicalSwitchEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String physicalSwitchUuid;
 
@@ -130,5 +134,13 @@ public class SwitchAO {
 
     public void setState(SwitchState state) {
         this.state = state;
+    }
+
+    public SwitchType getType() {
+        return type;
+    }
+
+    public void setType(SwitchType type) {
+        this.type = type;
     }
 }

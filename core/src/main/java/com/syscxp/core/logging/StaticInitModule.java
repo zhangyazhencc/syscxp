@@ -54,11 +54,7 @@ public class StaticInitModule {
                     throw new CloudRuntimeException(String.format("invalid locale[%s] in the label[%s]", l, msg), e);
                 }
 
-                Map<String, String> labels = localeMsgs.get(locale.toString());
-                if (labels == null) {
-                    labels = new LinkedHashMap<String, String>();
-                    localeMsgs.put(locale.toString(), labels);
-                }
+                Map<String, String> labels = localeMsgs.computeIfAbsent(locale.toString(), k -> new LinkedHashMap<>());
 
                 if (labels.containsKey(labelName)) {
                     throw new CloudRuntimeException(String.format("duplicate label. There has been a label[%s] for locale[%s]",

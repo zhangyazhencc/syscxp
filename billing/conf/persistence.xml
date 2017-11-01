@@ -19,8 +19,9 @@
         <class>com.syscxp.billing.header.receipt.ReceiptInfoVO</class>
         <class>com.syscxp.billing.header.balance.DealDetailVO</class>
         <class>com.syscxp.billing.header.sla.SLACompensateVO</class>
-        <class>com.syscxp.billing.header.balance.AccountDiscountVO</class>
+        <class>com.syscxp.header.billing.AccountDiscountVO</class>
         <class>com.syscxp.header.billing.ProductPriceUnitVO</class>
         <class>com.syscxp.billing.order.NotifyOrderVO</class>
+        <class>com.syscxp.header.billing.ProductCategoryVO</class>
     </persistence-unit>
 </persistence>

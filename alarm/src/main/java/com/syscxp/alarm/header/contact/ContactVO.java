@@ -18,6 +18,9 @@ public class ContactVO extends BaseVO{
     @Column
     private String mobile;
 
+    @Column
+    private String accountUuid;
+
 //    @Column
 //    private String accountUuid;
 
@@ -27,13 +30,6 @@ public class ContactVO extends BaseVO{
             inverseJoinColumns={@JoinColumn(name="notifyWayUuid",referencedColumnName="uuid")}
     )
     private Set<NotifyWayVO> notifyWayVOs;
-
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "ContactGroupRefVO",
-            joinColumns = {@JoinColumn(name = "contactUuid", referencedColumnName = "uuid")},
-            inverseJoinColumns = {@JoinColumn(name = "groupUuid", referencedColumnName = "uuid")}
-    )
-    private Set<ContactGroupVO> contactGroupVOS;
 
 //    @ManyToOne(targetEntity = ContactGroupVO.class)
 //    @JoinColumn(name="groupCode")
@@ -73,11 +69,11 @@ public class ContactVO extends BaseVO{
         this.notifyWayVOs = notifyWayVOs;
     }
 
-    public Set<ContactGroupVO> getContactGroupVOS() {
-        return contactGroupVOS;
+    public String getAccountUuid() {
+        return accountUuid;
     }
 
-    public void setContactGroupVOS(Set<ContactGroupVO> contactGroupVOS) {
-        this.contactGroupVOS = contactGroupVOS;
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

@@ -18,6 +18,8 @@ public class APIUpdateSwitchMsg extends APIMessage {
     private String code;
     @APIParam(emptyString = false,required = false,maxLength = 128)
     private String name;
+    @APIParam(emptyString = false,required = false,validValues = {"ACCESS", "INNER","OUTER"})
+    private SwitchType type;
     @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = PhysicalSwitchVO.class)
     private String physicalSwitchUuid;
     @APIParam(emptyString = false,required = false,validValues = {"Enabled", "Disabled","PreMaintenance","Maintenance"})
@@ -81,5 +83,13 @@ public class APIUpdateSwitchMsg extends APIMessage {
 
     public void setState(SwitchState state) {
         this.state = state;
+    }
+
+    public SwitchType getType() {
+        return type;
+    }
+
+    public void setType(SwitchType type) {
+        this.type = type;
     }
 }

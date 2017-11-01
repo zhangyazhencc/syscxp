@@ -110,17 +110,15 @@ public class VpnRESTCaller {
     /**
      * http调用内部服务
      */
-    public APIReply syncJsonPost(APIMessage innerMsg) {
+    public <T extends APIReply> T syncJsonPost(APIMessage innerMsg) {
         String url = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL);
         InnerMessageHelper.setMD5(innerMsg);
-
         RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
-
         APIReply reply =(APIReply) RESTApiDecoder.loads(rsp.getResult());
 
         if (!reply.isSuccess())
             throw new ApiMessageInterceptionException(argerr("call url[%s] failed.", url));
-        return reply;
+        return reply.castReply();
     }
 
     public void sendCommand(String path, VpnAgentCommand cmd, final Completion completion) {

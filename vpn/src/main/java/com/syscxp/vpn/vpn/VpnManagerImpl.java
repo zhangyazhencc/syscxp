@@ -31,6 +31,7 @@ import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
+import com.syscxp.utils.network.NetworkUtils;
 import com.syscxp.vpn.exception.VpnServiceException;
 import com.syscxp.vpn.header.host.*;
 import com.syscxp.vpn.header.vpn.*;
@@ -96,6 +97,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APIDeleteVpnRouteMsg) msg);
         } else if (msg instanceof APIGetVpnMsg) {
             handle((APIGetVpnMsg) msg);
+        } else if (msg instanceof APIGetVpnPriceMsg) {
+            handle((APIGetVpnPriceMsg) msg);
         } else if (msg instanceof APIUpdateVpnStateMsg) {
             handle((APIUpdateVpnStateMsg) msg);
         } else if (msg instanceof APIUpdateVpnCidrMsg) {
@@ -164,6 +167,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         APIGetVpnReply reply = new APIGetVpnReply();
         reply.setInventory(inventory);
+        bus.reply(msg, reply);
+    }
+
+    private void handle(APIGetVpnPriceMsg msg) {
+        APIGetVpnPriceReply reply = getVpnPrice(msg.getDuration(), msg.getBandwidth());
+
         bus.reply(msg, reply);
     }
 
@@ -822,6 +831,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APICreateVpnInterfaceMsg msg) {
+        if (!NetworkUtils.isIpv4Address(msg.getLocalIP()))
+            throw new ApiMessageInterceptionException(
+                    argerr("The LocalIp[%s] is illegal.", msg.getLocalIP()));
+        if (!NetworkUtils.isNetmask(msg.getNetmask()))
+            throw new ApiMessageInterceptionException(
+                    argerr("The Netmask[%s] is illegal.", msg.getNetmask()));
         String hostUuid = Q.New(VpnVO.class)
                 .eq(VpnVO_.uuid, msg.getVpnUuid())
                 .select(VpnVO_.hostUuid)
@@ -892,22 +907,35 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 .eq(HostInterfaceVO_.endpointUuid, msg.getEndpointUuid())
                 .select(HostInterfaceVO_.hostUuid).findValue();
 
+        if (!NetworkUtils.isCidr(msg.getVpnCidr()))
+            throw new ApiMessageInterceptionException(
+                    argerr("The vpnCidr[%s] is illegal.", msg.getVpnCidr()));
+
+        if (!NetworkUtils.isIpv4Address(msg.getLocalIp()))
+            throw new ApiMessageInterceptionException(
+                    argerr("The LocalIp[%s] is illegal.", msg.getLocalIp()));
+        if (!NetworkUtils.isNetmask(msg.getNetmask()))
+            throw new ApiMessageInterceptionException(
+                    argerr("The Netmask[%s] is illegal.", msg.getNetmask()));
+
         if (hostUuid == null)
             throw new ApiMessageInterceptionException(
                     argerr("The Host of the endpoint[uuid:%s] does not exist.", msg.getEndpointUuid()));
         msg.setHostUuid(hostUuid);
-
-        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
-        priceMsg.setAccountUuid(msg.getAccountUuid());
-        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
-        priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(generateUnits(msg.getBandwidth()));
-        APIReply rsp = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
-        APIGetProductPriceReply reply = rsp.castReply();
+        APIGetVpnPriceReply reply = getVpnPrice(msg.getDuration(), msg.getBandwidth());
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
     }
+
+    private APIGetVpnPriceReply getVpnPrice(Integer duration, Long bandWidth) {
+        APIGetProductPriceMsg msg = new APIGetProductPriceMsg();
+        msg.setProductChargeModel(ProductChargeModel.BY_MONTH);
+        msg.setDuration(duration);
+        msg.setUnits(generateUnits(bandWidth));
+        return new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(msg);
+    }
+
 
     private boolean reconnectVpn(VpnVO vo) {
         if (vo.getVpnHost().getStatus() == HostStatus.Disconnected ||

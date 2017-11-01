@@ -138,6 +138,7 @@ CREATE TABLE `syscxp_tunnel`.`ZoneVO` (
 
 ##节点区域关系表
 CREATE TABLE `syscxp_tunnel`.`ZoneNodeRefVO` (
+  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `nodeUuid` varchar(32) NOT NULL COMMENT '节点UUID',
   `zoneUuid` varchar(32) NOT NULL COMMENT '区域UUID',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
@@ -151,8 +152,8 @@ CREATE TABLE  `syscxp_tunnel`.`EndpointEO` (
   `name` varchar(255) NOT NULL  COMMENT '连接点名称',
   `code` varchar(128) NOT NULL  COMMENT '连接点编号',
   `endpointType` varchar(128) NOT NULL  COMMENT '连接点类型',
-  `enabled` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT '是否启用',
-  `openToCustomers` TINYINT(1)  NOT NULL DEFAULT '0' COMMENT '是否对外开放',
+  `state` varchar(32) NOT NULL COMMENT '启用|禁用 Enable|Disable',
+  `status` varchar(32) NOT NULL COMMENT '开发|未开放 Open|Close',
   `description` varchar(255)  DEFAULT NULL COMMENT '描述',
   `deleted` varchar(255) DEFAULT NULL,
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
@@ -160,15 +161,20 @@ CREATE TABLE  `syscxp_tunnel`.`EndpointEO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-
-ALTER TABLE EndpointEO ADD state varchar(32) COMMENT '启用|禁用 Enable|Disable' AFTER endpointType ;
-ALTER TABLE EndpointEO ADD status varchar(32) COMMENT '开发|未开放 Open|Close' AFTER state ;
-ALTER TABLE EndpointEO DROP COLUMN enabled;
-ALTER TABLE EndpointEO DROP COLUMN openToCustomers;
-
-
 CREATE OR REPLACE VIEW `syscxp_tunnel`.`EndpointVO` AS SELECT uuid, nodeUuid, name, code, endpointType, state, status, description, lastOpDate, createDate
                             FROM `EndpointEO` WHERE deleted IS NULL;
+
+##互联连接点配置表
+CREATE TABLE  `syscxp_tunnel`.`InnerConnectedEndpointVO` (
+  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `endpointUuid` varchar(32) NOT NULL COMMENT '互联连接点',
+  `connectedEndpointUuid` VARCHAR(32) NOT NULL COMMENT '目的连接点',
+  `name` VARCHAR(128) NOT NULL COMMENT '名称：如高速通道',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 ##交换机型号
 CREATE TABLE  `syscxp_tunnel`.`SwitchModelVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
@@ -224,6 +230,7 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
   `endpointUuid` varchar(32) NOT NULL COMMENT '连接点UUID',
   `code` varchar(128) NOT NULL COMMENT '交换机编号',
   `name` varchar(128) NOT NULL COMMENT '交换机名称',
+  `type` varchar(32) NOT NULL COMMENT '交换机类型：ACCESS,INNER,OUTER',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `state` varchar(32) NOT NULL DEFAULT 'Enabled' COMMENT '状况',
   `status` varchar(32) NOT NULL DEFAULT 'Connected' COMMENT '状态',
@@ -233,7 +240,7 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchEO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, physicalSwitchUuid, endpointUuid, name, code, description, state, status, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`SwitchVO` AS SELECT uuid, physicalSwitchUuid, endpointUuid, name, code, type, description, state, status, lastOpDate, createDate
                                             FROM `SwitchEO` WHERE deleted IS NULL;
 
 
@@ -374,17 +381,6 @@ CREATE TABLE  `syscxp_tunnel`.`TunnelMotifyRecordVO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-##监控网段字典表
-CREATE TABLE `syscxp_tunnel`.`MonitorCidrVO` (
-  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `monitorCidr` VARCHAR(32) NOT NULL COMMENT '监控网段IP',
-  `startAddress` VARCHAR(32) NOT NULL COMMENT '起始网络位',
-  `endAddress` VARCHAR(32) NOT NULL COMMENT '最后广播位',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  PRIMARY KEY (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 ##云专线端口信息表
 CREATE TABLE  `syscxp_tunnel`.`TunnelInterfaceVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
@@ -407,6 +403,20 @@ CREATE TABLE  `syscxp_tunnel`.`QinqVO` (
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+############################################################################################################################
+##########################################监控##############################################################################
+
+##监控网段字典表
+CREATE TABLE `syscxp_tunnel`.`MonitorCidrVO` (
+  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `monitorCidr` VARCHAR(32) NOT NULL COMMENT '监控网段IP',
+  `startAddress` VARCHAR(32) NOT NULL COMMENT '起始网络位',
+  `endAddress` VARCHAR(32) NOT NULL COMMENT '最后广播位',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ##通道监控

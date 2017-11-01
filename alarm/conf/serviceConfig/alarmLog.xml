@@ -7,4 +7,9 @@
         <name>com.syscxp.alarm.header.log.APICreateAlarmLogMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.alarm.header.log.APIQueryAlarmLogMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
 </service>
