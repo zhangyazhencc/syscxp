@@ -6,10 +6,6 @@ public class TunnelParameter {
 
     private String tunnel_id;
     private String user_id;
-    private String endpointA_vlan;
-    private String endpointA_ip;
-    private String endpointZ_vlan;
-    private String endpointZ_ip;
     private List<Rule> rules;
 
     public String getTunnel_id() {
@@ -28,37 +24,6 @@ public class TunnelParameter {
         this.user_id = user_id;
     }
 
-    public String getEndpointA_vlan() {
-        return endpointA_vlan;
-    }
-
-    public void setEndpointA_vlan(String endpointA_vlan) {
-        this.endpointA_vlan = endpointA_vlan;
-    }
-
-    public String getEndpointA_ip() {
-        return endpointA_ip;
-    }
-
-    public void setEndpointA_ip(String endpointA_ip) {
-        this.endpointA_ip = endpointA_ip;
-    }
-
-    public String getEndpointZ_vlan() {
-        return endpointZ_vlan;
-    }
-
-    public void setEndpointZ_vlan(String endpointZ_vlan) {
-        this.endpointZ_vlan = endpointZ_vlan;
-    }
-
-    public String getEndpointZ_ip() {
-        return endpointZ_ip;
-    }
-
-    public void setEndpointZ_ip(String endpointZ_ip) {
-        this.endpointZ_ip = endpointZ_ip;
-    }
 
     public List<Rule> getRules() {
         return rules;
@@ -67,6 +32,7 @@ public class TunnelParameter {
     public void setRules(List<Rule> rules) {
         this.rules = rules;
     }
+
 }
 
 class Rule {
