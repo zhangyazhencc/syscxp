@@ -12,14 +12,6 @@ public class ProductPriceUnitInventory {
 
     private String uuid;
 
-    private ProductType productTypeCode;
-
-    private String productTypeName;
-
-    private Category categoryCode;
-
-    private String categoryName;
-
     private String areaCode;
 
     private String areaName;
@@ -39,6 +31,7 @@ public class ProductPriceUnitInventory {
     private Timestamp lastOpDate;
 
     private int discount;
+    private ProductCategoryVO productCategoryVO;
 
     public static ProductPriceUnitInventory valueOf(ProductPriceUnitVO vo) {
         ProductPriceUnitInventory inv = new ProductPriceUnitInventory();
@@ -53,6 +46,8 @@ public class ProductPriceUnitInventory {
         inv.setUnitPrice(vo.getUnitPrice());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        if(vo.getProductCategoryVO()!=null)
+        inv.setProductCategoryVO(vo.getProductCategoryVO());
 
         return inv;
     }
@@ -72,38 +67,6 @@ public class ProductPriceUnitInventory {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public ProductType getProductTypeCode() {
-        return productTypeCode;
-    }
-
-    public void setProductTypeCode(ProductType productTypeCode) {
-        this.productTypeCode = productTypeCode;
-    }
-
-    public String getProductTypeName() {
-        return productTypeName;
-    }
-
-    public void setProductTypeName(String productTypeName) {
-        this.productTypeName = productTypeName;
-    }
-
-    public Category getCategoryCode() {
-        return categoryCode;
-    }
-
-    public void setCategoryCode(Category categoryCode) {
-        this.categoryCode = categoryCode;
-    }
-
-    public String getCategoryName() {
-        return categoryName;
-    }
-
-    public void setCategoryName(String categoryName) {
-        this.categoryName = categoryName;
     }
 
     public String getAreaCode() {
@@ -184,5 +147,13 @@ public class ProductPriceUnitInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public ProductCategoryVO getProductCategoryVO() {
+        return productCategoryVO;
+    }
+
+    public void setProductCategoryVO(ProductCategoryVO productCategoryVO) {
+        this.productCategoryVO = productCategoryVO;
     }
 }

@@ -1,7 +1,5 @@
 package com.syscxp.billing.price;
 
-import com.syscxp.billing.header.balance.AccountDiscountVO;
-import com.syscxp.billing.header.balance.AccountDiscountVO_;
 import com.syscxp.billing.header.price.*;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -23,7 +21,6 @@ import com.syscxp.header.message.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.Query;
 import java.util.*;
 
 public class ProductPriceUnitManagerImpl extends AbstractService implements ProductPriceUnitManager,ApiMessageInterceptor {

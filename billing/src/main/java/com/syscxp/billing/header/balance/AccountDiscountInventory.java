@@ -1,8 +1,5 @@
 package com.syscxp.billing.header.balance;
-import com.syscxp.billing.header.price.ProductCategoryVO;
-import com.syscxp.billing.header.price.ProductCategoryInventory;
-import com.syscxp.header.billing.Category;
-import com.syscxp.header.billing.ProductType;
+import com.syscxp.header.billing.ProductCategoryInventory;
 import com.syscxp.header.search.Inventory;
 
 import java.sql.Timestamp;
