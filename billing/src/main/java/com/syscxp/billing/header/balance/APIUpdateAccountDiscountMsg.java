@@ -1,6 +1,5 @@
 package com.syscxp.billing.header.balance;
 
-import com.syscxp.header.billing.AccountDiscountVO;
 import com.syscxp.header.billing.BillingConstant;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;

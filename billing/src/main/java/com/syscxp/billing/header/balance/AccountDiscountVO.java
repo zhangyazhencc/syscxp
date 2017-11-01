@@ -1,4 +1,4 @@
-package com.syscxp.header.billing;
+package com.syscxp.billing.header.balance;
 
 import com.syscxp.header.billing.ProductCategoryVO;
 import com.syscxp.header.search.SqlTrigger;
@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @TriggerIndex
-@SqlTrigger(foreignVOClass=ProductCategoryVO.class,foreignVOJoinColumn="productCategoryUuid")
+@SqlTrigger
 public class AccountDiscountVO {
 
     @Id
@@ -24,8 +24,8 @@ public class AccountDiscountVO {
     @Column
     private String productCategoryUuid;
 
-    @OneToOne(fetch = FetchType.EAGER,mappedBy = "accountDiscountVO")
-//    @JoinColumn(name="productCategoryUuid",insertable = false,updatable = false)
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name="productCategoryUuid",insertable = false,updatable = false)
     private ProductCategoryVO productCategoryEO;
 
     @Column
