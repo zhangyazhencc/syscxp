@@ -18,7 +18,6 @@ public class TunnelForAlarmInventory {
     private String uuid;
     private String accountUuid;
     private Integer vsi;
-    private String monitorCidr;
     private String name;
     private Long bandwidth;
     private Double distance;
@@ -38,7 +37,6 @@ public class TunnelForAlarmInventory {
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setVsi(vo.getVsi());
-        inv.setMonitorCidr(vo.getMonitorCidr());
         inv.setName(vo.getName());
         inv.setBandwidth(vo.getBandwidth());
         inv.setDistance(vo.getDistance());
@@ -181,14 +179,6 @@ public class TunnelForAlarmInventory {
 
     public void setVsi(Integer vsi) {
         this.vsi = vsi;
-    }
-
-    public String getMonitorCidr() {
-        return monitorCidr;
-    }
-
-    public void setMonitorCidr(String monitorCidr) {
-        this.monitorCidr = monitorCidr;
     }
 
     public Timestamp getExpireDate() {

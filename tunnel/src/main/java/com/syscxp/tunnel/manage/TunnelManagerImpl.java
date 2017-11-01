@@ -21,15 +21,14 @@ import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.SyncHttpCallHandler;
-import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.header.tunnel.TunnelMonitorState;
-import com.syscxp.header.tunnel.TunnelState;
-import com.syscxp.header.tunnel.TunnelStatus;
+import com.syscxp.header.tunnel.*;
+import com.syscxp.query.QueryFacade;
 import com.syscxp.tunnel.header.node.NodeVO;
 import com.syscxp.tunnel.header.switchs.*;
 import com.syscxp.tunnel.header.tunnel.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -38,10 +37,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -63,6 +59,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private ErrorFacade errf;
     @Autowired
     private ThreadFacade thdf;
+    @Autowired
+    private QueryFacade qf;
 
     @Override
     @MessageSafe
@@ -113,7 +111,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APICreateQinqMsg) msg);
         } else if (msg instanceof APIDeleteQinqMsg) {
             handle((APIDeleteQinqMsg) msg);
-        } else {
+        } else if(msg instanceof APIQueryTunnelDetailForAlarmMsg){
+            handle((APIQueryTunnelDetailForAlarmMsg) msg);
+        }else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -217,18 +217,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo = dbf.persistAndRefresh(vo);
 
         //调用支付
-        APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
-        orderMsg.setProductName(vo.getName());
-        orderMsg.setProductUuid(vo.getUuid());
-        orderMsg.setProductType(ProductType.PORT);
+        APICreateBuyOrderMsg orderMsg = getOrderMsgForInterface(vo, msg.getPortOfferingUuid());
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
-        orderMsg.setDescriptionData("no description");
-        orderMsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
-        orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
 
         OrderInventory orderInventory = createOrder(orderMsg);
+
         if (orderInventory != null) {
             //付款成功,记录生效订单
             saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
@@ -943,6 +938,31 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         bus.publish(evt);
     }
 
+    private void handle(APIQueryTunnelDetailForAlarmMsg msg){
+        Map<String,String> map = new HashMap<>();
+
+        String tunnelUuid = msg.getTunnelUuid();
+        TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelUuid).findValue();
+        map.put("tunnelUuid",tunnel.getName());
+        map.put("bandwidth",tunnel.getBandwidth().toString());
+
+        List<TunnelInterfaceVO> interfaceList = Q.New(TunnelInterfaceVO.class).eq(TunnelInterfaceVO_.tunnelUuid,tunnelUuid).list();
+        for(TunnelInterfaceVO vo : interfaceList){
+            if("A".equals(vo.getSortTag()))
+                map.put("endpointAVlan",vo.getVlan().toString());
+            else if("Z".equals(vo.getSortTag()))
+                map.put("endpointZVlan",vo.getVlan().toString());
+        }
+
+        //TODO: 等丁修改完成后取
+        map.put("endpointAIp","endpointAIp");
+        map.put("endpointZIp","endpointZIp");
+
+        APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
+        reply.setInventory(TunnelDetailForAlarmInventory.valueOf(map));
+        bus.reply(msg,reply);
+    }
+
     @Transactional
     private void deleteTunnel(TunnelVO vo) {
         dbf.remove(vo);
@@ -1306,18 +1326,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         apiGetHasNotifyMsg.setAccountUuid(accountUuid);
         apiGetHasNotifyMsg.setProductUuid(productUuid);
 
-        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
-        APIGetHasNotifyReply reply = (APIGetHasNotifyReply) rsp;
+        APIGetHasNotifyReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
         if (reply.isInventory())
             throw new ApiMessageInterceptionException(
                     argerr("该订单[uuid:%s] 有未完成操作，请稍等！", productUuid));
-
     }
 
     private void validate(APICreateInterfaceMsg msg) {
         SwitchPortType type = Q.New(PortOfferingVO.class)
                 .eq(PortOfferingVO_.uuid, msg.getPortOfferingUuid())
-                .select(PortOfferingVO_.type).findValue();
+                .select(PortOfferingVO_.type).find();
         //类型是否支持
         List<SwitchPortType> types = getPortTypeByEndpoint(msg.getEndpointUuid());
         if (!types.contains(type))

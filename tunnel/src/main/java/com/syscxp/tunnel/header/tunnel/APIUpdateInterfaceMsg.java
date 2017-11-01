@@ -11,13 +11,13 @@ import com.syscxp.header.tunnel.TunnelConstant;
  */
 @Action(category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
 public class APIUpdateInterfaceMsg extends APIMessage {
-    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
+    @APIParam(resourceType = InterfaceVO.class, checkAccount = true)
     private String uuid;
-    @APIParam(emptyString = false,required = false,maxLength = 32)
+    @APIParam(required = false, maxLength = 32)
     private String accountUuid;
-    @APIParam(emptyString = false,required = false,maxLength = 128)
+    @APIParam(required = false, maxLength = 128)
     private String name;
-    @APIParam(emptyString = false,required = false,maxLength = 255)
+    @APIParam(required = false, maxLength = 255)
     private String description;
 
     public String getUuid() {
@@ -45,9 +45,9 @@ public class APIUpdateInterfaceMsg extends APIMessage {
     }
 
     public String getAccountUuid() {
-        if(getSession().getType() == AccountType.SystemAdmin){
+        if (getSession().getType() == AccountType.SystemAdmin) {
             return accountUuid;
-        }else{
+        } else {
             return getSession().getAccountUuid();
         }
     }
