@@ -24,9 +24,7 @@ import com.syscxp.header.query.QueryCondition;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
-import com.syscxp.header.tunnel.APIQueryTunnelForAlarmMsg;
-import com.syscxp.header.tunnel.APIQueryTunnelForAlarmReply;
-import com.syscxp.header.tunnel.TunnelForAlarmInventory;
+import com.syscxp.header.tunnel.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -377,7 +375,6 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
 
     }
 
-
     @Transactional
     private void handle(APIDeletePolicyMsg msg) {
         PolicyVO vo = dbf.findByUuid(msg.getUuid(), PolicyVO.class);
@@ -537,7 +534,6 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         return bus.makeLocalServiceId(AlarmConstant.SERVICE_ID_RESOURCE_POLICY);
     }
 
-
     @Override
     public boolean start() {
         return true;
@@ -564,6 +560,16 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             List<TunnelParameter> tunnelparameterlist = new ArrayList<>();
             List<RegulationVO> regulationvolist = null;
             List<ResourcePolicyRefVO> resourcelist = resourcequery.list();
+
+            APIQueryTunnelDetailForAlarmMsg tunnelMsg = new APIQueryTunnelDetailForAlarmMsg();
+
+            RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
+                    RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
+            if (raps.getState().equals(RestAPIState.Done.toString())) {
+                APIQueryTunnelDetailForAlarmReply tunnelReply = (APIQueryTunnelDetailForAlarmReply) RESTApiDecoder.loads(raps.getResult());
+                tunnelReply.getInventory()
+            }
+
 
             for (ResourcePolicyRefVO resource : resourcelist) {
                 tunnelparameter = new TunnelParameter();
@@ -607,4 +613,6 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         }
         return true;
     }
+
+
 }
