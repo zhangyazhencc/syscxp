@@ -18,13 +18,13 @@ import java.util.List;
 @InnerCredentialCheck
 public class APIQueryTunnelDetailForAlarmMsg extends APISyncCallMessage {
     @APIParam(emptyString = false,maxLength = 32)
-    private String tunnelUuid;
+    private List<String> tunnelUuidList;
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public List<String> getTunnelUuidList() {
+        return tunnelUuidList;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
+    public void setTunnelUuidList(List<String> tunnelUuidList) {
+        this.tunnelUuidList = tunnelUuidList;
     }
 }
