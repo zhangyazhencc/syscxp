@@ -217,18 +217,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo = dbf.persistAndRefresh(vo);
 
         //调用支付
-        APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
-        orderMsg.setProductName(vo.getName());
-        orderMsg.setProductUuid(vo.getUuid());
-        orderMsg.setProductType(ProductType.PORT);
+        APICreateBuyOrderMsg orderMsg = getOrderMsgForInterface(vo, msg.getPortOfferingUuid());
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
-        orderMsg.setDescriptionData("no description");
-        orderMsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
-        orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
 
         OrderInventory orderInventory = createOrder(orderMsg);
+
         if (orderInventory != null) {
             //付款成功,记录生效订单
             saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
@@ -1306,18 +1301,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         apiGetHasNotifyMsg.setAccountUuid(accountUuid);
         apiGetHasNotifyMsg.setProductUuid(productUuid);
 
-        APIReply rsp = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
-        APIGetHasNotifyReply reply = (APIGetHasNotifyReply) rsp;
+        APIGetHasNotifyReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
         if (reply.isInventory())
             throw new ApiMessageInterceptionException(
                     argerr("该订单[uuid:%s] 有未完成操作，请稍等！", productUuid));
-
     }
 
     private void validate(APICreateInterfaceMsg msg) {
         SwitchPortType type = Q.New(PortOfferingVO.class)
                 .eq(PortOfferingVO_.uuid, msg.getPortOfferingUuid())
-                .select(PortOfferingVO_.type).findValue();
+                .select(PortOfferingVO_.type).find();
         //类型是否支持
         List<SwitchPortType> types = getPortTypeByEndpoint(msg.getEndpointUuid());
         if (!types.contains(type))
