@@ -10,4 +10,5 @@ public class ContactVO_  extends BaseVO_ {
     public static volatile SingularAttribute<ContactVO, String> name;
     public static volatile SingularAttribute<ContactVO, String> email;
     public static volatile SingularAttribute<ContactVO, String> mobile;
+    public static volatile SingularAttribute<ContactVO, String> accountUuid;
 }

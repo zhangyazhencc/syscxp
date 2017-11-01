@@ -17,6 +17,7 @@ public class ContactInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
     private Set<NotifyWayVO> ways;
+    private String accountUuid;
 
     public static ContactInventory valueOf(ContactVO vo) {
         ContactInventory inv = new ContactInventory();
@@ -27,6 +28,7 @@ public class ContactInventory {
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setWays(vo.getNotifyWayVOs());
+        inv.setAccountUuid(vo.getAccountUuid());
         return inv;
     }
 
@@ -92,5 +94,13 @@ public class ContactInventory {
 
     public void setWays(Set<NotifyWayVO> ways) {
         this.ways = ways;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }
