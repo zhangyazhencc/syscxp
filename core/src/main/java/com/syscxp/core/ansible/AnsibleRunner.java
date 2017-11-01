@@ -69,8 +69,8 @@ public class AnsibleRunner {
     private String playBookPath;
     private Map<String, Object> arguments = new HashMap<String, Object>();
     private int agentPort;
-    private boolean fullDeploy;
     private boolean localPublicKey;
+    private boolean fullDeploy;
     private boolean runOnLocal;
     private AnsibleNeedRun ansibleNeedRun;
     private String ansibleExecutable;

@@ -7,7 +7,15 @@ import com.syscxp.header.rest.RestResponse;
 public class APICreateOrderReply extends APIReply {
     private  OrderInventory inventory;
 
-    private boolean isSuccess = true;
+    private boolean orderSuccess = true;
+
+    public boolean isOrderSuccess() {
+        return orderSuccess;
+    }
+
+    public void setOrderSuccess(boolean orderSuccess) {
+        this.orderSuccess = orderSuccess;
+    }
 
     public APICreateOrderReply(){}
 
@@ -19,13 +27,5 @@ public class APICreateOrderReply extends APIReply {
         this.inventory = inventory;
     }
 
-    @Override
-    public boolean isSuccess() {
-        return isSuccess;
-    }
 
-    @Override
-    public void setSuccess(boolean success) {
-        isSuccess = success;
-    }
 }

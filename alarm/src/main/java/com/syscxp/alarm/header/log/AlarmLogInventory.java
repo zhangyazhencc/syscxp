@@ -1,55 +1,59 @@
 package com.syscxp.alarm.header.log;
 
-import com.syscxp.alarm.header.BaseVO;
 import com.syscxp.header.billing.ProductType;
 
-import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-@Entity
-@Table
-public class AlarmLogVO extends BaseVO {
-
-    @Column
+public class AlarmLogInventory {
+    private String uuid;
     private String productUuid;
-
-    @Column
     private String productName;
-
-    @Column
-    @Enumerated(EnumType.STRING)
     private ProductType productType;
-
-    @Column
     private Timestamp alarmTime;
-
-    @Column
-    private int duration;
-
-    @Column
-    @Enumerated(EnumType.STRING)
+    private Integer duration;
     private TimeUnit durationTimeUnit;
-
-    @Column
     private String alarmContent;
-
-    @Column
     private Timestamp resumeTime;
-
-    @Column
     private String status;
-
-    @Column
     private String accountUuid;
 
 
-    public String getAccountUuid() {
-        return accountUuid;
+
+    public static AlarmLogInventory valueOf(AlarmLogVO vo){
+        AlarmLogInventory inv = new AlarmLogInventory();
+        inv.setUuid(vo.getUuid());
+        inv.setProductUuid(vo.getProductUuid());
+        inv.setProductName(vo.getProductName());
+        inv.setProductType(vo.getProductType());
+        inv.setAlarmTime(vo.getAlarmTime());
+        inv.setDuration(vo.getDuration());
+        inv.setDurationTimeUnit(vo.getDurationTimeUnit());
+        inv.setAlarmContent(vo.getAlarmContent());
+        inv.setResumeTime(vo.getResumeTime());
+        inv.setStatus(vo.getStatus());
+        inv.setAccountUuid(vo.getAccountUuid());
+        return inv;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+
+    public static List<AlarmLogInventory> valueOf(Collection<AlarmLogVO> vos) {
+        List<AlarmLogInventory> lst = new ArrayList<>(vos.size());
+        for (AlarmLogVO vo : vos) {
+            lst.add(AlarmLogInventory.valueOf(vo));
+        }
+        return lst;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getProductUuid() {
@@ -84,11 +88,11 @@ public class AlarmLogVO extends BaseVO {
         this.alarmTime = alarmTime;
     }
 
-    public int getDuration() {
+    public Integer getDuration() {
         return duration;
     }
 
-    public void setDuration(int duration) {
+    public void setDuration(Integer duration) {
         this.duration = duration;
     }
 
@@ -122,5 +126,13 @@ public class AlarmLogVO extends BaseVO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

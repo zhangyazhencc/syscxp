@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.manage;
 
+import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.APIReply;
 import org.springframework.beans.factory.annotation.Autowire;
@@ -46,7 +47,7 @@ public class TunnelRESTCaller {
         RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
         APIReply reply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
         if (!reply.isSuccess()){
-            throw new CloudRuntimeException(reply.getError().getDetails());
+            throw new OperationFailureException(reply.getError());
         }else{
             return (T) reply.castReply();
         }

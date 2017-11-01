@@ -23,7 +23,7 @@ public class ContactGroupVO extends BaseVO {
         return groupCode;
     }
 
-    @OneToMany(fetch =FetchType.EAGER)
+    @ManyToMany(fetch =FetchType.EAGER)
     @JoinTable(name="ContactGroupRefVO",
             joinColumns={@JoinColumn(name="groupUuid",referencedColumnName="uuid")},
             inverseJoinColumns={@JoinColumn(name="contactUuid",referencedColumnName="uuid")}

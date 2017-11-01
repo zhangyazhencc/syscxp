@@ -20,7 +20,9 @@ public class NotificationVO {
     @Column
     private String accountUuid;
     @Column
-    private String userUuid;
+    private String opAccountUuid;
+    @Column
+    private String opUserUuid;
     @Column
     private String name;
     @Column
@@ -60,6 +62,14 @@ public class NotificationVO {
     @Column
     private Timestamp dateTime;
 
+    public String getOpAccountUuid() {
+        return opAccountUuid;
+    }
+
+    public void setOpAccountUuid(String opAccountUuid) {
+        this.opAccountUuid = opAccountUuid;
+    }
+
     @PrePersist
     private void prePersist() {
         dateTime = new Timestamp(System.currentTimeMillis());
@@ -81,12 +91,12 @@ public class NotificationVO {
         this.accountUuid = accountUuid;
     }
 
-    public String getUserUuid() {
-        return userUuid;
+    public String getOpUserUuid() {
+        return opUserUuid;
     }
 
-    public void setUserUuid(String userUuid) {
-        this.userUuid = userUuid;
+    public void setOpUserUuid(String opUserUuid) {
+        this.opUserUuid = opUserUuid;
     }
 
     public String getRemoteIp() {

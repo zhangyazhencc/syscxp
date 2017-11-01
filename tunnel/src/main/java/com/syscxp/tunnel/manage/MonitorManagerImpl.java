@@ -791,8 +791,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         monitorHostQ.setParameter("tunnelUuid", tunnelUuid);
 
         for (Tuple monitor : monitorHostQ.getResultList()) {
-            monitorIp.put(monitor.get(0).toString(), monitor.get(1, String.class).toString());
-            monitorPort.put(monitor.get(0).toString(), monitor.get(2, String.class).toString());
+            monitorIp.put(monitor.get(0).toString(), monitor.get(1, String.class));
+            monitorPort.put(monitor.get(0).toString(), monitor.get(2, String.class));
         }
     }
 }
