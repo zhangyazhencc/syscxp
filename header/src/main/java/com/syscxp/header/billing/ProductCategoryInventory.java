@@ -1,4 +1,4 @@
-package com.syscxp.billing.header.price;
+package com.syscxp.header.billing;
 
 
 import com.syscxp.header.search.Inventory;

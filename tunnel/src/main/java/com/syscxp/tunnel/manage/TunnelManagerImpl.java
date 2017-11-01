@@ -217,12 +217,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         OrderInventory orderInventory = createOrder(orderMsg);
         if (orderInventory != null) {
             //付款成功,记录生效订单
-            ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
-            resourceOrderEffectiveVO.setUuid(Platform.getUuid());
-            resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType(InterfaceVO.class.getSimpleName());
-            resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
-            dbf.persistAndRefresh(resourceOrderEffectiveVO);
+            saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
             //状态修改已支付，生成到期时间
             vo.setAccountUuid(vo.getOwnerAccountUuid());
             vo.setState(InterfaceState.Paid);
@@ -233,8 +228,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             evt.setInventory(InterfaceInventory.valueOf(vo));
         } else {
             //付款失败
-            vo.setExpireDate(dbf.getCurrentSqlTime());
-            vo = dbf.updateAndRefresh(vo);
             evt.setError(errf.stringToOperationError("付款失败"));
             evt.setInventory(InterfaceInventory.valueOf(vo));
         }
@@ -262,7 +255,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDescription(msg.getDescription());
-        vo.setExpireDate(null);
+        vo.setExpireDate(dbf.getCurrentSqlTime());
         vo.setState(InterfaceState.Unpaid);
         vo.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
 
@@ -283,12 +276,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         OrderInventory orderInventory = createOrder(orderMsg);
         if (orderInventory != null) {
             //付款成功,记录生效订单
-            ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
-            resourceOrderEffectiveVO.setUuid(Platform.getUuid());
-            resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType(InterfaceVO.class.getSimpleName());
-            resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
-            dbf.persistAndRefresh(resourceOrderEffectiveVO);
+            saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
             //状态修改已支付，生成到期时间
             vo.setAccountUuid(vo.getOwnerAccountUuid());
             vo.setState(InterfaceState.Paid);
@@ -299,8 +287,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             evt.setInventory(InterfaceInventory.valueOf(vo));
         } else {
             //付款失败
-            vo.setExpireDate(dbf.getCurrentSqlTime());
-            vo = dbf.updateAndRefresh(vo);
             evt.setError(errf.stringToOperationError("付款失败"));
             evt.setInventory(InterfaceInventory.valueOf(vo));
         }
@@ -368,12 +354,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         if (orderInventory != null) {
             //续费或者赔偿成功,记录生效订单
-            ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
-            resourceOrderEffectiveVO.setUuid(Platform.getUuid());
-            resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType(InterfaceVO.class.getSimpleName());
-            resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
-            dbf.persistAndRefresh(resourceOrderEffectiveVO);
+            saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
             //更新到期时间
             vo.setDuration(msg.getDuration());
             vo.setProductChargeModel(msg.getProductChargeModel());
@@ -407,12 +388,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         OrderInventory orderInventory = createOrder(orderMsg);
         if (orderInventory != null) {
             //退订成功,记录生效订单
-            ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
-            resourceOrderEffectiveVO.setUuid(Platform.getUuid());
-            resourceOrderEffectiveVO.setResourceUuid(vo.getUuid());
-            resourceOrderEffectiveVO.setResourceType(InterfaceVO.class.getSimpleName());
-            resourceOrderEffectiveVO.setOrderUuid(orderInventory.getUuid());
-            dbf.persistAndRefresh(resourceOrderEffectiveVO);
+            saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
             //删除产品
             dbf.remove(vo);
             evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -459,15 +435,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo = dbf.updateAndRefresh(vo);
 
         //创建任务
-        TaskResourceVO taskResourceVO = new TaskResourceVO();
-        taskResourceVO.setUuid(Platform.getUuid());
-        taskResourceVO.setResourceUuid(vo.getUuid());
-        taskResourceVO.setResourceType(TunnelVO.class.getSimpleName());
-        taskResourceVO.setTaskType(TaskType.Create);
-        taskResourceVO.setBody(null);
-        taskResourceVO.setResult(null);
-        taskResourceVO.setStatus(TaskStatus.Preexecute);
-        taskResourceVO = dbf.persistAndRefresh(taskResourceVO);
+        TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Create);
 
         CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
         createTunnelMsg.setTunnelUuid(vo.getUuid());
@@ -489,7 +457,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setProductType(ProductType.TUNNEL);
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
-        orderMsg.setUnits(getInterfacePriceUnit(msg.getBandwidthOfferingUuid()));
+        orderMsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid()));
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setDescriptionData("no description");
@@ -713,21 +681,23 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIUpdateTunnelBandwidthEvent evt = new APIUpdateTunnelBandwidthEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+        BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(),BandwidthOfferingVO.class);
 
         //调整次数记录表
         TunnelMotifyRecordVO record = new TunnelMotifyRecordVO();
         record.setUuid(Platform.getUuid());
         record.setTunnelUuid(vo.getUuid());
         record.setOpAccountUuid(msg.getSession().getAccountUuid());
-        record.setMotifyType(msg.getBandwidth() > vo.getBandwidth() ? MotifyType.UPGRADE : MotifyType.DEMOTION);
+        record.setMotifyType(bandwidthOfferingVO.getBandwidth() > vo.getBandwidth() ? MotifyType.UPGRADE : MotifyType.DEMOTION);
         dbf.persistAndRefresh(record);
 
         //调用支付-调整带宽
         APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg();
         orderMsg.setProductUuid(vo.getUuid());
         orderMsg.setProductName(vo.getName());
-        orderMsg.setDescriptionData(msg.getBandwidth().toString());
-        orderMsg.setUnits(msg.getUnits());
+        orderMsg.setDescriptionData("no description");
+        orderMsg.setCallBackData(bandwidthOfferingVO.getBandwidth().toString());
+        orderMsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid()));
         orderMsg.setProductType(ProductType.TUNNEL);
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -739,7 +709,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             //付款成功,记录生效订单
             saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
-            vo.setBandwidth(msg.getBandwidth());
+            vo.setBandwidth(bandwidthOfferingVO.getBandwidth());
             vo = dbf.updateAndRefresh(vo);
 
             //创建任务
@@ -763,13 +733,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIUpdateTunnelExpireDateEvent evt = new APIUpdateTunnelExpireDateEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
-        LocalDateTime newTime = vo.getExpireDate().toLocalDateTime();
+        Timestamp newTime = vo.getExpireDate();
         OrderInventory orderInventory = null;
         switch (msg.getType()) {
             case RENEW://续费
                 APICreateRenewOrderMsg renewOrderMsg = new APICreateRenewOrderMsg();
                 renewOrderMsg.setProductUuid(vo.getUuid());
+                renewOrderMsg.setProductName(vo.getName());
+                renewOrderMsg.setProductType(ProductType.TUNNEL);
                 renewOrderMsg.setDuration(msg.getDuration());
+                renewOrderMsg.setDescriptionData("no description");
                 renewOrderMsg.setProductChargeModel(msg.getProductChargeModel());
                 renewOrderMsg.setAccountUuid(msg.getAccountUuid());
                 renewOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -777,11 +750,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 renewOrderMsg.setExpiredTime(vo.getExpireDate());
 
                 orderInventory = createOrder(renewOrderMsg);
-                if (msg.getProductChargeModel() == ProductChargeModel.BY_MONTH) {
-                    newTime = newTime.plusMonths(msg.getDuration());
-                } else if (msg.getProductChargeModel() == ProductChargeModel.BY_YEAR) {
-                    newTime = newTime.plusYears(msg.getDuration());
-                }
                 break;
             case SLA_COMPENSATION://赔偿
                 APICreateSLACompensationOrderMsg slaCompensationOrderMsg =
@@ -797,7 +765,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 slaCompensationOrderMsg.setExpiredTime(vo.getExpireDate());
 
                 orderInventory = createOrder(slaCompensationOrderMsg);
-                newTime = newTime.plusDays(msg.getDuration());
                 break;
         }
 
@@ -807,7 +774,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             //更新到期时间
             vo.setDuration(msg.getDuration());
             vo.setProductChargeModel(msg.getProductChargeModel());
-            vo.setExpireDate(Timestamp.valueOf(newTime));
+            vo.setExpireDate(getExpireDate(newTime, msg.getProductChargeModel(), msg.getDuration()));
 
             vo = dbf.updateAndRefresh(vo);
             evt.setInventory(TunnelInventory.valueOf(vo));
@@ -833,7 +800,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
-        orderMsg.setDescriptionData("delete");
+        orderMsg.setDescriptionData("no description");
+        orderMsg.setCallBackData("delete");
 
         OrderInventory orderInventory = createOrder(orderMsg);
         if (orderInventory != null) {
@@ -874,7 +842,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
-        orderMsg.setDescriptionData("forciblydelete");
+        orderMsg.setDescriptionData("no description");
+        orderMsg.setCallBackData("forciblydelete");
 
         OrderInventory orderInventory = createOrder(orderMsg);
         if (orderInventory != null) {
@@ -1044,7 +1013,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void updateTunnelFromOrderModifyBandwidth(OrderCallbackCmd cmd) {
         TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
-        vo.setBandwidth(Long.valueOf(cmd.getDescriptionData()));
+        vo.setBandwidth(Long.valueOf(cmd.getCallBackData()));
         dbf.updateAndRefresh(vo);
 
         //创建任务
@@ -1084,7 +1053,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             }
                         } else if (cmd.getProductType() == ProductType.TUNNEL) {
                             TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
-                            if (vo != null && vo.getAccountUuid() != null && cmd.getDescriptionData().equals("delete")) {
+                            if (vo != null && vo.getAccountUuid() != null && cmd.getCallBackData().equals("delete")) {
                                 vo.setAccountUuid(null);
                                 dbf.updateAndRefresh(vo);
 
@@ -1096,7 +1065,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                 deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
                                 bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
                                 bus.send(deleteTunnelMsg);
-                            } else if (vo != null && vo.getAccountUuid() != null && cmd.getDescriptionData().equals("forciblydelete")) {
+                            } else if (vo != null && vo.getAccountUuid() != null && cmd.getCallBackData().equals("forciblydelete")) {
                                 deleteTunnel(vo);
                             }
                         }
@@ -1133,7 +1102,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
                         logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                        if (orderIsExist(cmd.getOrderUuid())) {
+                        if (!orderIsExist(cmd.getOrderUuid())) {
                             updateTunnelFromOrderModifyBandwidth(cmd);
                         }
 
@@ -1145,7 +1114,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     @Override
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
                         logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                        if (orderIsExist(cmd.getOrderUuid())) {
+                        if (!orderIsExist(cmd.getOrderUuid())) {
                             updateTunnelFromOrderModifyBandwidth(cmd);
                         }
 
@@ -1557,14 +1526,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void validate(APIUpdateTunnelBandwidthMsg msg) {
         //判断该产品是否有未完成订单
-        APIGetHasNotifyMsg apiGetHasNotifyMsg = new APIGetHasNotifyMsg();
-        apiGetHasNotifyMsg.setAccountUuid(msg.getAccountUuid());
-        apiGetHasNotifyMsg.setProductUuid(msg.getUuid());
-
-        APIGetHasNotifyReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
-        if (reply.isInventory())
-            throw new ApiMessageInterceptionException(
-                    argerr("该订单[uuid:%s] 有未完成操作，请稍等！", msg.getUuid()));
+        checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
 
         //调整次数当月是否达到上限
         LocalDateTime dateTime =

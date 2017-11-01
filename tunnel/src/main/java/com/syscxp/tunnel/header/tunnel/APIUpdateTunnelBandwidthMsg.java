@@ -18,10 +18,8 @@ public class APIUpdateTunnelBandwidthMsg extends APIMessage {
     private String uuid;
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
-    @APIParam
-    private Long bandwidth;
-    @APIParam(nonempty = true)
-    private List<ProductPriceUnit> units;
+    @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
+    private String bandwidthOfferingUuid;
 
     public String getUuid() {
         return uuid;
@@ -43,19 +41,11 @@ public class APIUpdateTunnelBandwidthMsg extends APIMessage {
         this.accountUuid = accountUuid;
     }
 
-    public Long getBandwidth() {
-        return bandwidth;
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
     }
 
-    public void setBandwidth(Long bandwidth) {
-        this.bandwidth = bandwidth;
-    }
-
-    public List<ProductPriceUnit> getUnits() {
-        return units;
-    }
-
-    public void setUnits(List<ProductPriceUnit> units) {
-        this.units = units;
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 }
