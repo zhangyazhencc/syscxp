@@ -939,7 +939,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIQueryTunnelDetailForAlarmMsg msg){
-        List<Map<String,String>> detailList = new ArrayList<>();
+        // List<Map<String,String>> detailList = new ArrayList<>();
+        Map<String,Object> detailMap = new HashMap<>();
 
         Map<String,String> map = new HashMap<>();
         for(String tunnelUuid:msg.getTunnelUuidList()){
@@ -959,11 +960,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             map.put("endpointAIp","endpointAIp");
             map.put("endpointZIp","endpointZIp");
 
-            detailList.add(map);
+            //detailList.add(map);
+            detailMap.put(tunnelUuid,map);
         }
 
         APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
-        reply.setInventories(TunnelDetailForAlarmInventory.valueOf(detailList));
+        reply.setMap(detailMap);
+        // reply.setInventories(TunnelDetailForAlarmInventory.valueOf(detailList));
         bus.reply(msg,reply);
     }
 
