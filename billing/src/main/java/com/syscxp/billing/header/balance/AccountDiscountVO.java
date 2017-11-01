@@ -1,6 +1,6 @@
 package com.syscxp.billing.header.balance;
 
-import com.syscxp.billing.header.price.ProductCategoryVO;
+import com.syscxp.header.billing.ProductCategoryVO;
 import com.syscxp.header.search.SqlTrigger;
 import com.syscxp.header.search.TriggerIndex;
 

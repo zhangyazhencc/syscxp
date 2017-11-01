@@ -3,7 +3,7 @@ package com.syscxp.tunnel.header.monitor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.tunnel.header.host.MonitorHostVO;
-import com.syscxp.tunnel.header.tunnel.TunnelEO;
+import com.syscxp.tunnel.header.tunnel.TunnelVO;
 
 /**
  * @Author: sunxuelong.
@@ -12,23 +12,14 @@ import com.syscxp.tunnel.header.tunnel.TunnelEO;
  */
 public class APIUpdateTunnelMonitorMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = TunnelMonitorVO.class)
+    @APIParam(emptyString = false,resourceType = TunnelMonitorVO.class,checkAccount = true)
     private String uuid;
 
-    @APIParam(emptyString = false,resourceType = TunnelEO.class)
-    private String tunnelUuid;
+    @APIParam(emptyString = false,maxLength = 32)
+    private String accountUuid;
 
-    @APIParam(emptyString = false,resourceType = MonitorHostVO.class)
-    private String hostAUuid;
-
-    @APIParam(emptyString = false,maxLength = 64)
-    private String monitorAIp;
-
-    @APIParam(emptyString = false,resourceType = MonitorHostVO.class)
-    private String hostZUuid;
-
-    @APIParam(emptyString = false,maxLength = 64)
-    private String monitorZIp;
+    @APIParam(emptyString = false,maxLength = 32)
+    private String monitorCidr;
 
     @APIParam(required = false,maxLength = 1024)
     private String msg;
@@ -41,44 +32,12 @@ public class APIUpdateTunnelMonitorMsg extends APIMessage {
         this.uuid = uuid;
     }
 
-    public String getTunnelUuid() {
-        return tunnelUuid;
+    public String getMonitorCidr() {
+        return monitorCidr;
     }
 
-    public void setTunnelUuid(String tunnelUuid) {
-        this.tunnelUuid = tunnelUuid;
-    }
-
-    public String getHostAUuid() {
-        return hostAUuid;
-    }
-
-    public void setHostAUuid(String hostAUuid) {
-        this.hostAUuid = hostAUuid;
-    }
-
-    public String getMonitorAIp() {
-        return monitorAIp;
-    }
-
-    public void setMonitorAIp(String monitorAIp) {
-        this.monitorAIp = monitorAIp;
-    }
-
-    public String getHostZUuid() {
-        return hostZUuid;
-    }
-
-    public void setHostZUuid(String hostZUuid) {
-        this.hostZUuid = hostZUuid;
-    }
-
-    public String getMonitorZIp() {
-        return monitorZIp;
-    }
-
-    public void setMonitorZIp(String monitorZIp) {
-        this.monitorZIp = monitorZIp;
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
     }
 
     public String getMsg() {
@@ -87,5 +46,13 @@ public class APIUpdateTunnelMonitorMsg extends APIMessage {
 
     public void setMsg(String msg) {
         this.msg = msg;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

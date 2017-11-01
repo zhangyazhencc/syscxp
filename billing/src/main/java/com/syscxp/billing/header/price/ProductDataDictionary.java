@@ -1,5 +1,7 @@
 package com.syscxp.billing.header.price;
 
+import com.syscxp.header.billing.ProductCategoryInventory;
+
 import java.util.List;
 
 public class ProductDataDictionary {

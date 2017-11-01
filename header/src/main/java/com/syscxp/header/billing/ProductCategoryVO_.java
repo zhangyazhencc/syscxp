@@ -1,8 +1,7 @@
-package com.syscxp.billing.header.price;
+package com.syscxp.header.billing;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
-import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @StaticMetamodel(ProductCategoryVO.class)
