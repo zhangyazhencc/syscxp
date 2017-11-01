@@ -17,7 +17,6 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.message.APIMessage;
-import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.SyncHttpCallHandler;
@@ -31,7 +30,6 @@ import com.syscxp.tunnel.header.switchs.*;
 import com.syscxp.tunnel.header.tunnel.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -118,9 +116,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APICreateQinqMsg) msg);
         } else if (msg instanceof APIDeleteQinqMsg) {
             handle((APIDeleteQinqMsg) msg);
-        } else if(msg instanceof APIQueryTunnelDetailForAlarmMsg){
+        } else if (msg instanceof APIQueryTunnelDetailForAlarmMsg) {
             handle((APIQueryTunnelDetailForAlarmMsg) msg);
-        }else {
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -191,29 +189,25 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIGetInterfacePriceMsg msg) {
-        APIGetInterfacePriceReply reply = new APIGetInterfacePriceReply();
 
         APIGetProductPriceMsg pmsg = new APIGetProductPriceMsg();
         pmsg.setProductChargeModel(msg.getProductChargeModel());
         pmsg.setDuration(msg.getDuration());
         pmsg.setAccountUuid(msg.getAccountUuid());
         pmsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
-        reply =  new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(msg);
-
+        APIGetInterfacePriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(msg);
         bus.reply(msg, reply);
     }
 
     private void handle(APIGetTunnelPriceMsg msg) {
-        APIGetTunnelPriceReply reply = new APIGetTunnelPriceReply();
 
         APIGetProductPriceMsg pmsg = new APIGetProductPriceMsg();
         pmsg.setProductChargeModel(msg.getProductChargeModel());
         pmsg.setDuration(msg.getDuration());
         pmsg.setAccountUuid(msg.getAccountUuid());
-        pmsg.setUnits(getTunnelPriceUnitCopy(msg.getBandwidthOfferingUuid(),msg.getNodeAUuid(),msg.getNodeZUuid(),msg.getInnerEndpointUuid()));
-
-        reply =  new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(msg);
-
+        pmsg.setUnits(getTunnelPriceUnitCopy(msg.getBandwidthOfferingUuid(), msg.getNodeAUuid(),
+                msg.getNodeZUuid(), msg.getInnerEndpointUuid()));
+        APIGetTunnelPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(msg);
         bus.reply(msg, reply);
     }
 
@@ -248,7 +242,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo = dbf.persistAndRefresh(vo);
 
         //调用支付
-        APICreateBuyOrderMsg orderMsg = getOrderMsgForInterface(vo, msg.getPortOfferingUuid());
+        APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg(
+                getOrderMsgForInterface(vo, msg.getPortOfferingUuid()));
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -302,7 +297,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo = dbf.persistAndRefresh(vo);
 
         //调用支付
-        APICreateBuyOrderMsg orderMsg = getOrderMsgForInterface(vo, msg.getPortOfferingUuid());
+        APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg(getOrderMsgForInterface(vo, msg.getPortOfferingUuid()));
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -327,7 +322,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         bus.publish(evt);
     }
 
-    private <T extends APICreateOrderMsg> T getOrderMsgForInterface(InterfaceVO vo, String portOfferingUuid) {
+    private APICreateOrderMsg getOrderMsgForInterface(InterfaceVO vo, String portOfferingUuid) {
         APICreateOrderMsg orderMsg = new APICreateOrderMsg();
         orderMsg.setProductName(vo.getName());
         orderMsg.setProductUuid(vo.getUuid());
@@ -338,7 +333,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
         orderMsg.setCallBackData(null);
         orderMsg.setNotifyUrl(TunnelConstant.NOTIFYURL);
-        return (T) orderMsg;
+        return orderMsg;
     }
 
     private void handle(APIUpdateInterfaceMsg msg) {
@@ -369,7 +364,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         OrderInventory orderInventory = null;
         switch (msg.getType()) {
             case RENEW://续费
-                APICreateRenewOrderMsg renewOrderMsg = getOrderMsgForInterface(vo, null);
+                APICreateRenewOrderMsg renewOrderMsg = new APICreateRenewOrderMsg(
+                        getOrderMsgForInterface(vo, null));
                 renewOrderMsg.setDuration(msg.getDuration());
                 renewOrderMsg.setProductChargeModel(msg.getProductChargeModel());
                 renewOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -379,7 +375,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 orderInventory = createOrder(renewOrderMsg);
                 break;
             case SLA_COMPENSATION://赔偿
-                APICreateSLACompensationOrderMsg slaCompensationOrderMsg = getOrderMsgForInterface(vo, null);
+                APICreateSLACompensationOrderMsg slaCompensationOrderMsg = new APICreateSLACompensationOrderMsg(
+                        getOrderMsgForInterface(vo, null));
                 slaCompensationOrderMsg.setDuration(msg.getDuration());
                 slaCompensationOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
                 slaCompensationOrderMsg.setStartTime(dbf.getCurrentSqlTime());
@@ -412,7 +409,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
 
         //调用退订
-        APICreateUnsubcribeOrderMsg orderMsg = getOrderMsgForInterface(vo, null);
+        APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(
+                getOrderMsgForInterface(vo, null));
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
@@ -969,34 +967,34 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         bus.publish(evt);
     }
 
-    private void handle(APIQueryTunnelDetailForAlarmMsg msg){
-        Map<String,Map<String,String>> detailMap = new HashMap<>();
+    private void handle(APIQueryTunnelDetailForAlarmMsg msg) {
+        Map<String, Map<String, String>> detailMap = new HashMap<>();
 
-        Map<String,String> map = new HashMap<>();
-        for(String tunnelUuid:msg.getTunnelUuidList()){
+        Map<String, String> map = new HashMap<>();
+        for (String tunnelUuid : msg.getTunnelUuidList()) {
             TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelUuid).findValue();
-            map.put("tunnelUuid",tunnel.getName());
-            map.put("bandwidth",tunnel.getBandwidth().toString());
+            map.put("tunnelUuid", tunnel.getName());
+            map.put("bandwidth", tunnel.getBandwidth().toString());
 
-            List<TunnelInterfaceVO> interfaceList = Q.New(TunnelInterfaceVO.class).eq(TunnelInterfaceVO_.tunnelUuid,tunnelUuid).list();
-            for(TunnelInterfaceVO vo : interfaceList){
-                if("A".equals(vo.getSortTag()))
-                    map.put("endpointAVlan",vo.getVlan().toString());
-                else if("Z".equals(vo.getSortTag()))
-                    map.put("endpointZVlan",vo.getVlan().toString());
+            List<TunnelInterfaceVO> interfaceList = Q.New(TunnelInterfaceVO.class).eq(TunnelInterfaceVO_.tunnelUuid, tunnelUuid).list();
+            for (TunnelInterfaceVO vo : interfaceList) {
+                if ("A".equals(vo.getSortTag()))
+                    map.put("endpointAVlan", vo.getVlan().toString());
+                else if ("Z".equals(vo.getSortTag()))
+                    map.put("endpointZVlan", vo.getVlan().toString());
             }
 
             //TODO: 等丁修改完成后取
-            map.put("endpointAIp","endpointAIp");
-            map.put("endpointZIp","endpointZIp");
+            map.put("endpointAIp", "endpointAIp");
+            map.put("endpointZIp", "endpointZIp");
 
             //detailList.add(map);
-            detailMap.put(tunnelUuid,map);
+            detailMap.put(tunnelUuid, map);
         }
 
         APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
         reply.setMap(detailMap);
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
     }
 
     @Transactional
@@ -1238,27 +1236,27 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     //获取云专线的单价
-    private List<ProductPriceUnit> getTunnelPriceUnitCopy(String bandwidthOfferingUuid,String nodeAUuid,String nodeZUuid,String innerEndpointUuid) {
+    private List<ProductPriceUnit> getTunnelPriceUnitCopy(String bandwidthOfferingUuid, String nodeAUuid, String nodeZUuid, String innerEndpointUuid) {
         List<ProductPriceUnit> units = new ArrayList<ProductPriceUnit>();
-        NodeVO nodeA = dbf.findByUuid(nodeAUuid,NodeVO.class);
-        NodeVO nodeZ = dbf.findByUuid(nodeZUuid,NodeVO.class);
+        NodeVO nodeA = dbf.findByUuid(nodeAUuid, NodeVO.class);
+        NodeVO nodeZ = dbf.findByUuid(nodeZUuid, NodeVO.class);
         String zoneCodeA = getZoneCode(nodeA.getUuid());
         String zoneCodeZ = getZoneCode(nodeZ.getUuid());
-        if(innerEndpointUuid == null){  //国内互传
+        if (innerEndpointUuid == null) {  //国内互传
             Category category = null;
             String areaCode = null;
             String lineCode = null;
             ProductPriceUnit unit = new ProductPriceUnit();
 
-            if(nodeA.getCity() == nodeZ.getCity()){  //同城
+            if (nodeA.getCity() == nodeZ.getCity()) {  //同城
                 category = Category.CITY;
                 areaCode = "DEFAULT";
                 lineCode = "DEFAULT";
-            }else if(zoneCodeA != null && zoneCodeZ != null && zoneCodeA == zoneCodeZ){ //同区域
+            } else if (zoneCodeA != null && zoneCodeZ != null && zoneCodeA == zoneCodeZ) { //同区域
                 category = Category.REGION;
                 areaCode = zoneCodeA;
                 lineCode = "DEFAULT";
-            }else{                      //长传
+            } else {                      //长传
                 category = Category.LONG;
                 areaCode = "DEFAULT";
                 lineCode = "DEFAULT";
@@ -1270,7 +1268,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             unit.setConfigCode(bandwidthOfferingUuid);
 
             units.add(unit);
-        }else{                          //跨国 或者 国外到国外
+        } else {                          //跨国 或者 国外到国外
 
         }
 
@@ -1278,13 +1276,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     //根据节点找到所属区域
-    private String getZoneCode(String nodeUuid){
+    private String getZoneCode(String nodeUuid) {
         String zoneCode = null;
         ZoneNodeRefVO zoneNodeRefVO = Q.New(ZoneNodeRefVO.class)
-                .eq(ZoneNodeRefVO_.nodeUuid,nodeUuid)
+                .eq(ZoneNodeRefVO_.nodeUuid, nodeUuid)
                 .find();
-        if(zoneNodeRefVO != null){
-            ZoneVO zoneVO = dbf.findByUuid(zoneNodeRefVO.getZoneUuid(),ZoneVO.class);
+        if (zoneNodeRefVO != null) {
+            ZoneVO zoneVO = dbf.findByUuid(zoneNodeRefVO.getZoneUuid(), ZoneVO.class);
             zoneCode = zoneVO.getCode();
         }
         return zoneCode;
