@@ -22,8 +22,8 @@ public class APICreateTunnelMsg extends APIMessage {
     private String accountUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
-    @APIParam
-    private Long bandwidth;
+    @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
+    private String bandwidthOfferingUuid;
     @APIParam(emptyString = false,resourceType = NodeVO.class)
     private String nodeAUuid;
     @APIParam(emptyString = false,resourceType = NodeVO.class)
@@ -40,8 +40,6 @@ public class APICreateTunnelMsg extends APIMessage {
     private Integer duration;
     @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
     private ProductChargeModel productChargeModel;
-    @APIParam(nonempty = true)
-    private List<ProductPriceUnit> units;
     @APIParam(emptyString = false,required = false)
     private String description;
 
@@ -63,14 +61,6 @@ public class APICreateTunnelMsg extends APIMessage {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Long getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(Long bandwidth) {
-        this.bandwidth = bandwidth;
     }
 
     public String getInterfaceAUuid() {
@@ -145,11 +135,11 @@ public class APICreateTunnelMsg extends APIMessage {
         this.productChargeModel = productChargeModel;
     }
 
-    public List<ProductPriceUnit> getUnits() {
-        return units;
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
     }
 
-    public void setUnits(List<ProductPriceUnit> units) {
-        this.units = units;
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 }

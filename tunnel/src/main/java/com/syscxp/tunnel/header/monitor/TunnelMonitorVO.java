@@ -28,6 +28,12 @@ public class TunnelMonitorVO {
     private String tunnelUuid;
 
     @Column
+    private String accountUuid;
+
+    @Column
+    private String monitorCidr;
+
+    @Column
     private String msg;
 
     @Column
@@ -93,5 +99,21 @@ public class TunnelMonitorVO {
 
     public void setTunnelMonitorInterfaceVOList(List<TunnelMonitorInterfaceVO> tunnelMonitorInterfaceVOList) {
         this.tunnelMonitorInterfaceVOList = tunnelMonitorInterfaceVOList;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
+
+    public String getMonitorCidr() {
+        return monitorCidr;
+    }
+
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
     }
 }

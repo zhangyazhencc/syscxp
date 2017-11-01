@@ -12,9 +12,7 @@ import javax.persistence.metamodel.StaticMetamodel;
 public class TunnelMonitorVO_ {
     public static volatile SingularAttribute<TunnelMonitorVO,String> uuid;
     public static volatile SingularAttribute<TunnelMonitorVO, String> tunnelUuid;
-    public static volatile SingularAttribute<TunnelMonitorVO, String> hostAUuid;
-    public static volatile SingularAttribute<TunnelMonitorVO, String> monitorAIp;
-    public static volatile SingularAttribute<TunnelMonitorVO, String> hostZUuid;
-    public static volatile SingularAttribute<TunnelMonitorVO, String> monitorZIp;
+    public static volatile SingularAttribute<TunnelMonitorVO, String> accountUuid;
+    public static volatile SingularAttribute<TunnelMonitorVO, String> monitorCidr;
     public static volatile SingularAttribute<TunnelMonitorVO, String> msg;
 }

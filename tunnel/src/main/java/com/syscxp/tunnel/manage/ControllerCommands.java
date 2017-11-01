@@ -94,6 +94,7 @@ public class ControllerCommands {
         private String username;
         private String password;
         private Integer bandwidth;
+        private Integer vni;
 
         public String getSwitch_type() {
             return switch_type;
@@ -157,6 +158,14 @@ public class ControllerCommands {
 
         public void setBandwidth(Integer bandwidth) {
             this.bandwidth = bandwidth;
+        }
+
+        public Integer getVni() {
+            return vni;
+        }
+
+        public void setVni(Integer vni) {
+            this.vni = vni;
         }
     }
 
