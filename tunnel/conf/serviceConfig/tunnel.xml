@@ -64,6 +64,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.APIQueryTunnelDetailForAlarmMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.tunnel.header.tunnel.APIQueryInterfaceMsg</name>
         <serviceId>query</serviceId>
     </message>

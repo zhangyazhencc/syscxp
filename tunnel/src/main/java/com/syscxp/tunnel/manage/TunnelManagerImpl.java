@@ -24,16 +24,15 @@ import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.SyncHttpCallHandler;
-import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.header.tunnel.TunnelMonitorState;
-import com.syscxp.header.tunnel.TunnelState;
-import com.syscxp.header.tunnel.TunnelStatus;
+import com.syscxp.header.tunnel.*;
+import com.syscxp.query.QueryFacade;
 import com.syscxp.tunnel.header.node.NodeVO;
 import com.syscxp.tunnel.header.switchs.*;
 import com.syscxp.tunnel.header.tunnel.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,10 +41,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -67,6 +63,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private ErrorFacade errf;
     @Autowired
     private ThreadFacade thdf;
+    @Autowired
+    private QueryFacade qf;
 
     @Override
     @MessageSafe
@@ -115,7 +113,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APICreateQinqMsg) msg);
         } else if (msg instanceof APIDeleteQinqMsg) {
             handle((APIDeleteQinqMsg) msg);
-        } else {
+        } else if(msg instanceof APIQueryTunnelDetailForAlarmMsg){
+            handle((APIQueryTunnelDetailForAlarmMsg) msg);
+        }else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -935,6 +935,31 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         evt.setInventory(QinqInventory.valueOf(qinqVO));
         bus.publish(evt);
+    }
+
+    private void handle(APIQueryTunnelDetailForAlarmMsg msg){
+        Map<String,String> map = new HashMap<>();
+
+        String tunnelUuid = msg.getTunnelUuid();
+        TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelUuid).findValue();
+        map.put("tunnelUuid",tunnel.getName());
+        map.put("bandwidth",tunnel.getBandwidth().toString());
+
+        List<TunnelInterfaceVO> interfaceList = Q.New(TunnelInterfaceVO.class).eq(TunnelInterfaceVO_.tunnelUuid,tunnelUuid).list();
+        for(TunnelInterfaceVO vo : interfaceList){
+            if("A".equals(vo.getSortTag()))
+                map.put("endpointAVlan",vo.getVlan().toString());
+            else if("Z".equals(vo.getSortTag()))
+                map.put("endpointZVlan",vo.getVlan().toString());
+        }
+
+        //TODO: 等丁修改完成后取
+        map.put("endpointAIp","endpointAIp");
+        map.put("endpointZIp","endpointZIp");
+
+        APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
+        reply.setInventory(TunnelDetailForAlarmInventory.valueOf(map));
+        bus.reply(msg,reply);
     }
 
     @Transactional
