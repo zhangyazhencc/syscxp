@@ -6,13 +6,11 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.tunnel.manage.NodeConstant;
 
 /**
- * @Author: sunxuelong.
- * @Cretion Date: 2017-09-13.
- * @Description: .
+ * Create by DCY on 2017/11/1
  */
 @Action(category = NodeConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
-public class APIDeleteEndpointMsg extends APIMessage {
-    @APIParam(emptyString = false, resourceType = EndpointVO.class)
+public class APIDeleteInnerEndpointMsg extends APIMessage {
+    @APIParam(emptyString = false, resourceType = InnerConnectedEndpointVO.class)
     private String uuid;
 
     public String getUuid() {

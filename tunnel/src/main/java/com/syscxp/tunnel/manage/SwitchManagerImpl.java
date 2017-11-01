@@ -369,6 +369,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         vo.setEndpointUuid(msg.getEndpointUuid());
         vo.setCode(msg.getCode());
         vo.setName(msg.getName());
+        vo.setType(msg.getType());
         vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
         vo.setState(SwitchState.Enabled);
         vo.setStatus(SwitchStatus.Connected);
@@ -391,6 +392,10 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         }
         if(msg.getCode() != null){
             vo.setCode(msg.getCode());
+            update = true;
+        }
+        if(msg.getType() != null){
+            vo.setType(msg.getType());
             update = true;
         }
         if(msg.getPhysicalSwitchUuid() != null){

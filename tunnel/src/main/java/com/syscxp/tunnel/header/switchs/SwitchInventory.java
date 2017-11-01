@@ -19,6 +19,7 @@ public class SwitchInventory {
     private EndpointInventory endpoint;
     private String code;
     private String name;
+    private SwitchType type;
     private String physicalSwitchUuid;
     private PhysicalSwitchInventory physicalSwitch;
     private String description;
@@ -35,6 +36,7 @@ public class SwitchInventory {
         inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpoint()));
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
+        inv.setType(vo.getType());
         inv.setPhysicalSwitchUuid(vo.getPhysicalSwitchUuid());
         inv.setPhysicalSwitch(PhysicalSwitchInventory.valueOf(vo.getPhysicalSwitch()));
         inv.setDescription(vo.getDescription());
@@ -148,5 +150,13 @@ public class SwitchInventory {
 
     public void setPhysicalSwitch(PhysicalSwitchInventory physicalSwitch) {
         this.physicalSwitch = physicalSwitch;
+    }
+
+    public SwitchType getType() {
+        return type;
+    }
+
+    public void setType(SwitchType type) {
+        this.type = type;
     }
 }
