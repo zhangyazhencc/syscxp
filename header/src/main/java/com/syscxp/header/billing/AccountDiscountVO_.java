@@ -1,4 +1,4 @@
-package com.syscxp.billing.header.balance;
+package com.syscxp.header.billing;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
