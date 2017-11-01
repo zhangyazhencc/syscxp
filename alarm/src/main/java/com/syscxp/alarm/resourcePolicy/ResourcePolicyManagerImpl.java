@@ -387,6 +387,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         if(vo!=null){
             dbf.remove(vo);
         }
+
         APIDeletePolicyEvent event = new APIDeletePolicyEvent(msg.getId());
         event.setInventory(PolicyInventory.valueOf(vo));
         bus.publish(event);
