@@ -13,13 +13,13 @@ import com.syscxp.header.tunnel.TunnelConstant;
  */
 @Action(category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
 public class APIUpdateInterfaceExpireDateMsg extends APIMessage {
-    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String uuid;
-    @APIParam(emptyString = false,required = false,maxLength = 32)
+    @APIParam(required = false, maxLength = 32)
     private String accountUuid;
     @APIParam
     private Integer duration;
-    @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
     private ProductChargeModel productChargeModel;
     @APIParam
     private OrderType type;
@@ -33,9 +33,9 @@ public class APIUpdateInterfaceExpireDateMsg extends APIMessage {
     }
 
     public String getAccountUuid() {
-        if(getSession().getType() == AccountType.SystemAdmin){
+        if (getSession().getType() == AccountType.SystemAdmin) {
             return accountUuid;
-        }else{
+        } else {
             return getSession().getAccountUuid();
         }
     }

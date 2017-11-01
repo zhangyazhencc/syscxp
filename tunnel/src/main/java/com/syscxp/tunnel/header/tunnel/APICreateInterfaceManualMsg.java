@@ -18,23 +18,23 @@ import java.util.List;
 public class APICreateInterfaceManualMsg extends APIMessage {
 
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false, maxLength = 32)
     private String accountUuid;
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(emptyString = false, maxLength = 128)
     private String name;
-    @APIParam(emptyString = false,maxLength = 32,resourceType = SwitchPortVO.class)
+    @APIParam(emptyString = false, maxLength = 32, resourceType = SwitchPortVO.class)
     private String switchPortUuid;
-    @APIParam(emptyString = false,maxLength = 32,resourceType = EndpointVO.class)
+    @APIParam(emptyString = false, maxLength = 32, resourceType = EndpointVO.class)
     private String endpointUuid;
-    @APIParam(emptyString = false,maxLength = 32,resourceType = PortOfferingVO.class)
+    @APIParam(emptyString = false, maxLength = 32, resourceType = PortOfferingVO.class)
     private String portOfferingUuid;
-    @APIParam(emptyString = false,required = false,validValues = {"TRUNK", "ACCESS","QINQ"})
+    @APIParam(required = false, validValues = {"TRUNK", "ACCESS", "QINQ"})
     private NetworkType type;
-    @APIParam(emptyString = false,required = false,maxLength = 255)
+    @APIParam(emptyString = false, maxLength = 255)
     private String description;
     @APIParam
     private Integer duration;
-    @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
     private ProductChargeModel productChargeModel;
 
     public String getAccountUuid() {

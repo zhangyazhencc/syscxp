@@ -14,7 +14,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 @Action(category = TunnelConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateInterfaceMsg extends APIMessage {
 
-    @APIParam(emptyString = false,required = false,maxLength = 32)
+    @APIParam(required = false,maxLength = 32)
     private String accountUuid;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
@@ -22,11 +22,11 @@ public class APICreateInterfaceMsg extends APIMessage {
     private String endpointUuid;
     @APIParam(emptyString = false,maxLength = 32,resourceType = PortOfferingVO.class)
     private String portOfferingUuid;
-    @APIParam(emptyString = false,required = false,maxLength = 255)
+    @APIParam(required = false,maxLength = 255)
     private String description;
     @APIParam
     private Integer duration;
-    @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
     private ProductChargeModel productChargeModel;
 
     public String getName() {

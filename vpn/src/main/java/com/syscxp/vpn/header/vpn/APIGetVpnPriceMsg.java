@@ -1,10 +1,11 @@
 package com.syscxp.vpn.header.vpn;
 
-import com.syscxp.header.identity.SuppressCredentialCheck;
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
+import com.syscxp.vpn.vpn.VpnConstant;
 
-@SuppressCredentialCheck
+@Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"read"})
 public class APIGetVpnPriceMsg extends APISyncCallMessage {
     @APIParam
     private Long bandwidth;

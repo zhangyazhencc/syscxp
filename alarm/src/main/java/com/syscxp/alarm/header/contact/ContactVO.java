@@ -21,28 +21,12 @@ public class ContactVO extends BaseVO{
     @Column
     private String accountUuid;
 
-//    @Column
-//    private String accountUuid;
-
     @OneToMany(fetch =FetchType.EAGER)
     @JoinTable(name="ContactNotifyWayRefVO",
             joinColumns={@JoinColumn(name="contactUuid",referencedColumnName="uuid")},
             inverseJoinColumns={@JoinColumn(name="notifyWayUuid",referencedColumnName="uuid")}
     )
     private Set<NotifyWayVO> notifyWayVOs;
-
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "ContactGroupRefVO",
-            joinColumns = {@JoinColumn(name = "contactUuid", referencedColumnName = "uuid")},
-            inverseJoinColumns = {@JoinColumn(name = "groupUuid", referencedColumnName = "uuid")}
-    )
-    private Set<ContactGroupVO> contactGroupVOS;
-
-//    @ManyToOne(targetEntity = ContactGroupVO.class)
-//    @JoinColumn(name="groupCode")
-//    private ContactGroupVO groupVO;
-
-
 
     public String getName() {
         return name;
@@ -74,14 +58,6 @@ public class ContactVO extends BaseVO{
 
     public void setNotifyWayVOs(Set<NotifyWayVO> notifyWayVOs) {
         this.notifyWayVOs = notifyWayVOs;
-    }
-
-    public Set<ContactGroupVO> getContactGroupVOS() {
-        return contactGroupVOS;
-    }
-
-    public void setContactGroupVOS(Set<ContactGroupVO> contactGroupVOS) {
-        this.contactGroupVOS = contactGroupVOS;
     }
 
     public String getAccountUuid() {

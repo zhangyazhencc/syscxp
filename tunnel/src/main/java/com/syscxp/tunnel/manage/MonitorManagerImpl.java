@@ -9,6 +9,7 @@ import com.syscxp.tunnel.header.switchs.PhysicalSwitchAccessType;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
 import com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO_;
 import com.syscxp.utils.gson.JSONObjectUtil;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.Platform;
@@ -174,7 +175,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         if (msg.getMonitorCidr() != null) {
             if (tunnelMonitorVO.getMonitorCidr() != msg.getMonitorCidr()) {
                 Map<String, String> monitorIps = new HashMap<String, String>(2);
-                generateMonirotIps(tunnelMonitorVO.getTunnelUuid(),tunnelMonitorVO.getMonitorCidr(),monitorIps);
+                generateMonirotIps(tunnelMonitorVO.getTunnelUuid(), tunnelMonitorVO.getMonitorCidr(), monitorIps);
 
                 List<TunnelMonitorInterfaceVO> interfaceVOList = tunnelMonitorVO.getTunnelMonitorInterfaceVOList();
                 TunnelMonitorInterfaceVO interfaceVO = new TunnelMonitorInterfaceVO();
@@ -307,7 +308,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
 
         // 按监控网络网段随机产生监控ip
-        generateMonirotIps(tunnelMonitorVO.getTunnelUuid(),tunnelMonitorVO.getMonitorCidr(), monitorIps);
+        generateMonirotIps(tunnelMonitorVO.getTunnelUuid(), tunnelMonitorVO.getMonitorCidr(), monitorIps);
         // 按tunnel查询两端监控机
         getMonirotHost(tunnelMonitorVO.getTunnelUuid(), monitorHosts);
         // 按tunnel查询tunnel两端接口
@@ -363,7 +364,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelUuid
      * @return：监控A/Z两端监控IP
      */
-    private void generateMonirotIps(String tunnelUuid,String monitorCidr, Map<String, String> monitorIps) {
+    private void generateMonirotIps(String tunnelUuid, String monitorCidr, Map<String, String> monitorIps) {
+        //TODO:测试util.NetWorkUtils中的getFreeIpInRange方法
+
         TunnelVO tunnel;
         MonitorCidrVO monitorCidrVO;
 
@@ -389,14 +392,17 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 String[] endIps = monitorCidrVO.getEndAddress().split("\\.");
                 String prefix = startIps[0] + "." + startIps[1] + ".";
 
+                //掩码
+                String mask = "/" + StringUtils.substringAfterLast(monitorCidr, "/");
+
                 // 生成IP
                 if (!monitorIps.containsKey(InterfaceType.A.toString())) {
                     String IpA = recursiveGenerateIp(existedMonitorIpList, startIps, endIps, prefix);
-                    monitorIps.put(InterfaceType.A.toString(), IpA);
+                    monitorIps.put(InterfaceType.A.toString(), IpA + mask);
                 }
                 if (!monitorIps.containsKey(InterfaceType.Z.toString())) {
                     String IpZ = recursiveGenerateIp(existedMonitorIpList, startIps, endIps, prefix);
-                    monitorIps.put(InterfaceType.Z.toString(), IpZ);
+                    monitorIps.put(InterfaceType.Z.toString(), IpZ + mask);
                 }
             }
         }
@@ -569,7 +575,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
         if (msg instanceof APICreateMonitorHostMsg) {
             validate((APICreateMonitorHostMsg) msg);
-        }else if (msg instanceof APICreateMonitorCidrMsg) {
+        } else if (msg instanceof APICreateMonitorCidrMsg) {
             validate((APICreateMonitorCidrMsg) msg);
         } else if (msg instanceof APICreateHostSwitchMonitorMsg) {
             validate((APICreateHostSwitchMonitorMsg) msg);
