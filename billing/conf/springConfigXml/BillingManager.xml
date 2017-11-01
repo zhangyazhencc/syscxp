@@ -29,7 +29,7 @@
                 <value>com.syscxp.billing.header.receipt.ReceiptInfoVO</value>
                 <value>com.syscxp.billing.header.balance.DealDetailVO</value>
                 <value>com.syscxp.billing.header.sla.SLACompensateVO</value>
-                <value>com.syscxp.billing.header.balance.AccountDiscountVO</value>
+                <value>com.syscxp.header.billing.AccountDiscountVO</value>
             </list>
         </property>
     </bean>

@@ -16,6 +16,9 @@ public class TicketInventory {
     private String AdminUserUuid;
 
     private String ticketTypeCode;
+    private String phone;
+    private String email;
+
     private String content;
     private String contentExtra;
     private String status;
@@ -36,6 +39,8 @@ public class TicketInventory {
         inv.setTicketTypeCode(vo.getTicketTypeCode());
         inv.setContent(vo.getContent());
         inv.setStatus(vo.getStatus().toString());
+        inv.setPhone(vo.getPhone());
+        inv.setEmail(vo.getEmail());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
@@ -137,5 +142,19 @@ public class TicketInventory {
         AdminUserUuid = adminUserUuid;
     }
 
+    public String getPhone() {
+        return phone;
+    }
 
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
 }

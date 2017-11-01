@@ -20,10 +20,6 @@ public class ProductPriceUnitVO {
     @Column
     private String productCategoryUuid;
 
-    @OneToOne
-    @JoinColumn(name="productCategoryUuid",referencedColumnName = "uuid")
-    private ProductCategoryVO productCategoryVO;
-
     @Column
     private String areaCode;
 
@@ -50,6 +46,10 @@ public class ProductPriceUnitVO {
 
     @Column
     private Timestamp lastOpDate;
+
+    @OneToOne
+    @JoinColumn(name="productCategoryUuid",referencedColumnName = "uuid",insertable = false,updatable = false)
+    private ProductCategoryVO productCategoryVO;
 
 
     public String getUuid() {
