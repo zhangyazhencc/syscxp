@@ -16,6 +16,7 @@ public class OrderCallbackCmd {
     private int duration;
     private ProductChargeModel productChargeModel;
     private String descriptionData;
+    private String callBackData;
 
     public static OrderCallbackCmd valueOf(OrderVO order){
         OrderCallbackCmd cmd = new OrderCallbackCmd();
@@ -27,6 +28,7 @@ public class OrderCallbackCmd {
         cmd.setDuration(order.getDuration());
         cmd.setProductChargeModel(order.getProductChargeModel());
         cmd.setDescriptionData(order.getDescriptionData());
+        cmd.setCallBackData(order.getCallBackData());
         return cmd;
     }
 
@@ -92,5 +94,13 @@ public class OrderCallbackCmd {
 
     public void setOrderUuid(String orderUuid) {
         this.orderUuid = orderUuid;
+    }
+
+    public String getCallBackData() {
+        return callBackData;
+    }
+
+    public void setCallBackData(String callBackData) {
+        this.callBackData = callBackData;
     }
 }

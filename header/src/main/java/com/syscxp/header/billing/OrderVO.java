@@ -63,7 +63,7 @@ public class OrderVO {
     @Column
     private String descriptionData;
     @Column
-    private String callBackData;;
+    private String callBackData;
 
     @Column
     private BigDecimal price;
