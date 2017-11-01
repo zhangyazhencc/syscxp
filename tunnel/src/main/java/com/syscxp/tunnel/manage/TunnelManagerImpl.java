@@ -1270,7 +1270,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             unit.setConfigCode(bandwidthOfferingUuid);
 
             units.add(unit);
-        }else{                          //跨国 或者 国外到国外
+        }else{                          //跨国 或者 国外到国外 或者 国外内部
 
         }
 
