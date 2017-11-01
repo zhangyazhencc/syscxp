@@ -23,10 +23,10 @@ public class PolicyVO extends BaseVO {
 
     private Long bindResources;
 
+
     @OneToMany(fetch =FetchType.EAGER,cascade = CascadeType.REMOVE)
     @JoinColumn(name="policyUuid")
     private Set<RegulationVO> regulationVOSet;
-
 //    @ManyToMany(fetch =FetchType.EAGER)
 //    @JoinTable(name="ResourcePolicyRefVO",
 //            joinColumns={@JoinColumn(name="resourceUuid",referencedColumnName="uuid")},
