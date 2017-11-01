@@ -3,12 +3,14 @@ package com.syscxp.header.tunnel;
 import com.syscxp.header.query.APIQueryReply;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by DCY on 2017-09-17
  */
 public class APIQueryTunnelDetailForAlarmReply extends APIQueryReply {
-    private TunnelDetailForAlarmInventory inventory;
+    private Map<String,Object> map;
+
     private List<TunnelDetailForAlarmInventory> inventories;
 
     public List<TunnelDetailForAlarmInventory> getInventories() {
@@ -19,11 +21,11 @@ public class APIQueryTunnelDetailForAlarmReply extends APIQueryReply {
         this.inventories = inventories;
     }
 
-    public TunnelDetailForAlarmInventory getInventory() {
-        return inventory;
+    public Map<String, Object> getMap() {
+        return map;
     }
 
-    public void setInventory(TunnelDetailForAlarmInventory inventory) {
-        this.inventory = inventory;
+    public void setMap(Map<String, Object> map) {
+        this.map = map;
     }
 }

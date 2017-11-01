@@ -939,27 +939,34 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIQueryTunnelDetailForAlarmMsg msg){
+        // List<Map<String,String>> detailList = new ArrayList<>();
+        Map<String,Object> detailMap = new HashMap<>();
+
         Map<String,String> map = new HashMap<>();
+        for(String tunnelUuid:msg.getTunnelUuidList()){
+            TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelUuid).findValue();
+            map.put("tunnelUuid",tunnel.getName());
+            map.put("bandwidth",tunnel.getBandwidth().toString());
 
-        String tunnelUuid = msg.getTunnelUuid();
-        TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelUuid).findValue();
-        map.put("tunnelUuid",tunnel.getName());
-        map.put("bandwidth",tunnel.getBandwidth().toString());
+            List<TunnelInterfaceVO> interfaceList = Q.New(TunnelInterfaceVO.class).eq(TunnelInterfaceVO_.tunnelUuid,tunnelUuid).list();
+            for(TunnelInterfaceVO vo : interfaceList){
+                if("A".equals(vo.getSortTag()))
+                    map.put("endpointAVlan",vo.getVlan().toString());
+                else if("Z".equals(vo.getSortTag()))
+                    map.put("endpointZVlan",vo.getVlan().toString());
+            }
 
-        List<TunnelInterfaceVO> interfaceList = Q.New(TunnelInterfaceVO.class).eq(TunnelInterfaceVO_.tunnelUuid,tunnelUuid).list();
-        for(TunnelInterfaceVO vo : interfaceList){
-            if("A".equals(vo.getSortTag()))
-                map.put("endpointAVlan",vo.getVlan().toString());
-            else if("Z".equals(vo.getSortTag()))
-                map.put("endpointZVlan",vo.getVlan().toString());
+            //TODO: 等丁修改完成后取
+            map.put("endpointAIp","endpointAIp");
+            map.put("endpointZIp","endpointZIp");
+
+            //detailList.add(map);
+            detailMap.put(tunnelUuid,map);
         }
 
-        //TODO: 等丁修改完成后取
-        map.put("endpointAIp","endpointAIp");
-        map.put("endpointZIp","endpointZIp");
-
         APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
-        reply.setInventory(TunnelDetailForAlarmInventory.valueOf(map));
+        reply.setMap(detailMap);
+        // reply.setInventories(TunnelDetailForAlarmInventory.valueOf(detailList));
         bus.reply(msg,reply);
     }
 
