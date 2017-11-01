@@ -16,6 +16,6 @@ public enum Category {
     CITY,
     REGION,
     EXCLUSIVE,
-    SHARE,
+    SHARE ,
     PORT
 }
