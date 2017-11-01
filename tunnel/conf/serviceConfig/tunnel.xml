@@ -12,6 +12,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIGetInterfaceTypeMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.tunnel.header.tunnel.APIUpdateInterfaceMsg</name>
     </message>
 
