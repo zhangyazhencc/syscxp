@@ -39,6 +39,11 @@
             <artifactId>portal</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.syscxp</groupId>
+            <artifactId>sms</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>javax.servlet</groupId>

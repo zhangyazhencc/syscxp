@@ -38,11 +38,11 @@ public class AlarmLogVO extends BaseVO {
     private Timestamp resumeTime;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private AlarmStatus status;
+    private String status;
 
     @Column
     private String accountUuid;
+
 
     public String getAccountUuid() {
         return accountUuid;
@@ -116,11 +116,11 @@ public class AlarmLogVO extends BaseVO {
         this.resumeTime = resumeTime;
     }
 
-    public AlarmStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(AlarmStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 }

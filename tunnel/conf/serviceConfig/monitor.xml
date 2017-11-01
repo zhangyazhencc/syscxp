@@ -16,7 +16,15 @@
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.monitor.APICreateTunnelMonitorMsg</name>
+        <name>com.syscxp.tunnel.header.monitor.APIStartTunnelMonitorMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.monitor.APIStopTunnelMonitorMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.monitor.APIRestartTunnelMonitorMsg</name>
     </message>
 
     <message>

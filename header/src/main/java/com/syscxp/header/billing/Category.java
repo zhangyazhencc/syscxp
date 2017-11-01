@@ -12,5 +12,10 @@ public enum Category {
     ABROAD,
     BANDWIDTH,
     HOST,
-    DISK
+    DISK,
+    CITY,
+    REGION,
+    EXCLUSIVE,
+    SHARE ,
+    PORT
 }

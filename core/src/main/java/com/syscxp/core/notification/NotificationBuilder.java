@@ -10,6 +10,7 @@ import java.util.*;
 public class NotificationBuilder {
     String notificationName;
     String category;
+    String accountUuid;
     String remoteIp;
     Boolean success;
     String content;
@@ -35,6 +36,11 @@ public class NotificationBuilder {
 
     public NotificationBuilder name(String name) {
         notificationName = name;
+        return this;
+    }
+
+    public NotificationBuilder ower(String accountUuid) {
+        accountUuid = accountUuid;
         return this;
     }
 

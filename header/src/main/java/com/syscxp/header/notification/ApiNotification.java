@@ -17,6 +17,7 @@ public abstract class ApiNotification {
 
     public class Inner {
         String content;
+        String accountUuid;
         Object[] arguments;
         String resourceUuid;
         String resourceType;
@@ -27,6 +28,10 @@ public abstract class ApiNotification {
 
         public APIMessage getMessage() {
             return message;
+        }
+
+        public String getAccountUuid() {
+            return accountUuid;
         }
 
         public APIEvent getEvent() {
@@ -64,6 +69,11 @@ public abstract class ApiNotification {
         }
 
         public Inner context(String key, Object value) {
+            context.put(key, value);
+            return this;
+        }
+
+        public Inner owner(String key, Object value) {
             context.put(key, value);
             return this;
         }

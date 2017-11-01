@@ -10,7 +10,7 @@ import java.sql.Timestamp;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @TriggerIndex
-@SqlTrigger
+@SqlTrigger(foreignVOClass=ProductCategoryVO.class,foreignVOJoinColumn="productCategoryUuid")
 public class ProductPriceUnitVO {
 
     @Id
@@ -19,6 +19,10 @@ public class ProductPriceUnitVO {
 
     @Column
     private String productCategoryUuid;
+
+    @OneToOne(fetch = FetchType.EAGER,mappedBy = "productPriceUnitVO")
+//    @JoinColumn(name="productCategoryUuid",referencedColumnName = "uuid")
+    private ProductCategoryVO productCategoryVO;
 
     @Column
     private String areaCode;
@@ -134,6 +138,14 @@ public class ProductPriceUnitVO {
 
     public void setUnitPrice(int unitPrice) {
         this.unitPrice = unitPrice;
+    }
+
+    public ProductCategoryVO getProductCategoryVO() {
+        return productCategoryVO;
+    }
+
+    public void setProductCategoryVO(ProductCategoryVO productCategoryVO) {
+        this.productCategoryVO = productCategoryVO;
     }
 
     @PreUpdate

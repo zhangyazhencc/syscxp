@@ -19,6 +19,10 @@ public class TunnelMonitorInventory {
 
     private String tunnelUuid;
 
+    private String accountUuid;
+
+    private String monitorCidr;
+
     private String msg;
 
     private Timestamp lastOpDate;
@@ -94,6 +98,22 @@ public class TunnelMonitorInventory {
 
     public void setTunnelMonitorInterfaceInventories(List<TunnelMonitorInterfaceInventory> tunnelMonitorInterfaceInventories) {
         this.tunnelMonitorInterfaceInventories = tunnelMonitorInterfaceInventories;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
+
+    public String getMonitorCidr() {
+        return monitorCidr;
+    }
+
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
     }
 }
 

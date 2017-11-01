@@ -1,38 +1,51 @@
-package com.syscxp.billing.header.price;
+package com.syscxp.header.billing;
 
-import com.syscxp.header.vo.EO;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import com.syscxp.header.search.Inventory;
+
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
-@Table
-@Entity
-public class ProductCategoryEO{
+@Inventory(mappingVOClass = ProductCategoryVO.class)
+public class ProductCategoryInventory {
 
-    @Id
-    @Column
     private String uuid;
 
-    @Column
     private String code;
 
-    @Column
     private String name;
 
-    @Column
     private String productTypeCode;
 
-    @Column
     private String productTypeName;
 
-    @Column
     private Timestamp createDate;
 
-    @Column
     private Timestamp lastOpDate;
+
+
+    public static ProductCategoryInventory valueOf(ProductCategoryVO vo) {
+        ProductCategoryInventory inv = new ProductCategoryInventory();
+        inv.setUuid(vo.getUuid());
+        inv.setCode(vo.getCode().toString());
+        inv.setName(vo.getName());
+        inv.setProductTypeCode(vo.getProductTypeCode().toString());
+        inv.setProductTypeName(vo.getProductTypeName());
+        inv.setUuid(vo.getUuid());
+        inv.setCreateDate(vo.getCreateDate());
+        inv.setLastOpDate(vo.getLastOpDate());
+        return inv;
+    }
+
+    public static List<ProductCategoryInventory> valueOf(Collection<ProductCategoryVO> vos) {
+        List<ProductCategoryInventory> lst = new ArrayList<>(vos.size());
+        for (ProductCategoryVO vo : vos) {
+            lst.add(ProductCategoryInventory.valueOf(vo));
+        }
+        return lst;
+    }
 
     public String getUuid() {
         return uuid;

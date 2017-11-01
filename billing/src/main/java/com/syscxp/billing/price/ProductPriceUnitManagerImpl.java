@@ -1,7 +1,5 @@
 package com.syscxp.billing.price;
 
-import com.syscxp.billing.header.balance.AccountDiscountVO;
-import com.syscxp.billing.header.balance.AccountDiscountVO_;
 import com.syscxp.billing.header.price.*;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -23,7 +21,6 @@ import com.syscxp.header.message.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.Query;
 import java.util.*;
 
 public class ProductPriceUnitManagerImpl extends AbstractService implements ProductPriceUnitManager,ApiMessageInterceptor {
@@ -73,17 +70,17 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
     }
 
     private void handle(APIGetProductCategoryListMsg msg) {
-        SimpleQuery<ProductCategoryEO> q = dbf.createQuery(ProductCategoryEO.class);
-        q.groupBy(ProductCategoryEO_.productTypeCode);
-        List<ProductCategoryEO> adVO = q.list();
+        SimpleQuery<ProductCategoryVO> q = dbf.createQuery(ProductCategoryVO.class);
+        q.groupBy(ProductCategoryVO_.productTypeCode);
+        List<ProductCategoryVO> adVO = q.list();
         List<ProductDataDictionary> productTypes = new ArrayList<>();
-        for(ProductCategoryEO eo: adVO){
+        for(ProductCategoryVO eo: adVO){
             ProductDataDictionary dictionary = new ProductDataDictionary();
-            dictionary.setCode(eo.getProductTypeCode());
+            dictionary.setCode(eo.getProductTypeCode().toString());
             dictionary.setName(eo.getProductTypeName());
-            SimpleQuery<ProductCategoryEO> query = dbf.createQuery(ProductCategoryEO.class);
-            query.add(ProductCategoryEO_.productTypeCode, SimpleQuery.Op.EQ, eo.getProductTypeCode());
-            List<ProductCategoryEO> pcVOs = query.list();
+            SimpleQuery<ProductCategoryVO> query = dbf.createQuery(ProductCategoryVO.class);
+            query.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ, eo.getProductTypeCode());
+            List<ProductCategoryVO> pcVOs = query.list();
             dictionary.setCategories(ProductCategoryInventory.valueOf(pcVOs));
             productTypes.add(dictionary);
         }

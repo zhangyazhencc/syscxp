@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.manage;
 
+import com.syscxp.core.db.*;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.tunnel.header.host.*;
@@ -8,7 +9,6 @@ import com.syscxp.tunnel.header.switchs.PhysicalSwitchAccessType;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
 import com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO_;
 import com.syscxp.utils.gson.JSONObjectUtil;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.Platform;
@@ -16,9 +16,6 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.cloudbus.ResourceDestinationMaker;
 import com.syscxp.core.componentloader.PluginRegistry;
-import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.DbEntityLister;
-import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
@@ -81,14 +78,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     private void handleApiMessage(APIMessage msg) {
-         if (msg instanceof APICreateHostSwitchMonitorMsg) {
+        if (msg instanceof APICreateHostSwitchMonitorMsg) {
             handle((APICreateHostSwitchMonitorMsg) msg);
         } else if (msg instanceof APIUpdateHostSwitchMonitorMsg) {
             handle((APIUpdateHostSwitchMonitorMsg) msg);
         } else if (msg instanceof APIDeleteHostSwitchMonitorMsg) {
             handle((APIDeleteHostSwitchMonitorMsg) msg);
-        } else if (msg instanceof APICreateTunnelMonitorMsg) {
-            handle((APICreateTunnelMonitorMsg) msg);
+        } else if (msg instanceof APIStartTunnelMonitorMsg) {
+            handle((APIStartTunnelMonitorMsg) msg);
         } else if (msg instanceof APIUpdateTunnelMonitorMsg) {
             handle((APIUpdateTunnelMonitorMsg) msg);
         } else if (msg instanceof APIDeleteTunnelMonitorMsg) {
@@ -145,14 +142,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         bus.publish(event);
     }
 
-    private void handle(APICreateTunnelMonitorMsg msg) {
+    private void handle(APIStartTunnelMonitorMsg msg) {
         TunnelMonitorVO tunnelMonitorVO = createTunnelMonitorHandle(msg);
 
         // 下发监控通道配置
         ControllerCommands.TunnelMonitorCommand cmd = getTunnelMonitorCommand(tunnelMonitorVO.getTunnelUuid());
         String command = JSONObjectUtil.toJsonString(cmd);
 
-        APICreateTunnelMonitorEvent event = new APICreateTunnelMonitorEvent(msg.getId());
+        APIStartTunnelMonitorEvent event = new APIStartTunnelMonitorEvent(msg.getId());
         ControllerRestFacade crf = new ControllerRestFacade();
         crf.sendCommand(ControllerRestConstant.SYNC_TEST, command, new Completion(event) {
             @Override
@@ -167,34 +164,37 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         });
 
 
-
         event.setInventory(TunnelMonitorInventory.valueOf(tunnelMonitorVO));
         bus.publish(event);
     }
 
+    @Transactional
     private void handle(APIUpdateTunnelMonitorMsg msg) {
         TunnelMonitorVO tunnelMonitorVO = dbf.findByUuid(msg.getUuid(), TunnelMonitorVO.class);
+        if (msg.getMonitorCidr() != null) {
+            if (tunnelMonitorVO.getMonitorCidr() != msg.getMonitorCidr()) {
+                Map<String, String> monitorIps = new HashMap<String, String>(2);
+                generateMonirotIps(tunnelMonitorVO.getTunnelUuid(),tunnelMonitorVO.getMonitorCidr(),monitorIps);
 
-        tunnelMonitorVO.setTunnelUuid(msg.getTunnelUuid());
+                List<TunnelMonitorInterfaceVO> interfaceVOList = tunnelMonitorVO.getTunnelMonitorInterfaceVOList();
+                TunnelMonitorInterfaceVO interfaceVO = new TunnelMonitorInterfaceVO();
+                for (TunnelMonitorInterfaceVO vo : interfaceVOList) {
+                    if (InterfaceType.A.equals(vo.getInterfaceType())) {
+                        interfaceVO.setMonitorIp(monitorIps.get(InterfaceType.A.toString()));
+                        dbf.getEntityManager().persist(interfaceVO);
+                    } else if (InterfaceType.Z.equals(vo.getInterfaceType())) {
+                        interfaceVO.setMonitorIp(monitorIps.get(InterfaceType.Z.toString()));
+                        dbf.getEntityManager().persist(interfaceVO);
+                    }
+                }
+
+                tunnelMonitorVO.setMonitorCidr(msg.getMonitorCidr());
+            }
+        }
         if (msg.getMsg() != null) {
             tunnelMonitorVO.setMsg(msg.getMsg());
         }
-        dbf.getEntityManager().merge(tunnelMonitorVO);
-
-        List<TunnelMonitorInterfaceVO> interfaceVOList = tunnelMonitorVO.getTunnelMonitorInterfaceVOList();
-
-        TunnelMonitorInterfaceVO interfaceVO = new TunnelMonitorInterfaceVO();
-        for (TunnelMonitorInterfaceVO vo : interfaceVOList) {
-            if (InterfaceType.A.equals(vo.getInterfaceType())) {
-                interfaceVO.setMonitorIp(msg.getMonitorAIp());
-                interfaceVO.setHostUuid(msg.getHostAUuid());
-                dbf.getEntityManager().merge(interfaceVO);
-            } else if (InterfaceType.Z.equals(vo.getInterfaceType())) {
-                interfaceVO.setMonitorIp(msg.getMonitorZIp());
-                interfaceVO.setHostUuid(msg.getHostZUuid());
-                dbf.getEntityManager().merge(interfaceVO);
-            }
-        }
+        dbf.getEntityManager().persist(tunnelMonitorVO);
 
         TunnelMonitorVO resultVo = dbf.findByUuid(msg.getUuid(), TunnelMonitorVO.class);
         APIUpdateTunnelMonitorEvent evt = new APIUpdateTunnelMonitorEvent(msg.getId());
@@ -279,24 +279,26 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     /**
-     * 创建监控通道 （手动创建 / 创建tunnel时自动创建）
+     * 创建监控通道 （创建完tunnel后手动开启）
      *
      * @param msg
      * @return：创建的监控通道
      */
     @Transactional
-    public TunnelMonitorVO createTunnelMonitorHandle(APICreateTunnelMonitorMsg msg) {
+    public TunnelMonitorVO createTunnelMonitorHandle(APIStartTunnelMonitorMsg msg) {
         // TunnelMonitorVO
         TunnelMonitorVO tunnelMonitorVO = new TunnelMonitorVO();
         tunnelMonitorVO.setUuid(Platform.getUuid());
         tunnelMonitorVO.setTunnelUuid(msg.getTunnelUuid());
+        tunnelMonitorVO.setAccountUuid(msg.getSession().getAccountUuid());
+        tunnelMonitorVO.setMonitorCidr(msg.getMonitorCidr());
         tunnelMonitorVO.setMsg(msg.getMsg());
         dbf.getEntityManager().persist(tunnelMonitorVO);
 
         Map<String, String> tunnelInterfaces = new HashMap<String, String>(2);
         Map<String, String> monitorIps = new HashMap<String, String>(2);
         Map<String, String> monitorHosts = new HashMap<String, String>(2);
-        // 按tunnel查询两端接口是否已存在监控机与监控IP
+        // 按tunnel查询两端接口已存在的监控机与监控IP
         List<TunnelMonitorInterfaceVO> existedMonitorList = getExistedMonitor(tunnelMonitorVO.getTunnelUuid());
         for (TunnelMonitorInterfaceVO existedMonitor : existedMonitorList) {
             tunnelInterfaces.put(existedMonitor.getInterfaceType().toString(), existedMonitor.getInterfaceUuid());
@@ -304,8 +306,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             monitorHosts.put(existedMonitor.getInterfaceType().toString(), existedMonitor.getHostUuid());
         }
 
-        // 按tunnel监控IP段随机产生
-        generateMonirotIps(tunnelMonitorVO.getTunnelUuid(), monitorIps);
+        // 按监控网络网段随机产生监控ip
+        generateMonirotIps(tunnelMonitorVO.getTunnelUuid(),tunnelMonitorVO.getMonitorCidr(), monitorIps);
         // 按tunnel查询两端监控机
         getMonirotHost(tunnelMonitorVO.getTunnelUuid(), monitorHosts);
         // 按tunnel查询tunnel两端接口
@@ -361,44 +363,40 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelUuid
      * @return：监控A/Z两端监控IP
      */
-    private void generateMonirotIps(String tunnelUuid, Map<String, String> monitorIps) {
+    private void generateMonirotIps(String tunnelUuid,String monitorCidr, Map<String, String> monitorIps) {
         TunnelVO tunnel;
-        MonitorCidrVO monitorCidr;
+        MonitorCidrVO monitorCidrVO;
 
         // A/Z至少有一个不存在
         if (!monitorIps.containsKey(InterfaceType.A.toString()) || !monitorIps.containsKey(InterfaceType.Z.toString())) {
-            tunnel = dbf.findByUuid(tunnelUuid, TunnelVO.class);
-            if (tunnel != null) {
-                SimpleQuery<MonitorCidrVO> qMonitorCidr = dbf.createQuery(MonitorCidrVO.class);
-                qMonitorCidr.add(MonitorCidrVO_.monitorCidr, SimpleQuery.Op.EQ, tunnel.getMonitorCidr());
-                monitorCidr = qMonitorCidr.find();
+            SimpleQuery<MonitorCidrVO> qMonitorCidr = dbf.createQuery(MonitorCidrVO.class);
+            qMonitorCidr.add(MonitorCidrVO_.monitorCidr, SimpleQuery.Op.EQ, monitorCidr);
+            monitorCidrVO = qMonitorCidr.find();
 
-                if (monitorCidr != null) {
-                    //TODO: 性能优化
-                    // vsi下已有监控ip
-                    String sqlExistedMonitorIp = "select c.monitorIp " +
-                            "from TunnelVO a,TunnelMonitorVO b,TunnelMonitorInterfaceVO c " +
-                            "where a.uuid = :tunnelUuid " +
-                            "and b.tunnelUuid = a.uuid " +
-                            "and c.tunnelMonitorUuid = b.uuid";
-                    TypedQuery<String> qExistedMonitorIp = dbf.getEntityManager().createQuery(sqlExistedMonitorIp, String.class);
-                    qExistedMonitorIp.setParameter("tunnelUuid", tunnelUuid);
-                    List<String> existedMonitorIpList = qExistedMonitorIp.getResultList();
+            if (monitorCidrVO != null) {
+                // vsi下已有监控ip
+                String sqlExistedMonitorIp = "select c.monitorIp " +
+                        "from TunnelVO a,TunnelMonitorVO b,TunnelMonitorInterfaceVO c " +
+                        "where a.uuid = :tunnelUuid " +
+                        "and b.tunnelUuid = a.uuid " +
+                        "and c.tunnelMonitorUuid = b.uuid";
+                TypedQuery<String> qExistedMonitorIp = dbf.getEntityManager().createQuery(sqlExistedMonitorIp, String.class);
+                qExistedMonitorIp.setParameter("tunnelUuid", tunnelUuid);
+                List<String> existedMonitorIpList = qExistedMonitorIp.getResultList();
 
-                    // 当前vsi的监控IP段
-                    String[] startIps = monitorCidr.getStartAddress().split("\\.");
-                    String[] endIps = monitorCidr.getEndAddress().split("\\.");
-                    String prefix = startIps[0] + "." + startIps[1] + ".";
+                // 当前vsi的监控IP段
+                String[] startIps = monitorCidrVO.getStartAddress().split("\\.");
+                String[] endIps = monitorCidrVO.getEndAddress().split("\\.");
+                String prefix = startIps[0] + "." + startIps[1] + ".";
 
-                    // 生成IP
-                    if (!monitorIps.containsKey(InterfaceType.A.toString())) {
-                        String IpA = recursiveGenerateIp(existedMonitorIpList, startIps, endIps, prefix);
-                        monitorIps.put(InterfaceType.A.toString(), IpA);
-                    }
-                    if (!monitorIps.containsKey(InterfaceType.Z.toString())) {
-                        String IpZ = recursiveGenerateIp(existedMonitorIpList, startIps, endIps, prefix);
-                        monitorIps.put(InterfaceType.Z.toString(), IpZ);
-                    }
+                // 生成IP
+                if (!monitorIps.containsKey(InterfaceType.A.toString())) {
+                    String IpA = recursiveGenerateIp(existedMonitorIpList, startIps, endIps, prefix);
+                    monitorIps.put(InterfaceType.A.toString(), IpA);
+                }
+                if (!monitorIps.containsKey(InterfaceType.Z.toString())) {
+                    String IpZ = recursiveGenerateIp(existedMonitorIpList, startIps, endIps, prefix);
+                    monitorIps.put(InterfaceType.Z.toString(), IpZ);
                 }
             }
         }
@@ -451,6 +449,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                     if (physicalSwitchUuidlist.size() > 0) {
                         String physicalSwitchUuid = physicalSwitchUuidlist.get(0);
 
+                        //TODO:修改HostVO的查询到MonitorHostVO
                         String sqlHostUuid = "select b.uuid from HostSwitchMonitorVO a,HostVO b\n" +
                                 "where b.uuid = a.hostUuid\n" +
                                 "and a.physicalSwitchUuid = :physicalSwitchUuid";
@@ -570,9 +569,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
         if (msg instanceof APICreateMonitorHostMsg) {
             validate((APICreateMonitorHostMsg) msg);
-        } else if (msg instanceof APIUpdateTunnelMonitorMsg) {
-            validate((APIUpdateTunnelMonitorMsg) msg);
-        } else if (msg instanceof APICreateMonitorCidrMsg) {
+        }else if (msg instanceof APICreateMonitorCidrMsg) {
             validate((APICreateMonitorCidrMsg) msg);
         } else if (msg instanceof APICreateHostSwitchMonitorMsg) {
             validate((APICreateHostSwitchMonitorMsg) msg);
@@ -641,15 +638,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         validateHostIp(msg.getHostIp());
     }
 
-    private void validate(APIUpdateTunnelMonitorMsg msg) {
-        //验证monitorIp合法性
-        if (!NetworkUtils.isIpv4Address(msg.getMonitorAIp()))
-            throw new ApiMessageInterceptionException(argerr("Illegal monitor IP %s！", msg.getMonitorAIp()));
-
-        if (!NetworkUtils.isIpv4Address(msg.getMonitorZIp()))
-            throw new ApiMessageInterceptionException(argerr("Illegal monitor IP %s！", msg.getMonitorZIp()));
-    }
-
     /**
      * 验证监控主机IP合法性
      *
@@ -715,7 +703,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             hostQ.setParameter("hostUuid", monitor.get(1).toString());
             Tuple host = hostQ.getResultList().get(0);
 
-            String tunnelSql = "select g.bandwidth,h.vlan,j.portName \n" +
+            String tunnelSql = "select g.bandwidth,h.vlan,j.portName,g.vsi \n" +
                     "from TunnelVO g, TunnelInterfaceVO h, InterfaceVO i, SwitchPortVO j\n" +
                     "where h.tunnelUuid = g.uuid\n" +
                     "and h.sortTag = :sortTag\n" +
@@ -737,7 +725,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 mpls.setVlan_id(Integer.valueOf(tunnel.get(1).toString()) + 1);
                 mpls.setPort_name(tunnel.get(2, String.class));
                 mpls.setBandwidth(Integer.valueOf(tunnel.get(0).toString()));
-
+                mpls.setVni(Integer.valueOf(tunnel.get(3).toString()));
                 mplsList.add(mpls);
             } else if (PhysicalSwitchAccessType.SDN.toString().equals(host.get(0).toString())) {
                 // 获取上联口对应的物理交换机作为mpls数据
@@ -801,8 +789,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         monitorHostQ.setParameter("tunnelUuid", tunnelUuid);
 
         for (Tuple monitor : monitorHostQ.getResultList()) {
-            monitorIp.put(monitor.get(0).toString(), monitor.get(1, String.class).toString());
-            monitorPort.put(monitor.get(0).toString(), monitor.get(2, String.class).toString());
+            monitorIp.put(monitor.get(0).toString(), monitor.get(1, String.class));
+            monitorPort.put(monitor.get(0).toString(), monitor.get(2, String.class));
         }
     }
 }

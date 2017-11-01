@@ -26,6 +26,8 @@ public class APICreateInterfaceManualMsg extends APIMessage {
     private String switchPortUuid;
     @APIParam(emptyString = false,maxLength = 32,resourceType = EndpointVO.class)
     private String endpointUuid;
+    @APIParam(emptyString = false,maxLength = 32,resourceType = PortOfferingVO.class)
+    private String portOfferingUuid;
     @APIParam(emptyString = false,required = false,validValues = {"TRUNK", "ACCESS","QINQ"})
     private NetworkType type;
     @APIParam(emptyString = false,required = false,maxLength = 255)
@@ -34,8 +36,6 @@ public class APICreateInterfaceManualMsg extends APIMessage {
     private Integer duration;
     @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
     private ProductChargeModel productChargeModel;
-    @APIParam(nonempty = true)
-    private List<ProductPriceUnit> units;
 
     public String getAccountUuid() {
         return accountUuid;
@@ -93,19 +93,19 @@ public class APICreateInterfaceManualMsg extends APIMessage {
         this.productChargeModel = productChargeModel;
     }
 
-    public List<ProductPriceUnit> getUnits() {
-        return units;
-    }
-
-    public void setUnits(List<ProductPriceUnit> units) {
-        this.units = units;
-    }
-
     public NetworkType getType() {
         return type;
     }
 
     public void setType(NetworkType type) {
         this.type = type;
+    }
+
+    public String getPortOfferingUuid() {
+        return portOfferingUuid;
+    }
+
+    public void setPortOfferingUuid(String portOfferingUuid) {
+        this.portOfferingUuid = portOfferingUuid;
     }
 }

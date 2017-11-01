@@ -1,7 +1,4 @@
-package com.syscxp.billing.header.balance;
-
-import com.syscxp.header.billing.Category;
-import com.syscxp.header.billing.ProductType;
+package com.syscxp.header.billing;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
