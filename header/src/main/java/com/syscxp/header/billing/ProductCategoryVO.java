@@ -2,10 +2,7 @@ package com.syscxp.header.billing;
 
 import com.syscxp.header.billing.Category;
 import com.syscxp.header.billing.ProductType;
-import com.syscxp.header.search.SqlTrigger;
 import com.syscxp.header.search.TriggerIndex;
-import com.syscxp.header.vo.ForeignKey;
-
 import javax.persistence.*;
 import java.sql.Timestamp;
 
@@ -13,6 +10,7 @@ import java.sql.Timestamp;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @TriggerIndex
+//@SqlTrigger(foreignVOClass = AccountDiscountVO.class, foreignVOJoinColumn = "uuid")
 public class ProductCategoryVO{
 
     @Id
@@ -38,14 +36,6 @@ public class ProductCategoryVO{
 
     @Column
     private Timestamp lastOpDate;
-
-    @OneToOne(fetch = FetchType.EAGER,targetEntity=AccountDiscountVO.class)
-    @JoinColumn(name = "uuid",referencedColumnName = "productCategoryUuid",insertable = false,updatable = false)
-    private AccountDiscountVO accountDiscountVO;
-
-    @OneToOne(fetch = FetchType.EAGER,targetEntity = ProductPriceUnitVO.class)
-    @JoinColumn(name = "uuid",referencedColumnName = "productCategoryUuid",insertable = false,updatable = false)
-    private ProductPriceUnitVO productPriceUnitVO;
 
     public String getUuid() {
         return uuid;
@@ -101,21 +91,5 @@ public class ProductCategoryVO{
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
-    }
-
-    public AccountDiscountVO getAccountDiscountVO() {
-        return accountDiscountVO;
-    }
-
-    public void setAccountDiscountVO(AccountDiscountVO accountDiscountVO) {
-        this.accountDiscountVO = accountDiscountVO;
-    }
-
-    public ProductPriceUnitVO getProductPriceUnitVO() {
-        return productPriceUnitVO;
-    }
-
-    public void setProductPriceUnitVO(ProductPriceUnitVO productPriceUnitVO) {
-        this.productPriceUnitVO = productPriceUnitVO;
     }
 }
