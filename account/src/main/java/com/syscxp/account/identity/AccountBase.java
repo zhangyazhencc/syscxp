@@ -543,24 +543,19 @@ public class AccountBase extends AbstractAccount {
 
 //        if (msg.getSession().getType() == AccountType.SystemAdmin) {
         if (msg.getSession().getType().toString().equals(AccountType.SystemAdmin.toString())) {
-             if (msg.getStatus() != null) {
+            if (msg.getStatus() != null) {
                 account.setStatus(msg.getStatus());
-                update = true;
             }
             if (msg.getType() != null) {
                 account.setType(AccountType.valueOf(msg.getType()));
-                update = true;
             }
 
             if (msg.getGrade() != null) {
                 account.getAccountExtraInfo().setGrade(msg.getGrade());
-                update = true;
             }
+            account.getAccountExtraInfo().setUserUuid(msg.getUserUuid());
+            update = true;
 
-            if (msg.getUserUuid() != null) {
-                account.getAccountExtraInfo().setUserUuid(msg.getUserUuid());
-                update = true;
-            }
         }
 
         if (update) {

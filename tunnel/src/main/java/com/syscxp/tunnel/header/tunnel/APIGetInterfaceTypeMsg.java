@@ -11,7 +11,7 @@ import com.syscxp.tunnel.header.endpoint.EndpointVO;
  */
 @Action(category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
 public class APIGetInterfaceTypeMsg extends APISyncCallMessage {
-    @APIParam(emptyString = false,resourceType = EndpointVO.class)
+    @APIParam(emptyString = false, resourceType = EndpointVO.class)
     private String uuid;
 
     public String getUuid() {
