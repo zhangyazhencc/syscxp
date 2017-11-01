@@ -8,14 +8,10 @@ import java.util.List;
 public class APIGetProductPriceReply extends APIReply {
 
     private List<ProductPriceUnitInventory> productPriceInventories;
-
     private AccountBalanceInventory accountBalanceInventory;
-
     private BigDecimal originalPrice;
     private BigDecimal discountPrice;
-
     private BigDecimal mayPayTotal;
-
     private boolean payable;
 
     public List<ProductPriceUnitInventory> getProductPriceInventories() {
