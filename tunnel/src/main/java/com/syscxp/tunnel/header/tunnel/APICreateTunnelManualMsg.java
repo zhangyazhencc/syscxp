@@ -23,8 +23,8 @@ public class APICreateTunnelManualMsg extends APIMessage {
     private Integer vsi;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
-    @APIParam
-    private Long bandwidth;
+    @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
+    private String bandwidthOfferingUuid;
     @APIParam(emptyString = false,resourceType = NodeVO.class)
     private String nodeAUuid;
     @APIParam(emptyString = false,resourceType = NodeVO.class)
@@ -49,8 +49,6 @@ public class APICreateTunnelManualMsg extends APIMessage {
     private Integer duration;
     @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
     private ProductChargeModel productChargeModel;
-    @APIParam(nonempty = true)
-    private List<ProductPriceUnit> units;
     @APIParam(emptyString = false,required = false)
     private String description;
     @APIParam(required = false)
@@ -70,14 +68,6 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Long getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(Long bandwidth) {
-        this.bandwidth = bandwidth;
     }
 
     public String getInterfaceAUuid() {
@@ -192,13 +182,6 @@ public class APICreateTunnelManualMsg extends APIMessage {
         this.productChargeModel = productChargeModel;
     }
 
-    public List<ProductPriceUnit> getUnits() {
-        return units;
-    }
-
-    public void setUnits(List<ProductPriceUnit> units) {
-        this.units = units;
-    }
 
     public Integer getVsi() {
         return vsi;
@@ -206,5 +189,13 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     public void setVsi(Integer vsi) {
         this.vsi = vsi;
+    }
+
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
+    }
+
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 }
