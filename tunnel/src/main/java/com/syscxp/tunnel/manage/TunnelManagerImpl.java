@@ -197,7 +197,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDescription(msg.getDescription());
-        vo.setExpireDate(null);
         vo.setState(InterfaceState.Unpaid);
         vo.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
         vo.setExpireDate(dbf.getCurrentSqlTime());
