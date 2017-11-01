@@ -23,9 +23,6 @@ public class TunnelForAlarmVO {
     private Integer vsi;
 
     @Column
-    private String monitorCidr;
-
-    @Column
     private String name;
 
     @Column
@@ -90,14 +87,6 @@ public class TunnelForAlarmVO {
 
     public void setVsi(Integer vsi) {
         this.vsi = vsi;
-    }
-
-    public String getMonitorCidr() {
-        return monitorCidr;
-    }
-
-    public void setMonitorCidr(String monitorCidr) {
-        this.monitorCidr = monitorCidr;
     }
 
     public String getName() {
