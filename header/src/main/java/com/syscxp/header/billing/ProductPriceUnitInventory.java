@@ -12,6 +12,8 @@ public class ProductPriceUnitInventory {
 
     private String uuid;
 
+    private String productCategoryUuid;
+
     private String areaCode;
 
     private String areaName;
@@ -46,6 +48,7 @@ public class ProductPriceUnitInventory {
         inv.setUnitPrice(vo.getUnitPrice());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        inv.setProductCategoryUuid(vo.getProductCategoryUuid());
         if(vo.getProductCategoryVO()!=null)
         inv.setProductCategoryVO(vo.getProductCategoryVO());
 
@@ -63,6 +66,15 @@ public class ProductPriceUnitInventory {
 
     public String getUuid() {
         return uuid;
+    }
+
+
+    public String getProductCategoryUuid() {
+        return productCategoryUuid;
+    }
+
+    public void setProductCategoryUuid(String productCategoryUuid) {
+        this.productCategoryUuid = productCategoryUuid;
     }
 
     public void setUuid(String uuid) {
