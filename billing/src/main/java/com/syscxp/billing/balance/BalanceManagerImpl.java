@@ -289,7 +289,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
             AccountDiscountVO adVO = q.find();
             if(adVO != null){
                 int discount = adVO.getDiscount();
-                if(msg.getDiscount()>discount){
+                if(msg.getDiscount() < discount){
                     throw new IllegalArgumentException("cannot give a discount large than self");
                 }
             }else{

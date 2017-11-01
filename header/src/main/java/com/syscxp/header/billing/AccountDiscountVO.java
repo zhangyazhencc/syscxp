@@ -1,4 +1,4 @@
-package com.syscxp.billing.header.balance;
+package com.syscxp.header.billing;
 
 import com.syscxp.header.billing.ProductCategoryVO;
 import com.syscxp.header.search.SqlTrigger;
@@ -24,8 +24,8 @@ public class AccountDiscountVO {
     @Column
     private String productCategoryUuid;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name="productCategoryUuid",insertable = false,updatable = false)
+    @OneToOne(fetch = FetchType.EAGER,mappedBy = "accountDiscountVO")
+//    @JoinColumn(name="productCategoryUuid",insertable = false,updatable = false)
     private ProductCategoryVO productCategoryEO;
 
     @Column
