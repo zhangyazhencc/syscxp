@@ -1,6 +1,7 @@
 package com.syscxp.alarm.header.log;
 
 import com.syscxp.header.billing.ProductType;
+import com.syscxp.header.search.Inventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -8,6 +9,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@Inventory(mappingVOClass = AlarmLogVO.class)
 public class AlarmLogInventory {
     private String uuid;
     private String productUuid;
