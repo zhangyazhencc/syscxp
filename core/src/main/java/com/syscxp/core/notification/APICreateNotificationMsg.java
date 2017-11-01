@@ -15,7 +15,9 @@ public class APICreateNotificationMsg extends APIMessage {
     @APIParam(required = false)
     private String accountUuid;
     @APIParam(required = false)
-    private String userUuid;
+    private String opAccountUuid;
+    @APIParam(required = false)
+    private String opUserUuid;
     @APIParam
     private String content;
     @APIParam
@@ -35,17 +37,25 @@ public class APICreateNotificationMsg extends APIMessage {
     @APIParam
     private Map opaque;
 
-    public String getUserUuid() {
-        return userUuid;
+    public String getOpUserUuid() {
+        return opUserUuid;
     }
 
-    public void setUserUuid(String userUuid) {
-        this.userUuid = userUuid;
+    public void setOpUserUuid(String opUserUuid) {
+        this.opUserUuid = opUserUuid;
     }
 
     public String getAccountUuid() {
 
         return accountUuid;
+    }
+
+    public String getOpAccountUuid() {
+        return opAccountUuid;
+    }
+
+    public void setOpAccountUuid(String opAccountUuid) {
+        this.opAccountUuid = opAccountUuid;
     }
 
     public void setAccountUuid(String accountUuid) {

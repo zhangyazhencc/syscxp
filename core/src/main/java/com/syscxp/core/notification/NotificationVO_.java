@@ -11,7 +11,8 @@ import java.sql.Timestamp;
 public class NotificationVO_ {
     public static volatile SingularAttribute<NotificationVO, String> uuid;
     public static volatile SingularAttribute<NotificationVO, String> accountUuid;
-    public static volatile SingularAttribute<NotificationVO, String> userUuid;
+    public static volatile SingularAttribute<NotificationVO, String> opAccountUuid;
+    public static volatile SingularAttribute<NotificationVO, String> opUserUuid;
     public static volatile SingularAttribute<NotificationVO, String> name;
     public static volatile SingularAttribute<NotificationVO, String> sender;
     public static volatile SingularAttribute<NotificationVO, String> remoteIp;

@@ -370,7 +370,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             tunnel = dbf.findByUuid(tunnelUuid, TunnelVO.class);
             if (tunnel != null) {
                 SimpleQuery<MonitorCidrVO> qMonitorCidr = dbf.createQuery(MonitorCidrVO.class);
-                qMonitorCidr.add(MonitorCidrVO_.monitorCidr, SimpleQuery.Op.EQ, tunnel.getMonitorCidr());
+//                qMonitorCidr.add(MonitorCidrVO_.monitorCidr, SimpleQuery.Op.EQ, tunnel.getMonitorCidr());
                 monitorCidr = qMonitorCidr.find();
 
                 if (monitorCidr != null) {
@@ -801,8 +801,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         monitorHostQ.setParameter("tunnelUuid", tunnelUuid);
 
         for (Tuple monitor : monitorHostQ.getResultList()) {
-            monitorIp.put(monitor.get(0).toString(), monitor.get(1, String.class).toString());
-            monitorPort.put(monitor.get(0).toString(), monitor.get(2, String.class).toString());
+            monitorIp.put(monitor.get(0).toString(), monitor.get(1, String.class));
+            monitorPort.put(monitor.get(0).toString(), monitor.get(2, String.class));
         }
     }
 }
