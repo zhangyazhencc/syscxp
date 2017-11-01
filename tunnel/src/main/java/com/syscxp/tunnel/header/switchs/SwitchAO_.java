@@ -13,6 +13,7 @@ public class SwitchAO_ {
     public static volatile SingularAttribute<SwitchAO, String> endpointUuid;
     public static volatile SingularAttribute<SwitchAO, String> code;
     public static volatile SingularAttribute<SwitchAO, String> name;
+    public static volatile SingularAttribute<SwitchAO, String> type;
     public static volatile SingularAttribute<SwitchAO, String> physicalSwitchUuid;
     public static volatile SingularAttribute<SwitchAO, String> description;
     public static volatile SingularAttribute<SwitchAO, SwitchState> state;

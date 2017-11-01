@@ -11,6 +11,9 @@ import java.util.List;
 @Action(category = AlarmConstant.ACTION_CATEGORY_CONTACT)
 public class APICreateContactMsg extends APIMessage{
 
+    @APIParam(emptyString = false,required = false)
+    private String accountUuid;
+
     @APIParam(emptyString = false)
     private String name;
 
@@ -53,5 +56,13 @@ public class APICreateContactMsg extends APIMessage{
 
     public void setMobile(String mobile) {
         this.mobile = mobile;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

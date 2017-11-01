@@ -18,6 +18,9 @@ public class ContactVO extends BaseVO{
     @Column
     private String mobile;
 
+    @Column
+    private String accountUuid;
+
 //    @Column
 //    private String accountUuid;
 
@@ -79,5 +82,13 @@ public class ContactVO extends BaseVO{
 
     public void setContactGroupVOS(Set<ContactGroupVO> contactGroupVOS) {
         this.contactGroupVOS = contactGroupVOS;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

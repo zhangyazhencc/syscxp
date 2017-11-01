@@ -19,6 +19,8 @@ public class APICreateSwitchMsg extends APIMessage {
     private String code;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
+    @APIParam(emptyString = false,maxLength = 32,validValues = {"ACCESS", "INNER","OUTER"})
+    private SwitchType type;
     @APIParam(emptyString = false,maxLength = 32,resourceType = PhysicalSwitchVO.class)
     private String physicalSwitchUuid;
     @APIParam(emptyString = false,required = false,maxLength = 255)
@@ -62,5 +64,13 @@ public class APICreateSwitchMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public SwitchType getType() {
+        return type;
+    }
+
+    public void setType(SwitchType type) {
+        this.type = type;
     }
 }
