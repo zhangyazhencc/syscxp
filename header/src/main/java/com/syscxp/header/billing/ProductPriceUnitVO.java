@@ -20,8 +20,8 @@ public class ProductPriceUnitVO {
     @Column
     private String productCategoryUuid;
 
-    @OneToOne
-    @JoinColumn(name="productCategoryUuid",referencedColumnName = "uuid")
+    @OneToOne(fetch = FetchType.EAGER,mappedBy = "productPriceUnitVO")
+//    @JoinColumn(name="productCategoryUuid",referencedColumnName = "uuid")
     private ProductCategoryVO productCategoryVO;
 
     @Column
