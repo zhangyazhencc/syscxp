@@ -12,7 +12,7 @@ import com.syscxp.tunnel.manage.NodeConstant;
  */
 @Action(category = NodeConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
 public class APIDeleteEndpointMsg extends APIMessage {
-    @APIParam(emptyString = false, checkAccount = true, resourceType = EndpointEO.class)
+    @APIParam(emptyString = false, resourceType = EndpointVO.class)
     private String uuid;
 
     public String getUuid() {

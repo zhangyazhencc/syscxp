@@ -44,6 +44,12 @@
     <message>
         <name>com.syscxp.vpn.header.vpn.APIDeleteVpnRouteMsg</name>
     </message>
+    <message>
+        <name>com.syscxp.vpn.header.vpn.APIGetVpnMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.vpn.header.vpn.APIGetVpnPriceMsg</name>
+    </message>
 
 
     <message>

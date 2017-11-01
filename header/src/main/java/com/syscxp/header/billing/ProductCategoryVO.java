@@ -1,7 +1,6 @@
 package com.syscxp.header.billing;
 
-import com.syscxp.header.billing.Category;
-import com.syscxp.header.billing.ProductType;
+import com.syscxp.header.search.SqlTrigger;
 import com.syscxp.header.search.TriggerIndex;
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -10,30 +9,23 @@ import java.sql.Timestamp;
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
 @TriggerIndex
-//@SqlTrigger(foreignVOClass = AccountDiscountVO.class, foreignVOJoinColumn = "uuid")
-public class ProductCategoryVO{
-
+@SqlTrigger(foreignVOClass = AccountDiscountVO.class, foreignVOJoinColumn = "uuid")
+public class ProductCategoryVO {
     @Id
     @Column
     private String uuid;
-
     @Column
     @Enumerated(EnumType.STRING)
     private Category code;
-
     @Column
     private String name;
-
     @Column
     @Enumerated(EnumType.STRING)
     private ProductType productTypeCode;
-
     @Column
     private String productTypeName;
-
     @Column
     private Timestamp createDate;
-
     @Column
     private Timestamp lastOpDate;
 

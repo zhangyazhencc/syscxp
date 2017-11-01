@@ -2,10 +2,7 @@ package com.syscxp.tunnel.header.host;
 
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.ansible.AnsibleFacade;
-import com.syscxp.core.cloudbus.CloudBus;
-import com.syscxp.core.cloudbus.CloudBusSteppingCallback;
-import com.syscxp.core.cloudbus.MessageSafe;
-import com.syscxp.core.cloudbus.ResourceDestinationMaker;
+import com.syscxp.core.cloudbus.*;
 import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SimpleQuery;
@@ -25,7 +22,9 @@ import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.message.NeedReplyMessage;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.tunnel.header.host.MonitorAgentCommands.*;
+import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
+import com.syscxp.utils.function.Function;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -226,9 +225,48 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
+        if (msg instanceof APIMonitorRunShellMsg) {
+            handle((APIMonitorRunShellMsg) msg);
+        } else {
+            bus.dealWithUnknownMessage(msg);
+        }
 
-        bus.dealWithUnknownMessage(msg);
+    }
 
+    private void handle(final APIMonitorRunShellMsg msg) {
+        final APIMonitorRunShellEvent evt = new APIMonitorRunShellEvent(msg.getId());
+
+        final List<MonitorRunShellMsg> kmsgs = CollectionUtils.transformToList(msg.getHostUuids(),
+                (Function<MonitorRunShellMsg, String>) arg -> {
+            MonitorRunShellMsg kmsg = new MonitorRunShellMsg();
+            kmsg.setHostUuid(arg);
+            kmsg.setScript(msg.getScript());
+            bus.makeTargetServiceIdByResourceUuid(kmsg, HostConstant.SERVICE_ID, arg);
+            return kmsg;
+        });
+
+        bus.send(kmsgs, new CloudBusListCallBack(msg) {
+            @Override
+            public void run(List<MessageReply> replies) {
+                for (MessageReply r : replies) {
+                    String hostUuid = kmsgs.get(replies.indexOf(r)).getHostUuid();
+
+                    APIMonitorRunShellEvent.ShellResult result = new APIMonitorRunShellEvent.ShellResult();
+                    if (!r.isSuccess()) {
+                        result.setErrorCode(r.getError());
+                    } else {
+                        MonitorRunShellReply kr = r.castReply();
+                        result.setReturnCode(kr.getReturnCode());
+                        result.setStderr(kr.getStderr());
+                        result.setStdout(kr.getStdout());
+                    }
+
+                    evt.getInventory().put(hostUuid, result);
+                }
+
+                bus.publish(evt);
+            }
+        });
     }
 
 

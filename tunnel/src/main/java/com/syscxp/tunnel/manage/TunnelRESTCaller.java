@@ -40,7 +40,7 @@ public class TunnelRESTCaller {
 //        return (APIReply) RESTApiDecoder.loads(rsp.getResult());
 //    }
 
-    public <T> T syncJsonPost(APIMessage innerMsg) {
+    public <T extends APIReply> T syncJsonPost(APIMessage innerMsg) {
         String url = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL);
         InnerMessageHelper.setMD5(innerMsg);
 
@@ -49,7 +49,7 @@ public class TunnelRESTCaller {
         if (!reply.isSuccess()){
             throw new OperationFailureException(reply.getError());
         }else{
-            return (T) reply.castReply();
+            return reply.castReply();
         }
     }
 

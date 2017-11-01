@@ -3,7 +3,6 @@ package com.syscxp.tunnel.manage;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
-import com.syscxp.core.cloudbus.CloudBusSteppingCallback;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.GLock;
@@ -17,8 +16,6 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
-import com.syscxp.header.message.*;
-import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
@@ -30,7 +27,6 @@ import com.syscxp.tunnel.header.node.NodeVO;
 import com.syscxp.tunnel.header.switchs.*;
 import com.syscxp.tunnel.header.tunnel.*;
 import com.syscxp.utils.Utils;
-import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -85,6 +81,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateInterfaceMsg) {
             handle((APICreateInterfaceMsg) msg);
+        } else if (msg instanceof APIGetInterfaceTypeMsg) {
+            handle((APIGetInterfaceTypeMsg) msg);
         } else if (msg instanceof APICreateInterfaceManualMsg) {
             handle((APICreateInterfaceManualMsg) msg);
         } else if (msg instanceof APIUpdateInterfaceMsg) {
@@ -163,26 +161,42 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         return null;
     }
 
+    private void handle(APIGetInterfaceTypeMsg msg) {
+        APIGetInterfaceTypeReply reply = new APIGetInterfaceTypeReply();
+        reply.setTypes(getPortTypeByEndpoint(msg.getUuid()));
+        bus.reply(msg, reply);
+    }
+
+    private List<SwitchPortType> getPortTypeByEndpoint(String endpointUuid) {
+        List<String> switchs = Q.New(SwitchVO.class)
+                .eq(SwitchVO_.state, SwitchState.Enabled)
+                .eq(SwitchVO_.status, SwitchStatus.Connected)
+                .eq(SwitchVO_.endpointUuid, endpointUuid)
+                .select(SwitchVO_.uuid).listValues();
+        if (switchs.isEmpty())
+            return Collections.emptyList();
+        return Q.New(SwitchPortVO.class)
+                .in(SwitchPortVO_.switchUuid, switchs)
+                .eq(SwitchPortVO_.state, SwitchPortState.Enabled)
+                .select(SwitchPortVO_.portType)
+                .groupBy(SwitchPortVO_.portType)
+                .listValues();
+    }
+
     private void handle(APICreateInterfaceMsg msg) {
         APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
 
         //将产品的端口对应到资产端口上
-        SwitchPortAttribute portAttribute = null;
-        SwitchPortType portType = null;
-        PortOfferingVO portOfferingVO = dbf.findByUuid(msg.getPortOfferingUuid(), PortOfferingVO.class);
-        if (portOfferingVO.getType().equals("sharePort")) {
-            portAttribute = SwitchPortAttribute.Shared;
-        } else if (portOfferingVO.getType().equals("exclusivePort")) {
-            portAttribute = SwitchPortAttribute.Exclusive;
-            portType = SwitchPortType.valueOf(portOfferingVO.getName());
-        }
-
+        PortOfferingVO portOffering = dbf.findByUuid(msg.getPortOfferingUuid(), PortOfferingVO.class);
+        SwitchPortAttribute attribute = SwitchPortAttribute.Exclusive;
+        if (portOffering.getType() == SwitchPortType.SHARE)
+            attribute = SwitchPortAttribute.Shared;
         //保存数据，分配资源
         InterfaceVO vo = new InterfaceVO();
 
         //分配资源:策略分配端口
         TunnelStrategy ts = new TunnelStrategy();
-        String switchPortUuid = ts.getSwitchPortByStrategy(msg.getEndpointUuid(), portAttribute, portType);
+        String switchPortUuid = ts.getSwitchPortByStrategy(msg.getEndpointUuid(), attribute, portOffering.getType());
         if (switchPortUuid == null) {
             throw new ApiMessageInterceptionException(argerr("该连接点下无可用的端口"));
         }
@@ -262,15 +276,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo = dbf.persistAndRefresh(vo);
 
         //调用支付
-        APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
-        orderMsg.setProductName(vo.getName());
-        orderMsg.setProductUuid(vo.getUuid());
-        orderMsg.setProductType(ProductType.PORT);
+        APICreateBuyOrderMsg orderMsg = getOrderMsgForInterface(vo, msg.getPortOfferingUuid());
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
-        orderMsg.setDescriptionData("no description");
-        orderMsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
-        orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
 
         OrderInventory orderInventory = createOrder(orderMsg);
@@ -291,6 +299,20 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             evt.setInventory(InterfaceInventory.valueOf(vo));
         }
         bus.publish(evt);
+    }
+
+    private <T extends APICreateOrderMsg> T getOrderMsgForInterface(InterfaceVO vo, String portOfferingUuid) {
+        APICreateOrderMsg orderMsg = new APICreateOrderMsg();
+        orderMsg.setProductName(vo.getName());
+        orderMsg.setProductUuid(vo.getUuid());
+        orderMsg.setProductType(ProductType.PORT);
+        orderMsg.setDescriptionData("no description");
+        if (portOfferingUuid != null)
+            orderMsg.setUnits(getInterfacePriceUnit(portOfferingUuid));
+        orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
+        orderMsg.setCallBackData(null);
+        orderMsg.setNotifyUrl(TunnelConstant.NOTIFYURL);
+        return (T) orderMsg;
     }
 
     private void handle(APIUpdateInterfaceMsg msg) {
@@ -321,14 +343,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         OrderInventory orderInventory = null;
         switch (msg.getType()) {
             case RENEW://续费
-                APICreateRenewOrderMsg renewOrderMsg = new APICreateRenewOrderMsg();
-                renewOrderMsg.setProductUuid(vo.getUuid());
-                renewOrderMsg.setProductName(vo.getName());
-                renewOrderMsg.setProductType(ProductType.PORT);
+                APICreateRenewOrderMsg renewOrderMsg = getOrderMsgForInterface(vo, null);
                 renewOrderMsg.setDuration(msg.getDuration());
-                renewOrderMsg.setDescriptionData("no description");
                 renewOrderMsg.setProductChargeModel(msg.getProductChargeModel());
-                renewOrderMsg.setAccountUuid(msg.getAccountUuid());
                 renewOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
                 renewOrderMsg.setStartTime(dbf.getCurrentSqlTime());
                 renewOrderMsg.setExpiredTime(vo.getExpireDate());
@@ -336,14 +353,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 orderInventory = createOrder(renewOrderMsg);
                 break;
             case SLA_COMPENSATION://赔偿
-                APICreateSLACompensationOrderMsg slaCompensationOrderMsg =
-                        new APICreateSLACompensationOrderMsg();
-                slaCompensationOrderMsg.setProductUuid(vo.getUuid());
-                slaCompensationOrderMsg.setProductName(vo.getName());
-                slaCompensationOrderMsg.setDescriptionData("no description");
-                slaCompensationOrderMsg.setProductType(ProductType.PORT);
+                APICreateSLACompensationOrderMsg slaCompensationOrderMsg = getOrderMsgForInterface(vo, null);
                 slaCompensationOrderMsg.setDuration(msg.getDuration());
-                slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
                 slaCompensationOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
                 slaCompensationOrderMsg.setStartTime(dbf.getCurrentSqlTime());
                 slaCompensationOrderMsg.setExpiredTime(vo.getExpireDate());
@@ -375,12 +386,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
 
         //调用退订
-        APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
-        orderMsg.setProductUuid(vo.getUuid());
-        orderMsg.setProductType(ProductType.PORT);
-        orderMsg.setProductName(vo.getName());
-        orderMsg.setDescriptionData("no description");
-        orderMsg.setAccountUuid(msg.getAccountUuid());
+        APICreateUnsubcribeOrderMsg orderMsg = getOrderMsgForInterface(vo, null);
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
@@ -500,7 +506,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         //保存数据，分配资源
         TunnelStrategy ts = new TunnelStrategy();
         TunnelVO vo = new TunnelVO();
-        BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(),BandwidthOfferingVO.class);
+        BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
 
         vo.setUuid(Platform.getUuid());
 
@@ -572,7 +578,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APICreateTunnelManualEvent evt = new APICreateTunnelManualEvent(msg.getId());
         //保存数据
         TunnelVO vo = new TunnelVO();
-        BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(),BandwidthOfferingVO.class);
+        BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
 
         vo.setUuid(Platform.getUuid());
 
@@ -681,7 +687,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIUpdateTunnelBandwidthEvent evt = new APIUpdateTunnelBandwidthEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
-        BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(),BandwidthOfferingVO.class);
+        BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
 
         //调整次数记录表
         TunnelMotifyRecordVO record = new TunnelMotifyRecordVO();
@@ -1175,8 +1181,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         return newTime;
     }
 
-    private List<ProductPriceUnit> getInterfacePriceUnit(String portOfferingUuid){
-        List<ProductPriceUnit> units = new ArrayList<ProductPriceUnit>();
+    private List<ProductPriceUnit> getInterfacePriceUnit(String portOfferingUuid) {
+        List<ProductPriceUnit> units = new ArrayList<>();
         ProductPriceUnit unit = new ProductPriceUnit();
         unit.setProductTypeCode(ProductType.PORT);
         unit.setCategoryCode(Category.PORT);
@@ -1187,7 +1193,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         return units;
     }
 
-    private List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid){
+    private List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid) {
         List<ProductPriceUnit> units = new ArrayList<ProductPriceUnit>();
         ProductPriceUnit unit = new ProductPriceUnit();
         unit.setProductTypeCode(ProductType.TUNNEL);
@@ -1334,6 +1340,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APICreateInterfaceMsg msg) {
+        SwitchPortType type = Q.New(PortOfferingVO.class)
+                .eq(PortOfferingVO_.uuid, msg.getPortOfferingUuid())
+                .select(PortOfferingVO_.type).findValue();
+        //类型是否支持
+        List<SwitchPortType> types = getPortTypeByEndpoint(msg.getEndpointUuid());
+        if (!types.contains(type))
+            throw new ApiMessageInterceptionException(
+                    argerr("该连接点[uuid:%s]下的端口[type:%s]已用完！", msg.getEndpointUuid(), type));
         //判断账户金额是否充足
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
         priceMsg.setAccountUuid(msg.getAccountUuid());
@@ -1575,7 +1589,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void validate(APIDeleteTunnelMsg msg) {
         checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
-
     }
 
     private void validate(APIDeleteForciblyTunnelMsg msg) {

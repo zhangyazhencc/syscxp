@@ -117,6 +117,10 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIGetImageUploadInfoMsg) msg);
         }  else if (msg instanceof APIListNodeExtensionInfoMsg) {
             handle((APIListNodeExtensionInfoMsg) msg);
+        }  else if (msg instanceof APICreateInnerEndpointMsg) {
+            handle((APICreateInnerEndpointMsg) msg);
+        }  else if (msg instanceof APIDeleteInnerEndpointMsg) {
+            handle((APIDeleteInnerEndpointMsg) msg);
         }  else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -511,6 +515,21 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         bus.publish(evt);
     }
 
+    private void handle(APICreateInnerEndpointMsg msg) {
+        InnerConnectedEndpointVO vo = new InnerConnectedEndpointVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setEndpointUuid(msg.getEndpointUuid());
+        vo.setConnectedEndpointUuid(msg.getConnectedEndpointUuid());
+        vo.setName(msg.getName());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateInnerEndpointEvent evt = new APICreateInnerEndpointEvent(msg.getId());
+        evt.setInventory(InnerConnectedEndpointInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
     private void handle(APIUpdateEndpointMsg msg) {
         EndpointVO vo = dbf.findByUuid(msg.getUuid(), EndpointVO.class);
         boolean update = false;
@@ -557,6 +576,19 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         bus.publish(event);
     }
 
+    private void handle(APIDeleteInnerEndpointMsg msg) {
+        String uuid = msg.getUuid();
+
+        InnerConnectedEndpointVO vo = dbf.findByUuid(uuid,InnerConnectedEndpointVO.class);
+        dbf.remove(vo);
+
+        APIDeleteInnerEndpointEvent event = new APIDeleteInnerEndpointEvent(msg.getId());
+        InnerConnectedEndpointInventory inventory = InnerConnectedEndpointInventory.valueOf(vo);
+        event.setInventory(inventory);
+
+        bus.publish(event);
+    }
+
     @Override
     public boolean start() {
         return true;
@@ -586,6 +618,10 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             validate((APIUpdateEndpointMsg) msg);
         } else if (msg instanceof APIDeleteEndpointMsg) {
             validate((APIDeleteEndpointMsg) msg);
+        } else if (msg instanceof APICreateInnerEndpointMsg) {
+            validate((APICreateInnerEndpointMsg) msg);
+        } else if (msg instanceof APIDeleteInnerEndpointMsg) {
+            validate((APIDeleteInnerEndpointMsg) msg);
         }
         return msg;
     }
@@ -670,6 +706,20 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         if (querySwitch.isExists()) {
             throw new ApiMessageInterceptionException(argerr("Virtual switch exist,cannot be deleted!"));
         }
+    }
+
+    private void validate(APICreateInnerEndpointMsg msg) {
+        //判断是否重复添加连接点
+        SimpleQuery<InnerConnectedEndpointVO> q = dbf.createQuery(InnerConnectedEndpointVO.class);
+        q.add(InnerConnectedEndpointVO_.endpointUuid, SimpleQuery.Op.EQ, msg.getEndpointUuid());
+        q.add(InnerConnectedEndpointVO_.connectedEndpointUuid, SimpleQuery.Op.EQ, msg.getConnectedEndpointUuid());
+        if (q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("该连接点已经绑定该互联连接点！"));
+        }
+    }
+
+    private void validate(APIDeleteInnerEndpointMsg msg) {
+
     }
 
     /**

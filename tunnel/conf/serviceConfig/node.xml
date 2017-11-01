@@ -39,6 +39,14 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.endpoint.APICreateInnerEndpointMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.endpoint.APIDeleteInnerEndpointMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.tunnel.header.endpoint.APIQueryEndpointMsg</name>
         <serviceId>query</serviceId>
     </message>

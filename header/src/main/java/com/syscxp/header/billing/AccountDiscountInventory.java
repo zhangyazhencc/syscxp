@@ -1,5 +1,4 @@
-package com.syscxp.billing.header.balance;
-import com.syscxp.header.billing.ProductCategoryInventory;
+package com.syscxp.header.billing;
 import com.syscxp.header.search.Inventory;
 
 import java.sql.Timestamp;

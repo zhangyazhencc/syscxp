@@ -30,7 +30,7 @@ public class PortOfferingInventory {
 
         inv.setUuid(vo.getUuid());
         inv.setName(vo.getName());
-        inv.setType(vo.getType());
+        inv.setType(vo.getType().toString());
         inv.setDescription(vo.getDescription());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());

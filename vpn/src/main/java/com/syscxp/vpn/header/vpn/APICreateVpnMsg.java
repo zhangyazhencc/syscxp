@@ -1,6 +1,5 @@
 package com.syscxp.vpn.header.vpn;
 
-import com.syscxp.header.billing.ProductPriceUnit;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -8,13 +7,12 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.vpn.vpn.VpnConstant;
 
-import java.util.List;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
 public class APICreateVpnMsg extends APIVpnMessage {
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false, minLength = 6, maxLength = 50)
     private String name;
-    @APIParam(required = false)
+    @APIParam(required = false, maxLength = 255)
     private String description;
     @APIParam(emptyString = false)
     private String vpnCidr;
@@ -22,7 +20,7 @@ public class APICreateVpnMsg extends APIVpnMessage {
     private Long bandwidth;
     @APIParam(emptyString = false)
     private String endpointUuid;
-    @APIParam(emptyString = false)
+    @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private Integer duration;
     @APIParam(emptyString = false)
     private String networkUuid;
