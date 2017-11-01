@@ -324,15 +324,15 @@ CREATE TABLE `TicketTypeVO` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO TicketTypeVO (code, name, category) VALUES ('PrivateNetwork','专线网络', 'cxp');
-INSERT INTO TicketTypeVO (code, name, category) VALUES ('CloudServer','云服务器', 'cxp');
-INSERT INTO TicketTypeVO (code, name, category) VALUES ('VPN','VPN网关', 'cxp');
-INSERT INTO TicketTypeVO (code, name, category) VALUES ('Account','账户', 'cxp');
-INSERT INTO TicketTypeVO (code, name, category) VALUES ('Billing','账务', 'cxp');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('Tunnel','云专线', 'console');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('Host','云服务器', 'console');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('Account','账户', 'console');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('Billing','账务', 'console');
+INSERT INTO TicketTypeVO (code, name, category) VALUES ('Others','其他','console');
 INSERT INTO TicketTypeVO (code, name, category) VALUES ('cloudLine','申请云专线工单','apply');
 INSERT INTO TicketTypeVO (code, name, category) VALUES ('trustee','申请托管工单','apply');
 INSERT INTO TicketTypeVO (code, name, category) VALUES ('leadCable','申请引接缆工单','apply');
 INSERT INTO TicketTypeVO (code, name, category) VALUES ('crossConnection','申请交叉互联工单','apply');
 INSERT INTO TicketTypeVO (code, name, category) VALUES ('internetEntrance','申请互联网工单','apply');
 INSERT INTO TicketTypeVO (code, name, category) VALUES ('cloudTransmission','申请云传输工单','apply');
-INSERT INTO TicketTypeVO (code, name, category) VALUES ('others','其他','');
+
