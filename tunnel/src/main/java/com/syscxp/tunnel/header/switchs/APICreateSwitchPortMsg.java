@@ -18,11 +18,11 @@ public class APICreateSwitchPortMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 128)
     private String portName;
 
-    @APIParam(emptyString = false,validValues = {"RJ45_1G", "SFP_1G","SFP_10G"})
+    @APIParam(emptyString = false,validValues = {"RJ45_1G", "SFP_1G","SFP_10G","SHARE"})
     private SwitchPortType portType;
 
-    @APIParam(emptyString = false,validValues = {"Exclusive", "Shared"})
-    private SwitchPortAttribute portAttribute;
+    @APIParam(emptyString = false)
+    private String portAttribute;
 
     @APIParam(numberRange = {0, 1})
     private Integer autoAllot;
@@ -52,11 +52,11 @@ public class APICreateSwitchPortMsg extends APIMessage {
         this.portType = portType;
     }
 
-    public SwitchPortAttribute getPortAttribute() {
+    public String getPortAttribute() {
         return portAttribute;
     }
 
-    public void setPortAttribute(SwitchPortAttribute portAttribute) {
+    public void setPortAttribute(String portAttribute) {
         this.portAttribute = portAttribute;
     }
 

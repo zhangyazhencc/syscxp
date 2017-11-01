@@ -251,7 +251,7 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchPortVO` (
   `portNum` INT(11) DEFAULT NULL COMMENT '该交换机端口编号：1口，2口...',
   `portName` varchar(128) NOT NULL COMMENT '端口名称',
   `portType` varchar(128) NOT NULL COMMENT '端口类型：光口，电口',
-  `portAttribute` varchar(128) NOT NULL COMMENT '独享：Exclusive 共享：Shared',
+  `portAttribute` varchar(128) NOT NULL COMMENT '属性',
   `autoAllot` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT '是否自动分配',
   `state` varchar(128) NOT NULL DEFAULT 'Enabled' COMMENT '是否启用',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',

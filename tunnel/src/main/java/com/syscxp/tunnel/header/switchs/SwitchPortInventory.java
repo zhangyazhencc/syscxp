@@ -24,7 +24,7 @@ public class SwitchPortInventory {
 
     private SwitchPortType portType;
 
-    private SwitchPortAttribute portAttribute;
+    private String portAttribute;
 
     private Integer autoAllot;
 
@@ -124,14 +124,6 @@ public class SwitchPortInventory {
         this.switchs = switchs;
     }
 
-    public SwitchPortAttribute getPortAttribute() {
-        return portAttribute;
-    }
-
-    public void setPortAttribute(SwitchPortAttribute portAttribute) {
-        this.portAttribute = portAttribute;
-    }
-
     public SwitchPortState getState() {
         return state;
     }
@@ -146,5 +138,13 @@ public class SwitchPortInventory {
 
     public void setAutoAllot(Integer autoAllot) {
         this.autoAllot = autoAllot;
+    }
+
+    public String getPortAttribute() {
+        return portAttribute;
+    }
+
+    public void setPortAttribute(String portAttribute) {
+        this.portAttribute = portAttribute;
     }
 }

@@ -36,8 +36,7 @@ public class SwitchPortVO {
     private SwitchPortType portType;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private SwitchPortAttribute portAttribute;
+    private String portAttribute;
 
     @Column
     private Integer autoAllot;
@@ -121,14 +120,6 @@ public class SwitchPortVO {
         this.portType = portType;
     }
 
-    public SwitchPortAttribute getPortAttribute() {
-        return portAttribute;
-    }
-
-    public void setPortAttribute(SwitchPortAttribute portAttribute) {
-        this.portAttribute = portAttribute;
-    }
-
     public SwitchPortState getState() {
         return state;
     }
@@ -143,5 +134,13 @@ public class SwitchPortVO {
 
     public void setAutoAllot(Integer autoAllot) {
         this.autoAllot = autoAllot;
+    }
+
+    public String getPortAttribute() {
+        return portAttribute;
+    }
+
+    public void setPortAttribute(String portAttribute) {
+        this.portAttribute = portAttribute;
     }
 }

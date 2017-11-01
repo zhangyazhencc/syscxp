@@ -8,7 +8,7 @@ import java.util.List;
 public class APIGetProductPriceReply extends APIReply {
 
     private List<ProductPriceUnitInventory> productPriceInventories;
-    private AccountBalanceInventory accountBalanceInventory;
+//    private AccountBalanceInventory accountBalanceInventory;
     private BigDecimal originalPrice;
     private BigDecimal discountPrice;
     private BigDecimal mayPayTotal;
@@ -22,13 +22,13 @@ public class APIGetProductPriceReply extends APIReply {
         this.productPriceInventories = productPriceInventories;
     }
 
-    public AccountBalanceInventory getAccountBalanceInventory() {
-        return accountBalanceInventory;
-    }
-
-    public void setAccountBalanceInventory(AccountBalanceInventory accountBalanceInventory) {
-        this.accountBalanceInventory = accountBalanceInventory;
-    }
+//    public AccountBalanceInventory getAccountBalanceInventory() {
+//        return accountBalanceInventory;
+//    }
+//
+//    public void setAccountBalanceInventory(AccountBalanceInventory accountBalanceInventory) {
+//        this.accountBalanceInventory = accountBalanceInventory;
+//    }
 
     public BigDecimal getOriginalPrice() {
         return originalPrice;

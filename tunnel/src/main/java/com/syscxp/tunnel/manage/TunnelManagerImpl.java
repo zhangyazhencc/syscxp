@@ -24,6 +24,9 @@ import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.header.tunnel.*;
 import com.syscxp.query.QueryFacade;
 import com.syscxp.tunnel.header.node.NodeVO;
+import com.syscxp.tunnel.header.node.ZoneNodeRefVO;
+import com.syscxp.tunnel.header.node.ZoneNodeRefVO_;
+import com.syscxp.tunnel.header.node.ZoneVO;
 import com.syscxp.tunnel.header.switchs.*;
 import com.syscxp.tunnel.header.tunnel.*;
 import com.syscxp.utils.Utils;
@@ -81,6 +84,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateInterfaceMsg) {
             handle((APICreateInterfaceMsg) msg);
+        } else if (msg instanceof APIGetInterfacePriceMsg) {
+            handle((APIGetInterfacePriceMsg) msg);
+        } else if (msg instanceof APIGetTunnelPriceMsg) {
+            handle((APIGetTunnelPriceMsg) msg);
         } else if (msg instanceof APIGetInterfaceTypeMsg) {
             handle((APIGetInterfaceTypeMsg) msg);
         } else if (msg instanceof APICreateInterfaceManualMsg) {
@@ -183,20 +190,44 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .listValues();
     }
 
+    private void handle(APIGetInterfacePriceMsg msg) {
+        APIGetInterfacePriceReply reply = new APIGetInterfacePriceReply();
+
+        APIGetProductPriceMsg pmsg = new APIGetProductPriceMsg();
+        pmsg.setProductChargeModel(msg.getProductChargeModel());
+        pmsg.setDuration(msg.getDuration());
+        pmsg.setAccountUuid(msg.getAccountUuid());
+        pmsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
+        reply =  new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(msg);
+
+        bus.reply(msg, reply);
+    }
+
+    private void handle(APIGetTunnelPriceMsg msg) {
+        APIGetTunnelPriceReply reply = new APIGetTunnelPriceReply();
+
+        APIGetProductPriceMsg pmsg = new APIGetProductPriceMsg();
+        pmsg.setProductChargeModel(msg.getProductChargeModel());
+        pmsg.setDuration(msg.getDuration());
+        pmsg.setAccountUuid(msg.getAccountUuid());
+        pmsg.setUnits(getTunnelPriceUnitCopy(msg.getBandwidthOfferingUuid(),msg.getNodeAUuid(),msg.getNodeZUuid(),msg.getInnerEndpointUuid()));
+
+        reply =  new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(msg);
+
+        bus.reply(msg, reply);
+    }
+
     private void handle(APICreateInterfaceMsg msg) {
         APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
 
-        //将产品的端口对应到资产端口上
+        //获取端口配置
         PortOfferingVO portOffering = dbf.findByUuid(msg.getPortOfferingUuid(), PortOfferingVO.class);
-        SwitchPortAttribute attribute = SwitchPortAttribute.Exclusive;
-        if (portOffering.getType() == SwitchPortType.SHARE)
-            attribute = SwitchPortAttribute.Shared;
         //保存数据，分配资源
         InterfaceVO vo = new InterfaceVO();
 
         //分配资源:策略分配端口
         TunnelStrategy ts = new TunnelStrategy();
-        String switchPortUuid = ts.getSwitchPortByStrategy(msg.getEndpointUuid(), attribute, portOffering.getType());
+        String switchPortUuid = ts.getSwitchPortByStrategy(msg.getEndpointUuid(), portOffering.getType());
         if (switchPortUuid == null) {
             throw new ApiMessageInterceptionException(argerr("该连接点下无可用的端口"));
         }
@@ -1181,6 +1212,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         return newTime;
     }
 
+    //获取物理接口的单价
     private List<ProductPriceUnit> getInterfacePriceUnit(String portOfferingUuid) {
         List<ProductPriceUnit> units = new ArrayList<>();
         ProductPriceUnit unit = new ProductPriceUnit();
@@ -1203,6 +1235,59 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         unit.setConfigCode(bandwidthOfferingUuid);
         units.add(unit);
         return units;
+    }
+
+    //获取云专线的单价
+    private List<ProductPriceUnit> getTunnelPriceUnitCopy(String bandwidthOfferingUuid,String nodeAUuid,String nodeZUuid,String innerEndpointUuid) {
+        List<ProductPriceUnit> units = new ArrayList<ProductPriceUnit>();
+        NodeVO nodeA = dbf.findByUuid(nodeAUuid,NodeVO.class);
+        NodeVO nodeZ = dbf.findByUuid(nodeZUuid,NodeVO.class);
+        String zoneCodeA = getZoneCode(nodeA.getUuid());
+        String zoneCodeZ = getZoneCode(nodeZ.getUuid());
+        if(innerEndpointUuid == null){  //国内互传
+            Category category = null;
+            String areaCode = null;
+            String lineCode = null;
+            ProductPriceUnit unit = new ProductPriceUnit();
+
+            if(nodeA.getCity() == nodeZ.getCity()){  //同城
+                category = Category.CITY;
+                areaCode = "DEFAULT";
+                lineCode = "DEFAULT";
+            }else if(zoneCodeA != null && zoneCodeZ != null && zoneCodeA == zoneCodeZ){ //同区域
+                category = Category.REGION;
+                areaCode = zoneCodeA;
+                lineCode = "DEFAULT";
+            }else{                      //长传
+                category = Category.LONG;
+                areaCode = "DEFAULT";
+                lineCode = "DEFAULT";
+            }
+            unit.setProductTypeCode(ProductType.TUNNEL);
+            unit.setCategoryCode(category);
+            unit.setAreaCode(areaCode);
+            unit.setLineCode(lineCode);
+            unit.setConfigCode(bandwidthOfferingUuid);
+
+            units.add(unit);
+        }else{                          //跨国 或者 国外到国外
+
+        }
+
+        return units;
+    }
+
+    //根据节点找到所属区域
+    private String getZoneCode(String nodeUuid){
+        String zoneCode = null;
+        ZoneNodeRefVO zoneNodeRefVO = Q.New(ZoneNodeRefVO.class)
+                .eq(ZoneNodeRefVO_.nodeUuid,nodeUuid)
+                .find();
+        if(zoneNodeRefVO != null){
+            ZoneVO zoneVO = dbf.findByUuid(zoneNodeRefVO.getZoneUuid(),ZoneVO.class);
+            zoneCode = zoneVO.getCode();
+        }
+        return zoneCode;
     }
 
     private Future<Void> cleanExpiredProductThread = null;
