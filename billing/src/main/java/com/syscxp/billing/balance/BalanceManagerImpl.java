@@ -225,10 +225,10 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
             queryEO.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, unit.getCategoryCode());
             ProductCategoryVO productCategoryEO = queryEO.find();
             if(productCategoryEO == null){
-                throw new IllegalArgumentException(" not fount this type product, check it");
+                throw new IllegalArgumentException(" not found this type product, check it");
             }
             SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-            q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, unit.getProductTypeCode());
+            q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryEO.getUuid());
             q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, unit.getAreaCode());
             q.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, unit.getLineCode());
             q.add(ProductPriceUnitVO_.configCode, SimpleQuery.Op.EQ, unit.getConfigCode());
@@ -268,9 +268,9 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
         boolean payable = discountPrice.compareTo(mayPayTotal) <= 0;
 
 
-        AccountBalanceInventory accountBalanceInventory = AccountBalanceInventory.valueOf(accountBalanceVO);
+//        AccountBalanceInventory accountBalanceInventory = AccountBalanceInventory.valueOf(accountBalanceVO);
         APIGetProductPriceReply reply = new APIGetProductPriceReply();
-        reply.setAccountBalanceInventory(accountBalanceInventory);
+//        reply.setAccountBalanceInventory(accountBalanceInventory);
         reply.setProductPriceInventories(productPriceUnits);
         reply.setMayPayTotal(mayPayTotal);
         reply.setOriginalPrice(originalPrice);
