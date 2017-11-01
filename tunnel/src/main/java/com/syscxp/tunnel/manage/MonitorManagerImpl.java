@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.manage;
 
+import com.syscxp.core.db.*;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.tunnel.header.host.*;
@@ -8,7 +9,6 @@ import com.syscxp.tunnel.header.switchs.PhysicalSwitchAccessType;
 import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
 import com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO_;
 import com.syscxp.utils.gson.JSONObjectUtil;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.Platform;
@@ -16,9 +16,6 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.cloudbus.ResourceDestinationMaker;
 import com.syscxp.core.componentloader.PluginRegistry;
-import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.DbEntityLister;
-import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
@@ -87,8 +84,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APIUpdateHostSwitchMonitorMsg) msg);
         } else if (msg instanceof APIDeleteHostSwitchMonitorMsg) {
             handle((APIDeleteHostSwitchMonitorMsg) msg);
-        } else if (msg instanceof APICreateTunnelMonitorMsg) {
-            handle((APICreateTunnelMonitorMsg) msg);
+        } else if (msg instanceof APIStartTunnelMonitorMsg) {
+            handle((APIStartTunnelMonitorMsg) msg);
         } else if (msg instanceof APIUpdateTunnelMonitorMsg) {
             handle((APIUpdateTunnelMonitorMsg) msg);
         } else if (msg instanceof APIDeleteTunnelMonitorMsg) {
@@ -145,14 +142,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         bus.publish(event);
     }
 
-    private void handle(APICreateTunnelMonitorMsg msg) {
+    private void handle(APIStartTunnelMonitorMsg msg) {
         TunnelMonitorVO tunnelMonitorVO = createTunnelMonitorHandle(msg);
 
         // 下发监控通道配置
         ControllerCommands.TunnelMonitorCommand cmd = getTunnelMonitorCommand(tunnelMonitorVO.getTunnelUuid());
         String command = JSONObjectUtil.toJsonString(cmd);
 
-        APICreateTunnelMonitorEvent event = new APICreateTunnelMonitorEvent(msg.getId());
+        APIStartTunnelMonitorEvent event = new APIStartTunnelMonitorEvent(msg.getId());
         ControllerRestFacade crf = new ControllerRestFacade();
         crf.sendCommand(ControllerRestConstant.SYNC_TEST, command, new Completion(event) {
             @Override
@@ -288,7 +285,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @return：创建的监控通道
      */
     @Transactional
-    public TunnelMonitorVO createTunnelMonitorHandle(APICreateTunnelMonitorMsg msg) {
+    public TunnelMonitorVO createTunnelMonitorHandle(APIStartTunnelMonitorMsg msg) {
         // TunnelMonitorVO
         TunnelMonitorVO tunnelMonitorVO = new TunnelMonitorVO();
         tunnelMonitorVO.setUuid(Platform.getUuid());
@@ -301,7 +298,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         Map<String, String> tunnelInterfaces = new HashMap<String, String>(2);
         Map<String, String> monitorIps = new HashMap<String, String>(2);
         Map<String, String> monitorHosts = new HashMap<String, String>(2);
-        // 按tunnel查询两端接口是否已存在监控机与监控IP
+        // 按tunnel查询两端接口已存在的监控机与监控IP
         List<TunnelMonitorInterfaceVO> existedMonitorList = getExistedMonitor(tunnelMonitorVO.getTunnelUuid());
         for (TunnelMonitorInterfaceVO existedMonitor : existedMonitorList) {
             tunnelInterfaces.put(existedMonitor.getInterfaceType().toString(), existedMonitor.getInterfaceUuid());
@@ -452,6 +449,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                     if (physicalSwitchUuidlist.size() > 0) {
                         String physicalSwitchUuid = physicalSwitchUuidlist.get(0);
 
+                        //TODO:修改HostVO的查询到MonitorHostVO
                         String sqlHostUuid = "select b.uuid from HostSwitchMonitorVO a,HostVO b\n" +
                                 "where b.uuid = a.hostUuid\n" +
                                 "and a.physicalSwitchUuid = :physicalSwitchUuid";

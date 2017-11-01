@@ -9,7 +9,7 @@ import com.syscxp.tunnel.header.tunnel.TunnelVO;
  * @Cretion Date: 2017-09-11.
  * @Description: 创建监控通道.
  */
-public class APICreateTunnelMonitorMsg extends APIMessage {
+public class APIStartTunnelMonitorMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = TunnelVO.class,maxLength = 32)
     private String tunnelUuid;
