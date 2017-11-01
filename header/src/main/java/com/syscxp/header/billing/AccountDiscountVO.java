@@ -11,7 +11,7 @@ import java.sql.Timestamp;
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
 @TriggerIndex
-@SqlTrigger
+@SqlTrigger(foreignVOClass=ProductCategoryVO.class,foreignVOJoinColumn="productCategoryUuid")
 public class AccountDiscountVO {
 
     @Id

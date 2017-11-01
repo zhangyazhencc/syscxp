@@ -39,11 +39,11 @@ public class ProductCategoryVO{
     @Column
     private Timestamp lastOpDate;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER,targetEntity=AccountDiscountVO.class)
     @JoinColumn(name = "uuid",referencedColumnName = "productCategoryUuid",insertable = false,updatable = false)
     private AccountDiscountVO accountDiscountVO;
 
-    @OneToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER,targetEntity = ProductPriceUnitVO.class)
     @JoinColumn(name = "uuid",referencedColumnName = "productCategoryUuid",insertable = false,updatable = false)
     private ProductPriceUnitVO productPriceUnitVO;
 
