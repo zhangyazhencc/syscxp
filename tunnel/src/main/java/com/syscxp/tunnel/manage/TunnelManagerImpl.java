@@ -1212,7 +1212,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         NodeVO nodeZ = dbf.findByUuid(nodeZUuid, NodeVO.class);
         String zoneCodeA = getZoneCode(nodeA.getUuid());
         String zoneCodeZ = getZoneCode(nodeZ.getUuid());
-        if (innerEndpointUuid == null) {  //国内互传
+        if (innerEndpointUuid == null) {  //国内互传  或者 国外到国外
             Category category = null;
             String areaCode = null;
             String lineCode = null;
@@ -1238,7 +1238,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             unit.setConfigCode(bandwidthOfferingUuid);
 
             units.add(unit);
-        }else{                          //跨国 或者 国外到国外
+        }else{                          //跨国
 
         }
 
