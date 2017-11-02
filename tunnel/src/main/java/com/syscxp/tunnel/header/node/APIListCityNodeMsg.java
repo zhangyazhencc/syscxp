@@ -1,6 +1,9 @@
 package com.syscxp.tunnel.header.node;
 
-public class DomesticNodeInventory {
+import com.syscxp.header.message.APISyncCallMessage;
+
+public class APIListCityNodeMsg extends APISyncCallMessage {
+
     private String provice;
 
     public String getProvice() {
