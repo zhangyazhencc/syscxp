@@ -13,6 +13,7 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
@@ -152,8 +153,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 调用支付
      */
     private OrderInventory createOrder(APICreateOrderMsg orderMsg) {
-        //orderMsg.setNotifyUrl(restf.getSendCommandUrl());
-        orderMsg.setNotifyUrl(TunnelConstant.NOTIFYURL);
+        orderMsg.setNotifyUrl(restf.getSendCommandUrl());
+//        orderMsg.setNotifyUrl(TunnelConstant.NOTIFYURL);
         try {
             APICreateOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
 
@@ -170,18 +171,19 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIQueryTunnelForAlarmReply reply = new APIQueryTunnelForAlarmReply();
 
         SimpleQuery<TunnelForAlarmVO> q = dbf.createQuery(TunnelForAlarmVO.class);
-        if(msg.getAccountUuid() != null){
+        if (msg.getAccountUuid() != null) {
             q.add(TunnelForAlarmVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         }
+
         if(msg.getProductName() != null){
-            q.add(TunnelForAlarmVO_.name, SimpleQuery.Op.LIKE, msg.getProductName());
+            q.add(TunnelForAlarmVO_.name, SimpleQuery.Op.LIKE, "%"+msg.getProductName()+"%");
         }
-        if(msg.getProductUuids() != null){
-            SimpleQuery.Op op =  SimpleQuery.Op.IN;
-            if(!msg.isBind()){
+        if (msg.getProductUuids() != null) {
+            SimpleQuery.Op op = SimpleQuery.Op.IN;
+            if (!msg.isBind()) {
                 op = SimpleQuery.Op.NOT_IN;
             }
-                q.add(TunnelForAlarmVO_.uuid, op, msg.getProductUuids());
+            q.add(TunnelForAlarmVO_.uuid, op, msg.getProductUuids());
 
         }
         q.add(TunnelForAlarmVO_.status, SimpleQuery.Op.EQ, TunnelStatus.Connected);
@@ -359,7 +361,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (portType != null)
             orderMsg.setUnits(getInterfacePriceUnit(portType));
         orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
-        orderMsg.setNotifyUrl(TunnelConstant.NOTIFYURL);
+        orderMsg.setNotifyUrl(restf.getSendCommandUrl());
         return orderMsg;
     }
 
@@ -1527,8 +1529,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APICreateInterfaceMsg msg) {
-        //类型是否支持
-        List<SwitchPortType> types = getPortTypeByEndpoint(msg.getEndpointUuid());
+            //类型是否支持
+            List<SwitchPortType> types = getPortTypeByEndpoint(msg.getEndpointUuid());
         if (!types.contains(msg.getPortType()))
             throw new ApiMessageInterceptionException(
                     argerr("该连接点[uuid:%s]下的端口[type:%s]已用完！", msg.getEndpointUuid(), msg.getPortType()));

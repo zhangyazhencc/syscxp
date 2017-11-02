@@ -83,11 +83,11 @@
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.node.APIQueryAbroadNodeMsg</name>
+        <name>com.syscxp.tunnel.header.node.APIListCountryNodeMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.node.APIQueryDomesticNodeMsg</name>
+        <name>com.syscxp.tunnel.header.node.APIListProvinceNodeMsg</name>
     </message>
 
     <message>

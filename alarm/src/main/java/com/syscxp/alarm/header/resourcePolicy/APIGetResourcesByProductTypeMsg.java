@@ -9,7 +9,7 @@ import com.syscxp.header.query.QueryCondition;
 
 import java.util.List;
 
-@Action(adminOnly = true,category = AlarmConstant.ACTION_CATEGORY_RESOURCE_POLICY)
+@Action(category = AlarmConstant.ACTION_CATEGORY_RESOURCE_POLICY)
 public class APIGetResourcesByProductTypeMsg extends APISyncCallMessage{
 
     @APIParam(emptyString = false)

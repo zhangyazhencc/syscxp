@@ -20,6 +20,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIGetPoliciesByResourceMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.alarm.header.resourcePolicy.APIDeleteRegulationMsg</name>
     </message>
 

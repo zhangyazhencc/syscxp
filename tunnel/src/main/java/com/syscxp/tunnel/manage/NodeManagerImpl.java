@@ -116,10 +116,10 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APICreateInnerEndpointMsg) msg);
         }  else if (msg instanceof APIDeleteInnerEndpointMsg) {
             handle((APIDeleteInnerEndpointMsg) msg);
-        } else if(msg instanceof APIQueryAbroadNodeMsg ){
-            handle((APIQueryAbroadNodeMsg) msg);
-        } else if(msg instanceof APIQueryDomesticNodeMsg ){
-            handle((APIQueryDomesticNodeMsg) msg);
+        } else if(msg instanceof APIListCountryNodeMsg ){
+            handle((APIListCountryNodeMsg) msg);
+        } else if(msg instanceof APIListProvinceNodeMsg){
+            handle((APIListProvinceNodeMsg) msg);
         }else if(msg instanceof APIListCityNodeMsg){
             handle((APIListCityNodeMsg) msg);
         }
@@ -129,55 +129,58 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     }
 
     private void handle(APIListCityNodeMsg msg) {
-        List<CityNodeInventory> cityNodeInventoryList = new ArrayList<>();
+        List<String> cityNodeInventoryList = new ArrayList<>();
 
         String sql = "select distinct city from NodeVO where province = :province";
         TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
         tfq.setParameter("province", msg.getProvice());
         List<Tuple> ts = tfq.getResultList();
         for (Tuple t : ts) {
-           CityNodeInventory cityNodeInventory = new CityNodeInventory();
-           cityNodeInventory.setCity(t.get(0, String.class));
-           cityNodeInventoryList.add(cityNodeInventory);
+           cityNodeInventoryList.add(t.get(0, String.class));
         }
         APIListCityNodeReply reply = new APIListCityNodeReply();
-        reply.setCityNodeInventoryList(cityNodeInventoryList);
+        reply.setCitys(cityNodeInventoryList);
         bus.reply(msg,reply);
 
     }
 
-    private void handle(APIQueryDomesticNodeMsg msg) {
-        List<DomesticNodeInventory> domesticNodeInventoryList =new ArrayList<>();
+    private void handle(APIListProvinceNodeMsg msg) {
+        List<String> domesticNodeInventoryList =new ArrayList<>();
 
-        String sql = "select province from NodeVO where country in ('中国')";
-        TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
-        List<Tuple> ts = tfq.getResultList();
-        for (Tuple t : ts) {
-            DomesticNodeInventory domesticNodeInventory = new DomesticNodeInventory();
-            domesticNodeInventory.setProvice(t.get(0, String.class));
-            domesticNodeInventoryList.add(domesticNodeInventory);
+        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
+        if(msg.getCountry() != null){
+            q.add(NodeVO_.country, SimpleQuery.Op.EQ, msg.getCountry());
+        }
+        q.select(NodeVO_.province);
+        List<String> provinceList = q.listValue();
+        for (String t : provinceList) {
+            domesticNodeInventoryList.add(t);
         }
 
-        APIQueryDomesticNodeReply reply = new APIQueryDomesticNodeReply();
-        reply.setDomesticNodeInventoryList(domesticNodeInventoryList);
+        HashSet h = new HashSet(domesticNodeInventoryList);
+        domesticNodeInventoryList.clear();
+        domesticNodeInventoryList.addAll(h);
+
+
+        APIListProvinceNodeReply reply = new APIListProvinceNodeReply();
+        reply.setPrivinces(domesticNodeInventoryList);
         bus.reply(msg,reply);
+
 
     }
 
-    private void handle(APIQueryAbroadNodeMsg msg) {
-        List<AbroadNodeInventory> abroadNodeInventoryList = new ArrayList<>();
+    private void handle(APIListCountryNodeMsg msg) {
+        List<String> abroadNodeInventoryList = new ArrayList<>();
 
-        String sql = "select country from NodeVO where country not in ('中国')";
+        String sql = "select distinct country from NodeVO";
         TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
         List<Tuple> ts = tfq.getResultList();
         for (Tuple t : ts) {
-            AbroadNodeInventory abroadNodeInventory = new AbroadNodeInventory();
-            abroadNodeInventory.setCountry(t.get(0, String.class));
-            abroadNodeInventoryList.add(abroadNodeInventory);
+            abroadNodeInventoryList.add(t.get(0, String.class));
         }
 
-        APIQueryAbroadNodeReply reply = new APIQueryAbroadNodeReply();
-        reply.setAbroadNodeInventories(abroadNodeInventoryList);
+        APIListCountryNodeReply reply = new APIListCountryNodeReply();
+        reply.setCountrys(abroadNodeInventoryList);
         bus.reply(msg,reply);
 
     }
