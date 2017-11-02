@@ -6,11 +6,11 @@ public class ProductPriceUnit {
 
     private Category categoryCode;
 
-    private String areaCode;
+    private String areaCode = "DEFAULT";
 
-    private String lineCode;
+    private String lineCode = "DEFAULT";
 
-    private String configCode;
+    private String configCode = "DEFAULT";
 
     public ProductType getProductTypeCode() {
         return productTypeCode;
