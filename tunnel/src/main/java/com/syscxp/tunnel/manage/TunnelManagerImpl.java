@@ -505,44 +505,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelStrategy ts = new TunnelStrategy();
         TunnelVO vo = new TunnelVO();
         BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
+        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class);
+        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class);
 
         vo.setUuid(Platform.getUuid());
-
-        //给A端口分配外部vlan,并创建TunnelInterface
-        Integer vlanA = ts.getInnerVlanByStrategy(msg.getInterfaceAUuid());
-        if (vlanA == 0) {
-            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-        }
-        TunnelInterfaceVO tivoA = new TunnelInterfaceVO();
-        tivoA.setUuid(Platform.getUuid());
-        tivoA.setTunnelUuid(vo.getUuid());
-        tivoA.setInterfaceUuid(msg.getInterfaceAUuid());
-        tivoA.setVlan(vlanA);
-        tivoA.setSortTag("A");
-        tivoA.setQinqState(TunnelQinqState.Disabled);
-        tivoA.setInterfaceVO(dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class));
-
-
-        //给Z端口分配外部vlan,并创建TunnelInterface
-        Integer vlanZ = ts.getInnerVlanByStrategy(msg.getInterfaceZUuid());
-        if (vlanZ == 0) {
-            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-        }
-        TunnelInterfaceVO tivoZ = new TunnelInterfaceVO();
-        tivoZ.setUuid(Platform.getUuid());
-        tivoZ.setTunnelUuid(vo.getUuid());
-        tivoZ.setInterfaceUuid(msg.getInterfaceZUuid());
-        tivoZ.setVlan(vlanZ);
-        tivoZ.setSortTag("Z");
-        tivoZ.setQinqState(TunnelQinqState.Disabled);
-        tivoZ.setInterfaceVO(dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class));
-
-
-        //根据经纬度算距离
-        NodeVO nvoA = dbf.findByUuid(msg.getNodeAUuid(), NodeVO.class);
-        NodeVO nvoZ = dbf.findByUuid(msg.getNodeZUuid(), NodeVO.class);
-        vo.setDistance(Distance.getDistance(nvoA.getLongtitude(), nvoA.getLatitude(), nvoZ.getLongtitude(), nvoZ.getLatitude()));
-
         vo.setAccountUuid(null);
         vo.setOwnerAccountUuid(msg.getAccountUuid());
         vo.setVsi(getVsiAuto());
@@ -553,18 +519,46 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setStatus(TunnelStatus.Disconnected);
         vo.setExpireDate(null);
         vo.setDescription(msg.getDescription());
-        List<TunnelInterfaceVO> tivo = new ArrayList<>();
-        tivo.add(tivoA);
-        tivo.add(tivoZ);
-        //todo
-        //vo.setTunnelInterfaceVOs(tivo);
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setMonitorState(TunnelMonitorState.Disabled);
         vo.setMaxModifies(CoreGlobalProperty.TUNNEL_MAX_MOTIFIES);
+        //根据经纬度算距离
+        NodeVO nvoA = dbf.findByUuid(msg.getNodeAUuid(), NodeVO.class);
+        NodeVO nvoZ = dbf.findByUuid(msg.getNodeZUuid(), NodeVO.class);
+        vo.setDistance(Distance.getDistance(nvoA.getLongtitude(), nvoA.getLatitude(), nvoZ.getLongtitude(), nvoZ.getLatitude()));
 
+        //给A端口分配外部vlan,并创建TunnelSwitch
+        Integer vlanA = ts.getInnerVlanByStrategy(msg.getInterfaceAUuid());
+        if (vlanA == 0) {
+            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
+        }
+        TunnelSwitchVO tsvoA = new TunnelSwitchVO();
+        tsvoA.setUuid(Platform.getUuid());
+        tsvoA.setTunnelUuid(vo.getUuid());
+        tsvoA.setEndpointUuid(msg.getEndpointAUuid());
+        tsvoA.setSwitchPortUuid(interfaceVOA.getSwitchPortUuid());
+        tsvoA.setType(interfaceVOA.getType());
+        tsvoA.setVlan(vlanA);
+        tsvoA.setSortTag("A");
 
-        dbf.persistAndRefresh(tivoA);
-        dbf.persistAndRefresh(tivoZ);
+        //给Z端口分配外部vlan,并创建TunnelSwitch
+        Integer vlanZ = ts.getInnerVlanByStrategy(msg.getInterfaceZUuid());
+        if (vlanZ == 0) {
+            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
+        }
+        TunnelSwitchVO tsvoZ = new TunnelSwitchVO();
+        tsvoZ.setUuid(Platform.getUuid());
+        tsvoZ.setTunnelUuid(vo.getUuid());
+        tsvoZ.setEndpointUuid(msg.getEndpointZUuid());
+        tsvoZ.setSwitchPortUuid(interfaceVOZ.getSwitchPortUuid());
+        tsvoZ.setType(interfaceVOZ.getType());
+        tsvoZ.setVlan(vlanZ);
+        tsvoZ.setSortTag("Z");
+
+        //如果跨国,将出海口设备添加至TunnelSwitch
+
+        tsvoA = dbf.persistAndRefresh(tsvoA);
+        tsvoZ = dbf.persistAndRefresh(tsvoZ);
         vo = dbf.persistAndRefresh(vo);
 
         afterCreateTunnel(msg.getId(),
@@ -1519,7 +1513,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ", msg.getName()));
         }
         //判断通道两端的连接点是否相同，不允许相同
-        if (Objects.equals(msg.getEndpointPointAUuid(), msg.getEndpointPointZUuid())) {
+        if (Objects.equals(msg.getEndpointAUuid(), msg.getEndpointZUuid())) {
             throw new ApiMessageInterceptionException(argerr("通道两端不允许在同一个连接点 "));
         }
     }
