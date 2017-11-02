@@ -7,6 +7,7 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.tunnel.header.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.tunnel.header.switchs.SwitchPortType;
 
 /**
  * Created by DCY on 2017-09-08
@@ -14,19 +15,19 @@ import com.syscxp.header.tunnel.TunnelConstant;
 @Action(category = TunnelConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateInterfaceMsg extends APIMessage {
 
-    @APIParam(required = false,maxLength = 32)
+    @APIParam(required = false, maxLength = 32)
     private String accountUuid;
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(emptyString = false, maxLength = 128)
     private String name;
-    @APIParam(emptyString = false,maxLength = 32,resourceType = EndpointVO.class)
+    @APIParam(emptyString = false, maxLength = 32, resourceType = EndpointVO.class)
     private String endpointUuid;
-    @APIParam(emptyString = false,maxLength = 32,resourceType = PortOfferingVO.class)
-    private String portOfferingUuid;
-    @APIParam(required = false,maxLength = 255)
+    @APIParam(resourceType = PortOfferingVO.class)
+    private SwitchPortType portType;
+    @APIParam(required = false, maxLength = 255)
     private String description;
     @APIParam
     private Integer duration;
-    @APIParam(validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
     private ProductChargeModel productChargeModel;
 
     public String getName() {
@@ -54,9 +55,9 @@ public class APICreateInterfaceMsg extends APIMessage {
     }
 
     public String getAccountUuid() {
-        if(getSession().getType() == AccountType.SystemAdmin){
+        if (getSession().getType() == AccountType.SystemAdmin) {
             return accountUuid;
-        }else{
+        } else {
             return getSession().getAccountUuid();
         }
     }
@@ -81,11 +82,11 @@ public class APICreateInterfaceMsg extends APIMessage {
         this.duration = duration;
     }
 
-    public String getPortOfferingUuid() {
-        return portOfferingUuid;
+    public SwitchPortType getPortType() {
+        return portType;
     }
 
-    public void setPortOfferingUuid(String portOfferingUuid) {
-        this.portOfferingUuid = portOfferingUuid;
+    public void setPortType(SwitchPortType portType) {
+        this.portType = portType;
     }
 }

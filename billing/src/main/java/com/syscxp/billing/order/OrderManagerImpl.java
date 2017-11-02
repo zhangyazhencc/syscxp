@@ -325,6 +325,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setDescriptionData(renewVO.getDescriptionData());
         orderVo.setProductUuid(renewVO.getProductUuid());
         orderVo.setDuration(originDuration);
+        orderVo.setCallBackData(msg.getCallBackData());
 
         dbf.getEntityManager().merge(abvo);
         dbf.getEntityManager().persist(orderVo);
@@ -350,6 +351,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(msg.getProductUuid());
         orderVo.setDuration(msg.getDuration());
+        orderVo.setCallBackData(msg.getCallBackData());
 
         orderVo.setPayCash(BigDecimal.ZERO);
         orderVo.setPayPresent(BigDecimal.ZERO);
@@ -400,6 +402,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setPayTime(currentTimestamp);
         orderVo.setProductUuid(msg.getProductUuid());
         orderVo.setDescriptionData(msg.getDescriptionData());
+        orderVo.setCallBackData(msg.getCallBackData());
 
         Timestamp startTime = msg.getStartTime();
         Timestamp endTime = msg.getExpiredTime();
@@ -472,9 +475,15 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         List<ProductPriceUnit> units = msg.getUnits();
         List<String> productPriceUnitUuids = new ArrayList<String>();
         for (ProductPriceUnit unit : units) {
+            SimpleQuery<ProductCategoryVO> query = dbf.createQuery(ProductCategoryVO.class);
+            query.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, unit.getCategoryCode());
+            query.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
+            ProductCategoryVO productCategoryVO = query.find();
+            if(productCategoryVO ==null){
+                throw new IllegalArgumentException("can not find productType or category");
+            }
             SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-            q.add(ProductPriceUnitVO_.categoryCode, SimpleQuery.Op.EQ, unit.getCategoryCode());
-            q.add(ProductPriceUnitVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
+            q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryVO.getUuid());
             q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, unit.getAreaCode());
             q.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, unit.getLineCode());
             q.add(ProductPriceUnitVO_.configCode, SimpleQuery.Op.EQ, unit.getConfigCode());
@@ -514,6 +523,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setPayTime(currentTimestamp);
         orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(msg.getProductUuid());
+        orderVo.setCallBackData(msg.getCallBackData());
 
 
         Timestamp startTime = msg.getStartTime();
@@ -610,13 +620,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         notifyOrderVO.setStatus(NotifyOrderStatus.FAILURE);
         notifyOrderVO.setNotifyTimes(0);
         notifyOrderVO.setAccountUuid(msg.getAccountUuid());
-        if(msg instanceof APICreateRenewOrderMsg){
-            notifyOrderVO.setProductUuid(((APICreateRenewOrderMsg) msg).getProductUuid());
-        } else if(msg instanceof  APICreateModifyOrderMsg){
-            notifyOrderVO.setProductUuid(((APICreateRenewOrderMsg) msg).getProductUuid());
-        } else if(msg instanceof APICreateUnsubcribeOrderMsg){
-            notifyOrderVO.setProductUuid(((APICreateRenewOrderMsg) msg).getProductUuid());
-        }
+        notifyOrderVO.setProductUuid(msg.getProductUuid());
         dbf.getEntityManager().persist(notifyOrderVO);
     }
 
@@ -643,9 +647,15 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         List<ProductPriceUnit> units = msg.getUnits();
         List<String> productPriceUnitUuids = new ArrayList<String>();
         for (ProductPriceUnit unit : units) {
+            SimpleQuery<ProductCategoryVO> query = dbf.createQuery(ProductCategoryVO.class);
+            query.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, unit.getCategoryCode());
+            query.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
+            ProductCategoryVO productCategoryVO = query.find();
+            if(productCategoryVO ==null){
+                throw new IllegalArgumentException("can not find productType or category");
+            }
             SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-            q.add(ProductPriceUnitVO_.categoryCode, SimpleQuery.Op.EQ, unit.getCategoryCode());
-            q.add(ProductPriceUnitVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
+            q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryVO.getUuid());
             q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, unit.getAreaCode());
             q.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, unit.getLineCode());
             q.add(ProductPriceUnitVO_.configCode, SimpleQuery.Op.EQ, unit.getConfigCode());
@@ -691,6 +701,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(msg.getProductUuid());
         orderVo.setDuration(msg.getDuration());
+        orderVo.setCallBackData(msg.getCallBackData());
 
         originalPrice = originalPrice.multiply(duration);
         discountPrice = discountPrice.multiply(duration);
