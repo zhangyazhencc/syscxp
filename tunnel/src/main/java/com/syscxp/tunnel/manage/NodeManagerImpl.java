@@ -9,8 +9,6 @@ import com.syscxp.tunnel.header.switchs.SwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO_;
 import com.syscxp.utils.Digest;
 import com.syscxp.utils.gson.JSONObjectUtil;
-import org.bson.types.ObjectId;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -37,15 +35,12 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static com.syscxp.core.Platform.argerr;
-
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by DCY on 2017-09-07
@@ -121,9 +116,73 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APICreateInnerEndpointMsg) msg);
         }  else if (msg instanceof APIDeleteInnerEndpointMsg) {
             handle((APIDeleteInnerEndpointMsg) msg);
-        }  else {
+        } else if(msg instanceof APIListCountryNodeMsg ){
+            handle((APIListCountryNodeMsg) msg);
+        } else if(msg instanceof APIListProvinceNodeMsg){
+            handle((APIListProvinceNodeMsg) msg);
+        }else if(msg instanceof APIListCityNodeMsg){
+            handle((APIListCityNodeMsg) msg);
+        }
+        else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIListCityNodeMsg msg) {
+        List<String> cityNodeInventoryList = new ArrayList<>();
+
+        String sql = "select distinct city from NodeVO where province = :province";
+        TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+        tfq.setParameter("province", msg.getProvice());
+        List<Tuple> ts = tfq.getResultList();
+        for (Tuple t : ts) {
+           cityNodeInventoryList.add(t.get(0, String.class));
+        }
+        APIListCityNodeReply reply = new APIListCityNodeReply();
+        reply.setCitys(cityNodeInventoryList);
+        bus.reply(msg,reply);
+
+    }
+
+    private void handle(APIListProvinceNodeMsg msg) {
+        List<String> domesticNodeInventoryList =new ArrayList<>();
+
+        SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
+        if(msg.getCountry() != null){
+            q.add(NodeVO_.country, SimpleQuery.Op.EQ, msg.getCountry());
+        }
+        q.select(NodeVO_.province);
+        List<String> provinceList = q.listValue();
+        for (String t : provinceList) {
+            domesticNodeInventoryList.add(t);
+        }
+
+        HashSet h = new HashSet(domesticNodeInventoryList);
+        domesticNodeInventoryList.clear();
+        domesticNodeInventoryList.addAll(h);
+
+
+        APIListProvinceNodeReply reply = new APIListProvinceNodeReply();
+        reply.setPrivinces(domesticNodeInventoryList);
+        bus.reply(msg,reply);
+
+
+    }
+
+    private void handle(APIListCountryNodeMsg msg) {
+        List<String> abroadNodeInventoryList = new ArrayList<>();
+
+        String sql = "select distinct country from NodeVO";
+        TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+        List<Tuple> ts = tfq.getResultList();
+        for (Tuple t : ts) {
+            abroadNodeInventoryList.add(t.get(0, String.class));
+        }
+
+        APIListCountryNodeReply reply = new APIListCountryNodeReply();
+        reply.setCountrys(abroadNodeInventoryList);
+        bus.reply(msg,reply);
+
     }
 
     private void handle(APIListNodeExtensionInfoMsg msg) {
