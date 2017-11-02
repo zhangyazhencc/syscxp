@@ -101,7 +101,6 @@
 
     <message>
         <name>com.syscxp.header.tunnel.APIQueryTunnelForAlarmMsg</name>
-        <serviceId>query</serviceId>
     </message>
 
 </service>

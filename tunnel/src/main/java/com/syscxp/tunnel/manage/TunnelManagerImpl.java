@@ -82,6 +82,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateInterfaceMsg) {
             handle((APICreateInterfaceMsg) msg);
+        } else if (msg instanceof APIQueryTunnelForAlarmMsg) {
+            handle((APIQueryTunnelForAlarmMsg) msg);
         } else if (msg instanceof APIGetInterfacePriceMsg) {
             handle((APIGetInterfacePriceMsg) msg);
         } else if (msg instanceof APIGetTunnelPriceMsg) {
@@ -164,6 +166,26 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             logger.error(String.format("无法创建订单, %s", e.getMessage()), e);
         }
         return null;
+    }
+
+    private void handle(APIQueryTunnelForAlarmMsg msg) {
+        APIQueryTunnelForAlarmReply reply = new APIQueryTunnelForAlarmReply();
+
+        SimpleQuery<TunnelForAlarmVO> q = dbf.createQuery(TunnelForAlarmVO.class);
+        if(msg.getAccountUuid() != null){
+            q.add(TunnelForAlarmVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        }
+        if(msg.getProductName() != null){
+            q.add(TunnelForAlarmVO_.name, SimpleQuery.Op.LIKE, msg.getProductName());
+        }
+
+        q.setStart(msg.getStart());
+        q.setLimit(msg.getLimit());
+
+        List<TunnelForAlarmVO> voList = q.list();
+        reply.setCount(q.count());
+        reply.setInventories(TunnelForAlarmInventory.valueOf(voList));
+        bus.reply(msg, reply);
     }
 
     private void handle(APIGetInterfaceTypeMsg msg) {
