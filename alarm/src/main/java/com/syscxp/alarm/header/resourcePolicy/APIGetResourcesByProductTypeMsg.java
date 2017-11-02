@@ -21,8 +21,11 @@ public class APIGetResourcesByProductTypeMsg extends APISyncCallMessage{
     @APIParam
     private int limit = 1000;
 
-    @APIParam
-    List<QueryCondition> conditions;
+    @APIParam(required = false)
+    private String accountUuid;
+
+    @APIParam(required = false)
+    private String productName;
 
     public ProductType getProductType() {
         return productType;
@@ -32,12 +35,20 @@ public class APIGetResourcesByProductTypeMsg extends APISyncCallMessage{
         this.productType = productType;
     }
 
-    public List<QueryCondition> getConditions() {
-        return conditions;
+    public String getAccountUuid() {
+        return accountUuid;
     }
 
-    public void setConditions(List<QueryCondition> conditions) {
-        this.conditions = conditions;
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
+
+    public String getProductName() {
+        return productName;
+    }
+
+    public void setProductName(String productName) {
+        this.productName = productName;
     }
 
     public int getStart() {

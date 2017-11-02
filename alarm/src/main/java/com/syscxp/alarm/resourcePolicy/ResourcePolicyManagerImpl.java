@@ -248,9 +248,6 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             conditions.add(condition2);
             aMsg.setLimit(msg.getLimit());
             aMsg.setStart(msg.getStart());
-            aMsg.setConditions(conditions);
-            aMsg.setReplyWithCount(true);
-            aMsg.setCount(false);
             InnerMessageHelper.setMD5(aMsg);
             String gstr = RESTApiDecoder.dump(aMsg);
             RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
@@ -258,7 +255,6 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
                 APIQueryTunnelForAlarmReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
                 if (productReply instanceof APIQueryTunnelForAlarmReply) {
                     inventories = productReply.getInventories();
-                    count = productReply.getTotal();
                 }
             }
             APIGetResourcesBindByPolicyReply reply = new APIGetResourcesBindByPolicyReply();
@@ -277,17 +273,8 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
 
         APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
         List<ResourceInventory> inventories = null;
-        QueryCondition condition = new QueryCondition();
-        condition.setName("status");
-        condition.setOp("=");
-        condition.setValue("Connected");
-        List<QueryCondition> conditions = new ArrayList<>();
-        if (msg.getConditions() != null && msg.getConditions().size() > 0) {
-            conditions.addAll(msg.getConditions());
-        }
-        conditions.add(condition);
-        aMsg.setConditions(conditions);
-        aMsg.setReplyWithCount(true);
+        aMsg.setAccountUuid(msg.getAccountUuid());
+        aMsg.setProductName(msg.getProductName());
         aMsg.setStart(msg.getStart());
         aMsg.setLimit(msg.getLimit());
         InnerMessageHelper.setMD5(aMsg);

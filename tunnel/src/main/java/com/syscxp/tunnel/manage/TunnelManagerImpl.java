@@ -4,10 +4,7 @@ import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
-import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.GLock;
-import com.syscxp.core.db.Q;
-import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
@@ -178,6 +175,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if(msg.getProductName() != null){
             q.add(TunnelForAlarmVO_.name, SimpleQuery.Op.LIKE, msg.getProductName());
         }
+        if(msg.getProductUuids() != null){
+            q.add(TunnelForAlarmVO_.uuid, SimpleQuery.Op.IN, msg.getProductUuids());
+        }
+        q.add(TunnelForAlarmVO_.status, SimpleQuery.Op.EQ, TunnelStatus.Connected);
         reply.setCount(q.count());
 
         q.setStart(msg.getStart());
@@ -1438,7 +1439,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private String getPortOfferingUuid(SwitchPortType type) {
         return Q.New(PortOfferingVO.class)
                 .eq(PortOfferingVO_.type, type)
-                .select(PortOfferingVO_.uuid).findValue();
+                .select(PortOfferingVO_.uuid)
+                .findValue();
     }
 
     private void validate(APICreateInterfaceManualMsg msg) {
