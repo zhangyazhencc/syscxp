@@ -26,6 +26,7 @@ public class AccountBalanceInventory {
         inv.setCreditPoint(vo.getCreditPoint());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+
         return inv;
     }
 

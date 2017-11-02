@@ -1,6 +1,5 @@
 package com.syscxp.tunnel.header.tunnel;
 
-import com.syscxp.tunnel.header.switchs.SwitchPortAttribute;
 import com.syscxp.tunnel.header.switchs.SwitchPortType;
 
 import javax.persistence.metamodel.SingularAttribute;

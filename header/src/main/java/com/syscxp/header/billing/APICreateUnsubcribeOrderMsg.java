@@ -31,4 +31,10 @@ public class APICreateUnsubcribeOrderMsg extends APICreateOrderMsg {
         this.expiredTime = expiredTime;
     }
 
+    public APICreateUnsubcribeOrderMsg(APICreateOrderMsg msg) {
+        super(msg);
+    }
+
+    public APICreateUnsubcribeOrderMsg() {
+    }
 }

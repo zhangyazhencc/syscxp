@@ -1,6 +1,7 @@
 package com.syscxp.tunnel.header.tunnel;
 
 import com.syscxp.header.search.Inventory;
+import com.syscxp.tunnel.header.switchs.SwitchPortType;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ public class PortOfferingInventory {
 
     private String name;
 
-    private String type;
+    private SwitchPortType type;
 
     private String description;
 
@@ -30,7 +31,7 @@ public class PortOfferingInventory {
 
         inv.setUuid(vo.getUuid());
         inv.setName(vo.getName());
-        inv.setType(vo.getType().toString());
+        inv.setType(vo.getType());
         inv.setDescription(vo.getDescription());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -62,14 +63,6 @@ public class PortOfferingInventory {
         this.name = name;
     }
 
-    public String getType() {
-        return type;
-    }
-
-    public void setType(String type) {
-        this.type = type;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -92,5 +85,13 @@ public class PortOfferingInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public SwitchPortType getType() {
+        return type;
+    }
+
+    public void setType(SwitchPortType type) {
+        this.type = type;
     }
 }

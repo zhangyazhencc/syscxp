@@ -32,4 +32,11 @@ public class APICreateBuyOrderMsg extends APICreateOrderMsg {
     public void setDuration(int duration) {
         this.duration = duration;
     }
+
+    public APICreateBuyOrderMsg(APICreateOrderMsg msg) {
+        super(msg);
+    }
+
+    public APICreateBuyOrderMsg() {
+    }
 }

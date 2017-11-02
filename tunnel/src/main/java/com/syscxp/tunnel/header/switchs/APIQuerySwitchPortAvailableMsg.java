@@ -1,17 +1,18 @@
 package com.syscxp.tunnel.header.switchs;
 
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.query.AutoQuery;
+import com.syscxp.tunnel.manage.SwitchConstant;
 
+@Action(category = SwitchConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
 @AutoQuery(replyClass = APIQuerySwitchPortAvailableReply.class, inventoryClass = SwitchPortAvailableInventory.class)
 public class APIQuerySwitchPortAvailableMsg extends APISyncCallMessage {
     @APIParam(required = false)
     private String uuid;
     @APIParam(required = false)
     private String portName;
-    @APIParam(required = false)
-    private SwitchPortAttribute portAttribute;
     @APIParam(required = false)
     private SwitchPortType portType;
     @APIParam(required = false)
@@ -33,14 +34,6 @@ public class APIQuerySwitchPortAvailableMsg extends APISyncCallMessage {
 
     public void setPortName(String portName) {
         this.portName = portName;
-    }
-
-    public SwitchPortAttribute getPortAttribute() {
-        return portAttribute;
-    }
-
-    public void setPortAttribute(SwitchPortAttribute portAttribute) {
-        this.portAttribute = portAttribute;
     }
 
     public SwitchPortType getPortType() {

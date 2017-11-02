@@ -53,4 +53,11 @@ public class APICreateRenewOrderMsg  extends APICreateOrderMsg {
     public void setStartTime(Timestamp startTime) {
         this.startTime = startTime;
     }
+
+    public APICreateRenewOrderMsg(APICreateOrderMsg msg) {
+        super(msg);
+    }
+
+    public APICreateRenewOrderMsg() {
+    }
 }

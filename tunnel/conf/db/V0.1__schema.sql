@@ -130,11 +130,16 @@ CREATE VIEW `syscxp_tunnel`.`NodeVO` AS SELECT uuid, name, code, description, co
 ## 区域字典表
 CREATE TABLE `syscxp_tunnel`.`ZoneVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
-  `code` varchar(128) NOT NULL COMMENT '区域代码',
   `name` varchar(128) NOT NULL COMMENT '区域名称',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `syscxp_tunnel`.`ZoneVO` (`uuid`,`name`,`lastOpDate`,`createDate`)
+VALUES ('CSJ','长三角','2017-11-02 12:59:56','2017-11-01 10:26:39'),
+  ('ZSJ','珠三角','2017-11-02 13:00:01','2017-11-01 10:27:23'),
+  ('JJJ','京津冀','2017-11-02 13:00:06','2017-11-01 10:27:50');
+
 
 ##节点区域关系表
 CREATE TABLE `syscxp_tunnel`.`ZoneNodeRefVO` (
@@ -251,7 +256,7 @@ CREATE TABLE  `syscxp_tunnel`.`SwitchPortVO` (
   `portNum` INT(11) DEFAULT NULL COMMENT '该交换机端口编号：1口，2口...',
   `portName` varchar(128) NOT NULL COMMENT '端口名称',
   `portType` varchar(128) NOT NULL COMMENT '端口类型：光口，电口',
-  `portAttribute` varchar(128) NOT NULL COMMENT '独享：Exclusive 共享：Shared',
+  `portAttribute` varchar(128) NOT NULL COMMENT '属性',
   `autoAllot` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT '是否自动分配',
   `state` varchar(128) NOT NULL DEFAULT 'Enabled' COMMENT '是否启用',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
@@ -328,16 +333,37 @@ CREATE TABLE `syscxp_tunnel`.`BandwidthOfferingVO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+INSERT INTO `syscxp_tunnel`.`BandwidthOfferingVO` (`uuid`,`name`,`description`,`bandwidth`,`lastOpDate`,`createDate`)
+VALUES ('2G','2G','',2147483648,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('10G','10G','',10737418240,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('1G','1G','',1073741824,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('10M','10M','',10485760,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('20M','20M','',20971520,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('100M','100M','',104857600,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('5M','5M','',5242880,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('50M','50M','',52428800,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('500M','500M','',524288000,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('5G','5G','',5368709120,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('200M','200M','',209715200,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('2M','2M','',2097152,'2017-11-01 13:51:31','2017-11-01 13:51:31');
+
 ##端口配置表
 CREATE TABLE `syscxp_tunnel`.`PortOfferingVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'uuid',
   `name` varchar(255) NOT NULL UNIQUE COMMENT 'port offering name',
-  `type` varchar(255) NOT NULL COMMENT '描述',
+  `type` varchar(255) NOT NULL UNIQUE COMMENT '描述',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `syscxp_tunnel`.`PortOfferingVO` (`uuid`,`name`,`type`,`description`,`lastOpDate`,`createDate`)
+VALUES ('SFP_10G','SFP_10G','SFP_10G','光口万兆','2017-11-01 13:51:31','2017-10-30 15:39:20'),
+  ('SHARE','SHARE','SHARE','共享端口','2017-11-01 16:10:18','2017-10-30 15:35:40'),
+  ('SFP_1G','SFP_1G','SFP_1G','光口千兆','2017-11-01 13:51:36','2017-10-30 15:39:20'),
+  ('RJ45_1G','RJ45_1G','RJ45_1G','电口千兆','2017-11-01 13:51:39','2017-10-30 15:35:59');
+
 
 ##产品订单生效表
 CREATE TABLE `syscxp_tunnel`.`ResourceOrderEffectiveVO` (
@@ -381,7 +407,7 @@ CREATE TABLE  `syscxp_tunnel`.`TunnelMotifyRecordVO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-##云专线端口信息表
+##云专线端口信息表(作废)
 CREATE TABLE  `syscxp_tunnel`.`TunnelInterfaceVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `tunnelUuid` varchar(32) NOT NULL COMMENT '所属云专线',
@@ -389,6 +415,20 @@ CREATE TABLE  `syscxp_tunnel`.`TunnelInterfaceVO` (
   `vlan` INT(11) NOT NULL COMMENT '端口外部vlan',
   `sortTag` varchar(32) NOT NULL COMMENT '排序',
   `qinqState` varchar(32) NOT NULL DEFAULT 'Disabled' COMMENT '是否开启qinq,共享为Disabled,独享才可以启用',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+##云专线端口信息表
+CREATE TABLE  `syscxp_tunnel`.`TunnelSwitchVO` (
+  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `tunnelUuid` varchar(32) NOT NULL COMMENT '所属云专线',
+  `endpointUuid` varchar(32) NOT NULL COMMENT '所属连接点',
+  `switchPortUuid` varchar(32) NOT NULL COMMENT '所属端口',
+  `type` varchar(32) NOT NULL DEFAULT 'TRUNK' COMMENT '用途:TRUNK,ACCESS,QINQ',
+  `vlan` INT(11) NOT NULL COMMENT '端口外部vlan',
+  `sortTag` varchar(32) NOT NULL COMMENT '排序',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)

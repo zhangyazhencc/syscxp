@@ -72,6 +72,14 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIGetTunnelPriceMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIGetInterfacePriceMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.tunnel.header.tunnel.APIQueryInterfaceMsg</name>
         <serviceId>query</serviceId>
     </message>
@@ -93,7 +101,6 @@
 
     <message>
         <name>com.syscxp.header.tunnel.APIQueryTunnelForAlarmMsg</name>
-        <serviceId>query</serviceId>
     </message>
 
 </service>
