@@ -1,5 +1,6 @@
 package com.syscxp.alarm.resourcePolicy;
 
+import com.alibaba.fastjson.JSONObject;
 import com.syscxp.alarm.AlarmGlobalProperty;
 import com.syscxp.alarm.header.resourcePolicy.*;
 import com.syscxp.core.Platform;
@@ -281,7 +282,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         requestHeaders.setContentLength(commandParam.length());
         HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
         ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
-        com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
+        JSONObject job = JSONObject.parseObject(rsp.getBody());
         if (job.getString("success").equals("false")) {
             System.out.println(rsp.getBody());
             throw new OperationFailureException(Platform.operr("falcon fail "));

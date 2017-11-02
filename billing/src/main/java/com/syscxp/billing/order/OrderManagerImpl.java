@@ -325,6 +325,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setDescriptionData(renewVO.getDescriptionData());
         orderVo.setProductUuid(renewVO.getProductUuid());
         orderVo.setDuration(originDuration);
+        orderVo.setCallBackData(msg.getCallBackData());
 
         dbf.getEntityManager().merge(abvo);
         dbf.getEntityManager().persist(orderVo);
@@ -350,6 +351,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(msg.getProductUuid());
         orderVo.setDuration(msg.getDuration());
+        orderVo.setCallBackData(msg.getCallBackData());
 
         orderVo.setPayCash(BigDecimal.ZERO);
         orderVo.setPayPresent(BigDecimal.ZERO);
@@ -400,6 +402,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setPayTime(currentTimestamp);
         orderVo.setProductUuid(msg.getProductUuid());
         orderVo.setDescriptionData(msg.getDescriptionData());
+        orderVo.setCallBackData(msg.getCallBackData());
 
         Timestamp startTime = msg.getStartTime();
         Timestamp endTime = msg.getExpiredTime();
@@ -520,6 +523,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setPayTime(currentTimestamp);
         orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(msg.getProductUuid());
+        orderVo.setCallBackData(msg.getCallBackData());
 
 
         Timestamp startTime = msg.getStartTime();
@@ -616,13 +620,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         notifyOrderVO.setStatus(NotifyOrderStatus.FAILURE);
         notifyOrderVO.setNotifyTimes(0);
         notifyOrderVO.setAccountUuid(msg.getAccountUuid());
-        if(msg instanceof APICreateRenewOrderMsg){
-            notifyOrderVO.setProductUuid(((APICreateRenewOrderMsg) msg).getProductUuid());
-        } else if(msg instanceof  APICreateModifyOrderMsg){
-            notifyOrderVO.setProductUuid(((APICreateRenewOrderMsg) msg).getProductUuid());
-        } else if(msg instanceof APICreateUnsubcribeOrderMsg){
-            notifyOrderVO.setProductUuid(((APICreateRenewOrderMsg) msg).getProductUuid());
-        }
+        notifyOrderVO.setProductUuid(msg.getProductUuid());
         dbf.getEntityManager().persist(notifyOrderVO);
     }
 
@@ -703,6 +701,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(msg.getProductUuid());
         orderVo.setDuration(msg.getDuration());
+        orderVo.setCallBackData(msg.getCallBackData());
 
         originalPrice = originalPrice.multiply(duration);
         discountPrice = discountPrice.multiply(duration);
