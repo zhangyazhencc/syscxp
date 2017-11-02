@@ -24,7 +24,7 @@ public class APICreateInterfaceManualMsg extends APIMessage {
     private String switchPortUuid;
     @APIParam(emptyString = false, maxLength = 32, resourceType = EndpointVO.class)
     private String endpointUuid;
-    @APIParam(resourceType = PortOfferingVO.class)
+    @APIParam
     private SwitchPortType portType;
     @APIParam(validValues = {"TRUNK", "ACCESS", "QINQ"})
     private NetworkType networkType;
