@@ -54,4 +54,8 @@
         <serviceId>query</serviceId>
     </message>
 
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIDeleteResourceMsg</name>
+    </message>
+
 </service>

@@ -10,6 +10,7 @@ import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
@@ -99,9 +100,57 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             handle((APIAttachResourceByPoliciesMsg) msg);
         }else if (msg instanceof APIGetResourcesByProductTypeMsg) {
             handle((APIGetResourcesByProductTypeMsg) msg);
-        }else {
+        }else if(msg instanceof APIDeleteResourceMsg){
+            handle((APIDeleteResourceMsg) msg);
+        }
+        else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIDeleteResourceMsg msg) {
+        String url = AlarmGlobalProperty.FALCON_URL_DELETE;
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+        requestHeaders.setContentLength(msg.getTunnel_id().length());
+        HttpEntity<String> req = new HttpEntity<String>(msg.getTunnel_id(), requestHeaders);
+        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
+        com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
+        if(job.getString("success").equals("false")){
+            System.out.println(rsp.getBody());
+            throw new OperationFailureException(Platform.operr(msg.getTunnel_id()+"falcon delete fail "));
+        }
+
+//        String url = AlarmGlobalProperty.FALCON_URL_DELETE;
+//        HttpHeaders requestHeaders = new HttpHeaders();
+//        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+//        requestHeaders.setContentLength(msg.getTunnel_id().length());
+//        HttpEntity<String> req = new HttpEntity<String>(msg.getTunnel_id(), requestHeaders);
+//        if (logger.isTraceEnabled()) {
+//            logger.trace(String.format("json post[%s], %s", url, req.toString()));
+//        }
+//
+//        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
+//
+//
+//        com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
+//        if(job.getString("success").equals("false")){
+//            System.out.println(rsp.getBody());
+//            throw new OperationFailureException(Platform.operr(msg.getTunnel_id()+"falcon delete fail "));
+//        }
+
+        APIDeleteResourceEvent evt = new APIDeleteResourceEvent();
+        if(job.getString("success").equals("success")){
+            UpdateQuery q = UpdateQuery.New(ResourcePolicyRefVO.class);
+            q.condAnd(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnel_id());
+            q.delete();
+
+            evt.setMsg(msg.getTunnel_id());
+            evt.setSuccess(true);
+        }
+        bus.publish(evt);
+
+
     }
 
     private String getProductUrl(ProductType productType){
