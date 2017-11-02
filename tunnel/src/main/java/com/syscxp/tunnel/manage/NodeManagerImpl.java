@@ -716,6 +716,13 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("该连接点已经绑定该互联连接点！"));
         }
+        //判断同一个目的连接点的名称是否唯一
+        SimpleQuery<InnerConnectedEndpointVO> q2 = dbf.createQuery(InnerConnectedEndpointVO.class);
+        q2.add(InnerConnectedEndpointVO_.name, SimpleQuery.Op.EQ, msg.getName());
+        q2.add(InnerConnectedEndpointVO_.connectedEndpointUuid, SimpleQuery.Op.EQ, msg.getConnectedEndpointUuid());
+        if (q2.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("该连接点已经绑定该互联连接点！"));
+        }
     }
 
     private void validate(APIDeleteInnerEndpointMsg msg) {
