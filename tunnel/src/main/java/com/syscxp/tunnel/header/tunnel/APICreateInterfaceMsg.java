@@ -21,7 +21,7 @@ public class APICreateInterfaceMsg extends APIMessage {
     private String name;
     @APIParam(emptyString = false, maxLength = 32, resourceType = EndpointVO.class)
     private String endpointUuid;
-    @APIParam(resourceType = PortOfferingVO.class)
+    @APIParam
     private SwitchPortType portType;
     @APIParam(required = false, maxLength = 255)
     private String description;
