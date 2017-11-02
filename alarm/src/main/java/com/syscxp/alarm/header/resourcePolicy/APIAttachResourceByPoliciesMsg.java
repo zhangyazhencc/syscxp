@@ -7,13 +7,13 @@ import com.syscxp.header.message.APIParam;
 
 import java.util.List;
 
-@Action(adminOnly = true,category = AlarmConstant.ACTION_CATEGORY_RESOURCE_POLICY)
+@Action(category = AlarmConstant.ACTION_CATEGORY_RESOURCE_POLICY)
 public class APIAttachResourceByPoliciesMsg extends APIMessage{
 
     @APIParam(emptyString = false)
     private String resourceUuid;
 
-    @APIParam(nonempty = false)
+    @APIParam
     private List<String> policyUuids;
 
     @APIParam
