@@ -23,6 +23,9 @@ public class APIQueryTunnelForAlarmMsg extends APISyncCallMessage {
     @APIParam(required = false)
     private List productUuids;
 
+    @APIParam(required = false)
+    private boolean isBind;
+
     public Integer getLimit() {
         return limit;
     }
@@ -61,5 +64,13 @@ public class APIQueryTunnelForAlarmMsg extends APISyncCallMessage {
 
     public void setProductUuids(List productUuids) {
         this.productUuids = productUuids;
+    }
+
+    public boolean isBind() {
+        return isBind;
+    }
+
+    public void setBind(boolean bind) {
+        isBind = bind;
     }
 }

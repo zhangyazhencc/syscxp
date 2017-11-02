@@ -12,6 +12,9 @@ public class APIGetResourcesBindByPolicyMsg extends APISyncCallMessage {
     private String policyUuid;
 
     @APIParam
+    private String accountUuid;
+
+    @APIParam
     private boolean isBind;
 
     @APIParam
@@ -50,5 +53,13 @@ public class APIGetResourcesBindByPolicyMsg extends APISyncCallMessage {
 
     public void setStart(Integer start) {
         this.start = start;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }
