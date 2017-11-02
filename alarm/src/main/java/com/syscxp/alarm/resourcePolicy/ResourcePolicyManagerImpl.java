@@ -166,37 +166,32 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
         query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
         List<ResourcePolicyRefVO> resourcePolicyRefVOS = query.list();
-        String[] values = new String[resourcePolicyRefVOS.size()];
-        for (int i = 0; i < resourcePolicyRefVOS.size(); i++) {
-            values[i] = resourcePolicyRefVOS.get(i).getPolicyUuid();
-        }
+        query.select(ResourcePolicyRefVO_.resourceUuid);
+        List<String> uuids = query.listValue();
 
         if (policyVo.getProductType() == ProductType.TUNNEL) {
             APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
+            aMsg.setAccountUuid(msg.getAccountUuid());
             List<TunnelForAlarmInventory> inventories = null;
             long count = 0;
-            QueryCondition condition = new QueryCondition();
-            condition.setName("status");
-            condition.setOp("=");
-            condition.setValue("Connected");
-            QueryCondition condition2 = new QueryCondition();
-            condition2.setName("uuid");
-            condition2.setOp(op.name());
-            condition2.setValues(values);
-            List<QueryCondition> conditions = new ArrayList<>();
-            conditions.add(condition);
-            conditions.add(condition2);
             aMsg.setLimit(msg.getLimit());
             aMsg.setStart(msg.getStart());
+            aMsg.setProductUuids(uuids);
             InnerMessageHelper.setMD5(aMsg);
             String gstr = RESTApiDecoder.dump(aMsg);
-            RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
-            if (rsp.getState().equals(RestAPIState.Done.toString())) {
-                APIQueryTunnelForAlarmReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
-                if (productReply instanceof APIQueryTunnelForAlarmReply) {
-                    inventories = productReply.getInventories();
+            try{
+                RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
+                if (rsp.getState().equals(RestAPIState.Done.toString())) {
+                    APIQueryTunnelForAlarmReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
+                    if (productReply instanceof APIQueryTunnelForAlarmReply) {
+                        inventories = productReply.getInventories();
+                        count = productReply.getCount();
+                    }
                 }
+            }catch (Exception e){
+                throw new RuntimeException("please check your network");
             }
+
             APIGetResourcesBindByPolicyReply reply = new APIGetResourcesBindByPolicyReply();
             reply.setCount(count);
             reply.setInventories(inventories);
@@ -219,11 +214,13 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         aMsg.setLimit(msg.getLimit());
         InnerMessageHelper.setMD5(aMsg);
         String gstr = RESTApiDecoder.dump(aMsg);
+        long count = 0;
         RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
         if (rsp.getState().equals(RestAPIState.Done.toString())) {
             APIQueryTunnelForAlarmReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
             if (productReply instanceof APIQueryTunnelForAlarmReply) {
                 List<TunnelForAlarmInventory> tunnelList = productReply.getInventories();
+                count = productReply.getCount();
                 for (TunnelForAlarmInventory inventory : tunnelList) {
                     ResourceInventory resourceInventory = new ResourceInventory();
                     resourceInventory.setAccountUuid(inventory.getAccountUuid());
@@ -248,6 +245,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         }
         APIGetResourcesByProductTypeReply reply = new APIGetResourcesByProductTypeReply();
         reply.setInventories(inventories);
+        reply.setCount(count);
         bus.reply(msg, reply);
     }
 
