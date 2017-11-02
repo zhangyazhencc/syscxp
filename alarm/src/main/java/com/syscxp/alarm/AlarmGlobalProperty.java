@@ -9,7 +9,7 @@ public class AlarmGlobalProperty {
     @GlobalProperty(name = "tunnelServerUrl",defaultValue = "http://192.168.211.99/tunnel/api")
     public static String TUNNEL_SERVER_RUL;
 
-    @GlobalProperty(name = "falconUrl_save",defaultValue = "http://192.168.211.100:6892/monitoring/strategy/save")
+    @GlobalProperty(name = "falconUrlSave",defaultValue = "http://192.168.211.100:6892/monitoring/strategy/save")
     public static String FALCON_URL_SAVE;
 
     @GlobalProperty(name = "falconUrlDelete",defaultValue = "http://192.168.211.100:6892/monitoring/strategy/delete")
