@@ -52,6 +52,13 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.endpoint.APIQueryInnerEndpointMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <!--NodeExtensionInfo-->
+
+    <message>
         <name>com.syscxp.tunnel.header.node.APICreateNodeExtensionInfoMsg</name>
     </message>
 
