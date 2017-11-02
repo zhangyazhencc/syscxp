@@ -1208,8 +1208,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         List<ProductPriceUnit> units = new ArrayList<ProductPriceUnit>();
         NodeVO nodeA = dbf.findByUuid(nodeAUuid, NodeVO.class);
         NodeVO nodeZ = dbf.findByUuid(nodeZUuid, NodeVO.class);
-        String zoneCodeA = getZoneCode(nodeA.getUuid());
-        String zoneCodeZ = getZoneCode(nodeZ.getUuid());
+        String zoneUuidA = getZoneUuid(nodeA.getUuid());
+        String zoneUuidZ = getZoneUuid(nodeZ.getUuid());
         if (innerEndpointUuid == null) {  //国内互传  或者 国外到国外
             Category category = null;
             String areaCode = null;
@@ -1220,9 +1220,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 category = Category.CITY;
                 areaCode = "DEFAULT";
                 lineCode = "DEFAULT";
-            } else if (zoneCodeA != null && zoneCodeZ != null && zoneCodeA == zoneCodeZ) { //同区域
+            } else if (zoneUuidA != null && zoneUuidZ != null && zoneUuidA == zoneUuidZ) { //同区域
                 category = Category.REGION;
-                areaCode = zoneCodeA;
+                areaCode = zoneUuidA;
                 lineCode = "DEFAULT";
             } else {                      //长传
                 category = Category.LONG;
@@ -1244,16 +1244,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     //根据节点找到所属区域
-    private String getZoneCode(String nodeUuid) {
-        String zoneCode = null;
+    private String getZoneUuid(String nodeUuid) {
+        String zoneUuid = null;
         ZoneNodeRefVO zoneNodeRefVO = Q.New(ZoneNodeRefVO.class)
                 .eq(ZoneNodeRefVO_.nodeUuid, nodeUuid)
                 .find();
         if (zoneNodeRefVO != null) {
-            ZoneVO zoneVO = dbf.findByUuid(zoneNodeRefVO.getZoneUuid(), ZoneVO.class);
-            zoneCode = zoneVO.getCode();
+            zoneUuid = zoneNodeRefVO.getZoneUuid();
         }
-        return zoneCode;
+        return zoneUuid;
     }
 
     private Future<Void> cleanExpiredProductThread = null;

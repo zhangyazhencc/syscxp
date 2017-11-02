@@ -1,6 +1,5 @@
 package com.syscxp.alarm.log;
 
-import com.cloopen.rest.sdk.CCPRestSDK;
 import com.syscxp.alarm.header.contact.*;
 import com.syscxp.alarm.header.log.*;
 import com.syscxp.core.Platform;
@@ -15,18 +14,15 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.errorcode.OperationFailureException;
-import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsGlobalProperty;
 import com.syscxp.sms.SmsService;
-import com.syscxp.sms.SmsServiceImpl;
 import com.syscxp.sms.header.SmsVO;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import groovy.ui.SystemOutputInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Timestamp;
@@ -34,9 +30,9 @@ import java.util.*;
 
 import static com.syscxp.core.Platform.operr;
 
-public class ALARMLOGManagerImpl  extends AbstractService implements ApiMessageInterceptor {
+public class AlarmLogManagerImpl extends AbstractService implements ApiMessageInterceptor {
 
-    private static final CLogger logger = Utils.getLogger(ALARMLOGManagerImpl.class);
+    private static final CLogger logger = Utils.getLogger(AlarmLogManagerImpl.class);
     @Autowired
     private CloudBus bus;
     @Autowired
