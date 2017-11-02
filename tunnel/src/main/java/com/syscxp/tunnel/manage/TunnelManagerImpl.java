@@ -280,10 +280,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setName(msg.getName());
         vo.setEndpointUuid(msg.getEndpointUuid());
         vo.setSwitchPortUuid(msg.getSwitchPortUuid());
-        if (msg.getType() == null) {
+        if (msg.getNetworkType() == null) {
             vo.setType(NetworkType.TRUNK);
         } else {
-            vo.setType(msg.getType());
+            vo.setType(msg.getNetworkType());
         }
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());

@@ -1,7 +1,6 @@
 package com.syscxp.tunnel.header.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
-import com.syscxp.header.billing.ProductPriceUnit;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -9,8 +8,6 @@ import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.tunnel.header.endpoint.EndpointVO;
 import com.syscxp.tunnel.header.switchs.SwitchPortType;
 import com.syscxp.tunnel.header.switchs.SwitchPortVO;
-
-import java.util.List;
 
 /**
  * Created by DCY on 2017-09-11
@@ -30,7 +27,7 @@ public class APICreateInterfaceManualMsg extends APIMessage {
     @APIParam(resourceType = PortOfferingVO.class)
     private SwitchPortType portType;
     @APIParam(validValues = {"TRUNK", "ACCESS", "QINQ"})
-    private NetworkType type;
+    private NetworkType networkType;
     @APIParam(emptyString = false, maxLength = 255)
     private String description;
     @APIParam
@@ -94,12 +91,12 @@ public class APICreateInterfaceManualMsg extends APIMessage {
         this.productChargeModel = productChargeModel;
     }
 
-    public NetworkType getType() {
-        return type;
+    public NetworkType getNetworkType() {
+        return networkType;
     }
 
-    public void setType(NetworkType type) {
-        this.type = type;
+    public void setNetworkType(NetworkType networkType) {
+        this.networkType = networkType;
     }
 
     public SwitchPortType getPortType() {
