@@ -13,7 +13,6 @@ import java.util.List;
 @Inventory(mappingVOClass = ZoneVO.class)
 public class ZoneInventory {
     private String uuid;
-    private String code;
     private String name;
     private Timestamp createDate;
     private Timestamp lastOpDate;
@@ -22,7 +21,6 @@ public class ZoneInventory {
         ZoneInventory inv = new ZoneInventory();
 
         inv.setUuid(vo.getUuid());
-        inv.setCode(vo.getCode());
         inv.setName(vo.getName());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -44,14 +42,6 @@ public class ZoneInventory {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
     }
 
     public String getName() {

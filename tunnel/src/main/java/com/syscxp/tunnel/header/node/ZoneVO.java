@@ -15,9 +15,6 @@ public class ZoneVO {
     private String uuid;
 
     @Column
-    private String code;
-
-    @Column
     private String name;
 
     @Column
@@ -53,14 +50,6 @@ public class ZoneVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
     }
 
     public String getName() {
