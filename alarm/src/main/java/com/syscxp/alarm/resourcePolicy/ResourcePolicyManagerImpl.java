@@ -43,7 +43,9 @@ import org.springframework.util.StringUtils;
 
 import javax.persistence.Query;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMessageInterceptor {
@@ -109,38 +111,27 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
     }
 
     private void handle(APIDeleteResourceMsg msg) {
+
         String url = AlarmGlobalProperty.FALCON_URL_DELETE;
+
+        Map<String,String> tunnelIdMap = new HashMap<>();
+        tunnelIdMap.put("tunnel_id", msg.getTunnel_id());
+
+        String commandParam = JSONObjectUtil.toJsonString(tunnelIdMap);
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        requestHeaders.setContentLength(msg.getTunnel_id().length());
-        HttpEntity<String> req = new HttpEntity<String>(msg.getTunnel_id(), requestHeaders);
+        requestHeaders.setContentLength(commandParam.length());
+        HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
         ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
         com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
         if(job.getString("success").equals("false")){
             System.out.println(rsp.getBody());
-            throw new OperationFailureException(Platform.operr(msg.getTunnel_id()+"falcon delete fail "));
+            throw new OperationFailureException(Platform.operr("falcon delete fail "));
         }
 
-//        String url = AlarmGlobalProperty.FALCON_URL_DELETE;
-//        HttpHeaders requestHeaders = new HttpHeaders();
-//        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-//        requestHeaders.setContentLength(msg.getTunnel_id().length());
-//        HttpEntity<String> req = new HttpEntity<String>(msg.getTunnel_id(), requestHeaders);
-//        if (logger.isTraceEnabled()) {
-//            logger.trace(String.format("json post[%s], %s", url, req.toString()));
-//        }
-//
-//        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
-//
-//
-//        com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
-//        if(job.getString("success").equals("false")){
-//            System.out.println(rsp.getBody());
-//            throw new OperationFailureException(Platform.operr(msg.getTunnel_id()+"falcon delete fail "));
-//        }
 
         APIDeleteResourceEvent evt = new APIDeleteResourceEvent();
-        if(job.getString("success").equals("success")){
+        if(!job.getString("success").equals("false")){
             UpdateQuery q = UpdateQuery.New(ResourcePolicyRefVO.class);
             q.condAnd(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnel_id());
             q.delete();
@@ -324,7 +315,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         tunnelparameter.setRules(rulelist);
         tunnelparameterlist.add(tunnelparameter);
 
-        String url = AlarmGlobalProperty.FALCON_URL;
+        String url = AlarmGlobalProperty.FALCON_URL_SAVE;
         String commandParam = JSONObjectUtil.toJsonString(tunnelparameterlist);
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -408,7 +399,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             tunnelparameterlist.add(tunnelparameter);
         }
 
-        String url = AlarmGlobalProperty.FALCON_URL;
+        String url = AlarmGlobalProperty.FALCON_URL_SAVE;
         String commandParam = JSONObjectUtil.toJsonString(tunnelparameterlist);
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -590,7 +581,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
                 tunnelparameterlist.add(tunnelparameter);
             }
 
-            String url = AlarmGlobalProperty.FALCON_URL;
+            String url = AlarmGlobalProperty.FALCON_URL_SAVE;
             String commandParam = JSONObjectUtil.toJsonString(tunnelparameterlist);
             HttpHeaders requestHeaders = new HttpHeaders();
             requestHeaders.setContentType(MediaType.APPLICATION_JSON);

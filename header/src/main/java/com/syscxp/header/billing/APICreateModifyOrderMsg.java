@@ -32,5 +32,10 @@ public class APICreateModifyOrderMsg extends APICreateOrderMsg {
         this.startTime = startTime;
     }
 
+    public APICreateModifyOrderMsg(APICreateOrderMsg msg) {
+        super(msg);
+    }
 
+    public APICreateModifyOrderMsg() {
+    }
 }

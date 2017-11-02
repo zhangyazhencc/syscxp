@@ -106,4 +106,18 @@ public class APICreateOrderMsg extends APISyncCallMessage {
     public void setCallBackData(String callBackData) {
         this.callBackData = callBackData;
     }
+
+    public APICreateOrderMsg(APICreateOrderMsg msg){
+        this.units = msg.getUnits();
+        this.productName = msg.getProductName();
+        this.productType = msg.getProductType();
+        this.productUuid = msg.getProductUuid();
+        this.accountUuid = msg.getAccountUuid();
+        this.opAccountUuid = msg.getOpAccountUuid();
+        this.callBackData = msg.getCallBackData();
+        this.descriptionData = msg.getDescriptionData();
+        this.notifyUrl = msg.getNotifyUrl();
+    }
+
+    public APICreateOrderMsg(){}
 }

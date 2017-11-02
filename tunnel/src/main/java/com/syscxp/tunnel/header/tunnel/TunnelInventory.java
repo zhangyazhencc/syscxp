@@ -19,7 +19,7 @@ public class TunnelInventory {
     private String accountUuid;
     private String ownerAccountUuid;
     private Integer vsi;
-    private List<TunnelInterfaceInventory> tunnelInterfaces = new ArrayList<TunnelInterfaceInventory>();
+    private List<TunnelSwitchInventory> tunnelSwitchs = new ArrayList<TunnelSwitchInventory>();
     private String name;
     private Long bandwidth;
     private Double distance;
@@ -40,7 +40,7 @@ public class TunnelInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
         inv.setVsi(vo.getVsi());
-        inv.setTunnelInterfaces(TunnelInterfaceInventory.valueOf(vo.getTunnelInterfaceVOs()));
+        inv.setTunnelSwitchs(TunnelSwitchInventory.valueOf(vo.getTunnelSwitchVOS()));
         inv.setName(vo.getName());
         inv.setBandwidth(vo.getBandwidth());
         inv.setDistance(vo.getDistance());
@@ -185,14 +185,6 @@ public class TunnelInventory {
         this.vsi = vsi;
     }
 
-    public List<TunnelInterfaceInventory> getTunnelInterfaces() {
-        return tunnelInterfaces;
-    }
-
-    public void setTunnelInterfaces(List<TunnelInterfaceInventory> tunnelInterfaces) {
-        this.tunnelInterfaces = tunnelInterfaces;
-    }
-
     public Timestamp getExpireDate() {
         return expireDate;
     }
@@ -207,5 +199,13 @@ public class TunnelInventory {
 
     public void setOwnerAccountUuid(String ownerAccountUuid) {
         this.ownerAccountUuid = ownerAccountUuid;
+    }
+
+    public List<TunnelSwitchInventory> getTunnelSwitchs() {
+        return tunnelSwitchs;
+    }
+
+    public void setTunnelSwitchs(List<TunnelSwitchInventory> tunnelSwitchs) {
+        this.tunnelSwitchs = tunnelSwitchs;
     }
 }

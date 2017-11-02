@@ -1,17 +1,12 @@
 package com.syscxp.tunnel.header.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
-import com.syscxp.header.billing.ProductPriceUnit;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.tunnel.header.endpoint.EndpointVO;
-import com.syscxp.tunnel.header.switchs.SwitchPortAttribute;
-import com.syscxp.tunnel.header.switchs.SwitchPortType;
 import com.syscxp.header.tunnel.TunnelConstant;
-
-import java.util.List;
 
 /**
  * Created by DCY on 2017-09-08

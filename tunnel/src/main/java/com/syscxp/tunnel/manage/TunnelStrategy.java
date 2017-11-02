@@ -30,19 +30,19 @@ public class TunnelStrategy  {
     private DatabaseFacade dbf;
 
     //策略分配端口
-    public String getSwitchPortByStrategy(String endpointUuid , SwitchPortAttribute portAttribute , SwitchPortType portType){
+    public String getSwitchPortByStrategy(String endpointUuid , SwitchPortType portType){
         String switchPortUuid = null;
-        if(portAttribute == SwitchPortAttribute.Shared){        //共享端口
+        if(portType == SwitchPortType.SHARE){        //共享端口
             String sql = "select c.uuid from EndpointVO a,SwitchVO b,SwitchPortVO c " +
                     "where a.uuid = b.endpointUuid and b.uuid = c.switchUuid " +
                     "and a.uuid = :endpointUuid " +
                     "and b.state = :switchState and b.status = :switchStatus " +
-                    "and c.portAttribute = :portAttribute and c.state = :portState and c.autoAllot = :autoAllot ";
+                    "and c.portType = :portType and c.state = :portState and c.autoAllot = :autoAllot ";
             TypedQuery<String> vq = dbf.getEntityManager().createQuery(sql, String.class);
             vq.setParameter("endpointUuid",endpointUuid);
             vq.setParameter("switchState", SwitchState.Enabled);
             vq.setParameter("switchStatus", SwitchStatus.Connected);
-            vq.setParameter("portAttribute",portAttribute);
+            vq.setParameter("portType",portType);
             vq.setParameter("portState", SwitchPortState.Enabled);
             vq.setParameter("autoAllot", 1);
             List<String> portList = vq.getResultList();
@@ -50,20 +50,19 @@ public class TunnelStrategy  {
                 Random r = new Random();
                 switchPortUuid = portList.get(r.nextInt(portList.size()));
             }
-        }else if(portAttribute == SwitchPortAttribute.Exclusive){    //独享端口
+        }else{    //独享端口
             String sql = "select c.uuid from EndpointVO a, SwitchVO b,SwitchPortVO c " +
                     "where a.uuid = b.endpointUuid and b.uuid = c.switchUuid " +
                     "and a.uuid = :endpointUuid " +
                     "and b.state = :switchState and b.status = :switchStatus " +
-                    "and c.portAttribute = :portAttribute and c.state = :portState and c.portType = :portType and c.autoAllot = :autoAllot " +
+                    "and c.portType = :portType and c.state = :portState and c.autoAllot = :autoAllot " +
                     "and c.uuid not in (select switchPortUuid from InterfaceVO)";
             TypedQuery<String> vq = dbf.getEntityManager().createQuery(sql, String.class);
             vq.setParameter("endpointUuid",endpointUuid);
             vq.setParameter("switchState", SwitchState.Enabled);
             vq.setParameter("switchStatus", SwitchStatus.Connected);
-            vq.setParameter("portAttribute",portAttribute);
-            vq.setParameter("portState", SwitchPortState.Enabled);
             vq.setParameter("portType",portType);
+            vq.setParameter("portState", SwitchPortState.Enabled);
             vq.setParameter("autoAllot", 1);
             List<String> portList = vq.getResultList();
             if(portList.size() > 0){
