@@ -6,6 +6,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.tunnel.header.switchs.SwitchPortType;
 
 /**
  * Create by DCY on 2017/11/1
@@ -15,8 +16,8 @@ public class APIGetInterfacePriceMsg extends APISyncCallMessage{
 
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;
-    @APIParam(emptyString = false,maxLength = 32,resourceType = PortOfferingVO.class)
-    private String portOfferingUuid;
+    @APIParam
+    private SwitchPortType portType;
     @APIParam
     private Integer duration;
     @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
@@ -34,12 +35,12 @@ public class APIGetInterfacePriceMsg extends APISyncCallMessage{
         this.accountUuid = accountUuid;
     }
 
-    public String getPortOfferingUuid() {
-        return portOfferingUuid;
+    public SwitchPortType getPortType() {
+        return portType;
     }
 
-    public void setPortOfferingUuid(String portOfferingUuid) {
-        this.portOfferingUuid = portOfferingUuid;
+    public void setPortType(SwitchPortType portType) {
+        this.portType = portType;
     }
 
     public Integer getDuration() {
