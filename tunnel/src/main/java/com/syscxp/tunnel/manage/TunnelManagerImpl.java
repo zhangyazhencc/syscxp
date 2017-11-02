@@ -19,6 +19,7 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.header.tunnel.*;
 import com.syscxp.query.QueryFacade;
+import com.syscxp.tunnel.header.endpoint.EndpointVO;
 import com.syscxp.tunnel.header.node.NodeVO;
 import com.syscxp.tunnel.header.node.ZoneNodeRefVO;
 import com.syscxp.tunnel.header.node.ZoneNodeRefVO_;
@@ -234,7 +235,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         pmsg.setProductChargeModel(msg.getProductChargeModel());
         pmsg.setDuration(msg.getDuration());
         pmsg.setAccountUuid(msg.getAccountUuid());
-        pmsg.setUnits(getTunnelPriceUnitCopy(msg.getBandwidthOfferingUuid(), msg.getNodeAUuid(),
+        pmsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getNodeAUuid(),
                 msg.getNodeZUuid(), msg.getInnerEndpointUuid()));
         APIGetTunnelPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(msg);
         bus.reply(msg, reply);
@@ -456,7 +457,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         bus.publish(evt);
     }
 
-    private void afterCreateTunnel(String msgId, String bandwidthOfferingUuid, String accountUuid, String opAccountUuid, TunnelVO vo) {
+    private void afterCreateTunnel(String msgId, String bandwidthOfferingUuid, String accountUuid, String opAccountUuid, TunnelVO vo, String nodeAuuid, String nodeZuuid, String innerEndpointUuid) {
         APICreateTunnelEvent evt = new APICreateTunnelEvent(msgId);
 
         //调用支付
@@ -466,7 +467,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setProductType(ProductType.TUNNEL);
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
-        orderMsg.setUnits(getTunnelPriceUnit(bandwidthOfferingUuid));
+        orderMsg.setUnits(getTunnelPriceUnit(bandwidthOfferingUuid, nodeAuuid, nodeZuuid, innerEndpointUuid));
         orderMsg.setAccountUuid(accountUuid);
         orderMsg.setOpAccountUuid(opAccountUuid);
         orderMsg.setDescriptionData("no description");
@@ -533,7 +534,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setDistance(Distance.getDistance(nvoA.getLongtitude(), nvoA.getLatitude(), nvoZ.getLongtitude(), nvoZ.getLatitude()));
 
         //给A端口分配外部vlan,并创建TunnelSwitch
-        Integer vlanA = ts.getInnerVlanByStrategy(msg.getInterfaceAUuid());
+        Integer vlanA = ts.getVlanByStrategy(msg.getInterfaceAUuid());
         if (vlanA == 0) {
             throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
         }
@@ -547,7 +548,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         tsvoA.setSortTag("A");
 
         //给Z端口分配外部vlan,并创建TunnelSwitch
-        Integer vlanZ = ts.getInnerVlanByStrategy(msg.getInterfaceZUuid());
+        Integer vlanZ = ts.getVlanByStrategy(msg.getInterfaceZUuid());
         if (vlanZ == 0) {
             throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
         }
@@ -561,6 +562,60 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         tsvoZ.setSortTag("Z");
 
         //如果跨国,将出海口设备添加至TunnelSwitch
+        if(msg.getInnerConnectedEndpointUuid() != null){
+            SwitchVO innerSwitch = Q.New(SwitchVO.class)
+                    .eq(SwitchVO_.endpointUuid,msg.getInnerConnectedEndpointUuid())
+                    .eq(SwitchVO_.type,SwitchType.INNER)
+                    .find();
+            if (innerSwitch == null) {
+                throw new ApiMessageInterceptionException(argerr("该互联连接点下未添加内联逻辑交换机 "));
+            }
+            SwitchPortVO innerSwitchPort = Q.New(SwitchPortVO.class)
+                    .eq(SwitchPortVO_.switchUuid,innerSwitch.getUuid())
+                    .find();
+            if (innerSwitchPort == null) {
+                throw new ApiMessageInterceptionException(argerr("该内联逻辑交换机下未添加端口 "));
+            }
+            SwitchVO outerSwitch = Q.New(SwitchVO.class)
+                    .eq(SwitchVO_.endpointUuid,msg.getInnerConnectedEndpointUuid())
+                    .eq(SwitchVO_.type,SwitchType.OUTER)
+                    .find();
+            if (outerSwitch == null) {
+                throw new ApiMessageInterceptionException(argerr("该互联连接点下未添加外联逻辑交换机 "));
+            }
+            SwitchPortVO outerSwitchPort = Q.New(SwitchPortVO.class)
+                    .eq(SwitchPortVO_.switchUuid,outerSwitch.getUuid())
+                    .find();
+            if (innerSwitchPort == null) {
+                throw new ApiMessageInterceptionException(argerr("该外联逻辑交换机下未添加端口 "));
+            }
+            Integer innerVlan = ts.getInnerVlanByStrategy(innerSwitch.getUuid());
+            if (innerVlan == 0) {
+                throw new ApiMessageInterceptionException(argerr("该端口所属内联虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
+            }
+
+            TunnelSwitchVO tsvoB = new TunnelSwitchVO();
+            tsvoB.setUuid(Platform.getUuid());
+            tsvoB.setTunnelUuid(vo.getUuid());
+            tsvoB.setEndpointUuid(msg.getInnerConnectedEndpointUuid());
+            tsvoB.setSwitchPortUuid(innerSwitchPort.getUuid());
+            tsvoB.setType(NetworkType.TRUNK);
+            tsvoB.setVlan(innerVlan);
+            tsvoB.setSortTag("B");
+
+            TunnelSwitchVO tsvoC = new TunnelSwitchVO();
+            tsvoC.setUuid(Platform.getUuid());
+            tsvoC.setTunnelUuid(vo.getUuid());
+            tsvoC.setEndpointUuid(msg.getInnerConnectedEndpointUuid());
+            tsvoC.setSwitchPortUuid(outerSwitchPort.getUuid());
+            tsvoC.setType(NetworkType.TRUNK);
+            tsvoC.setVlan(innerVlan);
+            tsvoC.setSortTag("C");
+
+            tsvoB = dbf.persistAndRefresh(tsvoB);
+            tsvoC = dbf.persistAndRefresh(tsvoC);
+
+        }
 
         tsvoA = dbf.persistAndRefresh(tsvoA);
         tsvoZ = dbf.persistAndRefresh(tsvoZ);
@@ -570,8 +625,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 msg.getBandwidthOfferingUuid(),
                 msg.getAccountUuid(),
                 msg.getSession().getAccountUuid(),
-                vo);
-
+                vo,
+                msg.getNodeAUuid(),
+                msg.getNodeZUuid(),
+                msg.getInnerConnectedEndpointUuid());
     }
 
     @Transactional
@@ -646,7 +703,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 msg.getBandwidthOfferingUuid(),
                 msg.getAccountUuid(),
                 msg.getSession().getAccountUuid(),
-                vo);
+                vo,
+                msg.getNodeAUuid(),
+                msg.getNodeZUuid(),
+                msg.getInnerConnectedEndpointUuid());
 
     }
 
@@ -688,11 +748,33 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         bus.publish(evt);
     }
 
+    //根据TunnelSwicth获取两端节点
+    private String getNodeUuid(TunnelVO vo,String sortTag){
+        TunnelSwitchVO tunnelSwitch = Q.New(TunnelSwitchVO.class)
+                .eq(TunnelSwitchVO_.tunnelUuid,vo.getUuid())
+                .eq(TunnelSwitchVO_.sortTag,sortTag)
+                .find();
+        String nodeUuid = dbf.findByUuid(tunnelSwitch.getEndpointUuid(),EndpointVO.class).getNodeUuid();
+        return nodeUuid;
+    }
     @Transactional
     private void handle(APIUpdateTunnelBandwidthMsg msg) {
         APIUpdateTunnelBandwidthEvent evt = new APIUpdateTunnelBandwidthEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        String nodeAUuid = getNodeUuid(vo,"A");
+        String nodeZUuid = getNodeUuid(vo,"Z");
+
+        String innerEndpointUuid = null;
+        TunnelSwitchVO tunnelSwitch = Q.New(TunnelSwitchVO.class)
+                .eq(TunnelSwitchVO_.tunnelUuid,vo.getUuid())
+                .eq(TunnelSwitchVO_.sortTag,"B")
+                .find();
+        if(tunnelSwitch != null){
+            innerEndpointUuid = tunnelSwitch.getEndpointUuid();
+        }
+
         BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
 
         //调整次数记录表
@@ -709,7 +791,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setProductName(vo.getName());
         orderMsg.setDescriptionData("no description");
         orderMsg.setCallBackData(bandwidthOfferingVO.getBandwidth().toString());
-        orderMsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid()));
+        orderMsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), nodeAUuid,
+                nodeZUuid, innerEndpointUuid));
         orderMsg.setProductType(ProductType.TUNNEL);
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -1214,56 +1297,89 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         return units;
     }
 
-    private List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid) {
-        List<ProductPriceUnit> units = new ArrayList<ProductPriceUnit>();
-        ProductPriceUnit unit = new ProductPriceUnit();
-        unit.setProductTypeCode(ProductType.TUNNEL);
-        unit.setCategoryCode(Category.CITY);
-        unit.setAreaCode("DEFAULT");
-        unit.setLineCode("DEFAULT");
-        unit.setConfigCode(bandwidthOfferingUuid);
-        units.add(unit);
-        return units;
-    }
-
     //获取云专线的单价
-    private List<ProductPriceUnit> getTunnelPriceUnitCopy(String bandwidthOfferingUuid, String nodeAUuid, String nodeZUuid, String innerEndpointUuid) {
+    private List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid, String nodeAUuid, String nodeZUuid, String innerEndpointUuid) {
         List<ProductPriceUnit> units = new ArrayList<ProductPriceUnit>();
         NodeVO nodeA = dbf.findByUuid(nodeAUuid, NodeVO.class);
         NodeVO nodeZ = dbf.findByUuid(nodeZUuid, NodeVO.class);
         String zoneUuidA = getZoneUuid(nodeA.getUuid());
         String zoneUuidZ = getZoneUuid(nodeZ.getUuid());
         if (innerEndpointUuid == null) {  //国内互传  或者 国外到国外
-            Category category = null;
-            String areaCode = null;
-            String lineCode = null;
-            ProductPriceUnit unit = new ProductPriceUnit();
-
-            if (nodeA.getCity() == nodeZ.getCity()) {  //同城
-                category = Category.CITY;
-                areaCode = "DEFAULT";
-                lineCode = "DEFAULT";
-            } else if (zoneUuidA != null && zoneUuidZ != null && zoneUuidA == zoneUuidZ) { //同区域
-                category = Category.REGION;
-                areaCode = zoneUuidA;
-                lineCode = "DEFAULT";
-            } else {                      //长传
-                category = Category.LONG;
-                areaCode = "DEFAULT";
-                lineCode = "DEFAULT";
+            if(nodeA.getCountry().equals("中国") && nodeZ.getCountry().equals("中国")){  //国内互传
+                ProductPriceUnit unit = getTunnelPriceUnitCN(bandwidthOfferingUuid,nodeA,nodeZ,zoneUuidA,zoneUuidZ);
+                units.add(unit);
+            }else{                          //国外到国外
+                ProductPriceUnit unit = getTunnelPriceUnitAb(bandwidthOfferingUuid,nodeA,nodeZ);
+                units.add(unit);
             }
-            unit.setProductTypeCode(ProductType.TUNNEL);
-            unit.setCategoryCode(category);
-            unit.setAreaCode(areaCode);
-            unit.setLineCode(lineCode);
-            unit.setConfigCode(bandwidthOfferingUuid);
-
-            units.add(unit);
         } else {                          //跨国
+            EndpointVO endpointVO = dbf.findByUuid(innerEndpointUuid,EndpointVO.class);
+            NodeVO nodeB = dbf.findByUuid(endpointVO.getNodeUuid(),NodeVO.class);
+            String zoneUuidB = getZoneUuid(nodeB.getUuid());
 
+            ProductPriceUnit unitInner = getTunnelPriceUnitCN(bandwidthOfferingUuid,nodeA,nodeB,zoneUuidA,zoneUuidB);
+            ProductPriceUnit unitOuter = getTunnelPriceUnitCNToAb(bandwidthOfferingUuid,nodeB,nodeZ);
+
+            units.add(unitInner);
+            units.add(unitOuter);
         }
-
         return units;
+    }
+
+    //国内互传单价
+    private ProductPriceUnit getTunnelPriceUnitCN(String bandwidthOfferingUuid,NodeVO nodeA,NodeVO nodeZ,String zoneUuidA,String zoneUuidZ){
+        ProductPriceUnit unit = new ProductPriceUnit();
+
+        Category category = null;
+        String areaCode = null;
+        String lineCode = null;
+
+        if (nodeA.getCity().equals(nodeZ.getCity())) {  //同城
+            category = Category.CITY;
+            areaCode = "DEFAULT";
+            lineCode = "DEFAULT";
+        } else if (zoneUuidA != null && zoneUuidZ != null && zoneUuidA.equals(zoneUuidZ)) { //同区域
+            category = Category.REGION;
+            areaCode = zoneUuidA;
+            lineCode = "DEFAULT";
+        } else {                      //长传
+            category = Category.LONG;
+            areaCode = "DEFAULT";
+            lineCode = "DEFAULT";
+        }
+        unit.setProductTypeCode(ProductType.TUNNEL);
+        unit.setCategoryCode(category);
+        unit.setAreaCode(areaCode);
+        unit.setLineCode(lineCode);
+        unit.setConfigCode(bandwidthOfferingUuid);
+
+        return unit;
+    }
+
+    //国内到国外单价
+    private ProductPriceUnit getTunnelPriceUnitCNToAb(String bandwidthOfferingUuid,NodeVO nodeB,NodeVO nodeZ){
+        ProductPriceUnit unit = new ProductPriceUnit();
+
+        unit.setProductTypeCode(ProductType.TUNNEL);
+        unit.setCategoryCode(Category.ABROAD);
+        unit.setAreaCode("CHINA2ABROAD");
+        unit.setLineCode(nodeB.getCity()+"/"+nodeZ.getCountry());
+        unit.setConfigCode(bandwidthOfferingUuid);
+
+        return unit;
+    }
+
+    //国外到国外单价
+    private ProductPriceUnit getTunnelPriceUnitAb(String bandwidthOfferingUuid,NodeVO nodeA,NodeVO nodeZ){
+        ProductPriceUnit unit = new ProductPriceUnit();
+
+        unit.setProductTypeCode(ProductType.TUNNEL);
+        unit.setCategoryCode(Category.ABROAD);
+        unit.setAreaCode("ABROAD");
+        unit.setLineCode(nodeA.getCountry()+"/"+nodeZ.getCountry());
+        unit.setConfigCode(bandwidthOfferingUuid);
+
+        return unit;
     }
 
     //根据节点找到所属区域
@@ -1505,7 +1621,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid()));
+        priceMsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getNodeAUuid(),
+                msg.getNodeZUuid(), msg.getInnerConnectedEndpointUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
@@ -1529,7 +1646,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid()));
+        priceMsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getNodeAUuid(),
+                msg.getNodeZUuid(), msg.getInnerConnectedEndpointUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
