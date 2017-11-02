@@ -17,14 +17,13 @@ public class TunnelVO extends TunnelAO{
 
     @OneToMany(fetch= FetchType.EAGER)
     @JoinColumn(name = "tunnelUuid", insertable = false, updatable = false)
-    private List<TunnelInterfaceVO> tunnelInterfaceVOs = new ArrayList<TunnelInterfaceVO>();
+    private List<TunnelSwitchVO> tunnelSwitchVOS = new ArrayList<TunnelSwitchVO>();
 
-
-    public List<TunnelInterfaceVO> getTunnelInterfaceVOs() {
-        return tunnelInterfaceVOs;
+    public List<TunnelSwitchVO> getTunnelSwitchVOS() {
+        return tunnelSwitchVOS;
     }
 
-    public void setTunnelInterfaceVOs(List<TunnelInterfaceVO> tunnelInterfaceVOs) {
-        this.tunnelInterfaceVOs = tunnelInterfaceVOs;
+    public void setTunnelSwitchVOS(List<TunnelSwitchVO> tunnelSwitchVOS) {
+        this.tunnelSwitchVOS = tunnelSwitchVOS;
     }
 }
