@@ -146,10 +146,18 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIListProvinceNodeMsg msg) {
         List<String> domesticNodeInventoryList =new ArrayList<>();
+        TypedQuery<Tuple> tfq = null;
+        if(msg.getCountry() != null){
+            String sql = "select distinct province from NodeVO where country = :country";
+            tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+            tfq.setParameter("country", msg.getCountry());
 
-        String sql = "select distinct province from NodeVO where country = :country";
-        TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
-        tfq.setParameter("country", msg.getCountry());
+        }else{
+            String sql = "select distinct province from NodeVO";
+            tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+        }
+
+
         List<Tuple> ts = tfq.getResultList();
         for (Tuple t : ts) {
             domesticNodeInventoryList.add(t.get(0, String.class));
