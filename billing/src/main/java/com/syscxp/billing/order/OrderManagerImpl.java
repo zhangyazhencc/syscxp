@@ -472,9 +472,15 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         List<ProductPriceUnit> units = msg.getUnits();
         List<String> productPriceUnitUuids = new ArrayList<String>();
         for (ProductPriceUnit unit : units) {
+            SimpleQuery<ProductCategoryVO> query = dbf.createQuery(ProductCategoryVO.class);
+            query.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, unit.getCategoryCode());
+            query.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
+            ProductCategoryVO productCategoryVO = query.find();
+            if(productCategoryVO ==null){
+                throw new IllegalArgumentException("can not find productType or category");
+            }
             SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-            q.add(ProductPriceUnitVO_.categoryCode, SimpleQuery.Op.EQ, unit.getCategoryCode());
-            q.add(ProductPriceUnitVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
+            q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryVO.getUuid());
             q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, unit.getAreaCode());
             q.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, unit.getLineCode());
             q.add(ProductPriceUnitVO_.configCode, SimpleQuery.Op.EQ, unit.getConfigCode());
@@ -643,9 +649,15 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         List<ProductPriceUnit> units = msg.getUnits();
         List<String> productPriceUnitUuids = new ArrayList<String>();
         for (ProductPriceUnit unit : units) {
+            SimpleQuery<ProductCategoryVO> query = dbf.createQuery(ProductCategoryVO.class);
+            query.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, unit.getCategoryCode());
+            query.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
+            ProductCategoryVO productCategoryVO = query.find();
+            if(productCategoryVO ==null){
+                throw new IllegalArgumentException("can not find productType or category");
+            }
             SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-            q.add(ProductPriceUnitVO_.categoryCode, SimpleQuery.Op.EQ, unit.getCategoryCode());
-            q.add(ProductPriceUnitVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
+            q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryVO.getUuid());
             q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, unit.getAreaCode());
             q.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, unit.getLineCode());
             q.add(ProductPriceUnitVO_.configCode, SimpleQuery.Op.EQ, unit.getConfigCode());
