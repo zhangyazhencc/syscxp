@@ -41,4 +41,11 @@ public class APICreateSLACompensationOrderMsg extends APICreateOrderMsg {
     public void setDuration(int duration) {
         this.duration = duration;
     }
+
+    public APICreateSLACompensationOrderMsg(APICreateOrderMsg msg) {
+        super(msg);
+    }
+
+    public APICreateSLACompensationOrderMsg() {
+    }
 }
