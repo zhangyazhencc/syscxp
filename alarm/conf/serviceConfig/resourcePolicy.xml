@@ -58,4 +58,8 @@
         <name>com.syscxp.alarm.header.resourcePolicy.APIDeleteResourceMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconMsg</name>
+    </message>
+
 </service>

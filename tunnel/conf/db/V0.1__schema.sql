@@ -351,7 +351,7 @@ VALUES ('2G','2G','',2147483648,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
 CREATE TABLE `syscxp_tunnel`.`PortOfferingVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'uuid',
   `name` varchar(255) NOT NULL UNIQUE COMMENT 'port offering name',
-  `type` varchar(255) NOT NULL COMMENT '描述',
+  `type` varchar(255) NOT NULL UNIQUE COMMENT '描述',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
