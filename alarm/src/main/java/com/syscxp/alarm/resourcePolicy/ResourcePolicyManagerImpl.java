@@ -14,6 +14,8 @@ import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.keyvalue.Op;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.AbstractService;
+import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconMsg;
+import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconReply;
 import com.syscxp.header.alarm.AlarmConstant;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
@@ -101,11 +103,69 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             handle((APIGetResourcesByProductTypeMsg) msg);
         } else if (msg instanceof APIDeleteResourceMsg) {
             handle((APIDeleteResourceMsg) msg);
+        } else if (msg instanceof APIUpdateTunnelInfoForFalconMsg) {
+            handle((APIUpdateTunnelInfoForFalconMsg) msg);
         }
 
         else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIUpdateTunnelInfoForFalconMsg msg) {
+
+        TunnelParameter tunnelparameter = new TunnelParameter();
+        tunnelparameter.setTunnel_id(msg.getTunnel_id());
+        tunnelparameter.setUser_id(msg.getSession().getAccountUuid());
+        tunnelparameter.setEndpointA_vlan(msg.getEndpointA_vlan());
+        tunnelparameter.setEndpointZ_vlan(msg.getEndpointZ_vlan());
+        tunnelparameter.setEndpointA_ip(msg.getEndpointA_ip());
+        tunnelparameter.setEndpointZ_ip(msg.getEndpointZ_ip());
+        tunnelparameter.setBandwidth(msg.getBandwidth());
+
+        List<Rule> rulelist = rulelist = new ArrayList<>();
+
+        List<TunnelParameter> tunnelparameterlist = new ArrayList<>();
+        List<RegulationVO> regulationvolist = null;
+        Rule rule = null;
+
+        SimpleQuery<ResourcePolicyRefVO> policyrquery = dbf.createQuery(ResourcePolicyRefVO.class);
+        policyrquery.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnel_id());
+        List<ResourcePolicyRefVO> policylist = policyrquery.list();
+        for (ResourcePolicyRefVO policy : policylist) {
+            SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
+            regulationvoquery.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, policy.getPolicyUuid());
+            regulationvolist = regulationvoquery.list();
+            for (RegulationVO regulationvo : regulationvolist) {
+                rule = new Rule();
+                rule.setOp(regulationvo.getComparisonRuleVO().getComparisonValue());
+                rule.setStrategy_type(regulationvo.getMonitorTargetVO().getTargetValue());
+                rule.setRight_value(regulationvo.getAlarmThreshold());
+                rule.setAlarm_rule_id(regulationvo.getUuid());
+                rule.setStay_time(regulationvo.getTriggerPeriod());
+                rulelist.add(rule);
+            }
+        }
+
+        tunnelparameter.setRules(rulelist);
+        tunnelparameterlist.add(tunnelparameter);
+
+        String url = AlarmGlobalProperty.FALCON_URL_SAVE;
+        String commandParam = JSONObjectUtil.toJsonString(tunnelparameterlist);
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+        requestHeaders.setContentLength(commandParam.length());
+        HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
+        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
+        com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
+        if (job.getString("success").equals("false")) {
+            System.out.println(rsp.getBody());
+            throw new OperationFailureException(Platform.operr("falcon fail "));
+        }
+
+        APIUpdateTunnelInfoForFalconReply reply = new APIUpdateTunnelInfoForFalconReply();
+        bus.reply(msg,reply);
+
     }
 
     private void handle(APIDeleteResourceMsg msg) {
@@ -166,41 +226,32 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
         query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
         List<ResourcePolicyRefVO> resourcePolicyRefVOS = query.list();
-        String[] values = new String[resourcePolicyRefVOS.size()];
-        for (int i = 0; i < resourcePolicyRefVOS.size(); i++) {
-            values[i] = resourcePolicyRefVOS.get(i).getPolicyUuid();
-        }
+        query.select(ResourcePolicyRefVO_.resourceUuid);
+        List<String> uuids = query.listValue();
 
         if (policyVo.getProductType() == ProductType.TUNNEL) {
             APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
+            aMsg.setAccountUuid(msg.getAccountUuid());
             List<TunnelForAlarmInventory> inventories = null;
             long count = 0;
-            QueryCondition condition = new QueryCondition();
-            condition.setName("status");
-            condition.setOp("=");
-            condition.setValue("Connected");
-            QueryCondition condition2 = new QueryCondition();
-            condition2.setName("uuid");
-            condition2.setOp(op.name());
-            condition2.setValues(values);
-            List<QueryCondition> conditions = new ArrayList<>();
-            conditions.add(condition);
-            conditions.add(condition2);
             aMsg.setLimit(msg.getLimit());
             aMsg.setStart(msg.getStart());
-            aMsg.setConditions(conditions);
-            aMsg.setReplyWithCount(true);
-            aMsg.setCount(false);
+            aMsg.setProductUuids(uuids);
             InnerMessageHelper.setMD5(aMsg);
             String gstr = RESTApiDecoder.dump(aMsg);
-            RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
-            if (rsp.getState().equals(RestAPIState.Done.toString())) {
-                APIQueryTunnelForAlarmReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
-                if (productReply instanceof APIQueryTunnelForAlarmReply) {
-                    inventories = productReply.getInventories();
-                    count = productReply.getTotal();
+            try{
+                RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
+                if (rsp.getState().equals(RestAPIState.Done.toString())) {
+                    APIQueryTunnelForAlarmReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
+                    if (productReply instanceof APIQueryTunnelForAlarmReply) {
+                        inventories = productReply.getInventories();
+                        count = productReply.getCount();
+                    }
                 }
+            }catch (Exception e){
+                throw new RuntimeException("please check your network");
             }
+
             APIGetResourcesBindByPolicyReply reply = new APIGetResourcesBindByPolicyReply();
             reply.setCount(count);
             reply.setInventories(inventories);
@@ -217,26 +268,19 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
 
         APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
         List<ResourceInventory> inventories = null;
-        QueryCondition condition = new QueryCondition();
-        condition.setName("status");
-        condition.setOp("=");
-        condition.setValue("Connected");
-        List<QueryCondition> conditions = new ArrayList<>();
-        if (msg.getConditions() != null && msg.getConditions().size() > 0) {
-            conditions.addAll(msg.getConditions());
-        }
-        conditions.add(condition);
-        aMsg.setConditions(conditions);
-        aMsg.setReplyWithCount(true);
+        aMsg.setAccountUuid(msg.getAccountUuid());
+        aMsg.setProductName(msg.getProductName());
         aMsg.setStart(msg.getStart());
         aMsg.setLimit(msg.getLimit());
         InnerMessageHelper.setMD5(aMsg);
         String gstr = RESTApiDecoder.dump(aMsg);
+        long count = 0;
         RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
         if (rsp.getState().equals(RestAPIState.Done.toString())) {
             APIQueryTunnelForAlarmReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
             if (productReply instanceof APIQueryTunnelForAlarmReply) {
                 List<TunnelForAlarmInventory> tunnelList = productReply.getInventories();
+                count = productReply.getCount();
                 for (TunnelForAlarmInventory inventory : tunnelList) {
                     ResourceInventory resourceInventory = new ResourceInventory();
                     resourceInventory.setAccountUuid(inventory.getAccountUuid());
@@ -261,6 +305,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         }
         APIGetResourcesByProductTypeReply reply = new APIGetResourcesByProductTypeReply();
         reply.setInventories(inventories);
+        reply.setCount(count);
         bus.reply(msg, reply);
     }
 
@@ -339,7 +384,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
         ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
         com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
-        if (job.getString("success").equals("false")) {
+        if (!job.getString("success").equals("True")) {
             System.out.println(rsp.getBody());
             throw new OperationFailureException(Platform.operr("falcon fail "));
         }
@@ -437,7 +482,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
         ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
         com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
-        if (job.getString("success").equals("false")) {
+        if (!job.getString("success").equals("True")) {
             System.out.println(rsp.getBody());
             throw new OperationFailureException(Platform.operr("falcon fail "));
         }

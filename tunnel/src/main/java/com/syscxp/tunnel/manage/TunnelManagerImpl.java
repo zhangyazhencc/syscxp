@@ -175,6 +175,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if(msg.getProductName() != null){
             q.add(TunnelForAlarmVO_.name, SimpleQuery.Op.LIKE, msg.getProductName());
         }
+        if(msg.getProductUuids() != null){
+            SimpleQuery.Op op =  SimpleQuery.Op.IN;
+            if(!msg.isBind()){
+                op = SimpleQuery.Op.NOT_IN;
+            }
+                q.add(TunnelForAlarmVO_.uuid, op, msg.getProductUuids());
+
+        }
+        q.add(TunnelForAlarmVO_.status, SimpleQuery.Op.EQ, TunnelStatus.Connected);
         reply.setCount(q.count());
 
         q.setStart(msg.getStart());

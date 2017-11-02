@@ -5,6 +5,8 @@ import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
+import java.util.List;
+
 /**
  * Created by DCY on 2017-09-17
  */
@@ -18,6 +20,11 @@ public class APIQueryTunnelForAlarmMsg extends APISyncCallMessage {
     private String accountUuid;
     @APIParam(required = false)
     private String productName;
+    @APIParam(required = false)
+    private List productUuids;
+
+    @APIParam(required = false)
+    private boolean isBind;
 
     public Integer getLimit() {
         return limit;
@@ -49,5 +56,21 @@ public class APIQueryTunnelForAlarmMsg extends APISyncCallMessage {
 
     public void setProductName(String productName) {
         this.productName = productName;
+    }
+
+    public List getProductUuids() {
+        return productUuids;
+    }
+
+    public void setProductUuids(List productUuids) {
+        this.productUuids = productUuids;
+    }
+
+    public boolean isBind() {
+        return isBind;
+    }
+
+    public void setBind(boolean bind) {
+        isBind = bind;
     }
 }
