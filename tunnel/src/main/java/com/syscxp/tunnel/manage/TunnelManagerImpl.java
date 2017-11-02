@@ -178,12 +178,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if(msg.getProductName() != null){
             q.add(TunnelForAlarmVO_.name, SimpleQuery.Op.LIKE, msg.getProductName());
         }
+        reply.setCount(q.count());
 
         q.setStart(msg.getStart());
         q.setLimit(msg.getLimit());
 
         List<TunnelForAlarmVO> voList = q.list();
-        reply.setCount(q.count());
+
         reply.setInventories(TunnelForAlarmInventory.valueOf(voList));
         bus.reply(msg, reply);
     }
