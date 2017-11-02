@@ -7,6 +7,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.tunnel.header.endpoint.EndpointVO;
+import com.syscxp.tunnel.header.endpoint.InnerConnectedEndpointVO;
 import com.syscxp.tunnel.header.node.NodeVO;
 import com.syscxp.header.tunnel.TunnelConstant;
 
@@ -29,9 +30,9 @@ public class APICreateTunnelMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = NodeVO.class)
     private String nodeZUuid;
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
-    private String endpointPointAUuid;
+    private String endpointAUuid;
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
-    private String endpointPointZUuid;
+    private String endpointZUuid;
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceAUuid;
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
@@ -42,6 +43,8 @@ public class APICreateTunnelMsg extends APIMessage {
     private ProductChargeModel productChargeModel;
     @APIParam(emptyString = false,required = false)
     private String description;
+    @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = InnerConnectedEndpointVO.class)
+    private String innerConnectedEndpointUuid;
 
     public String getAccountUuid() {
         if(getSession().getType() == AccountType.SystemAdmin){
@@ -87,22 +90,6 @@ public class APICreateTunnelMsg extends APIMessage {
         this.description = description;
     }
 
-    public String getEndpointPointAUuid() {
-        return endpointPointAUuid;
-    }
-
-    public void setEndpointPointAUuid(String endpointPointAUuid) {
-        this.endpointPointAUuid = endpointPointAUuid;
-    }
-
-    public String getEndpointPointZUuid() {
-        return endpointPointZUuid;
-    }
-
-    public void setEndpointPointZUuid(String endpointPointZUuid) {
-        this.endpointPointZUuid = endpointPointZUuid;
-    }
-
     public String getNodeAUuid() {
         return nodeAUuid;
     }
@@ -141,5 +128,29 @@ public class APICreateTunnelMsg extends APIMessage {
 
     public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
+    }
+
+    public String getInnerConnectedEndpointUuid() {
+        return innerConnectedEndpointUuid;
+    }
+
+    public void setInnerConnectedEndpointUuid(String innerConnectedEndpointUuid) {
+        this.innerConnectedEndpointUuid = innerConnectedEndpointUuid;
+    }
+
+    public String getEndpointAUuid() {
+        return endpointAUuid;
+    }
+
+    public void setEndpointAUuid(String endpointAUuid) {
+        this.endpointAUuid = endpointAUuid;
+    }
+
+    public String getEndpointZUuid() {
+        return endpointZUuid;
+    }
+
+    public void setEndpointZUuid(String endpointZUuid) {
+        this.endpointZUuid = endpointZUuid;
     }
 }
