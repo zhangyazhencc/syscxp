@@ -1,7 +1,5 @@
 package com.syscxp.tunnel.manage;
 
-import com.syscxp.header.tunnel.TunnelState;
-import com.syscxp.tunnel.header.aliEdgeRouter.AliTunnelInventory;
 import com.syscxp.tunnel.header.endpoint.*;
 import com.syscxp.tunnel.header.host.MonitorHostVO;
 import com.syscxp.tunnel.header.host.MonitorHostVO_;
@@ -11,8 +9,6 @@ import com.syscxp.tunnel.header.switchs.SwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO_;
 import com.syscxp.utils.Digest;
 import com.syscxp.utils.gson.JSONObjectUtil;
-import org.bson.types.ObjectId;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -124,18 +120,18 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIQueryAbroadNodeMsg) msg);
         } else if(msg instanceof APIQueryDomesticNodeMsg ){
             handle((APIQueryDomesticNodeMsg) msg);
-        }else if(msg instanceof APIQueryCityNodeMsg ){
-            handle((APIQueryCityNodeMsg) msg);
+        }else if(msg instanceof APIListCityNodeMsg){
+            handle((APIListCityNodeMsg) msg);
         }
         else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APIQueryCityNodeMsg msg) {
+    private void handle(APIListCityNodeMsg msg) {
         List<CityNodeInventory> cityNodeInventoryList = new ArrayList<>();
 
-        String sql = "select city from NodeVO where country  in ('中国') and province = :province";
+        String sql = "select distinct city from NodeVO where province = :province";
         TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
         tfq.setParameter("province", msg.getProvice());
         List<Tuple> ts = tfq.getResultList();
@@ -144,7 +140,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
            cityNodeInventory.setCity(t.get(0, String.class));
            cityNodeInventoryList.add(cityNodeInventory);
         }
-        APIQueryCityNodeReply reply = new APIQueryCityNodeReply();
+        APIListCityNodeReply reply = new APIListCityNodeReply();
         reply.setCityNodeInventoryList(cityNodeInventoryList);
         bus.reply(msg,reply);
 

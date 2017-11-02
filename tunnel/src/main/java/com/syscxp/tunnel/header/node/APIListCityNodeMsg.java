@@ -1,8 +1,9 @@
 package com.syscxp.tunnel.header.node;
 
-import com.syscxp.header.query.APIQueryMessage;
+import com.syscxp.header.message.APISyncCallMessage;
 
-public class APIQueryCityNodeMsg extends APIQueryMessage{
+public class APIListCityNodeMsg extends APISyncCallMessage {
+
     private String provice;
 
     public String getProvice() {

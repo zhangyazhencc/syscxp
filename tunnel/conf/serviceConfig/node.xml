@@ -91,7 +91,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.node.APIQueryCityNodeMsg</name>
+        <name>com.syscxp.tunnel.header.node.APIListCityNodeMsg</name>
     </message>
 
 
