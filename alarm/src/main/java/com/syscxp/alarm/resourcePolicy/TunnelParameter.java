@@ -79,6 +79,7 @@ public class TunnelParameter {
 }
 
 class Rule {
+    private String alarm_rule_id;
     private String strategy_type;
     private String op;
     private int right_value;
@@ -114,5 +115,13 @@ class Rule {
 
     public void setStay_time(int stay_time) {
         this.stay_time = stay_time;
+    }
+
+    public String getAlarm_rule_id() {
+        return alarm_rule_id;
+    }
+
+    public void setAlarm_rule_id(String alarm_rule_id) {
+        this.alarm_rule_id = alarm_rule_id;
     }
 }

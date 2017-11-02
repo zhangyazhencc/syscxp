@@ -2,6 +2,7 @@ package com.syscxp.alarm.resourcePolicy;
 
 import com.google.gson.JsonObject;
 import com.rabbitmq.tools.json.JSONUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.syscxp.alarm.AlarmGlobalProperty;
 import com.syscxp.alarm.header.resourcePolicy.*;
 import com.syscxp.core.Platform;
@@ -32,7 +33,6 @@ import com.syscxp.header.tunnel.TunnelForAlarmInventory;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -269,18 +269,18 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
 
     private void handle(APIAttachResourceByPoliciesMsg msg) {
         List<ResourcePolicyRefInventory> list = new ArrayList<>();
-        if(msg.isAttach()){
-           for(String policyUuid : msg.getPolicyUuids()){
-               ResourcePolicyRefVO resourcePolicyRefVO = new ResourcePolicyRefVO();
-               resourcePolicyRefVO.setPolicyUuid(policyUuid);
-               resourcePolicyRefVO.setResourceUuid(msg.getResourceUuid());
-               resourcePolicyRefVO.setUuid(Platform.getUuid());
-               dbf.getEntityManager().persist(resourcePolicyRefVO);
-               list.add(ResourcePolicyRefInventory.valueOf(resourcePolicyRefVO));
-           }
-        }else {
-            for(String policyUuid : msg.getPolicyUuids()){
-              list.add(ResourcePolicyRefInventory.valueOf(deleteResourcePolicyRef(policyUuid,msg.getResourceUuid()))) ;
+        if (msg.isAttach()) {
+            for (String policyUuid : msg.getPolicyUuids()) {
+                ResourcePolicyRefVO resourcePolicyRefVO = new ResourcePolicyRefVO();
+                resourcePolicyRefVO.setPolicyUuid(policyUuid);
+                resourcePolicyRefVO.setResourceUuid(msg.getResourceUuid());
+                resourcePolicyRefVO.setUuid(Platform.getUuid());
+                dbf.getEntityManager().persist(resourcePolicyRefVO);
+                list.add(ResourcePolicyRefInventory.valueOf(resourcePolicyRefVO));
+            }
+        } else {
+            for (String policyUuid : msg.getPolicyUuids()) {
+                list.add(ResourcePolicyRefInventory.valueOf(deleteResourcePolicyRef(policyUuid, msg.getResourceUuid())));
             }
 
         }
@@ -290,7 +290,8 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         tunnelparameter.setTunnel_id(msg.getResourceUuid());
         tunnelparameter.setUser_id(msg.getSession().getAccountUuid());
 
-        List<Rule> rulelist = rulelist = new ArrayList<>();;
+        List<Rule> rulelist = rulelist = new ArrayList<>();
+        ;
         List<TunnelParameter> tunnelparameterlist = new ArrayList<>();
         List<RegulationVO> regulationvolist = null;
         Rule rule = null;
@@ -298,12 +299,13 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         SimpleQuery<ResourcePolicyRefVO> policyrquery = dbf.createQuery(ResourcePolicyRefVO.class);
         policyrquery.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
         List<ResourcePolicyRefVO> policylist = policyrquery.list();
-        for(ResourcePolicyRefVO policy : policylist){
+        for (ResourcePolicyRefVO policy : policylist) {
             SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
-            regulationvoquery.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ,policy.getPolicyUuid());
+            regulationvoquery.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, policy.getPolicyUuid());
             regulationvolist = regulationvoquery.list();
-            for(RegulationVO regulationvo : regulationvolist){
+            for (RegulationVO regulationvo : regulationvolist) {
                 rule = new Rule();
+                rule.setAlarm_rule_id(regulationvo.getUuid());
                 rule.setOp(regulationvo.getComparisonRuleVO().getComparisonValue());
                 rule.setStrategy_type(regulationvo.getMonitorTargetVO().getTargetValue());
                 rule.setRight_value(regulationvo.getAlarmThreshold());
@@ -323,16 +325,17 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
         ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
         com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
-        if(job.getString("success").equals("false")){
-            System.out.println(rsp.getBody());
-            throw new OperationFailureException(Platform.operr("falcon fail "));
+        if (job.getString("success").equals("false")) {
+            if (job.getString("success").equals("false")) {
+                System.out.println(rsp.getBody());
+                throw new OperationFailureException(Platform.operr("falcon fail "));
+            }
+
+
+            APIAttachResourceByPoliciesEvent event = new APIAttachResourceByPoliciesEvent(msg.getId());
+            event.setInventory(list);
+            bus.publish(event);
         }
-
-
-
-        APIAttachResourceByPoliciesEvent event = new APIAttachResourceByPoliciesEvent(msg.getId());
-        event.setInventory(list);
-        bus.publish(event);
     }
 
     @Transactional
@@ -387,6 +390,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
                 regulationvolist = regulationvoquery.list();
                 for(RegulationVO regulationvo : regulationvolist){
                     rule = new Rule();
+                    rule.setAlarm_rule_id(regulationvo.getUuid());
                     rule.setStrategy_type(regulationvo.getMonitorTargetVO().getTargetValue());
                     rule.setOp(regulationvo.getComparisonRuleVO().getComparisonValue());
                     rule.setRight_value(regulationvo.getAlarmThreshold());
@@ -491,6 +495,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
 
     }
 
+    @Transactional
     private void handle(APIDeleteRegulationMsg msg) {
         RegulationVO regulationVO = dbf.findByUuid(msg.getUuid(),RegulationVO.class);
         if(regulationVO!=null){
@@ -500,6 +505,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         bus.publish(event);
     }
 
+    @Transactional
     private void handle(APIUpdateRegulationMsg msg) {
 
         RegulationVO regulationVO = dbf.findByUuid(msg.getUuid(),RegulationVO.class);
@@ -569,6 +575,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
                     regulationvolist = regulationvoquery.list();
                     for(RegulationVO regulationvo : regulationvolist){
                         rule = new Rule();
+                        rule.setAlarm_rule_id(regulationvo.getUuid());
                         rule.setRight_value(regulationvo.getAlarmThreshold());
                         rule.setStay_time(regulationvo.getTriggerPeriod());
                         rule.setOp(regulationvo.getComparisonRuleVO().getComparisonValue());
@@ -589,7 +596,8 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
             ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
             com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
-            if(job.getString("success").equals("false")){
+
+            if (!job.getString("success").equals("True")) {
                 System.out.println(rsp.getBody());
                 throw new OperationFailureException(Platform.operr("falcon fail "));
             }
