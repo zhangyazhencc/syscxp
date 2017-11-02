@@ -5,6 +5,7 @@ import com.syscxp.header.billing.ProductPriceUnit;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.tunnel.header.endpoint.InnerConnectedEndpointVO;
 import com.syscxp.tunnel.header.node.NodeVO;
 import com.syscxp.tunnel.header.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.TunnelConstant;
@@ -53,6 +54,8 @@ public class APICreateTunnelManualMsg extends APIMessage {
     private String description;
     @APIParam(required = false)
     private List<InnerVlanSegment> vlanSegment;
+    @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = InnerConnectedEndpointVO.class)
+    private String innerConnectedEndpointUuid;
 
     public String getAccountUuid() {
         return accountUuid;
@@ -197,5 +200,13 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
+    }
+
+    public String getInnerConnectedEndpointUuid() {
+        return innerConnectedEndpointUuid;
+    }
+
+    public void setInnerConnectedEndpointUuid(String innerConnectedEndpointUuid) {
+        this.innerConnectedEndpointUuid = innerConnectedEndpointUuid;
     }
 }
