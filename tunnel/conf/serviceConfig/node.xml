@@ -82,6 +82,18 @@
         <name>com.syscxp.tunnel.header.node.APIListNodeExtensionInfoMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.tunnel.header.node.APIQueryAbroadNodeMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.node.APIQueryDomesticNodeMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.node.APIListCityNodeMsg</name>
+    </message>
+
 
 
 </service>

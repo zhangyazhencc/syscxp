@@ -9,8 +9,6 @@ import com.syscxp.tunnel.header.switchs.SwitchVO;
 import com.syscxp.tunnel.header.switchs.SwitchVO_;
 import com.syscxp.utils.Digest;
 import com.syscxp.utils.gson.JSONObjectUtil;
-import org.bson.types.ObjectId;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -37,15 +35,12 @@ import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 
+import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 import static com.syscxp.core.Platform.argerr;
-
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by DCY on 2017-09-07
@@ -121,9 +116,70 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APICreateInnerEndpointMsg) msg);
         }  else if (msg instanceof APIDeleteInnerEndpointMsg) {
             handle((APIDeleteInnerEndpointMsg) msg);
-        }  else {
+        } else if(msg instanceof APIQueryAbroadNodeMsg ){
+            handle((APIQueryAbroadNodeMsg) msg);
+        } else if(msg instanceof APIQueryDomesticNodeMsg ){
+            handle((APIQueryDomesticNodeMsg) msg);
+        }else if(msg instanceof APIListCityNodeMsg){
+            handle((APIListCityNodeMsg) msg);
+        }
+        else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIListCityNodeMsg msg) {
+        List<CityNodeInventory> cityNodeInventoryList = new ArrayList<>();
+
+        String sql = "select distinct city from NodeVO where province = :province";
+        TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+        tfq.setParameter("province", msg.getProvice());
+        List<Tuple> ts = tfq.getResultList();
+        for (Tuple t : ts) {
+           CityNodeInventory cityNodeInventory = new CityNodeInventory();
+           cityNodeInventory.setCity(t.get(0, String.class));
+           cityNodeInventoryList.add(cityNodeInventory);
+        }
+        APIListCityNodeReply reply = new APIListCityNodeReply();
+        reply.setCityNodeInventoryList(cityNodeInventoryList);
+        bus.reply(msg,reply);
+
+    }
+
+    private void handle(APIQueryDomesticNodeMsg msg) {
+        List<DomesticNodeInventory> domesticNodeInventoryList =new ArrayList<>();
+
+        String sql = "select province from NodeVO where country in ('中国')";
+        TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+        List<Tuple> ts = tfq.getResultList();
+        for (Tuple t : ts) {
+            DomesticNodeInventory domesticNodeInventory = new DomesticNodeInventory();
+            domesticNodeInventory.setProvice(t.get(0, String.class));
+            domesticNodeInventoryList.add(domesticNodeInventory);
+        }
+
+        APIQueryDomesticNodeReply reply = new APIQueryDomesticNodeReply();
+        reply.setDomesticNodeInventoryList(domesticNodeInventoryList);
+        bus.reply(msg,reply);
+
+    }
+
+    private void handle(APIQueryAbroadNodeMsg msg) {
+        List<AbroadNodeInventory> abroadNodeInventoryList = new ArrayList<>();
+
+        String sql = "select country from NodeVO where country not in ('中国')";
+        TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+        List<Tuple> ts = tfq.getResultList();
+        for (Tuple t : ts) {
+            AbroadNodeInventory abroadNodeInventory = new AbroadNodeInventory();
+            abroadNodeInventory.setCountry(t.get(0, String.class));
+            abroadNodeInventoryList.add(abroadNodeInventory);
+        }
+
+        APIQueryAbroadNodeReply reply = new APIQueryAbroadNodeReply();
+        reply.setAbroadNodeInventories(abroadNodeInventoryList);
+        bus.reply(msg,reply);
+
     }
 
     private void handle(APIListNodeExtensionInfoMsg msg) {

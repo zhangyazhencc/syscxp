@@ -7,6 +7,7 @@ import com.syscxp.header.rest.APINoSee;
 import com.syscxp.header.search.Inventory;
 import com.syscxp.header.search.Parent;
 import com.syscxp.header.vo.NoView;
+import com.syscxp.tunnel.header.node.NodeInventory;
 import com.syscxp.tunnel.header.node.NodeVO;
 
 import javax.persistence.FetchType;
@@ -25,14 +26,14 @@ public class MonitorHostInventory extends HostInventory {
     private String password;
     private Integer sshPort;
 
-    private NodeVO node;
+    private NodeInventory nodeInventory;
 
-    public NodeVO getNode() {
-        return node;
+    public NodeInventory getNodeInventory() {
+        return nodeInventory;
     }
 
-    public void setNode(NodeVO node) {
-        this.node = node;
+    public void setNodeInventory(NodeInventory nodeInventory) {
+        this.nodeInventory = nodeInventory;
     }
 
     protected MonitorHostInventory(MonitorHostVO vo) {
@@ -40,7 +41,7 @@ public class MonitorHostInventory extends HostInventory {
         this.setUsername(vo.getUsername());
         this.setPassword(vo.getPassword());
         this.setSshPort(vo.getSshPort());
-        this.setNode(vo.getNode());
+        this.setNodeInventory(NodeInventory.valueOf(vo.getNode()));
     }
 
     public static MonitorHostInventory valueOf(MonitorHostVO vo) {

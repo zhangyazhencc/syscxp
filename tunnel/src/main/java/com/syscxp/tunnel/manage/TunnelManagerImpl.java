@@ -176,7 +176,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             q.add(TunnelForAlarmVO_.name, SimpleQuery.Op.LIKE, msg.getProductName());
         }
         if(msg.getProductUuids() != null){
-            q.add(TunnelForAlarmVO_.uuid, SimpleQuery.Op.IN, msg.getProductUuids());
+            SimpleQuery.Op op =  SimpleQuery.Op.IN;
+            if(!msg.isBind()){
+                op = SimpleQuery.Op.NOT_IN;
+            }
+                q.add(TunnelForAlarmVO_.uuid, op, msg.getProductUuids());
+
         }
         q.add(TunnelForAlarmVO_.status, SimpleQuery.Op.EQ, TunnelStatus.Connected);
         reply.setCount(q.count());
@@ -219,8 +224,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         pmsg.setDuration(msg.getDuration());
         pmsg.setAccountUuid(msg.getAccountUuid());
         pmsg.setUnits(getInterfacePriceUnit(msg.getPortType()));
-        APIGetInterfacePriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(msg);
-        bus.reply(msg, reply);
+        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
+        bus.reply(msg, new APIGetInterfacePriceReply(reply));
     }
 
     private void handle(APIGetTunnelPriceMsg msg) {
