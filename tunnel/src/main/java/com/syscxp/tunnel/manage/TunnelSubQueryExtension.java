@@ -15,9 +15,6 @@ public class TunnelSubQueryExtension extends AbstractMysqlQuerySubQueryExtension
 
     @Override
     public String makeSubquery(APIQueryMessage msg, Class inventoryClass) {
-        if(msg.getSession() == null){
-            return null;
-        }
         if (msg.getSession().isAdminAccountSession() || msg.getSession().isAdminUserSession()) {
             return null;
         }

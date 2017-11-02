@@ -11,7 +11,6 @@ import java.sql.Timestamp;
 public class ZoneVO_ {
 
     public static volatile SingularAttribute<ZoneVO, String> uuid;
-    public static volatile SingularAttribute<ZoneVO, String> code;
     public static volatile SingularAttribute<ZoneVO, String> name;
     public static volatile SingularAttribute<ZoneVO, Timestamp> createDate;
     public static volatile SingularAttribute<ZoneVO, Timestamp> lastOpDate;

@@ -1,15 +1,13 @@
 package com.syscxp.tunnel.header.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
-import com.syscxp.header.billing.ProductPriceUnit;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.tunnel.header.endpoint.EndpointVO;
+import com.syscxp.tunnel.header.switchs.SwitchPortType;
 import com.syscxp.tunnel.header.switchs.SwitchPortVO;
-
-import java.util.List;
 
 /**
  * Created by DCY on 2017-09-11
@@ -26,10 +24,10 @@ public class APICreateInterfaceManualMsg extends APIMessage {
     private String switchPortUuid;
     @APIParam(emptyString = false, maxLength = 32, resourceType = EndpointVO.class)
     private String endpointUuid;
-    @APIParam(emptyString = false, maxLength = 32, resourceType = PortOfferingVO.class)
-    private String portOfferingUuid;
-    @APIParam(required = false, validValues = {"TRUNK", "ACCESS", "QINQ"})
-    private NetworkType type;
+    @APIParam
+    private SwitchPortType portType;
+    @APIParam(validValues = {"TRUNK", "ACCESS", "QINQ"})
+    private NetworkType networkType;
     @APIParam(emptyString = false, maxLength = 255)
     private String description;
     @APIParam
@@ -93,19 +91,19 @@ public class APICreateInterfaceManualMsg extends APIMessage {
         this.productChargeModel = productChargeModel;
     }
 
-    public NetworkType getType() {
-        return type;
+    public NetworkType getNetworkType() {
+        return networkType;
     }
 
-    public void setType(NetworkType type) {
-        this.type = type;
+    public void setNetworkType(NetworkType networkType) {
+        this.networkType = networkType;
     }
 
-    public String getPortOfferingUuid() {
-        return portOfferingUuid;
+    public SwitchPortType getPortType() {
+        return portType;
     }
 
-    public void setPortOfferingUuid(String portOfferingUuid) {
-        this.portOfferingUuid = portOfferingUuid;
+    public void setPortType(SwitchPortType portType) {
+        this.portType = portType;
     }
 }
