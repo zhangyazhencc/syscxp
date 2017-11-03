@@ -100,7 +100,7 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
             dbf.getEntityManager().flush();
         }
         APIUpdateContactEvent event = new APIUpdateContactEvent(msg.getId());
-        event.setInventory(ContactInventory.valueOf(vo));
+        event.setInventory(ContactInventory.valueOf(dbf.findByUuid(msg.getUuid(),ContactVO.class)));
         bus.publish(event);
     }
 

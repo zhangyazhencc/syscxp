@@ -6,17 +6,17 @@ import java.util.List;
 
 public class APIAttachResourceByPoliciesEvent extends APIEvent {
 
-    private List<ResourcePolicyRefInventory> inventory;
+    private List<PolicyInventory> inventory;
 
     public APIAttachResourceByPoliciesEvent(String apiId) {super(apiId);}
 
     public APIAttachResourceByPoliciesEvent(){}
 
-    public List<ResourcePolicyRefInventory> getInventory() {
+    public List<PolicyInventory> getInventory() {
         return inventory;
     }
 
-    public void setInventory(List<ResourcePolicyRefInventory> inventory) {
+    public void setInventory(List<PolicyInventory> inventory) {
         this.inventory = inventory;
     }
 
