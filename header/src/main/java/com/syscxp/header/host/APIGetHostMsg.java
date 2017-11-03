@@ -1,8 +1,10 @@
 package com.syscxp.header.host;
 
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
+@Action(category = HostConstant.ACTION_CATEGORY, adminOnly = true)
 public class APIGetHostMsg extends APISyncCallMessage {
 
     @APIParam(resourceType = HostVO.class)

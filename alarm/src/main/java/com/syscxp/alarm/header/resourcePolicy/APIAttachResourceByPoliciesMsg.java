@@ -7,17 +7,14 @@ import com.syscxp.header.message.APIParam;
 
 import java.util.List;
 
-@Action(adminOnly = true,category = AlarmConstant.ACTION_CATEGORY_RESOURCE_POLICY)
+@Action(category = AlarmConstant.ACTION_CATEGORY_RESOURCE_POLICY)
 public class APIAttachResourceByPoliciesMsg extends APIMessage{
 
     @APIParam(emptyString = false)
     private String resourceUuid;
 
-    @APIParam(nonempty = false)
-    private List<String> policyUuids;
-
     @APIParam
-    private boolean isAttach;
+    private List<String> policyUuids;
 
     public String getResourceUuid() {
         return resourceUuid;
@@ -35,11 +32,4 @@ public class APIAttachResourceByPoliciesMsg extends APIMessage{
         this.policyUuids = policyUuids;
     }
 
-    public boolean isAttach() {
-        return isAttach;
-    }
-
-    public void setAttach(boolean attach) {
-        isAttach = attach;
-    }
 }

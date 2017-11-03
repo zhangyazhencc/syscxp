@@ -1,7 +1,6 @@
 package com.syscxp.tunnel.manage;
 
 import com.syscxp.tunnel.header.switchs.*;
-import com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -76,12 +75,29 @@ public class TunnelStrategy  {
 
     }
 
-    //策略分配外部VLAN
-    public Integer getInnerVlanByStrategy(String interfaceUuid){
+    //策略分配外部VLAN（业务VLAN）
+    public Integer getVlanByStrategy(String interfaceUuid){
         Integer vlan = null;
 
         //查询该TUNNEL的物理接口所属的虚拟交换机
         String switchUuid = findSwitchByInterface(interfaceUuid);
+        //查询该虚拟交换机下所有的Vlan段
+        List<SwitchVlanVO> vlanList = findSwitchVlanBySwitch(switchUuid);
+        //查询该虚拟交换机下已经分配的Vlan
+        List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
+
+        if(allocatedVlans.isEmpty()){
+            return vlanList.get(0).getStartVlan();
+        }else{
+            vlan = allocateVlan(vlanList, allocatedVlans);
+            return vlan;
+        }
+    }
+
+    //策略分配外部VLAN（互联VLAN）
+    public Integer getInnerVlanByStrategy(String switchUuid){
+        Integer vlan = null;
+
         //查询该虚拟交换机下所有的Vlan段
         List<SwitchVlanVO> vlanList = findSwitchVlanBySwitch(switchUuid);
         //查询该虚拟交换机下已经分配的Vlan
@@ -118,10 +134,9 @@ public class TunnelStrategy  {
     //查询该虚拟交换机下Tunnel已经分配的Vlan
     public List<Integer> fingAllocateVlanBySwitch(String switchUuid){
 
-        String sql = "select distinct a.vlan from TunnelInterfaceVO a,InterfaceVO b,SwitchPortVO c " +
-                "where a.interfaceUuid = b.uuid " +
-                "and b.switchPortUuid = c.uuid " +
-                "and c.switchUuid = :switchUuid ";
+        String sql = "select distinct a.vlan from TunnelSwitchPortVO a,SwitchPortVO b " +
+                "where a.switchPortUuid = b.uuid " +
+                "and b.switchUuid = :switchUuid ";
         TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);
         avq.setParameter("switchUuid",switchUuid);
         List<Integer> allocatedVlans = avq.getResultList();

@@ -17,7 +17,9 @@ public class TunnelForAlarmInventory {
 
     private String uuid;
     private String accountUuid;
+    private String ownerAccountUuid;
     private Integer vsi;
+    private String monitorCidr;
     private String name;
     private Long bandwidth;
     private Double distance;
@@ -36,7 +38,9 @@ public class TunnelForAlarmInventory {
         TunnelForAlarmInventory inv = new TunnelForAlarmInventory();
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
+        inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
         inv.setVsi(vo.getVsi());
+        inv.setMonitorCidr(vo.getMonitorCidr());
         inv.setName(vo.getName());
         inv.setBandwidth(vo.getBandwidth());
         inv.setDistance(vo.getDistance());
@@ -187,5 +191,21 @@ public class TunnelForAlarmInventory {
 
     public void setExpireDate(Timestamp expireDate) {
         this.expireDate = expireDate;
+    }
+
+    public String getOwnerAccountUuid() {
+        return ownerAccountUuid;
+    }
+
+    public void setOwnerAccountUuid(String ownerAccountUuid) {
+        this.ownerAccountUuid = ownerAccountUuid;
+    }
+
+    public String getMonitorCidr() {
+        return monitorCidr;
+    }
+
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
     }
 }

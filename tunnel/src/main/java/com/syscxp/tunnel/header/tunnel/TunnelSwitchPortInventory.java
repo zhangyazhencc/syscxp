@@ -1,6 +1,7 @@
 package com.syscxp.tunnel.header.tunnel;
 
 import com.syscxp.header.search.Inventory;
+import com.syscxp.tunnel.header.endpoint.EndpointInventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -8,39 +9,41 @@ import java.util.Collection;
 import java.util.List;
 
 /**
- * Created by DCY on 2017-09-20
+ * Created by DCY on 2017-11-01
  */
-@Inventory(mappingVOClass = TunnelInterfaceVO.class)
-public class TunnelInterfaceInventory {
+@Inventory(mappingVOClass = TunnelSwitchPortVO.class)
+public class TunnelSwitchPortInventory {
 
     private String uuid;
     private String tunnelUuid;
-    private String interfaceUuid;
-    private InterfaceInventory interfaces;
+    private String endpointUuid;
+    private EndpointInventory endpoint;
+    private String switchPortUuid;
+    private NetworkType type;
     private Integer vlan;
     private String sortTag;
-    private TunnelQinqState qinqState;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    public static TunnelInterfaceInventory valueOf(TunnelInterfaceVO vo){
-        TunnelInterfaceInventory inv = new TunnelInterfaceInventory();
+    public static TunnelSwitchPortInventory valueOf(TunnelSwitchPortVO vo){
+        TunnelSwitchPortInventory inv = new TunnelSwitchPortInventory();
         inv.setUuid(vo.getUuid());
         inv.setTunnelUuid(vo.getTunnelUuid());
-        inv.setInterfaceUuid(vo.getInterfaceUuid());
-        inv.setInterfaces(InterfaceInventory.valueOf(vo.getInterfaceVO()));
+        inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpointVO()));
+        inv.setSwitchPortUuid(vo.getSwitchPortUuid());
+        inv.setType(vo.getType());
         inv.setVlan(vo.getVlan());
         inv.setSortTag(vo.getSortTag());
-        inv.setQinqState(vo.getQinqState());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
     }
 
-    public static List<TunnelInterfaceInventory> valueOf(Collection<TunnelInterfaceVO> vos) {
-        List<TunnelInterfaceInventory> lst = new ArrayList<TunnelInterfaceInventory>(vos.size());
-        for (TunnelInterfaceVO vo : vos) {
-            lst.add(TunnelInterfaceInventory.valueOf(vo));
+    public static List<TunnelSwitchPortInventory> valueOf(Collection<TunnelSwitchPortVO> vos) {
+        List<TunnelSwitchPortInventory> lst = new ArrayList<TunnelSwitchPortInventory>(vos.size());
+        for (TunnelSwitchPortVO vo : vos) {
+            lst.add(TunnelSwitchPortInventory.valueOf(vo));
         }
         return lst;
     }
@@ -61,20 +64,36 @@ public class TunnelInterfaceInventory {
         this.tunnelUuid = tunnelUuid;
     }
 
-    public String getInterfaceUuid() {
-        return interfaceUuid;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setInterfaceUuid(String interfaceUuid) {
-        this.interfaceUuid = interfaceUuid;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 
-    public InterfaceInventory getInterfaces() {
-        return interfaces;
+    public EndpointInventory getEndpoint() {
+        return endpoint;
     }
 
-    public void setInterfaces(InterfaceInventory interfaces) {
-        this.interfaces = interfaces;
+    public void setEndpoint(EndpointInventory endpoint) {
+        this.endpoint = endpoint;
+    }
+
+    public String getSwitchPortUuid() {
+        return switchPortUuid;
+    }
+
+    public void setSwitchPortUuid(String switchPortUuid) {
+        this.switchPortUuid = switchPortUuid;
+    }
+
+    public NetworkType getType() {
+        return type;
+    }
+
+    public void setType(NetworkType type) {
+        this.type = type;
     }
 
     public Integer getVlan() {
@@ -91,14 +110,6 @@ public class TunnelInterfaceInventory {
 
     public void setSortTag(String sortTag) {
         this.sortTag = sortTag;
-    }
-
-    public TunnelQinqState getQinqState() {
-        return qinqState;
-    }
-
-    public void setQinqState(TunnelQinqState qinqState) {
-        this.qinqState = qinqState;
     }
 
     public Timestamp getCreateDate() {

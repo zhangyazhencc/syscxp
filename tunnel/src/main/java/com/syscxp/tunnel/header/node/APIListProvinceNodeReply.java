@@ -6,13 +6,13 @@ import com.syscxp.header.query.APIQueryReply;
 import java.util.List;
 
 public class APIListProvinceNodeReply extends APIReply {
-    List<String> privinces;
+    List<String> provinces;
 
-    public List<String> getPrivinces() {
-        return privinces;
+    public List<String> getProvinces() {
+        return provinces;
     }
 
-    public void setPrivinces(List<String> privinces) {
-        this.privinces = privinces;
+    public void setProvinces(List<String> provinces) {
+        this.provinces = provinces;
     }
 }

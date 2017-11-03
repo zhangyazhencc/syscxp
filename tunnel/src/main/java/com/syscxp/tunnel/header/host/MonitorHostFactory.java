@@ -144,7 +144,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
                             "reconnect it for %s", cmd.hostUuid, cmd.reason);
                     ReconnectHostMsg msg = new ReconnectHostMsg();
                     msg.setHostUuid(cmd.hostUuid);
-                    bus.makeTargetServiceIdByResourceUuid(msg, MonitorConstant.SERVICE_ID, cmd.hostUuid);
+                    bus.makeTargetServiceIdByResourceUuid(msg, HostConstant.SERVICE_ID, cmd.hostUuid);
                     bus.send(msg);
                     return null;
                 });

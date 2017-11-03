@@ -414,6 +414,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         query.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         query.add(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
         RenewVO renewVO = query.find();
+
         if (renewVO == null) {
             throw new IllegalArgumentException("could not find the product purchased history ");
         }

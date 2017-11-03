@@ -304,6 +304,7 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `accountUuid` VARCHAR(32) COMMENT '分配账户',
   `ownerAccountUuid` VARCHAR(32) NOT NULL COMMENT '所属账户',
   `vsi` INT(11) NOT NULL COMMENT 'VSI',
+  `monitorCidr` varchar(128) DEFAULT NULL COMMENT '监控网段',
   `name` varchar(128) NOT NULL COMMENT '通道名称',
   `bandwidth` BIGINT NOT NULL COMMENT '带宽',
   `distance` decimal(10,2) NOT NULL COMMENT '距离',
@@ -320,7 +321,7 @@ CREATE TABLE `syscxp_tunnel`.`TunnelEO` (
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, ownerAccountUuid, vsi, name, bandwidth, distance, state, status, monitorState, description, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`TunnelVO` AS SELECT uuid, accountUuid, ownerAccountUuid, vsi, monitorCidr, name, bandwidth, distance, state, status, monitorState, description, duration, productChargeModel, maxModifies, expireDate, lastOpDate, createDate
                                         FROM `TunnelEO` WHERE deleted IS NULL;
 ##带宽配置表
 CREATE TABLE `syscxp_tunnel`.`BandwidthOfferingVO` (
@@ -407,21 +408,8 @@ CREATE TABLE  `syscxp_tunnel`.`TunnelMotifyRecordVO` (
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-##云专线端口信息表(作废)
-CREATE TABLE  `syscxp_tunnel`.`TunnelInterfaceVO` (
-  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `tunnelUuid` varchar(32) NOT NULL COMMENT '所属云专线',
-  `interfaceUuid` varchar(32) NOT NULL COMMENT '所属物理接口',
-  `vlan` INT(11) NOT NULL COMMENT '端口外部vlan',
-  `sortTag` varchar(32) NOT NULL COMMENT '排序',
-  `qinqState` varchar(32) NOT NULL DEFAULT 'Disabled' COMMENT '是否开启qinq,共享为Disabled,独享才可以启用',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  PRIMARY KEY  (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 ##云专线端口信息表
-CREATE TABLE  `syscxp_tunnel`.`TunnelSwitchVO` (
+CREATE TABLE  `syscxp_tunnel`.`TunnelSwitchPortVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `tunnelUuid` varchar(32) NOT NULL COMMENT '所属云专线',
   `endpointUuid` varchar(32) NOT NULL COMMENT '所属连接点',

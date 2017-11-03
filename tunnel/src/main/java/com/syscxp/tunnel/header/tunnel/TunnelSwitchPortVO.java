@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 @Entity
 @Table
 @Inheritance(strategy = InheritanceType.JOINED)
-public class TunnelSwitchVO {
+public class TunnelSwitchPortVO {
     @Id
     @Column
     private String uuid;

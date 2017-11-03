@@ -36,8 +36,7 @@
         <class>com.syscxp.tunnel.header.tunnel.ResourceOrderEffectiveVO</class>
         <class>com.syscxp.tunnel.header.tunnel.TunnelMotifyRecordVO</class>
         <class>com.syscxp.tunnel.header.tunnel.QinqVO</class>
-        <class>com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO</class>
-        <class>com.syscxp.tunnel.header.tunnel.TunnelSwitchVO</class>
+        <class>com.syscxp.tunnel.header.tunnel.TunnelSwitchPortVO</class>
         <class>com.syscxp.tunnel.header.tunnel.BandwidthOfferingVO</class>
         <class>com.syscxp.tunnel.header.tunnel.PortOfferingVO</class>
 

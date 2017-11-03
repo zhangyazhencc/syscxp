@@ -6,7 +6,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-@Action(adminOnly = true,category = AlarmConstant.ACTION_CATEGORY_RESOURCE_POLICY)
+@Action(category = AlarmConstant.ACTION_CATEGORY_RESOURCE_POLICY)
 public class APICreatePolicyMsg extends APIMessage{
 
     @APIParam(emptyString = false)
@@ -17,6 +17,9 @@ public class APICreatePolicyMsg extends APIMessage{
 
     @APIParam
     private ProductType productType;
+
+    @APIParam
+    private String  accountUuid;
 
     public String getName() {
         return name;
@@ -40,5 +43,13 @@ public class APICreatePolicyMsg extends APIMessage{
 
     public void setProductType(ProductType productType) {
         this.productType = productType;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }
