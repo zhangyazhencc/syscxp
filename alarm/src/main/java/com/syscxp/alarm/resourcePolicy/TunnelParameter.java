@@ -6,10 +6,10 @@ public class TunnelParameter {
 
     private String tunnel_id;
     private String user_id;
-    private String endpointA_vlan;
+    private String endpointA_vid;
     private String endpointA_ip;
-    private String endpointZ_vlan;
-    private String endpointZ_ip;
+    private String endpointB_vid;
+    private String endpointB_ip;
     private String bandwidth;
     private List<Rule> rules;
 
@@ -29,12 +29,12 @@ public class TunnelParameter {
         this.user_id = user_id;
     }
 
-    public String getEndpointA_vlan() {
-        return endpointA_vlan;
+    public String getEndpointA_vid() {
+        return endpointA_vid;
     }
 
-    public void setEndpointA_vlan(String endpointA_vlan) {
-        this.endpointA_vlan = endpointA_vlan;
+    public void setEndpointA_vid(String endpointA_vid) {
+        this.endpointA_vid = endpointA_vid;
     }
 
     public String getEndpointA_ip() {
@@ -45,20 +45,20 @@ public class TunnelParameter {
         this.endpointA_ip = endpointA_ip;
     }
 
-    public String getEndpointZ_vlan() {
-        return endpointZ_vlan;
+    public String getEndpointB_vid() {
+        return endpointB_vid;
     }
 
-    public void setEndpointZ_vlan(String endpointZ_vlan) {
-        this.endpointZ_vlan = endpointZ_vlan;
+    public void setEndpointB_vid(String endpointB_vid) {
+        this.endpointB_vid = endpointB_vid;
     }
 
-    public String getEndpointZ_ip() {
-        return endpointZ_ip;
+    public String getEndpointB_ip() {
+        return endpointB_ip;
     }
 
-    public void setEndpointZ_ip(String endpointZ_ip) {
-        this.endpointZ_ip = endpointZ_ip;
+    public void setEndpointB_ip(String endpointB_ip) {
+        this.endpointB_ip = endpointB_ip;
     }
 
     public List<Rule> getRules() {
@@ -82,7 +82,7 @@ class Rule {
     private String alarm_rule_id;
     private String strategy_type;
     private String op;
-    private int right_value;
+    private String right_value;
     private int stay_time;
 
     public String getStrategy_type() {
@@ -101,11 +101,11 @@ class Rule {
         this.op = op;
     }
 
-    public int getRight_value() {
+    public String getRight_value() {
         return right_value;
     }
 
-    public void setRight_value(int right_value) {
+    public void setRight_value(String right_value) {
         this.right_value = right_value;
     }
 
