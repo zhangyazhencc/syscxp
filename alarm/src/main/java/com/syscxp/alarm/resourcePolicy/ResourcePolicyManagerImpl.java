@@ -20,6 +20,7 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.errorcode.OperationFailureException;
+import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
@@ -174,10 +175,10 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setContentLength(commandParam.length());
-        HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
-        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
-        com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
-        if (job.getString("success").equals("false")) {
+        HttpEntity<String> req = new HttpEntity<>(commandParam, requestHeaders);
+        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
+        FalconApiCommands.RestResponse res = rsp.getBody();
+        if (!res.isSuccess()) {
             System.out.println(rsp.getBody());
             throw new OperationFailureException(Platform.operr("falcon fail "));
         }
@@ -421,10 +422,11 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setContentLength(commandParam.length());
-        HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
-        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
-        com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
-        if (!job.getString("success").equals("True")) {
+        HttpEntity<String> req = new HttpEntity<>(commandParam, requestHeaders);
+        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
+        FalconApiCommands.RestResponse res = rsp.getBody();
+
+        if (!res.isSuccess()) {
             System.out.println(rsp.getBody());
             throw new OperationFailureException(Platform.operr("falcon fail "));
         }
@@ -530,10 +532,11 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setContentLength(commandParam.length());
-        HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
-        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
-        com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
-        if (!job.getString("success").equals("True")) {
+        HttpEntity<String> req = new HttpEntity<>(commandParam, requestHeaders);
+        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
+        FalconApiCommands.RestResponse res = rsp.getBody();
+
+        if (!res.isSuccess()) {
             System.out.println(rsp.getBody());
             throw new OperationFailureException(Platform.operr("falcon fail "));
         }
@@ -790,10 +793,11 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             requestHeaders.setContentType(MediaType.APPLICATION_JSON);
             requestHeaders.setContentLength(commandParam.length());
             HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
-            ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
-            com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
 
-            if (!job.getString("success").equals("True")) {
+            ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
+            FalconApiCommands.RestResponse res = rsp.getBody();
+
+            if (!res.isSuccess()) {
                 System.out.println(rsp.getBody());
                 throw new OperationFailureException(Platform.operr("falcon fail "));
             }
