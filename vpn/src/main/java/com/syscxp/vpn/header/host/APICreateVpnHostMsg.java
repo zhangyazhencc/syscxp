@@ -1,5 +1,6 @@
 package com.syscxp.vpn.header.host;
 
+import com.syscxp.header.host.APIAddHostMsg;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -8,19 +9,13 @@ import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.vpn.vpn.VpnConstant;
 
 @Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
-public class APICreateVpnHostMsg extends APIMessage {
-    @APIParam(emptyString = false)
-    private String name;
-    @APIParam(required = false)
-    private String description;
+public class APICreateVpnHostMsg extends APIAddHostMsg {
     @APIParam(emptyString = false)
     private String publicInterface;
     @APIParam(emptyString = false)
     private String publicIp;
-    @APIParam(resourceType = ZoneVO.class, checkAccount = true)
+    @APIParam(emptyString = false, resourceType = ZoneVO.class)
     private String zoneUuid;
-    @APIParam(emptyString = false)
-    private String manageIp;
     @APIParam
     private Integer sshPort;
     @APIParam(emptyString = false)
@@ -29,26 +24,6 @@ public class APICreateVpnHostMsg extends APIMessage {
     private String password;
     @APIParam(emptyString = false)
     private String vpnInterfaceName;
-    @APIParam
-    private Integer startPort;
-    @APIParam
-    private Integer endPort;
-
-    public Integer getStartPort() {
-        return startPort;
-    }
-
-    public void setStartPort(Integer startPort) {
-        this.startPort = startPort;
-    }
-
-    public Integer getEndPort() {
-        return endPort;
-    }
-
-    public void setEndPort(Integer endPort) {
-        this.endPort = endPort;
-    }
 
     public String getVpnInterfaceName() {
         return vpnInterfaceName;
@@ -66,36 +41,12 @@ public class APICreateVpnHostMsg extends APIMessage {
         this.publicIp = publicIp;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public String getPublicInterface() {
         return publicInterface;
     }
 
     public void setPublicInterface(String publicInterface) {
         this.publicInterface = publicInterface;
-    }
-
-    public String getManageIp() {
-        return manageIp;
-    }
-
-    public void setManageIp(String manageIp) {
-        this.manageIp = manageIp;
     }
 
     public Integer getSshPort() {
