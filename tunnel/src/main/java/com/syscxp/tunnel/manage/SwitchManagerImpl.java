@@ -778,11 +778,11 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
     }
 
     //查询该虚拟交换机下Tunnel已经分配的Vlan
-    private List<Integer> fingAllocateVlanBySwitch(String switchUuid){
-        String sql = "select distinct a.vlan from TunnelInterfaceVO a,InterfaceVO b,SwitchPortVO c " +
-                "where a.interfaceUuid = b.uuid " +
-                "and b.switchPortUuid = c.uuid " +
-                "and c.switchUuid = :switchUuid ";
+    public List<Integer> fingAllocateVlanBySwitch(String switchUuid){
+
+        String sql = "select distinct a.vlan from TunnelSwitchPortVO a,SwitchPortVO b " +
+                "where a.switchPortUuid = b.uuid " +
+                "and b.switchUuid = :switchUuid ";
         TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);
         avq.setParameter("switchUuid",switchUuid);
         List<Integer> allocatedVlans = avq.getResultList();
