@@ -56,8 +56,8 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
     private void handleApiMessage(APIMessage msg) {
         if(msg instanceof APICreateTunnelProductPriceUnitMsg){
             handle((APICreateTunnelProductPriceUnitMsg) msg);
-        }else if(msg instanceof APICreateVHostProductPriceUnitMsg){
-            handle((APICreateVHostProductPriceUnitMsg) msg);
+        }else if(msg instanceof APICreateECPProductPriceUnitMsg){
+            handle((APICreateECPProductPriceUnitMsg) msg);
         }else if(msg instanceof APIDeleteProductPriceUnitMsg){
             handle((APIDeleteProductPriceUnitMsg) msg);
         }else if(msg instanceof APIUpdateProductPriceUnitMsg){
@@ -108,8 +108,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
 
             UpdateQuery q = UpdateQuery.New(ProductPriceUnitVO.class);
             q.condAnd(ProductPriceUnitVO_.lineName, SimpleQuery.Op.EQ, msg.getLineName());
-            q.condAnd(ProductPriceUnitVO_.categoryCode, SimpleQuery.Op.EQ, Category.ABROAD);
-            q.condAnd(ProductPriceUnitVO_.productTypeCode, SimpleQuery.Op.EQ, ProductType.TUNNEL);
+            q.condAnd(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, msg.getProductCategoryUuid());
             q.delete();
 
         }else if (!StringUtils.isEmpty(msg.getUuid())){
@@ -122,17 +121,17 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
 
     }
 
-    private void handle(APICreateVHostProductPriceUnitMsg msg) {
+    private void handle(APICreateECPProductPriceUnitMsg msg) {
         ProductPriceUnitVO vo = new ProductPriceUnitVO();
 
         vo.setUuid(Platform.getUuid());
         vo.setProductCategoryUuid(msg.getProductCategoryUuid());
-        vo.setAreaCode(msg.getAreaName());
+        vo.setAreaCode(msg.getAreaCode());
         vo.setAreaName(msg.getAreaName());
         vo.setLineCode(msg.getLineName());
         vo.setLineName(msg.getLineName());
         vo.setConfigName(msg.getConfigName());
-        vo.setConfigCode(msg.getConfigName());
+        vo.setConfigCode(msg.getConfigCode());
         vo.setUnitPrice(msg.getUnitPrice());
 
         dbf.persistAndRefresh(vo);

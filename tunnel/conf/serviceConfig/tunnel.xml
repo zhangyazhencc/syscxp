@@ -24,6 +24,14 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIUpdateInterfacePortMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIListSwitchPortByTypeMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.tunnel.header.tunnel.APIDeleteInterfaceMsg</name>
     </message>
 
@@ -77,6 +85,10 @@
 
     <message>
         <name>com.syscxp.tunnel.header.tunnel.APIGetInterfacePriceMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIGetVlanAutoMsg</name>
     </message>
 
     <message>

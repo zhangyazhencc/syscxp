@@ -163,7 +163,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
 
         APIListProvinceNodeReply reply = new APIListProvinceNodeReply();
-        reply.setProvince(domesticNodeInventoryList);
+        reply.setProvinces(domesticNodeInventoryList);
         bus.reply(msg,reply);
 
 

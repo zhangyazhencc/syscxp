@@ -214,8 +214,6 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             q.condAnd(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnel_id());
             q.delete();
 
-            evt.setMsg(msg.getTunnel_id());
-            evt.setSuccess(true);
         }
         bus.publish(evt);
 
@@ -344,7 +342,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         if(!isEmptyList(policyVOList))list = PolicyInventory.valueOf(policyVOList);
         if(isEmptyList(hadAttachPolicyUuids) && isEmptyList(newAttachPolicyUuids)){
             APIAttachResourceByPoliciesEvent event = new APIAttachResourceByPoliciesEvent(msg.getId());
-            event.setInventory(list);
+            event.setInventories(list);
             bus.publish(event);
             return;
         }
@@ -433,7 +431,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
 
 
         APIAttachResourceByPoliciesEvent event = new APIAttachResourceByPoliciesEvent(msg.getId());
-        event.setInventory(list);
+        event.setInventories(list);
         bus.publish(event);
     }
 
@@ -752,9 +750,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
                         RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
 
                 if (raps.getState().equals(RestAPIState.Done.toString())) {
-                    String result = raps.getResult();
-                    APIQueryTunnelDetailForAlarmReply tunnelReply = JSONObjectUtil.toObject(result,APIQueryTunnelDetailForAlarmReply.class);
-//                APIQueryTunnelDetailForAlarmReply tunnelReply = (APIQueryTunnelDetailForAlarmReply) RESTApiDecoder.loads(raps.getResult());
+                    APIQueryTunnelDetailForAlarmReply tunnelReply = JSONObjectUtil.toObject(raps.getResult(),APIQueryTunnelDetailForAlarmReply.class);
                     if(tunnelReply.isSuccess()){
                         map = tunnelReply.getMap();
                     }else{
