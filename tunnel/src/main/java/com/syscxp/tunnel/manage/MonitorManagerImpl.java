@@ -4,6 +4,7 @@ import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.db.*;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.errorcode.ErrorCode;
+import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.falconapi.FalconApiRestConstant;
 import com.syscxp.header.host.HostVO;
@@ -45,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.syscxp.core.Platform.argerr;
+import static com.syscxp.core.Platform.operr;
 
 /**
  * Created by DCY on 2017-09-07
@@ -145,33 +147,35 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     private void handle(APIStartTunnelMonitorMsg msg) {
         APIStartTunnelMonitorEvent event = new APIStartTunnelMonitorEvent(msg.getId());
+        boolean success = true;
 
         // 创建监控通道
         List<TunnelMonitorVO> tunnelMonitorVOS = createTunnelMonitorHandle(msg);
 
-        // 下发监控通道配置
-        // TODO: 直接返回response对象
-        ControllerCommands.TunnelMonitorCommand cmd = getTunnelMonitorCommand(msg.getTunnelUuid());
-        String command = JSONObjectUtil.toJsonString(cmd);
-        ControllerRestFacade crf = new ControllerRestFacade();
-        crf.sendCommand(ControllerRestConstant.SYNC_TEST, command, new Completion(event) {
-            @Override
-            public void success() {
-                logger.info("监控通道:" + msg.getTunnelUuid() + ",控制器下发成功！");
-            }
-
-            @Override
-            public void fail(ErrorCode errorCode) {
-                logger.error("监控通道:" + msg.getTunnelUuid() + ",控制器下发失败！");
-                event.setError(errorCode);
-                bus.publish(event);
-            }
-        });
+        // 控制器命令下发
+        ControllerCommands.ControllerRestResponse controllerResponse = issueControllerCommand(msg.getTunnelUuid(),tunnelMonitorVOS);
+        //TODO:修改ControllerCommands.ControllerRestResponse，需要保存message
+        if(!controllerResponse.isSuccess()){
+            event.setSuccess(false);
+            event.setError(Platform.operr("监控命令下发失败！"));
+            success = false;
+        }
 
         // 同步icmp
-        FalconApiCommands.RestResponse restResponse = icmpSync(msg);
+        if(success){
+            FalconApiCommands.RestResponse falconResponse = icmpSync(msg);
+            if(!falconResponse.isSuccess()){
+                event.setSuccess(false);
+                event.setError(Platform.operr("监控命令下发失败！"));
+                success = false;
+            }
+        }
 
-        event.setInventories(TunnelMonitorInventory.valueOf(tunnelMonitorVOS));
+        if(success){
+            // TODO:更新TunnelVO cidr/monitorState
+        }
+
+        // event.setInventories(TunnelMonitorInventory.valueOf(tunnelMonitorVOS));
         bus.publish(event);
     }
 
@@ -218,93 +222,69 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     @Transactional
     public List<TunnelMonitorVO> createTunnelMonitorHandle(APIStartTunnelMonitorMsg msg) {
         List<TunnelMonitorVO> tunnelMonitorVOS = new ArrayList<TunnelMonitorVO>();
+        try{
+            // 按tunnel查找TunnelMonitorVO已经存在的IP
+            List<String> locatedIps =
+                    Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, msg.getTunnelUuid()).select(TunnelMonitorVO_.monitorIp).findValue();
 
-        // 按tunnel查找TunnelMonitorVO已经存在的IP
-        List<String> locatedIps =
-                Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, msg.getTunnelUuid()).select(TunnelMonitorVO_.monitorIp).findValue();
+            // 获取tunnel两端交换机端口
+            List<TunnelSwitchPortVO> portVOS = new ArrayList<TunnelSwitchPortVO>(2);
 
-        // 获取tunnel两端交换机端口
-        List<TunnelSwitchPortVO> portVOS = new ArrayList<TunnelSwitchPortVO>(2);
+            for (TunnelSwitchPortVO tunnelSwitchPortVO : portVOS) {
+                // 按tunnel port查询是否有已存在的监控机与监控IP
+                TunnelMonitorVO monitorVO = new TunnelMonitorVO();
+                if (monitorVO != null) {
+                    tunnelMonitorVOS.add(monitorVO);
+                    continue;
+                }
+                // 获取监控主机
+                String hostUuid = getHostUuid(tunnelSwitchPortVO.getSwitchPortUuid());
+                // 根据cidr获取监控IP
+                String monitorIp = getMonitorIp(msg.getMonitorCidr(),msg.getStartIp(), msg.getEndIp(), locatedIps);
 
-        for (TunnelSwitchPortVO tunnelSwitchPortVO : portVOS) {
-            // 按tunnel port查询是否有已存在的监控机与监控IP
-            TunnelMonitorVO monitorVO = new TunnelMonitorVO();
-            if (monitorVO != null) {
+                monitorVO.setUuid(Platform.getUuid());
+                monitorVO.setTunnelUuid(msg.getTunnelUuid());
+                monitorVO.setTunnelSwitchPortUuid(tunnelSwitchPortVO.getUuid());
+                monitorVO.setHostUuid(hostUuid);
+                monitorVO.setMonitorIp(monitorIp);
+                dbf.getEntityManager().persist(monitorVO);
+
                 tunnelMonitorVOS.add(monitorVO);
-                continue;
             }
-            // 获取监控主机
-            String hostUuid = getHostUuid(tunnelSwitchPortVO.getSwitchPortUuid());
-            // 根据cidr获取监控IP
-            String monitorIp = getMonitorIp(msg.getMonitorCidr(),msg.getStartIp(), msg.getEndIp(), locatedIps);
-
-            monitorVO.setUuid(Platform.getUuid());
-            monitorVO.setTunnelUuid(msg.getTunnelUuid());
-            monitorVO.setTunnelSwitchPortUuid(tunnelSwitchPortVO.getUuid());
-            monitorVO.setHostUuid(hostUuid);
-            monitorVO.setMonitorIp(monitorIp);
-            dbf.getEntityManager().persist(monitorVO);
-
-            tunnelMonitorVOS.add(monitorVO);
+            dbf.getEntityManager().flush();
+        }catch (Exception e){
+            throw new OperationFailureException(operr("创建监控通道失败！:" + e.getMessage()));
         }
-        dbf.getEntityManager().flush();
 
+        if(tunnelMonitorVOS.isEmpty())
+            throw new OperationFailureException(operr("创建监控通道失败！"));
         return tunnelMonitorVOS;
     }
 
     /***
-     * 按tunnel交换机端口，查询监控主机uuid
-     * @param switchPortUuid
-     * @return 监控主机uuid
+     * 监控命令下发至控制器
+     * @param tunnelUuid
+     * @param tunnelMonitorVOS
+     * @return
      */
-    private String getHostUuid(String switchPortUuid) {
-        String switcUuid = Q.New(SwitchPortVO.class).
-                eq(SwitchPortVO_.uuid, switchPortUuid)
-                .select(SwitchPortVO_.switchUuid)
-                .findValue();
+    private ControllerCommands.ControllerRestResponse issueControllerCommand(String tunnelUuid,List<TunnelMonitorVO> tunnelMonitorVOS){
+        ControllerCommands.ControllerRestResponse response = new ControllerCommands.ControllerRestResponse();
 
-        String physicalSwitchUuid = Q.New(SwitchVO.class).
-                eq(SwitchVO_.uuid, switcUuid)
-                .select(SwitchVO_.physicalSwitchUuid).findValue();
+        ControllerCommands.TunnelMonitorCommand cmd = getTunnelMonitorCommand(tunnelUuid);
+        try{
+            String command = JSONObjectUtil.toJsonString(cmd);
+            String url = CoreGlobalProperty.CONTROLLER_MANAGER_URL;
 
-        List<String> hostUuids = Q.New(HostSwitchMonitorVO.class).
-                eq(HostSwitchMonitorVO_.physicalSwitchUuid, physicalSwitchUuid).
-                select(HostSwitchMonitorVO_.hostUuid).
-                list();
-
-        if(hostUuids.isEmpty())
-            throw new IllegalArgumentException("获取监控主机失败");
-
-        return hostUuids.get(0);
-    }
-
-    /**
-     * 随机获取cidr中的IP
-     *
-     * @param startIp：cidr开始IP
-     * @param endIp：cidr结束
-     * @param locatedIps：已占用的IP
-     * @return ip地址
-     */
-    private String getMonitorIp(String cidr,String startIp, String endIp, List<String> locatedIps) {
-        String ip = "";
-
-        long s = NetworkUtils.ipv4StringToLong(startIp);
-        long e = NetworkUtils.ipv4StringToLong(endIp);
-        for (; s <= e; s++) {
-            ip = NetworkUtils.longToIpv4String(s);
-            if (!locatedIps.contains(ip)) {
-                locatedIps.add(ip);
+            try {
+                response = evtf.syncJsonPost(url + ControllerRestConstant.START_TUNNEL_MONITOR, command, ControllerCommands.ControllerRestResponse.class);
+            } catch (Exception e) {
+                response.setCode("1");
             }
-        }
-        if (ip == null || ip.length() == 0) {
-            throw new IllegalArgumentException("获取监控IP失败");
+        }catch (Exception e){
+            throw new OperationFailureException(operr("下发监控命令至控制器失败！:" + e.getMessage()));
         }
 
-        //掩码
-        String mask = "/" + StringUtils.substringAfterLast(cidr, "/");
-
-        return ip+mask;
+        return response;
     }
 
     /**
@@ -348,121 +328,13 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         return response;
     }
 
-    @Override
-    public boolean start() {
-        return true;
-    }
-
-    @Override
-    public boolean stop() {
-        return true;
-    }
-
-    @Override
-    public String getId() {
-        return bus.makeLocalServiceId(MonitorConstant.SERVICE_ID);
-    }
-
-    @Override
-    public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        if (msg instanceof APICreateMonitorHostMsg) {
-            validate((APICreateMonitorHostMsg) msg);
-        } else if (msg instanceof APICreateHostSwitchMonitorMsg) {
-            validate((APICreateHostSwitchMonitorMsg) msg);
-        }
-        return msg;
-    }
-
-    private void validate(APICreateHostSwitchMonitorMsg msg) {
-        //判断监控机和物理交换机所属节点是否一样
-        MonitorHostVO hostVO = dbf.findByUuid(msg.getHostUuid(), MonitorHostVO.class);
-        String hostNodeUuid = hostVO.getNodeUuid();
-        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(msg.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
-        String physicalNodeUuid = physicalSwitchVO.getNodeUuid();
-        if (!hostNodeUuid.equals(physicalNodeUuid)) {
-            throw new ApiMessageInterceptionException(argerr("该监控机不能监控非该节点下的物理交换机 "));
-        }
-
-        //判断监控口在该物理交换机下是否开了业务
-        String sql = "select count(a.uuid) from SwitchPortVO a, SwitchVO b " +
-                "where a.switchUuid = b.uuid " +
-                "and b.physicalSwitchUuid = :physicalSwitchUuid and a.portName = :portName ";
-        TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-        vq.setParameter("physicalSwitchUuid", msg.getPhysicalSwitchUuid());
-        vq.setParameter("portName", msg.getPhysicalSwitchPortName());
-        Long count = vq.getSingleResult();
-        if (count > 0) {
-            throw new ApiMessageInterceptionException(argerr("该端口已经在业务口被录用，不能创建监控口 "));
-        }
-
-        //判断监控口名称在该物理交换机下是否存在
-        SimpleQuery<HostSwitchMonitorVO> q = dbf.createQuery(HostSwitchMonitorVO.class);
-        q.add(HostSwitchMonitorVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, msg.getPhysicalSwitchUuid());
-        q.add(HostSwitchMonitorVO_.physicalSwitchPortName, SimpleQuery.Op.EQ, msg.getPhysicalSwitchPortName());
-        if (q.isExists())
-            throw new ApiMessageInterceptionException(argerr("physicalSwitchPortName %s is already exist ", msg.getPhysicalSwitchPortName()));
-
-        //同一个监控机的网卡名称要唯一
-        SimpleQuery<HostSwitchMonitorVO> q2 = dbf.createQuery(HostSwitchMonitorVO.class);
-        q2.add(HostSwitchMonitorVO_.hostUuid, SimpleQuery.Op.EQ, msg.getHostUuid());
-        q2.add(HostSwitchMonitorVO_.interfaceName, SimpleQuery.Op.EQ, msg.getInterfaceName());
-        if (q2.isExists())
-            throw new ApiMessageInterceptionException(argerr("interfaceName %s is already exist ", msg.getInterfaceName()));
-
-    }
-
-    private void validate(APICreateMonitorHostMsg msg) {
-        //判断code是否已经存在
-        SimpleQuery<MonitorHostVO> q = dbf.createQuery(MonitorHostVO.class);
-        q.add(MonitorHostVO_.code, SimpleQuery.Op.EQ, msg.getCode());
-        if (q.isExists())
-            throw new ApiMessageInterceptionException(argerr("host's code %s is already exist ", msg.getCode()));
-
-        //验证hostIp地址是否合法
-        if (isPortEmpty(msg.getHostIp())) {
-            msg.setHostIp(msg.getHostIp() + ":" + "22");
-        }
-        validateHostIp(msg.getHostIp());
-    }
-
-    /**
-     * 验证监控主机IP合法性
-     *
-     * @param hostIp：监控主机IP
-     */
-    private void validateHostIp(String hostIp) {
-        String ip = "";
-        int port = -1;
-
-        String[] hostAddress = hostIp.split(":");
-        ip = hostAddress[0];
-        try {
-            port = Integer.parseInt(hostAddress[1]);
-            if (!NetworkUtils.isLegalPort(port)) {
-                throw new ApiMessageInterceptionException(argerr("Illegal host port %s！", port));
-            }
-        } catch (Exception e) {
-            throw new ApiMessageInterceptionException(argerr("Illegal host port %s！", port));
-        }
-
-        if (!NetworkUtils.isIpv4Address(ip))
-            throw new ApiMessageInterceptionException(argerr("Illegal host IP %s！", ip));
-    }
-
-    private boolean isPortEmpty(String hostIp) {
-        if (!hostIp.contains(":"))
-            return true;
-        else
-            return false;
-    }
-
     /**
      * 获取监控下发controller命令
      *
      * @param tunnelUuid
      * @return
      */
-    public ControllerCommands.TunnelMonitorCommand getTunnelMonitorCommand(String tunnelUuid) {
+    private ControllerCommands.TunnelMonitorCommand getTunnelMonitorCommand(String tunnelUuid) {
         List<ControllerCommands.TunnelMonitorMpls> mplsList = new ArrayList<>();
         List<ControllerCommands.TunnelMonitorSdn> sdnList = new ArrayList<>();
 
@@ -559,6 +431,62 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         return ControllerCommands.TunnelMonitorCommand.valueOf(sdnList, mplsList);
     }
+
+    /***
+     * 按tunnel交换机端口，查询监控主机uuid
+     * @param switchPortUuid
+     * @return 监控主机uuid
+     */
+    private String getHostUuid(String switchPortUuid) {
+        String switcUuid = Q.New(SwitchPortVO.class).
+                eq(SwitchPortVO_.uuid, switchPortUuid)
+                .select(SwitchPortVO_.switchUuid)
+                .findValue();
+
+        String physicalSwitchUuid = Q.New(SwitchVO.class).
+                eq(SwitchVO_.uuid, switcUuid)
+                .select(SwitchVO_.physicalSwitchUuid).findValue();
+
+        List<String> hostUuids = Q.New(HostSwitchMonitorVO.class).
+                eq(HostSwitchMonitorVO_.physicalSwitchUuid, physicalSwitchUuid).
+                select(HostSwitchMonitorVO_.hostUuid).
+                list();
+
+        if(hostUuids.isEmpty())
+            throw new IllegalArgumentException("获取监控主机失败");
+
+        return hostUuids.get(0);
+    }
+
+    /**
+     * 随机获取cidr中的IP
+     *
+     * @param startIp：cidr开始IP
+     * @param endIp：cidr结束
+     * @param locatedIps：已占用的IP
+     * @return ip地址
+     */
+    private String getMonitorIp(String cidr,String startIp, String endIp, List<String> locatedIps) {
+        String ip = "";
+
+        long s = NetworkUtils.ipv4StringToLong(startIp);
+        long e = NetworkUtils.ipv4StringToLong(endIp);
+        for (; s <= e; s++) {
+            ip = NetworkUtils.longToIpv4String(s);
+            if (!locatedIps.contains(ip)) {
+                locatedIps.add(ip);
+            }
+        }
+        if (ip == null || ip.length() == 0) {
+            throw new IllegalArgumentException("获取监控IP失败");
+        }
+
+        //掩码
+        String mask = "/" + StringUtils.substringAfterLast(cidr, "/");
+
+        return ip+mask;
+    }
+
 
     /**
      * 获取tunnel两端监控ip与监控端口
@@ -707,5 +635,113 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         return Q.New(TunnelMonitorVO.class)
                 .eq(TunnelMonitorVO_.tunnelSwitchPortUuid,tunnelSwitchPortUuid)
                 .find();
+    }
+
+    @Override
+    public boolean start() {
+        return true;
+    }
+
+    @Override
+    public boolean stop() {
+        return true;
+    }
+
+    @Override
+    public String getId() {
+        return bus.makeLocalServiceId(MonitorConstant.SERVICE_ID);
+    }
+
+    @Override
+    public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
+        if (msg instanceof APICreateMonitorHostMsg) {
+            validate((APICreateMonitorHostMsg) msg);
+        } else if (msg instanceof APICreateHostSwitchMonitorMsg) {
+            validate((APICreateHostSwitchMonitorMsg) msg);
+        }
+        return msg;
+    }
+
+    private void validate(APICreateHostSwitchMonitorMsg msg) {
+        //判断监控机和物理交换机所属节点是否一样
+        MonitorHostVO hostVO = dbf.findByUuid(msg.getHostUuid(), MonitorHostVO.class);
+        String hostNodeUuid = hostVO.getNodeUuid();
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(msg.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
+        String physicalNodeUuid = physicalSwitchVO.getNodeUuid();
+        if (!hostNodeUuid.equals(physicalNodeUuid)) {
+            throw new ApiMessageInterceptionException(argerr("该监控机不能监控非该节点下的物理交换机 "));
+        }
+
+        //判断监控口在该物理交换机下是否开了业务
+        String sql = "select count(a.uuid) from SwitchPortVO a, SwitchVO b " +
+                "where a.switchUuid = b.uuid " +
+                "and b.physicalSwitchUuid = :physicalSwitchUuid and a.portName = :portName ";
+        TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
+        vq.setParameter("physicalSwitchUuid", msg.getPhysicalSwitchUuid());
+        vq.setParameter("portName", msg.getPhysicalSwitchPortName());
+        Long count = vq.getSingleResult();
+        if (count > 0) {
+            throw new ApiMessageInterceptionException(argerr("该端口已经在业务口被录用，不能创建监控口 "));
+        }
+
+        //判断监控口名称在该物理交换机下是否存在
+        SimpleQuery<HostSwitchMonitorVO> q = dbf.createQuery(HostSwitchMonitorVO.class);
+        q.add(HostSwitchMonitorVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, msg.getPhysicalSwitchUuid());
+        q.add(HostSwitchMonitorVO_.physicalSwitchPortName, SimpleQuery.Op.EQ, msg.getPhysicalSwitchPortName());
+        if (q.isExists())
+            throw new ApiMessageInterceptionException(argerr("physicalSwitchPortName %s is already exist ", msg.getPhysicalSwitchPortName()));
+
+        //同一个监控机的网卡名称要唯一
+        SimpleQuery<HostSwitchMonitorVO> q2 = dbf.createQuery(HostSwitchMonitorVO.class);
+        q2.add(HostSwitchMonitorVO_.hostUuid, SimpleQuery.Op.EQ, msg.getHostUuid());
+        q2.add(HostSwitchMonitorVO_.interfaceName, SimpleQuery.Op.EQ, msg.getInterfaceName());
+        if (q2.isExists())
+            throw new ApiMessageInterceptionException(argerr("interfaceName %s is already exist ", msg.getInterfaceName()));
+
+    }
+
+    private void validate(APICreateMonitorHostMsg msg) {
+        //判断code是否已经存在
+        SimpleQuery<MonitorHostVO> q = dbf.createQuery(MonitorHostVO.class);
+        q.add(MonitorHostVO_.code, SimpleQuery.Op.EQ, msg.getCode());
+        if (q.isExists())
+            throw new ApiMessageInterceptionException(argerr("host's code %s is already exist ", msg.getCode()));
+
+        //验证hostIp地址是否合法
+        if (isPortEmpty(msg.getHostIp())) {
+            msg.setHostIp(msg.getHostIp() + ":" + "22");
+        }
+        validateHostIp(msg.getHostIp());
+    }
+
+    /**
+     * 验证监控主机IP合法性
+     *
+     * @param hostIp：监控主机IP
+     */
+    private void validateHostIp(String hostIp) {
+        String ip = "";
+        int port = -1;
+
+        String[] hostAddress = hostIp.split(":");
+        ip = hostAddress[0];
+        try {
+            port = Integer.parseInt(hostAddress[1]);
+            if (!NetworkUtils.isLegalPort(port)) {
+                throw new ApiMessageInterceptionException(argerr("Illegal host port %s！", port));
+            }
+        } catch (Exception e) {
+            throw new ApiMessageInterceptionException(argerr("Illegal host port %s！", port));
+        }
+
+        if (!NetworkUtils.isIpv4Address(ip))
+            throw new ApiMessageInterceptionException(argerr("Illegal host IP %s！", ip));
+    }
+
+    private boolean isPortEmpty(String hostIp) {
+        if (!hostIp.contains(":"))
+            return true;
+        else
+            return false;
     }
 }

@@ -10,6 +10,10 @@ import com.syscxp.tunnel.header.tunnel.TunnelVO;
  * @Description: 创建监控通道.
  */
 public class APIRestartTunnelMonitorMsg extends APIMessage {
+    // TODO:重启监控
+        // 更新tunnelVO的monitorState
+        // 下发控制器监控命令
+        // ICMP同步
 
     @APIParam(emptyString = false,resourceType = TunnelVO.class,maxLength = 32)
     private String tunnelUuid;
