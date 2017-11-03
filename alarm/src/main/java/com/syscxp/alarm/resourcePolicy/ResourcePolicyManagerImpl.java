@@ -2,8 +2,10 @@ package com.syscxp.alarm.resourcePolicy;
 
 import com.syscxp.alarm.AlarmGlobalProperty;
 import com.syscxp.alarm.header.resourcePolicy.*;
+import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.core.cloudbus.EventFacade;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.DbEntityLister;
@@ -21,6 +23,7 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.falconapi.FalconApiCommands;
+import com.syscxp.header.falconapi.FalconApiRestConstant;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
@@ -59,6 +62,8 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
     private ErrorFacade errf;
     @Autowired
     private RESTFacade restf;
+//    @Autowired
+//    private EventFacade evtf;
 
     @Override
     @MessageSafe
@@ -190,26 +195,25 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
 
     private void handle(APIDeleteResourceMsg msg) {
 
-        String url = AlarmGlobalProperty.FALCON_URL_DELETE;
 
-        Map<String,String> tunnelIdMap = new HashMap<>();
+        String url = CoreGlobalProperty.FALCON_API_SERVER_URL;
+        Map<String, String> tunnelIdMap = new HashMap<>();
         tunnelIdMap.put("tunnel_id", msg.getTunnel_id());
-
-        String commandParam = JSONObjectUtil.toJsonString(tunnelIdMap);
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        requestHeaders.setContentLength(commandParam.length());
-        HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
-        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
-        FalconApiCommands.RestResponse res = rsp.getBody();
-
-        if (!res.isSuccess()) {
-            System.out.println(rsp.getBody());
-            throw new OperationFailureException(Platform.operr("falcon delete fail "));
+        FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
+        try {
+            response = restf.syncJsonPost(url+ FalconApiRestConstant.STRATEGY_DELETE,JSONObjectUtil.toJsonString(tunnelIdMap),FalconApiCommands.RestResponse.class);
+        }catch (Exception e){
+            response.setSuccess(false);
+            response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
         }
 
         APIDeleteResourceEvent evt = new APIDeleteResourceEvent();
-        if(res.isSuccess()){
+        evt.setSuccess(response.isSuccess());
+        if(!response.isSuccess()){
+            evt.setError(Platform.operr(response.getMsg()));
+        }
+
+        if(response.isSuccess()){
             UpdateQuery q = UpdateQuery.New(ResourcePolicyRefVO.class);
             q.condAnd(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnel_id());
             q.delete();
@@ -218,6 +222,36 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             evt.setSuccess(true);
         }
         bus.publish(evt);
+
+
+//        String url = AlarmGlobalProperty.FALCON_URL_DELETE;
+//
+//        Map<String,String> tunnelIdMap = new HashMap<>();
+//        tunnelIdMap.put("tunnel_id", msg.getTunnel_id());
+//        String commandParam = JSONObjectUtil.toJsonString(tunnelIdMap);
+
+//        HttpHeaders requestHeaders = new HttpHeaders();
+//        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+//        requestHeaders.setContentLength(commandParam.length());
+//        HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
+//        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
+//        FalconApiCommands.RestResponse res = rsp.getBody();
+//
+//        if (!res.isSuccess()) {
+//            System.out.println(rsp.getBody());
+//            throw new OperationFailureException(Platform.operr("falcon delete fail "));
+//        }
+//
+//        APIDeleteResourceEvent evt = new APIDeleteResourceEvent();
+//        if(res.isSuccess()){
+//            UpdateQuery q = UpdateQuery.New(ResourcePolicyRefVO.class);
+//            q.condAnd(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnel_id());
+//            q.delete();
+//
+//            evt.setMsg(msg.getTunnel_id());
+//            evt.setSuccess(true);
+//        }
+//        bus.publish(evt);
 
 
     }
