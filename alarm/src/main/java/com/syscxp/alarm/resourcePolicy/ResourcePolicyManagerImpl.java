@@ -20,6 +20,7 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.errorcode.OperationFailureException;
+import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
@@ -41,10 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.Query;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMessageInterceptor {
@@ -177,10 +175,10 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setContentLength(commandParam.length());
-        HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
-        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
-        com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
-        if (job.getString("success").equals("false")) {
+        HttpEntity<String> req = new HttpEntity<>(commandParam, requestHeaders);
+        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
+        FalconApiCommands.RestResponse res = rsp.getBody();
+        if (!res.isSuccess()) {
             System.out.println(rsp.getBody());
             throw new OperationFailureException(Platform.operr("falcon fail "));
         }
@@ -202,16 +200,16 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setContentLength(commandParam.length());
         HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
-        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
-        com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
-        if(job.getString("success").equals("false")){
+        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
+        FalconApiCommands.RestResponse res = rsp.getBody();
+
+        if (!res.isSuccess()) {
             System.out.println(rsp.getBody());
             throw new OperationFailureException(Platform.operr("falcon delete fail "));
         }
 
-
         APIDeleteResourceEvent evt = new APIDeleteResourceEvent();
-        if(!job.getString("success").equals("false")){
+        if(res.isSuccess()){
             UpdateQuery q = UpdateQuery.New(ResourcePolicyRefVO.class);
             q.condAnd(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnel_id());
             q.delete();
@@ -331,22 +329,43 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         bus.reply(msg, reply);
     }
 
+    @Transactional
     private void handle(APIAttachResourceByPoliciesMsg msg) {
-        List<ResourcePolicyRefInventory> list = new ArrayList<>();
-        if (msg.isAttach()) {
-            for (String policyUuid : msg.getPolicyUuids()) {
-                ResourcePolicyRefVO resourcePolicyRefVO = new ResourcePolicyRefVO();
-                resourcePolicyRefVO.setPolicyUuid(policyUuid);
-                resourcePolicyRefVO.setResourceUuid(msg.getResourceUuid());
-                resourcePolicyRefVO.setUuid(Platform.getUuid());
-                dbf.getEntityManager().persist(resourcePolicyRefVO);
-                list.add(ResourcePolicyRefInventory.valueOf(resourcePolicyRefVO));
+
+
+        SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
+        query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
+        query.select(ResourcePolicyRefVO_.policyUuid);
+        List<String> hadAttachPolicyUuids = query.listValue();
+        List<String> newAttachPolicyUuids = msg.getPolicyUuids();
+
+        List<PolicyVO> policyVOList = dbf.listByPrimaryKeys(hadAttachPolicyUuids,PolicyVO.class);
+        List<PolicyInventory> list =  new ArrayList<>();
+        if(!isEmptyList(policyVOList))list = PolicyInventory.valueOf(policyVOList);
+        if(isEmptyList(hadAttachPolicyUuids) && isEmptyList(newAttachPolicyUuids)){
+            APIAttachResourceByPoliciesEvent event = new APIAttachResourceByPoliciesEvent(msg.getId());
+            event.setInventory(list);
+            bus.publish(event);
+            return;
+        }
+
+        if(isEmptyList(hadAttachPolicyUuids) && !isEmptyList(newAttachPolicyUuids)){
+            attachPolcies(msg.getPolicyUuids(),msg.getResourceUuid(), list);
+        } else if(!isEmptyList(hadAttachPolicyUuids) && isEmptyList(newAttachPolicyUuids)){
+            List<String> needDettachPolicyUuids = substractList(hadAttachPolicyUuids,newAttachPolicyUuids);
+            for (String policyUuid : needDettachPolicyUuids) {
+                deleteResourcePolicyRef(policyUuid, msg.getResourceUuid());
+                list.remove(PolicyInventory.valueOf(dbf.findByUuid(policyUuid,PolicyVO.class)));
             }
         } else {
-            for (String policyUuid : msg.getPolicyUuids()) {
-                list.add(ResourcePolicyRefInventory.valueOf(deleteResourcePolicyRef(policyUuid, msg.getResourceUuid())));
+            List<String> needDettachPolicyUuids = substractList(hadAttachPolicyUuids,newAttachPolicyUuids);
+            for (String policyUuid : needDettachPolicyUuids) {
+                deleteResourcePolicyRef(policyUuid, msg.getResourceUuid());
+                list.remove(PolicyInventory.valueOf(dbf.findByUuid(policyUuid,PolicyVO.class)));
             }
 
+            List<String> needAttachPolicyUuids = substractList(newAttachPolicyUuids,hadAttachPolicyUuids);
+               attachPolcies(needAttachPolicyUuids,msg.getResourceUuid(), list);
         }
         dbf.getEntityManager().flush();
 
@@ -403,10 +422,11 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setContentLength(commandParam.length());
-        HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
-        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
-        com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
-        if (!job.getString("success").equals("True")) {
+        HttpEntity<String> req = new HttpEntity<>(commandParam, requestHeaders);
+        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
+        FalconApiCommands.RestResponse res = rsp.getBody();
+
+        if (!res.isSuccess()) {
             System.out.println(rsp.getBody());
             throw new OperationFailureException(Platform.operr("falcon fail "));
         }
@@ -417,6 +437,17 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         bus.publish(event);
     }
 
+    private void attachPolcies(List<String> policyUuids,String resourceUuid, List<PolicyInventory> list) {
+        for (String policyUuid : policyUuids) {
+            ResourcePolicyRefVO resourcePolicyRefVO = new ResourcePolicyRefVO();
+            resourcePolicyRefVO.setPolicyUuid(policyUuid);
+            resourcePolicyRefVO.setResourceUuid(resourceUuid);
+            resourcePolicyRefVO.setUuid(Platform.getUuid());
+            dbf.getEntityManager().persist(resourcePolicyRefVO);
+            list.add(PolicyInventory.valueOf(dbf.findByUuid(policyUuid,PolicyVO.class)));
+        }
+    }
+
     @Transactional
     private ResourcePolicyRefVO deleteResourcePolicyRef(String policyUuid, String resourceUuid) {
         SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
@@ -424,7 +455,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, resourceUuid);
         ResourcePolicyRefVO resourcePolicyRefVO = query.find();
         if (resourcePolicyRefVO != null) {
-            dbf.getEntityManager().remove(resourcePolicyRefVO);
+            dbf.getEntityManager().remove(dbf.getEntityManager().merge(resourcePolicyRefVO));
         }
         return resourcePolicyRefVO;
     }
@@ -501,10 +532,11 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setContentLength(commandParam.length());
-        HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
-        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
-        com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
-        if (!job.getString("success").equals("True")) {
+        HttpEntity<String> req = new HttpEntity<>(commandParam, requestHeaders);
+        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
+        FalconApiCommands.RestResponse res = rsp.getBody();
+
+        if (!res.isSuccess()) {
             System.out.println(rsp.getBody());
             throw new OperationFailureException(Platform.operr("falcon fail "));
         }
@@ -761,10 +793,11 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             requestHeaders.setContentType(MediaType.APPLICATION_JSON);
             requestHeaders.setContentLength(commandParam.length());
             HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
-            ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
-            com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
 
-            if (!job.getString("success").equals("True")) {
+            ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
+            FalconApiCommands.RestResponse res = rsp.getBody();
+
+            if (!res.isSuccess()) {
                 System.out.println(rsp.getBody());
                 throw new OperationFailureException(Platform.operr("falcon fail "));
             }
@@ -773,6 +806,31 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
     }
 
 
+    private  <T>  boolean isEmptyList(Collection<T> c){
+        return c==null ||c.size()==0;
+    }
+
+    private <T> Map<T,T> list2Map(List<T> list){
+        Map<T,T> map = new HashMap<>();
+        for(T t : list){
+            map.put(t,t);
+        }
+        return map;
+    }
+
+    private <T> List<T> substractList(List<T> c1,List<T> c2){
+        if(isEmptyList(c1)) return null;
+        if(isEmptyList(c2)) return c1;
+        Map<T,T> map2 = list2Map(c2);
+        List<T> resultList = new ArrayList<>();
+        for(T t: c1){
+            if(map2.get(t)==null){
+                resultList.add(t);
+            }
+        }
+        return resultList;
+
+    }
 
 
 }

@@ -113,9 +113,9 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
     private void handle(APIQueryVlanUsedMsg msg) {
         List<VlanUsedInventory> switchPortUsedInventoryList = new ArrayList<VlanUsedInventory>();
         APIQueryVlanUsedReply reply = new APIQueryVlanUsedReply();
-        String sql = "select s.code, sp.portName, ti.vlan " +
-                "from SwitchVO s, SwitchPortVO sp, InterfaceVO i,TunnelInterfaceVO ti " +
-                "where s.uuid = sp.switchUuid and sp.uuid = i.switchPortUuid and ti.interfaceUuid = i.uuid " +
+        String sql = "select s.code, sp.portName, ts.vlan  " +
+                "from SwitchVO s, SwitchPortVO sp, TunnelSwitchPortVO ts  " +
+                "where  s.uuid = sp.switchUuid and sp.uuid = ts.switchPortUuid " +
                 " and s.uuid = :uuid ORDER BY ti.createDate";
 
         TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
@@ -778,11 +778,11 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
     }
 
     //查询该虚拟交换机下Tunnel已经分配的Vlan
-    private List<Integer> fingAllocateVlanBySwitch(String switchUuid){
-        String sql = "select distinct a.vlan from TunnelInterfaceVO a,InterfaceVO b,SwitchPortVO c " +
-                "where a.interfaceUuid = b.uuid " +
-                "and b.switchPortUuid = c.uuid " +
-                "and c.switchUuid = :switchUuid ";
+    public List<Integer> fingAllocateVlanBySwitch(String switchUuid){
+
+        String sql = "select distinct a.vlan from TunnelSwitchPortVO a,SwitchPortVO b " +
+                "where a.switchPortUuid = b.uuid " +
+                "and b.switchUuid = :switchUuid ";
         TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);
         avq.setParameter("switchUuid",switchUuid);
         List<Integer> allocatedVlans = avq.getResultList();

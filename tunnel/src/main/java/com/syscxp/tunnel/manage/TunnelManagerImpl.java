@@ -843,12 +843,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         String nodeZUuid = getNodeUuid(vo, "Z");
 
         String innerEndpointUuid = null;
-        TunnelSwitchPortVO tunnelSwitch = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "B")
+        TunnelSwitchPortVO tunnelSwitchPort = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag,"B")
                 .find();
-        if (tunnelSwitch != null) {
-            innerEndpointUuid = tunnelSwitch.getEndpointUuid();
+        if(tunnelSwitchPort != null){
+            innerEndpointUuid = tunnelSwitchPort.getEndpointUuid();
         }
 
         BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
@@ -1381,8 +1381,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         String zoneUuidA = getZoneUuid(nodeA.getUuid());
         String zoneUuidZ = getZoneUuid(nodeZ.getUuid());
         if (innerEndpointUuid == null) {  //国内互传  或者 国外到国外
-            if (nodeA.getCountry().equals("中国") && nodeZ.getCountry().equals("中国")) {  //国内互传
-                ProductPriceUnit unit = getTunnelPriceUnitCN(bandwidthOfferingUuid, nodeA, nodeZ, zoneUuidA, zoneUuidZ);
+            if(nodeA.getCountry().equals("CHINA") && nodeZ.getCountry().equals("CHINA")){  //国内互传
+                ProductPriceUnit unit = getTunnelPriceUnitCN(bandwidthOfferingUuid,nodeA,nodeZ,zoneUuidA,zoneUuidZ);
                 units.add(unit);
             } else {                          //国外到国外
                 ProductPriceUnit unit = getTunnelPriceUnitAb(bandwidthOfferingUuid, nodeA, nodeZ);
@@ -1790,7 +1790,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //判断同一个switchPort下内部VLAN段是否有重叠
         String sql = "select count(a.uuid) from QinqVO a " +
-                "where a.tunnelUuid in (select tunnelUuid from TunnelInterfaceVO where interfaceUuid = :interfaceUuid and qinqState = 'Enabled') " +
+                "where a.tunnelUuid in (select b.tunnelUuid from TunnelSwitchPortVO b where b.switchPortUuid = :switchPortUuid and b.type = 'QINQ') " +
                 "and ((a.startVlan between :startVlan and :endVlan) " +
                 "or (a.endVlan between :startVlan and :endVlan) " +
                 "or (:startVlan between a.startVlan and a.endVlan) " +
@@ -1802,7 +1802,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
                 for (InnerVlanSegment vlanSegment : vlanSegments) {
                     TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-                    vq.setParameter("interfaceUuid", msg.getInterfaceAUuid());
+                    vq.setParameter("switchPortUuid", interfaceVOA.getSwitchPortUuid());
                     vq.setParameter("startVlan", vlanSegment.getStartVlan());
                     vq.setParameter("endVlan", vlanSegment.getEndVlan());
                     Long count = vq.getSingleResult();
@@ -1815,7 +1815,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
                 for (InnerVlanSegment vlanSegment : vlanSegments) {
                     TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-                    vq.setParameter("interfaceUuid", msg.getInterfaceZUuid());
+                    vq.setParameter("switchPortUuid", interfaceVOZ.getSwitchPortUuid());
                     vq.setParameter("startVlan", vlanSegment.getStartVlan());
                     vq.setParameter("endVlan", vlanSegment.getEndVlan());
                     Long count = vq.getSingleResult();
@@ -1883,22 +1883,22 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void validate(APICreateQinqMsg msg) {
         //判断同一个switchPort下内部VLAN段是否有重叠
         String sql = "select count(a.uuid) from QinqVO a " +
-                "where a.tunnelUuid in (select tunnelUuid from TunnelInterfaceVO where interfaceUuid = :interfaceUuid and qinqState = 'Enabled') " +
+                "where a.tunnelUuid in (select b.tunnelUuid from TunnelSwitchPortVO b where b.switchPortUuid = :switchPortUuid and b.type = 'QINQ') " +
                 "and ((a.startVlan between :startVlan and :endVlan) " +
                 "or (a.endVlan between :startVlan and :endVlan) " +
                 "or (:startVlan between a.startVlan and a.endVlan) " +
                 "or (:endVlan between a.startVlan and a.endVlan))";
-        TunnelInterfaceVO tunnelInterfaceA = Q.New(TunnelInterfaceVO.class)
-                .eq(TunnelInterfaceVO_.tunnelUuid, msg.getUuid())
-                .eq(TunnelInterfaceVO_.sortTag, "A")
+        TunnelSwitchPortVO tunnelSwitchPortVOA = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag, "A")
                 .find();
-        TunnelInterfaceVO tunnelInterfaceZ = Q.New(TunnelInterfaceVO.class)
-                .eq(TunnelInterfaceVO_.tunnelUuid, msg.getUuid())
-                .eq(TunnelInterfaceVO_.sortTag, "Z")
+        TunnelSwitchPortVO tunnelSwitchPortVOZ = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag, "Z")
                 .find();
-        if (tunnelInterfaceA.getQinqState() == TunnelQinqState.Enabled) {
+        if (tunnelSwitchPortVOA.getType() == NetworkType.QINQ) {
             TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-            vq.setParameter("interfaceUuid", tunnelInterfaceA.getInterfaceUuid());
+            vq.setParameter("switchPortUuid", tunnelSwitchPortVOA.getSwitchPortUuid());
             vq.setParameter("startVlan", msg.getStartVlan());
             vq.setParameter("endVlan", msg.getEndVlan());
             Long count = vq.getSingleResult();
@@ -1906,9 +1906,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
             }
         }
-        if (tunnelInterfaceZ.getQinqState() == TunnelQinqState.Enabled) {
+        if (tunnelSwitchPortVOZ.getType() == NetworkType.QINQ) {
             TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-            vq.setParameter("interfaceUuid", tunnelInterfaceZ.getInterfaceUuid());
+            vq.setParameter("switchPortUuid", tunnelSwitchPortVOZ.getSwitchPortUuid());
             vq.setParameter("startVlan", msg.getStartVlan());
             vq.setParameter("endVlan", msg.getEndVlan());
             Long count = vq.getSingleResult();
