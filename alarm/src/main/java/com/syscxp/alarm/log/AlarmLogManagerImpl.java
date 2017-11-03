@@ -77,89 +77,53 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
         alarmLogVO.setStatus(msg.getStatus());
         alarmLogVO.setAccountUuid(msg.getUser_id());
         alarmLogVO.setProductType(ProductType.TUNNEL);//todo  where should acquire
-        SimpleQuery<AlarmLogVO> queryTime = dbf.createQuery(AlarmLogVO.class);
-        queryTime.add(AlarmLogVO_.productUuid, SimpleQuery.Op.EQ, msg.getTunnel_id());
-        queryTime.orderBy(AlarmLogVO_.createDate, SimpleQuery.Od.DESC);
-        List<AlarmLogVO> alarmLogList = queryTime.list();
-        int count = 0;
-        int countSize = alarmLogList.size();
-        Timestamp time = null;
-        for(AlarmLogVO vo: alarmLogList){
-            time = vo.getCreateDate();
-          if(msg.getStatus().equals("RESUME")){
-              if(vo.getStatus().equals("RESUME")&& time != null){
-                      long times = time.getTime();
-                      long currentTime = System.currentTimeMillis();
-                      long diffTime = currentTime-times;
-                      alarmLogVO.setDuration((int)diffTime/1000);
-                      break;
-              }
-              if(count == countSize-1){
-                  long diffTime = System.currentTimeMillis() - vo.getCreateDate().getTime();
-                  alarmLogVO.setDuration((int)diffTime/1000);
-              }
-
-          }else if(msg.getStatus().equals("ALARM")){
-              if(vo.getStatus().equals("RESUME")){
-                  if(time != null){
-                      long times = time.getTime();
-                      long currentTime = System.currentTimeMillis();
-                      long diffTime = currentTime-times;
-                      alarmLogVO.setDuration((int)diffTime/1000);
-                      break;
-                  }
-              }
-              if(count == countSize-1){
-                  long diffTime = System.currentTimeMillis() - vo.getCreateDate().getTime();
-                  alarmLogVO.setDuration((int)diffTime/1000);
-              }
-          }
-          count++;
-        }
 
         //alarmLogVO.setDuration(0);//持续时间
-        //alarmLogVO.setDurationTimeUnit(TimeUnit.MILLISECONDS);
-        dbf.persistAndRefresh(alarmLogVO);
-        SimpleQuery<ContactVO> query = dbf.createQuery(ContactVO.class);
-        query.add(ContactVO_.accountUuid, SimpleQuery.Op.EQ,msg.getUser_id());
-        List<ContactVO> groups = query.list();
-            for(ContactVO contactVO: groups){
-                Set<NotifyWayVO> notifyWayVOs = contactVO.getNotifyWayVOs();
-                for(NotifyWayVO notifyWayVO: notifyWayVOs){
-                    if( notifyWayVO.getCode().equals("email")){
-                        String email = contactVO.getEmail();
-                        try{
-                            Boolean result = mailService.mailSend(email,"监控报警信息",msg.getProblem());
-                        }catch (Exception e){
-                            //保存失败信息
-                            e.printStackTrace();
-                            throw new OperationFailureException(operr("message:" + e.getMessage()));
-                        }
-                        logger.debug("发送告警的内容是：" + msg.getProblem() +
-                                "[邮件:"+email+"]");
+        dbf.persistAndRefresh(msg);
 
-                    }
-
-                    if( notifyWayVO.getCode().equals("mobile")){
-                        String phone = contactVO.getMobile();
-                        SmsVO sms = smsService.sendMsg(msg.getSession(), phone, SmsGlobalProperty.ALARM_VERIFICATION_CODE_APPID, SmsGlobalProperty.SMS_VERIFICATION_CODE_AlARM
-                                , new String[]{msg.getProblem(), "10"}, msg.getIp());
-//                        if(sms.getStatusCode() != "000000"){
-//                            //保存失败信息
-//
-//                        }
-                        logger.debug("发送告警的内容是：" + msg.getProblem() +
-                                "[手机号码:"+phone+"]");
-                    }
-
-                }
-            }
         //foreach发送短信和邮件
+        sendMessage(msg);
+
+
         APICreateALarmLogEvent evt = new APICreateALarmLogEvent(msg.getId());
         evt.setInventory(AlarmLogInventory.valueOf(alarmLogVO));
         bus.publish(evt);
 
 
+    }
+
+    private void sendMessage(APICreateAlarmLogMsg msg){
+        SimpleQuery<ContactVO> query = dbf.createQuery(ContactVO.class);
+        query.add(ContactVO_.accountUuid, SimpleQuery.Op.EQ, msg.getUser_id());
+        List<ContactVO> groups = query.list();
+        for(ContactVO contactVO: groups){
+            Set<NotifyWayVO> notifyWayVOs = contactVO.getNotifyWayVOs();
+            for(NotifyWayVO notifyWayVO: notifyWayVOs){
+                if( notifyWayVO.getCode().equals("email")){
+                    String email = contactVO.getEmail();
+                    try{
+                        Boolean result = mailService.mailSend(email,"监控报警信息", msg.getProblem());
+                    }catch (Exception e){
+                        //保存失败信息
+                        e.printStackTrace();
+                        throw new OperationFailureException(operr("message:" + e.getMessage()));
+                    }
+                    logger.debug("发送告警的内容是：" +msg.getProblem() +
+                            "[邮件:"+email+"]");
+
+                }
+
+                if( notifyWayVO.getCode().equals("mobile")){
+                    String phone = contactVO.getMobile();
+                    SmsVO sms = smsService.sendMsg(msg.getSession(), phone, SmsGlobalProperty.ALARM_VERIFICATION_CODE_APPID, SmsGlobalProperty.SMS_VERIFICATION_CODE_AlARM
+                            , new String[]{msg.getProblem(), "10"}, msg.getIp());
+
+                    logger.debug("发送告警的内容是：" + msg.getProblem() +
+                            "[手机号码:"+phone+"]");
+                }
+
+            }
+        }
     }
 
     private void handleLocalMessage(Message msg) {

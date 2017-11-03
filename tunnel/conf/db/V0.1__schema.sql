@@ -1,7 +1,7 @@
 
 CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`TunnelMonitorInterfaceVO` (
   `uuid` VARCHAR(32) NOT NULL COMMENT '主键',
-  `TunnelMonitorUuid` VARCHAR(32) NOT NULL COMMENT '监控通道uuid(TunnelMonitorVO.uuid)',
+  `tunnelMonitorUuid` VARCHAR(32) NOT NULL COMMENT '监控通道uuid(TunnelMonitorVO.uuid)',
   `interfaceType` VARCHAR(32) NOT NULL COMMENT '类型("A","Z")',
   `hostUuid` VARCHAR(32) NOT NULL COMMENT '监控主机UUID(HostVO.uuid)',
   `monitorIp` VARCHAR(64) NOT NULL COMMENT '监控IP(NetworkVO.monitorCidr)',

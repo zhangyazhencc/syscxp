@@ -114,10 +114,9 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             }
         });
 
-        sql = "select t.name, t.uuid, tf.vlan, i.switchPortUuid from InterfaceVO i, TunnelInterfaceVO tf, TunnelVO t where i.uuid = tf.interfaceUuid" +
-                " and t.uuid = tf.tunnelUuid" +
+        sql = "select t.name, t.uuid, ts.vlan, ts.switchPortUuid from TunnelSwitchPortVO ts, TunnelVO t where t.uuid = ts.tunnelUuid " +
                 " and t.accountUuid = :accountUuid and t.state = :state" +
-                " and i.switchPortUuid in (:switchPortUuids)";
+                " and ts.switchPortUuid in (:switchPortUuids)";
 
         TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
         tfq.setParameter("accountUuid", msg.getAccountUuid());
