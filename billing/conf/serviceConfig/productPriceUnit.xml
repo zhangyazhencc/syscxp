@@ -7,7 +7,7 @@
         <name>com.syscxp.billing.header.price.APICreateTunnelProductPriceUnitMsg</name>
     </message>
     <message>
-        <name>com.syscxp.billing.header.price.APICreateVHostProductPriceUnitMsg</name>
+        <name>com.syscxp.billing.header.price.APICreateECPProductPriceUnitMsg</name>
     </message>
     <message>
         <name>com.syscxp.billing.header.price.APIDeleteProductPriceUnitMsg</name>
