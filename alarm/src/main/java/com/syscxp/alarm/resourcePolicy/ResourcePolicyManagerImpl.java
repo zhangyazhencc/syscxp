@@ -110,12 +110,14 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             handle((APIUpdateTunnelInfoForFalconMsg) msg);
         }else if (msg instanceof APIGetPoliciesByResourceMsg) {
             handle((APIGetPoliciesByResourceMsg) msg);
+        }else if (msg instanceof APIAttachResourceViaPoliciesMsg) {
+            handle((APIAttachResourceViaPoliciesMsg) msg);
         }
-
         else {
             bus.dealWithUnknownMessage(msg);
         }
     }
+
 
     private void handle(APIGetPoliciesByResourceMsg msg) {
         List<PolicyVO> policies = null;
@@ -364,8 +366,23 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
     }
 
     @Transactional
-    private void handle(APIAttachResourceByPoliciesMsg msg) {
+    private void handle(APIAttachResourceViaPoliciesMsg msg) {
+        List<PolicyInventory> list =  new ArrayList<>();
+        if(msg.isAttach()){
+            attachPolcies(msg.getPolicyUuids(),msg.getResourceUuid(), list);
+        } else {
+            for (String policyUuid : msg.getPolicyUuids()) {
+                deleteResourcePolicyRef(policyUuid, msg.getResourceUuid());
+                list.add(PolicyInventory.valueOf(dbf.findByUuid(policyUuid,PolicyVO.class)));
+            }
+        }
+        APIAttachResourceByPoliciesEvent event = new APIAttachResourceByPoliciesEvent(msg.getId());
+        event.setInventories(list);
+        bus.publish(event);
+    }
 
+    @Transactional
+    private void handle(APIAttachResourceByPoliciesMsg msg) {
 
         SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
         query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
@@ -378,7 +395,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         if(!isEmptyList(policyVOList))list = PolicyInventory.valueOf(policyVOList);
         if(isEmptyList(hadAttachPolicyUuids) && isEmptyList(newAttachPolicyUuids)){
             APIAttachResourceByPoliciesEvent event = new APIAttachResourceByPoliciesEvent(msg.getId());
-            event.setInventory(list);
+            event.setInventories(list);
             bus.publish(event);
             return;
         }
@@ -389,13 +406,13 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             List<String> needDettachPolicyUuids = substractList(hadAttachPolicyUuids,newAttachPolicyUuids);
             for (String policyUuid : needDettachPolicyUuids) {
                 deleteResourcePolicyRef(policyUuid, msg.getResourceUuid());
-                list.remove(PolicyInventory.valueOf(dbf.findByUuid(policyUuid,PolicyVO.class)));
+                removeObj(list, policyUuid);
             }
         } else {
             List<String> needDettachPolicyUuids = substractList(hadAttachPolicyUuids,newAttachPolicyUuids);
             for (String policyUuid : needDettachPolicyUuids) {
                 deleteResourcePolicyRef(policyUuid, msg.getResourceUuid());
-                list.remove(PolicyInventory.valueOf(dbf.findByUuid(policyUuid,PolicyVO.class)));
+                removeObj(list, policyUuid);
             }
 
             List<String> needAttachPolicyUuids = substractList(newAttachPolicyUuids,hadAttachPolicyUuids);
@@ -403,72 +420,80 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         }
         dbf.getEntityManager().flush();
 
-        APIQueryTunnelDetailForAlarmMsg tunnelMsg = new APIQueryTunnelDetailForAlarmMsg();
-        List<String> lis = new ArrayList<>();
-        lis.add(msg.getResourceUuid());
-        tunnelMsg.setTunnelUuidList(lis);
-        Map<String, Map<String,String>> map = null;
-        RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
-                RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
-        if (raps.getState().equals(RestAPIState.Done.toString())) {
-            APIQueryTunnelDetailForAlarmReply tunnelReply = (APIQueryTunnelDetailForAlarmReply) RESTApiDecoder.loads(raps.getResult());
-            map = tunnelReply.getMap();
-        }
-
-        TunnelParameter tunnelparameter = new TunnelParameter();
-        tunnelparameter.setTunnel_id(msg.getResourceUuid());
-        tunnelparameter.setUser_id(msg.getSession().getAccountUuid());
-        tunnelparameter.setEndpointA_vlan(map.get(msg.getResourceUuid()).get("endpointA_vlan"));
-        tunnelparameter.setEndpointZ_vlan(map.get(msg.getResourceUuid()).get("endpointZ_vlan"));
-        tunnelparameter.setEndpointA_ip(map.get(msg.getResourceUuid()).get("endpointA_ip"));
-        tunnelparameter.setEndpointZ_ip(map.get(msg.getResourceUuid()).get("endpointZ_ip"));
-        tunnelparameter.setBandwidth(map.get(msg.getResourceUuid()).get("bandwidth"));
-
-        List<Rule> rulelist = rulelist = new ArrayList<>();
-
-        List<TunnelParameter> tunnelparameterlist = new ArrayList<>();
-        List<RegulationVO> regulationvolist = null;
-        Rule rule = null;
-
-        SimpleQuery<ResourcePolicyRefVO> policyrquery = dbf.createQuery(ResourcePolicyRefVO.class);
-        policyrquery.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
-        List<ResourcePolicyRefVO> policylist = policyrquery.list();
-        for (ResourcePolicyRefVO policy : policylist) {
-            SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
-            regulationvoquery.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, policy.getPolicyUuid());
-            regulationvolist = regulationvoquery.list();
-            for (RegulationVO regulationvo : regulationvolist) {
-                rule = new Rule();
-                rule.setAlarm_rule_id(regulationvo.getUuid());
-                rule.setOp(regulationvo.getComparisonRuleVO().getComparisonValue());
-                rule.setStrategy_type(regulationvo.getMonitorTargetVO().getTargetValue());
-                rule.setRight_value(regulationvo.getAlarmThreshold());
-                rule.setStay_time(regulationvo.getTriggerPeriod());
-                rulelist.add(rule);
-            }
-        }
-
-        tunnelparameter.setRules(rulelist);
-        tunnelparameterlist.add(tunnelparameter);
-
-        String url = AlarmGlobalProperty.FALCON_URL_SAVE;
-        String commandParam = JSONObjectUtil.toJsonString(tunnelparameterlist);
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        requestHeaders.setContentLength(commandParam.length());
-        HttpEntity<String> req = new HttpEntity<>(commandParam, requestHeaders);
-        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
-        FalconApiCommands.RestResponse res = rsp.getBody();
-
-        if (!res.isSuccess()) {
-            System.out.println(rsp.getBody());
-            throw new OperationFailureException(Platform.operr("falcon fail "));
-        }
+//        APIQueryTunnelDetailForAlarmMsg tunnelMsg = new APIQueryTunnelDetailForAlarmMsg();
+//        List<String> lis = new ArrayList<>();
+//        lis.add(msg.getResourceUuid());
+//        tunnelMsg.setTunnelUuidList(lis);
+//        Map<String, Map<String,String>> map = null;
+//        RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
+//                RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
+//        if (raps.getState().equals(RestAPIState.Done.toString())) {
+//            APIQueryTunnelDetailForAlarmReply tunnelReply = (APIQueryTunnelDetailForAlarmReply) RESTApiDecoder.loads(raps.getResult());
+//            map = tunnelReply.getMap();
+//        }
+//
+//        TunnelParameter tunnelparameter = new TunnelParameter();
+//        tunnelparameter.setTunnel_id(msg.getResourceUuid());
+//        tunnelparameter.setUser_id(msg.getSession().getAccountUuid());
+//        tunnelparameter.setEndpointA_vlan(map.get(msg.getResourceUuid()).get("endpointA_vlan"));
+//        tunnelparameter.setEndpointZ_vlan(map.get(msg.getResourceUuid()).get("endpointZ_vlan"));
+//        tunnelparameter.setEndpointA_ip(map.get(msg.getResourceUuid()).get("endpointA_ip"));
+//        tunnelparameter.setEndpointZ_ip(map.get(msg.getResourceUuid()).get("endpointZ_ip"));
+//        tunnelparameter.setBandwidth(map.get(msg.getResourceUuid()).get("bandwidth"));
+//
+//        List<Rule> rulelist = rulelist = new ArrayList<>();
+//
+//        List<TunnelParameter> tunnelparameterlist = new ArrayList<>();
+//        List<RegulationVO> regulationvolist = null;
+//        Rule rule = null;
+//
+//        SimpleQuery<ResourcePolicyRefVO> policyrquery = dbf.createQuery(ResourcePolicyRefVO.class);
+//        policyrquery.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
+//        List<ResourcePolicyRefVO> policylist = policyrquery.list();
+//        for (ResourcePolicyRefVO policy : policylist) {
+//            SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
+//            regulationvoquery.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, policy.getPolicyUuid());
+//            regulationvolist = regulationvoquery.list();
+//            for (RegulationVO regulationvo : regulationvolist) {
+//                rule = new Rule();
+//                rule.setAlarm_rule_id(regulationvo.getUuid());
+//                rule.setOp(regulationvo.getComparisonRuleVO().getComparisonValue());
+//                rule.setStrategy_type(regulationvo.getMonitorTargetVO().getTargetValue());
+//                rule.setRight_value(regulationvo.getAlarmThreshold());
+//                rule.setStay_time(regulationvo.getTriggerPeriod());
+//                rulelist.add(rule);
+//            }
+//        }
+//
+//        tunnelparameter.setRules(rulelist);
+//        tunnelparameterlist.add(tunnelparameter);
+//
+//        String url = AlarmGlobalProperty.FALCON_URL_SAVE;
+//        String commandParam = JSONObjectUtil.toJsonString(tunnelparameterlist);
+//        HttpHeaders requestHeaders = new HttpHeaders();
+//        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+//        requestHeaders.setContentLength(commandParam.length());
+//        HttpEntity<String> req = new HttpEntity<>(commandParam, requestHeaders);
+//        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
+//        FalconApiCommands.RestResponse res = rsp.getBody();
+//
+//        if (!res.isSuccess()) {
+//            System.out.println(rsp.getBody());
+//            throw new OperationFailureException(Platform.operr("falcon fail "));
+//        }
 
 
         APIAttachResourceByPoliciesEvent event = new APIAttachResourceByPoliciesEvent(msg.getId());
-        event.setInventory(list);
+        event.setInventories(list);
         bus.publish(event);
+    }
+
+    private void removeObj(List<PolicyInventory> list, String policyUuid) {
+        for(PolicyInventory policyInventory: list){
+            if(policyInventory.getUuid().equals(policyUuid)){
+                list.remove(policyInventory);
+            }
+        }
     }
 
     private void attachPolcies(List<String> policyUuids,String resourceUuid, List<PolicyInventory> list) {
