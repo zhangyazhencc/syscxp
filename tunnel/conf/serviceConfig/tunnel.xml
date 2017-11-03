@@ -88,6 +88,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIGetVlanAutoMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.tunnel.header.tunnel.APIQueryInterfaceMsg</name>
         <serviceId>query</serviceId>
     </message>

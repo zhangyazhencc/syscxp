@@ -40,8 +40,6 @@
         <class>com.syscxp.tunnel.header.tunnel.BandwidthOfferingVO</class>
         <class>com.syscxp.tunnel.header.tunnel.PortOfferingVO</class>
 
-        <class>com.syscxp.tunnel.header.monitor.MonitorCidrVO</class>
-
         <class>com.syscxp.header.tunnel.TunnelForAlarmVO</class>
 
         <class>com.syscxp.header.host.HostVO</class>

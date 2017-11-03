@@ -11,6 +11,16 @@ import com.syscxp.tunnel.header.tunnel.TunnelVO;
  */
 public class APIStopTunnelMonitorMsg extends APIMessage {
 
+    // TODO:监控停止（tunnel删除，手动关闭）
+        // tunnel删除
+            // 删除tunnel monitor
+            // 删除ICMP
+            // 删除控制器监控命令
+        // 手动关闭
+            // 更新tunnelVO的monitorState
+            // 删除ICMP
+            // 删除控制器监控命令
+
     @APIParam(emptyString = false,resourceType = TunnelVO.class,maxLength = 32)
     private String tunnelUuid;
 
