@@ -205,11 +205,12 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         try {
             response = restf.syncJsonPost(url+ FalconApiRestConstant.STRATEGY_DELETE,JSONObjectUtil.toJsonString(tunnelIdMap),FalconApiCommands.RestResponse.class);
         }catch (Exception e){
+            e.printStackTrace();
             response.setSuccess(false);
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
         }
 
-        APIDeleteResourceEvent evt = new APIDeleteResourceEvent();
+        APIDeleteResourceEvent evt = new APIDeleteResourceEvent(msg.getId());
         evt.setSuccess(response.isSuccess());
         if(!response.isSuccess()){
             evt.setError(Platform.operr(response.getMsg()));
@@ -220,8 +221,6 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             q.condAnd(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnel_id());
             q.delete();
 
-            evt.setMsg(msg.getTunnel_id());
-            evt.setSuccess(true);
         }
         bus.publish(evt);
 
