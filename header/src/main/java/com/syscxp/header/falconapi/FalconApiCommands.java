@@ -29,6 +29,7 @@ public class FalconApiCommands {
         private String endpointB_ip;
         private Integer endpointA_vid;
         private Integer endpointB_vid;
+        private Long bandwidth;
 
         public String getUser_id() {
             return user_id;
@@ -69,6 +70,14 @@ public class FalconApiCommands {
         public void setEndpointB_vid(Integer endpointB_vid) {
             this.endpointB_vid = endpointB_vid;
         }
+
+        public Long getBandwidth() {
+            return bandwidth;
+        }
+
+        public void setBandwidth(Long bandwidth) {
+            this.bandwidth = bandwidth;
+        }
     }
 
     /**
@@ -77,16 +86,7 @@ public class FalconApiCommands {
      * @Description: 策略同步.
      */
     public static class Strategy extends Tunnel{
-        private Integer bandwidth;
         private List<Rule> rules;
-
-        public Integer getBandwidth() {
-            return bandwidth;
-        }
-
-        public void setBandwidth(Integer bandwidth) {
-            this.bandwidth = bandwidth;
-        }
 
         public List<Rule> getRules() {
             return rules;

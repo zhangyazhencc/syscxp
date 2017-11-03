@@ -28,14 +28,6 @@
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.monitor.APIUpdateTunnelMonitorMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.tunnel.header.monitor.APIDeleteTunnelMonitorMsg</name>
-    </message>
-
-    <message>
         <name>com.syscxp.tunnel.header.monitor.APICreateSpeedRecordsMsg</name>
     </message>
 
@@ -44,16 +36,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.monitor.APICreateMonitorCidrMsg</name>
-    </message>
-
-    <message>
         <name>com.syscxp.tunnel.header.monitor.APIQuerySpeedRecordsMsg</name>
-        <serviceId>query</serviceId>
-    </message>
-
-    <message>
-        <name>com.syscxp.tunnel.header.monitor.APIQueryTunnelMonitorMsg</name>
         <serviceId>query</serviceId>
     </message>
 
