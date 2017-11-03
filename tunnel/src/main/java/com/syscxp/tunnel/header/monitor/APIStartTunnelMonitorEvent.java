@@ -3,6 +3,8 @@ package com.syscxp.tunnel.header.monitor;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.rest.RestResponse;
 
+import java.util.List;
+
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-09-11.
@@ -11,6 +13,7 @@ import com.syscxp.header.rest.RestResponse;
 @RestResponse(allTo = "inventory")
 public class APIStartTunnelMonitorEvent extends APIEvent {
     private TunnelMonitorInventory inventory;
+    private List<TunnelMonitorInventory> inventories;
 
     public APIStartTunnelMonitorEvent(){};
 
@@ -22,5 +25,13 @@ public class APIStartTunnelMonitorEvent extends APIEvent {
 
     public void setInventory(TunnelMonitorInventory inventory) {
         this.inventory = inventory;
+    }
+
+    public List<TunnelMonitorInventory> getInventories() {
+        return inventories;
+    }
+
+    public void setInventories(List<TunnelMonitorInventory> inventories) {
+        this.inventories = inventories;
     }
 }

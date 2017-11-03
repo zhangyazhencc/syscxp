@@ -13,6 +13,7 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
@@ -20,6 +21,9 @@ import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.header.tunnel.*;
 import com.syscxp.query.QueryFacade;
 import com.syscxp.tunnel.header.endpoint.EndpointVO;
+import com.syscxp.tunnel.header.monitor.HostSwitchMonitorVO;
+import com.syscxp.tunnel.header.monitor.HostSwitchMonitorVO_;
+import com.syscxp.tunnel.header.monitor.TunnelMonitorVO;
 import com.syscxp.tunnel.header.node.NodeVO;
 import com.syscxp.tunnel.header.node.ZoneNodeRefVO;
 import com.syscxp.tunnel.header.node.ZoneNodeRefVO_;
@@ -1124,33 +1128,51 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIQueryTunnelDetailForAlarmMsg msg) {
-        Map<String, Map<String, String>> detailMap = new HashMap<>();
+        Map<String,Object> detailMap = new HashMap<>();
 
-        Map<String, String> map = new HashMap<>();
+        FalconApiCommands.Tunnel tunnelCmd = new FalconApiCommands.Tunnel();
         for (String tunnelUuid : msg.getTunnelUuidList()) {
             TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelUuid).findValue();
-            map.put("tunnelUuid", tunnel.getName());
-            map.put("bandwidth", tunnel.getBandwidth().toString());
+            tunnelCmd.setTunnel_id(tunnel.getUuid());
+            tunnelCmd.setBandwidth(tunnel.getBandwidth());
 
-/*            List<TunnelInterfaceVO> interfaceList = Q.New(TunnelInterfaceVO.class).eq(TunnelInterfaceVO_.tunnelUuid, tunnelUuid).list();
-            for (TunnelInterfaceVO vo : interfaceList) {
-                if ("A".equals(vo.getSortTag()))
-                    map.put("endpointAVlan", vo.getVlan().toString());
-                else if ("Z".equals(vo.getSortTag()))
-                    map.put("endpointZVlan", vo.getVlan().toString());
-            }*/
+            List<TunnelSwitchPortVO> tunnelSwitchPortVOS = Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.tunnelUuid, tunnelUuid).list();
+            for (TunnelSwitchPortVO vo : tunnelSwitchPortVOS) {
+                if ("A".equals(vo.getSortTag())) {
+                    tunnelCmd.setEndpointA_ip(getPhysicalSwitch(vo.getSwitchPortUuid()));
+                    tunnelCmd.setEndpointA_vid(vo.getVlan());
+                }else if ("Z".equals(vo.getSortTag())){
+                    tunnelCmd.setEndpointB_ip(getPhysicalSwitch(vo.getSwitchPortUuid()));
+                    tunnelCmd.setEndpointB_vid(vo.getVlan());
+                }
+            }
 
-            //TODO: 等丁修改完成后取
-            map.put("endpointAIp", "endpointAIp");
-            map.put("endpointZIp", "endpointZIp");
-
-            //detailList.add(map);
-            detailMap.put(tunnelUuid, map);
+            detailMap.put(tunnelUuid, tunnelCmd);
         }
 
         APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
         reply.setMap(detailMap);
         bus.reply(msg, reply);
+    }
+
+    private String getPhysicalSwitch(String switchPortUuid){
+        String switcUuid = Q.New(SwitchPortVO.class).
+                eq(SwitchPortVO_.uuid, switchPortUuid)
+                .select(SwitchPortVO_.switchUuid)
+                .findValue();
+
+        String physicalSwitchUuid = Q.New(SwitchVO.class).
+                eq(SwitchVO_.uuid, switcUuid)
+                .select(SwitchVO_.physicalSwitchUuid).findValue();
+
+        String switchIp = Q.New(PhysicalSwitchVO.class).
+                eq(PhysicalSwitchVO_.uuid, physicalSwitchUuid).
+                select(PhysicalSwitchVO_.mIP).findValue();
+
+        if(switchIp.isEmpty())
+            throw new IllegalArgumentException("获取物理交换机IP失败");
+
+        return switchIp;
     }
 
     @Transactional

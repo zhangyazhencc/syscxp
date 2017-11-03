@@ -435,27 +435,15 @@ CREATE TABLE  `syscxp_tunnel`.`QinqVO` (
 
 ############################################################################################################################
 ##########################################监控##############################################################################
-
-##监控网段字典表
-CREATE TABLE `syscxp_tunnel`.`MonitorCidrVO` (
-  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
-  `monitorCidr` VARCHAR(32) NOT NULL COMMENT '监控网段IP',
-  `startAddress` VARCHAR(32) NOT NULL COMMENT '起始网络位',
-  `endAddress` VARCHAR(32) NOT NULL COMMENT '最后广播位',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  PRIMARY KEY (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 ##通道监控
+DROP TABLE IF EXISTS TunnelMonitorVO;
 CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`TunnelMonitorVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'uuid',
   `tunnelUuid` VARCHAR(32) NOT NULL COMMENT '通道uuid(TunnelVO.uuid)',
-  `hostAUuid` VARCHAR(32) NOT NULL COMMENT 'A端监控主机(HostVO.uuid)',
-  `monitorAIp` varchar(64) NOT NULL COMMENT 'A端监控IP',
-  `hostZUuid` varchar(64) NOT NULL COMMENT 'Z端监控主机(HostVO.uuid)',
-  `monitorZIp` varchar(64) NOT NULL COMMENT 'Z端监控IP',
-  `status` varchar(32) NOT NULL COMMENT '状态(NORMAL,APPLYING,TERMINATED',
+  `tunnelSwitchPortUuid` VARCHAR(32) NOT NULL COMMENT '通道交换机uuid(TunnelSwitchPortVO.uuid)',
+  `hostUuid` varchar(32) NOT NULL COMMENT '监控主机uuid(HostVO.uuid)',
+  `monitorIp` varchar(64) NOT NULL COMMENT '监控IP',
+  `monitorCidr` varchar(64) NOT NULL COMMENT '监控网络网段',
   `msg` varchar(1024) COMMENT '消息',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
@@ -466,8 +454,6 @@ ENGINE=InnoDB
 DEFAULT CHARSET=utf8
 COMMENT '通道监控';
 
-ALTER TABLE `syscxp_tunnel`.`TunnelMonitorVO` ADD accountUuid varchar(32) COMMENT 'accountUuid' AFTER tunnelUuid;
-ALTER TABLE `syscxp_tunnel`.`TunnelMonitorVO` ADD monitorCidr varchar(32) COMMENT '监控网络网段' AFTER accountUuid;
 
 ##监控机
 CREATE TABLE `HostEO` (
