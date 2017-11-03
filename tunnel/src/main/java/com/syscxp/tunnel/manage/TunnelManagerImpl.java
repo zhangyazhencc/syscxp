@@ -1117,13 +1117,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             map.put("tunnelUuid", tunnel.getName());
             map.put("bandwidth", tunnel.getBandwidth().toString());
 
-            List<TunnelInterfaceVO> interfaceList = Q.New(TunnelInterfaceVO.class).eq(TunnelInterfaceVO_.tunnelUuid, tunnelUuid).list();
+/*            List<TunnelInterfaceVO> interfaceList = Q.New(TunnelInterfaceVO.class).eq(TunnelInterfaceVO_.tunnelUuid, tunnelUuid).list();
             for (TunnelInterfaceVO vo : interfaceList) {
                 if ("A".equals(vo.getSortTag()))
                     map.put("endpointAVlan", vo.getVlan().toString());
                 else if ("Z".equals(vo.getSortTag()))
                     map.put("endpointZVlan", vo.getVlan().toString());
-            }
+            }*/
 
             //TODO: 等丁修改完成后取
             map.put("endpointAIp", "endpointAIp");

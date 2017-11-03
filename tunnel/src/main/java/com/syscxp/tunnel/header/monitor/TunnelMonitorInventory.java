@@ -19,9 +19,13 @@ public class TunnelMonitorInventory {
 
     private String tunnelUuid;
 
-    private String accountUuid;
-
     private String monitorCidr;
+
+    private String  tunnelSwitchPortUuid;
+
+    private String  hostUuid;
+
+    private String  monitorIp;
 
     private String msg;
 
@@ -29,17 +33,16 @@ public class TunnelMonitorInventory {
 
     private Timestamp createDate;
 
-    private List<TunnelMonitorInterfaceInventory> tunnelMonitorInterfaceInventories;
-
     public static TunnelMonitorInventory valueOf(TunnelMonitorVO vo){
         TunnelMonitorInventory inventory = new TunnelMonitorInventory();
         inventory.setUuid(vo.getUuid());
         inventory.setTunnelUuid(vo.getTunnelUuid());
+        inventory.setTunnelSwitchPortUuid(vo.getTunnelSwitchPortUuid());
+        inventory.setHostUuid(vo.getHostUuid());
+        inventory.setMonitorIp(vo.getMonitorIp());
         inventory.setMsg(vo.getMsg());
         inventory.setLastOpDate(vo.getLastOpDate());
         inventory.setCreateDate(vo.getCreateDate());
-        inventory.setTunnelMonitorInterfaceInventories(TunnelMonitorInterfaceInventory.valueOf(vo.getTunnelMonitorInterfaceVOList()));
-
         return inventory;
     }
 
@@ -92,20 +95,20 @@ public class TunnelMonitorInventory {
         this.createDate = createDate;
     }
 
-    public List<TunnelMonitorInterfaceInventory> getTunnelMonitorInterfaceInventories() {
-        return tunnelMonitorInterfaceInventories;
+    public String getTunnelSwitchPortUuid() {
+        return tunnelSwitchPortUuid;
     }
 
-    public void setTunnelMonitorInterfaceInventories(List<TunnelMonitorInterfaceInventory> tunnelMonitorInterfaceInventories) {
-        this.tunnelMonitorInterfaceInventories = tunnelMonitorInterfaceInventories;
+    public void setTunnelSwitchPortUuid(String tunnelSwitchPortUuid) {
+        this.tunnelSwitchPortUuid = tunnelSwitchPortUuid;
     }
 
-    public String getAccountUuid() {
-        return accountUuid;
+    public String getHostUuid() {
+        return hostUuid;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+    public void setHostUuid(String hostUuid) {
+        this.hostUuid = hostUuid;
     }
 
     public String getMonitorCidr() {
@@ -114,6 +117,14 @@ public class TunnelMonitorInventory {
 
     public void setMonitorCidr(String monitorCidr) {
         this.monitorCidr = monitorCidr;
+    }
+
+    public String getMonitorIp() {
+        return monitorIp;
+    }
+
+    public void setMonitorIp(String monitorIp) {
+        this.monitorIp = monitorIp;
     }
 }
 
