@@ -82,6 +82,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateInterfaceMsg) {
             handle((APICreateInterfaceMsg) msg);
+        } else if (msg instanceof APIGetVlanAutoMsg) {
+            handle((APIGetVlanAutoMsg) msg);
         } else if (msg instanceof APIQueryTunnelForAlarmMsg) {
             handle((APIQueryTunnelForAlarmMsg) msg);
         } else if (msg instanceof APIGetInterfacePriceMsg) {
@@ -206,6 +208,19 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIUpdateInterfacePortEvent evt = new APIUpdateInterfacePortEvent(msg.getId());
         evt.setInventory(InterfaceInventory.valueOf(dbf.reload(iface)));
         bus.publish(evt);
+    }
+
+    private void handle(APIGetVlanAutoMsg msg){
+        APIGetVlanAutoReply reply = new APIGetVlanAutoReply();
+
+        TunnelStrategy ts = new TunnelStrategy();
+        Integer vlan = ts.getVlanByStrategy(msg.getInterfaceUuid());
+        if (vlan == 0) {
+            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
+        }
+
+        reply.setVlan(vlan);
+        bus.reply(msg, reply);
     }
 
     private void handle(APIQueryTunnelForAlarmMsg msg) {
