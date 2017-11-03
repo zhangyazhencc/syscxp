@@ -329,6 +329,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         bus.reply(msg, reply);
     }
 
+    @Transactional
     private void handle(APIAttachResourceByPoliciesMsg msg) {
 
 
@@ -351,7 +352,8 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         if(isEmptyList(hadAttachPolicyUuids) && !isEmptyList(newAttachPolicyUuids)){
             attachPolcies(msg.getPolicyUuids(),msg.getResourceUuid(), list);
         } else if(!isEmptyList(hadAttachPolicyUuids) && isEmptyList(newAttachPolicyUuids)){
-            for (String policyUuid : msg.getPolicyUuids()) {
+            List<String> needDettachPolicyUuids = substractList(hadAttachPolicyUuids,newAttachPolicyUuids);
+            for (String policyUuid : needDettachPolicyUuids) {
                 deleteResourcePolicyRef(policyUuid, msg.getResourceUuid());
                 list.remove(PolicyInventory.valueOf(dbf.findByUuid(policyUuid,PolicyVO.class)));
             }
@@ -365,8 +367,6 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             List<String> needAttachPolicyUuids = substractList(newAttachPolicyUuids,hadAttachPolicyUuids);
                attachPolcies(needAttachPolicyUuids,msg.getResourceUuid(), list);
         }
-
-
         dbf.getEntityManager().flush();
 
         APIQueryTunnelDetailForAlarmMsg tunnelMsg = new APIQueryTunnelDetailForAlarmMsg();
@@ -455,7 +455,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, resourceUuid);
         ResourcePolicyRefVO resourcePolicyRefVO = query.find();
         if (resourcePolicyRefVO != null) {
-            dbf.getEntityManager().remove(resourcePolicyRefVO);
+            dbf.getEntityManager().remove(dbf.getEntityManager().merge(resourcePolicyRefVO));
         }
         return resourcePolicyRefVO;
     }
