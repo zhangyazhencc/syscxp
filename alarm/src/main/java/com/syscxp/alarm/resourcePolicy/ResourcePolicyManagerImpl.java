@@ -200,16 +200,16 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setContentLength(commandParam.length());
         HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
-        ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
-        com.alibaba.fastjson.JSONObject job = com.alibaba.fastjson.JSONObject.parseObject(rsp.getBody());
-        if(job.getString("success").equals("false")){
+        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
+        FalconApiCommands.RestResponse res = rsp.getBody();
+
+        if (!res.isSuccess()) {
             System.out.println(rsp.getBody());
             throw new OperationFailureException(Platform.operr("falcon delete fail "));
         }
 
-
         APIDeleteResourceEvent evt = new APIDeleteResourceEvent();
-        if(!job.getString("success").equals("false")){
+        if(res.isSuccess()){
             UpdateQuery q = UpdateQuery.New(ResourcePolicyRefVO.class);
             q.condAnd(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnel_id());
             q.delete();
