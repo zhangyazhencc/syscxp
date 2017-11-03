@@ -18,6 +18,9 @@ public class APICreatePolicyMsg extends APIMessage{
     @APIParam
     private ProductType productType;
 
+    @APIParam
+    private String  accountUuid;
+
     public String getName() {
         return name;
     }
@@ -40,5 +43,13 @@ public class APICreatePolicyMsg extends APIMessage{
 
     public void setProductType(ProductType productType) {
         this.productType = productType;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }
