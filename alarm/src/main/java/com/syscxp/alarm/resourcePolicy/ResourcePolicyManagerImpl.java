@@ -224,37 +224,6 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         }
         bus.publish(evt);
 
-
-//        String url = AlarmGlobalProperty.FALCON_URL_DELETE;
-//
-//        Map<String,String> tunnelIdMap = new HashMap<>();
-//        tunnelIdMap.put("tunnel_id", msg.getTunnel_id());
-//        String commandParam = JSONObjectUtil.toJsonString(tunnelIdMap);
-
-//        HttpHeaders requestHeaders = new HttpHeaders();
-//        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-//        requestHeaders.setContentLength(commandParam.length());
-//        HttpEntity<String> req = new HttpEntity<String>(commandParam, requestHeaders);
-//        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
-//        FalconApiCommands.RestResponse res = rsp.getBody();
-//
-//        if (!res.isSuccess()) {
-//            System.out.println(rsp.getBody());
-//            throw new OperationFailureException(Platform.operr("falcon delete fail "));
-//        }
-//
-//        APIDeleteResourceEvent evt = new APIDeleteResourceEvent();
-//        if(res.isSuccess()){
-//            UpdateQuery q = UpdateQuery.New(ResourcePolicyRefVO.class);
-//            q.condAnd(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnel_id());
-//            q.delete();
-//
-//            evt.setMsg(msg.getTunnel_id());
-//            evt.setSuccess(true);
-//        }
-//        bus.publish(evt);
-
-
     }
     private String getProductUrl(ProductType productType) {
         String productServerUrl = AlarmGlobalProperty.TUNNEL_SERVER_RUL;
