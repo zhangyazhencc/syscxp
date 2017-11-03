@@ -371,7 +371,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         List<String> lis = new ArrayList<>();
         lis.add(msg.getResourceUuid());
         tunnelMsg.setTunnelUuidList(lis);
-        Map<String, Map<String,String>> map = null;
+        Map<String,Object> map = null;
         RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
                 RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
         if (raps.getState().equals(RestAPIState.Done.toString())) {
@@ -382,11 +382,12 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         TunnelParameter tunnelparameter = new TunnelParameter();
         tunnelparameter.setTunnel_id(msg.getResourceUuid());
         tunnelparameter.setUser_id(msg.getSession().getAccountUuid());
-        tunnelparameter.setEndpointA_vid(map.get(msg.getResourceUuid()).get("endpointA_vlan"));
-        tunnelparameter.setEndpointB_vid(map.get(msg.getResourceUuid()).get("endpointZ_vlan"));
-        tunnelparameter.setEndpointA_ip(map.get(msg.getResourceUuid()).get("endpointA_ip"));
-        tunnelparameter.setEndpointB_ip(map.get(msg.getResourceUuid()).get("endpointZ_ip"));
-        tunnelparameter.setBandwidth(map.get(msg.getResourceUuid()).get("bandwidth"));
+        FalconApiCommands.Tunnel tunnel = (FalconApiCommands.Tunnel)map.get(msg.getResourceUuid());
+        tunnelparameter.setEndpointA_vid(tunnel.getEndpointA_vid().toString());
+        tunnelparameter.setEndpointB_vid(tunnel.getEndpointB_vid().toString());
+        tunnelparameter.setEndpointA_ip(tunnel.getEndpointA_ip());
+        tunnelparameter.setEndpointB_ip(tunnel.getEndpointB_ip());
+        tunnelparameter.setBandwidth(tunnel.getBandwidth().toString());
 
         List<Rule> rulelist = rulelist = new ArrayList<>();
 
@@ -415,18 +416,22 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         tunnelparameter.setRules(rulelist);
         tunnelparameterlist.add(tunnelparameter);
 
-        String url = AlarmGlobalProperty.FALCON_URL_SAVE;
-        String commandParam = JSONObjectUtil.toJsonString(tunnelparameterlist);
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        requestHeaders.setContentLength(commandParam.length());
-        HttpEntity<String> req = new HttpEntity<>(commandParam, requestHeaders);
-        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
-        FalconApiCommands.RestResponse res = rsp.getBody();
+        try{
+            FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
+            String url = AlarmGlobalProperty.FALCON_URL_SAVE;
+            try {
+                response = restf.syncJsonPost(url,JSONObjectUtil.toJsonString(JSONObjectUtil.toJsonString(tunnelparameterlist)),FalconApiCommands.RestResponse.class);
+            }catch (Exception e){
+                response.setSuccess(false);
+                response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
+            }
 
-        if (!res.isSuccess()) {
-            System.out.println(rsp.getBody());
-            throw new OperationFailureException(Platform.operr("falcon fail "));
+            if (!response.isSuccess()) {
+                System.out.println(response);
+                throw new OperationFailureException(Platform.operr("falcon fail "));
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
 
 
@@ -485,7 +490,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
 
         APIQueryTunnelDetailForAlarmMsg tunnelMsg = new APIQueryTunnelDetailForAlarmMsg();
         tunnelMsg.setTunnelUuidList(msg.getResourceUuids());
-        Map<String, Map<String,String>> map = null;
+        Map<String, Object> map = null;
         RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
                 RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
         if (raps.getState().equals(RestAPIState.Done.toString())) {
@@ -496,11 +501,12 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         for (String resourceid : msg.getResourceUuids()) {
             tunnelparameter.setUser_id(msg.getSession().getAccountUuid());
             tunnelparameter.setTunnel_id(resourceid);
-            tunnelparameter.setEndpointA_vid(map.get(resourceid).get("endpointA_vlan"));
-            tunnelparameter.setEndpointB_vid(map.get(resourceid).get("endpointZ_vlan"));
-            tunnelparameter.setEndpointA_ip(map.get(resourceid).get("endpointA_ip"));
-            tunnelparameter.setEndpointB_ip(map.get(resourceid).get("endpointZ_ip"));
-            tunnelparameter.setBandwidth(map.get(resourceid).get("bandwidth"));
+            FalconApiCommands.Tunnel tunnel = (FalconApiCommands.Tunnel)map.get(resourceid);
+            tunnelparameter.setEndpointA_vid(tunnel.getEndpointA_vid().toString());
+            tunnelparameter.setEndpointB_vid(tunnel.getEndpointB_vid().toString());
+            tunnelparameter.setEndpointA_ip(tunnel.getEndpointA_ip());
+            tunnelparameter.setEndpointB_ip(tunnel.getEndpointB_ip());
+            tunnelparameter.setBandwidth(tunnel.getBandwidth().toString());
 
             rulelist = new ArrayList<>();
             SimpleQuery<ResourcePolicyRefVO> policyrquery = dbf.createQuery(ResourcePolicyRefVO.class);
@@ -744,7 +750,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             APIQueryTunnelDetailForAlarmMsg tunnelMsg = new APIQueryTunnelDetailForAlarmMsg();
             tunnelMsg.setTunnelUuidList(prameterlist);
             tunnelMsg.setSession(session);
-            Map<String, Map<String,String>> map = null;
+            Map<String, Object> map = null;
             try{
                 RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
                         RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
@@ -768,17 +774,19 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
                 tunnelparameter = new TunnelParameter();
                 tunnelparameter.setUser_id(session.getAccountUuid());
                 tunnelparameter.setTunnel_id(resource.getResourceUuid());
-//                tunnelparameter.setEndpointA_vid(map.get(resource.getResourceUuid()).get("endpointA_vid"));
-//                tunnelparameter.setEndpointB_vid(map.get(resource.getResourceUuid()).get("endpointB_vid"));
-//                tunnelparameter.setEndpointA_ip(map.get(resource.getResourceUuid()).get("endpointA_ip"));
-//                tunnelparameter.setEndpointB_ip(map.get(resource.getResourceUuid()).get("endpointB_ip"));
-//                tunnelparameter.setBandwidth(map.get(resource.getResourceUuid()).get("bandwidth"));
 
-                tunnelparameter.setEndpointA_vid("192264588");
-                tunnelparameter.setEndpointB_vid("192264588");
-                tunnelparameter.setEndpointA_ip("192264588");
-                tunnelparameter.setEndpointB_ip("192264588");
-                tunnelparameter.setBandwidth("192264588");
+                FalconApiCommands.Tunnel tunnel = (FalconApiCommands.Tunnel)map.get(resource.getResourceUuid());
+                tunnelparameter.setEndpointA_vid(tunnel.getEndpointA_vid().toString());
+                tunnelparameter.setEndpointB_vid(tunnel.getEndpointB_vid().toString());
+                tunnelparameter.setEndpointA_ip(tunnel.getEndpointA_ip());
+                tunnelparameter.setEndpointB_ip(tunnel.getEndpointB_ip());
+                tunnelparameter.setBandwidth(tunnel.getBandwidth().toString());
+
+//                tunnelparameter.setEndpointA_vid("192264588");
+//                tunnelparameter.setEndpointB_vid("192264588");
+//                tunnelparameter.setEndpointA_ip("192264588");
+//                tunnelparameter.setEndpointB_ip("192264588");
+//                tunnelparameter.setBandwidth("192264588");
 
 
                 rulelist = new ArrayList<>();
@@ -805,7 +813,6 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             }
 
             try{
-
                 String url = AlarmGlobalProperty.FALCON_URL_SAVE;
                 FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
                 try {
