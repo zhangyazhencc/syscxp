@@ -1,11 +1,12 @@
 package com.syscxp.header.host;
 
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 
-
+@Action(category = HostConstant.ACTION_CATEGORY, adminOnly = true)
 public class APIUpdateHostMsg extends APIMessage implements HostMessage {
     @APIParam(resourceType = HostVO.class)
     private String uuid;

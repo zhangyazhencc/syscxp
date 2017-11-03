@@ -85,6 +85,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIGetInterfacePriceMsg) msg);
         } else if (msg instanceof APIGetTunnelPriceMsg) {
             handle((APIGetTunnelPriceMsg) msg);
+        } else if (msg instanceof APIUpdateInterfacePortMsg) {
+            handle((APIUpdateInterfacePortMsg) msg);
         } else if (msg instanceof APIGetInterfaceTypeMsg) {
             handle((APIGetInterfaceTypeMsg) msg);
         } else if (msg instanceof APICreateInterfaceManualMsg) {
@@ -163,6 +165,36 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             logger.error(String.format("无法创建订单, %s", e.getMessage()), e);
         }
         return null;
+    }
+
+    @Transactional
+    private void updateInterfacePort(InterfaceVO iface, TunnelSwitchVO tunnelSwitch, APIUpdateInterfacePortMsg msg) {
+        iface.setSwitchPortUuid(msg.getSwitchPortUuid());
+        iface.setType(msg.getNetworkType());
+        dbf.getEntityManager().merge(iface);
+
+        tunnelSwitch.setSwitchPortUuid(msg.getSwitchPortUuid());
+        tunnelSwitch.setType(msg.getNetworkType());
+        dbf.getEntityManager().merge(tunnelSwitch);
+    }
+
+
+    private void handle(APIUpdateInterfacePortMsg msg) {
+        InterfaceVO iface = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
+        TunnelSwitchVO tunnelSwitch = Q.New(TunnelSwitchVO.class)
+                .eq(TunnelSwitchVO_.switchPortUuid, iface.getSwitchPortUuid()).find();
+        updateInterfacePort(iface, tunnelSwitch, msg);
+        if (msg.isIssue()){
+            TunnelVO tunnel = Q.New(TunnelVO.class)
+                    .eq(TunnelVO_.uuid, tunnelSwitch.getTunnelUuid()).find();
+            TaskResourceVO taskResource = newTaskResourceVO(tunnel, TaskType.ModifyPorts);
+            ModifyTunnelPortsMsg modifyMsg = new ModifyTunnelPortsMsg();
+            modifyMsg.setTunnelUuid(tunnel.getUuid());
+            modifyMsg.setTaskUuid(taskResource.getUuid());
+        }
+        APIUpdateInterfacePortEvent evt = new APIUpdateInterfacePortEvent(msg.getId());
+        evt.setInventory(InterfaceInventory.valueOf(dbf.reload(iface)));
+        bus.publish(evt);
     }
 
     private void handle(APIQueryTunnelForAlarmMsg msg) {
@@ -518,8 +550,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelStrategy ts = new TunnelStrategy();
         TunnelVO vo = new TunnelVO();
         BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
-        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class);
-        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class);
+        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
+        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
 
         vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(null);
@@ -1544,8 +1576,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APICreateInterfaceMsg msg) {
-            //类型是否支持
-            List<SwitchPortType> types = getPortTypeByEndpoint(msg.getEndpointUuid());
+        //类型是否支持
+        List<SwitchPortType> types = getPortTypeByEndpoint(msg.getEndpointUuid());
         if (!types.contains(msg.getPortType()))
             throw new ApiMessageInterceptionException(
                     argerr("该连接点[uuid:%s]下的端口[type:%s]已用完！", msg.getEndpointUuid(), msg.getPortType()));
