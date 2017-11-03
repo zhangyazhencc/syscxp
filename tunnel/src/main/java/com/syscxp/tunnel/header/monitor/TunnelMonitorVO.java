@@ -28,7 +28,13 @@ public class TunnelMonitorVO {
     private String tunnelUuid;
 
     @Column
-    private String accountUuid;
+    private String tunnelSwitchPortUuid;
+
+    @Column
+    private String hostUuid;
+
+    @Column
+    private String monitorIp;
 
     @Column
     private String monitorCidr;
@@ -41,12 +47,6 @@ public class TunnelMonitorVO {
 
     @Column
     private Timestamp createDate;
-
-    //private List<TunnelMonitorInterfaceVO> tunnelMonitorInterfaceVOList;
-
-    @OneToMany
-    @JoinColumn(name = "tunnelMonitorUuid")
-    private List<TunnelMonitorInterfaceVO> tunnelMonitorInterfaceVOList = new ArrayList<TunnelMonitorInterfaceVO>();
 
     @PreUpdate
     private void preUpdate() {
@@ -67,6 +67,38 @@ public class TunnelMonitorVO {
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
+    }
+
+    public String getTunnelSwitchPortUuid() {
+        return tunnelSwitchPortUuid;
+    }
+
+    public void setTunnelSwitchPortUuid(String tunnelSwitchPortUuid) {
+        this.tunnelSwitchPortUuid = tunnelSwitchPortUuid;
+    }
+
+    public String getHostUuid() {
+        return hostUuid;
+    }
+
+    public void setHostUuid(String hostUuid) {
+        this.hostUuid = hostUuid;
+    }
+
+    public String getMonitorIp() {
+        return monitorIp;
+    }
+
+    public void setMonitorIp(String monitorIp) {
+        this.monitorIp = monitorIp;
+    }
+
+    public String getMonitorCidr() {
+        return monitorCidr;
+    }
+
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
     }
 
     public String getMsg() {
@@ -91,29 +123,5 @@ public class TunnelMonitorVO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
-    }
-
-    public List<TunnelMonitorInterfaceVO> getTunnelMonitorInterfaceVOList() {
-        return tunnelMonitorInterfaceVOList;
-    }
-
-    public void setTunnelMonitorInterfaceVOList(List<TunnelMonitorInterfaceVO> tunnelMonitorInterfaceVOList) {
-        this.tunnelMonitorInterfaceVOList = tunnelMonitorInterfaceVOList;
-    }
-
-    public String getAccountUuid() {
-        return accountUuid;
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
-
-    public String getMonitorCidr() {
-        return monitorCidr;
-    }
-
-    public void setMonitorCidr(String monitorCidr) {
-        this.monitorCidr = monitorCidr;
     }
 }
