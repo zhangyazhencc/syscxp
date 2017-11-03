@@ -11,7 +11,6 @@ import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.identity.InnerMessageHelper;
-import com.syscxp.core.keyvalue.Op;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconMsg;
@@ -21,6 +20,7 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.errorcode.OperationFailureException;
+import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
@@ -105,11 +105,33 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             handle((APIDeleteResourceMsg) msg);
         } else if (msg instanceof APIUpdateTunnelInfoForFalconMsg) {
             handle((APIUpdateTunnelInfoForFalconMsg) msg);
+        }else if (msg instanceof APIGetPoliciesByResourceMsg) {
+            handle((APIGetPoliciesByResourceMsg) msg);
         }
 
         else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetPoliciesByResourceMsg msg) {
+        List<PolicyVO> policies = null;
+
+        SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
+        query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
+        query.select(ResourcePolicyRefVO_.policyUuid);
+        List<String> policyUuids =query.listValue();
+        SimpleQuery.Op op = SimpleQuery.Op.IN;
+        if(!msg.isBind()){
+            op = SimpleQuery.Op.NOT_IN;
+        }
+        SimpleQuery<PolicyVO> q = dbf.createQuery(PolicyVO.class);
+        q.add(PolicyVO_.uuid, op,policyUuids);
+        q.add(PolicyVO_.accountUuid, op,msg.getAccountUuid());
+        policies  = q .list();
+        APIGetPoliciesByResourceReply reply = new APIGetPoliciesByResourceReply();
+        if(policies!=null)reply.setInventories(PolicyInventory.valueOf(policies));
+        bus.reply(msg,reply);
     }
 
     private void handle(APIUpdateTunnelInfoForFalconMsg msg) {
@@ -267,7 +289,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         String productServerUrl = getProductUrl(msg.getProductType());
 
         APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
-        List<ResourceInventory> inventories = null;
+        List<ResourceInventory> inventories = new ArrayList<>();
         aMsg.setAccountUuid(msg.getAccountUuid());
         aMsg.setProductName(msg.getProductName());
         aMsg.setStart(msg.getStart());
@@ -528,7 +550,8 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
 
     private void handle(APIGetPoliciesMsg msg) {
         SimpleQuery<PolicyVO> query = dbf.createQuery(PolicyVO.class);
-
+        if(msg.getSession().getType()!= AccountType.SystemAdmin){
+        }
         List<QueryCondition> conditions = msg.getConditions();
         if (conditions != null && conditions.size() > 0) {
             for (QueryCondition condition : conditions) {
@@ -548,7 +571,10 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
 
                         }
                         query.add(PolicyVO_.uuid, SimpleQuery.Op.IN, uuids);
+                    } else{
+
                     }
+
                 }
             }
         }

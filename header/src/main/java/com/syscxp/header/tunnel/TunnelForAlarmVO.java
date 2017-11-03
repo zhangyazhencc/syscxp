@@ -20,7 +20,13 @@ public class TunnelForAlarmVO {
     private String accountUuid;
 
     @Column
+    private String ownerAccountUuid;
+
+    @Column
     private Integer vsi;
+
+    @Column
+    private String monitorCidr;
 
     @Column
     private String name;
@@ -191,5 +197,21 @@ public class TunnelForAlarmVO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public String getMonitorCidr() {
+        return monitorCidr;
+    }
+
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
+    }
+
+    public String getOwnerAccountUuid() {
+        return ownerAccountUuid;
+    }
+
+    public void setOwnerAccountUuid(String ownerAccountUuid) {
+        this.ownerAccountUuid = ownerAccountUuid;
     }
 }

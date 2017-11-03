@@ -1,51 +1,57 @@
 package com.syscxp.tunnel.header.tunnel;
 
-import com.syscxp.header.search.Inventory;
-import com.syscxp.tunnel.header.endpoint.EndpointInventory;
+import com.syscxp.header.vo.ForeignKey;
+import com.syscxp.tunnel.header.endpoint.EndpointEO;
+import com.syscxp.tunnel.header.endpoint.EndpointVO;
 
+import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Created by DCY on 2017-11-01
  */
-@Inventory(mappingVOClass = TunnelSwitchVO.class)
-public class TunnelSwitchInventory {
-
+@Entity
+@Table
+@Inheritance(strategy = InheritanceType.JOINED)
+public class TunnelSwitchPortVO {
+    @Id
+    @Column
     private String uuid;
+
+    @Column
+    @ForeignKey(parentEntityClass = TunnelEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String tunnelUuid;
+
+    @Column
+    @ForeignKey(parentEntityClass = EndpointEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String endpointUuid;
-    private EndpointInventory endpoint;
+
+    @ManyToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name="endpointUuid", insertable=false, updatable=false)
+    private EndpointVO endpointVO;
+
+    @Column
     private String switchPortUuid;
+
+    @Column
+    @Enumerated(EnumType.STRING)
     private NetworkType type;
+
+    @Column
     private Integer vlan;
+
+    @Column
     private String sortTag;
+
+    @Column
     private Timestamp createDate;
+
+    @Column
     private Timestamp lastOpDate;
 
-    public static TunnelSwitchInventory valueOf(TunnelSwitchVO vo){
-        TunnelSwitchInventory inv = new TunnelSwitchInventory();
-        inv.setUuid(vo.getUuid());
-        inv.setTunnelUuid(vo.getTunnelUuid());
-        inv.setEndpointUuid(vo.getEndpointUuid());
-        inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpointVO()));
-        inv.setSwitchPortUuid(vo.getSwitchPortUuid());
-        inv.setType(vo.getType());
-        inv.setVlan(vo.getVlan());
-        inv.setSortTag(vo.getSortTag());
-        inv.setLastOpDate(vo.getLastOpDate());
-        inv.setCreateDate(vo.getCreateDate());
-        return inv;
-    }
-
-    public static List<TunnelSwitchInventory> valueOf(Collection<TunnelSwitchVO> vos) {
-        List<TunnelSwitchInventory> lst = new ArrayList<TunnelSwitchInventory>(vos.size());
-        for (TunnelSwitchVO vo : vos) {
-            lst.add(TunnelSwitchInventory.valueOf(vo));
-        }
-        return lst;
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
     }
 
     public String getUuid() {
@@ -72,12 +78,12 @@ public class TunnelSwitchInventory {
         this.endpointUuid = endpointUuid;
     }
 
-    public EndpointInventory getEndpoint() {
-        return endpoint;
+    public EndpointVO getEndpointVO() {
+        return endpointVO;
     }
 
-    public void setEndpoint(EndpointInventory endpoint) {
-        this.endpoint = endpoint;
+    public void setEndpointVO(EndpointVO endpointVO) {
+        this.endpointVO = endpointVO;
     }
 
     public String getSwitchPortUuid() {

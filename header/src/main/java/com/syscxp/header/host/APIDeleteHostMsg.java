@@ -1,5 +1,6 @@
 package com.syscxp.header.host;
 
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIDeleteMessage;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -8,6 +9,7 @@ import com.syscxp.header.notification.ApiNotification;
 
 import static com.syscxp.header.message.APIDeleteMessage.DeletionMode.Permissive;
 
+@Action(category = HostConstant.ACTION_CATEGORY, adminOnly = true)
 public class APIDeleteHostMsg extends APIDeleteMessage implements HostMessage {
     /**
      * @desc host uuid

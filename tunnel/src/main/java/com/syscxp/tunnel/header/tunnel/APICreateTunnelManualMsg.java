@@ -5,6 +5,7 @@ import com.syscxp.header.billing.ProductPriceUnit;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.tunnel.header.endpoint.InnerConnectedEndpointVO;
 import com.syscxp.tunnel.header.node.NodeVO;
 import com.syscxp.tunnel.header.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.TunnelConstant;
@@ -30,21 +31,17 @@ public class APICreateTunnelManualMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = NodeVO.class)
     private String nodeZUuid;
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
-    private String endpointPointAUuid;
+    private String endpointAUuid;
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
-    private String endpointPointZUuid;
+    private String endpointZUuid;
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceAUuid;
     @APIParam(numberRange = {1, 4094})
     private Integer aVlan;
-    @APIParam(emptyString = false,validValues = {"Enabled", "Disabled"})
-    private TunnelQinqState qinqStateA;
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceZUuid;
     @APIParam(numberRange = {1, 4094})
     private Integer zVlan;
-    @APIParam(emptyString = false,validValues = {"Enabled", "Disabled"})
-    private TunnelQinqState qinqStateZ;
     @APIParam
     private Integer duration;
     @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
@@ -53,6 +50,8 @@ public class APICreateTunnelManualMsg extends APIMessage {
     private String description;
     @APIParam(required = false)
     private List<InnerVlanSegment> vlanSegment;
+    @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = InnerConnectedEndpointVO.class)
+    private String innerConnectedEndpointUuid;
 
     public String getAccountUuid() {
         return accountUuid;
@@ -86,14 +85,6 @@ public class APICreateTunnelManualMsg extends APIMessage {
         this.aVlan = aVlan;
     }
 
-    public TunnelQinqState getQinqStateA() {
-        return qinqStateA;
-    }
-
-    public void setQinqStateA(TunnelQinqState qinqStateA) {
-        this.qinqStateA = qinqStateA;
-    }
-
     public String getInterfaceZUuid() {
         return interfaceZUuid;
     }
@@ -110,14 +101,6 @@ public class APICreateTunnelManualMsg extends APIMessage {
         this.zVlan = zVlan;
     }
 
-    public TunnelQinqState getQinqStateZ() {
-        return qinqStateZ;
-    }
-
-    public void setQinqStateZ(TunnelQinqState qinqStateZ) {
-        this.qinqStateZ = qinqStateZ;
-    }
-
     public String getDescription() {
         return description;
     }
@@ -132,22 +115,6 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     public void setVlanSegment(List<InnerVlanSegment> vlanSegment) {
         this.vlanSegment = vlanSegment;
-    }
-
-    public String getEndpointPointAUuid() {
-        return endpointPointAUuid;
-    }
-
-    public void setEndpointPointAUuid(String endpointPointAUuid) {
-        this.endpointPointAUuid = endpointPointAUuid;
-    }
-
-    public String getEndpointPointZUuid() {
-        return endpointPointZUuid;
-    }
-
-    public void setEndpointPointZUuid(String endpointPointZUuid) {
-        this.endpointPointZUuid = endpointPointZUuid;
     }
 
     public String getNodeAUuid() {
@@ -197,5 +164,29 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
+    }
+
+    public String getInnerConnectedEndpointUuid() {
+        return innerConnectedEndpointUuid;
+    }
+
+    public void setInnerConnectedEndpointUuid(String innerConnectedEndpointUuid) {
+        this.innerConnectedEndpointUuid = innerConnectedEndpointUuid;
+    }
+
+    public String getEndpointAUuid() {
+        return endpointAUuid;
+    }
+
+    public void setEndpointAUuid(String endpointAUuid) {
+        this.endpointAUuid = endpointAUuid;
+    }
+
+    public String getEndpointZUuid() {
+        return endpointZUuid;
+    }
+
+    public void setEndpointZUuid(String endpointZUuid) {
+        this.endpointZUuid = endpointZUuid;
     }
 }

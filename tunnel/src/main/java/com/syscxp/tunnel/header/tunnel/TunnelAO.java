@@ -28,6 +28,9 @@ public class TunnelAO {
     private Integer vsi;
 
     @Column
+    private String monitorCidr;
+
+    @Column
     private String name;
 
     @Column
@@ -209,5 +212,13 @@ public class TunnelAO {
 
     public void setOwnerAccountUuid(String ownerAccountUuid) {
         this.ownerAccountUuid = ownerAccountUuid;
+    }
+
+    public String getMonitorCidr() {
+        return monitorCidr;
+    }
+
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
     }
 }

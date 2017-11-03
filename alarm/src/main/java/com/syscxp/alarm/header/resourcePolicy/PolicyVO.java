@@ -23,6 +23,8 @@ public class PolicyVO extends BaseVO {
 
     private Long bindResources;
 
+    @Column
+    private String accountUuid;
 
     @OneToMany(fetch =FetchType.EAGER,cascade = CascadeType.REMOVE)
     @JoinColumn(name="policyUuid")
@@ -74,7 +76,15 @@ public class PolicyVO extends BaseVO {
         this.regulationVOSet = regulationVOSet;
     }
 
-//    public Set<ResourceVO> getResourceVOS() {
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
+
+    //    public Set<ResourceVO> getResourceVOS() {
 //        return resourceVOS;
 //    }
 //
