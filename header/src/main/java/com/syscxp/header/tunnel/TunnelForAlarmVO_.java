@@ -14,6 +14,7 @@ public class TunnelForAlarmVO_ {
 
     public static volatile SingularAttribute<TunnelForAlarmVO, String> uuid;
     public static volatile SingularAttribute<TunnelForAlarmVO, String> accountUuid;
+    public static volatile SingularAttribute<TunnelForAlarmVO, String> ownerAccountUuid;
     public static volatile SingularAttribute<TunnelForAlarmVO, Integer> vsi;
     public static volatile SingularAttribute<TunnelForAlarmVO, String> monitorCidr;
     public static volatile SingularAttribute<TunnelForAlarmVO, String> name;

@@ -1,7 +1,6 @@
 package com.syscxp.tunnel.manage;
 
 import com.syscxp.tunnel.header.switchs.*;
-import com.syscxp.tunnel.header.tunnel.TunnelInterfaceVO;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -135,7 +134,7 @@ public class TunnelStrategy  {
     //查询该虚拟交换机下Tunnel已经分配的Vlan
     public List<Integer> fingAllocateVlanBySwitch(String switchUuid){
 
-        String sql = "select distinct a.vlan from TunnelSwitchVO a,SwitchPortVO b " +
+        String sql = "select distinct a.vlan from TunnelSwitchPortVO a,SwitchPortVO b " +
                 "where a.switchPortUuid = b.uuid " +
                 "and b.switchUuid = :switchUuid ";
         TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);

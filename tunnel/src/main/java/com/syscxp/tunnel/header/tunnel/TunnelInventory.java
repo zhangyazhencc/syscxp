@@ -19,7 +19,8 @@ public class TunnelInventory {
     private String accountUuid;
     private String ownerAccountUuid;
     private Integer vsi;
-    private List<TunnelSwitchInventory> tunnelSwitchs = new ArrayList<TunnelSwitchInventory>();
+    private String monitorCidr;
+    private List<TunnelSwitchPortInventory> tunnelSwitchs = new ArrayList<TunnelSwitchPortInventory>();
     private String name;
     private Long bandwidth;
     private Double distance;
@@ -40,7 +41,8 @@ public class TunnelInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
         inv.setVsi(vo.getVsi());
-        inv.setTunnelSwitchs(TunnelSwitchInventory.valueOf(vo.getTunnelSwitchVOS()));
+        inv.setMonitorCidr(vo.getMonitorCidr());
+        inv.setTunnelSwitchs(TunnelSwitchPortInventory.valueOf(vo.getTunnelSwitchPortVOS()));
         inv.setName(vo.getName());
         inv.setBandwidth(vo.getBandwidth());
         inv.setDistance(vo.getDistance());
@@ -201,11 +203,19 @@ public class TunnelInventory {
         this.ownerAccountUuid = ownerAccountUuid;
     }
 
-    public List<TunnelSwitchInventory> getTunnelSwitchs() {
+    public List<TunnelSwitchPortInventory> getTunnelSwitchs() {
         return tunnelSwitchs;
     }
 
-    public void setTunnelSwitchs(List<TunnelSwitchInventory> tunnelSwitchs) {
+    public void setTunnelSwitchs(List<TunnelSwitchPortInventory> tunnelSwitchs) {
         this.tunnelSwitchs = tunnelSwitchs;
+    }
+
+    public String getMonitorCidr() {
+        return monitorCidr;
+    }
+
+    public void setMonitorCidr(String monitorCidr) {
+        this.monitorCidr = monitorCidr;
     }
 }
