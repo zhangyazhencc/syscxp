@@ -113,9 +113,9 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
     private void handle(APIQueryVlanUsedMsg msg) {
         List<VlanUsedInventory> switchPortUsedInventoryList = new ArrayList<VlanUsedInventory>();
         APIQueryVlanUsedReply reply = new APIQueryVlanUsedReply();
-        String sql = "select s.code, sp.portName, ti.vlan " +
-                "from SwitchVO s, SwitchPortVO sp, InterfaceVO i,TunnelInterfaceVO ti " +
-                "where s.uuid = sp.switchUuid and sp.uuid = i.switchPortUuid and ti.interfaceUuid = i.uuid " +
+        String sql = "select s.code, sp.portName, ts.vlan  " +
+                "from SwitchVO s, SwitchPortVO sp, TunnelSwitchPortVO ts  " +
+                "where  s.uuid = sp.switchUuid and sp.uuid = ts.switchPortUuid " +
                 " and s.uuid = :uuid ORDER BY ti.createDate";
 
         TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
