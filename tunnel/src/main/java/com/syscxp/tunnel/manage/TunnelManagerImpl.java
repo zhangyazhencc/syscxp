@@ -168,7 +168,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     @Transactional
-    private void updateInterfacePort(InterfaceVO iface, TunnelSwitchVO tunnelSwitch, APIUpdateInterfacePortMsg msg) {
+    private void updateInterfacePort(InterfaceVO iface, TunnelSwitchPortVO tunnelSwitch, APIUpdateInterfacePortMsg msg) {
         iface.setSwitchPortUuid(msg.getSwitchPortUuid());
         iface.setType(msg.getNetworkType());
         dbf.getEntityManager().merge(iface);
@@ -181,8 +181,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void handle(APIUpdateInterfacePortMsg msg) {
         InterfaceVO iface = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
-        TunnelSwitchVO tunnelSwitch = Q.New(TunnelSwitchVO.class)
-                .eq(TunnelSwitchVO_.switchPortUuid, iface.getSwitchPortUuid()).find();
+        TunnelSwitchPortVO tunnelSwitch = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.switchPortUuid, iface.getSwitchPortUuid()).find();
         updateInterfacePort(iface, tunnelSwitch, msg);
         if (msg.isIssue()){
             TunnelVO tunnel = Q.New(TunnelVO.class)
