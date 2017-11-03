@@ -108,8 +108,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
 
             UpdateQuery q = UpdateQuery.New(ProductPriceUnitVO.class);
             q.condAnd(ProductPriceUnitVO_.lineName, SimpleQuery.Op.EQ, msg.getLineName());
-            q.condAnd(ProductPriceUnitVO_.categoryCode, SimpleQuery.Op.EQ, Category.ABROAD);
-            q.condAnd(ProductPriceUnitVO_.productTypeCode, SimpleQuery.Op.EQ, ProductType.TUNNEL);
+            q.condAnd(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, msg.getProductCategoryUuid());
             q.delete();
 
         }else if (!StringUtils.isEmpty(msg.getUuid())){

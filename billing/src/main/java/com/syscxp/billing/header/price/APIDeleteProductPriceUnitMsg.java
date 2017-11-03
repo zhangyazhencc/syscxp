@@ -14,6 +14,9 @@ public class APIDeleteProductPriceUnitMsg extends APIMessage{
     @APIParam(required = false, maxLength = 256)
     private String lineName;
 
+    @APIParam(required = false)
+    private String productCategoryUuid;
+
     public String getLineName() {
         return lineName;
     }
@@ -28,5 +31,13 @@ public class APIDeleteProductPriceUnitMsg extends APIMessage{
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getProductCategoryUuid() {
+        return productCategoryUuid;
+    }
+
+    public void setProductCategoryUuid(String productCategoryUuid) {
+        this.productCategoryUuid = productCategoryUuid;
     }
 }
