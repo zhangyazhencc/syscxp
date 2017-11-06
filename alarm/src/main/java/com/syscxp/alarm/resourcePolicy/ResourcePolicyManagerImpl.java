@@ -369,12 +369,22 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         List<String> lis = new ArrayList<>();
         lis.add(msg.getResourceUuid());
         tunnelMsg.setTunnelUuidList(lis);
-        Map<String,Object> map = null;
-        RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
-                RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
-        if (raps.getState().equals(RestAPIState.Done.toString())) {
-            APIQueryTunnelDetailForAlarmReply tunnelReply = (APIQueryTunnelDetailForAlarmReply) RESTApiDecoder.loads(raps.getResult());
-            map = tunnelReply.getMap();
+        Map<String, Object> map = null;
+        try{
+            RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
+                    RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
+
+            if (raps.getState().equals(RestAPIState.Done.toString())) {
+                APIQueryTunnelDetailForAlarmReply tunnelReply = JSONObjectUtil.toObject(raps.getResult(),APIQueryTunnelDetailForAlarmReply.class);
+                if(tunnelReply.isSuccess()){
+                    map = tunnelReply.getMap();
+                }else{
+                    throw new OperationFailureException(Platform.operr(tunnelReply.getError().toString()));
+                }
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
 
         TunnelParameter tunnelparameter = new TunnelParameter();
@@ -489,11 +499,20 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         APIQueryTunnelDetailForAlarmMsg tunnelMsg = new APIQueryTunnelDetailForAlarmMsg();
         tunnelMsg.setTunnelUuidList(msg.getResourceUuids());
         Map<String, Object> map = null;
-        RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
-                RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
-        if (raps.getState().equals(RestAPIState.Done.toString())) {
-            APIQueryTunnelDetailForAlarmReply tunnelReply = (APIQueryTunnelDetailForAlarmReply) RESTApiDecoder.loads(raps.getResult());
-            map = tunnelReply.getMap();
+        try{
+            RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
+                    RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
+
+            if (raps.getState().equals(RestAPIState.Done.toString())) {
+                APIQueryTunnelDetailForAlarmReply tunnelReply = JSONObjectUtil.toObject(raps.getResult(),APIQueryTunnelDetailForAlarmReply.class);
+                if(tunnelReply.isSuccess()){
+                    map = tunnelReply.getMap();
+                }else{
+                    throw new OperationFailureException(Platform.operr(tunnelReply.getError().toString()));
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
 
         for (String resourceid : msg.getResourceUuids()) {
