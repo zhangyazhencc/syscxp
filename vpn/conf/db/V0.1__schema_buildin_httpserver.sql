@@ -1,3 +1,5 @@
+CREATE DATABASE /*!32312 IF NOT EXISTS*/`syscxp_vpn_rest` /*!40100 DEFAULT CHARACTER SET utf8 */;
+
 use syscxp_vpn_rest;
 
 CREATE TABLE  `syscxp_vpn_rest`.`RestAPIVO` (

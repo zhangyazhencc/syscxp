@@ -188,7 +188,7 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
                 new PrepareAnsible().setTargetIp(msg.getTargetIp()).prepare();
 
                 logger.debug(String.format("start running ansible for playbook[%s]", msg.getPlayBookPath()));
-                Map<String, Object> arguments = new HashMap<String, Object>();
+                Map<String, Object> arguments = new HashMap<>();
                 if (msg.getArguments() != null) {
                     arguments.putAll(msg.getArguments());
                 }

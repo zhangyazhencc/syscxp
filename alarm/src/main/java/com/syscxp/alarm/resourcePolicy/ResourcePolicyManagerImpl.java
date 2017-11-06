@@ -42,6 +42,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.Query;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -341,10 +342,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         List<PolicyInventory> list =  new ArrayList<>();
         if(!isEmptyList(policyVOList))list = PolicyInventory.valueOf(policyVOList);
         if(isEmptyList(hadAttachPolicyUuids) && isEmptyList(newAttachPolicyUuids)){
-            APIAttachResourceByPoliciesEvent event = new APIAttachResourceByPoliciesEvent(msg.getId());
-            event.setInventories(list);
-            bus.publish(event);
-            return;
+            throw new IllegalArgumentException("please select a policy");
         }
 
         if(isEmptyList(hadAttachPolicyUuids) && !isEmptyList(newAttachPolicyUuids)){
@@ -587,6 +585,9 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
     private void handle(APIGetPoliciesMsg msg) {
         SimpleQuery<PolicyVO> query = dbf.createQuery(PolicyVO.class);
         if(msg.getSession().getType()!= AccountType.SystemAdmin){
+            query.add(PolicyVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
+        }else if(!StringUtils.isEmpty(msg.getAccountUuid())){
+            query.add(PolicyVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         }
         List<QueryCondition> conditions = msg.getConditions();
         if (conditions != null && conditions.size() > 0) {
@@ -601,10 +602,13 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
                         List<PolicyBindResource> vos = objs.stream().map(PolicyBindResource::new).collect(Collectors.toList());
                         List<String> uuids = new ArrayList<>();
                         for (PolicyBindResource p : vos) {
-                            if (p.getBindingResources() == Long.parseLong(condition.getValue())) {
+                            if (p.getBindingResources().compareTo(new BigInteger(condition.getValue()))==0){
                                 uuids.add(p.getPolicyUuid());
                             }
 
+                        }
+                        if(uuids.size()==0){
+                            throw new IllegalArgumentException("there is no one suitable");
                         }
                         query.add(PolicyVO_.uuid, SimpleQuery.Op.IN, uuids);
                     } else{
