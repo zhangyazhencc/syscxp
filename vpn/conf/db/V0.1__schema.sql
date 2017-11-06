@@ -1,5 +1,3 @@
-
-
 CREATE DATABASE /*!32312 IF NOT EXISTS*/`syscxp_vpn` /*!40100 DEFAULT CHARACTER SET utf8 */;
 
 use syscxp_vpn;
@@ -108,14 +106,14 @@ CREATE TABLE  `syscxp_vpn`.`ZoneVO` (
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `syscxp_tunnel`.`ResourceVO` (
+CREATE TABLE `syscxp_vpn`.`ResourceVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE,
 	`resourceName` varchar(255) DEFAULT NULL,
 	`resourceType` varchar(255) DEFAULT NULL,
 	PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `HostEO` (
+CREATE TABLE `syscxp_vpn`.`HostEO` (
 	`uuid` varchar(32) NOT NULL COMMENT 'UUID',
 	`name` varchar(128) NOT NULL COMMENT '名称',
 	`code` varchar(128) NOT NULL COMMENT '编号',
@@ -135,6 +133,7 @@ CREATE VIEW `syscxp_tunnel`.`HostVO` AS SELECT `uuid`,`name`,`code`,`hostIp`,`po
 	FROM `HostEO` WHERE deleted IS NULL;
 
 CREATE TABLE  `syscxp_vpn`.`VpnHostVO` (
+	`uuid` varchar(32) NOT NULL COMMENT 'UUID',
 	`publicInterface` VARCHAR(255) NOT NULL COMMENT '公网物理接口',
 	`publicIp` VARCHAR(32) NOT NULL COMMENT '公网IP',
 	`sshPort` VARCHAR(10) NOT NULL COMMENT 'ssh端口',
