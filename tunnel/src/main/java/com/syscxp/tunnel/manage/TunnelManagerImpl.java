@@ -2035,17 +2035,20 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 修改interface 的 switchPort
      */
     private void updateInterfacePort(APIUpdateInterfacePortMsg msg) {
+        String switchPortUuid = Q.New(InterfaceVO.class)
+                .eq(InterfaceVO_.uuid, msg.getUuid())
+                .select(InterfaceVO_.switchPortUuid)
+                .find();
 
         UpdateQuery.New(InterfaceVO.class)
                 .set(InterfaceVO_.switchPortUuid, msg.getSwitchPortUuid())
                 .set(InterfaceVO_.type, msg.getNetworkType())
-                .eq(InterfaceVO_.uuid, msg.getNetworkType());
+                .eq(InterfaceVO_.uuid, msg.getUuid());
 
         UpdateQuery.New(TunnelSwitchPortVO.class)
                 .set(TunnelSwitchPortVO_.switchPortUuid, msg.getSwitchPortUuid())
                 .set(TunnelSwitchPortVO_.type, msg.getNetworkType())
-                .eq(TunnelSwitchPortVO_.switchPortUuid, msg.getSwitchPortUuid());
-
+                .eq(TunnelSwitchPortVO_.switchPortUuid, switchPortUuid);
     }
 
     /**
