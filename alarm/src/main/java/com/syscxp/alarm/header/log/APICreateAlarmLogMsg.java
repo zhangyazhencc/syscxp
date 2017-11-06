@@ -2,11 +2,12 @@ package com.syscxp.alarm.header.log;
 
 import com.syscxp.header.alarm.AlarmConstant;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
 import java.sql.Timestamp;
-
+@SuppressCredentialCheck
 @Action(category = AlarmConstant.ACTION_CATEGORY_ALARM_LOG)
 public class APICreateAlarmLogMsg extends APIMessage{
 
