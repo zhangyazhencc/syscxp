@@ -2028,7 +2028,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 修改interface 的 switchPort
      */
-    @Transactional
     private void updateInterfacePort(InterfaceVO iface, TunnelSwitchPortVO tunnelSwitch, APIUpdateInterfacePortMsg msg) {
         iface.setSwitchPortUuid(msg.getSwitchPortUuid());
         iface.setType(msg.getNetworkType());
