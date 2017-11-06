@@ -341,10 +341,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         List<PolicyInventory> list =  new ArrayList<>();
         if(!isEmptyList(policyVOList))list = PolicyInventory.valueOf(policyVOList);
         if(isEmptyList(hadAttachPolicyUuids) && isEmptyList(newAttachPolicyUuids)){
-            APIAttachResourceByPoliciesEvent event = new APIAttachResourceByPoliciesEvent(msg.getId());
-            event.setInventories(list);
-            bus.publish(event);
-            return;
+            throw new IllegalArgumentException("please select a policy");
         }
 
         if(isEmptyList(hadAttachPolicyUuids) && !isEmptyList(newAttachPolicyUuids)){
