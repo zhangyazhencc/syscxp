@@ -57,6 +57,14 @@
     <message>
         <name>com.syscxp.alarm.header.resourcePolicy.APIAttachResourceViaPoliciesMsg</name>
     </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIGetComparisonRuleListMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIGetMonitorTargetListMsg</name>
+    </message>
     <message>
         <name>com.syscxp.alarm.header.resourcePolicy.APIQueryResourceMsg</name>
         <serviceId>query</serviceId>
