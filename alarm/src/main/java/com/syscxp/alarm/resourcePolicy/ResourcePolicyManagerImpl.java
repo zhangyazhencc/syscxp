@@ -351,13 +351,13 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             List<String> needDettachPolicyUuids = substractList(hadAttachPolicyUuids,newAttachPolicyUuids);
             for (String policyUuid : needDettachPolicyUuids) {
                 deleteResourcePolicyRef(policyUuid, msg.getResourceUuid());
-                list.remove(PolicyInventory.valueOf(dbf.findByUuid(policyUuid,PolicyVO.class)));
+                removeObj(list, policyUuid);
             }
         } else {
             List<String> needDettachPolicyUuids = substractList(hadAttachPolicyUuids,newAttachPolicyUuids);
             for (String policyUuid : needDettachPolicyUuids) {
                 deleteResourcePolicyRef(policyUuid, msg.getResourceUuid());
-                list.remove(PolicyInventory.valueOf(dbf.findByUuid(policyUuid,PolicyVO.class)));
+                removeObj(list, policyUuid);
             }
 
             List<String> needAttachPolicyUuids = substractList(newAttachPolicyUuids,hadAttachPolicyUuids);
@@ -459,6 +459,14 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             dbf.getEntityManager().remove(dbf.getEntityManager().merge(resourcePolicyRefVO));
         }
         return resourcePolicyRefVO;
+    }
+
+    private void removeObj(List<PolicyInventory> list, String policyUuid) {
+        for(PolicyInventory policyInventory: list){
+            if(policyInventory.getUuid().equals(policyUuid)){
+                list.remove(policyInventory);
+            }
+        }
     }
 
     @Transactional
@@ -594,7 +602,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             for (QueryCondition condition : conditions) {
                 if (!StringUtils.isEmpty(condition.getName())) {
                     if (condition.getName().equals("productType")) {
-                        query.add(PolicyVO_.productType, SimpleQuery.Op.EQ, condition.getValue());
+                        query.add(PolicyVO_.productType, SimpleQuery.Op.EQ, ProductType.valueOf(condition.getValue()));
                     } else if (condition.getName().equals("bindResources")) {
                         String sql = "select policyUuid, count(*) as bindingResources from ResourcePolicyRefVO group by policyUuid ";
                         Query q = dbf.getEntityManager().createNativeQuery(sql);
