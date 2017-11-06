@@ -92,6 +92,14 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIUpdateForciblyTunnelVlanMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIUpdateTunnelVlanMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.tunnel.header.tunnel.APIQueryInterfaceMsg</name>
         <serviceId>query</serviceId>
     </message>

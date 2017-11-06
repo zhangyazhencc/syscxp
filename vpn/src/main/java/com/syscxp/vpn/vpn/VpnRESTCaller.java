@@ -44,7 +44,7 @@ public class VpnRESTCaller {
     }
 
     public VpnRESTCaller() {
-        this(VpnGlobalProperty.VPN_BASE_URL);
+        this("localhost");
     }
 
     /**

@@ -5,6 +5,8 @@ import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
+import com.syscxp.header.host.HostState;
+import com.syscxp.header.host.HostStatus;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.vpn.exception.VpnServiceException;
 import com.syscxp.vpn.header.host.*;
@@ -43,8 +45,8 @@ import java.util.concurrent.TimeUnit;
 import static com.syscxp.core.Platform.argerr;
 
 
-public class HostManagerImpl extends AbstractService implements HostManager, ApiMessageInterceptor {
-    private static final CLogger logger = Utils.getLogger(HostManagerImpl.class);
+public class VpnHostManagerImpl extends AbstractService implements VpnHostManager, ApiMessageInterceptor {
+    private static final CLogger logger = Utils.getLogger(VpnHostManagerImpl.class);
 
     @Autowired
     private CloudBus bus;
@@ -110,7 +112,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
 
         ReconnectVpnHostCmd cmd = ReconnectVpnHostCmd.valueOf(host);
-        new VpnRESTCaller().sendCommand(HostConstant.RECONNECT_HOST_PATH, cmd, new Completion(evt) {
+        new VpnRESTCaller().sendCommand(VpnHostConstant.RECONNECT_HOST_PATH, cmd, new Completion(evt) {
             @Override
             public void success() {
                 host.setStatus(HostStatus.Connected);
@@ -213,7 +215,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
 
         /*DeleteVpnHostCmd cmd = DeleteVpnHostCmd.valueOf(host);
-        new VpnRESTCaller().sendCommand(HostConstant.Delete_HOST_PATH, cmd, new Completion(evt) {
+        new VpnRESTCaller().sendCommand(VpnHostConstant.Delete_HOST_PATH, cmd, new Completion(evt) {
             @Override
             public void success() {
                 dbf.remove(host);
@@ -235,20 +237,12 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             host.setName(msg.getName());
             update = true;
         }
-        if (!StringUtils.isEmpty(msg.getDescription())) {
-            host.setDescription(msg.getDescription());
-            update = true;
-        }
         if (!StringUtils.isEmpty(msg.getPublicInterface())) {
             host.setPublicInterface(msg.getPublicInterface());
             update = true;
         }
         if (!StringUtils.isEmpty(msg.getPublicIp())) {
             host.setPublicIp(msg.getPublicIp());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getManageIp())) {
-            host.setManageIp(msg.getManageIp());
             update = true;
         }
         if (!StringUtils.isEmpty(msg.getSshPort())) {
@@ -279,23 +273,20 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         VpnHostVO host = new VpnHostVO();
         host.setUuid(Platform.getUuid());
         host.setName(msg.getName());
-        host.setDescription(msg.getDescription());
         host.setPublicInterface(msg.getPublicInterface());
         host.setPublicIp(msg.getPublicIp());
         host.setZoneUuid(msg.getZoneUuid());
-        host.setManageIp(msg.getManageIp());
+        host.setHostIp(msg.getHostIp());
         host.setSshPort(msg.getSshPort());
         host.setUsername(msg.getUsername());
         host.setPassword(msg.getPassword());
         host.setVpnInterfaceName(msg.getVpnInterfaceName());
-        host.setStartPort(msg.getStartPort());
-        host.setEndPort(msg.getEndPort());
         host.setState(HostState.Enabled);
         host.setStatus(HostStatus.Connecting);
 
         AddVpnHostCmd cmd = AddVpnHostCmd.valueOf(host);
 
-        new VpnRESTCaller().sendCommand(HostConstant.ADD_HOST_PATH, cmd, new Completion(evt) {
+        new VpnRESTCaller().sendCommand(VpnHostConstant.ADD_HOST_PATH, cmd, new Completion(evt) {
             @Override
             public void success() {
                 host.setStatus(HostStatus.Connected);
@@ -331,16 +322,13 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
         final VpnHostVO host = new VpnHostVO();
         host.setUuid(Platform.getUuid());
         host.setName(msg.getName());
-        host.setDescription(msg.getDescription());
         host.setPublicInterface(msg.getPublicInterface());
         host.setPublicIp(msg.getPublicIp());
         host.setZoneUuid(msg.getZoneUuid());
-        host.setManageIp(msg.getManageIp());
+        host.setHostIp(msg.getHostIp());
         host.setSshPort(msg.getSshPort());
         host.setUsername(msg.getUsername());
         host.setPassword(msg.getPassword());
-        host.setStartPort(msg.getStartPort());
-        host.setEndPort(msg.getEndPort());
         host.setState(HostState.Enabled);
         host.setStatus(HostStatus.Connecting);
         dbf.persistAndRefresh(host);
@@ -352,7 +340,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             @Override
             public void run(final FlowTrigger trigger, Map data) {
                 AddVpnHostCmd cmd = AddVpnHostCmd.valueOf(host);
-                new VpnRESTCaller().sendCommand(HostConstant.ADD_HOST_PATH, cmd, new Completion(trigger) {
+                new VpnRESTCaller().sendCommand(VpnHostConstant.ADD_HOST_PATH, cmd, new Completion(trigger) {
                     @Override
                     public void success() {
 
@@ -392,7 +380,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
 
 
     public String getId() {
-        return bus.makeLocalServiceId(HostConstant.SERVICE_ID);
+        return bus.makeLocalServiceId(VpnHostConstant.SERVICE_ID);
     }
 
     private Future<Void> hostCheckThread;
@@ -463,7 +451,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             }
             ReconnectVpnHostCmd cmd = ReconnectVpnHostCmd.valueOf(vo);
             try {
-                new VpnRESTCaller().sendCommand(HostConstant.RECONNECT_HOST_PATH, cmd, new Completion(null) {
+                new VpnRESTCaller().sendCommand(VpnHostConstant.RECONNECT_HOST_PATH, cmd, new Completion(null) {
                     @Override
                     public void success() {
                         if (vo.getStatus() != HostStatus.Connected)
@@ -497,7 +485,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Api
             }
             for (VpnHostVO vo : vos) {
                 CheckVpnHostStatusCmd cmd = CheckVpnHostStatusCmd.valueOf(vo);
-                RunStatus status = new VpnRESTCaller().checkStatus(HostConstant.CHECK_HOST_STATUS_PATH, cmd);
+                RunStatus status = new VpnRESTCaller().checkStatus(VpnHostConstant.CHECK_HOST_STATUS_PATH, cmd);
                 if (status == RunStatus.UP) {
                     if (vo.getStatus() == HostStatus.Disconnected)
                         updateHostStatus(Collections.singletonList(vo.getUuid()), HostStatus.Connected);

@@ -1,23 +1,21 @@
 package com.syscxp.vpn.header.host;
 
+import com.syscxp.header.host.HostInventory;
 import com.syscxp.header.search.Inventory;
+import com.syscxp.header.search.Parent;
+import com.syscxp.vpn.vpn.VpnConstant;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = VpnHostVO.class)
-public class VpnHostInventory {
-    private String uuid;
-    private String name;
-    private String description;
+@Inventory(mappingVOClass = VpnHostVO.class, collectionValueOfMethod = "valueOf1",
+        parent = {@Parent(inventoryClass = HostInventory.class, type = VpnConstant.HOST_TYPE)})
+public class VpnHostInventory extends HostInventory{
     private String publicIface;
     private String publicIp;
-    private String manageIp;
     private Integer sshPort;
-    private String state;
-    private String status;
     private String username;
     private String password;
     private String vpnInterfaceName;
@@ -25,34 +23,28 @@ public class VpnHostInventory {
     private Integer endPort;
     private ZoneInventory zoneInventory;
     private List<HostInterfaceInventory> hostInterfaceInventories;
-    private Timestamp lastOpDate;
-    private Timestamp createDate;
 
-    public static VpnHostInventory valueOf(VpnHostVO vo){
-        VpnHostInventory inv = new VpnHostInventory();
-        inv.setUuid(vo.getUuid());
-        inv.setName(vo.getName());
-        inv.setDescription(vo.getDescription());
-        inv.setPublicIface(vo.getPublicInterface());
-        inv.setPublicIp(vo.getPublicIp());
-        inv.setManageIp(vo.getManageIp());
-        inv.setSshPort(vo.getSshPort());
-        inv.setUsername(vo.getUsername());
-        inv.setPassword(vo.getPassword());
-        inv.setState(vo.getState().toString());
-        inv.setStatus(vo.getStatus().toString());
-        inv.setLastOpDate(vo.getLastOpDate());
-        inv.setCreateDate(vo.getCreateDate());
-        inv.setVpnInterfaceName(vo.getVpnInterfaceName());
-        inv.setStartPort(vo.getStartPort());
-        inv.setEndPort(vo.getEndPort());
-        inv.setZoneInventory(ZoneInventory.valueOf(vo.getZone()));
-        inv.setHostInterfaceInventories(HostInterfaceInventory.valueOf(vo.getHostInterfaces()));
-        return inv;
+    public VpnHostInventory(VpnHostVO vo) {
+        super(vo);
+        this.setPublicIface(vo.getPublicInterface());
+        this.setPublicIp(vo.getPublicIp());
+        this.setUsername(vo.getUsername());
+        this.setPassword(vo.getPassword());
+        this.setSshPort(vo.getSshPort());
+        this.setVpnInterfaceName(vo.getVpnInterfaceName());
+        this.setStartPort(vo.getStartPort());
+        this.setEndPort(vo.getEndPort());
+        this.setZoneInventory(ZoneInventory.valueOf(vo.getZone()));
+        this.setHostInterfaceInventories(HostInterfaceInventory.valueOf(vo.getHostInterfaces()));
+
     }
 
-    public static List<VpnHostInventory> valueOf(Collection<VpnHostVO> vos){
-        List<VpnHostInventory> invs = new ArrayList<VpnHostInventory>(vos.size());
+    public static VpnHostInventory valueOf(VpnHostVO vo){
+        return new VpnHostInventory(vo);
+    }
+
+    public static List<VpnHostInventory> valueOf1(Collection<VpnHostVO> vos){
+        List<VpnHostInventory> invs = new ArrayList<>(vos.size());
         for (VpnHostVO vo:vos){
             invs.add(VpnHostInventory.valueOf(vo));
         }
@@ -107,46 +99,6 @@ public class VpnHostInventory {
         this.publicIp = publicIp;
     }
 
-    public String getState() {
-        return state;
-    }
-
-    public void setState(String state) {
-        this.state = state;
-    }
-
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
     public String getPublicIface() {
         return publicIface;
     }
@@ -155,13 +107,6 @@ public class VpnHostInventory {
         this.publicIface = publicIface;
     }
 
-    public String getManageIp() {
-        return manageIp;
-    }
-
-    public void setManageIp(String manageIp) {
-        this.manageIp = manageIp;
-    }
 
     public Integer getSshPort() {
         return sshPort;
@@ -187,19 +132,4 @@ public class VpnHostInventory {
         this.password = password;
     }
 
-    public Timestamp getLastOpDate() {
-        return lastOpDate;
-    }
-
-    public void setLastOpDate(Timestamp lastOpDate) {
-        this.lastOpDate = lastOpDate;
-    }
-
-    public Timestamp getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Timestamp createDate) {
-        this.createDate = createDate;
-    }
 }

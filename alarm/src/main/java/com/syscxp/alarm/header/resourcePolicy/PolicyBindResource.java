@@ -1,15 +1,17 @@
 package com.syscxp.alarm.header.resourcePolicy;
 
 
+import java.math.BigInteger;
+
 public class PolicyBindResource {
 
     private String policyUuid;
-    private Long bindingResources;
+    private BigInteger bindingResources;
     public PolicyBindResource(){}
 
     public PolicyBindResource(Object[] objs) {
         policyUuid = (String) objs[0];
-        bindingResources = (Long) objs[1];
+        bindingResources = (BigInteger) objs[1];
     }
 
     public String getPolicyUuid() {
@@ -20,11 +22,11 @@ public class PolicyBindResource {
         this.policyUuid = policyUuid;
     }
 
-    public Long getBindingResources() {
+    public BigInteger getBindingResources() {
         return bindingResources;
     }
 
-    public void setBindingResources(Long bindingResources) {
+    public void setBindingResources(BigInteger bindingResources) {
         this.bindingResources = bindingResources;
     }
 }

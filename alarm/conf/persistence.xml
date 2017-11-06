@@ -11,13 +11,13 @@
         <class>com.syscxp.alarm.header.contact.ContactVO</class>
         <class>com.syscxp.alarm.header.contact.NotifyWayVO</class>
         <class>com.syscxp.alarm.header.contact.ContactNotifyWayRefVO</class>
-        <class>com.syscxp.alarm.header.contact.ContactGroupVO</class>
-        <class>com.syscxp.alarm.header.contact.ContactGroupRefVO</class>
         <class>com.syscxp.alarm.header.resourcePolicy.PolicyVO</class>
         <class>com.syscxp.alarm.header.resourcePolicy.ResourcePolicyRefVO</class>
         <class>com.syscxp.alarm.header.resourcePolicy.RegulationVO</class>
         <class>com.syscxp.alarm.header.resourcePolicy.ComparisonRuleVO</class>
         <class>com.syscxp.sms.header.SmsVO</class>
+        <class>com.syscxp.alarm.header.log.AlarmTimeRecordVO</class>
+        <class>com.syscxp.alarm.header.log.AlarmLogVO</class>
 
     </persistence-unit>
 </persistence>

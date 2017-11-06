@@ -4,6 +4,8 @@ public interface VpnConstant {
 
     public static final String SERVICE_ID = "vpn";
 
+    public static final String HOST_TYPE = "VPN";
+
     public static final String BANDWIDTH_UNIT = "M";
 
     public static final String GENERATE_KEY = "asdjhsajfhasowjl234jhfv";

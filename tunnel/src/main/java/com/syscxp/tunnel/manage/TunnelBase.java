@@ -99,6 +99,7 @@ public class TunnelBase extends AbstractTunnel{
                 dbf.updateAndRefresh(tunnelVO);
 
                 //更新任务状态
+                taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -113,6 +114,7 @@ public class TunnelBase extends AbstractTunnel{
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -135,6 +137,7 @@ public class TunnelBase extends AbstractTunnel{
                 deleteTunnel(tunnelVO);
 
                 //更新任务状态
+                taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -145,6 +148,7 @@ public class TunnelBase extends AbstractTunnel{
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -170,6 +174,7 @@ public class TunnelBase extends AbstractTunnel{
                 dbf.updateAndRefresh(tunnelVO);
 
                 //更新任务状态
+                taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -180,6 +185,7 @@ public class TunnelBase extends AbstractTunnel{
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -203,6 +209,10 @@ public class TunnelBase extends AbstractTunnel{
                 tunnelVO.setStatus(TunnelStatus.Disconnected);
 
                 dbf.updateAndRefresh(tunnelVO);
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
             }
 
             @Override
@@ -211,6 +221,7 @@ public class TunnelBase extends AbstractTunnel{
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -231,6 +242,7 @@ public class TunnelBase extends AbstractTunnel{
                 logger.info("下发调整带宽成功！");
 
                 //更新任务状态
+                taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -241,6 +253,7 @@ public class TunnelBase extends AbstractTunnel{
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -261,6 +274,7 @@ public class TunnelBase extends AbstractTunnel{
                 logger.info("下发更改端口成功！");
 
                 //更新任务状态
+                taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -271,6 +285,7 @@ public class TunnelBase extends AbstractTunnel{
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -374,6 +389,7 @@ public class TunnelBase extends AbstractTunnel{
             }
 
             tunnelConfigInner.setTunnel_id(tunnelVO.getUuid());
+            tunnelConfigInner.setIs_on_local(isOnLock(tunnelSwitchPortA,tunnelSwitchPortB));
             tunnelConfigInner.setMpls_switches(mplsListInner);
             if(sdnListInner.size()>0){
                 tunnelConfigInner.setSdn_switches(sdnListInner);
@@ -384,6 +400,7 @@ public class TunnelBase extends AbstractTunnel{
             connectionsConfigInner.setMpls_interface_Z(tmcB.getUuid());
 
             tunnelConfigOuter.setTunnel_id(tunnelVO.getUuid());
+            tunnelConfigOuter.setIs_on_local(isOnLock(tunnelSwitchPortC,tunnelSwitchPortZ));
             tunnelConfigOuter.setMpls_switches(mplsListOuter);
             if(sdnListOuter.size()>0){
                 tunnelConfigOuter.setSdn_switches(sdnListOuter);
@@ -433,6 +450,7 @@ public class TunnelBase extends AbstractTunnel{
 
 
             tunnelConfig.setTunnel_id(tunnelVO.getUuid());
+            tunnelConfig.setIs_on_local(isOnLock(tunnelSwitchPortA,tunnelSwitchPortZ));
             tunnelConfig.setMpls_switches(mplsList);
             if(sdnList.size()>0){
                 tunnelConfig.setSdn_switches(sdnList);
@@ -584,5 +602,25 @@ public class TunnelBase extends AbstractTunnel{
         SwitchVO switchVO = dbf.findByUuid(switchPortVO.getSwitchUuid(),SwitchVO.class);
         PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(switchVO.getPhysicalSwitchUuid(),PhysicalSwitchVO.class);
         return physicalSwitchVO;
+    }
+
+    /**
+     *  判断该通道是否onlock
+     */
+    private boolean isOnLock(TunnelSwitchPortVO tunnelSwitchPortA,TunnelSwitchPortVO tunnelSwitchPortZ){
+        boolean isonlock = false;
+        SwitchPortVO switchPortA = dbf.findByUuid(tunnelSwitchPortA.getSwitchPortUuid(),SwitchPortVO.class);
+        PhysicalSwitchVO physicalSwitchA = getPhysicalSwitch(switchPortA);
+
+        SwitchPortVO switchPortZ = dbf.findByUuid(tunnelSwitchPortZ.getSwitchPortUuid(),SwitchPortVO.class);
+        PhysicalSwitchVO physicalSwitchZ = getPhysicalSwitch(switchPortZ);
+
+        if(physicalSwitchA.getAccessType() == physicalSwitchZ.getAccessType()){
+            if(physicalSwitchA.getUuid().equals(physicalSwitchZ.getUuid())){
+                isonlock = true;
+            }
+        }
+
+        return isonlock;
     }
 }

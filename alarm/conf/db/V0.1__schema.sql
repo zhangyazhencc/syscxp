@@ -23,16 +23,18 @@ DROP TABLE IF EXISTS `AlarmLogVO`;
 CREATE TABLE `AlarmLogVO` (
   `uuid` varchar(32) NOT NULL,
   `productUuid` varchar(32) DEFAULT NULL,
-  `productName` varchar(255) DEFAULT NULL,
+  `productName` varchar(128) DEFAULT NULL,
   `productType` varchar(255) DEFAULT NULL,
-  `alarmTime` timestamp ,
   `duration` int(10) DEFAULT NULL COMMENT '持续时间',
-  `durationTimeUnit` varchar(127) DEFAULT NULL COMMENT '持续时间单位',
-  `alarmContent` varchar(1023) DEFAULT NULL COMMENT '报警内容',
-  `resumeTime` timestamp ,
+  `alarmContent` varchar(256) DEFAULT NULL COMMENT '报警内容',
   `status` varchar(127) DEFAULT NULL COMMENT '报警状态',
-  `createDate` timestamp NULL DEFAULT NULL,
-  `lastOpDate` timestamp NULL DEFAULT NULL,
+  `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户UUID',
+  `smsContent` varchar(256) DEFAULT NULL COMMENT '短信内容',
+  `mailContent` varchar(256) DEFAULT NULL COMMENT '邮件内容',
+  `ruleName` varchar(255) DEFAULT NULL COMMENT '策略名字',
+  `eventId` varchar(128) DEFAULT NULL COMMENT '事件ID',
+  `createDate` timestamp ,
+  `lastOpDate` timestamp ,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -293,6 +295,21 @@ CREATE TABLE `SmsVO` (
   `createDate` timestamp,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `AlarmTimeRecordVO`;
+
+CREATE TABLE `AlarmTimeRecordVO` (
+  `uuid` varchar(32) NOT NULL,
+  `tunnelUuid` varchar(32) DEFAULT NULL,
+  `eventId` varchar(128) DEFAULT NULL COMMENT '事件ID',
+  `status` varchar(127) DEFAULT NULL COMMENT '报警状态',
+  `productType` varchar(255) DEFAULT NULL COMMENT '产品类型',
+  `createDate` timestamp ,
+  `lastOpDate` timestamp ,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
 /*Data for the table `ResourceVO` */
 
 /*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
