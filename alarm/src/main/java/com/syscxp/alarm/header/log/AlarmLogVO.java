@@ -22,20 +22,10 @@ public class AlarmLogVO extends BaseVO {
     private ProductType productType;
 
     @Column
-    private Timestamp alarmTime;
-
-    @Column
-    private int duration;
-
-    @Column
-    @Enumerated(EnumType.STRING)
-    private TimeUnit durationTimeUnit;
+    private long duration;
 
     @Column
     private String alarmContent;
-
-    @Column
-    private Timestamp resumeTime;
 
     @Column
     private String status;
@@ -43,14 +33,18 @@ public class AlarmLogVO extends BaseVO {
     @Column
     private String accountUuid;
 
+    @Column
+    private String smsContent;
 
-    public String getAccountUuid() {
-        return accountUuid;
-    }
+    @Column
+    private String mailContent;
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
+    @Column
+    private String ruleName;
+
+    @Column
+    private String eventId;
+
 
     public String getProductUuid() {
         return productUuid;
@@ -76,28 +70,12 @@ public class AlarmLogVO extends BaseVO {
         this.productType = productType;
     }
 
-    public Timestamp getAlarmTime() {
-        return alarmTime;
-    }
-
-    public void setAlarmTime(Timestamp alarmTime) {
-        this.alarmTime = alarmTime;
-    }
-
-    public int getDuration() {
+    public long getDuration() {
         return duration;
     }
 
-    public void setDuration(int duration) {
+    public void setDuration(long duration) {
         this.duration = duration;
-    }
-
-    public TimeUnit getDurationTimeUnit() {
-        return durationTimeUnit;
-    }
-
-    public void setDurationTimeUnit(TimeUnit durationTimeUnit) {
-        this.durationTimeUnit = durationTimeUnit;
     }
 
     public String getAlarmContent() {
@@ -108,19 +86,51 @@ public class AlarmLogVO extends BaseVO {
         this.alarmContent = alarmContent;
     }
 
-    public Timestamp getResumeTime() {
-        return resumeTime;
-    }
-
-    public void setResumeTime(Timestamp resumeTime) {
-        this.resumeTime = resumeTime;
-    }
-
     public String getStatus() {
         return status;
     }
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
+
+    public String getSmsContent() {
+        return smsContent;
+    }
+
+    public void setSmsContent(String smsContent) {
+        this.smsContent = smsContent;
+    }
+
+    public String getMailContent() {
+        return mailContent;
+    }
+
+    public void setMailContent(String mailContent) {
+        this.mailContent = mailContent;
+    }
+
+    public String getRuleName() {
+        return ruleName;
+    }
+
+    public void setRuleName(String ruleName) {
+        this.ruleName = ruleName;
+    }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
     }
 }

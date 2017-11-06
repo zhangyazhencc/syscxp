@@ -15,15 +15,14 @@ public class AlarmLogInventory {
     private String productUuid;
     private String productName;
     private ProductType productType;
-    private Timestamp alarmTime;
-    private Integer duration;
-    private TimeUnit durationTimeUnit;
+    private Long duration;
     private String alarmContent;
-    private Timestamp resumeTime;
     private String status;
     private String accountUuid;
-
-
+    private String smsContent;
+    private String mailContent;
+    private String ruleName;
+    private String eventId;
 
     public static AlarmLogInventory valueOf(AlarmLogVO vo){
         AlarmLogInventory inv = new AlarmLogInventory();
@@ -31,13 +30,14 @@ public class AlarmLogInventory {
         inv.setProductUuid(vo.getProductUuid());
         inv.setProductName(vo.getProductName());
         inv.setProductType(vo.getProductType());
-        inv.setAlarmTime(vo.getAlarmTime());
         inv.setDuration(vo.getDuration());
-        inv.setDurationTimeUnit(vo.getDurationTimeUnit());
         inv.setAlarmContent(vo.getAlarmContent());
-        inv.setResumeTime(vo.getResumeTime());
         inv.setStatus(vo.getStatus());
         inv.setAccountUuid(vo.getAccountUuid());
+        inv.setSmsContent(vo.getSmsContent());
+        inv.setMailContent(vo.getMailContent());
+        inv.setRuleName(vo.getRuleName());
+        inv.setEventId(vo.getEventId());
         return inv;
     }
 
@@ -82,28 +82,12 @@ public class AlarmLogInventory {
         this.productType = productType;
     }
 
-    public Timestamp getAlarmTime() {
-        return alarmTime;
-    }
-
-    public void setAlarmTime(Timestamp alarmTime) {
-        this.alarmTime = alarmTime;
-    }
-
-    public Integer getDuration() {
+    public Long getDuration() {
         return duration;
     }
 
-    public void setDuration(Integer duration) {
+    public void setDuration(Long duration) {
         this.duration = duration;
-    }
-
-    public TimeUnit getDurationTimeUnit() {
-        return durationTimeUnit;
-    }
-
-    public void setDurationTimeUnit(TimeUnit durationTimeUnit) {
-        this.durationTimeUnit = durationTimeUnit;
     }
 
     public String getAlarmContent() {
@@ -112,14 +96,6 @@ public class AlarmLogInventory {
 
     public void setAlarmContent(String alarmContent) {
         this.alarmContent = alarmContent;
-    }
-
-    public Timestamp getResumeTime() {
-        return resumeTime;
-    }
-
-    public void setResumeTime(Timestamp resumeTime) {
-        this.resumeTime = resumeTime;
     }
 
     public String getStatus() {
@@ -136,5 +112,37 @@ public class AlarmLogInventory {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public String getSmsContent() {
+        return smsContent;
+    }
+
+    public void setSmsContent(String smsContent) {
+        this.smsContent = smsContent;
+    }
+
+    public String getMailContent() {
+        return mailContent;
+    }
+
+    public void setMailContent(String mailContent) {
+        this.mailContent = mailContent;
+    }
+
+    public String getRuleName() {
+        return ruleName;
+    }
+
+    public void setRuleName(String ruleName) {
+        this.ruleName = ruleName;
+    }
+
+    public String getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(String eventId) {
+        this.eventId = eventId;
     }
 }

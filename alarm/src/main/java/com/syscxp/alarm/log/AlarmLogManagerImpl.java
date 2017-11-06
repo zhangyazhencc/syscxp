@@ -2,6 +2,9 @@ package com.syscxp.alarm.log;
 
 import com.syscxp.alarm.header.contact.*;
 import com.syscxp.alarm.header.log.*;
+import com.syscxp.alarm.header.resourcePolicy.PolicyVO;
+import com.syscxp.alarm.header.resourcePolicy.RegulationVO;
+import com.syscxp.alarm.header.resourcePolicy.RegulationVO_;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
@@ -17,6 +20,7 @@ import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.tunnel.TunnelState;
 import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsGlobalProperty;
 import com.syscxp.sms.SmsService;
@@ -25,6 +29,8 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.persistence.Tuple;
+import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
 import java.util.*;
 
@@ -69,20 +75,62 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
         AlarmLogVO alarmLogVO = new AlarmLogVO();
         alarmLogVO.setUuid(Platform.getUuid());
-        alarmLogVO.setProductUuid(msg.getTunnel_id());
-        alarmLogVO.setProductName(msg.getTunnel_name());
+        alarmLogVO.setAccountUuid(msg.getAccountUuid());
+        alarmLogVO.setProductUuid(msg.getTunnelUuid());
+        alarmLogVO.setProductName(msg.getTunnelName());
         alarmLogVO.setAlarmContent(msg.getProblem());
-        alarmLogVO.setResumeTime(msg.getResumed());
-        alarmLogVO.setAlarmTime(msg.getCreated());
         alarmLogVO.setStatus(msg.getStatus());
-        alarmLogVO.setAccountUuid(msg.getUser_id());
         alarmLogVO.setProductType(ProductType.TUNNEL);//todo  where should acquire
 
-        //alarmLogVO.setDuration(0);//持续时间
-        dbf.persistAndRefresh(msg);
+        alarmLogVO.setSmsContent(msg.getSmsContent());
+        alarmLogVO.setMailContent(msg.getMailContent());
+        alarmLogVO.setEventId(msg.getEventId());
+        RegulationVO regulationVO = dbf.findByUuid(msg.getRuleUuid(),RegulationVO.class);
+        if(regulationVO != null){
+            PolicyVO policyVO = dbf.findByUuid(regulationVO.getPolicyUuid(),PolicyVO.class);
+            if(policyVO != null){
+                alarmLogVO.setRuleName(policyVO.getName());
+            }
+        }
+
+        //计算持续时间
+        SimpleQuery<AlarmTimeRecordVO> query = dbf.createQuery(AlarmTimeRecordVO.class);
+        query.add(AlarmTimeRecordVO_.tunnelUuid, SimpleQuery.Op.EQ, msg.getTunnelUuid());
+        query.add(AlarmTimeRecordVO_.eventId, SimpleQuery.Op.EQ, msg.getEventId());
+        AlarmTimeRecordVO alarmRecord = query.find();
+        if(alarmRecord == null){
+            AlarmTimeRecordVO alarmTimeRecordVO = new AlarmTimeRecordVO();
+            alarmTimeRecordVO.setUuid(Platform.getUuid());
+            alarmTimeRecordVO.setTunnelUuid(msg.getTunnelUuid());
+            alarmTimeRecordVO.setEventId(msg.getEventId());
+            alarmTimeRecordVO.setProductType(ProductType.TUNNEL);
+            alarmTimeRecordVO.setStatus(msg.getStatus());
+
+            dbf.persistAndRefresh(alarmTimeRecordVO);
+
+            int detectPeriod = regulationVO.getDetectPeriod();
+            int triggerPeriod = regulationVO.getTriggerPeriod();
+            alarmLogVO.setDuration((long) detectPeriod * triggerPeriod);
+        }else{
+            long duration = System.currentTimeMillis() - alarmRecord.getCreateDate().getTime();
+            alarmLogVO.setDuration(duration/1000);
+
+            if("OK".equals(msg.getStatus())){
+                alarmRecord.setStatus(msg.getStatus());
+                dbf.updateAndRefresh(alarmRecord);
+            }
+        }
+
+        dbf.persistAndRefresh(alarmLogVO);
 
         //foreach发送短信和邮件
-        sendMessage(msg);
+        try {
+            sendMessage(msg);
+        } catch (Exception e) {
+            //保存失败信息
+            e.printStackTrace();
+            throw new OperationFailureException(operr("message:" + e.getMessage()));
+        }
 
 
         APICreateALarmLogEvent evt = new APICreateALarmLogEvent(msg.getId());
@@ -92,38 +140,28 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     }
 
-    private void sendMessage(APICreateAlarmLogMsg msg){
+    private void sendMessage(APICreateAlarmLogMsg msg) throws Exception{
         SimpleQuery<ContactVO> query = dbf.createQuery(ContactVO.class);
-        query.add(ContactVO_.accountUuid, SimpleQuery.Op.EQ, msg.getUser_id());
-        List<ContactVO> groups = query.list();
-        for(ContactVO contactVO: groups){
+        query.add(ContactVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        List<ContactVO> contactVOS = query.list();
+        for (ContactVO contactVO : contactVOS) {
             Set<NotifyWayVO> notifyWayVOs = contactVO.getNotifyWayVOs();
-            for(NotifyWayVO notifyWayVO: notifyWayVOs){
-                if( notifyWayVO.getCode().equals("email")){
+            for (NotifyWayVO notifyWayVO : notifyWayVOs) {
+                if (notifyWayVO.getCode().equals("email")) {
                     String email = contactVO.getEmail();
-                    try{
-                        Boolean result = mailService.mailSend(email,"监控报警信息", msg.getProblem());
-                    }catch (Exception e){
-                        //保存失败信息
-                        e.printStackTrace();
-                        throw new OperationFailureException(operr("message:" + e.getMessage()));
-                    }
-                    logger.debug("发送告警的内容是：" +msg.getProblem() +
-                            "[邮件:"+email+"]");
-
+                    mailService.mailSend(email, "监控报警信息", msg.getMailContent());
                 }
 
-                if( notifyWayVO.getCode().equals("mobile")){
+                if (notifyWayVO.getCode().equals("mobile")) {
                     String phone = contactVO.getMobile();
-                    SmsVO sms = smsService.sendMsg(msg.getSession(), phone, SmsGlobalProperty.ALARM_VERIFICATION_CODE_APPID, SmsGlobalProperty.SMS_VERIFICATION_CODE_AlARM
-                            , new String[]{msg.getProblem(), "10"}, msg.getIp());
+                    smsService.sendMsg(msg.getSession(), phone, SmsGlobalProperty.ALARM_VERIFICATION_CODE_APPID, SmsGlobalProperty.SMS_VERIFICATION_CODE_AlARM
+                            , new String[]{msg.getSmsContent()}, msg.getIp());
 
-                    logger.debug("发送告警的内容是：" + msg.getProblem() +
-                            "[手机号码:"+phone+"]");
                 }
 
             }
         }
+
     }
 
     private void handleLocalMessage(Message msg) {
@@ -150,7 +188,10 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
         return msg;
     }
 
+    public Long continueTime(){
 
+        return null;
+    }
 
 
 }
