@@ -99,6 +99,7 @@ public class TunnelBase extends AbstractTunnel{
                 dbf.updateAndRefresh(tunnelVO);
 
                 //更新任务状态
+                taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -113,6 +114,7 @@ public class TunnelBase extends AbstractTunnel{
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -135,6 +137,7 @@ public class TunnelBase extends AbstractTunnel{
                 deleteTunnel(tunnelVO);
 
                 //更新任务状态
+                taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -145,6 +148,7 @@ public class TunnelBase extends AbstractTunnel{
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -170,6 +174,7 @@ public class TunnelBase extends AbstractTunnel{
                 dbf.updateAndRefresh(tunnelVO);
 
                 //更新任务状态
+                taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -180,6 +185,7 @@ public class TunnelBase extends AbstractTunnel{
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -203,6 +209,10 @@ public class TunnelBase extends AbstractTunnel{
                 tunnelVO.setStatus(TunnelStatus.Disconnected);
 
                 dbf.updateAndRefresh(tunnelVO);
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
             }
 
             @Override
@@ -211,6 +221,7 @@ public class TunnelBase extends AbstractTunnel{
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -231,6 +242,7 @@ public class TunnelBase extends AbstractTunnel{
                 logger.info("下发调整带宽成功！");
 
                 //更新任务状态
+                taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -241,6 +253,7 @@ public class TunnelBase extends AbstractTunnel{
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -261,6 +274,7 @@ public class TunnelBase extends AbstractTunnel{
                 logger.info("下发更改端口成功！");
 
                 //更新任务状态
+                taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
             }
@@ -271,6 +285,7 @@ public class TunnelBase extends AbstractTunnel{
 
                 //更新任务状态
                 taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
             }
