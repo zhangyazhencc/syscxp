@@ -46,6 +46,8 @@ import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.syscxp.core.Platform.argerr;
+
 public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMessageInterceptor {
 
     private static final CLogger logger = Utils.getLogger(ResourcePolicyManagerImpl.class);
@@ -328,53 +330,27 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         bus.reply(msg, reply);
     }
 
-    @Transactional
-    private void handle(APIAttachResourceByPoliciesMsg msg) {
-
-
-        SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
-        query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
-        query.select(ResourcePolicyRefVO_.policyUuid);
-        List<String> hadAttachPolicyUuids = query.listValue();
-        List<String> newAttachPolicyUuids = msg.getPolicyUuids();
-
-        List<PolicyVO> policyVOList = dbf.listByPrimaryKeys(hadAttachPolicyUuids,PolicyVO.class);
-        List<PolicyInventory> list =  new ArrayList<>();
-        if(!isEmptyList(policyVOList))list = PolicyInventory.valueOf(policyVOList);
-        if(isEmptyList(hadAttachPolicyUuids) && isEmptyList(newAttachPolicyUuids)){
-            throw new IllegalArgumentException("please select a policy");
-        }
-
-        if(isEmptyList(hadAttachPolicyUuids) && !isEmptyList(newAttachPolicyUuids)){
-            attachPolcies(msg.getPolicyUuids(),msg.getResourceUuid(), list);
-        } else if(!isEmptyList(hadAttachPolicyUuids) && isEmptyList(newAttachPolicyUuids)){
-            List<String> needDettachPolicyUuids = substractList(hadAttachPolicyUuids,newAttachPolicyUuids);
-            for (String policyUuid : needDettachPolicyUuids) {
-                deleteResourcePolicyRef(policyUuid, msg.getResourceUuid());
-                list.remove(PolicyInventory.valueOf(dbf.findByUuid(policyUuid,PolicyVO.class)));
-            }
-        } else {
-            List<String> needDettachPolicyUuids = substractList(hadAttachPolicyUuids,newAttachPolicyUuids);
-            for (String policyUuid : needDettachPolicyUuids) {
-                deleteResourcePolicyRef(policyUuid, msg.getResourceUuid());
-                list.remove(PolicyInventory.valueOf(dbf.findByUuid(policyUuid,PolicyVO.class)));
-            }
-
-            List<String> needAttachPolicyUuids = substractList(newAttachPolicyUuids,hadAttachPolicyUuids);
-               attachPolcies(needAttachPolicyUuids,msg.getResourceUuid(), list);
-        }
-        dbf.getEntityManager().flush();
-
+    private boolean attachResourceByPolicies(APIAttachResourceByPoliciesMsg msg){
         APIQueryTunnelDetailForAlarmMsg tunnelMsg = new APIQueryTunnelDetailForAlarmMsg();
         List<String> lis = new ArrayList<>();
         lis.add(msg.getResourceUuid());
         tunnelMsg.setTunnelUuidList(lis);
-        Map<String,Object> map = null;
-        RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
-                RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
-        if (raps.getState().equals(RestAPIState.Done.toString())) {
-            APIQueryTunnelDetailForAlarmReply tunnelReply = (APIQueryTunnelDetailForAlarmReply) RESTApiDecoder.loads(raps.getResult());
-            map = tunnelReply.getMap();
+        Map<String, Object> map = null;
+        try{
+            RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
+                    RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
+
+            if (raps.getState().equals(RestAPIState.Done.toString())) {
+                APIQueryTunnelDetailForAlarmReply tunnelReply = JSONObjectUtil.toObject(raps.getResult(),APIQueryTunnelDetailForAlarmReply.class);
+                if(tunnelReply.isSuccess()){
+                    map = tunnelReply.getMap();
+                }else{
+                    throw new OperationFailureException(Platform.operr(tunnelReply.getError().toString()));
+                }
+
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
 
         TunnelParameter tunnelparameter = new TunnelParameter();
@@ -432,6 +408,52 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             e.printStackTrace();
         }
 
+        return true;
+    }
+
+    @Transactional
+    private void handle(APIAttachResourceByPoliciesMsg msg) {
+
+
+        SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
+        query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
+        query.select(ResourcePolicyRefVO_.policyUuid);
+        List<String> hadAttachPolicyUuids = query.listValue();
+        List<String> newAttachPolicyUuids = msg.getPolicyUuids();
+
+        List<PolicyVO> policyVOList = dbf.listByPrimaryKeys(hadAttachPolicyUuids,PolicyVO.class);
+        List<PolicyInventory> list =  new ArrayList<>();
+        if(!isEmptyList(policyVOList))list = PolicyInventory.valueOf(policyVOList);
+        if(isEmptyList(hadAttachPolicyUuids) && isEmptyList(newAttachPolicyUuids)){
+            throw new IllegalArgumentException("please select a policy");
+        }
+
+        if(isEmptyList(hadAttachPolicyUuids) && !isEmptyList(newAttachPolicyUuids)){
+            attachPolcies(msg.getPolicyUuids(),msg.getResourceUuid(), list);
+        } else if(!isEmptyList(hadAttachPolicyUuids) && isEmptyList(newAttachPolicyUuids)){
+            List<String> needDettachPolicyUuids = substractList(hadAttachPolicyUuids,newAttachPolicyUuids);
+            for (String policyUuid : needDettachPolicyUuids) {
+                deleteResourcePolicyRef(policyUuid, msg.getResourceUuid());
+                removeObj(list, policyUuid);
+            }
+        } else {
+            List<String> needDettachPolicyUuids = substractList(hadAttachPolicyUuids,newAttachPolicyUuids);
+            for (String policyUuid : needDettachPolicyUuids) {
+                deleteResourcePolicyRef(policyUuid, msg.getResourceUuid());
+                removeObj(list, policyUuid);
+            }
+
+            List<String> needAttachPolicyUuids = substractList(newAttachPolicyUuids,hadAttachPolicyUuids);
+               attachPolcies(needAttachPolicyUuids,msg.getResourceUuid(), list);
+        }
+        dbf.getEntityManager().flush();
+
+        try{
+            attachResourceByPolicies(msg);
+        }catch (NullPointerException e){
+            throw new ApiMessageInterceptionException(argerr("tunnel information is mismatch"));
+        }
+
 
         APIAttachResourceByPoliciesEvent event = new APIAttachResourceByPoliciesEvent(msg.getId());
         event.setInventories(list);
@@ -461,25 +483,15 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         return resourcePolicyRefVO;
     }
 
-    @Transactional
-    private void handle(APIAttachPolicyByResourcesMsg msg) {
-        List<ResourcePolicyRefInventory> list = new ArrayList<>();
-        if (msg.isAttach()) {
-            for (String resourceUuid : msg.getResourceUuids()) {
-                ResourcePolicyRefVO resourcePolicyRefVO = new ResourcePolicyRefVO();
-                resourcePolicyRefVO.setUuid(Platform.getUuid());
-                resourcePolicyRefVO.setPolicyUuid(msg.getPolicyUuid());
-                resourcePolicyRefVO.setResourceUuid(resourceUuid);
-                dbf.getEntityManager().persist(resourcePolicyRefVO);
-                list.add(ResourcePolicyRefInventory.valueOf(resourcePolicyRefVO));
-            }
-        } else {
-            for (String resourceUuid : msg.getResourceUuids()) {
-                list.add(ResourcePolicyRefInventory.valueOf(deleteResourcePolicyRef(msg.getPolicyUuid(), resourceUuid)));
+    private void removeObj(List<PolicyInventory> list, String policyUuid) {
+        for(PolicyInventory policyInventory: list){
+            if(policyInventory.getUuid().equals(policyUuid)){
+                list.remove(policyInventory);
             }
         }
+    }
 
-
+    private boolean attachPolicyByResources(APIAttachPolicyByResourcesMsg msg){
         TunnelParameter tunnelparameter = null;
         Rule rule = null;
         List<Rule> rulelist = null;
@@ -489,11 +501,20 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         APIQueryTunnelDetailForAlarmMsg tunnelMsg = new APIQueryTunnelDetailForAlarmMsg();
         tunnelMsg.setTunnelUuidList(msg.getResourceUuids());
         Map<String, Object> map = null;
-        RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
-                RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
-        if (raps.getState().equals(RestAPIState.Done.toString())) {
-            APIQueryTunnelDetailForAlarmReply tunnelReply = (APIQueryTunnelDetailForAlarmReply) RESTApiDecoder.loads(raps.getResult());
-            map = tunnelReply.getMap();
+        try{
+            RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
+                    RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
+
+            if (raps.getState().equals(RestAPIState.Done.toString())) {
+                APIQueryTunnelDetailForAlarmReply tunnelReply = JSONObjectUtil.toObject(raps.getResult(),APIQueryTunnelDetailForAlarmReply.class);
+                if(tunnelReply.isSuccess()){
+                    map = tunnelReply.getMap();
+                }else{
+                    throw new OperationFailureException(Platform.operr(tunnelReply.getError().toString()));
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
         }
 
         for (String resourceid : msg.getResourceUuids()) {
@@ -541,6 +562,32 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         if (!res.isSuccess()) {
             System.out.println(rsp.getBody());
             throw new OperationFailureException(Platform.operr("falcon fail "));
+        }
+        return true;
+    }
+
+    @Transactional
+    private void handle(APIAttachPolicyByResourcesMsg msg) {
+        List<ResourcePolicyRefInventory> list = new ArrayList<>();
+        if (msg.isAttach()) {
+            for (String resourceUuid : msg.getResourceUuids()) {
+                ResourcePolicyRefVO resourcePolicyRefVO = new ResourcePolicyRefVO();
+                resourcePolicyRefVO.setUuid(Platform.getUuid());
+                resourcePolicyRefVO.setPolicyUuid(msg.getPolicyUuid());
+                resourcePolicyRefVO.setResourceUuid(resourceUuid);
+                dbf.getEntityManager().persist(resourcePolicyRefVO);
+                list.add(ResourcePolicyRefInventory.valueOf(resourcePolicyRefVO));
+            }
+        } else {
+            for (String resourceUuid : msg.getResourceUuids()) {
+                list.add(ResourcePolicyRefInventory.valueOf(deleteResourcePolicyRef(msg.getPolicyUuid(), resourceUuid)));
+            }
+        }
+
+        try{
+            attachPolicyByResources(msg);
+        }catch (NullPointerException e){
+            throw new ApiMessageInterceptionException(argerr("tunnel information is mismatch"));
         }
 
 
@@ -594,7 +641,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             for (QueryCondition condition : conditions) {
                 if (!StringUtils.isEmpty(condition.getName())) {
                     if (condition.getName().equals("productType")) {
-                        query.add(PolicyVO_.productType, SimpleQuery.Op.EQ, condition.getValue());
+                        query.add(PolicyVO_.productType, SimpleQuery.Op.EQ, ProductType.valueOf(condition.getValue()));
                     } else if (condition.getName().equals("bindResources")) {
                         String sql = "select policyUuid, count(*) as bindingResources from ResourcePolicyRefVO group by policyUuid ";
                         Query q = dbf.getEntityManager().createNativeQuery(sql);
