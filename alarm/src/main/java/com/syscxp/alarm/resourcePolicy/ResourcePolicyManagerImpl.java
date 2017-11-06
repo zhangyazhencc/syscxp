@@ -108,11 +108,30 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             handle((APIUpdateTunnelInfoForFalconMsg) msg);
         }else if (msg instanceof APIGetPoliciesByResourceMsg) {
             handle((APIGetPoliciesByResourceMsg) msg);
+        }else if (msg instanceof APIGetComparisonRuleListMsg) {
+            handle((APIGetComparisonRuleListMsg) msg);
+        }else if (msg instanceof APIGetMonitorTargetListMsg) {
+            handle((APIGetMonitorTargetListMsg) msg);
         }
 
         else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetMonitorTargetListMsg msg) {
+        SimpleQuery<MonitorTargetVO> query = dbf.createQuery(MonitorTargetVO.class);
+        query.add(MonitorTargetVO_.productType, SimpleQuery.Op.EQ, msg.getType());
+        List<MonitorTargetVO> monitorTargetVOS =query.list();
+        APIGetMonitorTargeListReply reply = new APIGetMonitorTargeListReply();
+        reply.setInventories(MonitorTargetInventory.valueOf(monitorTargetVOS));
+        bus.reply(msg,reply);
+    }
+
+    private void handle(APIGetComparisonRuleListMsg msg) {
+        APIGetComparisonRuleListReply reply = new APIGetComparisonRuleListReply();
+        reply.setInventories(ComparisonRuleInventory.valueOf(dbf.listAll(ComparisonRuleVO.class)));
+        bus.reply(msg,reply);
     }
 
     private void handle(APIGetPoliciesByResourceMsg msg) {
@@ -448,11 +467,11 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         }
         dbf.getEntityManager().flush();
 
-        try{
-            attachResourceByPolicies(msg);
-        }catch (NullPointerException e){
-            throw new ApiMessageInterceptionException(argerr("tunnel information is mismatch"));
-        }
+//        try{
+//            attachResourceByPolicies(msg);
+//        }catch (NullPointerException e){
+//            throw new ApiMessageInterceptionException(argerr("tunnel information is mismatch"));
+//        }
 
 
         APIAttachResourceByPoliciesEvent event = new APIAttachResourceByPoliciesEvent(msg.getId());
@@ -484,9 +503,11 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
     }
 
     private void removeObj(List<PolicyInventory> list, String policyUuid) {
-        for(PolicyInventory policyInventory: list){
-            if(policyInventory.getUuid().equals(policyUuid)){
-                list.remove(policyInventory);
+        Iterator<PolicyInventory> it = list.iterator();
+        while(it.hasNext()){
+            PolicyInventory p = it.next();
+            if(p.getUuid().equals(policyUuid)){
+                it.remove();
             }
         }
     }
@@ -658,8 +679,8 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
                             throw new IllegalArgumentException("there is no one suitable");
                         }
                         query.add(PolicyVO_.uuid, SimpleQuery.Op.IN, uuids);
-                    } else{
-
+                    } else if(condition.getName().equals("name")){
+                        query.add(PolicyVO_.name, SimpleQuery.Op.LIKE, ProductType.valueOf(condition.getValue()));
                     }
 
                 }
@@ -756,6 +777,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         policyVO.setName(msg.getName());
         policyVO.setDescription(msg.getDescription());
         policyVO.setProductType(msg.getProductType());
+        policyVO.setAccountUuid(msg.getAccountUuid());
         dbf.persistAndRefresh(policyVO);
         APICreatePolicyEvent event = new APICreatePolicyEvent(msg.getId());
         event.setInventory(PolicyInventory.valueOf(policyVO));

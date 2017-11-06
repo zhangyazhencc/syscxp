@@ -129,8 +129,8 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         String receiptInfoUuid = msg.getReceiptInfoUuid();
         ReceiptInfoVO receiptInfoVO = dbf.findByUuid(receiptInfoUuid, ReceiptInfoVO.class);
         receiptVO.setReceiptInfoVO(receiptInfoVO);
-        dbf.persistAndRefresh(receiptVO);
         ReceiptInventory inventory = ReceiptInventory.valueOf(receiptVO);
+        dbf.persistAndRefresh(receiptVO);
         APICreateReceiptEvent evt = new APICreateReceiptEvent(msg.getId());
         evt.setInventory(inventory);
         bus.publish(evt);

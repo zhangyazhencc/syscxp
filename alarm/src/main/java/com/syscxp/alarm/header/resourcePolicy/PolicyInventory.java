@@ -21,7 +21,7 @@ public class PolicyInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
     private Set<RegulationVO> regulationVOS;
-
+    private String accountUuid;
 
     public static PolicyInventory valueOf(PolicyVO vo) {
         PolicyInventory inv = new PolicyInventory();
@@ -33,6 +33,7 @@ public class PolicyInventory {
         inv.setDescription(vo.getDescription());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        inv.setAccountUuid(vo.getAccountUuid());
 
         return inv;
     }
@@ -107,5 +108,13 @@ public class PolicyInventory {
 
     public void setRegulationVOS(Set<RegulationVO> regulationVOS) {
         this.regulationVOS = regulationVOS;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }
