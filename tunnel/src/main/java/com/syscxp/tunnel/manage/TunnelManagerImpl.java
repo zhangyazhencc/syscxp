@@ -1317,8 +1317,27 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             validate((APIUpdateTunnelVlanMsg) msg);
         } else if (msg instanceof APIUpdateForciblyTunnelVlanMsg) {
             validate((APIUpdateForciblyTunnelVlanMsg) msg);
+        } else if (msg instanceof APIUpdateInterfacePortMsg) {
+            validate((APIUpdateInterfacePortMsg) msg);
         }
         return msg;
+    }
+
+    private void validate(APIUpdateInterfacePortMsg msg) {
+
+        InterfaceVO iface = Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).find();
+        if (iface == null)
+            throw new ApiMessageInterceptionException(
+                    argerr("The Interface[uuid:%s] does not exsit！", msg.getUuid()));
+        SwitchPortVO switchPort = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, iface.getSwitchPortUuid()).find();
+        if (switchPort.getPortType() == SwitchPortType.SHARE)
+            throw new ApiMessageInterceptionException(
+                    argerr("The type of Interface[uuid:%s] is %s, could not modify！", msg.getUuid(), switchPort.getPortType()));
+
+        Q q = Q.New(InterfaceVO.class).eq(InterfaceVO_.switchPortUuid, msg.getSwitchPortUuid());
+        if (q.isExists())
+            throw new ApiMessageInterceptionException(
+                    argerr("The SwitchPort[uuid:%s] has been used！", msg.getSwitchPortUuid()));
     }
 
     private void validate(APICreateInterfaceMsg msg) {
@@ -2043,12 +2062,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         UpdateQuery.New(InterfaceVO.class)
                 .set(InterfaceVO_.switchPortUuid, msg.getSwitchPortUuid())
                 .set(InterfaceVO_.type, msg.getNetworkType())
-                .eq(InterfaceVO_.uuid, msg.getUuid());
+                .eq(InterfaceVO_.uuid, msg.getUuid())
+                .update();
 
         UpdateQuery.New(TunnelSwitchPortVO.class)
                 .set(TunnelSwitchPortVO_.switchPortUuid, msg.getSwitchPortUuid())
                 .set(TunnelSwitchPortVO_.type, msg.getNetworkType())
-                .eq(TunnelSwitchPortVO_.switchPortUuid, switchPortUuid);
+                .eq(TunnelSwitchPortVO_.switchPortUuid, switchPortUuid)
+                .update();
     }
 
     /**
