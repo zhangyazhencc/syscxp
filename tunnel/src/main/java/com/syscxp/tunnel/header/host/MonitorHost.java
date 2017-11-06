@@ -476,15 +476,10 @@ public class MonitorHost extends HostBase implements Host {
 
     @Override
     public void handleMessage(Message msg) {
-        try {
-            if (msg instanceof APIMessage) {
-                handleApiMessage((APIMessage) msg);
-            } else {
-                handleLocalMessage(msg);
-            }
-        } catch (Exception e) {
-            bus.logExceptionWithMessageDump(msg, e);
-            bus.replyErrorByMessageType(msg, e);
+        if (msg instanceof APIMessage) {
+            handleApiMessage((APIMessage) msg);
+        } else {
+            handleLocalMessage(msg);
         }
     }
 
@@ -497,7 +492,7 @@ public class MonitorHost extends HostBase implements Host {
     protected void handleLocalMessage(Message msg) {
         if (msg instanceof MonitorRunShellMsg) {
             handle((MonitorRunShellMsg) msg);
-        }  else {
+        } else {
             super.handleLocalMessage(msg);
         }
     }
