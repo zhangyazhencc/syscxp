@@ -19,8 +19,8 @@ public class VpnInventory {
     private Integer vlan;
     private Long bandwidth;
     private String endpointUuid;
-    private VpnStatus status;
-    private VpnState state;
+    private String status;
+    private String state;
     private Integer duration;
     private Timestamp expiredDate;
     private Integer maxModifies;
@@ -42,8 +42,8 @@ public class VpnInventory {
         inv.setVpnCidr(vo.getVpnCidr());
         inv.setBandwidth(vo.getBandwidth());
         inv.setEndpointUuid(vo.getEndpointUuid());
-        inv.setStatus(vo.getStatus());
-        inv.setState(vo.getState());
+        inv.setStatus(vo.getStatus().toString());
+        inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
         inv.setDuration(vo.getDuration());
         inv.setExpiredDate(vo.getExpireDate());
@@ -66,70 +66,6 @@ public class VpnInventory {
         }
 
         return invs;
-    }
-
-    public VpnHostInventory getHostInventory() {
-        return hostInventory;
-    }
-
-    public void setHostInventory(VpnHostInventory hostInventory) {
-        this.hostInventory = hostInventory;
-    }
-
-    public Integer getMaxModifies() {
-        return maxModifies;
-    }
-
-    public void setMaxModifies(Integer maxModifies) {
-        this.maxModifies = maxModifies;
-    }
-
-    public String getCertKey() {
-        return certKey;
-    }
-
-    public void setCertKey(String certKey) {
-        this.certKey = certKey;
-    }
-
-    public Payment getPayment() {
-        return payment;
-    }
-
-    public void setPayment(Payment payment) {
-        this.payment = payment;
-    }
-
-    public String getSid() {
-        return sid;
-    }
-
-    public void setSid(String sid) {
-        this.sid = sid;
-    }
-
-    public Integer getPort() {
-        return port;
-    }
-
-    public void setPort(Integer port) {
-        this.port = port;
-    }
-
-    public Integer getVlan() {
-        return vlan;
-    }
-
-    public void setVlan(Integer vlan) {
-        this.vlan = vlan;
-    }
-
-    public VpnState getState() {
-        return state;
-    }
-
-    public void setState(VpnState state) {
-        this.state = state;
     }
 
     public String getUuid() {
@@ -172,6 +108,22 @@ public class VpnInventory {
         this.vpnCidr = vpnCidr;
     }
 
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
+    }
+
+    public Integer getVlan() {
+        return vlan;
+    }
+
+    public void setVlan(Integer vlan) {
+        this.vlan = vlan;
+    }
+
     public Long getBandwidth() {
         return bandwidth;
     }
@@ -188,12 +140,20 @@ public class VpnInventory {
         this.endpointUuid = endpointUuid;
     }
 
-    public VpnStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(VpnStatus status) {
+    public void setStatus(String status) {
         this.status = status;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 
     public Integer getDuration() {
@@ -212,20 +172,44 @@ public class VpnInventory {
         this.expiredDate = expiredDate;
     }
 
-    public Timestamp getLastOpDate() {
-        return lastOpDate;
+    public Integer getMaxModifies() {
+        return maxModifies;
     }
 
-    public void setLastOpDate(Timestamp lastOpDate) {
-        this.lastOpDate = lastOpDate;
+    public void setMaxModifies(Integer maxModifies) {
+        this.maxModifies = maxModifies;
     }
 
-    public Timestamp getCreateDate() {
-        return createDate;
+    public String getSid() {
+        return sid;
     }
 
-    public void setCreateDate(Timestamp createDate) {
-        this.createDate = createDate;
+    public void setSid(String sid) {
+        this.sid = sid;
+    }
+
+    public String getCertKey() {
+        return certKey;
+    }
+
+    public void setCertKey(String certKey) {
+        this.certKey = certKey;
+    }
+
+    public Payment getPayment() {
+        return payment;
+    }
+
+    public void setPayment(Payment payment) {
+        this.payment = payment;
+    }
+
+    public VpnHostInventory getHostInventory() {
+        return hostInventory;
+    }
+
+    public void setHostInventory(VpnHostInventory hostInventory) {
+        this.hostInventory = hostInventory;
     }
 
     public List<VpnInterfaceInventory> getInterfaceInventories() {
@@ -242,5 +226,21 @@ public class VpnInventory {
 
     public void setRouteInventories(List<VpnRouteInventory> routeInventories) {
         this.routeInventories = routeInventories;
+    }
+
+    public Timestamp getLastOpDate() {
+        return lastOpDate;
+    }
+
+    public void setLastOpDate(Timestamp lastOpDate) {
+        this.lastOpDate = lastOpDate;
+    }
+
+    public Timestamp getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Timestamp createDate) {
+        this.createDate = createDate;
     }
 }

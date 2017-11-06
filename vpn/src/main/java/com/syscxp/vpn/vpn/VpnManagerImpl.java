@@ -20,6 +20,7 @@ import com.syscxp.header.billing.*;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
+import com.syscxp.header.host.HostStatus;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIReply;
@@ -518,7 +519,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         iface.setLocalIp(msg.getLocalIP());
         iface.setNetmask(msg.getNetmask());
 
-        VpnInterfaceCmd cmd = VpnInterfaceCmd.valueOf(vpn.getVpnHost().getManageIp(), iface);
+        VpnInterfaceCmd cmd = VpnInterfaceCmd.valueOf(vpn.getVpnHost().getHostIp(), iface);
 
         new VpnRESTCaller().sendCommand(VpnConstant.ADD_VPN_INTERFACE_PATH, cmd, new Completion(evt) {
             @Override
@@ -540,7 +541,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnInterfaceVO iface = dbf.findByUuid(msg.getUuid(), VpnInterfaceVO.class);
 
         VpnVO vpn = dbf.findByUuid(iface.getVpnUuid(), VpnVO.class);
-        VpnInterfaceCmd cmd = VpnInterfaceCmd.valueOf(vpn.getVpnHost().getManageIp(), iface);
+        VpnInterfaceCmd cmd = VpnInterfaceCmd.valueOf(vpn.getVpnHost().getHostIp(), iface);
 
         new VpnRESTCaller().sendCommand(VpnConstant.DELETE_VPN_INTERFACE_PATH, cmd, new Completion(evt) {
             @Override
@@ -568,7 +569,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         route.setTargetCidr(msg.getTargetCidr());
 
         VpnVO vpn = dbf.findByUuid(msg.getVpnUuid(), VpnVO.class);
-        VpnRouteCmd cmd = VpnRouteCmd.valueOf(vpn.getVpnHost().getManageIp(), route);
+        VpnRouteCmd cmd = VpnRouteCmd.valueOf(vpn.getVpnHost().getHostIp(), route);
 
         new VpnRESTCaller().sendCommand(VpnConstant.ADD_VPN_ROUTE_PATH, cmd, new Completion(evt) {
             @Override
@@ -590,7 +591,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnRouteVO route = dbf.findByUuid(msg.getUuid(), VpnRouteVO.class);
 
         VpnVO vpn = dbf.findByUuid(route.getVpnUuid(), VpnVO.class);
-        VpnRouteCmd cmd = VpnRouteCmd.valueOf(vpn.getVpnHost().getManageIp(), route);
+        VpnRouteCmd cmd = VpnRouteCmd.valueOf(vpn.getVpnHost().getHostIp(), route);
 
         new VpnRESTCaller().sendCommand(VpnConstant.DELETE_VPN_ROUTE_PATH, cmd, new Completion(evt) {
             @Override
