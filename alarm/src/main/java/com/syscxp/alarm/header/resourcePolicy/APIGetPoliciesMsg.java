@@ -20,6 +20,16 @@ public class APIGetPoliciesMsg extends APISyncCallMessage{
     @APIParam
     private Integer start;
 
+    @APIParam(required = false)
+    private String accountUuid;
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
 
     public List<QueryCondition> getConditions() {
         return conditions;
