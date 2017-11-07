@@ -8,7 +8,7 @@ import com.syscxp.tunnel.manage.SwitchConstant;
 /**
  * Created by DCY on 2017-08-29
  */
-@Action(category = SwitchConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
+@Action(category = SwitchConstant.ACTION_CATEGORY, names = {"read"})
 
 @AutoQuery(replyClass = APIQuerySwitchReply.class, inventoryClass = SwitchInventory.class)
 public class APIQuerySwitchMsg extends APIQueryMessage {

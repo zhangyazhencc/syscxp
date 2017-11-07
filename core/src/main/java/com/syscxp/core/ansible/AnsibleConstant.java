@@ -19,4 +19,6 @@ public interface AnsibleConstant {
     public static String TRUSTED_HOST = "pypi.syscloud.cn";
 
     public static String AGENT_ANSIBLE_LOG_PATH_FROMAT = "/agent/ansiblelog/{uuid}";
+
+    public static String FALCON_IP = "192.168.211.99";
 }

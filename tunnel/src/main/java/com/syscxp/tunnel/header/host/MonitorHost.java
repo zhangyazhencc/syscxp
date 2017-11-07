@@ -286,22 +286,17 @@ public class MonitorHost extends HostBase implements Host {
                         sshShell.setPassword(getSelf().getPassword());
                         sshShell.setPort(getSelf().getSshPort());
                         ShellUtils.run(String.format("arp -d %s || true", getSelf().getSshPort()));
-                        try {
-                            SshResult ret = sshShell.runCommand(String.format("curl --connect-timeout 10 %s", restf
-                                    .getCallbackUrl()));
-                            if (ret.isSshFailure()) {
-                                trigger.fail(operr("unable to connect to Host[ip:%s, username:%s, sshPort:%d] to check " +
-                                                "the management node connectivity,please check if username/password is wrong; %s",
-                                        self.getHostIp(), getSelf().getUsername(), getSelf().getSshPort(), ret.getExitErrorMessage()));
-                            } else if (ret.getReturnCode() != 0) {
-                                trigger.fail(operr("the host[ip:%s] cannot access the management node's callback url. It seems" +
-                                                " that the host cannot reach the management IP[%s]. %s %s", self.getHostIp(), Platform.getManagementServerIp(),
-                                        ret.getStderr(), ret.getExitErrorMessage()));
-                            }
-                        } catch (Exception e) {
-                            trigger.fail(operr(e.getMessage()));
+                        SshResult ret = sshShell.runCommand(String.format("curl --connect-timeout 10 %s", restf
+                                .getCallbackUrl()));
+                        if (ret.isSshFailure()) {
+                            throw new OperationFailureException(operr("unable to connect to Host[ip:%s, username:%s, sshPort:%d] to check " +
+                                            "the management node connectivity,please check if username/password is wrong; %s",
+                                    self.getHostIp(), getSelf().getUsername(), getSelf().getSshPort(), ret.getExitErrorMessage()));
+                        } else if (ret.getReturnCode() != 0) {
+                            throw new OperationFailureException(operr("the host[ip:%s] cannot access the management node's callback url. It seems" +
+                                            " that the host cannot reach the management IP[%s]. %s %s", self.getHostIp(), Platform.getManagementServerIp(),
+                                    ret.getStderr(), ret.getExitErrorMessage()));
                         }
-
                         trigger.next();
                     }
                 });
@@ -336,6 +331,7 @@ public class MonitorHost extends HostBase implements Host {
                             runner.setFullDeploy(true);
                         }
                         runner.putArgument("pkg_monitoragent", agentPackageName);
+                        runner.putArgument("falcon_ip", AnsibleConstant.FALCON_IP);
                         runner.putArgument("hostname", String.format("%s.syscxp.com", self.getHostIp().replaceAll("\\.", "-")));
 
                         UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(restf.getBaseUrl());
@@ -383,11 +379,7 @@ public class MonitorHost extends HostBase implements Host {
                     @Override
                     public void run(FlowTrigger trigger, Map data) {
                         String script = "which iptables > /dev/null && iptables -C FORWARD -j REJECT --reject-with icmp-host-prohibited > /dev/null 2>&1 && iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited > /dev/null 2>&1 || true";
-                        try {
-                            runShell(script);
-                        } catch (Exception e) {
-                            trigger.fail(errf.instantiateErrorCode(HostErrors.CONNECTION_ERROR, e.getMessage()));
-                        }
+                        runShell(script);
                         trigger.next();
                     }
                 });
@@ -476,10 +468,15 @@ public class MonitorHost extends HostBase implements Host {
 
     @Override
     public void handleMessage(Message msg) {
-        if (msg instanceof APIMessage) {
-            handleApiMessage((APIMessage) msg);
-        } else {
-            handleLocalMessage(msg);
+        try {
+            if (msg instanceof APIMessage) {
+                handleApiMessage((APIMessage) msg);
+            } else {
+                handleLocalMessage(msg);
+            }
+        } catch (Exception e) {
+            bus.logExceptionWithMessageDump(msg, e);
+            bus.replyErrorByMessageType(msg, e);
         }
     }
 
