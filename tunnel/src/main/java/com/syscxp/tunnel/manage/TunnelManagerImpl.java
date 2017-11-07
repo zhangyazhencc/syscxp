@@ -511,8 +511,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo);
         }
 
-        tsvoA = dbf.persistAndRefresh(tsvoA);
-        tsvoZ = dbf.persistAndRefresh(tsvoZ);
+        dbf.persistAndRefresh(tsvoA);
+        dbf.persistAndRefresh(tsvoZ);
         vo = dbf.persistAndRefresh(vo);
 
         afterCreateTunnel(msg.getId(),
@@ -590,8 +590,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         }
 
-        tsvoA = dbf.persistAndRefresh(tsvoA);
-        tsvoZ = dbf.persistAndRefresh(tsvoZ);
+        dbf.persistAndRefresh(tsvoA);
+        dbf.persistAndRefresh(tsvoZ);
         vo = dbf.persistAndRefresh(vo);
 
         afterCreateTunnel(msg.getId(),
@@ -616,27 +616,32 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "Z")
                 .find();
-        if (msg.getInterfaceAUuid() != null) {
+        if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())) {
             tunnelSwitchPortA.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class).getSwitchPortUuid());
-            updateA = true;
-        }
-        if (msg.getInterfaceZUuid() != null) {
-            tunnelSwitchPortZ.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid());
-            updateZ = true;
-        }
-        if (msg.getaVlan() != null) {
             tunnelSwitchPortA.setVlan(msg.getaVlan());
             updateA = true;
+        }else{
+            if(!Objects.equals(msg.getaVlan(), msg.getOldAVlan())){
+                tunnelSwitchPortA.setVlan(msg.getaVlan());
+                updateA = true;
+            }
         }
-        if (msg.getzVlan() != null) {
+        if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid())) {
+            tunnelSwitchPortZ.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid());
             tunnelSwitchPortZ.setVlan(msg.getzVlan());
             updateZ = true;
+        }else{
+            if(!Objects.equals(msg.getzVlan(), msg.getOldZVlan())){
+                tunnelSwitchPortZ.setVlan(msg.getzVlan());
+                updateZ = true;
+            }
         }
-        if (updateA == true)
-            tunnelSwitchPortA = dbf.updateAndRefresh(tunnelSwitchPortA);
-        if (updateZ == true)
-            tunnelSwitchPortZ = dbf.updateAndRefresh(tunnelSwitchPortZ);
-        if (updateA == true || updateZ == true) {
+
+        if (updateA)
+            dbf.updateAndRefresh(tunnelSwitchPortA);
+        if (updateZ)
+            dbf.updateAndRefresh(tunnelSwitchPortZ);
+        if (updateA || updateZ) {
             //创建任务
             TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyPorts);
 
@@ -665,26 +670,30 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "Z")
                 .find();
-        if (msg.getInterfaceAUuid() != null) {
+        if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())) {
             tunnelSwitchPortA.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class).getSwitchPortUuid());
-            updateA = true;
-        }
-        if (msg.getInterfaceZUuid() != null) {
-            tunnelSwitchPortZ.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid());
-            updateZ = true;
-        }
-        if (msg.getaVlan() != null) {
             tunnelSwitchPortA.setVlan(msg.getaVlan());
             updateA = true;
+        }else{
+            if(!Objects.equals(msg.getaVlan(), msg.getOldAVlan())){
+                tunnelSwitchPortA.setVlan(msg.getaVlan());
+                updateA = true;
+            }
         }
-        if (msg.getzVlan() != null) {
+        if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid())) {
+            tunnelSwitchPortZ.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid());
             tunnelSwitchPortZ.setVlan(msg.getzVlan());
             updateZ = true;
+        }else{
+            if(!Objects.equals(msg.getzVlan(), msg.getOldZVlan())){
+                tunnelSwitchPortZ.setVlan(msg.getzVlan());
+                updateZ = true;
+            }
         }
-        if (updateA == true)
-            tunnelSwitchPortA = dbf.updateAndRefresh(tunnelSwitchPortA);
-        if (updateZ == true)
-            tunnelSwitchPortZ = dbf.updateAndRefresh(tunnelSwitchPortZ);
+        if (updateA)
+            dbf.updateAndRefresh(tunnelSwitchPortA);
+        if (updateZ)
+            dbf.updateAndRefresh(tunnelSwitchPortZ);
 
         APIUpdateForciblyTunnelVlanEvent evt = new APIUpdateForciblyTunnelVlanEvent(msg.getId());
         evt.setInventory(TunnelInventory.valueOf(vo));
@@ -1103,96 +1112,78 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     public boolean start() {
         startCleanExpiredProduct();
         restf.registerSyncHttpCallHandler(OrderType.BUY.toString(), OrderCallbackCmd.class,
-                new SyncHttpCallHandler<OrderCallbackCmd>() {
-                    @Override
-                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                        if (!orderIsExist(cmd.getOrderUuid())) {
-                            updateTunnelFromOrderBuy(cmd);
-                        }
-
-                        return null;
+                cmd -> {
+                    logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                    if (!orderIsExist(cmd.getOrderUuid())) {
+                        updateTunnelFromOrderBuy(cmd);
                     }
+
+                    return null;
                 });
         restf.registerSyncHttpCallHandler(OrderType.UN_SUBCRIBE.toString(), OrderCallbackCmd.class,
-                new SyncHttpCallHandler<OrderCallbackCmd>() {
-                    @Override
-                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                        if (cmd.getProductType() == ProductType.PORT) {
-                            InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
-                            if (vo != null) {
-                                dbf.remove(vo);
-                            }
-                        } else if (cmd.getProductType() == ProductType.TUNNEL) {
-                            TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
-                            if (vo != null && vo.getAccountUuid() != null && cmd.getCallBackData().equals("delete")) {
-                                vo.setAccountUuid(null);
-                                dbf.updateAndRefresh(vo);
-
-                                //创建任务
-                                TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
-
-                                DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
-                                deleteTunnelMsg.setTunnelUuid(vo.getUuid());
-                                deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-                                bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
-                                bus.send(deleteTunnelMsg);
-                            } else if (vo != null && vo.getAccountUuid() != null && cmd.getCallBackData().equals("forciblydelete")) {
-                                deleteTunnel(vo);
-                            }
+                cmd -> {
+                    logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                    if (cmd.getProductType() == ProductType.PORT) {
+                        InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
+                        if (vo != null) {
+                            dbf.remove(vo);
                         }
-                        return null;
+                    } else if (cmd.getProductType() == ProductType.TUNNEL) {
+                        TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
+                        if (vo != null && vo.getAccountUuid() != null && cmd.getCallBackData().equals("delete")) {
+                            vo.setAccountUuid(null);
+                            dbf.updateAndRefresh(vo);
+
+                            //创建任务
+                            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
+
+                            DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
+                            deleteTunnelMsg.setTunnelUuid(vo.getUuid());
+                            deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+                            bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                            bus.send(deleteTunnelMsg);
+                        } else if (vo != null && vo.getAccountUuid() != null && cmd.getCallBackData().equals("forciblydelete")) {
+                            deleteTunnel(vo);
+                        }
                     }
+                    return null;
                 });
 
         restf.registerSyncHttpCallHandler(OrderType.RENEW.toString(), OrderCallbackCmd.class,
-                new SyncHttpCallHandler<OrderCallbackCmd>() {
-                    @Override
-                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                        if (!orderIsExist(cmd.getOrderUuid())) {
-                            updateTunnelFromOrderRenewOrSla(cmd);
-                        }
-
-                        return null;
+                cmd -> {
+                    logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                    if (!orderIsExist(cmd.getOrderUuid())) {
+                        updateTunnelFromOrderRenewOrSla(cmd);
                     }
+
+                    return null;
                 });
         restf.registerSyncHttpCallHandler(OrderType.SLA_COMPENSATION.toString(), OrderCallbackCmd.class,
-                new SyncHttpCallHandler<OrderCallbackCmd>() {
-                    @Override
-                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                        if (!orderIsExist(cmd.getOrderUuid())) {
-                            updateTunnelFromOrderRenewOrSla(cmd);
-                        }
-
-                        return null;
+                cmd -> {
+                    logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                    if (!orderIsExist(cmd.getOrderUuid())) {
+                        updateTunnelFromOrderRenewOrSla(cmd);
                     }
+
+                    return null;
                 });
         restf.registerSyncHttpCallHandler(OrderType.UPGRADE.toString(), OrderCallbackCmd.class,
-                new SyncHttpCallHandler<OrderCallbackCmd>() {
-                    @Override
-                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                        if (!orderIsExist(cmd.getOrderUuid())) {
-                            updateTunnelFromOrderModifyBandwidth(cmd);
-                        }
-
-                        return null;
+                cmd -> {
+                    logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                    if (!orderIsExist(cmd.getOrderUuid())) {
+                        updateTunnelFromOrderModifyBandwidth(cmd);
                     }
+
+                    return null;
                 });
         restf.registerSyncHttpCallHandler(OrderType.DOWNGRADE.toString(), OrderCallbackCmd.class,
-                new SyncHttpCallHandler<OrderCallbackCmd>() {
-                    @Override
-                    public String handleSyncHttpCall(OrderCallbackCmd cmd) {
-                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                        if (!orderIsExist(cmd.getOrderUuid())) {
-                            updateTunnelFromOrderModifyBandwidth(cmd);
-                        }
-
-                        return null;
+                cmd -> {
+                    logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                    if (!orderIsExist(cmd.getOrderUuid())) {
+                        updateTunnelFromOrderModifyBandwidth(cmd);
                     }
+
+                    return null;
                 });
         return true;
     }
@@ -1619,22 +1610,25 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APIUpdateTunnelVlanMsg msg) {
-        if (msg.getaVlan() != null) {
+
+
+        if(!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())){
             validateVlan(msg.getInterfaceAUuid(), msg.getaVlan());
         }
 
-        if (msg.getzVlan() != null) {
-            validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
+        if(!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())){
+                validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
         }
+
     }
 
     private void validate(APIUpdateForciblyTunnelVlanMsg msg) {
 
-        if (msg.getaVlan() != null) {
+        if(!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())){
             validateVlan(msg.getInterfaceAUuid(), msg.getaVlan());
         }
 
-        if (msg.getzVlan() != null) {
+        if(!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())){
             validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
         }
     }
@@ -1649,6 +1643,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //查询该虚拟交换机下所有的Vlan段
         List<SwitchVlanVO> vlanList = ts.findSwitchVlanBySwitch(switchUuid);
+
+        if(vlanList.isEmpty()){
+            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
+        }
 
         //查询该虚拟交换机下已经分配的Vlan
         List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid);
@@ -1665,7 +1663,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             throw new ApiMessageInterceptionException(argerr("avlan not in switchVlan"));
         }
         //判断外部vlan是否可用
-        if (allocatedVlans.contains(vlan)) {
+        if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
             throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", vlan));
         }
     }
@@ -1788,7 +1786,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 获取云专线单价
      */
     private List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid, String nodeAUuid, String nodeZUuid, String innerEndpointUuid) {
-        List<ProductPriceUnit> units = new ArrayList<ProductPriceUnit>();
+        List<ProductPriceUnit> units = new ArrayList<>();
         NodeVO nodeA = dbf.findByUuid(nodeAUuid, NodeVO.class);
         NodeVO nodeZ = dbf.findByUuid(nodeZUuid, NodeVO.class);
         String zoneUuidA = getZoneUuid(nodeA.getUuid());
@@ -1821,9 +1819,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private ProductPriceUnit getTunnelPriceUnitCN(String bandwidthOfferingUuid, NodeVO nodeA, NodeVO nodeZ, String zoneUuidA, String zoneUuidZ) {
         ProductPriceUnit unit = new ProductPriceUnit();
 
-        Category category = null;
-        String areaCode = null;
-        String lineCode = null;
+        Category category ;
+        String areaCode ;
+        String lineCode ;
 
         if (nodeA.getCity().equals(nodeZ.getCity())) {  //同城
             category = Category.CITY;
@@ -2034,8 +2032,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         tsvoC.setVlan(innerVlan);
         tsvoC.setSortTag("C");
 
-        tsvoB = dbf.persistAndRefresh(tsvoB);
-        tsvoC = dbf.persistAndRefresh(tsvoC);
+        dbf.persistAndRefresh(tsvoB);
+        dbf.persistAndRefresh(tsvoC);
     }
 
     /**
@@ -2046,8 +2044,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, sortTag)
                 .find();
-        String nodeUuid = dbf.findByUuid(tunnelSwitch.getEndpointUuid(), EndpointVO.class).getNodeUuid();
-        return nodeUuid;
+        return dbf.findByUuid(tunnelSwitch.getEndpointUuid(), EndpointVO.class).getNodeUuid();
     }
 
     /**
@@ -2138,11 +2135,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 删除TUNNEL及其关联表
      */
-    @Transactional
     private void deleteTunnel(TunnelVO vo) {
         dbf.remove(vo);
-
-        //删除对应的 TunnelSwitchPortVO 和 QingqVO
+        //删除对应的  TunnelSwitchPortVO 和 QingqVO
         SimpleQuery<TunnelSwitchPortVO> q = dbf.createQuery(TunnelSwitchPortVO.class);
         q.add(TunnelSwitchPortVO_.tunnelUuid, SimpleQuery.Op.EQ, vo.getUuid());
         List<TunnelSwitchPortVO> tivList = q.list();
@@ -2151,6 +2146,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 dbf.remove(tiv);
             }
         }
+
         SimpleQuery<QinqVO> q2 = dbf.createQuery(QinqVO.class);
         q2.add(QinqVO_.tunnelUuid, SimpleQuery.Op.EQ, vo.getUuid());
         List<QinqVO> qinqList = q2.list();
