@@ -123,7 +123,7 @@ public class APICreateVpnMsg extends APIVpnMessage {
                 }
 
                 ntfy("Create VpnVO")
-                        .resource(uuid, VpnVO.class.getSimpleName())
+                        .resource(uuid, VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

@@ -49,7 +49,7 @@ public class APIUserPhoneAuthenticationMsg extends APIMessage implements Account
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Phone Authentication").resource(that.getSession().getUserUuid(), UserVO.class.getSimpleName())
+                ntfy("Phone Authentication").resource(that.getSession().getUserUuid(), UserVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

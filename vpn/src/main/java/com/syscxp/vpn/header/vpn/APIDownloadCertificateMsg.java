@@ -39,7 +39,7 @@ public class APIDownloadCertificateMsg extends APIMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Download certificate")
-                        .resource(sid, VpnVO.class.getSimpleName())
+                        .resource(sid, VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

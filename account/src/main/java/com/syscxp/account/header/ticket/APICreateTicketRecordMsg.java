@@ -68,7 +68,7 @@ public class APICreateTicketRecordMsg extends APIMessage {
                     uuid = ((APICreateTicketRecordEvent) evt).getInventory().getUuid();
                 }
                 ntfy("Create TicketRecord")
-                        .resource(uuid, TicketRecordVO.class.getSimpleName())
+                        .resource(uuid, TicketRecordVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

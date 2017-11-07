@@ -43,7 +43,7 @@ public class APIDeleteRoleMsg extends APIDeleteMessage implements AccountMessage
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Deleting").resource(uuid, RoleVO.class.getSimpleName())
+                ntfy("Deleting").resource(uuid, RoleVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

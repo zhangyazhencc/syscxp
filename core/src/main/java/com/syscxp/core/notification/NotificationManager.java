@@ -146,11 +146,11 @@ public class NotificationManager extends AbstractService {
                         .content(inner.getContent())
                         .msgfields(b.message.getDeclaredFieldAndValues())
                         .category(aevt.getType().toString())
-                        .ower(inner.getAccountUuid())
+                        .account(inner.getAccountUuid())
                         .action(b.message.getIp(), aevt.isSuccess())
                         .name(b.message.getClass().getSimpleName())
                         .sender(NotificationConstant.API_SENDER)
-                        .resource(inner.getResourceUuid(), inner.getResourceType())
+                        .resource(inner.getResourceUuid(), inner.getResourceClass())
                         .opaque(opaque));
             }
 

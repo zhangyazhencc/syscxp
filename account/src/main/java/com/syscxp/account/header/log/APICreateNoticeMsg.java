@@ -63,7 +63,7 @@ public class APICreateNoticeMsg extends APICreateMessage {
                     uuid = ((APICreateNoticeEvent) evt).getInventory().getUuid();
                 }
                 ntfy("Create NoticeVO")
-                        .resource(uuid, NoticeVO.class.getSimpleName())
+                        .resource(uuid, NoticeVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

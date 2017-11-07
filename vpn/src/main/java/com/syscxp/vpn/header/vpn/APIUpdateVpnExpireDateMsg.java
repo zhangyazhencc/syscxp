@@ -48,7 +48,7 @@ public class APIUpdateVpnExpireDateMsg extends APIVpnMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Update ExpireDate")
-                        .resource(uuid, VpnVO.class.getSimpleName())
+                        .resource(uuid, VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

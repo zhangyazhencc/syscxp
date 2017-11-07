@@ -83,7 +83,7 @@ public class APICreateAccountContactsMsg extends  APIMessage implements  Account
                     uuid = ((APICreateAccountContactsEvent) evt).getInventory().getUuid();
                 }
                 ntfy("Create Account")
-                        .resource(uuid, AccountContactsVO.class.getSimpleName())
+                        .resource(uuid, AccountContactsVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

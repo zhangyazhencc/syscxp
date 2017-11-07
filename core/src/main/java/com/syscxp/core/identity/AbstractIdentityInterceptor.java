@@ -471,6 +471,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         return resourceTypes.contains(entityClass);
     }
 
+
     public void setResourceTypeForAccountRef(List<String> resourceTypeForAccountRef) {
         this.resourceTypeForAccountRef = resourceTypeForAccountRef;
     }

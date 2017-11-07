@@ -52,7 +52,7 @@ public class APIAccountPWDBackMsg extends APIMessage  {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Update password ")
-                        .resource(phone, AccountVO.class.getSimpleName())
+                        .resource(phone, AccountVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };
