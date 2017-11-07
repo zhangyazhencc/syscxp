@@ -11,6 +11,7 @@ import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
 
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
@@ -151,7 +152,7 @@ public class TunnelStrategy  {
         for (SwitchVlanVO vlanVO : vlanList) {
             Integer startVlan = vlanVO.getStartVlan();
             Integer endVlan = vlanVO.getEndVlan();
-            List<Integer> allocatedVlan = null;
+            List<Integer> allocatedVlan = new ArrayList<>();
             for(Integer alloc : allocatedVlans){
                 if(alloc >= startVlan && alloc <= endVlan){
                     allocatedVlan.add(alloc);

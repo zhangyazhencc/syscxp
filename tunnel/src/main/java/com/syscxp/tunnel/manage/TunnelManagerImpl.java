@@ -616,22 +616,27 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "Z")
                 .find();
-        if (msg.getInterfaceAUuid() != null) {
+        if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())) {
             tunnelSwitchPortA.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class).getSwitchPortUuid());
-            updateA = true;
-        }
-        if (msg.getInterfaceZUuid() != null) {
-            tunnelSwitchPortZ.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid());
-            updateZ = true;
-        }
-        if (msg.getaVlan() != null) {
             tunnelSwitchPortA.setVlan(msg.getaVlan());
             updateA = true;
+        }else{
+            if(msg.getaVlan() != msg.getOldAVlan()){
+                tunnelSwitchPortA.setVlan(msg.getaVlan());
+                updateA = true;
+            }
         }
-        if (msg.getzVlan() != null) {
+        if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid())) {
+            tunnelSwitchPortZ.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid());
             tunnelSwitchPortZ.setVlan(msg.getzVlan());
             updateZ = true;
+        }else{
+            if(msg.getzVlan() != msg.getOldZVlan()){
+                tunnelSwitchPortZ.setVlan(msg.getzVlan());
+                updateZ = true;
+            }
         }
+
         if (updateA == true)
             tunnelSwitchPortA = dbf.updateAndRefresh(tunnelSwitchPortA);
         if (updateZ == true)
@@ -665,21 +670,25 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "Z")
                 .find();
-        if (msg.getInterfaceAUuid() != null) {
+        if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())) {
             tunnelSwitchPortA.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class).getSwitchPortUuid());
-            updateA = true;
-        }
-        if (msg.getInterfaceZUuid() != null) {
-            tunnelSwitchPortZ.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid());
-            updateZ = true;
-        }
-        if (msg.getaVlan() != null) {
             tunnelSwitchPortA.setVlan(msg.getaVlan());
             updateA = true;
+        }else{
+            if(msg.getaVlan() != msg.getOldAVlan()){
+                tunnelSwitchPortA.setVlan(msg.getaVlan());
+                updateA = true;
+            }
         }
-        if (msg.getzVlan() != null) {
+        if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid())) {
+            tunnelSwitchPortZ.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid());
             tunnelSwitchPortZ.setVlan(msg.getzVlan());
             updateZ = true;
+        }else{
+            if(msg.getzVlan() != msg.getOldZVlan()){
+                tunnelSwitchPortZ.setVlan(msg.getzVlan());
+                updateZ = true;
+            }
         }
         if (updateA == true)
             tunnelSwitchPortA = dbf.updateAndRefresh(tunnelSwitchPortA);
@@ -1619,22 +1628,25 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APIUpdateTunnelVlanMsg msg) {
-        if (msg.getaVlan() != null) {
+
+
+        if(!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid()) || msg.getaVlan() != msg.getOldAVlan()){
             validateVlan(msg.getInterfaceAUuid(), msg.getaVlan());
         }
 
-        if (msg.getzVlan() != null) {
-            validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
+        if(!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid()) || msg.getzVlan() != msg.getOldZVlan()){
+                validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
         }
+
     }
 
     private void validate(APIUpdateForciblyTunnelVlanMsg msg) {
 
-        if (msg.getaVlan() != null) {
+        if(!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid()) || msg.getaVlan() != msg.getOldAVlan()){
             validateVlan(msg.getInterfaceAUuid(), msg.getaVlan());
         }
 
-        if (msg.getzVlan() != null) {
+        if(!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid()) || msg.getzVlan() != msg.getOldZVlan()){
             validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
         }
     }

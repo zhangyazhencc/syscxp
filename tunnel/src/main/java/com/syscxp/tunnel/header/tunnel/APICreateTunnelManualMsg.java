@@ -20,8 +20,6 @@ public class APICreateTunnelManualMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32)
     private String accountUuid;
-    @APIParam
-    private Integer vsi;
     @APIParam(emptyString = false,maxLength = 128)
     private String name;
     @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
@@ -149,14 +147,6 @@ public class APICreateTunnelManualMsg extends APIMessage {
         this.productChargeModel = productChargeModel;
     }
 
-
-    public Integer getVsi() {
-        return vsi;
-    }
-
-    public void setVsi(Integer vsi) {
-        this.vsi = vsi;
-    }
 
     public String getBandwidthOfferingUuid() {
         return bandwidthOfferingUuid;
