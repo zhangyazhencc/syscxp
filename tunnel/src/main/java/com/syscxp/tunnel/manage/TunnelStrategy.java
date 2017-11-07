@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.manage;
 
+import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.tunnel.header.switchs.*;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import javax.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import static com.syscxp.core.Platform.argerr;
 
 /**
  * Created by DCY on 2017-09-18
@@ -87,6 +90,9 @@ public class TunnelStrategy  {
         //查询该虚拟交换机下已经分配的Vlan
         List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
 
+        if(vlanList.isEmpty()){
+            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
+        }
         if(allocatedVlans.isEmpty()){
             return vlanList.get(0).getStartVlan();
         }else{
@@ -104,6 +110,9 @@ public class TunnelStrategy  {
         //查询该虚拟交换机下已经分配的Vlan
         List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
 
+        if(vlanList.isEmpty()){
+            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
+        }
         if(allocatedVlans.isEmpty()){
             return vlanList.get(0).getStartVlan();
         }else{
