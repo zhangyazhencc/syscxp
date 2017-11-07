@@ -34,15 +34,20 @@
 
     </bean>
 
-    <bean id="HostManager" class="com.syscxp.vpn.host.VpnHostManagerImpl">
+    <bean id="VpnHostFactory" class="com.syscxp.vpn.host.VpnHostFactory">
         <syscxp:plugin>
-            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
-            <syscxp:extension interface="com.syscxp.header.Service"/>
+            <syscxp:extension interface="com.syscxp.header.host.HostFactory" />
             <syscxp:extension interface="com.syscxp.header.Component" />
+            <syscxp:extension interface="com.syscxp.header.Service" />
+            <syscxp:extension interface="com.syscxp.header.managementnode.ManagementNodeReadyExtensionPoint" />
         </syscxp:plugin>
-
     </bean>
 
+    <bean id="VpnHostApiInterceptor" class="com.syscxp.vpn.host.VpnHostApiInterceptor">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+        </syscxp:plugin>
+    </bean>
 
 </beans>
 

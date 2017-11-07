@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://syscxp.com/schema/syscxp">
+    <id>zone</id>
+    <interceptor>VpnHostApiInterceptor</interceptor>
+
+    <message>
+        <name>com.syscxp.vpn.header.host.APICreateZoneMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.vpn.header.host.APIUpdateZoneMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.vpn.header.host.APIDeleteZoneMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.vpn.header.host.APICreateHostInterfaceMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.vpn.header.host.APIDeleteHostInterfaceMsg</name>
+    </message>
+
+
+    <message>
+        <name>com.syscxp.vpn.header.host.APIQueryHostInterfaceMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+    <message>
+        <name>com.syscxp.vpn.header.host.APIQueryZoneMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+</service>
