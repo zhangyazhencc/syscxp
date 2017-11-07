@@ -214,6 +214,7 @@ DROP TABLE IF EXISTS `PolicyVO`;
 
 CREATE TABLE `PolicyVO` (
   `uuid` varchar(32) NOT NULL,
+  `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户UUID',
   `productType` varchar(255) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `description` varchar(1024) DEFAULT NULL,
