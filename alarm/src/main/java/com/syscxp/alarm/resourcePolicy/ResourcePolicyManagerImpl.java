@@ -271,6 +271,9 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
 
         if (policyVo.getProductType() == ProductType.TUNNEL) {
             APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
+            if(!StringUtils.isEmpty(msg.getName())){
+                aMsg.setProductName(msg.getName());
+            }
             aMsg.setAccountUuid(msg.getAccountUuid());
             List<TunnelForAlarmInventory> inventories = null;
             long count = 0;
@@ -710,7 +713,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             dbf.remove(regulationVO);
         }
 
-        updateFalcon(msg.getSession(), regulationVO.getPolicyUuid());
+       // updateFalcon(msg.getSession(), regulationVO.getPolicyUuid());
 
         APIDeleteRegulationEvent event = new APIDeleteRegulationEvent(msg.getId());
         bus.publish(event);
@@ -734,7 +737,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         }
         dbf.updateAndRefresh(regulationVO);
 
-        updateFalcon(msg.getSession(), regulationVO.getPolicyUuid());
+        //updateFalcon(msg.getSession(), regulationVO.getPolicyUuid());
 
         APIUpdateRegulationEvent event = new APIUpdateRegulationEvent(msg.getId());
         event.setInventory(RegulationInventory.valueOf(regulationVO));
@@ -764,7 +767,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
         regulationVO.setTriggerPeriod(msg.getTriggerPeriod());
         dbf.persistAndRefresh(regulationVO);
 
-        updateFalcon(msg.getSession(), msg.getPolicyUuid());
+       // updateFalcon(msg.getSession(), msg.getPolicyUuid());
 
         APICreateRegulationEvent event = new APICreateRegulationEvent(msg.getId());
         event.setInventory(RegulationInventory.valueOf(regulationVO));
