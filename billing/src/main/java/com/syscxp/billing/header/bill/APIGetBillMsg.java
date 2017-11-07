@@ -10,7 +10,7 @@ import com.syscxp.header.message.APISyncCallMessage;
 @Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
 public class APIGetBillMsg extends APISyncCallMessage{
 
-    @APIParam(emptyString = false, resourceType = BillVO.class,checkAccount = true)
+    @APIParam(emptyString = false, resourceType = BillVO.class)
     private String uuid;
 
     public String getUuid() {

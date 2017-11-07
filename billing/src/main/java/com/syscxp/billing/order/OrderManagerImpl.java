@@ -483,6 +483,13 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             if(productCategoryVO ==null){
                 throw new IllegalArgumentException("can not find productType or category");
             }
+            int times = 1;
+
+            if(unit.getProductTypeCode().equals(ProductType.ECP) && unit.getCategoryCode().equals(Category.BANDWIDTH)){
+                String configCode = unit.getConfigCode().replaceAll("\\D","");
+                times = Integer.parseInt(configCode);
+                unit.setConfigCode("1M");
+            }
             SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
             q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryVO.getUuid());
             q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, unit.getAreaCode());
@@ -502,7 +509,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             if (accountDiscountVO != null) {
                 productDiscount = accountDiscountVO.getDiscount() <= 0 ? 100 : accountDiscountVO.getDiscount();
             }
-            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
+            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()*times));
             BigDecimal currentDiscount = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
             discountPrice = discountPrice.add(currentDiscount);
 
@@ -655,6 +662,13 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             if(productCategoryVO ==null){
                 throw new IllegalArgumentException("can not find productType or category");
             }
+            int times = 1;
+
+            if(unit.getProductTypeCode().equals(ProductType.ECP) && unit.getCategoryCode().equals(Category.BANDWIDTH)){
+                String configCode = unit.getConfigCode().replaceAll("\\D","");
+                times = Integer.parseInt(configCode);
+                unit.setConfigCode("1M");
+            }
             SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
             q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryVO.getUuid());
             q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, unit.getAreaCode());
@@ -673,7 +687,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             if (accountDiscountVO != null) {
                 productDiscount = accountDiscountVO.getDiscount() <= 0 ? 100 : accountDiscountVO.getDiscount();
             }
-            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
+            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()*times));
             BigDecimal currentDiscount = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
             discountPrice = discountPrice.add(currentDiscount);
 
