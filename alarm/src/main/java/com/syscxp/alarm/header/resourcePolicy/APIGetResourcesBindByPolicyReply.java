@@ -7,15 +7,15 @@ import java.util.List;
 
 public class APIGetResourcesBindByPolicyReply extends APIReply {
 
-    private List<TunnelForAlarmInventory> inventories;
+    private List<ResourceInventory> inventories;
 
     private long count;
 
-    public List<TunnelForAlarmInventory> getInventories() {
+    public List<ResourceInventory> getInventories() {
         return inventories;
     }
 
-    public void setInventories(List<TunnelForAlarmInventory> inventories) {
+    public void setInventories(List<ResourceInventory> inventories) {
         this.inventories = inventories;
     }
 
