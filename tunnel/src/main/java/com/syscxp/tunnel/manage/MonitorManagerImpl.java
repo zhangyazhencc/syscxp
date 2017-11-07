@@ -384,7 +384,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     /**
-     * 控制器命令删除：关闭监控、删除tunnel、中止tunnel
+     * 控制器命令删除：关闭监控、中止tunnel
      * @param tunnelUuid
      * @param tunnelMonitorVOS
      * @param event
