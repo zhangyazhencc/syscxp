@@ -607,7 +607,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
             }
         }
 
-       PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
+        PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
         APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
         aMsg.setBind(msg.isAttach());
         aMsg.setStart(0);
