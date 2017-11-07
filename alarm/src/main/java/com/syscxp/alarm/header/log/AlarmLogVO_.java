@@ -14,10 +14,12 @@ public class AlarmLogVO_  extends BaseVO_ {
     public static volatile SingularAttribute<AlarmLogVO, String> productName;
     public static volatile SingularAttribute<AlarmLogVO, String> accountUuid;
     public static volatile SingularAttribute<AlarmLogVO, ProductType> productType;
-    public static volatile SingularAttribute<AlarmLogVO, Timestamp> alarmTime;
-    public static volatile SingularAttribute<AlarmLogVO, Integer> duration;
-    public static volatile SingularAttribute<AlarmLogVO, TimeUnit> durationTimeUnit;
+    public static volatile SingularAttribute<AlarmLogVO, Long> duration;
     public static volatile SingularAttribute<AlarmLogVO, String> alarmContent;
-    public static volatile SingularAttribute<AlarmLogVO, Timestamp> resumeTime;
     public static volatile SingularAttribute<AlarmLogVO, AlarmStatus> status;
+    public static volatile SingularAttribute<AlarmLogVO, AlarmStatus> smsContent;
+    public static volatile SingularAttribute<AlarmLogVO, AlarmStatus> mailContent;
+    public static volatile SingularAttribute<AlarmLogVO, AlarmStatus> ruleName;
+    public static volatile SingularAttribute<AlarmLogVO, AlarmStatus> eventId;
+
 }

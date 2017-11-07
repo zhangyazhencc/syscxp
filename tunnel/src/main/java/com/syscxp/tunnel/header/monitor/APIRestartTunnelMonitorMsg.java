@@ -10,22 +10,17 @@ import com.syscxp.tunnel.header.tunnel.TunnelVO;
  * @Description: 创建监控通道.
  */
 public class APIRestartTunnelMonitorMsg extends APIMessage {
-    // TODO:重启监控
-        // 更新tunnelVO的monitorState
-        // 下发控制器监控命令
-        // ICMP同步
-
     @APIParam(emptyString = false,resourceType = TunnelVO.class,maxLength = 32)
     private String tunnelUuid;
 
-    @APIParam(required = false,maxLength = 32)
-    private String accountUuid;
-
-    @APIParam(required = true,maxLength = 32)
+    @APIParam(required = false,maxLength = 128)
     private String monitorCidr;
 
-    @APIParam(required = false,maxLength = 1024)
-    private String msg;
+    @APIParam(required = false,maxLength = 64)
+    private String startIp;
+
+    @APIParam(required = false,maxLength = 64)
+    private String endIp;
 
     public String getTunnelUuid() {
         return tunnelUuid;
@@ -35,27 +30,27 @@ public class APIRestartTunnelMonitorMsg extends APIMessage {
         this.tunnelUuid = tunnelUuid;
     }
 
-    public String getAccountUuid() {
-        return accountUuid;
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
-
-    public String getMsg() {
-        return msg;
-    }
-
-    public void setMsg(String msg) {
-        this.msg = msg;
-    }
-
     public String getMonitorCidr() {
         return monitorCidr;
     }
 
     public void setMonitorCidr(String monitorCidr) {
         this.monitorCidr = monitorCidr;
+    }
+
+    public String getStartIp() {
+        return startIp;
+    }
+
+    public void setStartIp(String startIp) {
+        this.startIp = startIp;
+    }
+
+    public String getEndIp() {
+        return endIp;
+    }
+
+    public void setEndIp(String endIp) {
+        this.endIp = endIp;
     }
 }
