@@ -29,12 +29,6 @@ public class PolicyVO extends BaseVO {
     @OneToMany(fetch =FetchType.EAGER,cascade = CascadeType.REMOVE)
     @JoinColumn(name="policyUuid")
     private Set<RegulationVO> regulationVOSet;
-//    @ManyToMany(fetch =FetchType.EAGER)
-//    @JoinTable(name="ResourcePolicyRefVO",
-//            joinColumns={@JoinColumn(name="resourceUuid",referencedColumnName="uuid")},
-//            inverseJoinColumns={@JoinColumn(name="policyUuid",referencedColumnName="uuid")}
-//    )
-//    private Set<ResourceVO> resourceVOS;
 
     public ProductType getProductType() {
         return productType;
@@ -84,11 +78,4 @@ public class PolicyVO extends BaseVO {
         this.accountUuid = accountUuid;
     }
 
-    //    public Set<ResourceVO> getResourceVOS() {
-//        return resourceVOS;
-//    }
-//
-//    public void setResourceVOS(Set<ResourceVO> resourceVOS) {
-//        this.resourceVOS = resourceVOS;
-//    }
 }

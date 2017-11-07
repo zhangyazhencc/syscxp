@@ -29,6 +29,7 @@ import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Create by DCY on 2017/10/26
@@ -561,8 +562,7 @@ public class TunnelBase extends AbstractTunnel{
             PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
                     .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchVO.getUuid())
                     .find();
-            PhysicalSwitchVO mplsPhysicalSwitch = dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
-            physicalSwitchVO = mplsPhysicalSwitch;
+            physicalSwitchVO = dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
         }
 
         return physicalSwitchVO;
@@ -574,7 +574,7 @@ public class TunnelBase extends AbstractTunnel{
         for(int i=0;i<qinqVOs.size();i++){
             QinqVO qinqVO = qinqVOs.get(i);
             if(i == (qinqVOs.size()-1)){
-                if(qinqVO.getStartVlan() == qinqVO.getEndVlan()){
+                if(Objects.equals(qinqVO.getStartVlan(), qinqVO.getEndVlan())){
                     buf.append(qinqVO.getStartVlan().toString());
                 }else{
                     buf.append(qinqVO.getStartVlan().toString());
@@ -582,7 +582,7 @@ public class TunnelBase extends AbstractTunnel{
                     buf.append(qinqVO.getEndVlan().toString());
                 }
             }else{
-                if(qinqVO.getStartVlan() == qinqVO.getEndVlan()){
+                if(Objects.equals(qinqVO.getStartVlan(), qinqVO.getEndVlan())){
                     buf.append(qinqVO.getStartVlan().toString());
                     buf.append(",");
                 }else{
@@ -593,15 +593,13 @@ public class TunnelBase extends AbstractTunnel{
                 }
             }
         }
-        String d=buf.toString();
-        return d;
+        return buf.toString();
     }
 
     /**根据 switchPort 找出所属的 PhysicalSwitch */
     private PhysicalSwitchVO getPhysicalSwitch(SwitchPortVO switchPortVO){
         SwitchVO switchVO = dbf.findByUuid(switchPortVO.getSwitchUuid(),SwitchVO.class);
-        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(switchVO.getPhysicalSwitchUuid(),PhysicalSwitchVO.class);
-        return physicalSwitchVO;
+        return dbf.findByUuid(switchVO.getPhysicalSwitchUuid(),PhysicalSwitchVO.class);
     }
 
     /**

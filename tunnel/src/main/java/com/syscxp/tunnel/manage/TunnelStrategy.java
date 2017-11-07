@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.tunnel.header.switchs.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
@@ -168,9 +167,7 @@ public class TunnelStrategy  {
                 }
             }
             vlan = NetworkUtils.randomAllocateVlan(startVlan,endVlan,allocatedVlan);
-            if(vlan == 0){
-                continue;
-            }else{
+            if(vlan != 0){
                 break;
             }
         }
