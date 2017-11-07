@@ -470,7 +470,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     public void handle(APIDeleteVpnMsg msg) {
-        APIDeleteVpnHostEvent evt = new APIDeleteVpnHostEvent(msg.getId());
+        APIDeleteVpnEvent evt = new APIDeleteVpnEvent(msg.getId());
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
 
         APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();

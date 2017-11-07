@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # encoding=utf-8
 import argparse
+import ConfigParser
+from datetime import datetime
+
 from syscxplib import *
 
 # create log
@@ -20,6 +23,7 @@ virtualenv_version = "12.1.1"
 remote_user = "root"
 remote_pass = None
 remote_port = None
+monitor_section = "monitor"
 
 # get parameter from shell
 parser = argparse.ArgumentParser(description='Deploy monitor to host')
@@ -35,10 +39,12 @@ locals().update(argument_dict)
 virtenv_path = "%s/virtualenv/monitor/" % syscxp_root
 workplace = "%s/monitor" % syscxp_root
 monitor_root = "%s/package" % workplace
+agent_conf = "%s/monitoragent.conf" % file_root
 
 host_post_info = HostPostInfo()
 host_post_info.host_inventory = args.i
 host_post_info.host = host
+host_post_info.falcon_ip = falcon_ip
 host_post_info.post_url = post_url
 host_post_info.private_key = args.private_key
 host_post_info.remote_user = remote_user
@@ -74,22 +80,22 @@ else:
 
 run_remote_command("rm -rf %s/*" % monitor_root, host_post_info)
 
-
 if distro == "RedHat" or distro == "CentOS":
     # handle syscxp_repo
     if syscxp_repo != 'false':
         # name: install related packages on RedHat based OS from user defined repo
-        command = ("yum --enablerepo=%s clean metadata && pkg_list=`rpm -q openssh-clients bridge-utils wget sed vconfig net-tools sshpass iputils "
-                   "rsync nmap ipset | grep \"not installed\" | awk '{ print $2 }'` && for pkg in $pkg_list; do yum "
-                   "--disablerepo=* --enablerepo=%s install -y $pkg; done;") % (syscxp_repo, syscxp_repo)
+        command = (
+                  "yum --enablerepo=%s clean metadata && pkg_list=`rpm -q openssh-clients bridge-utils wget sed vconfig net-tools sshpass libffi-devel iputils "
+                  "rsync nmap ipset | grep \"not installed\" | awk '{ print $2 }'` && for pkg in $pkg_list; do yum "
+                  "--disablerepo=* --enablerepo=%s install -y $pkg; done;") % (syscxp_repo, syscxp_repo)
         host_post_info.post_label = "ansible.shell.install.pkg"
         host_post_info.post_label_param = "openssh-clients,bridge-utils,wget,sed," \
-                                          "vconfig,net-tools,sshpass,iputils,rsync,nmap,ipset"
+                                          "vconfig,net-tools,sshpass,iputils,rsync,nmap,ipset,libffi-devel"
         run_remote_command(command, host_post_info)
     else:
         # name: install monitor related packages on RedHat based OS from online
         for pkg in ['openssh-clients', 'bridge-utils', 'wget', 'sed', 'vconfig',
-                    'net-tools', 'sshpass', 'rsync', 'nmap', 'ipset']:
+                    'net-tools', 'sshpass', 'rsync', 'nmap', 'ipset', 'libffi-devel']:
             yum_install_package(pkg, host_post_info)
 
     # handle distro version specific task
@@ -115,7 +121,6 @@ if distro == "RedHat" or distro == "CentOS":
 else:
     error("unsupported OS!")
 
-
 # name: copy syscxplib
 copy_arg = CopyArg()
 copy_arg.src = "files/syscxplib/%s" % pkg_syscxplib
@@ -136,6 +141,20 @@ copy_arg.dest = "/etc/init.d/"
 copy_arg.args = "mode=755"
 copy(copy_arg, host_post_info)
 
+config = ConfigParser.ConfigParser()
+if not config.has_section(monitor_section):
+    config.add_section(monitor_section)
+config.set(monitor_section, "host_ip", host_post_info.host)
+config.set(monitor_section, "falcon_ip", host_post_info.falcon_ip)
+config.write(open(agent_conf, 'w'))
+
+# name: copy monitor conf file
+copy_arg = CopyArg()
+copy_arg.src = agent_conf
+copy_arg.dest = "/etc/monitor/"
+copy_arg.args = "mode=755"
+copy(copy_arg, host_post_info)
+
 # name: install virtualenv
 virtual_env_status = check_and_install_virtual_env(virtualenv_version, trusted_host, pip_url, host_post_info)
 if virtual_env_status is False:
@@ -148,6 +167,8 @@ if virtual_env_status is False:
 command = "[ -f %s/bin/python ] || virtualenv --system-site-packages %s " % (virtenv_path, virtenv_path)
 host_post_info.post_label = "ansible.shell.check.virtualenv"
 host_post_info.post_label_param = None
+run_remote_command(command, host_post_info)
+command = "%s/bin/pip install -U pip " % virtenv_path
 run_remote_command(command, host_post_info)
 
 # name: install syscxplib
@@ -162,7 +183,7 @@ if copy_syscxplib != "changed:False":
 # name: install monitor agent
 if copy_monitoragent != "changed:False":
     agent_install_arg = AgentInstallArg(trusted_host, pip_url, virtenv_path, init_install)
-    agent_install_arg.agent_name = "monitor agent"
+    agent_install_arg.agent_name = "monitoragent"
     agent_install_arg.agent_root = monitor_root
     agent_install_arg.pkg_name = pkg_monitoragent
     agent_install_arg.virtualenv_site_packages = "yes"
@@ -179,7 +200,7 @@ run_remote_command(command, host_post_info)
 
 # handlers
 if chroot_env == 'false':
-    # name: restart monitoragent, do not use ansible systemctl due to monitor can start by itself, so systemctl will not know
+    # name: restart monitoragent, do not use ansible systemctl due to monitoragent can start by itself, so systemctl will not know
     # the monitor agent status when we want to restart it to use the latest monitor agent code
     if distro == "RedHat" or distro == "CentOS":
         command = "service syscxp-monitoragent stop && service syscxp-monitoragent start && chkconfig syscxp-monitoragent on"
@@ -189,7 +210,6 @@ if chroot_env == 'false':
     host_post_info.post_label = "ansible.shell.restart.service"
     host_post_info.post_label_param = "syscxp-monitoragent"
     run_remote_command(command, host_post_info)
-
 
 host_post_info.start_time = start_time
 handle_ansible_info("SUCC: Deploy monitor agent successful", host_post_info, "INFO")

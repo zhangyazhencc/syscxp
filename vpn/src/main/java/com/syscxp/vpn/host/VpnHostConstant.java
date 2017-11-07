@@ -2,7 +2,7 @@ package com.syscxp.vpn.host;
 
 public interface VpnHostConstant {
 
-    public static final String SERVICE_ID = "vpn-host";
+    public static final String SERVICE_ID = "zone";
 
     public static final String HOST_TYPE = "VPN";
 

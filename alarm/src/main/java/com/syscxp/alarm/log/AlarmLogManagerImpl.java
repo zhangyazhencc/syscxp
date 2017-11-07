@@ -4,7 +4,6 @@ import com.syscxp.alarm.header.contact.*;
 import com.syscxp.alarm.header.log.*;
 import com.syscxp.alarm.header.resourcePolicy.PolicyVO;
 import com.syscxp.alarm.header.resourcePolicy.RegulationVO;
-import com.syscxp.alarm.header.resourcePolicy.RegulationVO_;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
@@ -20,18 +19,13 @@ import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.header.tunnel.TunnelState;
 import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsGlobalProperty;
 import com.syscxp.sms.SmsService;
-import com.syscxp.sms.header.SmsVO;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.persistence.Tuple;
-import javax.persistence.TypedQuery;
-import java.sql.Timestamp;
 import java.util.*;
 
 import static com.syscxp.core.Platform.operr;
@@ -85,7 +79,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
         alarmLogVO.setSmsContent(msg.getSmsContent());
         alarmLogVO.setMailContent(msg.getMailContent());
         alarmLogVO.setEventId(msg.getEventId());
-        RegulationVO regulationVO = dbf.findByUuid(msg.getRuleUuid(),RegulationVO.class);
+        RegulationVO regulationVO = dbf.findByUuid(msg.getRegulationUuid(),RegulationVO.class);
         if(regulationVO != null){
             PolicyVO policyVO = dbf.findByUuid(regulationVO.getPolicyUuid(),PolicyVO.class);
             if(policyVO != null){
@@ -154,7 +148,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
                 if (notifyWayVO.getCode().equals("mobile")) {
                     String phone = contactVO.getMobile();
-                    smsService.sendMsg(msg.getSession(), phone, SmsGlobalProperty.ALARM_VERIFICATION_CODE_APPID, SmsGlobalProperty.SMS_VERIFICATION_CODE_AlARM
+                    smsService.sendMsg(msg.getSession(), phone, SmsGlobalProperty.ALARM_APPID, SmsGlobalProperty.SMS_AlARM_TEMPLATEID
                             , new String[]{msg.getSmsContent()}, msg.getIp());
 
                 }

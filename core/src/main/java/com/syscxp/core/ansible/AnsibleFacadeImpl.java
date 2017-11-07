@@ -138,8 +138,8 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
                 logger.debug(String.format("discovered ansible variable[%s=%s]", key, e.getValue()));
             }
 
-//            placePip901();
-//            placeAnsible196();
+            placePip901();
+            placeAnsible196();
 
 //            ShellUtils.run(String.format("if ! ansible --version | grep -q 1.9.6; then " +
 //                    "if grep -i -s centos /etc/system-release; then " +

@@ -23,11 +23,11 @@
 
     - name: install related packages on RedHat based OS from user defined repo
       when: ansible_os_family == 'RedHat' and yum_repos != 'false'
-      shell: "yum --disablerepo=* --enablerepo={{yum_repos}} --nogpgcheck install -y bridge-utils wget vconfig net-tools sshpass rsync"
+      shell: "yum --disablerepo=* --enablerepo={{yum_repos}} --nogpgcheck install -y bridge-utils wget vconfig net-tools sshpass rsync libffi-devel"
 
     - name: install related packages on RedHat based OS from online
       when: ansible_os_family == 'RedHat' and yum_repos == 'false'
-      shell: "yum --nogpgcheck install -y bridge-utils wget vconfig net-tools sshpass rsync "
+      shell: "yum --nogpgcheck install -y bridge-utils wget vconfig net-tools sshpass rsync libffi-devel"
 
     - name: RHEL7 specific packages from user defined repos
       when: ansible_os_family == 'RedHat' and ansible_distribution_version >= '7' and yum_repos != 'false'
