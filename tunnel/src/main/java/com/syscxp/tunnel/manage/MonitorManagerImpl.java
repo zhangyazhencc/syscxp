@@ -155,10 +155,11 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         APIStartTunnelMonitorEvent event = new APIStartTunnelMonitorEvent(msg.getId());
 
         // 创建监控通道
-        List<TunnelMonitorVO> tunnelMonitorVOS = createTunnelMonitorHandle(msg);
+        List<TunnelMonitorVO> tunnelMonitorVOS = createTunnelMonitorHandle(msg,event);
 
         // 控制器命令下发
-        startControllerCommand(msg.getTunnelUuid(), tunnelMonitorVOS, event);
+        if(event.isSuccess())
+            startControllerCommand(msg.getTunnelUuid(), tunnelMonitorVOS, event);
 
         // 同步icmp
         if (event.isSuccess())
@@ -182,6 +183,32 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private void handle(APIRestartTunnelMonitorMsg msg) {
         APIRestartTunnelMonitorEvent event = new APIRestartTunnelMonitorEvent(msg.getId());
 
+        // 获取监控通道数据
+        List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(msg.getTunnelUuid());
+
+        // 更新监控IP
+        if(StringUtils.isNotEmpty(msg.getMonitorCidr())){
+            if(StringUtils.isNotEmpty(msg.getStartIp())||StringUtils.isNotEmpty(msg.getStartIp())){
+                event.setSuccess(false);
+                event.setError(Platform.operr("监控网络网段开始、结束IP不能为空！"));
+            }
+
+            List<String> locatedIps =
+                    Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, msg.getTunnelUuid()).select(TunnelMonitorVO_.monitorIp).findValue();
+
+            for(TunnelMonitorVO vo:tunnelMonitorVOS){
+                vo.setMonitorIp(getMonitorIp(msg.getMonitorCidr(),msg.getStartIp(),msg.getEndIp(),locatedIps));
+            }
+        }
+
+        // 控制器命令下发
+        if(event.isSuccess())
+            startControllerCommand(msg.getTunnelUuid(), tunnelMonitorVOS, event);
+
+        // 同步icmp
+        if (event.isSuccess())
+            icmpSync(msg.getSession(), msg.getTunnelUuid(), tunnelMonitorVOS,event);
+
         // 更新tunnel状态
         TunnelVO tunnelVO = Q.New(TunnelVO.class)
                 .eq(TunnelVO_.uuid, msg.getTunnelUuid())
@@ -192,19 +219,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             tunnelVO.setMonitorCidr(msg.getMonitorCidr());
         }
         dbf.getEntityManager().persist(tunnelVO);
-
-        // 获取监控通道数据
-        List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(msg.getTunnelUuid());
-
-        // 控制器命令下发
-        startControllerCommand(msg.getTunnelUuid(), tunnelMonitorVOS, event);
-
-        // 同步icmp
-        if (event.isSuccess()) {
-            icmpSync(msg.getSession(), msg.getTunnelUuid(), tunnelMonitorVOS,event);
-        }
-
-        // TODO:如果下发或同步失败，需要回滚
 
         bus.publish(event);
     }
@@ -258,7 +272,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param msg
      * @return：创建的监控通道
      */
-    private List<TunnelMonitorVO> createTunnelMonitorHandle(APIStartTunnelMonitorMsg msg) {
+    private List<TunnelMonitorVO> createTunnelMonitorHandle(APIStartTunnelMonitorMsg msg,APIEvent event) {
         List<TunnelMonitorVO> tunnelMonitorVOS = new ArrayList<TunnelMonitorVO>();
         try {
             // 按tunnel查找TunnelMonitorVO已经存在的IP
@@ -291,11 +305,16 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             }
             dbf.getEntityManager().flush();
         } catch (Exception e) {
-            throw new OperationFailureException(operr("创建监控通道失败！:" + e.getMessage()));
+            event.setSuccess(false);
+            event.setError(Platform.operr("创建监控通道失败！:" + e.getMessage()));
+            logger.error(e.getMessage());
         }
 
-        if (tunnelMonitorVOS.isEmpty())
-            throw new OperationFailureException(operr("创建监控通道失败！"));
+        if (tunnelMonitorVOS.isEmpty()){
+            event.setSuccess(false);
+            event.setError(Platform.operr("创建监控通道失败！"));
+        }
+
         return tunnelMonitorVOS;
     }
 
