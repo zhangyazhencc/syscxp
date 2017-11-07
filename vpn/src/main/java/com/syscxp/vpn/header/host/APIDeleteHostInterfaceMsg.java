@@ -27,7 +27,7 @@ public class APIDeleteHostInterfaceMsg extends APIDeleteMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Delete HostInterfaceVO")
-                        .resource(uuid, HostInterfaceVO.class.getSimpleName())
+                        .resource(uuid, HostInterfaceVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

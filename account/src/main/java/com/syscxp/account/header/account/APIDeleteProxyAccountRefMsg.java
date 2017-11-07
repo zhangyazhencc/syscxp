@@ -29,7 +29,7 @@ public class APIDeleteProxyAccountRefMsg extends APIDeleteMessage implements Acc
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Deleting").resource(uuid, ProxyAccountRefVO.class.getSimpleName())
+                ntfy("Deleting").resource(uuid, ProxyAccountRefVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

@@ -150,11 +150,11 @@ public class NotificationManager extends AbstractService {
                         .content(inner.getContent())
                         .msgfields(b.message.getDeclaredFieldAndValues())
                         .category(aevt.getType().toString())
-                        .ower(inner.getAccountUuid())
+                        .account(inner.getAccountUuid())
                         .action(b.message.getIp(), aevt.isSuccess())
                         .name(b.message.getClass().getSimpleName())
                         .sender(NotificationConstant.API_SENDER)
-                        .resource(inner.getResourceUuid(), inner.getResourceType())
+                        .resource(inner.getResourceUuid(), inner.getResourceClass())
                         .opaque(opaque));
             }
 
@@ -295,12 +295,11 @@ public class NotificationManager extends AbstractService {
 
                     msg.setAccountUuid(builder.accountUuid);
                     if (msg.getAccountUuid() == null && msg.getResourceType() != null && msg.getResourceUuid() != null){
-                        if (resourceHavingAccountReference.isResourceHavingAccountReference(builder.resourceType)) {
+                        if (resourceHavingAccountReference.isResourceHavingAccountReference(builder.resourceClass)) {
                             String sql = String.format("select accountUuid from %s where uuid = :resourceUuid ", msg.getResourceType());
                             String accountUuid = SQL.New(sql, String.class).param("resourceUuid", msg.getResourceUuid()).find();
                             if (accountUuid != null)
                                 msg.setAccountUuid(accountUuid);
-                            }
                         }
                     }
 

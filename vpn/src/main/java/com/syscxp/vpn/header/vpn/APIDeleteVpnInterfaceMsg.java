@@ -28,7 +28,7 @@ public class APIDeleteVpnInterfaceMsg extends APIDeleteMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Delete VpnInterfaceVO")
-                        .resource(uuid, VpnInterfaceVO.class.getSimpleName())
+                        .resource(uuid, VpnInterfaceVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

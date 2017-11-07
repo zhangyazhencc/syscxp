@@ -34,7 +34,7 @@ public class APIUpdateApiAllowIPMsg extends APIMessage implements AccountMessage
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update allow ip").resource(getAccountUuid(), AccountApiSecurityVO.class.getSimpleName())
+                ntfy("Update allow ip").resource(getAccountUuid(), AccountApiSecurityVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

@@ -67,7 +67,7 @@ public class APIUpdateZoneMsg extends APIMessage{
             @Override
             public void after(APIEvent evt) {
                 ntfy("Update ZoneVO")
-                        .resource(uuid, ZoneVO.class.getSimpleName())
+                        .resource(uuid, ZoneVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

@@ -21,12 +21,6 @@ public class APIStartTunnelMonitorMsg extends APIMessage {
     @APIParam(required = true,maxLength = 64)
     private String monitorCidr;
 
-    @APIParam(required = true,maxLength = 64)
-    private String startIp;
-
-    @APIParam(required = true,maxLength = 64)
-    private String endIp;
-
     @APIParam(required = false,maxLength = 1024)
     private String msg;
 
@@ -44,22 +38,6 @@ public class APIStartTunnelMonitorMsg extends APIMessage {
 
     public void setMonitorCidr(String monitorCidr) {
         this.monitorCidr = monitorCidr;
-    }
-
-    public String getStartIp() {
-        return startIp;
-    }
-
-    public void setStartIp(String startIp) {
-        this.startIp = startIp;
-    }
-
-    public String getEndIp() {
-        return endIp;
-    }
-
-    public void setEndIp(String endIp) {
-        this.endIp = endIp;
     }
 
     public String getMsg() {

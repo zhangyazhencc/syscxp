@@ -79,7 +79,7 @@ public class APIUpdateNoticeMsg extends APIMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Update NoticeVO")
-                        .resource(uuid, NoticeVO.class.getSimpleName())
+                        .resource(uuid, NoticeVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

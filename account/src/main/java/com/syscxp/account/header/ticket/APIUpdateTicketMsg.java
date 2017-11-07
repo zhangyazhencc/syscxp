@@ -101,7 +101,7 @@ public class APIUpdateTicketMsg extends APIMessage {
                     uuid = ((APIUpdateTicketEvent) evt).getInventory().getUuid();
                 }
                 ntfy("Update Ticket")
-                        .resource(uuid, TicketVO.class.getSimpleName())
+                        .resource(uuid, TicketVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

@@ -82,7 +82,7 @@ public class APICreateVpnInterfaceMsg extends APIMessage {
                 }
 
                 ntfy("Create VpnInterfaceVO")
-                        .resource(uuid, VpnInterfaceVO.class.getSimpleName())
+                        .resource(uuid, VpnInterfaceVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

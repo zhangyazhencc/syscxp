@@ -15,9 +15,6 @@ public class AlarmLogVO extends BaseVO {
     private String productUuid;
 
     @Column
-    private String productName;
-
-    @Column
     @Enumerated(EnumType.STRING)
     private ProductType productType;
 
@@ -40,11 +37,27 @@ public class AlarmLogVO extends BaseVO {
     private String mailContent;
 
     @Column
-    private String ruleName;
+    private String regulationUuid;
+
+    @Column
+    private String policyName;
 
     @Column
     private String eventId;
 
+    @Column
+    private Timestamp alarmTime;
+
+    @Column
+    private Timestamp resumeTime;
+
+    public String getRegulationUuid() {
+        return regulationUuid;
+    }
+
+    public void setRegulationUuid(String regulationUuid) {
+        this.regulationUuid = regulationUuid;
+    }
 
     public String getProductUuid() {
         return productUuid;
@@ -52,14 +65,6 @@ public class AlarmLogVO extends BaseVO {
 
     public void setProductUuid(String productUuid) {
         this.productUuid = productUuid;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public void setProductName(String productName) {
-        this.productName = productName;
     }
 
     public ProductType getProductType() {
@@ -118,12 +123,12 @@ public class AlarmLogVO extends BaseVO {
         this.mailContent = mailContent;
     }
 
-    public String getRuleName() {
-        return ruleName;
+    public String getPolicyName() {
+        return policyName;
     }
 
-    public void setRuleName(String ruleName) {
-        this.ruleName = ruleName;
+    public void setPolicyName(String policyName) {
+        this.policyName = policyName;
     }
 
     public String getEventId() {
@@ -132,5 +137,21 @@ public class AlarmLogVO extends BaseVO {
 
     public void setEventId(String eventId) {
         this.eventId = eventId;
+    }
+
+    public Timestamp getAlarmTime() {
+        return alarmTime;
+    }
+
+    public void setAlarmTime(Timestamp alarmTime) {
+        this.alarmTime = alarmTime;
+    }
+
+    public Timestamp getResumeTime() {
+        return resumeTime;
+    }
+
+    public void setResumeTime(Timestamp resumeTime) {
+        this.resumeTime = resumeTime;
     }
 }

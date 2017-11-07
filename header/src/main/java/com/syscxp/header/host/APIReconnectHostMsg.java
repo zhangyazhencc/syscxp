@@ -48,7 +48,7 @@ public class APIReconnectHostMsg extends APIMessage implements HostMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Reconnected").resource(uuid, HostVO.class.getSimpleName())
+                ntfy("Reconnected").resource(uuid, HostVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

@@ -78,7 +78,7 @@ public class APIUpdateAccountPWDMsg extends APIMessage implements AccountMessage
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update account password").resource(getAccountUuid(), AccountVO.class.getSimpleName())
+                ntfy("Update account password").resource(getAccountUuid(), AccountVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };
