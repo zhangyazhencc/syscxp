@@ -100,7 +100,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     @Override
     public boolean start() {
 
-        restf.registerSyncHttpCallHandler("alarm", AlarmLogCallbackCmd.class,
+        restf.registerSyncHttpCallHandler("alarmLog", AlarmLogCallbackCmd.class,
                 new SyncHttpCallHandler<AlarmLogCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(AlarmLogCallbackCmd cmd) {
