@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 public class AlarmLogInventory {
     private String uuid;
     private String productUuid;
-    private String productName;
     private ProductType productType;
     private Long duration;
     private String alarmContent;
@@ -21,14 +20,13 @@ public class AlarmLogInventory {
     private String accountUuid;
     private String smsContent;
     private String mailContent;
-    private String ruleName;
+    private String policyName;
     private String eventId;
 
     public static AlarmLogInventory valueOf(AlarmLogVO vo){
         AlarmLogInventory inv = new AlarmLogInventory();
         inv.setUuid(vo.getUuid());
         inv.setProductUuid(vo.getProductUuid());
-        inv.setProductName(vo.getProductName());
         inv.setProductType(vo.getProductType());
         inv.setDuration(vo.getDuration());
         inv.setAlarmContent(vo.getAlarmContent());
@@ -36,7 +34,7 @@ public class AlarmLogInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setSmsContent(vo.getSmsContent());
         inv.setMailContent(vo.getMailContent());
-        inv.setRuleName(vo.getRuleName());
+        inv.setPolicyName(vo.getPolicyName());
         inv.setEventId(vo.getEventId());
         return inv;
     }
@@ -64,14 +62,6 @@ public class AlarmLogInventory {
 
     public void setProductUuid(String productUuid) {
         this.productUuid = productUuid;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public void setProductName(String productName) {
-        this.productName = productName;
     }
 
     public ProductType getProductType() {
@@ -130,12 +120,12 @@ public class AlarmLogInventory {
         this.mailContent = mailContent;
     }
 
-    public String getRuleName() {
-        return ruleName;
+    public String getPolicyName() {
+        return policyName;
     }
 
-    public void setRuleName(String ruleName) {
-        this.ruleName = ruleName;
+    public void setPolicyName(String policyName) {
+        this.policyName = policyName;
     }
 
     public String getEventId() {
