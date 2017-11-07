@@ -296,11 +296,10 @@ public class NotificationManager extends AbstractService {
                     msg.setAccountUuid(builder.accountUuid);
                     if (msg.getAccountUuid() == null && msg.getResourceType() != null && msg.getResourceUuid() != null){
                         if (resourceHavingAccountReference.isResourceHavingAccountReference(builder.resourceType)) {
-                            String sql = String.format("select accountUuid from %s where uuid = :resourceUuid ",
-                                    msg.getResourceType());
-                            List<Tuple> ts = SQL.New(sql, Tuple.class).param("resourceUuid", msg.getResourceUuid()).list();
-                            for (Tuple t : ts) {
-                                msg.setAccountUuid(t.get(1, String.class));
+                            String sql = String.format("select accountUuid from %s where uuid = :resourceUuid ", msg.getResourceType());
+                            String accountUuid = SQL.New(sql, String.class).param("resourceUuid", msg.getResourceUuid()).find();
+                            if (accountUuid != null)
+                                msg.setAccountUuid(accountUuid);
                             }
                         }
                     }
