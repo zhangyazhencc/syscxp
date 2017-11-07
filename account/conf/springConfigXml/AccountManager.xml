@@ -25,7 +25,6 @@
                 <value>com.syscxp.account.header.account.AccountApiSecurityVO</value>
                 <value>com.syscxp.account.header.account.AccountVO</value>
                 <value>com.syscxp.account.header.account.ProxyAccountRefVO</value>
-
             </list>
         </property>
     </bean>

@@ -52,7 +52,7 @@ public class APIAttachPolicyToUserMsg extends APIMessage implements AccountMessa
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Attaching a policy[uuid:%s]", roleUuid).resource(userUuid, UserVO.class.getSimpleName())
+                ntfy("Attaching a policy[uuid:%s]", roleUuid).resource(userUuid, UserVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

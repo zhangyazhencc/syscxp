@@ -53,7 +53,7 @@ public class APIDetachPolicyFromUserMsg extends APIMessage implements AccountMes
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Detaching a policy[uuid:%s]", policyUuid).resource(userUuid, UserVO.class.getSimpleName())
+                ntfy("Detaching a policy[uuid:%s]", policyUuid).resource(userUuid, UserVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

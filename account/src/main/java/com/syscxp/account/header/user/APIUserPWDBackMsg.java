@@ -63,7 +63,7 @@ public class APIUserPWDBackMsg extends APIMessage  {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update user password").resource(that.getSession().getUserUuid(), UserVO.class.getSimpleName())
+                ntfy("Update user password").resource(that.getSession().getUserUuid(), UserVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

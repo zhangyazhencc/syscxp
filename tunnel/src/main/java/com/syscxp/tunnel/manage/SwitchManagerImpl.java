@@ -140,7 +140,6 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         List<SwitchPortAvailableInventory> switchPortAvailableInventoryList = new ArrayList<SwitchPortAvailableInventory>();
         APIQuerySwitchPortAvailableReply reply = new APIQuerySwitchPortAvailableReply();
         List<Tuple> ts;
-        String count = null;
         if(msg.getPortName() != null){
             String sql = "select s.code, sp.portName, sp.uuid from SwitchVO s, SwitchPortVO sp " +
                     "where s.uuid = sp.switchUuid and sp.state = :spstate " +
@@ -779,7 +778,6 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
                 "and b.switchUuid = :switchUuid ";
         TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);
         avq.setParameter("switchUuid",switchUuid);
-        List<Integer> allocatedVlans = avq.getResultList();
-        return allocatedVlans;
+        return avq.getResultList();
     }
 }

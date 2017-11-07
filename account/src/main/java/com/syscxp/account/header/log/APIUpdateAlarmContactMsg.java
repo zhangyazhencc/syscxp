@@ -69,7 +69,7 @@ public class APIUpdateAlarmContactMsg extends APICreateMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Update AlarmContactVO")
-                        .resource(uuid, AlarmContactVO.class.getSimpleName())
+                        .resource(uuid, AlarmContactVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

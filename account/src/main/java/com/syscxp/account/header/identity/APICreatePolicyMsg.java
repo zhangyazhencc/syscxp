@@ -87,7 +87,7 @@ public class APICreatePolicyMsg extends  APIMessage implements AccountMessage {
                 }
 
                 ntfy("Create PolicyVO")
-                        .resource(uuid, PolicyVO.class.getSimpleName())
+                        .resource(uuid, PolicyVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

@@ -46,7 +46,7 @@ public class APIAccountPhoneAuthenticationMsg extends APIMessage implements Acco
             @Override
             public void after(APIEvent evt) {
                 ntfy("Phone Authentication ")
-                        .resource(getAccountUuid(), AccountVO.class.getSimpleName())
+                        .resource(getAccountUuid(), AccountVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

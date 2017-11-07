@@ -6,6 +6,7 @@ import com.syscxp.core.db.SQL;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
+import com.syscxp.header.apimediator.ResourceHavingAccountReference;
 import com.syscxp.header.identity.*;
 import com.syscxp.utils.*;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,7 @@ import java.util.regex.Pattern;
 /**
  * Created by zxhread on 17/8/3.
  */
-public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInterceptor {
+public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInterceptor, ResourceHavingAccountReference {
     private static final CLogger logger = Utils.getLogger(AbstractIdentityInterceptor.class);
 
     @Autowired
@@ -466,10 +467,11 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         return msg;
     }
 
-
+    @Override
     public boolean isResourceHavingAccountReference(Class entityClass) {
         return resourceTypes.contains(entityClass);
     }
+
 
     public void setResourceTypeForAccountRef(List<String> resourceTypeForAccountRef) {
         this.resourceTypeForAccountRef = resourceTypeForAccountRef;

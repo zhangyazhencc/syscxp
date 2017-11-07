@@ -17,6 +17,7 @@ public class NotificationBuilder {
     String sender = NotificationConstant.SYSTEM_SENDER;
     String resourceUuid;
     String resourceType;
+    Class resourceClass;
     Map opaque;
     List arguments = new ArrayList();
     Map msgfields = new HashMap();
@@ -35,12 +36,12 @@ public class NotificationBuilder {
     }
 
     public NotificationBuilder name(String name) {
-        notificationName = name;
+        this.notificationName = name;
         return this;
     }
 
-    public NotificationBuilder ower(String accountUuid) {
-        accountUuid = accountUuid;
+    public NotificationBuilder account(String accountUuid) {
+        this.accountUuid = accountUuid;
         return this;
     }
 
@@ -72,9 +73,16 @@ public class NotificationBuilder {
         return this;
     }
 
-    public NotificationBuilder resource(String uuid, String type) {
-        resourceUuid = uuid;
-        resourceType = type;
+    public NotificationBuilder type(String uuid, String type) {
+        this.resourceUuid = uuid;
+        this.resourceType = type;
+        return this;
+    }
+
+    public NotificationBuilder resource(String uuid, Class clazz) {
+        this.resourceUuid = uuid;
+        this.resourceClass = clazz;
+        this.resourceType = clazz.getSimpleName();
         return this;
     }
 

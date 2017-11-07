@@ -165,7 +165,7 @@ public class NoticeManagerImpl extends AbstractService implements NoticeManager,
         noticeVO.setLink(msg.getLink());
         noticeVO.setStartTime(msg.getStartTime());
         noticeVO.setEndTime(msg.getEndTime());
-        noticeVO.setStatus(NoticeStatus.INVALID);
+        noticeVO.setStatus(NoticeStatus.NORMAL);
 
         NoticeVO nvo = dbf.persistAndRefresh(noticeVO);
 

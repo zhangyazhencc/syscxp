@@ -134,7 +134,7 @@ public class APIUpdateAccountMsg extends APIMessage implements AccountMessage{
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Updating").resource(uuid, AccountVO.class.getSimpleName())
+                ntfy("Updating").resource(uuid, AccountVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

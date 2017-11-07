@@ -27,7 +27,7 @@ public class APIDeleteReceiptPostAddressMsg extends APIMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Delete ReceiptPostAddressVO")
-                        .resource(uuid, ReceiptPostAddressVO.class.getSimpleName())
+                        .resource(uuid, ReceiptPostAddressVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

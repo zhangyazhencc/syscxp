@@ -112,7 +112,7 @@ public class APICreateUserMsg extends APIMessage implements AccountMessage {
                 if (evt.isSuccess()) {
                     uuid = ((APICreateUserEvent)evt).getInventory().getUuid();
                 }
-                ntfy("Creating").resource(uuid, UserVO.class.getSimpleName())
+                ntfy("Creating").resource(uuid, UserVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

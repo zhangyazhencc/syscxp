@@ -72,7 +72,7 @@ public class APIUpdateRoleMsg extends  APIMessage implements AccountMessage {
                 if (evt.isSuccess()) {
                     uuid = ((APICreateRoleEvent)evt).getInventory().getUuid();
                 }
-                ntfy("update role").resource(uuid, RoleVO.class.getSimpleName())
+                ntfy("update role").resource(uuid, RoleVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

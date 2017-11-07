@@ -35,7 +35,7 @@ public class APIDeleteAccountContactsMsg extends APIDeleteMessage implements Acc
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Deleting").resource(uuid, AccountContactsVO.class.getSimpleName())
+                ntfy("Deleting").resource(uuid, AccountContactsVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

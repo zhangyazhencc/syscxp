@@ -85,7 +85,7 @@ public class APICreateAlarmContactMsg extends APICreateMessage {
                 }
 
                 ntfy("Create AlarmContactVO")
-                        .resource(uuid, AlarmContactVO.class.getSimpleName())
+                        .resource(uuid, AlarmContactVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };
