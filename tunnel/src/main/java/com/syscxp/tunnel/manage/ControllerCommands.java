@@ -93,7 +93,7 @@ public class ControllerCommands {
         private String m_ip;
         private String username;
         private String password;
-        private Integer bandwidth;
+        private Long bandwidth;
         private Integer vni;
 
         public String getSwitch_type() {
@@ -152,11 +152,11 @@ public class ControllerCommands {
             this.password = password;
         }
 
-        public Integer getBandwidth() {
+        public Long getBandwidth() {
             return bandwidth;
         }
 
-        public void setBandwidth(Integer bandwidth) {
+        public void setBandwidth(Long bandwidth) {
             this.bandwidth = bandwidth;
         }
 
@@ -182,7 +182,7 @@ public class ControllerCommands {
         private String nw_src;
         private String nw_dst;
         private String uplink;
-        private Integer bandwidth;
+        private Long bandwidth;
 
         public Integer getVlan_id() {
             return vlan_id;
@@ -232,11 +232,11 @@ public class ControllerCommands {
             this.uplink = uplink;
         }
 
-        public Integer getBandwidth() {
+        public Long getBandwidth() {
             return bandwidth;
         }
 
-        public void setBandwidth(Integer bandwidth) {
+        public void setBandwidth(Long bandwidth) {
             this.bandwidth = bandwidth;
         }
     }
@@ -545,50 +545,23 @@ public class ControllerCommands {
      * @Description: RYU控制器返回.
      */
     public static class ControllerRestResponse {
-        private String code;
-        private Msg msg;
+        private boolean success;
+        private String msg;
 
-        class Msg{
-            private String details;
-
-            public String getDetails() {
-                return details;
-            }
-
-            public void setDetails(String details) {
-                this.details = details;
-            }
-
-            @Override
-            public String toString() {
-                return "msg{" +
-                        "details='" + details + '\'' +
-                        '}';
-            }
+        public boolean isSuccess() {
+            return success;
         }
 
-        public String getCode() {
-            return code;
+        public void setSuccess(boolean success) {
+            this.success = success;
         }
 
-        public void setCode(String code) {
-            this.code = code;
-        }
-
-        public Msg getMsg() {
+        public String getMsg() {
             return msg;
         }
 
-        public void setMsg(Msg msg) {
+        public void setMsg(String msg) {
             this.msg = msg;
         }
-
-        public boolean isSuccess() {
-            if("0".equals(this.code))
-                return true;
-            else
-                return false;
-        }
-
     }
 }

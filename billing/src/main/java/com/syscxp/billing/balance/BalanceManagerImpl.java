@@ -220,6 +220,12 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
 
         for (ProductPriceUnit unit : units) {
 
+            int times = 1;
+
+            if(unit.getProductTypeCode().equals(ProductType.ECP) && unit.getCategoryCode().equals(Category.BANDWIDTH)){
+                int time = Integer.parseInt(unit.getConfigCode());
+            }
+
             SimpleQuery<ProductCategoryVO> queryEO = dbf.createQuery(ProductCategoryVO.class);
             queryEO.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ,  unit.getProductTypeCode());
             queryEO.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, unit.getCategoryCode());

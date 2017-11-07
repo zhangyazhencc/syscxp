@@ -188,10 +188,5 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
         return msg;
     }
 
-    public Long continueTime(){
-
-        return null;
-    }
-
 
 }
