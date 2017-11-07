@@ -161,9 +161,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         startControllerCommand(msg.getTunnelUuid(), tunnelMonitorVOS, event);
 
         // 同步icmp
-        if (event.isSuccess()) {
+        if (event.isSuccess())
             icmpSync(msg.getSession(), msg.getTunnelUuid(), tunnelMonitorVOS,event);
-        }
 
         // 更新tunnel状态
         if (event.isSuccess()) {
@@ -214,26 +213,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private void handle(APIStopTunnelMonitorMsg msg) {
         APIStartTunnelMonitorEvent event = new APIStartTunnelMonitorEvent(msg.getId());
 
-        // 获取监控通道数据
-        List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(msg.getTunnelUuid());
-
-        // 控制器命令删除
-        stopControllerCommand(msg.getTunnelUuid(), tunnelMonitorVOS, event);
-
-        // 删除icmp
-        if (event.isSuccess()) {
-            icmpDelete(msg.getTunnelUuid());
-        }
-
-        // 更新tunnel状态
-        if (event.isSuccess()) {
-            TunnelVO tunnelVO = Q.New(TunnelVO.class)
-                    .eq(TunnelVO_.uuid, msg.getTunnelUuid())
-                    .find();
-
-            tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
-            dbf.getEntityManager().persist(tunnelVO);
-        }
+        stopTunnelMonitor(msg.getTunnelUuid(),event);
 
         bus.publish(event);
     }
@@ -333,7 +313,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         // 删除icmp
         if (event.isSuccess()) {
-            icmpDelete(tunnelUuid);
+            icmpDelete(tunnelUuid,event);
         }
 
         // 删除监控通道数据
@@ -351,6 +331,34 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         bus.publish(event);
     }
+
+    /***
+     * 监控关闭、tunnel中止
+     * @param tunnelUuid
+     * @param event
+     */
+    public void stopTunnelMonitor(String tunnelUuid,APIEvent event){
+        // 获取监控通道数据
+        List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelUuid);
+
+        // 控制器命令删除
+        stopControllerCommand(tunnelUuid, tunnelMonitorVOS, event);
+
+        // 删除icmp
+        if (event.isSuccess())
+            icmpDelete(tunnelUuid,event);
+
+        // 更新tunnel状态
+        if (event.isSuccess()) {
+            TunnelVO tunnelVO = Q.New(TunnelVO.class)
+                    .eq(TunnelVO_.uuid, tunnelUuid)
+                    .find();
+
+            tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
+            dbf.getEntityManager().persist(tunnelVO);
+        }
+    }
+
     /***
      * 监控命令下发至控制器
      * @param tunnelUuid
@@ -376,13 +384,27 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     /**
-     * 控制器命令删除：关闭监控、删除tunnel
+     * 控制器命令删除：关闭监控、删除tunnel、中止tunnel
      * @param tunnelUuid
      * @param tunnelMonitorVOS
      * @param event
      */
     private void stopControllerCommand(String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS, APIEvent event){
-        //TODO:
+        String url = CoreGlobalProperty.CONTROLLER_MANAGER_URL;
+        ControllerCommands.TunnelMonitorCommand cmd = getTunnelMonitorCommand(tunnelUuid, tunnelMonitorVOS);
+
+        ControllerCommands.ControllerRestResponse response = new ControllerCommands.ControllerRestResponse();
+        try {
+            String command = JSONObjectUtil.toJsonString(cmd);
+            response = evtf.syncJsonPost(url + ControllerRestConstant.STOP_TUNNEL_MONITOR, command, ControllerCommands.ControllerRestResponse.class);
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
+        }
+
+        if (!response.isSuccess()) {
+            event.setError(Platform.operr("监控命令删除失败！ %s", response.getMsg()));
+        }
     }
 
     /**
@@ -396,9 +418,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
         try {
             FalconApiCommands.Icmp icmp = getIcmp(session, tunnelUuid, tunnelMonitorVOS);
-            String icmpJson = JSONObjectUtil.toJsonString(icmp);
+            String savaJson = JSONObjectUtil.toJsonString(icmp);
 
-            response = evtf.syncJsonPost(url + FalconApiRestConstant.ICMP_SYNC, icmpJson, FalconApiCommands.RestResponse.class);
+            response = evtf.syncJsonPost(url + FalconApiRestConstant.ICMP_SYNC, savaJson, FalconApiCommands.RestResponse.class);
         } catch (Exception e) {
             response.setSuccess(false);
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
@@ -410,11 +432,27 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     /***
-     * 删除falcon_portal ICMP数据：关闭监控、tunnel删除
+     * 删除falcon_portal ICMP数据：关闭监控、tunnel删除、tunnel中止
      * @param tunnelUuid
      */
-    private void icmpDelete(String tunnelUuid){
-        // TODO
+    private void icmpDelete(String tunnelUuid,APIEvent event){
+        String url = CoreGlobalProperty.FALCON_API_SERVER_URL;
+        FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
+
+        try {
+            FalconApiCommands falconApiCommands = new FalconApiCommands();
+            falconApiCommands.setTunnel_id(tunnelUuid);
+            String deleteJson = JSONObjectUtil.toJsonString(falconApiCommands);
+
+            response = evtf.syncJsonPost(url + FalconApiRestConstant.ICMP_DELETE, deleteJson, FalconApiCommands.RestResponse.class);
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
+        }
+
+        if (!response.isSuccess()) {
+            event.setError(Platform.operr("删除ICMP失败！ %s",response.getMsg()));
+        }
     }
 
     public FalconApiCommands.Icmp getIcmp(SessionInventory session, String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS) {
