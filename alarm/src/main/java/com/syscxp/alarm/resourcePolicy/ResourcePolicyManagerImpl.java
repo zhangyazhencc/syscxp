@@ -592,7 +592,7 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
 
     @Transactional
     private void handle(APIAttachPolicyByResourcesMsg msg) {
-        List<ResourcePolicyRefInventory> list = new ArrayList<>();
+        List<String> resourceUuids = new ArrayList<>();
         if (msg.isAttach()) {
             for (String resourceUuid : msg.getResourceUuids()) {
                 ResourcePolicyRefVO resourcePolicyRefVO = new ResourcePolicyRefVO();
@@ -600,26 +600,73 @@ public class ResourcePolicyManagerImpl  extends AbstractService implements ApiMe
                 resourcePolicyRefVO.setPolicyUuid(msg.getPolicyUuid());
                 resourcePolicyRefVO.setResourceUuid(resourceUuid);
                 dbf.getEntityManager().persist(resourcePolicyRefVO);
-                list.add(ResourcePolicyRefInventory.valueOf(resourcePolicyRefVO));
             }
         } else {
             for (String resourceUuid : msg.getResourceUuids()) {
-                list.add(ResourcePolicyRefInventory.valueOf(deleteResourcePolicyRef(msg.getPolicyUuid(), resourceUuid)));
+                ResourcePolicyRefInventory.valueOf(deleteResourcePolicyRef(msg.getPolicyUuid(), resourceUuid));
             }
         }
 
+       PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
+        APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
+        aMsg.setBind(msg.isAttach());
+        aMsg.setStart(0);
+        aMsg.setLimit(1000);
+        aMsg.setAccountUuid(policyVO.getAccountUuid());
+        aMsg.setProductUuids(resourceUuids);
+        List<ResourceInventory>  inventories = getResources(aMsg,policyVO.getProductType());
+
+
         try{
-            attachPolicyByResources(msg);
+            //attachPolicyByResources(msg);
         }catch (NullPointerException e){
             throw new ApiMessageInterceptionException(argerr("tunnel information is mismatch"));
         }
 
 
         APIAttachPolicyByResourcesEvent event = new APIAttachPolicyByResourcesEvent(msg.getId());
-        event.setInventories(list);
+        event.setInventories(inventories);
         bus.publish(event);
 
     }
+
+    public List<ResourceInventory> getResources(APIQueryTunnelForAlarmMsg aMsg, ProductType productType){
+        String productServerUrl = getProductUrl(productType);
+        List<ResourceInventory> inventories = new ArrayList<>();
+        InnerMessageHelper.setMD5(aMsg);
+        String gstr = RESTApiDecoder.dump(aMsg);
+        long count = 0;
+        RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
+        if (rsp.getState().equals(RestAPIState.Done.toString())) {
+            APIQueryTunnelForAlarmReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
+            if (productReply instanceof APIQueryTunnelForAlarmReply) {
+                List<TunnelForAlarmInventory> tunnelList = productReply.getInventories();
+                count = productReply.getCount();
+                for (TunnelForAlarmInventory inventory : tunnelList) {
+                    ResourceInventory resourceInventory = new ResourceInventory();
+                    resourceInventory.setAccountUuid(inventory.getAccountUuid());
+                    resourceInventory.setProductUuid(inventory.getUuid());
+                    resourceInventory.setProductType(productType);
+                    resourceInventory.setDescription(inventory.getDescription());
+                    resourceInventory.setProductName(inventory.getName());
+                    resourceInventory.setCreateDate(inventory.getCreateDate());
+                    resourceInventory.setLastOpDate(inventory.getLastOpDate());
+                    SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
+                    query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, inventory.getUuid());
+                    List<ResourcePolicyRefVO> resourcePolicyRefVOS = query.list();
+                    List<PolicyInventory> policyInventories = new ArrayList<>();
+                    for (ResourcePolicyRefVO resourcePolicyRefVO : resourcePolicyRefVOS) {
+                        policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class)));
+                    }
+                    resourceInventory.setPolicies(policyInventories);
+                    inventories.add(resourceInventory);
+                }
+
+            }
+        }
+        return inventories;
+    }
+
 
     @Transactional
     private void handle(APIDeletePolicyMsg msg) {
