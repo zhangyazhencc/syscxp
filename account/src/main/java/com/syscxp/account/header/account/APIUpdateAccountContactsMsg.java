@@ -87,7 +87,7 @@ public class APIUpdateAccountContactsMsg extends  APIMessage implements AccountM
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update account contact").resource(getAccountUuid(), AccountContactsVO.class.getSimpleName())
+                ntfy("Update account contact").resource(getAccountUuid(), AccountContactsVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

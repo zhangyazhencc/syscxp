@@ -13,14 +13,23 @@ public class APIUpdateForciblyTunnelVlanMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
 
-    @APIParam(emptyString = false,required = false,resourceType = InterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceAUuid;
-    @APIParam(numberRange = {1, 4094},required = false)
+    @APIParam(numberRange = {1, 4094})
     private Integer aVlan;
-    @APIParam(emptyString = false,required = false,resourceType = InterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceZUuid;
-    @APIParam(numberRange = {1, 4094},required = false)
+    @APIParam(numberRange = {1, 4094})
     private Integer zVlan;
+
+    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
+    private String oldInterfaceAUuid;
+    @APIParam(numberRange = {1, 4094})
+    private Integer oldAVlan;
+    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
+    private String oldInterfaceZUuid;
+    @APIParam(numberRange = {1, 4094})
+    private Integer oldZVlan;
 
     public String getUuid() {
         return uuid;
@@ -60,5 +69,37 @@ public class APIUpdateForciblyTunnelVlanMsg extends APIMessage {
 
     public void setzVlan(Integer zVlan) {
         this.zVlan = zVlan;
+    }
+
+    public String getOldInterfaceAUuid() {
+        return oldInterfaceAUuid;
+    }
+
+    public void setOldInterfaceAUuid(String oldInterfaceAUuid) {
+        this.oldInterfaceAUuid = oldInterfaceAUuid;
+    }
+
+    public Integer getOldAVlan() {
+        return oldAVlan;
+    }
+
+    public void setOldAVlan(Integer oldAVlan) {
+        this.oldAVlan = oldAVlan;
+    }
+
+    public String getOldInterfaceZUuid() {
+        return oldInterfaceZUuid;
+    }
+
+    public void setOldInterfaceZUuid(String oldInterfaceZUuid) {
+        this.oldInterfaceZUuid = oldInterfaceZUuid;
+    }
+
+    public Integer getOldZVlan() {
+        return oldZVlan;
+    }
+
+    public void setOldZVlan(Integer oldZVlan) {
+        this.oldZVlan = oldZVlan;
     }
 }

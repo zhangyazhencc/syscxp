@@ -31,7 +31,7 @@ public class APIDeleteTicketMsg extends APIDeleteMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Deleting").resource(uuid, TicketVO.class.getSimpleName())
+                ntfy("Deleting").resource(uuid, TicketVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

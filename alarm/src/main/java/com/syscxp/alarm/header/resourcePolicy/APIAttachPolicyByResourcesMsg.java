@@ -16,9 +16,6 @@ public class APIAttachPolicyByResourcesMsg extends APIMessage{
     @APIParam(nonempty = false)
     private List<String> resourceUuids;
 
-    @APIParam
-    private boolean isAttach;
-
     public String getPolicyUuid() {
         return policyUuid;
     }
@@ -35,11 +32,4 @@ public class APIAttachPolicyByResourcesMsg extends APIMessage{
         this.resourceUuids = resourceUuids;
     }
 
-    public boolean isAttach() {
-        return isAttach;
-    }
-
-    public void setAttach(boolean attach) {
-        isAttach = attach;
-    }
 }

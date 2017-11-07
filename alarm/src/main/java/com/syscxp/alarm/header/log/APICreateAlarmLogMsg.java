@@ -6,7 +6,6 @@ import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-import java.sql.Timestamp;
 @SuppressCredentialCheck
 @Action(category = AlarmConstant.ACTION_CATEGORY_ALARM_LOG)
 public class APICreateAlarmLogMsg extends APIMessage{
@@ -18,10 +17,7 @@ public class APICreateAlarmLogMsg extends APIMessage{
     private String tunnelUuid;
 
     @APIParam(emptyString = false)
-    private String tunnelName;
-
-    @APIParam(emptyString = false)
-    private String ruleUuid;
+    private String regulationUuid;
 
     @APIParam(emptyString = false)
     private String problem;
@@ -55,20 +51,12 @@ public class APICreateAlarmLogMsg extends APIMessage{
         this.tunnelUuid = tunnelUuid;
     }
 
-    public String getTunnelName() {
-        return tunnelName;
+    public String getRegulationUuid() {
+        return regulationUuid;
     }
 
-    public void setTunnelName(String tunnelName) {
-        this.tunnelName = tunnelName;
-    }
-
-    public String getRuleUuid() {
-        return ruleUuid;
-    }
-
-    public void setRuleUuid(String ruleUuid) {
-        this.ruleUuid = ruleUuid;
+    public void setRegulationUuid(String regulationUuid) {
+        this.regulationUuid = regulationUuid;
     }
 
     public String getProblem() {

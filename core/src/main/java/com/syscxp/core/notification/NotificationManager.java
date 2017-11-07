@@ -9,6 +9,7 @@ import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.AsyncThread;
 import com.syscxp.core.thread.ThreadFacade;
+import com.syscxp.header.apimediator.ResourceHavingAccountReference;
 import com.syscxp.header.message.*;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 
+import javax.persistence.Tuple;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -55,6 +57,8 @@ public class NotificationManager extends AbstractService {
     private ThreadFacade thdf;
     @Autowired
     private RESTFacade restf;
+    @Autowired
+    private ResourceHavingAccountReference resourceHavingAccountReference;
 
     private Map<Class, ApiNotificationFactory> apiNotificationFactories = new HashMap<>();
 
@@ -146,11 +150,11 @@ public class NotificationManager extends AbstractService {
                         .content(inner.getContent())
                         .msgfields(b.message.getDeclaredFieldAndValues())
                         .category(aevt.getType().toString())
-                        .ower(inner.getAccountUuid())
+                        .account(inner.getAccountUuid())
                         .action(b.message.getIp(), aevt.isSuccess())
                         .name(b.message.getClass().getSimpleName())
                         .sender(NotificationConstant.API_SENDER)
-                        .resource(inner.getResourceUuid(), inner.getResourceType())
+                        .resource(inner.getResourceUuid(), inner.getResourceClass())
                         .opaque(opaque));
             }
 
@@ -276,7 +280,7 @@ public class NotificationManager extends AbstractService {
                         msg.setOpAccountUuid(session.getAccountUuid());
                         msg.setOpUserUuid(session.getUserUuid());
                     }
-                    msg.setAccountUuid(builder.accountUuid);
+
                     msg.setName(builder.notificationName);
                     msg.setCategory(builder.category);
                     msg.setSuccess(builder.success);
@@ -288,6 +292,18 @@ public class NotificationManager extends AbstractService {
                     msg.setSender(builder.sender);
                     msg.setType(builder.type);
                     msg.setOpaque(builder.opaque);
+
+                    msg.setAccountUuid(builder.accountUuid);
+                    if (msg.getAccountUuid() == null && msg.getResourceType() != null && msg.getResourceUuid() != null){
+                        if (resourceHavingAccountReference.isResourceHavingAccountReference(builder.resourceClass)) {
+                            String sql = String.format("select accountUuid from %s where uuid = :resourceUuid ",
+                                    msg.getResourceType());
+                            List<Tuple> ts = SQL.New(sql, Tuple.class).param("resourceUuid", msg.getResourceUuid()).list();
+                            for (Tuple t : ts) {
+                                msg.setAccountUuid(t.get(1, String.class));
+                            }
+                        }
+                    }
 
                     InnerMessageHelper.setMD5(msg);
 

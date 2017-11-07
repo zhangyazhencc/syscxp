@@ -1,6 +1,7 @@
 package com.syscxp.vpn.host;
 
 import com.syscxp.core.CoreGlobalProperty;
+import com.syscxp.core.Platform;
 import com.syscxp.core.ansible.AnsibleFacade;
 import com.syscxp.core.cloudbus.*;
 import com.syscxp.core.componentloader.PluginRegistry;
@@ -12,18 +13,18 @@ import com.syscxp.header.AbstractService;
 import com.syscxp.header.Component;
 import com.syscxp.header.host.*;
 import com.syscxp.header.managementnode.ManagementNodeReadyExtensionPoint;
+import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.message.NeedReplyMessage;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import com.syscxp.vpn.header.host.APICreateVpnHostMsg;
-import com.syscxp.vpn.header.host.VpnHostInventory;
-import com.syscxp.vpn.header.host.VpnHostVO;
+import com.syscxp.vpn.header.host.*;
 import com.syscxp.vpn.vpn.VpnConstant;
 import com.syscxp.vpn.vpn.VpnGlobalProperty;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
@@ -215,13 +216,118 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
+        if (msg instanceof APIMessage) {
+            handleApiMessage((APIMessage) msg);
+        } else {
+            handleLocalMessage(msg);
+        }
+    }
+
+    private void handleApiMessage(APIMessage msg) {
+        if (msg instanceof APICreateHostInterfaceMsg) {
+            handle((APICreateHostInterfaceMsg) msg);
+        } else if (msg instanceof APICreateZoneMsg) {
+            handle((APICreateZoneMsg) msg);
+        } else if (msg instanceof APIDeleteHostInterfaceMsg) {
+            handle((APIDeleteHostInterfaceMsg) msg);
+        } else if (msg instanceof APIDeleteZoneMsg) {
+            handle((APIDeleteZoneMsg) msg);
+        }  else if (msg instanceof APIUpdateZoneMsg) {
+            handle((APIUpdateZoneMsg) msg);
+        }  else if (msg instanceof APIUpdateVpnHostPortMsg) {
+            handle((APIUpdateVpnHostPortMsg) msg);
+        } else {
+            bus.dealWithUnknownMessage(msg);
+        }
+    }
+
+    private void handleLocalMessage(Message msg) {
         bus.dealWithUnknownMessage(msg);
     }
+    private void handle(APIUpdateVpnHostPortMsg msg) {
+        APIUpdateVpnHostPortEvent evt = new APIUpdateVpnHostPortEvent(msg.getId());
+        VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
+        host.setStartPort(msg.getStartPort());
+        host.setEndPort(msg.getEndPort());
+
+        evt.setInventory(VpnHostInventory.valueOf(dbf.updateAndRefresh(host)));
+        bus.publish(evt);
+    }
+
+
+    private void handle(APIDeleteHostInterfaceMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(), HostInterfaceVO.class);
+        APIDeleteHostInterfaceEvent evt = new APIDeleteHostInterfaceEvent(msg.getId());
+        bus.publish(evt);
+    }
+
+    private void handle(APIDeleteZoneMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(), ZoneVO.class);
+        APIDeleteZoneEvent evt = new APIDeleteZoneEvent(msg.getId());
+        bus.publish(evt);
+    }
+
+    private void handle(APIUpdateZoneMsg msg) {
+        ZoneVO zone = dbf.findByUuid(msg.getUuid(), ZoneVO.class);
+        boolean update = false;
+        if (!StringUtils.isEmpty(msg.getName())) {
+            zone.setName(msg.getName());
+            update = true;
+        }
+        if (!StringUtils.isEmpty(msg.getDescription())) {
+            zone.setDescription(msg.getDescription());
+            update = true;
+        }
+        if (!StringUtils.isEmpty(msg.getNodeUuid())) {
+            zone.setNodeUuid(msg.getNodeUuid());
+            update = true;
+        }
+        if (!StringUtils.isEmpty(msg.getProvince())) {
+            zone.setProvince(msg.getProvince());
+            update = true;
+        }
+        if (update)
+            zone = dbf.updateAndRefresh(zone);
+
+        APIUpdateZoneEvent evt = new APIUpdateZoneEvent(msg.getId());
+        evt.setInventory(ZoneInventory.valueOf(zone));
+        bus.publish(evt);
+
+    }
+
+    private void handle(APICreateZoneMsg msg) {
+        ZoneVO zone = new ZoneVO();
+        zone.setUuid(Platform.getUuid());
+        zone.setProvince(msg.getProvince());
+        zone.setName(msg.getName());
+        zone.setDescription(msg.getDescription());
+        zone.setNodeUuid(msg.getNodeUuid());
+
+        zone = dbf.persistAndRefresh(zone);
+        APICreateZoneEvent evt = new APICreateZoneEvent(msg.getId());
+        evt.setInventory(ZoneInventory.valueOf(zone));
+        bus.publish(evt);
+    }
+
+    private void handle(APICreateHostInterfaceMsg msg) {
+        HostInterfaceVO iface = new HostInterfaceVO();
+        iface.setUuid(Platform.getUuid());
+        iface.setInterfaceName(msg.getInterfaceName());
+        iface.setHostUuid(msg.getHostUuid());
+        iface.setEndpointUuid(msg.getEndpointUuid());
+
+        iface = dbf.persistAndRefresh(iface);
+
+        APICreateHostInterfaceEvent evt = new APICreateHostInterfaceEvent(msg.getId());
+        evt.setInventory(HostInterfaceInventory.valueOf(iface));
+        bus.publish(evt);
+    }
+
 
 
 
     @Override
     public String getId() {
-        return bus.makeLocalServiceId(VpnConstant.SERVICE_ID);
+        return bus.makeLocalServiceId(VpnHostConstant.SERVICE_ID);
     }
 }

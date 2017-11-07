@@ -53,7 +53,7 @@ public class APICreateReceiptPostAddressMsg extends APIMessage {
                     uuid = ((APICreateReceiptPostAddressEvent) evt).getInventory().getUuid();
                 }
                 ntfy("Create ReceiptPostAddressVO")
-                        .resource(uuid, ReceiptPostAddressVO.class.getSimpleName())
+                        .resource(uuid, ReceiptPostAddressVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

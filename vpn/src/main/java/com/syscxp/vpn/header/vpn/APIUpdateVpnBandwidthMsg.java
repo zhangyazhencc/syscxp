@@ -40,7 +40,7 @@ public class APIUpdateVpnBandwidthMsg extends APIVpnMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Update VpnVO bandwidth")
-                        .resource(uuid, VpnVO.class.getSimpleName())
+                        .resource(uuid, VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

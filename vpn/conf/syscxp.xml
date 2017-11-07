@@ -34,6 +34,7 @@
     </bean>
 
     <import resource="springConfigXml/VpnManager.xml"/>
+    <import resource="springConfigXml/VpnHostManager.xml"/>
     <import resource="springConfigXml/ApiMediator.xml"/>
     <import resource="springConfigXml/Aspect.xml"/>
     <import resource="springConfigXml/CascadeFacade.xml"/>

@@ -44,7 +44,7 @@ public class APIDeleteUserMsg extends APIDeleteMessage implements AccountMessage
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Deleting").resource(uuid, UserVO.class.getSimpleName())
+                ntfy("Deleting").resource(uuid, UserVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

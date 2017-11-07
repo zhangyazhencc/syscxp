@@ -33,12 +33,12 @@ public class SmsGlobalProperty {
     @GlobalProperty(name = "smsVerificationCodeAppid", defaultValue = "8a48b55149e0e7a20149ef2f176d0901")
     public static String SMS_VERIFICATION_CODE_APPID;
 
-    @GlobalProperty(name = "AlarmVerificationCodeAppid", defaultValue = "aaf98f8951af2ba80151af31e3180021")
-    public static String ALARM_VERIFICATION_CODE_APPID;
-
     @GlobalProperty(name = "smsVerificationCodeTemplateId", defaultValue = "8082")
     public static String SMS_VERIFICATION_CODE_TEMPLATEID;
 
-    @GlobalProperty(name = "smsVerificationCodeAlarm", defaultValue = "56405")
-    public static String SMS_VERIFICATION_CODE_AlARM;
+    @GlobalProperty(name = "alarmAppid", defaultValue = "aaf98f8951af2ba80151af31e3180021")
+    public static String ALARM_APPID;
+
+    @GlobalProperty(name = "smsAlarmTemplateId", defaultValue = "56405")
+    public static String SMS_AlARM_TEMPLATEID;
 }

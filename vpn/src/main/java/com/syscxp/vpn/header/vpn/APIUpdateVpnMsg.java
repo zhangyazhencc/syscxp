@@ -57,7 +57,7 @@ public class APIUpdateVpnMsg extends APIMessage{
             @Override
             public void after(APIEvent evt) {
                 ntfy("Update VpnVO")
-                        .resource(uuid, VpnVO.class.getSimpleName())
+                        .resource(uuid, VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

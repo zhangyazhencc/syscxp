@@ -1,18 +1,21 @@
 package com.syscxp.tunnel.manage;
 
+import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.tunnel.header.switchs.*;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.tunnel.header.switchs.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
 
 import javax.persistence.TypedQuery;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+
+import static com.syscxp.core.Platform.argerr;
 
 /**
  * Created by DCY on 2017-09-18
@@ -86,6 +89,9 @@ public class TunnelStrategy  {
         //查询该虚拟交换机下已经分配的Vlan
         List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
 
+        if(vlanList.isEmpty()){
+            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
+        }
         if(allocatedVlans.isEmpty()){
             return vlanList.get(0).getStartVlan();
         }else{
@@ -103,6 +109,9 @@ public class TunnelStrategy  {
         //查询该虚拟交换机下已经分配的Vlan
         List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
 
+        if(vlanList.isEmpty()){
+            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
+        }
         if(allocatedVlans.isEmpty()){
             return vlanList.get(0).getStartVlan();
         }else{
@@ -151,16 +160,14 @@ public class TunnelStrategy  {
         for (SwitchVlanVO vlanVO : vlanList) {
             Integer startVlan = vlanVO.getStartVlan();
             Integer endVlan = vlanVO.getEndVlan();
-            List<Integer> allocatedVlan = null;
+            List<Integer> allocatedVlan = new ArrayList<>();
             for(Integer alloc : allocatedVlans){
                 if(alloc >= startVlan && alloc <= endVlan){
                     allocatedVlan.add(alloc);
                 }
             }
             vlan = NetworkUtils.randomAllocateVlan(startVlan,endVlan,allocatedVlan);
-            if(vlan == 0){
-                continue;
-            }else{
+            if(vlan != 0){
                 break;
             }
         }

@@ -31,7 +31,7 @@ public class APIResetAccountPWDMsg extends  APIMessage implements  AccountMessag
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Reset account password").resource(uuid, AccountVO.class.getSimpleName())
+                ntfy("Reset account password").resource(uuid, AccountVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

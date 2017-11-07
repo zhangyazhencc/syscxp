@@ -223,7 +223,9 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
             int times = 1;
 
             if(unit.getProductTypeCode().equals(ProductType.ECP) && unit.getCategoryCode().equals(Category.BANDWIDTH)){
-                int time = Integer.parseInt(unit.getConfigCode());
+               String configCode = unit.getConfigCode().replaceAll("\\D","");
+               times = Integer.parseInt(configCode);
+                unit.setConfigCode("1M");
             }
 
             SimpleQuery<ProductCategoryVO> queryEO = dbf.createQuery(ProductCategoryVO.class);
@@ -251,7 +253,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
             if (accountDiscountVO != null) {
                 discount = accountDiscountVO.getDiscount() == 0 ? 100 : accountDiscountVO.getDiscount();
             }
-            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
+            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()*times));
             BigDecimal currentDiscount = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(discount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
             discountPrice = discountPrice.add(currentDiscount);
             inventory.setDiscount(discount);

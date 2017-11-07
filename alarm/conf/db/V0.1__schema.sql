@@ -23,7 +23,6 @@ DROP TABLE IF EXISTS `AlarmLogVO`;
 CREATE TABLE `AlarmLogVO` (
   `uuid` varchar(32) NOT NULL,
   `productUuid` varchar(32) DEFAULT NULL,
-  `productName` varchar(128) DEFAULT NULL,
   `productType` varchar(255) DEFAULT NULL,
   `duration` int(10) DEFAULT NULL COMMENT '持续时间',
   `alarmContent` varchar(256) DEFAULT NULL COMMENT '报警内容',
@@ -31,8 +30,11 @@ CREATE TABLE `AlarmLogVO` (
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户UUID',
   `smsContent` varchar(256) DEFAULT NULL COMMENT '短信内容',
   `mailContent` varchar(256) DEFAULT NULL COMMENT '邮件内容',
-  `ruleName` varchar(255) DEFAULT NULL COMMENT '策略名字',
+  `regulationUuid` varchar(32) DEFAULT NULL COMMENT '策略名字',
+  `policyName` varchar(255) DEFAULT NULL COMMENT '策略名字',
   `eventId` varchar(128) DEFAULT NULL COMMENT '事件ID',
+  `alarmTime` timestamp ,
+  `resumeTime` timestamp ,
   `createDate` timestamp ,
   `lastOpDate` timestamp ,
   PRIMARY KEY (`uuid`)
@@ -214,6 +216,7 @@ DROP TABLE IF EXISTS `PolicyVO`;
 
 CREATE TABLE `PolicyVO` (
   `uuid` varchar(32) NOT NULL,
+  `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户UUID',
   `productType` varchar(255) DEFAULT NULL,
   `name` varchar(255) DEFAULT NULL,
   `description` varchar(1024) DEFAULT NULL,

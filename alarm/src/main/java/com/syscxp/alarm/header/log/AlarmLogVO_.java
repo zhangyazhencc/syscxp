@@ -11,15 +11,17 @@ import java.util.concurrent.TimeUnit;
 @StaticMetamodel(AlarmLogVO.class)
 public class AlarmLogVO_  extends BaseVO_ {
     public static volatile SingularAttribute<AlarmLogVO, String> productUuid;
-    public static volatile SingularAttribute<AlarmLogVO, String> productName;
     public static volatile SingularAttribute<AlarmLogVO, String> accountUuid;
     public static volatile SingularAttribute<AlarmLogVO, ProductType> productType;
     public static volatile SingularAttribute<AlarmLogVO, Long> duration;
     public static volatile SingularAttribute<AlarmLogVO, String> alarmContent;
     public static volatile SingularAttribute<AlarmLogVO, AlarmStatus> status;
-    public static volatile SingularAttribute<AlarmLogVO, AlarmStatus> smsContent;
-    public static volatile SingularAttribute<AlarmLogVO, AlarmStatus> mailContent;
-    public static volatile SingularAttribute<AlarmLogVO, AlarmStatus> ruleName;
-    public static volatile SingularAttribute<AlarmLogVO, AlarmStatus> eventId;
+    public static volatile SingularAttribute<AlarmLogVO, String> smsContent;
+    public static volatile SingularAttribute<AlarmLogVO, String> mailContent;
+    public static volatile SingularAttribute<AlarmLogVO, String> regulationUuid;
+    public static volatile SingularAttribute<AlarmLogVO, String> policyName;
+    public static volatile SingularAttribute<AlarmLogVO, String> eventId;
+    public static volatile SingularAttribute<AlarmLogVO, Timestamp> alarmTime;
+    public static volatile SingularAttribute<AlarmLogVO, Timestamp> resumeTime;
 
 }

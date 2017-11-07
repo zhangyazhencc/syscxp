@@ -82,7 +82,7 @@ public class APIUpdateUserPWDMsg extends APIMessage implements AccountMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update user password").resource(that.getSession().getUserUuid(), UserVO.class.getSimpleName())
+                ntfy("Update user password").resource(that.getSession().getUserUuid(), UserVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

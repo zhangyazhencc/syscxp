@@ -103,7 +103,7 @@ public class APIRegisterAccountMsg extends APIMessage {
                 if (evt.isSuccess()) {
                     uuid = ((APIRegisterAccountEvent)evt).getInventory().getUuid();
                 }
-                ntfy("Regist ").resource(uuid, AccountVO.class.getSimpleName())
+                ntfy("Regist ").resource(uuid, AccountVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

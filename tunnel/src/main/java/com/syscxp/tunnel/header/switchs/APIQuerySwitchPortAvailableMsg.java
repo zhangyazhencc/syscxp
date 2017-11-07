@@ -6,15 +6,13 @@ import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.query.AutoQuery;
 import com.syscxp.tunnel.manage.SwitchConstant;
 
-@Action(category = SwitchConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
+@Action(category = SwitchConstant.ACTION_CATEGORY, names = {"read"})
 @AutoQuery(replyClass = APIQuerySwitchPortAvailableReply.class, inventoryClass = SwitchPortAvailableInventory.class)
 public class APIQuerySwitchPortAvailableMsg extends APISyncCallMessage {
-    @APIParam(required = false)
+    @APIParam(emptyString = false,resourceType = SwitchVO.class)
     private String uuid;
     @APIParam(required = false)
     private String portName;
-    @APIParam(required = false)
-    private SwitchPortType portType;
     @APIParam(required = false)
     private Integer start;
     @APIParam(required = false)
@@ -34,14 +32,6 @@ public class APIQuerySwitchPortAvailableMsg extends APISyncCallMessage {
 
     public void setPortName(String portName) {
         this.portName = portName;
-    }
-
-    public SwitchPortType getPortType() {
-        return portType;
-    }
-
-    public void setPortType(SwitchPortType portType) {
-        this.portType = portType;
     }
 
     public Integer getLimit() {

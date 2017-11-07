@@ -20,7 +20,7 @@ import javax.persistence.OneToOne;
  */
 @Action(category = HostConstant.ACTION_CATEGORY, adminOnly = true)
 public class APICreateMonitorHostMsg extends APIAddHostMsg {
-    @APIParam(emptyString = false,resourceType = NodeVO.class)
+    @APIParam(emptyString = false, resourceType = NodeVO.class)
     private String nodeUuid;
 
     @APIParam(emptyString = false)
@@ -68,10 +68,13 @@ public class APICreateMonitorHostMsg extends APIAddHostMsg {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
+                String uuid = null;
                 if (evt.isSuccess()) {
-                    ntfy("CreateMonitorHost").resource(((APIAddHostEvent)evt).getInventory().getUuid(), MonitorHostVO.class.getSimpleName())
-                            .messageAndEvent(that, evt).done();
+                    uuid = ((APIAddHostEvent) evt).getInventory().getUuid();
                 }
+                ntfy("CreateMonitorHost")
+                        .resource(uuid, MonitorHostVO.class)
+                        .messageAndEvent(that, evt).done();
             }
         };
     }

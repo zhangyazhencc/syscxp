@@ -46,7 +46,7 @@ public class APIAccountMailAuthenticationMsg extends APIMessage implements Accou
             @Override
             public void after(APIEvent evt) {
                 ntfy("account_mail Authentication ")
-                        .resource(getAccountUuid(), AccountVO.class.getSimpleName())
+                        .resource(getAccountUuid(), AccountVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };
