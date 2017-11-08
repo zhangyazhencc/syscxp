@@ -6,18 +6,27 @@
     <message>
         <name>com.syscxp.billing.header.price.APICreateTunnelProductPriceUnitMsg</name>
     </message>
+
     <message>
         <name>com.syscxp.billing.header.price.APICreateECPProductPriceUnitMsg</name>
     </message>
+
     <message>
         <name>com.syscxp.billing.header.price.APIDeleteProductPriceUnitMsg</name>
     </message>
+
     <message>
         <name>com.syscxp.billing.header.price.APIUpdateProductPriceUnitMsg</name>
     </message>
+
     <message>
         <name>com.syscxp.billing.header.price.APIGetProductCategoryListMsg</name>
     </message>
+
+    <message>
+        <name>com.syscxp.billing.header.price.APIGetModifyProductPriceDiffMsg</name>
+    </message>
+
     <message>
         <name>com.syscxp.billing.header.price.APIQueryProductPriceUnitMsg</name>
         <serviceId>query</serviceId>

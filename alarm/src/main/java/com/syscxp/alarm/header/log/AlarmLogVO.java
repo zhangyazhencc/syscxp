@@ -25,7 +25,7 @@ public class AlarmLogVO extends BaseVO {
     private String alarmContent;
 
     @Column
-    private String status;
+    private AlarmStatus status;
 
     @Column
     private String accountUuid;
@@ -91,11 +91,11 @@ public class AlarmLogVO extends BaseVO {
         this.alarmContent = alarmContent;
     }
 
-    public String getStatus() {
+    public AlarmStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(AlarmStatus status) {
         this.status = status;
     }
 
