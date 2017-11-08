@@ -476,7 +476,7 @@ public class TunnelBase extends AbstractTunnel{
         SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
         PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitch(switchPortVO);
 
-        if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.SDN){   //SDN接入
+        if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){   //SDN接入
 
             //找到SDN交换机的上联传输交换机
             PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
@@ -499,7 +499,7 @@ public class TunnelBase extends AbstractTunnel{
             tmc.setPassword(mplsPhysicalSwitch.getPassword());
             tmc.setNetwork_type("TRUNK");
 
-        }else if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.MPLS){  //Mpls接入
+        }else if(physicalSwitchVO.getType() == PhysicalSwitchType.MPLS){  //Mpls接入
             SwitchModelVO switchModel = dbf.findByUuid(physicalSwitchVO.getSwitchModelUuid(),SwitchModelVO.class);
 
             PhysicalSwitchVO remoteMplsPhysicalSwitch = getRemotePhysicalSwitch(remoteSwitchPortVO);
@@ -531,7 +531,7 @@ public class TunnelBase extends AbstractTunnel{
         ControllerCommands.TunnelSdnConfig tsc = new ControllerCommands.TunnelSdnConfig();
         SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
         PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitch(switchPortVO);
-        if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.SDN){   //SDN接入
+        if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){   //SDN接入
             //找到SDN交换机的上联传输交换机
             PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
                     .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchVO.getUuid())
@@ -547,7 +547,7 @@ public class TunnelBase extends AbstractTunnel{
                 tsc.setInner_vlan_id(getInnerVlanToString(qinqVOs));
             }
 
-        }else if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.MPLS){  //Mpls接入
+        }else if(physicalSwitchVO.getType() == PhysicalSwitchType.MPLS){  //Mpls接入
             tsc = null;
         }
         return tsc;
@@ -557,7 +557,7 @@ public class TunnelBase extends AbstractTunnel{
     private PhysicalSwitchVO getRemotePhysicalSwitch(TunnelSwitchPortVO tunnelSwitchPortVO){
         SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
         PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitch(switchPortVO);
-        if(physicalSwitchVO.getAccessType() == PhysicalSwitchAccessType.SDN) {   //SDN接入
+        if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN) {   //SDN接入
             //找到SDN交换机的上联传输交换机
             PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
                     .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchVO.getUuid())

@@ -19,13 +19,16 @@ import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsGlobalProperty;
 import com.syscxp.sms.SmsService;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.sql.Timestamp;
 import java.util.*;
 
 import static com.syscxp.core.Platform.operr;
@@ -58,98 +61,25 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     }
 
     private void handleApiMessage(APIMessage msg) {
-        if (msg instanceof APICreateAlarmLogMsg) {
-            handle((APICreateAlarmLogMsg) msg);
-        }else {
             bus.dealWithUnknownMessage(msg);
-        }
     }
 
-    private void handle(APICreateAlarmLogMsg msg) {
-
-        AlarmLogVO alarmLogVO = new AlarmLogVO();
-        alarmLogVO.setUuid(Platform.getUuid());
-        alarmLogVO.setAccountUuid(msg.getAccountUuid());
-        alarmLogVO.setProductUuid(msg.getTunnelUuid());
-        alarmLogVO.setProductName(msg.getTunnelName());
-        alarmLogVO.setAlarmContent(msg.getProblem());
-        alarmLogVO.setStatus(msg.getStatus());
-        alarmLogVO.setProductType(ProductType.TUNNEL);//todo  where should acquire
-
-        alarmLogVO.setSmsContent(msg.getSmsContent());
-        alarmLogVO.setMailContent(msg.getMailContent());
-        alarmLogVO.setEventId(msg.getEventId());
-        RegulationVO regulationVO = dbf.findByUuid(msg.getRegulationUuid(),RegulationVO.class);
-        if(regulationVO != null){
-            PolicyVO policyVO = dbf.findByUuid(regulationVO.getPolicyUuid(),PolicyVO.class);
-            if(policyVO != null){
-                alarmLogVO.setRuleName(policyVO.getName());
-            }
-        }
-
-        //计算持续时间
-        SimpleQuery<AlarmTimeRecordVO> query = dbf.createQuery(AlarmTimeRecordVO.class);
-        query.add(AlarmTimeRecordVO_.tunnelUuid, SimpleQuery.Op.EQ, msg.getTunnelUuid());
-        query.add(AlarmTimeRecordVO_.eventId, SimpleQuery.Op.EQ, msg.getEventId());
-        AlarmTimeRecordVO alarmRecord = query.find();
-        if(alarmRecord == null){
-            AlarmTimeRecordVO alarmTimeRecordVO = new AlarmTimeRecordVO();
-            alarmTimeRecordVO.setUuid(Platform.getUuid());
-            alarmTimeRecordVO.setTunnelUuid(msg.getTunnelUuid());
-            alarmTimeRecordVO.setEventId(msg.getEventId());
-            alarmTimeRecordVO.setProductType(ProductType.TUNNEL);
-            alarmTimeRecordVO.setStatus(msg.getStatus());
-
-            dbf.persistAndRefresh(alarmTimeRecordVO);
-
-            int detectPeriod = regulationVO.getDetectPeriod();
-            int triggerPeriod = regulationVO.getTriggerPeriod();
-            alarmLogVO.setDuration((long) detectPeriod * triggerPeriod);
-        }else{
-            long duration = System.currentTimeMillis() - alarmRecord.getCreateDate().getTime();
-            alarmLogVO.setDuration(duration/1000);
-
-            if("OK".equals(msg.getStatus())){
-                alarmRecord.setStatus(msg.getStatus());
-                dbf.updateAndRefresh(alarmRecord);
-            }
-        }
-
-        dbf.persistAndRefresh(alarmLogVO);
-
-        //foreach发送短信和邮件
-        try {
-            sendMessage(msg);
-        } catch (Exception e) {
-            //保存失败信息
-            e.printStackTrace();
-            throw new OperationFailureException(operr("message:" + e.getMessage()));
-        }
-
-
-        APICreateALarmLogEvent evt = new APICreateALarmLogEvent(msg.getId());
-        evt.setInventory(AlarmLogInventory.valueOf(alarmLogVO));
-        bus.publish(evt);
-
-
-    }
-
-    private void sendMessage(APICreateAlarmLogMsg msg) throws Exception{
+    private void sendMessage(AlarmLogCallbackCmd cmd) throws Exception{
         SimpleQuery<ContactVO> query = dbf.createQuery(ContactVO.class);
-        query.add(ContactVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        query.add(ContactVO_.accountUuid, SimpleQuery.Op.EQ, cmd.getAccountUuid());
         List<ContactVO> contactVOS = query.list();
         for (ContactVO contactVO : contactVOS) {
             Set<NotifyWayVO> notifyWayVOs = contactVO.getNotifyWayVOs();
             for (NotifyWayVO notifyWayVO : notifyWayVOs) {
                 if (notifyWayVO.getCode().equals("email")) {
                     String email = contactVO.getEmail();
-                    mailService.mailSend(email, "监控报警信息", msg.getMailContent());
+                    mailService.mailSend(email, "监控报警信息", cmd.getMailContent());
                 }
 
                 if (notifyWayVO.getCode().equals("mobile")) {
                     String phone = contactVO.getMobile();
-                    smsService.sendMsg(msg.getSession(), phone, SmsGlobalProperty.ALARM_APPID, SmsGlobalProperty.SMS_AlARM_TEMPLATEID
-                            , new String[]{msg.getSmsContent()}, msg.getIp());
+                    smsService.sendMsg(null, phone, SmsGlobalProperty.ALARM_APPID, SmsGlobalProperty.SMS_AlARM_TEMPLATEID
+                            , new String[]{cmd.getSmsContent()}, "");
 
                 }
 
@@ -169,6 +99,67 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     @Override
     public boolean start() {
+
+        restf.registerSyncHttpCallHandler("alarmLog", AlarmLogCallbackCmd.class,
+                new SyncHttpCallHandler<AlarmLogCallbackCmd>() {
+                    @Override
+                    public String handleSyncHttpCall(AlarmLogCallbackCmd cmd) {
+
+                        if("OK".equals(cmd.getStatus())){
+                            SimpleQuery<AlarmLogVO> query = dbf.createQuery(AlarmLogVO.class);
+                            query.add(AlarmLogVO_.productUuid, SimpleQuery.Op.EQ, cmd.getTunnelUuid());
+                            query.add(AlarmLogVO_.regulationUuid, SimpleQuery.Op.EQ, cmd.getRegulationUuid());
+                            List<AlarmLogVO> alarmLogVOS = query.list();
+                            for(AlarmLogVO vo : alarmLogVOS){
+                                vo.setResumeTime(new Timestamp(System.currentTimeMillis()));
+                                vo.setStatus(cmd.getStatus());
+                                long time = (System.currentTimeMillis() - vo.getAlarmTime().getTime())/1000 + vo.getDuration();
+                                vo.setDuration(time);
+                                dbf.updateAndRefresh(vo);
+                            }
+
+
+                        }else{
+
+                            AlarmLogVO alarmLogVO = new AlarmLogVO();
+                            alarmLogVO.setUuid(Platform.getUuid());
+                            alarmLogVO.setProductUuid(cmd.getTunnelUuid());
+                            alarmLogVO.setProductType(ProductType.TUNNEL);
+                            alarmLogVO.setAlarmContent(cmd.getProblem());
+                            alarmLogVO.setStatus(cmd.getStatus());
+                            alarmLogVO.setAccountUuid(cmd.getAccountUuid());
+                            alarmLogVO.setSmsContent(cmd.getSmsContent());
+                            alarmLogVO.setMailContent(cmd.getMailContent());
+                            alarmLogVO.setRegulationUuid(cmd.getRegulationUuid());
+                            RegulationVO regulationVO = dbf.findByUuid(cmd.getRegulationUuid(),RegulationVO.class);
+                            if(regulationVO != null){
+                                PolicyVO policyVO = dbf.findByUuid(regulationVO.getPolicyUuid(),PolicyVO.class);
+                                if(policyVO != null){
+                                    alarmLogVO.setPolicyName(policyVO.getName());
+                                }
+                            }
+                            alarmLogVO.setEventId(cmd.getEventId());
+                            alarmLogVO.setAlarmTime(new Timestamp(System.currentTimeMillis()));
+                            //持续时间
+                            alarmLogVO.setDuration((long)regulationVO.getDetectPeriod()*regulationVO.getTriggerPeriod());
+                            dbf.persistAndRefresh(alarmLogVO);
+
+                        }
+
+
+                        //foreach发送短信和邮件
+                        try {
+                            sendMessage(cmd);
+                        } catch (Exception e) {
+                            //保存失败信息
+                            e.printStackTrace();
+                            throw new OperationFailureException(operr("message:" + e.getMessage()));
+                        }
+
+                        return null;
+                    }
+                });
+
         return true;
     }
 

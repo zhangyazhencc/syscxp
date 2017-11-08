@@ -44,22 +44,15 @@
     </message>
 
     <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIAttachPolicyByResourcesMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIAttachResourceByPoliciesMsg</name>
-    </message>
-    <message>
         <name>com.syscxp.alarm.header.resourcePolicy.APIGetResourcesByProductTypeMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIAttachResourceViaPoliciesMsg</name>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIAttachPoliciesToResourcesMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIDetachPolicyByResourcesMsg</name>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIDetachPoliciesToResourcesMsg</name>
     </message>
 
     <message>

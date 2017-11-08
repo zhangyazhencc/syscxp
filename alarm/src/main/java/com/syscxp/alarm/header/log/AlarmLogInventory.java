@@ -13,7 +13,6 @@ import java.util.concurrent.TimeUnit;
 public class AlarmLogInventory {
     private String uuid;
     private String productUuid;
-    private String productName;
     private ProductType productType;
     private Long duration;
     private String alarmContent;
@@ -21,14 +20,15 @@ public class AlarmLogInventory {
     private String accountUuid;
     private String smsContent;
     private String mailContent;
-    private String ruleName;
+    private String policyName;
     private String eventId;
+    private Timestamp alarmTime;
+    private Timestamp resumeTime;
 
     public static AlarmLogInventory valueOf(AlarmLogVO vo){
         AlarmLogInventory inv = new AlarmLogInventory();
         inv.setUuid(vo.getUuid());
         inv.setProductUuid(vo.getProductUuid());
-        inv.setProductName(vo.getProductName());
         inv.setProductType(vo.getProductType());
         inv.setDuration(vo.getDuration());
         inv.setAlarmContent(vo.getAlarmContent());
@@ -36,8 +36,10 @@ public class AlarmLogInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setSmsContent(vo.getSmsContent());
         inv.setMailContent(vo.getMailContent());
-        inv.setRuleName(vo.getRuleName());
+        inv.setPolicyName(vo.getPolicyName());
         inv.setEventId(vo.getEventId());
+        inv.setAlarmTime(vo.getAlarmTime());
+        inv.setResumeTime(vo.getResumeTime());
         return inv;
     }
 
@@ -64,14 +66,6 @@ public class AlarmLogInventory {
 
     public void setProductUuid(String productUuid) {
         this.productUuid = productUuid;
-    }
-
-    public String getProductName() {
-        return productName;
-    }
-
-    public void setProductName(String productName) {
-        this.productName = productName;
     }
 
     public ProductType getProductType() {
@@ -130,12 +124,12 @@ public class AlarmLogInventory {
         this.mailContent = mailContent;
     }
 
-    public String getRuleName() {
-        return ruleName;
+    public String getPolicyName() {
+        return policyName;
     }
 
-    public void setRuleName(String ruleName) {
-        this.ruleName = ruleName;
+    public void setPolicyName(String policyName) {
+        this.policyName = policyName;
     }
 
     public String getEventId() {
@@ -144,5 +138,21 @@ public class AlarmLogInventory {
 
     public void setEventId(String eventId) {
         this.eventId = eventId;
+    }
+
+    public Timestamp getAlarmTime() {
+        return alarmTime;
+    }
+
+    public void setAlarmTime(Timestamp alarmTime) {
+        this.alarmTime = alarmTime;
+    }
+
+    public Timestamp getResumeTime() {
+        return resumeTime;
+    }
+
+    public void setResumeTime(Timestamp resumeTime) {
+        this.resumeTime = resumeTime;
     }
 }

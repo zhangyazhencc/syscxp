@@ -22,7 +22,7 @@ public class APICreatePhysicalSwitchMsg extends APIMessage {
     private String name;
     @APIParam(emptyString = false,maxLength = 128)
     private String owner;
-    @APIParam(emptyString = false,validValues = {"ACCESS", "TRANSPORT","BOTH"})
+    @APIParam(emptyString = false,validValues = {"SDN", "MPLS"})
     private PhysicalSwitchType type;
     @APIParam(emptyString = false,maxLength = 32)
     private String rack;
@@ -37,7 +37,7 @@ public class APICreatePhysicalSwitchMsg extends APIMessage {
     @APIParam(emptyString = false,required = false,maxLength = 255)
     private String description;
 
-    @APIParam(emptyString = false,required = false,validValues = {"SDN", "MPLS"})
+    @APIParam(emptyString = false,required = false,validValues = {"ACCESS", "TRANSPORT","BOTH"})
     private PhysicalSwitchAccessType accessType;
     @APIParam(emptyString = false,required = false,maxLength = 128)
     private String portName;

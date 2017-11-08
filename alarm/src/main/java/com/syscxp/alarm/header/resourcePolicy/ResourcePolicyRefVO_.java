@@ -6,6 +6,6 @@ import javax.persistence.metamodel.StaticMetamodel;
 @StaticMetamodel(ResourcePolicyRefVO.class)
 public class ResourcePolicyRefVO_ {
 
-    public static volatile SingularAttribute<ResourceVO, String> resourceUuid;
-    public static volatile SingularAttribute<ResourceVO, String> policyUuid;
+    public static volatile SingularAttribute<ResourcePolicyRefVO, String> resourceUuid;
+    public static volatile SingularAttribute<ResourcePolicyRefVO, String> policyUuid;
 }
