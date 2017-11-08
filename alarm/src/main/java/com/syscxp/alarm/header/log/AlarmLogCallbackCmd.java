@@ -7,7 +7,7 @@ public class AlarmLogCallbackCmd {
     private String problem;
     private String smsContent;
     private String mailContent;
-    private String status;
+    private AlarmStatus status;
     private String eventId;
 
     public static AlarmLogCallbackCmd valueOf(AlarmLogVO alarmLogVO){
@@ -72,11 +72,11 @@ public class AlarmLogCallbackCmd {
         this.mailContent = mailContent;
     }
 
-    public String getStatus() {
+    public AlarmStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(AlarmStatus status) {
         this.status = status;
     }
 

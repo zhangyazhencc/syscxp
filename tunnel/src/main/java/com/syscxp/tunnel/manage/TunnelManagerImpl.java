@@ -88,6 +88,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIGetInterfacePriceMsg) msg);
         } else if (msg instanceof APIGetTunnelPriceMsg) {
             handle((APIGetTunnelPriceMsg) msg);
+        } else if (msg instanceof APIGetModifyTunnelPriceDiffMsg) {
+            handle((APIGetModifyTunnelPriceDiffMsg) msg);
         } else if (msg instanceof APIUpdateInterfacePortMsg) {
             handle((APIUpdateInterfacePortMsg) msg);
         } else if (msg instanceof APIGetInterfaceTypeMsg) {
@@ -237,6 +239,34 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 msg.getNodeZUuid(), msg.getInnerEndpointUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
         bus.reply(msg, new APIGetTunnelPriceReply(reply));
+    }
+
+    private void handle(APIGetModifyTunnelPriceDiffMsg msg) {
+        TunnelSwitchPortVO tunnelSwitchPortVOA = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid,msg.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag,"A")
+                .find();
+        TunnelSwitchPortVO tunnelSwitchPortVOZ = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid,msg.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag,"Z")
+                .find();
+        String innerEndpointUuid = null;
+        TunnelSwitchPortVO tunnelSwitchPortVOB = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid,msg.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag,"B")
+                .find();
+        if(tunnelSwitchPortVOB != null){
+            innerEndpointUuid = tunnelSwitchPortVOB.getEndpointUuid();
+        }
+        EndpointVO endpointVOA = dbf.findByUuid(tunnelSwitchPortVOA.getEndpointUuid(),EndpointVO.class);
+        EndpointVO endpointVOZ = dbf.findByUuid(tunnelSwitchPortVOZ.getEndpointUuid(),EndpointVO.class);
+        APIGetModifyProductPriceDiffMsg pmsg = new APIGetModifyProductPriceDiffMsg();
+        pmsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
+                endpointVOZ.getNodeUuid(), innerEndpointUuid));
+        pmsg.setProductUuid(msg.getUuid());
+        pmsg.setExpiredTime(dbf.findByUuid(msg.getUuid(),TunnelVO.class).getExpireDate());
+        APIGetModifyProductPriceDiffReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
+        bus.reply(msg, new APIGetModifyTunnelPriceDiffReply(reply));
     }
 
     private void handle(APICreateInterfaceMsg msg) {
@@ -870,7 +900,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
-        orderMsg.setExpiredTime(vo.getExpireDate());
+        if(vo.getExpireDate() == null){
+            orderMsg.setExpiredTime(dbf.getCurrentSqlTime());
+            orderMsg.setCreateFailure(true);
+        }else{
+            orderMsg.setExpiredTime(vo.getExpireDate());
+        }
         orderMsg.setDescriptionData("no description");
         orderMsg.setCallBackData("delete");
 
@@ -912,7 +947,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
-        orderMsg.setExpiredTime(vo.getExpireDate());
+        if(vo.getExpireDate() == null){
+            orderMsg.setExpiredTime(dbf.getCurrentSqlTime());
+            orderMsg.setCreateFailure(true);
+        }else{
+            orderMsg.setExpiredTime(vo.getExpireDate());
+        }
         orderMsg.setDescriptionData("no description");
         orderMsg.setCallBackData("forciblydelete");
 

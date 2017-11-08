@@ -61,10 +61,10 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     }
 
     private void handleApiMessage(APIMessage msg) {
-            bus.dealWithUnknownMessage(msg);
+        bus.dealWithUnknownMessage(msg);
     }
 
-    private void sendMessage(AlarmLogCallbackCmd cmd) throws Exception{
+    private void sendMessage(AlarmLogCallbackCmd cmd) throws Exception {
         SimpleQuery<ContactVO> query = dbf.createQuery(ContactVO.class);
         query.add(ContactVO_.accountUuid, SimpleQuery.Op.EQ, cmd.getAccountUuid());
         List<ContactVO> contactVOS = query.list();
@@ -73,7 +73,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
             for (NotifyWayVO notifyWayVO : notifyWayVOs) {
                 if (notifyWayVO.getCode().equals("email")) {
                     String email = contactVO.getEmail();
-                    mailService.mailSend(email, "监控报警信息", cmd.getMailContent());
+                    mailService.mailSend(email, "监控报警信息", "【犀思云】服务器预警信息如下:\n             " + cmd.getMailContent());
                 }
 
                 if (notifyWayVO.getCode().equals("mobile")) {
@@ -105,21 +105,21 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                     @Override
                     public String handleSyncHttpCall(AlarmLogCallbackCmd cmd) {
 
-                        if("OK".equals(cmd.getStatus())){
+                        if (AlarmStatus.OK.equals(cmd.getStatus())) {
                             SimpleQuery<AlarmLogVO> query = dbf.createQuery(AlarmLogVO.class);
                             query.add(AlarmLogVO_.productUuid, SimpleQuery.Op.EQ, cmd.getTunnelUuid());
                             query.add(AlarmLogVO_.regulationUuid, SimpleQuery.Op.EQ, cmd.getRegulationUuid());
+                            query.add(AlarmLogVO_.status, SimpleQuery.Op.EQ, AlarmStatus.PROBLEM);
                             List<AlarmLogVO> alarmLogVOS = query.list();
-                            for(AlarmLogVO vo : alarmLogVOS){
+                            for (AlarmLogVO vo : alarmLogVOS) {
                                 vo.setResumeTime(new Timestamp(System.currentTimeMillis()));
                                 vo.setStatus(cmd.getStatus());
-                                long time = (System.currentTimeMillis() - vo.getAlarmTime().getTime())/1000 + vo.getDuration();
+                                long time = (System.currentTimeMillis() - vo.getAlarmTime().getTime()) / 1000 + vo.getDuration();
                                 vo.setDuration(time);
                                 dbf.updateAndRefresh(vo);
                             }
 
-
-                        }else{
+                        } else {
 
                             AlarmLogVO alarmLogVO = new AlarmLogVO();
                             alarmLogVO.setUuid(Platform.getUuid());
@@ -131,21 +131,20 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                             alarmLogVO.setSmsContent(cmd.getSmsContent());
                             alarmLogVO.setMailContent(cmd.getMailContent());
                             alarmLogVO.setRegulationUuid(cmd.getRegulationUuid());
-                            RegulationVO regulationVO = dbf.findByUuid(cmd.getRegulationUuid(),RegulationVO.class);
-                            if(regulationVO != null){
-                                PolicyVO policyVO = dbf.findByUuid(regulationVO.getPolicyUuid(),PolicyVO.class);
-                                if(policyVO != null){
+                            RegulationVO regulationVO = dbf.findByUuid(cmd.getRegulationUuid(), RegulationVO.class);
+                            if (regulationVO != null) {
+                                PolicyVO policyVO = dbf.findByUuid(regulationVO.getPolicyUuid(), PolicyVO.class);
+                                if (policyVO != null) {
                                     alarmLogVO.setPolicyName(policyVO.getName());
                                 }
                             }
                             alarmLogVO.setEventId(cmd.getEventId());
                             alarmLogVO.setAlarmTime(new Timestamp(System.currentTimeMillis()));
                             //持续时间
-                            alarmLogVO.setDuration((long)regulationVO.getDetectPeriod()*regulationVO.getTriggerPeriod());
+                            alarmLogVO.setDuration((long) regulationVO.getDetectPeriod() * regulationVO.getTriggerPeriod());
                             dbf.persistAndRefresh(alarmLogVO);
 
                         }
-
 
                         //foreach发送短信和邮件
                         try {
@@ -172,6 +171,5 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
         return msg;
     }
-
 
 }

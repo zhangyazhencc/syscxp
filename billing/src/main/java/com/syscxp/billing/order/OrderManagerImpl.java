@@ -161,6 +161,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 dealDetailVO.setState(DealState.SUCCESS);
                 dealDetailVO.setBalance(presentNow);
                 dealDetailVO.setOutTradeNO(outTradeNO);
+                dealDetailVO.setTradeNO(orderVo.getUuid());
                 dealDetailVO.setOpAccountUuid(opAccountUuid);
                 dbf.getEntityManager().persist(dealDetailVO);
 
@@ -183,6 +184,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 dealDetailVO.setState(DealState.SUCCESS);
                 dealDetailVO.setBalance(BigDecimal.ZERO);
                 dealDetailVO.setOutTradeNO(outTradeNO + "-1");
+                dealDetailVO.setTradeNO(orderVo.getUuid());
                 dealDetailVO.setOpAccountUuid(opAccountUuid);
                 dbf.getEntityManager().persist(dealDetailVO);
 
@@ -199,6 +201,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 dVO.setState(DealState.SUCCESS);
                 dVO.setBalance(remainCash);
                 dVO.setOutTradeNO(outTradeNO + "-2");
+                dVO.setTradeNO(orderVo.getUuid());
                 dVO.setOpAccountUuid(opAccountUuid);
                 dbf.getEntityManager().persist(dVO);
             }
@@ -220,6 +223,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             dVO.setBalance(remainCashBalance);
             dVO.setOpAccountUuid(opAccountUuid);
             dVO.setOutTradeNO(outTradeNO);
+            dVO.setTradeNO(orderVo.getUuid());
             dbf.getEntityManager().persist(dVO);
         }
     }
@@ -262,7 +266,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             AccountDiscountVO accountDiscountVO = qDiscount.find();
             int productDiscount = 100;
             if (accountDiscountVO != null) {
-                productDiscount = accountDiscountVO.getDiscount() == 0 ? 100 : accountDiscountVO.getDiscount();
+                productDiscount = accountDiscountVO.getDiscount() <= 0 ? 100 : accountDiscountVO.getDiscount();
             }
             originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
             discountPrice = discountPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));
@@ -384,15 +388,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     private void handle(APICreateUnsubcribeOrderMsg msg) {
 
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
-
-        BigDecimal discountPrice = BigDecimal.ZERO;
-        BigDecimal originalPrice = BigDecimal.ZERO;
-
         AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        BigDecimal cashBalance = abvo.getCashBalance();
-        BigDecimal presentBalance = abvo.getPresentBalance();
-        BigDecimal creditPoint = abvo.getCreditPoint();
-
         OrderVO orderVo = new OrderVO();
 
         orderVo.setUuid(Platform.getUuid());
@@ -406,10 +402,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         Timestamp startTime = msg.getStartTime();
         Timestamp endTime = msg.getExpiredTime();
-        long useDays = Math.abs(currentTimestamp.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
         long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
-        long days = Math.abs(endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
-
         SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
         query.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         query.add(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
@@ -425,6 +418,20 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         if (remainMoney.compareTo(valuePayCash) < 0) {
             remainMoney = valuePayCash;
         }
+        BigDecimal refundPresent = BigDecimal.ZERO;
+        if(msg.isCreateFailure()){
+            SimpleQuery<OrderVO> queryRefund = dbf.createQuery(OrderVO.class);
+            queryRefund.add(OrderVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+            queryRefund.add(OrderVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
+            queryRefund.add(OrderVO_.type, SimpleQuery.Op.EQ, OrderType.BUY);
+            OrderVO refundOrder = queryRefund.find();
+            if(refundOrder == null){
+                throw new IllegalArgumentException("can not find this product buy history ,please check up");
+            }
+            remainMoney = refundOrder.getPayCash();
+            refundPresent = refundOrder.getPayPresent();
+           dbf.getEntityManager().remove(renewVO);
+        }
         orderVo.setOriginalPrice(remainMoney);
         orderVo.setProductName(msg.getProductName());
         orderVo.setPrice(remainMoney);
@@ -432,7 +439,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductEffectTimeEnd(startTime);
         BigDecimal remainCash = abvo.getCashBalance().add(remainMoney);
         abvo.setCashBalance(remainCash);
-        orderVo.setPayPresent(BigDecimal.ZERO);
+        orderVo.setPayPresent(refundPresent);
         orderVo.setPayCash(remainMoney.negate());
 
         DealDetailVO dVO = new DealDetailVO();
@@ -446,6 +453,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         dVO.setState(DealState.SUCCESS);
         dVO.setBalance(remainCash == null ? BigDecimal.ZERO : remainCash);
         dVO.setOutTradeNO(orderVo.getUuid());
+        dVO.setTradeNO(orderVo.getUuid());
         dVO.setOpAccountUuid(msg.getOpAccountUuid());
         dbf.getEntityManager().persist(dVO);
         dbf.getEntityManager().remove(dbf.getEntityManager().find(RenewVO.class, renewVO.getUuid()));
@@ -589,6 +597,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             dVO.setState(DealState.SUCCESS);
             dVO.setBalance(remainCash == null ? BigDecimal.ZERO : remainCash);
             dVO.setOutTradeNO(orderVo.getUuid());
+            dVO.setTradeNO(orderVo.getUuid());
             dVO.setOpAccountUuid(msg.getOpAccountUuid());
             dbf.getEntityManager().persist(dVO);
         }

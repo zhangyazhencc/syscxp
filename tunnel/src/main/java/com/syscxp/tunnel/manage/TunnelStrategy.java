@@ -127,8 +127,7 @@ public class TunnelStrategy  {
                 "and b.uuid = :interfaceUuid";
         TypedQuery<String> sq = dbf.getEntityManager().createQuery(sql,String.class);
         sq.setParameter("interfaceUuid",interfaceUuid);
-        String switchUuid = sq.getSingleResult();
-        return switchUuid;
+        return sq.getSingleResult();
     }
 
     //查询该虚拟交换机下所有的Vlan段
@@ -136,8 +135,7 @@ public class TunnelStrategy  {
         String sql = "select a from SwitchVlanVO a where a.switchUuid = :switchUuid";
         TypedQuery<SwitchVlanVO> svq = dbf.getEntityManager().createQuery(sql, SwitchVlanVO.class);
         svq.setParameter("switchUuid",switchUuid);
-        List<SwitchVlanVO> vlanList = svq.getResultList();
-        return vlanList;
+        return svq.getResultList();
     }
 
     //查询该虚拟交换机下Tunnel已经分配的Vlan
@@ -148,8 +146,7 @@ public class TunnelStrategy  {
                 "and b.switchUuid = :switchUuid ";
         TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);
         avq.setParameter("switchUuid",switchUuid);
-        List<Integer> allocatedVlans = avq.getResultList();
-        return allocatedVlans;
+        return avq.getResultList();
     }
 
 
@@ -196,6 +193,35 @@ public class TunnelStrategy  {
         vq.setParameter("uplinkPhysicalSwitchUuid",uplinkPhysicalSwitchUuid);
         switchVlans = vq.getResultList();
         return switchVlans;
+    }
+
+    //将VLAN段整合成一个List
+    public List<Integer> getVlanIntegerList(List<SwitchVlanVO> switchVlans){
+        List<Integer> vlanIntegerList = new ArrayList<>();
+        for(SwitchVlanVO switchVlanVO: switchVlans){
+            if(switchVlanVO.getStartVlan().equals(switchVlanVO.getEndVlan())){
+                vlanIntegerList.add(switchVlanVO.getStartVlan());
+            }else{
+                for(Integer i=switchVlanVO.getStartVlan();i<=switchVlanVO.getEndVlan();i++){
+                    vlanIntegerList.add(i);
+                }
+            }
+        }
+        return vlanIntegerList;
+    }
+
+    public List<Integer> getVlanIntegerList(Integer startVlan,Integer endVlan){
+        List<Integer> vlanIntegerList = new ArrayList<>();
+
+        if(startVlan.equals(endVlan)){
+            vlanIntegerList.add(startVlan);
+        }else{
+            for(Integer i = startVlan;i <= endVlan;i++){
+                vlanIntegerList.add(i);
+            }
+        }
+
+        return vlanIntegerList;
     }
 
     //判断两个集合是否存在交集
