@@ -22,6 +22,8 @@ public class AlarmLogInventory {
     private String mailContent;
     private String policyName;
     private String eventId;
+    private Timestamp alarmTime;
+    private Timestamp resumeTime;
 
     public static AlarmLogInventory valueOf(AlarmLogVO vo){
         AlarmLogInventory inv = new AlarmLogInventory();
@@ -36,6 +38,8 @@ public class AlarmLogInventory {
         inv.setMailContent(vo.getMailContent());
         inv.setPolicyName(vo.getPolicyName());
         inv.setEventId(vo.getEventId());
+        inv.setAlarmTime(vo.getAlarmTime());
+        inv.setResumeTime(vo.getResumeTime());
         return inv;
     }
 
@@ -134,5 +138,21 @@ public class AlarmLogInventory {
 
     public void setEventId(String eventId) {
         this.eventId = eventId;
+    }
+
+    public Timestamp getAlarmTime() {
+        return alarmTime;
+    }
+
+    public void setAlarmTime(Timestamp alarmTime) {
+        this.alarmTime = alarmTime;
+    }
+
+    public Timestamp getResumeTime() {
+        return resumeTime;
+    }
+
+    public void setResumeTime(Timestamp resumeTime) {
+        this.resumeTime = resumeTime;
     }
 }
