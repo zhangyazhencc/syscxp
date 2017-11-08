@@ -173,4 +173,38 @@ public class TunnelStrategy  {
         }
         return vlan;
     }
+
+    //查询同一个物理交换机下的所有VLAN段
+    public List<SwitchVlanVO> getSwitchVlans(String physicalSwitchUuid){
+        List<SwitchVlanVO> switchVlans = new ArrayList<>();
+        String sql = "select c from PhysicalSwitchVO a,SwitchVO b,SwitchVlanVO c " +
+                "where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid " +
+                "and a.uuid = :physicalSwitchUuid";
+        TypedQuery<SwitchVlanVO> vq = dbf.getEntityManager().createQuery(sql, SwitchVlanVO.class);
+        vq.setParameter("physicalSwitchUuid",physicalSwitchUuid);
+        switchVlans = vq.getResultList();
+        return switchVlans;
+    }
+
+    //查询同一个上联交换机下的所有VLAN段、
+    public List<SwitchVlanVO> getSwitchVlansFromUplink(String uplinkPhysicalSwitchUuid){
+        List<SwitchVlanVO> switchVlans = new ArrayList<>();
+        String sql = "select d from PhysicalSwitchUpLinkRefVO a,PhysicalSwitchVO b,SwitchVO c,SwitchVlanVO d " +
+                "where a.physicalSwitchUuid = b.uuid and b.uuid = c.physicalSwitchUuid and c.uuid = d.switchUuid " +
+                "and a.uplinkPhysicalSwitchUuid = :uplinkPhysicalSwitchUuid";
+        TypedQuery<SwitchVlanVO> vq = dbf.getEntityManager().createQuery(sql, SwitchVlanVO.class);
+        vq.setParameter("uplinkPhysicalSwitchUuid",uplinkPhysicalSwitchUuid);
+        switchVlans = vq.getResultList();
+        return switchVlans;
+    }
+
+    //判断两个集合是否存在交集
+    public boolean isMixed(List<Integer> aList,List<Integer> bList){
+        for(Integer b: bList){
+            if(aList.contains(b)){
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -530,7 +530,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             SwitchPortVO switchPortVO = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, tunnelSwitchPortVO.getSwitchPortUuid()).find();
 
             ControllerCommands.TunnelMonitorMpls mpls = new ControllerCommands.TunnelMonitorMpls();
-            if (PhysicalSwitchAccessType.MPLS.toString().equals(physicalSwitchVO.getAccessType())) {
+            if (PhysicalSwitchType.MPLS.toString().equals(physicalSwitchVO.getType())) {
                 mpls.setM_ip(physicalSwitchVO.getmIP());
                 mpls.setUsername(physicalSwitchVO.getUsername());
                 mpls.setPassword(physicalSwitchVO.getPassword());
@@ -541,7 +541,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 mpls.setBandwidth(tunnelVO.getBandwidth());
                 mpls.setVni(tunnelVO.getVsi());
                 mplsList.add(mpls);
-            } else if (PhysicalSwitchAccessType.SDN.toString().equals(physicalSwitchVO.getAccessType())) {
+            } else if (PhysicalSwitchType.SDN.toString().equals(physicalSwitchVO.getType())) {
                 // 获取上联口对应的物理交换机作为mpls数据
                 PhysicalSwitchUpLinkRefVO upLinkRef = (PhysicalSwitchUpLinkRefVO) Q.New(PhysicalSwitchUpLinkRefVO.class)
                         .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid, physicalSwitchVO.getUuid())
