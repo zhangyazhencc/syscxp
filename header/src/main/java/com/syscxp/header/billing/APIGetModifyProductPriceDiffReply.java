@@ -43,4 +43,13 @@ public class APIGetModifyProductPriceDiffReply extends APIReply {
     public void setSubMoney(BigDecimal subMoney) {
         this.subMoney = subMoney;
     }
+
+    public APIGetModifyProductPriceDiffReply() {
+    }
+    public APIGetModifyProductPriceDiffReply(APIGetModifyProductPriceDiffReply reply) {
+        this.setRemainMoney(reply.getRemainMoney());
+        this.setNeedPayMoney(reply.getNeedPayMoney());
+        this.setNeedPayOriginMoney(reply.getNeedPayOriginMoney());
+        this.setSubMoney(reply.getSubMoney());
+    }
 }
