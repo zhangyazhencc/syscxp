@@ -63,6 +63,14 @@
     </message>
 
     <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIAttachResourcesByPoliciesMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIDetachResourcesByPoliciesMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.alarm.header.resourcePolicy.APIGetComparisonRuleListMsg</name>
     </message>
 
