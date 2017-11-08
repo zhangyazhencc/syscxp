@@ -245,6 +245,18 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         bus.reply(msg, new APIGetTunnelPriceReply(reply));
     }
 
+    /*private void handle(APIGetModifyTunnelPriceDiffMsg msg) {
+
+        APIGetModifyProductPriceDiffMsg pmsg = new APIGetModifyProductPriceDiffMsg();
+        pmsg.setProductChargeModel(msg.getProductChargeModel());
+        pmsg.setDuration(msg.getDuration());
+        pmsg.setAccountUuid(msg.getAccountUuid());
+        pmsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getNodeAUuid(),
+                msg.getNodeZUuid(), msg.getInnerEndpointUuid()));
+        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
+        bus.reply(msg, new APIGetTunnelPriceReply(reply));
+    }*/
+
     private void handle(APICreateInterfaceMsg msg) {
         APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
 
@@ -876,7 +888,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
-        orderMsg.setExpiredTime(vo.getExpireDate());
+        if(vo.getExpireDate() == null){
+            orderMsg.setExpiredTime(dbf.getCurrentSqlTime());
+            orderMsg.setCreateFailure(true);
+        }else{
+            orderMsg.setExpiredTime(vo.getExpireDate());
+        }
         orderMsg.setDescriptionData("no description");
         orderMsg.setCallBackData("delete");
 
@@ -918,7 +935,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setAccountUuid(msg.getAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
-        orderMsg.setExpiredTime(vo.getExpireDate());
+        if(vo.getExpireDate() == null){
+            orderMsg.setExpiredTime(dbf.getCurrentSqlTime());
+            orderMsg.setCreateFailure(true);
+        }else{
+            orderMsg.setExpiredTime(vo.getExpireDate());
+        }
         orderMsg.setDescriptionData("no description");
         orderMsg.setCallBackData("forciblydelete");
 

@@ -46,18 +46,6 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private PluginRegistry pluginRgty;
-    @Autowired
-    private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
-    private ResourceDestinationMaker destMaker;
-    @Autowired
-    private ThreadFacade thdf;
-    @Autowired
-    private EventFacade evtf;
 
 
     @Override
@@ -747,22 +735,52 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRef = Q.New(PhysicalSwitchUpLinkRefVO.class)
                 .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitch.getUuid())
                 .find();
+        List<Integer> addIntegerList = ts.getVlanIntegerList(msg.getStartVlan(),msg.getEndVlan());
         if(physicalSwitch.getType() == PhysicalSwitchType.SDN){        //SDN接入交换机
             //找到上联MPLS交换机
             PhysicalSwitchVO uplinkPhysicalSwitch = dbf.findByUuid(physicalSwitchUpLinkRef.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
             if(uplinkPhysicalSwitch.getAccessType() == PhysicalSwitchAccessType.TRANSPORT){   //该上联MPLS只做传输
-
+                List<SwitchVlanVO> switchVlans = ts.getSwitchVlansFromUplink(uplinkPhysicalSwitch.getUuid());
+                if(!switchVlans.isEmpty()){
+                    List<Integer> vlanIntegerList = ts.getVlanIntegerList(switchVlans);
+                    if(ts.isMixed(vlanIntegerList,addIntegerList)){
+                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+                    }
+                }
+            }else{                                                                              //该上联MPLS 接入传输
+                List<SwitchVlanVO> switchVlansT = ts.getSwitchVlansFromUplink(uplinkPhysicalSwitch.getUuid());
+                List<SwitchVlanVO> switchVlansA = ts.getSwitchVlans(uplinkPhysicalSwitch.getUuid());
+                if(!switchVlansT.isEmpty() || !switchVlansA.isEmpty()){
+                    if(!switchVlansT.isEmpty()){
+                        switchVlansA.addAll(switchVlansT);
+                    }
+                    List<Integer> vlanIntegerList = ts.getVlanIntegerList(switchVlansA);
+                    if(ts.isMixed(vlanIntegerList,addIntegerList)){
+                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+                    }
+                }
             }
-
-
-
-        }else{      //SDN接入交换机
-            //判断上联MPLS交换机是做接入传输还是只做传输
-            PhysicalSwitchVO uplinkPhysicalSwitch = dbf.findByUuid(physicalSwitchUpLinkRef.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
-            if(uplinkPhysicalSwitch.getAccessType() != PhysicalSwitchAccessType.TRANSPORT){  //接入传输
-
-            }else{                                                                  //只做传输
-
+        }else{      //MPLS交换机
+            if(physicalSwitch.getAccessType() == PhysicalSwitchAccessType.ACCESS){  //接入
+                List<SwitchVlanVO> switchVlans = ts.getSwitchVlans(physicalSwitch.getUuid());
+                if(!switchVlans.isEmpty()){
+                    List<Integer> vlanIntegerList = ts.getVlanIntegerList(switchVlans);
+                    if(ts.isMixed(vlanIntegerList,addIntegerList)){
+                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+                    }
+                }
+            }else{                                                                  //接入传输
+                List<SwitchVlanVO> switchVlansT = ts.getSwitchVlansFromUplink(physicalSwitch.getUuid());
+                List<SwitchVlanVO> switchVlansA = ts.getSwitchVlans(physicalSwitch.getUuid());
+                if(!switchVlansT.isEmpty() || !switchVlansA.isEmpty()){
+                    if(!switchVlansT.isEmpty()){
+                        switchVlansA.addAll(switchVlansT);
+                    }
+                    List<Integer> vlanIntegerList = ts.getVlanIntegerList(switchVlansA);
+                    if(ts.isMixed(vlanIntegerList,addIntegerList)){
+                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+                    }
+                }
             }
         }
 
