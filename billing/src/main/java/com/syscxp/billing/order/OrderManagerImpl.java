@@ -316,7 +316,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
         renewVO.setProductChargeModel(msg.getProductChargeModel());
 
-        renewVO.setPricePerDay(renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays)).add(discountPrice).divide(BigDecimal.valueOf(notUseDays).add(duration), 4, BigDecimal.ROUND_HALF_EVEN));
+        renewVO.setPricePerDay(renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays)).add(discountPrice).divide(BigDecimal.valueOf(notUseDays).add(duration.multiply(BigDecimal.valueOf(30))), 4, BigDecimal.ROUND_HALF_EVEN));
         dbf.getEntityManager().merge(renewVO);
 
         orderVo.setUuid(Platform.getUuid());
@@ -415,7 +415,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         BigDecimal remainMoney = renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal valuePayCash = getValueblePayCash(msg.getAccountUuid(), msg.getProductUuid());
         orderVo.setType(OrderType.UN_SUBCRIBE);
-        if (remainMoney.compareTo(valuePayCash) < 0) {
+        if (remainMoney.compareTo(valuePayCash) > 0) {
             remainMoney = valuePayCash;
         }
         BigDecimal refundPresent = BigDecimal.ZERO;
@@ -782,7 +782,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     private BigDecimal getValueblePayCash(String accountUuid, String productUuid) {
         BigDecimal total = BigDecimal.ZERO;
         SimpleQuery<OrderVO> query = dbf.createQuery(OrderVO.class);
