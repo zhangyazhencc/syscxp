@@ -30,7 +30,7 @@ public class TunnelAO_ {
     public static volatile SingularAttribute<TunnelAO, ProductChargeModel> productChargeModel;
     public static volatile SingularAttribute<TunnelAO, Integer> maxModifies;
     public static volatile SingularAttribute<TunnelAO, String> description;
-    public static volatile SingularAttribute<TunnelAO, Timestamp> expiredDate;
+    public static volatile SingularAttribute<TunnelAO, Timestamp> expireDate;
     public static volatile SingularAttribute<TunnelAO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<TunnelAO, Timestamp> createDate;
 }

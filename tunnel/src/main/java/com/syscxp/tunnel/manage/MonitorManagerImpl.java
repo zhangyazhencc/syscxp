@@ -1,15 +1,9 @@
 package com.syscxp.tunnel.manage;
 
-import com.sun.javafx.binding.StringFormatter;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.db.*;
-import com.syscxp.header.core.Completion;
-import com.syscxp.header.errorcode.ErrorCode;
-import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.falconapi.FalconApiRestConstant;
-import com.syscxp.header.host.HostVO;
-import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.tunnel.TunnelMonitorState;
 import com.syscxp.tunnel.header.host.*;
@@ -19,8 +13,6 @@ import com.syscxp.tunnel.header.tunnel.TunnelSwitchPortVO;
 import com.syscxp.tunnel.header.tunnel.TunnelSwitchPortVO_;
 import com.syscxp.tunnel.header.tunnel.TunnelVO_;
 import com.syscxp.utils.gson.JSONObjectUtil;
-import jdk.nashorn.internal.ir.ReturnNode;
-import org.apache.commons.collections.ListUtils;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,14 +34,12 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
 
-import javax.management.monitor.Monitor;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import java.net.UnknownHostException;
 import java.util.*;
 
 import static com.syscxp.core.Platform.argerr;
-import static com.syscxp.core.Platform.operr;
 
 /**
  * Created by DCY on 2017-09-07
@@ -444,8 +434,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     /**
      * 控制器命令删除：关闭监控、中止tunnel
      *
-     * @param tunnelUuid
-     * @param tunnelMonitorVOS
      * @param event
      */
     private void stopControllerCommand(ControllerCommands.TunnelMonitorCommand cmd, APIEvent event) {
@@ -466,7 +454,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     /**
      * 开启监控、tunnel修改且监控为开启状态时同步ICMP到falcon_portal数据库
      *
-     * @param msg
      * @return：创建的监控通道
      */
     private void icmpSync(String accountUuid, String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS, APIEvent event) {
@@ -674,7 +661,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     /***
      *
-     * @param tunnelUuid
      * @param monitorIp
      * @param monitorPort
      */
@@ -717,7 +703,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     /***
      * tunnel修改switch port，修改unnelMonitorVO.hostUuid
-     * @param tunnelUuid
      */
     public void updateTunnelMonitorHostByTunnelSwitchPort(String tunnelSwitchPortUuid) {
         TunnelSwitchPortVO tunnelSwitchPortVO = Q.New(TunnelSwitchPortVO.class)
@@ -873,7 +858,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     /***
      * 按tunnelSwitchPortUuid查询监控通道
-     * @param tunnelUuid
      * @return
      */
     public TunnelMonitorVO getTunnelMonitorByTunnelSwitchPort(String tunnelSwitchPortUuid) {
