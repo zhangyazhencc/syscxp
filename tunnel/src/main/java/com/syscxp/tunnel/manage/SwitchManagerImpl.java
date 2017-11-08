@@ -44,18 +44,6 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private PluginRegistry pluginRgty;
-    @Autowired
-    private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
-    private ResourceDestinationMaker destMaker;
-    @Autowired
-    private ThreadFacade thdf;
-    @Autowired
-    private EventFacade evtf;
 
 
     @Override
@@ -690,6 +678,34 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("switch's code %s is already exist ", msg.getCode()));
         }
+        //验证互联连接点下仅有2个逻辑交换机，且所属物理交换机不能是同一个
+        if(msg.getType() != SwitchType.ACCESS){  //内联或者外联交换机
+            SwitchVO switchInner = Q.New(SwitchVO.class)
+                    .eq(SwitchVO_.type,SwitchType.INNER)
+                    .eq(SwitchVO_.endpointUuid,msg.getEndpointUuid())
+                    .find();
+            SwitchVO switchOuter = Q.New(SwitchVO.class)
+                    .eq(SwitchVO_.type,SwitchType.OUTER)
+                    .eq(SwitchVO_.endpointUuid,msg.getEndpointUuid())
+                    .find();
+            if(msg.getType() == SwitchType.INNER){  //创建内联交换机
+                if(switchInner != null){
+                    throw new ApiMessageInterceptionException(argerr("该互联连接点下已经存在内联交换机!"));
+                }else{
+                    if(switchOuter != null && msg.getPhysicalSwitchUuid().equals(switchOuter.getPhysicalSwitchUuid())){
+                        throw new ApiMessageInterceptionException(argerr("该互联连接点下内联/外联交换机所属的物理交换机不能是同一个!"));
+                    }
+                }
+            }else{                                  //创建外链交换机
+                if(switchOuter != null){
+                    throw new ApiMessageInterceptionException(argerr("该互联连接点下已经存在外联交换机!"));
+                }else{
+                    if(switchInner != null && msg.getPhysicalSwitchUuid().equals(switchInner.getPhysicalSwitchUuid())){
+                        throw new ApiMessageInterceptionException(argerr("该互联连接点下内联/外联交换机所属的物理交换机不能是同一个!"));
+                    }
+                }
+            }
+        }
 
     }
 
@@ -754,33 +770,64 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
 
     }
 
-    private void validate(APICreateSwitchVlanMsg msg) {
+    private void validate(APICreateSwitchVlanMsg msg){
 
-        if (msg.getStartVlan() > msg.getEndVlan()) {
+        if(msg.getStartVlan() > msg.getEndVlan()){
             throw new ApiMessageInterceptionException(argerr("endvlan must more than startvlan"));
         }
 
         TunnelStrategy ts = new TunnelStrategy();
-        SwitchVO switchVO = dbf.findByUuid(msg.getSwitchUuid(), SwitchVO.class);
-        PhysicalSwitchVO physicalSwitch = dbf.findByUuid(switchVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
+        SwitchVO switchVO = dbf.findByUuid(msg.getSwitchUuid(),SwitchVO.class);
+        PhysicalSwitchVO physicalSwitch = dbf.findByUuid(switchVO.getPhysicalSwitchUuid(),PhysicalSwitchVO.class);
         PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRef = Q.New(PhysicalSwitchUpLinkRefVO.class)
-                .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid, physicalSwitch.getUuid())
+                .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitch.getUuid())
                 .find();
-        if (physicalSwitch.getType() == PhysicalSwitchType.SDN) {        //SDN接入交换机
+        List<Integer> addIntegerList = ts.getVlanIntegerList(msg.getStartVlan(),msg.getEndVlan());
+        if(physicalSwitch.getType() == PhysicalSwitchType.SDN){        //SDN接入交换机
             //找到上联MPLS交换机
-            PhysicalSwitchVO uplinkPhysicalSwitch = dbf.findByUuid(physicalSwitchUpLinkRef.getUplinkPhysicalSwitchUuid(), PhysicalSwitchVO.class);
-            if (uplinkPhysicalSwitch.getAccessType() == PhysicalSwitchAccessType.TRANSPORT) {   //该上联MPLS只做传输
-
+            PhysicalSwitchVO uplinkPhysicalSwitch = dbf.findByUuid(physicalSwitchUpLinkRef.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+            if(uplinkPhysicalSwitch.getAccessType() == PhysicalSwitchAccessType.TRANSPORT){   //该上联MPLS只做传输
+                List<SwitchVlanVO> switchVlans = ts.getSwitchVlansFromUplink(uplinkPhysicalSwitch.getUuid());
+                if(!switchVlans.isEmpty()){
+                    List<Integer> vlanIntegerList = ts.getVlanIntegerList(switchVlans);
+                    if(ts.isMixed(vlanIntegerList,addIntegerList)){
+                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+                    }
+                }
+            }else{                                                                              //该上联MPLS 接入传输
+                List<SwitchVlanVO> switchVlansT = ts.getSwitchVlansFromUplink(uplinkPhysicalSwitch.getUuid());
+                List<SwitchVlanVO> switchVlansA = ts.getSwitchVlans(uplinkPhysicalSwitch.getUuid());
+                if(!switchVlansT.isEmpty() || !switchVlansA.isEmpty()){
+                    if(!switchVlansT.isEmpty()){
+                        switchVlansA.addAll(switchVlansT);
+                    }
+                    List<Integer> vlanIntegerList = ts.getVlanIntegerList(switchVlansA);
+                    if(ts.isMixed(vlanIntegerList,addIntegerList)){
+                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+                    }
+                }
             }
-
-
-        } else {      //SDN接入交换机
-            //判断上联MPLS交换机是做接入传输还是只做传输
-            PhysicalSwitchVO uplinkPhysicalSwitch = dbf.findByUuid(physicalSwitchUpLinkRef.getUplinkPhysicalSwitchUuid(), PhysicalSwitchVO.class);
-            if (uplinkPhysicalSwitch.getAccessType() != PhysicalSwitchAccessType.TRANSPORT) {  //接入传输
-
-            } else {                                                                  //只做传输
-
+        }else{      //MPLS交换机
+            if(physicalSwitch.getAccessType() == PhysicalSwitchAccessType.ACCESS){  //接入
+                List<SwitchVlanVO> switchVlans = ts.getSwitchVlans(physicalSwitch.getUuid());
+                if(!switchVlans.isEmpty()){
+                    List<Integer> vlanIntegerList = ts.getVlanIntegerList(switchVlans);
+                    if(ts.isMixed(vlanIntegerList,addIntegerList)){
+                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+                    }
+                }
+            }else{                                                                  //接入传输
+                List<SwitchVlanVO> switchVlansT = ts.getSwitchVlansFromUplink(physicalSwitch.getUuid());
+                List<SwitchVlanVO> switchVlansA = ts.getSwitchVlans(physicalSwitch.getUuid());
+                if(!switchVlansT.isEmpty() || !switchVlansA.isEmpty()){
+                    if(!switchVlansT.isEmpty()){
+                        switchVlansA.addAll(switchVlansT);
+                    }
+                    List<Integer> vlanIntegerList = ts.getVlanIntegerList(switchVlansA);
+                    if(ts.isMixed(vlanIntegerList,addIntegerList)){
+                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+                    }
+                }
             }
         }
 
