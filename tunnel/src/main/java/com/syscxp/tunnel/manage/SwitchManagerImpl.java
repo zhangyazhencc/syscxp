@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.manage;
 
+import com.syscxp.core.db.Q;
 import com.syscxp.tunnel.header.switchs.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -251,7 +252,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
 
         //如果为SDN接入交换机，则存入上联表
         if(msg.getAccessType() != null){
-            if(msg.getType() != PhysicalSwitchType.TRANSPORT && msg.getAccessType() == PhysicalSwitchAccessType.SDN ){
+            if(msg.getAccessType() != PhysicalSwitchAccessType.TRANSPORT && msg.getType() == PhysicalSwitchType.SDN ){
                 PhysicalSwitchUpLinkRefVO voref = new PhysicalSwitchUpLinkRefVO();
                 voref.setUuid(Platform.getUuid());
                 voref.setPhysicalSwitchUuid(vo.getUuid());
@@ -581,7 +582,7 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         }
         //如果是SDN接入
         if(msg.getAccessType() != null){
-            if(msg.getType() != PhysicalSwitchType.TRANSPORT && msg.getAccessType() == PhysicalSwitchAccessType.SDN ){
+            if(msg.getAccessType() != PhysicalSwitchAccessType.TRANSPORT && msg.getType() == PhysicalSwitchType.SDN ){
                 //判断传输端口名称在一个物理交换机的业务端口下是否存在
                 String sql = "select count(b.uuid) from SwitchVO a,SwitchPortVO b " +
                         "where a.uuid = b.switchUuid " +
@@ -739,22 +740,32 @@ public class SwitchManagerImpl  extends AbstractService implements SwitchManager
         if(msg.getStartVlan() > msg.getEndVlan()){
             throw new ApiMessageInterceptionException(argerr("endvlan must more than startvlan"));
         }
-        //同一个物理交换机下的VLAN不能重叠
-        String sql = "select count(a.uuid) from PhysicalSwitchVO a,SwitchVO b,SwitchVlanVO c " +
-                "where a.uuid = b.physicalSwitchUuid and b.uuid = c.switchUuid " +
-                "and a.uuid = (select physicalSwitchUuid from SwitchVO where uuid = :switchUuid) " +
-                "and ((c.startVlan between :startVlan and :endVlan) " +
-                "or (c.endVlan between :startVlan and :endVlan) " +
-                "or (:startVlan between c.startVlan and c.endVlan) " +
-                "or (:endVlan between c.startVlan and c.endVlan))";
-        TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-        vq.setParameter("switchUuid",msg.getSwitchUuid());
-        vq.setParameter("startVlan",msg.getStartVlan());
-        vq.setParameter("endVlan",msg.getEndVlan());
-        Long count = vq.getSingleResult();
-        if(count > 0){
-            throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+
+        TunnelStrategy ts = new TunnelStrategy();
+        SwitchVO switchVO = dbf.findByUuid(msg.getSwitchUuid(),SwitchVO.class);
+        PhysicalSwitchVO physicalSwitch = dbf.findByUuid(switchVO.getPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+        PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRef = Q.New(PhysicalSwitchUpLinkRefVO.class)
+                .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitch.getUuid())
+                .find();
+        if(physicalSwitch.getType() == PhysicalSwitchType.SDN){        //SDN接入交换机
+            //找到上联MPLS交换机
+            PhysicalSwitchVO uplinkPhysicalSwitch = dbf.findByUuid(physicalSwitchUpLinkRef.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+            if(uplinkPhysicalSwitch.getAccessType() == PhysicalSwitchAccessType.TRANSPORT){   //该上联MPLS只做传输
+
+            }
+
+
+
+        }else{      //SDN接入交换机
+            //判断上联MPLS交换机是做接入传输还是只做传输
+            PhysicalSwitchVO uplinkPhysicalSwitch = dbf.findByUuid(physicalSwitchUpLinkRef.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+            if(uplinkPhysicalSwitch.getAccessType() != PhysicalSwitchAccessType.TRANSPORT){  //接入传输
+
+            }else{                                                                  //只做传输
+
+            }
         }
+
     }
 
     private void validate(APIDeleteSwitchVlanMsg msg){

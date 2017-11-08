@@ -27,7 +27,7 @@ public class TunnelForAlarmVO_ {
     public static volatile SingularAttribute<TunnelForAlarmVO, ProductChargeModel> productChargeModel;
     public static volatile SingularAttribute<TunnelForAlarmVO, Integer> maxModifies;
     public static volatile SingularAttribute<TunnelForAlarmVO, String> description;
-    public static volatile SingularAttribute<TunnelForAlarmVO, Timestamp> expiredDate;
+    public static volatile SingularAttribute<TunnelForAlarmVO, Timestamp> expireDate;
     public static volatile SingularAttribute<TunnelForAlarmVO, Timestamp> lastOpDate;
     public static volatile SingularAttribute<TunnelForAlarmVO, Timestamp> createDate;
 }
