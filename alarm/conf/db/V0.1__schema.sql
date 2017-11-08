@@ -299,18 +299,7 @@ CREATE TABLE `SmsVO` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `AlarmTimeRecordVO`;
 
-CREATE TABLE `AlarmTimeRecordVO` (
-  `uuid` varchar(32) NOT NULL,
-  `tunnelUuid` varchar(32) DEFAULT NULL,
-  `eventId` varchar(128) DEFAULT NULL COMMENT '事件ID',
-  `status` varchar(127) DEFAULT NULL COMMENT '报警状态',
-  `productType` varchar(255) DEFAULT NULL COMMENT '产品类型',
-  `createDate` timestamp ,
-  `lastOpDate` timestamp ,
-  PRIMARY KEY (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 /*Data for the table `ResourceVO` */
