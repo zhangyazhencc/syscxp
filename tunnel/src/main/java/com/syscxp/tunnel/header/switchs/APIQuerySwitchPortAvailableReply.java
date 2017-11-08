@@ -6,7 +6,7 @@ import java.util.List;
 
 public class APIQuerySwitchPortAvailableReply extends APIQueryReply {
 
-    private List<SwitchPortAvailableInventory> inventories;
+    private List<SwitchPortInventory> inventories;
     private Integer count;
 
     public Integer getCount() {
@@ -17,11 +17,11 @@ public class APIQuerySwitchPortAvailableReply extends APIQueryReply {
         this.count = count;
     }
 
-    public List<SwitchPortAvailableInventory> getInventories() {
+    public List<SwitchPortInventory> getInventories() {
         return inventories;
     }
 
-    public void setInventories(List<SwitchPortAvailableInventory> inventories) {
+    public void setInventories(List<SwitchPortInventory> inventories) {
         this.inventories = inventories;
     }
 }

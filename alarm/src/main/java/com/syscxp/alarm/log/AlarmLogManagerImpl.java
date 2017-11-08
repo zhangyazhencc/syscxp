@@ -73,7 +73,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
             for (NotifyWayVO notifyWayVO : notifyWayVOs) {
                 if (notifyWayVO.getCode().equals("email")) {
                     String email = contactVO.getEmail();
-                    mailService.mailSend(email, "监控报警信息", "【犀思云】服务器预警信息如下:\n             " + cmd.getMailContent());
+                    mailService.mailSend(email, "监控报警信息", "【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
                 }
 
                 if (notifyWayVO.getCode().equals("mobile")) {
