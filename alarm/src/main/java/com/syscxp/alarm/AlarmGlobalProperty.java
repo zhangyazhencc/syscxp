@@ -12,7 +12,7 @@ public class AlarmGlobalProperty {
     @GlobalProperty(name = "falconUrlSave",defaultValue = "http://192.168.211.96:6892/monitoring/strategy/save")
     public static String FALCON_URL_SAVE;
 
-    @GlobalProperty(name = "falconUrlDelete",defaultValue = "http://192.168.211.100:6892/monitoring/strategy/delete")
+    @GlobalProperty(name = "falconUrlDelete",defaultValue = "http://192.168.211.96:6892/monitoring/strategy/delete")
     public static String FALCON_URL_DELETE;
 
 }
