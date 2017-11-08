@@ -260,11 +260,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
         EndpointVO endpointVOA = dbf.findByUuid(tunnelSwitchPortVOA.getEndpointUuid(),EndpointVO.class);
         EndpointVO endpointVOZ = dbf.findByUuid(tunnelSwitchPortVOZ.getEndpointUuid(),EndpointVO.class);
+
         APIGetModifyProductPriceDiffMsg pmsg = new APIGetModifyProductPriceDiffMsg();
         pmsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
                 endpointVOZ.getNodeUuid(), innerEndpointUuid));
         pmsg.setProductUuid(msg.getUuid());
+        pmsg.setAccountUuid(msg.getAccountUuid());
         pmsg.setExpiredTime(dbf.findByUuid(msg.getUuid(),TunnelVO.class).getExpireDate());
+
         APIGetModifyProductPriceDiffReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
         bus.reply(msg, new APIGetModifyTunnelPriceDiffReply(reply));
     }
