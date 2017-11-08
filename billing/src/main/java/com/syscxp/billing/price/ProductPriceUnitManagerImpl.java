@@ -112,7 +112,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
 
             SimpleQuery<AccountDiscountVO> qDiscount = dbf.createQuery(AccountDiscountVO.class);
             qDiscount.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, productPriceUnitVO.getProductCategoryUuid());
-            qDiscount.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
+            qDiscount.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
             AccountDiscountVO accountDiscountVO = qDiscount.find();
             int productDiscount = 100;
             if (accountDiscountVO != null) {

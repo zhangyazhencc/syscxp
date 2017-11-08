@@ -17,6 +17,9 @@ public class APIGetModifyProductPriceDiffMsg extends APISyncCallMessage {
     private String productUuid;
 
     @APIParam
+    private String accountUuid;
+
+    @APIParam
     private Timestamp expiredTime;
 
     public List<ProductPriceUnit> getUnits() {
@@ -41,5 +44,13 @@ public class APIGetModifyProductPriceDiffMsg extends APISyncCallMessage {
 
     public void setExpiredTime(Timestamp expiredTime) {
         this.expiredTime = expiredTime;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }
