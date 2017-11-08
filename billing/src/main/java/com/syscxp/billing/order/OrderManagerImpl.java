@@ -266,7 +266,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             AccountDiscountVO accountDiscountVO = qDiscount.find();
             int productDiscount = 100;
             if (accountDiscountVO != null) {
-                productDiscount = accountDiscountVO.getDiscount() == 0 ? 100 : accountDiscountVO.getDiscount();
+                productDiscount = accountDiscountVO.getDiscount() <= 0 ? 100 : accountDiscountVO.getDiscount();
             }
             originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
             discountPrice = discountPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));

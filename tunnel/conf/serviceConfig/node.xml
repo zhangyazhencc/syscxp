@@ -22,6 +22,11 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.node.APIQueryZoneMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
         <name>com.syscxp.tunnel.header.node.APIGetDistinctNodeCityMsg</name>
     </message>
 
