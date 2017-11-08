@@ -143,7 +143,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
         long count =0;
         Map<String,Long> param = new HashMap<>();
-        List<ResourceInventory> inventories = getResources(aMsg, msg.getType(),param);
+        List<ResourceInventory> inventories = getResources(aMsg, msg.getType(),param,msg.getPolicyUuids(),false);
         count = param.get("count")!=null?param.get("count"):0;
 
         try {
@@ -178,7 +178,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 dbf.getEntityManager().merge(policyVO);
             }
         }
-
         APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
         aMsg.setBind(true);
         aMsg.setStart(0);
@@ -188,7 +187,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
         long count =0;
         Map<String,Long> param = new HashMap<>();
-        List<ResourceInventory> inventories = getResources(aMsg, msg.getType(),param);
+        List<ResourceInventory> inventories = getResources(aMsg, msg.getType(),param,msg.getPolicyUuids(),true);
         count = param.get("count")!=null?param.get("count"):0;
 
         try {
@@ -220,20 +219,23 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     }
 
     private void handle(APIGetPoliciesByResourceMsg msg) {
-        List<PolicyVO> policies = null;
+        List<PolicyVO> policies = new ArrayList<>();
 
         SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
         query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
         query.select(ResourcePolicyRefVO_.policyUuid);
         List<String> policyUuids = query.listValue();
-        SimpleQuery.Op op = SimpleQuery.Op.IN;
-        if (!msg.isBind()) {
-            op = SimpleQuery.Op.NOT_IN;
+        if(policyUuids.size()>0){
+            SimpleQuery.Op op = SimpleQuery.Op.IN;
+            if (!msg.isBind()) {
+                op = SimpleQuery.Op.NOT_IN;
+            }
+            SimpleQuery<PolicyVO> q = dbf.createQuery(PolicyVO.class);
+            q.add(PolicyVO_.uuid, op, policyUuids);
+            q.add(PolicyVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+            policies = q.list();
         }
-        SimpleQuery<PolicyVO> q = dbf.createQuery(PolicyVO.class);
-        q.add(PolicyVO_.uuid, op, policyUuids);
-        q.add(PolicyVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-        policies = q.list();
+
         APIGetPoliciesByResourceReply reply = new APIGetPoliciesByResourceReply();
         if (policies != null) reply.setInventories(PolicyInventory.valueOf(policies));
         bus.reply(msg, reply);
@@ -367,7 +369,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             aMsg.setBind(msg.isBind());
 
             Map<String,Long> param = new HashMap<>();
-            List<ResourceInventory> inventories = getResources(aMsg, policyVo.getProductType(),param);
+            List<ResourceInventory> inventories = getResources(aMsg, policyVo.getProductType(),param,new ArrayList<String>(),true);
             count = param.get("count")!=null?param.get("count"):0;
 
             APIGetResourcesBindByPolicyReply reply = new APIGetResourcesBindByPolicyReply();
@@ -402,6 +404,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 for (TunnelForAlarmInventory inventory : tunnelList) {
                     ResourceInventory resourceInventory = new ResourceInventory();
                     resourceInventory.setAccountUuid(inventory.getAccountUuid());
+                    resourceInventory.setUuid(inventory.getUuid());
                     resourceInventory.setProductUuid(inventory.getUuid());
                     resourceInventory.setProductType(msg.getProductType());
                     resourceInventory.setDescription(inventory.getDescription());
@@ -461,7 +464,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     }
 
 
-    public List<ResourceInventory> getResources(APIQueryTunnelForAlarmMsg aMsg, ProductType productType,Map<String,Long> map) {
+    public List<ResourceInventory> getResources(APIQueryTunnelForAlarmMsg aMsg, ProductType productType,Map<String,Long> map,List<String> policyUuids,boolean isBind) {
         String productServerUrl = getProductUrl(productType);
         List<ResourceInventory> inventories = new ArrayList<>();
         InnerMessageHelper.setMD5(aMsg);
@@ -484,11 +487,18 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                     resourceInventory.setLastOpDate(inventory.getLastOpDate());
                     SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
                     query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, inventory.getUuid());
+                    if(!isBind)query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.NOT_IN, policyUuids);
                     List<ResourcePolicyRefVO> resourcePolicyRefVOS = query.list();
                     List<PolicyInventory> policyInventories = new ArrayList<>();
                     for (ResourcePolicyRefVO resourcePolicyRefVO : resourcePolicyRefVOS) {
                         policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class)));
                     }
+                    if(isBind){
+                        for(String policyUuid:policyUuids){
+                            policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(policyUuid, PolicyVO.class)));
+                        }
+                    }
+
                     resourceInventory.setPolicies(policyInventories);
                     inventories.add(resourceInventory);
                 }
