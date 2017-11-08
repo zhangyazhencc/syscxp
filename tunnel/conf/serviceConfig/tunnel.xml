@@ -124,6 +124,11 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIQueryTaskResourceMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.APIQueryTunnelForAlarmMsg</name>
     </message>
 

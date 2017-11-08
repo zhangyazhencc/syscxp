@@ -2,6 +2,8 @@ package com.syscxp.tunnel.manage;
 
 import com.syscxp.core.db.*;
 import com.syscxp.tunnel.header.switchs.*;
+import com.syscxp.tunnel.header.tunnel.TunnelSwitchPortVO;
+import com.syscxp.tunnel.header.tunnel.TunnelSwitchPortVO_;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.Platform;
@@ -754,6 +756,12 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         if (count > 0) {
             throw new ApiMessageInterceptionException(argerr("portName %s is already exist ", msg.getPortName()));
         }
+        //若果给互联交换机添加端口，该端口只能有一个
+        SwitchVO switchVO = dbf.findByUuid(msg.getSwitchUuid(),SwitchVO.class);
+        boolean exists = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.switchUuid,msg.getSwitchUuid()).isExists();
+        if(switchVO.getType() != SwitchType.ACCESS && exists){
+            throw new ApiMessageInterceptionException(argerr("该互联交换机下已经存在端口"));
+        }
     }
 
     private void validate(APIUpdateSwitchPortMsg msg) {
@@ -761,10 +769,16 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
 
     private void validate(APIDeleteSwitchPortMsg msg) {
 
-        //判断该端口是否被买了
+        //判断该端口是否被购买
         SimpleQuery<InterfaceVO> q = dbf.createQuery(InterfaceVO.class);
         q.add(InterfaceVO_.switchPortUuid, SimpleQuery.Op.EQ, msg.getUuid());
         if (q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("cannot delete,switchPort is being used!"));
+        }
+        //判断该端口是否被使用（主要针对互联交换机端口）
+        SimpleQuery<TunnelSwitchPortVO> q2 = dbf.createQuery(TunnelSwitchPortVO.class);
+        q2.add(TunnelSwitchPortVO_.switchPortUuid, SimpleQuery.Op.EQ, msg.getUuid());
+        if (q2.isExists()) {
             throw new ApiMessageInterceptionException(argerr("cannot delete,switchPort is being used!"));
         }
 

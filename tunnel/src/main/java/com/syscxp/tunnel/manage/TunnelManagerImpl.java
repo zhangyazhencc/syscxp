@@ -1649,7 +1649,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         if(!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())){
-                validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
+            validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
         }
 
     }
