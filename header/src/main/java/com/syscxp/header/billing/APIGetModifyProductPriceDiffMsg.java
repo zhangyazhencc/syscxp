@@ -1,12 +1,14 @@
-package com.syscxp.billing.header.price;
+package com.syscxp.header.billing;
 
 import com.syscxp.header.billing.ProductPriceUnit;
+import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
 import java.sql.Timestamp;
 import java.util.List;
 
+@InnerCredentialCheck
 public class APIGetModifyProductPriceDiffMsg extends APISyncCallMessage {
     @APIParam(nonempty = true)
     private List<ProductPriceUnit> units;
