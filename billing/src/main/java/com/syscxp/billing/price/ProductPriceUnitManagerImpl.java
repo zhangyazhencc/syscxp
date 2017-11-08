@@ -127,7 +127,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
 
         SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
-        query.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
+        query.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         query.add(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
         RenewVO renewVO = query.find();
         if (renewVO == null) {

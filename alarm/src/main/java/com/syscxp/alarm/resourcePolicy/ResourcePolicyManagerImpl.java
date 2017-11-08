@@ -26,6 +26,7 @@ import com.syscxp.header.falconapi.FalconApiRestConstant;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
+import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.query.QueryCondition;
 import com.syscxp.header.rest.RESTFacade;
@@ -471,38 +472,42 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         String gstr = RESTApiDecoder.dump(aMsg);
         RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
         if (rsp.getState().equals(RestAPIState.Done.toString())) {
-            APIQueryTunnelForAlarmReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
-            if (productReply instanceof APIQueryTunnelForAlarmReply) {
-                List<TunnelForAlarmInventory> tunnelList = productReply.getInventories();
-                map.put("count",productReply.getCount());
-                for (TunnelForAlarmInventory inventory : tunnelList) {
-                    ResourceInventory resourceInventory = new ResourceInventory();
-                    resourceInventory.setUuid(inventory.getUuid());
-                    resourceInventory.setAccountUuid(inventory.getAccountUuid());
-                    resourceInventory.setProductUuid(inventory.getUuid());
-                    resourceInventory.setProductType(productType);
-                    resourceInventory.setDescription(inventory.getDescription());
-                    resourceInventory.setProductName(inventory.getName());
-                    resourceInventory.setCreateDate(inventory.getCreateDate());
-                    resourceInventory.setLastOpDate(inventory.getLastOpDate());
-                    SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
-                    query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, inventory.getUuid());
-                    if(!isBind)query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.NOT_IN, policyUuids);
-                    List<ResourcePolicyRefVO> resourcePolicyRefVOS = query.list();
-                    List<PolicyInventory> policyInventories = new ArrayList<>();
-                    for (ResourcePolicyRefVO resourcePolicyRefVO : resourcePolicyRefVOS) {
-                        policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class)));
-                    }
-                    if(isBind){
-                        for(String policyUuid:policyUuids){
-                            policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(policyUuid, PolicyVO.class)));
+            try {
+                APIQueryTunnelForAlarmReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
+                if (productReply instanceof APIQueryTunnelForAlarmReply) {
+                    List<TunnelForAlarmInventory> tunnelList = productReply.getInventories();
+                    map.put("count", productReply.getCount());
+                    for (TunnelForAlarmInventory inventory : tunnelList) {
+                        ResourceInventory resourceInventory = new ResourceInventory();
+                        resourceInventory.setUuid(inventory.getUuid());
+                        resourceInventory.setAccountUuid(inventory.getAccountUuid());
+                        resourceInventory.setProductUuid(inventory.getUuid());
+                        resourceInventory.setProductType(productType);
+                        resourceInventory.setDescription(inventory.getDescription());
+                        resourceInventory.setProductName(inventory.getName());
+                        resourceInventory.setCreateDate(inventory.getCreateDate());
+                        resourceInventory.setLastOpDate(inventory.getLastOpDate());
+                        SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
+                        query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, inventory.getUuid());
+                        if (!isBind) query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.NOT_IN, policyUuids);
+                        List<ResourcePolicyRefVO> resourcePolicyRefVOS = query.list();
+                        List<PolicyInventory> policyInventories = new ArrayList<>();
+                        for (ResourcePolicyRefVO resourcePolicyRefVO : resourcePolicyRefVOS) {
+                            policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class)));
                         }
+                        if (isBind) {
+                            for (String policyUuid : policyUuids) {
+                                policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(policyUuid, PolicyVO.class)));
+                            }
+                        }
+
+                        resourceInventory.setPolicies(policyInventories);
+                        inventories.add(resourceInventory);
                     }
 
-                    resourceInventory.setPolicies(policyInventories);
-                    inventories.add(resourceInventory);
                 }
-
+            }catch (Exception e){
+                return inventories;
             }
         }
         return inventories;
