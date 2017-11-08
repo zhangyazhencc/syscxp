@@ -232,7 +232,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }
         SimpleQuery<PolicyVO> q = dbf.createQuery(PolicyVO.class);
         q.add(PolicyVO_.uuid, op, policyUuids);
-        q.add(PolicyVO_.accountUuid, op, msg.getAccountUuid());
+        q.add(PolicyVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         policies = q.list();
         APIGetPoliciesByResourceReply reply = new APIGetPoliciesByResourceReply();
         if (policies != null) reply.setInventories(PolicyInventory.valueOf(policies));

@@ -16,7 +16,7 @@ public class AlarmLogInventory {
     private ProductType productType;
     private Long duration;
     private String alarmContent;
-    private String status;
+    private AlarmStatus status;
     private String accountUuid;
     private String smsContent;
     private String mailContent;
@@ -92,11 +92,11 @@ public class AlarmLogInventory {
         this.alarmContent = alarmContent;
     }
 
-    public String getStatus() {
+    public AlarmStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(AlarmStatus status) {
         this.status = status;
     }
 
