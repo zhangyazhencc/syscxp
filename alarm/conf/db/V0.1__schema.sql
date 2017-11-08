@@ -23,7 +23,6 @@ DROP TABLE IF EXISTS `AlarmLogVO`;
 CREATE TABLE `AlarmLogVO` (
   `uuid` varchar(32) NOT NULL,
   `productUuid` varchar(32) DEFAULT NULL,
-  `productName` varchar(128) DEFAULT NULL,
   `productType` varchar(255) DEFAULT NULL,
   `duration` int(10) DEFAULT NULL COMMENT '持续时间',
   `alarmContent` varchar(256) DEFAULT NULL COMMENT '报警内容',
@@ -31,8 +30,11 @@ CREATE TABLE `AlarmLogVO` (
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户UUID',
   `smsContent` varchar(256) DEFAULT NULL COMMENT '短信内容',
   `mailContent` varchar(256) DEFAULT NULL COMMENT '邮件内容',
-  `ruleName` varchar(255) DEFAULT NULL COMMENT '策略名字',
+  `regulationUuid` varchar(32) DEFAULT NULL COMMENT '策略名字',
+  `policyName` varchar(255) DEFAULT NULL COMMENT '策略名字',
   `eventId` varchar(128) DEFAULT NULL COMMENT '事件ID',
+  `alarmTime` timestamp ,
+  `resumeTime` timestamp ,
   `createDate` timestamp ,
   `lastOpDate` timestamp ,
   PRIMARY KEY (`uuid`)
@@ -297,18 +299,7 @@ CREATE TABLE `SmsVO` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-DROP TABLE IF EXISTS `AlarmTimeRecordVO`;
 
-CREATE TABLE `AlarmTimeRecordVO` (
-  `uuid` varchar(32) NOT NULL,
-  `tunnelUuid` varchar(32) DEFAULT NULL,
-  `eventId` varchar(128) DEFAULT NULL COMMENT '事件ID',
-  `status` varchar(127) DEFAULT NULL COMMENT '报警状态',
-  `productType` varchar(255) DEFAULT NULL COMMENT '产品类型',
-  `createDate` timestamp ,
-  `lastOpDate` timestamp ,
-  PRIMARY KEY (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 
 /*Data for the table `ResourceVO` */

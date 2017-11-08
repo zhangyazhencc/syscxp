@@ -93,7 +93,7 @@ public class APICreateVpnHostMsg extends APIAddHostMsg {
                 }
 
                 ntfy("Create VpnHostVO")
-                        .resource(uuid, VpnHostVO.class.getSimpleName())
+                        .resource(uuid, VpnHostVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

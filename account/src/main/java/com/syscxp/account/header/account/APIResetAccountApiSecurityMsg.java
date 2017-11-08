@@ -43,7 +43,7 @@ public class APIResetAccountApiSecurityMsg extends APIMessage implements Account
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Reset api_key").resource(getAccountUuid(), AccountVO.class.getSimpleName())
+                ntfy("Reset api_key").resource(getAccountUuid(), AccountVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

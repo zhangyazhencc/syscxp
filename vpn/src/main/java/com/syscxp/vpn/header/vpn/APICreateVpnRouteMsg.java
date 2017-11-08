@@ -64,7 +64,7 @@ public class APICreateVpnRouteMsg extends APIMessage {
                 }
 
                 ntfy("Create VpnRouteVO")
-                        .resource(uuid, VpnRouteVO.class.getSimpleName())
+                        .resource(uuid, VpnRouteVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

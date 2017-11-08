@@ -41,12 +41,12 @@ public class N {
 
     private N(String resourceType, String resourceUuid) {
         this();
-        builder.resource(resourceUuid, resourceType);
+        builder.type(resourceUuid, resourceType);
     }
 
     private N(Class resourceClass, String resourceUuid) {
         this();
-        builder.resource(resourceUuid, resourceClass.getSimpleName());
+        builder.type(resourceUuid, resourceClass.getSimpleName());
     }
 
     private void send() {

@@ -27,7 +27,7 @@ public class APIDeleteVpnRouteMsg extends APIDeleteMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Delete VpnRouteVO")
-                        .resource(uuid, VpnRouteVO.class.getSimpleName())
+                        .resource(uuid, VpnRouteVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

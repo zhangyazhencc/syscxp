@@ -71,7 +71,7 @@ public class APIUpdateReceiptPostAddressMsg extends APIMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Update ReceiptPostAddressVO")
-                        .resource(uuid, ReceiptPostAddressVO.class.getSimpleName())
+                        .resource(uuid, ReceiptPostAddressVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

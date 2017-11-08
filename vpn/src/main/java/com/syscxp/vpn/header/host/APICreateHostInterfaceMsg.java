@@ -52,7 +52,7 @@ public class APICreateHostInterfaceMsg extends APIMessage {
                 }
 
                 ntfy("Create HostInterfaceVO")
-                        .resource(uuid, HostInterfaceVO.class.getSimpleName())
+                        .resource(uuid, HostInterfaceVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

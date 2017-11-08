@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.manage;
 
+import com.sun.javafx.binding.StringFormatter;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.db.*;
 import com.syscxp.header.core.Completion;
@@ -44,6 +45,7 @@ import com.syscxp.utils.network.NetworkUtils;
 import javax.management.monitor.Monitor;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
+import java.net.UnknownHostException;
 import java.util.*;
 
 import static com.syscxp.core.Platform.argerr;
@@ -96,9 +98,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APIDeleteHostSwitchMonitorMsg) msg);
         } else if (msg instanceof APIStartTunnelMonitorMsg) {
             handle((APIStartTunnelMonitorMsg) msg);
-        }else if (msg instanceof APIRestartTunnelMonitorMsg) {
+        } else if (msg instanceof APIRestartTunnelMonitorMsg) {
             handle((APIRestartTunnelMonitorMsg) msg);
-        }else if (msg instanceof APIStopTunnelMonitorMsg) {
+        } else if (msg instanceof APIStopTunnelMonitorMsg) {
             handle((APIStopTunnelMonitorMsg) msg);
         } else if (msg instanceof APICreateSpeedRecordsMsg) {
             handle((APICreateSpeedRecordsMsg) msg);
@@ -155,79 +157,79 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         APIStartTunnelMonitorEvent event = new APIStartTunnelMonitorEvent(msg.getId());
 
         // 创建监控通道
-        List<TunnelMonitorVO> tunnelMonitorVOS = createTunnelMonitorHandle(msg,event);
+        List<TunnelMonitorVO> tunnelMonitorVOS = createTunnelMonitorHandle(msg, event);
 
         // 控制器命令下发
-        if(event.isSuccess())
+        if (event.isSuccess())
             startControllerCommand(msg.getTunnelUuid(), tunnelMonitorVOS, event);
 
         // 同步icmp
         if (event.isSuccess())
-            icmpSync(msg.getSession(), msg.getTunnelUuid(), tunnelMonitorVOS,event);
+            icmpSync(msg.getSession().getAccountUuid(), msg.getTunnelUuid(), tunnelMonitorVOS, event);
 
         // 更新tunnel状态
-        if (event.isSuccess()) {
-            TunnelVO tunnelVO = Q.New(TunnelVO.class)
-                    .eq(TunnelVO_.uuid, msg.getTunnelUuid())
-                    .find();
-
-            tunnelVO.setMonitorCidr(msg.getMonitorCidr());
-            tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
-            dbf.getEntityManager().persist(tunnelVO);
-        }
-
-        bus.publish(event);
-    }
-
-    @Transactional
-    private void handle(APIRestartTunnelMonitorMsg msg) {
-        APIRestartTunnelMonitorEvent event = new APIRestartTunnelMonitorEvent(msg.getId());
-
-        // 获取监控通道数据
-        List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(msg.getTunnelUuid());
-
-        // 更新监控IP
-        if(StringUtils.isNotEmpty(msg.getMonitorCidr())){
-            if(StringUtils.isNotEmpty(msg.getStartIp())||StringUtils.isNotEmpty(msg.getStartIp())){
-                event.setSuccess(false);
-                event.setError(Platform.operr("监控网络网段开始、结束IP不能为空！"));
-            }
-
-            List<String> locatedIps =
-                    Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, msg.getTunnelUuid()).select(TunnelMonitorVO_.monitorIp).findValue();
-
-            for(TunnelMonitorVO vo:tunnelMonitorVOS){
-                vo.setMonitorIp(getMonitorIp(msg.getMonitorCidr(),msg.getStartIp(),msg.getEndIp(),locatedIps));
-            }
-        }
-
-        // 控制器命令下发
-        if(event.isSuccess())
-            startControllerCommand(msg.getTunnelUuid(), tunnelMonitorVOS, event);
-
-        // 同步icmp
         if (event.isSuccess())
-            icmpSync(msg.getSession(), msg.getTunnelUuid(), tunnelMonitorVOS,event);
-
-        // 更新tunnel状态
-        TunnelVO tunnelVO = Q.New(TunnelVO.class)
-                .eq(TunnelVO_.uuid, msg.getTunnelUuid())
-                .find();
-
-        tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
-        if(StringUtils.isNotEmpty(msg.getMonitorCidr())){
-            tunnelVO.setMonitorCidr(msg.getMonitorCidr());
-        }
-        dbf.getEntityManager().persist(tunnelVO);
+            updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled);
+        else
+            logger.error(String.format("tunnelUuid: %s 开启监控失败 Error: %s", msg.getTunnelUuid(), event.getError().toString()));
 
         bus.publish(event);
     }
 
     @Transactional
     private void handle(APIStopTunnelMonitorMsg msg) {
-        APIStartTunnelMonitorEvent event = new APIStartTunnelMonitorEvent(msg.getId());
+        APIStopTunnelMonitorEvent event = new APIStopTunnelMonitorEvent(msg.getId());
 
-        stopTunnelMonitor(msg.getTunnelUuid(),event);
+        stopTunnelMonitor(msg.getTunnelUuid(), event);
+
+        bus.publish(event);
+    }
+
+    private void handle(APIRestartTunnelMonitorMsg msg) {
+        APIRestartTunnelMonitorEvent event = new APIRestartTunnelMonitorEvent(msg.getId());
+
+        // 获取监控通道数据
+        List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(msg.getTunnelUuid());
+
+        // 控制器命令删除
+        ControllerCommands.TunnelMonitorCommand cmd = getTunnelMonitorCommand(msg.getTunnelUuid(), tunnelMonitorVOS);
+        stopControllerCommand(cmd, event);
+
+        // 更新监控IP
+        if (event.isSuccess()) {
+            if (StringUtils.isNotEmpty(msg.getMonitorCidr())) {
+                try {
+                    CIDRUtils cidrUtils = new CIDRUtils(msg.getMonitorCidr());
+                    String startIp = cidrUtils.getNetworkAddress();
+                    String endIp = cidrUtils.getBroadcastAddress();
+
+                    List<String> locatedIps =
+                            Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, msg.getTunnelUuid()).select(TunnelMonitorVO_.monitorIp).findValue();
+
+                    for (TunnelMonitorVO vo : tunnelMonitorVOS) {
+                        vo.setMonitorIp(getMonitorIp(msg.getMonitorCidr(), startIp, endIp, locatedIps));
+                        dbf.getEntityManager().persist(vo);
+                    }
+                } catch (UnknownHostException e) {
+                    event.setSuccess(false);
+                    event.setError(Platform.operr("获取监控ip错误！" + e.getMessage()));
+                }
+            }
+        }
+
+        // 控制器命令下发
+        if (event.isSuccess())
+            startControllerCommand(msg.getTunnelUuid(), tunnelMonitorVOS, event);
+
+        // 同步icmp
+        if (event.isSuccess())
+            icmpSync(msg.getSession().getAccountUuid(), msg.getTunnelUuid(), tunnelMonitorVOS, event);
+
+        // 更新tunnel状态
+        if (event.isSuccess())
+            updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled);
+        else
+            logger.error(String.format("tunnelUuid: %s 重启监控失败 Error: %s", msg.getTunnelUuid(), event.getError().toString()));
 
         bus.publish(event);
     }
@@ -272,16 +274,19 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param msg
      * @return：创建的监控通道
      */
-    private List<TunnelMonitorVO> createTunnelMonitorHandle(APIStartTunnelMonitorMsg msg,APIEvent event) {
+    private List<TunnelMonitorVO> createTunnelMonitorHandle(APIStartTunnelMonitorMsg msg, APIEvent event) {
         List<TunnelMonitorVO> tunnelMonitorVOS = new ArrayList<TunnelMonitorVO>();
         try {
             // 按tunnel查找TunnelMonitorVO已经存在的IP
             List<String> locatedIps =
                     Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, msg.getTunnelUuid()).select(TunnelMonitorVO_.monitorIp).findValue();
 
+            CIDRUtils cidrUtils = new CIDRUtils(msg.getMonitorCidr());
+            String startIp = cidrUtils.getNetworkAddress();
+            String endIp = cidrUtils.getBroadcastAddress();
+
             // 获取tunnel两端交换机端口
             List<TunnelSwitchPortVO> portVOS = getMonitorTunnelSwitchPortByTunnelId(msg.getTunnelUuid());
-
             for (TunnelSwitchPortVO tunnelSwitchPortVO : portVOS) {
                 // 按tunnel port查询是否有已存在的监控机与监控IP
                 TunnelMonitorVO monitorVO = new TunnelMonitorVO();
@@ -292,7 +297,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 // 获取监控主机
                 String hostUuid = getHostUuid(tunnelSwitchPortVO.getSwitchPortUuid());
                 // 根据cidr获取监控IP
-                String monitorIp = getMonitorIp(msg.getMonitorCidr(), msg.getStartIp(), msg.getEndIp(), locatedIps);
+                String monitorIp = getMonitorIp(msg.getMonitorCidr(), startIp, endIp, locatedIps);
 
                 monitorVO.setUuid(Platform.getUuid());
                 monitorVO.setTunnelUuid(msg.getTunnelUuid());
@@ -306,49 +311,15 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             dbf.getEntityManager().flush();
         } catch (Exception e) {
             event.setSuccess(false);
-            event.setError(Platform.operr("创建监控通道失败！:" + e.getMessage()));
-            logger.error(e.getMessage());
+            event.setError(Platform.operr("tunnelUuid: %s %s Error: %s", msg.getTunnelUuid(), "创建监控通道失败！:" + e.getMessage()));
         }
 
-        if (tunnelMonitorVOS.isEmpty()){
+        if (tunnelMonitorVOS.isEmpty()) {
             event.setSuccess(false);
-            event.setError(Platform.operr("创建监控通道失败！"));
+            event.setError(Platform.operr("tunnelUuid: %s %s", msg.getTunnelUuid(), "创建监控通道失败！:"));
         }
 
         return tunnelMonitorVOS;
-    }
-
-    /***
-     * 删除监控通道：删除tunnel
-     * @param tunnelUuid
-     * @param event
-     */
-    public void deleteTunnelMonitor(String tunnelUuid,APIEvent event){
-        // 获取监控通道数据
-        List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelUuid);
-
-        // 控制器命令删除
-        stopControllerCommand(tunnelUuid, tunnelMonitorVOS, event);
-
-        // 删除icmp
-        if (event.isSuccess()) {
-            icmpDelete(tunnelUuid,event);
-        }
-
-        // 删除监控通道数据
-        UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid,tunnelUuid).delete();
-
-        // 更新tunnel状态
-        if (event.isSuccess()) {
-            TunnelVO tunnelVO = Q.New(TunnelVO.class)
-                    .eq(TunnelVO_.uuid, tunnelUuid)
-                    .find();
-
-            tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
-            dbf.getEntityManager().persist(tunnelVO);
-        }
-
-        bus.publish(event);
     }
 
     /***
@@ -356,26 +327,95 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelUuid
      * @param event
      */
-    public void stopTunnelMonitor(String tunnelUuid,APIEvent event){
+    public void stopTunnelMonitor(String tunnelUuid, APIEvent event) {
         // 获取监控通道数据
         List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelUuid);
 
         // 控制器命令删除
-        stopControllerCommand(tunnelUuid, tunnelMonitorVOS, event);
+        ControllerCommands.TunnelMonitorCommand cmd = getTunnelMonitorCommand(tunnelUuid, tunnelMonitorVOS);
+        stopControllerCommand(cmd, event);
 
         // 删除icmp
         if (event.isSuccess())
-            icmpDelete(tunnelUuid,event);
+            icmpDelete(tunnelUuid, event);
 
         // 更新tunnel状态
-        if (event.isSuccess()) {
-            TunnelVO tunnelVO = Q.New(TunnelVO.class)
-                    .eq(TunnelVO_.uuid, tunnelUuid)
-                    .find();
+        if (event.isSuccess())
+            updateTunnel(tunnelUuid, "", TunnelMonitorState.Disabled);
+        else
+            logger.error(String.format("tunnelUuid: %s 关闭监控失败 Error: %s", tunnelUuid, event.getError().toString()));
+    }
 
-            tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
-            dbf.getEntityManager().persist(tunnelVO);
+    /***
+     * 重启监控通道：tunnel修改vlan、调整带宽、修改端口调用
+     * @param tunnelUuid
+     * @param event
+     */
+    public void restartTunnelMonitor(String tunnelUuid, String accountUuid, ControllerCommands.TunnelMonitorCommand monitorCommand, APIEvent event) {
+        // 控制器命令删除
+        stopControllerCommand(monitorCommand, event);
+
+        // 获取监控通道数据
+        List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelUuid);
+        // 控制器命令下发
+        if (event.isSuccess())
+            startControllerCommand(tunnelUuid, tunnelMonitorVOS, event);
+
+        // 同步icmp
+        if (event.isSuccess())
+            icmpSync(accountUuid, tunnelUuid, tunnelMonitorVOS, event);
+
+        // 更新tunnel状态
+        if (!event.isSuccess()) {
+            updateTunnel(tunnelUuid, "", TunnelMonitorState.Disabled);
+            logger.error("tunnelUuid:" + tunnelUuid + " 重新开启监控失败" + event.getError().toString());
         }
+    }
+
+    /***
+     * 删除监控通道：删除tunnel
+     * @param tunnelUuid
+     * @param event
+     */
+    public void deleteTunnelMonitor(String tunnelUuid, APIEvent event) {
+        // 获取监控通道数据
+        List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelUuid);
+
+        // 控制器命令删除
+        ControllerCommands.TunnelMonitorCommand cmd = getTunnelMonitorCommand(tunnelUuid, tunnelMonitorVOS);
+        stopControllerCommand(cmd, event);
+
+        // 删除icmp
+        if (event.isSuccess())
+            icmpDelete(tunnelUuid, event);
+
+        // 删除监控通道数据
+        UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).delete();
+
+        // 更新tunnel状态
+        if (event.isSuccess())
+            updateTunnel(tunnelUuid,"",TunnelMonitorState.Disabled);
+        else
+            logger.error("tunnelUuid:" + tunnelUuid + " 关闭监控失败" + event.getError().toString());
+    }
+
+    /***
+     * 更新tunnel监控状态
+     * @param tunnelUuid
+     * @param monitorCidr
+     * @param monitorState
+     */
+    private void updateTunnel(String tunnelUuid, String monitorCidr, TunnelMonitorState monitorState) {
+        // 更新tunnel状态
+        TunnelVO tunnelVO = Q.New(TunnelVO.class)
+                .eq(TunnelVO_.uuid, tunnelUuid)
+                .find();
+
+        tunnelVO.setMonitorState(monitorState);
+        if (StringUtils.isNotEmpty(monitorCidr)) {
+            tunnelVO.setMonitorCidr(monitorCidr);
+        }
+        dbf.getEntityManager().persist(tunnelVO);
     }
 
     /***
@@ -397,21 +437,19 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
         }
 
-        if (!response.isSuccess()) {
+        if (!response.isSuccess())
             event.setError(Platform.operr("监控命令下发失败！ %s", response.getMsg()));
-        }
     }
 
     /**
      * 控制器命令删除：关闭监控、中止tunnel
+     *
      * @param tunnelUuid
      * @param tunnelMonitorVOS
      * @param event
      */
-    private void stopControllerCommand(String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS, APIEvent event){
+    private void stopControllerCommand(ControllerCommands.TunnelMonitorCommand cmd, APIEvent event) {
         String url = CoreGlobalProperty.CONTROLLER_MANAGER_URL;
-        ControllerCommands.TunnelMonitorCommand cmd = getTunnelMonitorCommand(tunnelUuid, tunnelMonitorVOS);
-
         ControllerCommands.ControllerRestResponse response = new ControllerCommands.ControllerRestResponse();
         try {
             String command = JSONObjectUtil.toJsonString(cmd);
@@ -421,9 +459,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
         }
 
-        if (!response.isSuccess()) {
+        if (!response.isSuccess())
             event.setError(Platform.operr("监控命令删除失败！ %s", response.getMsg()));
-        }
     }
 
     /**
@@ -432,11 +469,11 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param msg
      * @return：创建的监控通道
      */
-    private void icmpSync(SessionInventory session, String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS, APIEvent event) {
+    private void icmpSync(String accountUuid, String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS, APIEvent event) {
         String url = CoreGlobalProperty.FALCON_API_SERVER_URL;
         FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
         try {
-            FalconApiCommands.Icmp icmp = getIcmp(session, tunnelUuid, tunnelMonitorVOS);
+            FalconApiCommands.Icmp icmp = getIcmp(accountUuid, tunnelUuid, tunnelMonitorVOS);
             String savaJson = JSONObjectUtil.toJsonString(icmp);
 
             response = evtf.syncJsonPost(url + FalconApiRestConstant.ICMP_SYNC, savaJson, FalconApiCommands.RestResponse.class);
@@ -445,16 +482,15 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
         }
 
-        if (!response.isSuccess()) {
-            event.setError(Platform.operr("同步ICMP失败！ %s",response.getMsg()));
-        }
+        if (!response.isSuccess())
+            event.setError(Platform.operr("同步ICMP失败！ %s", response.getMsg()));
     }
 
     /***
      * 删除falcon_portal ICMP数据：关闭监控、tunnel删除、tunnel中止
      * @param tunnelUuid
      */
-    private void icmpDelete(String tunnelUuid,APIEvent event){
+    private void icmpDelete(String tunnelUuid, APIEvent event) {
         String url = CoreGlobalProperty.FALCON_API_SERVER_URL;
         FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
 
@@ -469,18 +505,17 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
         }
 
-        if (!response.isSuccess()) {
-            event.setError(Platform.operr("删除ICMP失败！ %s",response.getMsg()));
-        }
+        if (!response.isSuccess())
+            event.setError(Platform.operr("删除ICMP失败！ %s", response.getMsg()));
     }
 
-    public FalconApiCommands.Icmp getIcmp(SessionInventory session, String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS) {
+    public FalconApiCommands.Icmp getIcmp(String accountUuid, String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS) {
         FalconApiCommands.Icmp icmp = new FalconApiCommands.Icmp();
         TunnelVO tunnelVO = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelUuid).find();
 
         icmp.setTunnel_id(tunnelUuid);
         icmp.setTunnel_name(tunnelVO.getName());
-        icmp.setUser_id(session.getAccountUuid());
+        icmp.setUser_id(accountUuid);
         icmp.setCidr(tunnelVO.getMonitorCidr());
 
         for (TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS) {
@@ -514,7 +549,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelUuid
      * @return
      */
-    private ControllerCommands.TunnelMonitorCommand getTunnelMonitorCommand(String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS) {
+    public ControllerCommands.TunnelMonitorCommand getTunnelMonitorCommand(String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS) {
         List<ControllerCommands.TunnelMonitorMpls> mplsList = new ArrayList<>();
         List<ControllerCommands.TunnelMonitorSdn> sdnList = new ArrayList<>();
 
@@ -681,21 +716,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     /***
-     * 按tunnelUuid删除TunnelMonitorVO
-     * @param tunnelUuid
-     */
-    public void deleteTunnelMonitorByTunnel(String tunnelUuid) {
-        List<TunnelMonitorVO> vos = Q.New(TunnelMonitorVO.class).
-                eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).
-                list();
-
-        for (TunnelMonitorVO vo : vos) {
-            dbf.getEntityManager().remove(vo);
-        }
-    }
-
-    /***
-     * 按tunnelSwitchPortUuid修改unnelMonitorVO
+     * tunnel修改switch port，修改unnelMonitorVO.hostUuid
      * @param tunnelUuid
      */
     public void updateTunnelMonitorHostByTunnelSwitchPort(String tunnelSwitchPortUuid) {
@@ -706,12 +727,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         MonitorHostVO monitorHostVO = getHostBySwitchPort(tunnelSwitchPortVO.getSwitchPortUuid());
         TunnelMonitorVO tunnelMonitorVO = getTunnelMonitorByTunnelSwitchPort(tunnelSwitchPortUuid);
 
-        if (tunnelMonitorVO != null) {
-            if (monitorHostVO != null) {
-                tunnelMonitorVO.setHostUuid(monitorHostVO.getUuid());
-
-                dbf.update(tunnelMonitorVO);
-            }
+        if (tunnelMonitorVO != null && monitorHostVO != null) {
+            tunnelMonitorVO.setHostUuid(monitorHostVO.getUuid());
+            dbf.update(tunnelMonitorVO);
         }
     }
 

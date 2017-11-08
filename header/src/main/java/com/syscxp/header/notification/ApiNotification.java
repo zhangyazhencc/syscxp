@@ -21,6 +21,7 @@ public abstract class ApiNotification {
         Object[] arguments;
         String resourceUuid;
         String resourceType;
+        Class resourceClass;
         APIMessage message;
         APIEvent event;
         Boolean success;
@@ -50,8 +51,8 @@ public abstract class ApiNotification {
             return resourceUuid;
         }
 
-        public String getResourceType() {
-            return resourceType;
+        public Class getResourceClass() {
+            return resourceClass;
         }
 
         public Boolean getSuccess() {
@@ -78,9 +79,15 @@ public abstract class ApiNotification {
             return this;
         }
 
-        public Inner resource(String uuid, String type) {
-            resourceUuid = uuid;
-            resourceType = type;
+        public Inner account(String accountUuid) {
+            this.accountUuid = accountUuid;
+            return this;
+        }
+
+        public Inner resource(String uuid, Class clazz) {
+            this.resourceUuid = uuid;
+            this.resourceClass = clazz;
+            this.resourceType = clazz.getSimpleName();
             return this;
         }
 

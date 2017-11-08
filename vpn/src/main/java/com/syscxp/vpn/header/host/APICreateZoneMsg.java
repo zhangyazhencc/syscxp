@@ -62,7 +62,7 @@ public class APICreateZoneMsg extends APIMessage {
                 }
 
                 ntfy("Create ZoneVO")
-                        .resource(uuid, ZoneVO.class.getSimpleName())
+                        .resource(uuid, ZoneVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

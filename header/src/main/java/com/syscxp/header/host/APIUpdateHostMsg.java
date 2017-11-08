@@ -70,7 +70,7 @@ public class APIUpdateHostMsg extends APIMessage implements HostMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Updated").resource(uuid, HostVO.class.getSimpleName())
+                ntfy("Updated").resource(uuid, HostVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

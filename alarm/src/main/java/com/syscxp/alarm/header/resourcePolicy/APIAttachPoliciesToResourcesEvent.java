@@ -1,15 +1,19 @@
 package com.syscxp.alarm.header.resourcePolicy;
 
-import com.syscxp.header.message.APIReply;
-import com.syscxp.header.tunnel.TunnelForAlarmInventory;
+import com.syscxp.header.message.APIEvent;
 
 import java.util.List;
 
-public class APIGetResourcesBindByPolicyReply extends APIReply {
+public class APIAttachPoliciesToResourcesEvent extends APIEvent {
 
-    private List<ResourceInventory> inventories;
 
-    private long count;
+    public APIAttachPoliciesToResourcesEvent(String apiId) {super(apiId);}
+
+    public APIAttachPoliciesToResourcesEvent(){}
+
+    List<ResourceInventory> inventories;
+
+    long count;
 
     public List<ResourceInventory> getInventories() {
         return inventories;

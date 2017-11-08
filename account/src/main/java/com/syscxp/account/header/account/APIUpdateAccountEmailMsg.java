@@ -66,7 +66,7 @@ public class APIUpdateAccountEmailMsg extends APIMessage implements AccountMessa
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update account email").resource(getAccountUuid(), AccountVO.class.getSimpleName())
+                ntfy("Update account email").resource(getAccountUuid(), AccountVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };
