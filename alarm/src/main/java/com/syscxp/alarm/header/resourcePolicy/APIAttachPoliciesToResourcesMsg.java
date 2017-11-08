@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIParam;
 
 import java.util.List;
 
-public class APIAttachResourcesByPoliciesMsg extends APIMessage {
+public class APIAttachPoliciesToResourcesMsg extends APIMessage {
 
     @APIParam
     private List<String> policyUuids;

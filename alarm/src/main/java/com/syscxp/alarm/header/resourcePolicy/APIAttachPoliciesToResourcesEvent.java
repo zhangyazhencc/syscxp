@@ -4,12 +4,12 @@ import com.syscxp.header.message.APIEvent;
 
 import java.util.List;
 
-public class APIAttachResourcesByPoliciesEvent extends APIEvent {
+public class APIAttachPoliciesToResourcesEvent extends APIEvent {
 
 
-    public APIAttachResourcesByPoliciesEvent(String apiId) {super(apiId);}
+    public APIAttachPoliciesToResourcesEvent(String apiId) {super(apiId);}
 
-    public APIAttachResourcesByPoliciesEvent(){}
+    public APIAttachPoliciesToResourcesEvent(){}
 
     List<ResourceInventory> inventories;
 

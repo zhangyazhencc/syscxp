@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIParam;
 
 import java.util.List;
 
-public class APIDetachResourcesByPoliciesMsg extends APIMessage {
+public class APIDetachPoliciesToResourcesMsg extends APIMessage {
 
     @APIParam
     private String accountUuid;
