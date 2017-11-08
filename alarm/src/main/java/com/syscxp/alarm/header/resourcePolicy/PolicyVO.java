@@ -21,7 +21,8 @@ public class PolicyVO extends BaseVO {
     @Column
     private String description;
 
-    private Long bindResources;
+    @Column
+    private long bindResources;
 
     @Column
     private String accountUuid;
@@ -54,11 +55,11 @@ public class PolicyVO extends BaseVO {
         this.description = description;
     }
 
-    public Long getBindResources() {
+    public long getBindResources() {
         return bindResources;
     }
 
-    public void setBindResources(Long bindResources) {
+    public void setBindResources(long bindResources) {
         this.bindResources = bindResources;
     }
 

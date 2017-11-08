@@ -15,6 +15,9 @@ public class APICreateUnsubcribeOrderMsg extends APICreateOrderMsg {
     @APIParam
     private Timestamp expiredTime;
 
+    @APIParam(required = false)
+    private boolean isCreateFailure;
+
     public Timestamp getStartTime() {
         return startTime;
     }
@@ -36,5 +39,13 @@ public class APICreateUnsubcribeOrderMsg extends APICreateOrderMsg {
     }
 
     public APICreateUnsubcribeOrderMsg() {
+    }
+
+    public boolean isCreateFailure() {
+        return isCreateFailure;
+    }
+
+    public void setCreateFailure(boolean createFailure) {
+        isCreateFailure = createFailure;
     }
 }
