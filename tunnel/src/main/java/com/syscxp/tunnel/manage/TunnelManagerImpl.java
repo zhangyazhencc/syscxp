@@ -17,22 +17,16 @@ import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.header.tunnel.*;
 import com.syscxp.query.QueryFacade;
 import com.syscxp.tunnel.header.endpoint.EndpointVO;
-import com.syscxp.tunnel.header.monitor.HostSwitchMonitorVO;
-import com.syscxp.tunnel.header.monitor.HostSwitchMonitorVO_;
-import com.syscxp.tunnel.header.monitor.TunnelMonitorVO;
 import com.syscxp.tunnel.header.node.NodeVO;
 import com.syscxp.tunnel.header.node.ZoneNodeRefVO;
 import com.syscxp.tunnel.header.node.ZoneNodeRefVO_;
 import com.syscxp.tunnel.header.switchs.*;
 import com.syscxp.tunnel.header.tunnel.*;
-import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
-import com.syscxp.utils.function.Function;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -1197,23 +1191,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             cleanExpiredProductThread.cancel(true);
         }
 
-        cleanExpiredProductThread = thdf.submitPeriodicTask(new CleanExpiredProductThread(), TimeUnit.DAYS.toMillis(1));
+        cleanExpiredProductThread = thdf.submitPeriodicTask(new CleanExpiredProductThread(), TimeUnit.SECONDS.toMillis(10));
         logger.debug(String
                 .format("security group cleanExpiredProductThread starts[cleanExpiredProductInterval: %s day]", cleanExpiredProductInterval));
     }
-
-    private List<TunnelVO> tunnelVOs = new ArrayList<>();
 
     private class CleanExpiredProductThread implements PeriodicTask {
 
         @Override
         public TimeUnit getTimeUnit() {
-            return TimeUnit.DAYS;
+            return TimeUnit.MILLISECONDS;
         }
 
         @Override
         public long getInterval() {
-            return cleanExpiredProductInterval;
+            return TimeUnit.DAYS.toMillis(cleanExpiredProductInterval);
         }
 
         @Override
@@ -1221,10 +1213,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             return "clean-expired-product-" + Platform.getManagementServerId();
         }
 
-        @Transactional
         private List<TunnelVO> getTunnels() {
+
             return Q.New(TunnelVO.class)
-                    .lte(TunnelVO_.expiredDate, Timestamp.valueOf(LocalDateTime.now().plusDays(1)))
+                    .lte(TunnelVO_.expireDate, Timestamp.valueOf(LocalDateTime.now().minusDays(1)))
                     .list();
         }
 
@@ -1232,8 +1224,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         @Override
         public void run() {
             try {
-                tunnelVOs.clear();
-                tunnelVOs = getTunnels();
+                List<TunnelVO> tunnelVOs = getTunnels();
                 logger.debug("delete expired tunnel.");
                 if (tunnelVOs.isEmpty())
                     return;
@@ -1249,9 +1240,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         bus.makeTargetServiceIdByResourceUuid(msg, TunnelConstant.SERVICE_ID, vo.getUuid());
                         msgs.add(msg);
                     }
-                    tunnelVOs.remove(vo);
                 }
-
                 if (msgs.isEmpty()) {
                     return;
                 }
