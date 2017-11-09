@@ -1745,9 +1745,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 判断同一用户下产品名称是否重复
      */
     private boolean checkResourceName(String resourceType, String name, String accountUuid) {
-        StringBuilder sql = new StringBuilder(
-                String.format("SELECT r.uuid FROM %s r WHERE r.name = :name AND r.accountUuid = :accountUuid", resourceType));
-        String uuid = SQL.New(sql.toString(), String.class)
+        String uuid = SQL.New(String.format("SELECT r.uuid FROM %s r WHERE r.name = :name AND r.accountUuid = :accountUuid", resourceType), String.class)
                 .param("accountUuid", accountUuid)
                 .param("name", name).find();
         return uuid != null;
