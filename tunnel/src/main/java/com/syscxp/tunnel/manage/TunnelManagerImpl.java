@@ -1446,7 +1446,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APIUpdateInterfaceExpireDateMsg msg) {
-        checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
+        String accountUuid = Q.New(InterfaceVO.class)
+                .eq(InterfaceVO_.uuid, msg.getUuid())
+                .select(InterfaceVO_.accountUuid).findValue();
+        checkOrderNoPay(accountUuid, msg.getUuid());
     }
 
     private void validate(APIDeleteInterfaceMsg msg) {
@@ -1459,7 +1462,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         //判断该产品是否有未完成订单
-        checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
+        String accountUuid = Q.New(InterfaceVO.class)
+                .eq(InterfaceVO_.uuid, msg.getUuid())
+                .select(InterfaceVO_.accountUuid).findValue();
+        checkOrderNoPay(accountUuid, msg.getUuid());
     }
 
     private void validate(APICreateTunnelMsg msg) {
