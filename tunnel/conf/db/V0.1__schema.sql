@@ -412,6 +412,7 @@ CREATE TABLE  `syscxp_tunnel`.`TunnelMotifyRecordVO` (
 CREATE TABLE  `syscxp_tunnel`.`TunnelSwitchPortVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `tunnelUuid` varchar(32) NOT NULL COMMENT '所属云专线',
+  `interfaceUuid` varchar(32) COMMENT '所属物理接口',
   `endpointUuid` varchar(32) NOT NULL COMMENT '所属连接点',
   `switchPortUuid` varchar(32) NOT NULL COMMENT '所属端口',
   `type` varchar(32) NOT NULL DEFAULT 'TRUNK' COMMENT '用途:TRUNK,ACCESS,QINQ',
