@@ -201,7 +201,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
             q.add(TunnelForAlarmVO_.uuid, op, msg.getProductUuids());
 
+
+        }else{
+            q.add(TunnelForAlarmVO_.uuid, SimpleQuery.Op.EQ, "");
         }
+
         q.add(TunnelForAlarmVO_.state, SimpleQuery.Op.EQ, TunnelState.Enabled);
         reply.setCount(q.count());
 
@@ -211,6 +215,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         List<TunnelForAlarmVO> voList = q.list();
 
         reply.setInventories(TunnelForAlarmInventory.valueOf(voList));
+
         bus.reply(msg, reply);
     }
 
@@ -515,6 +520,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelSwitchPortVO tsvoA = new TunnelSwitchPortVO();
         tsvoA.setUuid(Platform.getUuid());
         tsvoA.setTunnelUuid(vo.getUuid());
+        tsvoA.setInterfaceUuid(msg.getInterfaceAUuid());
         tsvoA.setEndpointUuid(msg.getEndpointAUuid());
         tsvoA.setSwitchPortUuid(interfaceVOA.getSwitchPortUuid());
         tsvoA.setType(interfaceVOA.getType());
@@ -529,6 +535,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelSwitchPortVO tsvoZ = new TunnelSwitchPortVO();
         tsvoZ.setUuid(Platform.getUuid());
         tsvoZ.setTunnelUuid(vo.getUuid());
+        tsvoZ.setInterfaceUuid(msg.getInterfaceZUuid());
         tsvoZ.setEndpointUuid(msg.getEndpointZUuid());
         tsvoZ.setSwitchPortUuid(interfaceVOZ.getSwitchPortUuid());
         tsvoZ.setType(interfaceVOZ.getType());
@@ -586,6 +593,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelSwitchPortVO tsvoA = new TunnelSwitchPortVO();
         tsvoA.setUuid(Platform.getUuid());
         tsvoA.setTunnelUuid(vo.getUuid());
+        tsvoA.setInterfaceUuid(msg.getInterfaceAUuid());
         tsvoA.setEndpointUuid(msg.getEndpointAUuid());
         tsvoA.setSwitchPortUuid(interfaceVOA.getSwitchPortUuid());
         tsvoA.setType(interfaceVOA.getType());
@@ -595,6 +603,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelSwitchPortVO tsvoZ = new TunnelSwitchPortVO();
         tsvoZ.setUuid(Platform.getUuid());
         tsvoZ.setTunnelUuid(vo.getUuid());
+        tsvoZ.setInterfaceUuid(msg.getInterfaceZUuid());
         tsvoZ.setEndpointUuid(msg.getEndpointZUuid());
         tsvoZ.setSwitchPortUuid(interfaceVOZ.getSwitchPortUuid());
         tsvoZ.setType(interfaceVOZ.getType());
@@ -1442,16 +1451,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void validate(APIDeleteInterfaceMsg msg) {
         //判断云专线下是否有该物理接口
-        InterfaceVO interfaceVO = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
-        String sql = "select count(a.uuid) from TunnelSwitchPortVO a,TunnelVO b " +
-                "where b.uuid = a.tunnelUuid " +
-                "and b.accountUuid = :accountUuid " +
-                "and a.switchPortUuid = :switchPortUuid";
-        TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-        vq.setParameter("accountUuid", msg.getAccountUuid());
-        vq.setParameter("switchPortUuid", interfaceVO.getSwitchPortUuid());
-        Long count = vq.getSingleResult();
-        if (count > 0) {
+        boolean exists = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.interfaceUuid,msg.getUuid())
+                .isExists();
+        if (exists) {
             throw new ApiMessageInterceptionException(argerr("cannot delete,interface is being used!"));
         }
 
@@ -1514,6 +1517,26 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         validateVlan(msg.getInterfaceAUuid(), msg.getaVlan());
         validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
 
+        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
+        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
+        //如果是ACCESS或是QINQ的物理接口，判断该物理接口是否已经开通通道
+        if(interfaceVOA.getType() == NetworkType.ACCESS || interfaceVOA.getType() == NetworkType.QINQ){
+            boolean exists = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.interfaceUuid,msg.getInterfaceAUuid())
+                    .isExists();
+            if(exists){
+                throw new ApiMessageInterceptionException(argerr("该物理接口不可复用"));
+            }
+        }
+        if(interfaceVOZ.getType() == NetworkType.ACCESS || interfaceVOZ.getType() == NetworkType.QINQ){
+            boolean exists = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.interfaceUuid,msg.getInterfaceZUuid())
+                    .isExists();
+            if(exists){
+                throw new ApiMessageInterceptionException(argerr("该物理接口不可复用"));
+            }
+        }
+
         //判断同一个switchPort下内部VLAN段是否有重叠
         String sql = "select count(a.uuid) from QinqVO a " +
                 "where a.tunnelUuid in (select b.tunnelUuid from TunnelSwitchPortVO b where b.switchPortUuid = :switchPortUuid and b.type = 'QINQ') " +
@@ -1521,8 +1544,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 "or (a.endVlan between :startVlan and :endVlan) " +
                 "or (:startVlan between a.startVlan and a.endVlan) " +
                 "or (:endVlan between a.startVlan and a.endVlan))";
-        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
-        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
         if (msg.getVlanSegment() != null) {
             if (interfaceVOA.getType() == NetworkType.QINQ) {
                 List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
@@ -2075,6 +2096,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelSwitchPortVO tsvoB = new TunnelSwitchPortVO();
         tsvoB.setUuid(Platform.getUuid());
         tsvoB.setTunnelUuid(vo.getUuid());
+        tsvoB.setInterfaceUuid(null);
         tsvoB.setEndpointUuid(innerConnectedEndpointUuid);
         tsvoB.setSwitchPortUuid(innerSwitchPort.getUuid());
         tsvoB.setType(NetworkType.TRUNK);
@@ -2084,6 +2106,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelSwitchPortVO tsvoC = new TunnelSwitchPortVO();
         tsvoC.setUuid(Platform.getUuid());
         tsvoC.setTunnelUuid(vo.getUuid());
+        tsvoC.setInterfaceUuid(null);
         tsvoC.setEndpointUuid(innerConnectedEndpointUuid);
         tsvoC.setSwitchPortUuid(outerSwitchPort.getUuid());
         tsvoC.setType(NetworkType.TRUNK);

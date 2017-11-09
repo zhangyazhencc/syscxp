@@ -16,6 +16,7 @@ public class TunnelSwitchPortInventory {
 
     private String uuid;
     private String tunnelUuid;
+    private String interfaceUuid;
     private String endpointUuid;
     private EndpointInventory endpoint;
     private String switchPortUuid;
@@ -29,6 +30,7 @@ public class TunnelSwitchPortInventory {
         TunnelSwitchPortInventory inv = new TunnelSwitchPortInventory();
         inv.setUuid(vo.getUuid());
         inv.setTunnelUuid(vo.getTunnelUuid());
+        inv.setInterfaceUuid(vo.getInterfaceUuid());
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpointVO()));
         inv.setSwitchPortUuid(vo.getSwitchPortUuid());
@@ -126,5 +128,13 @@ public class TunnelSwitchPortInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getInterfaceUuid() {
+        return interfaceUuid;
+    }
+
+    public void setInterfaceUuid(String interfaceUuid) {
+        this.interfaceUuid = interfaceUuid;
     }
 }

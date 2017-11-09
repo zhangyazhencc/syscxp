@@ -23,6 +23,9 @@ public class TunnelSwitchPortVO {
     private String tunnelUuid;
 
     @Column
+    private String interfaceUuid;
+
+    @Column
     @ForeignKey(parentEntityClass = EndpointEO.class, onDeleteAction = ForeignKey.ReferenceOption.SET_NULL)
     private String endpointUuid;
 
@@ -132,5 +135,13 @@ public class TunnelSwitchPortVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getInterfaceUuid() {
+        return interfaceUuid;
+    }
+
+    public void setInterfaceUuid(String interfaceUuid) {
+        this.interfaceUuid = interfaceUuid;
     }
 }
