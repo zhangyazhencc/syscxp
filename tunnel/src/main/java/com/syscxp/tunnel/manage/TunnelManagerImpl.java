@@ -1750,7 +1750,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             TypedQuery<Integer> vq = dbf.getEntityManager().createQuery(sql, Integer.class);
             vsi = vq.getSingleResult();
             if (vsi == null) {
-                vsi = 1;
+                vsi = CoreGlobalProperty.START_VSI;
             } else {
                 vsi = vsi + 1;
             }
