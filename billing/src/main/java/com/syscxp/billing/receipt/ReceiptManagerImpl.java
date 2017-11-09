@@ -319,7 +319,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
 
     @Transactional(readOnly = true)
     BigDecimal getConsumeCashByAccountUuid(String accountUuid) {
-        String sql = "select sum(vo.payCash)" + " from OrderVO vo " + " where vo.accountUuid = :accountUuid";
+        String sql = "select sum(vo.payCash)" + " from OrderVO vo " + " where vo.accountUuid = :accountUuid ";
         TypedQuery<BigDecimal> vq = dbf.getEntityManager().createQuery(sql, BigDecimal.class);
         vq.setParameter("accountUuid", accountUuid);
         BigDecimal hadReceiptCash = vq.getSingleResult();
@@ -329,7 +329,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
 
     @Transactional(readOnly = true)
     BigDecimal getHadReceiptCashByAccountUuid(String accountUuid) {
-        String sql = "select sum(vo.total)" + " from ReceiptVO vo " + " where vo.accountUuid = :accountUuid ";
+        String sql = "select sum(vo.total)" + " from ReceiptVO vo " + " where vo.accountUuid = :accountUuid and vo.state <> 'REJECT' ";
         TypedQuery<BigDecimal> vq = dbf.getEntityManager().createQuery(sql, BigDecimal.class);
         vq.setParameter("accountUuid", accountUuid);
         BigDecimal consumeCash = vq.getSingleResult();
