@@ -35,9 +35,9 @@ public class TunnelStrategy  {
     public String getSwitchPortByStrategy(String endpointUuid , SwitchPortType portType){
         String switchPortUuid = null;
         if(portType == SwitchPortType.SHARE){        //共享端口
-            String sql = "select c.uuid from EndpointVO a,SwitchVO b,SwitchPortVO c " +
-                    "where a.uuid = b.endpointUuid and b.uuid = c.switchUuid " +
-                    "and a.uuid = :endpointUuid " +
+            String sql = "select c.uuid from SwitchVO b,SwitchPortVO c " +
+                    "where b.uuid = c.switchUuid " +
+                    "and b.endpointUuid = :endpointUuid " +
                     "and b.state = :switchState and b.status = :switchStatus " +
                     "and c.portType = :portType and c.state = :portState and c.autoAllot = :autoAllot ";
             TypedQuery<String> vq = dbf.getEntityManager().createQuery(sql, String.class);
@@ -53,9 +53,9 @@ public class TunnelStrategy  {
                 switchPortUuid = portList.get(r.nextInt(portList.size()));
             }
         }else{    //独享端口
-            String sql = "select c.uuid from EndpointVO a, SwitchVO b,SwitchPortVO c " +
-                    "where a.uuid = b.endpointUuid and b.uuid = c.switchUuid " +
-                    "and a.uuid = :endpointUuid " +
+            String sql = "select c.uuid from SwitchVO b,SwitchPortVO c " +
+                    "where b.uuid = c.switchUuid " +
+                    "and b.endpointUuid = :endpointUuid " +
                     "and b.state = :switchState and b.status = :switchStatus " +
                     "and c.portType = :portType and c.state = :portState and c.autoAllot = :autoAllot " +
                     "and c.uuid not in (select switchPortUuid from InterfaceVO)";
