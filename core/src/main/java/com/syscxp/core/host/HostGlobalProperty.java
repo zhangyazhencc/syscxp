@@ -24,7 +24,7 @@ public class HostGlobalProperty {
     public static Boolean RECONNECT_ALL_ON_BOOT;
 
 
-    @GlobalProperty(name = "Host.maxReconnectTimes", defaultValue = "5")
+    @GlobalProperty(name = "Host.maxReconnectTimes", defaultValue = "2")
     public static int MAX_RECONNECT_TIMES;
 
 }

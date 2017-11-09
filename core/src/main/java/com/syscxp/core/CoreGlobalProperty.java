@@ -60,10 +60,15 @@ public class CoreGlobalProperty {
 
     @GlobalProperty(name = "tunnelMaxMotifies", defaultValue = "5")
     public static Integer TUNNEL_MAX_MOTIFIES;
+    @GlobalProperty(name = "productExpireDays", defaultValue = "7")
+    public static Integer PRODUCT_EXPIRE_DAYS;
 
     @GlobalProperty(name = "controllerManagerUrl", defaultValue = "http://192.168.211.224:8080")
     public static String CONTROLLER_MANAGER_URL;
 
-    @GlobalProperty(name = "falconApiServerUrl", defaultValue = "http://192.168.211.100:8080")
-    public static String FALCON_API_SERVER_URL;
+    @GlobalProperty(name = "falconApiIp", defaultValue = "192.168.211.100")
+    public static String FALCON_API_IP;
+
+    @GlobalProperty(name = "falconApiServerUrl", defaultValue = "6892")
+    public static int FALCON_API_PORT;
 }

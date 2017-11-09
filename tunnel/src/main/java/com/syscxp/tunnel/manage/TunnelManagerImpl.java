@@ -18,7 +18,6 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.*;
-import com.syscxp.query.MysqlQueryBuilderFactory;
 import com.syscxp.query.QueryFacade;
 import com.syscxp.tunnel.header.endpoint.EndpointVO;
 import com.syscxp.tunnel.header.node.NodeVO;
@@ -1270,10 +1269,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         private List<TunnelVO> getTunnels() {
 
             return Q.New(TunnelVO.class)
-                    .lte(TunnelVO_.expireDate, Timestamp.valueOf(LocalDateTime.now().minusDays(1)))
+                    .lte(TunnelVO_.expireDate, Timestamp.valueOf(LocalDateTime.now().minusDays(CoreGlobalProperty.PRODUCT_EXPIRE_DAYS)))
                     .list();
         }
-
 
         @Override
         public void run() {
@@ -1287,6 +1285,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     if (vo.getState() == TunnelState.Unpaid) {
                         deleteTunnel(vo);
                     } else {
+                        vo.setAccountUuid(null);
+                        dbf.updateAndRefresh(vo);
                         TaskResourceVO task = newTaskResourceVO(vo, TaskType.Delete);
                         DeleteTunnelMsg msg = new DeleteTunnelMsg();
                         msg.setTaskUuid(task.getUuid());
