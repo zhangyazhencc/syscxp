@@ -52,7 +52,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIDetachPoliciesToResourcesMsg</name>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIDetachPoliciesFromResourcesMsg</name>
     </message>
 
     <message>

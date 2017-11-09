@@ -21,8 +21,6 @@ public class ResourceInventory {
 
     private String description;
 
-    private String monitorNetworkSegment;
-
     private List<PolicyInventory> policies;
 
 
@@ -68,14 +66,6 @@ public class ResourceInventory {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getMonitorNetworkSegment() {
-        return monitorNetworkSegment;
-    }
-
-    public void setMonitorNetworkSegment(String monitorNetworkSegment) {
-        this.monitorNetworkSegment = monitorNetworkSegment;
     }
 
     public Timestamp getCreateDate() {

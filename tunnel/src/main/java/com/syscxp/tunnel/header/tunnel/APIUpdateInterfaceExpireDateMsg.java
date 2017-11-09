@@ -15,8 +15,6 @@ import com.syscxp.header.tunnel.TunnelConstant;
 public class APIUpdateInterfaceExpireDateMsg extends APIMessage {
     @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String uuid;
-    @APIParam(required = false, maxLength = 32)
-    private String accountUuid;
     @APIParam
     private Integer duration;
     @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
@@ -30,18 +28,6 @@ public class APIUpdateInterfaceExpireDateMsg extends APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public String getAccountUuid() {
-        if (getSession().getType() == AccountType.SystemAdmin) {
-            return accountUuid;
-        } else {
-            return getSession().getAccountUuid();
-        }
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
     }
 
     public Integer getDuration() {

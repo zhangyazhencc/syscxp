@@ -1,12 +1,12 @@
 package com.syscxp.tunnel.header.host;
 
 import com.syscxp.header.host.APIUpdateHostMsg;
+import com.syscxp.header.host.HostConstant;
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.tunnel.header.node.NodeVO;
 
-/**
- * Created by DCY on 2017-08-30
- */
+@Action(category = HostConstant.ACTION_CATEGORY, adminOnly = true)
 public class APIUpdateMonitorHostMsg extends APIUpdateHostMsg {
 
     @APIParam(required = false, emptyString = false, resourceType = NodeVO.class)
