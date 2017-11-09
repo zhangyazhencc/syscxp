@@ -15,9 +15,6 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 
-/**
- * Created by DCY on 2017-08-30
- */
 @Action(category = HostConstant.ACTION_CATEGORY, adminOnly = true)
 public class APICreateMonitorHostMsg extends APIAddHostMsg {
     @APIParam(emptyString = false, resourceType = NodeVO.class)
