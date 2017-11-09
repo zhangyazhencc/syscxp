@@ -131,6 +131,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIUpdateForciblyTunnelVlanMsg) msg);
         } else if (msg instanceof APIUpdateTunnelVlanMsg) {
             handle((APIUpdateTunnelVlanMsg) msg);
+        } else if (msg instanceof APIReCallControllerMsg) {
+            handle((APIReCallControllerMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -1130,6 +1132,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
         reply.setMap(detailMap);
         bus.reply(msg, reply);
+    }
+
+    private void handle(APIReCallControllerMsg msg) {
+        APIReCallControllerEvent evt = new APIReCallControllerEvent(msg.getId());
+
+        TaskResourceVO vo = dbf.findByUuid(msg.getUuid(),TaskResourceVO.class);
+
+        ReCallControllerMsg reCallControllerMsg = new ReCallControllerMsg();
+        reCallControllerMsg.setTunnelUuid(vo.getResourceUuid());
+        reCallControllerMsg.setTaskUuid(msg.getUuid());
+        bus.makeLocalServiceId(reCallControllerMsg, TunnelConstant.SERVICE_ID);
+        bus.send(reCallControllerMsg);
+
+        evt.setInventory(TaskResourceInventory.valueOf(vo));
+        bus.publish(evt);
     }
 
     private boolean orderIsExist(String orderUuid) {
