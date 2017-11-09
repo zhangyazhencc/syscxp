@@ -331,7 +331,7 @@ public class MonitorHost extends HostBase implements Host {
                             runner.setFullDeploy(true);
                         }
                         runner.putArgument("pkg_monitoragent", agentPackageName);
-                        runner.putArgument("falcon_ip", AnsibleConstant.FALCON_IP);
+                        runner.putArgument("falcon_ip", CoreGlobalProperty.FALCON_API_IP);
                         runner.putArgument("hostname", String.format("%s.syscxp.com", self.getHostIp().replaceAll("\\.", "-")));
 
                         UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(restf.getBaseUrl());
