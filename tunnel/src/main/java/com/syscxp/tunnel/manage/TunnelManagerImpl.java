@@ -198,17 +198,20 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 op = SimpleQuery.Op.NOT_IN;
             }
             q.add(TunnelForAlarmVO_.uuid, op, msg.getProductUuids());
+            q.add(TunnelForAlarmVO_.status, SimpleQuery.Op.EQ, TunnelStatus.Connected);
+            reply.setCount(q.count());
 
+            q.setStart(msg.getStart());
+            q.setLimit(msg.getLimit());
+
+            List<TunnelForAlarmVO> voList = q.list();
+
+            reply.setInventories(TunnelForAlarmInventory.valueOf(voList));
+
+        }else{
+            reply.setInventories(new ArrayList<TunnelForAlarmInventory>());
         }
-        q.add(TunnelForAlarmVO_.status, SimpleQuery.Op.EQ, TunnelStatus.Connected);
-        reply.setCount(q.count());
 
-        q.setStart(msg.getStart());
-        q.setLimit(msg.getLimit());
-
-        List<TunnelForAlarmVO> voList = q.list();
-
-        reply.setInventories(TunnelForAlarmInventory.valueOf(voList));
         bus.reply(msg, reply);
     }
 
