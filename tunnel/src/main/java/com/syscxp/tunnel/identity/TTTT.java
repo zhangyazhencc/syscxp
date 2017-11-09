@@ -10,5 +10,7 @@ public class TTTT {
         System.out.println(UUID.randomUUID().toString().replaceAll("-", ""));
         System.out.println(UUID.randomUUID().toString().replaceAll("-", ""));
         System.out.println(UUID.randomUUID().toString().replaceAll("-", ""));
+
+        System.out.println(Integer.MAX_VALUE);
     }
 }

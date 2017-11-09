@@ -33,6 +33,7 @@ import com.syscxp.tunnel.header.tunnel.TunnelVO;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
@@ -64,6 +65,13 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private ThreadFacade thdf;
     @Autowired
     private RESTFacade evtf;
+
+
+
+    public String getFalconServerUrl() {
+        return String.format("http://%s:%s",
+                CoreGlobalProperty.FALCON_API_IP, CoreGlobalProperty.FALCON_API_PORT);
+    }
 
     @Override
     @MessageSafe
@@ -457,7 +465,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @return：创建的监控通道
      */
     private void icmpSync(String accountUuid, String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS, APIEvent event) {
-        String url = CoreGlobalProperty.FALCON_API_SERVER_URL;
+        String url = getFalconServerUrl();
         FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
         try {
             FalconApiCommands.Icmp icmp = getIcmp(accountUuid, tunnelUuid, tunnelMonitorVOS);
@@ -478,7 +486,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelUuid
      */
     private void icmpDelete(String tunnelUuid, APIEvent event) {
-        String url = CoreGlobalProperty.FALCON_API_SERVER_URL;
+        String url = getFalconServerUrl();
         FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
 
         try {

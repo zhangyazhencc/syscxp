@@ -280,7 +280,7 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
             @Override
             public void handle(Map data) {
                 HostInventory inv = factory.getHostInventory(vo.getUuid());
-                logger.debug(String.format("successfully added host[name:%s, hypervisor:%s, uuid:%s]", vo.getName(), vo.getHostType(), vo.getUuid()));
+                logger.debug(String.format("successfully added host[name:%s, hostType:%s, uuid:%s]", vo.getName(), vo.getHostType(), vo.getUuid()));
                 completion.success(inv);
 
             }
