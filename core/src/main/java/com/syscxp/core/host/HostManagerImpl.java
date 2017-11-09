@@ -247,7 +247,8 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
                 ConnectHostMsg connectMsg = new ConnectHostMsg(vo.getUuid());
                 connectMsg.setNewAdd(true);
                 connectMsg.setStartPingTaskOnFailure(false);
-                bus.makeTargetServiceIdByResourceUuid(connectMsg, HostConstant.SERVICE_ID, hvo.getUuid());
+//                bus.makeTargetServiceIdByResourceUuid(connectMsg, HostConstant.SERVICE_ID, hvo.getUuid());
+                bus.makeLocalServiceId(connectMsg, HostConstant.SERVICE_ID);
                 bus.send(connectMsg, new CloudBusCallBack(trigger) {
                     @Override
                     public void run(MessageReply reply) {
