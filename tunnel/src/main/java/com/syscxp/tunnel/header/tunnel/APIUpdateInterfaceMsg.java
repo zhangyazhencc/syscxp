@@ -13,8 +13,6 @@ import com.syscxp.header.tunnel.TunnelConstant;
 public class APIUpdateInterfaceMsg extends APIMessage {
     @APIParam(resourceType = InterfaceVO.class, checkAccount = true)
     private String uuid;
-    @APIParam(required = false, maxLength = 32)
-    private String accountUuid;
     @APIParam(required = false, maxLength = 128)
     private String name;
     @APIParam(required = false, maxLength = 255)
@@ -44,15 +42,4 @@ public class APIUpdateInterfaceMsg extends APIMessage {
         this.description = description;
     }
 
-    public String getAccountUuid() {
-        if (getSession().getType() == AccountType.SystemAdmin) {
-            return accountUuid;
-        } else {
-            return getSession().getAccountUuid();
-        }
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
 }

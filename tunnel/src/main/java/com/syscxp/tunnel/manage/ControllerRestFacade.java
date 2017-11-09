@@ -65,6 +65,7 @@ public class ControllerRestFacade {
     public void sendCommandForResponce(String url, String commandParam,
                                        final ReturnValueCompletion<ControllerCommands.ControllerRestResponse> completion) {
         try {
+            logger.info(String.format("call controller url %s, command params %s.", url, commandParam));
             ControllerCommands.ControllerRestResponse response = syncPostForResponseNoretry(url, commandParam);
             logger.info("response: " + JSONObjectUtil.toJsonString(response));
             logger.debug(String.format("successfully post %s", url));

@@ -15,7 +15,6 @@ import com.syscxp.tunnel.header.switchs.SwitchPortVO;
 @Action(category = TunnelConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreateInterfaceManualMsg extends APIMessage {
 
-
     @APIParam(emptyString = false, maxLength = 32)
     private String accountUuid;
     @APIParam(emptyString = false, maxLength = 128)

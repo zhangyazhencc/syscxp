@@ -11,6 +11,7 @@ import java.sql.Timestamp;
 public class TunnelSwitchPortVO_ {
     public static volatile SingularAttribute<TunnelSwitchPortVO, String> uuid;
     public static volatile SingularAttribute<TunnelSwitchPortVO, String> tunnelUuid;
+    public static volatile SingularAttribute<TunnelSwitchPortVO, String> interfaceUuid;
     public static volatile SingularAttribute<TunnelSwitchPortVO, String> endpointUuid;
     public static volatile SingularAttribute<TunnelSwitchPortVO, String> switchPortUuid;
     public static volatile SingularAttribute<TunnelSwitchPortVO, NetworkType> type;

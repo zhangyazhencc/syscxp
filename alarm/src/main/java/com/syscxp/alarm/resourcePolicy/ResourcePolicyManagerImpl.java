@@ -26,7 +26,6 @@ import com.syscxp.header.falconapi.FalconApiRestConstant;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
-import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.query.QueryCondition;
 import com.syscxp.header.rest.RESTFacade;
@@ -110,15 +109,15 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             handle((APIGetMonitorTargetListMsg) msg);
         }  else if (msg instanceof APIAttachPoliciesToResourcesMsg) {
             handle((APIAttachPoliciesToResourcesMsg) msg);
-        }  else if (msg instanceof APIDetachPoliciesToResourcesMsg) {
-            handle((APIDetachPoliciesToResourcesMsg) msg);
+        }  else if (msg instanceof APIDetachPoliciesFromResourcesMsg) {
+            handle((APIDetachPoliciesFromResourcesMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
     @Transactional
-    private void handle(APIDetachPoliciesToResourcesMsg msg) {
+    private void handle(APIDetachPoliciesFromResourcesMsg msg) {
         for(String resourceUuid: msg.getResourceUuids()){
             for(String policyUuid: msg.getPolicyUuids()){
                 SimpleQuery<ResourcePolicyRefVO> query =  dbf.createQuery(ResourcePolicyRefVO.class);
@@ -127,11 +126,12 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 ResourcePolicyRefVO resourcePolicyRefVO = query.find();
                 if(resourcePolicyRefVO==null){
                     throw new IllegalArgumentException("the resource is not bond the policy");
+                }else{
+                    dbf.getEntityManager().remove(dbf.getEntityManager().merge(resourcePolicyRefVO));
+                    PolicyVO policyVO = dbf.findByUuid(policyUuid,PolicyVO.class);
+                    policyVO.setBindResources(policyVO.getBindResources()-1);
+                    dbf.getEntityManager().merge(policyVO);
                 }
-                deleteResourcePolicyRef(policyUuid, resourceUuid);
-                PolicyVO policyVO = dbf.findByUuid(policyUuid,PolicyVO.class);
-                policyVO.setBindResources(policyVO.getBindResources()-1);
-                dbf.getEntityManager().merge(policyVO);
             }
         }
 
@@ -144,7 +144,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
         long count =0;
         Map<String,Long> param = new HashMap<>();
-        List<ResourceInventory> inventories = getResources(aMsg, msg.getType(),param,msg.getPolicyUuids(),false);
+        List<ResourceInventory> inventories = getResources(aMsg, msg.getType(), param, msg.getPolicyUuids(),false);
         count = param.get("count")!=null?param.get("count"):0;
 
         try {
