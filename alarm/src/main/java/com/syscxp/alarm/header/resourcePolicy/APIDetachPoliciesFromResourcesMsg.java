@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIParam;
 
 import java.util.List;
 
-public class APIDetachPoliciesToResourcesMsg extends APIMessage {
+public class APIDetachPoliciesFromResourcesMsg extends APIMessage {
 
     @APIParam
     private String accountUuid;
@@ -14,7 +14,7 @@ public class APIDetachPoliciesToResourcesMsg extends APIMessage {
     @APIParam
     private ProductType type;
 
-    @APIParam
+    @APIParam(checkAccount = true, resourceType = PolicyVO.class)
     private List<String> policyUuids;
 
     @APIParam

@@ -21,10 +21,10 @@ public class ContactVO extends BaseVO{
     @Column
     private String accountUuid;
 
-    @OneToMany(fetch =FetchType.EAGER)
+    @OneToMany(fetch =FetchType.EAGER, cascade = CascadeType.REFRESH)
     @JoinTable(name="ContactNotifyWayRefVO",
-            joinColumns={@JoinColumn(name="contactUuid",referencedColumnName="uuid")},
-            inverseJoinColumns={@JoinColumn(name="notifyWayUuid",referencedColumnName="uuid")}
+            joinColumns={@JoinColumn(name="contactUuid",referencedColumnName="uuid", insertable = false, updatable = false)},
+            inverseJoinColumns={@JoinColumn(name="notifyWayUuid",referencedColumnName="uuid", insertable = false, updatable = false)}
     )
     private Set<NotifyWayVO> notifyWayVOs;
 
