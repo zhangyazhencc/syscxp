@@ -45,7 +45,6 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 
-import static com.syscxp.core.Platform.argerr;
 
 public class ResourcePolicyManagerImpl extends AbstractService implements ApiMessageInterceptor {
 
@@ -147,13 +146,10 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         List<ResourceInventory> inventories = getResources(aMsg, msg.getType(), param, msg.getPolicyUuids(),false);
         count = param.get("count")!=null?param.get("count"):0;
 
-        try {
-//            updatePoliciesByResources(msg.getSession().getAccountUuid(),msg.getResourceUuids());
-        } catch (Exception e) {
-            throw new ApiMessageInterceptionException(argerr("tunnel information is mismatch"));
-        }
-
         APIAttachPoliciesToResourcesEvent event = new APIAttachPoliciesToResourcesEvent(msg.getId());
+        if(!updatePoliciesByResources(msg.getSession().getAccountUuid(),msg.getResourceUuids())){
+            throw new OperationFailureException(Platform.operr("资源不存在！"));
+        }
         event.setInventories(inventories);
         event.setCount(count);
         bus.publish(event);
@@ -191,17 +187,39 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         List<ResourceInventory> inventories = getResources(aMsg, msg.getType(),param,msg.getPolicyUuids(),true);
         count = param.get("count")!=null?param.get("count"):0;
 
-        try {
-//            updatePoliciesByResources(msg.getSession().getAccountUuid(),msg.getResourceUuids());
-        } catch (Exception e) {
-            throw new ApiMessageInterceptionException(argerr("tunnel information is mismatch"));
+        APIAttachPoliciesToResourcesEvent event = new APIAttachPoliciesToResourcesEvent(msg.getId());
+        if(!updatePoliciesByResources(msg.getSession().getAccountUuid(),msg.getResourceUuids())){
+            throw new OperationFailureException(Platform.operr("资源不存在！"));
         }
 
-        APIAttachPoliciesToResourcesEvent event = new APIAttachPoliciesToResourcesEvent(msg.getId());
         event.setInventories(inventories);
         event.setCount(count);
         bus.publish(event);
 
+    }
+
+    private Map getTunnelInfo(List<String> Resources){
+
+        APIQueryTunnelDetailForAlarmMsg tunnelMsg = new APIQueryTunnelDetailForAlarmMsg();
+        tunnelMsg.setTunnelUuidList(Resources);
+
+        try{
+            RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
+                    RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
+
+            if (raps.getState().equals(RestAPIState.Done.toString())) {
+                APIQueryTunnelDetailForAlarmReply tunnelReply = JSONObjectUtil.toObject(raps.getResult(),
+                        APIQueryTunnelDetailForAlarmReply.class);
+                if(tunnelReply.isSuccess()){
+                    return tunnelReply.getMap();
+                }else{
+                    throw new OperationFailureException(Platform.operr(tunnelReply.getError().toString()));
+                }
+            }
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private boolean updatePoliciesByResources(String userid, List<String> Resources){
@@ -211,35 +229,21 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         List<TunnelParameter> tunnelparameterlist = new ArrayList<>();
         List<RegulationVO> regulationvolist = null;
 
-        APIQueryTunnelDetailForAlarmMsg tunnelMsg = new APIQueryTunnelDetailForAlarmMsg();
-        tunnelMsg.setTunnelUuidList(Resources);
-        Map<String, Object> map = null;
-        try{
-            RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
-                    RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
-
-            if (raps.getState().equals(RestAPIState.Done.toString())) {
-                APIQueryTunnelDetailForAlarmReply tunnelReply = JSONObjectUtil.toObject(raps.getResult(),
-                        APIQueryTunnelDetailForAlarmReply.class);
-                if(tunnelReply.isSuccess()){
-                    map = tunnelReply.getMap();
-                }else{
-                    throw new OperationFailureException(Platform.operr(tunnelReply.getError().toString()));
-                }
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
+        Map<String, Object> map = getTunnelInfo(Resources);
 
         for (String resourceid : Resources) {
             tunnelparameter.setUser_id(userid);
             tunnelparameter.setTunnel_id(resourceid);
-            FalconApiCommands.Tunnel tunnel = (FalconApiCommands.Tunnel)map.get(resourceid);
-            tunnelparameter.setEndpointA_vid(tunnel.getEndpointA_vid());
-            tunnelparameter.setEndpointB_vid(tunnel.getEndpointB_vid());
-            tunnelparameter.setEndpointA_ip(tunnel.getEndpointA_ip());
-            tunnelparameter.setEndpointB_ip(tunnel.getEndpointB_ip());
-            tunnelparameter.setBandwidth(tunnel.getBandwidth());
+            if(map == null || map.get(resourceid) == null){
+                return false;
+            }else{
+                FalconApiCommands.Tunnel tunnel = (FalconApiCommands.Tunnel)map.get(resourceid);
+                tunnelparameter.setEndpointA_vid(tunnel.getEndpointA_vid());
+                tunnelparameter.setEndpointB_vid(tunnel.getEndpointB_vid());
+                tunnelparameter.setEndpointA_ip(tunnel.getEndpointA_ip());
+                tunnelparameter.setEndpointB_ip(tunnel.getEndpointB_ip());
+                tunnelparameter.setBandwidth(tunnel.getBandwidth());
+            }
 
             rulelist = new ArrayList<>();
             SimpleQuery<ResourcePolicyRefVO> policyrquery = dbf.createQuery(ResourcePolicyRefVO.class);
@@ -593,15 +597,16 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     @Transactional
     private void handle(APIDeletePolicyMsg msg) {
         PolicyVO vo = dbf.findByUuid(msg.getUuid(), PolicyVO.class);
+        APIDeletePolicyEvent event = new APIDeletePolicyEvent(msg.getId());
         if (vo != null) {
             dbf.remove(vo);
-            updateFalcon(msg.getSession(), vo.getUuid());
-            dbf.removeCollection(dbf.createQuery(ResourcePolicyRefVO.class)
-                    .add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, vo.getUuid()).list(), ResourcePolicyRefVO.class);
-
+            if(!updateFalcon(msg.getSession(), vo.getUuid())){
+                throw new OperationFailureException(Platform.operr("资源不存在！"));
+            }else{
+                dbf.removeCollection(dbf.createQuery(ResourcePolicyRefVO.class)
+                        .add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, vo.getUuid()).list(), ResourcePolicyRefVO.class);
+            }
         }
-
-        APIDeletePolicyEvent event = new APIDeletePolicyEvent(msg.getId());
         event.setInventory(PolicyInventory.valueOf(vo));
         bus.publish(event);
     }
@@ -654,16 +659,17 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
     }
 
-    @Transactional
+    @Transactional()
     private void handle(APIDeleteRegulationMsg msg) {
         RegulationVO regulationVO = dbf.findByUuid(msg.getUuid(), RegulationVO.class);
+        APIDeleteRegulationEvent event = new APIDeleteRegulationEvent(msg.getId());
         if (regulationVO != null) {
             dbf.remove(regulationVO);
         }
+        if(!updateFalcon(msg.getSession(), regulationVO.getPolicyUuid())){
+            throw new OperationFailureException(Platform.operr("资源不存在！"));
+        }
 
-        // updateFalcon(msg.getSession(), regulationVO.getPolicyUuid());
-
-        APIDeleteRegulationEvent event = new APIDeleteRegulationEvent(msg.getId());
         bus.publish(event);
     }
 
@@ -685,7 +691,9 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }
         dbf.updateAndRefresh(regulationVO);
 
-        //updateFalcon(msg.getSession(), regulationVO.getPolicyUuid());
+        if(!updateFalcon(msg.getSession(), regulationVO.getPolicyUuid())){
+            throw new OperationFailureException(Platform.operr("资源不存在！"));
+        }
 
         APIUpdateRegulationEvent event = new APIUpdateRegulationEvent(msg.getId());
         event.setInventory(RegulationInventory.valueOf(regulationVO));
@@ -715,7 +723,9 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         regulationVO.setTriggerPeriod(msg.getTriggerPeriod());
         dbf.persistAndRefresh(regulationVO);
 
-        // updateFalcon(msg.getSession(), msg.getPolicyUuid());
+        if(!updateFalcon(msg.getSession(), regulationVO.getPolicyUuid())){
+            throw new OperationFailureException(Platform.operr("资源不存在！"));
+        }
 
         APICreateRegulationEvent event = new APICreateRegulationEvent(msg.getId());
         event.setInventory(RegulationInventory.valueOf(regulationVO));
@@ -771,46 +781,30 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             for (ResourcePolicyRefVO rvo : resourcelist) {
                 prameterlist.add(rvo.getResourceUuid());
             }
-            APIQueryTunnelDetailForAlarmMsg tunnelMsg = new APIQueryTunnelDetailForAlarmMsg();
-            tunnelMsg.setTunnelUuidList(prameterlist);
-            tunnelMsg.setSession(session);
-            Map<String, Object> map = null;
-            try {
-                RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
-                        RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
 
-                if (raps.getState().equals(RestAPIState.Done.toString())) {
-                    APIQueryTunnelDetailForAlarmReply tunnelReply = JSONObjectUtil.toObject(raps.getResult(), APIQueryTunnelDetailForAlarmReply.class);
-                    if (tunnelReply.isSuccess()) {
-                        map = tunnelReply.getMap();
-                    } else {
-                        throw new OperationFailureException(Platform.operr(tunnelReply.getError().toString()));
-                    }
-
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+            Map<String, Object> map = getTunnelInfo(prameterlist);
 
             for (ResourcePolicyRefVO resource : resourcelist) {
                 tunnelparameter = new TunnelParameter();
                 tunnelparameter.setUser_id(session.getAccountUuid());
                 tunnelparameter.setTunnel_id(resource.getResourceUuid());
 
-                FalconApiCommands.Tunnel tunnel = (FalconApiCommands.Tunnel) map.get(resource.getResourceUuid());
-                tunnelparameter.setEndpointA_vid(tunnel.getEndpointA_vid());
-                tunnelparameter.setEndpointB_vid(tunnel.getEndpointB_vid());
-                tunnelparameter.setEndpointA_ip(tunnel.getEndpointA_ip());
-                tunnelparameter.setEndpointB_ip(tunnel.getEndpointB_ip());
-                tunnelparameter.setBandwidth(tunnel.getBandwidth());
+                if(map == null || map.get(resource.getResourceUuid()) == null){
+                    return false;
+                }else{
+                    FalconApiCommands.Tunnel tunnel = (FalconApiCommands.Tunnel)map.get(resource.getResourceUuid());
+                    tunnelparameter.setEndpointA_vid(tunnel.getEndpointA_vid());
+                    tunnelparameter.setEndpointB_vid(tunnel.getEndpointB_vid());
+                    tunnelparameter.setEndpointA_ip(tunnel.getEndpointA_ip());
+                    tunnelparameter.setEndpointB_ip(tunnel.getEndpointB_ip());
+                    tunnelparameter.setBandwidth(tunnel.getBandwidth());
+                }
 
 //                tunnelparameter.setEndpointA_vid(192264588);
 //                tunnelparameter.setEndpointB_vid(192264588);
 //                tunnelparameter.setEndpointA_ip("192264588");
 //                tunnelparameter.setEndpointB_ip("192264588");
 //                tunnelparameter.setBandwidth(1922L);
-
 
                 rulelist = new ArrayList<>();
                 SimpleQuery<ResourcePolicyRefVO> policyrquery = dbf.createQuery(ResourcePolicyRefVO.class);
