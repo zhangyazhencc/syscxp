@@ -14,6 +14,7 @@ MySQL - 5.5.56-MariaDB : Database - syscxp_alarm
 CREATE DATABASE /*!32312 IF NOT EXISTS*/`syscxp_alarm` /*!40100 DEFAULT CHARACTER SET utf8 */;
 
 /*Table structure for table `AlarmLogVO` */
+DROP TABLE IF EXISTS `AlarmLogVO`;
 
 CREATE TABLE `AlarmLogVO` (
   `uuid` varchar(32) NOT NULL,
@@ -40,6 +41,8 @@ CREATE TABLE `AlarmLogVO` (
 
 /*Table structure for table `AlarmTemplateVO` */
 
+DROP TABLE IF EXISTS `AlarmTemplateVO`;
+
 CREATE TABLE `AlarmTemplateVO` (
   `uuid` varchar(32) NOT NULL,
   `productType` varchar(255) DEFAULT NULL COMMENT '产品类型',
@@ -55,6 +58,7 @@ CREATE TABLE `AlarmTemplateVO` (
 
 
 /*Table structure for table `ComparisonRuleVO` */
+DROP TABLE IF EXISTS `ComparisonRuleVO`;
 
 CREATE TABLE `ComparisonRuleVO` (
   `uuid` varchar(32) DEFAULT NULL,
@@ -71,6 +75,7 @@ insert  into `ComparisonRuleVO`(`uuid`,`productType`,`comparisonName`,`compariso
 insert  into `ComparisonRuleVO`(`uuid`,`productType`,`comparisonName`,`comparisonValue`,`createDate`,`lastOpDate`) values ('86f5b551b4a111e79e8e525400c2a7e2','TUNNEL','小于等于','<=','2017-10-19 15:52:00','2017-10-19 15:45:36');
 
 /*Table structure for table `ContactNotifyWayRefVO` */
+DROP TABLE IF EXISTS `ContactNotifyWayRefVO`;
 
 CREATE TABLE `ContactNotifyWayRefVO` (
   `uuid` varchar(32) NOT NULL,
@@ -82,6 +87,7 @@ CREATE TABLE `ContactNotifyWayRefVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `ContactVO` */
+DROP TABLE IF EXISTS `ContactVO`;
 
 CREATE TABLE `ContactVO` (
   `uuid` varchar(32) NOT NULL,
@@ -97,6 +103,7 @@ CREATE TABLE `ContactVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `GlobalConfigVO` */
+DROP TABLE IF EXISTS `GlobalConfigVO`;
 
 CREATE TABLE `GlobalConfigVO` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -111,6 +118,7 @@ CREATE TABLE `GlobalConfigVO` (
 
 
 /*Table structure for table `JobQueueEntryVO` */
+DROP TABLE IF EXISTS `JobQueueEntryVO`;
 
 CREATE TABLE `JobQueueEntryVO` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -131,6 +139,7 @@ CREATE TABLE `JobQueueEntryVO` (
 /*Data for the table `JobQueueEntryVO` */
 
 /*Table structure for table `JobQueueVO` */
+DROP TABLE IF EXISTS `JobQueueVO`;
 
 CREATE TABLE `JobQueueVO` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -146,6 +155,7 @@ CREATE TABLE `JobQueueVO` (
 /*Data for the table `JobQueueVO` */
 
 /*Table structure for table `ManagementNodeVO` */
+DROP TABLE IF EXISTS `ManagementNodeVO`;
 
 CREATE TABLE `ManagementNodeVO` (
   `uuid` varchar(32) NOT NULL,
@@ -160,6 +170,7 @@ CREATE TABLE `ManagementNodeVO` (
 
 
 /*Table structure for table `MonitorTargetVO` */
+DROP TABLE IF EXISTS `MonitorTargetVO`;
 
 CREATE TABLE `MonitorTargetVO` (
   `uuid` varchar(32) DEFAULT NULL,
@@ -177,6 +188,7 @@ insert  into `MonitorTargetVO`(`uuid`,`productType`,`targetName`,`targetValue`,`
 insert  into `MonitorTargetVO`(`uuid`,`productType`,`targetName`,`targetValue`,`createDate`,`lastOpDate`) values ('5312c4d0b4a211e79e8e525400c2a7e2','TUNNEL','延迟','delay','2017-10-19 15:51:49','2017-10-19 15:49:50');
 
 /*Table structure for table `NotifyWayVO` */
+DROP TABLE IF EXISTS `NotifyWayVO`;
 
 CREATE TABLE `NotifyWayVO` (
   `uuid` varchar(32) NOT NULL,
@@ -195,6 +207,7 @@ insert  into `NotifyWayVO`(`uuid`,`code`,`name`,`createDate`,`lastOpDate`) value
 insert  into `NotifyWayVO`(`uuid`,`code`,`name`,`createDate`,`lastOpDate`) values ('9a0c922db30311e78816525400c2a7e2','mobile','手机','2017-10-17 15:53:18','2017-10-17 14:22:29');
 
 /*Table structure for table `PolicyVO` */
+DROP TABLE IF EXISTS `PolicyVO`;
 
 CREATE TABLE `PolicyVO` (
   `uuid` varchar(32) NOT NULL,
@@ -209,6 +222,7 @@ CREATE TABLE `PolicyVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `RegulationVO` */
+DROP TABLE IF EXISTS `RegulationVO`;
 
 CREATE TABLE `RegulationVO` (
   `uuid` varchar(32) NOT NULL,
@@ -225,6 +239,7 @@ CREATE TABLE `RegulationVO` (
 
 
 /*Table structure for table `ResourcePolicyRefVO` */
+DROP TABLE IF EXISTS `ResourcePolicyRefVO`;
 
 CREATE TABLE `ResourcePolicyRefVO` (
   `uuid` varchar(32) NOT NULL,
@@ -237,6 +252,7 @@ CREATE TABLE `ResourcePolicyRefVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `SmsVO` */
+DROP TABLE IF EXISTS `SmsVO`;
 
 CREATE TABLE `SmsVO` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
