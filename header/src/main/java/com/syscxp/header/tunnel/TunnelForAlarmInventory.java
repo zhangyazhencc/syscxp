@@ -12,7 +12,6 @@ import java.util.List;
 /**
  * Created by DCY on 2017-09-11
  */
-@Inventory(mappingVOClass = TunnelForAlarmVO.class)
 public class TunnelForAlarmInventory {
 
     private String uuid;
@@ -33,37 +32,6 @@ public class TunnelForAlarmInventory {
     private Timestamp expireDate;
     private Timestamp lastOpDate;
     private Timestamp createDate;
-
-    public static TunnelForAlarmInventory valueOf(TunnelForAlarmVO vo){
-        TunnelForAlarmInventory inv = new TunnelForAlarmInventory();
-        inv.setUuid(vo.getUuid());
-        inv.setAccountUuid(vo.getAccountUuid());
-        inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
-        inv.setVsi(vo.getVsi());
-        inv.setMonitorCidr(vo.getMonitorCidr());
-        inv.setName(vo.getName());
-        inv.setBandwidth(vo.getBandwidth());
-        inv.setDistance(vo.getDistance());
-        inv.setState(vo.getState());
-        inv.setStatus(vo.getStatus());
-        inv.setMonitorState(vo.getMonitorState());
-        inv.setDuration(vo.getDuration());
-        inv.setProductChargeModel(vo.getProductChargeModel());
-        inv.setMaxModifies(vo.getMaxModifies());
-        inv.setDescription(vo.getDescription());
-        inv.setExpireDate(vo.getExpireDate());
-        inv.setLastOpDate(vo.getLastOpDate());
-        inv.setCreateDate(vo.getCreateDate());
-        return inv;
-    }
-
-    public static List<TunnelForAlarmInventory> valueOf(Collection<TunnelForAlarmVO> vos) {
-        List<TunnelForAlarmInventory> lst = new ArrayList<TunnelForAlarmInventory>(vos.size());
-        for (TunnelForAlarmVO vo : vos) {
-            lst.add(TunnelForAlarmInventory.valueOf(vo));
-        }
-        return lst;
-    }
 
     public String getUuid() {
         return uuid;
