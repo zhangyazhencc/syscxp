@@ -268,7 +268,8 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             tunnelparameterlist.add(tunnelparameter);
         }
 
-        String url = CoreGlobalProperty.FALCON_API_SERVER_URL + FalconApiRestConstant.STRATEGY_SYNC;
+        String url = CoreGlobalProperty.FALCON_API_IP + ":" + CoreGlobalProperty.FALCON_API_PORT +
+                FalconApiRestConstant.STRATEGY_SYNC;
         String commandParam = JSONObjectUtil.toJsonString(tunnelparameterlist);
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -360,7 +361,8 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         tunnelparameter.setRules(rulelist);
         tunnelparameterlist.add(tunnelparameter);
 
-        String url = CoreGlobalProperty.FALCON_API_SERVER_URL + FalconApiRestConstant.STRATEGY_SYNC;
+        String url = CoreGlobalProperty.FALCON_API_IP + ":" + CoreGlobalProperty.FALCON_API_PORT +
+                FalconApiRestConstant.STRATEGY_SYNC;
         String commandParam = JSONObjectUtil.toJsonString(tunnelparameterlist);
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -381,7 +383,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     private void handle(APIDeleteResourceMsg msg) {
 
 
-        String url = CoreGlobalProperty.FALCON_API_SERVER_URL;
+        String url = CoreGlobalProperty.FALCON_API_IP + ":" + CoreGlobalProperty.FALCON_API_PORT;
         Map<String, String> tunnelIdMap = new HashMap<>();
         tunnelIdMap.put("tunnel_id", msg.getTunnel_id());
         FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
@@ -830,7 +832,8 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             }
 
             try {
-                String url = CoreGlobalProperty.FALCON_API_SERVER_URL + FalconApiRestConstant.STRATEGY_SYNC;
+                String url = CoreGlobalProperty.FALCON_API_IP + ":" + CoreGlobalProperty.FALCON_API_PORT +
+                        FalconApiRestConstant.STRATEGY_SYNC;
                 FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
                 try {
                     response = restf.syncJsonPost(url, JSONObjectUtil.toJsonString(JSONObjectUtil.toJsonString(tunnelparameterlist)), FalconApiCommands.RestResponse.class);
