@@ -199,7 +199,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
             q.add(TunnelForAlarmVO_.uuid, op, msg.getProductUuids());
 
+
+        }else{
+            q.add(TunnelForAlarmVO_.uuid, SimpleQuery.Op.EQ, "");
         }
+
         q.add(TunnelForAlarmVO_.state, SimpleQuery.Op.EQ, TunnelState.Enabled);
         reply.setCount(q.count());
 
@@ -209,6 +213,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         List<TunnelForAlarmVO> voList = q.list();
 
         reply.setInventories(TunnelForAlarmInventory.valueOf(voList));
+
         bus.reply(msg, reply);
     }
 
