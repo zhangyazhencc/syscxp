@@ -6,11 +6,11 @@ public class TunnelParameter {
 
     private String tunnel_id;
     private String user_id;
-    private String endpointA_vid;
+    private Integer endpointA_vid;
     private String endpointA_ip;
-    private String endpointB_vid;
+    private Integer endpointB_vid;
     private String endpointB_ip;
-    private String bandwidth;
+    private Long bandwidth;
     private List<Rule> rules;
 
     public String getTunnel_id() {
@@ -29,28 +29,12 @@ public class TunnelParameter {
         this.user_id = user_id;
     }
 
-    public String getEndpointA_vid() {
-        return endpointA_vid;
-    }
-
-    public void setEndpointA_vid(String endpointA_vid) {
-        this.endpointA_vid = endpointA_vid;
-    }
-
     public String getEndpointA_ip() {
         return endpointA_ip;
     }
 
     public void setEndpointA_ip(String endpointA_ip) {
         this.endpointA_ip = endpointA_ip;
-    }
-
-    public String getEndpointB_vid() {
-        return endpointB_vid;
-    }
-
-    public void setEndpointB_vid(String endpointB_vid) {
-        this.endpointB_vid = endpointB_vid;
     }
 
     public String getEndpointB_ip() {
@@ -69,11 +53,27 @@ public class TunnelParameter {
         this.rules = rules;
     }
 
-    public String getBandwidth() {
+    public Integer getEndpointA_vid() {
+        return endpointA_vid;
+    }
+
+    public void setEndpointA_vid(Integer endpointA_vid) {
+        this.endpointA_vid = endpointA_vid;
+    }
+
+    public Integer getEndpointB_vid() {
+        return endpointB_vid;
+    }
+
+    public void setEndpointB_vid(Integer endpointB_vid) {
+        this.endpointB_vid = endpointB_vid;
+    }
+
+    public Long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(String bandwidth) {
+    public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
 }
@@ -83,7 +83,7 @@ class Rule {
     private String strategy_type;
     private String op;
     private String right_value;
-    private int stay_time;
+    private Integer stay_time;
 
     public String getStrategy_type() {
         return strategy_type;
@@ -109,11 +109,11 @@ class Rule {
         this.right_value = right_value;
     }
 
-    public int getStay_time() {
+    public Integer getStay_time() {
         return stay_time;
     }
 
-    public void setStay_time(int stay_time) {
+    public void setStay_time(Integer stay_time) {
         this.stay_time = stay_time;
     }
 

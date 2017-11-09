@@ -66,8 +66,6 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
         }
     }
 
-
-
     @Transactional
     private void handle(APIUpdateContactMsg msg) {
 
@@ -109,10 +107,11 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
         String uuid =  msg.getUuid();
         ContactVO vo = dbf.findByUuid(uuid, ContactVO.class);
         if(vo != null){
-            dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
-            UpdateQuery q = UpdateQuery.New(ContactNotifyWayRefVO.class);
-            q.condAnd(ContactNotifyWayRefVO_.contactUuid, SimpleQuery.Op.EQ, vo.getUuid());
-            q.delete();
+            dbf.remove(vo);
+//            dbf.getEntityManager().remove(vo);
+//            UpdateQuery q = UpdateQuery.New(ContactNotifyWayRefVO.class);
+//            q.condAnd(ContactNotifyWayRefVO_.contactUuid, SimpleQuery.Op.EQ, vo.getUuid());
+//            q.delete();
         }
         APIDeleteContactEvent event = new APIDeleteContactEvent(msg.getId());
         event.setInventory(ContactInventory.valueOf(vo));
@@ -128,11 +127,7 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
         vo.setEmail(msg.getEmail());
         vo.setMobile(msg.getMobile());
         vo.setName(msg.getName());
-        if(msg.getSession().getType().equals(AccountType.SystemAdmin)){
-            vo.setAccountUuid(msg.getAccountUuid());
-        }else{
-            vo.setAccountUuid(msg.getSession().getAccountUuid());
-        }
+        vo.setAccountUuid(msg.getAccountUuid());
 
         dbf.getEntityManager().persist(vo);
 

@@ -10,7 +10,7 @@ import java.util.List;
 @Action(category = AlarmConstant.ACTION_CATEGORY_CONTACT)
 public class APIUpdateContactMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = ContactVO.class)
+    @APIParam(emptyString = false, resourceType = ContactVO.class)
     private String uuid;
 
     @APIParam(required = false)

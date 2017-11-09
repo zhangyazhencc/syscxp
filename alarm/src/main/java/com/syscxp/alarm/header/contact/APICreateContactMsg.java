@@ -2,6 +2,7 @@ package com.syscxp.alarm.header.contact;
 
 import com.syscxp.header.alarm.AlarmConstant;
 import com.syscxp.header.core.validation.Validation;
+import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -59,7 +60,11 @@ public class APICreateContactMsg extends APIMessage{
     }
 
     public String getAccountUuid() {
-        return accountUuid;
+        if (getSession().getType() == AccountType.SystemAdmin) {
+            return accountUuid;
+        } else {
+            return getSession().getAccountUuid();
+        }
     }
 
     public void setAccountUuid(String accountUuid) {

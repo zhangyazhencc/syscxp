@@ -8,7 +8,7 @@ import com.syscxp.header.message.APIParam;
 @Action(category = AlarmConstant.ACTION_CATEGORY_CONTACT)
 public class APIDeleteContactMsg extends APIMessage{
 
-    @APIParam(emptyString = false,resourceType=ContactVO.class)
+    @APIParam(emptyString = false, resourceType=ContactVO.class, checkAccount = true)
     private String uuid;
 
     public String getUuid() {

@@ -22,19 +22,19 @@ public class APIUpdateTunnelInfoForFalconMsg extends APIMessage {
     private String  tunnel_id;
 
     @APIParam(emptyString = false)
-    private String  endpointA_vlan;
+    private Integer  endpointA_vid;
 
     @APIParam(emptyString = false)
     private String  endpointA_ip;
 
     @APIParam(emptyString = false)
-    private String  endpointZ_vlan;
+    private Integer  endpointB_vid;
 
     @APIParam(emptyString = false)
-    private String  endpointZ_ip;
+    private String  endpointB_ip;
 
     @APIParam(emptyString = false)
-    private String  bandwidth;
+    private Long  bandwidth;
 
     public String getTunnel_id() {
         return tunnel_id;
@@ -44,12 +44,12 @@ public class APIUpdateTunnelInfoForFalconMsg extends APIMessage {
         this.tunnel_id = tunnel_id;
     }
 
-    public String getEndpointA_vlan() {
-        return endpointA_vlan;
+    public Integer getEndpointA_vid() {
+        return endpointA_vid;
     }
 
-    public void setEndpointA_vlan(String endpointA_vlan) {
-        this.endpointA_vlan = endpointA_vlan;
+    public void setEndpointA_vid(Integer endpointA_vid) {
+        this.endpointA_vid = endpointA_vid;
     }
 
     public String getEndpointA_ip() {
@@ -60,27 +60,27 @@ public class APIUpdateTunnelInfoForFalconMsg extends APIMessage {
         this.endpointA_ip = endpointA_ip;
     }
 
-    public String getEndpointZ_vlan() {
-        return endpointZ_vlan;
+    public Integer getEndpointB_vid() {
+        return endpointB_vid;
     }
 
-    public void setEndpointZ_vlan(String endpointZ_vlan) {
-        this.endpointZ_vlan = endpointZ_vlan;
+    public void setEndpointB_vid(Integer endpointB_vid) {
+        this.endpointB_vid = endpointB_vid;
     }
 
-    public String getEndpointZ_ip() {
-        return endpointZ_ip;
+    public String getEndpointB_ip() {
+        return endpointB_ip;
     }
 
-    public void setEndpointZ_ip(String endpointZ_ip) {
-        this.endpointZ_ip = endpointZ_ip;
+    public void setEndpointB_ip(String endpointB_ip) {
+        this.endpointB_ip = endpointB_ip;
     }
 
-    public String getBandwidth() {
+    public Long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(String bandwidth) {
+    public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
 }
