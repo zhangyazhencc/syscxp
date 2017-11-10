@@ -6,7 +6,7 @@ import com.syscxp.core.GlobalPropertyDefinition;
 /**
  */
 @GlobalPropertyDefinition
-public class AlipayGlobalProperty {
+public class BillingGlobalProperty {
 
     @GlobalProperty(name = "app_id")
     public static String APP_ID;
@@ -39,6 +39,9 @@ public class AlipayGlobalProperty {
 
     @GlobalProperty(name = "seller_id")
     public static String SELLER_ID;
+
+    @GlobalProperty(name = "tunnelServerUrl")
+    public static String TUNNEL_SERVER_URL;
 
 }
 
