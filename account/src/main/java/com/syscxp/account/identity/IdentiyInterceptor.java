@@ -20,6 +20,7 @@ import com.syscxp.account.header.identity.*;
 import com.syscxp.utils.gson.JSONObjectUtil;
 
 import javax.persistence.Query;
+import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
@@ -64,25 +65,21 @@ public class IdentiyInterceptor extends AbstractIdentityInterceptor {
     @Transactional(readOnly = true, propagation = Propagation.REQUIRES_NEW)
     public List<PolicyStatement> getUserPolicyStatements(String userUuid){
         List<PolicyStatement> policyStatements = new ArrayList<>();
-        //UserVO user = dbf.findByUuid(userUuid, UserVO.class);
-        UserVO user = dbf.getEntityManager().find(UserVO.class, userUuid);
-
-        if(user.getRoleSet() != null ){
-            for (RoleVO role : user.getRoleSet()) {
-                for (PolicyVO permission : role.getPolicySet()) {
-                    PolicyStatement p = JSONObjectUtil.toObject(permission.getPermission(), PolicyStatement.class);
-                    p.setUuid(permission.getUuid());
-                    p.setName(permission.getName());
-                    policyStatements.add(p);
-                }
-            }
-            return policyStatements;
+        String sql = "select p" +
+                " from PolicyVO p, UserRoleRefVO ref, RolePolicyRefVO rref" +
+                " where p.uuid = rref.policyUuid" +
+                " and rref.roleUuid = ref.roleUuid" +
+                " and ref.userUuid = :uuid";
+        TypedQuery<PolicyVO> q = dbf.getEntityManager().createQuery(sql, PolicyVO.class);
+        q.setParameter("uuid", userUuid);
+        List<PolicyVO> policys = q.getResultList();
+        for (PolicyVO permission : policys) {
+            PolicyStatement p = JSONObjectUtil.toObject(permission.getPermission(), PolicyStatement.class);
+            p.setUuid(permission.getUuid());
+            p.setName(permission.getName());
+            policyStatements.add(p);
         }
-
-        return null;
-
-
-
+        return policyStatements;
     }
 
     @Override

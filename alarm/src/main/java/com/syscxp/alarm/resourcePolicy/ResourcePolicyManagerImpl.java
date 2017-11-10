@@ -11,7 +11,6 @@ import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconMsg;
@@ -57,10 +56,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     @Autowired
     private DatabaseFacade dbf;
     @Autowired
-    private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
     private RESTFacade restf;
 
     @Override
@@ -88,113 +83,46 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             handle((APIUpdateRegulationMsg) msg);
         } else if (msg instanceof APIDeleteRegulationMsg) {
             handle((APIDeleteRegulationMsg) msg);
-        } else if (msg instanceof APIGetPoliciesMsg) {
-            handle((APIGetPoliciesMsg) msg);
         } else if (msg instanceof APIUpdatePolicyMsg) {
             handle((APIUpdatePolicyMsg) msg);
         } else if (msg instanceof APIDeletePolicyMsg) {
             handle((APIDeletePolicyMsg) msg);
-        } else if (msg instanceof APIGetResourcesBindByPolicyMsg) {
-            handle((APIGetResourcesBindByPolicyMsg) msg);
-        }  else if (msg instanceof APIGetResourcesByProductTypeMsg) {
-            handle((APIGetResourcesByProductTypeMsg) msg);
         } else if (msg instanceof APIDeleteResourceMsg) {
             handle((APIDeleteResourceMsg) msg);
         } else if (msg instanceof APIUpdateTunnelInfoForFalconMsg) {
             handle((APIUpdateTunnelInfoForFalconMsg) msg);
-        } else if (msg instanceof APIGetPoliciesByResourceMsg) {
-            handle((APIGetPoliciesByResourceMsg) msg);
         } else if (msg instanceof APIGetComparisonRuleListMsg) {
             handle((APIGetComparisonRuleListMsg) msg);
         } else if (msg instanceof APIGetMonitorTargetListMsg) {
             handle((APIGetMonitorTargetListMsg) msg);
-        }  else if (msg instanceof APIAttachPoliciesToResourcesMsg) {
-            handle((APIAttachPoliciesToResourcesMsg) msg);
-        }  else if (msg instanceof APIDetachPoliciesFromResourcesMsg) {
-            handle((APIDetachPoliciesFromResourcesMsg) msg);
-        } else {
+        }  else if (msg instanceof APIAttachPolicyToResourceMsg) {
+            handle((APIAttachPolicyToResourceMsg) msg);
+        }   else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    @Transactional
-    private void handle(APIDetachPoliciesFromResourcesMsg msg) {
-        for(String resourceUuid: msg.getResourceUuids()){
-            for(String policyUuid: msg.getPolicyUuids()){
-                SimpleQuery<ResourcePolicyRefVO> query =  dbf.createQuery(ResourcePolicyRefVO.class);
-                query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ,policyUuid);
-                query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ,resourceUuid);
-                ResourcePolicyRefVO resourcePolicyRefVO = query.find();
-                if(resourcePolicyRefVO==null){
-                    throw new IllegalArgumentException("the resource is not bond the policy");
-                }else{
-                    dbf.getEntityManager().remove(dbf.getEntityManager().merge(resourcePolicyRefVO));
-                    PolicyVO policyVO = dbf.findByUuid(policyUuid,PolicyVO.class);
-                    policyVO.setBindResources(policyVO.getBindResources()-1);
-                    dbf.getEntityManager().merge(policyVO);
-                }
-            }
+    private void handle(APIAttachPolicyToResourceMsg msg) {
+
+        UpdateQuery q = UpdateQuery.New(ResourcePolicyRefVO.class);
+        q.condAnd(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
+        q.delete();
+
+        APIAttachPolicyToResourceEvent event = new APIAttachPolicyToResourceEvent(msg.getId());
+
+        if(!StringUtils.isEmpty(msg.getPolicyUuid())){
+            ResourcePolicyRefVO resourcePolicyRefVO = new ResourcePolicyRefVO();
+            resourcePolicyRefVO.setPolicyUuid(msg.getPolicyUuid());
+            resourcePolicyRefVO.setResourceUuid(msg.getResourceUuid());
+            dbf.persistAndRefresh(resourcePolicyRefVO);
+            event.setInventory(PolicyInventory.valueOf(dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class)));
         }
 
-        APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
-        aMsg.setBind(true);
-        aMsg.setStart(0);
-        aMsg.setLimit(1000);
-        aMsg.setAccountUuid(msg.getAccountUuid());
-        aMsg.setProductUuids(msg.getResourceUuids());
+//
+//        if(!updatePoliciesByResources(msg.getSession().getAccountUuid(),msg.getResourceUuids())){
+//            throw new OperationFailureException(Platform.operr("资源不存在！"));
+//        }
 
-        long count =0;
-        Map<String,Long> param = new HashMap<>();
-        List<ResourceInventory> inventories = getResources(aMsg, msg.getType(), param, msg.getPolicyUuids(),false);
-        count = param.get("count")!=null?param.get("count"):0;
-
-        APIAttachPoliciesToResourcesEvent event = new APIAttachPoliciesToResourcesEvent(msg.getId());
-        if(!updatePoliciesByResources(msg.getSession().getAccountUuid(),msg.getResourceUuids())){
-            throw new OperationFailureException(Platform.operr("资源不存在！"));
-        }
-        event.setInventories(inventories);
-        event.setCount(count);
-        bus.publish(event);
-    }
-
-    @Transactional
-    private void handle(APIAttachPoliciesToResourcesMsg msg) {
-        for(String resourceUuid: msg.getResourceUuids()){
-            for(String policyUuid: msg.getPolicyUuids()){
-                SimpleQuery<ResourcePolicyRefVO> query =  dbf.createQuery(ResourcePolicyRefVO.class);
-                query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ,policyUuid);
-                query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ,resourceUuid);
-                if(query.find()!=null){
-                    throw new IllegalArgumentException("it is already attach");
-                }
-                ResourcePolicyRefVO resourcePolicyRefVO = new ResourcePolicyRefVO();
-                resourcePolicyRefVO.setPolicyUuid(policyUuid);
-                resourcePolicyRefVO.setResourceUuid(resourceUuid);
-                dbf.getEntityManager().persist(resourcePolicyRefVO);
-                PolicyVO policyVO = dbf.findByUuid(policyUuid,PolicyVO.class);
-                policyVO.setBindResources(policyVO.getBindResources()+1);
-                dbf.getEntityManager().merge(policyVO);
-            }
-        }
-        APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
-        aMsg.setBind(true);
-        aMsg.setStart(0);
-        aMsg.setLimit(1000);
-        aMsg.setAccountUuid(msg.getAccountUuid());
-        aMsg.setProductUuids(msg.getResourceUuids());
-
-        long count =0;
-        Map<String,Long> param = new HashMap<>();
-        List<ResourceInventory> inventories = getResources(aMsg, msg.getType(),param,msg.getPolicyUuids(),true);
-        count = param.get("count")!=null?param.get("count"):0;
-
-        APIAttachPoliciesToResourcesEvent event = new APIAttachPoliciesToResourcesEvent(msg.getId());
-        if(!updatePoliciesByResources(msg.getSession().getAccountUuid(),msg.getResourceUuids())){
-            throw new OperationFailureException(Platform.operr("资源不存在！"));
-        }
-
-        event.setInventories(inventories);
-        event.setCount(count);
         bus.publish(event);
 
     }
@@ -301,29 +229,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         bus.reply(msg, reply);
     }
 
-    private void handle(APIGetPoliciesByResourceMsg msg) {
-        List<PolicyVO> policies = new ArrayList<>();
-
-        SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
-        query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
-        query.select(ResourcePolicyRefVO_.policyUuid);
-        List<String> policyUuids = query.listValue();
-        if(policyUuids.size()>0){
-            SimpleQuery.Op op = SimpleQuery.Op.IN;
-            if (!msg.isBind()) {
-                op = SimpleQuery.Op.NOT_IN;
-            }
-            SimpleQuery<PolicyVO> q = dbf.createQuery(PolicyVO.class);
-            q.add(PolicyVO_.uuid, op, policyUuids);
-            q.add(PolicyVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-            policies = q.list();
-        }
-
-        APIGetPoliciesByResourceReply reply = new APIGetPoliciesByResourceReply();
-        if (policies != null) reply.setInventories(PolicyInventory.valueOf(policies));
-        bus.reply(msg, reply);
-    }
-
     private void handle(APIUpdateTunnelInfoForFalconMsg msg) {
 
         TunnelParameter tunnelparameter = new TunnelParameter();
@@ -425,189 +330,18 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         return productServerUrl;
     }
 
-    private void handle(APIGetResourcesBindByPolicyMsg msg) {
-        PolicyVO policyVo = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
-        String productServerUrl = getProductUrl(policyVo.getProductType());
-
-        SimpleQuery.Op op = SimpleQuery.Op.IN;
-        if (!msg.isBind()) {
-            op = SimpleQuery.Op.NOT_IN;
-        }
-
-        SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
-        query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
-        List<ResourcePolicyRefVO> resourcePolicyRefVOS = query.list();
-        query.select(ResourcePolicyRefVO_.resourceUuid);
-        List<String> uuids = query.listValue();
-
-        if (policyVo.getProductType() == ProductType.TUNNEL) {
-            APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
-            if (!StringUtils.isEmpty(msg.getName())) {
-                aMsg.setProductName(msg.getName());
-            }
-            aMsg.setAccountUuid(msg.getAccountUuid());
-            long count = 0;
-            aMsg.setLimit(msg.getLimit());
-            aMsg.setStart(msg.getStart());
-            aMsg.setProductUuids(uuids);
-            aMsg.setBind(msg.isBind());
-
-            Map<String,Long> param = new HashMap<>();
-            List<ResourceInventory> inventories = getResources(aMsg, policyVo.getProductType(),param,new ArrayList<String>(),true);
-            count = param.get("count")!=null?param.get("count"):0;
-
-            APIGetResourcesBindByPolicyReply reply = new APIGetResourcesBindByPolicyReply();
-            reply.setCount(count);
-            reply.setInventories(inventories);
-            bus.reply(msg, reply);
-        } else if (policyVo.getProductType() == ProductType.VPN) {
-
-        }
-
-    }
-
-    private void handle(APIGetResourcesByProductTypeMsg msg) {
-
-        String productServerUrl = getProductUrl(msg.getProductType());
-
-        APIQueryTunnelForAlarmMsg aMsg = new APIQueryTunnelForAlarmMsg();
-        List<ResourceInventory> inventories = new ArrayList<>();
-        aMsg.setAccountUuid(msg.getAccountUuid());
-        aMsg.setProductName(msg.getProductName());
-        aMsg.setStart(msg.getStart());
-        aMsg.setLimit(msg.getLimit());
-        InnerMessageHelper.setMD5(aMsg);
-        String gstr = RESTApiDecoder.dump(aMsg);
-        long count = 0;
-        RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
-        if (rsp.getState().equals(RestAPIState.Done.toString())) {
-            APIQueryTunnelForAlarmReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
-            if (productReply instanceof APIQueryTunnelForAlarmReply) {
-                List<TunnelForAlarmInventory> tunnelList = productReply.getInventories();
-                count = productReply.getCount();
-                for (TunnelForAlarmInventory inventory : tunnelList) {
-                    ResourceInventory resourceInventory = new ResourceInventory();
-                    resourceInventory.setAccountUuid(inventory.getAccountUuid());
-                    resourceInventory.setUuid(inventory.getUuid());
-                    resourceInventory.setProductUuid(inventory.getUuid());
-                    resourceInventory.setProductType(msg.getProductType());
-                    resourceInventory.setDescription(inventory.getDescription());
-                    resourceInventory.setProductName(inventory.getName());
-                    resourceInventory.setCreateDate(inventory.getCreateDate());
-                    resourceInventory.setLastOpDate(inventory.getLastOpDate());
-                    SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
-                    query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, inventory.getUuid());
-                    List<ResourcePolicyRefVO> resourcePolicyRefVOS = query.list();
-                    List<PolicyInventory> policyInventories = new ArrayList<>();
-                    for (ResourcePolicyRefVO resourcePolicyRefVO : resourcePolicyRefVOS) {
-                        policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class)));
-                    }
-                    resourceInventory.setPolicies(policyInventories);
-                    inventories.add(resourceInventory);
-                }
-
-            }
-        }
-        APIGetResourcesByProductTypeReply reply = new APIGetResourcesByProductTypeReply();
-        reply.setInventories(inventories);
-        reply.setCount(count);
-        bus.reply(msg, reply);
-    }
-
-    private void attachPolcies(List<String> policyUuids, String resourceUuid, List<PolicyInventory> list) {
-        for (String policyUuid : policyUuids) {
-            ResourcePolicyRefVO resourcePolicyRefVO = new ResourcePolicyRefVO();
-            resourcePolicyRefVO.setPolicyUuid(policyUuid);
-            resourcePolicyRefVO.setResourceUuid(resourceUuid);
-            dbf.getEntityManager().persist(resourcePolicyRefVO);
-            list.add(PolicyInventory.valueOf(dbf.findByUuid(policyUuid, PolicyVO.class)));
-        }
-    }
-
-    @Transactional
-    private ResourcePolicyRefVO deleteResourcePolicyRef(String policyUuid, String resourceUuid) {
-        SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
-        query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, policyUuid);
-        query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, resourceUuid);
-        ResourcePolicyRefVO resourcePolicyRefVO = query.find();
-        if (resourcePolicyRefVO != null) {
-            dbf.getEntityManager().remove(dbf.getEntityManager().merge(resourcePolicyRefVO));
-        }
-        return resourcePolicyRefVO;
-    }
-
-    private void removeObj(List<PolicyInventory> list, String policyUuid) {
-        Iterator<PolicyInventory> it = list.iterator();
-        while (it.hasNext()) {
-            PolicyInventory p = it.next();
-            if (p.getUuid().equals(policyUuid)) {
-                it.remove();
-            }
-        }
-    }
-
-
-    public List<ResourceInventory> getResources(APIQueryTunnelForAlarmMsg aMsg, ProductType productType,Map<String,Long> map,List<String> policyUuids,boolean isBind) {
-        String productServerUrl = getProductUrl(productType);
-        List<ResourceInventory> inventories = new ArrayList<>();
-        InnerMessageHelper.setMD5(aMsg);
-        String gstr = RESTApiDecoder.dump(aMsg);
-        RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
-        if (rsp.getState().equals(RestAPIState.Done.toString())) {
-            try {
-                APIQueryTunnelForAlarmReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
-                if (productReply instanceof APIQueryTunnelForAlarmReply) {
-                    List<TunnelForAlarmInventory> tunnelList = productReply.getInventories();
-                    map.put("count", productReply.getCount());
-                    for (TunnelForAlarmInventory inventory : tunnelList) {
-                        ResourceInventory resourceInventory = new ResourceInventory();
-                        resourceInventory.setUuid(inventory.getUuid());
-                        resourceInventory.setAccountUuid(inventory.getAccountUuid());
-                        resourceInventory.setProductUuid(inventory.getUuid());
-                        resourceInventory.setProductType(productType);
-                        resourceInventory.setDescription(inventory.getDescription());
-                        resourceInventory.setProductName(inventory.getName());
-                        resourceInventory.setCreateDate(inventory.getCreateDate());
-                        resourceInventory.setLastOpDate(inventory.getLastOpDate());
-                        SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
-                        query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, inventory.getUuid());
-                        if (!isBind) query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.NOT_IN, policyUuids);
-                        List<ResourcePolicyRefVO> resourcePolicyRefVOS = query.list();
-                        List<PolicyInventory> policyInventories = new ArrayList<>();
-                        for (ResourcePolicyRefVO resourcePolicyRefVO : resourcePolicyRefVOS) {
-                            policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class)));
-                        }
-                        if (isBind) {
-                            for (String policyUuid : policyUuids) {
-                                policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(policyUuid, PolicyVO.class)));
-                            }
-                        }
-
-                        resourceInventory.setPolicies(policyInventories);
-                        inventories.add(resourceInventory);
-                    }
-
-                }
-            }catch (Exception e){
-                return inventories;
-            }
-        }
-        return inventories;
-    }
-
-
     @Transactional
     private void handle(APIDeletePolicyMsg msg) {
+        SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
+        query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ,msg.getUuid());
+        List<ResourcePolicyRefVO> list = query.list();
+        if(list!=null && list.size()>0){
+            throw new IllegalArgumentException("the policy can remove till no resource bind to this policy");
+        }
         PolicyVO vo = dbf.findByUuid(msg.getUuid(), PolicyVO.class);
         APIDeletePolicyEvent event = new APIDeletePolicyEvent(msg.getId());
         if (vo != null) {
             dbf.remove(vo);
-            if(!updateFalcon(msg.getSession(), vo.getUuid())){
-                throw new OperationFailureException(Platform.operr("资源不存在！"));
-            }else{
-                dbf.removeCollection(dbf.createQuery(ResourcePolicyRefVO.class)
-                        .add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, vo.getUuid()).list(), ResourcePolicyRefVO.class);
-            }
         }
         event.setInventory(PolicyInventory.valueOf(vo));
         bus.publish(event);
@@ -627,38 +361,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         APIUpdatePolicyEvent event = new APIUpdatePolicyEvent(msg.getId());
         event.setInventory(PolicyInventory.valueOf(vo));
         bus.publish(event);
-    }
-
-    private void handle(APIGetPoliciesMsg msg) {
-        SimpleQuery<PolicyVO> query = dbf.createQuery(PolicyVO.class);
-        if (msg.getSession().getType() != AccountType.SystemAdmin) {
-            query.add(PolicyVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
-        } else if (!StringUtils.isEmpty(msg.getAccountUuid())) {
-            query.add(PolicyVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-        }
-        List<QueryCondition> conditions = msg.getConditions();
-        if (conditions != null && conditions.size() > 0) {
-            for (QueryCondition condition : conditions) {
-                if (!StringUtils.isEmpty(condition.getName())) {
-                    if (condition.getName().equals("name")) {
-                        query.add(PolicyVO_.name, SimpleQuery.Op.LIKE, ProductType.valueOf(condition.getValue()));
-                    } else {
-                        query.add(PolicyVO_.productType, SimpleQuery.Op.EQ, ProductType.valueOf(condition.getValue()));
-                    }
-
-                }
-            }
-        }
-        long count = query.count();
-        query.setLimit(msg.getLimit());
-        query.setStart(msg.getStart());
-
-        List<PolicyVO> policyVOS = query.list();
-        APIGetPoliciesReply reply = new APIGetPoliciesReply();
-        reply.setInventories(PolicyInventory.valueOf(policyVOS));
-        reply.setCount(count);
-        bus.reply(msg, reply);
-
     }
 
     @Transactional()
@@ -705,8 +407,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     private void handle(APIGetRegulationByPolicyMsg msg) {
         SimpleQuery<RegulationVO> query = dbf.createQuery(RegulationVO.class);
         query.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
-//        query.setStart(msg.getStart());
-//        query.setLimit(msg.getLimit());
         List<RegulationVO> regulationVOList = query.list();
         APIGetRegulationByPolicyReply reply = new APIGetRegulationByPolicyReply();
         reply.setInventories(RegulationInventory.valueOf(regulationVOList));
@@ -853,33 +553,5 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }
         return true;
     }
-
-
-    private <T> boolean isEmptyList(Collection<T> c) {
-        return c == null || c.size() == 0;
-    }
-
-    private <T> Map<T, T> list2Map(List<T> list) {
-        Map<T, T> map = new HashMap<>();
-        for (T t : list) {
-            map.put(t, t);
-        }
-        return map;
-    }
-
-    private <T> List<T> substractList(List<T> c1, List<T> c2) {
-        if (isEmptyList(c1)) return null;
-        if (isEmptyList(c2)) return c1;
-        Map<T, T> map2 = list2Map(c2);
-        List<T> resultList = new ArrayList<>();
-        for (T t : c1) {
-            if (map2.get(t) == null) {
-                resultList.add(t);
-            }
-        }
-        return resultList;
-
-    }
-
 
 }
