@@ -26,7 +26,7 @@ CREATE TABLE `AlarmLogVO` (
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户UUID',
   `smsContent` varchar(256) DEFAULT NULL COMMENT '短信内容',
   `mailContent` varchar(256) DEFAULT NULL COMMENT '邮件内容',
-  `policyName` varchar(255) DEFAULT NULL COMMENT '策略名字',
+  `policyUuid` varchar(32) DEFAULT NULL COMMENT '策略ID',
   `eventId` varchar(128) DEFAULT NULL COMMENT '事件ID',
   `alarmTime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `resumeTime` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
