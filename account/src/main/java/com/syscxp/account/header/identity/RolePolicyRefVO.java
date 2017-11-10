@@ -28,7 +28,7 @@ public class RolePolicyRefVO {
     private Timestamp createDate;
 
     @ManyToOne(cascade = CascadeType.REFRESH)
-    @JoinColumn(name="policyUuid")
+    @JoinColumn(name="policyUuid",insertable=false,updatable=false)
     private PolicyVO policy;
 
     public long getId() {
