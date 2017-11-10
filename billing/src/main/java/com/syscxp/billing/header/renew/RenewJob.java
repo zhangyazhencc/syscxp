@@ -42,7 +42,7 @@ public class RenewJob extends QuartzJobBean {
             for (RenewVO renewVO : renewVOs) {
                 Timestamp expiredTimestamp =renewVO.getExpiredTime();
                 if(currentTimestamp.getTime()-expiredTimestamp.getTime()>7*24*60*60*1000l){
-                    databaseFacade.getEntityManager().remove(renewVO);
+                    databaseFacade.getEntityManager().remove(databaseFacade.getEntityManager().merge(renewVO));
                     databaseFacade.getEntityManager().flush();
                     continue;
                 }
@@ -184,7 +184,7 @@ public class RenewJob extends QuartzJobBean {
 
                     Timestamp endTime = new Timestamp(calendar.getTime().getTime());
                     long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
-                    renewVO.setPricePerDay(renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays)).add(discountPrice).divide(BigDecimal.valueOf(notUseDays).add(duration),4,BigDecimal.ROUND_HALF_EVEN));
+                    renewVO.setPriceOneMonth(renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays)).add(discountPrice).divide(BigDecimal.valueOf(notUseDays).add(duration.multiply(BigDecimal.valueOf(30))), 4, BigDecimal.ROUND_HALF_EVEN).multiply(BigDecimal.valueOf(30)));
                     databaseFacade.getEntityManager().merge(renewVO);
 
                     orderVo.setUuid(Platform.getUuid());
