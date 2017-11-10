@@ -44,11 +44,6 @@
     </message>
 
     <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIQueryResourceMsg</name>
-        <serviceId>query</serviceId>
-    </message>
-
-    <message>
         <name>com.syscxp.alarm.header.resourcePolicy.APIQueryPolicyMsg</name>
         <serviceId>query</serviceId>
     </message>
