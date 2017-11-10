@@ -9,10 +9,10 @@ import javax.persistence.metamodel.StaticMetamodel;
 @StaticMetamodel(RegulationVO.class)
 public class RegulationVO_  extends BaseVO_ {
 
-    public static volatile SingularAttribute<ResourceVO, String> comparisonRuleUuid;
-    public static volatile SingularAttribute<ResourceVO, String> policyUuid;
-    public static volatile SingularAttribute<ResourceVO, String> monitorTargetUuid;
-    public static volatile SingularAttribute<ResourceVO, Integer> alarmThreshold;
-    public static volatile SingularAttribute<ResourceVO, Integer> detectPeriod;
-    public static volatile SingularAttribute<ResourceVO, Integer> triggerPeriod;
+    public static volatile SingularAttribute<RegulationVO, String> comparisonRuleUuid;
+    public static volatile SingularAttribute<RegulationVO, String> policyUuid;
+    public static volatile SingularAttribute<RegulationVO, String> monitorTargetUuid;
+    public static volatile SingularAttribute<RegulationVO, Integer> alarmThreshold;
+    public static volatile SingularAttribute<RegulationVO, Integer> detectPeriod;
+    public static volatile SingularAttribute<RegulationVO, Integer> triggerPeriod;
 }
