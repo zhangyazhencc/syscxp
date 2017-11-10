@@ -206,4 +206,11 @@
         <name>com.syscxp.account.header.user.APIUserMailAuthenticationMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.account.header.identity.APIQueryRolePolicyMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+
+
 </service>

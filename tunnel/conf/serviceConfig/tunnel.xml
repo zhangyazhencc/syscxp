@@ -76,7 +76,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.APIQueryTunnelDetailForAlarmMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIQueryTunnelDetailForAlarmMsg</name>
     </message>
 
     <message>

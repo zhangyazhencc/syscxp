@@ -79,8 +79,6 @@ public abstract class HostBase extends AbstractHost {
 
     protected abstract void pingHook(Completion completion);
 
-    protected abstract int getVmMigrateQuantity();
-
     protected abstract void changeStateHook(HostState current, HostStateEvent stateEvent, HostState next);
 
     protected abstract void connectHook(ConnectHostInfo info, Completion complete);
@@ -171,8 +169,6 @@ public abstract class HostBase extends AbstractHost {
             }
         }
 
-        final int quantity = getVmMigrateQuantity();
-        DebugUtils.Assert(quantity != 0, "getVmMigrateQuantity() cannot return 0");
         final HostMaintenancePolicy finalPolicy = policy;
         chain.then(new ShareFlow() {
             List<String> vmFailedToMigrate = new ArrayList<String>();
@@ -252,7 +248,20 @@ public abstract class HostBase extends AbstractHost {
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
-                //Todo stop monitor agent
+                ChangeHostStateMsg cmsg = new ChangeHostStateMsg();
+                cmsg.setUuid(self.getUuid());
+                cmsg.setStateEvent(HostStateEvent.disable.toString());
+                bus.makeLocalServiceId(cmsg, HostConstant.SERVICE_ID);
+                bus.send(cmsg, new CloudBusCallBack(msg) {
+                    @Override
+                    public void run(MessageReply reply) {
+                        if (!reply.isSuccess()) {
+                            APIDeleteHostEvent evt = new APIDeleteHostEvent(msg.getId());
+                            evt.setError(errf.instantiateErrorCode(HostErrors.FAILED_TO_STOP_AGNET, reply.getError()));
+                            logger.debug(String.format("failed to stop host[uuid:%s] agent %s", self.getUuid(), reply.getError()));
+                        }
+                    }
+                });
                 trigger.next();
             }
         }).then(new NoRollbackFlow() {
@@ -452,6 +461,8 @@ public abstract class HostBase extends AbstractHost {
                 reply.setConnected(true);
                 reply.setCurrentHostStatus(self.getStatus().toString());
                 bus.reply(msg, reply);
+
+                changeConnectionState(HostStatusEvent.connected);
 
                 extpEmitter.hostPingTask(HostType.valueOf(self.getHostType()), getSelfInventory());
             }

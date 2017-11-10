@@ -1,14 +1,11 @@
 package com.syscxp.alarm.header.resourcePolicy;
 
-import com.syscxp.header.message.APIReply;
+import com.syscxp.header.query.APIQueryReply;
 
 import java.util.List;
 
-public class APIGetPoliciesReply extends APIReply {
-
+public class APIQueryPolicyReply extends APIQueryReply {
     private List<PolicyInventory> inventories;
-
-    private long count;
 
     public List<PolicyInventory> getInventories() {
         return inventories;
@@ -18,11 +15,4 @@ public class APIGetPoliciesReply extends APIReply {
         this.inventories = inventories;
     }
 
-    public long getCount() {
-        return count;
-    }
-
-    public void setCount(long count) {
-        this.count = count;
-    }
 }
