@@ -17,7 +17,7 @@ public class RenewVO_ {
     public static volatile SingularAttribute<RenewVO, String> productUuid;
     public static volatile SingularAttribute<RenewVO, String> productName;
     public static volatile SingularAttribute<RenewVO, String> descriptionData;
-    public static volatile SingularAttribute<RenewVO, BigDecimal> pricePerDay;
+    public static volatile SingularAttribute<RenewVO, BigDecimal> priceOneMonth;
     public static volatile SingularAttribute<RenewVO, ProductType> productType;
     public static volatile SingularAttribute<RenewVO, ProductChargeModel> productChargeModel;
     public static volatile SingularAttribute<RenewVO, Timestamp> createDate;
