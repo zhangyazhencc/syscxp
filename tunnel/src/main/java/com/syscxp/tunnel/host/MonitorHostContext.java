@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.host;
 
+import com.syscxp.header.tunnel.host.MonitorHostInventory;
 import org.springframework.web.util.UriComponentsBuilder;
 
 public class MonitorHostContext {

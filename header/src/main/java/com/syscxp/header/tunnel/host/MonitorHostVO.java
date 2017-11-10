@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.host;
+package com.syscxp.header.tunnel.host;
 
 import com.syscxp.header.core.encrypt.DECRYPT;
 import com.syscxp.header.core.encrypt.ENCRYPTParam;
@@ -31,7 +31,7 @@ public class MonitorHostVO extends HostVO {
     @ForeignKey(parentEntityClass = NodeVO.class, onDeleteAction = ReferenceOption.RESTRICT)
     private String nodeUuid;
 
-    /*@ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "nodeUuid", insertable = false, updatable = false)
     @NoView
     private NodeVO node;
@@ -42,7 +42,7 @@ public class MonitorHostVO extends HostVO {
 
     public void setNode(NodeVO node) {
         this.node = node;
-    }*/
+    }
 
     public MonitorHostVO() {
     }

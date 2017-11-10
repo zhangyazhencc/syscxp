@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.host;
+package com.syscxp.header.tunnel.host;
 
 import com.syscxp.header.host.HostInventory;
 import com.syscxp.header.search.Inventory;
@@ -33,7 +33,7 @@ public class MonitorHostInventory extends HostInventory {
         this.setUsername(vo.getUsername());
         this.setPassword(vo.getPassword());
         this.setSshPort(vo.getSshPort());
-        //this.setNodeInventory(NodeInventory.valueOf(vo.getNode()));
+        this.setNodeInventory(NodeInventory.valueOf(vo.getNode()));
     }
 
     public static MonitorHostInventory valueOf(MonitorHostVO vo) {
