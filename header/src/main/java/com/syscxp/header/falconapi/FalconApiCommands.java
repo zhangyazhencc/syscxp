@@ -103,18 +103,18 @@ public class FalconApiCommands {
      * @Description: 规则.
      */
     public static class Rule{
-        private String alarm_rule_id;
+        private String regulation_id;
         private String strategy_type;
         private String op;
         private String right_value;
         private Integer stay_time;
 
-        public String getAlarm_rule_id() {
-            return alarm_rule_id;
+        public String getRegulation_id() {
+            return regulation_id;
         }
 
-        public void setAlarm_rule_id(String alarm_rule_id) {
-            this.alarm_rule_id = alarm_rule_id;
+        public void setRegulation_id(String regulation_id) {
+            this.regulation_id = regulation_id;
         }
 
         public String getStrategy_type() {

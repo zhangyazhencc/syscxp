@@ -32,6 +32,8 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
 import com.syscxp.header.tunnel.*;
+import com.syscxp.header.tunnel.tunnel.APIQueryTunnelDetailForAlarmMsg;
+import com.syscxp.header.tunnel.tunnel.APIQueryTunnelDetailForAlarmReply;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
