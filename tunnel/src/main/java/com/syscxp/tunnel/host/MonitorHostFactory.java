@@ -21,6 +21,7 @@ import com.syscxp.header.message.Message;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.message.NeedReplyMessage;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.tunnel.host.*;
 import com.syscxp.tunnel.host.MonitorAgentCommands.*;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
@@ -144,7 +145,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
                             "reconnect it for %s", cmd.hostUuid, cmd.reason);
                     ReconnectHostMsg msg = new ReconnectHostMsg();
                     msg.setHostUuid(cmd.hostUuid);
-                    bus.makeTargetServiceIdByResourceUuid(msg, HostConstant.SERVICE_ID, cmd.hostUuid);
+                    bus.makeLocalServiceId(msg, HostConstant.SERVICE_ID);
                     bus.send(msg);
                     return null;
                 });
@@ -241,7 +242,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
             MonitorRunShellMsg kmsg = new MonitorRunShellMsg();
             kmsg.setHostUuid(arg);
             kmsg.setScript(msg.getScript());
-            bus.makeTargetServiceIdByResourceUuid(kmsg, HostConstant.SERVICE_ID, arg);
+            bus.makeLocalServiceId(kmsg, HostConstant.SERVICE_ID);
             return kmsg;
         });
 

@@ -1,5 +1,7 @@
 package com.syscxp.tunnel.host;
 
+import com.syscxp.header.tunnel.host.MonitorHostInventory;
+
 /**
  */
 public class MonitorHostConnectedContext {

@@ -66,7 +66,7 @@ public class HostCascadeExtension extends AbstractAsyncCascadeExtension {
             HostDeletionMsg msg = new HostDeletionMsg();
             msg.setForceDelete(action.isActionCode(CascadeConstant.DELETION_FORCE_DELETE_CODE));
             msg.setHostUuid(hinv.getUuid());
-            bus.makeTargetServiceIdByResourceUuid(msg, HostConstant.SERVICE_ID, hinv.getUuid());
+            bus.makeLocalServiceId(msg, HostConstant.SERVICE_ID);
             msgs.add(msg);
         }
 

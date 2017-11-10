@@ -2,8 +2,8 @@ package com.syscxp.tunnel.manage;
 
 import com.syscxp.header.tunnel.NodeConstant;
 import com.syscxp.header.tunnel.endpoint.*;
-import com.syscxp.tunnel.host.MonitorHostVO;
-import com.syscxp.tunnel.host.MonitorHostVO_;
+import com.syscxp.header.tunnel.host.MonitorHostVO;
+import com.syscxp.header.tunnel.host.MonitorHostVO_;
 import com.syscxp.header.tunnel.node.*;
 import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
 import com.syscxp.header.tunnel.switchs.SwitchVO;

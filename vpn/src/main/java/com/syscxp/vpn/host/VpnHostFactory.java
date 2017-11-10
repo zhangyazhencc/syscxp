@@ -195,7 +195,7 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
             ConnectHostMsg msg = new ConnectHostMsg();
             msg.setNewAdd(false);
             msg.setUuid(huuid);
-            bus.makeTargetServiceIdByResourceUuid(msg, VpnConstant.SERVICE_ID, huuid);
+            bus.makeLocalServiceId(msg, VpnConstant.SERVICE_ID);
             msgs.add(msg);
         }
 

@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.host;
+package com.syscxp.header.tunnel.host;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
