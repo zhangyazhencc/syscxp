@@ -104,6 +104,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.tunnel.header.tunnel.APIReCallControllerMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.tunnel.header.tunnel.APIQueryInterfaceMsg</name>
         <serviceId>query</serviceId>
     </message>
