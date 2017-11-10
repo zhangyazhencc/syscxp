@@ -9,7 +9,7 @@ import javax.persistence.metamodel.StaticMetamodel;
 @StaticMetamodel( ComparisonRuleVO.class)
 public class ComparisonRuleVO_  extends BaseVO_ {
 
-    public static volatile SingularAttribute<ResourceVO, ProductType> productType;
-    public static volatile SingularAttribute<ResourceVO, String> comparisonName;
-    public static volatile SingularAttribute<ResourceVO, String> comparisonValue ;
+    public static volatile SingularAttribute<ComparisonRuleVO_, ProductType> productType;
+    public static volatile SingularAttribute<ComparisonRuleVO_, String> comparisonName;
+    public static volatile SingularAttribute<ComparisonRuleVO_, String> comparisonValue ;
 }

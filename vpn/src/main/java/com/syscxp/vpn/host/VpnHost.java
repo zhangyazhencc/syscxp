@@ -259,11 +259,6 @@ public class VpnHost extends HostBase implements Host {
     }
 
     @Override
-    protected int getVmMigrateQuantity() {
-        return 1;
-    }
-
-    @Override
     protected void changeStateHook(HostState current, HostStateEvent stateEvent, HostState next) {
         logger.debug(String.format("Host: %s changed state from %s to %s by %s", self.getName(), current, next, stateEvent));
     }

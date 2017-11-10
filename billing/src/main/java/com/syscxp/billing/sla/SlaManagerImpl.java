@@ -1,8 +1,18 @@
 package com.syscxp.billing.sla;
 
+import com.syscxp.billing.BillingGlobalProperty;
 import com.syscxp.billing.header.sla.*;
-import com.syscxp.header.billing.APICreateOrderMsg;
-import com.syscxp.header.billing.BillingConstant;
+import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.rest.RESTApiDecoder;
+import com.syscxp.header.billing.*;
+import com.syscxp.header.rest.RestAPIResponse;
+import com.syscxp.header.rest.RestAPIState;
+import com.syscxp.header.tunnel.APIQueryTunnelForAlarmReply;
+import com.syscxp.header.tunnel.TunnelForAlarmInventory;
+import com.syscxp.header.tunnel.tunnel.APIUpdateInterfaceExpireDateEvent;
+import com.syscxp.header.tunnel.tunnel.APIUpdateInterfaceExpireDateMsg;
+import com.syscxp.header.tunnel.tunnel.APIUpdateTunnelExpireDateEvent;
+import com.syscxp.header.tunnel.tunnel.APIUpdateTunnelExpireDateMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.billing.header.sla.*;
 import com.syscxp.core.Platform;
@@ -23,6 +33,8 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
 import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
 
 public class SlaManagerImpl  extends AbstractService implements  ApiMessageInterceptor {
 
@@ -83,7 +95,57 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
             if(msg.getSession().getType() != AccountType.SystemAdmin){
                 throw new RuntimeException("you have not the permission to do this");
             }
-            //todo modify the product expired time
+
+            APIUpdateTunnelExpireDateMsg aMsg = new APIUpdateTunnelExpireDateMsg();
+            aMsg.setUuid(slaCompensateVO.getProductUuid());
+            aMsg.setDuration(slaCompensateVO.getDuration());
+            aMsg.setProductChargeModel(ProductChargeModel.BY_DAY);
+            aMsg.setType(OrderType.SLA_COMPENSATION);
+            aMsg.setSession(msg.getSession());
+
+            String productServerUrl = getProductUrl(slaCompensateVO.getProductType());
+            String gstr = RESTApiDecoder.dumpWithSession(aMsg);
+            RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
+//            if (rsp.getState().equals(RestAPIState.Done.toString())) {
+//                try {
+//                    APIUpdateTunnelExpireDateEvent productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
+//                    if (productReply instanceof APIQueryTunnelForAlarmReply) {
+//                        List<TunnelForAlarmInventory> tunnelList = productReply.getInventories();
+//                        map.put("count", productReply.getCount());
+//                        for (TunnelForAlarmInventory inventory : tunnelList) {
+//                            ResourceInventory resourceInventory = new ResourceInventory();
+//                            resourceInventory.setUuid(inventory.getUuid());
+//                            resourceInventory.setAccountUuid(inventory.getAccountUuid());
+//                            resourceInventory.setProductUuid(inventory.getUuid());
+//                            resourceInventory.setProductType(productType);
+//                            resourceInventory.setDescription(inventory.getDescription());
+//                            resourceInventory.setProductName(inventory.getName());
+//                            resourceInventory.setCreateDate(inventory.getCreateDate());
+//                            resourceInventory.setLastOpDate(inventory.getLastOpDate());
+//                            SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
+//                            query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, inventory.getUuid());
+//                            if (!isBind) query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.NOT_IN, policyUuids);
+//                            List<ResourcePolicyRefVO> resourcePolicyRefVOS = query.list();
+//                            List<PolicyInventory> policyInventories = new ArrayList<>();
+//                            for (ResourcePolicyRefVO resourcePolicyRefVO : resourcePolicyRefVOS) {
+//                                policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class)));
+//                            }
+//                            if (isBind) {
+//                                for (String policyUuid : policyUuids) {
+//                                    policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(policyUuid, PolicyVO.class)));
+//                                }
+//                            }
+//
+//                            resourceInventory.setPolicies(policyInventories);
+//                            inventories.add(resourceInventory);
+//                        }
+//
+//                    }
+//                }catch (Exception e){
+//                    return inventories;
+//                }
+//            }
+
             slaCompensateVO.setState(SLAState.DONE);
             dbf.updateAndRefresh(slaCompensateVO);
         }
@@ -92,6 +154,22 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
         evt.setInventory(ri);
         bus.publish(evt);
 
+    }
+
+    private String getProductUrl(ProductType productType) {
+        String productServerUrl = BillingGlobalProperty.TUNNEL_SERVER_URL;
+        switch (productType) {
+            case TUNNEL:
+                productServerUrl = BillingGlobalProperty.TUNNEL_SERVER_URL;
+                break;
+            case PORT:
+                productServerUrl = BillingGlobalProperty.TUNNEL_SERVER_URL;
+                break;
+            case VPN:
+                productServerUrl = "";
+                break;
+        }
+        return productServerUrl;
     }
 
 

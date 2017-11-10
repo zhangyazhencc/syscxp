@@ -6,13 +6,13 @@ import com.syscxp.header.message.APIParam;
 
 import java.util.List;
 
-public class APIAttachPoliciesToResourcesMsg extends APIMessage {
+public class APIAttachPolicyToResourceMsg extends APIMessage {
+
+    @APIParam(required = false,resourceType = PolicyVO.class,checkAccount = true)
+    private String policyUuid;
 
     @APIParam
-    private List<String> policyUuids;
-
-    @APIParam
-    private List<String> resourceUuids;
+    private String resourceUuid;
 
     @APIParam
     private ProductType type;
@@ -20,20 +20,20 @@ public class APIAttachPoliciesToResourcesMsg extends APIMessage {
     @APIParam
     private String accountUuid;
 
-    public List<String> getPolicyUuids() {
-        return policyUuids;
+    public String getPolicyUuid() {
+        return policyUuid;
     }
 
-    public void setPolicyUuids(List<String> policyUuids) {
-        this.policyUuids = policyUuids;
+    public void setPolicyUuid(String policyUuid) {
+        this.policyUuid = policyUuid;
     }
 
-    public List<String> getResourceUuids() {
-        return resourceUuids;
+    public String getResourceUuid() {
+        return resourceUuid;
     }
 
-    public void setResourceUuids(List<String> resourceUuids) {
-        this.resourceUuids = resourceUuids;
+    public void setResourceUuid(String resourceUuid) {
+        this.resourceUuid = resourceUuid;
     }
 
     public ProductType getType() {
