@@ -105,7 +105,7 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                     ReconnectHostMsg msg = new ReconnectHostMsg();
                     msg.setHostUuid(hostUuid);
                     msg.setSkipIfHostConnected(true);
-                    bus.makeTargetServiceIdByResourceUuid(msg, HostConstant.SERVICE_ID, hostUuid);
+                    bus.makeLocalServiceId(msg, HostConstant.SERVICE_ID);
                     bus.send(msg, new CloudBusCallBack(null) {
                         @Override
                         public void run(MessageReply reply) {
@@ -137,7 +137,7 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
 
                         PingHostMsg msg = new PingHostMsg();
                         msg.setHostUuid(huuid);
-                        bus.makeTargetServiceIdByResourceUuid(msg, HostConstant.SERVICE_ID, huuid);
+                        bus.makeLocalServiceId(msg, HostConstant.SERVICE_ID);
                         msgs.add(msg);
                         hostInTracking.add(huuid);
                     }
