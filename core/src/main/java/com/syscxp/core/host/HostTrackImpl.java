@@ -97,6 +97,8 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                             "but connection.autoReconnectOnError is set to false, no reconnect will issue", hostUuid));
                 }
 
+                System.out.println("hostUuid: " + hostUuid + "=== " + reconnectTimes.get(hostUuid));
+
                 if (needReconnect && !inReconnectingHost.contains(hostUuid) &&
                         reconnectTimes.get(hostUuid) <= HostGlobalProperty.MAX_RECONNECT_TIMES) {
                     logger.debug(String.format("[Host Tracker]: detected host[uuid:%s] connection lost, " +
