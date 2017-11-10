@@ -50,16 +50,16 @@ public class RenewVO {
     private String descriptionData;
 
     @Column
-    private BigDecimal pricePerDay;
+    private BigDecimal priceOneMonth;
     @Column
     private Timestamp expiredTime;
 
-    public BigDecimal getPricePerDay() {
-        return pricePerDay;
+    public BigDecimal getPriceOneMonth() {
+        return priceOneMonth;
     }
 
-    public void setPricePerDay(BigDecimal pricePerDay) {
-        this.pricePerDay = pricePerDay;
+    public void setPriceOneMonth(BigDecimal priceOneMonth) {
+        this.priceOneMonth = priceOneMonth;
     }
 
     public String getDescriptionData() {

@@ -1,5 +1,7 @@
 package com.syscxp.alarm.header.resourcePolicy;
 
+import com.syscxp.header.query.ExpandedQueries;
+import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
 
 import java.sql.Timestamp;
@@ -8,6 +10,10 @@ import java.util.Collection;
 import java.util.List;
 
 @Inventory(mappingVOClass = ResourcePolicyRefVO.class)
+@ExpandedQueries({
+        @ExpandedQuery(expandedField = "policy", inventoryClass = PolicyInventory.class,
+                foreignKey = "policyUuid", expandedInventoryKey = "uuid"),
+})
 public class ResourcePolicyRefInventory {
 
     private String uuid;
@@ -21,7 +27,6 @@ public class ResourcePolicyRefInventory {
 
     public static ResourcePolicyRefInventory valueOf(ResourcePolicyRefVO vo) {
         ResourcePolicyRefInventory inv = new ResourcePolicyRefInventory();
-        inv.setUuid(vo.getUuid());
         inv.setResourceUuid(vo.getResourceUuid());
         inv.setPolicyUuid(vo.getPolicyUuid());
         inv.setCreateDate(vo.getCreateDate());

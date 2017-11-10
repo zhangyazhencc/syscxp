@@ -1,8 +1,12 @@
 package com.syscxp.core.rest;
 
 import com.google.gson.*;
+import com.syscxp.header.account.APIValidateAccountMsg;
+import com.syscxp.header.identity.SessionInventory;
+import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.APINoSee;
+import com.syscxp.header.rest.APIWithSession;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.GsonTypeCoder;
 import com.syscxp.utils.gson.GsonUtil;
@@ -16,6 +20,7 @@ public class RESTApiDecoder {
     
     private final Gson gsonEncoder;
     private final Gson gsonDecoder;
+    private final Gson gsonEncoderWithSession;
     private static final RESTApiDecoder self;
     
     private class Encoder implements GsonTypeCoder<Message>, ExclusionStrategy {
@@ -56,7 +61,16 @@ public class RESTApiDecoder {
             return false;
         }
     }
-    
+
+    private class EncoderWithSession extends Encoder {
+        @Override
+        public boolean shouldSkipField(FieldAttributes f) {
+            if (f.getAnnotation(APIWithSession.class) != null)
+                return false;
+            return f.getAnnotation(APINoSee.class) != null;
+        }
+    }
+
     private class Decoder implements GsonTypeCoder<Message> {
         private Gson gson;
         
@@ -96,7 +110,11 @@ public class RESTApiDecoder {
         Encoder encoder = new Encoder();
         gsonEncoder = new GsonUtil().setCoder(Message.class, encoder).setExclusionStrategies(new ExclusionStrategy[]{encoder}).create();
         encoder.setGson(gsonEncoder);
-        
+
+        EncoderWithSession encoder1 = new EncoderWithSession();
+        gsonEncoderWithSession = new GsonUtil().setCoder(Message.class, encoder1).setExclusionStrategies(new ExclusionStrategy[]{encoder1}).create();
+        encoder1.setGson(gsonEncoderWithSession);
+
         Decoder decoder = new Decoder();
         gsonDecoder = new GsonUtil().setCoder(Message.class, decoder).create();
         decoder.setGson(gsonDecoder);
@@ -110,4 +128,9 @@ public class RESTApiDecoder {
     public static String dump(Message msg) {
         return self.gsonEncoder.toJson(msg, Message.class);
     }
+
+    public static String dumpWithSession(Message msg) {
+        return self.gsonEncoderWithSession.toJson(msg, Message.class);
+    }
+
 }

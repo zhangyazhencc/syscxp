@@ -2,6 +2,7 @@ package com.syscxp.header.message;
 
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.rest.APINoSee;
+import com.syscxp.header.rest.APIWithSession;
 import com.syscxp.utils.FieldUtils;
 
 import java.lang.reflect.Field;
@@ -13,6 +14,7 @@ public abstract class APIMessage extends NeedReplyMessage {
      * @ignore
      */
     @NoJsonSchema
+    @APIWithSession
     @APINoSee
     private SessionInventory session;
 

@@ -187,38 +187,90 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handle(APIQueryTunnelForAlarmMsg msg) {
         APIQueryTunnelForAlarmReply reply = new APIQueryTunnelForAlarmReply();
 
-        SimpleQuery<TunnelForAlarmVO> q = dbf.createQuery(TunnelForAlarmVO.class);
+        SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
         if (msg.getAccountUuid() != null) {
-            q.add(TunnelForAlarmVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+            q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         }
 
         if (msg.getProductName() != null) {
-            q.add(TunnelForAlarmVO_.name, SimpleQuery.Op.LIKE, "%" + msg.getProductName() + "%");
+            q.add(TunnelVO_.name, SimpleQuery.Op.LIKE, "%" + msg.getProductName() + "%");
         }
         if (msg.getProductUuids() != null && msg.getProductUuids().size() > 0) {
             SimpleQuery.Op op = SimpleQuery.Op.IN;
             if (!msg.isBind()) {
                 op = SimpleQuery.Op.NOT_IN;
             }
-            q.add(TunnelForAlarmVO_.uuid, op, msg.getProductUuids());
+            q.add(TunnelVO_.uuid, op, msg.getProductUuids());
 
 
         }else{
-            q.add(TunnelForAlarmVO_.uuid, SimpleQuery.Op.EQ, "");
+            q.add(TunnelVO_.uuid, SimpleQuery.Op.EQ, "");
         }
 
-        q.add(TunnelForAlarmVO_.state, SimpleQuery.Op.EQ, TunnelState.Enabled);
+        q.add(TunnelVO_.state, SimpleQuery.Op.EQ, TunnelState.Enabled);
         reply.setCount(q.count());
 
         q.setStart(msg.getStart());
         q.setLimit(msg.getLimit());
 
-        List<TunnelForAlarmVO> voList = q.list();
+        List<TunnelVO> voList = q.list();
 
-        reply.setInventories(TunnelForAlarmInventory.valueOf(voList));
+        reply.setInventories(convertToTunnelForAlarmInventory(voList));
 
         bus.reply(msg, reply);
     }
+
+    public List<TunnelForAlarmInventory> convertToTunnelForAlarmInventory(Collection<TunnelVO> vos) {
+        List<TunnelForAlarmInventory> lst = new ArrayList<TunnelForAlarmInventory>(vos.size());
+        for (TunnelVO vo : vos) {
+            TunnelForAlarmInventory inv = new TunnelForAlarmInventory();
+            inv.setUuid(vo.getUuid());
+            inv.setAccountUuid(vo.getAccountUuid());
+            inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
+            inv.setVsi(vo.getVsi());
+            inv.setMonitorCidr(vo.getMonitorCidr());
+            inv.setName(vo.getName());
+            inv.setBandwidth(vo.getBandwidth());
+            inv.setDistance(vo.getDistance());
+            inv.setState(vo.getState());
+            inv.setStatus(vo.getStatus());
+            inv.setMonitorState(vo.getMonitorState());
+            inv.setDuration(vo.getDuration());
+            inv.setProductChargeModel(vo.getProductChargeModel());
+            inv.setMaxModifies(vo.getMaxModifies());
+            inv.setDescription(vo.getDescription());
+            inv.setExpireDate(vo.getExpireDate());
+            inv.setLastOpDate(vo.getLastOpDate());
+            inv.setCreateDate(vo.getCreateDate());
+            lst.add(inv);
+        }
+        return lst;
+    }
+
+
+    private TunnelForAlarmInventory valueOf(TunnelVO vo){
+        TunnelForAlarmInventory inv = new TunnelForAlarmInventory();
+        inv.setUuid(vo.getUuid());
+        inv.setAccountUuid(vo.getAccountUuid());
+        inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
+        inv.setVsi(vo.getVsi());
+        inv.setMonitorCidr(vo.getMonitorCidr());
+        inv.setName(vo.getName());
+        inv.setBandwidth(vo.getBandwidth());
+        inv.setDistance(vo.getDistance());
+        inv.setState(vo.getState());
+        inv.setStatus(vo.getStatus());
+        inv.setMonitorState(vo.getMonitorState());
+        inv.setDuration(vo.getDuration());
+        inv.setProductChargeModel(vo.getProductChargeModel());
+        inv.setMaxModifies(vo.getMaxModifies());
+        inv.setDescription(vo.getDescription());
+        inv.setExpireDate(vo.getExpireDate());
+        inv.setLastOpDate(vo.getLastOpDate());
+        inv.setCreateDate(vo.getCreateDate());
+        return inv;
+    }
+
 
     private void handle(APIGetInterfaceTypeMsg msg) {
         APIGetInterfaceTypeReply reply = new APIGetInterfaceTypeReply();
