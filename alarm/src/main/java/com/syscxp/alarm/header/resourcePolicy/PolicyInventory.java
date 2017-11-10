@@ -2,6 +2,8 @@ package com.syscxp.alarm.header.resourcePolicy;
 
 import com.syscxp.alarm.header.contact.NotifyWayVO;
 import com.syscxp.header.billing.ProductType;
+import com.syscxp.header.query.ExpandedQueries;
+import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
 
 import java.sql.Timestamp;
@@ -11,6 +13,10 @@ import java.util.List;
 import java.util.Set;
 
 @Inventory(mappingVOClass = PolicyVO.class)
+@ExpandedQueries({
+        @ExpandedQuery(expandedField = "resourcePolicyRef", inventoryClass = ResourcePolicyRefInventory.class,
+                foreignKey = "uuid", expandedInventoryKey = "policyUuid"),
+})
 public class PolicyInventory {
 
     private String uuid;

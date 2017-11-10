@@ -42,6 +42,7 @@ public class AlarmLogVO extends BaseVO {
     @Column
     private String policyName;
 
+
     @Column
     private String eventId;
 
