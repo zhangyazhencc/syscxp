@@ -4,44 +4,44 @@
     <interceptor>MonitorManager</interceptor>
 
     <message>
-        <name>com.syscxp.tunnel.header.monitor.APICreateHostSwitchMonitorMsg</name>
+        <name>com.syscxp.header.tunnel.monitor.APICreateHostSwitchMonitorMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.monitor.APIUpdateHostSwitchMonitorMsg</name>
+        <name>com.syscxp.header.tunnel.monitor.APIUpdateHostSwitchMonitorMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.monitor.APIDeleteHostSwitchMonitorMsg</name>
+        <name>com.syscxp.header.tunnel.monitor.APIDeleteHostSwitchMonitorMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.monitor.APIStartTunnelMonitorMsg</name>
+        <name>com.syscxp.header.tunnel.monitor.APIStartTunnelMonitorMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.monitor.APIStopTunnelMonitorMsg</name>
+        <name>com.syscxp.header.tunnel.monitor.APIStopTunnelMonitorMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.monitor.APIRestartTunnelMonitorMsg</name>
+        <name>com.syscxp.header.tunnel.monitor.APIRestartTunnelMonitorMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.monitor.APICreateSpeedRecordsMsg</name>
+        <name>com.syscxp.header.tunnel.monitor.APICreateSpeedRecordsMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.monitor.APIUpdateSpeedRecordsMsg</name>
+        <name>com.syscxp.header.tunnel.monitor.APIUpdateSpeedRecordsMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.monitor.APIQuerySpeedRecordsMsg</name>
+        <name>com.syscxp.header.tunnel.monitor.APIQuerySpeedRecordsMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.monitor.APIQueryHostSwitchMonitorMsg</name>
+        <name>com.syscxp.header.tunnel.monitor.APIQueryHostSwitchMonitorMsg</name>
         <serviceId>query</serviceId>
     </message>
 </service>

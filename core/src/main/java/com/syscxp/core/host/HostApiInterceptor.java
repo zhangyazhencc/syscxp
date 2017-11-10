@@ -28,7 +28,7 @@ public class HostApiInterceptor implements ApiMessageInterceptor {
     private void setServiceId(APIMessage msg) {
         if (msg instanceof HostMessage) {
             HostMessage hmsg = (HostMessage)msg;
-            bus.makeTargetServiceIdByResourceUuid(msg, HostConstant.SERVICE_ID, hmsg.getHostUuid());
+            bus.makeLocalServiceId(msg, HostConstant.SERVICE_ID);
         }
     }
 

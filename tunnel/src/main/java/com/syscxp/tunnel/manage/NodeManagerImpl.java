@@ -1,12 +1,13 @@
 package com.syscxp.tunnel.manage;
 
-import com.syscxp.tunnel.header.endpoint.*;
-import com.syscxp.tunnel.header.host.MonitorHostVO;
-import com.syscxp.tunnel.header.host.MonitorHostVO_;
-import com.syscxp.tunnel.header.node.*;
-import com.syscxp.tunnel.header.switchs.PhysicalSwitchVO;
-import com.syscxp.tunnel.header.switchs.SwitchVO;
-import com.syscxp.tunnel.header.switchs.SwitchVO_;
+import com.syscxp.header.tunnel.NodeConstant;
+import com.syscxp.header.tunnel.endpoint.*;
+import com.syscxp.header.tunnel.host.MonitorHostVO;
+import com.syscxp.header.tunnel.host.MonitorHostVO_;
+import com.syscxp.header.tunnel.node.*;
+import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
+import com.syscxp.header.tunnel.switchs.SwitchVO;
+import com.syscxp.header.tunnel.switchs.SwitchVO_;
 import com.syscxp.utils.Digest;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -20,8 +20,8 @@
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>com.syscxp.tunnel.header.tunnel.InterfaceVO</value>
-                <value>com.syscxp.tunnel.header.tunnel.TunnelVO</value>
+                <value>com.syscxp.header.tunnel.tunnel.InterfaceVO</value>
+                <value>com.syscxp.header.tunnel.tunnel.TunnelVO</value>
             </list>
         </property>
 
@@ -41,7 +41,7 @@
         </syscxp:plugin>
     </bean>
 
-    <bean id="MonitorHostFactory" class="com.syscxp.tunnel.header.host.MonitorHostFactory">
+    <bean id="MonitorHostFactory" class="com.syscxp.tunnel.host.MonitorHostFactory">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.header.host.HostFactory" />
             <syscxp:extension interface="com.syscxp.header.Component" />
@@ -50,7 +50,7 @@
         </syscxp:plugin>
     </bean>
 
-    <bean id="MonitorApiInterceptor" class="com.syscxp.tunnel.header.host.MonitorApiInterceptor">
+    <bean id="MonitorApiInterceptor" class="com.syscxp.tunnel.host.MonitorApiInterceptor">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
         </syscxp:plugin>

@@ -224,7 +224,7 @@ public abstract class HostBase extends AbstractHost {
     private void handle(final APIReconnectHostMsg msg) {
         ReconnectHostMsg rmsg = new ReconnectHostMsg();
         rmsg.setHostUuid(self.getUuid());
-        bus.makeTargetServiceIdByResourceUuid(rmsg, HostConstant.SERVICE_ID, self.getUuid());
+        bus.makeLocalServiceId(rmsg, HostConstant.SERVICE_ID);
         bus.send(rmsg, new CloudBusCallBack(msg) {
             @Override
             public void run(MessageReply reply) {
@@ -263,7 +263,7 @@ public abstract class HostBase extends AbstractHost {
                 HostDeletionMsg msg = new HostDeletionMsg();
                 msg.setForceDelete(true);
                 msg.setHostUuid(hinv.getUuid());
-                bus.makeTargetServiceIdByResourceUuid(msg, HostConstant.SERVICE_ID, hinv.getUuid());
+                bus.makeLocalServiceId(msg, HostConstant.SERVICE_ID);
                 bus.send(msg, new CloudBusCallBack(trigger) {
                     @Override
                     public void run(MessageReply reply) {
@@ -367,7 +367,7 @@ public abstract class HostBase extends AbstractHost {
                         tracker.trackHost(self.getUuid());
                         ReconnectHostMsg rmsg = new ReconnectHostMsg();
                         rmsg.setHostUuid(self.getUuid());
-                        bus.makeTargetServiceIdByResourceUuid(rmsg, HostConstant.SERVICE_ID, self.getUuid());
+                        bus.makeLocalServiceId(rmsg, HostConstant.SERVICE_ID);
                         bus.send(rmsg);
                     }
 
@@ -533,7 +533,7 @@ public abstract class HostBase extends AbstractHost {
                 changeConnectionState(HostStatusEvent.disconnected);
                 ConnectHostMsg connectMsg = new ConnectHostMsg(self.getUuid());
                 connectMsg.setNewAdd(false);
-                bus.makeTargetServiceIdByResourceUuid(connectMsg, HostConstant.SERVICE_ID, self.getUuid());
+                bus.makeLocalServiceId(connectMsg, HostConstant.SERVICE_ID);
                 bus.send(connectMsg, new CloudBusCallBack(msg, chain, completion) {
                     @Override
                     public void run(MessageReply reply) {
