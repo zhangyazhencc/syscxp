@@ -8,6 +8,8 @@ import org.springframework.util.StringUtils;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.query.APIQueryMessage;
 
+import java.util.List;
+
 /**
  */
 public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtension {
@@ -21,8 +23,15 @@ public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
         }
         if (msg.getSession().getType().equals(AccountType.Proxy)) {
             if (msg instanceof APIQueryExpendMessage) {
-               if(!StringUtils.isEmpty(((APIQueryExpendMessage) msg).getAccountUuid())){
-                   return String.format("%s.accountUuid = '%s'", inventoryClass.getSimpleName().toLowerCase(), ((APIQueryExpendMessage) msg).getAccountUuid());
+                List<String> accountUuids = ((APIQueryExpendMessage) msg).getAccountUuids();
+               if(accountUuids!=null && accountUuids.size()>0){
+                   StringBuilder sb = new StringBuilder();
+                   for(String accountUuid : accountUuids){
+                      sb.append("'"+accountUuid+"'").append(",");
+                   }
+                   sb.deleteCharAt(sb.length()-1);
+
+                   return String.format("%s.accountUuid in (%s)", inventoryClass.getSimpleName().toLowerCase(), sb.toString());
                }
             }
         }

@@ -35,7 +35,7 @@ public class RenewInventory {
 
     private Timestamp lastOpDate;
 
-    private BigDecimal pricePerDay;
+    private BigDecimal priceOneMonth;
 
     private Timestamp expiredTime;
 
@@ -49,7 +49,7 @@ public class RenewInventory {
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setProductUuid(vo.getProductUuid());
-        inv.setPricePerDay(vo.getPricePerDay());
+        inv.setPriceOneMonth(vo.getPriceOneMonth());
         inv.setDescriptionData(vo.getDescriptionData());
         inv.setRenewAuto(vo.isRenewAuto());
         inv.setExpiredTime(vo.getExpiredTime());
@@ -128,12 +128,12 @@ public class RenewInventory {
         this.duration = duration;
     }
 
-    public BigDecimal getPricePerDay() {
-        return pricePerDay;
+    public BigDecimal getPriceOneMonth() {
+        return priceOneMonth;
     }
 
-    public void setPricePerDay(BigDecimal pricePerDay) {
-        this.pricePerDay = pricePerDay;
+    public void setPriceOneMonth(BigDecimal priceOneMonth) {
+        this.priceOneMonth = priceOneMonth;
     }
 
     public Timestamp getCreateDate() {
