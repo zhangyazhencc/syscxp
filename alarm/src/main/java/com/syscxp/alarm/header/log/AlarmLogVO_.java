@@ -19,7 +19,7 @@ public class AlarmLogVO_  extends BaseVO_ {
     public static volatile SingularAttribute<AlarmLogVO, String> smsContent;
     public static volatile SingularAttribute<AlarmLogVO, String> mailContent;
     public static volatile SingularAttribute<AlarmLogVO, String> regulationUuid;
-    public static volatile SingularAttribute<AlarmLogVO, String> policyName;
+    public static volatile SingularAttribute<AlarmLogVO, String> policyUuid;
     public static volatile SingularAttribute<AlarmLogVO, String> eventId;
     public static volatile SingularAttribute<AlarmLogVO, Timestamp> alarmTime;
     public static volatile SingularAttribute<AlarmLogVO, Timestamp> resumeTime;

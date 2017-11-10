@@ -135,7 +135,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                             if (regulationVO != null) {
                                 PolicyVO policyVO = dbf.findByUuid(regulationVO.getPolicyUuid(), PolicyVO.class);
                                 if (policyVO != null) {
-                                    alarmLogVO.setPolicyName(policyVO.getName());
+                                    alarmLogVO.setPolicyVO(policyVO);
                                 }
                             }
                             alarmLogVO.setEventId(cmd.getEventId());
