@@ -20,15 +20,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIGetPoliciesByResourceMsg</name>
-    </message>
-
-    <message>
         <name>com.syscxp.alarm.header.resourcePolicy.APIDeleteRegulationMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIGetPoliciesMsg</name>
     </message>
 
     <message>
@@ -40,19 +32,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIGetResourcesBindByPolicyMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIGetResourcesByProductTypeMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIAttachPoliciesToResourcesMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIDetachPoliciesFromResourcesMsg</name>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIAttachPolicyToResourceMsg</name>
     </message>
 
     <message>
@@ -62,8 +42,14 @@
     <message>
         <name>com.syscxp.alarm.header.resourcePolicy.APIGetMonitorTargetListMsg</name>
     </message>
+
     <message>
         <name>com.syscxp.alarm.header.resourcePolicy.APIQueryResourceMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIQueryPolicyMsg</name>
         <serviceId>query</serviceId>
     </message>
 
