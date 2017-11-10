@@ -1,17 +1,24 @@
 package com.syscxp.header.identity;
 
+import com.syscxp.header.rest.APINoSee;
+
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
 
 public class SessionInventory implements Serializable {
     private String uuid;
+    @APINoSee
     private String accountUuid;
+    @APINoSee
     private String userUuid;
+    @APINoSee
     private Timestamp expiredDate;
+    @APINoSee
     private Timestamp createDate;
+    @APINoSee
     private AccountType type;
-
+    @APINoSee
     private List<PolicyStatement> policyStatements;
 
     public List<PolicyStatement> getPolicyStatements() {
