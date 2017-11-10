@@ -9,53 +9,53 @@
         <class>com.syscxp.core.job.JobQueueVO</class>
         <class>com.syscxp.core.job.JobQueueEntryVO</class>
 
-        <class>com.syscxp.tunnel.header.node.NodeVO</class>
-        <class>com.syscxp.tunnel.header.node.NodeEO</class>
-        <class>com.syscxp.tunnel.header.node.ZoneVO</class>
-        <class>com.syscxp.tunnel.header.node.ZoneNodeRefVO</class>
+        <class>com.syscxp.header.tunnel.node.NodeVO</class>
+        <class>com.syscxp.header.tunnel.node.NodeEO</class>
+        <class>com.syscxp.header.tunnel.node.ZoneVO</class>
+        <class>com.syscxp.header.tunnel.node.ZoneNodeRefVO</class>
 
-        <class>com.syscxp.tunnel.header.endpoint.EndpointVO</class>
-        <class>com.syscxp.tunnel.header.endpoint.EndpointEO</class>
-        <class>com.syscxp.tunnel.header.endpoint.InnerConnectedEndpointVO</class>
+        <class>com.syscxp.header.tunnel.endpoint.EndpointVO</class>
+        <class>com.syscxp.header.tunnel.endpoint.EndpointEO</class>
+        <class>com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO</class>
 
-        <class>com.syscxp.tunnel.header.switchs.SwitchVO</class>
-        <class>com.syscxp.tunnel.header.switchs.SwitchEO</class>
-        <class>com.syscxp.tunnel.header.switchs.PhysicalSwitchVO</class>
-        <class>com.syscxp.tunnel.header.switchs.PhysicalSwitchEO</class>
-        <class>com.syscxp.tunnel.header.switchs.PhysicalSwitchUpLinkRefVO</class>
-        <class>com.syscxp.tunnel.header.switchs.SwitchModelVO</class>
-        <class>com.syscxp.tunnel.header.switchs.SwitchPortVO</class>
-        <class>com.syscxp.tunnel.header.switchs.SwitchVlanVO</class>
+        <class>com.syscxp.header.tunnel.switchs.SwitchVO</class>
+        <class>com.syscxp.header.tunnel.switchs.SwitchEO</class>
+        <class>com.syscxp.header.tunnel.switchs.PhysicalSwitchVO</class>
+        <class>com.syscxp.header.tunnel.switchs.PhysicalSwitchEO</class>
+        <class>com.syscxp.header.tunnel.switchs.PhysicalSwitchUpLinkRefVO</class>
+        <class>com.syscxp.header.tunnel.switchs.SwitchModelVO</class>
+        <class>com.syscxp.header.tunnel.switchs.SwitchPortVO</class>
+        <class>com.syscxp.header.tunnel.switchs.SwitchVlanVO</class>
 
-        <class>com.syscxp.tunnel.header.tunnel.InterfaceVO</class>
-        <class>com.syscxp.tunnel.header.tunnel.InterfaceEO</class>
-        <class>com.syscxp.tunnel.header.tunnel.InterfaceMotifyRecordVO</class>
-        <class>com.syscxp.tunnel.header.tunnel.TunnelVO</class>
-        <class>com.syscxp.tunnel.header.tunnel.TunnelEO</class>
-        <class>com.syscxp.tunnel.header.tunnel.TaskResourceVO</class>
-        <class>com.syscxp.tunnel.header.tunnel.ResourceOrderEffectiveVO</class>
-        <class>com.syscxp.tunnel.header.tunnel.TunnelMotifyRecordVO</class>
-        <class>com.syscxp.tunnel.header.tunnel.QinqVO</class>
-        <class>com.syscxp.tunnel.header.tunnel.TunnelSwitchPortVO</class>
-        <class>com.syscxp.tunnel.header.tunnel.BandwidthOfferingVO</class>
-        <class>com.syscxp.tunnel.header.tunnel.PortOfferingVO</class>
+        <class>com.syscxp.header.tunnel.tunnel.InterfaceVO</class>
+        <class>com.syscxp.header.tunnel.tunnel.InterfaceEO</class>
+        <class>com.syscxp.header.tunnel.tunnel.InterfaceMotifyRecordVO</class>
+        <class>com.syscxp.header.tunnel.tunnel.TunnelVO</class>
+        <class>com.syscxp.header.tunnel.tunnel.TunnelEO</class>
+        <class>com.syscxp.header.tunnel.tunnel.TaskResourceVO</class>
+        <class>com.syscxp.header.tunnel.tunnel.ResourceOrderEffectiveVO</class>
+        <class>com.syscxp.header.tunnel.tunnel.TunnelMotifyRecordVO</class>
+        <class>com.syscxp.header.tunnel.tunnel.QinqVO</class>
+        <class>com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO</class>
+        <class>com.syscxp.header.tunnel.tunnel.BandwidthOfferingVO</class>
+        <class>com.syscxp.header.tunnel.tunnel.PortOfferingVO</class>
 
         <class>com.syscxp.header.tunnel.TunnelForAlarmVO</class>
 
         <class>com.syscxp.header.host.HostVO</class>
         <class>com.syscxp.header.host.HostEO</class>
-        <class>com.syscxp.tunnel.header.host.MonitorHostVO</class>
+        <class>com.syscxp.tunnel.host.MonitorHostVO</class>
 
-        <class>com.syscxp.tunnel.header.monitor.HostSwitchMonitorVO</class>
-        <class>com.syscxp.tunnel.header.monitor.HostSwitchMonitorEO</class>
+        <class>com.syscxp.header.tunnel.monitor.HostSwitchMonitorVO</class>
+        <class>com.syscxp.header.tunnel.monitor.HostSwitchMonitorEO</class>
 
-        <class>com.syscxp.tunnel.header.monitor.TunnelMonitorVO</class>
-        <class>com.syscxp.tunnel.header.monitor.SpeedRecordsVO</class>
+        <class>com.syscxp.header.tunnel.monitor.TunnelMonitorVO</class>
+        <class>com.syscxp.header.tunnel.monitor.SpeedRecordsVO</class>
 
-        <class>com.syscxp.tunnel.header.aliEdgeRouter.AliEdgeRouterEO</class>
-        <class>com.syscxp.tunnel.header.aliEdgeRouter.AliEdgeRouterVO</class>
-        <class>com.syscxp.tunnel.header.aliEdgeRouter.AliUserVO</class>
-        <class>com.syscxp.tunnel.header.aliEdgeRouter.AliEdgeRouterConfigVO</class>
+        <class>com.syscxp.header.tunnel.aliEdgeRouter.AliEdgeRouterEO</class>
+        <class>com.syscxp.header.tunnel.aliEdgeRouter.AliEdgeRouterVO</class>
+        <class>com.syscxp.header.tunnel.aliEdgeRouter.AliUserVO</class>
+        <class>com.syscxp.header.tunnel.aliEdgeRouter.AliEdgeRouterConfigVO</class>
 
     </persistence-unit>
 </persistence>

@@ -1,8 +1,10 @@
 package com.syscxp.header.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
-import com.syscxp.header.identity.UserPolicyInventory;
 import com.syscxp.header.search.Inventory;
+import com.syscxp.header.tunnel.tunnel.TunnelMonitorState;
+import com.syscxp.header.tunnel.tunnel.TunnelState;
+import com.syscxp.header.tunnel.tunnel.TunnelStatus;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;

@@ -4,91 +4,91 @@
     <interceptor>SwitchManager</interceptor>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APICreateSwitchModelMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APICreateSwitchModelMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIDeleteSwitchModelMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIDeleteSwitchModelMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APICreatePhysicalSwitchMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APICreatePhysicalSwitchMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIUpdatePhysicalSwitchMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIUpdatePhysicalSwitchMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIDeletePhysicalSwitchMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIDeletePhysicalSwitchMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APICreateSwitchMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APICreateSwitchMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIUpdateSwitchMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIUpdateSwitchMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIDeleteSwitchMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIDeleteSwitchMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APICreateSwitchPortMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APICreateSwitchPortMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIUpdateSwitchPortMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIUpdateSwitchPortMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIDeleteSwitchPortMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIDeleteSwitchPortMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APICreateSwitchVlanMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APICreateSwitchVlanMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIDeleteSwitchVlanMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIDeleteSwitchVlanMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIQueryPhysicalSwitchMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIQueryPhysicalSwitchMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIQuerySwitchModelMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIQuerySwitchModelMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIQuerySwitchMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIQuerySwitchMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIQuerySwitchPortMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIQuerySwitchPortMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIQuerySwitchVlanMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIQuerySwitchVlanMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIQueryPhysicalSwitchUpLinkRefMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIQueryPhysicalSwitchUpLinkRefMsg</name>
         <serviceId>query</serviceId>
     </message>
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIQuerySwitchPortAvailableMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIQuerySwitchPortAvailableMsg</name>
     </message>
     <message>
-        <name>com.syscxp.tunnel.header.switchs.APIQueryVlanUsedMsg</name>
+        <name>com.syscxp.header.tunnel.switchs.APIQueryVlanUsedMsg</name>
     </message>
 
 

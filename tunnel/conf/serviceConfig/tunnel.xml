@@ -4,75 +4,75 @@
     <interceptor>TunnelManager</interceptor>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APICreateInterfaceMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APICreateInterfaceMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APICreateInterfaceManualMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APICreateInterfaceManualMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIGetInterfaceTypeMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIGetInterfaceTypeMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIUpdateInterfaceMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIUpdateInterfaceMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIUpdateInterfaceExpireDateMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIUpdateInterfaceExpireDateMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIUpdateInterfacePortMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIUpdateInterfacePortMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIListSwitchPortByTypeMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIListSwitchPortByTypeMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIDeleteInterfaceMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIDeleteInterfaceMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APICreateTunnelMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APICreateTunnelMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APICreateTunnelManualMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APICreateTunnelManualMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIUpdateTunnelMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIUpdateTunnelMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIUpdateTunnelBandwidthMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIUpdateTunnelBandwidthMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIUpdateTunnelExpireDateMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIUpdateTunnelExpireDateMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIDeleteForciblyTunnelMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIDeleteForciblyTunnelMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIDeleteTunnelMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIDeleteTunnelMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIUpdateTunnelStateMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIUpdateTunnelStateMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APICreateQinqMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APICreateQinqMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIDeleteQinqMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIDeleteQinqMsg</name>
     </message>
 
     <message>
@@ -80,55 +80,55 @@
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIGetTunnelPriceMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIGetTunnelPriceMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIGetModifyTunnelPriceDiffMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIGetModifyTunnelPriceDiffMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIGetInterfacePriceMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIGetInterfacePriceMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIGetVlanAutoMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIGetVlanAutoMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIUpdateForciblyTunnelVlanMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIUpdateForciblyTunnelVlanMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIUpdateTunnelVlanMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIUpdateTunnelVlanMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIReCallControllerMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIReCallControllerMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIQueryInterfaceMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIQueryInterfaceMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIQueryTunnelMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIQueryTunnelMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIQueryPortOfferingMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIQueryPortOfferingMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIQueryBandwidthOfferingMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIQueryBandwidthOfferingMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
-        <name>com.syscxp.tunnel.header.tunnel.APIQueryTaskResourceMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIQueryTaskResourceMsg</name>
         <serviceId>query</serviceId>
     </message>
 
