@@ -11,6 +11,6 @@ import java.sql.Timestamp;
 public class RolePolicyRefVO_ {
     public static volatile SingularAttribute<RolePolicyRefVO, Long> id;
     public static volatile SingularAttribute<RolePolicyRefVO, String> policyUuid;
-    public static volatile SingularAttribute<RolePolicyRefVO, String> userUuid;
+    public static volatile SingularAttribute<RolePolicyRefVO, String> roleUuid;
     public static volatile SingularAttribute<RolePolicyRefVO, Timestamp> createDate;
 }
