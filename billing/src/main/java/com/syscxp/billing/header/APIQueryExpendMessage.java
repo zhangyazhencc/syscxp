@@ -2,15 +2,17 @@ package com.syscxp.billing.header;
 
 import com.syscxp.header.query.APIQueryMessage;
 
+import java.util.List;
+
 public class APIQueryExpendMessage extends APIQueryMessage {
 
-    private String  accountUuid;
+    private List<String> accountUuids;
 
-    public String getAccountUuid() {
-        return accountUuid;
+    public List<String> getAccountUuids() {
+        return accountUuids;
     }
 
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
+    public void setAccountUuids(List<String> accountUuids) {
+        this.accountUuids = accountUuids;
     }
 }

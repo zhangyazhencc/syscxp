@@ -153,7 +153,6 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
         ContactNotifyWayRefVO contactNotifyWayRefVO = new ContactNotifyWayRefVO();
         contactNotifyWayRefVO.setContactUuid(contactUuid);
         contactNotifyWayRefVO.setNotifyWayUuid(notifyWayVO.getUuid());
-        contactNotifyWayRefVO.setUuid(Platform.getUuid());
         dbf.getEntityManager().persist(contactNotifyWayRefVO);
     }
 

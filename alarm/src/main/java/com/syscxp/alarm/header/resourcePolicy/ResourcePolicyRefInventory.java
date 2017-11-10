@@ -21,7 +21,6 @@ public class ResourcePolicyRefInventory {
 
     public static ResourcePolicyRefInventory valueOf(ResourcePolicyRefVO vo) {
         ResourcePolicyRefInventory inv = new ResourcePolicyRefInventory();
-        inv.setUuid(vo.getUuid());
         inv.setResourceUuid(vo.getResourceUuid());
         inv.setPolicyUuid(vo.getPolicyUuid());
         inv.setCreateDate(vo.getCreateDate());

@@ -134,7 +134,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             throw new IllegalArgumentException("could not find the product purchased history ");
         }
 
-        BigDecimal remainMoney = renewVO.getPricePerDay().multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal needPayMoney = discountPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal needPayOriginMoney = originalPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal subMoney = needPayMoney.subtract(remainMoney);

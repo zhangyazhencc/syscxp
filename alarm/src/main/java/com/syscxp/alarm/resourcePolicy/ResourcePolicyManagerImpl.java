@@ -170,7 +170,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                     throw new IllegalArgumentException("it is already attach");
                 }
                 ResourcePolicyRefVO resourcePolicyRefVO = new ResourcePolicyRefVO();
-                resourcePolicyRefVO.setUuid(Platform.getUuid());
                 resourcePolicyRefVO.setPolicyUuid(policyUuid);
                 resourcePolicyRefVO.setResourceUuid(resourceUuid);
                 dbf.getEntityManager().persist(resourcePolicyRefVO);
@@ -436,7 +435,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             ResourcePolicyRefVO resourcePolicyRefVO = new ResourcePolicyRefVO();
             resourcePolicyRefVO.setPolicyUuid(policyUuid);
             resourcePolicyRefVO.setResourceUuid(resourceUuid);
-            resourcePolicyRefVO.setUuid(Platform.getUuid());
             dbf.getEntityManager().persist(resourcePolicyRefVO);
             list.add(PolicyInventory.valueOf(dbf.findByUuid(policyUuid, PolicyVO.class)));
         }
