@@ -12,7 +12,7 @@ import java.util.List;
  * @Cretion Date: 2017-11-03.
  * @Description: 测速结果.
  */
-@Inventory(mappingVOClass = MonitorAgentCommands.SpeedResult.class)
+// @Inventory(mappingVOClass = MonitorAgentCommands.SpeedResult.class)
 public class SpeedResultInventory {
     private String tunnel_id;
     private boolean complete_flag;
