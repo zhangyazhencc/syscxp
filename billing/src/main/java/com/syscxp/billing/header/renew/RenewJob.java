@@ -1,10 +1,21 @@
 package com.syscxp.billing.header.renew;
 
 import com.syscxp.billing.header.balance.*;
+import com.syscxp.billing.header.sla.ProductCaller;
+import com.syscxp.core.identity.InnerMessageHelper;
+import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.rest.RestAPIResponse;
+import com.syscxp.header.rest.RestAPIState;
+import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateMsg;
+import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateReply;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.quartz.QuartzJobBean;
+import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.Platform;
 import com.syscxp.core.db.DatabaseFacade;
@@ -18,189 +29,70 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.List;
+import java.util.ListIterator;
 
-public class RenewJob extends QuartzJobBean {
+@Component
+public class RenewJob{
 
-    private DatabaseFacade databaseFacade;
-    private ThreadLocal<DatabaseFacade> dbfThreadLocal = new ThreadLocal<DatabaseFacade>();
+    @Autowired
+    private DatabaseFacade dbf;
+
+    @Autowired
+    private RESTFacade restf;
 
     private static final CLogger logger = Utils.getLogger(RenewJob.class);
 
-    @Override
+    @Scheduled(cron = "0 0/1 * * * ? ")
     @Transactional
-    protected void executeInternal(JobExecutionContext jobExecutionContext) throws JobExecutionException {
+    protected void autoRenew() {
 
         GLock lock = new GLock(String.format("id-%s", "createRenew"), 120);
         lock.lock();
         try {
-            Timestamp currentTimestamp = databaseFacade.getCurrentSqlTime();
+            Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
-            SimpleQuery<RenewVO> q = databaseFacade.createQuery(RenewVO.class);
+            SimpleQuery<RenewVO> q = dbf.createQuery(RenewVO.class);
             q.add(RenewVO_.isRenewAuto, SimpleQuery.Op.EQ, true);
             List<RenewVO> renewVOs = q.list();
-            logger.info(renewVOs.toString());
-            for (RenewVO renewVO : renewVOs) {
-                Timestamp expiredTimestamp =renewVO.getExpiredTime();
-                if(currentTimestamp.getTime()-expiredTimestamp.getTime()>7*24*60*60*1000l){
-                    databaseFacade.getEntityManager().remove(databaseFacade.getEntityManager().merge(renewVO));
-                    databaseFacade.getEntityManager().flush();
+            if(renewVOs == null){
+                logger.info("there is no activity renew product");
+                return;
+            }
+            logger.info("the demon thread was going to autoRenew");
+            ListIterator<RenewVO> ite = renewVOs.listIterator();
+            while (ite.hasNext()) {
+                RenewVO renewVO = ite.next();
+                Timestamp expiredTimestamp = renewVO.getExpiredTime();
+                if (currentTimestamp.getTime() - expiredTimestamp.getTime() > 7 * 24 * 60 * 60 * 1000l) {
+                    dbf.getEntityManager().remove(dbf.getEntityManager().merge(renewVO));
+                    dbf.getEntityManager().flush();
+                    continue;
+                }
+                if(currentTimestamp.getTime()<expiredTimestamp.getTime()){
+                    logger.info("this product is also valid");
                     continue;
                 }
 
-                    BigDecimal discountPrice = BigDecimal.ZERO;
-                    BigDecimal originalPrice = BigDecimal.ZERO;
-                    SimpleQuery<PriceRefRenewVO> queryPriceRefRenewVO = databaseFacade.createQuery(PriceRefRenewVO.class);
-                    queryPriceRefRenewVO.add(PriceRefRenewVO_.renewUuid, SimpleQuery.Op.EQ, renewVO.getUuid());
-                    List<PriceRefRenewVO> PriceRefRenewVOs = queryPriceRefRenewVO.list();
+                ProductCaller caller = new ProductCaller(renewVO.getProductType());
+                APIUpdateExpireDateMsg aMsg = caller.getCallMsg();
 
-                    for (PriceRefRenewVO priceUuid : PriceRefRenewVOs) {
-                        ProductPriceUnitVO productPriceUnitVO = databaseFacade.findByUuid(priceUuid.getProductPriceUnitUuid(), ProductPriceUnitVO.class);
-                        if (productPriceUnitVO == null) {
-                            throw new IllegalArgumentException("price uuid is not valid");
-                        }
-                        SimpleQuery<AccountDiscountVO> qDiscount = databaseFacade.createQuery(AccountDiscountVO.class);
-                        qDiscount.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, productPriceUnitVO.getProductCategoryUuid());
-                        qDiscount.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, renewVO.getAccountUuid());
-                        AccountDiscountVO accountDiscountVO = qDiscount.find();
-                        int productDiscount = 100;
-                        if (accountDiscountVO != null) {
-                            productDiscount = accountDiscountVO.getDiscount() == 0 ? 100 : accountDiscountVO.getDiscount();
-                        }
-                        originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()));
-                        discountPrice = discountPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN));
+                aMsg.setUuid(renewVO.getProductUuid());
+                aMsg.setDuration(1);
+                aMsg.setProductChargeModel(renewVO.getProductChargeModel());
+                aMsg.setType(OrderType.RENEW);
+                aMsg.setAccountUuid(renewVO.getAccountUuid());
+                InnerMessageHelper.setMD5(aMsg);
+                String gstr = RESTApiDecoder.dumpWithSession(aMsg);
+                RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class);
 
+                if (rsp.getState().equals(RestAPIState.Done.toString())) {
+                    try {
+                        APIUpdateExpireDateReply productReply = (APIUpdateExpireDateReply) RESTApiDecoder.loads(rsp.getResult());
+                    } catch (Exception e) {
+                        logger.error(e.getMessage());
                     }
+                }
 
-                    BigDecimal duration = BigDecimal.ONE;
-                    if (renewVO.getProductChargeModel().equals(ProductChargeModel.BY_YEAR)) {
-                        duration = duration.multiply(BigDecimal.valueOf(12));
-                    }
-
-                    AccountBalanceVO abvo = databaseFacade.findByUuid(renewVO.getAccountUuid(), AccountBalanceVO.class);
-                    BigDecimal cashBalance = abvo.getCashBalance();
-                    BigDecimal presentBalance = abvo.getPresentBalance();
-                    BigDecimal creditPoint = abvo.getCreditPoint();
-                    BigDecimal mayPayTotal = cashBalance.add(presentBalance).add(creditPoint);//可支付金额
-
-                    OrderVO orderVo = new OrderVO();
-
-                    originalPrice = originalPrice.multiply(duration);
-                    discountPrice = discountPrice.multiply(duration);
-                    if (originalPrice.compareTo(mayPayTotal) > 0) {
-                        return;
-                    }
-                    int hash = renewVO.getAccountUuid().hashCode();
-                    if (hash < 0) {
-                        hash = ~hash;
-                    }
-                    String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
-                    if (abvo.getPresentBalance().compareTo(BigDecimal.ZERO) > 0) {
-                        if (abvo.getPresentBalance().compareTo(discountPrice) > 0) {
-                            BigDecimal presentNow = abvo.getPresentBalance().subtract(discountPrice);
-                            abvo.setPresentBalance(presentNow);
-                            orderVo.setPayPresent(discountPrice);
-                            orderVo.setPayCash(BigDecimal.ZERO);
-                            DealDetailVO dealDetailVO = new DealDetailVO();
-                            dealDetailVO.setUuid(Platform.getUuid());
-                            dealDetailVO.setAccountUuid(renewVO.getAccountUuid());
-                            dealDetailVO.setDealWay(DealWay.PRESENT_BILL);
-                            dealDetailVO.setIncome(BigDecimal.ZERO);
-                            dealDetailVO.setExpend(discountPrice.negate());
-                            dealDetailVO.setFinishTime(currentTimestamp);
-                            dealDetailVO.setType(DealType.DEDUCTION);
-                            dealDetailVO.setState(DealState.SUCCESS);
-                            dealDetailVO.setBalance(presentNow==null?BigDecimal.ZERO:presentNow);
-                            dealDetailVO.setOutTradeNO(outTradeNO);
-                            dealDetailVO.setOpAccountUuid(renewVO.getAccountUuid());
-                            databaseFacade.getEntityManager().persist(dealDetailVO);
-
-                        } else {
-                            BigDecimal payPresent = abvo.getPresentBalance();
-                            BigDecimal payCash = discountPrice.subtract(payPresent);
-                            BigDecimal remainCash = abvo.getCashBalance().subtract(payCash);
-                            abvo.setCashBalance(remainCash);
-                            abvo.setPresentBalance(BigDecimal.ZERO);
-                            orderVo.setPayPresent(payPresent);
-
-                            DealDetailVO dealDetailVO = new DealDetailVO();
-                            dealDetailVO.setUuid(Platform.getUuid());
-                            dealDetailVO.setAccountUuid(renewVO.getAccountUuid());
-                            dealDetailVO.setDealWay(DealWay.PRESENT_BILL);
-                            dealDetailVO.setIncome(BigDecimal.ZERO);
-                            dealDetailVO.setExpend(payPresent.negate());
-                            dealDetailVO.setFinishTime(currentTimestamp);
-                            dealDetailVO.setType(DealType.DEDUCTION);
-                            dealDetailVO.setState(DealState.SUCCESS);
-                            dealDetailVO.setBalance(BigDecimal.ZERO);
-                            dealDetailVO.setOutTradeNO(outTradeNO+"-1");
-                            dealDetailVO.setOpAccountUuid(renewVO.getAccountUuid());
-                            databaseFacade.getEntityManager().persist(dealDetailVO);
-
-                            orderVo.setPayCash(payCash);
-
-                            DealDetailVO dVO = new DealDetailVO();
-                            dVO.setUuid(Platform.getUuid());
-                            dVO.setAccountUuid(renewVO.getAccountUuid());
-                            dVO.setDealWay(DealWay.CASH_BILL);
-                            dVO.setIncome(BigDecimal.ZERO);
-                            dVO.setExpend(payCash.negate());
-                            dVO.setFinishTime(currentTimestamp);
-                            dVO.setType(DealType.DEDUCTION);
-                            dVO.setState(DealState.SUCCESS);
-                            dVO.setBalance(remainCash==null?BigDecimal.ZERO:remainCash);
-                            dVO.setOutTradeNO(outTradeNO+"-2");
-                            dVO.setOpAccountUuid(renewVO.getAccountUuid());
-                            databaseFacade.getEntityManager().persist(dVO);
-                        }
-                    } else {
-                        BigDecimal remainCashBalance = abvo.getCashBalance().subtract(discountPrice);
-                        abvo.setCashBalance(remainCashBalance);
-                        orderVo.setPayPresent(BigDecimal.ZERO);
-                        orderVo.setPayCash(discountPrice);
-
-                        DealDetailVO dVO = new DealDetailVO();
-                        dVO.setUuid(Platform.getUuid());
-                        dVO.setAccountUuid(renewVO.getAccountUuid());
-                        dVO.setDealWay(DealWay.CASH_BILL);
-                        dVO.setIncome(BigDecimal.ZERO);
-                        dVO.setExpend(discountPrice.negate());
-                        dVO.setFinishTime(currentTimestamp);
-                        dVO.setType(DealType.DEDUCTION);
-                        dVO.setState(DealState.SUCCESS);
-                        dVO.setBalance(remainCashBalance==null?BigDecimal.ZERO:remainCashBalance);
-                        dVO.setOutTradeNO(outTradeNO);
-                        dVO.setOpAccountUuid(renewVO.getAccountUuid());
-                        databaseFacade.getEntityManager().persist(dVO);
-                    }
-                    orderVo.setType(OrderType.RENEW);
-                    orderVo.setOriginalPrice(originalPrice);
-                    orderVo.setPrice(discountPrice);
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTime(currentTimestamp);
-                    calendar.add(Calendar.MONTH, duration.intValue());
-                    orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
-                    orderVo.setProductEffectTimeStart(currentTimestamp);
-
-
-                    Timestamp endTime = new Timestamp(calendar.getTime().getTime());
-                    long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
-                    renewVO.setPriceOneMonth(renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays)).add(discountPrice).divide(BigDecimal.valueOf(notUseDays).add(duration.multiply(BigDecimal.valueOf(30))), 4, BigDecimal.ROUND_HALF_EVEN).multiply(BigDecimal.valueOf(30)));
-                    databaseFacade.getEntityManager().merge(renewVO);
-
-                    orderVo.setUuid(Platform.getUuid());
-                    orderVo.setAccountUuid(renewVO.getAccountUuid());
-                    orderVo.setProductName(renewVO.getProductName());
-                    orderVo.setState(OrderState.PAID);
-                    orderVo.setProductType(renewVO.getProductType());
-                    orderVo.setProductChargeModel(renewVO.getProductChargeModel());
-                    orderVo.setPayTime(currentTimestamp);
-                    orderVo.setDescriptionData(renewVO.getDescriptionData());
-                    orderVo.setProductUuid(renewVO.getProductUuid());
-                    orderVo.setDuration(1);
-
-                    databaseFacade.getEntityManager().merge(abvo);
-                    databaseFacade.getEntityManager().persist(orderVo);
-                    databaseFacade.getEntityManager().flush();
             }
 
         } finally {
@@ -209,17 +101,5 @@ public class RenewJob extends QuartzJobBean {
 
     }
 
-    public DatabaseFacade getDatabaseFacade() {
-        return databaseFacade;
-    }
-
-    public void setDatabaseFacade(DatabaseFacade databaseFacade) {
-        if (dbfThreadLocal.get() == null) {
-            dbfThreadLocal.set(databaseFacade);
-            this.databaseFacade = databaseFacade;
-        } else {
-            this.databaseFacade = dbfThreadLocal.get();
-        }
-    }
 
 }

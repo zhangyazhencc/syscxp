@@ -9,6 +9,7 @@ import com.syscxp.header.tunnel.tunnel.APIUpdateTunnelExpireDateReply;
 
 public class ProductCaller {
     private String productUrl;
+    private APIUpdateTunnelExpireDateMsg callMsg;
 
     private ProductType type;
 
@@ -22,15 +23,21 @@ public class ProductCaller {
         switch (type){
             case TUNNEL:
                 this.productUrl = BillingGlobalProperty.TUNNEL_SERVER_URL;
+                this.callMsg = new APIUpdateTunnelExpireDateMsg();
                 break;
             case PORT:
                 this.productUrl = BillingGlobalProperty.TUNNEL_SERVER_URL;
+                this.callMsg = new APIUpdateTunnelExpireDateMsg();
                 break;
         }
     }
 
     public String getProductUrl() {
         return productUrl;
+    }
+
+    public APIUpdateTunnelExpireDateMsg getCallMsg() {
+        return callMsg;
     }
 
     public ProductType getType() {
