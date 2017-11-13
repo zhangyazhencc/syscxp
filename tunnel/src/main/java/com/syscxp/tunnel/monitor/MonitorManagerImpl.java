@@ -70,13 +70,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     @Autowired
     private RESTFacade evtf;
 
-
-
-    public String getFalconServerUrl() {
-        return String.format("http://%s:%s",
-                CoreGlobalProperty.FALCON_API_IP, CoreGlobalProperty.FALCON_API_PORT);
-    }
-
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
@@ -469,13 +462,13 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @return：创建的监控通道
      */
     private void icmpSync(String accountUuid, String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS, APIEvent event) {
-        String url = getFalconServerUrl();
+        String url = getFalconServerUrl(FalconApiRestConstant.ICMP_SYNC);
         FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
         try {
             FalconApiCommands.Icmp icmp = getIcmp(accountUuid, tunnelUuid, tunnelMonitorVOS);
             String savaJson = JSONObjectUtil.toJsonString(icmp);
 
-            response = evtf.syncJsonPost(url + FalconApiRestConstant.ICMP_SYNC, savaJson, FalconApiCommands.RestResponse.class);
+            response = evtf.syncJsonPost(url, savaJson, FalconApiCommands.RestResponse.class);
         } catch (Exception e) {
             response.setSuccess(false);
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
@@ -490,7 +483,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelUuid
      */
     private void icmpDelete(String tunnelUuid, APIEvent event) {
-        String url = getFalconServerUrl();
+        String url = getFalconServerUrl(FalconApiRestConstant.ICMP_DELETE);
         FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
 
         try {
@@ -498,7 +491,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             falconApiCommands.setTunnel_id(tunnelUuid);
             String deleteJson = JSONObjectUtil.toJsonString(falconApiCommands);
 
-            response = evtf.syncJsonPost(url + FalconApiRestConstant.ICMP_DELETE, deleteJson, FalconApiCommands.RestResponse.class);
+            response = evtf.syncJsonPost(url, deleteJson, FalconApiCommands.RestResponse.class);
         } catch (Exception e) {
             response.setSuccess(false);
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
@@ -872,6 +865,16 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 .list();
 
         return portVOS;
+    }
+
+    /**
+     * 获取falcon API地址
+     * @param method：方法名称
+     * @return falcon api url地址
+     */
+    public String getFalconServerUrl(String method) {
+        return String.format("http://%s:%s%s",
+                CoreGlobalProperty.FALCON_API_IP, CoreGlobalProperty.FALCON_API_PORT,method);
     }
 
     @Override
