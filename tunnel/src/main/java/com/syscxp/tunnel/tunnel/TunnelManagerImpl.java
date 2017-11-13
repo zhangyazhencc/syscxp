@@ -882,26 +882,34 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             orderMsg.setCallBackData("delete");
 
             OrderInventory orderInventory = createOrder(orderMsg);
-            if (orderInventory != null) {
-                //退订成功,记录生效订单
-                saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
-
-                vo.setAccountUuid(null);
-                dbf.updateAndRefresh(vo);
-
-                //创建任务
-                TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
-
-                DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
-                deleteTunnelMsg.setTunnelUuid(vo.getUuid());
-                deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-                bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
-                bus.send(deleteTunnelMsg);
-
-                evt.setInventory(TunnelInventory.valueOf(vo));
-            } else {
+            if (orderInventory == null){
                 evt.setError(errf.stringToOperationError("退订失败"));
+            } else {
+                if (vo.getState() == TunnelState.Enabled){   //对于已开通的产品，退订，下发
+                    //退订成功,记录生效订单
+                    saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+
+                    vo.setAccountUuid(null);
+                    dbf.updateAndRefresh(vo);
+
+                    //创建任务
+                    TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
+
+                    DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
+                    deleteTunnelMsg.setTunnelUuid(vo.getUuid());
+                    deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+                    bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                    bus.send(deleteTunnelMsg);
+
+                    evt.setInventory(TunnelInventory.valueOf(vo));
+                } else {                                        //对于已关闭的产品，退订，不用下发
+                    //退订成功,记录生效订单
+                    saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+                    deleteTunnel(vo);
+                    evt.setInventory(TunnelInventory.valueOf(vo));
+                }
             }
+
         }
 
         bus.publish(evt);
@@ -1136,21 +1144,28 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         }
                     } else if (cmd.getProductType() == ProductType.TUNNEL) {
                         TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
-                        if (vo != null && vo.getAccountUuid() != null && cmd.getCallBackData().equals("delete")) {
-                            vo.setAccountUuid(null);
-                            dbf.updateAndRefresh(vo);
+                        if(!orderIsExist(cmd.getOrderUuid())){
+                            //退订成功，记录生效订单
+                            saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+                            if(cmd.getCallBackData().equals("forciblydelete")){
+                                deleteTunnel(vo);
+                            }else if(cmd.getCallBackData().equals("delete") && vo.getState() == TunnelState.Enabled){
+                                vo.setAccountUuid(null);
+                                dbf.updateAndRefresh(vo);
 
-                            //创建任务
-                            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
+                                //创建任务
+                                TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
 
-                            DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
-                            deleteTunnelMsg.setTunnelUuid(vo.getUuid());
-                            deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-                            bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
-                            bus.send(deleteTunnelMsg);
-                        } else if (vo != null && vo.getAccountUuid() != null && cmd.getCallBackData().equals("forciblydelete")) {
-                            deleteTunnel(vo);
+                                DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
+                                deleteTunnelMsg.setTunnelUuid(vo.getUuid());
+                                deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+                                bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                                bus.send(deleteTunnelMsg);
+                            }else if(cmd.getCallBackData().equals("delete") && vo.getState() == TunnelState.Disabled){
+                                deleteTunnel(vo);
+                            }
                         }
+
                     }
                     return null;
                 });
