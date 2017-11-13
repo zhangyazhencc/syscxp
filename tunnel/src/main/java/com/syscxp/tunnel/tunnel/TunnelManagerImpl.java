@@ -16,6 +16,7 @@ import com.syscxp.header.billing.*;
 import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
+import com.syscxp.header.message.NeedReplyMessage;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.*;
 import com.syscxp.query.QueryFacade;
@@ -810,7 +811,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 renewOrderMsg.setDuration(msg.getDuration());
                 renewOrderMsg.setDescriptionData("no description");
                 renewOrderMsg.setProductChargeModel(msg.getProductChargeModel());
-                renewOrderMsg.setAccountUuid(msg.getAccountUuid());
+//                renewOrderMsg.setAccountUuid(msg.getAccountUuid());
                 renewOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
                 renewOrderMsg.setStartTime(dbf.getCurrentSqlTime());
                 renewOrderMsg.setExpiredTime(vo.getExpireDate());
@@ -825,7 +826,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 slaCompensationOrderMsg.setDescriptionData("no description");
                 slaCompensationOrderMsg.setProductType(ProductType.TUNNEL);
                 slaCompensationOrderMsg.setDuration(msg.getDuration());
-                slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
+//                slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
                 slaCompensationOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
                 slaCompensationOrderMsg.setStartTime(dbf.getCurrentSqlTime());
                 slaCompensationOrderMsg.setExpiredTime(vo.getExpireDate());
@@ -1204,9 +1205,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private Future<Void> cleanExpiredProductThread = null;
     private int cleanExpiredProductInterval;
+    private int expiredProductCloseTime;
+    private int expiredProductDeleteTime;
 
     private void startCleanExpiredProduct() {
         cleanExpiredProductInterval = CoreGlobalProperty.CLEAN_EXPIRED_PRODUCT_INTERVAL;
+        expiredProductCloseTime = CoreGlobalProperty.EXPIRED_PRODUCT_CLOSE_TIME;
+        expiredProductDeleteTime = CoreGlobalProperty.EXPIRED_PRODUCT_DELETE_TIME;
         if (cleanExpiredProductThread != null) {
             cleanExpiredProductThread.cancel(true);
         }
@@ -1236,30 +1241,62 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         private List<TunnelVO> getTunnels() {
 
             return Q.New(TunnelVO.class)
-                    .lte(TunnelVO_.expireDate, Timestamp.valueOf(LocalDateTime.now()))
+                    .lte(TunnelVO_.expireDate, dbf.getCurrentSqlTime())
                     .list();
+        }
+
+        private List<InterfaceVO> getInterfaces() {
+
+            return Q.New(InterfaceVO.class)
+                    .lte(InterfaceVO_.expireDate, dbf.getCurrentSqlTime())
+                    .list();
+        }
+
+        private void deleteInterface(List<InterfaceVO> ifaces, Timestamp close, Timestamp delete){
+            for (InterfaceVO vo : ifaces) {
+                if (vo.getExpireDate().after(delete)) {
+                    if (!Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid, vo.getUuid()).isExists())
+                        dbf.remove(vo);
+                }
+                if (vo.getExpireDate().after(close) && vo.getState() == InterfaceState.Unpaid) {
+                    dbf.remove(vo);
+                }
+            }
         }
 
         @Override
         public void run() {
+            Timestamp closeTime = Timestamp.valueOf(LocalDateTime.now().plusDays(expiredProductCloseTime));
+            Timestamp deleteTime = Timestamp.valueOf(LocalDateTime.now().plusDays(expiredProductDeleteTime));
+
             try {
                 List<TunnelVO> tunnelVOs = getTunnels();
                 logger.debug("delete expired tunnel.");
                 if (tunnelVOs.isEmpty())
                     return;
-                List<DeleteTunnelMsg> msgs = new ArrayList<>();
+                List<NeedReplyMessage> msgs = new ArrayList<>();
                 for (TunnelVO vo : tunnelVOs) {
-                    if (vo.getState() == TunnelState.Unpaid) {
-                        deleteTunnel(vo);
-                    } else {
+                    if (vo.getExpireDate().after(deleteTime)) {
                         vo.setAccountUuid(null);
                         dbf.updateAndRefresh(vo);
                         TaskResourceVO task = newTaskResourceVO(vo, TaskType.Delete);
                         DeleteTunnelMsg msg = new DeleteTunnelMsg();
                         msg.setTaskUuid(task.getUuid());
                         msg.setTunnelUuid(vo.getUuid());
-                        bus.makeTargetServiceIdByResourceUuid(msg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                        bus.makeLocalServiceId(msg, TunnelConstant.SERVICE_ID);
                         msgs.add(msg);
+                    }
+                    if (vo.getExpireDate().after(closeTime)) {
+                        if (vo.getState() == TunnelState.Unpaid) {
+                            deleteTunnel(vo);
+                        } else {
+                            TaskResourceVO task = newTaskResourceVO(vo, TaskType.Delete);
+                            DisabledTunnelMsg msg = new DisabledTunnelMsg();
+                            msg.setTaskUuid(task.getUuid());
+                            msg.setTunnelUuid(vo.getUuid());
+                            bus.makeLocalServiceId(msg, TunnelConstant.SERVICE_ID);
+                            msgs.add(msg);
+                        }
                     }
                 }
                 if (msgs.isEmpty()) {
@@ -1590,7 +1627,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APIUpdateTunnelExpireDateMsg msg) {
-        checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
+        String accountUuid = Q.New(TunnelVO.class)
+                .eq(TunnelVO_.uuid, msg.getUuid())
+                .select(TunnelVO_.accountUuid)
+                .findValue();
+        checkOrderNoPay(accountUuid, msg.getUuid());
     }
 
     private void validate(APIDeleteTunnelMsg msg) {
