@@ -69,7 +69,7 @@ public class RenewJob{
                     continue;
                 }
                 if(currentTimestamp.getTime()<expiredTimestamp.getTime()){
-                    logger.info("this product is also valid");
+                    logger.info(renewVO.getProductName()+" is also valid");
                     continue;
                 }
 
