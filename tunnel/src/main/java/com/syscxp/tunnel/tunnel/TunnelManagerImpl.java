@@ -83,8 +83,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APICreateInterfaceMsg) msg);
         } else if (msg instanceof APIGetVlanAutoMsg) {
             handle((APIGetVlanAutoMsg) msg);
-        } else if (msg instanceof APIQueryTunnelForAlarmMsg) {
-            handle((APIQueryTunnelForAlarmMsg) msg);
         } else if (msg instanceof APIGetInterfacePriceMsg) {
             handle((APIGetInterfacePriceMsg) msg);
         } else if (msg instanceof APIGetTunnelPriceMsg) {
@@ -183,94 +181,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         reply.setVlan(vlan);
         bus.reply(msg, reply);
     }
-
-    private void handle(APIQueryTunnelForAlarmMsg msg) {
-        APIQueryTunnelForAlarmReply reply = new APIQueryTunnelForAlarmReply();
-
-        SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
-        if (msg.getAccountUuid() != null) {
-            q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-        }
-
-        if (msg.getProductName() != null) {
-            q.add(TunnelVO_.name, SimpleQuery.Op.LIKE, "%" + msg.getProductName() + "%");
-        }
-        if (msg.getProductUuids() != null && msg.getProductUuids().size() > 0) {
-            SimpleQuery.Op op = SimpleQuery.Op.IN;
-            if (!msg.isBind()) {
-                op = SimpleQuery.Op.NOT_IN;
-            }
-            q.add(TunnelVO_.uuid, op, msg.getProductUuids());
-
-
-        }else{
-            q.add(TunnelVO_.uuid, SimpleQuery.Op.EQ, "");
-        }
-
-        q.add(TunnelVO_.state, SimpleQuery.Op.EQ, TunnelState.Enabled);
-        reply.setCount(q.count());
-
-        q.setStart(msg.getStart());
-        q.setLimit(msg.getLimit());
-
-        List<TunnelVO> voList = q.list();
-
-        reply.setInventories(convertToTunnelForAlarmInventory(voList));
-
-        bus.reply(msg, reply);
-    }
-
-    public List<TunnelForAlarmInventory> convertToTunnelForAlarmInventory(Collection<TunnelVO> vos) {
-        List<TunnelForAlarmInventory> lst = new ArrayList<TunnelForAlarmInventory>(vos.size());
-        for (TunnelVO vo : vos) {
-            TunnelForAlarmInventory inv = new TunnelForAlarmInventory();
-            inv.setUuid(vo.getUuid());
-            inv.setAccountUuid(vo.getAccountUuid());
-            inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
-            inv.setVsi(vo.getVsi());
-            inv.setMonitorCidr(vo.getMonitorCidr());
-            inv.setName(vo.getName());
-            inv.setBandwidth(vo.getBandwidth());
-            inv.setDistance(vo.getDistance());
-            inv.setState(vo.getState());
-            inv.setStatus(vo.getStatus());
-            inv.setMonitorState(vo.getMonitorState());
-            inv.setDuration(vo.getDuration());
-            inv.setProductChargeModel(vo.getProductChargeModel());
-            inv.setMaxModifies(vo.getMaxModifies());
-            inv.setDescription(vo.getDescription());
-            inv.setExpireDate(vo.getExpireDate());
-            inv.setLastOpDate(vo.getLastOpDate());
-            inv.setCreateDate(vo.getCreateDate());
-            lst.add(inv);
-        }
-        return lst;
-    }
-
-
-    private TunnelForAlarmInventory valueOf(TunnelVO vo){
-        TunnelForAlarmInventory inv = new TunnelForAlarmInventory();
-        inv.setUuid(vo.getUuid());
-        inv.setAccountUuid(vo.getAccountUuid());
-        inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
-        inv.setVsi(vo.getVsi());
-        inv.setMonitorCidr(vo.getMonitorCidr());
-        inv.setName(vo.getName());
-        inv.setBandwidth(vo.getBandwidth());
-        inv.setDistance(vo.getDistance());
-        inv.setState(vo.getState());
-        inv.setStatus(vo.getStatus());
-        inv.setMonitorState(vo.getMonitorState());
-        inv.setDuration(vo.getDuration());
-        inv.setProductChargeModel(vo.getProductChargeModel());
-        inv.setMaxModifies(vo.getMaxModifies());
-        inv.setDescription(vo.getDescription());
-        inv.setExpireDate(vo.getExpireDate());
-        inv.setLastOpDate(vo.getLastOpDate());
-        inv.setCreateDate(vo.getCreateDate());
-        return inv;
-    }
-
 
     private void handle(APIGetInterfaceTypeMsg msg) {
         APIGetInterfaceTypeReply reply = new APIGetInterfaceTypeReply();
@@ -462,7 +372,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIUpdateInterfaceExpireDateMsg msg) {
-        APIUpdateInterfaceExpireDateEvent evt = new APIUpdateInterfaceExpireDateEvent(msg.getId());
+        APIUpdateInterfaceExpireDateReply reply = new APIUpdateInterfaceExpireDateReply();
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
         Timestamp newTime = vo.getExpireDate();
@@ -500,12 +410,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo.setExpireDate(getExpireDate(newTime, msg.getProductChargeModel(), msg.getDuration()));
 
             vo = dbf.updateAndRefresh(vo);
-            evt.setInventory(InterfaceInventory.valueOf(vo));
+            reply.setInventory(InterfaceInventory.valueOf(vo));
         } else {
-            evt.setError(errf.stringToOperationError("订单操作失败"));
+            reply.setError(errf.stringToOperationError("订单操作失败"));
         }
 
-        bus.publish(evt);
+        bus.reply(msg, reply);
     }
 
     private void handle(APIDeleteInterfaceMsg msg) {
@@ -898,7 +808,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     @Transactional
     private void handle(APIUpdateTunnelExpireDateMsg msg) {
-        APIUpdateTunnelExpireDateEvent evt = new APIUpdateTunnelExpireDateEvent(msg.getId());
+        APIUpdateTunnelExpireDateReply reply = new APIUpdateTunnelExpireDateReply();
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
         Timestamp newTime = vo.getExpireDate();
@@ -945,12 +855,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo.setExpireDate(getExpireDate(newTime, msg.getProductChargeModel(), msg.getDuration()));
 
             vo = dbf.updateAndRefresh(vo);
-            evt.setInventory(TunnelInventory.valueOf(vo));
+            reply.setInventory(TunnelInventory.valueOf(vo));
         } else {
-            evt.setError(errf.stringToOperationError("订单操作失败"));
+            reply.setError(errf.stringToOperationError("订单操作失败"));
         }
 
-        bus.publish(evt);
+        bus.reply(msg,reply);
     }
 
     @Transactional
