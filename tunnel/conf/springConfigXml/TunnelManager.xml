@@ -35,7 +35,7 @@
         </syscxp:plugin>
     </bean>
 
-    <bean id="TunnelSubQueryExtension" class="com.syscxp.tunnel.tunnel.TunnelSubQueryExtension">
+    <bean id="TunnelSubQueryExtension" class="com.syscxp.tunnel.identity.TunnelSubQueryExtension">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.query.MysqlQuerySubQueryExtension"/>
         </syscxp:plugin>
