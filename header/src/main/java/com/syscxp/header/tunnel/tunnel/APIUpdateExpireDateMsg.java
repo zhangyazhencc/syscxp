@@ -15,6 +15,9 @@ public class APIUpdateExpireDateMsg extends APISyncCallMessage {
     @APIParam
     private OrderType type;
 
+    @APIParam(emptyString = false,required = false,maxLength = 32)
+    private String accountUuid;
+
     public String getUuid() {
         return uuid;
     }
@@ -47,4 +50,11 @@ public class APIUpdateExpireDateMsg extends APISyncCallMessage {
         this.type = type;
     }
 
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
 }
