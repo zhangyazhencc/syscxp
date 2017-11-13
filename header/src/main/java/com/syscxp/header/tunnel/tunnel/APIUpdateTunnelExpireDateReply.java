@@ -7,7 +7,7 @@ import com.syscxp.header.rest.RestResponse;
 /**
  * Create by DCY on 2017/10/10
  */
-public class APIUpdateTunnelExpireDateReply extends APIReply {
+public class APIUpdateTunnelExpireDateReply extends APIUpdateExpireDateReply {
     private TunnelInventory inventory;
 
     public TunnelInventory getInventory() {
