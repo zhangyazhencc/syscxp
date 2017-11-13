@@ -2,19 +2,11 @@ package com.syscxp.billing.sla;
 
 import com.syscxp.billing.BillingGlobalProperty;
 import com.syscxp.billing.header.sla.*;
-import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.rest.RestAPIResponse;
-import com.syscxp.header.rest.RestAPIState;
-import com.syscxp.header.tunnel.APIQueryTunnelForAlarmReply;
-import com.syscxp.header.tunnel.TunnelForAlarmInventory;
-import com.syscxp.header.tunnel.tunnel.APIUpdateInterfaceExpireDateEvent;
-import com.syscxp.header.tunnel.tunnel.APIUpdateInterfaceExpireDateMsg;
-import com.syscxp.header.tunnel.tunnel.APIUpdateTunnelExpireDateEvent;
 import com.syscxp.header.tunnel.tunnel.APIUpdateTunnelExpireDateMsg;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.syscxp.billing.header.sla.*;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
@@ -33,8 +25,6 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SlaManagerImpl  extends AbstractService implements  ApiMessageInterceptor {
 

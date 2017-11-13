@@ -462,7 +462,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIUpdateInterfaceExpireDateMsg msg) {
-        APIUpdateInterfaceExpireDateEvent evt = new APIUpdateInterfaceExpireDateEvent(msg.getId());
+        APIUpdateInterfaceExpireDateReply reply = new APIUpdateInterfaceExpireDateReply();
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
         Timestamp newTime = vo.getExpireDate();
@@ -500,12 +500,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo.setExpireDate(getExpireDate(newTime, msg.getProductChargeModel(), msg.getDuration()));
 
             vo = dbf.updateAndRefresh(vo);
-            evt.setInventory(InterfaceInventory.valueOf(vo));
+            reply.setInventory(InterfaceInventory.valueOf(vo));
         } else {
-            evt.setError(errf.stringToOperationError("订单操作失败"));
+            reply.setError(errf.stringToOperationError("订单操作失败"));
         }
 
-        bus.publish(evt);
+        bus.reply(msg, reply);
     }
 
     private void handle(APIDeleteInterfaceMsg msg) {
