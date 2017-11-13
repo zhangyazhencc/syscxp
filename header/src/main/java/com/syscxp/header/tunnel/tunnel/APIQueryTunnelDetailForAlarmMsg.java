@@ -6,7 +6,6 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.query.AutoQuery;
 import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.header.tunnel.TunnelForAlarmInventory;
 
 import java.util.List;
 
@@ -14,7 +13,6 @@ import java.util.List;
  * Created by DCY on 2017-09-17
  */
 @Action(category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
-@AutoQuery(replyClass = APIQueryTunnelDetailForAlarmReply.class, inventoryClass = TunnelForAlarmInventory.class)
 @InnerCredentialCheck
 public class APIQueryTunnelDetailForAlarmMsg extends APISyncCallMessage {
     @APIParam(emptyString = false,maxLength = 32)
