@@ -25,7 +25,7 @@ CREATE TABLE `syscxp_tunnel`.`SpeedRecordsVO` (
   `avgSpeed` int(11) DEFAULT '0' COMMENT '平均速度(k/s)',
   `maxSpeed` int(11) DEFAULT '0' COMMENT '最大速度(k/s)',
   `minSpeed` int(11) DEFAULT '0' COMMENT '最小速度(k/s)',
-  `completed` tinyint(1) NOT NULL DEFAULT '0' COMMENT '完成标识 0:未完成 1:已完成',
+  `status` varchar(32) NOT NULL DEFAULT 'TESTING' COMMENT '测速状态（COMPLETED\FAILURE\TESTING)',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`),

@@ -3,6 +3,8 @@ package com.syscxp.header.tunnel.monitor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
+import javax.print.DocFlavor;
+
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-09-18.
@@ -22,8 +24,8 @@ public class APIUpdateSpeedRecordsMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 11)
     private Integer minSpeed;
 
-    @APIParam(emptyString = false,validValues = {"0","1"})
-    private Integer completed;
+    @APIParam(emptyString = false,validValues = {"COMPLETED","FAILURE"})
+    private SpeedRecordStatus status;
 
     public String getUuid() {
         return uuid;
@@ -57,11 +59,11 @@ public class APIUpdateSpeedRecordsMsg extends APIMessage {
         this.minSpeed = minSpeed;
     }
 
-    public Integer getCompleted() {
-        return completed;
+    public SpeedRecordStatus getStatus() {
+        return status;
     }
 
-    public void setCompleted(Integer completed) {
-        this.completed = completed;
+    public void setStatus(SpeedRecordStatus status) {
+        this.status = status;
     }
 }

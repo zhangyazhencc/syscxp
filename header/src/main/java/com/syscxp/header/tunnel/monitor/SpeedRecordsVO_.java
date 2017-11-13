@@ -12,10 +12,8 @@ import javax.persistence.metamodel.StaticMetamodel;
 public class SpeedRecordsVO_ {
     public static volatile SingularAttribute<TunnelMonitorVO,String> uuid;
     public static volatile SingularAttribute<TunnelMonitorVO, String> tunnelUuid;
-    public static volatile SingularAttribute<TunnelMonitorVO, String> srcHostUuid;
-    public static volatile SingularAttribute<TunnelMonitorVO, String> srcMonitorIp;
-    public static volatile SingularAttribute<TunnelMonitorVO, String> dstHostUuid;
-    public static volatile SingularAttribute<TunnelMonitorVO, String> dstMonitorIp;
+    public static volatile SingularAttribute<TunnelMonitorVO, String> srcTunnelMonitorUuid;
+    public static volatile SingularAttribute<TunnelMonitorVO, String> dstunnelMonitorUuid;
     public static volatile SingularAttribute<TunnelMonitorVO, ProtocolType> protocolType;
-    public static volatile SingularAttribute<TunnelMonitorVO, Integer> completed;
+    public static volatile SingularAttribute<TunnelMonitorVO, SpeedRecordStatus> status;
 }
