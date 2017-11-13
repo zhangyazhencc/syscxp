@@ -97,6 +97,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
             aMsg.setDuration(slaCompensateVO.getDuration());
             aMsg.setProductChargeModel(ProductChargeModel.BY_DAY);
             aMsg.setType(OrderType.SLA_COMPENSATION);
+            aMsg.setAccountUuid(msg.getSession().getAccountUuid());
             aMsg.setSession(msg.getSession());
 
             String gstr = RESTApiDecoder.dumpWithSession(aMsg);
