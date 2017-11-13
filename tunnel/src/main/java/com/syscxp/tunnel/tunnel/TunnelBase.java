@@ -175,6 +175,14 @@ public class TunnelBase extends AbstractTunnel {
                 tunnelVO.setState(TunnelState.Enabled);
                 tunnelVO.setStatus(TunnelStatus.Connected);
 
+                if(tunnelVO.getExpireDate()==null){
+                    if(tunnelVO.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+                        tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(tunnelVO.getDuration())));
+                    }else if(tunnelVO.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+                        tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(tunnelVO.getDuration())));
+                    }
+                }
+
                 dbf.updateAndRefresh(tunnelVO);
 
                 //更新任务状态
