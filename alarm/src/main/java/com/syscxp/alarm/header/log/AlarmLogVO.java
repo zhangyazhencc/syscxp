@@ -26,6 +26,7 @@ public class AlarmLogVO extends BaseVO {
     private String alarmContent;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private AlarmStatus status;
 
     @Column

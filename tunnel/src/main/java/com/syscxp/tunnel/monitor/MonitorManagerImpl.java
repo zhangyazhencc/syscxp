@@ -1,12 +1,10 @@
 package com.syscxp.tunnel.monitor;
 
-import com.rabbitmq.tools.json.JSONUtil;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.db.*;
 import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.falconapi.FalconApiRestConstant;
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.message.Event;
 import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.host.APICreateMonitorHostMsg;
 import com.syscxp.header.tunnel.host.MonitorHostVO;
@@ -100,6 +98,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APIStopTunnelMonitorMsg) msg);
         } else if (msg instanceof APICreateSpeedRecordsMsg) {
             handle((APICreateSpeedRecordsMsg) msg);
+        } else if (msg instanceof APIQuerySpeedResultMsg) {
+            handle((APIQuerySpeedResultMsg) msg);
         } else if (msg instanceof APIUpdateSpeedRecordsMsg) {
             handle((APIUpdateSpeedRecordsMsg) msg);
         } else {
@@ -296,7 +296,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 .eq(MonitorHostVO_.uuid,tunnelMonitorVO.getHostUuid())
                 .select(MonitorHostVO_.hostIp).findValue();
 
-        agentSyncRestRequest(monitorHostIp, MonitorAgentConstant.IPERF, serverCommand, event);
+        sendSpeedTestCommand(monitorHostIp, serverCommand, event);
 
         if (event.isSuccess()) {
             // client
@@ -305,11 +305,17 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             monitorHostIp = Q.New(MonitorHostVO.class)
                     .eq(MonitorHostVO_.uuid,tunnelMonitorVO.getHostUuid())
                     .select(MonitorHostVO_.hostIp).findValue();
-            agentSyncRestRequest(tunnelMonitorVO.getMonitorIp(), MonitorAgentConstant.IPERF, clientCommand, event);
+            sendSpeedTestCommand(tunnelMonitorVO.getMonitorIp(), clientCommand, event);
         }
     }
 
-    private void agentSyncRestRequest(String hostIp, String method, String command, APIEvent event) {
+    /***
+     * 发送测速命令
+     * @param hostIp：监控主机IP
+     * @param command：命令
+     * @param event
+     */
+    private void sendSpeedTestCommand(String hostIp, String command, APIEvent event) {
         String url = getMonitorAgentUrl(hostIp, MonitorAgentConstant.IPERF);
 
         MonitorAgentCommands.RestResponse response = new MonitorAgentCommands.RestResponse();
@@ -382,6 +388,44 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         return commandMap;
     }
 
+    private void handle(APIQuerySpeedResultMsg msg){
+        TunnelMonitorVO tunnelMonitorVO = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.uuid,msg.getSrcTunnelMonitorUuid()).find();
+        MonitorHostVO hostVO = Q.New(MonitorHostVO.class).eq(MonitorHostVO_.uuid,tunnelMonitorVO.getHostUuid()).find();
+
+        Map<String,String> map = new HashMap<>();
+        map.put("guid",msg.getUuid());
+        String command = JSONObjectUtil.toJsonString(map);
+
+        APIEvent event = new APIEvent();
+        List<MonitorAgentCommands.SpeedResult> resultList = getSpeedResultFromAgent(hostVO.getHostIp(),command);
+
+        APIQuerySpeedResultReply reply = new APIQuerySpeedResultReply();
+        reply.setInventories(SpeedResultInventory.valueOf(resultList));
+        bus.reply(msg,reply);
+    }
+
+    /***
+     * 从agent获取测速结果
+     * @param hostIp
+     * @param command
+     * @return 测速结果
+     */
+    private List<MonitorAgentCommands.SpeedResult> getSpeedResultFromAgent(String hostIp,String command){
+        String url = getMonitorAgentUrl(hostIp, MonitorAgentConstant.IPERF_RESULT);
+
+        List<MonitorAgentCommands.SpeedResult> resultList = new ArrayList<>();
+        try {
+            resultList = evtf.syncJsonPost(url, command,  List.class);
+        } catch (Exception e) {
+            MonitorAgentCommands.SpeedResult result = new MonitorAgentCommands.SpeedResult();
+            result.setComplete_flag(true);
+            result.setIperf_data(0);
+
+            resultList.add(result);
+        }
+
+        return resultList;
+    }
 
     private void handle(APIUpdateSpeedRecordsMsg msg) {
         SpeedRecordsVO vo = dbf.findByUuid(msg.getUuid(), SpeedRecordsVO.class);

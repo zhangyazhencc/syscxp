@@ -16,10 +16,8 @@ ALTER TABLE `syscxp_tunnel`.`TunnelMonitorInterfaceVO` ADD interfaceUuid varchar
 CREATE TABLE `syscxp_tunnel`.`SpeedRecordsVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'uuid',
   `tunnelUuid` varchar(32) NOT NULL COMMENT 'TunnelVO.uuid',
-  `srcHostUuid` varchar(32) NOT NULL COMMENT '源监控机uuid',
-  `srcMonitorIp` varchar(32) NOT NULL COMMENT '源监控IP',
-  `dstHostUuid` varchar(32) NOT NULL COMMENT '目标监控机uuid',
-  `dstMonitorIp` varchar(32) NOT NULL COMMENT '目标监控IP',
+  `srcTunnelMonitorUuid` varchar(32) NOT NULL COMMENT '源监控机uuid',
+  `dstTunnelMonitorUuid` varchar(32) NOT NULL COMMENT '源监控IP',
   `protocolType` varchar(32) NOT NULL COMMENT '协议',
   `duration` int(11) NOT NULL COMMENT '持续时间(秒)',
   `avgSpeed` int(11) DEFAULT '0' COMMENT '平均速度(k/s)',
