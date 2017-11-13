@@ -3,19 +3,26 @@ package com.syscxp.tunnel.tunnel;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
+import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.core.workflow.*;
+import com.syscxp.header.errorcode.ErrorCode;
+import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.falconapi.FalconApiCommands;
+import com.syscxp.header.managementnode.*;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
+import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.message.NeedReplyMessage;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.*;
@@ -26,8 +33,10 @@ import com.syscxp.header.tunnel.node.ZoneNodeRefVO;
 import com.syscxp.header.tunnel.node.ZoneNodeRefVO_;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
+import com.syscxp.utils.BootErrorLog;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -145,26 +154,110 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void handle(APIUpdateInterfacePortMsg msg) {
         InterfaceVO iface = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
-        List<TunnelSwitchPortVO> tunnelSwitchPorts = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.switchPortUuid, iface.getSwitchPortUuid())
-                .list();
-        updateInterfacePort(msg);
-        if (msg.isIssue() && !tunnelSwitchPorts.isEmpty()) {
-            List<TunnelVO> tunnels = Q.New(TunnelVO.class)
-                    .in(TunnelVO_.uuid, CollectionUtils.transformToList(tunnelSwitchPorts, TunnelSwitchPortVO::getTunnelUuid))
-                    .list();
-            List<ModifyTunnelPortsMsg> msgs = new ArrayList<>();
-            for (TunnelVO tunnel : tunnels) {
-                TaskResourceVO taskResource = newTaskResourceVO(tunnel, TaskType.ModifyPorts);
-                ModifyTunnelPortsMsg modifyMsg = new ModifyTunnelPortsMsg();
-                modifyMsg.setTunnelUuid(tunnel.getUuid());
-                modifyMsg.setTaskUuid(taskResource.getUuid());
-                msgs.add(modifyMsg);
-            }
-            bus.send(msgs);
-        }
+        logger.info(String.format("before update InterfaceVO: [%s]", iface));
+
+        TunnelSwitchPortVO tsPort = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
+                .find();
+        logger.info(String.format("before update TunnelSwitchPortVO: [%s]", tsPort));
+
+
         APIUpdateInterfacePortEvent evt = new APIUpdateInterfacePortEvent(msg.getId());
-        evt.setInventory(InterfaceInventory.valueOf(dbf.reload(iface)));
+
+        FlowChain updateInterface = FlowChainBuilder.newSimpleFlowChain();
+        updateInterface.setName(String.format("update-interfacePort-%s", msg.getUuid()));
+        updateInterface.then(new Flow() {
+            String __name__ = "update-interface-for-DB";
+
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                UpdateQuery.New(InterfaceVO.class)
+                        .set(InterfaceVO_.switchPortUuid, msg.getSwitchPortUuid())
+                        .set(InterfaceVO_.type, msg.getNetworkType())
+                        .eq(InterfaceVO_.uuid, msg.getUuid())
+                        .update();
+                logger.info(String.format("after update InterfaceVO: [%s]", JSONObjectUtil.toJsonString(dbf.findByUuid(msg.getUuid(), InterfaceVO.class))));
+                throw new CloudRuntimeException("update interface port ...............");
+//                trigger.next();
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                dbf.updateAndRefresh(iface);
+                logger.info(String.format("rollback InterfaceVO: [%s]", JSONObjectUtil.toJsonString(dbf.findByUuid(msg.getUuid(), InterfaceVO.class))));
+
+                trigger.rollback();
+            }
+        }).then(new Flow() {
+            String __name__ = "update-tunnelSwitchPort-for-DB";
+
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                if (tsPort != null) {
+                    UpdateQuery.New(TunnelSwitchPortVO.class)
+                            .set(TunnelSwitchPortVO_.switchPortUuid, msg.getSwitchPortUuid())
+                            .set(TunnelSwitchPortVO_.type, msg.getNetworkType())
+                            .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
+                            .update();
+                    logger.info(String.format("after update TunnelSwitchPortVO: [%s]", Q.New(TunnelSwitchPortVO.class)
+                            .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid()).findValue()));
+                }
+                trigger.next();
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                if (tsPort != null) {
+                    dbf.updateAndRefresh(tsPort);
+                    logger.info(String.format("after update TunnelSwitchPortVO: [%s]", Q.New(TunnelSwitchPortVO.class)
+                            .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid()).findValue()));
+                }
+                trigger.rollback();
+            }
+        }).then(new Flow() {
+            String __name__ = "send-tunnelMsg";
+
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                if (msg.isIssue() && tsPort != null) {
+                    TunnelVO tunnel = Q.New(TunnelVO.class)
+                            .eq(TunnelVO_.uuid, tsPort.getTunnelUuid())
+                            .find();
+                    TaskResourceVO taskResource = newTaskResourceVO(tunnel, TaskType.ModifyPorts);
+                    ModifyTunnelPortsMsg modifyMsg = new ModifyTunnelPortsMsg();
+                    modifyMsg.setTunnelUuid(tunnel.getUuid());
+                    modifyMsg.setTaskUuid(taskResource.getUuid());
+                    bus.send(msg, new CloudBusCallBack(null) {
+                        @Override
+                        public void run(MessageReply reply) {
+                            if (reply.isSuccess()) {
+                                logger.info(String.format("Successfully restart tunnel[uuid:%s].", tunnel.getUuid()));
+                            } else {
+                                logger.info(String.format("Failed to restart tunnel[uuid:%s].", tunnel.getUuid()));
+                                trigger.fail(reply.getError());
+                            }
+                        }
+                    });
+                    trigger.next();
+                }
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                trigger.rollback();
+            }
+        }).done(new FlowDoneHandler(null) {
+            @Override
+            public void handle(Map data) {
+                evt.setInventory(InterfaceInventory.valueOf(dbf.reload(iface)));
+            }
+        }).error(new FlowErrorHandler(null) {
+            @Override
+            public void handle(ErrorCode errCode, Map data) {
+                evt.setError(errf.stringToOperationError("update interfacePort failed!"));
+            }
+        }).start();
+
         bus.publish(evt);
     }
 
@@ -847,7 +940,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             reply.setError(errf.stringToOperationError("订单操作失败"));
         }
 
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
     }
 
     @Transactional
@@ -1258,9 +1351,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     .list();
         }
 
-        private void deleteInterface(List<InterfaceVO> ifaces, Timestamp close, Timestamp delete){
+        private void deleteInterface(List<InterfaceVO> ifaces, Timestamp close, Timestamp delete) {
+
             for (InterfaceVO vo : ifaces) {
-                if (vo.getExpireDate().after(delete)) {
+                if (vo.getExpireDate().before(delete)) {
                     if (!Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid, vo.getUuid()).isExists())
                         dbf.remove(vo);
                 }
@@ -1282,7 +1376,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     return;
                 List<NeedReplyMessage> msgs = new ArrayList<>();
                 for (TunnelVO vo : tunnelVOs) {
-                    if (vo.getExpireDate().after(deleteTime)) {
+                    if (vo.getExpireDate().before(deleteTime)) {
                         vo.setAccountUuid(null);
                         dbf.updateAndRefresh(vo);
                         TaskResourceVO task = newTaskResourceVO(vo, TaskType.Delete);
@@ -1292,7 +1386,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         bus.makeLocalServiceId(msg, TunnelConstant.SERVICE_ID);
                         msgs.add(msg);
                     }
-                    if (vo.getExpireDate().after(closeTime)) {
+                    if (vo.getExpireDate().before(closeTime)) {
                         if (vo.getState() == TunnelState.Unpaid) {
                             deleteTunnel(vo);
                         } else {
@@ -1309,10 +1403,17 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     return;
                 }
                 bus.send(msgs);
+
+                List<InterfaceVO> ifaces = getInterfaces();
+                logger.debug("delete expired interface.");
+                if (ifaces.isEmpty())
+                    return;
+                deleteInterface(ifaces, closeTime, deleteTime);
             } catch (Throwable t) {
                 logger.warn("unhandled exception", t);
             }
         }
+
     }
 
     @Override
@@ -1370,15 +1471,20 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void validate(APIUpdateInterfacePortMsg msg) {
 
         InterfaceVO iface = Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).find();
-        if (iface.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now())))
+        if (iface.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())))
             throw new ApiMessageInterceptionException(
                     argerr("The Interface[uuid:%s] has expired！", msg.getUuid()));
+        Q q = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.interfaceUuid, iface.getUuid());
+        if (q.count() > 1)
+            throw new ApiMessageInterceptionException(
+                    argerr("The Interface[uuid:%s] has been used by two tunnel as least！", msg.getUuid()));
         SwitchPortVO switchPort = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, iface.getSwitchPortUuid()).find();
         if (switchPort.getPortType() == SwitchPortType.SHARE)
             throw new ApiMessageInterceptionException(
                     argerr("The type of Interface[uuid:%s] is %s, could not modify！", msg.getUuid(), switchPort.getPortType()));
 
-        Q q = Q.New(InterfaceVO.class).eq(InterfaceVO_.switchPortUuid, msg.getSwitchPortUuid());
+        q = Q.New(InterfaceVO.class).eq(InterfaceVO_.switchPortUuid, msg.getSwitchPortUuid());
         if (q.isExists())
             throw new ApiMessageInterceptionException(
                     argerr("The SwitchPort[uuid:%s] has been used！", msg.getSwitchPortUuid()));
@@ -1532,19 +1638,19 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
         InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
         //如果是ACCESS或是QINQ的物理接口，判断该物理接口是否已经开通通道
-        if(interfaceVOA.getType() == NetworkType.ACCESS || interfaceVOA.getType() == NetworkType.QINQ){
+        if (interfaceVOA.getType() == NetworkType.ACCESS || interfaceVOA.getType() == NetworkType.QINQ) {
             boolean exists = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.interfaceUuid,msg.getInterfaceAUuid())
+                    .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getInterfaceAUuid())
                     .isExists();
-            if(exists){
+            if (exists) {
                 throw new ApiMessageInterceptionException(argerr("该物理接口不可复用"));
             }
         }
-        if(interfaceVOZ.getType() == NetworkType.ACCESS || interfaceVOZ.getType() == NetworkType.QINQ){
+        if (interfaceVOZ.getType() == NetworkType.ACCESS || interfaceVOZ.getType() == NetworkType.QINQ) {
             boolean exists = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.interfaceUuid,msg.getInterfaceZUuid())
+                    .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getInterfaceZUuid())
                     .isExists();
-            if(exists){
+            if (exists) {
                 throw new ApiMessageInterceptionException(argerr("该物理接口不可复用"));
             }
         }
@@ -2159,10 +2265,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 修改interface 的 switchPort
      */
     private void updateInterfacePort(APIUpdateInterfacePortMsg msg) {
-        String switchPortUuid = Q.New(InterfaceVO.class)
-                .eq(InterfaceVO_.uuid, msg.getUuid())
-                .select(InterfaceVO_.switchPortUuid)
-                .find();
 
         UpdateQuery.New(InterfaceVO.class)
                 .set(InterfaceVO_.switchPortUuid, msg.getSwitchPortUuid())
@@ -2173,7 +2275,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         UpdateQuery.New(TunnelSwitchPortVO.class)
                 .set(TunnelSwitchPortVO_.switchPortUuid, msg.getSwitchPortUuid())
                 .set(TunnelSwitchPortVO_.type, msg.getNetworkType())
-                .eq(TunnelSwitchPortVO_.switchPortUuid, switchPortUuid)
+                .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
                 .update();
     }
 
