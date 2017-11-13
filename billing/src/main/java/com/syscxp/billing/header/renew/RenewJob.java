@@ -54,6 +54,10 @@ public class RenewJob{
             SimpleQuery<RenewVO> q = dbf.createQuery(RenewVO.class);
             q.add(RenewVO_.isRenewAuto, SimpleQuery.Op.EQ, true);
             List<RenewVO> renewVOs = q.list();
+            if(renewVOs == null){
+                logger.info("there is no activity renew product");
+                return;
+            }
             logger.info("the demon thread was going to autoRenew");
             ListIterator<RenewVO> ite = renewVOs.listIterator();
             while (ite.hasNext()) {
