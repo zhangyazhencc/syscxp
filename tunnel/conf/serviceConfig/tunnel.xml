@@ -104,10 +104,6 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIReCallControllerMsg</name>
-    </message>
-
-    <message>
         <name>com.syscxp.header.tunnel.tunnel.APIQueryInterfaceMsg</name>
         <serviceId>query</serviceId>
     </message>
@@ -133,7 +129,8 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.APIQueryTunnelForAlarmMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIQueryQinqMsg</name>
+        <serviceId>query</serviceId>
     </message>
 
 </service>

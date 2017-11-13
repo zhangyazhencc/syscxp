@@ -16,16 +16,14 @@ ALTER TABLE `syscxp_tunnel`.`TunnelMonitorInterfaceVO` ADD interfaceUuid varchar
 CREATE TABLE `syscxp_tunnel`.`SpeedRecordsVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'uuid',
   `tunnelUuid` varchar(32) NOT NULL COMMENT 'TunnelVO.uuid',
-  `srcHostUuid` varchar(32) NOT NULL COMMENT '源监控机uuid',
-  `srcMonitorIp` varchar(32) NOT NULL COMMENT '源监控IP',
-  `dstHostUuid` varchar(32) NOT NULL COMMENT '目标监控机uuid',
-  `dstMonitorIp` varchar(32) NOT NULL COMMENT '目标监控IP',
+  `srcTunnelMonitorUuid` varchar(32) NOT NULL COMMENT '源监控机uuid',
+  `dstTunnelMonitorUuid` varchar(32) NOT NULL COMMENT '源监控IP',
   `protocolType` varchar(32) NOT NULL COMMENT '协议',
   `duration` int(11) NOT NULL COMMENT '持续时间(秒)',
   `avgSpeed` int(11) DEFAULT '0' COMMENT '平均速度(k/s)',
   `maxSpeed` int(11) DEFAULT '0' COMMENT '最大速度(k/s)',
   `minSpeed` int(11) DEFAULT '0' COMMENT '最小速度(k/s)',
-  `completed` tinyint(1) NOT NULL DEFAULT '0' COMMENT '完成标识 0:未完成 1:已完成',
+  `status` varchar(32) NOT NULL DEFAULT 'TESTING' COMMENT '测速状态（COMPLETED\FAILURE\TESTING)',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`),
@@ -379,6 +377,7 @@ CREATE TABLE `syscxp_tunnel`.`ResourceOrderEffectiveVO` (
 ##产品下发任务表
 CREATE TABLE `syscxp_tunnel`.`TaskResourceVO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `accountUuid` varchar(32) NOT NULL COMMENT '资源所属UUID',
   `resourceUuid` varchar(32) NOT NULL COMMENT '产品UUID',
   `resourceType` varchar(255) NOT NULL COMMENT '产品表名',
   `taskType` varchar(255) NOT NULL COMMENT '任务类型',

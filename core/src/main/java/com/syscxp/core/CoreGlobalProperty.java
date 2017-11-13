@@ -60,8 +60,12 @@ public class CoreGlobalProperty {
 
     @GlobalProperty(name = "tunnelMaxMotifies", defaultValue = "5")
     public static Integer TUNNEL_MAX_MOTIFIES;
-    @GlobalProperty(name = "productExpireDays", defaultValue = "7")
-    public static Integer PRODUCT_EXPIRE_DAYS;
+
+    @GlobalProperty(name = "expiredProductCloseTime", defaultValue = "3")
+    public static Integer EXPIRED_PRODUCT_CLOSE_TIME;
+
+    @GlobalProperty(name = "expiredProductDeleteTime", defaultValue = "10")
+    public static Integer EXPIRED_PRODUCT_DELETE_TIME;
 
     @GlobalProperty(name = "controllerManagerUrl", defaultValue = "http://192.168.211.224:8080")
     public static String CONTROLLER_MANAGER_URL;

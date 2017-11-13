@@ -8,10 +8,6 @@ package com.syscxp.tunnel.sdnController;
  * @Description: .
  */
 public interface ControllerRestConstant {
-    //测试
-    static final String SYNC_TEST = "/demo/sync";
-    static final String ASYNC_TEST = "/demo/async";
-
     static final String START_TUNNEL = "/tunnel/create";
     static final String MODIFY_TUNNEL_BANDWIDTH = "/tunnel/bandwidth_modify";
     static final String MODIFY_TUNNEL_PORTS = "/tunnel/ports_modify";
