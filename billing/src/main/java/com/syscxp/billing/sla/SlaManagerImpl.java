@@ -91,7 +91,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
             }
 
             ProductCaller caller = new ProductCaller(slaCompensateVO.getProductType());
-            APIUpdateExpireDateMsg aMsg = new APIUpdateExpireDateMsg();
+            APIUpdateExpireDateMsg aMsg = caller.getCallMsg();
 
             aMsg.setUuid(slaCompensateVO.getProductUuid());
             aMsg.setDuration(slaCompensateVO.getDuration());
