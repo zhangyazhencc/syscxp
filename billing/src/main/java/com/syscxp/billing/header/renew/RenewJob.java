@@ -13,6 +13,7 @@ import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateReply;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -41,6 +42,7 @@ public class RenewJob{
 
     private static final CLogger logger = Utils.getLogger(RenewJob.class);
 
+    @Scheduled(cron = "0 0/1 * * * ? ")
     @Transactional
     protected void autoRenew() {
 
