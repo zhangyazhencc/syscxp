@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.manage;
+package com.syscxp.tunnel.tunnel;
 
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;

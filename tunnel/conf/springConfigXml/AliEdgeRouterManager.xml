@@ -27,7 +27,7 @@
             </property>
         </bean>-->
 
-    <bean id="AliEdgeRouterManager" class="com.syscxp.tunnel.manage.AliEdgeRouterManagerImpl">
+    <bean id="AliEdgeRouterManager" class="com.syscxp.tunnel.aliEdgeRouter.AliEdgeRouterManagerImpl">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.header.Component"/>
             <syscxp:extension interface="com.syscxp.header.Service"/>

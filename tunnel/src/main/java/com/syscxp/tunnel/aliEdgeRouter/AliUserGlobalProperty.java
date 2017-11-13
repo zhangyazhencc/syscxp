@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.manage;
+package com.syscxp.tunnel.aliEdgeRouter;
 
 import com.syscxp.core.GlobalProperty;
 import com.syscxp.core.GlobalPropertyDefinition;

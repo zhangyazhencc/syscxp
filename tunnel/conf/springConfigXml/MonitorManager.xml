@@ -27,7 +27,7 @@
         </property>
     </bean>-->
 
-    <bean id="MonitorManager" class="com.syscxp.tunnel.manage.MonitorManagerImpl">
+    <bean id="MonitorManager" class="com.syscxp.tunnel.monitor.MonitorManagerImpl">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.header.Component"/>
             <syscxp:extension interface="com.syscxp.header.Service"/>

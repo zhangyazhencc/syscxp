@@ -20,7 +20,7 @@
 
     </bean>-->
 
-    <bean id="NodeManager" class="com.syscxp.tunnel.manage.NodeManagerImpl">
+    <bean id="NodeManager" class="com.syscxp.tunnel.node.NodeManagerImpl">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.header.Component"/>
             <syscxp:extension interface="com.syscxp.header.Service"/>

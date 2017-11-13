@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.manage;
+package com.syscxp.tunnel.tunnel;
 
 import com.syscxp.header.message.Message;
 

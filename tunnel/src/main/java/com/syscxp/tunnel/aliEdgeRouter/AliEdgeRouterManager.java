@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.manage;
+package com.syscxp.tunnel.aliEdgeRouter;
 
 public interface AliEdgeRouterManager {
 }

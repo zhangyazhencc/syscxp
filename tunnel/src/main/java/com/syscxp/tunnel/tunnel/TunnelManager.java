@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.manage;
+package com.syscxp.tunnel.tunnel;
 /**
  * Created by DCY on 2017-08-21
  */

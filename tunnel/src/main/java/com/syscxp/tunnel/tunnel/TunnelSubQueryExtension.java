@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.manage;
+package com.syscxp.tunnel.tunnel;
 
 import com.syscxp.query.QueryUtils;
 import org.springframework.beans.factory.annotation.Autowired;
