@@ -61,8 +61,8 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
         host.setUsername(amsg.getUsername());
         host.setPassword(amsg.getPassword());
         host.setSshPort(amsg.getSshPort());
-        host = dbf.persistAndRefresh(host);
-        return host;
+        host.setMonitorType(amsg.getMonitorType());
+        return dbf.persistAndRefresh(host);
     }
 
     @Override

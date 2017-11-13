@@ -539,6 +539,9 @@ public class MonitorHost extends HostBase implements Host {
         if (umsg.getPassword() != null) {
             vo.setPassword(umsg.getPassword());
         }
+        if (umsg.getMonitorType() != null) {
+            vo.setMonitorType(umsg.getMonitorType());
+        }
         if (umsg.getSshPort() != null && NetworkUtils.isLegalPort(umsg.getSshPort())) {
             vo.setSshPort(umsg.getSshPort());
         }
