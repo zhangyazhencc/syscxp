@@ -1,4 +1,4 @@
-package com.syscxp.header.tunnel;
+package com.syscxp.header.tunnel.tunnel;
 
 import com.syscxp.header.query.APIQueryReply;
 

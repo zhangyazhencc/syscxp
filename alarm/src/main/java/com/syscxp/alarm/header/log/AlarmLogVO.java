@@ -1,6 +1,7 @@
 package com.syscxp.alarm.header.log;
 
 import com.syscxp.alarm.header.BaseVO;
+import com.syscxp.alarm.header.resourcePolicy.PolicyVO;
 import com.syscxp.header.billing.ProductType;
 
 import javax.persistence.*;
@@ -39,8 +40,9 @@ public class AlarmLogVO extends BaseVO {
     @Column
     private String regulationUuid;
 
-    @Column
-    private String policyName;
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "policyUuid")
+    private PolicyVO policyVO;
 
 
     @Column
@@ -124,12 +126,12 @@ public class AlarmLogVO extends BaseVO {
         this.mailContent = mailContent;
     }
 
-    public String getPolicyName() {
-        return policyName;
+    public PolicyVO getPolicyVO() {
+        return policyVO;
     }
 
-    public void setPolicyName(String policyName) {
-        this.policyName = policyName;
+    public void setPolicyVO(PolicyVO policyVO) {
+        this.policyVO = policyVO;
     }
 
     public String getEventId() {

@@ -36,7 +36,7 @@ public class AlarmLogInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setSmsContent(vo.getSmsContent());
         inv.setMailContent(vo.getMailContent());
-        inv.setPolicyName(vo.getPolicyName());
+        inv.setPolicyName(vo.getPolicyVO().getName());
         inv.setEventId(vo.getEventId());
         inv.setAlarmTime(vo.getAlarmTime());
         inv.setResumeTime(vo.getResumeTime());

@@ -179,14 +179,24 @@ public class AccountBase extends AbstractAccount {
         }
 
         if (msg.getPolicyUuids() != null) {
-            Set<PolicyVO> policySet = new HashSet<>();
+
+            List<RolePolicyRefVO> list = new ArrayList();
+            RolePolicyRefVO vo = null;
+
+            dbf.removeCollection(dbf.createQuery(RolePolicyRefVO.class).add(RolePolicyRefVO_.roleUuid,
+                    SimpleQuery.Op.EQ,msg.getUuid()).list(),RolePolicyRefVO.class);
+
             for (String id : msg.getPolicyUuids()) {
                 PolicyVO policy = dbf.findByUuid(id, PolicyVO.class);
                 if (policy != null) {
-                    policySet.add(policy);
+                    vo = new RolePolicyRefVO();
+                    vo.setRoleUuid(msg.getUuid());
+                    vo.setPolicyUuid(id);
+                    list.add(vo);
                 }
             }
-            role.setPolicySet(policySet);
+
+            dbf.persistCollection(list);
         }
 
 
@@ -745,6 +755,8 @@ public class AccountBase extends AbstractAccount {
         bus.publish(evt);
     }
 
+
+    @Transactional
     private void handle(APICreateRoleMsg msg) {
 
         RoleVO role = new RoleVO();
@@ -755,14 +767,16 @@ public class AccountBase extends AbstractAccount {
 
         Set<PolicyVO> policySet = new HashSet<>();
 
+        RolePolicyRefVO vo = null;
         for (String id : msg.getPolicyUuids()) {
             PolicyVO policy = dbf.findByUuid(id, PolicyVO.class);
             if (policy != null) {
-                policySet.add(policy);
+                vo = new RolePolicyRefVO();
+                vo.setPolicyUuid(id);
+                vo.setRoleUuid(role.getUuid());
+                dbf.persistAndRefresh(vo);
             }
         }
-
-        role.setPolicySet(policySet);
 
         role = dbf.persistAndRefresh(role);
 
@@ -788,10 +802,14 @@ public class AccountBase extends AbstractAccount {
         bus.publish(evt);
     }
 
+    @Transactional
     private void handle(APIDeleteRoleMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), RoleVO.class);
-        APIDeleteRoleEvent evt = new APIDeleteRoleEvent(msg.getId());
 
+        dbf.removeCollection(dbf.createQuery(RolePolicyRefVO.class).add(RolePolicyRefVO_.roleUuid,
+                SimpleQuery.Op.EQ,msg.getUuid()).list(),RolePolicyRefVO.class);
+
+        APIDeleteRoleEvent evt = new APIDeleteRoleEvent(msg.getId());
         bus.publish(evt);
     }
 

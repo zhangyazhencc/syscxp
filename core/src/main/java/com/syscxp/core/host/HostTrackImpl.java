@@ -92,16 +92,21 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                         && HostStatus.Disconnected.toString().equals(r.getCurrentHostStatus())) {
                     // can ping, but host is in Disconnected status
                     needReconnect = true;
-                } else if (!r.isConnected()) {
+                } else if (!r.isConnected() && HostGlobalProperty.AUTO_RECONNECT_ON_ERROR
+                        && HostStatus.Disconnected.toString().equals(r.getCurrentHostStatus())) {
+                    // cannot ping, host is in Disconnected status
+                    needReconnect = true;
                     logger.debug(String.format("[Host Tracker]: detected host[uuid:%s] connection lost, " +
                             "but connection.autoReconnectOnError is set to false, no reconnect will issue", hostUuid));
                 }
+
 
                 if (needReconnect && !inReconnectingHost.contains(hostUuid) &&
                         reconnectTimes.get(hostUuid) <= HostGlobalProperty.MAX_RECONNECT_TIMES) {
                     logger.debug(String.format("[Host Tracker]: detected host[uuid:%s] connection lost, " +
                                     "issue a reconnect because %s is set to true",
                             hostUuid, HostGlobalProperty.AUTO_RECONNECT_ON_ERROR.toString()));
+
                     ReconnectHostMsg msg = new ReconnectHostMsg();
                     msg.setHostUuid(hostUuid);
                     msg.setSkipIfHostConnected(true);
@@ -120,6 +125,8 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                         }
                     });
                 }
+            } else {
+                reconnectTimes.remove(hostUuid);
             }
         }
 

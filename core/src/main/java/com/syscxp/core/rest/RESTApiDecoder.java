@@ -6,6 +6,7 @@ import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.APINoSee;
+import com.syscxp.header.rest.APINoSession;
 import com.syscxp.header.rest.APIWithSession;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.GsonTypeCoder;
@@ -67,7 +68,7 @@ public class RESTApiDecoder {
         public boolean shouldSkipField(FieldAttributes f) {
             if (f.getAnnotation(APIWithSession.class) != null)
                 return false;
-            return f.getAnnotation(APINoSee.class) != null;
+            return f.getAnnotation(APINoSee.class) != null || f.getAnnotation(APINoSession.class) != null;
         }
     }
 

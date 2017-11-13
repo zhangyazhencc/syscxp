@@ -5,7 +5,7 @@ import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePagePayRequest;
-import com.syscxp.billing.AlipayGlobalProperty;
+import com.syscxp.billing.BillingGlobalProperty;
 import com.syscxp.billing.header.balance.*;
 import com.syscxp.header.billing.ProductCategoryVO;
 import com.syscxp.header.billing.ProductCategoryVO_;
@@ -435,7 +435,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
     }
 
     private void handle(APIGetAccountBalanceMsg msg) {
-        AccountBalanceVO vo = dbf.findByUuid(msg.getSession().getAccountUuid(), AccountBalanceVO.class);
+        AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         AccountBalanceInventory inventory = AccountBalanceInventory.valueOf(vo);
         APIGetAccountBalanceReply reply = new APIGetAccountBalanceReply();
         reply.setInventory(inventory);
@@ -477,10 +477,10 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
         vo.setAccountUuid(accountUuid);
         vo.setOpAccountUuid(msg.getSession().getAccountUuid());
         dbf.persistAndRefresh(vo);
-        AlipayClient alipayClient = new DefaultAlipayClient(AlipayGlobalProperty.GATEWAYURL, AlipayGlobalProperty.APP_ID, AlipayGlobalProperty.MERCHANT_PRIVATE_KEY, "json", AlipayGlobalProperty.CHARSET, AlipayGlobalProperty.ALIPAY_PUBLIC_KEY, AlipayGlobalProperty.SIGN_TYPE);
+        AlipayClient alipayClient = new DefaultAlipayClient(BillingGlobalProperty.GATEWAYURL, BillingGlobalProperty.APP_ID, BillingGlobalProperty.MERCHANT_PRIVATE_KEY, "json", BillingGlobalProperty.CHARSET, BillingGlobalProperty.ALIPAY_PUBLIC_KEY, BillingGlobalProperty.SIGN_TYPE);
         AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();
-        alipayRequest.setReturnUrl(AlipayGlobalProperty.RETURN_URL);
-        alipayRequest.setNotifyUrl(AlipayGlobalProperty.NOTIFY_URL);
+        alipayRequest.setReturnUrl(BillingGlobalProperty.RETURN_URL);
+        alipayRequest.setNotifyUrl(BillingGlobalProperty.NOTIFY_URL);
         Map<String, String> param = new HashMap<>();
         param.put("out_trade_no", outTradeNO);
         param.put("total_amount", total.toString());
@@ -507,7 +507,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
         APIVerifyNotifyReply reply = new APIVerifyNotifyReply();
         boolean signVerified = false;
         try {
-            signVerified = AlipaySignature.rsaCheckV1(param, AlipayGlobalProperty.ALIPAY_PUBLIC_KEY, AlipayGlobalProperty.CHARSET, AlipayGlobalProperty.SIGN_TYPE); //调用SDK验证签名
+            signVerified = AlipaySignature.rsaCheckV1(param, BillingGlobalProperty.ALIPAY_PUBLIC_KEY, BillingGlobalProperty.CHARSET, BillingGlobalProperty.SIGN_TYPE); //调用SDK验证签名
         } catch (AlipayApiException e) {
             logger.error(e.getErrMsg());
             reply.setInventory(false);
@@ -525,7 +525,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
             q.add(DealDetailVO_.state, SimpleQuery.Op.EQ, DealState.SUCCESS);
             DealDetailVO dealDetailVO = q.find();
 
-            if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(AlipayGlobalProperty.SELLER_ID) || !app_id.equals(AlipayGlobalProperty.APP_ID)) {
+            if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(BillingGlobalProperty.SELLER_ID) || !app_id.equals(BillingGlobalProperty.APP_ID)) {
                 reply.setInventory(false);
                 bus.reply(msg, reply);
                 return;
@@ -587,7 +587,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
         APIVerifyReturnReply reply = new APIVerifyReturnReply();
         boolean signVerified = false;
         try {
-            signVerified = AlipaySignature.rsaCheckV1(param, AlipayGlobalProperty.ALIPAY_PUBLIC_KEY, AlipayGlobalProperty.CHARSET, AlipayGlobalProperty.SIGN_TYPE); //调用SDK验证签名
+            signVerified = AlipaySignature.rsaCheckV1(param, BillingGlobalProperty.ALIPAY_PUBLIC_KEY, BillingGlobalProperty.CHARSET, BillingGlobalProperty.SIGN_TYPE); //调用SDK验证签名
         } catch (AlipayApiException e) {
             logger.error(e.getErrMsg());
             reply.setInventory(false);
@@ -603,7 +603,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
             q.add(DealDetailVO_.outTradeNO, SimpleQuery.Op.EQ, out_trade_no);
             DealDetailVO dealDetailVO = q.find();
 
-            if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(AlipayGlobalProperty.SELLER_ID) || !app_id.equals(AlipayGlobalProperty.APP_ID)) {
+            if (dealDetailVO == null || dealDetailVO.getIncome().setScale(2).compareTo(new BigDecimal(total_amount)) != 0 || !seller_id.equals(BillingGlobalProperty.SELLER_ID) || !app_id.equals(BillingGlobalProperty.APP_ID)) {
                 reply.setInventory(false);
                 bus.reply(msg, reply);
                 return;

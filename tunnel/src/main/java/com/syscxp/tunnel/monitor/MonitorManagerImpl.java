@@ -692,27 +692,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
     }
 
-    /**
-     * 获取tunnel两端监控ip与监控端口
-     *
-     * @param monitorIp：监控IP集合
-     * @param monitorPort：监控端口集合
-     */
-    private void getIpPort(String tunnelUuid, Map<String, String> monitorIp, Map<String, String> monitorPort) {
-        String monitorHostSql = "select b.interfaceType,b.monitorIp,k.physicalSwitchPortName\n" +
-                "  from TunnelMonitorVO a,TunnelMonitorInterfaceVO b,HostSwitchMonitorVO k\n" +
-                " where b.tunnelMonitorUuid = a.uuid\n" +
-                "   and k.hostUuid = b.hostUuid\n" +
-                "   and a.tunnelUuid = :tunnelUuid";
-        TypedQuery<Tuple> monitorHostQ = dbf.getEntityManager().createQuery(monitorHostSql, Tuple.class);
-        monitorHostQ.setParameter("tunnelUuid", tunnelUuid);
-
-        for (Tuple monitor : monitorHostQ.getResultList()) {
-            monitorIp.put(monitor.get(0).toString(), monitor.get(1, String.class));
-            monitorPort.put(monitor.get(0).toString(), monitor.get(2, String.class));
-        }
-    }
-
     /***
      * tunnel修改switch port，修改unnelMonitorVO.hostUuid
      */
