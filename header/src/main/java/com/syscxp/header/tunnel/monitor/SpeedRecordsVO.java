@@ -25,16 +25,10 @@ public class SpeedRecordsVO {
     private String tunnelUuid;
 
     @Column
-    private String srcHostUuid;
+    private String srcTunnelMonitorUuid;
 
     @Column
-    private String srcMonitorIp;
-
-    @Column
-    private String dstHostUuid;
-
-    @Column
-    private String dstMonitorIp;
+    private String dstTunnelMonitorUuid;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -53,7 +47,7 @@ public class SpeedRecordsVO {
     private Integer minSpeed;
 
     @Column
-    private Integer completed;
+    private SpeedRecordStatus status;
 
     @Column
     private Timestamp lastOpDate;
@@ -80,38 +74,6 @@ public class SpeedRecordsVO {
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
-    }
-
-    public String getSrcHostUuid() {
-        return srcHostUuid;
-    }
-
-    public void setSrcHostUuid(String srcHostUuid) {
-        this.srcHostUuid = srcHostUuid;
-    }
-
-    public String getSrcMonitorIp() {
-        return srcMonitorIp;
-    }
-
-    public void setSrcMonitorIp(String srcMonitorIp) {
-        this.srcMonitorIp = srcMonitorIp;
-    }
-
-    public String getDstHostUuid() {
-        return dstHostUuid;
-    }
-
-    public void setDstHostUuid(String dstHostUuid) {
-        this.dstHostUuid = dstHostUuid;
-    }
-
-    public String getDstMonitorIp() {
-        return dstMonitorIp;
-    }
-
-    public void setDstMonitorIp(String dstMonitorIp) {
-        this.dstMonitorIp = dstMonitorIp;
     }
 
     public ProtocolType getProtocolType() {
@@ -154,12 +116,12 @@ public class SpeedRecordsVO {
         this.minSpeed = minSpeed;
     }
 
-    public Integer getCompleted() {
-        return completed;
+    public SpeedRecordStatus getStatus() {
+        return status;
     }
 
-    public void setCompleted(Integer completed) {
-        this.completed = completed;
+    public void setStatus(SpeedRecordStatus status) {
+        this.status = status;
     }
 
     public Timestamp getLastOpDate() {
@@ -176,5 +138,21 @@ public class SpeedRecordsVO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public String getSrcTunnelMonitorUuid() {
+        return srcTunnelMonitorUuid;
+    }
+
+    public void setSrcTunnelMonitorUuid(String srcTunnelMonitorUuid) {
+        this.srcTunnelMonitorUuid = srcTunnelMonitorUuid;
+    }
+
+    public String getDstTunnelMonitorUuid() {
+        return dstTunnelMonitorUuid;
+    }
+
+    public void setDstTunnelMonitorUuid(String dstTunnelMonitorUuid) {
+        this.dstTunnelMonitorUuid = dstTunnelMonitorUuid;
     }
 }

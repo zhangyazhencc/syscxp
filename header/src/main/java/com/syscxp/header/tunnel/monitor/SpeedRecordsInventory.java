@@ -16,16 +16,14 @@ import java.util.List;
 public class SpeedRecordsInventory {
     private String uuid;
     private String tunnelUuid;
-    private String srcHostUuid;
-    private String srcMonitorIp;
-    private String dstHostUuid;
-    private String dstMonitorIp;
+    private String srcTunnelMonitorUuid;
+    private String dstTunnelMonitorUuid;
     private ProtocolType protocolType;
     private Integer duration;
     private Integer avgSpeed;
     private Integer maxSpeed;
     private Integer minSpeed;
-    private Integer completed;
+    private SpeedRecordStatus status;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -33,16 +31,14 @@ public class SpeedRecordsInventory {
         SpeedRecordsInventory inventory = new SpeedRecordsInventory();
         inventory.setUuid(vo.getUuid());
         inventory.setTunnelUuid(vo.getTunnelUuid());
-        inventory.setSrcHostUuid(vo.getSrcHostUuid());
-        inventory.setSrcMonitorIp(vo.getSrcMonitorIp());
-        inventory.setDstHostUuid(vo.getDstHostUuid());
-        inventory.setDstMonitorIp(vo.getDstMonitorIp());
+        inventory.setSrcTunnelMonitorUuid(vo.getSrcTunnelMonitorUuid());
+        inventory.setDstTunnelMonitorUuid(vo.getDstTunnelMonitorUuid());
         inventory.setProtocolType(vo.getProtocolType());
         inventory.setDuration(vo.getDuration());
         inventory.setAvgSpeed(vo.getAvgSpeed());
         inventory.setMaxSpeed(vo.getMaxSpeed());
         inventory.setMinSpeed(vo.getMinSpeed());
-        inventory.setCompleted(vo.getCompleted());
+        inventory.setStatus(vo.getStatus());
         inventory.setLastOpDate(vo.getLastOpDate());
         inventory.setCreateDate(vo.getCreateDate());
 
@@ -76,36 +72,20 @@ public class SpeedRecordsInventory {
         this.tunnelUuid = tunnelUuid;
     }
 
-    public String getSrcHostUuid() {
-        return srcHostUuid;
+    public String getSrcTunnelMonitorUuid() {
+        return srcTunnelMonitorUuid;
     }
 
-    public void setSrcHostUuid(String srcHostUuid) {
-        this.srcHostUuid = srcHostUuid;
+    public void setSrcTunnelMonitorUuid(String srcTunnelMonitorUuid) {
+        this.srcTunnelMonitorUuid = srcTunnelMonitorUuid;
     }
 
-    public String getSrcMonitorIp() {
-        return srcMonitorIp;
+    public String getDstTunnelMonitorUuid() {
+        return dstTunnelMonitorUuid;
     }
 
-    public void setSrcMonitorIp(String srcMonitorIp) {
-        this.srcMonitorIp = srcMonitorIp;
-    }
-
-    public String getDstHostUuid() {
-        return dstHostUuid;
-    }
-
-    public void setDstHostUuid(String dstHostUuid) {
-        this.dstHostUuid = dstHostUuid;
-    }
-
-    public String getDstMonitorIp() {
-        return dstMonitorIp;
-    }
-
-    public void setDstMonitorIp(String dstMonitorIp) {
-        this.dstMonitorIp = dstMonitorIp;
+    public void setDstTunnelMonitorUuid(String dstTunnelMonitorUuid) {
+        this.dstTunnelMonitorUuid = dstTunnelMonitorUuid;
     }
 
     public ProtocolType getProtocolType() {
@@ -148,12 +128,12 @@ public class SpeedRecordsInventory {
         this.minSpeed = minSpeed;
     }
 
-    public Integer getCompleted() {
-        return completed;
+    public SpeedRecordStatus getStatus() {
+        return status;
     }
 
-    public void setCompleted(Integer completed) {
-        this.completed = completed;
+    public void setStatus(SpeedRecordStatus status) {
+        this.status = status;
     }
 
     public Timestamp getLastOpDate() {
