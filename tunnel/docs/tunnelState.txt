@@ -62,8 +62,8 @@ boss:开通，强制删除 | 页面显示开通失败，未连接 | 继续点开
 ############################################################################################
 
 删除：只有state=Enabled
-1.退订失败：不变
-2.退订成功
+1.billing退订失败：不变
+2.billing退订成功
     解绑account
     下发删除：
         成功：删除tunnelVO及其相关表
@@ -81,10 +81,10 @@ boss:开通，强制删除 | 页面显示开通失败，未连接 | 继续点开
 state           status          nass展示          nass后续操作                boss展示              boss后续操作
 
 Unpaid          Disconnected    无记录            无操作                      未支付，未连接         无操作
-Deployfailure   Disconnected    开通中，未连接     无操作                      开通失败，未连接       开通，强制删除
-Enabled         Connected       开通，已连接      续费，中止，调整带宽，删除     开通，已连接           续费，中止，调整带宽，删除，修改内部VLAN（仅QINQ通道），修改外部VLAN，强制删除
+Deployfailure   Disconnected    开通中，未连接     无操作                      开通失败，未连接       开通/，强制删除
+Enabled         Connected       开通，已连接      续费，关闭连接，调整带宽，删除     开通，已连接           续费，关闭连接，调整带宽，删除，修改内部VLAN（仅QINQ通道），修改外部VLAN，强制删除
 Enabled         Disconnected    开通，未连接      续费，删除                   开通，未连接           续费，删除，强制删除
-Disabled        Disconnected    中止，未连接      续费，恢复链接                中止，未连接          续费，恢复链接，强制删除
+Disabled        Disconnected    已关闭，未连接      续费，恢复链接，删除        已关闭，未连接          续费，恢复链接，删除，强制删除
 
 
 
