@@ -8,7 +8,7 @@ import com.syscxp.header.rest.RestResponse;
  * Create by DCY on 2017/9/28
  */
 @RestResponse(allTo = "inventory")
-public class APIUpdateInterfaceExpireDateReply extends APIReply {
+public class APIUpdateInterfaceExpireDateReply extends APIUpdateExpireDateReply {
     private InterfaceInventory inventory;
 
     public InterfaceInventory getInventory() {
