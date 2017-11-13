@@ -18,14 +18,11 @@ public class RoleInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    private List<PolicyInventory> permissions;
-
     public static RoleInventory valueOf(RoleVO vo) {
         RoleInventory inv = new RoleInventory();
         inv.setName(vo.getName());
         inv.setUuid(vo.getUuid());
         inv.setDescription(vo.getDescription());
-        inv.setPermissions(PolicyInventory.valueOf(vo.getPolicySet()));
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -39,8 +36,6 @@ public class RoleInventory {
         }
         return invs;
     }
-
-
 
     public String getAccountUuid() {
         return accountUuid;
@@ -90,11 +85,4 @@ public class RoleInventory {
         this.lastOpDate = lastOpDate;
     }
 
-    public List<PolicyInventory> getPermissions() {
-        return permissions;
-    }
-
-    public void setPermissions(List<PolicyInventory> permissions) {
-        this.permissions = permissions;
-    }
 }

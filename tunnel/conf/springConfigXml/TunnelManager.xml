@@ -27,7 +27,7 @@
 
     </bean>
 
-    <bean id="TunnelManager" class="com.syscxp.tunnel.manage.TunnelManagerImpl">
+    <bean id="TunnelManager" class="com.syscxp.tunnel.tunnel.TunnelManagerImpl">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.header.Component"/>
             <syscxp:extension interface="com.syscxp.header.Service"/>
@@ -35,7 +35,7 @@
         </syscxp:plugin>
     </bean>
 
-    <bean id="TunnelSubQueryExtension" class="com.syscxp.tunnel.manage.TunnelSubQueryExtension">
+    <bean id="TunnelSubQueryExtension" class="com.syscxp.tunnel.tunnel.TunnelSubQueryExtension">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.query.MysqlQuerySubQueryExtension"/>
         </syscxp:plugin>

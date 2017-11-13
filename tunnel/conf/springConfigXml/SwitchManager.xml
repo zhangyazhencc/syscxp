@@ -20,7 +20,7 @@
 
     </bean>-->
 
-    <bean id="SwitchManager" class="com.syscxp.tunnel.manage.SwitchManagerImpl">
+    <bean id="SwitchManager" class="com.syscxp.tunnel.switchs.SwitchManagerImpl">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.header.Component"/>
             <syscxp:extension interface="com.syscxp.header.Service"/>

@@ -20,7 +20,7 @@
 
         <property name="resourceTypeForAccountRef">
             <list>
-                <value>com.syscxp.alarm.header.resourcePolicy.ResourceVO</value>
+                <value>com.syscxp.alarm.header.resourcePolicy.PolicyVO</value>
             </list>
         </property>
     </bean>

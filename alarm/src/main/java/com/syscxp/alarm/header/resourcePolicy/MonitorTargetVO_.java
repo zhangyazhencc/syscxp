@@ -9,7 +9,7 @@ import javax.persistence.metamodel.StaticMetamodel;
 @StaticMetamodel( MonitorTargetVO.class)
 public class MonitorTargetVO_  extends BaseVO_{
 
-    public static volatile SingularAttribute<ResourceVO, ProductType> productType;
-    public static volatile SingularAttribute<ResourceVO, String> targetName;
-    public static volatile SingularAttribute<ResourceVO, String> targetValue;
+    public static volatile SingularAttribute<MonitorTargetVO, ProductType> productType;
+    public static volatile SingularAttribute<MonitorTargetVO, String> targetName;
+    public static volatile SingularAttribute<MonitorTargetVO, String> targetValue;
 }

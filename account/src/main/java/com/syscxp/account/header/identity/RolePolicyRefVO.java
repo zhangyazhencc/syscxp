@@ -6,6 +6,7 @@ import com.syscxp.header.vo.ForeignKey.ReferenceOption;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.Set;
 
 @Entity
 @Table
@@ -25,6 +26,10 @@ public class RolePolicyRefVO {
 
     @Column
     private Timestamp createDate;
+
+    @ManyToOne(cascade = CascadeType.REFRESH)
+    @JoinColumn(name="policyUuid",insertable=false,updatable=false)
+    private PolicyVO policy;
 
     public long getId() {
         return id;
@@ -56,5 +61,13 @@ public class RolePolicyRefVO {
 
     public String getPolicyUuid() {
         return policyUuid;
+    }
+
+    public PolicyVO getPolicy() {
+        return policy;
+    }
+
+    public void setPolicy(PolicyVO policy) {
+        this.policy = policy;
     }
 }
