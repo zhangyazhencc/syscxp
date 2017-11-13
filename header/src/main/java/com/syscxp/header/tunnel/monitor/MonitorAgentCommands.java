@@ -128,6 +128,47 @@ public class MonitorAgentCommands {
         }
     }
 
+    /***
+     * 测速结果
+     */
+    public static class SpeedResult{
+        private String tunnel_id;
+        private boolean complete_flag;
+        private float iperf_data;
+        private String time_stamp;
+
+        public String getTunnel_id() {
+            return tunnel_id;
+        }
+
+        public void setTunnel_id(String tunnel_id) {
+            this.tunnel_id = tunnel_id;
+        }
+
+        public boolean isComplete_flag() {
+            return complete_flag;
+        }
+
+        public void setComplete_flag(boolean complete_flag) {
+            this.complete_flag = complete_flag;
+        }
+
+        public float getIperf_data() {
+            return iperf_data;
+        }
+
+        public void setIperf_data(float iperf_data) {
+            this.iperf_data = iperf_data;
+        }
+
+        public String getTime_stamp() {
+            return time_stamp;
+        }
+
+        public void setTime_stamp(String time_stamp) {
+            this.time_stamp = time_stamp;
+        }
+    }
     /**
      * 获取端口
      * @return
