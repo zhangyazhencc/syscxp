@@ -519,6 +519,7 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIUpdateAccountMsg msg) {
 
         AccountVO account = dbf.findByUuid(msg.getUuid(), AccountVO.class);
+        APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
 
         boolean update = false;
         if (msg.getCompany() != null) {
@@ -553,11 +554,30 @@ public class AccountBase extends AbstractAccount {
 
 //        if (msg.getSession().getType() == AccountType.SystemAdmin) {
         if (msg.getSession().getType().toString().equals(AccountType.SystemAdmin.toString())) {
+
             if (msg.getStatus() != null) {
                 account.setStatus(msg.getStatus());
             }
             if (msg.getType() != null) {
-                account.setType(AccountType.valueOf(msg.getType()));
+
+                if(msg.getType().equals(AccountType.Proxy.toString()) &&
+                        dbf.createQuery(ProxyAccountRefVO.class).add(ProxyAccountRefVO_.customerAccountUuid,
+                                SimpleQuery.Op.EQ,msg.getUuid()).isExists()){
+                    evt.setError(Platform.argerr("先解绑此账户[%s]",msg.getUuid()));
+                }else{
+                    account.setType(AccountType.valueOf(msg.getType()));
+                }
+
+                if(msg.getType().equals(AccountType.Normal.toString()) &&
+                        dbf.createQuery(ProxyAccountRefVO.class).add(ProxyAccountRefVO_.accountUuid,
+                                SimpleQuery.Op.EQ,msg.getUuid()).isExists()){
+                    dbf.removeCollection(dbf.createQuery(ProxyAccountRefVO.class).add(ProxyAccountRefVO_.accountUuid,
+                            SimpleQuery.Op.EQ,msg.getUuid()).list(),ProxyAccountRefVO.class);
+                    account.setType(AccountType.valueOf(msg.getType()));
+                }
+
+
+
             }
 
             if (msg.getGrade() != null) {
@@ -572,7 +592,6 @@ public class AccountBase extends AbstractAccount {
             account = dbf.getEntityManager().merge(account);
         }
 
-        APIUpdateAccountEvent evt = new APIUpdateAccountEvent(msg.getId());
         evt.setInventory(AccountInventory.valueOf(account));
         bus.publish(evt);
 
