@@ -34,35 +34,12 @@
         <property name="repeatCount" value="1" />
     </bean>
 
-    <bean name="renewJob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
-        <property name="name" value="renew_job"/>
-        <property name="group" value="renew_group"/>
-        <property name="jobClass" value="com.syscxp.billing.header.renew.RenewJob"/>
-        <property name="jobDataAsMap">
-            <map>
-                <entry key="databaseFacade" value-ref="databaseFacade"/>
-            </map>
-        </property>
-
-        <property name="durability" value="true"/>
-    </bean>
-
-    <bean id="renewCronTrigger" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
-        <property name="name" value="renew_trigger"/>
-        <property name="group" value="renew_trigger_group"/>
-        <property name="jobDetail" ref="renewJob"/>
-        <property name="cronExpression" value="0 0 */6 * * ?" />
-        <property name="timeZone">
-            <value>GMT+8:00</value>
-        </property>
-    </bean>
 
     <bean id="scheduler" class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
         <property name="triggers">
             <list>
                 <ref bean="billCronTrigger"/>
                 <ref bean="taskJobTrigger"/>
-                <ref bean="renewCronTrigger"/>
             </list>
         </property>
         <property name="applicationContextSchedulerContextKey" value="applicationContext" />
