@@ -15,6 +15,9 @@ public class TaskResourceVO {
     private String uuid;
 
     @Column
+    private String accountUuid;
+
+    @Column
     private String resourceUuid;
 
     @Column
@@ -115,5 +118,13 @@ public class TaskResourceVO {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

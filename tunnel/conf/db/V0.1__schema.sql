@@ -379,6 +379,7 @@ CREATE TABLE `syscxp_tunnel`.`ResourceOrderEffectiveVO` (
 ##产品下发任务表
 CREATE TABLE `syscxp_tunnel`.`TaskResourceVO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `accountUuid` varchar(32) NOT NULL COMMENT '资源所属UUID',
   `resourceUuid` varchar(32) NOT NULL COMMENT '产品UUID',
   `resourceType` varchar(255) NOT NULL COMMENT '产品表名',
   `taskType` varchar(255) NOT NULL COMMENT '任务类型',

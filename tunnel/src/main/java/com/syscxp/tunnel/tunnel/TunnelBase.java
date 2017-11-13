@@ -70,8 +70,6 @@ public class TunnelBase extends AbstractTunnel {
             handle((ModifyTunnelBandwidthMsg) msg);
         }else if(msg instanceof ModifyTunnelPortsMsg){
             handle((ModifyTunnelPortsMsg) msg);
-        }else if(msg instanceof ReCallControllerMsg){
-            handle((ReCallControllerMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
@@ -174,6 +172,14 @@ public class TunnelBase extends AbstractTunnel {
 
                 tunnelVO.setState(TunnelState.Enabled);
                 tunnelVO.setStatus(TunnelStatus.Connected);
+
+                if(tunnelVO.getExpireDate()==null){
+                    if(tunnelVO.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+                        tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(tunnelVO.getDuration())));
+                    }else if(tunnelVO.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+                        tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(tunnelVO.getDuration())));
+                    }
+                }
 
                 dbf.updateAndRefresh(tunnelVO);
 
@@ -294,170 +300,6 @@ public class TunnelBase extends AbstractTunnel {
                 dbf.updateAndRefresh(taskResourceVO);
             }
         });
-    }
-
-    private void handle(ReCallControllerMsg msg){
-        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
-        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
-
-        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
-
-        switch(taskResourceVO.getTaskType()){
-            case Create:
-                crf.sendCommand(ControllerRestConstant.START_TUNNEL, taskResourceVO.getBody(), new Completion(null) {
-                    @Override
-                    public void success() {
-                        logger.info("下发创建成功！");
-
-                        //修改产品状态,设置到期时间
-                        tunnelVO.setState(TunnelState.Enabled);
-                        tunnelVO.setStatus(TunnelStatus.Connected);
-                        if(tunnelVO.getProductChargeModel() == ProductChargeModel.BY_MONTH){
-                            tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(tunnelVO.getDuration())));
-                        }else if(tunnelVO.getProductChargeModel() == ProductChargeModel.BY_YEAR){
-                            tunnelVO.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(tunnelVO.getDuration())));
-                        }
-                        dbf.updateAndRefresh(tunnelVO);
-
-                        //更新任务状态
-                        taskResourceVO.setStatus(TaskStatus.Success);
-                        taskResourceVO.setResult(null);
-                        dbf.updateAndRefresh(taskResourceVO);
-                    }
-
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        logger.info("下发创建失败！");
-
-                        //更新任务状态
-                        taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
-                        dbf.updateAndRefresh(taskResourceVO);
-                    }
-                });
-                break;
-            case Delete:
-                crf.sendCommand(ControllerRestConstant.STOP_TUNNEL, taskResourceVO.getBody(), new Completion(null) {
-                    @Override
-                    public void success() {
-                        logger.info("下发删除成功！");
-
-                        deleteTunnel(tunnelVO);
-
-                        //更新任务状态
-                        taskResourceVO.setStatus(TaskStatus.Success);
-                        taskResourceVO.setResult(null);
-                        dbf.updateAndRefresh(taskResourceVO);
-                    }
-
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        logger.info("下发删除失败！");
-
-                        //更新任务状态
-                        taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
-                        dbf.updateAndRefresh(taskResourceVO);
-                    }
-                });
-                break;
-            case Enabled:
-                crf.sendCommand(ControllerRestConstant.START_TUNNEL, taskResourceVO.getBody(), new Completion(null) {
-                    @Override
-                    public void success() {
-                        logger.info("下发启用成功！");
-
-                        tunnelVO.setState(TunnelState.Enabled);
-                        tunnelVO.setStatus(TunnelStatus.Connected);
-
-                        dbf.updateAndRefresh(tunnelVO);
-
-                        //更新任务状态
-                        taskResourceVO.setStatus(TaskStatus.Success);
-                        taskResourceVO.setResult(null);
-                        dbf.updateAndRefresh(taskResourceVO);
-                    }
-
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        logger.info("下发启用失败！");
-
-                        //更新任务状态
-                        taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
-                        dbf.updateAndRefresh(taskResourceVO);
-                    }
-                });
-                break;
-            case Disabled:
-                crf.sendCommand(ControllerRestConstant.STOP_TUNNEL, taskResourceVO.getBody(), new Completion(null) {
-                    @Override
-                    public void success() {
-                        logger.info("下发禁用成功！");
-
-                        tunnelVO.setState(TunnelState.Disabled);
-                        tunnelVO.setStatus(TunnelStatus.Disconnected);
-
-                        dbf.updateAndRefresh(tunnelVO);
-
-                        //更新任务状态
-                        taskResourceVO.setStatus(TaskStatus.Success);
-                        taskResourceVO.setResult(null);
-                        dbf.updateAndRefresh(taskResourceVO);
-                    }
-
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        logger.info("下发禁用失败！");
-
-                        //更新任务状态
-                        taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
-                        dbf.updateAndRefresh(taskResourceVO);
-                    }
-                });
-                break;
-            case ModifyBandwidth:
-                crf.sendCommand(ControllerRestConstant.MODIFY_TUNNEL_BANDWIDTH, taskResourceVO.getBody(), new Completion(null) {
-                    @Override
-                    public void success() {
-                        logger.info("下发调整带宽成功！");
-
-                        //更新任务状态
-                        taskResourceVO.setStatus(TaskStatus.Success);
-                        taskResourceVO.setResult(null);
-                        dbf.updateAndRefresh(taskResourceVO);
-                    }
-
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        logger.info("下发调整带宽失败！");
-
-                        //更新任务状态
-                        taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
-                        dbf.updateAndRefresh(taskResourceVO);
-                    }
-                });
-                break;
-            case ModifyPorts:
-                crf.sendCommand(ControllerRestConstant.MODIFY_TUNNEL_PORTS, taskResourceVO.getBody(), new Completion(null) {
-                    @Override
-                    public void success() {
-                        logger.info("下发更改端口成功！");
-
-                        //更新任务状态
-                        taskResourceVO.setStatus(TaskStatus.Success);
-                        taskResourceVO.setResult(null);
-                        dbf.updateAndRefresh(taskResourceVO);
-                    }
-
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        logger.info("下发更改端口失败！");
-
-                        //更新任务状态
-                        taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
-                        dbf.updateAndRefresh(taskResourceVO);
-                    }
-                });
-                break;
-        }
     }
 
     @Transactional
