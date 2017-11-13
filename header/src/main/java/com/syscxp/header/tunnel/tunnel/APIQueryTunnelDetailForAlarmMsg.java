@@ -14,7 +14,6 @@ import java.util.List;
  * Created by DCY on 2017-09-17
  */
 @Action(category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
-@AutoQuery(replyClass = APIQueryTunnelDetailForAlarmReply.class, inventoryClass = TunnelForAlarmInventory.class)
 @InnerCredentialCheck
 public class APIQueryTunnelDetailForAlarmMsg extends APISyncCallMessage {
     @APIParam(emptyString = false,maxLength = 32)
