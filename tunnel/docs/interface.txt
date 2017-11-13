@@ -31,3 +31,22 @@
 	    1.未支付超过3天——删除数据库
 	    2.过期超过3天——下发关闭
 	    3.过期超过10天——删除数据库
+
+5.host部署流程
+	新建：	1.保存数据库，状态Enabled，Connecting
+			2.发送ConnectHostMsg
+			3.失败删除信息
+	重连：	1.发送ReconnectHostMsg:
+				1.修改状态disconnected
+				2.发送ConnectHostMsg
+
+	ConnectHostMsg处理：
+			1.host访问management
+			2.运行ansible部署
+			3.部署完成，echo访问agent
+			4.修改防火墙，成功修改状态connected
+			5.错误：修改状态disconnected
+	PingHostMsg处理:
+			1.调用/host/ping
+			2.失败，修改状态disconnected
+			3.发送ReconnectHostMsg

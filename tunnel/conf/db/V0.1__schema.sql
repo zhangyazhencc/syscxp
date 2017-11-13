@@ -546,6 +546,7 @@ CREATE TABLE  `syscxp_tunnel`.`MonitorHostVO` (
 	`username` varchar(128) NOT NULL COMMENT '用户名',
 	`password` varchar(128) NOT NULL COMMENT '密码',
 	`sshPort` INT NOT NULL DEFAULT 22 COMMENT 'ssh端口',
+  `monitorType` VARCHAR(32) DEFAULT 'TUNNEL',
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
