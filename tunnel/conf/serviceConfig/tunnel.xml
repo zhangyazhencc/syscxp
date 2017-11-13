@@ -132,4 +132,9 @@
         <serviceId>query</serviceId>
     </message>
 
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIQueryQinqMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
 </service>

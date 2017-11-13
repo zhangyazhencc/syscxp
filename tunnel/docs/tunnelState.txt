@@ -1,0 +1,78 @@
+创建:
+
+1.支付失败：expireDate=当前时间 state=Unpaid status=Disconnected
+nass:用户看不到
+boss:没有操作，交给定时任务去删除 | 页面显示未支付，未连接
+
+2.创建成功：state=Enabled status=Connected expireDate=当前时间+时长
+nass:续费，中止，调整带宽，删除  | 页面显示开通，已连接
+boss:续费，中止，调整带宽，删除，修改内部VLAN，修改外部VLAN，强制删除 | 页面显示开通，已连接
+
+3.创建失败：state=Deployfailure status=Disconnected expireDate=当前时间
+nass:没有操作  | 页面显示开通中，未连接
+boss:开通，强制删除 | 页面显示开通失败，未连接 | 继续点开通，如果确认无法开通，点强制删除（退订删除资源）
+
+#################################################################################################
+
+续费:只有state=Enabled/Disabled
+
+1.成功：修改expireDate
+2.失败：不变
+
+#################################################################################################
+
+恢复链接:只有state=Disabled status=Disconnected
+1.成功：state=Enabled status=Connected
+2.失败：不变
+
+#################################################################################################
+
+中止：只有state=Enabled status=Connected
+1.成功：state=Disabled status=Disconnected
+2.失败：不变
+
+################################################################################################
+
+调整带宽：只有state=Enabled status=Connected
+1.支付成功：修改带宽，下发
+    下发成功：即成功
+    下发失败：不变（暂时默认已经修改了带宽）
+2.支付失败：带宽不变
+
+################################################################################################
+
+开通：只有state=Deployfailure status=Disconnected
+1.成功：state=Enabled status=Connected expireDate=当前时间+时长
+2.失败：不变
+
+################################################################################################
+
+修改外部VLAN：只有state=Enabled status=Connected
+1.成功：state=Enabled status=Connected expireDate=当前时间+时长
+2.失败：不变
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

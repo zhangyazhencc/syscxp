@@ -10,6 +10,7 @@ import java.sql.Timestamp;
 @StaticMetamodel(TaskResourceVO.class)
 public class TaskResourceVO_ {
     public static volatile SingularAttribute<TaskResourceVO, String> uuid;
+    public static volatile SingularAttribute<TaskResourceVO, String> accountUuid;
     public static volatile SingularAttribute<TaskResourceVO, String> resourceUuid;
     public static volatile SingularAttribute<TaskResourceVO, String> resourceType;
     public static volatile SingularAttribute<TaskResourceVO, TaskType> taskType;
