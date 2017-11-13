@@ -403,7 +403,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         Timestamp startTime = msg.getStartTime();
         Timestamp endTime = msg.getExpiredTime();
-        long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
+        long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24)-1;
         SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
         query.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         query.add(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
@@ -545,9 +545,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         Timestamp startTime = msg.getStartTime();
         Timestamp endTime = msg.getExpiredTime();
-        long useDays = Math.abs(currentTimestamp.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
         long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
-        long days = Math.abs(endTime.getTime() - startTime.getTime()) / (1000 * 60 * 60 * 24);
 
         SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
         query.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
