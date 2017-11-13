@@ -4,7 +4,12 @@ import com.syscxp.billing.BillingGlobalProperty;
 import com.syscxp.billing.header.sla.*;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.rest.RestAPIResponse;
+import com.syscxp.header.rest.RestAPIState;
+import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateMsg;
+import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateReply;
+import com.syscxp.header.tunnel.tunnel.APIUpdateInterfaceExpireDateMsg;
 import com.syscxp.header.tunnel.tunnel.APIUpdateTunnelExpireDateMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
@@ -23,6 +28,7 @@ import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 
@@ -71,8 +77,6 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
 
     private void handle(APIUpdateSLACompensateStateMsg msg) {
         SLACompensateVO slaCompensateVO = dbf.findByUuid(msg.getUuid(), SLACompensateVO.class);
-        String productUuid = slaCompensateVO.getProductUuid();
-        //todo get product expired
         if(msg.getState() == SLAState.APPLIED){
             Timestamp expiredTime = dbf.getCurrentSqlTime();
             Timestamp endTime = new Timestamp(expiredTime.getTime()+slaCompensateVO.getDuration()*24*60*60*1000);
@@ -86,55 +90,28 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
                 throw new RuntimeException("you have not the permission to do this");
             }
 
-            APIUpdateTunnelExpireDateMsg aMsg = new APIUpdateTunnelExpireDateMsg();
+            ProductCaller caller = new ProductCaller(slaCompensateVO.getProductType());
+            APIUpdateExpireDateMsg aMsg = new APIUpdateExpireDateMsg();
+
             aMsg.setUuid(slaCompensateVO.getProductUuid());
             aMsg.setDuration(slaCompensateVO.getDuration());
             aMsg.setProductChargeModel(ProductChargeModel.BY_DAY);
             aMsg.setType(OrderType.SLA_COMPENSATION);
+            aMsg.setAccountUuid(msg.getSession().getAccountUuid());
             aMsg.setSession(msg.getSession());
 
-            String productServerUrl = getProductUrl(slaCompensateVO.getProductType());
             String gstr = RESTApiDecoder.dumpWithSession(aMsg);
-            RestAPIResponse rsp = restf.syncJsonPost(productServerUrl, gstr, RestAPIResponse.class);
-//            if (rsp.getState().equals(RestAPIState.Done.toString())) {
-//                try {
-//                    APIUpdateTunnelExpireDateReply productReply = (APIQueryTunnelForAlarmReply) RESTApiDecoder.loads(rsp.getResult());//todo rename reply name and refactor field for other product
-//                    if (productReply instanceof APIQueryTunnelForAlarmReply) {
-//                        List<TunnelForAlarmInventory> tunnelList = productReply.getInventories();
-//                        map.put("count", productReply.getCount());
-//                        for (TunnelForAlarmInventory inventory : tunnelList) {
-//                            ResourceInventory resourceInventory = new ResourceInventory();
-//                            resourceInventory.setUuid(inventory.getUuid());
-//                            resourceInventory.setAccountUuid(inventory.getAccountUuid());
-//                            resourceInventory.setProductUuid(inventory.getUuid());
-//                            resourceInventory.setProductType(productType);
-//                            resourceInventory.setDescription(inventory.getDescription());
-//                            resourceInventory.setProductName(inventory.getName());
-//                            resourceInventory.setCreateDate(inventory.getCreateDate());
-//                            resourceInventory.setLastOpDate(inventory.getLastOpDate());
-//                            SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
-//                            query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, inventory.getUuid());
-//                            if (!isBind) query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.NOT_IN, policyUuids);
-//                            List<ResourcePolicyRefVO> resourcePolicyRefVOS = query.list();
-//                            List<PolicyInventory> policyInventories = new ArrayList<>();
-//                            for (ResourcePolicyRefVO resourcePolicyRefVO : resourcePolicyRefVOS) {
-//                                policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class)));
-//                            }
-//                            if (isBind) {
-//                                for (String policyUuid : policyUuids) {
-//                                    policyInventories.add(PolicyInventory.valueOf(dbf.findByUuid(policyUuid, PolicyVO.class)));
-//                                }
-//                            }
-//
-//                            resourceInventory.setPolicies(policyInventories);
-//                            inventories.add(resourceInventory);
-//                        }
-//
-//                    }
-//                }catch (Exception e){
-//                    return inventories;
-//                }
-//            }
+            RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class);
+
+            if (rsp.getState().equals(RestAPIState.Done.toString())) {
+                try {
+                    APIUpdateExpireDateReply productReply = (APIUpdateExpireDateReply) RESTApiDecoder.loads(rsp.getResult());
+                }catch (Exception e){
+                   throw new IllegalArgumentException(e);
+                }
+            } else {
+                throw new IllegalArgumentException("the network is not fine ,try for a moment");
+            }
 
             slaCompensateVO.setState(SLAState.DONE);
             dbf.updateAndRefresh(slaCompensateVO);
@@ -146,21 +123,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
 
     }
 
-    private String getProductUrl(ProductType productType) {
-        String productServerUrl = BillingGlobalProperty.TUNNEL_SERVER_URL;
-        switch (productType) {
-            case TUNNEL:
-                productServerUrl = BillingGlobalProperty.TUNNEL_SERVER_URL;
-                break;
-            case PORT:
-                productServerUrl = BillingGlobalProperty.TUNNEL_SERVER_URL;
-                break;
-            case VPN:
-                productServerUrl = "";
-                break;
-        }
-        return productServerUrl;
-    }
+
 
 
     private void handle(APIUpdateSLACompensateMsg msg) {
