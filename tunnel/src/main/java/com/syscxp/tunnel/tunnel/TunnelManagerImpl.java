@@ -243,8 +243,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APICreateInterfaceMsg msg) {
-        APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
-
         //保存数据，分配资源
         InterfaceVO vo = new InterfaceVO();
 
@@ -279,13 +277,19 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         OrderInventory orderInventory = createOrder(orderMsg);
 
-        if (orderInventory != null) {
+        afterCreateInterface(orderInventory, vo, msg);
+    }
+
+    private void afterCreateInterface(OrderInventory inventory, InterfaceVO vo, APIMessage msg) {
+        APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
+
+        if (inventory != null) {
             //付款成功,记录生效订单
-            saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+            saveResourceOrderEffective(inventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
             //状态修改已支付，生成到期时间
             vo.setAccountUuid(vo.getOwnerAccountUuid());
             vo.setState(InterfaceState.Paid);
-            vo.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), msg.getProductChargeModel(), msg.getDuration()));
+            vo.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), vo.getProductChargeModel(), vo.getDuration()));
 
             vo = dbf.updateAndRefresh(vo);
 
@@ -295,7 +299,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             evt.setError(errf.stringToOperationError("付款失败"));
             evt.setInventory(InterfaceInventory.valueOf(vo));
         }
-
         bus.publish(evt);
     }
 
@@ -332,23 +335,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
 
         OrderInventory orderInventory = createOrder(orderMsg);
-        if (orderInventory != null) {
-            //付款成功,记录生效订单
-            saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
-            //状态修改已支付，生成到期时间
-            vo.setAccountUuid(vo.getOwnerAccountUuid());
-            vo.setState(InterfaceState.Paid);
-            vo.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), msg.getProductChargeModel(), msg.getDuration()));
 
-            vo = dbf.updateAndRefresh(vo);
-
-            evt.setInventory(InterfaceInventory.valueOf(vo));
-        } else {
-            //付款失败
-            evt.setError(errf.stringToOperationError("付款失败"));
-            evt.setInventory(InterfaceInventory.valueOf(vo));
-        }
-        bus.publish(evt);
+        afterCreateInterface(orderInventory, vo, msg);
     }
 
     private void handle(APIUpdateInterfaceMsg msg) {
@@ -1248,7 +1236,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         private List<TunnelVO> getTunnels() {
 
             return Q.New(TunnelVO.class)
-                    .lte(TunnelVO_.expireDate, Timestamp.valueOf(LocalDateTime.now().minusDays(CoreGlobalProperty.PRODUCT_EXPIRE_DAYS)))
+                    .lte(TunnelVO_.expireDate, Timestamp.valueOf(LocalDateTime.now()))
                     .list();
         }
 
@@ -1339,9 +1327,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void validate(APIUpdateInterfacePortMsg msg) {
 
         InterfaceVO iface = Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).find();
-        if (iface == null)
+        if (iface.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now())))
             throw new ApiMessageInterceptionException(
-                    argerr("The Interface[uuid:%s] does not exsit！", msg.getUuid()));
+                    argerr("The Interface[uuid:%s] has expired！", msg.getUuid()));
         SwitchPortVO switchPort = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, iface.getSwitchPortUuid()).find();
         if (switchPort.getPortType() == SwitchPortType.SHARE)
             throw new ApiMessageInterceptionException(
@@ -1412,6 +1400,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APIUpdateInterfaceMsg msg) {
+
+        InterfaceVO iface = Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).find();
+        if (iface.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now())))
+            throw new ApiMessageInterceptionException(
+                    argerr("The Interface[uuid:%s] has expired！", msg.getUuid()));
+
         //判断同一个用户的网络名称是否已经存在
         if (!StringUtils.isEmpty(msg.getName())) {
             String accountUuid = Q.New(InterfaceVO.class)
@@ -1433,11 +1427,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void validate(APIDeleteInterfaceMsg msg) {
         //判断云专线下是否有该物理接口
-        boolean exists = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.interfaceUuid,msg.getUuid())
-                .isExists();
-        if (exists) {
-            throw new ApiMessageInterceptionException(argerr("cannot delete,interface is being used!"));
+        Q q = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid());
+        if (q.isExists()) {
+            throw new ApiMessageInterceptionException(
+                    argerr("The interface[uuid:%s] is being used, cannot delete!", msg.getUuid()));
         }
 
         //判断该产品是否有未完成订单
