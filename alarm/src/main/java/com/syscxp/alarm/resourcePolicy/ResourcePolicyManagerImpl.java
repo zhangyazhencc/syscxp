@@ -390,6 +390,12 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
     @Transactional
     private void handle(APICreateRegulationMsg msg) {
+        SimpleQuery<RegulationVO> query = dbf.createQuery(RegulationVO.class);
+        query.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ,msg.getPolicyUuid());
+        long count = query.count();
+        if(count>5){
+            throw new IllegalArgumentException("every policy can build 5 regulations");
+        }
         RegulationVO regulationVO = new RegulationVO();
         regulationVO.setUuid(Platform.getUuid());
         regulationVO.setAlarmThreshold(msg.getAlarmThreshold());
@@ -410,6 +416,14 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     }
 
     private void handle(APICreatePolicyMsg msg) {
+        SimpleQuery<PolicyVO> query = dbf.createQuery(PolicyVO.class);
+        query.add(PolicyVO_.accountUuid, SimpleQuery.Op.EQ,msg.getAccountUuid());
+        query.add(PolicyVO_.productType, SimpleQuery.Op.EQ,msg.getProductType());
+        long count = query.count();
+        if(count>10){
+            throw new IllegalArgumentException("everyone can build 10 policies on one productType");
+        }
+
         PolicyVO policyVO = new PolicyVO();
         policyVO.setUuid(Platform.getUuid());
         policyVO.setName(msg.getName());

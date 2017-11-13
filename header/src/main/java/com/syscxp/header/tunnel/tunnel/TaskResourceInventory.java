@@ -14,6 +14,7 @@ import java.util.List;
 public class TaskResourceInventory {
 
     private String uuid;
+    private String accountUuid;
     private String resourceUuid;
     private String resourceType;
     private TaskType taskType;
@@ -26,6 +27,7 @@ public class TaskResourceInventory {
     public static TaskResourceInventory valueOf(TaskResourceVO vo){
         TaskResourceInventory inv = new TaskResourceInventory();
         inv.setUuid(vo.getUuid());
+        inv.setAccountUuid(vo.getAccountUuid());
         inv.setResourceUuid(vo.getResourceUuid());
         inv.setResourceType(vo.getResourceType());
         inv.setTaskType(vo.getTaskType());
@@ -115,5 +117,13 @@ public class TaskResourceInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }
