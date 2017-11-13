@@ -130,8 +130,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIUpdateForciblyTunnelVlanMsg) msg);
         } else if (msg instanceof APIUpdateTunnelVlanMsg) {
             handle((APIUpdateTunnelVlanMsg) msg);
-        } else if (msg instanceof APIReCallControllerMsg) {
-            handle((APIReCallControllerMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -858,31 +856,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
-        //调用退订
-        APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
-        orderMsg.setProductUuid(vo.getUuid());
-        orderMsg.setProductType(ProductType.TUNNEL);
-        orderMsg.setProductName(vo.getName());
-        orderMsg.setAccountUuid(msg.getAccountUuid());
-        orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        orderMsg.setStartTime(dbf.getCurrentSqlTime());
-        if (vo.getExpireDate() == null) {
-            orderMsg.setExpiredTime(dbf.getCurrentSqlTime());
-            orderMsg.setCreateFailure(true);
-        } else {
-            orderMsg.setExpiredTime(vo.getExpireDate());
-        }
-        orderMsg.setDescriptionData("no description");
-        orderMsg.setCallBackData("delete");
-
-        OrderInventory orderInventory = createOrder(orderMsg);
-        if (orderInventory != null) {
-            //退订成功,记录生效订单
-            saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
-
-            vo.setAccountUuid(null);
-            dbf.updateAndRefresh(vo);
-
+        if(vo.getAccountUuid()==null){  //退订成功但是下发失败了的再次下发，不需要再退订
             //创建任务
             TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
 
@@ -893,8 +867,41 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             bus.send(deleteTunnelMsg);
 
             evt.setInventory(TunnelInventory.valueOf(vo));
-        } else {
-            evt.setError(errf.stringToOperationError("退订失败"));
+        }else{
+            //调用退订
+            APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
+            orderMsg.setProductUuid(vo.getUuid());
+            orderMsg.setProductType(ProductType.TUNNEL);
+            orderMsg.setProductName(vo.getName());
+            orderMsg.setAccountUuid(msg.getAccountUuid());
+            orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+            orderMsg.setStartTime(dbf.getCurrentSqlTime());
+            orderMsg.setExpiredTime(vo.getExpireDate());
+
+            orderMsg.setDescriptionData("no description");
+            orderMsg.setCallBackData("delete");
+
+            OrderInventory orderInventory = createOrder(orderMsg);
+            if (orderInventory != null) {
+                //退订成功,记录生效订单
+                saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+
+                vo.setAccountUuid(null);
+                dbf.updateAndRefresh(vo);
+
+                //创建任务
+                TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
+
+                DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
+                deleteTunnelMsg.setTunnelUuid(vo.getUuid());
+                deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+                bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                bus.send(deleteTunnelMsg);
+
+                evt.setInventory(TunnelInventory.valueOf(vo));
+            } else {
+                evt.setError(errf.stringToOperationError("退订失败"));
+            }
         }
 
         bus.publish(evt);
@@ -1033,21 +1040,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         bus.reply(msg, reply);
     }
 
-    private void handle(APIReCallControllerMsg msg) {
-        APIReCallControllerEvent evt = new APIReCallControllerEvent(msg.getId());
-
-        TaskResourceVO vo = dbf.findByUuid(msg.getUuid(),TaskResourceVO.class);
-
-        ReCallControllerMsg reCallControllerMsg = new ReCallControllerMsg();
-        reCallControllerMsg.setTunnelUuid(vo.getResourceUuid());
-        reCallControllerMsg.setTaskUuid(msg.getUuid());
-        bus.makeLocalServiceId(reCallControllerMsg, TunnelConstant.SERVICE_ID);
-        bus.send(reCallControllerMsg);
-
-        evt.setInventory(TaskResourceInventory.valueOf(vo));
-        bus.publish(evt);
-    }
-
     private boolean orderIsExist(String orderUuid) {
         return Q.New(ResourceOrderEffectiveVO.class)
                 .eq(ResourceOrderEffectiveVO_.orderUuid, orderUuid)
@@ -1058,7 +1050,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (cmd.getProductType() == ProductType.PORT) {
             InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
             vo.setExpireDate(getExpireDate(vo.getExpireDate(), cmd.getProductChargeModel(), cmd.getDuration()));
-
             vo.setDuration(cmd.getDuration());
             vo.setProductChargeModel(cmd.getProductChargeModel());
             dbf.updateAndRefresh(vo);
