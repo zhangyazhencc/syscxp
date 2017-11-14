@@ -41,6 +41,7 @@ import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
 
 import javax.persistence.TypedQuery;
+import javax.swing.text.html.HTML;
 import java.net.UnknownHostException;
 import java.util.*;
 
@@ -107,7 +108,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APICreateNettoolRecordMsg) msg);
         } else if (msg instanceof APIQueryNettoolResultMsg) {
             handle((APIQueryNettoolResultMsg) msg);
-        } else {
+        } else if (msg instanceof APIQueryMonitorResultMsg) {
+            handle((APIQueryMonitorResultMsg) msg);
+        }else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -462,6 +465,46 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             reply.setInventory(NettoolResultInventory.valueOf(result));
 
         bus.reply(msg, reply);
+    }
+
+    private void handle(APIQueryMonitorResultMsg msg){
+        APIQueryMonitorResultReply reply = new APIQueryMonitorResultReply();
+
+        try{
+            String condition = getOpenTSDBQueryCondition(msg);
+            String url = getOpenTSDBUrl(OpenTSDBCommands.restMethod.OPEN_TSDB_QUERY);
+
+            List<OpenTSDBCommands.QueryResult> results = evtf.syncJsonPost(url, condition, List.class);
+            reply.setInventories(OpenTSDBResultInventory.valueOf(results));
+        }catch (Exception e){
+            String err = String.format("查询OpenTSDB数据失败：",e.getMessage());
+            logger.error(err);
+            reply.setError(Platform.argerr(err));
+        }
+
+        bus.reply(msg,reply);
+    }
+
+    private String getOpenTSDBQueryCondition(APIQueryMonitorResultMsg msg){
+        List<OpenTSDBCommands.query> queries = new ArrayList<>();
+
+        TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid,msg.getTunnelUuid()).find();
+        for(TunnelSwitchPortVO tunnelPort:tunnel.getTunnelSwitchPortVOS()){
+            PhysicalSwitchVO physicalSwitch = getPhysicalSwitchBySwitchPort(tunnelPort.getSwitchPortUuid());
+
+            OpenTSDBCommands.tags tags = new OpenTSDBCommands.tags(physicalSwitch.getmIP(),"Vlanif"+tunnelPort.getVlan());
+
+            OpenTSDBCommands.query query = new OpenTSDBCommands.query("avg",msg.getMetric(),tags);
+
+            queries.add(query);
+        }
+
+        OpenTSDBCommands.QueryCondition condition = new OpenTSDBCommands.QueryCondition();
+        condition.setStart(msg.getStart());
+        condition.setEnd(msg.getEnd());
+        condition.setQueries(queries);
+
+        return JSONObjectUtil.toJsonString(condition);
     }
 
     /**
@@ -1132,6 +1175,17 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
 
         return response;
+    }
+
+    /***
+     * 获取OpenTSDB服务url
+     * @param method
+     * @return
+     */
+    private String getOpenTSDBUrl(String method) {
+        String url = CoreGlobalProperty.OPENTSDB_SERVER_URL + method;
+
+        return url;
     }
 
     @Override
