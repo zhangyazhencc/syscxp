@@ -726,6 +726,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setDuration(msg.getDuration());
         orderVo.setCallBackData(msg.getCallBackData());
 
+        BigDecimal renewPrice = discountPrice;
+
         originalPrice = originalPrice.multiply(duration);
         discountPrice = discountPrice.multiply(duration);
 
@@ -755,7 +757,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         renewVO.setDescriptionData(orderVo.getDescriptionData());
         renewVO.setRenewAuto(true);
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
-        renewVO.setPriceOneMonth(discountPrice);
+        renewVO.setPriceOneMonth(renewPrice);
         dbf.getEntityManager().persist(renewVO);
 
         for (String productPriceUnitUuid : productPriceUnitUuids) {

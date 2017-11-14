@@ -35,6 +35,7 @@ public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
                 if(accountUuids != null && accountUuids.size() > 0) {
                     return null;
                 }
+                return String.format("%s.accountUuid = '%s'", inventoryClass.getSimpleName().toLowerCase(), "-1");
 
             }
         }
@@ -66,7 +67,7 @@ public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
             QueryCondition qcond = new QueryCondition();
             qcond.setName("accountUuid");
             qcond.setOp(QueryOp.IN.toString());
-            qcond.setValues((String[]) accountUuids.toArray());
+            qcond.setValues( accountUuids.toArray(new String[accountUuids.size()]));
             conds.add(qcond);
         }
         return conds;
