@@ -72,7 +72,7 @@ state=Enabled status=Connected expireDate=当前时间+时长
 
 ############################################################################################
 
-删除：只有state=Enabled/Disabled
+删除：只有state=Enabled/Disabled/Unsupport
 
 if(accountUuid != null){
 

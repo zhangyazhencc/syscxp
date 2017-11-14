@@ -14,6 +14,10 @@ public class APIUpdateTunnelStateMsg extends APIMessage {
     private String uuid;
     @APIParam(emptyString = false,validValues = {"Enabled", "Disabled"})
     private TunnelState state;
+    @APIParam
+    private boolean saveOnly;
+    @APIParam
+    private boolean unsupport;
 
     public String getUuid() {
         return uuid;
@@ -29,5 +33,21 @@ public class APIUpdateTunnelStateMsg extends APIMessage {
 
     public void setState(TunnelState state) {
         this.state = state;
+    }
+
+    public boolean isSaveOnly() {
+        return saveOnly;
+    }
+
+    public void setSaveOnly(boolean saveOnly) {
+        this.saveOnly = saveOnly;
+    }
+
+    public boolean isUnsupport() {
+        return unsupport;
+    }
+
+    public void setUnsupport(boolean unsupport) {
+        this.unsupport = unsupport;
     }
 }

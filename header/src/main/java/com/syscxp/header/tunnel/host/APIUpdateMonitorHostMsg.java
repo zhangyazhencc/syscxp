@@ -17,6 +17,16 @@ public class APIUpdateMonitorHostMsg extends APIUpdateHostMsg {
     private String password;
     @APIParam(numberRange = {1, 65535})
     private Integer sshPort;
+    @APIParam
+    private MonitorType monitorType;
+
+    public MonitorType getMonitorType() {
+        return monitorType;
+    }
+
+    public void setMonitorType(MonitorType monitorType) {
+        this.monitorType = monitorType;
+    }
 
     public String getNodeUuid() {
         return nodeUuid;
