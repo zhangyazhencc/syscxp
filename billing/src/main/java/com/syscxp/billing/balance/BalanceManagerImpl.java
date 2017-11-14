@@ -7,9 +7,11 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.syscxp.billing.BillingGlobalProperty;
 import com.syscxp.billing.header.balance.*;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.header.billing.ProductCategoryVO;
 import com.syscxp.header.billing.ProductCategoryVO_;
 import com.syscxp.header.billing.*;
+import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -123,8 +125,25 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
     }
 
     private void handle(APIDeleteAccountDiscountMsg msg) {
+        if(msg.getSession().getType()==AccountType.Normal){
+            throw new IllegalArgumentException("you hava not permission");
+        }
         AccountDiscountVO accountDiscountVO = dbf.findByUuid(msg.getUuid(), AccountDiscountVO.class);
         if (accountDiscountVO != null) {
+            APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
+            aMsg.setUuid(accountDiscountVO.getAccountUuid());
+            InnerMessageHelper.setMD5(aMsg);
+            String gstr = RESTApiDecoder.dump(aMsg);
+            RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
+            if (rsp.getState().equals(RestAPIState.Done.toString())) {
+                APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
+                List<String> customerUuids = replay.getAccountUuidOwnProxy();
+                if (customerUuids != null && customerUuids.size() > 0) {
+                    UpdateQuery q = UpdateQuery.New(AccountDiscountVO.class);
+                    q.condAnd(AccountDiscountVO_.accountUuid, SimpleQuery.Op.IN, customerUuids);
+                    q.delete();
+                }
+            }
             dbf.remove(accountDiscountVO);
         }
         APIDeleteAccountDiscountEvent event = new APIDeleteAccountDiscountEvent(msg.getId());
@@ -306,6 +325,33 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
                 }
             }
 
+        }
+        if(msg.getSession().getType().equals(AccountType.SystemAdmin)){
+            APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
+            aMsg.setUuid(accountDiscountVO.getAccountUuid());
+            InnerMessageHelper.setMD5(aMsg);
+            String gstr = RESTApiDecoder.dump(aMsg);
+            RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
+            if (rsp.getState().equals(RestAPIState.Done.toString())) {
+                APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
+                List<String> customerUuids = replay.getAccountUuidOwnProxy();
+                if (customerUuids != null && customerUuids.size() > 0) {
+                    for(String accountUuid:customerUuids){
+                        SimpleQuery<AccountDiscountVO> query = dbf.createQuery(AccountDiscountVO.class);
+                        query.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, accountDiscountVO);
+                        query.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, accountDiscountVO.getProductCategoryUuid());
+                        AccountDiscountVO accountDiscountVO1 = query.find();
+                        if (accountDiscountVO1 != null) {
+                            int discount = accountDiscountVO1.getDiscount();
+                            if(discount<msg.getDiscount()){
+                                accountDiscountVO1.setDiscount(msg.getDiscount());
+                                dbf.updateAndRefresh(accountDiscountVO1);
+                            }
+                        }
+
+                    }
+                }
+            }
         }
         if(msg.getSession().getType() == AccountType.Normal){
             throw new IllegalArgumentException("you are not permit");
