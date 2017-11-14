@@ -34,17 +34,17 @@ public class SpeedTestTunnelVO {
     @Column
     private Timestamp createDate;
 
-    @OneToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name = "uuid", insertable = false, updatable = false)
-    private TunnelVO tunnelVO = new TunnelVO();
-
-    public TunnelVO getTunnelVO() {
-        return tunnelVO;
-    }
-
-    public void setTunnelVO(TunnelVO tunnelVO) {
-        this.tunnelVO = tunnelVO;
-    }
+//    @OneToOne(fetch= FetchType.EAGER)
+//    @JoinColumn(name = "uuid", insertable = false, updatable = false)
+//    private TunnelVO tunnelVO = new TunnelVO();
+//
+//    public TunnelVO getTunnelVO() {
+//        return tunnelVO;
+//    }
+//
+//    public void setTunnelVO(TunnelVO tunnelVO) {
+//        this.tunnelVO = tunnelVO;
+//    }
 
     @PreUpdate
     private void preUpdate() {

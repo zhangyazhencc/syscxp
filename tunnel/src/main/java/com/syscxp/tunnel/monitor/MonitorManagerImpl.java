@@ -1296,7 +1296,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             validate((APICreateHostSwitchMonitorMsg) msg);
         } else if (msg instanceof APICreateSpeedRecordsMsg) {
             validate((APICreateSpeedRecordsMsg) msg);
+        } else if (msg instanceof APICreateSpeedTestTunnelMsg) {
+            validate((APICreateSpeedTestTunnelMsg) msg);
         }
+
         return msg;
     }
 
@@ -1354,6 +1357,20 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     private void validate(APICreateSpeedRecordsMsg msg) {
         //测速tunnel是否有未完成的测速
+        List<SpeedRecordsVO> vos = Q.New(SpeedRecordsVO.class)
+                .eq(SpeedRecordsVO_.tunnelUuid, msg.getTunnelUuid())
+                .eq(SpeedRecordsVO_.status, SpeedRecordStatus.TESTING)
+                .find();
+
+        if (vos.size() > 0) {
+            throw new ApiMessageInterceptionException(argerr("Uncompleted test records exists, please retry later!"));
+        }
+    }
+
+    private void validate(APICreateSpeedTestTunnelMsg msg) {
+        //测速tunnel是否有未完成的测速
+
+
         List<SpeedRecordsVO> vos = Q.New(SpeedRecordsVO.class)
                 .eq(SpeedRecordsVO_.tunnelUuid, msg.getTunnelUuid())
                 .eq(SpeedRecordsVO_.status, SpeedRecordStatus.TESTING)

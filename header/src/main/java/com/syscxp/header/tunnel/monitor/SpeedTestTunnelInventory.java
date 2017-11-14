@@ -25,7 +25,7 @@ public class SpeedTestTunnelInventory {
         SpeedTestTunnelInventory inventory = new SpeedTestTunnelInventory();
         inventory.setUuid(vo.getUuid());
         inventory.setTunnelUuid(vo.getTunnelUuid());
-        inventory.setTunnelVO(vo.getTunnelVO());
+        //inventory.setTunnelVO(vo.getTunnelVO());
         inventory.setLastOpDate(vo.getLastOpDate());
         inventory.setCreateDate(vo.getCreateDate());
 
