@@ -9,6 +9,7 @@ import java.util.List;
  * @Cretion Date: 2017-09-18.
  * @Description: .
  */
+
 public class APIQuerySpeedTestTunnelReply extends APIQueryReply {
     private List<SpeedRecordsVO> inventories;
 

@@ -22,12 +22,12 @@ public class OpenTSDBCommands {
     public static class QueryCondition{
         private Long start;
         private Long end;
-        private List<query> queries;
+        private List<Query> queries;
 
         public QueryCondition() {
         }
 
-        public QueryCondition(Long start, Long end, List<query> queries) {
+        public QueryCondition(Long start, Long end, List<Query> queries) {
             this.start = start;
             this.end = end;
             this.queries = queries;
@@ -49,21 +49,21 @@ public class OpenTSDBCommands {
             this.end = end;
         }
 
-        public List<query> getQueries() {
+        public List<Query> getQueries() {
             return queries;
         }
 
-        public void setQueries(List<query> queries) {
+        public void setQueries(List<Query> queries) {
             this.queries = queries;
         }
     }
 
-    public static class query{
+    public static class Query{
         private String aggregator;
         private String metric;
         private tags tags;
 
-        public query(String aggregator, String metric, OpenTSDBCommands.tags tags) {
+        public Query(String aggregator, String metric, OpenTSDBCommands.tags tags) {
             this.aggregator = aggregator;
             this.metric = metric;
             this.tags = tags;

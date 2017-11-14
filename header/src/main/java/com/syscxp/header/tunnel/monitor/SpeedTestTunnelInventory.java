@@ -1,6 +1,10 @@
 package com.syscxp.header.tunnel.monitor;
 
+import com.sun.xml.internal.messaging.saaj.packaging.mime.util.LineInputStream;
 import com.syscxp.header.search.Inventory;
+import com.syscxp.header.tunnel.node.NodeInventory;
+import com.syscxp.header.tunnel.node.NodeVO;
+import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 
 import java.sql.Timestamp;
@@ -10,14 +14,15 @@ import java.util.List;
 
 /**
  * @Author: sunxuelong.
- * @Cretion Date: 2017-09-18.
+ * @Cretion Date: 2017-11-14.
  * @Description: .
  */
 @Inventory(mappingVOClass = SpeedTestTunnelVO.class)
 public class SpeedTestTunnelInventory {
     private String uuid;
     private String tunnelUuid;
-    private TunnelVO tunnelVO;
+    private String tunnelName;
+    private List<NodeInventory> nodeInventories;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -25,7 +30,14 @@ public class SpeedTestTunnelInventory {
         SpeedTestTunnelInventory inventory = new SpeedTestTunnelInventory();
         inventory.setUuid(vo.getUuid());
         inventory.setTunnelUuid(vo.getTunnelUuid());
-        //inventory.setTunnelVO(vo.getTunnelVO());
+        inventory.setTunnelName(vo.getTunnelVO().getName());
+
+        List<NodeVO> nodeVOS = new ArrayList<>();
+        for(TunnelSwitchPortVO tunnelSwitchPortVO :vo.getTunnelVO().getTunnelSwitchPortVOS()){
+            nodeVOS.add(tunnelSwitchPortVO.getEndpointVO().getNodeVO());
+        }
+        inventory.setNodeInventories(NodeInventory.valueOf(nodeVOS));
+
         inventory.setLastOpDate(vo.getLastOpDate());
         inventory.setCreateDate(vo.getCreateDate());
 
@@ -73,11 +85,19 @@ public class SpeedTestTunnelInventory {
         this.createDate = createDate;
     }
 
-    public TunnelVO getTunnelVO() {
-        return tunnelVO;
+    public String getTunnelName() {
+        return tunnelName;
     }
 
-    public void setTunnelVO(TunnelVO tunnelVO) {
-        this.tunnelVO = tunnelVO;
+    public void setTunnelName(String tunnelName) {
+        this.tunnelName = tunnelName;
+    }
+
+    public List<NodeInventory> getNodeInventories() {
+        return nodeInventories;
+    }
+
+    public void setNodeInventories(List<NodeInventory> nodeInventories) {
+        this.nodeInventories = nodeInventories;
     }
 }
