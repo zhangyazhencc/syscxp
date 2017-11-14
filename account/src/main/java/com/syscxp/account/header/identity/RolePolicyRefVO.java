@@ -17,11 +17,11 @@ public class RolePolicyRefVO {
     private long id;
 
     @Column
-    @ForeignKey(parentEntityClass = RoleVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
+//    @ForeignKey(parentEntityClass = RoleVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
     private String roleUuid;
 
     @Column
-    @ForeignKey(parentEntityClass = PolicyVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
+//    @ForeignKey(parentEntityClass = PolicyVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
     private String policyUuid;
 
     @Column
