@@ -5,14 +5,12 @@ import com.syscxp.billing.header.balance.APIQueryAccountDiscountMsg;
 import com.syscxp.billing.header.balance.APIQueryDealDetailMsg;
 import com.syscxp.billing.header.bill.APIQueryBillMsg;
 import com.syscxp.billing.header.order.APIQueryOrderMsg;
-import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.header.query.AddExtraConditionToQueryExtensionPoint;
 import com.syscxp.header.query.QueryCondition;
 import com.syscxp.header.query.QueryOp;
 import com.syscxp.query.AbstractMysqlQuerySubQueryExtension;
 import com.syscxp.query.QueryUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.query.APIQueryMessage;
 
@@ -37,6 +35,7 @@ public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
                 if(accountUuids != null && accountUuids.size() > 0) {
                     return null;
                 }
+
             }
         }
 
