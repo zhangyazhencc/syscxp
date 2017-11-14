@@ -86,6 +86,7 @@
     <bean id="BillingSubQueryExtension" class="com.syscxp.billing.identity.BillingSubQueryExtension">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.query.MysqlQuerySubQueryExtension"/>
+            <syscxp:extension interface="com.syscxp.header.query.AddExtraConditionToQueryExtensionPoint"/>
         </syscxp:plugin>
     </bean>
 

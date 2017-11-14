@@ -1,5 +1,6 @@
 package com.syscxp.header.host;
 
+import com.syscxp.header.rest.APINoSee;
 import com.syscxp.header.search.Inventory;
 import com.syscxp.header.search.TypeField;
 
@@ -17,6 +18,7 @@ public class HostInventory implements Serializable {
     private String code;
     private String hostIp;
     @TypeField
+    @APINoSee
     private String hostType;
     private String position;
     private String state;
