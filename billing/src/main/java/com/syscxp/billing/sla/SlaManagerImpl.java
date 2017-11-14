@@ -1,7 +1,10 @@
 package com.syscxp.billing.sla;
 
 import com.syscxp.billing.BillingGlobalProperty;
+import com.syscxp.billing.header.renew.RenewVO;
+import com.syscxp.billing.header.renew.RenewVO_;
 import com.syscxp.billing.header.sla.*;
+import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.message.APISyncCallMessage;
@@ -77,11 +80,20 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
 
     private void handle(APIUpdateSLACompensateStateMsg msg) {
         SLACompensateVO slaCompensateVO = dbf.findByUuid(msg.getUuid(), SLACompensateVO.class);
+
         if(msg.getState() == SLAState.APPLIED){
-            Timestamp expiredTime = dbf.getCurrentSqlTime();
+            SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
+            query.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, slaCompensateVO.getAccountUuid());
+            query.add(RenewVO_.productUuid, SimpleQuery.Op.EQ, slaCompensateVO.getProductUuid());
+            RenewVO renewVO = query.find();
+            if(renewVO == null){
+                throw new IllegalArgumentException("can not find the product");
+            }
+
+            Timestamp expiredTime = renewVO.getExpiredTime();
             Timestamp endTime = new Timestamp(expiredTime.getTime()+slaCompensateVO.getDuration()*24*60*60*1000);
             slaCompensateVO.setTimeStart(expiredTime);
-            slaCompensateVO.setTimeStart(endTime);
+            slaCompensateVO.setTimeEnd(endTime);
             slaCompensateVO.setState(SLAState.APPLIED);
             slaCompensateVO.setApplyTime(dbf.getCurrentSqlTime());
             dbf.updateAndRefresh(slaCompensateVO);
