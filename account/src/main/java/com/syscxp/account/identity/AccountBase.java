@@ -784,8 +784,9 @@ public class AccountBase extends AbstractAccount {
         role.setAccountUuid(msg.getAccountUuid());
         role.setDescription(msg.getDescription());
 
-        Set<PolicyVO> policySet = new HashSet<>();
+        role = dbf.persistAndRefresh(role);
 
+//        Set<PolicyVO> policySet = new HashSet<>();
         RolePolicyRefVO vo = null;
         for (String id : msg.getPolicyUuids()) {
             PolicyVO policy = dbf.findByUuid(id, PolicyVO.class);
@@ -797,7 +798,7 @@ public class AccountBase extends AbstractAccount {
             }
         }
 
-        role = dbf.persistAndRefresh(role);
+
 
         APICreateRoleEvent evt = new APICreateRoleEvent(msg.getId());
 
