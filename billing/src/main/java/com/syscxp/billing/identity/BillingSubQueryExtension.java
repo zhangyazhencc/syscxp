@@ -1,8 +1,6 @@
 package com.syscxp.billing.identity;
 
 import com.syscxp.billing.header.APIQueryExpendMessage;
-import com.syscxp.core.db.SimpleQuery;
-import com.syscxp.header.query.QueryOp;
 import com.syscxp.query.AbstractMysqlQuerySubQueryExtension;
 import com.syscxp.query.QueryUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,12 +23,16 @@ public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
         }
         if (msg.getSession().getType().equals(AccountType.Proxy)) {
             if (msg instanceof APIQueryExpendMessage) {
-
                 List<String> accountUuids = ((APIQueryExpendMessage) msg).getAccountUuids();
-                if(accountUuids!=null && accountUuids.size()>0){
-                    msg.addQueryCondition("accountUuid", QueryOp.IN, (String[])accountUuids.toArray());
-                    return null;
-                }
+               if(accountUuids!=null && accountUuids.size()>0){
+                   StringBuilder sb = new StringBuilder();
+                   for(String accountUuid : accountUuids){
+                      sb.append("'"+accountUuid+"'").append(",");
+                   }
+                   sb.deleteCharAt(sb.length()-1);
+
+                   return String.format("%s.accountUuid in (%s)", inventoryClass.getSimpleName().toLowerCase(), sb.toString());
+               }
             }
         }
 
