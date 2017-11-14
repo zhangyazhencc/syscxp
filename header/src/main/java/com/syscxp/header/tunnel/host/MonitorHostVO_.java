@@ -13,4 +13,5 @@ public class MonitorHostVO_ extends HostVO_ {
     public static volatile SingularAttribute<MonitorHostVO, String> password;
     public static volatile SingularAttribute<MonitorHostVO, String> nodeUuid;
     public static volatile SingularAttribute<MonitorHostVO, Integer> sshPort;
+    public static volatile SingularAttribute<MonitorHostVO, MonitorType> monitorType;
 }

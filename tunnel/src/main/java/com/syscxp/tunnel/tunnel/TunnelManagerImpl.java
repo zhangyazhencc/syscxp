@@ -177,8 +177,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         .eq(InterfaceVO_.uuid, msg.getUuid())
                         .update();
                 logger.info(String.format("after update InterfaceVO: [%s]", JSONObjectUtil.toJsonString(dbf.findByUuid(msg.getUuid(), InterfaceVO.class))));
-                throw new CloudRuntimeException("update interface port ...............");
-//                trigger.next();
+                //throw new CloudRuntimeException("update interface port ...............");
+                trigger.next();
             }
 
             @Override
@@ -238,8 +238,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             }
                         }
                     });
-                    trigger.next();
                 }
+                trigger.next();
             }
 
             @Override
@@ -686,9 +686,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIUpdateTunnelVlanMsg msg) {
+        APIUpdateTunnelVlanEvent evt = new APIUpdateTunnelVlanEvent(msg.getId());
+
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
-        boolean updateA = false;
-        boolean updateZ = false;
         TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "A")
@@ -697,44 +697,97 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "Z")
                 .find();
-        if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())) {
-            tunnelSwitchPortA.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class).getSwitchPortUuid());
-            tunnelSwitchPortA.setVlan(msg.getaVlan());
-            updateA = true;
-        } else {
-            if (!Objects.equals(msg.getaVlan(), msg.getOldAVlan())) {
-                tunnelSwitchPortA.setVlan(msg.getaVlan());
-                updateA = true;
+
+        FlowChain updatevlan = FlowChainBuilder.newSimpleFlowChain();
+        updatevlan.setName(String.format("update-tunnelvlan-%s", msg.getUuid()));
+        updatevlan.then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                if (!Objects.equals(msg.getInterfaceAUuid(), msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())){
+                    UpdateQuery.New(TunnelSwitchPortVO.class)
+                            .set(TunnelSwitchPortVO_.switchPortUuid,dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class).getSwitchPortUuid())
+                            .set(TunnelSwitchPortVO_.vlan,msg.getaVlan())
+                            .eq(TunnelSwitchPortVO_.tunnelUuid,msg.getUuid())
+                            .eq(TunnelSwitchPortVO_.sortTag, "A")
+                            .update();
+                }
+
+                trigger.next();
             }
-        }
-        if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid())) {
-            tunnelSwitchPortZ.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid());
-            tunnelSwitchPortZ.setVlan(msg.getzVlan());
-            updateZ = true;
-        } else {
-            if (!Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
-                tunnelSwitchPortZ.setVlan(msg.getzVlan());
-                updateZ = true;
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                if (!Objects.equals(msg.getInterfaceAUuid(), msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())){
+                    dbf.updateAndRefresh(tunnelSwitchPortA);
+                }
+
+                trigger.rollback();
             }
-        }
+        }).then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                if (!Objects.equals(msg.getInterfaceZUuid(), msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())){
+                    UpdateQuery.New(TunnelSwitchPortVO.class)
+                            .set(TunnelSwitchPortVO_.switchPortUuid,dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid())
+                            .set(TunnelSwitchPortVO_.vlan,msg.getzVlan())
+                            .eq(TunnelSwitchPortVO_.tunnelUuid,msg.getUuid())
+                            .eq(TunnelSwitchPortVO_.sortTag, "Z")
+                            .update();
+                }
 
-        if (updateA)
-            dbf.updateAndRefresh(tunnelSwitchPortA);
-        if (updateZ)
-            dbf.updateAndRefresh(tunnelSwitchPortZ);
-        if (updateA || updateZ) {
-            //创建任务
-            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyPorts);
+                trigger.next();
+            }
 
-            ModifyTunnelPortsMsg modifyTunnelPortsMsg = new ModifyTunnelPortsMsg();
-            modifyTunnelPortsMsg.setTunnelUuid(vo.getUuid());
-            modifyTunnelPortsMsg.setTaskUuid(taskResourceVO.getUuid());
-            bus.makeTargetServiceIdByResourceUuid(modifyTunnelPortsMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
-            bus.send(modifyTunnelPortsMsg);
-        }
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                if (!Objects.equals(msg.getInterfaceZUuid(), msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())){
+                    dbf.updateAndRefresh(tunnelSwitchPortZ);
+                }
+                trigger.rollback();
+            }
+        }).then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                if(!Objects.equals(msg.getInterfaceAUuid(), msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan()) || !Objects.equals(msg.getInterfaceZUuid(), msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())){
+                    //创建任务
+                    TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyPorts);
 
-        APIUpdateTunnelVlanEvent evt = new APIUpdateTunnelVlanEvent(msg.getId());
-        evt.setInventory(TunnelInventory.valueOf(vo));
+                    ModifyTunnelPortsMsg modifyTunnelPortsMsg = new ModifyTunnelPortsMsg();
+                    modifyTunnelPortsMsg.setTunnelUuid(vo.getUuid());
+                    modifyTunnelPortsMsg.setTaskUuid(taskResourceVO.getUuid());
+                    bus.makeTargetServiceIdByResourceUuid(modifyTunnelPortsMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                    bus.send(modifyTunnelPortsMsg, new CloudBusCallBack(null) {
+                        @Override
+                        public void run(MessageReply reply) {
+                            if (reply.isSuccess()) {
+                                logger.info(String.format("Successfully update vlan of tunnel[uuid:%s].", vo.getUuid()));
+                            } else {
+                                logger.info(String.format("Failed update vlan of tunnel[uuid:%s].", vo.getUuid()));
+                                trigger.fail(reply.getError());
+                            }
+                        }
+                    });
+                }
+
+                trigger.next();
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                trigger.rollback();
+            }
+        }).done(new FlowDoneHandler(null) {
+            @Override
+            public void handle(Map data) {
+                evt.setInventory(TunnelInventory.valueOf(vo));
+            }
+        }).error(new FlowErrorHandler(null) {
+            @Override
+            public void handle(ErrorCode errCode, Map data) {
+                evt.setError(errf.stringToOperationError("update vlan failed!"));
+            }
+        }).start();
+
         bus.publish(evt);
 
     }
@@ -949,60 +1002,65 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
-        if(vo.getAccountUuid()==null){  //退订成功但是下发失败了的再次下发，不需要再退订
-            //创建任务
-            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
-
-            DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
-            deleteTunnelMsg.setTunnelUuid(vo.getUuid());
-            deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-            bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
-            bus.send(deleteTunnelMsg);
-
+        if(vo.getState() == TunnelState.Unsupport){         //仅删除：无法开通
+            deleteTunnel(vo);
             evt.setInventory(TunnelInventory.valueOf(vo));
         }else{
-            //调用退订
-            APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
-            orderMsg.setProductUuid(vo.getUuid());
-            orderMsg.setProductType(ProductType.TUNNEL);
-            orderMsg.setProductName(vo.getName());
-            orderMsg.setAccountUuid(msg.getAccountUuid());
-            orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-            orderMsg.setStartTime(dbf.getCurrentSqlTime());
-            orderMsg.setExpiredTime(vo.getExpireDate());
+            if(vo.getAccountUuid()==null){                  //仅下发删除：退订成功但是下发失败了的再次下发，不需要再退订
+                //创建任务
+                TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
 
-            orderMsg.setDescriptionData("no description");
-            orderMsg.setCallBackData("delete");
+                DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
+                deleteTunnelMsg.setTunnelUuid(vo.getUuid());
+                deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+                bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                bus.send(deleteTunnelMsg);
 
-            OrderInventory orderInventory = createOrder(orderMsg);
-            if (orderInventory == null){
-                evt.setError(errf.stringToOperationError("退订失败"));
-            } else {
-                if (vo.getState() == TunnelState.Enabled){   //对于已开通的产品，退订，下发
-                    //退订成功,记录生效订单
-                    saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+                evt.setInventory(TunnelInventory.valueOf(vo));
+            }else{
+                //调用退订
+                APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
+                orderMsg.setProductUuid(vo.getUuid());
+                orderMsg.setProductType(ProductType.TUNNEL);
+                orderMsg.setProductName(vo.getName());
+                orderMsg.setAccountUuid(msg.getAccountUuid());
+                orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+                orderMsg.setStartTime(dbf.getCurrentSqlTime());
+                orderMsg.setExpiredTime(vo.getExpireDate());
 
-                    vo.setAccountUuid(null);
-                    dbf.updateAndRefresh(vo);
+                orderMsg.setDescriptionData("no description");
+                orderMsg.setCallBackData("delete");
 
-                    //创建任务
-                    TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
+                OrderInventory orderInventory = createOrder(orderMsg);
+                if (orderInventory == null){
+                    evt.setError(errf.stringToOperationError("退订失败"));
+                } else {
+                    if (vo.getState() == TunnelState.Enabled){          //退订下发删除：对于已开通的产品
+                        //退订成功,记录生效订单
+                        saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
-                    DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
-                    deleteTunnelMsg.setTunnelUuid(vo.getUuid());
-                    deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-                    bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
-                    bus.send(deleteTunnelMsg);
+                        vo.setAccountUuid(null);
+                        dbf.updateAndRefresh(vo);
 
-                    evt.setInventory(TunnelInventory.valueOf(vo));
-                } else {                                        //对于已关闭的产品，退订，不用下发
-                    //退订成功,记录生效订单
-                    saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
-                    deleteTunnel(vo);
-                    evt.setInventory(TunnelInventory.valueOf(vo));
+                        //创建任务
+                        TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
+
+                        DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
+                        deleteTunnelMsg.setTunnelUuid(vo.getUuid());
+                        deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+                        bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                        bus.send(deleteTunnelMsg);
+
+                        evt.setInventory(TunnelInventory.valueOf(vo));
+                    } else {                                            //退订删除：对于已关闭的产品
+                        //退订成功,记录生效订单
+                        saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+                        deleteTunnel(vo);
+                        evt.setInventory(TunnelInventory.valueOf(vo));
+                    }
                 }
-            }
 
+            }
         }
 
         bus.publish(evt);
@@ -1049,21 +1107,72 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
-        //创建任务
-        TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.valueOf(msg.getState().toString()));
+        if(vo.getState() == TunnelState.Deployfailure){  //开通和无法开通
+            if(msg.isUnsupport()){
+                //调用退订
+                APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
+                orderMsg.setProductUuid(vo.getUuid());
+                orderMsg.setProductType(ProductType.TUNNEL);
+                orderMsg.setProductName(vo.getName());
+                orderMsg.setAccountUuid(vo.getAccountUuid());
+                orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+                orderMsg.setStartTime(dbf.getCurrentSqlTime());
+                orderMsg.setExpiredTime(dbf.getCurrentSqlTime());
+                orderMsg.setCreateFailure(true);
+                orderMsg.setDescriptionData("no description");
+                orderMsg.setCallBackData("unsupport");
 
-        if (msg.getState() == TunnelState.Enabled) {
-            EnabledTunnelMsg enabledTunnelMsg = new EnabledTunnelMsg();
-            enabledTunnelMsg.setTunnelUuid(vo.getUuid());
-            enabledTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-            bus.makeTargetServiceIdByResourceUuid(enabledTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
-            bus.send(enabledTunnelMsg);
-        } else {
-            DisabledTunnelMsg disabledTunnelMsg = new DisabledTunnelMsg();
-            disabledTunnelMsg.setTunnelUuid(vo.getUuid());
-            disabledTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-            bus.makeTargetServiceIdByResourceUuid(disabledTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
-            bus.send(disabledTunnelMsg);
+                OrderInventory orderInventory = createOrder(orderMsg);
+                if (orderInventory == null){
+                    evt.setError(errf.stringToOperationError("退订失败"));
+                } else {
+                    //退订成功,记录生效订单
+                    saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+                    vo.setState(TunnelState.Unsupport);
+                    vo.setExpireDate(dbf.getCurrentSqlTime());
+                    dbf.updateAndRefresh(vo);
+                }
+            }else{
+                if(msg.isSaveOnly()){
+
+                    vo.setState(TunnelState.Enabled);
+                    vo.setStatus(TunnelStatus.Connected);
+                    if(vo.getProductChargeModel() == ProductChargeModel.BY_MONTH){
+                        vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(vo.getDuration())));
+                    }else if(vo.getProductChargeModel() == ProductChargeModel.BY_YEAR){
+                        vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusYears(vo.getDuration())));
+                    }
+
+                    dbf.updateAndRefresh(vo);
+                }else{
+                    //创建任务
+                    TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Enabled);
+
+                    EnabledTunnelMsg enabledTunnelMsg = new EnabledTunnelMsg();
+                    enabledTunnelMsg.setTunnelUuid(vo.getUuid());
+                    enabledTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+                    bus.makeTargetServiceIdByResourceUuid(enabledTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                    bus.send(enabledTunnelMsg);
+                }
+            }
+
+        }else{                                           //恢复连接和关闭连接
+            //创建任务
+            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.valueOf(msg.getState().toString()));
+
+            if (msg.getState() == TunnelState.Enabled) {
+                EnabledTunnelMsg enabledTunnelMsg = new EnabledTunnelMsg();
+                enabledTunnelMsg.setTunnelUuid(vo.getUuid());
+                enabledTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+                bus.makeTargetServiceIdByResourceUuid(enabledTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                bus.send(enabledTunnelMsg);
+            } else {
+                DisabledTunnelMsg disabledTunnelMsg = new DisabledTunnelMsg();
+                disabledTunnelMsg.setTunnelUuid(vo.getUuid());
+                disabledTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+                bus.makeTargetServiceIdByResourceUuid(disabledTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                bus.send(disabledTunnelMsg);
+            }
         }
 
         evt.setInventory(TunnelInventory.valueOf(vo));
@@ -1256,6 +1365,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                 bus.send(deleteTunnelMsg);
                             }else if(cmd.getCallBackData().equals("delete") && vo.getState() == TunnelState.Disabled){
                                 deleteTunnel(vo);
+                            }else if(cmd.getCallBackData().equals("unsupport")){
+                                vo.setState(TunnelState.Unsupport);
+                                vo.setExpireDate(dbf.getCurrentSqlTime());
+                                dbf.updateAndRefresh(vo);
                             }
                         }
 
