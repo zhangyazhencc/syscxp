@@ -1749,6 +1749,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         Q q = Q.New(InterfaceVO.class)
                 .eq(InterfaceVO_.name, msg.getName())
                 .eq(InterfaceVO_.accountUuid, msg.getAccountUuid());
+
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("物理接口名称【%s】已经存在!", msg.getName()));
         }
@@ -1769,16 +1770,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void validate(APIUpdateInterfaceMsg msg) {
 
         InterfaceVO iface = Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).find();
-        if (iface.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now())))
+        if (iface.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())))
             throw new ApiMessageInterceptionException(
                     argerr("The Interface[uuid:%s] has expired！", msg.getUuid()));
 
         //判断同一个用户的网络名称是否已经存在
-        if (!StringUtils.isEmpty(msg.getName())) {
-            String accountUuid = Q.New(InterfaceVO.class)
-                    .eq(InterfaceVO_.uuid, msg.getUuid())
-                    .select(InterfaceVO_.accountUuid).findValue();
-            if (checkResourceName(InterfaceVO.class.getSimpleName(), msg.getName(), accountUuid)) {
+        if (!StringUtils.isEmpty(msg.getName()) && !msg.getName().equals(iface.getName())) {
+            if (checkResourceName(InterfaceVO.class.getSimpleName(), msg.getName(), iface.getAccountUuid())) {
                 throw new ApiMessageInterceptionException(argerr("物理接口名称【%s】已经存在!", msg.getName()));
             }
         }

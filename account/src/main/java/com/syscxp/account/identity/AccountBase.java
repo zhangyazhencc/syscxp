@@ -5,6 +5,7 @@ import com.syscxp.account.header.identity.*;
 import com.syscxp.account.header.user.*;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.header.identity.AbstractAccount;
 import com.syscxp.header.identity.AccountStatus;
 import com.syscxp.header.identity.AccountType;
@@ -183,17 +184,14 @@ public class AccountBase extends AbstractAccount {
             List<RolePolicyRefVO> list = new ArrayList();
             RolePolicyRefVO vo = null;
 
-            dbf.removeCollection(dbf.createQuery(RolePolicyRefVO.class).add(RolePolicyRefVO_.roleUuid,
-                    SimpleQuery.Op.EQ,msg.getUuid()).list(),RolePolicyRefVO.class);
+            UpdateQuery.New(RolePolicyRefVO.class).condAnd(RolePolicyRefVO_.roleUuid,
+                    SimpleQuery.Op.EQ,msg.getUuid()).delete();
 
             for (String id : msg.getPolicyUuids()) {
-                PolicyVO policy = dbf.findByUuid(id, PolicyVO.class);
-                if (policy != null) {
-                    vo = new RolePolicyRefVO();
-                    vo.setRoleUuid(msg.getUuid());
-                    vo.setPolicyUuid(id);
-                    list.add(vo);
-                }
+                vo = new RolePolicyRefVO();
+                vo.setRoleUuid(msg.getUuid());
+                vo.setPolicyUuid(id);
+                list.add(vo);
             }
 
             dbf.persistCollection(list);
@@ -784,20 +782,15 @@ public class AccountBase extends AbstractAccount {
         role.setAccountUuid(msg.getAccountUuid());
         role.setDescription(msg.getDescription());
 
-        Set<PolicyVO> policySet = new HashSet<>();
+        role = dbf.persistAndRefresh(role);
 
         RolePolicyRefVO vo = null;
         for (String id : msg.getPolicyUuids()) {
-            PolicyVO policy = dbf.findByUuid(id, PolicyVO.class);
-            if (policy != null) {
-                vo = new RolePolicyRefVO();
-                vo.setPolicyUuid(id);
-                vo.setRoleUuid(role.getUuid());
-                dbf.persistAndRefresh(vo);
-            }
+            vo = new RolePolicyRefVO();
+            vo.setPolicyUuid(id);
+            vo.setRoleUuid(role.getUuid());
+            dbf.persistAndRefresh(vo);
         }
-
-        role = dbf.persistAndRefresh(role);
 
         APICreateRoleEvent evt = new APICreateRoleEvent(msg.getId());
 
@@ -823,10 +816,10 @@ public class AccountBase extends AbstractAccount {
 
     @Transactional
     private void handle(APIDeleteRoleMsg msg) {
-        dbf.removeByPrimaryKey(msg.getUuid(), RoleVO.class);
+        UpdateQuery.New(RolePolicyRefVO.class).condAnd(RolePolicyRefVO_.roleUuid,
+                SimpleQuery.Op.EQ,msg.getUuid()).delete();
 
-        dbf.removeCollection(dbf.createQuery(RolePolicyRefVO.class).add(RolePolicyRefVO_.roleUuid,
-                SimpleQuery.Op.EQ,msg.getUuid()).list(),RolePolicyRefVO.class);
+        dbf.removeByPrimaryKey(msg.getUuid(), RoleVO.class);
 
         APIDeleteRoleEvent evt = new APIDeleteRoleEvent(msg.getId());
         bus.publish(evt);

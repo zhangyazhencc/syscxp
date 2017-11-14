@@ -16,7 +16,7 @@ public class APIGetAccountBalanceMsg extends APISyncCallMessage {
     private String  accountUuid;
 
     public String getAccountUuid() {
-       if(this.getSession().getType()== AccountType.SystemAdmin && !StringUtils.isEmpty(accountUuid)){
+       if(this.getSession().getType()!= AccountType.Normal && !StringUtils.isEmpty(accountUuid)){
            return accountUuid;
        }
        return this.getSession().getAccountUuid();

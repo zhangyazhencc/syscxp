@@ -9,6 +9,7 @@ import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.host.APICreateMonitorHostMsg;
 import com.syscxp.header.tunnel.host.MonitorHostVO;
 import com.syscxp.header.tunnel.host.MonitorHostVO_;
+import com.syscxp.header.tunnel.host.MonitorType;
 import com.syscxp.header.tunnel.tunnel.TunnelMonitorState;
 import com.syscxp.header.tunnel.monitor.*;
 import com.syscxp.header.tunnel.switchs.*;
@@ -102,6 +103,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APIQuerySpeedResultMsg) msg);
         } else if (msg instanceof APIUpdateSpeedRecordsMsg) {
             handle((APIUpdateSpeedRecordsMsg) msg);
+        } else if (msg instanceof APICreateNettoolRecordMsg) {
+            handle((APICreateNettoolRecordMsg) msg);
+        } else if (msg instanceof APIQueryNettoolResultMsg) {
+            handle((APIQueryNettoolResultMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -237,16 +242,21 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         try {
             // 创建纪录
-            SpeedRecordsVO vo = createSpeedRecord(msg, event);
+            SpeedRecordsVO vo = createSpeedRecord(msg);
 
             // 下发测速命令
-            if (event.isSuccess())
-                startSpeedTest(vo, event);
-
-            if (event.isSuccess())
+            MonitorAgentCommands.RestResponse response = sendSpeedTestCommand(vo);
+            if (response.isSuccess())
                 event.setInventory(SpeedRecordsInventory.valueOf(vo));
+            else{
+                String err = String.format("Failure to send speed test command！ %s", response.getMsg());
+                logger.error(err);
+                event.setError(Platform.operr(err));
+            }
         } catch (Exception e) {
-            event.setError(Platform.operr("测速失败！ %s", e.getMessage()));
+            String err = String.format("Speed test failure！ %s", e.getMessage());
+            logger.error(err);
+            event.setError(Platform.operr(err));
         }
 
         bus.publish(event);
@@ -258,7 +268,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param msg
      * @return 测速记录
      */
-    private SpeedRecordsVO createSpeedRecord(APICreateSpeedRecordsMsg msg, APIEvent event) {
+    private SpeedRecordsVO createSpeedRecord(APICreateSpeedRecordsMsg msg) {
         SpeedRecordsVO vo = new SpeedRecordsVO();
 
         vo.setUuid(Platform.getUuid());
@@ -278,68 +288,37 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         return vo;
     }
 
-    /**
-     * 下发测速命令开始测速
-     *
-     * @param vo
-     */
-    private void startSpeedTest(SpeedRecordsVO vo, APIEvent event) {
-        Map<String, Object> commamdMap = getSpeedTestCommand(vo);
-
-        TunnelMonitorVO tunnelMonitorVO = new TunnelMonitorVO();
-        String monitorHostIp = "";
-        MonitorHostVO monitorHostVO = new MonitorHostVO();
-        // server
-        String serverCommand = JSONObjectUtil.toJsonString(commamdMap.get(MonitorAgentCommands.SpeedCommandType.SERVER.toString()));
-        tunnelMonitorVO = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.uuid, vo.getSrcTunnelMonitorUuid()).find();
-        monitorHostIp = Q.New(MonitorHostVO.class)
-                .eq(MonitorHostVO_.uuid,tunnelMonitorVO.getHostUuid())
-                .select(MonitorHostVO_.hostIp).findValue();
-
-        sendSpeedTestCommand(monitorHostIp, serverCommand, event);
-
-        if (event.isSuccess()) {
-            // client
-            String clientCommand = JSONObjectUtil.toJsonString(commamdMap.get(MonitorAgentCommands.SpeedCommandType.CLIENT.toString()));
-            tunnelMonitorVO = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.uuid, vo.getSrcTunnelMonitorUuid()).find();
-            monitorHostIp = Q.New(MonitorHostVO.class)
-                    .eq(MonitorHostVO_.uuid,tunnelMonitorVO.getHostUuid())
-                    .select(MonitorHostVO_.hostIp).findValue();
-            sendSpeedTestCommand(tunnelMonitorVO.getMonitorIp(), clientCommand, event);
-        }
-    }
-
     /***
      * 发送测速命令
-     * @param hostIp：监控主机IP
-     * @param command：命令
-     * @param event
+     * @param vo
      */
-    private void sendSpeedTestCommand(String hostIp, String command, APIEvent event) {
-        String url = getMonitorAgentUrl(hostIp, MonitorAgentConstant.IPERF);
+    private MonitorAgentCommands.RestResponse sendSpeedTestCommand(SpeedRecordsVO vo) {
+        Map<String, Object> commamdMap = getSpeedTestCommand(vo);
 
-        MonitorAgentCommands.RestResponse response = new MonitorAgentCommands.RestResponse();
-        try {
-            response = evtf.syncJsonPost(url, command, MonitorAgentCommands.RestResponse.class);
-        } catch (Exception e) {
-            response.setSuccess(false);
-            response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
-        }
+        // server
+        String serverCommand = JSONObjectUtil.toJsonString(commamdMap.get(MonitorAgentCommands.SpeedCommandType.SERVER.toString()));
+        MonitorAgentCommands.RestResponse  response = sendAgentCommand(getMonitorHostIp(vo.getSrcTunnelMonitorUuid()), MonitorAgentConstant.IPERF, serverCommand);
 
-        if (!response.isSuccess())
-            event.setError(Platform.operr("测速命令下发失败！ %s", response.getMsg()));
+        if (response.isSuccess()) {
+            // client
+            String clientCommand = JSONObjectUtil.toJsonString(commamdMap.get(MonitorAgentCommands.SpeedCommandType.CLIENT.toString()));
+            response = sendAgentCommand(getMonitorHostIp(vo.getDstTunnelMonitorUuid()), MonitorAgentConstant.IPERF, clientCommand);
+
+            if (!response.isSuccess())
+                logger.error(String.format("Failure to send client side iperf command s%", clientCommand));
+        }else
+            logger.error(String.format("Failure to send server side iperf command s%", serverCommand));
+
+        return response;
     }
 
-    /***
-     * 获取监控agent 服务url
-     * @param hostIp
-     * @param method
-     * @return
-     */
-    private String getMonitorAgentUrl(String hostIp, String method) {
-        String url = "http://" + hostIp + ":"+MonitorAgentConstant.SERVER_PORT + method;
+    private String getMonitorHostIp(String tunnelMonitorUuid) {
+        TunnelMonitorVO tunnelMonitorVO = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.uuid, tunnelMonitorUuid).find();
+        String monitorHostIp = Q.New(MonitorHostVO.class)
+                .eq(MonitorHostVO_.uuid, tunnelMonitorVO.getHostUuid())
+                .select(MonitorHostVO_.hostIp).findValue();
 
-        return url;
+        return monitorHostIp;
     }
 
     /**
@@ -388,43 +367,34 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         return commandMap;
     }
 
-    private void handle(APIQuerySpeedResultMsg msg){
-        TunnelMonitorVO tunnelMonitorVO = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.uuid,msg.getSrcTunnelMonitorUuid()).find();
-        MonitorHostVO hostVO = Q.New(MonitorHostVO.class).eq(MonitorHostVO_.uuid,tunnelMonitorVO.getHostUuid()).find();
-
-        Map<String,String> map = new HashMap<>();
-        map.put("guid",msg.getUuid());
-        String command = JSONObjectUtil.toJsonString(map);
-
-        APIEvent event = new APIEvent();
-        List<MonitorAgentCommands.SpeedResult> resultList = getSpeedResultFromAgent(hostVO.getHostIp(),command);
-
+    private void handle(APIQuerySpeedResultMsg msg) {
         APIQuerySpeedResultReply reply = new APIQuerySpeedResultReply();
-        reply.setInventories(SpeedResultInventory.valueOf(resultList));
-        bus.reply(msg,reply);
-    }
 
-    /***
-     * 从agent获取测速结果
-     * @param hostIp
-     * @param command
-     * @return 测速结果
-     */
-    private List<MonitorAgentCommands.SpeedResult> getSpeedResultFromAgent(String hostIp,String command){
-        String url = getMonitorAgentUrl(hostIp, MonitorAgentConstant.IPERF_RESULT);
-
-        List<MonitorAgentCommands.SpeedResult> resultList = new ArrayList<>();
+        List<MonitorAgentCommands.SpeedResult> results = new ArrayList<>();
         try {
-            resultList = evtf.syncJsonPost(url, command,  List.class);
-        } catch (Exception e) {
-            MonitorAgentCommands.SpeedResult result = new MonitorAgentCommands.SpeedResult();
-            result.setComplete_flag(true);
-            result.setIperf_data(0);
+            TunnelMonitorVO tunnelMonitorVO = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.uuid, msg.getSrcTunnelMonitorUuid()).find();
+            MonitorHostVO hostVO = Q.New(MonitorHostVO.class).eq(MonitorHostVO_.uuid, tunnelMonitorVO.getHostUuid()).find();
 
-            resultList.add(result);
+            Map<String, String> map = new HashMap<>();
+            map.put("guid", msg.getUuid());
+            String command = JSONObjectUtil.toJsonString(map);
+            String url = getMonitorAgentUrl(hostVO.getHostIp(), MonitorAgentConstant.IPERF_RESULT);
+            results = evtf.syncJsonPost(url, command, List.class);
+            if(!results.get(0).isSuccess()){
+                String err = String.format("Failure to execute speed test command! s%",results.get(0).getMsg());
+                logger.error(err);
+                reply.setError(Platform.argerr(err));
+            }
+        }catch (Exception e){
+            String err = String.format("Failure to execute speed test command! s%",e.getMessage());
+            logger.error(err);
+            reply.setError(Platform.argerr(err));
         }
 
-        return resultList;
+        if(reply.isSuccess())
+            reply.setInventories(SpeedResultInventory.valueOf(results));
+
+        bus.reply(msg, reply);
     }
 
     private void handle(APIUpdateSpeedRecordsMsg msg) {
@@ -440,6 +410,58 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         APIUpdateSpeedRecordsEvent event = new APIUpdateSpeedRecordsEvent(msg.getId());
         event.setInventory(SpeedRecordsInventory.valueOf(vo));
         bus.publish(event);
+    }
+
+    private void handle(APICreateNettoolRecordMsg msg) {
+        APICreateNettoolRecordEvent event = new APICreateNettoolRecordEvent();
+
+        MonitorAgentCommands.NettoolCommand nettoolCommand = new MonitorAgentCommands.NettoolCommand();
+        nettoolCommand.setCommand(msg.getCommand());
+        nettoolCommand.setGuid(Platform.getUuid());
+        nettoolCommand.setRemote_ip(msg.getRemoteIp());
+        String command = JSONObjectUtil.toJsonString(nettoolCommand);
+
+        List<MonitorHostVO> hosts = Q.New(MonitorHostVO.class)
+                .eq(MonitorHostVO_.nodeUuid, msg.getNodeUuid())
+                .eq(MonitorHostVO_.monitorType, MonitorType.NETTOOL)
+                .find();
+
+        if (!hosts.isEmpty()) {
+            MonitorAgentCommands.RestResponse response = sendAgentCommand(hosts.get(0).getHostIp(),
+                    MonitorAgentConstant.NETTOOL,
+                    command);
+
+            if (!response.isSuccess())
+                event.setError(Platform.operr("Failure to send s% command ", msg.getCommand()));
+        } else
+            event.setError(Platform.operr("No nettoolCommand monitor host under node s%", msg.getNodeUuid()));
+
+        if (event.isSuccess())
+            event.setInventory(NettoolRecordInventory.valueOf(nettoolCommand,hosts.get(0).getHostIp()));
+
+        bus.publish(event);
+    }
+
+    private void handle(APIQueryNettoolResultMsg msg){
+        APIQueryNettoolResultReply reply = new APIQueryNettoolResultReply();
+        MonitorAgentCommands.NettoolResult result = new MonitorAgentCommands.NettoolResult();
+        try {
+            Map<String,String> map = new HashMap<>();
+            map.put("guid",msg.getGuid());
+            String command = JSONObjectUtil.toJsonString(map);
+            String url = getMonitorAgentUrl(msg.getHostIp(), MonitorAgentConstant.NETTOOL_RESULT);
+
+            result = evtf.syncJsonPost(url, command, MonitorAgentCommands.NettoolResult.class);
+        }catch (Exception e){
+            String err = String.format("Failure to execute speed test command! s%",e.getMessage());
+            logger.error(err);
+            reply.setError(Platform.argerr(err));
+        }
+
+        if(reply.isSuccess())
+            reply.setInventory(NettoolResultInventory.valueOf(result));
+
+        bus.reply(msg, reply);
     }
 
     /**
@@ -1077,6 +1099,39 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     public String getFalconServerUrl(String method) {
         return String.format("http://%s:%s%s",
                 CoreGlobalProperty.FALCON_API_IP, CoreGlobalProperty.FALCON_API_PORT, method);
+    }
+
+    /***
+     * 获取监控agent 服务url
+     * @param hostIp
+     * @param method
+     * @return
+     */
+    private String getMonitorAgentUrl(String hostIp, String method) {
+        String url = "http://" + hostIp + ":" + MonitorAgentConstant.SERVER_PORT + method;
+
+        return url;
+    }
+
+    /***
+     * 下发监控agent命令
+     * @param hostIp：监控机IP
+     * @param method：命令类型
+     * @param command：命令
+     * @return： MonitorAgentCommands.RestResponse
+     */
+    private MonitorAgentCommands.RestResponse sendAgentCommand(String hostIp, String method, String command) {
+        String url = getMonitorAgentUrl(hostIp, method);
+
+        MonitorAgentCommands.RestResponse response = new MonitorAgentCommands.RestResponse();
+        try {
+            response = evtf.syncJsonPost(url, command, MonitorAgentCommands.RestResponse.class);
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
+        }
+
+        return response;
     }
 
     @Override
