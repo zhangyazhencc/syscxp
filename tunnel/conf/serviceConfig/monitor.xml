@@ -36,12 +36,37 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.monitor.APICreateSpeedTestTunnelMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.monitor.APIDeleteSpeedTestTunnelMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.monitor.APICreateNettoolRecordMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.monitor.APIQueryNettoolResultMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.monitor.APIQuerySpeedResultMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.monitor.APIQuerySpeedRecordsMsg</name>
         <serviceId>query</serviceId>
     </message>
 
     <message>
         <name>com.syscxp.header.tunnel.monitor.APIQueryHostSwitchMonitorMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.monitor.APIQuerySpeedTestTunnelMsg</name>
         <serviceId>query</serviceId>
     </message>
 </service>
