@@ -227,7 +227,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     ModifyTunnelPortsMsg modifyMsg = new ModifyTunnelPortsMsg();
                     modifyMsg.setTunnelUuid(tunnel.getUuid());
                     modifyMsg.setTaskUuid(taskResource.getUuid());
-                    bus.send(msg, new CloudBusCallBack(null) {
+                    bus.makeLocalServiceId(modifyMsg, TunnelConstant.SERVICE_ID);
+                    bus.send(modifyMsg, new CloudBusCallBack(null) {
                         @Override
                         public void run(MessageReply reply) {
                             if (reply.isSuccess()) {
@@ -710,6 +711,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             .eq(TunnelSwitchPortVO_.tunnelUuid,msg.getUuid())
                             .eq(TunnelSwitchPortVO_.sortTag, "A")
                             .update();
+                    logger.info("修改A端物理接口或VLAN");
                 }
 
                 trigger.next();
@@ -719,6 +721,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void rollback(FlowRollback trigger, Map data) {
                 if (!Objects.equals(msg.getInterfaceAUuid(), msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())){
                     dbf.updateAndRefresh(tunnelSwitchPortA);
+                    logger.info("回滚A端物理接口或VLAN");
                 }
 
                 trigger.rollback();
@@ -733,6 +736,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             .eq(TunnelSwitchPortVO_.tunnelUuid,msg.getUuid())
                             .eq(TunnelSwitchPortVO_.sortTag, "Z")
                             .update();
+                    logger.info("修改Z端物理接口或VLAN");
                 }
 
                 trigger.next();
@@ -742,6 +746,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void rollback(FlowRollback trigger, Map data) {
                 if (!Objects.equals(msg.getInterfaceZUuid(), msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())){
                     dbf.updateAndRefresh(tunnelSwitchPortZ);
+                    logger.info("回滚Z端物理接口或VLAN");
                 }
                 trigger.rollback();
             }
@@ -755,7 +760,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     ModifyTunnelPortsMsg modifyTunnelPortsMsg = new ModifyTunnelPortsMsg();
                     modifyTunnelPortsMsg.setTunnelUuid(vo.getUuid());
                     modifyTunnelPortsMsg.setTaskUuid(taskResourceVO.getUuid());
-                    bus.makeTargetServiceIdByResourceUuid(modifyTunnelPortsMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                    bus.makeLocalServiceId(modifyTunnelPortsMsg, TunnelConstant.SERVICE_ID);
                     bus.send(modifyTunnelPortsMsg, new CloudBusCallBack(null) {
                         @Override
                         public void run(MessageReply reply) {
@@ -929,7 +934,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             ModifyTunnelBandwidthMsg modifyTunnelBandwidthMsg = new ModifyTunnelBandwidthMsg();
             modifyTunnelBandwidthMsg.setTunnelUuid(vo.getUuid());
             modifyTunnelBandwidthMsg.setTaskUuid(taskResourceVO.getUuid());
-            bus.makeTargetServiceIdByResourceUuid(modifyTunnelBandwidthMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+            bus.makeLocalServiceId(modifyTunnelBandwidthMsg, TunnelConstant.SERVICE_ID);
             bus.send(modifyTunnelBandwidthMsg);
             evt.setInventory(TunnelInventory.valueOf(vo));
         } else {
@@ -1013,7 +1018,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
                 deleteTunnelMsg.setTunnelUuid(vo.getUuid());
                 deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-                bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                bus.makeLocalServiceId(deleteTunnelMsg, TunnelConstant.SERVICE_ID);
                 bus.send(deleteTunnelMsg);
 
                 evt.setInventory(TunnelInventory.valueOf(vo));
@@ -1048,7 +1053,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
                         deleteTunnelMsg.setTunnelUuid(vo.getUuid());
                         deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-                        bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                        bus.makeLocalServiceId(deleteTunnelMsg, TunnelConstant.SERVICE_ID);
                         bus.send(deleteTunnelMsg);
 
                         evt.setInventory(TunnelInventory.valueOf(vo));
@@ -1151,7 +1156,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     EnabledTunnelMsg enabledTunnelMsg = new EnabledTunnelMsg();
                     enabledTunnelMsg.setTunnelUuid(vo.getUuid());
                     enabledTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-                    bus.makeTargetServiceIdByResourceUuid(enabledTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                    bus.makeLocalServiceId(enabledTunnelMsg, TunnelConstant.SERVICE_ID);
                     bus.send(enabledTunnelMsg);
                 }
             }
@@ -1164,13 +1169,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 EnabledTunnelMsg enabledTunnelMsg = new EnabledTunnelMsg();
                 enabledTunnelMsg.setTunnelUuid(vo.getUuid());
                 enabledTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-                bus.makeTargetServiceIdByResourceUuid(enabledTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                bus.makeLocalServiceId(enabledTunnelMsg, TunnelConstant.SERVICE_ID);
                 bus.send(enabledTunnelMsg);
             } else {
                 DisabledTunnelMsg disabledTunnelMsg = new DisabledTunnelMsg();
                 disabledTunnelMsg.setTunnelUuid(vo.getUuid());
                 disabledTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-                bus.makeTargetServiceIdByResourceUuid(disabledTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                bus.makeLocalServiceId(disabledTunnelMsg, TunnelConstant.SERVICE_ID);
                 bus.send(disabledTunnelMsg);
             }
         }
@@ -1181,25 +1186,77 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void handle(APICreateQinqMsg msg) {
         APICreateQinqEvent evt = new APICreateQinqEvent(msg.getId());
-
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        String uuid = Platform.getUuid();
         QinqVO qinqVO = new QinqVO();
-        qinqVO.setUuid(Platform.getUuid());
+        qinqVO.setUuid(uuid);
         qinqVO.setTunnelUuid(msg.getUuid());
         qinqVO.setStartVlan(msg.getStartVlan());
         qinqVO.setEndVlan(msg.getEndVlan());
-        dbf.persistAndRefresh(qinqVO);
 
-        //创建任务
-        TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyPorts);
+        FlowChain createQinq = FlowChainBuilder.newSimpleFlowChain();
+        createQinq.setName(String.format("create-tunnel-%s-innervlan", msg.getUuid()));
+        createQinq.then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
 
-        ModifyTunnelPortsMsg modifyTunnelPortsMsg = new ModifyTunnelPortsMsg();
-        modifyTunnelPortsMsg.setTunnelUuid(vo.getUuid());
-        modifyTunnelPortsMsg.setTaskUuid(taskResourceVO.getUuid());
-        bus.makeTargetServiceIdByResourceUuid(modifyTunnelPortsMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
-        bus.send(modifyTunnelPortsMsg);
+                dbf.persistAndRefresh(qinqVO);
 
-        evt.setInventory(QinqInventory.valueOf(qinqVO));
+                logger.info("新增一段QINQ");
+                trigger.next();
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                UpdateQuery.New(QinqVO.class)
+                        .eq(QinqVO_.uuid, uuid)
+                        .hardDelete();
+
+                logger.info("回滚QINQ");
+                trigger.rollback();
+            }
+        }).then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                //创建任务
+                TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyPorts);
+
+                ModifyTunnelPortsMsg modifyTunnelPortsMsg = new ModifyTunnelPortsMsg();
+                modifyTunnelPortsMsg.setTunnelUuid(vo.getUuid());
+                modifyTunnelPortsMsg.setTaskUuid(taskResourceVO.getUuid());
+                bus.makeLocalServiceId(modifyTunnelPortsMsg, TunnelConstant.SERVICE_ID);
+                bus.send(modifyTunnelPortsMsg, new CloudBusCallBack(null) {
+                    @Override
+                    public void run(MessageReply reply) {
+                        if (reply.isSuccess()) {
+                            logger.info(String.format("新增 tunnel[uuid:%s] 内部VLAN 成功.", vo.getUuid()));
+                        } else {
+                            logger.info(String.format("新增 tunnel[uuid:%s] 内部VLAN 失败.", vo.getUuid()));
+                            trigger.fail(reply.getError());
+                        }
+                    }
+                });
+
+                trigger.next();
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                trigger.rollback();
+            }
+        }).done(new FlowDoneHandler(null) {
+            @Override
+            public void handle(Map data) {
+                evt.setInventory(QinqInventory.valueOf(qinqVO));
+            }
+        }).error(new FlowErrorHandler(null) {
+            @Override
+            public void handle(ErrorCode errCode, Map data) {
+                evt.setError(errf.stringToOperationError("create innervlan failed!"));
+            }
+        }).start();
+
         bus.publish(evt);
     }
 
@@ -1207,18 +1264,66 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIDeleteQinqEvent evt = new APIDeleteQinqEvent(msg.getId());
         QinqVO qinqVO = dbf.findByUuid(msg.getUuid(), QinqVO.class);
         TunnelVO vo = dbf.findByUuid(qinqVO.getTunnelUuid(), TunnelVO.class);
-        dbf.remove(qinqVO);
 
-        //创建任务
-        TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyPorts);
+        FlowChain deleteQinq = FlowChainBuilder.newSimpleFlowChain();
+        deleteQinq.setName(String.format("delete-tunnel-%s-innervlan", vo.getUuid()));
+        deleteQinq.then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                dbf.remove(qinqVO);
 
-        ModifyTunnelPortsMsg modifyTunnelPortsMsg = new ModifyTunnelPortsMsg();
-        modifyTunnelPortsMsg.setTunnelUuid(vo.getUuid());
-        modifyTunnelPortsMsg.setTaskUuid(taskResourceVO.getUuid());
-        bus.makeTargetServiceIdByResourceUuid(modifyTunnelPortsMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
-        bus.send(modifyTunnelPortsMsg);
+                logger.info("删除一段QINQ");
+                trigger.next();
+            }
 
-        evt.setInventory(QinqInventory.valueOf(qinqVO));
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                dbf.persistAndRefresh(qinqVO);
+
+                logger.info("回滚QINQ");
+                trigger.rollback();
+            }
+        }).then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                //创建任务
+                TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyPorts);
+
+                ModifyTunnelPortsMsg modifyTunnelPortsMsg = new ModifyTunnelPortsMsg();
+                modifyTunnelPortsMsg.setTunnelUuid(vo.getUuid());
+                modifyTunnelPortsMsg.setTaskUuid(taskResourceVO.getUuid());
+                bus.makeLocalServiceId(modifyTunnelPortsMsg, TunnelConstant.SERVICE_ID);
+                bus.send(modifyTunnelPortsMsg, new CloudBusCallBack(null) {
+                    @Override
+                    public void run(MessageReply reply) {
+                        if (reply.isSuccess()) {
+                            logger.info(String.format("删除 tunnel[uuid:%s] 内部VLAN 成功.", vo.getUuid()));
+                        } else {
+                            logger.info(String.format("删除 tunnel[uuid:%s] 内部VLAN 失败.", vo.getUuid()));
+                            trigger.fail(reply.getError());
+                        }
+                    }
+                });
+
+                trigger.next();
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                trigger.rollback();
+            }
+        }).done(new FlowDoneHandler(null) {
+            @Override
+            public void handle(Map data) {
+                evt.setInventory(QinqInventory.valueOf(qinqVO));
+            }
+        }).error(new FlowErrorHandler(null) {
+            @Override
+            public void handle(ErrorCode errCode, Map data) {
+                evt.setError(errf.stringToOperationError("delete innervlan failed!"));
+            }
+        }).start();
+
         bus.publish(evt);
     }
 
@@ -1302,7 +1407,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
             createTunnelMsg.setTunnelUuid(vo.getUuid());
             createTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-            bus.makeTargetServiceIdByResourceUuid(createTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+            bus.makeLocalServiceId(createTunnelMsg, TunnelConstant.SERVICE_ID);
             bus.send(createTunnelMsg);
         }
     }
@@ -1320,7 +1425,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         ModifyTunnelBandwidthMsg modifyTunnelBandwidthMsg = new ModifyTunnelBandwidthMsg();
         modifyTunnelBandwidthMsg.setTunnelUuid(vo.getUuid());
         modifyTunnelBandwidthMsg.setTaskUuid(taskResourceVO.getUuid());
-        bus.makeTargetServiceIdByResourceUuid(modifyTunnelBandwidthMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+        bus.makeLocalServiceId(modifyTunnelBandwidthMsg, TunnelConstant.SERVICE_ID);
         bus.send(modifyTunnelBandwidthMsg);
     }
 
@@ -1361,7 +1466,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                 DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
                                 deleteTunnelMsg.setTunnelUuid(vo.getUuid());
                                 deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-                                bus.makeTargetServiceIdByResourceUuid(deleteTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+                                bus.makeLocalServiceId(deleteTunnelMsg, TunnelConstant.SERVICE_ID);
                                 bus.send(deleteTunnelMsg);
                             }else if(cmd.getCallBackData().equals("delete") && vo.getState() == TunnelState.Disabled){
                                 deleteTunnel(vo);
@@ -1664,7 +1769,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void validate(APIUpdateInterfaceMsg msg) {
 
         InterfaceVO iface = Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).find();
-        if (iface.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now())))
+        if (iface.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())))
             throw new ApiMessageInterceptionException(
                     argerr("The Interface[uuid:%s] has expired！", msg.getUuid()));
 
@@ -2275,7 +2380,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
         createTunnelMsg.setTunnelUuid(vo.getUuid());
         createTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-        bus.makeTargetServiceIdByResourceUuid(createTunnelMsg, TunnelConstant.SERVICE_ID, vo.getUuid());
+        bus.makeLocalServiceId(createTunnelMsg, TunnelConstant.SERVICE_ID);
         bus.send(createTunnelMsg);
 
         evt.setInventory(TunnelInventory.valueOf(vo));

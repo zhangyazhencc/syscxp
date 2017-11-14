@@ -21,6 +21,7 @@ public class MonitorHostVO extends HostVO {
     private String username;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private MonitorType monitorType;
 
     @Column
