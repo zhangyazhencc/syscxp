@@ -30,13 +30,12 @@ public class BillingSubQueryExtension extends AbstractMysqlQuerySubQueryExtensio
         if (msg.getSession().isAdminAccountSession() || msg.getSession().isAdminUserSession()) {
             return null;
         }
+
         if (msg.getSession().getType() == AccountType.Proxy) {
-            if (msg instanceof APIQueryExpendMessage) {
-                if (getMessageClassesForAddExtraConditionToQueryExtensionPoint().contains(msg.getClass())){
-                    List<String> accountUuids = ((APIQueryExpendMessage) msg).getAccountUuids();
-                    if(accountUuids != null && accountUuids.size() > 0) {
-                        return null;
-                    }
+            if (getMessageClassesForAddExtraConditionToQueryExtensionPoint().contains(msg.getClass())){
+                List<String> accountUuids = ((APIQueryExpendMessage) msg).getAccountUuids();
+                if(accountUuids != null && accountUuids.size() > 0) {
+                    return null;
                 }
             }
         }
