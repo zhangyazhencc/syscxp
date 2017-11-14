@@ -12,12 +12,13 @@ import java.util.List;
  * @Cretion Date: 2017-11-03.
  * @Description: 测速结果.
  */
-// @Inventory(mappingVOClass = MonitorAgentCommands.SpeedResult.class)
 public class SpeedResultInventory {
     private String tunnel_id;
     private boolean complete_flag;
     private float iperf_data;
     private String time_stamp;
+    private boolean success;
+    private String msg;
 
     public static SpeedResultInventory valueOf(MonitorAgentCommands.SpeedResult vo){
         SpeedResultInventory inventory = new SpeedResultInventory();
@@ -25,6 +26,8 @@ public class SpeedResultInventory {
         inventory.setComplete_flag(vo.isComplete_flag());
         inventory.setIperf_data(vo.getIperf_data());
         inventory.setTime_stamp(vo.getTime_stamp());
+        inventory.setSuccess(vo.isSuccess());
+        inventory.setMsg(vo.getMsg());
 
         return  inventory;
     }
@@ -67,5 +70,21 @@ public class SpeedResultInventory {
 
     public void setTime_stamp(String time_stamp) {
         this.time_stamp = time_stamp;
+    }
+
+    public boolean isSuccess() {
+        return success;
+    }
+
+    public void setSuccess(boolean success) {
+        this.success = success;
+    }
+
+    public String getMsg() {
+        return msg;
+    }
+
+    public void setMsg(String msg) {
+        this.msg = msg;
     }
 }

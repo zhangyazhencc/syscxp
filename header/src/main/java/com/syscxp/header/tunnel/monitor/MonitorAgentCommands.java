@@ -136,6 +136,8 @@ public class MonitorAgentCommands {
         private boolean complete_flag;
         private float iperf_data;
         private String time_stamp;
+        private boolean success;
+        private String msg;
 
         public String getTunnel_id() {
             return tunnel_id;
@@ -168,7 +170,82 @@ public class MonitorAgentCommands {
         public void setTime_stamp(String time_stamp) {
             this.time_stamp = time_stamp;
         }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
+
+        public String getMsg() {
+            return msg;
+        }
+
+        public void setMsg(String msg) {
+            this.msg = msg;
+        }
     }
+
+    /***
+     * 网络工具
+     */
+    public static class NettoolCommand {
+        private String command;
+        private String remote_ip;
+        private String guid;
+
+        public String getCommand() {
+            return command;
+        }
+
+        public void setCommand(String command) {
+            this.command = command;
+        }
+
+        public String getRemote_ip() {
+            return remote_ip;
+        }
+
+        public void setRemote_ip(String remote_ip) {
+            this.remote_ip = remote_ip;
+        }
+
+        public String getGuid() {
+            return guid;
+        }
+
+        public void setGuid(String guid) {
+            this.guid = guid;
+        }
+    }
+
+    /***
+     * 网络工具返回结果
+     */
+    public static class NettoolResult {
+        private String guid;
+        private String result;
+
+        public String getGuid() {
+            return guid;
+        }
+
+        public void setGuid(String guid) {
+            this.guid = guid;
+        }
+
+        public String getResult() {
+            return result;
+        }
+
+        public void setResult(String result) {
+            this.result = result;
+        }
+    }
+
+
     /**
      * 获取端口
      * @return
