@@ -5,7 +5,6 @@ import com.syscxp.header.vo.ForeignKey;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.Set;
 
 @Entity
 @Table
@@ -23,14 +22,6 @@ public class RoleVO {
 
     @Column
     private String description;
-
-//    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.REFRESH)
-//    @JoinTable(
-//            name="RolePolicyRefVO",
-//            joinColumns=@JoinColumn(name="roleUuid"),
-//            inverseJoinColumns=@JoinColumn(name="policyUuid")
-//    )
-//    private Set<PolicyVO> policySet;
 
     @Column
     private Timestamp createDate;
@@ -91,11 +82,4 @@ public class RoleVO {
         this.lastOpDate = lastOpDate;
     }
 
-//    public Set<PolicyVO> getPolicySet() {
-//        return policySet;
-//    }
-//
-//    public void setPolicySet(Set<PolicyVO> policySet) {
-//        this.policySet = policySet;
-//    }
 }
