@@ -27,7 +27,7 @@ public class APICreateInterfaceManualMsg extends APIMessage {
     private SwitchPortType portType;
     @APIParam(validValues = {"TRUNK", "ACCESS", "QINQ"})
     private NetworkType networkType;
-    @APIParam(emptyString = false, maxLength = 255)
+    @APIParam(required = false, maxLength = 255)
     private String description;
     @APIParam
     private Integer duration;
