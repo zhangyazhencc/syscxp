@@ -36,6 +36,7 @@ import com.syscxp.utils.logging.CLogger;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.time.Instant;
@@ -757,11 +758,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setProductStatus(0);
         }
         payMethod(msg, orderVo, abvo, discountPrice, currentTimestamp);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(currentTimestamp);
-        calendar.add(Calendar.MONTH, duration.intValue());
+        LocalDateTime now = LocalDateTime.now().plusMonths(duration.intValue());
         orderVo.setProductEffectTimeStart(currentTimestamp);
-        orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
+        orderVo.setProductEffectTimeEnd(Timestamp.valueOf(now));
 
         RenewVO renewVO = new RenewVO();
         renewVO.setUuid(Platform.getUuid());
@@ -772,7 +771,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         renewVO.setProductType(orderVo.getProductType());
         renewVO.setDescriptionData(orderVo.getDescriptionData());
         renewVO.setRenewAuto(true);
-        renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
+        renewVO.setExpiredTime(Timestamp.valueOf(now));
         renewVO.setPriceOneMonth(renewPrice);
         dbf.getEntityManager().persist(renewVO);
 

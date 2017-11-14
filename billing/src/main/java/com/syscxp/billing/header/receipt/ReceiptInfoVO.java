@@ -57,6 +57,17 @@ public class ReceiptInfoVO {
     @Column
     private Timestamp lastOpDate;
 
+    @Column
+    private boolean isShow;
+
+    public boolean isShow() {
+        return isShow;
+    }
+
+    public void setShow(boolean show) {
+        isShow = show;
+    }
+
     public String getComment() {
         return comment;
     }
