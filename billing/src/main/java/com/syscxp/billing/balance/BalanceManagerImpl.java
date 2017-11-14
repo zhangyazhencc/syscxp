@@ -436,6 +436,9 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
 
     private void handle(APIGetAccountBalanceMsg msg) {
         AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+        if(vo ==null){
+            vo = initAccountBlance(msg.getAccountUuid());
+        }
         AccountBalanceInventory inventory = AccountBalanceInventory.valueOf(vo);
         APIGetAccountBalanceReply reply = new APIGetAccountBalanceReply();
         reply.setInventory(inventory);
