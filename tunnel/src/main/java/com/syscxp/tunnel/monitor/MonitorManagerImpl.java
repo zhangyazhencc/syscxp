@@ -111,6 +111,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APIQueryNettoolResultMsg) msg);
         } else if (msg instanceof APIQueryMonitorResultMsg) {
             handle((APIQueryMonitorResultMsg) msg);
+        }else if (msg instanceof APICreateSpeedTestTunnelMsg) {
+            handle((APICreateSpeedTestTunnelMsg) msg);
+        }else if (msg instanceof APIDeleteSpeedTestTunnelMsg) {
+            handle((APIDeleteSpeedTestTunnelMsg) msg);
         }else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -504,6 +508,30 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         condition.setQueries(queries);
 
         return JSONObjectUtil.toJsonString(condition);
+    }
+
+    private void handle(APICreateSpeedTestTunnelMsg msg){
+        SpeedTestTunnelVO vo = new SpeedTestTunnelVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setTunnelUuid(msg.getTunnelUuid());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateSpeedTestTunnelEvent event = new APICreateSpeedTestTunnelEvent(msg.getId());
+        event.setInventory(SpeedTestTunnelInventory.valueOf(vo));
+        bus.publish(event);
+    }
+
+    private void handle(APIDeleteSpeedTestTunnelMsg msg){
+        SpeedTestTunnelVO vo = dbf.findByUuid(msg.getUuid(), SpeedTestTunnelVO.class);
+
+        dbf.remove(vo);
+
+        APIDeleteSpeedTestTunnelEvent event = new APIDeleteSpeedTestTunnelEvent(msg.getId());
+        event.setInventory(SpeedTestTunnelInventory.valueOf(vo));
+
+        bus.publish(event);
     }
 
     /**
