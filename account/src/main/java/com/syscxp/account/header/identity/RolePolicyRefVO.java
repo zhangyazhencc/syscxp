@@ -6,7 +6,6 @@ import com.syscxp.header.vo.ForeignKey.ReferenceOption;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
-import java.util.Set;
 
 @Entity
 @Table
