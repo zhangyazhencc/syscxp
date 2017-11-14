@@ -187,13 +187,10 @@ public class AccountBase extends AbstractAccount {
                     SimpleQuery.Op.EQ,msg.getUuid()).list(),RolePolicyRefVO.class);
 
             for (String id : msg.getPolicyUuids()) {
-                PolicyVO policy = dbf.findByUuid(id, PolicyVO.class);
-                if (policy != null) {
-                    vo = new RolePolicyRefVO();
-                    vo.setRoleUuid(msg.getUuid());
-                    vo.setPolicyUuid(id);
-                    list.add(vo);
-                }
+                vo = new RolePolicyRefVO();
+                vo.setRoleUuid(msg.getUuid());
+                vo.setPolicyUuid(id);
+                list.add(vo);
             }
 
             dbf.persistCollection(list);
@@ -786,19 +783,13 @@ public class AccountBase extends AbstractAccount {
 
         role = dbf.persistAndRefresh(role);
 
-//        Set<PolicyVO> policySet = new HashSet<>();
         RolePolicyRefVO vo = null;
         for (String id : msg.getPolicyUuids()) {
-            PolicyVO policy = dbf.findByUuid(id, PolicyVO.class);
-            if (policy != null) {
-                vo = new RolePolicyRefVO();
-                vo.setPolicyUuid(id);
-                vo.setRoleUuid(role.getUuid());
-                dbf.persistAndRefresh(vo);
-            }
+            vo = new RolePolicyRefVO();
+            vo.setPolicyUuid(id);
+            vo.setRoleUuid(role.getUuid());
+            dbf.persistAndRefresh(vo);
         }
-
-
 
         APICreateRoleEvent evt = new APICreateRoleEvent(msg.getId());
 
