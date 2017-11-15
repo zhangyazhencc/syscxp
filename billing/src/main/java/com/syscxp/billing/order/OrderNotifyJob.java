@@ -61,7 +61,7 @@ public class OrderNotifyJob {
                 @Override
                 public boolean run() {
                     Map<String, String> header = new HashMap<>();
-                    header.put(RESTConstant.COMMAND_PATH, orderVO.getType().toString());
+                    header.put(RESTConstant.COMMAND_PATH, "billing");
                     String body = JSONObjectUtil.toJsonString(orderCallbackCmd);
                     boolean flag = false;
                     try {
