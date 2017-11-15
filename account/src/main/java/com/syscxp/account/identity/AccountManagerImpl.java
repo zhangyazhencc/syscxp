@@ -147,6 +147,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                 if(proxyAccountRefVOS!=null && proxyAccountRefVOS.size()>0){
                     reply.setNormalAccountHasProxy(true);
                 }
+            } else if (accountVO.getType() == AccountType.Proxy) {
+                SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
+                q.add(ProxyAccountRefVO_.accountUuid, Op.EQ, accountVO.getUuid());
+                q.select(ProxyAccountRefVO_.customerAccountUuid);
+                List<String> customerAccountUuids = q.listValue();
+                reply.setAccountUuidOwnProxy(customerAccountUuids);
             }
         }
         bus.reply(msg, reply);

@@ -78,4 +78,8 @@ public class CoreGlobalProperty {
 
     @GlobalProperty(name = "falconApiPort", defaultValue = "6892")
     public static int FALCON_API_PORT;
+
+    @GlobalProperty(name = "openTSDBServerUrl", defaultValue = "http://192.168.211.6:4242")
+    public static int OPENTSDB_SERVER_URL;
+
 }
