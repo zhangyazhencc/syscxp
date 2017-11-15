@@ -37,6 +37,8 @@ public class ReceiptInfoInventory {
 
     private String comment;
 
+    private boolean isShow;
+
     public static ReceiptInfoInventory valueOf(ReceiptInfoVO vo) {
         ReceiptInfoInventory inv = new ReceiptInfoInventory();
         inv.setUuid(vo.getUuid());
@@ -52,6 +54,7 @@ public class ReceiptInfoInventory {
         inv.setTitle(vo.getTitle());
         inv.setType(vo.getType());
         inv.setComment(vo.getComment());
+        inv.setShow(vo.isShow());
 
         return inv;
     }
@@ -62,6 +65,14 @@ public class ReceiptInfoInventory {
             lst.add(ReceiptInfoInventory.valueOf(vo));
         }
         return lst;
+    }
+
+    public boolean isShow() {
+        return isShow;
+    }
+
+    public void setShow(boolean show) {
+        isShow = show;
     }
 
     public String getUuid() {
