@@ -415,7 +415,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     private void handle(APICreateNettoolRecordMsg msg) {
-        APICreateNettoolRecordEvent event = new APICreateNettoolRecordEvent();
+        APICreateNettoolRecordEvent event = new APICreateNettoolRecordEvent(msg.getId());
 
         MonitorAgentCommands.NettoolCommand nettoolCommand = new MonitorAgentCommands.NettoolCommand();
         nettoolCommand.setCommand(msg.getCommand());
@@ -425,7 +425,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         MonitorHostVO host = getMonitorHostByNodeAndType(msg.getNodeUuid(),MonitorType.NETTOOL);
 
-        if(host != null)
+        if(host == null)
             event.setError(Platform.operr("No monitor host exist under node s%",msg.getNodeUuid()));
 
         if(event.isSuccess()){
@@ -445,22 +445,24 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     private void handle(APIQueryNettoolResultMsg msg){
         APIQueryNettoolResultReply reply = new APIQueryNettoolResultReply();
-        MonitorAgentCommands.NettoolResult result = new MonitorAgentCommands.NettoolResult();
+        List<MonitorAgentCommands.NettoolResult> result = new ArrayList<>();
         try {
             Map<String,String> map = new HashMap<>();
             map.put("guid",msg.getGuid());
             String command = JSONObjectUtil.toJsonString(map);
             String url = getMonitorAgentUrl(msg.getHostIp(), MonitorAgentConstant.NETTOOL_RESULT);
 
-            result = evtf.syncJsonPost(url, command, MonitorAgentCommands.NettoolResult.class);
+            // result = evtf.syncJsonPost(url, command, List.class);
+            String resp = evtf.syncJsonPost(url, command, String.class);
+            logger.info(resp);
         }catch (Exception e){
             String err = String.format("Failure to execute speed test command! s%",e.getMessage());
             logger.error(err);
             reply.setError(Platform.argerr(err));
         }
 
-        if(reply.isSuccess())
-            reply.setInventory(NettoolResultInventory.valueOf(result));
+        /*if(reply.isSuccess())
+            reply.setInventories(NettoolResultInventory.valueOf(result));*/
 
         bus.reply(msg, reply);
     }
@@ -1147,9 +1149,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         List<MonitorHostVO> hosts = Q.New(MonitorHostVO.class)
                 .eq(MonitorHostVO_.nodeUuid, nodeUuid)
                 .eq(MonitorHostVO_.monitorType, monitorType)
-                .eq(MonitorHostVO_.state, HostState.Disabled)
+                .eq(MonitorHostVO_.state, HostState.Enabled)
                 .eq(MonitorHostVO_.status, HostStatus.Connected)
-                .find();
+                .list();
 
         if (hosts.isEmpty())
             return null;
@@ -1165,13 +1167,13 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     public TunnelMonitorVO getTunnelMonitorByNodeAndTunnel(String nodeUuid, String tunnelUuid) {
 
         List<MonitorHostVO> host = Q.New(MonitorHostVO.class)
-                .eq(MonitorHostVO_.nodeUuid, nodeUuid).find();
+                .eq(MonitorHostVO_.nodeUuid, nodeUuid).list();
         if (host.isEmpty())
             throw new ApiMessageInterceptionException(argerr("No Monitor Host exist under Node s%", nodeUuid));
 
         List<TunnelMonitorVO> tunnelMonitors = Q.New(TunnelMonitorVO.class)
                 .eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid)
-                .eq(TunnelMonitorVO_.hostUuid, host.get(0).getUuid()).find();
+                .eq(TunnelMonitorVO_.hostUuid, host.get(0).getUuid()).list();
         if (tunnelMonitors.isEmpty())
             throw new ApiMessageInterceptionException(argerr("No Tunnel Monitor under tunnel: s% host:s%", tunnelUuid, host.get(0).getUuid()));
 
@@ -1369,7 +1371,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         List<SpeedRecordsVO> vos = Q.New(SpeedRecordsVO.class)
                 .eq(SpeedRecordsVO_.tunnelUuid, msg.getTunnelUuid())
                 .eq(SpeedRecordsVO_.status, SpeedRecordStatus.TESTING)
-                .find();
+                .list();
 
         if (vos.size() > 0) {
             throw new ApiMessageInterceptionException(argerr("Uncompleted test records exists, please retry later!"));

@@ -438,7 +438,6 @@ public class RESTFacadeImpl implements RESTFacade {
             logger.trace(String.format("json post[%s], %s", url, req.toString()));
         }
 
-
         ResponseEntity<String> rsp = new Retry<ResponseEntity<String>>() {
             @Override
             @RetryCondition(onExceptions = {IOException.class, RestClientException.class})
