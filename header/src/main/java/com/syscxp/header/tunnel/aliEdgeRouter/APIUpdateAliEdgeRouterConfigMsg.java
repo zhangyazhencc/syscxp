@@ -12,6 +12,8 @@ public class APIUpdateAliEdgeRouterConfigMsg extends APIMessage {
     @APIParam(maxLength = 32)
     private String aliRegionId;
     @APIParam(maxLength = 32)
+    private String aliRegionName;
+    @APIParam(maxLength = 32)
     private String physicalLineUuid;
     @APIParam(maxLength = 32)
     private String switchPortUuid;
@@ -30,6 +32,14 @@ public class APIUpdateAliEdgeRouterConfigMsg extends APIMessage {
 
     public void setAliRegionId(String aliRegionId) {
         this.aliRegionId = aliRegionId;
+    }
+
+    public String getAliRegionName() {
+        return aliRegionName;
+    }
+
+    public void setAliRegionName(String aliRegionName) {
+        this.aliRegionName = aliRegionName;
     }
 
     public String getPhysicalLineUuid() {

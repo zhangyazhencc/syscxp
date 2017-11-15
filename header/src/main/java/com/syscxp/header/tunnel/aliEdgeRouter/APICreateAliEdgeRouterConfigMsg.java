@@ -9,6 +9,8 @@ import com.syscxp.header.tunnel.TunnelConstant;
 public class APICreateAliEdgeRouterConfigMsg extends APIMessage {
     @APIParam(maxLength = 64)
     private String aliRegionId;
+    @APIParam(maxLength = 64)
+    private String aliRegionName;
     @APIParam(maxLength = 32)
     private String physicalLineUuid;
     @APIParam(maxLength = 32)
@@ -20,6 +22,14 @@ public class APICreateAliEdgeRouterConfigMsg extends APIMessage {
 
     public void setAliRegionId(String aliRegionId) {
         this.aliRegionId = aliRegionId;
+    }
+
+    public String getAliRegionName() {
+        return aliRegionName;
+    }
+
+    public void setAliRegionName(String aliRegionName) {
+        this.aliRegionName = aliRegionName;
     }
 
     public String getPhysicalLineUuid() {

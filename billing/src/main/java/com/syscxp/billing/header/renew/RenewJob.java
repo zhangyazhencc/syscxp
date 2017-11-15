@@ -3,11 +3,21 @@ package com.syscxp.billing.header.renew;
 import com.syscxp.billing.header.sla.ProductCaller;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
+import com.syscxp.core.retry.Retry;
+import com.syscxp.core.retry.RetryCondition;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
+import com.syscxp.header.rest.TimeoutRestTemplate;
+import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateMsg;
+import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateReply;
+import com.syscxp.utils.gson.JSONObjectUtil;
+import org.quartz.JobExecutionContext;
+import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,12 +26,17 @@ import com.syscxp.core.db.GLock;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.web.client.RestClientException;
 
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 
 @Component
 public class RenewJob{
@@ -32,8 +47,12 @@ public class RenewJob{
     @Autowired
     private RESTFacade restf;
 
-    private static final CLogger logger = Utils.getLogger(RenewJob.class);
+    private TimeoutRestTemplate template;
 
+    private static final CLogger logger = Utils.getLogger(RenewJob.class);
+    public RenewJob() {
+        template = RESTFacade.createRestTemplate(CoreGlobalProperty.REST_FACADE_READ_TIMEOUT, CoreGlobalProperty.REST_FACADE_CONNECT_TIMEOUT);
+    }
     @Scheduled(cron = "0 0/5 * * * ? ")
     @Transactional
     protected void autoRenew() {
@@ -41,7 +60,6 @@ public class RenewJob{
         GLock lock = new GLock(String.format("id-%s", "createRenew"), 120);
         lock.lock();
         try {
-            Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
             SimpleQuery<RenewVO> q = dbf.createQuery(RenewVO.class);
             q.add(RenewVO_.isRenewAuto, SimpleQuery.Op.EQ, true);
@@ -75,7 +93,7 @@ public class RenewJob{
                 aMsg.setAccountUuid(renewVO.getAccountUuid());
                 InnerMessageHelper.setMD5(aMsg);
                 String gstr = RESTApiDecoder.dumpWithSession(aMsg);
-                RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class);
+                RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr,RestAPIResponse.class);
 
                 if (rsp.getState().equals(RestAPIState.Done.toString())) {
                     try {
@@ -91,6 +109,34 @@ public class RenewJob{
             lock.unlock();
         }
 
+    }
+
+    public <T> T syncJsonPost(String url, String body,  Class<T> returnClass) {
+        body = body == null ? "" : body;
+
+        HttpHeaders requestHeaders = new HttpHeaders();
+        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+        requestHeaders.setContentLength(body.length());
+        HttpEntity<String> req = new HttpEntity<String>(body, requestHeaders);
+
+        ResponseEntity<String> rsp = new Retry<ResponseEntity<String>>() {
+            @Override
+            @RetryCondition(onExceptions = {IOException.class, RestClientException.class})
+            protected ResponseEntity<String> call() {
+                return template.exchange(url, HttpMethod.POST, req, String.class);
+            }
+        }.run();
+
+        if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
+            throw new OperationFailureException(Platform.operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
+        }
+
+        if (rsp.getBody() != null && returnClass != Void.class) {
+
+            return JSONObjectUtil.toObject(rsp.getBody(), returnClass);
+        } else {
+            return null;
+        }
     }
 
 

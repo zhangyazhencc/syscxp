@@ -10,7 +10,6 @@ import com.syscxp.header.rest.APINoSee;
 
 import javax.persistence.Column;
 
-@Action(category = HostConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public abstract class APIAddHostMsg extends APICreateMessage implements AddHostMessage {
 
     @APIParam(maxLength = 255)

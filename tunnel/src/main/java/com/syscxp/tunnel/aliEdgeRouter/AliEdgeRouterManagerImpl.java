@@ -29,6 +29,7 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.function.Function;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import javax.persistence.Tuple;
@@ -93,14 +94,32 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             handle((APIDeleteAliEdgeRouterConfigMsg) msg);
         } else if(msg instanceof APIListAliTunnelMsg){
             handle((APIListAliTunnelMsg) msg);
-        }
-        else {
+        }else if(msg instanceof APIListAliRegionMsg){
+            handle((APIListAliRegionMsg) msg);
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
 
     }
 
+    private void handle(APIListAliRegionMsg msg) {
+        List<AliRegionInventoey> regions = new ArrayList<>();
+        String sql = "select distinct aliRegionId,aliRegionName from AliEdgeRouterConfigVO ";
 
+        TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+        List<Tuple> ts = tfq.getResultList();
+        for (Tuple t : ts) {
+            AliRegionInventoey aliRegionInventoey = new AliRegionInventoey();
+            aliRegionInventoey.setId(t.get(0, String.class));
+            aliRegionInventoey.setName(t.get(1, String.class));
+            regions.add(aliRegionInventoey);
+        }
+        APIListAliRegionReply reply = new APIListAliRegionReply();
+        reply.setAliRegionInventoeys(regions);
+        bus.reply(msg,reply);
+    }
+
+    @Transactional
     private void handle(APIListAliTunnelMsg msg){
         List<AliTunnelInventory> tunnelQueryList = new ArrayList<AliTunnelInventory>();
 
@@ -168,6 +187,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         Boolean update = false;
         if(msg.getAliRegionId() != null){
             vo.setAliRegionId(msg.getAliRegionId());
+            vo.setAliRegionName(msg.getAliRegionName());
             update = true;
         }
 
@@ -195,6 +215,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         vo.setUuid(Platform.getUuid());
         vo.setAliRegionId(msg.getAliRegionId());
+        vo.setAliRegionName(msg.getAliRegionName());
         vo.setPhysicalLineUuid(msg.getPhysicalLineUuid());
         vo.setSwitchPortUuid(msg.getSwitchPortUuid());
 
