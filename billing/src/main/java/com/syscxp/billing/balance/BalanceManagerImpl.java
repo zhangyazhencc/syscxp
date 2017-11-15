@@ -141,6 +141,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
                 if (customerUuids != null && customerUuids.size() > 0) {
                     UpdateQuery q = UpdateQuery.New(AccountDiscountVO.class);
                     q.condAnd(AccountDiscountVO_.accountUuid, SimpleQuery.Op.IN, customerUuids);
+                    q.condAnd(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.IN, accountDiscountVO.getProductCategoryUuid());
                     q.delete();
                 }
             }
@@ -338,7 +339,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
                 if (customerUuids != null && customerUuids.size() > 0) {
                     for(String accountUuid:customerUuids){
                         SimpleQuery<AccountDiscountVO> query = dbf.createQuery(AccountDiscountVO.class);
-                        query.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, accountDiscountVO);
+                        query.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, accountDiscountVO.getAccountUuid());
                         query.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, accountDiscountVO.getProductCategoryUuid());
                         AccountDiscountVO accountDiscountVO1 = query.find();
                         if (accountDiscountVO1 != null) {
