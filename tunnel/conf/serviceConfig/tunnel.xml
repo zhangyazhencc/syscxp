@@ -20,10 +20,6 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIUpdateInterfaceExpireDateMsg</name>
-    </message>
-
-    <message>
         <name>com.syscxp.header.tunnel.tunnel.APIUpdateInterfacePortMsg</name>
     </message>
 
