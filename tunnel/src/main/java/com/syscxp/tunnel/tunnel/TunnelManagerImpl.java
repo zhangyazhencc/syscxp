@@ -465,7 +465,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 renewOrderMsg.setDuration(msg.getDuration());
                 renewOrderMsg.setProductChargeModel(msg.getProductChargeModel());
                 renewOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-                renewOrderMsg.setAccountUuid(msg.getSession().getAccountUuid());
                 renewOrderMsg.setStartTime(dbf.getCurrentSqlTime());
                 renewOrderMsg.setExpiredTime(vo.getExpireDate());
 
@@ -476,7 +475,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         getOrderMsgForInterface(vo, null));
                 slaCompensationOrderMsg.setDuration(msg.getDuration());
                 slaCompensationOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-                slaCompensationOrderMsg.setAccountUuid(msg.getSession().getAccountUuid());
                 slaCompensationOrderMsg.setStartTime(dbf.getCurrentSqlTime());
                 slaCompensationOrderMsg.setExpiredTime(vo.getExpireDate());
 
