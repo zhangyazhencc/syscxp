@@ -17,7 +17,6 @@ public class VpnHostInventory extends HostInventory{
     private String publicIp;
     private Integer sshPort;
     private String username;
-    private String password;
     private String vpnInterfaceName;
     private Integer startPort;
     private Integer endPort;
@@ -29,7 +28,6 @@ public class VpnHostInventory extends HostInventory{
         this.setPublicIface(vo.getPublicInterface());
         this.setPublicIp(vo.getPublicIp());
         this.setUsername(vo.getUsername());
-        this.setPassword(vo.getPassword());
         this.setSshPort(vo.getSshPort());
         this.setVpnInterfaceName(vo.getVpnInterfaceName());
         this.setStartPort(vo.getStartPort());
@@ -122,14 +120,6 @@ public class VpnHostInventory extends HostInventory{
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
     }
 
 }

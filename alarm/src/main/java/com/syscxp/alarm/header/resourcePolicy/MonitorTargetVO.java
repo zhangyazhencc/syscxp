@@ -21,6 +21,39 @@ public class MonitorTargetVO extends BaseVO{
     @Column
     private String targetValue;
 
+    @Column
+    private String unit;
+
+    @Column
+    private String defaultValue;
+
+    @Column
+    private String range;
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
+    public String getRange() {
+        return range;
+    }
+
+    public void setRange(String range) {
+        this.range = range;
+    }
+
     public ProductType getProductType() {
         return productType;
     }

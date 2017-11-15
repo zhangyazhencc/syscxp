@@ -33,6 +33,17 @@ public class ReceiptPostAddressVO {
     private boolean isDefault;
 
     @Column
+    private boolean isShow;
+
+    public boolean isShow() {
+        return isShow;
+    }
+
+    public void setShow(boolean show) {
+        isShow = show;
+    }
+
+    @Column
     private Timestamp createDate;
 
     @Column

@@ -111,6 +111,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APIQueryNettoolResultMsg) msg);
         } else if (msg instanceof APIQueryMonitorResultMsg) {
             handle((APIQueryMonitorResultMsg) msg);
+        }else if (msg instanceof APICreateSpeedTestTunnelMsg) {
+            handle((APICreateSpeedTestTunnelMsg) msg);
+        }else if (msg instanceof APIDeleteSpeedTestTunnelMsg) {
+            handle((APIDeleteSpeedTestTunnelMsg) msg);
         }else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -485,7 +489,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     private String getOpenTSDBQueryCondition(APIQueryMonitorResultMsg msg){
-        List<OpenTSDBCommands.query> queries = new ArrayList<>();
+        List<OpenTSDBCommands.Query> queries = new ArrayList<>();
 
         TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid,msg.getTunnelUuid()).find();
         for(TunnelSwitchPortVO tunnelPort:tunnel.getTunnelSwitchPortVOS()){
@@ -493,7 +497,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
             OpenTSDBCommands.tags tags = new OpenTSDBCommands.tags(physicalSwitch.getmIP(),"Vlanif"+tunnelPort.getVlan());
 
-            OpenTSDBCommands.query query = new OpenTSDBCommands.query("avg",msg.getMetric(),tags);
+            OpenTSDBCommands.Query query = new OpenTSDBCommands.Query("avg",msg.getMetric(),tags);
 
             queries.add(query);
         }
@@ -504,6 +508,30 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         condition.setQueries(queries);
 
         return JSONObjectUtil.toJsonString(condition);
+    }
+
+    private void handle(APICreateSpeedTestTunnelMsg msg){
+        SpeedTestTunnelVO vo = new SpeedTestTunnelVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setTunnelUuid(msg.getTunnelUuid());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateSpeedTestTunnelEvent event = new APICreateSpeedTestTunnelEvent(msg.getId());
+        event.setInventory(SpeedTestTunnelInventory.valueOf(vo));
+        bus.publish(event);
+    }
+
+    private void handle(APIDeleteSpeedTestTunnelMsg msg){
+        SpeedTestTunnelVO vo = dbf.findByUuid(msg.getUuid(), SpeedTestTunnelVO.class);
+
+        dbf.remove(vo);
+
+        APIDeleteSpeedTestTunnelEvent event = new APIDeleteSpeedTestTunnelEvent(msg.getId());
+        event.setInventory(SpeedTestTunnelInventory.valueOf(vo));
+
+        bus.publish(event);
     }
 
     /**
@@ -1268,7 +1296,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             validate((APICreateHostSwitchMonitorMsg) msg);
         } else if (msg instanceof APICreateSpeedRecordsMsg) {
             validate((APICreateSpeedRecordsMsg) msg);
+        } else if (msg instanceof APICreateSpeedTestTunnelMsg) {
+            validate((APICreateSpeedTestTunnelMsg) msg);
         }
+
         return msg;
     }
 
@@ -1334,6 +1365,13 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         if (vos.size() > 0) {
             throw new ApiMessageInterceptionException(argerr("Uncompleted test records exists, please retry later!"));
         }
+    }
+
+    private void validate(APICreateSpeedTestTunnelMsg msg) {
+        SpeedTestTunnelVO vo = Q.New(SpeedTestTunnelVO.class).eq(SpeedTestTunnelVO_.tunnelUuid,msg.getTunnelUuid()).find();
+
+        if (vo != null)
+            throw new ApiMessageInterceptionException(argerr("Tunnel already exsited!"));
     }
 
     /**

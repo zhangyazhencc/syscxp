@@ -86,18 +86,13 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
     }
 
     private void handle(APIUpdateReceiptMsg msg) {
-        String receiptUuid = msg.getUuid();
-        ReceiptState state = msg.getState();
-        ReceiptVO vo = dbf.findByUuid(receiptUuid, ReceiptVO.class);
-        vo.setState(msg.getState());
-        vo.setCommet(msg.getReason());
-        if (vo.getState().equals(ReceiptState.REJECT)) {
-            vo.setOpMan(msg.getOpMan());
-        } else if(vo.getState().equals(ReceiptState.DONE)){
-            vo.setReceiptNO(msg.getReceiptNO());
-        }
-        dbf.updateAndRefresh(vo);
-        ReceiptInventory inventory = ReceiptInventory.valueOf(vo);
+        ReceiptVO receiptVO = dbf.findByUuid(msg.getUuid(), ReceiptVO.class);
+        receiptVO.setState(msg.getState());
+        receiptVO.setCommet(msg.getReason());
+        receiptVO.setOpMan(msg.getOpMan());
+        receiptVO.setReceiptNO(msg.getReceiptNO());
+        dbf.updateAndRefresh(receiptVO);
+        ReceiptInventory inventory = ReceiptInventory.valueOf(receiptVO);
         APIUpdateReceiptEvent evt = new APIUpdateReceiptEvent(msg.getId());
         evt.setInventory(inventory);
         bus.publish(evt);
@@ -125,12 +120,40 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         receiptVO.setState(ReceiptState.UNDONE);
         receiptVO.setTotal(total);
         ReceiptPostAddressVO receiptPostAddressVO = dbf.findByUuid(msg.getReceiptAddressUuid(), ReceiptPostAddressVO.class);
-        receiptVO.setReceiptPostAddressVO(receiptPostAddressVO);
-        receiptVO.setReceiptAddressUuid(receiptPostAddressVO.getUuid());
-        String receiptInfoUuid = msg.getReceiptInfoUuid();
-        ReceiptInfoVO receiptInfoVO = dbf.findByUuid(receiptInfoUuid, ReceiptInfoVO.class);
-        receiptVO.setReceiptInfoVO(receiptInfoVO);
-        receiptVO.setReceiptInfoUuid(receiptInfoVO.getUuid());
+        ReceiptPostAddressVO newAddress = new ReceiptPostAddressVO();
+        newAddress.setUuid(Platform.getUuid());
+        newAddress.setAccountUuid(receiptPostAddressVO.getAccountUuid());
+        newAddress.setAddress(receiptPostAddressVO.getAddress());
+        newAddress.setCreateDate(receiptPostAddressVO.getCreateDate());
+        newAddress.setDefault(false);
+        newAddress.setLastOpDate(receiptPostAddressVO.getLastOpDate());
+        newAddress.setName(receiptPostAddressVO.getName());
+        newAddress.setTelephone(receiptPostAddressVO.getTelephone());
+        newAddress.setShow(false);
+        dbf.persistAndRefresh(newAddress);
+        receiptVO.setReceiptAddressUuid(newAddress.getUuid());
+        receiptVO.setReceiptPostAddressVO(newAddress);
+        ReceiptInfoVO receiptInfoVO = dbf.findByUuid( msg.getReceiptInfoUuid(), ReceiptInfoVO.class);
+
+        ReceiptInfoVO newInfo = new ReceiptInfoVO();
+        newInfo.setUuid(Platform.getUuid());
+        newInfo.setComment(receiptInfoVO.getComment());
+        newInfo.setAccountUuid(receiptInfoVO.getAccountUuid());
+        newInfo.setAddress(receiptInfoVO.getAddress());
+        newInfo.setBankAccountNumber(receiptInfoVO.getBankAccountNumber());
+        newInfo.setBankName(receiptInfoVO.getBankName());
+        newInfo.setIdentifyNumber(receiptInfoVO.getIdentifyNumber());
+        newInfo.setDefault(false);
+        newInfo.setTelephone(receiptInfoVO.getTelephone());
+        newInfo.setTitle(receiptInfoVO.getTitle());
+        newInfo.setType(receiptInfoVO.getType());
+        newInfo.setCreateDate(receiptInfoVO.getCreateDate());
+        newInfo.setLastOpDate(receiptInfoVO.getLastOpDate());
+        newInfo.setShow(false);
+        dbf.persistAndRefresh(newInfo);
+        receiptVO.setReceiptInfoVO(newInfo);
+        receiptVO.setReceiptInfoUuid(newInfo.getUuid());
+
         ReceiptInventory inventory = ReceiptInventory.valueOf(receiptVO);
         dbf.persistAndRefresh(receiptVO);
         APICreateReceiptEvent evt = new APICreateReceiptEvent(msg.getId());

@@ -13,6 +13,7 @@ import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
@@ -144,7 +145,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             tunnelQueryList.add(inventory);
         }
 
-        TunnelQueryReply reply = new TunnelQueryReply();
+        APIListAliTunnelReply reply = new APIListAliTunnelReply();
         reply.setInventory(tunnelQueryList);
         bus.reply(msg,reply);
 
@@ -340,6 +341,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         }catch (ClientException e){
             e.printStackTrace();
             if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
+                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
             }else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
@@ -358,6 +360,13 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         bus.reply(msg,reply);
 
 
+    }
+
+    private void DeleteAliUser(String aliAccessKeyId, String aliAccessKeySecret) {
+        UpdateQuery q = UpdateQuery.New(AliUserVO.class);
+        q.condAnd(AliUserVO_.aliAccessKeyID, SimpleQuery.Op.EQ, aliAccessKeyId);
+        q.condAnd(AliUserVO_.aliAccessKeySecret, SimpleQuery.Op.EQ, aliAccessKeySecret);
+        q.delete();
     }
 
 
@@ -407,6 +416,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         }catch (ClientException e){
             e.printStackTrace();
             if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
+                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
             }else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
@@ -485,7 +495,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             e.printStackTrace();
 
             if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
-
+                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
             }else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
