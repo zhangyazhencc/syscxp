@@ -141,7 +141,7 @@ public class BalanceManagerImpl  extends AbstractService implements ApiMessageIn
                 if (customerUuids != null && customerUuids.size() > 0) {
                     UpdateQuery q = UpdateQuery.New(AccountDiscountVO.class);
                     q.condAnd(AccountDiscountVO_.accountUuid, SimpleQuery.Op.IN, customerUuids);
-                    q.condAnd(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.IN, accountDiscountVO.getProductCategoryUuid());
+                    q.condAnd(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, accountDiscountVO.getProductCategoryUuid());
                     q.delete();
                 }
             }
