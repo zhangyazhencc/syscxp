@@ -29,6 +29,7 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.function.Function;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import javax.persistence.Tuple;
@@ -117,7 +118,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         bus.reply(msg,reply);
     }
 
-
+    @Transactional
     private void handle(APIListAliTunnelMsg msg){
         List<AliTunnelInventory> tunnelQueryList = new ArrayList<AliTunnelInventory>();
 
