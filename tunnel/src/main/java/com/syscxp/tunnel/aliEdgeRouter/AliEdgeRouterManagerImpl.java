@@ -145,7 +145,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             tunnelQueryList.add(inventory);
         }
 
-        TunnelQueryReply reply = new TunnelQueryReply();
+        APIListAliTunnelReply reply = new APIListAliTunnelReply();
         reply.setInventory(tunnelQueryList);
         bus.reply(msg,reply);
 
