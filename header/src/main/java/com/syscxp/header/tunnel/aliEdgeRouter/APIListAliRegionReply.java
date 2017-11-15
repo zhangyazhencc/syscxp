@@ -3,17 +3,16 @@ package com.syscxp.header.tunnel.aliEdgeRouter;
 import com.syscxp.header.query.APIQueryReply;
 
 import java.util.List;
-import java.util.Map;
 
 public class APIListAliRegionReply extends APIQueryReply {
-    private List<AliRegionInventoey> aliRegionInventoeys;
+    private List<AliRegionInventory> aliRegionInventories;
 
 
-    public List<AliRegionInventoey> getAliRegionInventoeys() {
-        return aliRegionInventoeys;
+    public List<AliRegionInventory> getAliRegionInventories() {
+        return aliRegionInventories;
     }
 
-    public void setAliRegionInventoeys(List<AliRegionInventoey> aliRegionInventoeys) {
-        this.aliRegionInventoeys = aliRegionInventoeys;
+    public void setAliRegionInventories(List<AliRegionInventory> aliRegionInventories) {
+        this.aliRegionInventories = aliRegionInventories;
     }
 }

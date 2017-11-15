@@ -103,19 +103,19 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     }
 
     private void handle(APIListAliRegionMsg msg) {
-        List<AliRegionInventoey> regions = new ArrayList<>();
+        List<AliRegionInventory> regions = new ArrayList<>();
         String sql = "select distinct aliRegionId,aliRegionName from AliEdgeRouterConfigVO ";
 
         TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
         List<Tuple> ts = tfq.getResultList();
         for (Tuple t : ts) {
-            AliRegionInventoey aliRegionInventoey = new AliRegionInventoey();
+            AliRegionInventory aliRegionInventoey = new AliRegionInventory();
             aliRegionInventoey.setId(t.get(0, String.class));
             aliRegionInventoey.setName(t.get(1, String.class));
             regions.add(aliRegionInventoey);
         }
         APIListAliRegionReply reply = new APIListAliRegionReply();
-        reply.setAliRegionInventoeys(regions);
+        reply.setAliRegionInventories(regions);
         bus.reply(msg,reply);
     }
 
