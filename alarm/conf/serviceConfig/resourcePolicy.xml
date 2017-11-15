@@ -49,7 +49,7 @@
 
 
     <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIGetResrouceUuidsByPolicyMsg</name>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIGetResourceUuidsByPolicyMsg</name>
     </message>
 
     <message>

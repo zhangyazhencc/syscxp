@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
 @Action(category = AlarmConstant.ACTION_CATEGORY_RESOURCE_POLICY)
-public class APIGetResrouceUuidsByPolicyMsg extends APISyncCallMessage {
+public class APIGetResourceUuidsByPolicyMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false,resourceType = PolicyVO.class,checkAccount = true)
     private String policyUuid;

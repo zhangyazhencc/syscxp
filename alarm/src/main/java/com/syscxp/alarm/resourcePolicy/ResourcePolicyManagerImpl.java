@@ -7,10 +7,8 @@ import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
-import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconMsg;
@@ -22,15 +20,12 @@ import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.falconapi.FalconApiRestConstant;
-import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.header.query.QueryCondition;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
-import com.syscxp.header.tunnel.*;
 import com.syscxp.header.tunnel.tunnel.APIQueryTunnelDetailForAlarmMsg;
 import com.syscxp.header.tunnel.tunnel.APIQueryTunnelDetailForAlarmReply;
 import com.syscxp.utils.Utils;
@@ -99,14 +94,14 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             handle((APIAttachPolicyToResourceMsg) msg);
         }  else if (msg instanceof APIGetPolicyByResourceUuidMsg) {
             handle((APIGetPolicyByResourceUuidMsg) msg);
-        }  else if (msg instanceof APIGetResrouceUuidsByPolicyMsg) {
-            handle((APIGetResrouceUuidsByPolicyMsg) msg);
+        }  else if (msg instanceof APIGetResourceUuidsByPolicyMsg) {
+            handle((APIGetResourceUuidsByPolicyMsg) msg);
         }   else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APIGetResrouceUuidsByPolicyMsg msg) {
+    private void handle(APIGetResourceUuidsByPolicyMsg msg) {
 
         APIGetResourceUuidsByPolicyReply reply = new APIGetResourceUuidsByPolicyReply();
         SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
