@@ -34,6 +34,7 @@ import com.syscxp.header.tunnel.node.ZoneNodeRefVO_;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.utils.BootErrorLog;
+import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
@@ -362,22 +363,37 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo = dbf.persistAndRefresh(vo);
 
         //调用支付
-        APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg(getOrderMsgForInterface(vo, msg.getPortType()));
-        orderMsg.setProductChargeModel(vo.getProductChargeModel());
-        orderMsg.setDuration(vo.getDuration());
-        orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+        APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
+        ProductInfoForOrder productInfoForOrder = createBuyOrderForInterface(vo, msg.getPortType());
+        productInfoForOrder.setOpAccountUuid(msg.getAccountUuid());
+        orderMsg.setProducts(CollectionDSL.list(productInfoForOrder));
 
-        OrderInventory orderInventory = createOrder(orderMsg);
-
-        afterCreateInterface(orderInventory, vo, msg);
+        List<OrderInventory> inventories = createBuyOrder(orderMsg);
+        afterCreateInterface(inventories, vo, msg);
     }
 
-    private void afterCreateInterface(OrderInventory inventory, InterfaceVO vo, APIMessage msg) {
+    private ProductInfoForOrder createBuyOrderForInterface(InterfaceVO vo, SwitchPortType portType) {
+        ProductInfoForOrder order = new ProductInfoForOrder();
+        order.setProductChargeModel(vo.getProductChargeModel());
+        order.setDuration(vo.getDuration());
+        order.setProductName(vo.getName());
+        order.setProductUuid(vo.getUuid());
+        order.setProductType(ProductType.PORT);
+        order.setDescriptionData("no description");
+        if (portType != null)
+            order.setUnits(getInterfacePriceUnit(portType));
+        order.setAccountUuid(vo.getOwnerAccountUuid());
+        order.setNotifyUrl(restf.getSendCommandUrl());
+        return order;
+    }
+
+    private void afterCreateInterface(List<OrderInventory> inventories, InterfaceVO vo, APIMessage msg) {
         APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
 
-        if (inventory != null) {
+        if (!inventories.isEmpty()) {
+
             //付款成功,记录生效订单
-            saveResourceOrderEffective(inventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+            saveResourceOrderEffective(inventories.get(0).getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
             //状态修改已支付，生成到期时间
             vo.setAccountUuid(vo.getOwnerAccountUuid());
             vo.setState(InterfaceState.Paid);
@@ -414,14 +430,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo = dbf.persistAndRefresh(vo);
 
         //调用支付
-        APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg(getOrderMsgForInterface(vo, msg.getPortType()));
-        orderMsg.setProductChargeModel(vo.getProductChargeModel());
-        orderMsg.setDuration(vo.getDuration());
-        orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+        APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
+        ProductInfoForOrder productInfoForOrder = createBuyOrderForInterface(vo, msg.getPortType());
+        productInfoForOrder.setOpAccountUuid(msg.getAccountUuid());
+        orderMsg.setProducts(CollectionDSL.list(productInfoForOrder));
 
-        OrderInventory orderInventory = createOrder(orderMsg);
-
-        afterCreateInterface(orderInventory, vo, msg);
+        List<OrderInventory> inventories = createBuyOrder(orderMsg);
+        afterCreateInterface(inventories, vo, msg);
     }
 
     private void handle(APIUpdateInterfaceMsg msg) {
@@ -2143,6 +2158,19 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             logger.error(String.format("无法创建订单, %s", e.getMessage()), e);
         }
         return null;
+    }
+
+    private List<OrderInventory> createBuyOrder(APICreateBuyOrderMsg orderMsg) {
+        try {
+            APICreateBuyOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+
+            if (reply.isSuccess()) {
+                return reply.getInventories();
+            }
+        } catch (Exception e) {
+            logger.error(String.format("无法创建订单, %s", e.getMessage()), e);
+        }
+        return Collections.emptyList();
     }
 
     /**
