@@ -1,8 +1,8 @@
 package com.syscxp.billing.header.renew;
 
-import com.syscxp.billing.header.balance.*;
 import com.syscxp.billing.header.sla.ProductCaller;
 import com.syscxp.core.CoreGlobalProperty;
+import com.syscxp.core.Platform;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.retry.Retry;
@@ -13,18 +13,13 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
 import com.syscxp.header.rest.TimeoutRestTemplate;
-import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateMsg;
-import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateReply;
+import com.syscxp.header.tunnel.tunnel.APIRenewAutoTunnelMsg;
 import com.syscxp.utils.gson.JSONObjectUtil;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import com.syscxp.core.Platform;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.GLock;
 import com.syscxp.core.db.SimpleQuery;
@@ -33,15 +28,10 @@ import com.syscxp.utils.logging.CLogger;
 import org.springframework.web.client.RestClientException;
 
 import java.io.IOException;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
 import java.util.List;
 import java.util.ListIterator;
-import java.util.Map;
 
 @Component
 public class RenewJob{
@@ -79,7 +69,7 @@ public class RenewJob{
                 RenewVO renewVO = ite.next();
                 LocalDateTime now = LocalDateTime.now();
                 LocalDateTime expiredTime = renewVO.getExpiredTime().toLocalDateTime();
-                if ( ChronoUnit.DAYS.between(now, expiredTime) > 7 ) {
+                if ( ChronoUnit.DAYS.between(now, expiredTime) > 7 && now.isAfter(expiredTime)) {
                     dbf.getEntityManager().remove(dbf.getEntityManager().merge(renewVO));
                     dbf.getEntityManager().flush();
                     continue;
@@ -89,22 +79,24 @@ public class RenewJob{
                 }
 
                 ProductCaller caller = new ProductCaller(renewVO.getProductType());
-                APIUpdateExpireDateMsg aMsg = caller.getCallMsg();
 
-                aMsg.setUuid(renewVO.getProductUuid());
-                aMsg.setDuration(1);
-                aMsg.setProductChargeModel(renewVO.getProductChargeModel());
-                aMsg.setType(OrderType.RENEW);
-                aMsg.setAccountUuid(renewVO.getAccountUuid());
-                InnerMessageHelper.setMD5(aMsg);
-                String gstr = RESTApiDecoder.dumpWithSession(aMsg);
-                RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr,RestAPIResponse.class);
+                if(renewVO.getProductType().equals(ProductType.TUNNEL)){
+                    APIRenewAutoTunnelMsg aMsg = new APIRenewAutoTunnelMsg();
 
-                if (rsp.getState().equals(RestAPIState.Done.toString())) {
-                    try {
-                        RESTApiDecoder.loads(rsp.getResult());
-                    } catch (Exception e) {
-                        logger.error(e.getMessage());
+                    aMsg.setUuid(renewVO.getProductUuid());
+                    aMsg.setDuration(1);
+                    aMsg.setProductChargeModel(renewVO.getProductChargeModel());
+                    aMsg.setAccountUuid(renewVO.getAccountUuid());
+                    InnerMessageHelper.setMD5(aMsg);
+                    String gstr = RESTApiDecoder.dumpWithSession(aMsg);
+                    RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr,RestAPIResponse.class);
+
+                    if (rsp.getState().equals(RestAPIState.Done.toString())) {
+                        try {
+                            RESTApiDecoder.loads(rsp.getResult());
+                        } catch (Exception e) {
+                            logger.error(e.getMessage());
+                        }
                     }
                 }
 
@@ -115,6 +107,8 @@ public class RenewJob{
         }
 
     }
+
+
 
     public <T> T syncJsonPost(String url, String body,  Class<T> returnClass) {
         body = body == null ? "" : body;

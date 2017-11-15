@@ -227,6 +227,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         vo.setTitle(msg.getTitle());
         vo.setType(msg.getType());
         vo.setAccountUuid(msg.getSession().getAccountUuid());
+        vo.setShow(true);
         if (msg.getType().equals(ReceiptType.VAT_SPECIAL_RECEIPT)) {
             vo.setAddress(msg.getAddress());
             vo.setBankAccountNumber(msg.getBankAccountNumber());
@@ -311,6 +312,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         vo.setAddress(msg.getAddress());
         vo.setName(msg.getName());
         vo.setTelephone(msg.getTelephone());
+        vo.setShow(true);
         dbf.persistAndRefresh(vo);
 
         ReceiptPostAddressInventory ri = ReceiptPostAddressInventory.valueOf(vo);

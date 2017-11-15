@@ -1,26 +1,21 @@
 package com.syscxp.billing.sla;
 
-import com.syscxp.billing.BillingGlobalProperty;
 import com.syscxp.billing.header.renew.RenewVO;
 import com.syscxp.billing.header.renew.RenewVO_;
 import com.syscxp.billing.header.sla.*;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.billing.*;
-import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
-import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateMsg;
-import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateReply;
-import com.syscxp.header.tunnel.tunnel.APIUpdateInterfaceExpireDateMsg;
-import com.syscxp.header.tunnel.tunnel.APIUpdateTunnelExpireDateMsg;
+import com.syscxp.header.tunnel.tunnel.APISalTunnelMsg;
+import com.syscxp.header.tunnel.tunnel.APISalTunnelReply;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.DbEntityLister;
-import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
@@ -31,7 +26,6 @@ import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 
@@ -43,10 +37,6 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
     @Autowired
     private RESTFacade restf;
 
@@ -103,27 +93,28 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
             }
 
             ProductCaller caller = new ProductCaller(slaCompensateVO.getProductType());
-            APIUpdateExpireDateMsg aMsg = caller.getCallMsg();
-            APIUpdateExpireDateReply aReply = caller.getCallReply();
+            if(slaCompensateVO.getProductType().equals(ProductType.TUNNEL)){
+                APISalTunnelMsg aMsg = new APISalTunnelMsg();
+                aMsg.setUuid(slaCompensateVO.getProductUuid());
+                aMsg.setDuration(slaCompensateVO.getDuration());
+                aMsg.setAccountUuid(slaCompensateVO.getAccountUuid());
+                InnerMessageHelper.setMD5(aMsg);
+                String gstr = RESTApiDecoder.dumpWithSession(aMsg);
+                RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class);
 
-            aMsg.setUuid(slaCompensateVO.getProductUuid());
-            aMsg.setDuration(slaCompensateVO.getDuration());
-            aMsg.setProductChargeModel(ProductChargeModel.BY_DAY);
-            aMsg.setType(OrderType.SLA_COMPENSATION);
-            aMsg.setAccountUuid(msg.getSession().getAccountUuid());
-            aMsg.setSession(msg.getSession());
-
-            String gstr = RESTApiDecoder.dumpWithSession(aMsg);
-            RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class);
-
-            if (rsp.getState().equals(RestAPIState.Done.toString())) {
-                try {
-                    RESTApiDecoder.loads(rsp.getResult());
-                }catch (Exception e){
-                   throw new IllegalArgumentException(e);
+                if (rsp.getState().equals(RestAPIState.Done.toString())) {
+                    try {
+                        APISalTunnelReply reply = (APISalTunnelReply) RESTApiDecoder.loads(rsp.getResult());
+                        if(reply!=null && reply.getInventory()!=null){
+                            slaCompensateVO.setTimeEnd(reply.getInventory().getExpireDate());
+                            slaCompensateVO.setTimeStart(new Timestamp(reply.getInventory().getExpireDate().getTime()-slaCompensateVO.getDuration()*24*60*60*1000));
+                        }
+                    }catch (Exception e){
+                        throw new IllegalArgumentException(e);
+                    }
+                } else {
+                    throw new IllegalArgumentException("the network is not fine ,try for a moment");
                 }
-            } else {
-                throw new IllegalArgumentException("the network is not fine ,try for a moment");
             }
 
             slaCompensateVO.setState(SLAState.DONE);
