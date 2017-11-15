@@ -57,6 +57,11 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.endpoint.APIQueryCloudMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.endpoint.APIQueryInnerEndpointMsg</name>
         <serviceId>query</serviceId>
     </message>

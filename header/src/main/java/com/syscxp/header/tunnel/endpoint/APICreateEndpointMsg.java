@@ -25,6 +25,9 @@ public class APICreateEndpointMsg extends APIMessage {
     @APIParam(emptyString = false,validValues = {"CLOUD","ACCESSIN","INTERCONNECTED"})
     private EndpointType endpointType;
 
+    @APIParam(emptyString = false, required = false)
+    private String cloudType;
+
     @APIParam(emptyString = false,validValues = {"Disabled","Enabled"})
     private EndpointState state;
 
@@ -88,5 +91,13 @@ public class APICreateEndpointMsg extends APIMessage {
 
     public void setStatus(EndpointStatus status) {
         this.status = status;
+    }
+
+    public String getCloudType() {
+        return cloudType;
+    }
+
+    public void setCloudType(String cloudType) {
+        this.cloudType = cloudType;
     }
 }
