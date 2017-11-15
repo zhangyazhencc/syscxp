@@ -32,6 +32,9 @@ public class EndpointAO {
     private EndpointType endpointType;
 
     @Column
+    private String cloudType;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private EndpointState state;
 
@@ -52,6 +55,14 @@ public class EndpointAO {
 
     @Column
     private Timestamp createDate;
+
+    public String getCloudType() {
+        return cloudType;
+    }
+
+    public void setCloudType(String cloudType) {
+        this.cloudType = cloudType;
+    }
 
     public String getUuid() {
         return uuid;

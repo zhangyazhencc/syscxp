@@ -35,6 +35,7 @@ import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 
 import javax.persistence.Tuple;
@@ -565,6 +566,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         vo.setName(msg.getName());
         vo.setCode(msg.getCode());
         vo.setEndpointType(msg.getEndpointType());
+        if (msg.getEndpointType() == EndpointType.CLOUD)
+            vo.setCloudType(msg.getCloudType());
         vo.setState(msg.getState());
         vo.setStatus(msg.getStatus());
         vo.setDescription(msg.getDescription());
@@ -740,6 +743,11 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     }
 
     private void validate(APICreateEndpointMsg msg) {
+        if (msg.getEndpointType() == EndpointType.CLOUD) {
+            if (StringUtils.isEmpty(msg.getCloudType()) || !Q.New(CloudVO.class).eq(CloudVO_.name, msg.getCloudType()).isExists()) {
+                throw new ApiMessageInterceptionException(argerr(" the cloud endpoint must specify an existing cloud"));
+            }
+        }
         //判断code是否已经存在
         SimpleQuery<EndpointVO> q = dbf.createQuery(EndpointVO.class);
         q.add(EndpointVO_.code, SimpleQuery.Op.EQ, msg.getCode());

@@ -336,8 +336,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APICreateInterfaceMsg msg) {
-        //保存数据，分配资源
-        InterfaceVO vo = new InterfaceVO();
 
         //分配资源:策略分配端口
         TunnelStrategy ts = new TunnelStrategy();
@@ -345,7 +343,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (switchPortUuid == null) {
             throw new ApiMessageInterceptionException(argerr("该连接点下无可用的端口"));
         }
-        //保存数据
+
+        //保存数据，分配资源
+        InterfaceVO vo = new InterfaceVO();
         vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(null);
         vo.setOwnerAccountUuid(msg.getAccountUuid());
@@ -362,8 +362,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo = dbf.persistAndRefresh(vo);
 
         //调用支付
-        APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg(
-                getOrderMsgForInterface(vo, msg.getPortType()));
+        APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg(getOrderMsgForInterface(vo, msg.getPortType()));
         orderMsg.setProductChargeModel(vo.getProductChargeModel());
         orderMsg.setDuration(vo.getDuration());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -396,22 +395,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APICreateInterfaceManualMsg msg) {
-        APICreateInterfaceManualEvent evt = new APICreateInterfaceManualEvent(msg.getId());
-
         //保存数据
         InterfaceVO vo = new InterfaceVO();
-
         vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(null);
         vo.setOwnerAccountUuid(msg.getAccountUuid());
         vo.setName(msg.getName());
         vo.setEndpointUuid(msg.getEndpointUuid());
         vo.setSwitchPortUuid(msg.getSwitchPortUuid());
-        if (msg.getNetworkType() == null) {
-            vo.setType(NetworkType.TRUNK);
-        } else {
-            vo.setType(msg.getNetworkType());
-        }
+        vo.setType(msg.getNetworkType() != null ? msg.getNetworkType() : NetworkType.TRUNK);
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDescription(msg.getDescription());
@@ -2552,7 +2544,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 eq(PhysicalSwitchVO_.uuid, physicalSwitchUuid).
                 select(PhysicalSwitchVO_.mIP).findValue();
 
-        if (switchIp.isEmpty())
+        if (switchIp != null)
             throw new IllegalArgumentException("获取物理交换机IP失败");
 
         return switchIp;
