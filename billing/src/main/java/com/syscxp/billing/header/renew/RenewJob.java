@@ -14,7 +14,6 @@ import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
 import com.syscxp.header.rest.TimeoutRestTemplate;
 import com.syscxp.header.tunnel.tunnel.APIRenewAutoTunnelMsg;
-import com.syscxp.header.tunnel.tunnel.APIUpdateInterfaceExpireDateMsg;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
