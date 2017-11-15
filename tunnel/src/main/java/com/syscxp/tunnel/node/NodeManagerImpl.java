@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.node;
 
+import com.syscxp.core.db.Q;
 import com.syscxp.header.tunnel.NodeConstant;
 import com.syscxp.header.tunnel.endpoint.*;
 import com.syscxp.header.tunnel.host.MonitorHostVO;
@@ -766,6 +767,13 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         if (querySwitch.isExists()) {
             throw new ApiMessageInterceptionException(argerr("Virtual switch exist,cannot be deleted!"));
         }
+        //判断是否有连接点关联
+        if(Q.New(InnerConnectedEndpointVO.class).eq(InnerConnectedEndpointVO_.endpointUuid,msg.getUuid()).isExists()){
+            throw new ApiMessageInterceptionException(argerr("innerconnected exist,cannot be deleted!"));
+        }
+        if(Q.New(InnerConnectedEndpointVO.class).eq(InnerConnectedEndpointVO_.connectedEndpointUuid,msg.getUuid()).isExists()){
+            throw new ApiMessageInterceptionException(argerr("innerconnected exist,cannot be deleted!"));
+        }
     }
 
     private void validate(APICreateInnerEndpointMsg msg) {
@@ -781,7 +789,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         q2.add(InnerConnectedEndpointVO_.name, SimpleQuery.Op.EQ, msg.getName());
         q2.add(InnerConnectedEndpointVO_.connectedEndpointUuid, SimpleQuery.Op.EQ, msg.getConnectedEndpointUuid());
         if (q2.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("该连接点已经绑定该互联连接点！"));
+            throw new ApiMessageInterceptionException(argerr("该目的连接点的名称已经存在！"));
         }
     }
 

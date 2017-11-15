@@ -1,0 +1,61 @@
+消息：APIUpdateEndpointMsg
+
+权限：category = NodeConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true
+
+一、修改连接点
+参数（默认非必填）：
+    uuid：必填，要修改endpoint的uuid
+    名称
+    描述：
+    编号：唯一
+
+请求消息体示例：
+{
+    "com.syscxp.header.tunnel.endpoint.APIUpdateEndpointMsg":{
+        "uuid":"684049bf89554dc184a1df1f62e9572e",
+        "name":"接入昆山2",
+        "description":"测试",
+        "code":"ENDPOINT_KS_2",
+        "session":{
+            "uuid":"f6d965af88fd411d9edec6737378be92"
+        }
+    }
+}
+
+二、开放/关闭连接点
+参数：
+    uuid：必填，要修改endpoint的uuid
+    状态：开放传Open  关闭传Close
+
+请求消息体示例：
+{
+    "com.syscxp.header.tunnel.endpoint.APIUpdateEndpointMsg":{
+        "uuid":"684049bf89554dc184a1df1f62e9572e",
+        "status":"Open",
+        "session":{
+            "uuid":"f6d965af88fd411d9edec6737378be92"
+        }
+    }
+}
+
+三、启用/禁用连接点
+参数：
+    uuid：必填，要修改endpoint的uuid
+    状况：启用传Enabled  禁用传Disabled
+
+请求消息体示例：
+{
+    "com.syscxp.header.tunnel.endpoint.APIUpdateEndpointMsg":{
+        "uuid":"684049bf89554dc184a1df1f62e9572e",
+        "state":"Enabled",
+        "session":{
+            "uuid":"f6d965af88fd411d9edec6737378be92"
+        }
+    }
+}
+
+后台验证（validate）：
+    1.code唯一性验证
+
+业务流程：
+    修改数据

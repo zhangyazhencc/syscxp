@@ -256,17 +256,16 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         vo.setSwitchModel(dbf.findByUuid(msg.getSwitchModelUuid(), SwitchModelVO.class));
 
         //如果为SDN接入交换机，则存入上联表
-        if (msg.getAccessType() != null) {
-            if (msg.getAccessType() != PhysicalSwitchAccessType.TRANSPORT && msg.getType() == PhysicalSwitchType.SDN) {
-                PhysicalSwitchUpLinkRefVO voref = new PhysicalSwitchUpLinkRefVO();
-                voref.setUuid(Platform.getUuid());
-                voref.setPhysicalSwitchUuid(vo.getUuid());
-                voref.setPortName(msg.getPortName());
-                voref.setUplinkPhysicalSwitchUuid(msg.getUplinkPhysicalSwitchUuid());
-                voref.setUplinkPhysicalSwitchPortName(msg.getUplinkPhysicalSwitchPortName());
-                dbf.getEntityManager().persist(voref);
-            }
+        if (msg.getType() == PhysicalSwitchType.SDN) {
+            PhysicalSwitchUpLinkRefVO voref = new PhysicalSwitchUpLinkRefVO();
+            voref.setUuid(Platform.getUuid());
+            voref.setPhysicalSwitchUuid(vo.getUuid());
+            voref.setPortName(msg.getPortName());
+            voref.setUplinkPhysicalSwitchUuid(msg.getUplinkPhysicalSwitchUuid());
+            voref.setUplinkPhysicalSwitchPortName(msg.getUplinkPhysicalSwitchPortName());
+            dbf.getEntityManager().persist(voref);
         }
+
 
         dbf.getEntityManager().persist(vo);
 
@@ -585,39 +584,36 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         if (q3.isExists()) {
             throw new ApiMessageInterceptionException(argerr("PhysicalSwitch's localIp %s is already exist ", msg.getLocalIP()));
         }
+
         //如果是SDN接入
-        if (msg.getAccessType() != null) {
-            if (msg.getAccessType() != PhysicalSwitchAccessType.TRANSPORT && msg.getType() == PhysicalSwitchType.SDN) {
-                //判断传输端口名称在一个物理交换机的业务端口下是否存在
-                String sql = "select count(b.uuid) from SwitchVO a,SwitchPortVO b " +
-                        "where a.uuid = b.switchUuid " +
-                        "and b.portName = :portName " +
-                        "and a.physicalSwitchUuid = :physicalSwitchUuid ";
-                TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-                vq.setParameter("portName", msg.getUplinkPhysicalSwitchPortName());
-                vq.setParameter("physicalSwitchUuid", msg.getUplinkPhysicalSwitchUuid());
-                Long count = vq.getSingleResult();
-                if (count > 0) {
-                    throw new ApiMessageInterceptionException(argerr("portName %s is already exist ", msg.getUplinkPhysicalSwitchPortName()));
-                }
-                //判断传输端口名称在一个物理交换机的传输端口下是否存在
-                SimpleQuery<PhysicalSwitchUpLinkRefVO> q4 = dbf.createQuery(PhysicalSwitchUpLinkRefVO.class);
-                q4.add(PhysicalSwitchUpLinkRefVO_.uplinkPhysicalSwitchUuid, SimpleQuery.Op.EQ, msg.getUplinkPhysicalSwitchUuid());
-                q4.add(PhysicalSwitchUpLinkRefVO_.uplinkPhysicalSwitchPortName, SimpleQuery.Op.EQ, msg.getUplinkPhysicalSwitchPortName());
-                if (q4.isExists()) {
-                    throw new ApiMessageInterceptionException(argerr("portName %s is already exist ", msg.getUplinkPhysicalSwitchPortName()));
-                }
-                //判断传输端口名称在一个物理交换机的监控端口下是否存在
-                SimpleQuery<HostSwitchMonitorVO> q5 = dbf.createQuery(HostSwitchMonitorVO.class);
-                q5.add(HostSwitchMonitorVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, msg.getUplinkPhysicalSwitchUuid());
-                q5.add(HostSwitchMonitorVO_.physicalSwitchPortName, SimpleQuery.Op.EQ, msg.getUplinkPhysicalSwitchPortName());
-                if (q5.isExists()) {
-                    throw new ApiMessageInterceptionException(argerr("portName %s is already exist ", msg.getUplinkPhysicalSwitchPortName()));
-                }
+        if (msg.getType() == PhysicalSwitchType.SDN) {
+            //判断传输端口名称在一个物理交换机的业务端口下是否存在
+            String sql = "select count(b.uuid) from SwitchVO a,SwitchPortVO b " +
+                    "where a.uuid = b.switchUuid " +
+                    "and b.portName = :portName " +
+                    "and a.physicalSwitchUuid = :physicalSwitchUuid ";
+            TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
+            vq.setParameter("portName", msg.getUplinkPhysicalSwitchPortName());
+            vq.setParameter("physicalSwitchUuid", msg.getUplinkPhysicalSwitchUuid());
+            Long count = vq.getSingleResult();
+            if (count > 0) {
+                throw new ApiMessageInterceptionException(argerr("portName %s is already exist ", msg.getUplinkPhysicalSwitchPortName()));
             }
-
+            //判断传输端口名称在一个物理交换机的传输端口下是否存在
+            SimpleQuery<PhysicalSwitchUpLinkRefVO> q4 = dbf.createQuery(PhysicalSwitchUpLinkRefVO.class);
+            q4.add(PhysicalSwitchUpLinkRefVO_.uplinkPhysicalSwitchUuid, SimpleQuery.Op.EQ, msg.getUplinkPhysicalSwitchUuid());
+            q4.add(PhysicalSwitchUpLinkRefVO_.uplinkPhysicalSwitchPortName, SimpleQuery.Op.EQ, msg.getUplinkPhysicalSwitchPortName());
+            if (q4.isExists()) {
+                throw new ApiMessageInterceptionException(argerr("portName %s is already exist ", msg.getUplinkPhysicalSwitchPortName()));
+            }
+            //判断传输端口名称在一个物理交换机的监控端口下是否存在
+            SimpleQuery<HostSwitchMonitorVO> q5 = dbf.createQuery(HostSwitchMonitorVO.class);
+            q5.add(HostSwitchMonitorVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, msg.getUplinkPhysicalSwitchUuid());
+            q5.add(HostSwitchMonitorVO_.physicalSwitchPortName, SimpleQuery.Op.EQ, msg.getUplinkPhysicalSwitchPortName());
+            if (q5.isExists()) {
+                throw new ApiMessageInterceptionException(argerr("portName %s is already exist ", msg.getUplinkPhysicalSwitchPortName()));
+            }
         }
-
 
     }
 
@@ -659,13 +655,13 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         SimpleQuery<SwitchVO> q = dbf.createQuery(SwitchVO.class);
         q.add(SwitchVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, msg.getUuid());
         if (q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("cannot delete,PhysicalSwitch is being used!"));
+            throw new ApiMessageInterceptionException(argerr("cannot delete,PhysicalSwitch is being used by switchs!"));
         }
         //判断该物理交换机下是否有监控
         SimpleQuery<HostSwitchMonitorVO> q2 = dbf.createQuery(HostSwitchMonitorVO.class);
         q2.add(HostSwitchMonitorVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, msg.getUuid());
         if (q2.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("cannot delete,PhysicalSwitch is being used!"));
+            throw new ApiMessageInterceptionException(argerr("cannot delete,PhysicalSwitch is being used by host!"));
         }
 
     }

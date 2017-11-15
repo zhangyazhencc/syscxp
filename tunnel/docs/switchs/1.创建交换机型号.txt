@@ -1,0 +1,26 @@
+消息：APICreateSwitchModelMsg
+
+权限：category = SwitchConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true
+
+参数（默认必填）：
+    品牌
+    型号：
+    子型号：非必填
+
+请求消息体示例：
+{
+    "com.syscxp.header.tunnel.switchs.APICreateSwitchModelMsg":{
+        "brand":"盛科",
+        "model":"centec_v",
+        "subModel":"centec_v200",
+        "session":{
+            "uuid":"f6d965af88fd411d9edec6737378be92"
+        }
+    }
+}
+
+后台验证（validate）：
+    1.验证型号和子型号的唯一性
+
+业务流程：
+    保存数据
