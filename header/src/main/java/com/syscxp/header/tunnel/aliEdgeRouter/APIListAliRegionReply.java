@@ -6,14 +6,14 @@ import java.util.List;
 import java.util.Map;
 
 public class APIListAliRegionReply extends APIQueryReply {
-    private List<List> regions;
+    private List<AliRegionInventoey> aliRegionInventoeys;
 
 
-    public List<List> getRegions() {
-        return regions;
+    public List<AliRegionInventoey> getAliRegionInventoeys() {
+        return aliRegionInventoeys;
     }
 
-    public void setRegions(List<List> regions) {
-        this.regions = regions;
+    public void setAliRegionInventoeys(List<AliRegionInventoey> aliRegionInventoeys) {
+        this.aliRegionInventoeys = aliRegionInventoeys;
     }
 }
