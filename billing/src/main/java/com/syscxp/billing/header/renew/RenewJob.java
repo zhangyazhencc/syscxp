@@ -65,7 +65,6 @@ public class RenewJob{
         GLock lock = new GLock(String.format("id-%s", "createRenew"), 120);
         lock.lock();
         try {
-            Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
             SimpleQuery<RenewVO> q = dbf.createQuery(RenewVO.class);
             q.add(RenewVO_.isRenewAuto, SimpleQuery.Op.EQ, true);

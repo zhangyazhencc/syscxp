@@ -47,6 +47,11 @@
         <name>com.syscxp.alarm.header.resourcePolicy.APIGetPolicyByResourceUuidMsg</name>
     </message>
 
+
+    <message>
+        <name>com.syscxp.alarm.header.resourcePolicy.APIGetResourceUuidsByPolicyMsg</name>
+    </message>
+
     <message>
         <name>com.syscxp.alarm.header.resourcePolicy.APIQueryPolicyMsg</name>
         <serviceId>query</serviceId>
