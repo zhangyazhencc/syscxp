@@ -2556,29 +2556,29 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
-        orderMsg.setProductName(vo.getName());
-        orderMsg.setProductUuid(vo.getUuid());
-        orderMsg.setProductType(ProductType.TUNNEL);
-        orderMsg.setProductChargeModel(vo.getProductChargeModel());
-        orderMsg.setDuration(vo.getDuration());
-        orderMsg.setUnits(getTunnelPriceUnit(bandwidthOfferingUuid, nodeAuuid, nodeZuuid, innerEndpointUuid));
-        orderMsg.setAccountUuid(accountUuid);
-        orderMsg.setOpAccountUuid(opAccountUuid);
-        orderMsg.setDescriptionData("no description");
+//        orderMsg.setProductName(vo.getName());
+//        orderMsg.setProductUuid(vo.getUuid());
+//        orderMsg.setProductType(ProductType.TUNNEL);
+//        orderMsg.setProductChargeModel(vo.getProductChargeModel());
+//        orderMsg.setDuration(vo.getDuration());
+//        orderMsg.setUnits(getTunnelPriceUnit(bandwidthOfferingUuid, nodeAuuid, nodeZuuid, innerEndpointUuid));
+//        orderMsg.setAccountUuid(accountUuid);
+//        orderMsg.setOpAccountUuid(opAccountUuid);
+//        orderMsg.setDescriptionData("no description");
 
-        OrderInventory orderInventory = createOrder(orderMsg);
+//        OrderInventory orderInventory = createOrder(orderMsg);
 
-        if (orderInventory == null) {
-            vo.setExpireDate(dbf.getCurrentSqlTime());
-            vo = dbf.updateAndRefresh(vo);
-            evt.setError(errf.stringToOperationError("付款失败"));
-            evt.setInventory(TunnelInventory.valueOf(vo));
-            bus.publish(evt);
-            return;
-        }
+//        if (orderInventory == null) {
+//            vo.setExpireDate(dbf.getCurrentSqlTime());
+//            vo = dbf.updateAndRefresh(vo);
+//            evt.setError(errf.stringToOperationError("付款失败"));
+//            evt.setInventory(TunnelInventory.valueOf(vo));
+//            bus.publish(evt);
+//            return;
+//        }
 
         //支付成功修改状态,记录生效订单
-        saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+//        saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
         vo.setAccountUuid(vo.getOwnerAccountUuid());
         vo.setState(TunnelState.Deploying);
