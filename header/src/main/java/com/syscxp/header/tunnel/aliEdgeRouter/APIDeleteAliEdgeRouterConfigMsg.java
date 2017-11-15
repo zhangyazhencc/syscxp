@@ -1,7 +1,11 @@
 package com.syscxp.header.tunnel.aliEdgeRouter;
 
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.tunnel.TunnelConstant;
+
+@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"delete"})
 
 public class APIDeleteAliEdgeRouterConfigMsg extends APIMessage {
     @APIParam(resourceType = AliEdgeRouterConfigVO.class)

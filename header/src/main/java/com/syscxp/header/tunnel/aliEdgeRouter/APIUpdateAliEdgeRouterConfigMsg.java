@@ -1,8 +1,11 @@
 package com.syscxp.header.tunnel.aliEdgeRouter;
 
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.tunnel.TunnelConstant;
 
+@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
 public class APIUpdateAliEdgeRouterConfigMsg extends APIMessage {
     @APIParam(checkAccount = true,resourceType = AliEdgeRouterConfigVO.class)
     private String uuid;
