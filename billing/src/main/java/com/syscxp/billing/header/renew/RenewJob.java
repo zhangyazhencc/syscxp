@@ -1,6 +1,5 @@
 package com.syscxp.billing.header.renew;
 
-import com.syscxp.billing.header.balance.*;
 import com.syscxp.billing.header.sla.ProductCaller;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
@@ -8,28 +7,19 @@ import com.syscxp.header.billing.*;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
-import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateMsg;
-import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateReply;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import com.syscxp.core.Platform;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.GLock;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
 import java.util.List;
 import java.util.ListIterator;
 

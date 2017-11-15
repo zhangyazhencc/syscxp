@@ -1,19 +1,13 @@
 package com.syscxp.billing.sla;
 
-import com.syscxp.billing.BillingGlobalProperty;
 import com.syscxp.billing.header.renew.RenewVO;
 import com.syscxp.billing.header.renew.RenewVO_;
 import com.syscxp.billing.header.sla.*;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.billing.*;
-import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
-import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateMsg;
-import com.syscxp.header.tunnel.tunnel.APIUpdateExpireDateReply;
-import com.syscxp.header.tunnel.tunnel.APIUpdateInterfaceExpireDateMsg;
-import com.syscxp.header.tunnel.tunnel.APIUpdateTunnelExpireDateMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -31,7 +25,6 @@ import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 
