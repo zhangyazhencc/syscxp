@@ -48,7 +48,9 @@ public class ReceiptInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setState(vo.getState());
         inv.setApplyTime(vo.getApplyTime());
+        if(vo.getReceiptPostAddressVO()!=null)
         inv.setReceiptPostAddressInventory(ReceiptPostAddressInventory.valueOf(vo.getReceiptPostAddressVO()));
+        if(vo.getReceiptInfoVO()!=null)
         inv.setReceiptInfoInventory(ReceiptInfoInventory.valueOf(vo.getReceiptInfoVO()));
         inv.setTotal(vo.getTotal());
         inv.setCreateDate(vo.getCreateDate());

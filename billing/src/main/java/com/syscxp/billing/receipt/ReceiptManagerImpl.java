@@ -132,6 +132,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         newAddress.setShow(false);
         dbf.persistAndRefresh(newAddress);
         receiptVO.setReceiptAddressUuid(newAddress.getUuid());
+        receiptVO.setReceiptPostAddressVO(newAddress);
         ReceiptInfoVO receiptInfoVO = dbf.findByUuid( msg.getReceiptInfoUuid(), ReceiptInfoVO.class);
 
         ReceiptInfoVO newInfo = new ReceiptInfoVO();
@@ -150,7 +151,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         newInfo.setLastOpDate(receiptInfoVO.getLastOpDate());
         newInfo.setShow(false);
         dbf.persistAndRefresh(newInfo);
-
+        receiptVO.setReceiptInfoVO(newInfo);
         receiptVO.setReceiptInfoUuid(newInfo.getUuid());
 
         ReceiptInventory inventory = ReceiptInventory.valueOf(receiptVO);
