@@ -15,6 +15,9 @@ public class AliEdgeRouterConfigVO {
     private String aliRegionId;
 
     @Column
+    private String aliRegionName;
+
+    @Column
     private String physicalLineUuid;
 
     @Column
@@ -45,6 +48,15 @@ public class AliEdgeRouterConfigVO {
 
     public void setAliRegionId(String aliRegionId) {
         this.aliRegionId = aliRegionId;
+    }
+
+
+    public String getAliRegionName() {
+        return aliRegionName;
+    }
+
+    public void setAliRegionName(String aliRegionName) {
+        this.aliRegionName = aliRegionName;
     }
 
     public String getPhysicalLineUuid() {

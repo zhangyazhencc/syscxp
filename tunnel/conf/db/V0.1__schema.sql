@@ -368,10 +368,10 @@ CREATE TABLE `syscxp_tunnel`.`PortOfferingVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `syscxp_tunnel`.`PortOfferingVO` (`uuid`,`name`,`type`,`description`,`lastOpDate`,`createDate`)
-VALUES ('SFP_10G','SFP_10G','SFP_10G','光口万兆','2017-11-01 13:51:31','2017-10-30 15:39:20'),
-  ('SHARE','SHARE','SHARE','共享端口','2017-11-01 16:10:18','2017-10-30 15:35:40'),
-  ('SFP_1G','SFP_1G','SFP_1G','光口千兆','2017-11-01 13:51:36','2017-10-30 15:39:20'),
-  ('RJ45_1G','RJ45_1G','RJ45_1G','电口千兆','2017-11-01 13:51:39','2017-10-30 15:35:59');
+VALUES ('SFP_10G','光口万兆','SFP_10G','光口万兆','2017-11-01 13:51:31','2017-10-30 15:39:20'),
+  ('SHARE','共享端口','SHARE','共享端口','2017-11-01 16:10:18','2017-10-30 15:35:40'),
+  ('SFP_1G','光口千兆','SFP_1G','光口千兆','2017-11-01 13:51:36','2017-10-30 15:39:20'),
+  ('RJ45_1G','电口千兆','RJ45_1G','电口千兆','2017-11-01 13:51:39','2017-10-30 15:35:59');
 
 
 ##产品订单生效表
@@ -524,6 +524,7 @@ CREATE VIEW `syscxp_tunnel`.`AliEdgeRouterVO` AS SELECT uuid, tunnelUuid, accoun
 CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterConfigVO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `aliRegionId` VARCHAR(32) NOT NULL COMMENT '区域id',
+  `aliRegionName` VARCHAR(32) NOT NULL COMMENT '区域Name',
   `physicalLineUuid` varchar(32) DEFAULT NULL COMMENT '物理专线id',
   `switchPortUuid` VARCHAR(32) NOT NULL COMMENT '交换机接口id',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
