@@ -523,6 +523,7 @@ CREATE VIEW `syscxp_tunnel`.`AliEdgeRouterVO` AS SELECT uuid, tunnelUuid, accoun
 CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterConfigVO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `aliRegionId` VARCHAR(32) NOT NULL COMMENT '区域id',
+  `aliRegionName` VARCHAR(32) NOT NULL COMMENT '区域Name',
   `physicalLineUuid` varchar(32) DEFAULT NULL COMMENT '物理专线id',
   `switchPortUuid` VARCHAR(32) NOT NULL COMMENT '交换机接口id',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
