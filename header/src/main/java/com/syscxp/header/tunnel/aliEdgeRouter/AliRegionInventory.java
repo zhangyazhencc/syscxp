@@ -1,6 +1,6 @@
 package com.syscxp.header.tunnel.aliEdgeRouter;
 
-public class AliRegionInventoey {
+public class AliRegionInventory {
     private String id;
     private String name;
 
