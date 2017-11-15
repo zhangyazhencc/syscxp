@@ -119,7 +119,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }
 
         if(!updatePoliciesByResources(msg.getSession().getAccountUuid(),msg.getResourceUuid())){
-            throw new OperationFailureException(Platform.operr("资源不存在！"));
+//            throw new OperationFailureException(Platform.operr("资源不存在！"));
         }
 
         bus.publish(event);
@@ -346,7 +346,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             dbf.remove(regulationVO);
         }
         if(!updateFalcon(msg.getSession(), regulationVO.getPolicyUuid())){
-            throw new OperationFailureException(Platform.operr("资源不存在！"));
+//            throw new OperationFailureException(Platform.operr("资源不存在！"));
         }
 
         bus.publish(event);
@@ -407,7 +407,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         dbf.persistAndRefresh(regulationVO);
 
         if(!updateFalcon(msg.getSession(), regulationVO.getPolicyUuid())){
-            throw new OperationFailureException(Platform.operr("资源不存在！"));
+//            throw new OperationFailureException(Platform.operr("资源不存在！"));
         }
 
         APICreateRegulationEvent event = new APICreateRegulationEvent(msg.getId());
