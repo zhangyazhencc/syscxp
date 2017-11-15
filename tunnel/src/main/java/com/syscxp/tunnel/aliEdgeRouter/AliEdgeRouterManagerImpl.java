@@ -93,20 +93,37 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             handle((APIDeleteAliEdgeRouterConfigMsg) msg);
         } else if(msg instanceof APIListAliTunnelMsg){
             handle((APIListAliTunnelMsg) msg);
-        }
-        else {
+        }else if(msg instanceof APIListAliRegionMsg){
+            handle((APIListAliRegionMsg) msg);
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
 
+    }
+
+    private void handle(APIListAliRegionMsg msg) {
+        List<Map<String,String>> regions = new ArrayList<>();
+        String sql = "select distinct aliRegionId,aliRegionName from AliEdgeRouterConfigVO ";
+
+        TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+        List<Tuple> ts = tfq.getResultList();
+        for (Tuple t : ts) {
+            HashMap<String,String> map = new HashMap<>();
+            map.put(t.get(0, String.class),t.get(1, String.class));
+            regions.add(map);
+        }
+        APIListAliRegionReply reply = new APIListAliRegionReply();
+        reply.setRegions(regions);
+        bus.reply(msg,reply);
     }
 
 
     private void handle(APIListAliTunnelMsg msg){
         List<AliTunnelInventory> tunnelQueryList = new ArrayList<AliTunnelInventory>();
 
-        String sql = "select ac from AliEdgeRouterConfigVO ac where ac.aliRegionId = :aliRegionId";
+        String sql = "select ac from AliEdgeRouterConfigVO ac where ac.aliRegionName = :aliRegionName";
         TypedQuery<AliEdgeRouterConfigVO> configq = dbf.getEntityManager().createQuery(sql, AliEdgeRouterConfigVO.class);
-        configq.setParameter("aliRegionId", msg.getAliRegionId());
+        configq.setParameter("aliRegionName", msg.getAliRegionName());
         List<AliEdgeRouterConfigVO> acs = configq.getResultList();
 
         List<String> switchPortUuids = CollectionUtils.transformToList(acs, new Function<String, AliEdgeRouterConfigVO>() {
@@ -168,6 +185,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         Boolean update = false;
         if(msg.getAliRegionId() != null){
             vo.setAliRegionId(msg.getAliRegionId());
+            vo.setAliRegionName(msg.getAliRegionName());
             update = true;
         }
 
@@ -195,6 +213,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         vo.setUuid(Platform.getUuid());
         vo.setAliRegionId(msg.getAliRegionId());
+        vo.setAliRegionName(msg.getAliRegionName());
         vo.setPhysicalLineUuid(msg.getPhysicalLineUuid());
         vo.setSwitchPortUuid(msg.getSwitchPortUuid());
 
