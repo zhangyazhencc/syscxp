@@ -11,7 +11,7 @@ public class APIListAliTunnelMsg extends APISyncCallMessage {
     @APIParam(required = false, maxLength = 32)
     private String accountUuid;
     @APIParam(maxLength = 128)
-    private String aliRegionName;
+    private String aliRegionId;
 
     public String getAccountUuid() {
         if(getSession().getType() == AccountType.SystemAdmin){
@@ -25,11 +25,11 @@ public class APIListAliTunnelMsg extends APISyncCallMessage {
         this.accountUuid = accountUuid;
     }
 
-    public String getAliRegionName() {
-        return aliRegionName;
+    public String getAliRegionId() {
+        return aliRegionId;
     }
 
-    public void setAliRegionName(String aliRegionName) {
-        this.aliRegionName = aliRegionName;
+    public void setAliRegionId(String aliRegionId) {
+        this.aliRegionId = aliRegionId;
     }
 }
