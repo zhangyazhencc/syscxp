@@ -4,7 +4,7 @@ import com.syscxp.header.query.APIQueryReply;
 
 import java.util.List;
 
-public class TunnelQueryReply extends APIQueryReply {
+public class APIListAliTunnelReply extends APIQueryReply {
     private List<AliTunnelInventory> inventory;
 
     public List<AliTunnelInventory> getInventory() {

@@ -14,6 +14,9 @@ public class MonitorTargetInventory {
     private String targetName;
     private String targetValue;
     private String uuid;
+    private String range;
+    private String unit;
+    private String defaultValue;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
@@ -25,7 +28,9 @@ public class MonitorTargetInventory {
         inv.setTargetValue(vo.getTargetValue());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
-
+        inv.setDefaultValue(vo.getDefaultValue());
+        inv.setRange(vo.getRange());
+        inv.setUnit(vo.getUnit());
         return inv;
     }
 
@@ -85,5 +90,29 @@ public class MonitorTargetInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public String getRange() {
+        return range;
+    }
+
+    public void setRange(String range) {
+        this.range = range;
+    }
+
+    public String getUnit() {
+        return unit;
+    }
+
+    public void setUnit(String unit) {
+        this.unit = unit;
+    }
+
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 }
