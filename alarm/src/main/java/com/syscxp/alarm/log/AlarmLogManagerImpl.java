@@ -104,23 +104,15 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                 new SyncHttpCallHandler<AlarmLogCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(AlarmLogCallbackCmd cmd) {
+                        Boolean flag = false;
 
-                        if (AlarmStatus.OK.equals(cmd.getStatus())) {
-                            SimpleQuery<AlarmLogVO> query = dbf.createQuery(AlarmLogVO.class);
-                            query.add(AlarmLogVO_.productUuid, SimpleQuery.Op.EQ, cmd.getTunnelUuid());
-                            query.add(AlarmLogVO_.regulationUuid, SimpleQuery.Op.EQ, cmd.getRegulationUuid());
-                            query.add(AlarmLogVO_.status, SimpleQuery.Op.EQ, AlarmStatus.PROBLEM);
-                            List<AlarmLogVO> alarmLogVOS = query.list();
-                            for (AlarmLogVO vo : alarmLogVOS) {
-                                vo.setResumeTime(new Timestamp(System.currentTimeMillis()));
-                                vo.setStatus(cmd.getStatus());
-                                long time = (System.currentTimeMillis() - vo.getAlarmTime().getTime()) / 1000 + vo.getDuration();
-                                vo.setDuration(time);
-                                dbf.updateAndRefresh(vo);
-                            }
+                        SimpleQuery<AlarmLogVO> query = dbf.createQuery(AlarmLogVO.class);
+                        query.add(AlarmLogVO_.productUuid, SimpleQuery.Op.EQ, cmd.getTunnelUuid());
+                        query.add(AlarmLogVO_.regulationUuid, SimpleQuery.Op.EQ, cmd.getRegulationUuid());
+                        query.add(AlarmLogVO_.createDate, SimpleQuery.Op.GT, new Timestamp(dbf.getCurrentSqlTime().getTime()-3600000));
+                        List<AlarmLogVO> alarmLogVOS = query.list();
 
-                        } else {
-
+                        if(alarmLogVOS.size() == 0){
                             AlarmLogVO alarmLogVO = new AlarmLogVO();
                             alarmLogVO.setUuid(Platform.getUuid());
                             alarmLogVO.setProductUuid(cmd.getTunnelUuid());
@@ -142,13 +134,37 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                             alarmLogVO.setAlarmTime(new Timestamp(System.currentTimeMillis()));
                             //持续时间
                             alarmLogVO.setDuration((long) regulationVO.getDetectPeriod() * regulationVO.getTriggerPeriod());
+                            alarmLogVO.setCount(1);
                             dbf.persistAndRefresh(alarmLogVO);
+                            flag = true;
 
+                        }else{
+                            for (AlarmLogVO vo : alarmLogVOS) {
+                                if(AlarmStatus.OK.equals(cmd.getStatus())){
+                                    vo.setCount(vo.getCount()-1);
+                                    if(vo.getCount() == 0){
+                                        vo.setResumeTime(new Timestamp(System.currentTimeMillis()));
+                                        vo.setStatus(cmd.getStatus());
+                                        long time = (System.currentTimeMillis() - vo.getAlarmTime().getTime()) / 1000 + vo.getDuration();
+                                        vo.setDuration(time);
+                                        flag = true;
+                                    }
+                                }else{
+                                    if(vo.getCount() < 2){
+                                        vo.setCount(vo.getCount()+1);
+                                    }
+                                }
+                                dbf.updateAndRefresh(vo);
+                            }
                         }
+
 
                         //foreach发送短信和邮件
                         try {
-                            sendMessage(cmd);
+                            if(flag){
+                                sendMessage(cmd);
+                            }
+
                         } catch (Exception e) {
                             //保存失败信息
                             e.printStackTrace();
