@@ -1,22 +1,20 @@
 package com.syscxp.tunnel.monitor;
 
-import com.mongodb.util.JSON;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.db.*;
 import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.falconapi.FalconApiRestConstant;
+import com.syscxp.header.host.HostState;
+import com.syscxp.header.host.HostStatus;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.host.APICreateMonitorHostMsg;
 import com.syscxp.header.tunnel.host.MonitorHostVO;
 import com.syscxp.header.tunnel.host.MonitorHostVO_;
 import com.syscxp.header.tunnel.host.MonitorType;
-import com.syscxp.header.tunnel.tunnel.TunnelMonitorState;
+import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.header.tunnel.monitor.*;
 import com.syscxp.header.tunnel.switchs.*;
-import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO;
-import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO_;
-import com.syscxp.header.tunnel.tunnel.TunnelVO_;
 import com.syscxp.tunnel.sdnController.ControllerCommands;
 import com.syscxp.tunnel.sdnController.ControllerRestConstant;
 import com.syscxp.utils.gson.JSONObjectUtil;
@@ -36,13 +34,11 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.header.tunnel.tunnel.TunnelVO;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.network.NetworkUtils;
 
 import javax.persistence.TypedQuery;
-import javax.swing.text.html.HTML;
 import java.net.UnknownHostException;
 import java.util.*;
 
@@ -303,12 +299,12 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         // server
         String serverCommand = JSONObjectUtil.toJsonString(commamdMap.get(MonitorAgentCommands.SpeedCommandType.SERVER.toString()));
-        MonitorAgentCommands.RestResponse  response = sendAgentCommand(getMonitorHostIp(vo.getSrcTunnelMonitorUuid()), MonitorAgentConstant.IPERF, serverCommand);
+        MonitorAgentCommands.RestResponse  response = sendAgentCommand(getMonitorHostIpByTunnelMonitorUuid(vo.getSrcTunnelMonitorUuid()), MonitorAgentConstant.IPERF, serverCommand);
 
         if (response.isSuccess()) {
             // client
             String clientCommand = JSONObjectUtil.toJsonString(commamdMap.get(MonitorAgentCommands.SpeedCommandType.CLIENT.toString()));
-            response = sendAgentCommand(getMonitorHostIp(vo.getDstTunnelMonitorUuid()), MonitorAgentConstant.IPERF, clientCommand);
+            response = sendAgentCommand(getMonitorHostIpByTunnelMonitorUuid(vo.getDstTunnelMonitorUuid()), MonitorAgentConstant.IPERF, clientCommand);
 
             if (!response.isSuccess())
                 logger.error(String.format("Failure to send client side iperf command s%", clientCommand));
@@ -318,7 +314,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         return response;
     }
 
-    private String getMonitorHostIp(String tunnelMonitorUuid) {
+    private String getMonitorHostIpByTunnelMonitorUuid(String tunnelMonitorUuid) {
         TunnelMonitorVO tunnelMonitorVO = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.uuid, tunnelMonitorUuid).find();
         String monitorHostIp = Q.New(MonitorHostVO.class)
                 .eq(MonitorHostVO_.uuid, tunnelMonitorVO.getHostUuid())
@@ -427,23 +423,22 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         nettoolCommand.setRemote_ip(msg.getRemoteIp());
         String command = JSONObjectUtil.toJsonString(nettoolCommand);
 
-        List<MonitorHostVO> hosts = Q.New(MonitorHostVO.class)
-                .eq(MonitorHostVO_.nodeUuid, msg.getNodeUuid())
-                .eq(MonitorHostVO_.monitorType, MonitorType.NETTOOL)
-                .find();
+        MonitorHostVO host = getMonitorHostByNodeAndType(msg.getNodeUuid(),MonitorType.NETTOOL);
 
-        if (!hosts.isEmpty()) {
-            MonitorAgentCommands.RestResponse response = sendAgentCommand(hosts.get(0).getHostIp(),
+        if(host != null)
+            event.setError(Platform.operr("No monitor host exist under node s%",msg.getNodeUuid()));
+
+        if(event.isSuccess()){
+            MonitorAgentCommands.RestResponse response = sendAgentCommand(host.getHostIp(),
                     MonitorAgentConstant.NETTOOL,
                     command);
 
             if (!response.isSuccess())
                 event.setError(Platform.operr("Failure to send s% command ", msg.getCommand()));
-        } else
-            event.setError(Platform.operr("No nettoolCommand monitor host under node s%", msg.getNodeUuid()));
+        }
 
         if (event.isSuccess())
-            event.setInventory(NettoolRecordInventory.valueOf(nettoolCommand,hosts.get(0).getHostIp()));
+            event.setInventory(NettoolRecordInventory.valueOf(nettoolCommand,host.getHostIp()));
 
         bus.publish(event);
     }
@@ -761,7 +756,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             // 下发监控agent配置
             for(TunnelMonitorVO tunnelMonitor : tunnelMonitorVOS){
                 if(event.isSuccess()){
-                    String hostIp = getMonitorHostIp(tunnelMonitor.getUuid());
+                    String hostIp = getMonitorHostIpByTunnelMonitorUuid(tunnelMonitor.getUuid());
 
                     startMonitor(hostIp,icmpJson,event);
                 }
@@ -793,6 +788,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     private void startMonitor(String hostIp,String command, APIEvent event){
+        // TODO: 新增、修改、停止调用不同的接口
         String url = getMonitorAgentUrl(hostIp,MonitorAgentConstant.START_MONITOR);
         MonitorAgentCommands.RestResponse response = new MonitorAgentCommands.RestResponse();
         try {
@@ -810,7 +806,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private void stopMonitor(String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS,APIEvent event){
         for(TunnelMonitorVO tunnelMonitor : tunnelMonitorVOS){
             if(event.isSuccess()){
-                String hostIp = getMonitorHostIp(tunnelMonitor.getUuid());
+                String hostIp = getMonitorHostIpByTunnelMonitorUuid(tunnelMonitor.getUuid());
                 Map<String,String> tunnelMap = new HashMap<>();
                 tunnelMap.put("tunnel_id",tunnelUuid);
 
@@ -1141,6 +1137,25 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         return monitorHostVOS.get(0);
     }
 
+    /***
+     * 按节点、类型查找监控主机
+     * @param nodeUuid
+     * @param monitorType
+     * @return
+     */
+    private MonitorHostVO getMonitorHostByNodeAndType(String nodeUuid,MonitorType monitorType){
+        List<MonitorHostVO> hosts = Q.New(MonitorHostVO.class)
+                .eq(MonitorHostVO_.nodeUuid, nodeUuid)
+                .eq(MonitorHostVO_.monitorType, monitorType)
+                .eq(MonitorHostVO_.state, HostState.Disabled)
+                .eq(MonitorHostVO_.status, HostStatus.Connected)
+                .find();
+
+        if (hosts.isEmpty())
+            return null;
+
+        return hosts.get(0);
+    }
     /**
      * 按nodeUuid与tunnelUuid查询监控通道
      *
@@ -1347,12 +1362,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         q.add(MonitorHostVO_.code, SimpleQuery.Op.EQ, msg.getCode());
         if (q.isExists())
             throw new ApiMessageInterceptionException(argerr("host's code %s is already exist ", msg.getCode()));
-
-        //验证hostIp地址是否合法
-        if (isPortEmpty(msg.getHostIp())) {
-            msg.setHostIp(msg.getHostIp() + ":" + "22");
-        }
-        validateHostIp(msg.getHostIp());
     }
 
     private void validate(APICreateSpeedRecordsMsg msg) {
@@ -1372,6 +1381,16 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         if (vo != null)
             throw new ApiMessageInterceptionException(argerr("Tunnel already exsited!"));
+
+        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+        if(tunnelVO.getState() != TunnelState.Enabled)
+            throw new ApiMessageInterceptionException(argerr("Tunnel %s is not enabled!", tunnelVO.getName()));
+
+        if(tunnelVO.getStatus() != TunnelStatus.Connected)
+            throw new ApiMessageInterceptionException(argerr("Tunnel %s is not connected!",tunnelVO.getName()));
+
+        if(tunnelVO.getMonitorState() != TunnelMonitorState.Enabled)
+            throw new ApiMessageInterceptionException(argerr("Tunnel %s monitor state is not enabled!",tunnelVO.getName()));
     }
 
     /**
@@ -1396,12 +1415,5 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         if (!NetworkUtils.isIpv4Address(ip))
             throw new ApiMessageInterceptionException(argerr("Illegal host IP %s！", ip));
-    }
-
-    private boolean isPortEmpty(String hostIp) {
-        if (!hostIp.contains(":"))
-            return true;
-        else
-            return false;
     }
 }

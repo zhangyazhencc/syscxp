@@ -1,0 +1,24 @@
+消息：APIDeletePhysicalSwitchMsg
+
+权限：category = SwitchConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true
+
+参数：
+    uuid：必填，要删除PhysicalSwitchVO的uuid
+
+请求消息体示例：
+{
+    "com.syscxp.header.tunnel.switchs.APIDeletePhysicalSwitchMsg":{
+        "uuid":"1e6bcb32b9b34bb98e84fa1fef9d3bca",
+        "session":{
+            "uuid":"b01947ee1b714eca82d0b82b4da57255"
+        }
+    }
+}
+
+后台验证（validate）：
+    1.判断该物理交换机下是否有逻辑交换机
+    2.判断该物理交换机下是否有监控
+
+业务流程：
+    软删除物理交换机
+    硬删除物理交换机对应的上联表（如果存在）

@@ -1,0 +1,85 @@
+消息：APICreatePhysicalSwitchMsg
+
+权限：category = SwitchConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true
+
+参数（默认必填）：
+    名称
+    描述：非必填
+    编号：唯一
+    节点：根据city选择节点
+    型号：从SwitchModelVO中选择
+
+若  交换机类型：SDN
+    接入类型：ACCESS
+    上联端口：
+    上联交换机：从PhysicalSwitchVO中选择类型为MPLS，且接入类型不为ACCESS
+    下联端口：
+若  交换机类型：MPLS
+    接入类型：ACCESS，TRANSPORT，BOTH
+
+    位置：
+    管理IP：唯一
+    本地IP：唯一
+    属主：
+    用户名：
+    密码：
+
+请求消息体示例：
+创建SDN交换机：
+{
+    "com.syscxp.header.tunnel.switchs.APICreatePhysicalSwitchMsg":{
+        "nodeUuid":"45f40eaa7a864e8aada273a2db5861b8",
+        "switchModelUuid":"ea70ebbbbb454a18b2704c3829d078a7",
+        "code":"CSW16",
+        "name":"盛科交换机_日本_16",
+        "owner":"syscloud",
+        "type":"SDN",
+        "accessType":"ACCESS",
+        "rack":"2",
+        "mIP":"192.168.211.16",
+        "localIP":"192.168.211.16",
+        "username":"admin",
+        "password":"admin",
+        "description":"测试",
+        "portName":"eth-0-3",
+        "uplinkPhysicalSwitchUuid":"b102c56e91f246c590bf6fe07adb96df",
+        "uplinkPhysicalSwitchPortName":"XGigabitEthernet0/0/3",
+        "session":{
+            "uuid":"c0002bf9347a4503bba54ebc1bd6beab"
+        }
+    }
+}
+创建MPLS交换机
+{
+    "com.syscxp.header.tunnel.switchs.APICreatePhysicalSwitchMsg":{
+        "nodeUuid":"45f40eaa7a864e8aada273a2db5861b8",
+        "switchModelUuid":"ea70ebbbbb454a18b2704c3829d078a7",
+        "code":"HSW55",
+        "name":"华为交换机_日本_55",
+        "owner":"syscloud",
+        "type":"MPLS",
+        "accessType":"BOTH",
+        "rack":"2",
+        "mIP":"192.168.211.55",
+        "localIP":"5.5.5.5",
+        "username":"admin",
+        "password":"admin@123",
+        "description":"测试",
+        "session":{
+            "uuid":"c0002bf9347a4503bba54ebc1bd6beab"
+        }
+    }
+}
+
+后台验证（validate）：
+    1.code唯一性验证
+    2.mIP唯一性验证
+    3.localIP唯一性验证
+    4.如果创建SDN交换机，要验证下联端口（uplinkPhysicalSwitchPortName）
+        判断该端口名称在业务端口中是否已经存在
+        判断该端口名称在传输端口中是否已经存在
+        判断该端口名称在监控端口中是否已经存在
+
+业务流程：
+    保存数据PhysicalSwitchVO
+    如果创建SDN交换机，保存PhysicalSwitchUpLinkRefVO
