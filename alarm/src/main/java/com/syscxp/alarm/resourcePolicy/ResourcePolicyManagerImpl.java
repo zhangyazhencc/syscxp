@@ -97,11 +97,25 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             handle((APIGetMonitorTargetListMsg) msg);
         }  else if (msg instanceof APIAttachPolicyToResourceMsg) {
             handle((APIAttachPolicyToResourceMsg) msg);
-        }   else if (msg instanceof APIGetPolicyByResourceUuidMsg) {
+        }  else if (msg instanceof APIGetPolicyByResourceUuidMsg) {
             handle((APIGetPolicyByResourceUuidMsg) msg);
+        }  else if (msg instanceof APIGetResrouceUuidsByPolicyMsg) {
+            handle((APIGetResrouceUuidsByPolicyMsg) msg);
         }   else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetResrouceUuidsByPolicyMsg msg) {
+
+        APIGetResourceUuidsByPolicyReply reply = new APIGetResourceUuidsByPolicyReply();
+        SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
+        query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
+        query.select(ResourcePolicyRefVO_.resourceUuid);
+        List<String> resourceUuids = query.listValue();
+        reply.setResourceUuids(resourceUuids);
+        bus.reply(msg,reply);
+
     }
 
     private void handle(APIGetPolicyByResourceUuidMsg msg) {
