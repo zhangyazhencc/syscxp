@@ -530,8 +530,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         NodeVO nvoZ = dbf.findByUuid(msg.getNodeZUuid(), NodeVO.class);
         EndpointVO evoA = dbf.findByUuid(msg.getEndpointAUuid(),EndpointVO.class);
         EndpointVO evoZ = dbf.findByUuid(msg.getEndpointZUuid(),EndpointVO.class);
-        InterfaceVO interfaceVOA = new InterfaceVO();;
-        InterfaceVO interfaceVOZ = new InterfaceVO();;
+        InterfaceVO interfaceVOA = new InterfaceVO();
+        InterfaceVO interfaceVOZ = new InterfaceVO();
+        boolean newBuyInterfaceA = false;
+        boolean newBuyInterfaceZ = false;
 
         TunnelVO vo = new TunnelVO();
         vo.setUuid(Platform.getUuid());
@@ -551,6 +553,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setDistance(Distance.getDistance(nvoA.getLongtitude(), nvoA.getLatitude(), nvoZ.getLongtitude(), nvoZ.getLatitude()));
 
         if(msg.getInterfaceAUuid() == null){    //A接口为新购
+            newBuyInterfaceA = true;
 
             String switchPortUuidA = ts.getSwitchPortByStrategy(msg.getEndpointAUuid(), msg.getPortTypeA());
             if (switchPortUuidA == null) {
@@ -578,20 +581,39 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         if(msg.getInterfaceZUuid() == null){    //Z接口为新购
+            newBuyInterfaceZ = true;
 
+            String switchPortUuidZ = ts.getSwitchPortByStrategy(msg.getEndpointZUuid(), msg.getPortTypeZ());
+            if (switchPortUuidZ == null) {
+                throw new ApiMessageInterceptionException(argerr("该连接点Z下无可用的端口"));
+            }
+            //保存数据
+            interfaceVOZ.setUuid(Platform.getUuid());
+            interfaceVOZ.setAccountUuid(null);
+            interfaceVOZ.setOwnerAccountUuid(msg.getAccountUuid());
+            interfaceVOZ.setName(evoZ.getName()+Platform.getUuid().substring(0,6));
+            interfaceVOZ.setEndpointUuid(msg.getEndpointZUuid());
+            interfaceVOZ.setSwitchPortUuid(switchPortUuidZ);
+            interfaceVOZ.setType(NetworkType.TRUNK);
+            interfaceVOZ.setDuration(msg.getDuration());
+            interfaceVOZ.setProductChargeModel(msg.getProductChargeModel());
+            interfaceVOZ.setDescription(null);
+            interfaceVOZ.setState(InterfaceState.Unpaid);
+            interfaceVOZ.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
+            interfaceVOZ.setExpireDate(dbf.getCurrentSqlTime());
+
+            interfaceVOZ = dbf.persistAndRefresh(interfaceVOZ);
         }else{
             interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
         }
+
+        //
 
         if(msg.getCrossTunnelUuid() != null){   //存在关联云专线
 
         }else{
             vo.setVsi(getVsiAuto());
         }
-
-
-
-
 
         //给A端口分配外部vlan,并创建TunnelSwitch
         Integer vlanA = ts.getVlanByStrategy(msg.getInterfaceAUuid());
@@ -2241,7 +2263,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 调用支付
      */
     private OrderInventory createOrder(APICreateOrderMsg orderMsg) {
-        orderMsg.setNotifyUrl(restf.getSendCommandUrl());
+        //orderMsg.setNotifyUrl(restf.getSendCommandUrl());
 //        orderMsg.setNotifyUrl(TunnelConstant.NOTIFYURL);
         try {
             APICreateOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
