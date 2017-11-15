@@ -1,8 +1,6 @@
 package com.syscxp.billing.header.renew;
 
-import com.syscxp.billing.header.balance.*;
 import com.syscxp.billing.header.sla.ProductCaller;
-import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.retry.Retry;
@@ -21,10 +19,8 @@ import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import com.syscxp.core.Platform;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.GLock;
 import com.syscxp.core.db.SimpleQuery;
@@ -38,7 +34,6 @@ import java.math.RoundingMode;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Calendar;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -65,7 +60,6 @@ public class RenewJob{
         GLock lock = new GLock(String.format("id-%s", "createRenew"), 120);
         lock.lock();
         try {
-            Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
             SimpleQuery<RenewVO> q = dbf.createQuery(RenewVO.class);
             q.add(RenewVO_.isRenewAuto, SimpleQuery.Op.EQ, true);

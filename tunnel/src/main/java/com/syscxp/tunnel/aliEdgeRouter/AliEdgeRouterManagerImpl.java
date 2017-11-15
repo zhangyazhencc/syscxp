@@ -103,18 +103,19 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     }
 
     private void handle(APIListAliRegionMsg msg) {
-        List<Map<String,String>> regions = new ArrayList<>();
+        List<AliRegionInventoey> regions = new ArrayList<>();
         String sql = "select distinct aliRegionId,aliRegionName from AliEdgeRouterConfigVO ";
 
         TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
         List<Tuple> ts = tfq.getResultList();
         for (Tuple t : ts) {
-            HashMap<String,String> map = new HashMap<>();
-            map.put(t.get(0, String.class),t.get(1, String.class));
-            regions.add(map);
+            AliRegionInventoey aliRegionInventoey = new AliRegionInventoey();
+            aliRegionInventoey.setId(t.get(0, String.class));
+            aliRegionInventoey.setName(t.get(1, String.class));
+            regions.add(aliRegionInventoey);
         }
         APIListAliRegionReply reply = new APIListAliRegionReply();
-        reply.setRegions(regions);
+        reply.setAliRegionInventoeys(regions);
         bus.reply(msg,reply);
     }
 
@@ -122,9 +123,9 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     private void handle(APIListAliTunnelMsg msg){
         List<AliTunnelInventory> tunnelQueryList = new ArrayList<AliTunnelInventory>();
 
-        String sql = "select ac from AliEdgeRouterConfigVO ac where ac.aliRegionName = :aliRegionName";
+        String sql = "select ac from AliEdgeRouterConfigVO ac where ac.aliRegionId = :aliRegionId";
         TypedQuery<AliEdgeRouterConfigVO> configq = dbf.getEntityManager().createQuery(sql, AliEdgeRouterConfigVO.class);
-        configq.setParameter("aliRegionName", msg.getAliRegionName());
+        configq.setParameter("aliRegionId", msg.getAliRegionId());
         List<AliEdgeRouterConfigVO> acs = configq.getResultList();
 
         List<String> switchPortUuids = CollectionUtils.transformToList(acs, new Function<String, AliEdgeRouterConfigVO>() {

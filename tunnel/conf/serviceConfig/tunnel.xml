@@ -48,7 +48,15 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIUpdateTunnelExpireDateMsg</name>
+        <name>com.syscxp.header.tunnel.tunnel.APIRenewTunnelMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIRenewAutoTunnelMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APISalTunnelMsg</name>
     </message>
 
     <message>

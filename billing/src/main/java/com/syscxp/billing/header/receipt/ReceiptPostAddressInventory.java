@@ -26,6 +26,8 @@ public class ReceiptPostAddressInventory {
 
     private Timestamp lastOpDate;
 
+    private boolean isShow;
+
     public static ReceiptPostAddressInventory valueOf(ReceiptPostAddressVO vo) {
         ReceiptPostAddressInventory inv = new ReceiptPostAddressInventory();
         inv.setUuid(vo.getUuid());
@@ -36,6 +38,7 @@ public class ReceiptPostAddressInventory {
         inv.setTelephone(vo.getTelephone());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        inv.setShow(vo.isShow());
 
         return inv;
     }
@@ -110,5 +113,13 @@ public class ReceiptPostAddressInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public boolean isShow() {
+        return isShow;
+    }
+
+    public void setShow(boolean show) {
+        isShow = show;
     }
 }
