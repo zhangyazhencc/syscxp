@@ -30,6 +30,15 @@ CREATE TABLE `syscxp_tunnel`.`SpeedRecordsVO` (
   UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='监控测速纪录';
 
+CREATE TABLE `syscxp_tunnel`.`SpeedTestTunnelVO` (
+  `uuid` varchar(32) NOT NULL COMMENT 'uuid',
+  `tunnelUuid` varchar(32) NOT NULL COMMENT 'TunnelVO.uuid',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `uuid` (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='测速专线列表';
+
 CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`HostSwitchMonitorEO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `hostUuid` varchar(32) NOT NULL COMMENT '主机UUID(HostEO.uuid)',
@@ -546,6 +555,7 @@ CREATE TABLE  `syscxp_tunnel`.`MonitorHostVO` (
 	`username` varchar(128) NOT NULL COMMENT '用户名',
 	`password` varchar(128) NOT NULL COMMENT '密码',
 	`sshPort` INT NOT NULL DEFAULT 22 COMMENT 'ssh端口',
+  `monitorType` VARCHAR(32) DEFAULT 'TUNNEL',
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

@@ -10,7 +10,7 @@ boss:续费，中止，调整带宽，删除，修改内部VLAN，修改外部VL
 
 3.创建失败：state=Deployfailure status=Disconnected expireDate=null
 nass:没有操作  | 页面显示开通中，未连接
-boss:开通，强制删除 | 页面显示开通失败，未连接 | 继续点开通，如果确认无法开通，点强制删除（退订删除资源）
+boss:开通（仅保存数据和保存并下发）/无法开通，强制删除 | 页面显示开通失败，未连接
 
 #################################################################################################
 
@@ -42,8 +42,19 @@ boss:开通，强制删除 | 页面显示开通失败，未连接 | 继续点开
 ################################################################################################
 
 开通：只有state=Deployfailure status=Disconnected
-1.成功：state=Enabled status=Connected expireDate=当前时间+时长
-2.失败：不变
+
+保存并下发：
+1.下发成功：state=Enabled status=Connected expireDate=当前时间+时长
+2.下发失败：不变
+
+仅保存：
+state=Enabled status=Connected expireDate=当前时间+时长
+
+################################################################################################
+
+无法开通：只有state=Deployfailure status=Disconnected
+1.退订失败：不变
+2.退订成功：state=Unsupport status=Disconnected expireDate=当前时间
 
 ################################################################################################
 
@@ -61,30 +72,49 @@ boss:开通，强制删除 | 页面显示开通失败，未连接 | 继续点开
 
 ############################################################################################
 
-删除：只有state=Enabled
-1.billing退订失败：不变
-2.billing退订成功
-    解绑account
+删除：只有state=Enabled/Disabled/Unsupport
+
+if(accountUuid != null){
+
+    if(state == Enabled){   --对于已开通的产品，退订，下发
+    billing退订失败：不变
+    billing退订成功
+            解绑account
     下发删除：
-        成功：删除tunnelVO及其相关表
-        失败：nass不可见，boss对于解绑account的tunnel可以再次下发删除
+            成功：删除tunnelVO及其相关表
+            失败：nass不可见，boss对于解绑account的tunnel可以再次下发删除
+
+    }else{                  --对于已关闭的产品，退订，不用下发
+
+    billing退订失败：不变
+    billing退订成功
+        删除tunnelVO及其相关表
+
+    }
+}else{                      --对于退订成功，下发失败的情况。只下发，不退订
+
+    下发删除：
+            成功：删除tunnelVO及其相关表
+            失败：不变
+}
 
 ########################################################################################
 
-强制删除：只有state != Unpaid
+强制删除：只有state != Unpaid 且 state != Unsupport
 1.退订失败：不变
 2.退订成功:删除tunnelVO及其相关表
 
 #######################################################################################
 
 总结几种状态及操作：
-state           status          nass展示          nass后续操作                boss展示              boss后续操作
+state           status          nass展示          nass后续操作                    boss展示              boss后续操作
 
-Unpaid          Disconnected    无记录            无操作                      未支付，未连接         无操作
-Deployfailure   Disconnected    开通中，未连接     无操作                      开通失败，未连接       开通/，强制删除
-Enabled         Connected       开通，已连接      续费，关闭连接，调整带宽，删除     开通，已连接           续费，关闭连接，调整带宽，删除，修改内部VLAN（仅QINQ通道），修改外部VLAN，强制删除
-Enabled         Disconnected    开通，未连接      续费，删除                   开通，未连接           续费，删除，强制删除
-Disabled        Disconnected    已关闭，未连接      续费，恢复链接，删除        已关闭，未连接          续费，恢复链接，删除，强制删除
+Unpaid          Disconnected    无记录            无操作                          未支付，未连接         无操作
+Deployfailure   Disconnected    开通中，未连接     无操作                          开通失败，未连接       开通（仅保存数据和保存并下发）/无法开通，强制删除
+Unsupport       Disconnected    无法开通，未连接    删除                            无法开通，未连接      删除
+Enabled         Connected       开通，已连接       续费，关闭连接，调整带宽，删除     开通，已连接           续费，关闭连接，调整带宽，删除，修改内部VLAN（仅QINQ通道），修改外部VLAN，强制删除
+Enabled         Disconnected    开通，未连接       续费，删除                      开通，未连接           续费，删除，强制删除
+Disabled        Disconnected    已关闭，未连接     续费，恢复链接，删除              已关闭，未连接         续费，恢复链接，删除，强制删除
 
 
 

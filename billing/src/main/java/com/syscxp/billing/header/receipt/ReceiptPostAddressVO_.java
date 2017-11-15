@@ -13,6 +13,7 @@ public class ReceiptPostAddressVO_ {
     public static volatile SingularAttribute<ReceiptPostAddressVO, String> telephone;
     public static volatile SingularAttribute<ReceiptPostAddressVO, String> address;
     public static volatile SingularAttribute<ReceiptPostAddressVO, Boolean> isDefault;
+    public static volatile SingularAttribute<ReceiptPostAddressVO, Boolean> isShow;
     public static volatile SingularAttribute<ReceiptVO, Timestamp> createDate;
     public static volatile SingularAttribute<ReceiptVO, Timestamp> lastOpDate;
 

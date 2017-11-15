@@ -1,6 +1,7 @@
 package com.syscxp.header.tunnel.host;
 
 import com.syscxp.header.host.HostInventory;
+import com.syscxp.header.rest.APINoSee;
 import com.syscxp.header.search.Inventory;
 import com.syscxp.header.search.Parent;
 import com.syscxp.header.tunnel.node.NodeInventory;
@@ -15,8 +16,8 @@ import java.util.List;
 public class MonitorHostInventory extends HostInventory {
 
     private String username;
-    private String password;
     private Integer sshPort;
+    private MonitorType monitorType;
 
     private NodeInventory nodeInventory;
 
@@ -31,8 +32,8 @@ public class MonitorHostInventory extends HostInventory {
     protected MonitorHostInventory(MonitorHostVO vo) {
         super(vo);
         this.setUsername(vo.getUsername());
-        this.setPassword(vo.getPassword());
         this.setSshPort(vo.getSshPort());
+        this.setMonitorType(vo.getMonitorType());
         this.setNodeInventory(NodeInventory.valueOf(vo.getNode()));
     }
 
@@ -56,14 +57,6 @@ public class MonitorHostInventory extends HostInventory {
         this.username = username;
     }
 
-    public String getPassword() {
-        return password;
-    }
-
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
     public Integer getSshPort() {
         return sshPort;
     }
@@ -72,4 +65,11 @@ public class MonitorHostInventory extends HostInventory {
         this.sshPort = sshPort;
     }
 
+    public MonitorType getMonitorType() {
+        return monitorType;
+    }
+
+    public void setMonitorType(MonitorType monitorType) {
+        this.monitorType = monitorType;
+    }
 }

@@ -36,8 +36,13 @@ import com.syscxp.utils.logging.CLogger;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Time;
 import java.sql.Timestamp;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class OrderManagerImpl extends AbstractService implements ApiMessageInterceptor {
@@ -311,8 +316,13 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         localDateTime = localDateTime.plusMonths(duration.intValue());
         Timestamp endTime = Timestamp.valueOf(localDateTime);
         orderVo.setProductEffectTimeEnd(endTime);
-        long notUseDays = (endTime.getTime() - currentTimestamp.getTime()) /( 1000 * 60 * 60 * 24);
-        notUseDays = notUseDays<0?0:notUseDays;
+
+//        LocalDateTime now = LocalDateTime.now();
+//        LocalDate today = LocalDate.now();
+//        LocalDateTime expiredDay = endTime.toLocalDateTime();
+//        ;
+//        long notUseDays =  ChronoUnit.DAYS.between(now, expiredDay);
+
 
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
         renewVO.setProductChargeModel(msg.getProductChargeModel());
@@ -403,7 +413,11 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         Timestamp startTime = msg.getStartTime();
         Timestamp endTime = msg.getExpiredTime();
-        long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24)-1;
+        LocalDateTime now = LocalDateTime.now();
+        LocalDate today = LocalDate.now();
+        LocalDateTime expiredDay = endTime.toLocalDateTime();
+                ;
+        long notUseDays =  ChronoUnit.DAYS.between(now, expiredDay);
         SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
         query.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         query.add(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
@@ -413,7 +427,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             throw new IllegalArgumentException("could not find the product purchased history ");
         }
 
-        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(renewVO.getLastOpDate().toLocalDateTime().toLocalDate().lengthOfMonth()), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal valuePayCash = getValueblePayCash(msg.getAccountUuid(), msg.getProductUuid());
         orderVo.setType(OrderType.UN_SUBCRIBE);
         if (remainMoney.compareTo(valuePayCash) > 0) {
@@ -545,7 +559,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         Timestamp startTime = msg.getStartTime();
         Timestamp endTime = msg.getExpiredTime();
-        long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime expiredDay = endTime.toLocalDateTime();
+        ;
+        long notUseDays =  ChronoUnit.DAYS.between(now, expiredDay);
 
         SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
         query.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
@@ -554,10 +571,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         if (renewVO == null) {
             throw new IllegalArgumentException("could not find the product purchased history ");
         }
-
-        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
-        BigDecimal needPayMoney = discountPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
-        BigDecimal needPayOriginMoney = originalPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
+        LocalDate thatDay = renewVO.getLastOpDate().toLocalDateTime().toLocalDate();
+        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(thatDay.lengthOfMonth()), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal needPayMoney = discountPrice.divide(BigDecimal.valueOf(thatDay.lengthOfMonth()), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal needPayOriginMoney = originalPrice.divide(BigDecimal.valueOf(thatDay.lengthOfMonth()), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal subMoney = needPayMoney.subtract(remainMoney);
         if (subMoney.compareTo(BigDecimal.ZERO) >= 0) { //upgrade
             if (subMoney.compareTo(mayPayTotal) > 0) {
@@ -726,6 +743,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setDuration(msg.getDuration());
         orderVo.setCallBackData(msg.getCallBackData());
 
+        BigDecimal renewPrice = discountPrice;
+
         originalPrice = originalPrice.multiply(duration);
         discountPrice = discountPrice.multiply(duration);
 
@@ -739,11 +758,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setProductStatus(0);
         }
         payMethod(msg, orderVo, abvo, discountPrice, currentTimestamp);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(currentTimestamp);
-        calendar.add(Calendar.MONTH, duration.intValue());
+        LocalDateTime now = LocalDateTime.now().plusMonths(duration.intValue());
         orderVo.setProductEffectTimeStart(currentTimestamp);
-        orderVo.setProductEffectTimeEnd(new Timestamp(calendar.getTime().getTime()));
+        orderVo.setProductEffectTimeEnd(Timestamp.valueOf(now));
 
         RenewVO renewVO = new RenewVO();
         renewVO.setUuid(Platform.getUuid());
@@ -754,8 +771,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         renewVO.setProductType(orderVo.getProductType());
         renewVO.setDescriptionData(orderVo.getDescriptionData());
         renewVO.setRenewAuto(true);
-        renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
-        renewVO.setPriceOneMonth(discountPrice);
+        renewVO.setExpiredTime(Timestamp.valueOf(now));
+        renewVO.setPriceOneMonth(renewPrice);
         dbf.getEntityManager().persist(renewVO);
 
         for (String productPriceUnitUuid : productPriceUnitUuids) {
@@ -837,7 +854,5 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     private void validate(APICreateOrderMsg msg) {
 
     }
-
-
 
 }

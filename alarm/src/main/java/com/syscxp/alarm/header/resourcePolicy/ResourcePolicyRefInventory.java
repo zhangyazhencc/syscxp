@@ -21,6 +21,8 @@ public class ResourcePolicyRefInventory {
     private String policyUuid;
     private String resourceUuid;
 
+    private PolicyInventory policyInventory;
+
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
@@ -81,5 +83,13 @@ public class ResourcePolicyRefInventory {
 
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
+    }
+
+    public PolicyInventory getPolicyInventory() {
+        return policyInventory;
+    }
+
+    public void setPolicyInventory(PolicyInventory policyInventory) {
+        this.policyInventory = policyInventory;
     }
 }

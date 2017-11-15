@@ -21,6 +21,10 @@ public class MonitorHostVO extends HostVO {
     private String username;
 
     @Column
+    @Enumerated(EnumType.STRING)
+    private MonitorType monitorType;
+
+    @Column
     @ENCRYPTParam
     private String password;
 
@@ -50,7 +54,14 @@ public class MonitorHostVO extends HostVO {
     public MonitorHostVO(HostVO vo) {
         super(vo);
     }
-    
+
+    public MonitorType getMonitorType() {
+        return monitorType;
+    }
+
+    public void setMonitorType(MonitorType monitorType) {
+        this.monitorType = monitorType;
+    }
 
     @DECRYPT
     public String getPassword() {

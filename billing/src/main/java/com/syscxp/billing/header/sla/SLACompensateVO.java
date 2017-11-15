@@ -47,6 +47,7 @@ public class SLACompensateVO {
     private Timestamp timeEnd;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private SLAState state;
 
     @Column
