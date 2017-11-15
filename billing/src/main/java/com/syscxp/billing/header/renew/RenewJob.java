@@ -69,14 +69,15 @@ public class RenewJob{
                 RenewVO renewVO = ite.next();
                 LocalDateTime now = LocalDateTime.now();
                 LocalDateTime expiredTime = renewVO.getExpiredTime().toLocalDateTime();
-                if ( ChronoUnit.DAYS.between(now, expiredTime) > 7 && now.isAfter(expiredTime)) {
+                if(expiredTime.isAfter(now)){
+                    continue;
+                }
+                if ( (ChronoUnit.DAYS.between(now, expiredTime) > 7) && expiredTime.isBefore(now)) {
                     dbf.getEntityManager().remove(dbf.getEntityManager().merge(renewVO));
                     dbf.getEntityManager().flush();
                     continue;
                 }
-                if(expiredTime.isAfter(now)){
-                    continue;
-                }
+
 
                 ProductCaller caller = new ProductCaller(renewVO.getProductType());
 
