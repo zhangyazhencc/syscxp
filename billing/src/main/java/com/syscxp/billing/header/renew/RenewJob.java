@@ -27,6 +27,8 @@ import com.syscxp.utils.logging.CLogger;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.List;
 import java.util.ListIterator;
@@ -42,7 +44,7 @@ public class RenewJob{
 
     private static final CLogger logger = Utils.getLogger(RenewJob.class);
 
-    @Scheduled(cron = "0 0/1 * * * ? ")
+    @Scheduled(cron = "0 0/5 * * * ? ")
     @Transactional
     protected void autoRenew() {
 
@@ -62,14 +64,14 @@ public class RenewJob{
             ListIterator<RenewVO> ite = renewVOs.listIterator();
             while (ite.hasNext()) {
                 RenewVO renewVO = ite.next();
-                Timestamp expiredTimestamp = renewVO.getExpiredTime();
-                if (currentTimestamp.getTime() - expiredTimestamp.getTime() > 7 * 24 * 60 * 60 * 1000l) {
+                LocalDateTime now = LocalDateTime.now();
+                LocalDateTime expiredTime = renewVO.getExpiredTime().toLocalDateTime();
+                if ( ChronoUnit.DAYS.between(now, expiredTime) > 7 ) {
                     dbf.getEntityManager().remove(dbf.getEntityManager().merge(renewVO));
                     dbf.getEntityManager().flush();
                     continue;
                 }
-                if(currentTimestamp.getTime()<expiredTimestamp.getTime()){
-                    logger.info(renewVO.getProductName()+" is also valid");
+                if(expiredTime.isAfter(now)){
                     continue;
                 }
 
@@ -87,7 +89,7 @@ public class RenewJob{
 
                 if (rsp.getState().equals(RestAPIState.Done.toString())) {
                     try {
-                        APIUpdateExpireDateReply productReply = (APIUpdateExpireDateReply) RESTApiDecoder.loads(rsp.getResult());
+                        RESTApiDecoder.loads(rsp.getResult());
                     } catch (Exception e) {
                         logger.error(e.getMessage());
                     }

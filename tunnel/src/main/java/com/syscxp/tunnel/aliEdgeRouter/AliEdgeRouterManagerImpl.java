@@ -13,6 +13,7 @@ import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
@@ -28,6 +29,7 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.function.Function;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 
 import javax.persistence.Tuple;
@@ -92,20 +94,37 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             handle((APIDeleteAliEdgeRouterConfigMsg) msg);
         } else if(msg instanceof APIListAliTunnelMsg){
             handle((APIListAliTunnelMsg) msg);
-        }
-        else {
+        }else if(msg instanceof APIListAliRegionMsg){
+            handle((APIListAliRegionMsg) msg);
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
 
     }
 
+    private void handle(APIListAliRegionMsg msg) {
+        List<Map<String,String>> regions = new ArrayList<>();
+        String sql = "select distinct aliRegionId,aliRegionName from AliEdgeRouterConfigVO ";
 
+        TypedQuery<Tuple> tfq = dbf.getEntityManager().createQuery(sql, Tuple.class);
+        List<Tuple> ts = tfq.getResultList();
+        for (Tuple t : ts) {
+            HashMap<String,String> map = new HashMap<>();
+            map.put(t.get(0, String.class),t.get(1, String.class));
+            regions.add(map);
+        }
+        APIListAliRegionReply reply = new APIListAliRegionReply();
+        reply.setRegions(regions);
+        bus.reply(msg,reply);
+    }
+
+    @Transactional
     private void handle(APIListAliTunnelMsg msg){
         List<AliTunnelInventory> tunnelQueryList = new ArrayList<AliTunnelInventory>();
 
-        String sql = "select ac from AliEdgeRouterConfigVO ac where ac.aliRegionId = :aliRegionId";
+        String sql = "select ac from AliEdgeRouterConfigVO ac where ac.aliRegionName = :aliRegionName";
         TypedQuery<AliEdgeRouterConfigVO> configq = dbf.getEntityManager().createQuery(sql, AliEdgeRouterConfigVO.class);
-        configq.setParameter("aliRegionId", msg.getAliRegionId());
+        configq.setParameter("aliRegionName", msg.getAliRegionName());
         List<AliEdgeRouterConfigVO> acs = configq.getResultList();
 
         List<String> switchPortUuids = CollectionUtils.transformToList(acs, new Function<String, AliEdgeRouterConfigVO>() {
@@ -144,7 +163,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             tunnelQueryList.add(inventory);
         }
 
-        TunnelQueryReply reply = new TunnelQueryReply();
+        APIListAliTunnelReply reply = new APIListAliTunnelReply();
         reply.setInventory(tunnelQueryList);
         bus.reply(msg,reply);
 
@@ -167,6 +186,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         Boolean update = false;
         if(msg.getAliRegionId() != null){
             vo.setAliRegionId(msg.getAliRegionId());
+            vo.setAliRegionName(msg.getAliRegionName());
             update = true;
         }
 
@@ -194,6 +214,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         vo.setUuid(Platform.getUuid());
         vo.setAliRegionId(msg.getAliRegionId());
+        vo.setAliRegionName(msg.getAliRegionName());
         vo.setPhysicalLineUuid(msg.getPhysicalLineUuid());
         vo.setSwitchPortUuid(msg.getSwitchPortUuid());
 
@@ -340,6 +361,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         }catch (ClientException e){
             e.printStackTrace();
             if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
+                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
             }else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
@@ -358,6 +380,13 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         bus.reply(msg,reply);
 
 
+    }
+
+    private void DeleteAliUser(String aliAccessKeyId, String aliAccessKeySecret) {
+        UpdateQuery q = UpdateQuery.New(AliUserVO.class);
+        q.condAnd(AliUserVO_.aliAccessKeyID, SimpleQuery.Op.EQ, aliAccessKeyId);
+        q.condAnd(AliUserVO_.aliAccessKeySecret, SimpleQuery.Op.EQ, aliAccessKeySecret);
+        q.delete();
     }
 
 
@@ -407,6 +436,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         }catch (ClientException e){
             e.printStackTrace();
             if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
+                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
             }else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
@@ -485,7 +515,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             e.printStackTrace();
 
             if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
-
+                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
             }else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));

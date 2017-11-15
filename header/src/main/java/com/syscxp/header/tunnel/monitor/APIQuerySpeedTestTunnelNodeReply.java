@@ -10,7 +10,7 @@ import java.util.List;
  * @Description: .
  */
 
-public class APIQuerySpeedTestTunnelReply extends APIQueryReply {
+public class APIQuerySpeedTestTunnelNodeReply extends APIQueryReply {
     private List<SpeedRecordsVO> inventories;
 
     public List<SpeedRecordsVO> getInventories() {

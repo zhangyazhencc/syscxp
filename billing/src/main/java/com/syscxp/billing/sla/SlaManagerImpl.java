@@ -104,6 +104,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
 
             ProductCaller caller = new ProductCaller(slaCompensateVO.getProductType());
             APIUpdateExpireDateMsg aMsg = caller.getCallMsg();
+            APIUpdateExpireDateReply aReply = caller.getCallReply();
 
             aMsg.setUuid(slaCompensateVO.getProductUuid());
             aMsg.setDuration(slaCompensateVO.getDuration());
@@ -117,7 +118,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
 
             if (rsp.getState().equals(RestAPIState.Done.toString())) {
                 try {
-                    APIUpdateExpireDateReply productReply = (APIUpdateExpireDateReply) RESTApiDecoder.loads(rsp.getResult());
+                    RESTApiDecoder.loads(rsp.getResult());
                 }catch (Exception e){
                    throw new IllegalArgumentException(e);
                 }

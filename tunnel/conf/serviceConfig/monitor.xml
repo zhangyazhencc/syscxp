@@ -69,4 +69,9 @@
         <name>com.syscxp.header.tunnel.monitor.APIQuerySpeedTestTunnelMsg</name>
         <serviceId>query</serviceId>
     </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.monitor.APIQuerySpeedTestTunnelNodeMsg</name>
+        <serviceId>query</serviceId>
+    </message>
 </service>

@@ -1,23 +1,22 @@
 package com.syscxp.header.tunnel.monitor;
 
 import com.syscxp.header.search.Inventory;
-import com.syscxp.header.tunnel.tunnel.TunnelVO;
+import com.syscxp.header.tunnel.tunnel.TunnelInventory;
+import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO;
 
 import java.sql.Timestamp;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * @Author: sunxuelong.
- * @Cretion Date: 2017-09-18.
+ * @Cretion Date: 2017-11-14.
  * @Description: .
  */
 @Inventory(mappingVOClass = SpeedTestTunnelVO.class)
 public class SpeedTestTunnelInventory {
     private String uuid;
     private String tunnelUuid;
-    private TunnelVO tunnelVO;
+    private TunnelInventory tunnelInventory;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -25,7 +24,7 @@ public class SpeedTestTunnelInventory {
         SpeedTestTunnelInventory inventory = new SpeedTestTunnelInventory();
         inventory.setUuid(vo.getUuid());
         inventory.setTunnelUuid(vo.getTunnelUuid());
-        //inventory.setTunnelVO(vo.getTunnelVO());
+        inventory.setTunnelInventory(TunnelInventory.valueOf(vo.getTunnelVO()));
         inventory.setLastOpDate(vo.getLastOpDate());
         inventory.setCreateDate(vo.getCreateDate());
 
@@ -73,11 +72,11 @@ public class SpeedTestTunnelInventory {
         this.createDate = createDate;
     }
 
-    public TunnelVO getTunnelVO() {
-        return tunnelVO;
+    public TunnelInventory getTunnelInventory() {
+        return tunnelInventory;
     }
 
-    public void setTunnelVO(TunnelVO tunnelVO) {
-        this.tunnelVO = tunnelVO;
+    public void setTunnelInventory(TunnelInventory tunnelInventory) {
+        this.tunnelInventory = tunnelInventory;
     }
 }

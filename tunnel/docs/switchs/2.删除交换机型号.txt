@@ -1,0 +1,22 @@
+消息：APIDeleteSwitchModelMsg
+
+权限：category = SwitchConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true
+
+参数：
+    uuid：必填，要删除SwitchModelVO的uuid
+
+请求消息体示例：
+{
+    "com.syscxp.header.tunnel.switchs.APIDeleteSwitchModelMsg":{
+        "uuid":"1e6bcb32b9b34bb98e84fa1fef9d3bca",
+        "session":{
+            "uuid":"b01947ee1b714eca82d0b82b4da57255"
+        }
+    }
+}
+
+后台验证（validate）：
+    1.判断该型号下是否有物理交换机
+
+业务流程：
+    硬删除
