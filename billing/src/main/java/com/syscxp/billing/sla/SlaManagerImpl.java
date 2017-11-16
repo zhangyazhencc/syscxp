@@ -9,6 +9,8 @@ import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
+import com.syscxp.header.tunnel.tunnel.APISLAInterfaceMsg;
+import com.syscxp.header.tunnel.tunnel.APISLAInterfaceReply;
 import com.syscxp.header.tunnel.tunnel.APISalTunnelMsg;
 import com.syscxp.header.tunnel.tunnel.APISalTunnelReply;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,6 +107,27 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
                 if (rsp.getState().equals(RestAPIState.Done.toString())) {
                     try {
                         APISalTunnelReply reply = (APISalTunnelReply) RESTApiDecoder.loads(rsp.getResult());
+                        if(reply!=null && reply.getInventory()!=null){
+                            slaCompensateVO.setTimeEnd(reply.getInventory().getExpireDate());
+                            slaCompensateVO.setTimeStart(new Timestamp(reply.getInventory().getExpireDate().getTime()-slaCompensateVO.getDuration()*24*60*60*1000));
+                        }
+                    }catch (Exception e){
+                        throw new IllegalArgumentException(e);
+                    }
+                } else {
+                    throw new IllegalArgumentException("the network is not fine ,try for a moment");
+                }
+            } else if (slaCompensateVO.getProductType().equals(ProductType.PORT)) {
+                APISLAInterfaceMsg aMsg = new APISLAInterfaceMsg();
+                aMsg.setUuid(slaCompensateVO.getProductUuid());
+                aMsg.setDuration(slaCompensateVO.getDuration());
+                InnerMessageHelper.setMD5(aMsg);
+                String gstr = RESTApiDecoder.dumpWithSession(aMsg);
+                RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class);
+
+                if (rsp.getState().equals(RestAPIState.Done.toString())) {
+                    try {
+                        APISLAInterfaceReply reply = (APISLAInterfaceReply) RESTApiDecoder.loads(rsp.getResult());
                         if(reply!=null && reply.getInventory()!=null){
                             slaCompensateVO.setTimeEnd(reply.getInventory().getExpireDate());
                             slaCompensateVO.setTimeStart(new Timestamp(reply.getInventory().getExpireDate().getTime()-slaCompensateVO.getDuration()*24*60*60*1000));

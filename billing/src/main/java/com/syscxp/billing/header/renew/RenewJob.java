@@ -3,6 +3,7 @@ package com.syscxp.billing.header.renew;
 import com.syscxp.billing.header.sla.ProductCaller;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.retry.Retry;
@@ -13,7 +14,7 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
 import com.syscxp.header.rest.TimeoutRestTemplate;
-import com.syscxp.header.tunnel.tunnel.APIRenewAutoTunnelMsg;
+import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
@@ -38,9 +39,6 @@ public class RenewJob {
 
     @Autowired
     private DatabaseFacade dbf;
-
-    @Autowired
-    private RESTFacade restf;
 
     private TimeoutRestTemplate template;
 
@@ -96,13 +94,38 @@ public class RenewJob {
 
                     if (rsp.getState().equals(RestAPIState.Done.toString())) {
                         try {
-                            RESTApiDecoder.loads(rsp.getResult());
+                            APIRenewAutoTunnelReply reply = (APIRenewAutoTunnelReply) RESTApiDecoder.loads(rsp.getResult());
+                            if(reply != null){
+                                TunnelInventory inventory = reply.getInventory();
+                                renewVO.setExpiredTime(inventory.getExpireDate());
+                                dbf.getEntityManager().merge(renewVO);
+                            }
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                } else if(renewVO.getProductType().equals(ProductType.PORT)){
+                    APIRenewAutoInterfaceMsg aMsg = new APIRenewAutoInterfaceMsg();
+
+                    aMsg.setUuid(renewVO.getProductUuid());
+                    aMsg.setDuration(1);
+                    aMsg.setProductChargeModel(renewVO.getProductChargeModel());
+                    InnerMessageHelper.setMD5(aMsg);
+                    String gstr = RESTApiDecoder.dump(aMsg);
+                    RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class);
+
+                    if (rsp.getState().equals(RestAPIState.Done.toString())) {
+                        try {
+                            APIRenewAutoInterfaceReply reply = (APIRenewAutoInterfaceReply) RESTApiDecoder.loads(rsp.getResult());
+                            if(reply != null){
+                                InterfaceInventory inventory = reply.getInventory();
+                                renewVO.setExpiredTime(inventory.getExpireDate());
+                                dbf.getEntityManager().merge(renewVO);
+                            }
                         } catch (Exception e) {
                             logger.error(e.getMessage());
                         }
                     }
-                } else if(renewVO.getProductType().equals(ProductType.PORT)){
-
                 }
 
             }
@@ -123,18 +146,6 @@ public class RenewJob {
         HttpEntity<String> req = new HttpEntity<String>(body, requestHeaders);
 
         ResponseEntity<String> rsp = new Retry<ResponseEntity<String>>() {
-
-
-
-
-
-
-
-
-
-
-
-            
             @Override
             @RetryCondition(onExceptions = {IOException.class, RestClientException.class})
             protected ResponseEntity<String> call() {

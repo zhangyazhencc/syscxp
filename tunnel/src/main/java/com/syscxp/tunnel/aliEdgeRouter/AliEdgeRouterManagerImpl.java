@@ -349,6 +349,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
                 routerInventory.setVlan(vo.getVlan());
                 routerInventory.setAliAccountUuid(vo.getAliAccountUuid());
                 routerInventory.setAliRegionId(vo.getAliRegionId());
+                routerInventory.setPhysicalLineUuid(vo.getPhysicalLineUuid());
 
 
                 inventory.setAccessPoint(virtualBorderRouterType.getAccessPointId());

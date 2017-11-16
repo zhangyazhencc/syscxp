@@ -1,6 +1,5 @@
 package com.syscxp.header.billing;
 
-import com.syscxp.header.callBack.CallBackData;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
@@ -21,11 +20,11 @@ public class APICreateOrderMsg extends APISyncCallMessage {
     @APIParam(emptyString = false)
     private String productUuid;
 
-    @APIParam
-    private DescriptionData descriptionData;
+    @APIParam(emptyString = false)
+    private String descriptionData;
 
     @APIParam(required = false)
-    private CallBackData callBackData;
+    private String callBackData;
 
     @APIParam(emptyString = false)
     private String accountUuid;
@@ -92,19 +91,19 @@ public class APICreateOrderMsg extends APISyncCallMessage {
         this.productUuid = productUuid;
     }
 
-    public DescriptionData getDescriptionData() {
+    public String getDescriptionData() {
         return descriptionData;
     }
 
-    public void setDescriptionData(DescriptionData descriptionData) {
+    public void setDescriptionData(String descriptionData) {
         this.descriptionData = descriptionData;
     }
 
-    public CallBackData getCallBackData() {
+    public String getCallBackData() {
         return callBackData;
     }
 
-    public void setCallBackData(CallBackData callBackData) {
+    public void setCallBackData(String callBackData) {
         this.callBackData = callBackData;
     }
 
