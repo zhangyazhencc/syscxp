@@ -21,4 +21,12 @@ public class DescriptionItem {
     public void setValue(String value) {
         this.value = value;
     }
+
+    public DescriptionItem(String name, String value) {
+        this.name = name;
+        this.value = value;
+    }
+
+    public DescriptionItem() {
+    }
 }
