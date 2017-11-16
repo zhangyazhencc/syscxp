@@ -17,6 +17,7 @@
         <class>com.syscxp.header.tunnel.endpoint.EndpointVO</class>
         <class>com.syscxp.header.tunnel.endpoint.EndpointEO</class>
         <class>com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO</class>
+        <class>com.syscxp.header.tunnel.endpoint.CloudVO</class>
 
         <class>com.syscxp.header.tunnel.switchs.SwitchVO</class>
         <class>com.syscxp.header.tunnel.switchs.SwitchEO</class>

@@ -132,6 +132,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         newAddress.setShow(false);
         dbf.persistAndRefresh(newAddress);
         receiptVO.setReceiptAddressUuid(newAddress.getUuid());
+        receiptVO.setReceiptPostAddressVO(newAddress);
         ReceiptInfoVO receiptInfoVO = dbf.findByUuid( msg.getReceiptInfoUuid(), ReceiptInfoVO.class);
 
         ReceiptInfoVO newInfo = new ReceiptInfoVO();
@@ -150,7 +151,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         newInfo.setLastOpDate(receiptInfoVO.getLastOpDate());
         newInfo.setShow(false);
         dbf.persistAndRefresh(newInfo);
-
+        receiptVO.setReceiptInfoVO(newInfo);
         receiptVO.setReceiptInfoUuid(newInfo.getUuid());
 
         ReceiptInventory inventory = ReceiptInventory.valueOf(receiptVO);
@@ -226,6 +227,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         vo.setTitle(msg.getTitle());
         vo.setType(msg.getType());
         vo.setAccountUuid(msg.getSession().getAccountUuid());
+        vo.setShow(true);
         if (msg.getType().equals(ReceiptType.VAT_SPECIAL_RECEIPT)) {
             vo.setAddress(msg.getAddress());
             vo.setBankAccountNumber(msg.getBankAccountNumber());
@@ -310,6 +312,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         vo.setAddress(msg.getAddress());
         vo.setName(msg.getName());
         vo.setTelephone(msg.getTelephone());
+        vo.setShow(true);
         dbf.persistAndRefresh(vo);
 
         ReceiptPostAddressInventory ri = ReceiptPostAddressInventory.valueOf(vo);

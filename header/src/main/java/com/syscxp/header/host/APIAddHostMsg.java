@@ -1,16 +1,10 @@
 package com.syscxp.header.host;
 
-import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APICreateMessage;
-import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.rest.APINoSee;
 
-import javax.persistence.Column;
 
-@Action(category = HostConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public abstract class APIAddHostMsg extends APICreateMessage implements AddHostMessage {
 
     @APIParam(maxLength = 255)

@@ -71,4 +71,8 @@ public interface CloudBus extends Component {
     void installBeforeSendMessageInterceptor(BeforeSendMessageInterceptor interceptor, Class<? extends Message>...classes);
 
     void installBeforePublishEventInterceptor(BeforePublishEventInterceptor interceptor, Class<? extends Event>...classes);
+
+    String getBusProjectId();
+
+    void setBusProjectId(String busProjectId);
 }

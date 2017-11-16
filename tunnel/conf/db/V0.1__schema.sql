@@ -164,6 +164,7 @@ CREATE TABLE  `syscxp_tunnel`.`EndpointEO` (
   `name` varchar(255) NOT NULL  COMMENT '连接点名称',
   `code` varchar(128) NOT NULL  COMMENT '连接点编号',
   `endpointType` varchar(128) NOT NULL  COMMENT '连接点类型',
+  `cloudType` VARCHAR(32) DEFAULT NULL COMMENT '云类型',
   `state` varchar(32) NOT NULL COMMENT '启用|禁用 Enable|Disable',
   `status` varchar(32) NOT NULL COMMENT '开发|未开放 Open|Close',
   `description` varchar(255)  DEFAULT NULL COMMENT '描述',
@@ -173,7 +174,7 @@ CREATE TABLE  `syscxp_tunnel`.`EndpointEO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE OR REPLACE VIEW `syscxp_tunnel`.`EndpointVO` AS SELECT uuid, nodeUuid, name, code, endpointType, state, status, description, lastOpDate, createDate
+CREATE OR REPLACE VIEW `syscxp_tunnel`.`EndpointVO` AS SELECT uuid, nodeUuid, name, code, endpointType, cloudType, state, status, description, lastOpDate, createDate
                             FROM `EndpointEO` WHERE deleted IS NULL;
 
 ##互联连接点配置表
@@ -367,10 +368,10 @@ CREATE TABLE `syscxp_tunnel`.`PortOfferingVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `syscxp_tunnel`.`PortOfferingVO` (`uuid`,`name`,`type`,`description`,`lastOpDate`,`createDate`)
-VALUES ('SFP_10G','SFP_10G','SFP_10G','光口万兆','2017-11-01 13:51:31','2017-10-30 15:39:20'),
-  ('SHARE','SHARE','SHARE','共享端口','2017-11-01 16:10:18','2017-10-30 15:35:40'),
-  ('SFP_1G','SFP_1G','SFP_1G','光口千兆','2017-11-01 13:51:36','2017-10-30 15:39:20'),
-  ('RJ45_1G','RJ45_1G','RJ45_1G','电口千兆','2017-11-01 13:51:39','2017-10-30 15:35:59');
+VALUES ('SFP_10G','光口万兆','SFP_10G','光口万兆','2017-11-01 13:51:31','2017-10-30 15:39:20'),
+  ('SHARE','共享端口','SHARE','共享端口','2017-11-01 16:10:18','2017-10-30 15:35:40'),
+  ('SFP_1G','光口千兆','SFP_1G','光口千兆','2017-11-01 13:51:36','2017-10-30 15:39:20'),
+  ('RJ45_1G','电口千兆','RJ45_1G','电口千兆','2017-11-01 13:51:39','2017-10-30 15:35:59');
 
 
 ##产品订单生效表
@@ -523,6 +524,7 @@ CREATE VIEW `syscxp_tunnel`.`AliEdgeRouterVO` AS SELECT uuid, tunnelUuid, accoun
 CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterConfigVO` (
   `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
   `aliRegionId` VARCHAR(32) NOT NULL COMMENT '区域id',
+  `aliRegionName` VARCHAR(32) NOT NULL COMMENT '区域Name',
   `physicalLineUuid` varchar(32) DEFAULT NULL COMMENT '物理专线id',
   `switchPortUuid` VARCHAR(32) NOT NULL COMMENT '交换机接口id',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
@@ -542,20 +544,35 @@ CREATE TABLE `syscxp_tunnel`.`AliUserVO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+## 云配置表
+CREATE TABLE `syscxp_tunnel`.`CloudVO` (
+  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `name` VARCHAR(64) NOT NULL COMMENT '名称',
+  `description` varchar(32) DEFAULT NULL COMMENT '描述',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+INSERT INTO `syscxp_tunnel`.`CloudVO` (`uuid`,`name`,`description`,`lastOpDate`,`createDate`)
+VALUES ('ALiYun','阿里云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('huawei','华为云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('baidu','百度云','','2017-11-01 13:51:31','2017-11-01 13:51:31');
+
 CREATE TABLE `syscxp_tunnel`.`ResourceVO` (
-	`uuid` varchar(32) NOT NULL UNIQUE,
-	`resourceName` varchar(255) DEFAULT NULL,
-	`resourceType` varchar(255) DEFAULT NULL,
-	PRIMARY KEY (`uuid`)
+    `uuid` varchar(32) NOT NULL UNIQUE,
+    `resourceName` varchar(255) DEFAULT NULL,
+    `resourceType` varchar(255) DEFAULT NULL,
+    PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE  `syscxp_tunnel`.`MonitorHostVO` (
     `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'host uuid',
     `nodeUuid` varchar(32) DEFAULT NULL COMMENT '节点ID(NodeEO.uuid)',
-	`username` varchar(128) NOT NULL COMMENT '用户名',
-	`password` varchar(128) NOT NULL COMMENT '密码',
-	`sshPort` INT NOT NULL DEFAULT 22 COMMENT 'ssh端口',
-  `monitorType` VARCHAR(32) DEFAULT 'TUNNEL',
+	  `username` varchar(128) NOT NULL COMMENT '用户名',
+    `password` varchar(128) NOT NULL COMMENT '密码',
+    `sshPort` INT NOT NULL DEFAULT 22 COMMENT 'ssh端口',
+    `monitorType` VARCHAR(32) DEFAULT 'TUNNEL',
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

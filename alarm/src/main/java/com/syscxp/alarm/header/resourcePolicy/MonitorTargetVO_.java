@@ -12,4 +12,7 @@ public class MonitorTargetVO_  extends BaseVO_{
     public static volatile SingularAttribute<MonitorTargetVO, ProductType> productType;
     public static volatile SingularAttribute<MonitorTargetVO, String> targetName;
     public static volatile SingularAttribute<MonitorTargetVO, String> targetValue;
+    public static volatile SingularAttribute<MonitorTargetVO, String> unit;
+    public static volatile SingularAttribute<MonitorTargetVO, String> range;
+    public static volatile SingularAttribute<MonitorTargetVO, String> defaultValue;
 }

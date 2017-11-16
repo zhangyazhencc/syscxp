@@ -13,4 +13,12 @@ public class DescriptionData {
     public void setDatas(List<DescriptionItem> datas) {
         this.datas = datas;
     }
+
+    public void add(DescriptionItem item) {
+        datas.add(item);
+    }
+
+    public void addAll(List<DescriptionItem> items) {
+        datas.addAll(items);
+    }
 }

@@ -8,6 +8,7 @@ import com.syscxp.core.retry.RetryCondition;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.core.thread.TimerTask;
 import com.syscxp.header.agent.OrderCallbackCmd;
+import com.syscxp.header.billing.OrderInventory;
 import com.syscxp.header.billing.OrderVO;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
@@ -56,12 +57,12 @@ public class OrderNotifyJob {
             NotifyOrderVO notifyOrderVO2 = dbf.findByUuid(notifyOrderVO.getUuid(), NotifyOrderVO.class);
             String orderUuid = notifyOrderVO2.getOrderUuid();
             OrderVO orderVO = dbf.findByUuid(orderUuid, OrderVO.class);
-            OrderCallbackCmd orderCallbackCmd = OrderCallbackCmd.valueOf(orderVO);
+            OrderCallbackCmd orderCallbackCmd = OrderCallbackCmd.valueOf(OrderInventory.valueOf(orderVO));
             threadFacade.submitTimerTask(new TimerTask() {
                 @Override
                 public boolean run() {
                     Map<String, String> header = new HashMap<>();
-                    header.put(RESTConstant.COMMAND_PATH, orderVO.getType().toString());
+                    header.put(RESTConstant.COMMAND_PATH, "billing");
                     String body = JSONObjectUtil.toJsonString(orderCallbackCmd);
                     boolean flag = false;
                     try {

@@ -50,5 +50,8 @@
     <message>
         <name>com.syscxp.header.tunnel.aliEdgeRouter.APIGetAliEdgeRouterMsg</name>
     </message>
+    <message>
+        <name>com.syscxp.header.tunnel.aliEdgeRouter.APIListAliRegionMsg</name>
+    </message>
 
 </service>

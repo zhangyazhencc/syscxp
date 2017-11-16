@@ -64,7 +64,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
     private Connection conn;
     private BusQueue outboundQueue;
     private ChannelPool channelPool;
-    private String busProjectId = "";
+    private static String busProjectId = "";
 
     @Autowired
     private ResourceDestinationMaker destMaker;
@@ -606,7 +606,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
             Channel chan = channelPool.acquire();
             try {
-                new RecoverableSend(chan, evt, evt.getType().toString(), BusExchange.BROADCAST).send();
+                new RecoverableSend(chan, evt, evt.getType(CloudBusImpl2.busProjectId).toString(), BusExchange.BROADCAST).send();
                 /*
                 watch.stop();
                 logger.debug(String.mediaType("sending %s cost %sms", evt.getClass().getName(), watch.getTime()));
@@ -744,7 +744,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
 
 
         public void listen(Event evt, EventListenerWrapper l) {
-            String type = evt.getType().toString();
+            String type = evt.getType(CloudBusImpl2.busProjectId).toString();
             try {
                 synchronized (listeners) {
                     List<EventListenerWrapper> lst = listeners.get(evt.getClass().getName());
@@ -765,7 +765,7 @@ public class CloudBusImpl2 implements CloudBus, CloudBusIN, ManagementNodeChange
         }
 
         public void unlisten(Event evt, EventListenerWrapper l) {
-            String type = evt.getType().toString();
+            String type = evt.getType(CloudBusImpl2.busProjectId).toString();
             try {
                 synchronized (listeners) {
                     List<EventListenerWrapper> lst = listeners.get(evt.getClass().getName());

@@ -8,11 +8,10 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 
-@Action(category = HostConstant.ACTION_CATEGORY, names = {"read"})
+@Action(category = HostConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
 @AutoQuery(replyClass = APIQueryHostReply.class, inventoryClass = HostInventory.class)
 public class APIQueryHostMsg extends APIQueryMessage {
 
- 
     public static List<String> __example__() {
         return asList("uuid="+uuid());
     }
