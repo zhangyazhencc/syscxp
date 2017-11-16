@@ -863,7 +863,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             if(newBuyInterfaceZ){
                 createTunnelCallBack.setInterfaceZUuid(interfaceVOZ.getUuid());
             }
-            productInfoForOrderTunnel.setCallBackData(createTunnelCallBack);
+//            productInfoForOrderTunnel.setCallBackData(createTunnelCallBack);
         }
 
 
@@ -1862,9 +1862,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         restf.registerSyncHttpCallHandler("callbackData",OrderCallbackCmd.class,
                 cmd -> {
 
-            if(cmd.getCallBackData() instanceof CreateTunnelCallBack){
-
-            }
                     logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                     if (!orderIsExist(cmd.getOrderUuid())) {
                         updateTunnelFromOrderBuy(cmd);
