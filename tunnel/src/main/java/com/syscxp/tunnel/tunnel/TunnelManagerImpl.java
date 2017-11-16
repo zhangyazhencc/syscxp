@@ -7,6 +7,7 @@ import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.core.workflow.FlowChainBuilder;
@@ -15,6 +16,7 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.callBack.CallBackData;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.falconapi.FalconApiCommands;
@@ -369,7 +371,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
-        ProductInfoForOrder productInfoForOrder = createBuyOrderForInterface(vo, msg.getPortType());
+        ProductInfoForOrder productInfoForOrder = createBuyOrderForInterface(vo, msg.getPortType(), new CreateInterfaceCallBack());
         productInfoForOrder.setOpAccountUuid(msg.getSession().getAccountUuid());
         productInfoForOrder.setNotifyUrl(restf.getSendCommandUrl());
         orderMsg.setProducts(CollectionDSL.list(productInfoForOrder));
@@ -378,16 +380,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         afterCreateInterface(inventories, vo, msg);
     }
 
-    private ProductInfoForOrder createBuyOrderForInterface(InterfaceVO vo, SwitchPortType portType) {
+    private ProductInfoForOrder createBuyOrderForInterface(InterfaceVO vo, SwitchPortType portType, NotifyCallBackData callBack) {
         ProductInfoForOrder order = new ProductInfoForOrder();
         order.setProductChargeModel(vo.getProductChargeModel());
         order.setDuration(vo.getDuration());
         order.setProductName(vo.getName());
         order.setProductUuid(vo.getUuid());
         order.setProductType(ProductType.PORT);
-        order.setDescriptionData("no description");
-        if (portType != null)
-            order.setUnits(getInterfacePriceUnit(portType));
+        order.setDescriptionData(getDescriptionForInterface(vo));
+        order.setCallBackData(RESTApiDecoder.dump(callBack));
+        order.setUnits(getInterfacePriceUnit(portType));
         order.setAccountUuid(vo.getOwnerAccountUuid());
 
         return order;
@@ -469,8 +471,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
 
-        APICreateRenewOrderMsg orderMsg = new APICreateRenewOrderMsg(
-                getOrderMsgForInterface(vo, null));
+        APICreateRenewOrderMsg orderMsg = new APICreateRenewOrderMsg(getOrderMsgForInterface(vo, new RenewInterfaceCallBack()));
         orderMsg.setDuration(msg.getDuration());
         orderMsg.setProductChargeModel(msg.getProductChargeModel());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -486,8 +487,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
 
-        APICreateRenewOrderMsg orderMsg = new APICreateRenewOrderMsg(
-                getOrderMsgForInterface(vo, null));
+        APICreateRenewOrderMsg orderMsg = new APICreateRenewOrderMsg(getOrderMsgForInterface(vo, new RenewAutoInterfaceCallBack()));
         orderMsg.setDuration(msg.getDuration());
         orderMsg.setProductChargeModel(msg.getProductChargeModel());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -525,8 +525,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
         Timestamp newTime = vo.getExpireDate();
-        APICreateSLACompensationOrderMsg orderMsg = new APICreateSLACompensationOrderMsg(
-                getOrderMsgForInterface(vo, null));
+        APICreateSLACompensationOrderMsg orderMsg = new APICreateSLACompensationOrderMsg(getOrderMsgForInterface(vo, new SlaInterfaceCallBack()));
         orderMsg.setDuration(msg.getDuration());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
@@ -556,8 +555,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
 
         //调用退订
-        APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(
-                getOrderMsgForInterface(vo, null));
+        APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(getOrderMsgForInterface(vo, new UnsubcribeInterfaceCallBack()));
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
@@ -2679,15 +2677,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 获取物理接口订单信息
      */
-    private APICreateOrderMsg getOrderMsgForInterface(InterfaceVO vo, SwitchPortType portType) {
+    private APICreateOrderMsg getOrderMsgForInterface(InterfaceVO vo, NotifyCallBackData callBack) {
         APICreateOrderMsg orderMsg = new APICreateOrderMsg();
         orderMsg.setProductName(vo.getName());
         orderMsg.setProductUuid(vo.getUuid());
         orderMsg.setProductType(ProductType.PORT);
-        orderMsg.setDescriptionData("no description");
-        if (portType != null)
-            orderMsg.setUnits(getInterfacePriceUnit(portType));
+        orderMsg.setDescriptionData(getDescriptionForInterface(vo));
         orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
+        orderMsg.setCallBackData(RESTApiDecoder.dump(callBack));
         orderMsg.setNotifyUrl(restf.getSendCommandUrl());
         return orderMsg;
     }
