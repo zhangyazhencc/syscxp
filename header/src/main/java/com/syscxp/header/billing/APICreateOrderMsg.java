@@ -20,8 +20,8 @@ public class APICreateOrderMsg extends APISyncCallMessage {
     @APIParam(emptyString = false)
     private String productUuid;
 
-    @APIParam(emptyString = false)
-    private String descriptionData;
+    @APIParam
+    private DescriptionData descriptionData;
 
     @APIParam(required = false)
     private String callBackData;
