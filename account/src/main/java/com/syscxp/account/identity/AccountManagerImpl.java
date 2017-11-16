@@ -810,6 +810,20 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("unable to create an account. account name %s already is exsists", msg.getName()));
         }
+
+        SimpleQuery<AccountVO> q1 = dbf.createQuery(AccountVO.class);
+        q1.add(AccountVO_.phone, Op.EQ, msg.getPhone());
+        if (q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("unable to create an account. account phone %s already is exsists", msg.getName()));
+        }
+
+        SimpleQuery<AccountVO> q2 = dbf.createQuery(AccountVO.class);
+        q2.add(AccountVO_.email, Op.EQ, msg.getEmail());
+        if (q.isExists()) {
+            throw new ApiMessageInterceptionException(argerr("unable to create an account. account email %s already is exsists", msg.getName()));
+        }
+
+
     }
 
     private void validate(APIUpdateUserMsg msg) {

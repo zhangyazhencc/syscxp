@@ -16,7 +16,7 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
-import com.syscxp.header.callBack.CallBackData;
+import com.syscxp.header.tunnel.tunnel.CreateTunnelCallBack;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.falconapi.FalconApiCommands;
@@ -852,7 +852,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             //productInfoForOrderZ.setNotifyUrl(restf.getSendCommandUrl());
             products.add(productInfoForOrderZ);
         }
+
         ProductInfoForOrder productInfoForOrderTunnel = createBuyOrderForTunnel(vo, msg);
+
+        if(newBuyInterfaceA || newBuyInterfaceZ){
+            CreateTunnelCallBack createTunnelCallBack = new CreateTunnelCallBack();
+            if(newBuyInterfaceA){
+                createTunnelCallBack.setInterfaceAUuid(interfaceVOA.getUuid());
+            }
+            if(newBuyInterfaceZ){
+                createTunnelCallBack.setInterfaceZUuid(interfaceVOZ.getUuid());
+            }
+            productInfoForOrderTunnel.setCallBackData(createTunnelCallBack);
+        }
+
+
         products.add(productInfoForOrderTunnel);
 
         List<OrderInventory> inventories = createBuyOrder(orderMsg);
@@ -1844,6 +1858,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     @Override
     public boolean start() {
         startCleanExpiredProduct();
+
+        restf.registerSyncHttpCallHandler("callbackData",OrderCallbackCmd.class,
+                cmd -> {
+
+            if(cmd.getCallBackData() instanceof CreateTunnelCallBack){
+
+            }
+                    logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                    if (!orderIsExist(cmd.getOrderUuid())) {
+                        updateTunnelFromOrderBuy(cmd);
+                    }
+
+                    return null;
+                });
+        ///////////////////////////以下都不要/////////////////
         restf.registerSyncHttpCallHandler(OrderType.BUY.toString(), OrderCallbackCmd.class,
                 cmd -> {
                     logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
