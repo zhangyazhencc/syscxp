@@ -71,7 +71,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     private void sendMessage(AlarmLogCallbackCmd cmd) throws Exception {
 
-        mailService.alarmEmail("zhangqiuyu@syscloud.cn","监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+        //mailService.alarmEmail("zhangqiuyu@syscloud.cn","监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
 
         SimpleQuery<ContactVO> query = dbf.createQuery(ContactVO.class);
         query.add(ContactVO_.accountUuid, SimpleQuery.Op.EQ, cmd.getAccountUuid());
@@ -81,7 +81,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
             for (NotifyWayVO notifyWayVO : notifyWayVOs) {
                 if (notifyWayVO.getCode().equals("email")) {
                     String email = contactVO.getEmail();
-                    mailService.alarmEmail(email,"监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+                    //mailService.alarmEmail(email,"监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
                 }
 
                 if (notifyWayVO.getCode().equals("mobile")) {
