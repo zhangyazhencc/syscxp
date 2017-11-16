@@ -163,7 +163,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                     policyVO.setBindResources(policyVO.getBindResources() - 1);
                     dbf.updateAndRefresh(policyVO);
                     event.setInventory(PolicyInventory.valueOf(policyVO));
-                    it.remove();
+                    dbf.remove(resourcePolicyRefVO);
                 }
             }
 

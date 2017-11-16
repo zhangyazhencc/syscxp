@@ -1,5 +1,7 @@
 package com.syscxp.header.billing;
 
-public class NotifyCallBackData {
+import com.syscxp.header.message.Message;
+
+public class NotifyCallBackData extends Message{
 
 }
