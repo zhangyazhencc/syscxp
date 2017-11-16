@@ -12,8 +12,8 @@ public class OrderCallbackCmd {
     private Timestamp expireDate;
     private int duration;
     private ProductChargeModel productChargeModel;
-    private DescriptionData descriptionData;
-    private CallBackData callBackData;
+    private String descriptionData;
+    private String callBackData;
 
     public static OrderCallbackCmd valueOf(OrderInventory order){
         OrderCallbackCmd cmd = new OrderCallbackCmd();
@@ -77,19 +77,19 @@ public class OrderCallbackCmd {
         this.productChargeModel = productChargeModel;
     }
 
-    public DescriptionData getDescriptionData() {
+    public String getDescriptionData() {
         return descriptionData;
     }
 
-    public void setDescriptionData(DescriptionData descriptionData) {
+    public void setDescriptionData(String descriptionData) {
         this.descriptionData = descriptionData;
     }
 
-    public CallBackData getCallBackData() {
+    public String getCallBackData() {
         return callBackData;
     }
 
-    public void setCallBackData(CallBackData callBackData) {
+    public void setCallBackData(String callBackData) {
         this.callBackData = callBackData;
     }
 
