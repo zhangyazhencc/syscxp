@@ -1,10 +1,11 @@
 package com.syscxp.header.billing;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class DescriptionData {
 
-    private List<DescriptionItem> datas;
+    private List<DescriptionItem> datas = new ArrayList<>();
 
     public List<DescriptionItem> getDatas() {
         return datas;
