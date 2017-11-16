@@ -9,7 +9,6 @@ import com.syscxp.billing.header.renew.RenewVO_;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.rest.TimeoutRestTemplate;
-import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -337,7 +336,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setDescriptionData(renewVO.getDescriptionData());
         orderVo.setProductUuid(renewVO.getProductUuid());
         orderVo.setDuration(originDuration);
-        orderVo.setCallBackData(JSONObjectUtil.toJsonString(msg.getCallBackData()));
+        orderVo.setCallBackData(msg.getCallBackData());
 
         dbf.getEntityManager().merge(abvo);
         dbf.getEntityManager().persist(orderVo);
@@ -360,10 +359,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductType(msg.getProductType());
         orderVo.setProductChargeModel(ProductChargeModel.BY_DAY);
         orderVo.setPayTime(currentTimestamp);
-        orderVo.setDescriptionData(JSONObjectUtil.toJsonString(msg.getDescriptionData()));
+        orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(msg.getProductUuid());
         orderVo.setDuration(msg.getDuration());
-        orderVo.setCallBackData(JSONObjectUtil.toJsonString(msg.getCallBackData()));
+        orderVo.setCallBackData(msg.getCallBackData());
 
         orderVo.setPayCash(BigDecimal.ZERO);
         orderVo.setPayPresent(BigDecimal.ZERO);
@@ -405,8 +404,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductType(msg.getProductType());
         orderVo.setPayTime(currentTimestamp);
         orderVo.setProductUuid(msg.getProductUuid());
-        orderVo.setDescriptionData(JSONObjectUtil.toJsonString(msg.getDescriptionData()));
-        orderVo.setCallBackData(JSONObjectUtil.toJsonString(msg.getCallBackData()));
+        orderVo.setDescriptionData(msg.getDescriptionData());
+        orderVo.setCallBackData(msg.getCallBackData());
 
         Timestamp startTime = msg.getStartTime();
         Timestamp endTime = msg.getExpiredTime();
@@ -549,9 +548,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setState(OrderState.PAID);
         orderVo.setProductType(msg.getProductType());
         orderVo.setPayTime(currentTimestamp);
-        orderVo.setDescriptionData(JSONObjectUtil.toJsonString(msg.getDescriptionData()));
+        orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(msg.getProductUuid());
-        orderVo.setCallBackData(JSONObjectUtil.toJsonString(msg.getCallBackData()));
+        orderVo.setCallBackData(msg.getCallBackData());
 
 
         Timestamp startTime = msg.getStartTime();
@@ -747,10 +746,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setProductType(msg.getProductType());
             orderVo.setProductChargeModel(msg.getProductChargeModel());
             orderVo.setPayTime(currentTimestamp);
-            orderVo.setDescriptionData(JSONObjectUtil.toJsonString(msg.getDescriptionData()));
+            orderVo.setDescriptionData(msg.getDescriptionData());
             orderVo.setProductUuid(msg.getProductUuid());
             orderVo.setDuration(msg.getDuration());
-            orderVo.setCallBackData(JSONObjectUtil.toJsonString(msg.getCallBackData()));
+            orderVo.setCallBackData(msg.getCallBackData());
 
             BigDecimal renewPrice = discountPrice;
 
