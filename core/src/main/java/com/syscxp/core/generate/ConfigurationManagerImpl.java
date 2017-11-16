@@ -1,5 +1,6 @@
 package com.syscxp.core.generate;
 
+import com.syscxp.core.cloudbus.CloudBusImpl2;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.config.GlobalConfig;
 import com.syscxp.core.config.GlobalConfigFacade;
@@ -337,7 +338,7 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
             StringBuilder sb = new StringBuilder();
             sb.append("package syscxp.ui.api\n\n");
             sb.append("interface ApiConstants {\n");
-            sb.append(String.format("%sdef API_EVENT_TYPE = '%s'\n", whiteSpace(4), new APIEvent().getType()));
+            sb.append(String.format("%sdef API_EVENT_TYPE = '%s'\n", whiteSpace(4), new APIEvent().getType(bus.getBusProjectId())));
             /*
             sb.append("import syscxp.ui.core.JSON\n\n");
             sb.append(String.mediaType("public class Session {\n"));
@@ -397,7 +398,7 @@ public class ConfigurationManagerImpl extends AbstractService implements Configu
         if (APIEvent.class.isAssignableFrom(clazz) && !Modifier.isAbstract(clazz.getModifiers())) {
             try {
                 APIEvent evt = (APIEvent) clazz.newInstance();
-                sb.append(String.format("\n%sdef eventType() { return '%s' }", whiteSpace(4), evt.getType().toString()));
+                sb.append(String.format("\n%sdef eventType() { return '%s' }", whiteSpace(4), evt.getType(bus.getBusProjectId()).toString()));
             } catch (Exception e) {
                 throw new CloudRuntimeException(String.format("cannot generate event type for %s", clazz.getName()), e);
             }

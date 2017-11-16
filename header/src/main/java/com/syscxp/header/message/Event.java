@@ -17,7 +17,7 @@ public abstract class Event extends Message {
         this.avoidKey = avoidKey;
     }
 
-    public abstract Type getType();
+    public abstract Type getType(String busProjectId);
 
     public abstract String getSubCategory();
 
@@ -31,8 +31,8 @@ public abstract class Event extends Message {
     public static class Type {
         private final String _name;
 
-        public Type(Category ctg, String subCtg) {
-            _name = BINDING_KEY_PERFIX + ctg.toString() + "." + subCtg;
+        public Type(String busProjectId, Category ctg, String subCtg) {
+            _name = BINDING_KEY_PERFIX + busProjectId + "." + ctg.toString() + "." + subCtg;
         }
 
         @Override
