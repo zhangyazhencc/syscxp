@@ -19,8 +19,6 @@ public class TunnelMonitorInventory {
 
     private String tunnelUuid;
 
-    private String monitorCidr;
-
     private String  tunnelSwitchPortUuid;
 
     private String  hostUuid;
@@ -109,14 +107,6 @@ public class TunnelMonitorInventory {
 
     public void setHostUuid(String hostUuid) {
         this.hostUuid = hostUuid;
-    }
-
-    public String getMonitorCidr() {
-        return monitorCidr;
-    }
-
-    public void setMonitorCidr(String monitorCidr) {
-        this.monitorCidr = monitorCidr;
     }
 
     public String getMonitorIp() {

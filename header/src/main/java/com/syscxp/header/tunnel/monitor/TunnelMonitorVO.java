@@ -35,9 +35,6 @@ public class TunnelMonitorVO {
     private String monitorIp;
 
     @Column
-    private String monitorCidr;
-
-    @Column
     private String msg;
 
     @Column
@@ -89,14 +86,6 @@ public class TunnelMonitorVO {
 
     public void setMonitorIp(String monitorIp) {
         this.monitorIp = monitorIp;
-    }
-
-    public String getMonitorCidr() {
-        return monitorCidr;
-    }
-
-    public void setMonitorCidr(String monitorCidr) {
-        this.monitorCidr = monitorCidr;
     }
 
     public String getMsg() {
