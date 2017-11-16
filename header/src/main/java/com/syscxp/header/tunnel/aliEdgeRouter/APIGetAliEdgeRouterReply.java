@@ -7,11 +7,11 @@ public class APIGetAliEdgeRouterReply extends APIQueryReply {
     private AliEdgeRouterInventory routerInventory;
     private boolean aliIndentityFailure;
 
-    public Boolean getAliIndentityFailure() {
+    public boolean isAliIndentityFailure() {
         return aliIndentityFailure;
     }
 
-    public void setAliIndentityFailure(Boolean aliIndentityFailure) {
+    public void setAliIndentityFailure(boolean aliIndentityFailure) {
         this.aliIndentityFailure = aliIndentityFailure;
     }
 
