@@ -1,6 +1,8 @@
 package com.syscxp.header.billing;
 
 
+import com.syscxp.header.callBack.CallBackData;
+
 import java.util.List;
 
 public class ProductInfoForOrder {
@@ -17,9 +19,9 @@ public class ProductInfoForOrder {
 
     private String productUuid;
 
-    private String descriptionData;
+    private DescriptionData descriptionData;
 
-    private String callBackData;
+    private CallBackData callBackData;
 
     private String accountUuid;
 
@@ -75,19 +77,19 @@ public class ProductInfoForOrder {
         this.productUuid = productUuid;
     }
 
-    public String getDescriptionData() {
+    public DescriptionData getDescriptionData() {
         return descriptionData;
     }
 
-    public void setDescriptionData(String descriptionData) {
+    public void setDescriptionData(DescriptionData descriptionData) {
         this.descriptionData = descriptionData;
     }
 
-    public String getCallBackData() {
+    public CallBackData getCallBackData() {
         return callBackData;
     }
 
-    public void setCallBackData(String callBackData) {
+    public void setCallBackData(CallBackData callBackData) {
         this.callBackData = callBackData;
     }
 

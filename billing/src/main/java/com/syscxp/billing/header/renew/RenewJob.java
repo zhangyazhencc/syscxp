@@ -101,6 +101,8 @@ public class RenewJob {
                             logger.error(e.getMessage());
                         }
                     }
+                } else if(renewVO.getProductType().equals(ProductType.PORT)){
+
                 }
 
             }
@@ -121,6 +123,18 @@ public class RenewJob {
         HttpEntity<String> req = new HttpEntity<String>(body, requestHeaders);
 
         ResponseEntity<String> rsp = new Retry<ResponseEntity<String>>() {
+
+
+
+
+
+
+
+
+
+
+
+            
             @Override
             @RetryCondition(onExceptions = {IOException.class, RestClientException.class})
             protected ResponseEntity<String> call() {
