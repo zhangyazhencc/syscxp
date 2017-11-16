@@ -8,13 +8,13 @@ import javax.persistence.Table;
 @Table
 public class AliEdgeRouterEO extends AliEdgeRouterAO{
     @Column
-    private Integer deleted;
+    private String deleted;
 
-    public Integer getDeleted() {
+    public String getDeleted() {
         return deleted;
     }
 
-    public void setDeleted(Integer deleted) {
+    public void setDeleted(String deleted) {
         this.deleted = deleted;
     }
 }

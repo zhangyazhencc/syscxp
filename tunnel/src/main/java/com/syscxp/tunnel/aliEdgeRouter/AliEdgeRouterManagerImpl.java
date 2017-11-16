@@ -393,6 +393,14 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         q.delete();
     }
 
+    private AliUserVO findAliUser(AliEdgeRouterVO vo){
+        SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
+        q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ, vo.getAccountUuid());
+        q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ, vo.getAliAccountUuid());
+        AliUserVO user = q.find();
+
+        return user;
+    }
 
     private void handle(APIDeleteAliEdgeRouterMsg msg){
         AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
@@ -402,26 +410,24 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         String AliAccessKeyId = null;
         String AliAccessKeySecret = null;
 
-        if(msg.getHaveConnectIpFlag() == true && msg.getAliAccessKeyID() == null && msg.getAliAccessKeySecret() == null){
-            SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ, vo.getAccountUuid());
-            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ, vo.getAliAccountUuid());
-            AliUserVO user = q.find();
+        if(vo.isCreateFlag()){
+            if(msg.getAliAccessKeyID() == null && msg.getAliAccessKeySecret() == null){
 
-            if(user != null){
-                AliAccessKeyId = user.getAliAccessKeyID();
-                AliAccessKeySecret = user.getAliAccessKeySecret();
+                AliUserVO user = findAliUser(vo);
+                if(user != null){
+                    AliAccessKeyId = user.getAliAccessKeyID();
+                    AliAccessKeySecret = user.getAliAccessKeySecret();
+                }
+            }else{
+                AliAccessKeyId = msg.getAliAccessKeyID();
+                AliAccessKeySecret = msg.getAliAccessKeySecret();
             }
 
-
-        }else if(msg.getHaveConnectIpFlag() == true && msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null){
-            AliAccessKeyId = msg.getAliAccessKeyID();
-            AliAccessKeySecret = msg.getAliAccessKeySecret();
-        } else{
-            AliAccessKeyId = AliUserGlobalProperty.ALI_VALUE;
+        }else{
+            AliAccessKeyId = AliUserGlobalProperty.ALI_KEY;
             AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
-
         }
+
 
         // 创建DefaultAcsClient实例并初始化
         DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);
@@ -512,8 +518,12 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         ModifyVirtualBorderRouterAttributeResponse response;
         try{
             response = client.getAcsResponse(request);
-            if (update)
+            logger.info(response.toString());
+            if (update){
+                vo.setCreateFlag(true);
                 vo = dbf.updateAndRefresh(vo);
+            }
+
 
         }catch (ClientException e){
             e.printStackTrace();

@@ -511,8 +511,9 @@ CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterEO` (
 	  `description` varchar(255) DEFAULT NULL COMMENT '描述',
 	  `vbrUuid` varchar(64) NOT NULL COMMENT '虚拟边界路由器id',
 	  `physicalLineUuid` varchar(32) NOT NULL COMMENT '物理专线id',
+	  `isCreateFlag` tinyint(1) unsigned DEFAULT 0 COMMENT '是否确认创建',
 	  `vlan` int(11) NOT NULL COMMENT '端口号',
-	  `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+	  `deleted` varchar(255) DEFAULT NULL COMMENT '是否删除',
 	  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	  `createDate` timestamp,
   PRIMARY KEY (`uuid`)

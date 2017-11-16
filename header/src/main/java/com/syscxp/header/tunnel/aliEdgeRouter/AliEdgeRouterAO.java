@@ -46,9 +46,20 @@ public class AliEdgeRouterAO {
     @Column
     private Timestamp createDate;
 
+    @Column
+    private boolean isCreateFlag;
+
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
+    }
+
+    public boolean isCreateFlag() {
+        return isCreateFlag;
+    }
+
+    public void setCreateFlag(boolean createFlag) {
+        isCreateFlag = createFlag;
     }
 
     public String getUuid() {
