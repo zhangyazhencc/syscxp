@@ -490,7 +490,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APICreateRenewOrderMsg orderMsg = new APICreateRenewOrderMsg(getOrderMsgForInterface(vo, new RenewAutoInterfaceCallBack()));
         orderMsg.setDuration(msg.getDuration());
         orderMsg.setProductChargeModel(msg.getProductChargeModel());
-        orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+        orderMsg.setOpAccountUuid("system");
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
 
