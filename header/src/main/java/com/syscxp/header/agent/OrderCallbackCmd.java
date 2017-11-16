@@ -1,9 +1,7 @@
 package com.syscxp.header.agent;
 
-import com.syscxp.header.billing.OrderVO;
-import com.syscxp.header.billing.OrderType;
-import com.syscxp.header.billing.ProductChargeModel;
-import com.syscxp.header.billing.ProductType;
+import com.syscxp.header.billing.*;
+import com.syscxp.header.callBack.CallBackData;
 
 import java.sql.Timestamp;
 
@@ -15,10 +13,10 @@ public class OrderCallbackCmd {
     private Timestamp expireDate;
     private int duration;
     private ProductChargeModel productChargeModel;
-    private String descriptionData;
-    private String callBackData;
+    private DescriptionData descriptionData;
+    private CallBackData callBackData;
 
-    public static OrderCallbackCmd valueOf(OrderVO order){
+    public static OrderCallbackCmd valueOf(OrderInventory order){
         OrderCallbackCmd cmd = new OrderCallbackCmd();
         cmd.setOrderUuid(order.getUuid());
         cmd.setPorductUuid(order.getProductUuid());
@@ -80,12 +78,20 @@ public class OrderCallbackCmd {
         this.productChargeModel = productChargeModel;
     }
 
-    public String getDescriptionData() {
+    public DescriptionData getDescriptionData() {
         return descriptionData;
     }
 
-    public void setDescriptionData(String descriptionData) {
+    public void setDescriptionData(DescriptionData descriptionData) {
         this.descriptionData = descriptionData;
+    }
+
+    public CallBackData getCallBackData() {
+        return callBackData;
+    }
+
+    public void setCallBackData(CallBackData callBackData) {
+        this.callBackData = callBackData;
     }
 
     public String getOrderUuid() {
@@ -96,11 +102,5 @@ public class OrderCallbackCmd {
         this.orderUuid = orderUuid;
     }
 
-    public String getCallBackData() {
-        return callBackData;
-    }
 
-    public void setCallBackData(String callBackData) {
-        this.callBackData = callBackData;
-    }
 }
