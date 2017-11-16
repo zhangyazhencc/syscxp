@@ -20,7 +20,6 @@ import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.header.rest.RESTApiFacade;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.SyncHttpCallHandler;
@@ -31,7 +30,6 @@ import com.syscxp.sms.header.APIMaiAlarmSendMsg;
 import com.syscxp.sms.header.MailConstant;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Timestamp;
