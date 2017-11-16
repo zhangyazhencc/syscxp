@@ -1,8 +1,6 @@
 package com.syscxp.header.billing;
 
 
-import com.syscxp.header.callBack.CallBackData;
-
 import java.util.List;
 
 public class ProductInfoForOrder {

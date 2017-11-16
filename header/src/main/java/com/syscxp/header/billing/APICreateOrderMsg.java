@@ -1,6 +1,5 @@
 package com.syscxp.header.billing;
 
-import com.syscxp.header.callBack.CallBackData;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
