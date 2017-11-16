@@ -5,14 +5,14 @@ import com.syscxp.header.query.APIQueryReply;
 public class APIGetAliEdgeRouterReply extends APIQueryReply {
     private AliEdgeRouterInformationInventory inventory;
     private AliEdgeRouterInventory routerInventory;
-    private boolean aliIndentityFailure;
+    private boolean aliIdentityFailure;
 
-    public boolean isAliIndentityFailure() {
-        return aliIndentityFailure;
+    public boolean isAliIdentityFailure() {
+        return aliIdentityFailure;
     }
 
-    public void setAliIndentityFailure(boolean aliIndentityFailure) {
-        this.aliIndentityFailure = aliIndentityFailure;
+    public void setAliIdentityFailure(boolean aliIdentityFailure) {
+        this.aliIdentityFailure = aliIdentityFailure;
     }
 
     public AliEdgeRouterInventory getRouterInventory() {

@@ -379,7 +379,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             reply.setInventory(inventory);
             reply.setRouterInventory(routerInventory);
         }else {
-            reply.setAliIndentityFailure(true);
+            reply.setAliIdentityFailure(true);
         }
         bus.reply(msg,reply);
 
