@@ -1,18 +1,4 @@
 
-CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`TunnelMonitorInterfaceVO` (
-  `uuid` VARCHAR(32) NOT NULL COMMENT '主键',
-  `tunnelMonitorUuid` VARCHAR(32) NOT NULL COMMENT '监控通道uuid(TunnelMonitorVO.uuid)',
-  `interfaceType` VARCHAR(32) NOT NULL COMMENT '类型("A","Z")',
-  `hostUuid` VARCHAR(32) NOT NULL COMMENT '监控主机UUID(HostVO.uuid)',
-  `monitorIp` VARCHAR(64) NOT NULL COMMENT '监控IP(NetworkVO.monitorCidr)',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  PRIMARY KEY (`uuid`),
-  UNIQUE KEY `uuid` (`uuid`))
-ENGINE = InnoDB DEFAULT CHARSET = utf8 COMMENT '监控通道两端信息表';
-
-ALTER TABLE `syscxp_tunnel`.`TunnelMonitorInterfaceVO` ADD interfaceUuid varchar(32) COMMENT '物理接口uuid InterfaceVO.uuid' AFTER interfaceType;
-
 CREATE TABLE `syscxp_tunnel`.`SpeedRecordsVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'uuid',
   `tunnelUuid` varchar(32) NOT NULL COMMENT 'TunnelVO.uuid',
@@ -453,7 +439,6 @@ CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`TunnelMonitorVO` (
   `tunnelSwitchPortUuid` VARCHAR(32) NOT NULL COMMENT '通道交换机uuid(TunnelSwitchPortVO.uuid)',
   `hostUuid` varchar(32) NOT NULL COMMENT '监控主机uuid(HostVO.uuid)',
   `monitorIp` varchar(64) NOT NULL COMMENT '监控IP',
-  `monitorCidr` varchar(64) NOT NULL COMMENT '监控网络网段',
   `msg` varchar(1024) COMMENT '消息',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
