@@ -339,24 +339,26 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         try{
             response = client.getAcsResponse(request);
 
-            DescribeVirtualBorderRoutersResponse.VirtualBorderRouterType virtualBorderRouterType = new DescribeVirtualBorderRoutersResponse.VirtualBorderRouterType();
-            virtualBorderRouterType = response.getVirtualBorderRouterSet().get(0);
+            if(response.getVirtualBorderRouterSet().size() != 0){
+                DescribeVirtualBorderRoutersResponse.VirtualBorderRouterType virtualBorderRouterType = response.getVirtualBorderRouterSet().get(0);
 
-            routerInventory.setName(virtualBorderRouterType.getName());
-            routerInventory.setVbrUuid(virtualBorderRouterType.getVbrId());
-            routerInventory.setDescription(virtualBorderRouterType.getDescription());
-            routerInventory.setCreateDate(vo.getCreateDate());
-            routerInventory.setVlan(vo.getVlan());
-            routerInventory.setAliAccountUuid(vo.getAliAccountUuid());
-            routerInventory.setAliRegionId(vo.getAliRegionId());
+                routerInventory.setName(virtualBorderRouterType.getName());
+                routerInventory.setVbrUuid(virtualBorderRouterType.getVbrId());
+                routerInventory.setDescription(virtualBorderRouterType.getDescription());
+                routerInventory.setCreateDate(vo.getCreateDate());
+                routerInventory.setVlan(vo.getVlan());
+                routerInventory.setAliAccountUuid(vo.getAliAccountUuid());
+                routerInventory.setAliRegionId(vo.getAliRegionId());
 
 
-            inventory.setAccessPoint(virtualBorderRouterType.getAccessPointId());
-            inventory.setStatus(virtualBorderRouterType.getStatus());
-            inventory.setPhysicalLineOwerUuid(virtualBorderRouterType.getPhysicalConnectionOwnerUid());
-            inventory.setLocalGatewayIp(virtualBorderRouterType.getLocalGatewayIp());
-            inventory.setPeerGatewayIp(virtualBorderRouterType.getPeerGatewayIp());
-            inventory.setPeeringSubnetMask(virtualBorderRouterType.getPeeringSubnetMask());
+                inventory.setAccessPoint(virtualBorderRouterType.getAccessPointId());
+                inventory.setStatus(virtualBorderRouterType.getStatus());
+                inventory.setPhysicalLineOwerUuid(virtualBorderRouterType.getPhysicalConnectionOwnerUid());
+                inventory.setLocalGatewayIp(virtualBorderRouterType.getLocalGatewayIp());
+                inventory.setPeerGatewayIp(virtualBorderRouterType.getPeerGatewayIp());
+                inventory.setPeeringSubnetMask(virtualBorderRouterType.getPeeringSubnetMask());
+            }
+
 
 
         }catch (ClientException e){
