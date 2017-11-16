@@ -55,6 +55,9 @@ public class AlarmLogVO extends BaseVO {
     @Column
     private Timestamp resumeTime;
 
+    @Column
+    private int count;
+
     public String getRegulationUuid() {
         return regulationUuid;
     }
@@ -157,5 +160,13 @@ public class AlarmLogVO extends BaseVO {
 
     public void setResumeTime(Timestamp resumeTime) {
         this.resumeTime = resumeTime;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
     }
 }

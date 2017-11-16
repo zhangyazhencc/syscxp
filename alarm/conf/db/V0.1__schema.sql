@@ -33,6 +33,7 @@ CREATE TABLE `AlarmLogVO` (
   `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `regulationUuid` varchar(32) DEFAULT NULL,
+  `count` int(10) DEFAULT NULL COMMENT '计数',
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
