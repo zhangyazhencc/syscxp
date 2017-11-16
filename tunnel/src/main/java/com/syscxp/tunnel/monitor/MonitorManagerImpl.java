@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.monitor;
 
+import com.alibaba.fastjson.JSON;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.db.*;
 import com.syscxp.header.falconapi.FalconApiCommands;
@@ -127,10 +128,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             List<TunnelMonitorVO> tunnelMonitorVOS = createTunnelMonitorHandle(msg);
 
             // 控制器命令下发
-            ControllerCommands.ControllerRestResponse controllerResp =
-                    startControllerCommand(msg.getTunnelUuid(), tunnelMonitorVOS);
-            if(!controllerResp.isSuccess())
-                event.setError(Platform.operr("Failure to send RYU start command: tunnelUuid: %s , Error:", msg.getTunnelUuid(), controllerResp.getMsg()));
+//            ControllerCommands.ControllerRestResponse controllerResp =
+//                    startControllerCommand(msg.getTunnelUuid(), tunnelMonitorVOS);
+//            if(!controllerResp.isSuccess())
+//                event.setError(Platform.operr("Failure to send RYU start command: tunnelUuid: %s , Error:%s", msg.getTunnelUuid(), controllerResp.getMsg()));
 
             // 同步icmp
             if (event.isSuccess()){
@@ -138,7 +139,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                         icmpSync(msg.getSession().getAccountUuid(), msg.getTunnelUuid(), tunnelMonitorVOS);
 
                 if(!falconRsp.isSuccess())
-                    event.setError(Platform.operr("Failure to sync icmp: tunnelUuid: %s , Error:", msg.getTunnelUuid(), falconRsp.getMsg()));
+                    event.setError(Platform.operr("Failure to sync icmp: tunnelUuid: %s , Error: %s", msg.getTunnelUuid(), falconRsp.getMsg()));
             }
 
             // 开启agent监控
@@ -146,15 +147,18 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 MonitorAgentCommands.RestResponse agentResp = startMonitor(msg.getSession().getAccountUuid(),msg.getTunnelUuid(),tunnelMonitorVOS);
 
                 if(!agentResp.isSuccess())
-                    event.setError(Platform.operr("Failure to start agent monitor: tunnelUuid: %s , Error:", msg.getTunnelUuid(),agentResp.getMsg()));
+                    event.setError(Platform.operr("Failure to start agent monitor: tunnelUuid: %s , Error: %s", msg.getTunnelUuid(),agentResp.getMsg()));
             }
 
             // 更新tunnel状态
             if (event.isSuccess()){
                 updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled);
                 event.setInventories(TunnelMonitorInventory.valueOf(tunnelMonitorVOS));
-            }
+            }else
+                logger.error(event.getError().toString());
+
         } catch (Exception e) {
+            logger.error(String.format("Failure to start tunnel monitor %s. Error: %s", msg.getTunnelUuid(), e.getMessage()));
             event.setError(Platform.operr("Failure to start tunnel monitor %s. Error: %s", msg.getTunnelUuid(), e.getMessage()));
         }
 
@@ -171,8 +175,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         List<TunnelMonitorVO> tunnelMonitorVOS = new ArrayList<TunnelMonitorVO>();
 
         // 按tunnel查找TunnelMonitorVO已经存在的IP
-        List<String> locatedIps =
-                Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, msg.getTunnelUuid()).select(TunnelMonitorVO_.monitorIp).list();
+        List<String> locatedIps = getLocatedIps(msg.getTunnelUuid());
 
         CIDRUtils cidrUtils = new CIDRUtils(msg.getMonitorCidr());
         String startIp = cidrUtils.getNetworkAddress();
@@ -212,6 +215,19 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             throw new IllegalArgumentException(String.format(" Fail to create tunnel monitor！ %s ", msg.getTunnelUuid()));
 
         return tunnelMonitorVOS;
+    }
+
+    /***
+     * 获取已分配的监控ip
+     * @param tunnelUuid
+     * @return
+     */
+    private List<String> getLocatedIps(String tunnelUuid){
+        List<String> ips =  Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).select(TunnelMonitorVO_.monitorIp).list();
+        ips.add("192.168.0.0");
+        ips.add("192.168.0.255");
+
+        return ips;
     }
 
     /**
@@ -776,17 +792,17 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             String command = JSONObjectUtil.toJsonString(map);
             String url = getMonitorAgentUrl(msg.getHostIp(), MonitorAgentConstant.NETTOOL_RESULT);
 
-            // result = evtf.syncJsonPost(url, command, List.class);
-            String resp = evtf.syncJsonPost(url, command, String.class);
-            logger.info(resp);
+            String resp = evtf.getRESTTemplate().postForObject(url,command,String.class);
+
+            result = JSON.parseArray(resp,MonitorAgentCommands.NettoolResult.class);
         } catch (Exception e) {
             String err = String.format("Failure to execute speed test command! %s", e.getMessage());
             logger.error(err);
             reply.setError(Platform.argerr(err));
         }
 
-        /*if(reply.isSuccess())
-            reply.setInventories(NettoolResultInventory.valueOf(result));*/
+        if(reply.isSuccess())
+            reply.setInventories(NettoolResultInventory.valueOf(result));
 
         bus.reply(msg, reply);
     }
