@@ -514,7 +514,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             reply.setError(errf.stringToOperationError("订单操作失败"));
         }
 
-        bus.reply(msg, reply);;
+        bus.reply(msg, reply);
     }
 
     private void handle(APISLAInterfaceMsg msg) {
@@ -2003,7 +2003,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         }
 
                     }else{
-                        logger.debug(String.format("未知回调！！！！！！！！"));
+                        logger.debug("未知回调！！！！！！！！");
                     }
 
                     return null;
