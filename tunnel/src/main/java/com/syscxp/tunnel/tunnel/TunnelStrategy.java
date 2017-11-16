@@ -78,7 +78,7 @@ public class TunnelStrategy  {
 
     }
 
-    //策略分配外部VLAN（业务VLAN）
+    //策略分配外部VLAN（通过物理接口）
     public Integer getVlanByStrategy(String interfaceUuid){
         Integer vlan = null;
 
@@ -100,8 +100,8 @@ public class TunnelStrategy  {
         }
     }
 
-    //策略分配外部VLAN（互联VLAN）
-    public Integer getInnerVlanByStrategy(String switchUuid){
+    //策略分配外部VLAN（通过交换机）
+    public Integer getVlanBySwitch(String switchUuid){
         Integer vlan = null;
 
         //查询该虚拟交换机下所有的Vlan段
