@@ -28,6 +28,7 @@ import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsGlobalProperty;
 import com.syscxp.sms.SmsService;
 import com.syscxp.sms.header.APIMaiAlarmSendMsg;
+import com.syscxp.sms.header.MailConstant;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.junit.Test;
@@ -36,6 +37,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.sql.Timestamp;
 import java.util.*;
 
+import static com.syscxp.alarm.AlarmGlobalProperty.ALARM_SERVER_RUL;
 import static com.syscxp.core.Platform.operr;
 
 public class AlarmLogManagerImpl extends AbstractService implements ApiMessageInterceptor {
@@ -71,7 +73,16 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     private void sendMessage(AlarmLogCallbackCmd cmd) throws Exception {
 
-        //mailService.alarmEmail("zhangqiuyu@syscloud.cn","监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+        APIMaiAlarmSendMsg apiMaiAlarmSendMsg = new APIMaiAlarmSendMsg();
+        apiMaiAlarmSendMsg.setEmail("zhangqiuyu@syscloud.cn");
+        apiMaiAlarmSendMsg.setSubject("监控报警信息");
+        apiMaiAlarmSendMsg.setComtent("dasqweqeqw");
+        InnerMessageHelper.setMD5(apiMaiAlarmSendMsg);
+        String gstr = RESTApiDecoder.dump(apiMaiAlarmSendMsg);
+        RestAPIResponse rsp = restf.syncJsonPost(ALARM_SERVER_RUL, gstr, RestAPIResponse.class);
+
+
+//        mailService.alarmEmail("zhangqiuyu@syscloud.cn","监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
 
         SimpleQuery<ContactVO> query = dbf.createQuery(ContactVO.class);
         query.add(ContactVO_.accountUuid, SimpleQuery.Op.EQ, cmd.getAccountUuid());
