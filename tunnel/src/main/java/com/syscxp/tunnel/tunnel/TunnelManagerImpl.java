@@ -439,7 +439,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
-        ProductInfoForOrder productInfoForOrder = createBuyOrderForInterface(vo, msg.getPortType());
+        ProductInfoForOrder productInfoForOrder = createBuyOrderForInterface(vo, msg.getPortType(), new CreateInterfaceCallBack());
         productInfoForOrder.setOpAccountUuid(msg.getAccountUuid());
         orderMsg.setProducts(CollectionDSL.list(productInfoForOrder));
 
@@ -841,13 +841,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
         List<ProductInfoForOrder> products = new ArrayList<>();
         if(newBuyInterfaceA){
-            ProductInfoForOrder productInfoForOrderA = createBuyOrderForInterface(interfaceVOA, msg.getPortTypeA());
+            ProductInfoForOrder productInfoForOrderA = createBuyOrderForInterface(interfaceVOA, msg.getPortTypeA(), new CreateInterfaceCallBack());
             productInfoForOrderA.setOpAccountUuid(msg.getSession().getAccountUuid());
             //productInfoForOrderA.setNotifyUrl(restf.getSendCommandUrl());
             products.add(productInfoForOrderA);
         }
         if(newBuyInterfaceZ){
-            ProductInfoForOrder productInfoForOrderZ = createBuyOrderForInterface(interfaceVOZ, msg.getPortTypeZ());
+            ProductInfoForOrder productInfoForOrderZ = createBuyOrderForInterface(interfaceVOZ, msg.getPortTypeZ(), new CreateInterfaceCallBack());
             productInfoForOrderZ.setOpAccountUuid(msg.getSession().getAccountUuid());
             //productInfoForOrderZ.setNotifyUrl(restf.getSendCommandUrl());
             products.add(productInfoForOrderZ);
@@ -1826,7 +1826,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void updateTunnelFromOrderModifyBandwidth(OrderCallbackCmd cmd) {
         TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
-        vo.setBandwidth(Long.valueOf(cmd.getCallBackData()));
+//        vo.setBandwidth(Long.valueOf(cmd.getCallBackData()));
         dbf.updateAndRefresh(vo);
         //付款成功,记录生效订单
         saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
@@ -2968,7 +2968,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .list();
     }
 
-    private DescriptionData getDescriptionForInterface(InterfaceVO vo) {
+    private String getDescriptionForInterface(InterfaceVO vo) {
         DescriptionData data = new DescriptionData();
         data.add(new DescriptionItem("name", vo.getName()));
         data.add(new DescriptionItem("NetworkType", vo.getType().toString()));
@@ -2976,7 +2976,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(SwitchPortVO_.uuid, vo.getSwitchPortUuid())
                 .select(SwitchPortVO_.portType).findValue();
         data.add(new DescriptionItem("PortType", portType.toString()));
-        return data;
+
+        return JSONObjectUtil.toJsonString(data);
     }
 
     /**
