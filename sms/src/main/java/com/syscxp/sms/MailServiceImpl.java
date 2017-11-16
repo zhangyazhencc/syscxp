@@ -1,5 +1,6 @@
 package com.syscxp.sms;
 
+import com.syscxp.header.host.APIAddHostEvent;
 import com.syscxp.sms.header.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -64,9 +65,20 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
             handle((APIMailCodeSendMsg) msg);
         }else if (msg instanceof APIValidateMailCodeMsg) {
             handle((APIValidateMailCodeMsg) msg);
-        }else{
+        }else if(msg instanceof APIMaiAlarmSendMsg){
+            handle((APIMaiAlarmSendMsg) msg);
+        }
+        else{
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIMaiAlarmSendMsg msg) {
+        boolean result = mailSend(msg.getEmail(),msg.getSubject(),msg.getComtent());
+
+        APIMaiAlarmSendEvent evt = new APIMaiAlarmSendEvent(msg.getId());
+
+        bus.publish(evt);
     }
 
     private void  handle(APIValidateMailCodeMsg msg){
@@ -218,5 +230,14 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
     private void validate(APIGetVerificationCodeMsg msg) {
 
+    }
+
+    public void alarmEmail(String email,String subject, String comtent){
+        APIMaiAlarmSendMsg apiMaiAlarmSendMsg = new APIMaiAlarmSendMsg();
+        apiMaiAlarmSendMsg.setEmail(email);
+        apiMaiAlarmSendMsg.setSubject(subject);
+        apiMaiAlarmSendMsg.setComtent(comtent);
+        apiMaiAlarmSendMsg.setServiceId(MailConstant.SERVICE_ID);
+        bus.send(apiMaiAlarmSendMsg);
     }
 }

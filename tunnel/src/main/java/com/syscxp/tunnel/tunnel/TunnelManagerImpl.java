@@ -16,7 +16,7 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
-import com.syscxp.header.tunnel.tunnel.CreateTunnelCallBack;
+import com.syscxp.header.tunnel.billingCallBack.*;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.falconapi.FalconApiCommands;
@@ -26,7 +26,6 @@ import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.message.NeedReplyMessage;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.*;
-import com.syscxp.query.QueryFacade;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.node.ZoneNodeRefVO;
@@ -69,8 +68,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private ErrorFacade errf;
     @Autowired
     private ThreadFacade thdf;
-    @Autowired
-    private QueryFacade qf;
 
     @Override
     @MessageSafe
@@ -490,7 +487,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APICreateRenewOrderMsg orderMsg = new APICreateRenewOrderMsg(getOrderMsgForInterface(vo, new RenewAutoInterfaceCallBack()));
         orderMsg.setDuration(msg.getDuration());
         orderMsg.setProductChargeModel(msg.getProductChargeModel());
-        orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+        orderMsg.setOpAccountUuid("system");
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
 
@@ -837,7 +834,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                    InterfaceVO interfaceVOZ) {
         APICreateTunnelEvent evt = new APICreateTunnelEvent(msg.getId());
 
-        //调用支付
+        //支付接口订单
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
         List<ProductInfoForOrder> products = new ArrayList<>();
         if(newBuyInterfaceA){
@@ -852,23 +849,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             //productInfoForOrderZ.setNotifyUrl(restf.getSendCommandUrl());
             products.add(productInfoForOrderZ);
         }
-
+        //支付专线订单
         ProductInfoForOrder productInfoForOrderTunnel = createBuyOrderForTunnel(vo, msg);
 
-        if(newBuyInterfaceA || newBuyInterfaceZ){
-            CreateTunnelCallBack createTunnelCallBack = new CreateTunnelCallBack();
-            if(newBuyInterfaceA){
-                createTunnelCallBack.setInterfaceAUuid(interfaceVOA.getUuid());
-            }
-            if(newBuyInterfaceZ){
-                createTunnelCallBack.setInterfaceZUuid(interfaceVOZ.getUuid());
-            }
-            productInfoForOrderTunnel.setCallBackData(createTunnelCallBack);
-        }
+        CreateTunnelCallBack createTunnelCallBack = new CreateTunnelCallBack();
+        createTunnelCallBack.setInterfaceAUuid(interfaceVOA.getUuid());
+        createTunnelCallBack.setInterfaceZUuid(interfaceVOZ.getUuid());
+        createTunnelCallBack.setNewBuyInterfaceA(newBuyInterfaceA);
+        createTunnelCallBack.setNewBuyInterfaceZ(newBuyInterfaceZ);
 
+        productInfoForOrderTunnel.setCallBackData(RESTApiDecoder.dump(createTunnelCallBack));
 
         products.add(productInfoForOrderTunnel);
+        orderMsg.setProducts(products);
 
+        //调用支付
         List<OrderInventory> inventories = createBuyOrder(orderMsg);
 
         if(!inventories.isEmpty()){     //付款成功
@@ -891,13 +886,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 interfaceVOA.setAccountUuid(interfaceVOA.getOwnerAccountUuid());
                 interfaceVOA.setState(InterfaceState.Paid);
                 interfaceVOA.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), interfaceVOA.getProductChargeModel(), interfaceVOA.getDuration()));
-                interfaceVOA = dbf.updateAndRefresh(interfaceVOA);
+                dbf.updateAndRefresh(interfaceVOA);
             }
             if(newBuyInterfaceZ){
                 interfaceVOZ.setState(InterfaceState.Paid);
                 interfaceVOZ.setAccountUuid(interfaceVOZ.getOwnerAccountUuid());
                 interfaceVOZ.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), interfaceVOZ.getProductChargeModel(), interfaceVOZ.getDuration()));
-                interfaceVOZ = dbf.updateAndRefresh(interfaceVOZ);
+                dbf.updateAndRefresh(interfaceVOZ);
             }
 
             //创建任务
@@ -929,7 +924,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         order.setProductName(vo.getName());
         order.setAccountUuid(vo.getOwnerAccountUuid());
         order.setOpAccountUuid(msg.getSession().getAccountUuid());
-        order.setDescriptionData("no description");
+        order.setDescriptionData(getDescriptionForTunnel(vo));
         order.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getNodeAUuid(), msg.getNodeZUuid(), msg.getInnerConnectedEndpointUuid()));
         order.setNotifyUrl(restf.getSendCommandUrl());
         return order;
@@ -1017,9 +1012,19 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
-        ProductInfoForOrder productInfoForOrder = createBuyOrderForTunnelManual(vo, msg);
-        orderMsg.setProducts(CollectionDSL.list(productInfoForOrder));
+        List<ProductInfoForOrder> products = new ArrayList<>();
+        ProductInfoForOrder productInfoForOrderTunnel = createBuyOrderForTunnelManual(vo, msg);
 
+        CreateTunnelCallBack createTunnelCallBack = new CreateTunnelCallBack();
+        createTunnelCallBack.setInterfaceAUuid(null);
+        createTunnelCallBack.setInterfaceZUuid(null);
+        createTunnelCallBack.setNewBuyInterfaceA(false);
+        createTunnelCallBack.setNewBuyInterfaceZ(false);
+
+        productInfoForOrderTunnel.setCallBackData(RESTApiDecoder.dump(createTunnelCallBack));
+
+        products.add(productInfoForOrderTunnel);
+        orderMsg.setProducts(products);
         List<OrderInventory> inventories = createBuyOrder(orderMsg);
 
         if (inventories.isEmpty()) {
@@ -1061,7 +1066,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         order.setDuration(vo.getDuration());
         order.setAccountUuid(vo.getOwnerAccountUuid());
         order.setOpAccountUuid(msg.getSession().getAccountUuid());
-        order.setDescriptionData("no description");
+        order.setDescriptionData(getDescriptionForTunnel(vo));
         order.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getNodeAUuid(), msg.getNodeZUuid(), msg.getInnerConnectedEndpointUuid()));
         order.setNotifyUrl(restf.getSendCommandUrl());
         return order;
@@ -1288,11 +1293,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         dbf.persistAndRefresh(record);
 
         //调用支付-调整带宽
+        UpdateTunnelBandwidthCallBack uc = new UpdateTunnelBandwidthCallBack();
+        uc.setBandwidth(bandwidthOfferingVO.getBandwidth());
+
         APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg();
         orderMsg.setProductUuid(vo.getUuid());
         orderMsg.setProductName(vo.getName());
-        orderMsg.setDescriptionData("no description");
-        orderMsg.setCallBackData(bandwidthOfferingVO.getBandwidth().toString());
+        orderMsg.setDescriptionData(getDescriptionForTunnel(vo));
+        orderMsg.setCallBackData(RESTApiDecoder.dump(uc));
         orderMsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), nodeAUuid,
                 nodeZUuid, innerEndpointUuid));
         orderMsg.setProductType(ProductType.TUNNEL);
@@ -1300,6 +1308,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
+        orderMsg.setNotifyUrl(restf.getSendCommandUrl());
 
         OrderInventory orderInventory = createOrder(orderMsg);
         if (orderInventory != null) {
@@ -1359,17 +1368,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelVO vo = dbf.findByUuid(uuid, TunnelVO.class);
         Timestamp newTime = vo.getExpireDate();
 
+        //续费
+        RenewTunnelCallBack rc = new RenewTunnelCallBack();
         APICreateRenewOrderMsg renewOrderMsg = new APICreateRenewOrderMsg();
         renewOrderMsg.setProductUuid(vo.getUuid());
         renewOrderMsg.setProductName(vo.getName());
         renewOrderMsg.setProductType(ProductType.TUNNEL);
         renewOrderMsg.setDuration(duration);
-        renewOrderMsg.setDescriptionData("no description");
+        renewOrderMsg.setDescriptionData(getDescriptionForTunnel(vo));
         renewOrderMsg.setProductChargeModel(productChargeModel);
         renewOrderMsg.setAccountUuid(accountUuid);
         renewOrderMsg.setOpAccountUuid(opAccountUuid);
         renewOrderMsg.setStartTime(dbf.getCurrentSqlTime());
         renewOrderMsg.setExpiredTime(vo.getExpireDate());
+        renewOrderMsg.setNotifyUrl(restf.getSendCommandUrl());
+        renewOrderMsg.setCallBackData(RESTApiDecoder.dump(rc));
 
         OrderInventory orderInventory = createOrder(renewOrderMsg);
 
@@ -1396,17 +1409,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
         Timestamp newTime = vo.getExpireDate();
 
+        //赔偿
+        SalTunnelCallBack sc = new SalTunnelCallBack();
         APICreateSLACompensationOrderMsg slaCompensationOrderMsg =
                 new APICreateSLACompensationOrderMsg();
         slaCompensationOrderMsg.setProductUuid(vo.getUuid());
         slaCompensationOrderMsg.setProductName(vo.getName());
-        slaCompensationOrderMsg.setDescriptionData("no description");
+        slaCompensationOrderMsg.setDescriptionData(getDescriptionForTunnel(vo));
         slaCompensationOrderMsg.setProductType(ProductType.TUNNEL);
         slaCompensationOrderMsg.setDuration(msg.getDuration());
         slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
         slaCompensationOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         slaCompensationOrderMsg.setStartTime(dbf.getCurrentSqlTime());
         slaCompensationOrderMsg.setExpiredTime(vo.getExpireDate());
+        slaCompensationOrderMsg.setCallBackData(RESTApiDecoder.dump(sc));
+        slaCompensationOrderMsg.setNotifyUrl(restf.getSendCommandUrl());
 
         OrderInventory orderInventory = createOrder(slaCompensationOrderMsg);
 
@@ -1450,6 +1467,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 evt.setInventory(TunnelInventory.valueOf(vo));
             } else {
                 //调用退订
+                DeleteTunnelCallBack dc = new DeleteTunnelCallBack();
+                dc.setDescription("delete");
                 APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
                 orderMsg.setProductUuid(vo.getUuid());
                 orderMsg.setProductType(ProductType.TUNNEL);
@@ -1458,9 +1477,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
                 orderMsg.setStartTime(dbf.getCurrentSqlTime());
                 orderMsg.setExpiredTime(vo.getExpireDate());
-
-                orderMsg.setDescriptionData("no description");
-                orderMsg.setCallBackData("delete");
+                orderMsg.setDescriptionData(getDescriptionForTunnel(vo));
+                orderMsg.setCallBackData(RESTApiDecoder.dump(dc));
+                orderMsg.setNotifyUrl(restf.getSendCommandUrl());
 
                 OrderInventory orderInventory = createOrder(orderMsg);
                 if (orderInventory == null) {
@@ -1503,6 +1522,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
         //调用退订
+        DeleteTunnelCallBack dc = new DeleteTunnelCallBack();
+        dc.setDescription("forciblydelete");
         APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
         orderMsg.setProductUuid(vo.getUuid());
         orderMsg.setProductType(ProductType.TUNNEL);
@@ -1516,8 +1537,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         } else {
             orderMsg.setExpiredTime(vo.getExpireDate());
         }
-        orderMsg.setDescriptionData("no description");
-        orderMsg.setCallBackData("forciblydelete");
+        orderMsg.setDescriptionData(getDescriptionForTunnel(vo));
+        orderMsg.setCallBackData(RESTApiDecoder.dump(dc));
+        orderMsg.setNotifyUrl(restf.getSendCommandUrl());
 
         OrderInventory orderInventory = createOrder(orderMsg);
         if (orderInventory != null) {
@@ -1541,6 +1563,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (vo.getState() == TunnelState.Deployfailure) {  //开通和无法开通
             if (msg.isUnsupport()) {
                 //调用退订
+                DeleteTunnelCallBack dc = new DeleteTunnelCallBack();
+                dc.setDescription("unsupport");
                 APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
                 orderMsg.setProductUuid(vo.getUuid());
                 orderMsg.setProductType(ProductType.TUNNEL);
@@ -1550,8 +1574,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 orderMsg.setStartTime(dbf.getCurrentSqlTime());
                 orderMsg.setExpiredTime(dbf.getCurrentSqlTime());
                 orderMsg.setCreateFailure(true);
-                orderMsg.setDescriptionData("no description");
-                orderMsg.setCallBackData("unsupport");
+                orderMsg.setDescriptionData(getDescriptionForTunnel(vo));
+                orderMsg.setCallBackData(RESTApiDecoder.dump(dc));
+                orderMsg.setNotifyUrl(restf.getSendCommandUrl());
 
                 OrderInventory orderInventory = createOrder(orderMsg);
                 if (orderInventory == null) {
@@ -1781,13 +1806,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         bus.reply(msg, reply);
     }
 
+    //////////////////////////////////////////                 billing call back                  /////////////////////////////////////////
+
     private boolean orderIsExist(String orderUuid) {
         return Q.New(ResourceOrderEffectiveVO.class)
                 .eq(ResourceOrderEffectiveVO_.orderUuid, orderUuid)
                 .isExists();
     }
 
-    private void updateTunnelFromOrderRenewOrSla(OrderCallbackCmd cmd) {
+    private void renewOrSla(OrderCallbackCmd cmd) {
         if (cmd.getProductType() == ProductType.PORT) {
             InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
             vo.setExpireDate(getExpireDate(vo.getExpireDate(), cmd.getProductChargeModel(), cmd.getDuration()));
@@ -1808,39 +1835,92 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
     }
 
-    private void updateTunnelFromOrderBuy(OrderCallbackCmd cmd) {
-        if (cmd.getProductType() == ProductType.PORT) {
-            InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
+    private void buyTunnel(OrderCallbackCmd cmd,CreateTunnelCallBack message) {
+        if(message.isNewBuyInterfaceA()){
+            InterfaceVO vo = dbf.findByUuid(message.getInterfaceAUuid(), InterfaceVO.class);
             vo.setAccountUuid(vo.getOwnerAccountUuid());
             vo.setState(InterfaceState.Paid);
             vo.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), cmd.getProductChargeModel(), cmd.getDuration()));
             dbf.updateAndRefresh(vo);
-            //付款成功,记录生效订单
-            saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
-
-        } else if (cmd.getProductType() == ProductType.TUNNEL) {
-            TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
-            vo.setAccountUuid(vo.getOwnerAccountUuid());
-            vo.setState(TunnelState.Deploying);
-            vo.setStatus(TunnelStatus.Connecting);
-            dbf.updateAndRefresh(vo);
-            //付款成功,记录生效订单
-            saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
-
-            //创建任务
-            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Create);
-
-            CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
-            createTunnelMsg.setTunnelUuid(vo.getUuid());
-            createTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-            bus.makeLocalServiceId(createTunnelMsg, TunnelConstant.SERVICE_ID);
-            bus.send(createTunnelMsg);
         }
+        if(message.isNewBuyInterfaceZ()){
+            InterfaceVO vo = dbf.findByUuid(message.getInterfaceZUuid(), InterfaceVO.class);
+            vo.setAccountUuid(vo.getOwnerAccountUuid());
+            vo.setState(InterfaceState.Paid);
+            vo.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), cmd.getProductChargeModel(), cmd.getDuration()));
+            dbf.updateAndRefresh(vo);
+        }
+
+        TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
+        vo.setAccountUuid(vo.getOwnerAccountUuid());
+        vo.setState(TunnelState.Deploying);
+        vo.setStatus(TunnelStatus.Connecting);
+        dbf.updateAndRefresh(vo);
+        //付款成功,记录生效订单
+        saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+
+        //创建任务
+        TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Create);
+
+        CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
+        createTunnelMsg.setTunnelUuid(vo.getUuid());
+        createTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+        bus.makeLocalServiceId(createTunnelMsg, TunnelConstant.SERVICE_ID);
+        bus.send(createTunnelMsg);
+
     }
 
-    private void updateTunnelFromOrderModifyBandwidth(OrderCallbackCmd cmd) {
+    private void buyInterface(OrderCallbackCmd cmd) {
+
+        InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
+        vo.setAccountUuid(vo.getOwnerAccountUuid());
+        vo.setState(InterfaceState.Paid);
+        vo.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), cmd.getProductChargeModel(), cmd.getDuration()));
+        dbf.updateAndRefresh(vo);
+        //付款成功,记录生效订单
+        saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+
+    }
+
+    private void unsubcribeInterface(OrderCallbackCmd cmd){
+        InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
+        saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+        dbf.remove(vo);
+
+    }
+    private void unsubcribeTunnel(OrderCallbackCmd cmd,DeleteTunnelCallBack message){
+
         TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
-//        vo.setBandwidth(Long.valueOf(cmd.getCallBackData()));
+
+        //退订成功，记录生效订单
+        saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+        if (message.getDescription().equals("forciblydelete")) {
+            deleteTunnel(vo);
+        } else if (message.getDescription().equals("delete") && vo.getState() == TunnelState.Enabled) {
+            vo.setAccountUuid(null);
+            dbf.updateAndRefresh(vo);
+
+            //创建任务
+            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
+
+            DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
+            deleteTunnelMsg.setTunnelUuid(vo.getUuid());
+            deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+            bus.makeLocalServiceId(deleteTunnelMsg, TunnelConstant.SERVICE_ID);
+            bus.send(deleteTunnelMsg);
+        } else if (message.getDescription().equals("delete") && vo.getState() == TunnelState.Disabled) {
+            deleteTunnel(vo);
+        } else if (message.getDescription().equals("unsupport")) {
+            vo.setState(TunnelState.Unsupport);
+            vo.setExpireDate(dbf.getCurrentSqlTime());
+            dbf.updateAndRefresh(vo);
+        }
+
+    }
+
+    private void modifyBandwidth(OrderCallbackCmd cmd,UpdateTunnelBandwidthCallBack message) {
+        TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
+        vo.setBandwidth(message.getBandwidth());
         dbf.updateAndRefresh(vo);
         //付款成功,记录生效订单
         saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
@@ -1861,99 +1941,69 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         restf.registerSyncHttpCallHandler("callbackData",OrderCallbackCmd.class,
                 cmd -> {
-
-            if(cmd.getCallBackData() instanceof CreateTunnelCallBack){
-
-            }
-                    logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                    if (!orderIsExist(cmd.getOrderUuid())) {
-                        updateTunnelFromOrderBuy(cmd);
-                    }
-
-                    return null;
-                });
-        ///////////////////////////以下都不要/////////////////
-        restf.registerSyncHttpCallHandler(OrderType.BUY.toString(), OrderCallbackCmd.class,
-                cmd -> {
-                    logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                    if (!orderIsExist(cmd.getOrderUuid())) {
-                        updateTunnelFromOrderBuy(cmd);
-                    }
-
-                    return null;
-                });
-        restf.registerSyncHttpCallHandler(OrderType.UN_SUBCRIBE.toString(), OrderCallbackCmd.class,
-                cmd -> {
-                    logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                    if (cmd.getProductType() == ProductType.PORT) {
-                        InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
-                        if (vo != null) {
-                            dbf.remove(vo);
-                        }
-                    } else if (cmd.getProductType() == ProductType.TUNNEL) {
-                        TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
+                    Message message = RESTApiDecoder.loads(cmd.getCallBackData());
+                    if(message instanceof CreateInterfaceCallBack){
+                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
                         if (!orderIsExist(cmd.getOrderUuid())) {
-                            //退订成功，记录生效订单
-                            saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
-                            if (cmd.getCallBackData().equals("forciblydelete")) {
-                                deleteTunnel(vo);
-                            } else if (cmd.getCallBackData().equals("delete") && vo.getState() == TunnelState.Enabled) {
-                                vo.setAccountUuid(null);
-                                dbf.updateAndRefresh(vo);
-
-                                //创建任务
-                                TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
-
-                                DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
-                                deleteTunnelMsg.setTunnelUuid(vo.getUuid());
-                                deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-                                bus.makeLocalServiceId(deleteTunnelMsg, TunnelConstant.SERVICE_ID);
-                                bus.send(deleteTunnelMsg);
-                            } else if (cmd.getCallBackData().equals("delete") && vo.getState() == TunnelState.Disabled) {
-                                deleteTunnel(vo);
-                            } else if (cmd.getCallBackData().equals("unsupport")) {
-                                vo.setState(TunnelState.Unsupport);
-                                vo.setExpireDate(dbf.getCurrentSqlTime());
-                                dbf.updateAndRefresh(vo);
-                            }
+                            buyInterface(cmd);
                         }
 
-                    }
-                    return null;
-                });
+                    }else if(message instanceof CreateTunnelCallBack){
+                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                        if (!orderIsExist(cmd.getOrderUuid())) {
+                            buyTunnel(cmd,(CreateTunnelCallBack) message);
+                        }
 
-        restf.registerSyncHttpCallHandler(OrderType.RENEW.toString(), OrderCallbackCmd.class,
-                cmd -> {
-                    logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                    if (!orderIsExist(cmd.getOrderUuid())) {
-                        updateTunnelFromOrderRenewOrSla(cmd);
-                    }
+                    }else if(message instanceof DeleteTunnelCallBack){
+                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                        if (!orderIsExist(cmd.getOrderUuid())) {
+                            unsubcribeTunnel(cmd,(DeleteTunnelCallBack) message);
+                        }
 
-                    return null;
-                });
-        restf.registerSyncHttpCallHandler(OrderType.SLA_COMPENSATION.toString(), OrderCallbackCmd.class,
-                cmd -> {
-                    logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                    if (!orderIsExist(cmd.getOrderUuid())) {
-                        updateTunnelFromOrderRenewOrSla(cmd);
-                    }
+                    }else if(message instanceof RenewAutoInterfaceCallBack){
+                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                        if (!orderIsExist(cmd.getOrderUuid())) {
+                            renewOrSla(cmd);
+                        }
 
-                    return null;
-                });
-        restf.registerSyncHttpCallHandler(OrderType.UPGRADE.toString(), OrderCallbackCmd.class,
-                cmd -> {
-                    logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                    if (!orderIsExist(cmd.getOrderUuid())) {
-                        updateTunnelFromOrderModifyBandwidth(cmd);
-                    }
+                    }else if(message instanceof RenewInterfaceCallBack){
+                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                        if (!orderIsExist(cmd.getOrderUuid())) {
+                            renewOrSla(cmd);
+                        }
 
-                    return null;
-                });
-        restf.registerSyncHttpCallHandler(OrderType.DOWNGRADE.toString(), OrderCallbackCmd.class,
-                cmd -> {
-                    logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
-                    if (!orderIsExist(cmd.getOrderUuid())) {
-                        updateTunnelFromOrderModifyBandwidth(cmd);
+                    }else if(message instanceof RenewTunnelCallBack){
+                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                        if (!orderIsExist(cmd.getOrderUuid())) {
+                            renewOrSla(cmd);
+                        }
+
+                    }else if(message instanceof SalTunnelCallBack){
+                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                        if (!orderIsExist(cmd.getOrderUuid())) {
+                            renewOrSla(cmd);
+                        }
+
+                    }else if(message instanceof SlaInterfaceCallBack){
+                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                        if (!orderIsExist(cmd.getOrderUuid())) {
+                            renewOrSla(cmd);
+                        }
+
+                    }else if(message instanceof UnsubcribeInterfaceCallBack){
+                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                        if (!orderIsExist(cmd.getOrderUuid())) {
+                            unsubcribeInterface(cmd);
+                        }
+
+                    }else if(message instanceof UpdateTunnelBandwidthCallBack){
+                        logger.debug(String.format("from %s call back. type: %s", CoreGlobalProperty.BILLING_SERVER_URL, cmd.getType()));
+                        if (!orderIsExist(cmd.getOrderUuid())) {
+                            modifyBandwidth(cmd,(UpdateTunnelBandwidthCallBack) message);
+                        }
+
+                    }else{
+                        logger.debug(String.format("未知回调！！！！！！！！"));
                     }
 
                     return null;
@@ -3005,6 +3055,27 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(SwitchPortVO_.uuid, vo.getSwitchPortUuid())
                 .select(SwitchPortVO_.portType).findValue();
         data.add(new DescriptionItem("PortType", portType.toString()));
+
+        return JSONObjectUtil.toJsonString(data);
+    }
+
+    private String getDescriptionForTunnel(TunnelVO vo) {
+        DescriptionData data = new DescriptionData();
+
+        TunnelSwitchPortVO tunnelSwitchPortVOA = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag,"A")
+                .find();
+        TunnelSwitchPortVO tunnelSwitchPortVOZ = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag,"Z")
+                .find();
+        String endpointNameA = dbf.findByUuid(tunnelSwitchPortVOA.getEndpointUuid(),EndpointVO.class).getName();
+        String endpointNameZ = dbf.findByUuid(tunnelSwitchPortVOZ.getEndpointUuid(),EndpointVO.class).getName();
+
+        data.add(new DescriptionItem("endpointNameA", endpointNameA));
+        data.add(new DescriptionItem("endpointNameZ", endpointNameZ));
+        data.add(new DescriptionItem("bandwidth", vo.getBandwidth().toString()));
 
         return JSONObjectUtil.toJsonString(data);
     }
