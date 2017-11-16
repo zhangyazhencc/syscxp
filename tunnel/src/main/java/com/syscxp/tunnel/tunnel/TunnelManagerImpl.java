@@ -2745,9 +2745,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .list();
     }
 
-    private String getDescriptionForInterface(InterfaceVO vo) {
-
-        return null;
+    private DescriptionData getDescriptionForInterface(InterfaceVO vo) {
+        DescriptionData data = new DescriptionData();
+        data.add(new DescriptionItem("name", vo.getName()));
+        data.add(new DescriptionItem("NetworkType", vo.getType().toString()));
+        SwitchPortType portType = Q.New(SwitchPortVO.class)
+                .eq(SwitchPortVO_.uuid, vo.getSwitchPortUuid())
+                .select(SwitchPortVO_.portType).findValue();
+        data.add(new DescriptionItem("PortType", portType.toString()));
+        return data;
     }
 
     /**
