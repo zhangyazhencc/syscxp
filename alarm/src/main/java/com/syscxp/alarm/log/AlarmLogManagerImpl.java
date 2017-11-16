@@ -10,6 +10,8 @@ import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.identity.InnerMessageHelper;
+import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.alarm.AlarmConstant;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
@@ -18,11 +20,14 @@ import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
+import com.syscxp.header.rest.RESTApiFacade;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsGlobalProperty;
 import com.syscxp.sms.SmsService;
+import com.syscxp.sms.header.APIMaiAlarmSendMsg;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.junit.Test;
@@ -65,6 +70,9 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     }
 
     private void sendMessage(AlarmLogCallbackCmd cmd) throws Exception {
+
+        mailService.alarmEmail("zhangqiuyu@syscloud.cn","监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+
         SimpleQuery<ContactVO> query = dbf.createQuery(ContactVO.class);
         query.add(ContactVO_.accountUuid, SimpleQuery.Op.EQ, cmd.getAccountUuid());
         List<ContactVO> contactVOS = query.list();
@@ -73,7 +81,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
             for (NotifyWayVO notifyWayVO : notifyWayVOs) {
                 if (notifyWayVO.getCode().equals("email")) {
                     String email = contactVO.getEmail();
-                    mailService.mailSend(email, "监控报警信息", "【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+                    mailService.alarmEmail(email,"监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
                 }
 
                 if (notifyWayVO.getCode().equals("mobile")) {
@@ -109,35 +117,13 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                         SimpleQuery<AlarmLogVO> query = dbf.createQuery(AlarmLogVO.class);
                         query.add(AlarmLogVO_.productUuid, SimpleQuery.Op.EQ, cmd.getTunnelUuid());
                         query.add(AlarmLogVO_.regulationUuid, SimpleQuery.Op.EQ, cmd.getRegulationUuid());
+                        query.add(AlarmLogVO_.status, SimpleQuery.Op.EQ, AlarmStatus.PROBLEM);
                         query.add(AlarmLogVO_.createDate, SimpleQuery.Op.GT, new Timestamp(dbf.getCurrentSqlTime().getTime()-3600000));
                         List<AlarmLogVO> alarmLogVOS = query.list();
 
-                        if(alarmLogVOS.size() == 0){
-                            AlarmLogVO alarmLogVO = new AlarmLogVO();
-                            alarmLogVO.setUuid(Platform.getUuid());
-                            alarmLogVO.setProductUuid(cmd.getTunnelUuid());
-                            alarmLogVO.setProductType(ProductType.TUNNEL);
-                            alarmLogVO.setAlarmContent(cmd.getProblem());
-                            alarmLogVO.setStatus(cmd.getStatus());
-                            alarmLogVO.setAccountUuid(cmd.getAccountUuid());
-                            alarmLogVO.setSmsContent(cmd.getSmsContent());
-                            alarmLogVO.setMailContent(cmd.getMailContent());
-                            alarmLogVO.setRegulationUuid(cmd.getRegulationUuid());
-                            RegulationVO regulationVO = dbf.findByUuid(cmd.getRegulationUuid(), RegulationVO.class);
-                            if (regulationVO != null) {
-                                PolicyVO policyVO = dbf.findByUuid(regulationVO.getPolicyUuid(), PolicyVO.class);
-                                if (policyVO != null) {
-                                    alarmLogVO.setProductUuid(policyVO.getUuid());
-                                }
-                            }
-                            alarmLogVO.setEventId(cmd.getEventId());
-                            alarmLogVO.setAlarmTime(new Timestamp(System.currentTimeMillis()));
-                            //持续时间
-                            alarmLogVO.setDuration((long) regulationVO.getDetectPeriod() * regulationVO.getTriggerPeriod());
-                            alarmLogVO.setCount(1);
-                            dbf.persistAndRefresh(alarmLogVO);
+                        if(alarmLogVOS.size() == 0 ){
+                            saveAlarmLog(cmd);
                             flag = true;
-
                         }else{
                             for (AlarmLogVO vo : alarmLogVOS) {
                                 if(AlarmStatus.OK.equals(cmd.getStatus())){
@@ -187,5 +173,34 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
         return msg;
     }
+
+    public void saveAlarmLog(AlarmLogCallbackCmd cmd){
+        AlarmLogVO alarmLogVO = new AlarmLogVO();
+        alarmLogVO.setUuid(Platform.getUuid());
+        alarmLogVO.setProductUuid(cmd.getTunnelUuid());
+        alarmLogVO.setProductType(ProductType.TUNNEL);
+        alarmLogVO.setAlarmContent(cmd.getProblem());
+        alarmLogVO.setStatus(cmd.getStatus());
+        alarmLogVO.setAccountUuid(cmd.getAccountUuid());
+        alarmLogVO.setSmsContent(cmd.getSmsContent());
+        alarmLogVO.setMailContent(cmd.getMailContent());
+        alarmLogVO.setRegulationUuid(cmd.getRegulationUuid());
+        RegulationVO regulationVO = dbf.findByUuid(cmd.getRegulationUuid(), RegulationVO.class);
+        if (regulationVO != null) {
+            //持续时间
+            alarmLogVO.setDuration((long) regulationVO.getDetectPeriod() * regulationVO.getTriggerPeriod());
+
+            PolicyVO policyVO = dbf.findByUuid(regulationVO.getPolicyUuid(), PolicyVO.class);
+            if (policyVO != null) {
+                alarmLogVO.setProductUuid(policyVO.getUuid());
+            }
+        }
+        alarmLogVO.setEventId(cmd.getEventId());
+        alarmLogVO.setAlarmTime(new Timestamp(System.currentTimeMillis()));
+
+        alarmLogVO.setCount(1);
+        dbf.persistAndRefresh(alarmLogVO);
+    }
+
 
 }
