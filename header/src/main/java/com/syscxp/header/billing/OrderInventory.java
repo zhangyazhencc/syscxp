@@ -1,7 +1,6 @@
 package com.syscxp.header.billing;
 
 import com.syscxp.header.search.Inventory;
-import com.syscxp.utils.gson.JSONObjectUtil;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -40,8 +39,8 @@ public class OrderInventory {
 
     private ProductChargeModel productChargeModel;
 
-    private DescriptionData descriptionData;
-    private CallBackData callBackData;
+    private String descriptionData;
+    private String callBackData;
 
     private String productUuid;
 
@@ -63,7 +62,7 @@ public class OrderInventory {
         inv.setType(vo.getType());
         inv.setPayTime(vo.getPayTime());
         inv.setProductChargeModel(vo.getProductChargeModel());
-        inv.setDescriptionData(JSONObjectUtil.toObject(vo.getDescriptionData(),DescriptionData.class));
+        inv.setDescriptionData(vo.getDescriptionData());
         inv.setProductEffectTimeEnd(vo.getProductEffectTimeEnd());
         inv.setProductEffectTimeStart(vo.getProductEffectTimeStart());
         inv.setProductName(vo.getProductName());
@@ -75,7 +74,7 @@ public class OrderInventory {
         inv.setProductUuid(vo.getProductUuid());
         inv.setDuration(vo.getDuration());
         inv.setProductStatus(vo.getProductStatus());
-        inv.setCallBackData(JSONObjectUtil.toObject(vo.getCallBackData(),CallBackData.class));
+        inv.setCallBackData(vo.getCallBackData());
         return inv;
     }
 
@@ -207,6 +206,14 @@ public class OrderInventory {
         this.productChargeModel = productChargeModel;
     }
 
+    public String getDescriptionData() {
+        return descriptionData;
+    }
+
+    public void setDescriptionData(String descriptionData) {
+        this.descriptionData = descriptionData;
+    }
+
     public String getProductUuid() {
         return productUuid;
     }
@@ -239,19 +246,11 @@ public class OrderInventory {
         this.duration = duration;
     }
 
-    public DescriptionData getDescriptionData() {
-        return descriptionData;
-    }
-
-    public void setDescriptionData(DescriptionData descriptionData) {
-        this.descriptionData = descriptionData;
-    }
-
-    public CallBackData getCallBackData() {
+    public String getCallBackData() {
         return callBackData;
     }
 
-    public void setCallBackData(CallBackData callBackData) {
+    public void setCallBackData(String callBackData) {
         this.callBackData = callBackData;
     }
 }

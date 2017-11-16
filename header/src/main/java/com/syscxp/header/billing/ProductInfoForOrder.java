@@ -17,9 +17,9 @@ public class ProductInfoForOrder {
 
     private String productUuid;
 
-    private DescriptionData descriptionData;
+    private String descriptionData;
 
-    private CallBackData callBackData;
+    private String callBackData;
 
     private String accountUuid;
 
@@ -75,19 +75,19 @@ public class ProductInfoForOrder {
         this.productUuid = productUuid;
     }
 
-    public DescriptionData getDescriptionData() {
+    public String getDescriptionData() {
         return descriptionData;
     }
 
-    public void setDescriptionData(DescriptionData descriptionData) {
+    public void setDescriptionData(String descriptionData) {
         this.descriptionData = descriptionData;
     }
 
-    public CallBackData getCallBackData() {
+    public String getCallBackData() {
         return callBackData;
     }
 
-    public void setCallBackData(CallBackData callBackData) {
+    public void setCallBackData(String callBackData) {
         this.callBackData = callBackData;
     }
 
