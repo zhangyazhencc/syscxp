@@ -22,8 +22,6 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.message.NeedReplyMessage;
-import com.syscxp.header.managementnode.*;
-import com.syscxp.header.message.*;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.*;
 import com.syscxp.query.QueryFacade;
@@ -33,7 +31,6 @@ import com.syscxp.header.tunnel.node.ZoneNodeRefVO;
 import com.syscxp.header.tunnel.node.ZoneNodeRefVO_;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
-import com.syscxp.utils.BootErrorLog;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
@@ -108,8 +105,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APICreateInterfaceManualMsg) msg);
         } else if (msg instanceof APIUpdateInterfaceMsg) {
             handle((APIUpdateInterfaceMsg) msg);
-        } else if (msg instanceof APISLACompensationInterfaceMsg) {
-            handle((APISLACompensationInterfaceMsg) msg);
+        } else if (msg instanceof APISLAInterfaceMsg) {
+            handle((APISLAInterfaceMsg) msg);
         } else if (msg instanceof APIRenewAutoInterfaceMsg) {
             handle((APIRenewAutoInterfaceMsg) msg);
         } else if (msg instanceof APIRenewInterfaceMsg) {
@@ -522,8 +519,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         bus.reply(msg, reply);;
     }
 
-    private void handle(APISLACompensationInterfaceMsg msg) {
-        APISLACompensationInterfaceReply reply = new APISLACompensationInterfaceReply();
+    private void handle(APISLAInterfaceMsg msg) {
+        APISLAInterfaceReply reply = new APISLAInterfaceReply();
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
         Timestamp newTime = vo.getExpireDate();
@@ -1820,8 +1817,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             validate((APIRenewInterfaceMsg) msg);
         } else if (msg instanceof APIRenewAutoInterfaceMsg) {
             validate((APIRenewAutoInterfaceMsg) msg);
-        } else if (msg instanceof APISLACompensationInterfaceMsg) {
-            validate((APISLACompensationInterfaceMsg) msg);
+        } else if (msg instanceof APISLAInterfaceMsg) {
+            validate((APISLAInterfaceMsg) msg);
         } else if (msg instanceof APIDeleteInterfaceMsg) {
             validate((APIDeleteInterfaceMsg) msg);
         } else if (msg instanceof APICreateTunnelMsg) {
@@ -1955,7 +1952,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     }
 
-    private void validate(APISLACompensationInterfaceMsg msg) {
+    private void validate(APISLAInterfaceMsg msg) {
         checkOrderNoPayForInterface(msg.getUuid());
     }
 
@@ -2746,6 +2743,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(SwitchPortVO_.state, SwitchPortState.Enabled)
                 .eq(SwitchPortVO_.portType, type)
                 .list();
+    }
+
+    private String getDescriptionForInterface(InterfaceVO vo) {
+
+        return null;
     }
 
     /**

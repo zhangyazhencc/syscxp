@@ -8,7 +8,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 
 @InnerCredentialCheck
 @Action(category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
-public class APISLACompensationInterfaceMsg extends APISyncCallMessage {
+public class APISLAInterfaceMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false, resourceType = InterfaceVO.class)
     private String uuid;
