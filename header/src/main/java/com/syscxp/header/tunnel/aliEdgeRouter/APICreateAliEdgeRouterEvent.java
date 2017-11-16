@@ -6,18 +6,18 @@ import com.syscxp.header.rest.RestResponse;
 @RestResponse(allTo = "inventory")
 public class APICreateAliEdgeRouterEvent extends APIEvent{
 
-    private Boolean AliIdentityFlag;
+    private boolean aliIdentityFailure;
 
     private AliEdgeRouterInventory inventory;
 
     public APICreateAliEdgeRouterEvent(){}
 
-    public Boolean getAliIdentityFlag() {
-        return AliIdentityFlag;
+    public Boolean getAliIdentityFailure() {
+        return aliIdentityFailure;
     }
 
-    public void setAliIdentityFlag(Boolean aliIdentityFlag) {
-        AliIdentityFlag = aliIdentityFlag;
+    public void setAliIdentityFailure(Boolean aliIdentityFailure) {
+        this.aliIdentityFailure = aliIdentityFailure;
     }
 
     public APICreateAliEdgeRouterEvent(String apiId){super(apiId);}

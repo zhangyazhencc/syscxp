@@ -367,7 +367,11 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
                 DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
-            }else{
+            }else if(e.getErrCode().equals("IncompleteSignature")){
+                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
+                flag = false;
+
+            } else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
 
@@ -448,6 +452,10 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
                 DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
+            }
+            else if(e.getErrCode().equals("IncompleteSignature")){
+                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
+                flag = false;
             }else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
@@ -457,7 +465,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         if(flag){
             evt.setInventory(AliEdgeRouterInventory.valueOf(vo));
         }else {
-            evt.setAliIdentityFlag(false);
+            evt.setAliIdentityFailure(true);
         }
 
         bus.publish(evt);
@@ -531,7 +539,11 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
                 DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
-            }else{
+            }else if(e.getErrCode().equals("IncompleteSignature")){
+                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
+                flag = false;
+            }
+            else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
 
@@ -541,7 +553,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         if(flag){
             evt.setInventory(AliEdgeRouterInventory.valueOf(vo));
         }else {
-            evt.setAliIdentityFlag(false);
+            evt.setAliIdentityFailure(true);
         }
 
         bus.publish(evt);
