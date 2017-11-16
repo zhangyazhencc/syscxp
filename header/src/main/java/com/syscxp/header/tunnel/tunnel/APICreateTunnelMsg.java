@@ -9,6 +9,7 @@ import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.switchs.SwitchPortType;
 
 /**
  * Created by DCY on 2017-09-11
@@ -30,9 +31,9 @@ public class APICreateTunnelMsg extends APIMessage {
     private String endpointAUuid;
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
     private String endpointZUuid;
-    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false,required = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceAUuid;
-    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false,required = false,resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceZUuid;
     @APIParam
     private Integer duration;
@@ -40,8 +41,17 @@ public class APICreateTunnelMsg extends APIMessage {
     private ProductChargeModel productChargeModel;
     @APIParam(emptyString = false,required = false)
     private String description;
+
+    @APIParam(emptyString = false,required = false,validValues = {"SHARE", "RJ45_1G","SFP_1G","SFP_10G"})
+    private SwitchPortType portTypeA;
+    @APIParam(emptyString = false,required = false,validValues = {"SHARE", "RJ45_1G","SFP_1G","SFP_10G"})
+    private SwitchPortType portTypeZ;
     @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = EndpointVO.class)
     private String innerConnectedEndpointUuid;
+    @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = InterfaceVO.class)
+    private String crossInterfaceUuid;
+    @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = TunnelVO.class)
+    private String crossTunnelUuid;
 
     public String getAccountUuid() {
         if(getSession().getType() == AccountType.SystemAdmin){
@@ -149,5 +159,37 @@ public class APICreateTunnelMsg extends APIMessage {
 
     public void setEndpointZUuid(String endpointZUuid) {
         this.endpointZUuid = endpointZUuid;
+    }
+
+    public SwitchPortType getPortTypeA() {
+        return portTypeA;
+    }
+
+    public void setPortTypeA(SwitchPortType portTypeA) {
+        this.portTypeA = portTypeA;
+    }
+
+    public SwitchPortType getPortTypeZ() {
+        return portTypeZ;
+    }
+
+    public void setPortTypeZ(SwitchPortType portTypeZ) {
+        this.portTypeZ = portTypeZ;
+    }
+
+    public String getCrossInterfaceUuid() {
+        return crossInterfaceUuid;
+    }
+
+    public void setCrossInterfaceUuid(String crossInterfaceUuid) {
+        this.crossInterfaceUuid = crossInterfaceUuid;
+    }
+
+    public String getCrossTunnelUuid() {
+        return crossTunnelUuid;
+    }
+
+    public void setCrossTunnelUuid(String crossTunnelUuid) {
+        this.crossTunnelUuid = crossTunnelUuid;
     }
 }

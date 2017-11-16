@@ -34,9 +34,9 @@ public class APIEvent extends Event {
     protected ErrorCode error;
 
     @Override
-    public final Type getType() {
+    public final Type getType(String busProjectId) {
         if (type == null) {
-            type = new Type(Event.Category.API, getSubCategory());
+            type = new Type(busProjectId, Event.Category.API, getSubCategory());
         }
         return type;
     }

@@ -220,17 +220,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         dbf.persistAndRefresh(vpnIface);
 
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
-        orderMsg.setProductName(vpn.getName());
-        orderMsg.setProductUuid(vpn.getUuid());
-        orderMsg.setProductType(ProductType.VPN);
-        orderMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
-        orderMsg.setDuration(vpn.getDuration());
-        orderMsg.setDescriptionData(vpn.getDescription());
-        orderMsg.setUnits(generateUnits(msg.getBandwidth()));
-        orderMsg.setAccountUuid(msg.getAccountUuid());
-        orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
+        ProductInfoForOrder productInfoForOrder = createBuyOrderForVPN(vpn);
+        productInfoForOrder.setOpAccountUuid(msg.getAccountUuid());
+        orderMsg.setProducts(CollectionDSL.list(productInfoForOrder));
 
-        if (!createOrder(orderMsg)) {
+        if (!createBuyOrder(orderMsg)) {
             evt.setError(errf.stringToOperationError("付款失败"));
             evt.setInventory(VpnInventory.valueOf(dbf.reload(vpn)));
             bus.publish(evt);
@@ -259,6 +253,20 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         bus.publish(evt);
     }
 
+    private ProductInfoForOrder createBuyOrderForVPN(VpnVO vo) {
+        ProductInfoForOrder order = new ProductInfoForOrder();
+        order.setProductChargeModel(ProductChargeModel.BY_MONTH);
+        order.setDuration(vo.getDuration());
+        order.setProductName(vo.getName());
+        order.setProductUuid(vo.getUuid());
+        order.setProductType(ProductType.VPN);
+        order.setDescriptionData("no description");
+        order.setCallBackData("");
+        order.setAccountUuid(vo.getAccountUuid());
+        order.setNotifyUrl(restf.getSendCommandUrl());
+        return order;
+    }
+
     private List<ProductPriceUnit> generateUnits(Long bandwidth) {
 
         return CollectionDSL.list(ProductPriceUnitFactory
@@ -275,6 +283,18 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
         return reply.isSuccess();
     }
+
+
+    private boolean createBuyOrder(APICreateBuyOrderMsg orderMsg) {
+        APIReply reply;
+        try {
+            reply = new VpnRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
+        } catch (Exception e) {
+            return false;
+        }
+        return reply.isSuccess();
+    }
+
 
     private Integer generatePort(VpnHostVO host) {
         VpnVO vpn = Q.New(VpnVO.class).eq(VpnVO_.hostUuid, host.getUuid())
