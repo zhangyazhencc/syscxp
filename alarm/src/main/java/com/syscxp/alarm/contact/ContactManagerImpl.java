@@ -17,10 +17,13 @@ import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.sms.MailService;
+import com.syscxp.sms.SmsService;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -34,11 +37,10 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
     @Autowired
     private DatabaseFacade dbf;
     @Autowired
-    private DbEntityLister dl;
+    private SmsService smsService;
+
     @Autowired
-    private ErrorFacade errf;
-    @Autowired
-    private RESTFacade restf;
+    private MailService mailService;
 
     @Override
     @MessageSafe
@@ -68,6 +70,11 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
 
     @Transactional
     private void handle(APIUpdateContactMsg msg) {
+
+        if (msg.getSession().getType() != AccountType.SystemAdmin) {
+            validationCaptcah(msg.getMobile(), msg.getEmail(), msg.getMobileCaptcha(), msg.getEmailCaptcha());
+        }
+
 
         String uuid = msg.getUuid();
         ContactVO vo = dbf.getEntityManager().find(ContactVO.class, uuid);
@@ -102,16 +109,29 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
         bus.publish(event);
     }
 
+    private void validationCaptcah(String mobile, String email, String mobileCaptcha, String emailCaptcha) {
+            if (StringUtils.isEmpty(mobileCaptcha)) {
+                throw new IllegalArgumentException("please input the mobile captcha");
+            }
+            if(!smsService.validateVerificationCode(mobile,mobileCaptcha)){
+                throw new IllegalArgumentException("the mobile captcha is not correct");
+            }
+            if(!StringUtils.isEmpty(email)){
+                if(StringUtils.isEmpty(emailCaptcha)){
+                    throw new IllegalArgumentException("please input the email captcha");
+                }
+                if (!mailService.ValidateMailCode(email, emailCaptcha)) {
+                    throw new IllegalArgumentException("the email captcha is not correct");
+                }
+            }
+    }
+
     @Transactional
     private void handle(APIDeleteContactMsg msg) {
         String uuid =  msg.getUuid();
         ContactVO vo = dbf.findByUuid(uuid, ContactVO.class);
         if(vo != null){
             dbf.remove(vo);
-//            dbf.getEntityManager().remove(vo);
-//            UpdateQuery q = UpdateQuery.New(ContactNotifyWayRefVO.class);
-//            q.condAnd(ContactNotifyWayRefVO_.contactUuid, SimpleQuery.Op.EQ, vo.getUuid());
-//            q.delete();
         }
         APIDeleteContactEvent event = new APIDeleteContactEvent(msg.getId());
         event.setInventory(ContactInventory.valueOf(vo));
@@ -121,6 +141,10 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
 
     @Transactional
     private void handle(APICreateContactMsg msg) {
+
+        if (msg.getSession().getType() != AccountType.SystemAdmin) {
+            validationCaptcah(msg.getMobile(), msg.getEmail(), msg.getMobileCaptcha(), msg.getEmailCaptcha());
+        }
         List<String> codes = msg.getWays();
         ContactVO vo = new ContactVO();
         vo.setUuid(Platform.getUuid());

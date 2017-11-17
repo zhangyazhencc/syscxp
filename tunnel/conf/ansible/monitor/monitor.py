@@ -45,6 +45,7 @@ host_post_info = HostPostInfo()
 host_post_info.host_inventory = args.i
 host_post_info.host = host
 host_post_info.falcon_ip = falcon_ip
+host_post_info.transfer_rpc_ip = transfer_rpc_ip
 host_post_info.falcon_port = int(falcon_port)
 host_post_info.post_url = post_url
 host_post_info.private_key = args.private_key
@@ -147,6 +148,7 @@ if not config.has_section(monitor_section):
     config.add_section(monitor_section)
 config.set(monitor_section, "host_ip", host_post_info.host)
 config.set(monitor_section, "falcon_ip", host_post_info.falcon_ip)
+config.set(monitor_section, "transfer_rpc_ip", host_post_info.transfer_rpc_ip)
 config.set(monitor_section, "falcon_port", host_post_info.falcon_port)
 config.write(open(agent_conf, 'w'))
 
