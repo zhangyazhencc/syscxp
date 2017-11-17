@@ -71,6 +71,11 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
     @Transactional
     private void handle(APIUpdateContactMsg msg) {
 
+        if (msg.getSession().getType() != AccountType.SystemAdmin) {
+            validationCaptcah(msg.getMobile(), msg.getEmail(), msg.getMobileCaptcha(), msg.getEmailCaptcha());
+        }
+
+
         String uuid = msg.getUuid();
         ContactVO vo = dbf.getEntityManager().find(ContactVO.class, uuid);
         if(vo!=null){
@@ -104,16 +109,29 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
         bus.publish(event);
     }
 
+    private void validationCaptcah(String mobile, String email, String mobileCaptcha, String emailCaptcha) {
+            if (StringUtils.isEmpty(mobileCaptcha)) {
+                throw new IllegalArgumentException("please input the mobile captcha");
+            }
+            if(!smsService.validateVerificationCode(mobile,mobileCaptcha)){
+                throw new IllegalArgumentException("the mobile captcha is not correct");
+            }
+            if(!StringUtils.isEmpty(email)){
+                if(StringUtils.isEmpty(emailCaptcha)){
+                    throw new IllegalArgumentException("please input the email captcha");
+                }
+                if (!mailService.ValidateMailCode(email, emailCaptcha)) {
+                    throw new IllegalArgumentException("the email captcha is not correct");
+                }
+            }
+    }
+
     @Transactional
     private void handle(APIDeleteContactMsg msg) {
         String uuid =  msg.getUuid();
         ContactVO vo = dbf.findByUuid(uuid, ContactVO.class);
         if(vo != null){
             dbf.remove(vo);
-//            dbf.getEntityManager().remove(vo);
-//            UpdateQuery q = UpdateQuery.New(ContactNotifyWayRefVO.class);
-//            q.condAnd(ContactNotifyWayRefVO_.contactUuid, SimpleQuery.Op.EQ, vo.getUuid());
-//            q.delete();
         }
         APIDeleteContactEvent event = new APIDeleteContactEvent(msg.getId());
         event.setInventory(ContactInventory.valueOf(vo));
@@ -123,21 +141,9 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
 
     @Transactional
     private void handle(APICreateContactMsg msg) {
-        if(msg.getSession().getType()!=AccountType.SystemAdmin){
-            if (StringUtils.isEmpty(msg.getMobileCaptcha())) {
-                throw new IllegalArgumentException("please input the mobile captcha");
-            }
-            if(!smsService.validateVerificationCode(msg.getMobile(),msg.getMobileCaptcha())){
-                throw new IllegalArgumentException("the mobile captcha is not correct");
-            }
-            if(!StringUtils.isEmpty(msg.getEmail())){
-                if(StringUtils.isEmpty(msg.getEmailCaptcha())){
-                    throw new IllegalArgumentException("please input the email captcha");
-                }
-                if (!mailService.ValidateMailCode(msg.getEmail(), msg.getMobileCaptcha())) {
-                    throw new IllegalArgumentException("the email captcha is not correct");
-                }
-            }
+
+        if (msg.getSession().getType() != AccountType.SystemAdmin) {
+            validationCaptcah(msg.getMobile(), msg.getEmail(), msg.getMobileCaptcha(), msg.getEmailCaptcha());
         }
         List<String> codes = msg.getWays();
         ContactVO vo = new ContactVO();
