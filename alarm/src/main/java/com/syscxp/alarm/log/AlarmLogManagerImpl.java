@@ -70,13 +70,6 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     private void sendMessage(AlarmLogCallbackCmd cmd) throws Exception {
 
-        APISendAlarmSmsMsg apiSendAlarmSmsMsg = new APISendAlarmSmsMsg();
-        apiSendAlarmSmsMsg.setPhone("18334705944");
-        apiSendAlarmSmsMsg.setData(cmd.getSmsContent());
-        InnerMessageHelper.setMD5(apiSendAlarmSmsMsg);
-        String str = RESTApiDecoder.dump(apiSendAlarmSmsMsg);
-        restf.syncJsonPost(ALARM_SERVER_RUL, str, RestAPIResponse.class);
-
 //        mailService.alarmEmail("zhangqiuyu@syscloud.cn","监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
 
         SimpleQuery<ContactVO> query = dbf.createQuery(ContactVO.class);
