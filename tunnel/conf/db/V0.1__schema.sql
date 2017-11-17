@@ -357,18 +357,17 @@ VALUES ('2G','2G','',2147483648,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
 CREATE TABLE `syscxp_tunnel`.`PortOfferingVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'uuid',
   `name` varchar(255) NOT NULL UNIQUE COMMENT 'port offering name',
-  `type` varchar(255) NOT NULL UNIQUE COMMENT '描述',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `syscxp_tunnel`.`PortOfferingVO` (`uuid`,`name`,`type`,`description`,`lastOpDate`,`createDate`)
-VALUES ('SFP_10G','光口万兆','SFP_10G','光口万兆','2017-11-01 13:51:31','2017-10-30 15:39:20'),
-  ('SHARE','共享端口','SHARE','共享端口','2017-11-01 16:10:18','2017-10-30 15:35:40'),
-  ('SFP_1G','光口千兆','SFP_1G','光口千兆','2017-11-01 13:51:36','2017-10-30 15:39:20'),
-  ('RJ45_1G','电口千兆','RJ45_1G','电口千兆','2017-11-01 13:51:39','2017-10-30 15:35:59');
+INSERT INTO `syscxp_tunnel`.`PortOfferingVO` (`uuid`,`name`,`description`,`lastOpDate`,`createDate`)
+VALUES ('SFP_10G','光口万兆','光口万兆','2017-11-01 13:51:31','2017-10-30 15:39:20'),
+  ('SHARE','共享端口','共享端口','2017-11-01 16:10:18','2017-10-30 15:35:40'),
+  ('SFP_1G','光口千兆','光口千兆','2017-11-01 13:51:36','2017-10-30 15:39:20'),
+  ('RJ45_1G','电口千兆','电口千兆','2017-11-01 13:51:39','2017-10-30 15:35:59');
 
 
 ##产品订单生效表

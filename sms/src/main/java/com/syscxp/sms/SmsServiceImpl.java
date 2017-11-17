@@ -1,6 +1,8 @@
 package com.syscxp.sms;
 
 import com.cloopen.rest.sdk.CCPRestSDK;
+import com.syscxp.sms.header.APIValidateVerificationCodeMsg;
+import com.syscxp.sms.header.APIValidateVerificationCodeReply;
 import com.syscxp.sms.header.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -15,7 +17,6 @@ import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.sms.header.*;
 import com.syscxp.utils.StringDSL;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -68,9 +69,19 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
             handle((APIGetVerificationCodeMsg) msg);
         }else if (msg instanceof APIValidateVerificationCodeMsg) {
             handle((APIValidateVerificationCodeMsg) msg);
+        }else if (msg instanceof APISendAlarmSmsMsg) {
+            handle((APISendAlarmSmsMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APISendAlarmSmsMsg msg) {
+        SmsVO smsVO = sendMsg(null, msg.getPhone(), SmsGlobalProperty.ALARM_APPID, SmsGlobalProperty.SMS_AlARM_TEMPLATEID
+                , new String[]{msg.getData()}, "");
+
+        APISendAlarmSmsEvent evt = new APISendAlarmSmsEvent();
+        bus.reply(msg,evt);
     }
 
     @Override

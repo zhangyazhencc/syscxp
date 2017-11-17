@@ -17,10 +17,13 @@ import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.sms.MailService;
+import com.syscxp.sms.SmsService;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 
@@ -34,11 +37,10 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
     @Autowired
     private DatabaseFacade dbf;
     @Autowired
-    private DbEntityLister dl;
+    private SmsService smsService;
+
     @Autowired
-    private ErrorFacade errf;
-    @Autowired
-    private RESTFacade restf;
+    private MailService mailService;
 
     @Override
     @MessageSafe
@@ -121,6 +123,22 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
 
     @Transactional
     private void handle(APICreateContactMsg msg) {
+        if(msg.getSession().getType()!=AccountType.SystemAdmin){
+            if (StringUtils.isEmpty(msg.getMobileCaptcha())) {
+                throw new IllegalArgumentException("please input the mobile captcha");
+            }
+            if(!smsService.validateVerificationCode(msg.getMobile(),msg.getMobileCaptcha())){
+                throw new IllegalArgumentException("the mobile captcha is not correct");
+            }
+            if(!StringUtils.isEmpty(msg.getEmail())){
+                if(StringUtils.isEmpty(msg.getEmailCaptcha())){
+                    throw new IllegalArgumentException("please input the email captcha");
+                }
+                if (!mailService.ValidateMailCode(msg.getEmail(), msg.getMobileCaptcha())) {
+                    throw new IllegalArgumentException("the email captcha is not correct");
+                }
+            }
+        }
         List<String> codes = msg.getWays();
         ContactVO vo = new ContactVO();
         vo.setUuid(Platform.getUuid());

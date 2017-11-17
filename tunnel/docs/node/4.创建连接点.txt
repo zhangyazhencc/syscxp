@@ -8,10 +8,12 @@
     编号：唯一
     节点：通过city选择节点
     类型：CLOUD,ACCESSIN,INTERCONNECTED
+    云类型：如果连接点是CLOUD类型，从CloudVO中选择一个云类型
     状态：Open,Close
     状况：Disabled,Enabled
 
 请求消息体示例：
+创建互联连接点
 {
     "com.syscxp.header.tunnel.endpoint.APICreateEndpointMsg":{
         "name":"互联上海",
@@ -19,6 +21,22 @@
         "code":"ENDPOINT_SH_INTER",
         "nodeUuid":"f827191b6a084296b9f409472b3036fb",
         "endpointType":"INTERCONNECTED",
+        "status":"Open",
+        "state":"Enabled",
+        "session":{
+            "uuid":"1b35b1dd00014c7b9108ba4cb3f84dfd"
+        }
+    }
+}
+创建云连接点
+{
+    "com.syscxp.header.tunnel.endpoint.APICreateEndpointMsg":{
+        "name":"阿里云",
+        "description":"测试",
+        "code":"ENDPOINT_ALI",
+        "nodeUuid":"f827191b6a084296b9f409472b3036fb",
+        "endpointType":"CLOUD",
+        "cloudType:"ALiYun",
         "status":"Open",
         "state":"Enabled",
         "session":{
