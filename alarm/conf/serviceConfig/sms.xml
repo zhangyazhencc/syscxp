@@ -7,4 +7,9 @@
         <name>com.syscxp.sms.header.APISendAlarmSmsMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.sms.header.APIGetVerificationCodeMsg</name>
+    </message>
+
+
 </service>
