@@ -1,0 +1,37 @@
+消息：APICreateSwitchPortMsg
+
+权限：category = SwitchConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true
+
+参数（默认必填）：
+    逻辑交换机：要添加端口的逻辑交换机
+    名称
+    类型：即端口规格，从端口规格配置表 PortOfferingVO 查询（通用查询：APIQueryPortOfferingMsg），页面展示用name，传参用uuid
+    属性：运维备注用
+    是否自动分配
+
+请求消息体示例：
+{
+    "com.syscxp.header.tunnel.switchs.APICreateSwitchPortMsg":{
+        "switchUuid":"a2bc2e1893e34aa1a7f3ce24f7285c31",
+        "portName":"XGigabitEthernet0/0/27",
+        "portType":"SHARE",
+        "portAttribute":"SHARE",
+        "autoAllot":1,
+        "session":{
+            "uuid":"8991ca2627eb46c7bd8ac30551a756f7"
+        }
+    }
+}
+
+后台验证（validate）：
+    1.端口名称在一个物理交换机下是否存在
+    2.若给互联交换机添加端口，该端口只能有一个
+
+业务流程：
+    保存数据
+
+
+
+
+
+

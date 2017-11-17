@@ -1,0 +1,45 @@
+消息：APIUpdateSwitchMsg
+
+权限：category = SwitchConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true
+
+一、修改逻辑交换机
+参数（默认非必填）：
+    uuid：必填，要修改SwitchVO的uuid
+    名称
+    描述：
+    编号：唯一
+
+请求消息体示例：
+{
+    "com.syscxp.header.tunnel.switchs.APIUpdateSwitchMsg":{
+        "uuid":"ccaabf7d071d41a1ae15936d451522e2",
+        "code":"access_huawei_ks_2",
+        "name":"接入_华为_昆山_2",
+        "description":"测试",
+        "session":{
+            "uuid":"ddad933c79ae4606bbdda211dbb8e160"
+        }
+    }
+}
+
+二、启用/禁用逻辑交换机
+参数：
+    uuid：必填，要修改SwitchVO的uuid
+    状况：启用传Enabled  禁用传Disabled
+
+请求消息体示例：
+{
+    "com.syscxp.header.tunnel.switchs.APIUpdateSwitchMsg":{
+        "uuid":"ccaabf7d071d41a1ae15936d451522e2",
+        "state":"Enabled",
+        "session":{
+            "uuid":"ddad933c79ae4606bbdda211dbb8e160"
+        }
+    }
+}
+
+后台验证（validate）：
+    1.code唯一性验证
+
+业务流程：
+    修改数据
