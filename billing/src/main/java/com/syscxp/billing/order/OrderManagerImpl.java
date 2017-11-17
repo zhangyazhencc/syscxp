@@ -333,7 +333,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductType(renewVO.getProductType());
         orderVo.setProductChargeModel(renewVO.getProductChargeModel());
         orderVo.setPayTime(currentTimestamp);
-        orderVo.setDescriptionData(renewVO.getDescriptionData());
+        orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(renewVO.getProductUuid());
         orderVo.setDuration(originDuration);
         orderVo.setCallBackData(msg.getCallBackData());
