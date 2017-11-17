@@ -1,6 +1,12 @@
 package com.syscxp.tunnel.quota;
 
+import com.syscxp.core.db.Q;
 import com.syscxp.header.tunnel.tunnel.InterfaceVO;
+import com.syscxp.header.tunnel.tunnel.InterfaceVO_;
+import com.syscxp.header.tunnel.tunnel.TunnelVO;
+import com.syscxp.header.tunnel.tunnel.TunnelVO_;
+import com.syscxp.utils.SizeUtils;
+import com.syscxp.utils.data.SizeUnit;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
@@ -41,28 +47,44 @@ public class TunnelQuotaUtil {
     }
 
     @Transactional(readOnly = true)
-    public InterfaceQuota getUsedInterface(String accountUUid) {
+    public InterfaceQuota getUsedTunnel(String accountUUid) {
         InterfaceQuota quota = new InterfaceQuota();
 
-        quota.interfaceNum = getUsedInterfaceBandwidth(accountUUid);
-        quota.interfaceBandwidth = getUsedInterfaceNum(accountUUid);
+        quota.interfaceNum = getUsedTunnelNum(accountUUid);
+        quota.interfaceBandwidth = getUsedTunnelBandwidth(accountUUid);
 
         return quota;
     }
 
     @Transactional(readOnly = true)
+    public InterfaceQuota getUsedInterface(String accountUUid) {
+        InterfaceQuota quota = new InterfaceQuota();
+
+        quota.interfaceNum = getUsedInterfaceNum(accountUUid);
+        quota.interfaceBandwidth = getUsedInterfaceBandwidth(accountUUid);
+
+        return quota;
+    }
+
+    @Transactional(readOnly = true)
+    public long getUsedTunnelNum(String accountUuid) {
+        Long imageNum = Q.New(TunnelVO.class).eq(TunnelVO_.accountUuid, accountUuid).count();
+        return imageNum == null ? 0 : imageNum;
+    }
+
+    @Transactional(readOnly = true)
+    public long getUsedTunnelBandwidth(String accountUuid) {
+        Long imageSize = Q.New(TunnelVO.class)
+                .eq(TunnelVO_.accountUuid, accountUuid)
+                .select(TunnelVO_.bandwidth)
+                .findValue();
+        return imageSize == null ? 0 : imageSize;
+    }
+
+    @Transactional(readOnly = true)
     public long getUsedInterfaceNum(String accountUuid) {
-        String sql = "select count(image) " +
-                " from ImageVO image, AccountResourceRefVO ref " +
-                " where image.uuid = ref.resourceUuid " +
-                " and ref.accountUuid = :auuid " +
-                " and ref.resourceType = :rtype ";
-        TypedQuery<Long> q = dbf.getEntityManager().createQuery(sql, Long.class);
-        q.setParameter("auuid", accountUuid);
-        q.setParameter("rtype", InterfaceVO.class.getSimpleName());
-        Long imageNum = q.getSingleResult();
-        imageNum = imageNum == null ? 0 : imageNum;
-        return imageNum;
+        Long imageNum = Q.New(InterfaceVO.class).eq(InterfaceVO_.accountUuid, accountUuid).count();
+        return imageNum == null ? 0 : imageNum;
     }
 
     @Transactional(readOnly = true)
@@ -77,7 +99,7 @@ public class TunnelQuotaUtil {
         q.setParameter("rtype", InterfaceVO.class.getSimpleName());
         Long imageSize = q.getSingleResult();
         imageSize = imageSize == null ? 0 : imageSize;
-        return imageSize;
+        return SizeUnit.MEGABYTE.toByte(100);
     }
 
    /* @BypassWhenUnitTest

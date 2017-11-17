@@ -28,7 +28,7 @@
 
     <bean id="QuotaChecker" class="com.syscxp.core.identity.QuotaChecker">
         <syscxp:plugin>
-            <syscxp:extension interface="org.zstack.header.apimediator.GlobalApiMessageInterceptor"/>
+            <syscxp:extension interface="com.syscxp.header.apimediator.GlobalApiMessageInterceptor"/>
         </syscxp:plugin>
     </bean>
 

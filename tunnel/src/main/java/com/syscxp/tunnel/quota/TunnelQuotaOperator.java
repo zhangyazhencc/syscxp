@@ -1,6 +1,5 @@
 package com.syscxp.tunnel.quota;
 
-import com.syscxp.core.identity.QuotaUtil;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.NeedQuotaCheckMessage;
 import com.syscxp.header.quota.Quota;
@@ -41,10 +40,21 @@ public class TunnelQuotaOperator implements Quota.QuotaOperator {
         List<Quota.QuotaUsage> usages = new ArrayList<>();
 
         TunnelQuotaUtil.InterfaceQuota interfaceQuota = new TunnelQuotaUtil().getUsedInterface(accountUuid);
+        TunnelQuotaUtil.InterfaceQuota tuunelQuota = new TunnelQuotaUtil().getUsedInterface(accountUuid);
 
         Quota.QuotaUsage usage = new Quota.QuotaUsage();
         usage.setName(TunnelConstant.QUOTA_INTERFACE_NUM);
         usage.setUsed(interfaceQuota.interfaceNum);
+        usages.add(usage);
+
+        usage = new Quota.QuotaUsage();
+        usage.setName(TunnelConstant.QUOTA_INTERFACE_BANDWIDTH);
+        usage.setUsed(interfaceQuota.interfaceBandwidth);
+        usages.add(usage);
+
+        usage = new Quota.QuotaUsage();
+        usage.setName(TunnelConstant.QUOTA_INTERFACE_BANDWIDTH);
+        usage.setUsed(interfaceQuota.interfaceBandwidth);
         usages.add(usage);
 
         usage = new Quota.QuotaUsage();
