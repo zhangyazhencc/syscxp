@@ -139,13 +139,11 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
     }
 
 
-    public void sendAlarmMsg(List<String> phones, String content){
+    public void sendAlarmMonitorMsg(List<String> phones, List<String> datas){
         APISendSmsMsg msg = new APISendSmsMsg();
         msg.setPhone(phones);
         msg.setAppId(SmsGlobalProperty.ALARM_APPID);
         msg.setTemplateId(SmsGlobalProperty.SMS_AlARM_TEMPLATEID);
-        List<String> datas = new ArrayList<String>();
-        datas.add(content);
         msg.setData(datas);
         msg.setServiceId(bus.makeLocalServiceId(SmsConstant.SERVICE_ID));
 

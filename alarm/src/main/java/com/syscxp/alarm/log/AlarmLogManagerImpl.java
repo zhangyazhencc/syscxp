@@ -99,13 +99,18 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
                 if (notifyWayVO.getCode().equals("mobile")) {
                     String phone = contactVO.getMobile();
-                    smsService.sendMsg(null, phone, SmsGlobalProperty.ALARM_APPID, SmsGlobalProperty.SMS_AlARM_TEMPLATEID
-                            , new String[]{cmd.getSmsContent()}, "");
+
+
 
                 }
 
             }
         }
+
+        List<String> datas = new ArrayList<String>();
+        datas.add(cmd.getSmsContent());
+        
+        smsService.sendAlarmMonitorMsg(null, datas);
 
     }
 
