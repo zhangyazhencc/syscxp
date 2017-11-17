@@ -68,9 +68,19 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
             handle((APIGetVerificationCodeMsg) msg);
         }else if (msg instanceof APIValidateVerificationCodeMsg) {
             handle((APIValidateVerificationCodeMsg) msg);
+        }else if (msg instanceof APISendAlarmSmsMsg) {
+            handle((APISendAlarmSmsMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APISendAlarmSmsMsg msg) {
+        SmsVO smsVO = sendMsg(null, msg.getPhone(), SmsGlobalProperty.ALARM_APPID, SmsGlobalProperty.SMS_AlARM_TEMPLATEID
+                , new String[]{msg.getData()}, "");
+
+        APISendAlarmSmsEvent evt = new APISendAlarmSmsEvent();
+        bus.reply(msg,evt);
     }
 
     @Override
