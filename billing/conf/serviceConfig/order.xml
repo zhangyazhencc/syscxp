@@ -30,6 +30,14 @@
         <name>com.syscxp.billing.header.order.APIUpdateOrderExpiredTimeMsg</name>
     </message>
 
+   <message>
+        <name>com.syscxp.header.billing.APIGetUnscribeProductPriceDiffMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.billing.APIGetModifyProductPriceDiffMsg</name>
+    </message>
+
     <message>
         <name>com.syscxp.billing.header.order.APIQueryOrderMsg</name>
         <serviceId>query</serviceId>

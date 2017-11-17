@@ -4,7 +4,12 @@
     <interceptor>SmsService</interceptor>
 
     <message>
-        <name>com.syscxp.sms.header.APISendAlarmSmsMsg</name>
+        <name>com.syscxp.sms.header.APISendSmsMsg</name>
     </message>
+
+    <message>
+        <name>com.syscxp.sms.header.APIGetVerificationCodeMsg</name>
+    </message>
+
 
 </service>

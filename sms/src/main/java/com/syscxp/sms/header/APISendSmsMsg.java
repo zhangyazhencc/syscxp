@@ -11,7 +11,10 @@ import java.util.List;
 public class APISendSmsMsg extends APIMessage {
 
     @APIParam(nonempty = true)
-    private String phone;
+    private List<String> phone;
+
+    @APIParam(nonempty = true)
+    private String appId;
 
     @APIParam(nonempty = true)
     private String templateId;
@@ -21,11 +24,19 @@ public class APISendSmsMsg extends APIMessage {
 
     private String ip;
 
-    public String getPhone() {
+    public String getAppId() {
+        return appId;
+    }
+
+    public void setAppId(String appId) {
+        this.appId = appId;
+    }
+
+    public List<String> getPhone() {
         return phone;
     }
 
-    public void setPhone(String phone) {
+    public void setPhone(List<String> phone) {
         this.phone = phone;
     }
 
