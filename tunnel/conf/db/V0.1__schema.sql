@@ -91,6 +91,17 @@ CREATE TABLE  `syscxp_tunnel`.`JobQueueEntryVO` (
   PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE  `syscxp_tunnel`.`QuotaVO` (
+  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+  `name` varchar(255) NOT NULL,
+  `identityUuid` varchar(32) DEFAULT NULL,
+  `identityType` varchar(255) NOT NULL,
+  `value` bigint unsigned DEFAULT 0,
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 #########################################################################################
 
 ## 节点

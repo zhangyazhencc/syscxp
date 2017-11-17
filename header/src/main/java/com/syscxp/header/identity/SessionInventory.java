@@ -40,12 +40,16 @@ public class SessionInventory implements Serializable {
         return !accountUuid.equals(userUuid);
     }
 
+    public boolean isAdminSession() {
+        return this.type == AccountType.SystemAdmin;
+    }
+
     public boolean isAdminAccountSession() {
-        return this.type == AccountType.SystemAdmin && isAccountSession();
+        return isAdminSession() && isAccountSession();
     }
 
     public boolean isAdminUserSession() {
-        return this.type == AccountType.SystemAdmin && isUserSession();
+        return isAdminSession() && isUserSession();
     }
 
     public boolean isProxySession(){return this.type==AccountType.Proxy;}
