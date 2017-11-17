@@ -33,6 +33,7 @@ import com.syscxp.header.tunnel.node.ZoneNodeRefVO;
 import com.syscxp.header.tunnel.node.ZoneNodeRefVO_;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
+import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.CollectionUtils;
@@ -3123,11 +3124,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     @Override
     public List<Quota> reportQuota() {
-        TunnelQuotaOperator checker = new TunnelQuotaOperator();
 
+        InterfaceQuotaOperator interfaceQuotaOperator = new InterfaceQuotaOperator();
         // interface quota
         Quota iQuota = new Quota();
-        iQuota.setOperator(checker);
+        iQuota.setOperator(interfaceQuotaOperator);
         iQuota.addMessageNeedValidation(APICreateInterfaceMsg.class);
         iQuota.addMessageNeedValidation(APICreateInterfaceManualMsg.class);
 
@@ -3137,8 +3138,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         iQuota.addPair(p);
 
         // tunnel quota
+        TunnelQuotaOperator tunnelQuotaOperator = new TunnelQuotaOperator();
         Quota tQuota = new Quota();
-        tQuota.setOperator(checker);
+        tQuota.setOperator(tunnelQuotaOperator);
         tQuota.addMessageNeedValidation(APICreateTunnelMsg.class);
         tQuota.addMessageNeedValidation(APICreateTunnelManualMsg.class);
 
