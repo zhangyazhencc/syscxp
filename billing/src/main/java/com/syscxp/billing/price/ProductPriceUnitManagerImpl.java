@@ -26,6 +26,9 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class ProductPriceUnitManagerImpl extends AbstractService implements ProductPriceUnitManager,ApiMessageInterceptor {
@@ -69,83 +72,11 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             handle((APIUpdateProductPriceUnitMsg) msg);
         }else if(msg instanceof APIGetProductCategoryListMsg){
             handle((APIGetProductCategoryListMsg) msg);
-        }else if(msg instanceof APIGetModifyProductPriceDiffMsg){
-            handle((APIGetModifyProductPriceDiffMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APIGetModifyProductPriceDiffMsg msg) {
-        Timestamp currentTimestamp = dbf.getCurrentSqlTime();
-
-        BigDecimal discountPrice = BigDecimal.ZERO;
-        BigDecimal originalPrice = BigDecimal.ZERO;
-
-        List<ProductPriceUnit> units = msg.getUnits();
-        List<String> productPriceUnitUuids = new ArrayList<String>();
-        for (ProductPriceUnit unit : units) {
-            SimpleQuery<ProductCategoryVO> query = dbf.createQuery(ProductCategoryVO.class);
-            query.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, unit.getCategoryCode());
-            query.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
-            ProductCategoryVO productCategoryVO = query.find();
-            if(productCategoryVO ==null){
-                throw new IllegalArgumentException("can not find productType or category");
-            }
-            int times = 1;
-
-            if(unit.getProductTypeCode().equals(ProductType.ECP) && unit.getCategoryCode().equals(Category.BANDWIDTH)){
-                String configCode = unit.getConfigCode().replaceAll("\\D","");
-                times = Integer.parseInt(configCode);
-                unit.setConfigCode("1M");
-            }
-            SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-            q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryVO.getUuid());
-            q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, unit.getAreaCode());
-            q.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, unit.getLineCode());
-            q.add(ProductPriceUnitVO_.configCode, SimpleQuery.Op.EQ, unit.getConfigCode());
-            ProductPriceUnitVO productPriceUnitVO = q.find();
-            if (productPriceUnitVO == null) {
-                throw new IllegalArgumentException("price uuid is not valid");
-            }
-            productPriceUnitUuids.add(productPriceUnitVO.getUuid());
-
-            SimpleQuery<AccountDiscountVO> qDiscount = dbf.createQuery(AccountDiscountVO.class);
-            qDiscount.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, productPriceUnitVO.getProductCategoryUuid());
-            qDiscount.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-            AccountDiscountVO accountDiscountVO = qDiscount.find();
-            int productDiscount = 100;
-            if (accountDiscountVO != null) {
-                productDiscount = accountDiscountVO.getDiscount() <= 0 ? 100 : accountDiscountVO.getDiscount();
-            }
-            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()*times));
-            BigDecimal currentDiscount = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
-            discountPrice = discountPrice.add(currentDiscount);
-
-        }
-        Timestamp endTime = msg.getExpiredTime();
-        long notUseDays = Math.abs(endTime.getTime() - currentTimestamp.getTime()) / (1000 * 60 * 60 * 24);
-
-        SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
-        query.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-        query.add(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
-        RenewVO renewVO = query.find();
-        if (renewVO == null) {
-            throw new IllegalArgumentException("could not find the product purchased history ");
-        }
-
-        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
-        BigDecimal needPayMoney = discountPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
-        BigDecimal needPayOriginMoney = originalPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_EVEN).multiply(BigDecimal.valueOf(notUseDays));
-        BigDecimal subMoney = needPayMoney.subtract(remainMoney);
-
-        APIGetModifyProductPriceDiffReply reply = new APIGetModifyProductPriceDiffReply();
-        reply.setNeedPayMoney(needPayMoney);
-        reply.setRemainMoney(remainMoney);
-        reply.setNeedPayOriginMoney(needPayOriginMoney);
-        reply.setSubMoney(subMoney);
-        bus.reply(msg,reply);
-    }
 
     private void handle(APIGetProductCategoryListMsg msg) {
         SimpleQuery<ProductCategoryVO> q = dbf.createQuery(ProductCategoryVO.class);
