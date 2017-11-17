@@ -70,41 +70,38 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     private void sendMessage(AlarmLogCallbackCmd cmd) throws Exception {
 
-//        mailService.alarmEmail("zhangqiuyu@syscloud.cn","监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+        List<String> smsDatas = new ArrayList<String>();
+        smsDatas.add(cmd.getSmsContent());
+        List<String> phoneList = new ArrayList<>();
+        List<String> emailList = new ArrayList<>();
 
         SimpleQuery<ContactVO> query = dbf.createQuery(ContactVO.class);
         query.add(ContactVO_.accountUuid, SimpleQuery.Op.EQ, cmd.getAccountUuid());
         List<ContactVO> contactVOS = query.list();
         for (ContactVO contactVO : contactVOS) {
+
+
             Set<NotifyWayVO> notifyWayVOs = contactVO.getNotifyWayVOs();
             for (NotifyWayVO notifyWayVO : notifyWayVOs) {
                 if (notifyWayVO.getCode().equals("email")) {
                     String email = contactVO.getEmail();
-                    APIMaiAlarmSendMsg apiMaiAlarmSendMsg = new APIMaiAlarmSendMsg();
-                    apiMaiAlarmSendMsg.setEmail(email);
-                    apiMaiAlarmSendMsg.setSubject("监控报警信息");
-                    apiMaiAlarmSendMsg.setComtent("【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
-                    InnerMessageHelper.setMD5(apiMaiAlarmSendMsg);
-                    String gstr = RESTApiDecoder.dump(apiMaiAlarmSendMsg);
-                    RestAPIResponse rsp = restf.syncJsonPost(ALARM_SERVER_RUL, gstr, RestAPIResponse.class);
-                    //mailService.alarmEmail(email,"监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+                    emailList.add(email);
                 }
 
                 if (notifyWayVO.getCode().equals("mobile")) {
                     String phone = contactVO.getMobile();
-
-
-
+                    phoneList.add(phone);
                 }
 
             }
+
         }
-
-        List<String> datas = new ArrayList<String>();
-        datas.add(cmd.getSmsContent());
-        
-        smsService.sendAlarmMonitorMsg(null, datas);
-
+        if(emailList.size()>0){
+            mailService.sendAlarmMonitorMsg(emailList,"监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+        }
+        if(phoneList.size()>0){
+            smsService.sendAlarmMonitorMsg(phoneList, smsDatas);
+        }
     }
 
     private void handleLocalMessage(Message msg) {

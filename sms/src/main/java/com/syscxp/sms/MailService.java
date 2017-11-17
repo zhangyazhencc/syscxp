@@ -1,8 +1,9 @@
 package com.syscxp.sms;
 
+import java.util.List;
+
 public interface MailService {
     boolean ValidateMailCode(String mail, String code);
-    boolean mailSend(String mail, String subject, String comtent);
-    void alarmEmail(String mail, String subject, String comtent);
+    void sendAlarmMonitorMsg(List<String> mail, String subject, String comtent);
 
 }
