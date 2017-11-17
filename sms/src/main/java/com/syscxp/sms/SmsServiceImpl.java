@@ -4,6 +4,8 @@ import com.cloopen.rest.sdk.CCPRestSDK;
 import com.syscxp.sms.header.APIValidateVerificationCodeMsg;
 import com.syscxp.sms.header.APIValidateVerificationCodeReply;
 import com.syscxp.sms.header.*;
+import com.syscxp.utils.data.StringTemplate;
+import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
@@ -69,19 +71,9 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
             handle((APIGetVerificationCodeMsg) msg);
         }else if (msg instanceof APIValidateVerificationCodeMsg) {
             handle((APIValidateVerificationCodeMsg) msg);
-        }else if (msg instanceof APISendAlarmSmsMsg) {
-            handle((APISendAlarmSmsMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
-    }
-
-    private void handle(APISendAlarmSmsMsg msg) {
-        SmsVO smsVO = sendMsg(null, msg.getPhone(), SmsGlobalProperty.ALARM_APPID, SmsGlobalProperty.SMS_AlARM_TEMPLATEID
-                , new String[]{msg.getData()}, "");
-
-        APISendAlarmSmsEvent evt = new APISendAlarmSmsEvent();
-        bus.reply(msg,evt);
     }
 
     @Override
@@ -146,15 +138,35 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         bus.reply(msg, reply);
     }
 
+
+    public void sendAlarmMsg(List<String> phones, String content){
+        APISendSmsMsg msg = new APISendSmsMsg();
+        msg.setPhone(phones);
+        msg.setAppId(SmsGlobalProperty.ALARM_APPID);
+        msg.setTemplateId(SmsGlobalProperty.SMS_AlARM_TEMPLATEID);
+        List<String> datas = new ArrayList<String>();
+        datas.add(content);
+        msg.setData(datas);
+        msg.setServiceId(bus.makeLocalServiceId(SmsConstant.SERVICE_ID));
+
+        bus.send(msg);
+    }
+
     private void handle(APISendSmsMsg msg){
 
-        SmsVO sms = sendMsg(msg.getSession(), msg.getPhone(), SmsGlobalProperty.SMS_YUNTONGXUN_APPID, msg.getTemplateId(), msg.getData().toArray(new String[msg.getData().size()]), msg.getIp());
+        String phones = StringTemplate.join(msg.getPhone(), ",");
+        SmsVO sms = sendMsg(msg.getSession(), phones, SmsGlobalProperty.SMS_YUNTONGXUN_APPID, msg.getTemplateId(), msg.getData().toArray(new String[msg.getData().size()]), msg.getIp());
 
         APISendSmsEvent evt = new APISendSmsEvent(msg.getId());
         evt.setInventory(SmsInventory.valueOf(sms));
 
         bus.publish(evt);
     }
+
+    /**
+     * 发送短信模板请求
+     * @param phone 必选参数 短信接收端手机号码集合，用英文逗号分开，每批发送的手机号数量不得超过100个
+     */
 
     @Override
     public SmsVO sendMsg(SessionInventory session, String phone, String appId, String templateId, String[] datas, String ip){
