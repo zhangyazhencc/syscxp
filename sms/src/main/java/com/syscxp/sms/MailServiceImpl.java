@@ -1,6 +1,7 @@
 package com.syscxp.sms;
 
-import com.syscxp.header.host.APIAddHostEvent;
+import com.syscxp.header.sms.APIValidateMailCodeMsg;
+import com.syscxp.header.sms.APIValidateMailCodeReply;
 import com.syscxp.sms.header.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
@@ -17,7 +18,6 @@ import com.syscxp.header.exception.CloudRuntimeException;
 
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.sms.header.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
