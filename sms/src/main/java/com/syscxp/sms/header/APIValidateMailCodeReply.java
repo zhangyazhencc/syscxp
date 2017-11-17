@@ -1,11 +1,9 @@
-package com.syscxp.header.sms;
+package com.syscxp.sms.header;
 
 import com.syscxp.header.message.APIReply;
 
-/**
- * Created by zxhread on 17/8/15.
- */
-public class APIValidateVerificationCodeReply extends APIReply {
+
+public class APIValidateMailCodeReply extends APIReply {
 
     private boolean valid;
 

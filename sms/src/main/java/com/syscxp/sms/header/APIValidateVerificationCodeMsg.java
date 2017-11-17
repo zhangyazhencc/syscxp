@@ -1,4 +1,4 @@
-package com.syscxp.header.sms;
+package com.syscxp.sms.header;
 
 import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIParam;

@@ -1,8 +1,8 @@
 package com.syscxp.sms;
 
 import com.cloopen.rest.sdk.CCPRestSDK;
-import com.syscxp.header.sms.APIValidateVerificationCodeMsg;
-import com.syscxp.header.sms.APIValidateVerificationCodeReply;
+import com.syscxp.sms.header.APIValidateVerificationCodeMsg;
+import com.syscxp.sms.header.APIValidateVerificationCodeReply;
 import com.syscxp.sms.header.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.cloudbus.CloudBus;
