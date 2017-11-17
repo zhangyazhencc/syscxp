@@ -297,9 +297,6 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setType(OrderType.RENEW);
         orderVo.setOriginalPrice(originalPrice);
         orderVo.setPrice(discountPrice);
-        Calendar calendar = Calendar.getInstance();
-        calendar.setTime(currentTimestamp);
-        calendar.add(Calendar.MONTH, duration.intValue());
         if(msg.getStartTime().getTime()<msg.getExpiredTime().getTime()){
             orderVo.setProductEffectTimeStart(msg.getExpiredTime());
         }else{
@@ -333,7 +330,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductType(renewVO.getProductType());
         orderVo.setProductChargeModel(renewVO.getProductChargeModel());
         orderVo.setPayTime(currentTimestamp);
-        orderVo.setDescriptionData(renewVO.getDescriptionData());
+        orderVo.setDescriptionData(msg.getDescriptionData());
         orderVo.setProductUuid(renewVO.getProductUuid());
         orderVo.setDuration(originDuration);
         orderVo.setCallBackData(msg.getCallBackData());

@@ -32,9 +32,9 @@ public class TunnelStrategy  {
     private DatabaseFacade dbf;
 
     //策略分配端口
-    public String getSwitchPortByStrategy(String endpointUuid , SwitchPortType portType){
+    public String getSwitchPortByStrategy(String endpointUuid , String portOfferingUuid){
         String switchPortUuid = null;
-        if(portType == SwitchPortType.SHARE){        //共享端口
+        if(portOfferingUuid.equals("SHARE")){        //共享端口
             String sql = "select c.uuid from SwitchVO b,SwitchPortVO c " +
                     "where b.uuid = c.switchUuid " +
                     "and b.endpointUuid = :endpointUuid " +
@@ -44,7 +44,7 @@ public class TunnelStrategy  {
             vq.setParameter("endpointUuid",endpointUuid);
             vq.setParameter("switchState", SwitchState.Enabled);
             vq.setParameter("switchStatus", SwitchStatus.Connected);
-            vq.setParameter("portType",portType);
+            vq.setParameter("portType",portOfferingUuid);
             vq.setParameter("portState", SwitchPortState.Enabled);
             vq.setParameter("autoAllot", 1);
             List<String> portList = vq.getResultList();
@@ -63,7 +63,7 @@ public class TunnelStrategy  {
             vq.setParameter("endpointUuid",endpointUuid);
             vq.setParameter("switchState", SwitchState.Enabled);
             vq.setParameter("switchStatus", SwitchStatus.Connected);
-            vq.setParameter("portType",portType);
+            vq.setParameter("portType",portOfferingUuid);
             vq.setParameter("portState", SwitchPortState.Enabled);
             vq.setParameter("autoAllot", 1);
             List<String> portList = vq.getResultList();
