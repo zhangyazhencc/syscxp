@@ -40,7 +40,7 @@ public class TunnelQuotaOperator implements Quota.QuotaOperator {
     public List<Quota.QuotaUsage> getQuotaUsageByAccount(String accountUuid) {
         List<Quota.QuotaUsage> usages = new ArrayList<>();
 
-        TunnelQuotaUtil.InterfaceQuota interfaceQuota = new TunnelQuotaUtil().getUsed(accountUuid);
+        TunnelQuotaUtil.InterfaceQuota interfaceQuota = new TunnelQuotaUtil().getUsedInterface(accountUuid);
 
         Quota.QuotaUsage usage = new Quota.QuotaUsage();
         usage.setName(TunnelConstant.QUOTA_INTERFACE_NUM);
