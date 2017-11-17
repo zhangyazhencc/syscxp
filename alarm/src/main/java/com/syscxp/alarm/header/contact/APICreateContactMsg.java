@@ -18,11 +18,17 @@ public class APICreateContactMsg extends APIMessage{
     @APIParam(emptyString = false)
     private String name;
 
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false,required = false)
     private String email;
 
     @APIParam(emptyString = false)
     private String mobile;
+
+    @APIParam(required = false)
+    private String mobileCaptcha;
+
+    @APIParam(required = false)
+    private String emailCaptcha;
 
     @APIParam(required = false)
     private List<String> ways;
@@ -69,5 +75,21 @@ public class APICreateContactMsg extends APIMessage{
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public String getMobileCaptcha() {
+        return mobileCaptcha;
+    }
+
+    public void setMobileCaptcha(String mobileCaptcha) {
+        this.mobileCaptcha = mobileCaptcha;
+    }
+
+    public String getEmailCaptcha() {
+        return emailCaptcha;
+    }
+
+    public void setEmailCaptcha(String emailCaptcha) {
+        this.emailCaptcha = emailCaptcha;
     }
 }

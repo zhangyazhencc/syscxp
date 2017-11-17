@@ -7,6 +7,7 @@ import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.identity.QuotaUtil;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
@@ -16,14 +17,14 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.quota.Quota;
+import com.syscxp.header.quota.QuotaConstant;
+import com.syscxp.header.quota.ReportQuotaExtensionPoint;
+import com.syscxp.header.message.*;
 import com.syscxp.header.tunnel.billingCallBack.*;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.falconapi.FalconApiCommands;
-import com.syscxp.header.message.APIMessage;
-import com.syscxp.header.message.Message;
-import com.syscxp.header.message.MessageReply;
-import com.syscxp.header.message.NeedReplyMessage;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.*;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
@@ -32,6 +33,7 @@ import com.syscxp.header.tunnel.node.ZoneNodeRefVO;
 import com.syscxp.header.tunnel.node.ZoneNodeRefVO_;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
+import com.syscxp.tunnel.quota.TunnelQuotaOperator;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
@@ -51,11 +53,12 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.argerr;
+import static com.syscxp.utils.CollectionDSL.list;
 
 /**
  * Create by DCY on 2017/10/26
  */
-public class TunnelManagerImpl extends AbstractService implements TunnelManager, ApiMessageInterceptor {
+public class TunnelManagerImpl extends AbstractService implements TunnelManager, ApiMessageInterceptor, ReportQuotaExtensionPoint {
     private static final CLogger logger = Utils.getLogger(TunnelManagerImpl.class);
 
     @Autowired
@@ -3118,4 +3121,32 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
     }
 
+    @Override
+    public List<Quota> reportQuota() {
+        TunnelQuotaOperator checker = new TunnelQuotaOperator();
+
+        // interface quota
+        Quota iQuota = new Quota();
+        iQuota.setOperator(checker);
+        iQuota.addMessageNeedValidation(APICreateInterfaceMsg.class);
+        iQuota.addMessageNeedValidation(APICreateInterfaceManualMsg.class);
+
+        Quota.QuotaPair p = new Quota.QuotaPair();
+        p.setName(TunnelConstant.QUOTA_INTERFACE_NUM);
+        p.setValue(QuotaConstant.QUOTA_INTERFACE_NUM);
+        iQuota.addPair(p);
+
+        // tunnel quota
+        Quota tQuota = new Quota();
+        tQuota.setOperator(checker);
+        tQuota.addMessageNeedValidation(APICreateTunnelMsg.class);
+        tQuota.addMessageNeedValidation(APICreateTunnelManualMsg.class);
+
+        p = new Quota.QuotaPair();
+        p.setName(TunnelConstant.QUOTA_TUNNEL_NUM);
+        p.setValue(QuotaConstant.QUOTA_TUNNEL_NUM);
+        tQuota.addPair(p);
+
+        return list(iQuota, tQuota);
+    }
 }

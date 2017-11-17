@@ -27,7 +27,6 @@ import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsGlobalProperty;
 import com.syscxp.sms.SmsService;
 import com.syscxp.sms.header.APIMaiAlarmSendMsg;
-import com.syscxp.sms.header.MailConstant;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,15 +70,6 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     private void sendMessage(AlarmLogCallbackCmd cmd) throws Exception {
 
-        APIMaiAlarmSendMsg apiMaiAlarmSendMsg = new APIMaiAlarmSendMsg();
-        apiMaiAlarmSendMsg.setEmail("zhangqiuyu@syscloud.cn");
-        apiMaiAlarmSendMsg.setSubject("监控报警信息");
-        apiMaiAlarmSendMsg.setComtent("dasqweqeqw");
-        InnerMessageHelper.setMD5(apiMaiAlarmSendMsg);
-        String gstr = RESTApiDecoder.dump(apiMaiAlarmSendMsg);
-        RestAPIResponse rsp = restf.syncJsonPost(ALARM_SERVER_RUL, gstr, RestAPIResponse.class);
-
-
 //        mailService.alarmEmail("zhangqiuyu@syscloud.cn","监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
 
         SimpleQuery<ContactVO> query = dbf.createQuery(ContactVO.class);
@@ -90,18 +80,30 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
             for (NotifyWayVO notifyWayVO : notifyWayVOs) {
                 if (notifyWayVO.getCode().equals("email")) {
                     String email = contactVO.getEmail();
+                    APIMaiAlarmSendMsg apiMaiAlarmSendMsg = new APIMaiAlarmSendMsg();
+                    apiMaiAlarmSendMsg.setEmail(email);
+                    apiMaiAlarmSendMsg.setSubject("监控报警信息");
+                    apiMaiAlarmSendMsg.setComtent("【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+                    InnerMessageHelper.setMD5(apiMaiAlarmSendMsg);
+                    String gstr = RESTApiDecoder.dump(apiMaiAlarmSendMsg);
+                    RestAPIResponse rsp = restf.syncJsonPost(ALARM_SERVER_RUL, gstr, RestAPIResponse.class);
                     //mailService.alarmEmail(email,"监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
                 }
 
                 if (notifyWayVO.getCode().equals("mobile")) {
                     String phone = contactVO.getMobile();
-                    smsService.sendMsg(null, phone, SmsGlobalProperty.ALARM_APPID, SmsGlobalProperty.SMS_AlARM_TEMPLATEID
-                            , new String[]{cmd.getSmsContent()}, "");
+
+
 
                 }
 
             }
         }
+
+        List<String> datas = new ArrayList<String>();
+        datas.add(cmd.getSmsContent());
+        
+        smsService.sendAlarmMonitorMsg(null, datas);
 
     }
 
