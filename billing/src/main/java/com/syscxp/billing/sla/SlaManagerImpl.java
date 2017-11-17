@@ -100,7 +100,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
                 aMsg.setUuid(slaCompensateVO.getProductUuid());
                 aMsg.setDuration(slaCompensateVO.getDuration());
                 aMsg.setAccountUuid(slaCompensateVO.getAccountUuid());
-                InnerMessageHelper.setMD5(aMsg);
+                aMsg.setSession(msg.getSession());
                 String gstr = RESTApiDecoder.dumpWithSession(aMsg);
                 RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class);
 
@@ -121,7 +121,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
                 APISLAInterfaceMsg aMsg = new APISLAInterfaceMsg();
                 aMsg.setUuid(slaCompensateVO.getProductUuid());
                 aMsg.setDuration(slaCompensateVO.getDuration());
-                InnerMessageHelper.setMD5(aMsg);
+                aMsg.setSession(msg.getSession());
                 String gstr = RESTApiDecoder.dumpWithSession(aMsg);
                 RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class);
 
