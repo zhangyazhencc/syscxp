@@ -6,7 +6,6 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
-import com.syscxp.header.tunnel.switchs.SwitchPortType;
 import com.syscxp.header.tunnel.switchs.SwitchPortVO;
 
 /**
@@ -23,8 +22,8 @@ public class APICreateInterfaceManualMsg extends APIMessage {
     private String switchPortUuid;
     @APIParam(emptyString = false, maxLength = 32, resourceType = EndpointVO.class)
     private String endpointUuid;
-    @APIParam
-    private SwitchPortType portType;
+    @APIParam(emptyString = false,maxLength = 32,resourceType = PortOfferingVO.class)
+    private String portOfferingUuid;
     @APIParam(validValues = {"TRUNK", "ACCESS", "QINQ"})
     private NetworkType networkType;
     @APIParam(required = false, maxLength = 255)
@@ -98,11 +97,11 @@ public class APICreateInterfaceManualMsg extends APIMessage {
         this.networkType = networkType;
     }
 
-    public SwitchPortType getPortType() {
-        return portType;
+    public String getPortOfferingUuid() {
+        return portOfferingUuid;
     }
 
-    public void setPortType(SwitchPortType portType) {
-        this.portType = portType;
+    public void setPortOfferingUuid(String portOfferingUuid) {
+        this.portOfferingUuid = portOfferingUuid;
     }
 }

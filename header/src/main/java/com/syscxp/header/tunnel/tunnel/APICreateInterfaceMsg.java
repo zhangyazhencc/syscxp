@@ -7,7 +7,6 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.header.tunnel.switchs.SwitchPortType;
 
 /**
  * Created by DCY on 2017-09-08
@@ -21,8 +20,8 @@ public class APICreateInterfaceMsg extends APIMessage {
     private String name;
     @APIParam(emptyString = false, maxLength = 32, resourceType = EndpointVO.class)
     private String endpointUuid;
-    @APIParam
-    private SwitchPortType portType;
+    @APIParam(emptyString = false,maxLength = 32,resourceType = PortOfferingVO.class)
+    private String portOfferingUuid;
     @APIParam(required = false, maxLength = 255)
     private String description;
     @APIParam
@@ -82,11 +81,11 @@ public class APICreateInterfaceMsg extends APIMessage {
         this.duration = duration;
     }
 
-    public SwitchPortType getPortType() {
-        return portType;
+    public String getPortOfferingUuid() {
+        return portOfferingUuid;
     }
 
-    public void setPortType(SwitchPortType portType) {
-        this.portType = portType;
+    public void setPortOfferingUuid(String portOfferingUuid) {
+        this.portOfferingUuid = portOfferingUuid;
     }
 }

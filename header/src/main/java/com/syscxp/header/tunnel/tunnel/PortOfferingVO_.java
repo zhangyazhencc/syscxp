@@ -1,6 +1,5 @@
 package com.syscxp.header.tunnel.tunnel;
 
-import com.syscxp.header.tunnel.switchs.SwitchPortType;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
@@ -14,7 +13,6 @@ public class PortOfferingVO_ {
 
     public static volatile SingularAttribute<PortOfferingVO, String> uuid;
     public static volatile SingularAttribute<PortOfferingVO, String> name;
-    public static volatile SingularAttribute<PortOfferingVO, SwitchPortType> type;
     public static volatile SingularAttribute<PortOfferingVO, String> description;
     public static volatile SingularAttribute<PortOfferingVO, Timestamp> createDate;
     public static volatile SingularAttribute<PortOfferingVO, Timestamp> lastOpDate;

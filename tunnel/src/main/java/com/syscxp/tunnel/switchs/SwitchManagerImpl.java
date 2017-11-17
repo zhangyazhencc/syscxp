@@ -421,7 +421,7 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         vo.setSwitchUuid(msg.getSwitchUuid());
         vo.setPortNum(null);
         vo.setPortName(msg.getPortName());
-        vo.setPortType(msg.getPortType());
+        vo.setPortType(msg.getPortOfferingUuid());
         vo.setPortAttribute(msg.getPortAttribute());
         vo.setAutoAllot(msg.getAutoAllot());
         vo.setState(SwitchPortState.Enabled);

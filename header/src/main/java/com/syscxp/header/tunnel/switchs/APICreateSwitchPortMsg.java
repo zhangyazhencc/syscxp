@@ -4,6 +4,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.SwitchConstant;
+import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
 
 /**
  * Created by DCY on 2017-08-30
@@ -18,8 +19,8 @@ public class APICreateSwitchPortMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 128)
     private String portName;
 
-    @APIParam(emptyString = false,validValues = {"RJ45_1G", "SFP_1G","SFP_10G","SHARE"})
-    private SwitchPortType portType;
+    @APIParam(emptyString = false,maxLength = 32,resourceType = PortOfferingVO.class)
+    private String portOfferingUuid;
 
     @APIParam(emptyString = false)
     private String portAttribute;
@@ -44,14 +45,6 @@ public class APICreateSwitchPortMsg extends APIMessage {
         this.portName = portName;
     }
 
-    public SwitchPortType getPortType() {
-        return portType;
-    }
-
-    public void setPortType(SwitchPortType portType) {
-        this.portType = portType;
-    }
-
     public String getPortAttribute() {
         return portAttribute;
     }
@@ -66,5 +59,13 @@ public class APICreateSwitchPortMsg extends APIMessage {
 
     public void setAutoAllot(Integer autoAllot) {
         this.autoAllot = autoAllot;
+    }
+
+    public String getPortOfferingUuid() {
+        return portOfferingUuid;
+    }
+
+    public void setPortOfferingUuid(String portOfferingUuid) {
+        this.portOfferingUuid = portOfferingUuid;
     }
 }

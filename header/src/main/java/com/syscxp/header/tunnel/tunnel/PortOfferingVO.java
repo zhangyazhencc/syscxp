@@ -1,6 +1,5 @@
 package com.syscxp.header.tunnel.tunnel;
 
-import com.syscxp.header.tunnel.switchs.SwitchPortType;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -19,10 +18,6 @@ public class PortOfferingVO {
 
     @Column
     private String name;
-
-    @Column
-    @Enumerated(EnumType.STRING)
-    private SwitchPortType type;
 
     @Column
     private String description;
@@ -52,14 +47,6 @@ public class PortOfferingVO {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public SwitchPortType getType() {
-        return type;
-    }
-
-    public void setType(SwitchPortType type) {
-        this.type = type;
     }
 
     public String getDescription() {

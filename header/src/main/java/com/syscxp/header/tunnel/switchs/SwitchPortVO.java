@@ -32,8 +32,7 @@ public class SwitchPortVO {
     private String portName;
 
     @Column
-    @Enumerated(EnumType.STRING)
-    private SwitchPortType portType;
+    private String portType;
 
     @Column
     private String portAttribute;
@@ -112,11 +111,11 @@ public class SwitchPortVO {
         this.switchs = switchs;
     }
 
-    public SwitchPortType getPortType() {
+    public String getPortType() {
         return portType;
     }
 
-    public void setPortType(SwitchPortType portType) {
+    public void setPortType(String portType) {
         this.portType = portType;
     }
 

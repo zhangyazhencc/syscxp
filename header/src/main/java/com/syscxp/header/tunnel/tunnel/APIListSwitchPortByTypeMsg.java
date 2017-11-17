@@ -5,7 +5,6 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
-import com.syscxp.header.tunnel.switchs.SwitchPortType;
 
 /**
  * Created by DCY on 2017-09-11
@@ -15,13 +14,13 @@ public class APIListSwitchPortByTypeMsg extends APISyncCallMessage {
     @APIParam(emptyString = false, resourceType = EndpointVO.class)
     private String uuid;
     @APIParam
-    private SwitchPortType type;
+    private String type;
 
-    public SwitchPortType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(SwitchPortType type) {
+    public void setType(String type) {
         this.type = type;
     }
 

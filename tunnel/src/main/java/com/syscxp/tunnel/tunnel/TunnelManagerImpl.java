@@ -292,7 +292,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         pmsg.setProductChargeModel(msg.getProductChargeModel());
         pmsg.setDuration(msg.getDuration());
         pmsg.setAccountUuid(msg.getAccountUuid());
-        pmsg.setUnits(getInterfacePriceUnit(msg.getPortType()));
+        pmsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
         bus.reply(msg, new APIGetInterfacePriceReply(reply));
     }
@@ -344,7 +344,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //分配资源:策略分配端口
         TunnelStrategy ts = new TunnelStrategy();
-        String switchPortUuid = ts.getSwitchPortByStrategy(msg.getEndpointUuid(), msg.getPortType());
+        String switchPortUuid = ts.getSwitchPortByStrategy(msg.getEndpointUuid(), msg.getPortOfferingUuid());
         if (switchPortUuid == null) {
             throw new ApiMessageInterceptionException(argerr("该连接点下无可用的端口"));
         }
@@ -368,7 +368,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
-        ProductInfoForOrder productInfoForOrder = createBuyOrderForInterface(vo, msg.getPortType(), new CreateInterfaceCallBack());
+        ProductInfoForOrder productInfoForOrder = createBuyOrderForInterface(vo, msg.getPortOfferingUuid(), new CreateInterfaceCallBack());
         productInfoForOrder.setOpAccountUuid(msg.getSession().getAccountUuid());
         productInfoForOrder.setNotifyUrl(restf.getSendCommandUrl());
         orderMsg.setProducts(CollectionDSL.list(productInfoForOrder));
@@ -377,7 +377,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         afterCreateInterface(inventories, vo, msg);
     }
 
-    private ProductInfoForOrder createBuyOrderForInterface(InterfaceVO vo, SwitchPortType portType, NotifyCallBackData callBack) {
+    private ProductInfoForOrder createBuyOrderForInterface(InterfaceVO vo, String portOfferingUuid, NotifyCallBackData callBack) {
         ProductInfoForOrder order = new ProductInfoForOrder();
         order.setProductChargeModel(vo.getProductChargeModel());
         order.setDuration(vo.getDuration());
@@ -386,7 +386,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         order.setProductType(ProductType.PORT);
         order.setDescriptionData(getDescriptionForInterface(vo));
         order.setCallBackData(RESTApiDecoder.dump(callBack));
-        order.setUnits(getInterfacePriceUnit(portType));
+        order.setUnits(getInterfacePriceUnit(portOfferingUuid));
         order.setAccountUuid(vo.getOwnerAccountUuid());
 
         return order;
@@ -436,7 +436,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
-        ProductInfoForOrder productInfoForOrder = createBuyOrderForInterface(vo, msg.getPortType(), new CreateInterfaceCallBack());
+        ProductInfoForOrder productInfoForOrder = createBuyOrderForInterface(vo, msg.getPortOfferingUuid(), new CreateInterfaceCallBack());
         productInfoForOrder.setOpAccountUuid(msg.getAccountUuid());
         orderMsg.setProducts(CollectionDSL.list(productInfoForOrder));
 
@@ -658,7 +658,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }else if(msg.getInterfaceAUuid() == null && msg.getInterfaceZUuid() == null){   //都是新购接口
             //分配A端口
             newBuyInterfaceA = true;
-            String switchPortUuidA = ts.getSwitchPortByStrategy(msg.getEndpointAUuid(), msg.getPortTypeA());
+            String switchPortUuidA = ts.getSwitchPortByStrategy(msg.getEndpointAUuid(), msg.getPortOfferingUuidA());
             if (switchPortUuidA == null) {
                 throw new ApiMessageInterceptionException(argerr("该连接点A下无可用的端口"));
             }
@@ -683,7 +683,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
             //分配Z端口
             newBuyInterfaceZ = true;
-            String switchPortUuidZ = ts.getSwitchPortByStrategy(msg.getEndpointZUuid(), msg.getPortTypeZ());
+            String switchPortUuidZ = ts.getSwitchPortByStrategy(msg.getEndpointZUuid(), msg.getPortOfferingUuidZ());
             if (switchPortUuidZ == null) {
                 throw new ApiMessageInterceptionException(argerr("该连接点Z下无可用的端口"));
             }
@@ -712,7 +712,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }else{                                              //有一端为新购
             if(msg.getInterfaceAUuid() == null){            //A新购，Z已有
                 newBuyInterfaceA = true;
-                String switchPortUuidA = ts.getSwitchPortByStrategy(msg.getEndpointAUuid(), msg.getPortTypeA());
+                String switchPortUuidA = ts.getSwitchPortByStrategy(msg.getEndpointAUuid(), msg.getPortOfferingUuidA());
                 if (switchPortUuidA == null) {
                     throw new ApiMessageInterceptionException(argerr("该连接点A下无可用的端口"));
                 }
@@ -750,7 +750,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
             }else{                                          //Z新购，A已有
                 newBuyInterfaceZ = true;
-                String switchPortUuidZ = ts.getSwitchPortByStrategy(msg.getEndpointZUuid(), msg.getPortTypeZ());
+                String switchPortUuidZ = ts.getSwitchPortByStrategy(msg.getEndpointZUuid(), msg.getPortOfferingUuidZ());
                 if (switchPortUuidZ == null) {
                     throw new ApiMessageInterceptionException(argerr("该连接点Z下无可用的端口"));
                 }
@@ -838,13 +838,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
         List<ProductInfoForOrder> products = new ArrayList<>();
         if(newBuyInterfaceA){
-            ProductInfoForOrder productInfoForOrderA = createBuyOrderForInterface(interfaceVOA, msg.getPortTypeA(), new CreateInterfaceCallBack());
+            ProductInfoForOrder productInfoForOrderA = createBuyOrderForInterface(interfaceVOA, msg.getPortOfferingUuidA(), new CreateInterfaceCallBack());
             productInfoForOrderA.setOpAccountUuid(msg.getSession().getAccountUuid());
             //productInfoForOrderA.setNotifyUrl(restf.getSendCommandUrl());
             products.add(productInfoForOrderA);
         }
         if(newBuyInterfaceZ){
-            ProductInfoForOrder productInfoForOrderZ = createBuyOrderForInterface(interfaceVOZ, msg.getPortTypeZ(), new CreateInterfaceCallBack());
+            ProductInfoForOrder productInfoForOrderZ = createBuyOrderForInterface(interfaceVOZ, msg.getPortOfferingUuidZ(), new CreateInterfaceCallBack());
             productInfoForOrderZ.setOpAccountUuid(msg.getSession().getAccountUuid());
             //productInfoForOrderZ.setNotifyUrl(restf.getSendCommandUrl());
             products.add(productInfoForOrderZ);
@@ -2197,7 +2197,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             throw new ApiMessageInterceptionException(
                     argerr("The Interface[uuid:%s] has been used by two tunnel as least！", msg.getUuid()));
         SwitchPortVO switchPort = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, iface.getSwitchPortUuid()).find();
-        if (switchPort.getPortType() == SwitchPortType.SHARE)
+        if (switchPort.getPortType().equals("SHARE"))
             throw new ApiMessageInterceptionException(
                     argerr("The type of Interface[uuid:%s] is %s, could not modify！", msg.getUuid(), switchPort.getPortType()));
 
@@ -2217,11 +2217,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         //类型是否支持
-        List<SwitchPortType> types = getPortTypeByEndpoint(msg.getEndpointUuid());
-        if (msg.getPortType() != SwitchPortType.SHARE) {
-            if (!types.contains(msg.getPortType()))
+        List<String> types = getPortTypeByEndpoint(msg.getEndpointUuid());
+        if (!msg.getPortOfferingUuid().equals("SHARE")) {
+            if (!types.contains(msg.getPortOfferingUuid()))
                 throw new ApiMessageInterceptionException(
-                        argerr("该连接点[uuid:%s]下的端口[type:%s]已用完！", msg.getEndpointUuid(), msg.getPortType()));
+                        argerr("该连接点[uuid:%s]下的端口[type:%s]已用完！", msg.getEndpointUuid(), msg.getPortOfferingUuid()));
         } else {
             Q q2 = Q.New(InterfaceVO.class)
                     .eq(InterfaceVO_.accountUuid, msg.getAccountUuid())
@@ -2236,7 +2236,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(getInterfacePriceUnit(msg.getPortType()));
+        priceMsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
@@ -2258,7 +2258,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(getInterfacePriceUnit(msg.getPortType()));
+        priceMsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
@@ -2771,26 +2771,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 获取物理接口单价
      */
-    private List<ProductPriceUnit> getInterfacePriceUnit(SwitchPortType portType) {
+    private List<ProductPriceUnit> getInterfacePriceUnit(String portOfferingUuid) {
         List<ProductPriceUnit> units = new ArrayList<>();
         ProductPriceUnit unit = new ProductPriceUnit();
         unit.setProductTypeCode(ProductType.PORT);
         unit.setCategoryCode(Category.PORT);
         unit.setAreaCode("DEFAULT");
         unit.setLineCode("DEFAULT");
-        unit.setConfigCode(getPortOfferingUuid(portType));
+        unit.setConfigCode(portOfferingUuid);
         units.add(unit);
         return units;
-    }
-
-    /**
-     * 根据端口类型获取端口规格UUID
-     */
-    private String getPortOfferingUuid(SwitchPortType type) {
-        return Q.New(PortOfferingVO.class)
-                .eq(PortOfferingVO_.type, type)
-                .select(PortOfferingVO_.uuid)
-                .findValue();
     }
 
     /**
@@ -3010,7 +3000,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 通过连接点获取可用的端口规格
      */
-    private List<SwitchPortType> getPortTypeByEndpoint(String endpointUuid) {
+    private List<String> getPortTypeByEndpoint(String endpointUuid) {
         List<String> switchs = CollectionUtils.transformToList(getSwitchByEndpoint(endpointUuid), SwitchAO::getUuid);
         if (switchs.isEmpty())
             return Collections.emptyList();
@@ -3036,7 +3026,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 通过连接点和端口规格获取可用的端口
      */
-    private List<SwitchPortVO> getSwitchPortByType(String endpointUuid, SwitchPortType type) {
+    private List<SwitchPortVO> getSwitchPortByType(String endpointUuid, String type) {
         List<String> switchs = CollectionUtils.transformToList(getSwitchByEndpoint(endpointUuid), SwitchAO::getUuid);
         if (switchs.isEmpty())
             return Collections.emptyList();
@@ -3051,10 +3041,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         DescriptionData data = new DescriptionData();
         data.add(new DescriptionItem("name", vo.getName()));
         data.add(new DescriptionItem("NetworkType", vo.getType().toString()));
-        SwitchPortType portType = Q.New(SwitchPortVO.class)
+        String portType = Q.New(SwitchPortVO.class)
                 .eq(SwitchPortVO_.uuid, vo.getSwitchPortUuid())
                 .select(SwitchPortVO_.portType).findValue();
-        data.add(new DescriptionItem("PortType", portType.toString()));
+        data.add(new DescriptionItem("PortType", portType));
 
         return JSONObjectUtil.toJsonString(data);
     }
