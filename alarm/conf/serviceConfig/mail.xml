@@ -6,6 +6,9 @@
     <message>
         <name>com.syscxp.sms.header.APIMaiAlarmSendMsg</name>
     </message>
+    <message>
+        <name>com.syscxp.sms.header.APIMailCodeSendMsg</name>
+    </message>
 
 
 </service>
