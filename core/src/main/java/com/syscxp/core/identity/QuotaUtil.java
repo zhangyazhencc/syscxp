@@ -1,6 +1,5 @@
 package com.syscxp.core.identity;
 
-import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SQL;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaVO;
@@ -31,7 +30,7 @@ public class QuotaUtil {
 
     public static class QuotaCompareInfo {
         public String currentAccountUuid;
-        public String resourceTargetOwnerAccountUuid;
+        public String ownerAccountUuid;
         public String quotaName;
         public long quotaValue;
         public long currentUsed;
@@ -57,7 +56,7 @@ public class QuotaUtil {
                     String.format("quota exceeding. Current account is [uuid: %s]. " +
                                     "The resource target owner account[uuid: %s] exceeds a quota[name: %s, value: %s], " +
                                     "Current used:%s, Request:%s. ",
-                            quotaCompareInfo.currentAccountUuid, quotaCompareInfo.resourceTargetOwnerAccountUuid,
+                            quotaCompareInfo.currentAccountUuid, quotaCompareInfo.ownerAccountUuid,
                             quotaCompareInfo.quotaName, quotaCompareInfo.quotaValue,
                             quotaCompareInfo.currentUsed, quotaCompareInfo.request)
             ));
