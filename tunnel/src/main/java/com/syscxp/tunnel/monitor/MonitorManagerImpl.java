@@ -136,7 +136,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             // 同步icmp
             if (event.isSuccess()){
                 FalconApiCommands.RestResponse falconRsp =
-                        icmpSync(msg.getSession().getAccountUuid(), msg.getTunnelUuid(), tunnelMonitorVOS);
+                        icmpSync(msg.getSession().getAccountUuid(), msg.getTunnelUuid(),msg.getMonitorCidr(), tunnelMonitorVOS);
 
                 if(!falconRsp.isSuccess())
                     event.setError(Platform.operr("Failure to sync icmp: tunnelUuid: %s , Error: %s", msg.getTunnelUuid(), falconRsp.getMsg()));
@@ -144,7 +144,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
             // 开启agent监控
             if (event.isSuccess()){
-                MonitorAgentCommands.RestResponse agentResp = startMonitor(msg.getSession().getAccountUuid(),msg.getTunnelUuid(),tunnelMonitorVOS);
+                MonitorAgentCommands.RestResponse agentResp = startMonitor(msg.getSession().getAccountUuid(),msg.getTunnelUuid(),msg.getMonitorCidr(),tunnelMonitorVOS);
 
                 if(!agentResp.isSuccess())
                     event.setError(Platform.operr("Failure to start agent monitor: tunnelUuid: %s , Error: %s", msg.getTunnelUuid(),agentResp.getMsg()));
@@ -286,11 +286,11 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * 开启监控、tunnel修改且监控为开启状态时同步ICMP到falcon_portal数据库
      * 下发监控agent配置
      */
-    private FalconApiCommands.RestResponse icmpSync(String accountUuid, String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS) {
+    private FalconApiCommands.RestResponse icmpSync(String accountUuid, String tunnelUuid,String monitorCidr, List<TunnelMonitorVO> tunnelMonitorVOS) {
         String falconUrl = getFalconServerUrl(FalconApiRestConstant.ICMP_SYNC);
         FalconApiCommands.RestResponse falconRsp = new FalconApiCommands.RestResponse();
         try {
-            FalconApiCommands.Icmp icmp = getIcmp(accountUuid, tunnelUuid, tunnelMonitorVOS);
+            FalconApiCommands.Icmp icmp = getIcmp(accountUuid, tunnelUuid, monitorCidr, tunnelMonitorVOS);
             String icmpJson = JSONObjectUtil.toJsonString(icmp);
 
             falconRsp = evtf.syncJsonPost(falconUrl, icmpJson, FalconApiCommands.RestResponse.class);
@@ -332,9 +332,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param command
      * @return
      */
-    private MonitorAgentCommands.RestResponse startMonitor(String accountUuid, String tunnelUuid,List<TunnelMonitorVO> tunnelMonitorVOS) {
+    private MonitorAgentCommands.RestResponse startMonitor(String accountUuid, String tunnelUuid,String monitorCidr,List<TunnelMonitorVO> tunnelMonitorVOS) {
         // TODO: 新增、修改、停止调用不同的接口
-        FalconApiCommands.Icmp icmp = getIcmp(accountUuid,tunnelUuid,tunnelMonitorVOS);
+        FalconApiCommands.Icmp icmp = getIcmp(accountUuid,tunnelUuid,monitorCidr,tunnelMonitorVOS);
         String icmpJson = JSONObjectUtil.toJsonString(icmp);
         // 下发监控agent配置
         MonitorAgentCommands.RestResponse agentResp = new MonitorAgentCommands.RestResponse();
@@ -393,14 +393,15 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
     }
 
-    public FalconApiCommands.Icmp getIcmp(String accountUuid, String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS) {
+    public FalconApiCommands.Icmp getIcmp(String accountUuid, String tunnelUuid,String monitorCidr, List<TunnelMonitorVO> tunnelMonitorVOS) {
         FalconApiCommands.Icmp icmp = new FalconApiCommands.Icmp();
         TunnelVO tunnelVO = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelUuid).find();
 
         icmp.setTunnel_id(tunnelUuid);
         icmp.setTunnel_name(tunnelVO.getName());
         icmp.setUser_id(accountUuid);
-        icmp.setCidr(tunnelVO.getMonitorCidr());
+        icmp.setCidr(monitorCidr);
+        icmp.setBandwidth(tunnelVO.getBandwidth());
 
         for (TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS) {
             TunnelSwitchPortVO tunnelSwitchPortVO = getTunnelSwitchPortByUuid(tunnelMonitorVO.getTunnelSwitchPortUuid());
@@ -568,7 +569,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         // 同步icmp
         if (event.isSuccess())
-            icmpSync(msg.getSession().getAccountUuid(), msg.getTunnelUuid(), tunnelMonitorVOS);
+            icmpSync(msg.getSession().getAccountUuid(), msg.getTunnelUuid(),msg.getMonitorCidr(), tunnelMonitorVOS);
 
         // 更新tunnel状态
         if (event.isSuccess())
@@ -796,9 +797,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
             result = JSON.parseArray(resp,MonitorAgentCommands.NettoolResult.class);
         } catch (Exception e) {
-            String err = String.format("Failure to execute speed test command! %s", e.getMessage());
-            logger.error(err);
-            reply.setError(Platform.argerr(err));
+            reply.setError(Platform.argerr("Failure to execute speed test command! %s", e.getMessage()));
         }
 
         if(reply.isSuccess())
@@ -812,14 +811,28 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         try {
             String condition = getOpenTSDBQueryCondition(msg);
+            //todo:获取url有问题
             String url = getOpenTSDBUrl(OpenTSDBCommands.restMethod.OPEN_TSDB_QUERY);
+            //String url = "http://192.168.211.6:4242"+OpenTSDBCommands.restMethod.OPEN_TSDB_QUERY;
 
-            List<OpenTSDBCommands.QueryResult> results = evtf.syncJsonPost(url, condition, List.class);
+            String resp = evtf.getRESTTemplate().postForObject(url, condition, String.class);
+            List<OpenTSDBCommands.QueryResult> results = JSON.parseArray(resp,OpenTSDBCommands.QueryResult.class);
+            for(OpenTSDBCommands.QueryResult result:results){
+                String mIP = result.getTags().getEndpoint();
+                List<PhysicalSwitchVO> physicalSwitchVOS = Q.New(PhysicalSwitchVO.class)
+                        .eq(PhysicalSwitchVO_.mIP,mIP)
+                        .list();
+
+                if(physicalSwitchVOS.isEmpty())
+                    reply.setError(Platform.argerr("Fail to get physical switch by mIP %S",mIP));
+
+                result.setNodeUuid(physicalSwitchVOS.get(0).getNodeUuid());
+            }
+
             reply.setInventories(OpenTSDBResultInventory.valueOf(results));
         } catch (Exception e) {
-            String err = String.format("查询OpenTSDB数据失败：", e.getMessage());
-            logger.error(err);
-            reply.setError(Platform.argerr(err));
+            reply.setError(Platform.argerr("Fail to query tunnel %s metric %s from OpenTSDB. Error: %s",
+                    msg.getTunnelUuid(),msg.getMetric(),e.getMessage()));
         }
 
         bus.reply(msg, reply);
@@ -904,7 +917,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelUuid
      * @param event
      */
-    public void restartTunnelMonitor(String tunnelUuid, String accountUuid, ControllerCommands.TunnelMonitorCommand monitorCommand, APIEvent event) {
+    public void restartTunnelMonitor(String tunnelUuid, String accountUuid,String monitorCidr, ControllerCommands.TunnelMonitorCommand monitorCommand, APIEvent event) {
         // 控制器命令删除
         stopControllerCommand(monitorCommand, event);
 
@@ -916,7 +929,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         // 同步icmp
         if (event.isSuccess())
-            icmpSync(accountUuid, tunnelUuid, tunnelMonitorVOS);
+            icmpSync(accountUuid, tunnelUuid, monitorCidr,tunnelMonitorVOS);
 
         // 更新tunnel状态
         if (!event.isSuccess()) {

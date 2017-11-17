@@ -1,0 +1,22 @@
+消息：APIDeleteSwitchVlanMsg
+
+权限：category = SwitchConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true
+
+参数：
+    uuid：必填，要删除SwitchVlanVO的uuid
+
+请求消息体示例：
+{
+    "com.syscxp.header.tunnel.switchs.APIDeleteSwitchVlanMsg":{
+        "uuid":"1e6bcb32b9b34bb98e84fa1fef9d3bca",
+        "session":{
+            "uuid":"b01947ee1b714eca82d0b82b4da57255"
+        }
+    }
+}
+
+后台验证（validate）：
+    1.判断该VLAN段是否被分配
+
+业务流程：
+    硬删除
