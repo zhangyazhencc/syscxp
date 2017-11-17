@@ -3123,7 +3123,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     @Override
     public List<Quota> reportQuota() {
-        Quota.QuotaOperator checker = new TunnelQuotaOperator();
+        TunnelQuotaOperator checker = new TunnelQuotaOperator();
 
         // interface quota
         Quota iQuota = new Quota();
@@ -3136,26 +3136,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         p.setValue(QuotaConstant.QUOTA_INTERFACE_NUM);
         iQuota.addPair(p);
 
-        p = new Quota.QuotaPair();
-        p.setName(TunnelConstant.QUOTA_INTERFACE_BANDWIDTH);
-        p.setValue(QuotaConstant.QUOTA_INTERFACE_BANDWIDTH);
-        iQuota.addPair(p);
-
         // tunnel quota
         Quota tQuota = new Quota();
         tQuota.setOperator(checker);
         tQuota.addMessageNeedValidation(APICreateTunnelMsg.class);
         tQuota.addMessageNeedValidation(APICreateTunnelManualMsg.class);
-        tQuota.addMessageNeedValidation(APIUpdateTunnelBandwidthMsg.class);
 
         p = new Quota.QuotaPair();
         p.setName(TunnelConstant.QUOTA_TUNNEL_NUM);
         p.setValue(QuotaConstant.QUOTA_TUNNEL_NUM);
-        tQuota.addPair(p);
-
-        p = new Quota.QuotaPair();
-        p.setName(TunnelConstant.QUOTA_TUNNEL_BANDWIDTH);
-        p.setValue(QuotaConstant.QUOTA_TUNNEL_BANDWIDTH);
         tQuota.addPair(p);
 
         return list(iQuota, tQuota);

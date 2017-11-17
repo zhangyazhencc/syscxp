@@ -16,8 +16,6 @@ public interface TunnelConstant {
 
 
     String QUOTA_INTERFACE_NUM = "interface.num";
-    String QUOTA_INTERFACE_BANDWIDTH = "interface.bandwidth";
 
     String QUOTA_TUNNEL_NUM = "tunnel.num";
-    String QUOTA_TUNNEL_BANDWIDTH = "tunnel.bandwidth";
 }

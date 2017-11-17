@@ -27,7 +27,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.List;
 
-public class ContactManagerImpl  extends AbstractService implements ApiMessageInterceptor {
+public class ContactManagerImpl extends AbstractService implements ApiMessageInterceptor {
 
 
     private static final CLogger logger = Utils.getLogger(ContactManagerImpl.class);
@@ -59,11 +59,11 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateContactMsg) {
             handle((APICreateContactMsg) msg);
-        }else if(msg instanceof  APIDeleteContactMsg){
+        } else if (msg instanceof APIDeleteContactMsg) {
             handle((APIDeleteContactMsg) msg);
-        }else if(msg instanceof  APIUpdateContactMsg){
+        } else if (msg instanceof APIUpdateContactMsg) {
             handle((APIUpdateContactMsg) msg);
-        }else {
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -72,20 +72,20 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
     private void handle(APIUpdateContactMsg msg) {
 
         if (msg.getSession().getType() != AccountType.SystemAdmin) {
-            validationCaptcah(msg.getMobile(), msg.getEmail(), msg.getMobileCaptcha(), msg.getEmailCaptcha());
+            validateUpdateCaptcha(msg.getMobile(), msg.getEmail(), msg.getMobileCaptcha(), msg.getEmailCaptcha());
         }
 
 
         String uuid = msg.getUuid();
         ContactVO vo = dbf.getEntityManager().find(ContactVO.class, uuid);
-        if(vo!=null){
-            if(msg.getEmail()!=null){
+        if (vo != null) {
+            if (msg.getEmail() != null) {
                 vo.setEmail(msg.getEmail());
             }
-            if(msg.getName()!=null){
+            if (msg.getName() != null) {
                 vo.setName(msg.getName());
             }
-            if(msg.getMobile()!=null){
+            if (msg.getMobile() != null) {
                 vo.setMobile(msg.getMobile());
             }
             dbf.getEntityManager().merge(vo);
@@ -95,42 +95,60 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
             q.condAnd(ContactNotifyWayRefVO_.contactUuid, SimpleQuery.Op.EQ, vo.getUuid());
             q.delete();
             List<String> codes = msg.getWays();
-            if(codes == null || codes.size()==0){
-                persistNotifyWay(vo.getUuid(),"mobile");
-            }else {
-                for(String code: codes){
-                    persistNotifyWay(vo.getUuid(),code);
+            if (codes == null || codes.size() == 0) {
+                persistNotifyWay(vo.getUuid(), "mobile");
+            } else {
+                for (String code : codes) {
+                    persistNotifyWay(vo.getUuid(), code);
                 }
             }
             dbf.getEntityManager().flush();
         }
         APIUpdateContactEvent event = new APIUpdateContactEvent(msg.getId());
-        event.setInventory(ContactInventory.valueOf(dbf.findByUuid(msg.getUuid(),ContactVO.class)));
+        event.setInventory(ContactInventory.valueOf(dbf.findByUuid(msg.getUuid(), ContactVO.class)));
         bus.publish(event);
     }
 
-    private void validationCaptcah(String mobile, String email, String mobileCaptcha, String emailCaptcha) {
+    private void validationCaptcha(String mobile, String email, String mobileCaptcha, String emailCaptcha) {
+        if (StringUtils.isEmpty(mobileCaptcha)) {
+            throw new IllegalArgumentException("please input the mobile captcha");
+        }
+        if (!smsService.validateVerificationCode(mobile, mobileCaptcha)) {
+            throw new IllegalArgumentException("the mobile captcha is not correct");
+        }
+        validateEmail(email, emailCaptcha);
+    }
+
+    private void validateUpdateCaptcha(String mobile, String email, String mobileCaptcha, String emailCaptcha) {
+        if (!StringUtils.isEmpty(mobile)) {
             if (StringUtils.isEmpty(mobileCaptcha)) {
                 throw new IllegalArgumentException("please input the mobile captcha");
             }
-            if(!smsService.validateVerificationCode(mobile,mobileCaptcha)){
+            if (!smsService.validateVerificationCode(mobile, mobileCaptcha)) {
                 throw new IllegalArgumentException("the mobile captcha is not correct");
             }
-            if(!StringUtils.isEmpty(email)){
-                if(StringUtils.isEmpty(emailCaptcha)){
-                    throw new IllegalArgumentException("please input the email captcha");
-                }
-                if (!mailService.ValidateMailCode(email, emailCaptcha)) {
-                    throw new IllegalArgumentException("the email captcha is not correct");
-                }
-            }
+        }
+        validateEmail(email, emailCaptcha);
+
     }
+
+    private void validateEmail(String email, String emailCaptcha) {
+        if (!StringUtils.isEmpty(email)) {
+            if (StringUtils.isEmpty(emailCaptcha)) {
+                throw new IllegalArgumentException("please input the email captcha");
+            }
+            if (!mailService.ValidateMailCode(email, emailCaptcha)) {
+                throw new IllegalArgumentException("the email captcha is not correct");
+            }
+        }
+    }
+
 
     @Transactional
     private void handle(APIDeleteContactMsg msg) {
-        String uuid =  msg.getUuid();
+        String uuid = msg.getUuid();
         ContactVO vo = dbf.findByUuid(uuid, ContactVO.class);
-        if(vo != null){
+        if (vo != null) {
             dbf.remove(vo);
         }
         APIDeleteContactEvent event = new APIDeleteContactEvent(msg.getId());
@@ -143,7 +161,7 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
     private void handle(APICreateContactMsg msg) {
 
         if (msg.getSession().getType() != AccountType.SystemAdmin) {
-            validationCaptcah(msg.getMobile(), msg.getEmail(), msg.getMobileCaptcha(), msg.getEmailCaptcha());
+            validationCaptcha(msg.getMobile(), msg.getEmail(), msg.getMobileCaptcha(), msg.getEmailCaptcha());
         }
         List<String> codes = msg.getWays();
         ContactVO vo = new ContactVO();
@@ -155,11 +173,11 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
 
         dbf.getEntityManager().persist(vo);
 
-        if(codes == null || codes.size()==0){
-            persistNotifyWay(vo.getUuid(),"mobile");
-        }else {
-            for(String code: codes){
-                persistNotifyWay(vo.getUuid(),code);
+        if (codes == null || codes.size() == 0) {
+            persistNotifyWay(vo.getUuid(), "mobile");
+        } else {
+            for (String code : codes) {
+                persistNotifyWay(vo.getUuid(), code);
             }
         }
 
@@ -170,9 +188,9 @@ public class ContactManagerImpl  extends AbstractService implements ApiMessageIn
     }
 
     @Transactional
-    private void persistNotifyWay(String contactUuid,String code){
+    private void persistNotifyWay(String contactUuid, String code) {
         SimpleQuery<NotifyWayVO> q = dbf.createQuery(NotifyWayVO.class);
-        q.add(NotifyWayVO_.code, SimpleQuery.Op.EQ,code);
+        q.add(NotifyWayVO_.code, SimpleQuery.Op.EQ, code);
         NotifyWayVO notifyWayVO = q.find();
         ContactNotifyWayRefVO contactNotifyWayRefVO = new ContactNotifyWayRefVO();
         contactNotifyWayRefVO.setContactUuid(contactUuid);

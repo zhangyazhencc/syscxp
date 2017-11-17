@@ -146,6 +146,7 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         msg.setTemplateId(SmsGlobalProperty.SMS_AlARM_TEMPLATEID);
         msg.setData(datas);
         msg.setServiceId(bus.makeLocalServiceId(SmsConstant.SERVICE_ID));
+
         bus.send(msg);
     }
 
