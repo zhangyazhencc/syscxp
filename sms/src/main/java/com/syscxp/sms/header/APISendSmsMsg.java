@@ -2,6 +2,7 @@ package com.syscxp.sms.header;
 
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.rest.APINoSee;
 
 import java.util.List;
 
@@ -22,7 +23,8 @@ public class APISendSmsMsg extends APIMessage {
     @APIParam(nonempty = true)
     private List<String> data;
 
-    private String ip;
+    @APINoSee
+    private String ipConfine;
 
     public String getAppId() {
         return appId;
@@ -56,11 +58,11 @@ public class APISendSmsMsg extends APIMessage {
         this.data = data;
     }
 
-    public String getIp() {
-        return ip;
+    public String getIpConfine() {
+        return ipConfine;
     }
 
-    public void setIp(String ip) {
-        this.ip = ip;
+    public void setIpConfine(String ipConfine) {
+        this.ipConfine = ipConfine;
     }
 }

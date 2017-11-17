@@ -146,14 +146,20 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         msg.setTemplateId(SmsGlobalProperty.SMS_AlARM_TEMPLATEID);
         msg.setData(datas);
         msg.setServiceId(bus.makeLocalServiceId(SmsConstant.SERVICE_ID));
-
         bus.send(msg);
     }
 
     private void handle(APISendSmsMsg msg){
 
         String phones = StringTemplate.join(msg.getPhone(), ",");
-        SmsVO sms = sendMsg(msg.getSession(), phones, SmsGlobalProperty.SMS_YUNTONGXUN_APPID, msg.getTemplateId(), msg.getData().toArray(new String[msg.getData().size()]), msg.getIp());
+        String appid;
+        if(msg.getAppId() == null){
+            appid = SmsGlobalProperty.SMS_YUNTONGXUN_APPID;
+        }else{
+            appid = msg.getAppId();
+        }
+
+        SmsVO sms = sendMsg(msg.getSession(), phones, appid, msg.getTemplateId(), msg.getData().toArray(new String[msg.getData().size()]), msg.getIp());
 
         APISendSmsEvent evt = new APISendSmsEvent(msg.getId());
         evt.setInventory(SmsInventory.valueOf(sms));
