@@ -4,7 +4,7 @@
     <interceptor>SmsService</interceptor>
 
     <message>
-        <name>com.syscxp.sms.header.APISendAlarmSmsMsg</name>
+        <name>com.syscxp.sms.header.APISendSmsMsg</name>
     </message>
 
 </service>
