@@ -5,7 +5,9 @@ import com.syscxp.header.rest.RestResponse;
 
 @RestResponse(allTo = "inventory")
 public class APIDeleteAliEdgeRouterEvent extends APIEvent{
-    private AliEdgeRouterInventory inventory;
+
+    private AliEdgeRouterInformationInventory inventory;
+    private AliEdgeRouterInventory routerInventory;
 
     private Boolean aliIdentityFailure;
 
@@ -21,11 +23,19 @@ public class APIDeleteAliEdgeRouterEvent extends APIEvent{
 
     public APIDeleteAliEdgeRouterEvent(String apiId){super(apiId);}
 
-    public AliEdgeRouterInventory getInventory() {
+    public AliEdgeRouterInformationInventory getInventory() {
         return inventory;
     }
 
-    public void setInventory(AliEdgeRouterInventory inventory) {
+    public void setInventory(AliEdgeRouterInformationInventory inventory) {
         this.inventory = inventory;
+    }
+
+    public AliEdgeRouterInventory getRouterInventory() {
+        return routerInventory;
+    }
+
+    public void setRouterInventory(AliEdgeRouterInventory routerInventory) {
+        this.routerInventory = routerInventory;
     }
 }

@@ -463,7 +463,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         APIDeleteAliEdgeRouterEvent evt = new APIDeleteAliEdgeRouterEvent(msg.getId());
         if(flag){
-            evt.setInventory(AliEdgeRouterInventory.valueOf(vo));
+            evt.setRouterInventory(AliEdgeRouterInventory.valueOf(vo));
         }else {
             evt.setAliIdentityFailure(true);
         }
@@ -476,7 +476,8 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
         Boolean flag = true;
 
-        APICreateAliEdgeRouterEvent evt = new APICreateAliEdgeRouterEvent(msg.getId());
+        AliEdgeRouterInformationInventory inventory = new AliEdgeRouterInformationInventory();
+        APIUpdateAliEdgeRouterEvent evt = new APIUpdateAliEdgeRouterEvent(msg.getId());
         boolean update = false;
 
         if(msg.getName() !=null){
@@ -527,6 +528,34 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         try{
             response = client.getAcsResponse(request);
             logger.info(response.toString());
+
+
+            // 创建API请求并设置参数
+            DescribeVirtualBorderRoutersRequest requestGet = new DescribeVirtualBorderRoutersRequest();
+
+            //组装filter数据
+            List<DescribeVirtualBorderRoutersRequest.Filter> list = new ArrayList<DescribeVirtualBorderRoutersRequest.Filter>();
+            DescribeVirtualBorderRoutersRequest.Filter filter = new DescribeVirtualBorderRoutersRequest.Filter();
+            filter.setKey(AliEdgeRouterConstant.FILTER_KEY);
+            List list1 = new ArrayList();
+            list1.add(vo.getVbrUuid());
+            filter.setValues(list1);
+            list.add(filter);
+
+            requestGet.setFilters(list);
+            DescribeVirtualBorderRoutersResponse responseGet = client.getAcsResponse(requestGet);
+            if(responseGet.getVirtualBorderRouterSet().size() != 0){
+                DescribeVirtualBorderRoutersResponse.VirtualBorderRouterType virtualBorderRouterType = responseGet.getVirtualBorderRouterSet().get(0);
+
+                inventory.setAccessPoint(virtualBorderRouterType.getAccessPointId());
+                inventory.setStatus(virtualBorderRouterType.getStatus());
+                inventory.setPhysicalLineOwerUuid(virtualBorderRouterType.getPhysicalConnectionOwnerUid());
+                inventory.setLocalGatewayIp(virtualBorderRouterType.getLocalGatewayIp());
+                inventory.setPeerGatewayIp(virtualBorderRouterType.getPeerGatewayIp());
+                inventory.setPeeringSubnetMask(virtualBorderRouterType.getPeeringSubnetMask());
+            }
+
+
             if (update){
                 vo.setCreateFlag(true);
                 vo = dbf.updateAndRefresh(vo);
@@ -551,7 +580,8 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         }
 
         if(flag){
-            evt.setInventory(AliEdgeRouterInventory.valueOf(vo));
+            evt.setRouterInventory(AliEdgeRouterInventory.valueOf(vo));
+            evt.setInventory(inventory);
         }else {
             evt.setAliIdentityFailure(true);
         }

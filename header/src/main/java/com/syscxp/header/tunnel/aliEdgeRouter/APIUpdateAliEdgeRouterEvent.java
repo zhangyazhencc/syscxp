@@ -5,29 +5,39 @@ import com.syscxp.header.rest.RestResponse;
 
 @RestResponse(allTo = "inventory")
 public class APIUpdateAliEdgeRouterEvent extends APIEvent{
-    private AliEdgeRouterInventory inventory;
+    private AliEdgeRouterInformationInventory inventory;
+    private AliEdgeRouterInventory routerInventory;
 
-    private String AliIdentityFlag;
+
+    private boolean aliIdentityFailure;
 
     public APIUpdateAliEdgeRouterEvent() {}
 
-    public String getAliIdentityFlag() {
-        return AliIdentityFlag;
+    public boolean isAliIdentityFailure() {
+        return aliIdentityFailure;
     }
 
-    public void setAliIdentityFlag(String aliIdentityFlag) {
-        AliIdentityFlag = aliIdentityFlag;
+    public void setAliIdentityFailure(boolean aliIdentityFailure) {
+        this.aliIdentityFailure = aliIdentityFailure;
     }
 
     public APIUpdateAliEdgeRouterEvent(String apiId) {
         super(apiId);
     }
 
-    public AliEdgeRouterInventory getInventory() {
+    public AliEdgeRouterInformationInventory getInventory() {
         return inventory;
     }
 
-    public void setInventory(AliEdgeRouterInventory inventory) {
+    public void setInventory(AliEdgeRouterInformationInventory inventory) {
         this.inventory = inventory;
+    }
+
+    public AliEdgeRouterInventory getRouterInventory() {
+        return routerInventory;
+    }
+
+    public void setRouterInventory(AliEdgeRouterInventory routerInventory) {
+        this.routerInventory = routerInventory;
     }
 }
