@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.monitor;
 
+import javax.naming.InvalidNameException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -11,17 +12,19 @@ import java.util.Map;
  * @Description: OpenTSDB返回集合.
  */
 public class OpenTSDBResultInventory {
+    private String nodeUuid;
     private String metric;
     private OpenTSDBCommands.tags tags;
-    private List agggregateTags;
-    private List<Map<Long,Object>> dps;
+    private List aggregateTags;
+    private Map dps;
 
     public static OpenTSDBResultInventory valueOf(OpenTSDBCommands.QueryResult vo){
         OpenTSDBResultInventory inventory = new OpenTSDBResultInventory();
         inventory.setMetric(vo.getMetric());
         inventory.setTags(vo.getTags());
-        inventory.setAgggregateTags(vo.getAgggregateTags());
+        inventory.setAggregateTags(vo.getAggregateTags());
         inventory.setDps(vo.getDps());
+        inventory.setNodeUuid(vo.getNodeUuid());
 
         return  inventory;
     }
@@ -50,19 +53,28 @@ public class OpenTSDBResultInventory {
         this.tags = tags;
     }
 
-    public List getAgggregateTags() {
-        return agggregateTags;
+    public List getAggregateTags() {
+        return aggregateTags;
     }
 
-    public void setAgggregateTags(List agggregateTags) {
-        this.agggregateTags = agggregateTags;
+    public void setAggregateTags(List aggregateTags) {
+        this.aggregateTags = aggregateTags;
     }
 
-    public List<Map<Long, Object>> getDps() {
+
+    public Map getDps() {
         return dps;
     }
 
-    public void setDps(List<Map<Long, Object>> dps) {
+    public void setDps(Map dps) {
         this.dps = dps;
+    }
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 }

@@ -11,13 +11,13 @@ import java.util.List;
  */
 
 public class APIQuerySpeedTestTunnelNodeReply extends APIQueryReply {
-    private List<SpeedRecordsVO> inventories;
+    private List<SpeedTestTunnelNodeInventory> inventories;
 
-    public List<SpeedRecordsVO> getInventories() {
+    public List<SpeedTestTunnelNodeInventory> getInventories() {
         return inventories;
     }
 
-    public void setInventories(List<SpeedRecordsVO> inventories) {
+    public void setInventories(List<SpeedTestTunnelNodeInventory> inventories) {
         this.inventories = inventories;
     }
 }

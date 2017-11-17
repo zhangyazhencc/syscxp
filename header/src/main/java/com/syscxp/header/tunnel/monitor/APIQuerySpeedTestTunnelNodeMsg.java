@@ -8,6 +8,6 @@ import com.syscxp.header.query.AutoQuery;
  * @Cretion Date: 2017-09-18.
  * @Description: 速度测试查询.
  */
-@AutoQuery(replyClass = APIQuerySpeedTestTunnelReply.class, inventoryClass = SpeedTestTunnelNodeInventory.class)
+@AutoQuery(replyClass = APIQuerySpeedTestTunnelNodeReply.class, inventoryClass = SpeedTestTunnelNodeInventory.class)
 public class APIQuerySpeedTestTunnelNodeMsg extends APIQueryMessage {
 }
