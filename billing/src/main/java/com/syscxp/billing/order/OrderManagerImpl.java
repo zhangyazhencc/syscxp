@@ -987,7 +987,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             throw new IllegalArgumentException("could not find the product purchased history ");
         }
 
-        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(renewVO.getLastOpDate().toLocalDateTime().toLocalDate().lengthOfMonth()), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal needPayMoney = discountPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal needPayOriginMoney = originalPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal subMoney = needPayMoney.subtract(remainMoney);
