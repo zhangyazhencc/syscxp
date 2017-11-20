@@ -3,7 +3,6 @@ package com.syscxp.sms;
 import com.syscxp.sms.header.APIValidateMailCodeMsg;
 import com.syscxp.sms.header.APIValidateMailCodeReply;
 import com.syscxp.sms.header.*;
-import com.syscxp.utils.data.StringTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -66,18 +65,18 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
             handle((APIMailCodeSendMsg) msg);
         }else if (msg instanceof APIValidateMailCodeMsg) {
             handle((APIValidateMailCodeMsg) msg);
-        }else if(msg instanceof APIMaiAlarmSendMsg){
-            handle((APIMaiAlarmSendMsg) msg);
+        }else if(msg instanceof APISendMailMsg){
+            handle((APISendMailMsg) msg);
         }
         else{
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APIMaiAlarmSendMsg msg) {
+    private void handle(APISendMailMsg msg) {
         String[] emails = msg.getEmails().toArray(new String[msg.getEmails().size()]);
 
-        boolean result = mailMassSend(emails,msg.getSubject(),msg.getComtent());
+        boolean result = mailSend(emails,msg.getSubject(),msg.getContent());
 
         APIMaiAlarmSendEvent evt = new APIMaiAlarmSendEvent(msg.getId());
 
@@ -120,9 +119,6 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
     }
 
-
-
-
     private void  handle(APIMailCodeSendMsg msg) throws OperationFailureException {
 
         String code = String.valueOf(new Random().nextInt(1000000));
@@ -147,12 +143,16 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
         bus.reply(msg, reply);
     }
 
-    public boolean mailSend(String mail, String subject, String comtent){
+    public boolean mailSend(String mail, String subject, String content){
+        return mailSend(new String[]{mail}, subject, content);
+    }
+
+    public boolean mailSend(String[] mails, String subject, String content){
         SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setTo(mail);
+        mailMessage.setTo(mails);
         mailMessage.setFrom(MailGlobalProperty.FROM);
         mailMessage.setSubject(subject);
-        mailMessage.setText(comtent);
+        mailMessage.setText(content);
         JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
         senderImpl.setHost(MailGlobalProperty.HOST);
         senderImpl.setPort(25);
@@ -173,39 +173,6 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
         return true;
     }
-
-    /**
-     * 群发邮件
-     *
-
-     */
-    public boolean mailMassSend(String[] mail, String subject, String comtent){
-        SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setTo(mail);
-        mailMessage.setFrom(MailGlobalProperty.FROM);
-        mailMessage.setSubject(subject);
-        mailMessage.setText(comtent);
-        JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
-        senderImpl.setHost(MailGlobalProperty.HOST);
-        senderImpl.setPort(25);
-        senderImpl.setUsername(MailGlobalProperty.USERNAME);
-        senderImpl.setPassword(MailGlobalProperty.PASSWORD);
-        Properties prop = new Properties();
-        prop.put(" mail.smtp.auth ", "true");
-        prop.put(" mail.smtp.timeout ", "25000");
-        senderImpl.setJavaMailProperties(prop);
-
-        try{
-            senderImpl.send(mailMessage);
-        }catch(Exception e){
-            e.printStackTrace();
-            throw new OperationFailureException(operr("message:" + e.getMessage()));
-        }
-        logger.debug(">>>>>>>>>>>>>>>>>>告警发送成功<<<<<<<<<<<<<<<<<<<<<<");
-
-        return true;
-    }
-
 
     public void init() {
         try {
@@ -270,13 +237,13 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
     }
 
-    public void sendAlarmMonitorMsg(List<String> email,String subject, String comtent){
-        APIMaiAlarmSendMsg apiMaiAlarmSendMsg = new APIMaiAlarmSendMsg();
-        apiMaiAlarmSendMsg.setEmails(email);
-        apiMaiAlarmSendMsg.setSubject(subject);
-        apiMaiAlarmSendMsg.setComtent(comtent);
-        apiMaiAlarmSendMsg.setServiceId(bus.makeLocalServiceId(MailConstant.SERVICE_ID));
+    public void sendAlarmMonitorMsg(List<String> email,String subject, String content){
+        APISendMailMsg msg = new APISendMailMsg();
+        msg.setEmails(email);
+        msg.setSubject(subject);
+        msg.setContent(content);
+        msg.setServiceId(bus.makeLocalServiceId(MailConstant.SERVICE_ID));
 
-        bus.send(apiMaiAlarmSendMsg);
+        bus.send(msg);
     }
 }
