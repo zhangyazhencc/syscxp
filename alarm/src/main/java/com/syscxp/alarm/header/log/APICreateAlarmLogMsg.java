@@ -6,7 +6,7 @@ import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-@Action(category = AlarmConstant.ACTION_CATEGORY_ALARM, names = "create")
+@Action(services = {AlarmConstant.ACTION_SERVICE}, category = AlarmConstant.ACTION_CATEGORY_ALARM, names = "create")
 public class APICreateAlarmLogMsg extends APIMessage{
 
     @APIParam(emptyString = false)

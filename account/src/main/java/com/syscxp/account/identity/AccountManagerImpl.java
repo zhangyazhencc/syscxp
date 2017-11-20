@@ -18,8 +18,6 @@ import com.syscxp.account.header.identity.APICheckApiPermissionMsg;
 import com.syscxp.account.header.identity.APICheckApiPermissionReply;
 import com.syscxp.account.header.identity.APIValidateSessionMsg;
 import com.syscxp.account.header.identity.APIValidateSessionReply;
-import com.syscxp.account.header.account.*;
-import com.syscxp.account.header.user.*;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
@@ -33,14 +31,11 @@ import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.managementnode.PrepareDbInitialValueExtensionPoint;
 import com.syscxp.header.query.QueryOp;
-import com.syscxp.utils.*;
 import com.syscxp.utils.logging.CLogger;
 
 import javax.persistence.Query;
 import java.sql.Timestamp;
 import java.util.*;
-
-import com.syscxp.account.header.identity.*;
 
 import static com.syscxp.core.Platform.argerr;
 import static com.syscxp.core.Platform.operr;
@@ -174,7 +169,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         q.add(ProxyAccountRefVO_.accountUuid, Op.EQ, accountVO.getUuid());
         q.select(ProxyAccountRefVO_.customerAccountUuid);
         List<String> customerAccountUuids = q.listValue();
-        reply.setAccountUuidBoundToProxy(customerAccountUuids);
+        reply.setAccountUuids(customerAccountUuids);
         bus.reply(msg, reply);
     }
 

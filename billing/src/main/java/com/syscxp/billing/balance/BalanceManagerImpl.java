@@ -7,12 +7,10 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.syscxp.billing.BillingGlobalProperty;
 import com.syscxp.billing.header.balance.*;
-import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.header.account.*;
 import com.syscxp.header.billing.ProductCategoryVO;
 import com.syscxp.header.billing.ProductCategoryVO_;
 import com.syscxp.header.billing.*;
-import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -137,7 +135,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
         if (rsp.getState().equals(RestAPIState.Done.toString())) {
             APIGetAccountUuidListByProxyReply replay = (APIGetAccountUuidListByProxyReply) RESTApiDecoder.loads(rsp.getResult());
-            List<String> customerUuids = replay.getAccountUuidBoundToProxy();
+            List<String> customerUuids = replay.getAccountUuids();
             if (customerUuids != null && customerUuids.size() > 0) {
                 for (String id : customerUuids) {
                     SimpleQuery<AccountDiscountVO> query = dbf.createQuery(AccountDiscountVO.class);
@@ -299,7 +297,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
             if (rsp.getState().equals(RestAPIState.Done.toString())) {
                 APIGetAccountUuidListByProxyReply replay = (APIGetAccountUuidListByProxyReply) RESTApiDecoder.loads(rsp.getResult());
-                List<String> customerUuids = replay.getAccountUuidBoundToProxy();
+                List<String> customerUuids = replay.getAccountUuids();
                 if (customerUuids != null && customerUuids.size() > 0) {
                     for (String accountUuid : customerUuids) {
                         SimpleQuery<AccountDiscountVO> query = dbf.createQuery(AccountDiscountVO.class);

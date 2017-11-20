@@ -6,13 +6,13 @@ import java.util.List;
 
 public class APIGetAccountUuidListByProxyReply extends APIReply {
 
-    private List<String> accountUuidBoundToProxy;
+    private List<String> accountUuids;
 
-    public List<String> getAccountUuidBoundToProxy() {
-        return accountUuidBoundToProxy;
+    public List<String> getAccountUuids() {
+        return accountUuids;
     }
 
-    public void setAccountUuidBoundToProxy(List<String> accountUuidBoundToProxy) {
-        this.accountUuidBoundToProxy = accountUuidBoundToProxy;
+    public void setAccountUuids(List<String> accountUuids) {
+        this.accountUuids = accountUuids;
     }
 }
