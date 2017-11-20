@@ -644,6 +644,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
     }
 
+    private BigDecimal getRefundMoney(){
+        return null;
+    }
+
     @Transactional
     private void saveNotifyOrderVO(APICreateOrderMsg msg, String orderUuid) {
         saveNotify(msg.getNotifyUrl(), msg.getAccountUuid(), msg.getProductUuid(), orderUuid);
@@ -801,7 +805,6 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
             }
 
-
             dbf.getEntityManager().merge(abvo);
             dbf.getEntityManager().persist(orderVo);
             dbf.getEntityManager().flush();
@@ -874,6 +877,20 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         if (remainMoney.compareTo(valuePayCash) > 0) {
             remainMoney = valuePayCash;
         }
+        BigDecimal refundPresent = BigDecimal.ZERO;
+        if (msg.isCreateFailure()) {
+            SimpleQuery<OrderVO> queryRefund = dbf.createQuery(OrderVO.class);
+            queryRefund.add(OrderVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+            queryRefund.add(OrderVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
+            queryRefund.add(OrderVO_.type, SimpleQuery.Op.EQ, OrderType.BUY);
+            OrderVO refundOrder = queryRefund.find();
+            if (refundOrder == null) {
+                throw new IllegalArgumentException("can not find this product buy history ,please check up");
+            }
+            remainMoney = refundOrder.getPayCash();
+            refundPresent = refundOrder.getPayPresent();
+        }
+        reply.setReFoundMoney(refundPresent);
         reply.setInventory(remainMoney);
         bus.reply(msg,reply);
     }
