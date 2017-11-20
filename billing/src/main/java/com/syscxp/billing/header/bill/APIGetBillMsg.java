@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
 @SuppressUserCredentialCheck
-@Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
+@Action(category = BillingConstant.ACTION_CATEGORY_BILLING, names = {"read"})
 public class APIGetBillMsg extends APISyncCallMessage{
 
     @APIParam(emptyString = false, resourceType = BillVO.class)

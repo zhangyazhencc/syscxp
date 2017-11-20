@@ -9,7 +9,7 @@ import com.syscxp.header.message.APISyncCallMessage;
 import org.springframework.util.StringUtils;
 
 @SuppressUserCredentialCheck
-@Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
+@Action(category = BillingConstant.ACTION_CATEGORY_BILLING, names = {"read"})
 public class APIGetAccountBalanceMsg extends APISyncCallMessage {
 
     @APIParam(required = false,emptyString = false)
