@@ -10,8 +10,6 @@ import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.identity.InnerMessageHelper;
-import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.alarm.AlarmConstant;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
@@ -21,12 +19,9 @@ import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.sms.MailService;
-import com.syscxp.sms.SmsGlobalProperty;
 import com.syscxp.sms.SmsService;
-import com.syscxp.sms.header.APIMaiAlarmSendMsg;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.sql.Timestamp;
 import java.util.*;
 
-import static com.syscxp.alarm.AlarmGlobalProperty.ALARM_SERVER_RUL;
 import static com.syscxp.core.Platform.operr;
 
 public class AlarmLogManagerImpl extends AbstractService implements ApiMessageInterceptor {
