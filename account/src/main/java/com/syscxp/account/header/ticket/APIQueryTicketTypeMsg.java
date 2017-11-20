@@ -9,7 +9,7 @@ import com.syscxp.header.query.AutoQuery;
  * Created by wangwg on 2017/09/26.
  */
 @AutoQuery(replyClass = APIQueryTicketTypeReply.class, inventoryClass = TicketTypeInventory.class)
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
+@Action(category = AccountConstant.ACTION_CATEGORY_TICKET, names = "read")
 public class APIQueryTicketTypeMsg extends APIQueryMessage {
 
 }

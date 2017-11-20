@@ -99,23 +99,23 @@ public class MonitorAgentCommands {
      * 客户端命令
      */
     public static class SpeedRecordClient extends SpeedRecord{
-        private String protocol;
-        private Integer bandwidth;
+        private ProtocolType protocol;
+        private Long bandwidth;
         private String dst_ip;
 
-        public String getProtocol() {
+        public ProtocolType getProtocol() {
             return protocol;
         }
 
-        public void setProtocol(String protocol) {
+        public void setProtocol(ProtocolType protocol) {
             this.protocol = protocol;
         }
 
-        public Integer getBandwidth() {
+        public Long getBandwidth() {
             return bandwidth;
         }
 
-        public void setBandwidth(Integer bandwidth) {
+        public void setBandwidth(Long bandwidth) {
             this.bandwidth = bandwidth;
         }
 
@@ -278,8 +278,8 @@ public class MonitorAgentCommands {
     }
 
     public enum SpeedCommandType{
-        SERVER,
-        CLIENT
+        server,
+        client
     }
 
     /**

@@ -5,7 +5,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.AutoQuery;
 
-@Action(category = AlarmConstant.ACTION_CATEGORY_CONTACT)
+@Action(category = AlarmConstant.ACTION_CATEGORY_ALARM, names = {"read"})
 @AutoQuery(replyClass = APIQueryContactReply.class, inventoryClass = ContactInventory.class)
 public class APIQueryContactMsg extends APIQueryMessage {
 }

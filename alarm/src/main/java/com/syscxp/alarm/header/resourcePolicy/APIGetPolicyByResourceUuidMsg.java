@@ -7,7 +7,7 @@ import com.syscxp.header.message.APISyncCallMessage;
 
 import java.util.List;
 
-@Action(category = AlarmConstant.ACTION_CATEGORY_RESOURCE_POLICY)
+@Action(category = AlarmConstant.ACTION_CATEGORY_ALARM, names = {"read"})
 public class APIGetPolicyByResourceUuidMsg  extends APISyncCallMessage{
     @APIParam
     private List<String> resourceUuids;

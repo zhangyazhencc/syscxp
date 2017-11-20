@@ -18,10 +18,10 @@ public class APIUpdateSpeedRecordsMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 11)
     private Integer avgSpeed;
 
-    @APIParam(emptyString = false,maxLength = 11)
+    @APIParam(required = false,maxLength = 11)
     private Integer maxSpeed;
 
-    @APIParam(emptyString = false,maxLength = 11)
+    @APIParam(required = false,maxLength = 11)
     private Integer minSpeed;
 
     @APIParam(emptyString = false,validValues = {"COMPLETED","FAILURE"})
