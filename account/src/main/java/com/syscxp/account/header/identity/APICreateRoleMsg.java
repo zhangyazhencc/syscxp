@@ -10,7 +10,7 @@ import com.syscxp.header.notification.ApiNotification;
 
 import java.util.List;
 
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"create"}, accountOnly = true)
+@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"create"}, accountOnly = true)
 public class APICreateRoleMsg extends  APIMessage implements AccountMessage {
     @APIParam(maxLength = 128)
     private String name;
