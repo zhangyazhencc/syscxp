@@ -153,7 +153,8 @@ public class MonitorHost extends HostBase implements Host {
                                             logger.warn(info);
                                             ReconnectHostMsg rmsg = new ReconnectHostMsg();
                                             rmsg.setHostUuid(self.getUuid());
-                                            bus.makeTargetServiceIdByResourceUuid(rmsg, MonitorConstant.SERVICE_ID, self.getUuid());
+//                                            bus.makeTargetServiceIdByResourceUuid(rmsg, MonitorConstant.SERVICE_ID, self.getUuid());
+                                            bus.makeLocalServiceId(rmsg, MonitorConstant.SERVICE_ID);
                                             bus.send(rmsg);
                                         });
                                     }

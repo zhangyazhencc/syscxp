@@ -314,11 +314,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         upmsg.setAccountUuid(vo.getAccountUuid());
         upmsg.setProductUuid(msg.getUuid());
         upmsg.setExpiredTime(vo.getExpireDate());
-        upmsg.setCreateFailure(true);
 
         APIGetUnscribeProductPriceDiffReply reply = new TunnelRESTCaller().syncJsonPost(upmsg);
 
-        bus.reply(msg, new APIGetUnscribeTunnelPriceDiffReply(reply));
+        bus.reply(msg, new APIGetUnscribeInterfacePriceDiffReply(reply));
     }
 
     private void handle(APIGetTunnelPriceMsg msg) {
