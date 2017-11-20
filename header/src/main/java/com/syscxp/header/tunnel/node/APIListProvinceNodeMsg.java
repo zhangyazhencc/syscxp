@@ -5,7 +5,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.tunnel.NodeConstant;
 
-@Action(category = NodeConstant.ACTION_CATEGORY, names = {"read"})
+@Action(services = {"tunnel"}, category = NodeConstant.ACTION_CATEGORY, names = {"read"})
 public class APIListProvinceNodeMsg extends APISyncCallMessage {
     @APIParam(required = false)
     private String country;

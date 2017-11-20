@@ -9,7 +9,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Created by DCY on 2017-09-17
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
+@Action(services = {"tunnel"}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUpdateTunnelMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;

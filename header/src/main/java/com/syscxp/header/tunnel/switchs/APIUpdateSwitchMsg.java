@@ -8,7 +8,7 @@ import com.syscxp.header.tunnel.SwitchConstant;
 /**
  * Created by DCY on 2017-08-29
  */
-@Action(category = SwitchConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
+@Action(services = {"tunnel"}, category = SwitchConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 
 public class APIUpdateSwitchMsg extends APIMessage {
 

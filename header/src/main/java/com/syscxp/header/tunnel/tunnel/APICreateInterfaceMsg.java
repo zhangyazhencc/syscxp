@@ -11,7 +11,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Created by DCY on 2017-09-08
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"create"})
+@Action(services = {"tunnel"}, category = TunnelConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateInterfaceMsg extends APIMessage {
 
     @APIParam(required = false, maxLength = 32)

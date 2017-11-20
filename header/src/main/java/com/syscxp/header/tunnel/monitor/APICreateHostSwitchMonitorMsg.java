@@ -1,8 +1,11 @@
 package com.syscxp.header.tunnel.monitor;
 
+import com.syscxp.header.host.HostConstant;
 import com.syscxp.header.host.HostVO;
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
 
 /**
@@ -10,6 +13,8 @@ import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
  * @Cretion Date: 2017-09-11.
  * @Description: 创建监控主机与物理交换机关联.
  */
+
+@Action(services = {"tunnel"}, category = MonitorConstant.ACTION_CATEGORY)
 public class APICreateHostSwitchMonitorMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = HostVO.class)

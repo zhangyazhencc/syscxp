@@ -8,7 +8,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.vpn.vpn.VpnConstant;
 
-@Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"delete"}, adminOnly = true)
+@Action(services = {"vpn"}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"delete"}, adminOnly = true)
 public class APIDeleteZoneMsg extends APIDeleteMessage {
     @APIParam(resourceType = ZoneVO.class)
     private String uuid;

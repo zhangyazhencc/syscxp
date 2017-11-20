@@ -6,7 +6,7 @@ import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.query.AutoQuery;
 import com.syscxp.header.tunnel.SwitchConstant;
 
-@Action(category = SwitchConstant.ACTION_CATEGORY, names = {"read"})
+@Action(services = {"tunnel"}, category = SwitchConstant.ACTION_CATEGORY, names = {"read"})
 @AutoQuery(replyClass = APIQuerySwitchPortAvailableReply.class, inventoryClass = SwitchPortAvailableInventory.class)
 public class APIQuerySwitchPortAvailableMsg extends APISyncCallMessage {
     @APIParam(emptyString = false,resourceType = SwitchVO.class)

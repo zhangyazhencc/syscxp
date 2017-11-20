@@ -12,4 +12,6 @@ public interface AliEdgeRouterConstant {
     String ALIACCOUNTUUID = "admin";
     String ACCOUNTUUID = "admin";
     String FILTER_KEY = "VbrId";
+    String ACTION_CATEGORY = "aliEdgeRouter";
+
 }
