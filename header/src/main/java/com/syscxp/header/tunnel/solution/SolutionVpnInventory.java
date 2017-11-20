@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.solution;
+package com.syscxp.header.tunnel.solution;
 
 import com.syscxp.header.search.Inventory;
 
@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = SolutionTunnelVO.class)
-public class SolutionTunnelInventory {
+@Inventory(mappingVOClass = SolutionVpnVO.class)
+public class SolutionVpnInventory {
     private String uuid;
     private String solutionUuid;
     private String name;
@@ -19,12 +19,12 @@ public class SolutionTunnelInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    private String endpointNameA;
-    private String endpointNameZ;
+    private String zoneName;
+    private String endpointName;
     private Long bandwidth;
 
-    public static SolutionTunnelInventory valueOf(SolutionTunnelVO vo) {
-        SolutionTunnelInventory inv = new SolutionTunnelInventory();
+    public static SolutionVpnInventory valueOf(SolutionVpnVO vo) {
+        SolutionVpnInventory inv = new SolutionVpnInventory();
         inv.setUuid(vo.getUuid());
         inv.setSolutionUuid(vo.getSolutionUuid());
         inv.setName(vo.getName());
@@ -35,17 +35,17 @@ public class SolutionTunnelInventory {
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
 
-        inv.setEndpointNameA(vo.getEndpointNameA());
-        inv.setEndpointNameZ(vo.getEndpointNameZ());
+        inv.setEndpointName(vo.getEndpointName());
+        inv.setZoneName(vo.getZoneName());
         inv.setBandwidth(vo.getBandwidth());
 
         return inv;
     }
 
-    public static List<SolutionTunnelInventory> valueOf(Collection<SolutionTunnelVO> vos) {
-        List<SolutionTunnelInventory> list = new ArrayList<>(vos.size());
-        for (SolutionTunnelVO vo : vos) {
-            list.add(SolutionTunnelInventory.valueOf(vo));
+    public static List<SolutionVpnInventory> valueOf(Collection<SolutionVpnVO> vos) {
+        List<SolutionVpnInventory> list = new ArrayList<>(vos.size());
+        for (SolutionVpnVO vo : vos) {
+            list.add(SolutionVpnInventory.valueOf(vo));
         }
         return list;
     }
@@ -122,27 +122,27 @@ public class SolutionTunnelInventory {
         this.createDate = createDate;
     }
 
-    public String getEndpointNameA() {
-        return endpointNameA;
-    }
-
-    public void setEndpointNameA(String endpointNameA) {
-        this.endpointNameA = endpointNameA;
-    }
-
-    public String getEndpointNameZ() {
-        return endpointNameZ;
-    }
-
-    public void setEndpointNameZ(String endpointNameZ) {
-        this.endpointNameZ = endpointNameZ;
-    }
-
     public Long getBandwidth() {
         return bandwidth;
     }
 
     public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
+    }
+
+    public String getZoneName() {
+        return zoneName;
+    }
+
+    public void setZoneName(String zoneName) {
+        this.zoneName = zoneName;
+    }
+
+    public String getEndpointName() {
+        return endpointName;
+    }
+
+    public void setEndpointName(String endpointName) {
+        this.endpointName = endpointName;
     }
 }

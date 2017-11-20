@@ -427,7 +427,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         LocalDate today = LocalDate.now();
         LocalDateTime expiredDay = endTime.toLocalDateTime();
         ;
-        long notUseDays = ChronoUnit.DAYS.between(now, expiredDay)-1;
+        long notUseDays = ChronoUnit.DAYS.between(now, expiredDay);
         SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
         query.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         query.add(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
