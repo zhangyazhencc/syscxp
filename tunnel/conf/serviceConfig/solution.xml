@@ -4,7 +4,7 @@
     <interceptor>SolutionManager</interceptor>
 
     <message>
-        <name>com.syscxp.tunnel.solution.header.APICreateSolutionMsg</name>
+        <name>com.syscxp.header.tunnel.solution.APICreateSolutionMsg</name>
     </message>
 
     <!--<message>-->

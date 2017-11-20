@@ -1,9 +1,8 @@
-package com.syscxp.tunnel.solution.header;
+package com.syscxp.header.tunnel.solution;
 
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.tunnel.solution.SolutionConstant;
 
 @Action(category = SolutionConstant.ACTION_CATEGORY, names = "create")
 public class APICreateSolutionMsg extends  APIMessage {

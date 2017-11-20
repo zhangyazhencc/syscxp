@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.solution.header;
+package com.syscxp.header.tunnel.solution;
 
 import com.syscxp.header.search.Inventory;
 
@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = SolutionInterfaceVO.class)
-public class SolutionInterfaceInventory {
+@Inventory(mappingVOClass = SolutionVpnVO.class)
+public class SolutionVpnInventory {
     private String uuid;
     private String solutionUuid;
     private String name;
@@ -19,11 +19,12 @@ public class SolutionInterfaceInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
+    private String zoneName;
     private String endpointName;
-    private String portOfferingName;
+    private Long bandwidth;
 
-    public static SolutionInterfaceInventory valueOf(SolutionInterfaceVO vo) {
-        SolutionInterfaceInventory inv = new SolutionInterfaceInventory();
+    public static SolutionVpnInventory valueOf(SolutionVpnVO vo) {
+        SolutionVpnInventory inv = new SolutionVpnInventory();
         inv.setUuid(vo.getUuid());
         inv.setSolutionUuid(vo.getSolutionUuid());
         inv.setName(vo.getName());
@@ -35,14 +36,16 @@ public class SolutionInterfaceInventory {
         inv.setLastOpDate(vo.getLastOpDate());
 
         inv.setEndpointName(vo.getEndpointName());
-        inv.setPortOfferingName(vo.getPortOfferingName());
+        inv.setZoneName(vo.getZoneName());
+        inv.setBandwidth(vo.getBandwidth());
+
         return inv;
     }
 
-    public static List<SolutionInterfaceInventory> valueOf(Collection<SolutionInterfaceVO> vos) {
-        List<SolutionInterfaceInventory> list = new ArrayList<>(vos.size());
-        for (SolutionInterfaceVO vo : vos) {
-            list.add(SolutionInterfaceInventory.valueOf(vo));
+    public static List<SolutionVpnInventory> valueOf(Collection<SolutionVpnVO> vos) {
+        List<SolutionVpnInventory> list = new ArrayList<>(vos.size());
+        for (SolutionVpnVO vo : vos) {
+            list.add(SolutionVpnInventory.valueOf(vo));
         }
         return list;
     }
@@ -119,19 +122,27 @@ public class SolutionInterfaceInventory {
         this.createDate = createDate;
     }
 
+    public Long getBandwidth() {
+        return bandwidth;
+    }
+
+    public void setBandwidth(Long bandwidth) {
+        this.bandwidth = bandwidth;
+    }
+
+    public String getZoneName() {
+        return zoneName;
+    }
+
+    public void setZoneName(String zoneName) {
+        this.zoneName = zoneName;
+    }
+
     public String getEndpointName() {
         return endpointName;
     }
 
     public void setEndpointName(String endpointName) {
         this.endpointName = endpointName;
-    }
-
-    public String getPortOfferingName() {
-        return portOfferingName;
-    }
-
-    public void setPortOfferingName(String portOfferingName) {
-        this.portOfferingName = portOfferingName;
     }
 }
