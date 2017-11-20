@@ -106,6 +106,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIGetUnscribeInterfacePriceDiffMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.tunnel.APIGetVlanAutoMsg</name>
     </message>
 
