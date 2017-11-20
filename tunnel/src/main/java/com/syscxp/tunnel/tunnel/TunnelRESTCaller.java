@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.tunnel;
 
+import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.message.APIReply;
 import org.springframework.beans.factory.annotation.Autowire;
@@ -25,6 +26,10 @@ public class TunnelRESTCaller {
     private RESTFacade restf;
 
     private String baseUrl;
+
+    public TunnelRESTCaller() {
+        this.baseUrl = CoreGlobalProperty.BILLING_SERVER_URL;
+    }
 
     public TunnelRESTCaller(String baseUrl) {
         this.baseUrl = baseUrl;
