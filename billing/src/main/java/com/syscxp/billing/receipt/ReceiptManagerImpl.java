@@ -97,6 +97,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         evt.setInventory(inventory);
         bus.publish(evt);
     }
+    @Transactional
     private void handle(APICreateReceiptMsg msg) {
         String accountUuid = msg.getSession().getAccountUuid();
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
@@ -130,7 +131,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         newAddress.setName(receiptPostAddressVO.getName());
         newAddress.setTelephone(receiptPostAddressVO.getTelephone());
         newAddress.setShow(false);
-        dbf.persistAndRefresh(newAddress);
+        dbf.getEntityManager().persist(newAddress);
         receiptVO.setReceiptAddressUuid(newAddress.getUuid());
         receiptVO.setReceiptPostAddressVO(newAddress);
         ReceiptInfoVO receiptInfoVO = dbf.findByUuid( msg.getReceiptInfoUuid(), ReceiptInfoVO.class);
@@ -150,12 +151,12 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         newInfo.setCreateDate(receiptInfoVO.getCreateDate());
         newInfo.setLastOpDate(receiptInfoVO.getLastOpDate());
         newInfo.setShow(false);
-        dbf.persistAndRefresh(newInfo);
+        dbf.getEntityManager().persist(newInfo);
         receiptVO.setReceiptInfoVO(newInfo);
         receiptVO.setReceiptInfoUuid(newInfo.getUuid());
 
         ReceiptInventory inventory = ReceiptInventory.valueOf(receiptVO);
-        dbf.persistAndRefresh(receiptVO);
+        dbf.getEntityManager().persist(receiptVO);
         APICreateReceiptEvent evt = new APICreateReceiptEvent(msg.getId());
         evt.setInventory(inventory);
         bus.publish(evt);
@@ -171,6 +172,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         bus.publish(evt);
     }
 
+    @Transactional
     private void handle(APIUpdateReceiptInfoMsg msg) {
         ReceiptInfoVO vo = dbf.findByUuid(msg.getUuid(), ReceiptInfoVO.class);
         if (msg.getAddress() != null) {
@@ -208,12 +210,12 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
                 }
                 if (riVO.isDefault()) {
                     riVO.setDefault(false);
-                    dbf.updateAndRefresh(riVO);
+                    dbf.getEntityManager().merge(riVO);
                 }
             }
 
         }
-        dbf.updateAndRefresh(vo);
+        dbf.getEntityManager().merge(vo);
         ReceiptInfoInventory ri = ReceiptInfoInventory.valueOf(vo);
         APIUpdateReceiptInfoEvent evt = new APIUpdateReceiptInfoEvent(msg.getId());
         evt.setInventory(ri);
@@ -270,6 +272,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         }
     }
 
+    @Transactional
     private void handle(APIUpdateReceiptPostAddressMsg msg) {
         ReceiptPostAddressVO vo = dbf.findByUuid(msg.getUuid(), ReceiptPostAddressVO.class);
         if (msg.getName() != null) {
@@ -293,12 +296,12 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
                 ReceiptPostAddressVO v = dbf.findByUuid(receiptPostAddressVO.getUuid(), ReceiptPostAddressVO.class);
                 if (v.isDefault()) {
                     v.setDefault(false);
-                    dbf.updateAndRefresh(v);
+                    dbf.getEntityManager().merge(v);
                 }
             }
 
         }
-        dbf.updateAndRefresh(vo);
+        dbf.getEntityManager().merge(vo);
         ReceiptPostAddressInventory ri = ReceiptPostAddressInventory.valueOf(vo);
         APIUpdateReceiptPostAddressEvent evt = new APIUpdateReceiptPostAddressEvent(msg.getId());
         evt.setInventory(ri);
