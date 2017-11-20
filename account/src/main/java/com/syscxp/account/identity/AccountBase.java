@@ -599,59 +599,43 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIUpdateUserMsg msg) {
         UserVO user = dbf.findByUuid(msg.getUuid(), UserVO.class);
 
-        boolean update = false;
-
         if (msg.getName() != null) {
             user.setName(msg.getName());
-            update = true;
         }
         if (msg.getDescription() != null) {
             user.setDescription(msg.getDescription());
-            update = true;
         }
 
         if (msg.getDepartment() != null) {
             user.setDepartment(msg.getDepartment());
-            update = true;
         }
         if (msg.getEmail() != null && !msg.getEmail().equalsIgnoreCase(user.getEmail())) {
             user.setEmail(msg.getEmail());
             user.setEmailStatus(ValidateStatus.Unvalidated);
-            update = true;
         }
         if (msg.getPhone() != null && !msg.getPhone().equalsIgnoreCase(user.getPhone())) {
             user.setPhone(msg.getPhone());
             user.setPhoneStatus(ValidateStatus.Unvalidated);
-            update = true;
         }
         if (msg.getStatus() != null) {
             user.setStatus(msg.getStatus());
-            update = true;
         }
         if (msg.getTrueName() != null) {
             user.setTrueName(msg.getTrueName());
-            update = true;
         }
 
         if (msg.getSession().getType() == AccountType.SystemAdmin && msg.getUserType() != null) {
             user.setUserType(msg.getUserType());
-            update = true;
         }
 
-        if (msg.getRoleUuid() != null) {
-            Set<RoleVO> roleSet = new HashSet<>();
-            RoleVO role = dbf.findByUuid(msg.getRoleUuid(), RoleVO.class);
-            if (role != null) {
-                roleSet.add(role);
-            }
-            user.setRoleSet(roleSet);
-
-            update = true;
+        RoleVO role = dbf.findByUuid(msg.getRoleUuid(), RoleVO.class);
+        Set<RoleVO> roleSet = new HashSet<>();
+        if (role != null) {
+            roleSet.add(role);
         }
+        user.setRoleSet(roleSet);
 
-        if (update) {
-            user = dbf.getEntityManager().merge(user);
-        }
+        user = dbf.getEntityManager().merge(user);
 
         APIUpdateUserEvent evt = new APIUpdateUserEvent(msg.getId());
         evt.setInventory(UserInventory.valueOf(user));
@@ -818,6 +802,7 @@ public class AccountBase extends AbstractAccount {
     private void handle(APIDeleteRoleMsg msg) {
         UpdateQuery.New(RolePolicyRefVO.class).condAnd(RolePolicyRefVO_.roleUuid,
                 SimpleQuery.Op.EQ,msg.getUuid()).delete();
+
 
         dbf.removeByPrimaryKey(msg.getUuid(), RoleVO.class);
 
