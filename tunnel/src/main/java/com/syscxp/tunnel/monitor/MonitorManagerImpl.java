@@ -18,6 +18,8 @@ import com.syscxp.header.tunnel.monitor.*;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.tunnel.sdnController.ControllerCommands;
 import com.syscxp.tunnel.sdnController.ControllerRestConstant;
+import com.syscxp.tunnel.tunnel.TunnelManager;
+import com.syscxp.tunnel.tunnel.TunnelManagerImpl;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -898,44 +900,73 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     private void handle(APIGetEndpointTunnelsMsg msg){
-        // TODO:
-
         APIGetEndpointTunnelsReply reply = new APIGetEndpointTunnelsReply();
         try{
-            // 按vlan、物理交换机IP 获取tunnel
-            TunnelVO vo =getTunnelByPhysicalSwitchAndVlan(msg.getPhysicalSwitchMip(),msg.getVlan());
+            // 按物理交换机IP获取交换机端口
+            Set<String> ports = getPortsPhysicalSwitch(msg.getPhysicalSwitchMip());
 
-            //按accountUuid、物理交换机IP 获取该客户在这个点的所有tunnel
+            // 按交换机端口、vlan获取tunnel
+            List<MonitorAgentCommands.EndpointTunnel> endpointTunnels = getTunnelBySwitchAndVlan(ports,msg.getVlan());
+
+
+
         }catch (Exception e){
             reply.setError(Platform.argerr("Fail to get tunnel. Error: ",e.getMessage()));
         }
     }
 
-    private TunnelVO getTunnelByPhysicalSwitchAndVlan(String physicalSwitchMip,Integer vlan){
+    private List<MonitorAgentCommands.EndpointTunnel> getTunnelBySwitchAndVlan(Set<String> ports, Integer vlan) {
+        List<MonitorAgentCommands.EndpointTunnel> endpointTunnels = new ArrayList<>();
+
+        MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
+        TunnelVO tunnelVO = new TunnelVO();
+        for(String portUuid:ports){
+            List<TunnelSwitchPortVO> tunnelSwitchPorts = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.switchPortUuid,ports)
+                    .eq(TunnelSwitchPortVO_.vlan,vlan).list();
+
+            if(tunnelSwitchPorts.isEmpty())
+                continue;
+
+            tunnelVO = Q.New(TunnelVO.class).eq(TunnelVO_.uuid,tunnelSwitchPorts.get(0).getTunnelUuid()).find();
+            for (TunnelSwitchPortVO tunnelPort:tunnelVO.getTunnelSwitchPortVOS()){
+                if(tunnelPort.getSortTag().equals(InterfaceType.A.toString()))
+                    endpointTunnel.setNodeA(tunnelPort.getEndpointVO().getNodeVO().getName());
+                else if(tunnelPort.getSortTag().equals(InterfaceType.Z.toString()))
+                    endpointTunnel.setNodeZ(tunnelPort.getEndpointVO().getNodeVO().getName());
+            }
+
+            endpointTunnel.setTunnelUuid(tunnelVO.getUuid());
+            endpointTunnel.setTunnelName(tunnelVO.getName());
+            endpointTunnel.setBandwidth(tunnelVO.getBandwidth());
+
+            endpointTunnels.add(endpointTunnel);
+        }
+
+        return endpointTunnels;
+    }
+
+    private Set<String> getPortsPhysicalSwitch(String physicalSwitchMip){
+        // 查询物理交换机
         List<PhysicalSwitchVO> physicalSwitchVOS = Q.New(PhysicalSwitchVO.class).eq(PhysicalSwitchVO_.mIP,physicalSwitchMip).list();
         if(physicalSwitchVOS.isEmpty())
             throw new IllegalArgumentException(String.format("No physicalSwitch exist under endpoint %s!",physicalSwitchMip));
 
+        // 查询逻辑交换机
         List<SwitchVO> switchVOS = Q.New(SwitchVO.class).eq(SwitchVO_.physicalSwitchUuid,physicalSwitchVOS.get(0).getUuid()).list();
         if(switchVOS.isEmpty())
             throw new IllegalArgumentException(String.format("No logical switch exist under physical switch %s!",physicalSwitchVOS.get(0).getCode()));
 
-
-
-
+        // 逻辑交换机端口
         List<String> portVOS =  Q.New(SwitchVO.class).eq(SwitchVO_.physicalSwitchUuid,physicalSwitchVOS.get(0).getUuid()).select(SwitchVO_.uuid).list();
         if(portVOS.isEmpty())
             throw new IllegalArgumentException(String.format("No switch port exist under logical switch %s!",switchVOS.get(0).getCode()));
 
-        Set portsSet = new HashSet();
+        Set<String> portsSet = new HashSet();
         for(String portUuid:portVOS)
             portsSet.add(portUuid);
 
-        List<TunnelSwitchPortVO> tunnelSwitchPortVO = Q.New(TunnelSwitchPortVO.class).in(TunnelSwitchPortVO_.switchPortUuid,portsSet).list();
-
-        TunnelVO tunnelVO = new TunnelVO();
-
-        return  tunnelVO;
+        return portsSet;
     }
 
     /***
