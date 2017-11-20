@@ -8,7 +8,7 @@
     编号：唯一
     节点：通过city选择节点（通用查询：APIGetDistinctNodeCityMsg | APIQueryNodeMsg）
     类型：CLOUD,ACCESSIN,INTERCONNECTED
-    云类型：如果连接点是CLOUD类型，从CloudVO中选择一个云类型(通用查询：APIQueryCloudMsg)
+    云类型：如果连接点是CLOUD类型，从CloudVO中列出所有云类型,页面显示name,选择一个传参uuid(通用查询：APIQueryCloudMsg)
     状态：Open,Close
     状况：Disabled,Enabled
 

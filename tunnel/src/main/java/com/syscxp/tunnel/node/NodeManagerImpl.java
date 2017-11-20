@@ -148,22 +148,15 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     }
 
     private void handle(APIListProvinceNodeMsg msg) {
-        List<String> domesticNodeInventoryList =new ArrayList<>();
+        List<String> domesticNodeInventoryList;
 
         SimpleQuery<NodeVO> q = dbf.createQuery(NodeVO.class);
         if(msg.getCountry() != null){
             q.add(NodeVO_.country, SimpleQuery.Op.EQ, msg.getCountry());
         }
         q.select(NodeVO_.province);
-        List<String> provinceList = q.listValue();
-        for (String t : provinceList) {
-            domesticNodeInventoryList.add(t);
-        }
-
-        HashSet h = new HashSet(domesticNodeInventoryList);
-        domesticNodeInventoryList.clear();
-        domesticNodeInventoryList.addAll(h);
-
+        q.groupBy(NodeVO_.province);
+        domesticNodeInventoryList = q.listValue();
 
         APIListProvinceNodeReply reply = new APIListProvinceNodeReply();
         reply.setProvinces(domesticNodeInventoryList);
