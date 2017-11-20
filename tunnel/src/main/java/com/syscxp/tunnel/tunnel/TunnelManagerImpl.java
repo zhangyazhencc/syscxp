@@ -3046,7 +3046,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .select(SwitchPortVO_.portType)
                 .groupBy(SwitchPortVO_.portType)
                 .listValues();
-        if (switchs.isEmpty())
+        if (switchPorts.isEmpty())
             return Collections.emptyList();
         return Q.New(PortOfferingVO.class)
                 .in(PortOfferingVO_.uuid, switchPorts)
