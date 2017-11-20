@@ -15,19 +15,19 @@ public class SolutionInterfaceVO extends SolutionBaseVO{
     @Column
     private String portOfferingName;
 
-    public String getEndpointUuid() {
+    public String getEndpointName() {
         return endpointName;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointName = endpointUuid;
+    public void setEndpointName(String endpointName) {
+        this.endpointName = endpointName;
     }
 
-    public String getSwitchPortUuid() {
+    public String getPortOfferingName() {
         return portOfferingName;
     }
 
-    public void setSwitchPortUuid(String switchPortUuid) {
-        this.portOfferingName = switchPortUuid;
+    public void setPortOfferingName(String portOfferingName) {
+        this.portOfferingName = portOfferingName;
     }
 }

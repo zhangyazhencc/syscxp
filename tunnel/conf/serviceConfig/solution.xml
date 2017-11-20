@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://syscxp.com/schema/syscxp">
+    <id>solution</id>
+    <interceptor>SolutionManager</interceptor>
+
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APICreateInterfaceMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIQueryQinqMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+</service>

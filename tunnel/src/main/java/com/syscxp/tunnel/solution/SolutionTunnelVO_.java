@@ -7,11 +7,11 @@ import javax.persistence.metamodel.StaticMetamodel;
 /**
  * Created by wangwg on 2017/11/20.
  */
-@StaticMetamodel(SolutionInterfaceVO.class)
+@StaticMetamodel(SolutionTunnelVO.class)
 public class SolutionTunnelVO_ extends SolutionBaseVO_ {
 
-    public static volatile SingularAttribute<SolutionInterfaceVO, String> endpointNameA;
-    public static volatile SingularAttribute<SolutionInterfaceVO, String> endpointNameZ;
-    public static volatile SingularAttribute<SolutionInterfaceVO, Long> bandwidth;
+    public static volatile SingularAttribute<SolutionTunnelVO, String> endpointNameA;
+    public static volatile SingularAttribute<SolutionTunnelVO, String> endpointNameZ;
+    public static volatile SingularAttribute<SolutionTunnelVO, Long> bandwidth;
 
 }
