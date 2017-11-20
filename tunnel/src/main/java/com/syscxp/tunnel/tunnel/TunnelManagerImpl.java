@@ -36,7 +36,6 @@ import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.CollectionUtils;
-import com.syscxp.utils.ObjectUtils;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -181,6 +180,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             List<QinqVO> vos = new ArrayList<>();
             for (InnerVlanSegment segment : segments) {
                 QinqVO qinq = new QinqVO();
+                qinq.setUuid(Platform.getUuid());
                 qinq.setTunnelUuid(tunnelUuid);
                 qinq.setStartVlan(segment.getStartVlan());
                 qinq.setEndVlan(segment.getEndVlan());
@@ -197,15 +197,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelSwitchPortVO tsPort = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
                 .find();
-        List<QinqVO> qinqs = new ArrayList<>();
-        if (tsPort != null) {
-            qinqs = Q.New(QinqVO.class)
-                    .eq(QinqVO_.tunnelUuid, tsPort.getTunnelUuid()).list();
-        }
-        Map<String, Object> rollback = new HashMap<>();
-        rollback.put("qinqs", qinqs);
-
         boolean isUsed = tsPort != null;
+        Map<String, Object> rollback = new HashMap<>();
+        if (tsPort != null && iface.getType() == NetworkType.QINQ) {
+            List<QinqVO> qinqs = Q.New(QinqVO.class)
+                    .eq(QinqVO_.tunnelUuid, tsPort.getTunnelUuid()).list();
+            rollback.put("qinqs", qinqs);
+        }
+
 
         APIUpdateInterfacePortEvent evt = new APIUpdateInterfacePortEvent(msg.getId());
         FlowChain updateInterface = FlowChainBuilder.newSimpleFlowChain();
@@ -216,7 +215,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
             @Override
             public void run(FlowTrigger trigger, Map data) {
-                if (Objects.equals(msg.getSwitchPortUuid(), iface.getSwitchPortUuid())) {
+                if (!Objects.equals(msg.getSwitchPortUuid(), iface.getSwitchPortUuid())) {
                     UpdateQuery.New(InterfaceVO.class)
                             .set(InterfaceVO_.switchPortUuid, msg.getSwitchPortUuid())
                             .eq(InterfaceVO_.uuid, msg.getUuid())
@@ -225,7 +224,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     String tunnelUuid = isUsed ? tsPort.getTunnelUuid() : null;
                     updateNetworkType(iface, tunnelUuid, msg.getNetworkType(), msg.getSegments());
                 }
-                logger.info(String.format("after update InterfaceVO: [%s]", JSONObjectUtil.toJsonString(dbf.findByUuid(msg.getUuid(), InterfaceVO.class))));
+                logger.info(String.format("after update InterfaceVO[uuid: %s]", iface.getUuid()));
                 //throw new CloudRuntimeException("update interface port ...............");
                 trigger.next();
             }
@@ -234,10 +233,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void rollback(FlowRollback trigger, Map data) {
                 dbf.updateAndRefresh(iface);
                 if (isUsed) {
-                    List<QinqVO> qinqs = (List<QinqVO>) data.get("qinqs");
+                    List<QinqVO> qinqs = (List<QinqVO>) data.getOrDefault("qinqs", new ArrayList());
                     dbf.updateCollection(qinqs);
                 }
-                logger.info(String.format("rollback InterfaceVO: [%s]", JSONObjectUtil.toJsonString(dbf.findByUuid(msg.getUuid(), InterfaceVO.class))));
+                logger.info(String.format("rollback to update InterfaceVO[uuid: %s]", iface.getUuid()));
 
                 trigger.rollback();
             }
@@ -252,8 +251,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             .set(TunnelSwitchPortVO_.type, msg.getNetworkType())
                             .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
                             .update();
-                    logger.info(String.format("after update TunnelSwitchPortVO: [%s]", Q.New(TunnelSwitchPortVO.class)
-                            .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid()).findValue()));
+                    logger.info(String.format("after update TunnelSwitchPortVO[uuid: %s]", tsPort.getUuid()));
                 }
                 trigger.next();
             }
@@ -262,8 +260,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void rollback(FlowRollback trigger, Map data) {
                 if (isUsed) {
                     dbf.updateAndRefresh(tsPort);
-                    logger.info(String.format("after update TunnelSwitchPortVO: [%s]", Q.New(TunnelSwitchPortVO.class)
-                            .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid()).findValue()));
+                    logger.info(String.format("rollback to update TunnelSwitchPortVO[uuid: %s]", tsPort.getUuid()));
                 }
                 trigger.rollback();
             }
@@ -2288,10 +2285,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             throw new ApiMessageInterceptionException(
                     argerr("The InnerVlans cannot be empty！"));
         }
-        q = Q.New(InterfaceVO.class).eq(InterfaceVO_.switchPortUuid, msg.getSwitchPortUuid());
-        if (q.isExists())
-            throw new ApiMessageInterceptionException(
-                    argerr("The SwitchPort[uuid:%s] has been used！", msg.getSwitchPortUuid()));
     }
 
     private void validate(APICreateInterfaceMsg msg) {
