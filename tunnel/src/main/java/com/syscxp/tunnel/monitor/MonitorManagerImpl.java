@@ -114,8 +114,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APICreateSpeedTestTunnelMsg) msg);
         } else if (msg instanceof APIDeleteSpeedTestTunnelMsg) {
             handle((APIDeleteSpeedTestTunnelMsg) msg);
-        }else if (msg instanceof APIGetEndpointTunnelsMsg) {
-            handle((APIGetEndpointTunnelsMsg) msg);
+//        }else if (msg instanceof APIGetEndpointTunnelsMsg) {
+//            handle((APIGetEndpointTunnelsMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -897,19 +897,19 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         bus.publish(event);
     }
 
-    private void handle(APIGetEndpointTunnelsMsg msg){
-        // TODO:
-
-        APIGetEndpointTunnelsReply reply = new APIGetEndpointTunnelsReply();
-        try{
-            // 按vlan、物理交换机IP 获取tunnel
-            TunnelVO vo =getTunnelByPhysicalSwitchAndVlan(msg.getPhysicalSwitchMip(),msg.getVlan());
-
-            //按accountUuid、物理交换机IP 获取该客户在这个点的所有tunnel
-        }catch (Exception e){
-            reply.setError(Platform.argerr("Fail to get tunnel. Error: ",e.getMessage()));
-        }
-    }
+//    private void handle(APIGetEndpointTunnelsMsg msg){
+//        // TODO:
+//
+//        APIGetEndpointTunnelsReply reply = new APIGetEndpointTunnelsReply();
+//        try{
+//            // 按vlan、物理交换机IP 获取tunnel
+//            TunnelVO vo =getTunnelByPhysicalSwitchAndVlan(msg.getPhysicalSwitchMip(),msg.getVlan());
+//
+//            //按accountUuid、物理交换机IP 获取该客户在这个点的所有tunnel
+//        }catch (Exception e){
+//            reply.setError(Platform.argerr("Fail to get tunnel. Error: ",e.getMessage()));
+//        }
+//    }
 
     private TunnelVO getTunnelByPhysicalSwitchAndVlan(String physicalSwitchMip,Integer vlan){
         List<PhysicalSwitchVO> physicalSwitchVOS = Q.New(PhysicalSwitchVO.class).eq(PhysicalSwitchVO_.mIP,physicalSwitchMip).list();

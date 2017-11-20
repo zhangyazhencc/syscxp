@@ -17,7 +17,7 @@ public class APIUpdateInterfacePortMsg extends APIMessage {
     private String uuid;
     @APIParam(emptyString = false, maxLength = 32, resourceType = SwitchPortVO.class)
     private String switchPortUuid;
-    @APIParam(required = false)
+    @APIParam
     private NetworkType networkType;
     @APIParam(required = false)
     private List<InnerVlanSegment> segments;

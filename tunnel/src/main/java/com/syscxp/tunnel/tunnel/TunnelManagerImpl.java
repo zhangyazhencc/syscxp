@@ -180,6 +180,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             List<QinqVO> vos = new ArrayList<>();
             for (InnerVlanSegment segment : segments) {
                 QinqVO qinq = new QinqVO();
+                qinq.setUuid(Platform.getUuid());
                 qinq.setTunnelUuid(tunnelUuid);
                 qinq.setStartVlan(segment.getStartVlan());
                 qinq.setEndVlan(segment.getEndVlan());
@@ -196,15 +197,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelSwitchPortVO tsPort = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
                 .find();
-        List<QinqVO> qinqs = new ArrayList<>();
-        if (tsPort != null) {
-            qinqs = Q.New(QinqVO.class)
-                    .eq(QinqVO_.tunnelUuid, tsPort.getTunnelUuid()).list();
-        }
-        Map<String, Object> rollback = new HashMap<>();
-        rollback.put("qinqs", qinqs);
-
         boolean isUsed = tsPort != null;
+        Map<String, Object> rollback = new HashMap<>();
+        if (tsPort != null && iface.getType() == NetworkType.QINQ) {
+            List<QinqVO> qinqs = Q.New(QinqVO.class)
+                    .eq(QinqVO_.tunnelUuid, tsPort.getTunnelUuid()).list();
+            rollback.put("qinqs", qinqs);
+        }
+
 
         APIUpdateInterfacePortEvent evt = new APIUpdateInterfacePortEvent(msg.getId());
         FlowChain updateInterface = FlowChainBuilder.newSimpleFlowChain();
@@ -233,7 +233,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void rollback(FlowRollback trigger, Map data) {
                 dbf.updateAndRefresh(iface);
                 if (isUsed) {
-                    List<QinqVO> qinqs = (List<QinqVO>) data.get("qinqs");
+                    List<QinqVO> qinqs = (List<QinqVO>) data.getOrDefault("qinqs", new ArrayList());
                     dbf.updateCollection(qinqs);
                 }
                 logger.info(String.format("rollback to update InterfaceVO[uuid: %s]", iface.getUuid()));
@@ -2285,10 +2285,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             throw new ApiMessageInterceptionException(
                     argerr("The InnerVlans cannot be empty！"));
         }
-        q = Q.New(InterfaceVO.class).eq(InterfaceVO_.switchPortUuid, msg.getSwitchPortUuid());
-        if (q.isExists())
-            throw new ApiMessageInterceptionException(
-                    argerr("The SwitchPort[uuid:%s] has been used！", msg.getSwitchPortUuid()));
     }
 
     private void validate(APICreateInterfaceMsg msg) {
