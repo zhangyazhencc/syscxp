@@ -10,7 +10,7 @@ import com.syscxp.header.query.AutoQuery;
  * Created by wangwg on 2017/09/26.
  */
 @AutoQuery(replyClass = APIQueryTicketReply.class, inventoryClass = TicketInventory.class)
-@SuppressCredentialCheck
+@Action(category = AccountConstant.ACTION_CATEGORY_TICKET, names = {"read"})
 public class APIQueryTicketMsg extends APIQueryMessage {
 
 }

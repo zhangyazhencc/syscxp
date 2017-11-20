@@ -173,7 +173,6 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
             if(svo==null){
                 throw new ApiMessageInterceptionException(argerr("not login"));
             }
-            Map<String, Object> contentExtra = new HashMap<>();
             vo.setAccountUuid(svo.getAccountUuid());
             if(!svo.getAccountUuid().equals(svo.getUserUuid())){
                 vo.setUserUuid(svo.getUserUuid());
