@@ -16,6 +16,9 @@ public class APIGetUnscribeProductPriceDiffMsg extends APISyncCallMessage {
     @APIParam
     private Timestamp expiredTime;
 
+    @APIParam(required = false)
+    private boolean isCreateFailure;
+
     public String getAccountUuid() {
         return accountUuid;
     }
@@ -38,5 +41,13 @@ public class APIGetUnscribeProductPriceDiffMsg extends APISyncCallMessage {
 
     public void setExpiredTime(Timestamp expiredTime) {
         this.expiredTime = expiredTime;
+    }
+
+    public boolean isCreateFailure() {
+        return isCreateFailure;
+    }
+
+    public void setCreateFailure(boolean createFailure) {
+        isCreateFailure = createFailure;
     }
 }
