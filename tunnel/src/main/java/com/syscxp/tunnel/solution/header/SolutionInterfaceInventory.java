@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.solution;
+package com.syscxp.tunnel.solution.header;
 
 import com.syscxp.header.search.Inventory;
 
@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = SolutionTunnelVO.class)
-public class SolutionTunnelInventory {
+@Inventory(mappingVOClass = SolutionInterfaceVO.class)
+public class SolutionInterfaceInventory {
     private String uuid;
     private String solutionUuid;
     private String name;
@@ -19,12 +19,11 @@ public class SolutionTunnelInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    private String endpointNameA;
-    private String endpointNameZ;
-    private Long bandwidth;
+    private String endpointName;
+    private String portOfferingName;
 
-    public static SolutionTunnelInventory valueOf(SolutionTunnelVO vo) {
-        SolutionTunnelInventory inv = new SolutionTunnelInventory();
+    public static SolutionInterfaceInventory valueOf(SolutionInterfaceVO vo) {
+        SolutionInterfaceInventory inv = new SolutionInterfaceInventory();
         inv.setUuid(vo.getUuid());
         inv.setSolutionUuid(vo.getSolutionUuid());
         inv.setName(vo.getName());
@@ -35,17 +34,15 @@ public class SolutionTunnelInventory {
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
 
-        inv.setEndpointNameA(vo.getEndpointNameA());
-        inv.setEndpointNameZ(vo.getEndpointNameZ());
-        inv.setBandwidth(vo.getBandwidth());
-
+        inv.setEndpointName(vo.getEndpointName());
+        inv.setPortOfferingName(vo.getPortOfferingName());
         return inv;
     }
 
-    public static List<SolutionTunnelInventory> valueOf(Collection<SolutionTunnelVO> vos) {
-        List<SolutionTunnelInventory> list = new ArrayList<>(vos.size());
-        for (SolutionTunnelVO vo : vos) {
-            list.add(SolutionTunnelInventory.valueOf(vo));
+    public static List<SolutionInterfaceInventory> valueOf(Collection<SolutionInterfaceVO> vos) {
+        List<SolutionInterfaceInventory> list = new ArrayList<>(vos.size());
+        for (SolutionInterfaceVO vo : vos) {
+            list.add(SolutionInterfaceInventory.valueOf(vo));
         }
         return list;
     }
@@ -122,27 +119,19 @@ public class SolutionTunnelInventory {
         this.createDate = createDate;
     }
 
-    public String getEndpointNameA() {
-        return endpointNameA;
+    public String getEndpointName() {
+        return endpointName;
     }
 
-    public void setEndpointNameA(String endpointNameA) {
-        this.endpointNameA = endpointNameA;
+    public void setEndpointName(String endpointName) {
+        this.endpointName = endpointName;
     }
 
-    public String getEndpointNameZ() {
-        return endpointNameZ;
+    public String getPortOfferingName() {
+        return portOfferingName;
     }
 
-    public void setEndpointNameZ(String endpointNameZ) {
-        this.endpointNameZ = endpointNameZ;
-    }
-
-    public Long getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(Long bandwidth) {
-        this.bandwidth = bandwidth;
+    public void setPortOfferingName(String portOfferingName) {
+        this.portOfferingName = portOfferingName;
     }
 }

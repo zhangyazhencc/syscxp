@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.solution;
+package com.syscxp.tunnel.solution.header;
 
 import com.syscxp.header.search.Inventory;
 
@@ -22,8 +22,6 @@ public class SolutionVpnInventory {
     private String zoneName;
     private String endpointName;
     private Long bandwidth;
-
-
 
     public static SolutionVpnInventory valueOf(SolutionVpnVO vo) {
         SolutionVpnInventory inv = new SolutionVpnInventory();

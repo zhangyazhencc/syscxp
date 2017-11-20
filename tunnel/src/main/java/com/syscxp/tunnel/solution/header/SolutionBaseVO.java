@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.solution;
+package com.syscxp.tunnel.solution.header;
 
 import com.syscxp.header.vo.ForeignKey;
 

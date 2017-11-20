@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.solution;
+package com.syscxp.tunnel.solution.header;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

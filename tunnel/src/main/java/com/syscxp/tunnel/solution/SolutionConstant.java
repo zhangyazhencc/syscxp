@@ -9,4 +9,5 @@ import com.syscxp.header.configuration.PythonClass;
 @PythonClass
 public interface SolutionConstant {
     String SERVICE_ID = "solution";
+    String ACTION_CATEGORY = "solution";
 }
