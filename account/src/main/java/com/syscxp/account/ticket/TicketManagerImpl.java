@@ -1,15 +1,9 @@
 package com.syscxp.account.ticket;
 
-import com.syscxp.account.header.account.AccountConstant;
 import com.syscxp.account.header.identity.SessionVO;
 import com.syscxp.account.header.ticket.*;
-import com.syscxp.account.header.user.UserVO;
-import com.syscxp.header.query.APIQueryMessage;
-import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import com.syscxp.account.header.account.*;
-import com.syscxp.account.header.ticket.*;
 import com.syscxp.account.identity.IdentiyInterceptor;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -171,7 +165,7 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
 
         TicketVO vo =  new TicketVO();
         vo.setUuid(Platform.getUuid());
-        if(!msg.getTicketFrom().toString().equals(TicketFrom.apply.toString())){
+        if(!msg.getTicketFrom().toString().equals(TicketFrom.console.toString())){
             if(msg.getSession().getUuid() == null){
                 throw new ApiMessageInterceptionException(argerr("uuid of session is null"));
             }
@@ -183,16 +177,6 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
             vo.setAccountUuid(svo.getAccountUuid());
             if(!svo.getAccountUuid().equals(svo.getUserUuid())){
                 vo.setUserUuid(svo.getUserUuid());
-                UserVO user = dbf.findByUuid(svo.getUserUuid(),UserVO.class);
-                AccountVO account = dbf.findByUuid(svo.getAccountUuid(),AccountVO.class);
-                contentExtra.put("name",user.getName());
-                contentExtra.put("company",account.getCompany());
-                vo.setContentExtra(JSONObjectUtil.toJsonString(contentExtra));
-            }else{
-                AccountVO account = dbf.findByUuid(svo.getAccountUuid(),AccountVO.class);
-                contentExtra.put("name",account.getName());
-                contentExtra.put("company",account.getCompany());
-                vo.setContentExtra(JSONObjectUtil.toJsonString(contentExtra));
             }
 
         }
