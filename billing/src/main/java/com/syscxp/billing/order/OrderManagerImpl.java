@@ -6,6 +6,8 @@ import com.syscxp.billing.header.renew.PriceRefRenewVO;
 import com.syscxp.billing.header.renew.PriceRefRenewVO_;
 import com.syscxp.billing.header.renew.RenewVO;
 import com.syscxp.billing.header.renew.RenewVO_;
+import com.syscxp.billing.header.sla.SLALogVO;
+import com.syscxp.billing.header.sla.SLALogVO_;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.rest.TimeoutRestTemplate;
@@ -98,9 +100,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             handle((APIUpdateOrderExpiredTimeMsg) msg);
         } else if (msg instanceof APIGetHasNotifyMsg) {
             handle((APIGetHasNotifyMsg) msg);
-        }else if(msg instanceof APIGetUnscribeProductPriceDiffMsg){
+        } else if (msg instanceof APIGetUnscribeProductPriceDiffMsg) {
             handle((APIGetUnscribeProductPriceDiffMsg) msg);
-        }else if(msg instanceof APIGetModifyProductPriceDiffMsg){
+        } else if (msg instanceof APIGetModifyProductPriceDiffMsg) {
             handle((APIGetModifyProductPriceDiffMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
@@ -365,11 +367,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setOriginalPrice(BigDecimal.ZERO);
         orderVo.setPrice(BigDecimal.ZERO);
 
-        orderVo.setProductEffectTimeStart(msg.getStartTime());
-        orderVo.setProductEffectTimeEnd(msg.getExpiredTime());
-//        LocalDateTime localDateTime = msg.getExpiredTime().toLocalDateTime();
-//        localDateTime = localDateTime.plusDays(msg.getDuration());
-//        orderVo.setProductEffectTimeEnd(Timestamp.valueOf(localDateTime));
+        orderVo.setProductEffectTimeStart(msg.getExpiredTime());
+        LocalDateTime localDateTime = msg.getExpiredTime().toLocalDateTime();
+        localDateTime = localDateTime.plusDays(msg.getDuration());
+        orderVo.setProductEffectTimeEnd(Timestamp.valueOf(localDateTime));
         orderVo.setProductStatus(1);
 
         SimpleQuery<RenewVO> qRenew = dbf.createQuery(RenewVO.class);
@@ -380,14 +381,23 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         if (renewVO == null) {
             throw new IllegalArgumentException("please input the correct value");
         }
-        renewVO.setExpiredTime(msg.getExpiredTime());
-        dbf.getEntityManager().merge(renewVO);
+        renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
 
+        SLALogVO slaLogVO = new SLALogVO();
+        slaLogVO.setUuid(Platform.getUuid());
+        slaLogVO.setAccountUuid(msg.getAccountUuid());
+        slaLogVO.setProductUuid(msg.getProductUuid());
+        slaLogVO.setDuration(msg.getDuration());
+        slaLogVO.setTimeEnd(orderVo.getProductEffectTimeStart());
+        slaLogVO.setTimeEnd(orderVo.getProductEffectTimeEnd());
+        slaLogVO.setSlaPrice(renewVO.getPriceOneMonth());
+
+        dbf.getEntityManager().persist(slaLogVO);
+        dbf.getEntityManager().merge(renewVO);
         dbf.getEntityManager().persist(orderVo);
-        saveNotifyOrderVO(msg, orderVo.getUuid());
         dbf.getEntityManager().flush();
 
-
+        saveNotifyOrderVO(msg, orderVo.getUuid());
         OrderInventory inventory = OrderInventory.valueOf(orderVo);
         APICreateOrderReply reply = new APICreateOrderReply();
         reply.setInventory(inventory);
@@ -430,6 +440,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(renewVO.getLastOpDate().toLocalDateTime().toLocalDate().lengthOfMonth()), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal valuePayCash = getValueblePayCash(msg.getAccountUuid(), msg.getProductUuid());
         orderVo.setType(OrderType.UN_SUBCRIBE);
+        remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(),  BigDecimal.ZERO));
         if (remainMoney.compareTo(valuePayCash) > 0) {
             remainMoney = valuePayCash;
         }
@@ -590,6 +601,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         } else { //downgrade
             BigDecimal valuePayCash = getValueblePayCash(msg.getAccountUuid(), msg.getProductUuid());
             orderVo.setType(OrderType.DOWNGRADE);
+            subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(),  discountPrice));
             if (subMoney.compareTo(valuePayCash.negate()) < 0) {
                 subMoney = valuePayCash.negate();
             }
@@ -644,8 +656,33 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
     }
 
-    private BigDecimal getRefundMoney(){
-        return null;
+    @Transactional
+    private BigDecimal getDownGradeDiffMoney(String accountUuid, String productUuid, BigDecimal priceDownTo) {
+        SimpleQuery<SLALogVO> query = dbf.createQuery(SLALogVO.class);
+        query.add(SLALogVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
+        query.add(SLALogVO_.productUuid, SimpleQuery.Op.EQ, productUuid);
+        List<SLALogVO> slaLogVOS = query.list();
+        BigDecimal returnMoney = BigDecimal.ZERO;
+        if (slaLogVOS != null && slaLogVOS.size() > 0) {
+            for (SLALogVO slaLogVO : slaLogVOS) {
+                LocalDateTime startTime = slaLogVO.getTimeStart().toLocalDateTime();
+                long duration = slaLogVO.getDuration();
+                if (startTime.isBefore(LocalDateTime.now())) {
+                    duration = ChronoUnit.DAYS.between(slaLogVO.getTimeEnd().toLocalDateTime(), LocalDateTime.now());
+                }
+                if (priceDownTo.compareTo(slaLogVO.getSlaPrice()) < 0) {
+                    if (priceDownTo.compareTo(slaLogVO.getSlaPrice()) > 0) {
+                        returnMoney = returnMoney.add(slaLogVO.getSlaPrice().subtract(priceDownTo).divide(BigDecimal.valueOf(slaLogVO.getTimeEnd().toLocalDateTime().toLocalDate().lengthOfMonth()), 4, RoundingMode.HALF_UP)).multiply(BigDecimal.valueOf(duration));
+                        slaLogVO.setSlaPrice(priceDownTo);
+                        dbf.getEntityManager().persist(slaLogVO);
+                    }
+                }
+
+            }
+
+        }
+
+        return returnMoney;
     }
 
     @Transactional
@@ -729,7 +766,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                     productDiscount = accountDiscountVO.getDiscount() <= 0 ? 100 : accountDiscountVO.getDiscount();
                 }
                 originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice() * times));
-                BigDecimal currentDiscount = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
+                BigDecimal currentDiscount = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_DOWN);
                 discountPrice = discountPrice.add(currentDiscount);
 
             }
@@ -892,7 +929,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         }
         reply.setReFoundMoney(refundPresent);
         reply.setInventory(remainMoney);
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
     }
 
     private void handle(APIGetModifyProductPriceDiffMsg msg) {
@@ -908,13 +945,13 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             query.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, unit.getCategoryCode());
             query.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
             ProductCategoryVO productCategoryVO = query.find();
-            if(productCategoryVO ==null){
+            if (productCategoryVO == null) {
                 throw new IllegalArgumentException("can not find productType or category");
             }
             int times = 1;
 
-            if(unit.getProductTypeCode().equals(ProductType.ECP) && unit.getCategoryCode().equals(Category.BANDWIDTH)){
-                String configCode = unit.getConfigCode().replaceAll("\\D","");
+            if (unit.getProductTypeCode().equals(ProductType.ECP) && unit.getCategoryCode().equals(Category.BANDWIDTH)) {
+                String configCode = unit.getConfigCode().replaceAll("\\D", "");
                 times = Integer.parseInt(configCode);
                 unit.setConfigCode("1M");
             }
@@ -937,7 +974,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             if (accountDiscountVO != null) {
                 productDiscount = accountDiscountVO.getDiscount() <= 0 ? 100 : accountDiscountVO.getDiscount();
             }
-            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()*times));
+            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice() * times));
             BigDecimal currentDiscount = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
             discountPrice = discountPrice.add(currentDiscount);
 
@@ -963,9 +1000,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         reply.setRemainMoney(remainMoney);
         reply.setNeedPayOriginMoney(needPayOriginMoney);
         reply.setSubMoney(subMoney);
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
     }
-
 
 
     @Override
