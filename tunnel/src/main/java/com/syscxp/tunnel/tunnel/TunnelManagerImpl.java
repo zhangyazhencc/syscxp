@@ -7,7 +7,6 @@ import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.identity.QuotaUtil;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
@@ -290,7 +289,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void handle(APIGetInterfaceTypeMsg msg) {
         APIGetInterfaceTypeReply reply = new APIGetInterfaceTypeReply();
-        reply.setTypes(getPortTypeByEndpoint(msg.getUuid()));
+        reply.setInventories(PortOfferingInventory.valueOf(getPortTypeByEndpoint(msg.getUuid())));
         bus.reply(msg, reply);
     }
 
@@ -2259,12 +2258,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         //类型是否支持
-        List<String> types = getPortTypeByEndpoint(msg.getEndpointUuid());
-        if (!msg.getPortOfferingUuid().equals("SHARE")) {
-            if (!types.contains(msg.getPortOfferingUuid()))
-                throw new ApiMessageInterceptionException(
-                        argerr("该连接点[uuid:%s]下的端口[type:%s]已用完！", msg.getEndpointUuid(), msg.getPortOfferingUuid()));
-        } else {
+        if (msg.getPortOfferingUuid().equals("SHARE")) {
             Q q2 = Q.New(InterfaceVO.class)
                     .eq(InterfaceVO_.accountUuid, msg.getAccountUuid())
                     .eq(InterfaceVO_.endpointUuid, msg.getEndpointUuid());
@@ -3042,16 +3036,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 通过连接点获取可用的端口规格
      */
-    private List<String> getPortTypeByEndpoint(String endpointUuid) {
+    private List<PortOfferingVO> getPortTypeByEndpoint(String endpointUuid) {
         List<String> switchs = CollectionUtils.transformToList(getSwitchByEndpoint(endpointUuid), SwitchAO::getUuid);
         if (switchs.isEmpty())
             return Collections.emptyList();
-        return Q.New(SwitchPortVO.class)
+        List<String> switchPorts = Q.New(SwitchPortVO.class)
                 .in(SwitchPortVO_.switchUuid, switchs)
                 .eq(SwitchPortVO_.state, SwitchPortState.Enabled)
                 .select(SwitchPortVO_.portType)
                 .groupBy(SwitchPortVO_.portType)
                 .listValues();
+        if (switchs.isEmpty())
+            return Collections.emptyList();
+        return Q.New(PortOfferingVO.class)
+                .in(PortOfferingVO_.uuid, switchPorts)
+                .list();
     }
 
     /**
