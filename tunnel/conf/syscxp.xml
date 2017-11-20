@@ -57,5 +57,6 @@
     <import resource="springConfigXml/MonitorManager.xml"/>
     <import resource="springConfigXml/MongodbFacade.xml"/>
     <import resource="springConfigXml/AliEdgeRouterManager.xml"/>
+    <import resource="springConfigXml/SolutionManager.xml"/>
 
 </beans>
