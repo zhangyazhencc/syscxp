@@ -174,7 +174,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
             ma.actions = new ArrayList<String>();
             ma.accountControl = a.accountControl();
             ma.accountCheckFields = new ArrayList<AccountCheckField>();
-            for (String p : a.products()) {
+            for (String p : a.services()) {
                 for (String ac : a.names()) {
                     ma.actions.add(String.format("%s:%s:%s", p, ma.category, ac));
                 }

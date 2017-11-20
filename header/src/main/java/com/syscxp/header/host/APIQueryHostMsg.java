@@ -8,7 +8,7 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 
-@Action(products = {"tunnel", "vpn"}, category = HostConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
+@Action(services = {"tunnel", "vpn"}, category = HostConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
 @AutoQuery(replyClass = APIQueryHostReply.class, inventoryClass = HostInventory.class)
 public class APIQueryHostMsg extends APIQueryMessage {
 

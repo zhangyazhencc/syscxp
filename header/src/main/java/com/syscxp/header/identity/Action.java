@@ -12,8 +12,8 @@ public @interface Action {
     boolean adminOnly() default false;      //只SystemAdmin
     boolean accountOnly() default false;    //只帐户
 
-    String[] products() default {};
-    
+    String[] services() default {};
+
     String category();
 
     String[] names() default {};
