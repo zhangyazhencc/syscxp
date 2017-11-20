@@ -12,7 +12,7 @@ import com.syscxp.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/09/26.
  */
-@SuppressCredentialCheck
+@Action(category = AccountConstant.ACTION_CATEGORY_TICKET, names = "delete")
 public class APIDeleteTicketMsg extends APIDeleteMessage {
 
     private String uuid;
