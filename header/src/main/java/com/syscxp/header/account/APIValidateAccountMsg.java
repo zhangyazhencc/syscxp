@@ -11,8 +11,6 @@ public class APIValidateAccountMsg extends APISyncCallMessage {
     @APIParam(emptyString = false)
     private String uuid;
 
-    private String name;
-
     public String getUuid() {
         return uuid;
     }
