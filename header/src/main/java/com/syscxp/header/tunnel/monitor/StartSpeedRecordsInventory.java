@@ -1,7 +1,5 @@
 package com.syscxp.header.tunnel.monitor;
 
-import com.syscxp.header.search.Inventory;
-
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -12,8 +10,7 @@ import java.util.List;
  * @Cretion Date: 2017-09-18.
  * @Description: .
  */
-@Inventory(mappingVOClass = SpeedRecordsVO.class)
-public class SpeedRecordsInventory {
+public class StartSpeedRecordsInventory {
     private String uuid;
     private String tunnelUuid;
     private String srcTunnelMonitorUuid;
@@ -26,9 +23,10 @@ public class SpeedRecordsInventory {
     private SpeedRecordStatus status;
     private Timestamp lastOpDate;
     private Timestamp createDate;
+    private String hostIp;
 
-    public static SpeedRecordsInventory valueOf(SpeedRecordsVO vo){
-        SpeedRecordsInventory inventory = new SpeedRecordsInventory();
+    public static StartSpeedRecordsInventory valueOf(SpeedRecordsVO vo, String hostIp){
+        StartSpeedRecordsInventory inventory = new StartSpeedRecordsInventory();
         inventory.setUuid(vo.getUuid());
         inventory.setTunnelUuid(vo.getTunnelUuid());
         inventory.setSrcTunnelMonitorUuid(vo.getSrcTunnelMonitorUuid());
@@ -41,14 +39,15 @@ public class SpeedRecordsInventory {
         inventory.setStatus(vo.getStatus());
         inventory.setLastOpDate(vo.getLastOpDate());
         inventory.setCreateDate(vo.getCreateDate());
+        inventory.setHostIp(hostIp);
 
         return  inventory;
     }
 
-    public static List<SpeedRecordsInventory> valueOf(Collection<SpeedRecordsVO> vos ) {
-        List<SpeedRecordsInventory> lst = new ArrayList<SpeedRecordsInventory>(vos.size());
+    public static List<StartSpeedRecordsInventory> valueOf(Collection<SpeedRecordsVO> vos, String hostIp ) {
+        List<StartSpeedRecordsInventory> lst = new ArrayList<StartSpeedRecordsInventory>(vos.size());
         for (SpeedRecordsVO vo : vos) {
-            lst.add(SpeedRecordsInventory.valueOf(vo));
+            lst.add(StartSpeedRecordsInventory.valueOf(vo,hostIp));
         }
         return lst;
     }
@@ -148,4 +147,11 @@ public class SpeedRecordsInventory {
         return createDate;
     }
 
+    public String getHostIp() {
+        return hostIp;
+    }
+
+    public void setHostIp(String hostIp) {
+        this.hostIp = hostIp;
+    }
 }

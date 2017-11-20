@@ -15,8 +15,8 @@ public class APIQuerySpeedResultMsg extends APISyncCallMessage {
     @APIParam(emptyString = false,resourceType = SpeedRecordsVO.class)
     private String uuid;
 
-    @APIParam(emptyString = false,resourceType = TunnelMonitorVO.class)
-    private String srcTunnelMonitorUuid;
+    @APIParam(emptyString = false)
+    private String hostIp;
 
     public String getUuid() {
         return uuid;
@@ -26,12 +26,11 @@ public class APIQuerySpeedResultMsg extends APISyncCallMessage {
         this.uuid = uuid;
     }
 
-
-    public String getSrcTunnelMonitorUuid() {
-        return srcTunnelMonitorUuid;
+    public String getHostIp() {
+        return hostIp;
     }
 
-    public void setSrcTunnelMonitorUuid(String srcTunnelMonitorUuid) {
-        this.srcTunnelMonitorUuid = srcTunnelMonitorUuid;
+    public void setHostIp(String hostIp) {
+        this.hostIp = hostIp;
     }
 }
