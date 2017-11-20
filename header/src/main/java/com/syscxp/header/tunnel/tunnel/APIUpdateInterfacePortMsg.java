@@ -6,6 +6,8 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.switchs.SwitchPortVO;
 
+import java.util.List;
+
 /**
  * Create by DCY on 2017/9/28
  */
@@ -15,8 +17,10 @@ public class APIUpdateInterfacePortMsg extends APIMessage {
     private String uuid;
     @APIParam(emptyString = false, maxLength = 32, resourceType = SwitchPortVO.class)
     private String switchPortUuid;
-    @APIParam
+    @APIParam(required = false)
     private NetworkType networkType;
+    @APIParam(required = false)
+    private List<InnerVlanSegment> segments;
     @APIParam
     private boolean issue = false;
 
@@ -50,6 +54,14 @@ public class APIUpdateInterfacePortMsg extends APIMessage {
 
     public void setNetworkType(NetworkType networkType) {
         this.networkType = networkType;
+    }
+
+    public List<InnerVlanSegment> getSegments() {
+        return segments;
+    }
+
+    public void setSegments(List<InnerVlanSegment> segments) {
+        this.segments = segments;
     }
 }
 
