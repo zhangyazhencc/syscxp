@@ -1,7 +1,6 @@
-package com.syscxp.tunnel.solution;
+package com.syscxp.header.tunnel.solution;
 
 import javax.persistence.*;
-import java.sql.Timestamp;
 
 /**
  * Created by wangwg on 2017/11/20.

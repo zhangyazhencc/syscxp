@@ -57,10 +57,10 @@
         <class>com.syscxp.header.tunnel.aliEdgeRouter.AliUserVO</class>
         <class>com.syscxp.header.tunnel.aliEdgeRouter.AliEdgeRouterConfigVO</class>
 
-        <class>com.syscxp.tunnel.solution.SolutionVO</class>
-        <class>com.syscxp.tunnel.solution.SolutionInterfaceVO</class>
-        <class>com.syscxp.tunnel.solution.SolutionTunnelVO</class>
-        <class>com.syscxp.tunnel.solution.SolutionVpnVO</class>
+        <class>com.syscxp.header.tunnel.solution.SolutionVO</class>
+        <class>com.syscxp.header.tunnel.solution.SolutionInterfaceVO</class>
+        <class>com.syscxp.header.tunnel.solution.SolutionTunnelVO</class>
+        <class>com.syscxp.header.tunnel.solution.SolutionVpnVO</class>
 
     </persistence-unit>
 </persistence>

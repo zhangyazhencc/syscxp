@@ -1,4 +1,4 @@
-package com.syscxp.tunnel.solution;
+package com.syscxp.header.tunnel.solution;
 
 
 import javax.persistence.metamodel.SingularAttribute;

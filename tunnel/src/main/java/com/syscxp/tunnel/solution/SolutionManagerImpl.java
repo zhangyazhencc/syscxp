@@ -9,6 +9,7 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.tunnel.solution.SolutionConstant;
 import com.syscxp.tunnel.tunnel.TunnelBase;
 import com.syscxp.tunnel.tunnel.TunnelManagerImpl;
 import com.syscxp.utils.Utils;

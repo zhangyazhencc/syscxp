@@ -4,12 +4,12 @@
     <interceptor>SolutionManager</interceptor>
 
     <message>
-        <name>com.syscxp.header.tunnel.tunnel.APICreateInterfaceMsg</name>
+        <name>com.syscxp.header.tunnel.solution.APICreateSolutionMsg</name>
     </message>
 
-    <message>
-        <name>com.syscxp.header.tunnel.tunnel.APIQueryQinqMsg</name>
-        <serviceId>query</serviceId>
-    </message>
+    <!--<message>-->
+        <!--<name>com.syscxp.header.tunnel.tunnel.APIQueryQinqMsg</name>-->
+        <!--<serviceId>query</serviceId>-->
+    <!--</message>-->
 
 </service>
