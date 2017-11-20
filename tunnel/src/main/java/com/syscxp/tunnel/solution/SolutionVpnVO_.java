@@ -1,0 +1,17 @@
+package com.syscxp.tunnel.solution;
+
+
+import javax.persistence.metamodel.SingularAttribute;
+import javax.persistence.metamodel.StaticMetamodel;
+
+/**
+ * Created by wangwg on 2017/11/20.
+ */
+@StaticMetamodel(SolutionVpnVO.class)
+public class SolutionVpnVO_ extends SolutionBaseVO_ {
+
+    public static volatile SingularAttribute<SolutionVpnVO, String> zoneName;
+    public static volatile SingularAttribute<SolutionVpnVO, String> endpointName;
+    public static volatile SingularAttribute<SolutionVpnVO, Long> bandwidth;
+
+}

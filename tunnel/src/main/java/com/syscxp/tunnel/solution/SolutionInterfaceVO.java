@@ -8,76 +8,26 @@ import java.sql.Timestamp;
  */
 @Entity
 @Table
-public class SolutionInterfaceVO {
-    @Id
-    @Column
-    private String uuid;
+public class SolutionInterfaceVO extends SolutionBaseVO{
 
     @Column
-    private String name;
-
+    private String endpointName;
     @Column
-    private String description;
+    private String portOfferingName;
 
-    @Column
-    private String totalCost;
-
-    @Column
-    private Timestamp createDate;
-
-    @Column
-    private Timestamp lastOpDate;
-
-    @PreUpdate
-    private void preUpdate() {
-        lastOpDate = null;
+    public String getEndpointUuid() {
+        return endpointName;
     }
 
-    public String getUuid() {
-        return uuid;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointName = endpointUuid;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public String getSwitchPortUuid() {
+        return portOfferingName;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getTotalCost() {
-        return totalCost;
-    }
-
-    public void setTotalCost(String totalCost) {
-        this.totalCost = totalCost;
-    }
-
-    public Timestamp getCreateDate() {
-        return createDate;
-    }
-
-    public void setCreateDate(Timestamp createDate) {
-        this.createDate = createDate;
-    }
-
-    public Timestamp getLastOpDate() {
-        return lastOpDate;
-    }
-
-    public void setLastOpDate(Timestamp lastOpDate) {
-        this.lastOpDate = lastOpDate;
+    public void setSwitchPortUuid(String switchPortUuid) {
+        this.portOfferingName = switchPortUuid;
     }
 }
