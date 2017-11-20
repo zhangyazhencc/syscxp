@@ -364,14 +364,10 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         }catch (ClientException e){
             e.printStackTrace();
-            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
+            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")||e.getErrCode().equals("IncompleteSignature")){
                 DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
-            }else if(e.getErrCode().equals("IncompleteSignature")){
-                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
-                flag = false;
-
-            } else{
+            }else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
 
@@ -449,14 +445,10 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         }catch (ClientException e){
             e.printStackTrace();
-            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
+            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")||e.getErrCode().equals("IncompleteSignature")){
                 DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
-            }
-            else if(e.getErrCode().equals("IncompleteSignature")){
-                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
-                flag = false;
-            }else{
+            } else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
         }
@@ -565,14 +557,10 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         }catch (ClientException e){
             e.printStackTrace();
 
-            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
+            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")||e.getErrCode().equals("IncompleteSignature")){
                 DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
-            }else if(e.getErrCode().equals("IncompleteSignature")){
-                DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
-                flag = false;
-            }
-            else{
+            }else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
 
