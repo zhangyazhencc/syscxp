@@ -99,6 +99,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIGetTunnelPriceMsg) msg);
         } else if (msg instanceof APIGetModifyTunnelPriceDiffMsg) {
             handle((APIGetModifyTunnelPriceDiffMsg) msg);
+        } else if (msg instanceof APIGetUnscribeTunnelPriceDiffMsg) {
+            handle((APIGetUnscribeTunnelPriceDiffMsg) msg);
         } else if (msg instanceof APIUpdateInterfacePortMsg) {
             handle((APIUpdateInterfacePortMsg) msg);
         } else if (msg instanceof APIGetInterfaceTypeMsg) {
@@ -341,6 +343,24 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         APIGetModifyProductPriceDiffReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
         bus.reply(msg, new APIGetModifyTunnelPriceDiffReply(reply));
+    }
+
+    private void handle(APIGetUnscribeTunnelPriceDiffMsg msg){
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+
+        APIGetUnscribeProductPriceDiffMsg upmsg = new APIGetUnscribeProductPriceDiffMsg();
+        upmsg.setAccountUuid(msg.getAccountUuid());
+        upmsg.setProductUuid(msg.getUuid());
+        if (vo.getExpireDate() == null) {
+            upmsg.setExpiredTime(dbf.getCurrentSqlTime());
+            upmsg.setCreateFailure(true);
+        } else {
+            upmsg.setExpiredTime(vo.getExpireDate());
+        }
+
+        APIGetUnscribeProductPriceDiffReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(upmsg);
+        bus.reply(msg, new APIGetUnscribeTunnelPriceDiffReply(reply));
+
     }
 
     private void handle(APICreateInterfaceMsg msg) {
