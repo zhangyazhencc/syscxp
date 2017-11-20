@@ -10,17 +10,17 @@ import com.syscxp.header.rest.RestResponse;
  */
 @RestResponse(allTo = "inventory")
 public class APICreateSpeedRecordsEvent extends APIEvent {
-    private SpeedRecordsInventory inventory;
+    private StartSpeedRecordsInventory inventory;
 
     public APICreateSpeedRecordsEvent(){};
 
     public APICreateSpeedRecordsEvent(String apiId){super(apiId);}
 
-    public SpeedRecordsInventory getInventory() {
+    public StartSpeedRecordsInventory getInventory() {
         return inventory;
     }
 
-    public void setInventory(SpeedRecordsInventory inventory) {
+    public void setInventory(StartSpeedRecordsInventory inventory) {
         this.inventory = inventory;
     }
 }

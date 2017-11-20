@@ -6,7 +6,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-@Action(category = AlarmConstant.ACTION_CATEGORY_RESOURCE_POLICY)
+@Action(category = AlarmConstant.ACTION_CATEGORY_ALARM, names = {"create"})
 public class APICreatePolicyMsg extends APIMessage{
 
     @APIParam(emptyString = false)

@@ -1,11 +1,14 @@
 package com.syscxp.alarm.header.resourcePolicy;
 
+import com.syscxp.header.alarm.AlarmConstant;
 import com.syscxp.header.billing.ProductType;
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
 import java.util.List;
 
+@Action(category = AlarmConstant.ACTION_CATEGORY_ALARM, names = {"update"})
 public class APIAttachPolicyToResourceMsg extends APIMessage {
 
     @APIParam(required = false,resourceType = PolicyVO.class,checkAccount = true)

@@ -164,8 +164,6 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
     private void handle(APICreateTicketMsg msg) {
 
         TicketVO vo =  new TicketVO();
-        vo.setCreateDate(dbf.getCurrentSqlTime());
-        vo.setLastOpDate(dbf.getCurrentSqlTime());
         vo.setUuid(Platform.getUuid());
         if(!msg.getTicketFrom().toString().equals(TicketFrom.console.toString())){
             if(msg.getSession().getUuid() == null){
@@ -175,7 +173,6 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
             if(svo==null){
                 throw new ApiMessageInterceptionException(argerr("not login"));
             }
-            Map<String, Object> contentExtra = new HashMap<>();
             vo.setAccountUuid(svo.getAccountUuid());
             if(!svo.getAccountUuid().equals(svo.getUserUuid())){
                 vo.setUserUuid(svo.getUserUuid());

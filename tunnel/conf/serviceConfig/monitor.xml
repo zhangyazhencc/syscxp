@@ -36,6 +36,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.monitor.APIDeleteSpeedRecordsMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.monitor.APICreateSpeedTestTunnelMsg</name>
     </message>
 

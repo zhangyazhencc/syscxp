@@ -4,16 +4,10 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.header.message.APISyncCallMessage;
-import com.syscxp.header.query.AutoQuery;
-import com.syscxp.header.tunnel.TunnelConstant;
-
-import java.util.List;
 
 /**
  * Created by wangwg on 2017/11/02
  */
-@Action(category = AlarmConstant.ACTION_CATEGORY_RESOURCE_POLICY, names = {"update"})
 @InnerCredentialCheck
 public class APIUpdateTunnelInfoForFalconMsg extends APIMessage {
 
