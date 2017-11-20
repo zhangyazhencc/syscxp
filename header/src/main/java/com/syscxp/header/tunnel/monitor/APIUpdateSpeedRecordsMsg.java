@@ -1,7 +1,9 @@
 package com.syscxp.header.tunnel.monitor;
 
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.tunnel.MonitorConstant;
 
 import javax.print.DocFlavor;
 
@@ -10,6 +12,8 @@ import javax.print.DocFlavor;
  * @Cretion Date: 2017-09-18.
  * @Description: 速度测试结果更新.
  */
+
+@Action(services = {"tunnel"}, category = MonitorConstant.ACTION_CATEGORY)
 public class APIUpdateSpeedRecordsMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = SpeedRecordsVO.class)
@@ -18,10 +22,10 @@ public class APIUpdateSpeedRecordsMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 11)
     private Integer avgSpeed;
 
-    @APIParam(emptyString = false,maxLength = 11)
+    @APIParam(required = false,maxLength = 11)
     private Integer maxSpeed;
 
-    @APIParam(emptyString = false,maxLength = 11)
+    @APIParam(required = false,maxLength = 11)
     private Integer minSpeed;
 
     @APIParam(emptyString = false,validValues = {"COMPLETED","FAILURE"})

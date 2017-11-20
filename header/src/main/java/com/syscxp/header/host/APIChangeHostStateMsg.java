@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 
-@Action(category = HostConstant.ACTION_CATEGORY, adminOnly = true)
+@Action(services = {"tunnel", "vpn"}, category = HostConstant.ACTION_CATEGORY, adminOnly = true)
 public class APIChangeHostStateMsg extends APIMessage implements HostMessage {
     /**
      * @desc host uuid
@@ -54,7 +54,7 @@ public class APIChangeHostStateMsg extends APIMessage implements HostMessage {
     public String getHostUuid() {
         return getUuid();
     }
- 
+
     public static APIChangeHostStateMsg __example__() {
         APIChangeHostStateMsg msg = new APIChangeHostStateMsg();
         msg.setUuid(uuid());
@@ -68,7 +68,7 @@ public class APIChangeHostStateMsg extends APIMessage implements HostMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Changed the state to %s", ((APIChangeHostStateEvent)evt).getInventory().getState())
+                ntfy("Changed the state to %s", ((APIChangeHostStateEvent) evt).getInventory().getState())
                         .resource(uuid, HostVO.class)
                         .messageAndEvent(that, evt).done();
             }

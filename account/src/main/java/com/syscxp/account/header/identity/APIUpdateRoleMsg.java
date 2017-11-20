@@ -10,7 +10,7 @@ import com.syscxp.header.notification.ApiNotification;
 
 import java.util.List;
 
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"}, accountOnly = true)
+@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"}, accountOnly = true)
 public class APIUpdateRoleMsg extends  APIMessage implements AccountMessage {
 
     @APIParam(maxLength = 128)

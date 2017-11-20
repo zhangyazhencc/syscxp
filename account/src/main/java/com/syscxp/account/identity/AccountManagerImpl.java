@@ -5,6 +5,7 @@ import com.syscxp.account.header.identity.*;
 import com.syscxp.account.header.user.*;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.header.account.*;
 import com.syscxp.header.identity.*;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
@@ -25,8 +26,6 @@ import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.SimpleQuery.Op;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.AbstractService;
-import com.syscxp.header.account.APIValidateAccountMsg;
-import com.syscxp.header.account.APIValidateAccountReply;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.errorcode.OperationFailureException;
@@ -117,102 +116,123 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APIGetSessionPolicyMsg) msg);
         } else if (msg instanceof APICheckApiPermissionMsg) {
             handle((APICheckApiPermissionMsg) msg);
-        } else if(msg instanceof APIRegisterAccountMsg){
+        } else if (msg instanceof APIRegisterAccountMsg) {
             handle((APIRegisterAccountMsg) msg);
-        } else if(msg instanceof APIAccountPWDBackMsg){
+        } else if (msg instanceof APIAccountPWDBackMsg) {
             handle((APIAccountPWDBackMsg) msg);
-        } else if(msg instanceof APIUserPWDBackMsg){
+        } else if (msg instanceof APIUserPWDBackMsg) {
             handle((APIUserPWDBackMsg) msg);
-        } else if(msg instanceof APIVerifyRepetitionMsg){
+        } else if (msg instanceof APIVerifyRepetitionMsg) {
             handle((APIVerifyRepetitionMsg) msg);
-        }else if (msg instanceof APIValidateAccountMsg) {
+        } else if (msg instanceof APIValidateAccountMsg) {
             handle((APIValidateAccountMsg) msg);
-        }else {
+        } else if (msg instanceof APIGetAccountUuidListByProxyMsg) {
+            handle((APIGetAccountUuidListByProxyMsg) msg);
+        } else if (msg instanceof APIValidateAccountWithProxyMsg) {
+            handle((APIValidateAccountWithProxyMsg) msg);
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
 
 
     }
 
+    private void handle(APIValidateAccountWithProxyMsg msg) {
+        APIValidateAccountWithProxyReply reply = new APIValidateAccountWithProxyReply();
+        SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
+        q.add(ProxyAccountRefVO_.customerAccountUuid, Op.EQ, msg.getAccountUuid());
+        q.add(ProxyAccountRefVO_.accountUuid, Op.EQ, msg.getProxyUuid());
+        ProxyAccountRefVO proxyAccountRefVO = q.find();
+        if(proxyAccountRefVO!=null){
+            reply.setHasRelativeAccountWithProxy(true);
+        }
+        bus.reply(msg,reply);
+    }
+
 
     private void handle(APIValidateAccountMsg msg) {
-        AccountVO accountVO = dbf.findByUuid(msg.getUuid(),AccountVO.class);
+        AccountVO accountVO = dbf.findByUuid(msg.getUuid(), AccountVO.class);
         APIValidateAccountReply reply = new APIValidateAccountReply();
-        if(accountVO!=null){
+        if (accountVO != null) {
             reply.setValidAccount(true);
-            if(accountVO.getType() == AccountType.Normal){
-                SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
-                q.add(ProxyAccountRefVO_.customerAccountUuid, Op.EQ, accountVO.getUuid());
-                List<ProxyAccountRefVO> proxyAccountRefVOS = q.list();
-                if(proxyAccountRefVOS!=null && proxyAccountRefVOS.size()>0){
-                    reply.setNormalAccountHasProxy(true);
-                }
-            } else if (accountVO.getType() == AccountType.Proxy) {
-                SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
-                q.add(ProxyAccountRefVO_.accountUuid, Op.EQ, accountVO.getUuid());
-                q.select(ProxyAccountRefVO_.customerAccountUuid);
-                List<String> customerAccountUuids = q.listValue();
-                reply.setAccountUuidOwnProxy(customerAccountUuids);
-            }
+            reply.setType(accountVO.getType());
         }
+        bus.reply(msg, reply);
+    }
+
+    private void handle(APIGetAccountUuidListByProxyMsg msg) {
+        AccountVO accountVO = dbf.findByUuid(msg.getAccountUuid(), AccountVO.class);
+        if (accountVO == null) {
+            throw new IllegalArgumentException("input the correct accountUuid");
+        }
+        if (accountVO.getType() != AccountType.Proxy) {
+            throw new IllegalArgumentException("the account must bu proxy");
+        }
+        APIGetAccountUuidListByProxyReply reply = new APIGetAccountUuidListByProxyReply();
+
+        SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
+        q.add(ProxyAccountRefVO_.accountUuid, Op.EQ, accountVO.getUuid());
+        q.select(ProxyAccountRefVO_.customerAccountUuid);
+        List<String> customerAccountUuids = q.listValue();
+        reply.setAccountUuidBoundToProxy(customerAccountUuids);
         bus.reply(msg, reply);
     }
 
     private void handle(APIVerifyRepetitionMsg msg) {
         APIVerifyRepetitionReply reply = new APIVerifyRepetitionReply();
 
-        if(msg.getAccountName() != null){
+        if (msg.getAccountName() != null) {
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.name, Op.EQ, msg.getAccountName());
-            if(q.isExists()){
+            if (q.isExists()) {
                 reply.setAccountName(true);
             }
         }
-        if(msg.getAccountEmail() != null){
+        if (msg.getAccountEmail() != null) {
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.email, Op.EQ, msg.getAccountEmail());
-            if(q.isExists()){
+            if (q.isExists()) {
                 reply.setAccountEmail(true);
             }
         }
-        if(msg.getAccountPhone() != null){
+        if (msg.getAccountPhone() != null) {
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.phone, Op.EQ, msg.getAccountPhone());
-            if(q.isExists()){
+            if (q.isExists()) {
                 reply.setAccountPhone(true);
             }
         }
 
-        if(msg.getUserName() != null){
+        if (msg.getUserName() != null) {
             SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
             q.add(UserVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
             q.add(UserVO_.name, Op.EQ, msg.getUserName());
-            if(q.isExists()){
+            if (q.isExists()) {
                 reply.setUserName(true);
             }
         }
-        if(msg.getUserEmail() != null){
+        if (msg.getUserEmail() != null) {
             SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
             q.add(UserVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
             q.add(UserVO_.email, Op.EQ, msg.getUserEmail());
-            if(q.isExists()){
+            if (q.isExists()) {
                 reply.setUserEmail(true);
             }
         }
-        if(msg.getUserPhone() != null){
+        if (msg.getUserPhone() != null) {
             SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
             q.add(UserVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
             q.add(UserVO_.phone, Op.EQ, msg.getUserPhone());
-            if(q.isExists()){
+            if (q.isExists()) {
                 reply.setUserPhone(true);
             }
         }
 
-        if(msg.getRoleName() != null){
+        if (msg.getRoleName() != null) {
             SimpleQuery<RoleVO> q = dbf.createQuery(RoleVO.class);
             q.add(RoleVO_.accountUuid, Op.EQ, msg.getSession().getAccountUuid());
             q.add(RoleVO_.name, Op.EQ, msg.getRoleName());
-            if(q.isExists()){
+            if (q.isExists()) {
                 reply.setRoleName(true);
             }
         }
@@ -224,8 +244,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         APIAccountPWDBackEvent evt = new APIAccountPWDBackEvent(msg.getId());
 
         if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
-            throw new ApiMessageInterceptionException(argerr("Validation code does not match[%s, %s]", msg.getPhone(), msg.getCode() ));
-        }else{
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[%s, %s]", msg.getPhone(), msg.getCode()));
+        } else {
 
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
             q.add(AccountVO_.phone, Op.EQ, msg.getPhone());
@@ -252,11 +272,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
                 user.setPassword(msg.getNewpassword());
                 evt.setInventory(UserInventory.valueOf(dbf.updateAndRefresh(user)));
-            }else{
+            } else {
                 throw new ApiMessageInterceptionException(argerr("account[%s] is not exists", msg.getAccountName()));
             }
-        }else{
-            throw new ApiMessageInterceptionException(argerr("Validation code does not match[%s, %s]", msg.getPhone(), msg.getCode() ));
+        } else {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[%s, %s]", msg.getPhone(), msg.getCode()));
         }
 
         bus.publish(evt);
@@ -417,7 +437,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
         if (valid) {
             reply.setSessionInventory(s);
-            AccountVO vo = dbf.findByUuid(s.getAccountUuid(),AccountVO.class);
+            AccountVO vo = dbf.findByUuid(s.getAccountUuid(), AccountVO.class);
             reply.setAccountName(vo.getName());
         }
 
@@ -437,11 +457,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         AccountVO account;
 
         SimpleQuery<AccountVO> accountq = dbf.createQuery(AccountVO.class);
-        if(msg.getAccountName() != null){
+        if (msg.getAccountName() != null) {
             accountq.add(AccountVO_.name, Op.EQ, msg.getAccountName());
-        }else if(msg.getAccountPhone() != null){
+        } else if (msg.getAccountPhone() != null) {
             accountq.add(AccountVO_.phone, Op.EQ, msg.getAccountPhone());
-        }else if(msg.getAccountEmail() != null){
+        } else if (msg.getAccountEmail() != null) {
             accountq.add(AccountVO_.email, Op.EQ, msg.getAccountEmail());
         }
         account = accountq.find();
@@ -452,11 +472,11 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         SimpleQuery<UserVO> q = dbf.createQuery(UserVO.class);
         q.add(UserVO_.accountUuid, Op.EQ, account.getUuid());
         q.add(UserVO_.password, Op.EQ, msg.getPassword());
-        if(msg.getUserName() != null){
+        if (msg.getUserName() != null) {
             q.add(UserVO_.name, Op.EQ, msg.getUserName());
-        }else if(msg.getUserPhone() != null){
+        } else if (msg.getUserPhone() != null) {
             q.add(UserVO_.phone, Op.EQ, msg.getUserPhone());
-        }else if(msg.getUserEmail() != null){
+        } else if (msg.getUserEmail() != null) {
             q.add(UserVO_.email, Op.EQ, msg.getUserEmail());
         }
         UserVO user = q.find();
@@ -467,7 +487,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             ));
             bus.reply(msg, reply);
             return;
-        }else if(user.getStatus() == AccountStatus.Disabled){
+        } else if (user.getStatus() == AccountStatus.Disabled) {
             reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                     "frozen user"
             ));
@@ -481,18 +501,18 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void handle(APILogInByAccountMsg msg) {
 
-        if(msg.getAccountName()==null && msg.getEmail()==null &&
-                msg.getPhone()==null){
+        if (msg.getAccountName() == null && msg.getEmail() == null &&
+                msg.getPhone() == null) {
             throw new OperationFailureException(operr("account/email/phone all is null"));
 
         }
         APILogInReply reply = new APILogInReply();
         SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
-        if(msg.getAccountName() != null){
+        if (msg.getAccountName() != null) {
             q.add(AccountVO_.name, Op.EQ, msg.getAccountName());
-        }else if(msg.getEmail() != null){
+        } else if (msg.getEmail() != null) {
             q.add(AccountVO_.email, Op.EQ, msg.getEmail());
-        }else if(msg.getPhone() != null){
+        } else if (msg.getPhone() != null) {
             q.add(AccountVO_.phone, Op.EQ, msg.getPhone());
         }
 
@@ -503,7 +523,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                     "wrong account name or password"));
             bus.reply(msg, reply);
             return;
-        } else if(vo.getStatus() == AccountStatus.Disabled){
+        } else if (vo.getStatus() == AccountStatus.Disabled) {
             reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                     "frozen account"));
             bus.reply(msg, reply);
@@ -653,7 +673,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         q.add(ProxyAccountRefVO_.customerAccountUuid, Op.EQ, msg.getUuid());
 
         if (msg.getSession().getType() == AccountType.SystemAdmin || q.isExists()) {
-        }else{
+        } else {
             throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot reset the password of the other account[uuid: %s]",
                     msg.getAccountUuid(), msg.getUuid()));
         }
@@ -694,13 +714,13 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateUserPhoneMsg msg) {
-        if(!msg.getOldphone().equals(dbf.findByUuid(msg.getSession().getUserUuid(),
-                UserVO.class).getPhone())){
+        if (!msg.getOldphone().equals(dbf.findByUuid(msg.getSession().getUserUuid(),
+                UserVO.class).getPhone())) {
             throw new ApiMessageInterceptionException(argerr("wrong oldphone"));
         }
 
         if (!smsService.validateVerificationCode(msg.getOldphone(), msg.getOldcode())
-                ||!smsService.validateVerificationCode(msg.getNewphone(), msg.getNewcode())) {
+                || !smsService.validateVerificationCode(msg.getNewphone(), msg.getNewcode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
         }
@@ -708,17 +728,17 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void validate(APIUpdateUserPWDMsg msg) {
 
-        if(msg.getPhone() != null){
+        if (msg.getPhone() != null) {
             if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
                 throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                         msg.getSession().getAccountUuid()));
             }
-        }else if(msg.getEmail() != null){
+        } else if (msg.getEmail() != null) {
             if (!mailService.ValidateMailCode(msg.getEmail(), msg.getCode())) {
                 throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                         msg.getSession().getAccountUuid()));
             }
-        }else{
+        } else {
             throw new ApiMessageInterceptionException(argerr("email and phone all is null"));
         }
 
@@ -726,12 +746,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void validate(APIUpdateUserEmailMsg msg) {
 
-        if(!msg.getOldEmail().equals(dbf.findByUuid(msg.getSession().getUserUuid(),
-                UserVO.class).getEmail())){
+        if (!msg.getOldEmail().equals(dbf.findByUuid(msg.getSession().getUserUuid(),
+                UserVO.class).getEmail())) {
             throw new ApiMessageInterceptionException(argerr("wrong oldmail"));
         }
 
-        if (!mailService.ValidateMailCode(msg.getOldEmail(), msg.getOldCode())||
+        if (!mailService.ValidateMailCode(msg.getOldEmail(), msg.getOldCode()) ||
                 !mailService.ValidateMailCode(msg.getNewEmail(), msg.getNewCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
@@ -739,34 +759,34 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateAccountPWDMsg msg) {
-        if(msg.getPhone() != null && !msg.getPhone().equals(dbf.findByUuid(msg.getAccountUuid(),
-                AccountVO.class).getPhone())){
+        if (msg.getPhone() != null && !msg.getPhone().equals(dbf.findByUuid(msg.getAccountUuid(),
+                AccountVO.class).getPhone())) {
             throw new ApiMessageInterceptionException(argerr("Wrong Old Phone"));
         }
 
-        if(msg.getPhone() != null){
+        if (msg.getPhone() != null) {
             if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
                 throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                         msg.getSession().getAccountUuid()));
             }
-        }else if(msg.getEmail() != null){
+        } else if (msg.getEmail() != null) {
             if (!mailService.ValidateMailCode(msg.getEmail(), msg.getCode())) {
                 throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                         msg.getSession().getAccountUuid()));
             }
-        }else{
+        } else {
             throw new ApiMessageInterceptionException(argerr("email/phone all is null"));
         }
 
     }
 
     private void validate(APIUpdateAccountPhoneMsg msg) {
-        if(!msg.getOldphone().equals(dbf.findByUuid(msg.getSession().getAccountUuid(),
-                AccountVO.class).getPhone())){
+        if (!msg.getOldphone().equals(dbf.findByUuid(msg.getSession().getAccountUuid(),
+                AccountVO.class).getPhone())) {
             throw new ApiMessageInterceptionException(argerr("wrong oldphone"));
         }
 
-        if (!smsService.validateVerificationCode(msg.getOldphone(), msg.getOldcode())||
+        if (!smsService.validateVerificationCode(msg.getOldphone(), msg.getOldcode()) ||
                 !smsService.validateVerificationCode(msg.getNewphone(), msg.getNewcode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
@@ -775,12 +795,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void validate(APIUpdateAccountEmailMsg msg) {
 
-        if(!msg.getOldEmail().equals(dbf.findByUuid(msg.getSession().getAccountUuid(),
-                AccountVO.class).getEmail())){
+        if (!msg.getOldEmail().equals(dbf.findByUuid(msg.getSession().getAccountUuid(),
+                AccountVO.class).getEmail())) {
             throw new ApiMessageInterceptionException(argerr("wrong oldmail"));
         }
 
-        if (!mailService.ValidateMailCode(msg.getOldEmail(), msg.getOldCode())||
+        if (!mailService.ValidateMailCode(msg.getOldEmail(), msg.getOldCode()) ||
                 !mailService.ValidateMailCode(msg.getNewEmail(), msg.getNewCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[uuid: %s]",
                     msg.getSession().getAccountUuid()));
@@ -800,7 +820,7 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
 
     private void validate(APICreateAccountMsg msg) {
         if (msg.getSession().getType() != AccountType.SystemAdmin
-                && msg.getSession().getType() != AccountType.Proxy){
+                && msg.getSession().getType() != AccountType.Proxy) {
             throw new ApiMessageInterceptionException(argerr("unable to create a account. account[uuid:%s] is not admin or proxy",
                     msg.getSession().getAccountUuid()));
         }
@@ -842,12 +862,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void validate(APIUpdateAccountMsg msg) {
-        if (AccountType.SystemAdmin.toString().equalsIgnoreCase(msg.getType())){
+        if (AccountType.SystemAdmin.toString().equalsIgnoreCase(msg.getType())) {
             throw new OperationFailureException(operr("cannot set account type to SystemAdmin"));
         }
 
         if (msg.getSession().getType() != AccountType.SystemAdmin &&
-                ! msg.getSession().getAccountUuid().equals(msg.getUuid())) {
+                !msg.getSession().getAccountUuid().equals(msg.getUuid())) {
             throw new OperationFailureException(operr("account[uuid: %s] is a normal account, it cannot update another account[uuid: %s]",
                     msg.getSession().getAccountUuid(), msg.getUuid()));
         }

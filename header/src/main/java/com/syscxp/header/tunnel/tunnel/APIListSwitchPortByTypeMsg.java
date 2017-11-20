@@ -9,7 +9,7 @@ import com.syscxp.header.tunnel.endpoint.EndpointVO;
 /**
  * Created by DCY on 2017-09-11
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
+@Action(services = {"tunnel"}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
 public class APIListSwitchPortByTypeMsg extends APISyncCallMessage {
     @APIParam(emptyString = false, resourceType = EndpointVO.class)
     private String uuid;

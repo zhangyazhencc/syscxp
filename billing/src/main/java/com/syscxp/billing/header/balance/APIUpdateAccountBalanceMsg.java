@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIParam;
 
 import java.math.BigDecimal;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"})
+@Action(category = BillingConstant.ACTION_CATEGORY_BILLING, names = {"update"})
 public class APIUpdateAccountBalanceMsg extends APIMessage {
     @APIParam(emptyString = false)
     private String accountUuid;

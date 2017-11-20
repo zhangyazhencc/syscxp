@@ -9,7 +9,7 @@ import com.syscxp.header.tunnel.NodeConstant;
  * Created by DCY on 2017-08-23
  */
 
-@Action(category = NodeConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
+@Action(services = {"tunnel"}, category = NodeConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUpdateEndpointMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
     private String uuid;

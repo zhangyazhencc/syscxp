@@ -9,7 +9,7 @@ import com.syscxp.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/08/23.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
+@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
 public class APIUpdateApiAllowIPMsg extends APIMessage implements AccountMessage{
 
     @APIParam(maxLength = 2048)

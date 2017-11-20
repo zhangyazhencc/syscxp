@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.vpn.vpn.VpnConstant;
 
-@Action(category = VpnConstant.ACTION_CATEGORY_VPN)
+@Action(services = {"vpn"}, category = VpnConstant.ACTION_CATEGORY_VPN)
 public class APIResetCertificateMsg extends APIVpnMessage {
     @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String uuid;

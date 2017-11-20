@@ -8,7 +8,7 @@ import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.vpn.vpn.VpnConstant;
 
 
-@Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
+@Action(services = {"vpn"}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"}, adminOnly = true)
 public class APICreateVpnMsg extends APIVpnMessage {
     @APIParam(emptyString = false, minLength = 6, maxLength = 50)
     private String name;

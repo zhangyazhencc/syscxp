@@ -9,7 +9,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 
 import java.sql.Timestamp;
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, adminOnly = true)
+@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, adminOnly = true)
 public class APICreateNoticeMsg extends APICreateMessage {
     @APIParam(maxLength = 255, emptyString = false)
     private String title;

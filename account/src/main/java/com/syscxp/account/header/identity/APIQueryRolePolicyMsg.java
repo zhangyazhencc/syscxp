@@ -9,7 +9,7 @@ import com.syscxp.header.query.AutoQuery;
  * Created by wangwg on 2017/11/10.
  */
 @AutoQuery(replyClass = APIQueryRolePolicyReply.class, inventoryClass = RolePolicyRefInventory.class)
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"}, accountOnly = true)
+@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"}, accountOnly = true)
 public class APIQueryRolePolicyMsg extends APIQueryMessage {
 
 }

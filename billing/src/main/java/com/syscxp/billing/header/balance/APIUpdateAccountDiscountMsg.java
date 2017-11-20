@@ -6,7 +6,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"})
+@Action(category = BillingConstant.ACTION_CATEGORY_BILLING, names = {"update"})
 public class APIUpdateAccountDiscountMsg extends APIMessage{
 
     @APIParam(emptyString = false, resourceType = AccountDiscountVO.class)

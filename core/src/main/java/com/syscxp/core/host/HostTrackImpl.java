@@ -132,7 +132,6 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
         @Override
         public void run() {
             try {
-                reScanHost();
                 List<PingHostMsg> msgs;
                 synchronized (hostUuids) {
                     msgs = new ArrayList<>();

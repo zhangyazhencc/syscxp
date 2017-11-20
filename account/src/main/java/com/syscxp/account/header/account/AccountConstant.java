@@ -21,6 +21,7 @@ public interface AccountConstant {
     int RESOURCE_PERMISSION_WRITE = 2;
 
     public static final String ACTION_CATEGORY_ACCOUNT = "account";
+    public static final String ACTION_CATEGORY_TICKET = "ticket";
 
     enum RoleDecision {
         EXPLICIT_DENY,

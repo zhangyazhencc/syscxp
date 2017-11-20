@@ -114,8 +114,6 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                 new SyncHttpCallHandler<AlarmLogCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(AlarmLogCallbackCmd cmd) {
-                        Boolean flag = false;
-
                         SimpleQuery<AlarmLogVO> query = dbf.createQuery(AlarmLogVO.class);
                         query.add(AlarmLogVO_.productUuid, SimpleQuery.Op.EQ, cmd.getTunnelUuid());
                         query.add(AlarmLogVO_.regulationUuid, SimpleQuery.Op.EQ, cmd.getRegulationUuid());
