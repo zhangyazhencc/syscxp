@@ -353,7 +353,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         upmsg.setProductUuid(msg.getUuid());
         if (vo.getExpireDate() == null) {
             upmsg.setExpiredTime(dbf.getCurrentSqlTime());
-            //upmsg.setCreateFailure(true);
+            upmsg.setCreateFailure(true);
         } else {
             upmsg.setExpiredTime(vo.getExpireDate());
         }

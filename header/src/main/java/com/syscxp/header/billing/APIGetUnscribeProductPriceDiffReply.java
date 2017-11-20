@@ -30,5 +30,6 @@ public class APIGetUnscribeProductPriceDiffReply extends APIReply{
 
     public APIGetUnscribeProductPriceDiffReply(APIGetUnscribeProductPriceDiffReply reply){
         this.setInventory(reply.getInventory());
+        this.setReFoundMoney(reply.getReFoundMoney());
     }
 }
