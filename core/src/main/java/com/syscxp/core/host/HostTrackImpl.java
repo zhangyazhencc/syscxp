@@ -50,9 +50,6 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
             reconnectTimes.remove(hostUuid);
         }
     }
-    public void initMap(String hostUuid) {
-        reconnectTimes.putIfAbsent(hostUuid, 0);
-    }
 
     private class Tracker implements PeriodicTask {
         @Override
@@ -72,7 +69,9 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
 
         private void handleReply(final String hostUuid, MessageReply reply) {
 
-            initMap(hostUuid);
+            if (!reconnectTimes.containsKey(hostUuid)) {
+                reconnectTimes.put(hostUuid, 0);
+            }
 
             if (!reply.isSuccess()) {
                 logger.warn(String.format("[Host Tracker]: unable track host[uuid:%s], %s", hostUuid, reply.getError()));
@@ -133,7 +132,6 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
         @Override
         public void run() {
             try {
-                reScanHost();
                 List<PingHostMsg> msgs;
                 synchronized (hostUuids) {
                     msgs = new ArrayList<>();

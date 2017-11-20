@@ -10,8 +10,6 @@ import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.identity.InnerMessageHelper;
-import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.alarm.AlarmConstant;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
@@ -21,12 +19,9 @@ import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.sms.MailService;
-import com.syscxp.sms.SmsGlobalProperty;
 import com.syscxp.sms.SmsService;
-import com.syscxp.sms.header.APIMaiAlarmSendMsg;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,7 +29,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.sql.Timestamp;
 import java.util.*;
 
-import static com.syscxp.alarm.AlarmGlobalProperty.ALARM_SERVER_RUL;
 import static com.syscxp.core.Platform.operr;
 
 public class AlarmLogManagerImpl extends AbstractService implements ApiMessageInterceptor {
@@ -68,43 +62,40 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
         bus.dealWithUnknownMessage(msg);
     }
 
-    private void sendMessage(AlarmLogCallbackCmd cmd) throws Exception {
+    private void sendMessage(AlarmLogCallbackCmd cmd) {
 
-//        mailService.alarmEmail("zhangqiuyu@syscloud.cn","监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+        List<String> smsDatas = new ArrayList<String>();
+        smsDatas.add(cmd.getSmsContent());
+        List<String> phoneList = new ArrayList<>();
+        List<String> emailList = new ArrayList<>();
 
         SimpleQuery<ContactVO> query = dbf.createQuery(ContactVO.class);
         query.add(ContactVO_.accountUuid, SimpleQuery.Op.EQ, cmd.getAccountUuid());
         List<ContactVO> contactVOS = query.list();
         for (ContactVO contactVO : contactVOS) {
+
+
             Set<NotifyWayVO> notifyWayVOs = contactVO.getNotifyWayVOs();
             for (NotifyWayVO notifyWayVO : notifyWayVOs) {
                 if (notifyWayVO.getCode().equals("email")) {
                     String email = contactVO.getEmail();
-                    APIMaiAlarmSendMsg apiMaiAlarmSendMsg = new APIMaiAlarmSendMsg();
-                    apiMaiAlarmSendMsg.setEmail(email);
-                    apiMaiAlarmSendMsg.setSubject("监控报警信息");
-                    apiMaiAlarmSendMsg.setComtent("【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
-                    InnerMessageHelper.setMD5(apiMaiAlarmSendMsg);
-                    String gstr = RESTApiDecoder.dump(apiMaiAlarmSendMsg);
-                    RestAPIResponse rsp = restf.syncJsonPost(ALARM_SERVER_RUL, gstr, RestAPIResponse.class);
-                    //mailService.alarmEmail(email,"监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+                    emailList.add(email);
                 }
 
                 if (notifyWayVO.getCode().equals("mobile")) {
                     String phone = contactVO.getMobile();
-
-
-
+                    phoneList.add(phone);
                 }
 
             }
+
         }
-
-        List<String> datas = new ArrayList<String>();
-        datas.add(cmd.getSmsContent());
-        
-        smsService.sendAlarmMonitorMsg(null, datas);
-
+        if(emailList.size()>0){
+            mailService.sendAlarmMonitorMsg(emailList,"监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+        }
+        if(phoneList.size()>0){
+            smsService.sendAlarmMonitorMsg(phoneList, smsDatas);
+        }
     }
 
     private void handleLocalMessage(Message msg) {
@@ -123,49 +114,46 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                 new SyncHttpCallHandler<AlarmLogCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(AlarmLogCallbackCmd cmd) {
-                        Boolean flag = false;
-
                         SimpleQuery<AlarmLogVO> query = dbf.createQuery(AlarmLogVO.class);
                         query.add(AlarmLogVO_.productUuid, SimpleQuery.Op.EQ, cmd.getTunnelUuid());
                         query.add(AlarmLogVO_.regulationUuid, SimpleQuery.Op.EQ, cmd.getRegulationUuid());
-                        query.add(AlarmLogVO_.status, SimpleQuery.Op.EQ, AlarmStatus.PROBLEM);
-                        query.add(AlarmLogVO_.createDate, SimpleQuery.Op.GT, new Timestamp(dbf.getCurrentSqlTime().getTime()-3600000));
-                        List<AlarmLogVO> alarmLogVOS = query.list();
+                        AlarmLogVO log = query.find();
 
-                        if(alarmLogVOS.size() == 0 ){
-                            saveAlarmLog(cmd);
-                            flag = true;
-                        }else{
-                            for (AlarmLogVO vo : alarmLogVOS) {
-                                if(AlarmStatus.OK.equals(cmd.getStatus())){
-                                    vo.setCount(vo.getCount()-1);
-                                    if(vo.getCount() == 0){
-                                        vo.setResumeTime(new Timestamp(System.currentTimeMillis()));
-                                        vo.setStatus(cmd.getStatus());
-                                        long time = (System.currentTimeMillis() - vo.getAlarmTime().getTime()) / 1000 + vo.getDuration();
-                                        vo.setDuration(time);
-                                        flag = true;
-                                    }
-                                }else{
-                                    if(vo.getCount() < 2){
-                                        vo.setCount(vo.getCount()+1);
-                                    }
-                                }
-                                dbf.updateAndRefresh(vo);
-                            }
-                        }
-
-
-                        //foreach发送短信和邮件
-                        try {
-                            if(flag){
+                        if (log == null){
+                            if (AlarmStatus.PROBLEM.equals(cmd.getStatus())) {
+                                saveAlarmLog(cmd);
                                 sendMessage(cmd);
                             }
+                        }else {
+                            if (log.getStatus() == AlarmStatus.OK) {
+                                if (AlarmStatus.PROBLEM.equals(cmd.getStatus())) {
+                                    saveAlarmLog(cmd);
+                                    sendMessage(cmd);
+                                }
+                            } else {
+                                if (AlarmStatus.PROBLEM.equals(cmd.getStatus())) {
+                                    if (log.getAlarmTime().before(new Timestamp(dbf.getCurrentSqlTime().getTime() - 3600 * 1000))){
+                                        saveAlarmLog(cmd);
+                                        sendMessage(cmd);
+                                    }else{
+                                        if (log.getCount() < 2) {
+                                            log.setCount(log.getCount() + 1);
+                                            dbf.updateAndRefresh(log);
+                                        }
+                                    }
+                                } else {
+                                    log.setCount(log.getCount() - 1);
+                                    if (log.getCount() == 0) {
+                                        log.setResumeTime(new Timestamp(System.currentTimeMillis()));
+                                        log.setStatus(cmd.getStatus());
+                                        long time = (System.currentTimeMillis() - log.getAlarmTime().getTime()) / 1000 + log.getDuration();
+                                        log.setDuration(time);
+                                        sendMessage(cmd);
+                                    }
+                                    dbf.updateAndRefresh(log);
+                                }
 
-                        } catch (Exception e) {
-                            //保存失败信息
-                            e.printStackTrace();
-                            throw new OperationFailureException(operr("message:" + e.getMessage()));
+                            }
                         }
 
                         return null;

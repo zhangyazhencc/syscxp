@@ -3,24 +3,27 @@ package com.syscxp.sms.header;
 import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+
+import java.util.List;
+
 @InnerCredentialCheck
-public class APIMaiAlarmSendMsg extends APIMessage{
+public class APISendMailMsg extends APIMessage{
 
     @APIParam
-    private String email;
+    private List<String> emails;
 
     @APIParam
     private String subject;
 
     @APIParam
-    private String comtent;
+    private String content;
 
-    public String getEmail() {
-        return email;
+    public List<String> getEmails() {
+        return emails;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setEmails(List<String> emails) {
+        this.emails = emails;
     }
 
     public String getSubject() {
@@ -31,11 +34,11 @@ public class APIMaiAlarmSendMsg extends APIMessage{
         this.subject = subject;
     }
 
-    public String getComtent() {
-        return comtent;
+    public String getContent() {
+        return content;
     }
 
-    public void setComtent(String comtent) {
-        this.comtent = comtent;
+    public void setContent(String content) {
+        this.content = content;
     }
 }

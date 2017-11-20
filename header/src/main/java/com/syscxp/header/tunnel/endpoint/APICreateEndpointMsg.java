@@ -25,7 +25,7 @@ public class APICreateEndpointMsg extends APIMessage {
     @APIParam(emptyString = false,validValues = {"CLOUD","ACCESSIN","INTERCONNECTED"})
     private EndpointType endpointType;
 
-    @APIParam(emptyString = false, required = false)
+    @APIParam(emptyString = false, required = false,resourceType = CloudVO.class)
     private String cloudType;
 
     @APIParam(emptyString = false,validValues = {"Disabled","Enabled"})

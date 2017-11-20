@@ -7,6 +7,7 @@ import com.syscxp.core.config.GlobalConfigVO;
 import com.syscxp.core.config.GlobalConfigVO_;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.header.Component;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.quota.*;
 import com.syscxp.utils.DebugUtils;
@@ -21,7 +22,7 @@ import com.syscxp.header.message.APIMessage;
 
 import java.util.*;
 
-public class QuotaChecker implements GlobalApiMessageInterceptor {
+public class QuotaChecker implements GlobalApiMessageInterceptor, Component {
     private static final CLogger logger = Utils.getLogger(QuotaChecker.class);
 
     @Autowired
@@ -34,15 +35,6 @@ public class QuotaChecker implements GlobalApiMessageInterceptor {
     private Map<Class, List<Quota>> messageQuotaMap = new HashMap<>();
     private Map<String, Quota> nameQuotaMap = new HashMap<>();
     private List<Quota> definedQuotas = new ArrayList<>();
-
-    public void init() {
-        logger.debug("QuotaChecker init.");
-        try {
-            collectDefaultQuota();
-        } catch (Exception e) {
-            throw new CloudRuntimeException(e);
-        }
-    }
 
     @Override
     public List<Class> getMessageClassToIntercept() {
@@ -77,18 +69,17 @@ public class QuotaChecker implements GlobalApiMessageInterceptor {
     }
 
     private void check(APIMessage msg, Quota quota) {
-        // 暂时不做每个账户的单独限额
-
-        // Map<String, QuotaPair> pairs = new QuotaUtil().makeQuotaPairs(msg.getSession().getAccountUuid());
         // 查询默认配置
-        List<GlobalConfigVO> vos = Q.New(GlobalConfigVO.class)
-                .eq(GlobalConfigVO_.category, QuotaConstant.QUOTA_GLOBAL_CONFIG_CATETORY).list();
+        SimpleQuery<GlobalConfigVO> query = dbf.createQuery(GlobalConfigVO.class);
+        query.add(GlobalConfigVO_.category, SimpleQuery.Op.EQ, QuotaConstant.QUOTA_GLOBAL_CONFIG_CATETORY);
+        List<GlobalConfigVO> vos = query.list();
 
         Map<String, QuotaPair> pairs = new HashMap<>();
         for (GlobalConfigVO vo:vos){
             QuotaPair pair = new QuotaPair();
             pair.setName(vo.getName());
             pair.setValue(Long.valueOf(vo.getValue()));
+            pairs.put(vo.getName(), pair);
         }
 
         quota.getOperator().checkQuota(msg, pairs);
@@ -144,28 +135,6 @@ public class QuotaChecker implements GlobalApiMessageInterceptor {
             }
         }
 
-        // Add additional quota checker to quota
-        for (RegisterQuotaCheckerExtensionPoint ext : pluginRgty.getExtensionList(RegisterQuotaCheckerExtensionPoint.class)) {
-            // Map<quota name,Set<QuotaValidator>>
-            Map<String, Set<Quota.QuotaValidator>> m = ext.registerQuotaValidator();
-            for (Map.Entry<String, Set<Quota.QuotaValidator>> entry : m.entrySet()) {
-                Quota quota = nameQuotaMap.get(entry.getKey());
-                quota.addQuotaValidators(entry.getValue());
-                for (Quota.QuotaValidator q : entry.getValue()) {
-                    for (Class clz : q.getMessagesNeedValidation()) {
-                        if (messageQuotaMap.containsKey(clz)) {
-                            messageQuotaMap.get(clz).add(quota);
-                        } else {
-                            ArrayList<Quota> quotaArrayList = new ArrayList<>();
-                            quotaArrayList.add(quota);
-                            messageQuotaMap.put(clz, quotaArrayList);
-                        }
-                    }
-                }
-            }
-
-        }
-
         // complete default quota
         SimpleQuery<GlobalConfigVO> q = dbf.createQuery(GlobalConfigVO.class);
         q.select(GlobalConfigVO_.name);
@@ -197,49 +166,16 @@ public class QuotaChecker implements GlobalApiMessageInterceptor {
             gcf.createGlobalConfig(vo);
         }
 
-        // 完善每个账户的配额
-//        repairAccountQuota(defaultQuota);
     }
 
-    private void repairAccountQuota(Map<String, Long> defaultQuota) {
-//        SimpleQuery<AccountVO> queryAccounts = dbf.createQuery(AccountVO.class);
-//        queryAccounts.select(AccountVO_.uuid);
-//        queryAccounts.add(AccountVO_.type, SimpleQuery.Op.EQ, AccountType.Normal);
-//        List<String> normalAccounts = queryAccounts.listValue();
-        List<String> normalAccounts = new ArrayList<>();
-
-        List<QuotaVO> quotas = new ArrayList<>();
-        for (String nA : normalAccounts) {
-            SimpleQuery<QuotaVO> queryAccountQuotas = dbf.createQuery(QuotaVO.class);
-            queryAccountQuotas.select(QuotaVO_.name);
-            queryAccountQuotas.add(QuotaVO_.identityUuid, SimpleQuery.Op.EQ, nA);
-            List<String> existingQuota = queryAccountQuotas.listValue();
-
-
-            for (Map.Entry<String, Long> e : defaultQuota.entrySet()) {
-                String rtype = e.getKey();
-                Long value = e.getValue();
-                if (existingQuota.contains(rtype)) {
-                    continue;
-                }
-
-                QuotaVO q = new QuotaVO();
-                q.setUuid(Platform.getUuid());
-                q.setName(rtype);
-                q.setIdentityUuid(nA);
-//                q.setIdentityType(AccountVO.class.getSimpleName());
-                q.setValue(value);
-                quotas.add(q);
-
-                if (logger.isTraceEnabled()) {
-                    logger.trace(String.format("create default quota[name: %s, value: %s] global config", rtype, value));
-                }
-            }
-        }
-
-        if (!quotas.isEmpty()) {
-            dbf.persistCollection(quotas);
-        }
+    @Override
+    public boolean start() {
+        collectDefaultQuota();
+        return true;
     }
 
+    @Override
+    public boolean stop() {
+        return true;
+    }
 }

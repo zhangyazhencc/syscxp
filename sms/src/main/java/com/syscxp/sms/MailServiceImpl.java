@@ -65,16 +65,18 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
             handle((APIMailCodeSendMsg) msg);
         }else if (msg instanceof APIValidateMailCodeMsg) {
             handle((APIValidateMailCodeMsg) msg);
-        }else if(msg instanceof APIMaiAlarmSendMsg){
-            handle((APIMaiAlarmSendMsg) msg);
+        }else if(msg instanceof APISendMailMsg){
+            handle((APISendMailMsg) msg);
         }
         else{
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APIMaiAlarmSendMsg msg) {
-        boolean result = mailSend(msg.getEmail(),msg.getSubject(),msg.getComtent());
+    private void handle(APISendMailMsg msg) {
+        String[] emails = msg.getEmails().toArray(new String[msg.getEmails().size()]);
+
+        boolean result = mailSend(emails,msg.getSubject(),msg.getContent());
 
         APIMaiAlarmSendEvent evt = new APIMaiAlarmSendEvent(msg.getId());
 
@@ -117,7 +119,6 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
     }
 
-
     private void  handle(APIMailCodeSendMsg msg) throws OperationFailureException {
 
         String code = String.valueOf(new Random().nextInt(1000000));
@@ -142,12 +143,16 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
         bus.reply(msg, reply);
     }
 
-    public boolean mailSend(String mail, String subject, String comtent){
+    public boolean mailSend(String mail, String subject, String content){
+        return mailSend(new String[]{mail}, subject, content);
+    }
+
+    public boolean mailSend(String[] mails, String subject, String content){
         SimpleMailMessage mailMessage = new SimpleMailMessage();
-        mailMessage.setTo(mail);
+        mailMessage.setTo(mails);
         mailMessage.setFrom(MailGlobalProperty.FROM);
         mailMessage.setSubject(subject);
-        mailMessage.setText(comtent);
+        mailMessage.setText(content);
         JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
         senderImpl.setHost(MailGlobalProperty.HOST);
         senderImpl.setPort(25);
@@ -232,12 +237,13 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
     }
 
-    public void alarmEmail(String email,String subject, String comtent){
-        APIMaiAlarmSendMsg apiMaiAlarmSendMsg = new APIMaiAlarmSendMsg();
-        apiMaiAlarmSendMsg.setEmail(email);
-        apiMaiAlarmSendMsg.setSubject(subject);
-        apiMaiAlarmSendMsg.setComtent(comtent);
-        apiMaiAlarmSendMsg.setServiceId(MailConstant.SERVICE_ID);
-        bus.send(apiMaiAlarmSendMsg);
+    public void sendAlarmMonitorMsg(List<String> email,String subject, String content){
+        APISendMailMsg msg = new APISendMailMsg();
+        msg.setEmails(email);
+        msg.setSubject(subject);
+        msg.setContent(content);
+        msg.setServiceId(bus.makeLocalServiceId(MailConstant.SERVICE_ID));
+
+        bus.send(msg);
     }
 }

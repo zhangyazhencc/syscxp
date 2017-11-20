@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, adminOnly = true)
+
 public class APIDeleteAlarmContactMsg extends APIDeleteMessage {
     @APIParam()
     private String uuid;

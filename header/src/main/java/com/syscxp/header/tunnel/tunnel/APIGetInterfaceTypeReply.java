@@ -8,13 +8,13 @@ import java.util.List;
  * Created by DCY on 2017-09-11
  */
 public class APIGetInterfaceTypeReply extends APIReply {
-    private List<String> types;
+    private List<PortOfferingInventory> inventories;
 
-    public List<String> getTypes() {
-        return types;
+    public List<PortOfferingInventory> getInventories() {
+        return inventories;
     }
 
-    public void setTypes(List<String> types) {
-        this.types = types;
+    public void setInventories(List<PortOfferingInventory> inventories) {
+        this.inventories = inventories;
     }
 }
