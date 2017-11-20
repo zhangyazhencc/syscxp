@@ -102,6 +102,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APIQuerySpeedResultMsg) msg);
         } else if (msg instanceof APIUpdateSpeedRecordsMsg) {
             handle((APIUpdateSpeedRecordsMsg) msg);
+        } else if (msg instanceof APIDeleteSpeedRecordsMsg) {
+            handle((APIDeleteSpeedRecordsMsg) msg);
         } else if (msg instanceof APICreateNettoolRecordMsg) {
             handle((APICreateNettoolRecordMsg) msg);
         } else if (msg instanceof APIQueryNettoolResultMsg) {
@@ -749,7 +751,17 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         vo = dbf.updateAndRefresh(vo);
 
         APIUpdateSpeedRecordsEvent event = new APIUpdateSpeedRecordsEvent(msg.getId());
-        event.setInventory(StartSpeedRecordsInventory.valueOf(vo,""));
+        event.setInventory(SpeedRecordsInventory.valueOf(vo));
+        bus.publish(event);
+    }
+
+    private void handle(APIDeleteSpeedRecordsMsg msg) {
+        SpeedRecordsVO vo = dbf.findByUuid(msg.getUuid(), SpeedRecordsVO.class);
+
+        dbf.remove(vo);
+
+        APIDeleteSpeedRecordsEvent event = new APIDeleteSpeedRecordsEvent(msg.getId());
+        event.setInventory(SpeedRecordsInventory.valueOf(vo));
         bus.publish(event);
     }
 

@@ -9,12 +9,12 @@ import com.syscxp.header.rest.RestResponse;
  * @Description: .
  */
 @RestResponse(allTo = "inventory")
-public class APIUpdateSpeedRecordsEvent extends APIEvent {
+public class APIDeleteSpeedRecordsEvent extends APIEvent {
     private SpeedRecordsInventory inventory;
 
-    public APIUpdateSpeedRecordsEvent(){};
+    public APIDeleteSpeedRecordsEvent(){};
 
-    public APIUpdateSpeedRecordsEvent(String apiId){super(apiId);}
+    public APIDeleteSpeedRecordsEvent(String apiId){super(apiId);}
 
     public SpeedRecordsInventory getInventory() {
         return inventory;
