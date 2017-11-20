@@ -3,8 +3,6 @@ package com.syscxp.vpn.vpn;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
-import com.syscxp.core.config.GlobalConfig;
-import com.syscxp.core.config.GlobalConfigUpdateExtensionPoint;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
@@ -88,15 +86,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APIUpdateVpnBandwidthMsg) msg);
         } else if (msg instanceof APIDeleteVpnMsg) {
             handle((APIDeleteVpnMsg) msg);
-        } else if (msg instanceof APICreateVpnInterfaceMsg) {
-            handle((APICreateVpnInterfaceMsg) msg);
-        } else if (msg instanceof APIDeleteVpnInterfaceMsg) {
-            handle((APIDeleteVpnInterfaceMsg) msg);
-        } else if (msg instanceof APICreateVpnRouteMsg) {
-            handle((APICreateVpnRouteMsg) msg);
-        } else if (msg instanceof APIDeleteVpnRouteMsg) {
-            handle((APIDeleteVpnRouteMsg) msg);
-        } else if (msg instanceof APIGetVpnMsg) {
+        }else if (msg instanceof APIGetVpnMsg) {
             handle((APIGetVpnMsg) msg);
         } else if (msg instanceof APIGetVpnPriceMsg) {
             handle((APIGetVpnPriceMsg) msg);
@@ -124,7 +114,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         ResetCertificateCmd cmd = ResetCertificateCmd.valueOf(vpn);
 
-        new VpnRESTCaller().sendCommand(VpnConstant.RESET_CERTIFICATE_PATH, cmd, new Completion(evt) {
+        new VpnRESTCaller().sendCommand(VpnConstant.SERVICE_PATH, cmd, new Completion(evt) {
             @Override
             public void success() {
                 evt.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vpn)));
@@ -144,20 +134,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         final APIDownloadCertificateEvent evt = new APIDownloadCertificateEvent(msg.getId());
         VpnVO vpn = Q.New(VpnVO.class).eq(VpnVO_.sid, msg.getSid()).find();
 
-        DownloadCertificateCmd cmd = DownloadCertificateCmd.valueOf(vpn);
-        try {
-            DownloadCertificateResponse rsp = restf.syncJsonPost(VpnConstant.DOWNLOAD_CERTIFICATE_PATH, cmd,
-                    DownloadCertificateResponse.class);
-            CertificateInventory inv = new CertificateInventory();
-            inv.setCaCert(rsp.getCaCert());
-            inv.setClientCert(rsp.getClientCert());
-            inv.setClientConf(rsp.getClientConf());
-            inv.setClientKey(rsp.getClientKey());
-
-            evt.setInventory(inv);
-        } catch (Exception e) {
-            evt.setError(operr("failed to post to %s", VpnConstant.DOWNLOAD_CERTIFICATE_PATH));
-        }
         bus.publish(evt);
     }
 
@@ -205,19 +181,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setPort(generatePort(host));
         vpn.setHostUuid(msg.getHostUuid());
 
-        VpnInterfaceVO vpnIface = new VpnInterfaceVO();
-        vpnIface.setUuid(Platform.getUuid());
-        vpnIface.setName(host.getVpnInterfaceName());
-        vpnIface.setHostUuid(msg.getHostUuid());
-        vpnIface.setVpnUuid(vpn.getUuid());
-        vpnIface.setLocalIp(msg.getLocalIp());
-        vpnIface.setNetmask(msg.getNetmask());
-        vpnIface.setVlan(msg.getVlan());
-        vpnIface.setNetworkUuid(msg.getNetworkUuid());
-//        vpn.setVpnInterfaces(CollectionDSL.list(vpnIface));
 
         dbf.persistAndRefresh(vpn);
-        dbf.persistAndRefresh(vpnIface);
 
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
         ProductInfoForOrder productInfoForOrder = createBuyOrderForVPN(vpn);
@@ -236,7 +201,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         CreateVpnCmd cmd = CreateVpnCmd.valueOf(vo);
 
-        new VpnRESTCaller().sendCommand(VpnConstant.INIT_VPN_PATH, cmd, new Completion(evt) {
+        new VpnRESTCaller().sendCommand(VpnConstant.SERVICE_PATH, cmd, new Completion(evt) {
             @Override
             public void success() {
                 vo.setStatus(VpnStatus.Connected);
@@ -393,7 +358,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         UpdateVpnBandWidthCmd cmd = UpdateVpnBandWidthCmd.valueOf(vo);
 
-        new VpnRESTCaller().sendCommand(VpnConstant.UPDATE_VPN_BANDWIDTH_PATH, cmd, new Completion(evt) {
+        new VpnRESTCaller().sendCommand(VpnConstant.SERVICE_PATH, cmd, new Completion(evt) {
             @Override
             public void success() {
             }
@@ -443,11 +408,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setState(next);
         vpn.setStatus(VpnStatus.Connected);
         VpnAgentCommand cmd = CreateVpnCmd.valueOf(vpn);
-        String path = VpnConstant.START_VPN_PATH;
+        String path = VpnConstant.SERVICE_PATH;
         if (next == VpnState.Disabled) {
             vpn.setStatus(VpnStatus.Disconnected);
             cmd = DeleteVpnCmd.valueOf(vpn);
-            path = VpnConstant.STOP_VPN_PATH;
+            path = VpnConstant.SERVICE_PATH;
         }
 
         new VpnRESTCaller().sendCommand(path, cmd, new Completion(evt) {
@@ -472,7 +437,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         UpdateVpnCidrCmd cmd = UpdateVpnCidrCmd.valueOf(vpn);
 
-        new VpnRESTCaller().sendCommand(VpnConstant.UPDATE_VPN_CIDR_PATH, cmd, new Completion(evt) {
+        new VpnRESTCaller().sendCommand(VpnConstant.SERVICE_PATH, cmd, new Completion(evt) {
             @Override
             public void success() {
                 evt.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vpn)));
@@ -511,112 +476,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         final VpnVO vo = dbf.updateAndRefresh(vpn);
 
         DeleteVpnCmd cmd = DeleteVpnCmd.valueOf(vpn);
-        new VpnRESTCaller().sendCommand(VpnConstant.DELETE_VPN_PATH, cmd, new Completion(evt) {
+        new VpnRESTCaller().sendCommand(VpnConstant.SERVICE_PATH, cmd, new Completion(evt) {
             @Override
             public void success() {
                 dbf.remove(vo);
-            }
-
-            @Override
-            public void fail(ErrorCode errorCode) {
-                evt.setError(errorCode);
-            }
-        });
-        bus.publish(evt);
-    }
-
-    public void handle(APICreateVpnInterfaceMsg msg) {
-        APICreateVpnInterfaceEvent evt = new APICreateVpnInterfaceEvent(msg.getId());
-        VpnVO vpn = dbf.findByUuid(msg.getVpnUuid(), VpnVO.class);
-
-        VpnInterfaceVO iface = new VpnInterfaceVO();
-        iface.setUuid(Platform.getUuid());
-        iface.setVpnUuid(msg.getVpnUuid());
-        iface.setHostUuid(vpn.getHostUuid());
-        iface.setName(msg.getName());
-        iface.setVlan(msg.getVlan());
-        iface.setNetworkUuid(msg.getTunnelUuid());
-        iface.setLocalIp(msg.getLocalIP());
-        iface.setNetmask(msg.getNetmask());
-
-        VpnInterfaceCmd cmd = VpnInterfaceCmd.valueOf(vpn.getVpnHost().getHostIp(), iface);
-
-        new VpnRESTCaller().sendCommand(VpnConstant.ADD_VPN_INTERFACE_PATH, cmd, new Completion(evt) {
-            @Override
-            public void success() {
-                evt.setInventory(VpnInterfaceInventory.valueOf(dbf.persistAndRefresh(iface)));
-            }
-
-            @Override
-            public void fail(ErrorCode errorCode) {
-                evt.setError(errorCode);
-            }
-        });
-
-        bus.publish(evt);
-    }
-
-    public void handle(APIDeleteVpnInterfaceMsg msg) {
-        APIDeleteVpnInterfaceEvent evt = new APIDeleteVpnInterfaceEvent(msg.getId());
-        VpnInterfaceVO iface = dbf.findByUuid(msg.getUuid(), VpnInterfaceVO.class);
-
-        VpnVO vpn = dbf.findByUuid(iface.getVpnUuid(), VpnVO.class);
-        VpnInterfaceCmd cmd = VpnInterfaceCmd.valueOf(vpn.getVpnHost().getHostIp(), iface);
-
-        new VpnRESTCaller().sendCommand(VpnConstant.DELETE_VPN_INTERFACE_PATH, cmd, new Completion(evt) {
-            @Override
-            public void success() {
-                dbf.remove(iface);
-            }
-
-            @Override
-            public void fail(ErrorCode errorCode) {
-                evt.setError(errorCode);
-            }
-        });
-
-        bus.publish(evt);
-    }
-
-    public void handle(APICreateVpnRouteMsg msg) {
-        APICreateVpnRouteEvent evt = new APICreateVpnRouteEvent(msg.getId());
-
-        VpnRouteVO route = new VpnRouteVO();
-        route.setUuid(Platform.getUuid());
-        route.setVpnUuid(msg.getVpnUuid());
-        route.setRouteType(msg.getRouteType());
-        route.setNextInterface(msg.getNextIface());
-        route.setTargetCidr(msg.getTargetCidr());
-
-        VpnVO vpn = dbf.findByUuid(msg.getVpnUuid(), VpnVO.class);
-        VpnRouteCmd cmd = VpnRouteCmd.valueOf(vpn.getVpnHost().getHostIp(), route);
-
-        new VpnRESTCaller().sendCommand(VpnConstant.ADD_VPN_ROUTE_PATH, cmd, new Completion(evt) {
-            @Override
-            public void success() {
-                evt.setInventory(VpnRouteInventory.valueOf(dbf.persistAndRefresh(route)));
-            }
-
-            @Override
-            public void fail(ErrorCode errorCode) {
-                evt.setError(errorCode);
-            }
-        });
-
-        bus.publish(evt);
-    }
-
-    public void handle(APIDeleteVpnRouteMsg msg) {
-        APIDeleteVpnRouteEvent evt = new APIDeleteVpnRouteEvent(msg.getId());
-        VpnRouteVO route = dbf.findByUuid(msg.getUuid(), VpnRouteVO.class);
-
-        VpnVO vpn = dbf.findByUuid(route.getVpnUuid(), VpnVO.class);
-        VpnRouteCmd cmd = VpnRouteCmd.valueOf(vpn.getVpnHost().getHostIp(), route);
-
-        new VpnRESTCaller().sendCommand(VpnConstant.DELETE_VPN_ROUTE_PATH, cmd, new Completion(evt) {
-            @Override
-            public void success() {
-                dbf.remove(route);
             }
 
             @Override
@@ -655,20 +518,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void prepareGlobalConfig() {
-        vpnStatusCheckWorkerInterval =
-                VpnGlobalConfig.VPN_STATUS_CHECK_WORKER_INTERVAL.value(Integer.class);
-
-        GlobalConfigUpdateExtensionPoint onUpdate = new GlobalConfigUpdateExtensionPoint() {
-            @Override
-            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
-                if (VpnGlobalConfig.VPN_STATUS_CHECK_WORKER_INTERVAL.isMe(newConfig)) {
-                    vpnStatusCheckWorkerInterval = newConfig.value(Integer.class);
-                    restartFailureHostCopingThread();
-                }
-            }
-        };
+        vpnStatusCheckWorkerInterval = VpnGlobalProperty.VPN_STATUS_CHECK_WORKER_INTERVAL;
         restartFailureHostCopingThread();
-        VpnGlobalConfig.VPN_STATUS_CHECK_WORKER_INTERVAL.installUpdateExtension(onUpdate);
     }
 
     private class VpnStatusCheckWorker implements PeriodicTask {
@@ -699,7 +550,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             }
             for (VpnVO vo : vos) {
                 CheckVpnStatusCmd cmd = CheckVpnStatusCmd.valueOf(vo);
-                RunStatus status = new VpnRESTCaller().checkStatus(VpnConstant.CHECK_VPN_STATUS_PATH, cmd);
+                RunStatus status = new VpnRESTCaller().checkStatus(VpnConstant.SERVICE_PATH, cmd);
 
                 if (status == RunStatus.UP) {
                     if (vo.getStatus() == VpnStatus.Disconnected)
@@ -739,7 +590,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     public String handleSyncHttpCall(OrderCallbackCmd cmd) {
                         VpnVO vpn = updateVpnFromOrder(cmd);
                         if (vpn != null && vpn.getStatus() == VpnStatus.Connecting)
-                            new VpnRESTCaller().sendCommand(VpnConstant.INIT_VPN_PATH, CreateVpnCmd.valueOf(vpn),
+                            new VpnRESTCaller().sendCommand(VpnConstant.SERVICE_PATH, CreateVpnCmd.valueOf(vpn),
                                     new Completion(null) {
                                         @Override
                                         public void success() {
@@ -845,31 +696,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             validate((APIUpdateVpnBandwidthMsg) msg);
         } else if (msg instanceof APIDownloadCertificateMsg) {
             validate((APIDownloadCertificateMsg) msg);
-        } else if (msg instanceof APICreateVpnInterfaceMsg) {
-            validate((APICreateVpnInterfaceMsg) msg);
         }
         return msg;
     }
 
-    private void validate(APICreateVpnInterfaceMsg msg) {
-        if (!NetworkUtils.isIpv4Address(msg.getLocalIP()))
-            throw new ApiMessageInterceptionException(
-                    argerr("The LocalIp[%s] is illegal.", msg.getLocalIP()));
-        if (!NetworkUtils.isNetmask(msg.getNetmask()))
-            throw new ApiMessageInterceptionException(
-                    argerr("The Netmask[%s] is illegal.", msg.getNetmask()));
-        String hostUuid = Q.New(VpnVO.class)
-                .eq(VpnVO_.uuid, msg.getVpnUuid())
-                .select(VpnVO_.hostUuid)
-                .findValue();
-        // 接口Vlan检查
-        Q q = Q.New(VpnInterfaceVO.class)
-                .eq(VpnInterfaceVO_.vlan, msg.getVlan())
-                .eq(VpnInterfaceVO_.hostUuid, hostUuid);
-        if (q.isExists())
-            throw new ApiMessageInterceptionException(
-                    argerr("The Vlan[:%s] of Host[uuid:%s] is already exist.", msg.getVlan(), hostUuid));
-    }
 
     private void validate(APIDownloadCertificateMsg msg) {
 
@@ -965,7 +795,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
         CreateVpnCmd cmd = CreateVpnCmd.valueOf(vo);
         try {
-            new VpnRESTCaller().sendCommand(VpnConstant.START_VPN_PATH, cmd, new Completion(null) {
+            new VpnRESTCaller().sendCommand(VpnConstant.SERVICE_PATH, cmd, new Completion(null) {
                 @Override
                 public void success() {
                     if (vo.getStatus() != VpnStatus.Connected)
@@ -992,7 +822,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         TaskResult result;
         try {
             result = new VpnRESTCaller()
-                    .syncPostForResult(VpnConstant.DELETE_VPN_PATH, DeleteVpnCmd.valueOf(vo));
+                    .syncPostForResult(VpnConstant.SERVICE_PATH, DeleteVpnCmd.valueOf(vo));
             if (result.isSuccess()) {
                 dbf.removeByPrimaryKey(vo.getUuid(), VpnVO.class);
             } else {
