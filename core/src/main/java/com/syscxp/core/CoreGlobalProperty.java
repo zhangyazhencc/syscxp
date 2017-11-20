@@ -76,10 +76,13 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "falconApiIp", defaultValue = "192.168.211.96")
     public static String FALCON_API_IP;
 
+    @GlobalProperty(name = "transferRpcIp", defaultValue = "192.168.211.6")
+    public static String TRANSFER_RPC_IP;
+
     @GlobalProperty(name = "falconApiPort", defaultValue = "6892")
     public static int FALCON_API_PORT;
 
     @GlobalProperty(name = "openTSDBServerUrl", defaultValue = "http://192.168.211.6:4242")
-    public static int OPENTSDB_SERVER_URL;
+    public static String OPENTSDB_SERVER_URL;
 
 }

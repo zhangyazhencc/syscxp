@@ -364,7 +364,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         }catch (ClientException e){
             e.printStackTrace();
-            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
+            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")||e.getErrCode().equals("IncompleteSignature")){
                 DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
             }else{
@@ -379,7 +379,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             reply.setInventory(inventory);
             reply.setRouterInventory(routerInventory);
         }else {
-            reply.setAliIdentityFlag(false);
+            reply.setAliIdentityFailure(true);
         }
         bus.reply(msg,reply);
 
@@ -393,6 +393,14 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         q.delete();
     }
 
+    private AliUserVO findAliUser(AliEdgeRouterVO vo){
+        SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
+        q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ, vo.getAccountUuid());
+        q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ, vo.getAliAccountUuid());
+        AliUserVO user = q.find();
+
+        return user;
+    }
 
     private void handle(APIDeleteAliEdgeRouterMsg msg){
         AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
@@ -402,26 +410,24 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         String AliAccessKeyId = null;
         String AliAccessKeySecret = null;
 
-        if(msg.getHaveConnectIpFlag() == true && msg.getAliAccessKeyID() == null && msg.getAliAccessKeySecret() == null){
-            SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ, vo.getAccountUuid());
-            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ, vo.getAliAccountUuid());
-            AliUserVO user = q.find();
+        if(vo.isCreateFlag()){
+            if(msg.getAliAccessKeyID() == null && msg.getAliAccessKeySecret() == null){
 
-            if(user != null){
-                AliAccessKeyId = user.getAliAccessKeyID();
-                AliAccessKeySecret = user.getAliAccessKeySecret();
+                AliUserVO user = findAliUser(vo);
+                if(user != null){
+                    AliAccessKeyId = user.getAliAccessKeyID();
+                    AliAccessKeySecret = user.getAliAccessKeySecret();
+                }
+            }else{
+                AliAccessKeyId = msg.getAliAccessKeyID();
+                AliAccessKeySecret = msg.getAliAccessKeySecret();
             }
 
-
-        }else if(msg.getHaveConnectIpFlag() == true && msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null){
-            AliAccessKeyId = msg.getAliAccessKeyID();
-            AliAccessKeySecret = msg.getAliAccessKeySecret();
-        } else{
-            AliAccessKeyId = AliUserGlobalProperty.ALI_VALUE;
+        }else{
+            AliAccessKeyId = AliUserGlobalProperty.ALI_KEY;
             AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
-
         }
+
 
         // 创建DefaultAcsClient实例并初始化
         DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);
@@ -439,19 +445,19 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         }catch (ClientException e){
             e.printStackTrace();
-            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
+            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")||e.getErrCode().equals("IncompleteSignature")){
                 DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
-            }else{
+            } else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
         }
 
         APIDeleteAliEdgeRouterEvent evt = new APIDeleteAliEdgeRouterEvent(msg.getId());
         if(flag){
-            evt.setInventory(AliEdgeRouterInventory.valueOf(vo));
+            evt.setRouterInventory(AliEdgeRouterInventory.valueOf(vo));
         }else {
-            evt.setAliIdentityFlag(false);
+            evt.setAliIdentityFailure(true);
         }
 
         bus.publish(evt);
@@ -462,7 +468,8 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
         Boolean flag = true;
 
-        APICreateAliEdgeRouterEvent evt = new APICreateAliEdgeRouterEvent(msg.getId());
+        AliEdgeRouterInformationInventory inventory = new AliEdgeRouterInformationInventory();
+        APIUpdateAliEdgeRouterEvent evt = new APIUpdateAliEdgeRouterEvent(msg.getId());
         boolean update = false;
 
         if(msg.getName() !=null){
@@ -512,13 +519,45 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         ModifyVirtualBorderRouterAttributeResponse response;
         try{
             response = client.getAcsResponse(request);
-            if (update)
+            logger.info(response.toString());
+
+
+            // 创建API请求并设置参数
+            DescribeVirtualBorderRoutersRequest requestGet = new DescribeVirtualBorderRoutersRequest();
+
+            //组装filter数据
+            List<DescribeVirtualBorderRoutersRequest.Filter> list = new ArrayList<DescribeVirtualBorderRoutersRequest.Filter>();
+            DescribeVirtualBorderRoutersRequest.Filter filter = new DescribeVirtualBorderRoutersRequest.Filter();
+            filter.setKey(AliEdgeRouterConstant.FILTER_KEY);
+            List list1 = new ArrayList();
+            list1.add(vo.getVbrUuid());
+            filter.setValues(list1);
+            list.add(filter);
+
+            requestGet.setFilters(list);
+            DescribeVirtualBorderRoutersResponse responseGet = client.getAcsResponse(requestGet);
+            if(responseGet.getVirtualBorderRouterSet().size() != 0){
+                DescribeVirtualBorderRoutersResponse.VirtualBorderRouterType virtualBorderRouterType = responseGet.getVirtualBorderRouterSet().get(0);
+
+                inventory.setAccessPoint(virtualBorderRouterType.getAccessPointId());
+                inventory.setStatus(virtualBorderRouterType.getStatus());
+                inventory.setPhysicalLineOwerUuid(virtualBorderRouterType.getPhysicalConnectionOwnerUid());
+                inventory.setLocalGatewayIp(virtualBorderRouterType.getLocalGatewayIp());
+                inventory.setPeerGatewayIp(virtualBorderRouterType.getPeerGatewayIp());
+                inventory.setPeeringSubnetMask(virtualBorderRouterType.getPeeringSubnetMask());
+            }
+
+
+            if (update){
+                vo.setCreateFlag(true);
                 vo = dbf.updateAndRefresh(vo);
+            }
+
 
         }catch (ClientException e){
             e.printStackTrace();
 
-            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")){
+            if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")||e.getErrCode().equals("IncompleteSignature")){
                 DeleteAliUser(AliAccessKeyId,AliAccessKeySecret);
                 flag = false;
             }else{
@@ -529,9 +568,10 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         }
 
         if(flag){
-            evt.setInventory(AliEdgeRouterInventory.valueOf(vo));
+            evt.setRouterInventory(AliEdgeRouterInventory.valueOf(vo));
+            evt.setInventory(inventory);
         }else {
-            evt.setAliIdentityFlag(false);
+            evt.setAliIdentityFailure(true);
         }
 
         bus.publish(evt);

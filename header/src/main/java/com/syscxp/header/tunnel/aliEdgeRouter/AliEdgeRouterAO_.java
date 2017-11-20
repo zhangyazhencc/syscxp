@@ -18,4 +18,5 @@ public class AliEdgeRouterAO_ {
     public static volatile SingularAttribute<AliEdgeRouterAO, String> vlan;
     public static volatile SingularAttribute<AliEdgeRouterAO, Timestamp> createDate;
     public static volatile SingularAttribute<AliEdgeRouterAO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<AliEdgeRouterAO, Boolean> isCreateFlag;
 }

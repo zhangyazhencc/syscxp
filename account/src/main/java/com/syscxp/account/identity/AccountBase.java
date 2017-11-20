@@ -665,7 +665,7 @@ public class AccountBase extends AbstractAccount {
         accountVO.setPhone(msg.getPhone());
         accountVO.setTrueName(msg.getTrueName());
         accountVO.setStatus(AccountStatus.Available);
-        if (msg.getType() != null) {
+        if (msg.getType() != null && (msg.getSession().isAdminAccountSession() || msg.getSession().isAdminUserSession())) {
             accountVO.setType(AccountType.valueOf(msg.getType()));
         } else {
             accountVO.setType(AccountType.Normal);

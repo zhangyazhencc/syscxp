@@ -1,6 +1,9 @@
 package com.syscxp.sms;
 
+import com.syscxp.sms.header.APIValidateMailCodeMsg;
+import com.syscxp.sms.header.APIValidateMailCodeReply;
 import com.syscxp.sms.header.*;
+import com.syscxp.utils.data.StringTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -16,7 +19,6 @@ import com.syscxp.header.exception.CloudRuntimeException;
 
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.sms.header.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
@@ -64,9 +66,22 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
             handle((APIMailCodeSendMsg) msg);
         }else if (msg instanceof APIValidateMailCodeMsg) {
             handle((APIValidateMailCodeMsg) msg);
-        }else{
+        }else if(msg instanceof APIMaiAlarmSendMsg){
+            handle((APIMaiAlarmSendMsg) msg);
+        }
+        else{
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIMaiAlarmSendMsg msg) {
+        String[] emails = msg.getEmails().toArray(new String[msg.getEmails().size()]);
+
+        boolean result = mailMassSend(emails,msg.getSubject(),msg.getComtent());
+
+        APIMaiAlarmSendEvent evt = new APIMaiAlarmSendEvent(msg.getId());
+
+        bus.publish(evt);
     }
 
     private void  handle(APIValidateMailCodeMsg msg){
@@ -104,6 +119,8 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
         }
 
     }
+
+
 
 
     private void  handle(APIMailCodeSendMsg msg) throws OperationFailureException {
@@ -156,6 +173,39 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
         return true;
     }
+
+    /**
+     * 群发邮件
+     *
+
+     */
+    public boolean mailMassSend(String[] mail, String subject, String comtent){
+        SimpleMailMessage mailMessage = new SimpleMailMessage();
+        mailMessage.setTo(mail);
+        mailMessage.setFrom(MailGlobalProperty.FROM);
+        mailMessage.setSubject(subject);
+        mailMessage.setText(comtent);
+        JavaMailSenderImpl senderImpl = new JavaMailSenderImpl();
+        senderImpl.setHost(MailGlobalProperty.HOST);
+        senderImpl.setPort(25);
+        senderImpl.setUsername(MailGlobalProperty.USERNAME);
+        senderImpl.setPassword(MailGlobalProperty.PASSWORD);
+        Properties prop = new Properties();
+        prop.put(" mail.smtp.auth ", "true");
+        prop.put(" mail.smtp.timeout ", "25000");
+        senderImpl.setJavaMailProperties(prop);
+
+        try{
+            senderImpl.send(mailMessage);
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new OperationFailureException(operr("message:" + e.getMessage()));
+        }
+        logger.debug(">>>>>>>>>>>>>>>>>>告警发送成功<<<<<<<<<<<<<<<<<<<<<<");
+
+        return true;
+    }
+
 
     public void init() {
         try {
@@ -218,5 +268,15 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
     private void validate(APIGetVerificationCodeMsg msg) {
 
+    }
+
+    public void sendAlarmMonitorMsg(List<String> email,String subject, String comtent){
+        APIMaiAlarmSendMsg apiMaiAlarmSendMsg = new APIMaiAlarmSendMsg();
+        apiMaiAlarmSendMsg.setEmails(email);
+        apiMaiAlarmSendMsg.setSubject(subject);
+        apiMaiAlarmSendMsg.setComtent(comtent);
+        apiMaiAlarmSendMsg.setServiceId(bus.makeLocalServiceId(MailConstant.SERVICE_ID));
+
+        bus.send(apiMaiAlarmSendMsg);
     }
 }

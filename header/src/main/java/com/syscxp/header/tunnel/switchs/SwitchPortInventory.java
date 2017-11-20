@@ -22,7 +22,7 @@ public class SwitchPortInventory {
 
     private String portName;
 
-    private SwitchPortType portType;
+    private String portType;
 
     private String portAttribute;
 
@@ -108,11 +108,11 @@ public class SwitchPortInventory {
         this.lastOpDate = lastOpDate;
     }
 
-    public SwitchPortType getPortType() {
+    public String getPortType() {
         return portType;
     }
 
-    public void setPortType(SwitchPortType portType) {
+    public void setPortType(String portType) {
         this.portType = portType;
     }
 

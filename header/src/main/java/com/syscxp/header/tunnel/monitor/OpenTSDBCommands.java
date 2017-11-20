@@ -8,6 +8,10 @@ import java.util.Map;
  * @Description: OpenTSDB数据查询.
  */
 public class OpenTSDBCommands {
+
+    public OpenTSDBCommands() {
+    }
+
     /**
      * @Author: sunxuelong.
      * @Cretion Date: 2017-11-14.
@@ -68,6 +72,9 @@ public class OpenTSDBCommands {
             this.tags = tags;
         }
 
+        public Query() {
+        }
+
         public String getAggregator() {
             return aggregator;
         }
@@ -100,6 +107,9 @@ public class OpenTSDBCommands {
         public tags(String endpoint, String ifname) {
             this.endpoint = endpoint;
             this.ifname = ifname;
+        }
+
+        public tags() {
         }
 
         public String getEndpoint() {
@@ -137,10 +147,14 @@ public class OpenTSDBCommands {
     }
 
     public static class QueryResult{
+        private String nodeUuid;
         private String metric;
         private tags tags;
-        private List agggregateTags;
-        private List<Map<Long,Object>> dps;
+        private List aggregateTags;
+        private Map dps;
+
+        public QueryResult() {
+        }
 
         public String getMetric() {
             return metric;
@@ -158,20 +172,28 @@ public class OpenTSDBCommands {
             this.tags = tags;
         }
 
-        public List getAgggregateTags() {
-            return agggregateTags;
+        public List getAggregateTags() {
+            return aggregateTags;
         }
 
-        public void setAgggregateTags(List agggregateTags) {
-            this.agggregateTags = agggregateTags;
+        public void setAggregateTags(List aggregateTags) {
+            this.aggregateTags = aggregateTags;
         }
 
-        public List<Map<Long, Object>> getDps() {
+        public Map getDps() {
             return dps;
         }
 
-        public void setDps(List<Map<Long, Object>> dps) {
+        public void setDps(Map dps) {
             this.dps = dps;
+        }
+
+        public String getNodeUuid() {
+            return nodeUuid;
+        }
+
+        public void setNodeUuid(String nodeUuid) {
+            this.nodeUuid = nodeUuid;
         }
     }
 }

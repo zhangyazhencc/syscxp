@@ -6,13 +6,13 @@
     名称
     描述：非必填
     编号：唯一
-    节点：根据city选择节点
-    型号：从SwitchModelVO中选择
+    节点：通过city选择节点（通用查询：APIGetDistinctNodeCityMsg | APIQueryNodeMsg）
+    型号：从SwitchModelVO中选择（通用查询：APIQuerySwitchModelMsg）
 
 若  交换机类型：SDN
     接入类型：ACCESS
     上联端口：
-    上联交换机：从PhysicalSwitchVO中选择类型为MPLS，且接入类型不为ACCESS
+    上联交换机：从PhysicalSwitchVO中选择类型为MPLS，且接入类型不为ACCESS（通用查询：APIQueryPhysicalSwitchMsg）
     下联端口：
 若  交换机类型：MPLS
     接入类型：ACCESS，TRANSPORT，BOTH

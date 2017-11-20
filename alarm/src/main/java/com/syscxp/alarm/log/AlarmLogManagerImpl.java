@@ -10,6 +10,8 @@ import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.identity.InnerMessageHelper;
+import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.alarm.AlarmConstant;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
@@ -19,10 +21,12 @@ import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsGlobalProperty;
 import com.syscxp.sms.SmsService;
+import com.syscxp.sms.header.APIMaiAlarmSendMsg;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.sql.Timestamp;
 import java.util.*;
 
+import static com.syscxp.alarm.AlarmGlobalProperty.ALARM_SERVER_RUL;
 import static com.syscxp.core.Platform.operr;
 
 public class AlarmLogManagerImpl extends AbstractService implements ApiMessageInterceptor {
@@ -65,29 +70,38 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
     private void sendMessage(AlarmLogCallbackCmd cmd) throws Exception {
 
-        //mailService.alarmEmail("zhangqiuyu@syscloud.cn","监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+        List<String> smsDatas = new ArrayList<String>();
+        smsDatas.add(cmd.getSmsContent());
+        List<String> phoneList = new ArrayList<>();
+        List<String> emailList = new ArrayList<>();
 
         SimpleQuery<ContactVO> query = dbf.createQuery(ContactVO.class);
         query.add(ContactVO_.accountUuid, SimpleQuery.Op.EQ, cmd.getAccountUuid());
         List<ContactVO> contactVOS = query.list();
         for (ContactVO contactVO : contactVOS) {
+
+
             Set<NotifyWayVO> notifyWayVOs = contactVO.getNotifyWayVOs();
             for (NotifyWayVO notifyWayVO : notifyWayVOs) {
                 if (notifyWayVO.getCode().equals("email")) {
                     String email = contactVO.getEmail();
-                    //mailService.alarmEmail(email,"监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+                    emailList.add(email);
                 }
 
                 if (notifyWayVO.getCode().equals("mobile")) {
                     String phone = contactVO.getMobile();
-                    smsService.sendMsg(null, phone, SmsGlobalProperty.ALARM_APPID, SmsGlobalProperty.SMS_AlARM_TEMPLATEID
-                            , new String[]{cmd.getSmsContent()}, "");
-
+                    phoneList.add(phone);
                 }
 
             }
-        }
 
+        }
+        if(emailList.size()>0){
+            mailService.sendAlarmMonitorMsg(emailList,"监控报警信息","【犀思云】服务器预警信息如下:\n          " + cmd.getMailContent());
+        }
+        if(phoneList.size()>0){
+            smsService.sendAlarmMonitorMsg(phoneList, smsDatas);
+        }
     }
 
     private void handleLocalMessage(Message msg) {

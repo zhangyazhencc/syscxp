@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://syscxp.com/schema/syscxp">
+    <id>sms</id>
+    <interceptor>SmsService</interceptor>
+
+    <message>
+        <name>com.syscxp.sms.header.APISendSmsMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.sms.header.APIGetVerificationCodeMsg</name>
+    </message>
+
+
+</service>

@@ -6,10 +6,8 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
-import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.header.tunnel.switchs.SwitchPortType;
 
 /**
  * Created by DCY on 2017-09-11
@@ -42,10 +40,10 @@ public class APICreateTunnelMsg extends APIMessage {
     @APIParam(emptyString = false,required = false)
     private String description;
 
-    @APIParam(emptyString = false,required = false,validValues = {"SHARE", "RJ45_1G","SFP_1G","SFP_10G"})
-    private SwitchPortType portTypeA;
-    @APIParam(emptyString = false,required = false,validValues = {"SHARE", "RJ45_1G","SFP_1G","SFP_10G"})
-    private SwitchPortType portTypeZ;
+    @APIParam(emptyString = false,required = false,resourceType = PortOfferingVO.class)
+    private String portOfferingUuidA;
+    @APIParam(emptyString = false,required = false,resourceType = PortOfferingVO.class)
+    private String portOfferingUuidZ;
     @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = EndpointVO.class)
     private String innerConnectedEndpointUuid;
     @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = InterfaceVO.class)
@@ -161,20 +159,20 @@ public class APICreateTunnelMsg extends APIMessage {
         this.endpointZUuid = endpointZUuid;
     }
 
-    public SwitchPortType getPortTypeA() {
-        return portTypeA;
+    public String getPortOfferingUuidA() {
+        return portOfferingUuidA;
     }
 
-    public void setPortTypeA(SwitchPortType portTypeA) {
-        this.portTypeA = portTypeA;
+    public void setPortOfferingUuidA(String portOfferingUuidA) {
+        this.portOfferingUuidA = portOfferingUuidA;
     }
 
-    public SwitchPortType getPortTypeZ() {
-        return portTypeZ;
+    public String getPortOfferingUuidZ() {
+        return portOfferingUuidZ;
     }
 
-    public void setPortTypeZ(SwitchPortType portTypeZ) {
-        this.portTypeZ = portTypeZ;
+    public void setPortOfferingUuidZ(String portOfferingUuidZ) {
+        this.portOfferingUuidZ = portOfferingUuidZ;
     }
 
     public String getCrossInterfaceUuid() {

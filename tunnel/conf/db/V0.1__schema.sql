@@ -1,18 +1,4 @@
 
-CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`TunnelMonitorInterfaceVO` (
-  `uuid` VARCHAR(32) NOT NULL COMMENT '主键',
-  `tunnelMonitorUuid` VARCHAR(32) NOT NULL COMMENT '监控通道uuid(TunnelMonitorVO.uuid)',
-  `interfaceType` VARCHAR(32) NOT NULL COMMENT '类型("A","Z")',
-  `hostUuid` VARCHAR(32) NOT NULL COMMENT '监控主机UUID(HostVO.uuid)',
-  `monitorIp` VARCHAR(64) NOT NULL COMMENT '监控IP(NetworkVO.monitorCidr)',
-  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-  `createDate` timestamp,
-  PRIMARY KEY (`uuid`),
-  UNIQUE KEY `uuid` (`uuid`))
-ENGINE = InnoDB DEFAULT CHARSET = utf8 COMMENT '监控通道两端信息表';
-
-ALTER TABLE `syscxp_tunnel`.`TunnelMonitorInterfaceVO` ADD interfaceUuid varchar(32) COMMENT '物理接口uuid InterfaceVO.uuid' AFTER interfaceType;
-
 CREATE TABLE `syscxp_tunnel`.`SpeedRecordsVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'uuid',
   `tunnelUuid` varchar(32) NOT NULL COMMENT 'TunnelVO.uuid',
@@ -103,6 +89,17 @@ CREATE TABLE  `syscxp_tunnel`.`JobQueueEntryVO` (
   `doneDate` timestamp NULL,
   `errText` text DEFAULT NULL,
   PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  `syscxp_tunnel`.`QuotaVO` (
+  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+  `name` varchar(255) NOT NULL,
+  `identityUuid` varchar(32) DEFAULT NULL,
+  `identityType` varchar(255) NOT NULL,
+  `value` bigint unsigned DEFAULT 0,
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 #########################################################################################
@@ -360,18 +357,17 @@ VALUES ('2G','2G','',2147483648,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
 CREATE TABLE `syscxp_tunnel`.`PortOfferingVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'uuid',
   `name` varchar(255) NOT NULL UNIQUE COMMENT 'port offering name',
-  `type` varchar(255) NOT NULL UNIQUE COMMENT '描述',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-INSERT INTO `syscxp_tunnel`.`PortOfferingVO` (`uuid`,`name`,`type`,`description`,`lastOpDate`,`createDate`)
-VALUES ('SFP_10G','光口万兆','SFP_10G','光口万兆','2017-11-01 13:51:31','2017-10-30 15:39:20'),
-  ('SHARE','共享端口','SHARE','共享端口','2017-11-01 16:10:18','2017-10-30 15:35:40'),
-  ('SFP_1G','光口千兆','SFP_1G','光口千兆','2017-11-01 13:51:36','2017-10-30 15:39:20'),
-  ('RJ45_1G','电口千兆','RJ45_1G','电口千兆','2017-11-01 13:51:39','2017-10-30 15:35:59');
+INSERT INTO `syscxp_tunnel`.`PortOfferingVO` (`uuid`,`name`,`description`,`lastOpDate`,`createDate`)
+VALUES ('SFP_10G','光口万兆','光口万兆','2017-11-01 13:51:31','2017-10-30 15:39:20'),
+  ('SHARE','共享端口','共享端口','2017-11-01 16:10:18','2017-10-30 15:35:40'),
+  ('SFP_1G','光口千兆','光口千兆','2017-11-01 13:51:36','2017-10-30 15:39:20'),
+  ('RJ45_1G','电口千兆','电口千兆','2017-11-01 13:51:39','2017-10-30 15:35:59');
 
 
 ##产品订单生效表
@@ -453,7 +449,6 @@ CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`TunnelMonitorVO` (
   `tunnelSwitchPortUuid` VARCHAR(32) NOT NULL COMMENT '通道交换机uuid(TunnelSwitchPortVO.uuid)',
   `hostUuid` varchar(32) NOT NULL COMMENT '监控主机uuid(HostVO.uuid)',
   `monitorIp` varchar(64) NOT NULL COMMENT '监控IP',
-  `monitorCidr` varchar(64) NOT NULL COMMENT '监控网络网段',
   `msg` varchar(1024) COMMENT '消息',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
@@ -511,8 +506,9 @@ CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterEO` (
 	  `description` varchar(255) DEFAULT NULL COMMENT '描述',
 	  `vbrUuid` varchar(64) NOT NULL COMMENT '虚拟边界路由器id',
 	  `physicalLineUuid` varchar(32) NOT NULL COMMENT '物理专线id',
+	  `isCreateFlag` tinyint(1) unsigned DEFAULT 0 COMMENT '是否确认创建',
 	  `vlan` int(11) NOT NULL COMMENT '端口号',
-	  `deleted` TINYINT(1) NOT NULL DEFAULT '0' COMMENT '是否删除',
+	  `deleted` varchar(255) DEFAULT NULL COMMENT '是否删除',
 	  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	  `createDate` timestamp,
   PRIMARY KEY (`uuid`)

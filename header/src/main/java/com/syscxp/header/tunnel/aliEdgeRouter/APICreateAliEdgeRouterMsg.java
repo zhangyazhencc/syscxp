@@ -73,8 +73,4 @@ public class APICreateAliEdgeRouterMsg extends APIMessage{
         this.vlan = vlan;
     }
 
-
-
-
-
 }

@@ -24,7 +24,13 @@
                 <value>com.syscxp.header.tunnel.tunnel.TunnelVO</value>
             </list>
         </property>
+    </bean>
 
+    <bean id="QuotaChecker" class="com.syscxp.core.identity.QuotaChecker">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.Component"/>
+            <syscxp:extension interface="com.syscxp.header.apimediator.GlobalApiMessageInterceptor"/>
+        </syscxp:plugin>
     </bean>
 
     <bean id="TunnelManager" class="com.syscxp.tunnel.tunnel.TunnelManagerImpl">
@@ -32,6 +38,7 @@
             <syscxp:extension interface="com.syscxp.header.Component"/>
             <syscxp:extension interface="com.syscxp.header.Service"/>
             <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+            <syscxp:extension interface="com.syscxp.header.quota.ReportQuotaExtensionPoint" />
         </syscxp:plugin>
     </bean>
 

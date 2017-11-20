@@ -23,6 +23,12 @@ public class APIUpdateContactMsg extends APIMessage {
     private String mobile;
 
     @APIParam(required = false)
+    private String mobileCaptcha;
+
+    @APIParam(required = false)
+    private String emailCaptcha;
+
+    @APIParam(required = false)
     private List<String> ways;
 
     public String getUuid() {
@@ -63,5 +69,21 @@ public class APIUpdateContactMsg extends APIMessage {
 
     public void setWays(List<String> ways) {
         this.ways = ways;
+    }
+
+    public String getMobileCaptcha() {
+        return mobileCaptcha;
+    }
+
+    public void setMobileCaptcha(String mobileCaptcha) {
+        this.mobileCaptcha = mobileCaptcha;
+    }
+
+    public String getEmailCaptcha() {
+        return emailCaptcha;
+    }
+
+    public void setEmailCaptcha(String emailCaptcha) {
+        this.emailCaptcha = emailCaptcha;
     }
 }

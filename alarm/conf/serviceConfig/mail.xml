@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://syscxp.com/schema/syscxp">
+    <id>mail</id>
+    <interceptor>mailService</interceptor>
+
+    <message>
+        <name>com.syscxp.sms.header.APIMaiAlarmSendMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.sms.header.APIMailCodeSendMsg</name>
+    </message>
+
+
+</service>
