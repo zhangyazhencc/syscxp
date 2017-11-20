@@ -62,7 +62,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
         bus.dealWithUnknownMessage(msg);
     }
 
-    private void sendMessage(AlarmLogCallbackCmd cmd) throws Exception {
+    private void sendMessage(AlarmLogCallbackCmd cmd) {
 
         List<String> smsDatas = new ArrayList<String>();
         smsDatas.add(cmd.getSmsContent());
@@ -114,49 +114,46 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                 new SyncHttpCallHandler<AlarmLogCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(AlarmLogCallbackCmd cmd) {
-                        Boolean flag = false;
-
                         SimpleQuery<AlarmLogVO> query = dbf.createQuery(AlarmLogVO.class);
                         query.add(AlarmLogVO_.productUuid, SimpleQuery.Op.EQ, cmd.getTunnelUuid());
                         query.add(AlarmLogVO_.regulationUuid, SimpleQuery.Op.EQ, cmd.getRegulationUuid());
-                        query.add(AlarmLogVO_.status, SimpleQuery.Op.EQ, AlarmStatus.PROBLEM);
-                        query.add(AlarmLogVO_.createDate, SimpleQuery.Op.GT, new Timestamp(dbf.getCurrentSqlTime().getTime()-3600000));
-                        List<AlarmLogVO> alarmLogVOS = query.list();
+                        AlarmLogVO log = query.find();
 
-                        if(alarmLogVOS.size() == 0 ){
-                            saveAlarmLog(cmd);
-                            flag = true;
-                        }else{
-                            for (AlarmLogVO vo : alarmLogVOS) {
-                                if(AlarmStatus.OK.equals(cmd.getStatus())){
-                                    vo.setCount(vo.getCount()-1);
-                                    if(vo.getCount() == 0){
-                                        vo.setResumeTime(new Timestamp(System.currentTimeMillis()));
-                                        vo.setStatus(cmd.getStatus());
-                                        long time = (System.currentTimeMillis() - vo.getAlarmTime().getTime()) / 1000 + vo.getDuration();
-                                        vo.setDuration(time);
-                                        flag = true;
-                                    }
-                                }else{
-                                    if(vo.getCount() < 2){
-                                        vo.setCount(vo.getCount()+1);
-                                    }
-                                }
-                                dbf.updateAndRefresh(vo);
-                            }
-                        }
-
-
-                        //foreach发送短信和邮件
-                        try {
-                            if(flag){
+                        if (log == null){
+                            if (AlarmStatus.PROBLEM.equals(cmd.getStatus())) {
+                                saveAlarmLog(cmd);
                                 sendMessage(cmd);
                             }
+                        }else {
+                            if (log.getStatus() == AlarmStatus.OK) {
+                                if (AlarmStatus.PROBLEM.equals(cmd.getStatus())) {
+                                    saveAlarmLog(cmd);
+                                    sendMessage(cmd);
+                                }
+                            } else {
+                                if (AlarmStatus.PROBLEM.equals(cmd.getStatus())) {
+                                    if (log.getAlarmTime().before(new Timestamp(dbf.getCurrentSqlTime().getTime() - 3600 * 1000))){
+                                        saveAlarmLog(cmd);
+                                        sendMessage(cmd);
+                                    }else{
+                                        if (log.getCount() < 2) {
+                                            log.setCount(log.getCount() + 1);
+                                            dbf.updateAndRefresh(log);
+                                        }
+                                    }
+                                } else {
+                                    log.setCount(log.getCount() - 1);
+                                    if (log.getCount() == 0) {
+                                        log.setResumeTime(new Timestamp(System.currentTimeMillis()));
+                                        log.setStatus(cmd.getStatus());
+                                        long time = (System.currentTimeMillis() - log.getAlarmTime().getTime()) / 1000 + log.getDuration();
+                                        log.setDuration(time);
+                                        sendMessage(cmd);
+                                    }
+                                    dbf.updateAndRefresh(log);
+                                }
 
-                        } catch (Exception e) {
-                            //保存失败信息
-                            e.printStackTrace();
-                            throw new OperationFailureException(operr("message:" + e.getMessage()));
+                            }
                         }
 
                         return null;
