@@ -10,7 +10,7 @@ import com.syscxp.header.tunnel.NodeConstant;
  * @Cretion Date: 2017-09-13.
  * @Description: .
  */
-@Action(category = NodeConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
+@Action(services = {"tunnel"}, category = NodeConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
 public class APIDeleteEndpointMsg extends APIMessage {
     @APIParam(emptyString = false, resourceType = EndpointVO.class)
     private String uuid;

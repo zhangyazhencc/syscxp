@@ -1,7 +1,9 @@
 package com.syscxp.header.tunnel.monitor;
 
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
+import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 
 /**
@@ -9,6 +11,8 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
  * @Cretion Date: 2017-11-13.
  * @Description: 实时查询测速结果.
  */
+
+@Action(services = {"tunnel"}, category = MonitorConstant.ACTION_CATEGORY, names = {"read"})
 public class APIQueryMonitorResultMsg extends APISyncCallMessage {
     @APIParam(emptyString = false)
     private Long start;

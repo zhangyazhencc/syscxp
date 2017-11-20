@@ -10,7 +10,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Create by DCY on 2017/11/1
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
+@Action(services = {"tunnel"}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
 public class APIGetInterfacePriceMsg extends APISyncCallMessage{
 
     @APIParam(emptyString = false,required = false,maxLength = 32)

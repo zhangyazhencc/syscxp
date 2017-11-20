@@ -9,7 +9,7 @@ import com.syscxp.header.tunnel.NodeConstant;
  * Created by DCY on 8/21/17.
  */
 
-@Action(category = NodeConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
+@Action(services = {"tunnel"}, category = NodeConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 
 public class APICreateNodeMsg extends APIMessage {
 
