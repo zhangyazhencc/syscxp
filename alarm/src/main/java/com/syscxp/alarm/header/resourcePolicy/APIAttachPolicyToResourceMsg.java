@@ -8,7 +8,7 @@ import com.syscxp.header.message.APIParam;
 
 import java.util.List;
 
-@Action(category = AlarmConstant.ACTION_CATEGORY_ALARM, names = {"update"})
+@Action(services = {AlarmConstant.ACTION_SERVICE}, category = AlarmConstant.ACTION_CATEGORY_ALARM, names = {"update"})
 public class APIAttachPolicyToResourceMsg extends APIMessage {
 
     @APIParam(required = false,resourceType = PolicyVO.class,checkAccount = true)
