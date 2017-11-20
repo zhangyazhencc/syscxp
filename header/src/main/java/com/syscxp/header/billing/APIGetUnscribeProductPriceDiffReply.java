@@ -15,4 +15,10 @@ public class APIGetUnscribeProductPriceDiffReply extends APIReply{
     public void setInventory(BigDecimal inventory) {
         this.inventory = inventory;
     }
+
+    public APIGetUnscribeProductPriceDiffReply(){}
+
+    public APIGetUnscribeProductPriceDiffReply(APIGetUnscribeProductPriceDiffReply reply){
+        this.setInventory(reply.getInventory());
+    }
 }
