@@ -6,7 +6,7 @@
     名称
     描述：非必填
     编号：唯一
-    节点：通过city选择节点（通用查询：APIGetDistinctNodeCityMsg | APIQueryNodeMsg）
+    节点：通过Province选择节点（查询：APIListProvinceNodeMsg | APIQueryNodeMsg）
     型号：从SwitchModelVO中选择（通用查询：APIQuerySwitchModelMsg）
 
 若  交换机类型：SDN

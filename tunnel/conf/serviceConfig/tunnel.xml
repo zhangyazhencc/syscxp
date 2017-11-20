@@ -102,6 +102,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIGetUnscribeTunnelPriceDiffMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.tunnel.APIGetInterfacePriceMsg</name>
     </message>
 
@@ -119,6 +123,14 @@
 
     <message>
         <name>com.syscxp.header.tunnel.tunnel.APIUpdateTunnelVlanMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIListInnerEndpointMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIListCrossTunnelMsg</name>
     </message>
 
     <message>

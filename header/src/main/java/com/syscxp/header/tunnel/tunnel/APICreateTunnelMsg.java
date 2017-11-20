@@ -21,10 +21,6 @@ public class APICreateTunnelMsg extends APIMessage {
     private String name;
     @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
-    @APIParam(emptyString = false,resourceType = NodeVO.class)
-    private String nodeAUuid;
-    @APIParam(emptyString = false,resourceType = NodeVO.class)
-    private String nodeZUuid;
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
     private String endpointAUuid;
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
@@ -93,22 +89,6 @@ public class APICreateTunnelMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getNodeAUuid() {
-        return nodeAUuid;
-    }
-
-    public void setNodeAUuid(String nodeAUuid) {
-        this.nodeAUuid = nodeAUuid;
-    }
-
-    public String getNodeZUuid() {
-        return nodeZUuid;
-    }
-
-    public void setNodeZUuid(String nodeZUuid) {
-        this.nodeZUuid = nodeZUuid;
     }
 
     public Integer getDuration() {
