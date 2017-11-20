@@ -22,7 +22,7 @@ CREATE TABLE `SolutionInterfaceVO` (
   `createDate` timestamp,
 
   `endpointUuid` varchar(32) NOT NULL COMMENT '连接点',
-  `type` varchar(255) NOT NULL UNIQUE COMMENT '类型:光口千兆、电口...',
+  `switchPortUuid` varchar(32) NOT NULL COMMENT '对应交换机端口',
 
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
