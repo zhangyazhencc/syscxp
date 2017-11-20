@@ -10,7 +10,7 @@ import com.syscxp.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/09/21.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, accountOnly = true)
+@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, accountOnly = true)
 public class APIDeleteProxyAccountRefMsg extends APIDeleteMessage implements AccountMessage{
 
     private String uuid;

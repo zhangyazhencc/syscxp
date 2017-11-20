@@ -119,12 +119,6 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
     }
 
     private void handle(APIDeleteTicketMsg msg) {
-        TicketVO vo = dbf.findByUuid(msg.getUuid(),TicketVO.class);
-        if(!vo.getAccountUuid().equals(msg.getSession().getAccountUuid())
-                || (vo.getUserUuid() != null && !vo.getUserUuid().equals(msg.getSession().getUserUuid()))){
-
-            throw new OperationFailureException(operr("the ticket is not belong to this account/user"));
-        }
 
         dbf.removeByPrimaryKey(msg.getUuid(), TicketVO.class);
         APIDeleteTicketEvent evt = new APIDeleteTicketEvent(msg.getId());

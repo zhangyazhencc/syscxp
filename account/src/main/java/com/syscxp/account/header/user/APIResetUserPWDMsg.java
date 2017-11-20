@@ -11,7 +11,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 
 @SuppressUserCredentialCheck
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
+@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
 public class APIResetUserPWDMsg extends  APIMessage implements AccountMessage {
 
     @APIParam(maxLength = 32)
