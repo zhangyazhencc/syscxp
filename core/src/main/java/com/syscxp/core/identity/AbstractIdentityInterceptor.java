@@ -174,8 +174,12 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
             ma.actions = new ArrayList<String>();
             ma.accountControl = a.accountControl();
             ma.accountCheckFields = new ArrayList<AccountCheckField>();
-            for (String ac : a.names()) {
-                ma.actions.add(String.format("%s:%s", ma.category, ac));
+            for (String p : a.products()) {
+                for (String ac : a.names()) {
+                    ma.actions.add(String.format("%s:%s:%s", p, ma.category, ac));
+                }
+                ma.actions.add(String.format("%s:%s:%s", p, ma.category, clz.getName()));
+                ma.actions.add(String.format("%s:%s:%s", p, ma.category, clz.getSimpleName()));
             }
 
             List<Field> allFields = FieldUtils.getAllFields(clz);
@@ -196,8 +200,6 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                 ma.accountCheckFields.add(af);
             }
 
-            ma.actions.add(String.format("%s:%s", ma.category, clz.getName()));
-            ma.actions.add(String.format("%s:%s", ma.category, clz.getSimpleName()));
 
             actions.put(clz, ma);
         }
