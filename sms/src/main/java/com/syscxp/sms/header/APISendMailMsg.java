@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIParam;
 import java.util.List;
 
 @InnerCredentialCheck
-public class APIMaiAlarmSendMsg extends APIMessage{
+public class APISendMailMsg extends APIMessage{
 
     @APIParam
     private List<String> emails;
@@ -16,7 +16,7 @@ public class APIMaiAlarmSendMsg extends APIMessage{
     private String subject;
 
     @APIParam
-    private String comtent;
+    private String content;
 
     public List<String> getEmails() {
         return emails;
@@ -34,11 +34,11 @@ public class APIMaiAlarmSendMsg extends APIMessage{
         this.subject = subject;
     }
 
-    public String getComtent() {
-        return comtent;
+    public String getContent() {
+        return content;
     }
 
-    public void setComtent(String comtent) {
-        this.comtent = comtent;
+    public void setContent(String content) {
+        this.content = content;
     }
 }

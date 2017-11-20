@@ -4,7 +4,7 @@
     <interceptor>mailService</interceptor>
 
     <message>
-        <name>com.syscxp.sms.header.APIMaiAlarmSendMsg</name>
+        <name>com.syscxp.sms.header.APISendMailMsg</name>
     </message>
     <message>
         <name>com.syscxp.sms.header.APIMailCodeSendMsg</name>
