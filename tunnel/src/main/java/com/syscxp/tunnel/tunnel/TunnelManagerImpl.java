@@ -2081,7 +2081,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     public boolean start() {
         startCleanExpiredProduct();
 
-        restf.registerSyncHttpCallHandler("callbackData", OrderCallbackCmd.class,
+        restf.registerSyncHttpCallHandler("billing", OrderCallbackCmd.class,
                 cmd -> {
                     Message message = RESTApiDecoder.loads(cmd.getCallBackData());
                     if (message instanceof CreateInterfaceCallBack) {
