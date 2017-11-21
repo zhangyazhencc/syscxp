@@ -1,8 +1,6 @@
 package com.syscxp.billing.price;
 
 import com.syscxp.billing.header.price.*;
-import com.syscxp.billing.header.renew.RenewVO;
-import com.syscxp.billing.header.renew.RenewVO_;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.EventFacade;
@@ -23,12 +21,6 @@ import com.syscxp.header.message.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 public class ProductPriceUnitManagerImpl extends AbstractService implements ProductPriceUnitManager,ApiMessageInterceptor {
@@ -145,7 +137,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
 
         dbf.persistAndRefresh(vo);
 
-        APICreateVHostProductPriceUnitEvent evt = new APICreateVHostProductPriceUnitEvent(msg.getId());
+        APICreateECPProductPriceUnitEvent evt = new APICreateECPProductPriceUnitEvent(msg.getId());
         evt.setInventory(ProductPriceUnitInventory.valueOf(vo));
         bus.publish(evt);
     }

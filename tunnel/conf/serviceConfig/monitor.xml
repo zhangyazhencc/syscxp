@@ -64,6 +64,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.monitor.APIGetEndpointTunnelsMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.monitor.APIQuerySpeedRecordsMsg</name>
         <serviceId>query</serviceId>
     </message>
