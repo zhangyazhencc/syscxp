@@ -1,0 +1,15 @@
+package com.syscxp.header.vpn.host;
+
+import javax.persistence.metamodel.SingularAttribute;
+import javax.persistence.metamodel.StaticMetamodel;
+import java.sql.Timestamp;
+
+@StaticMetamodel(HostInterfaceVO.class)
+public class HostInterfaceVO_ {
+    public static volatile SingularAttribute<HostInterfaceVO, String> uuid;
+    public static volatile SingularAttribute<HostInterfaceVO, String> interfaceName;
+    public static volatile SingularAttribute<HostInterfaceVO, String> hostUuid;
+    public static volatile SingularAttribute<HostInterfaceVO, String> endpointUuid;
+    public static volatile SingularAttribute<HostInterfaceVO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<HostInterfaceVO, Timestamp> createDate;
+}

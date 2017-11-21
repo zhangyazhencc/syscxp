@@ -1,7 +1,7 @@
 package com.syscxp.vpn.vpn;
 
-import com.syscxp.vpn.header.host.VpnHostVO;
-import com.syscxp.vpn.header.vpn.VpnVO;
+import com.syscxp.header.vpn.host.VpnHostVO;
+import com.syscxp.header.vpn.vpn.VpnVO;
 
 
 /**

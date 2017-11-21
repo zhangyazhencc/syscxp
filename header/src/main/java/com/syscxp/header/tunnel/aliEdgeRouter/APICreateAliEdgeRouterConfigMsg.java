@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.AliEdgeRouterConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
-@Action(services = {"tunnel"}, category = AliEdgeRouterConstant.ACTION_CATEGORY)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = AliEdgeRouterConstant.ACTION_CATEGORY)
 public class APICreateAliEdgeRouterConfigMsg extends APIMessage {
     @APIParam(maxLength = 64)
     private String aliRegionId;

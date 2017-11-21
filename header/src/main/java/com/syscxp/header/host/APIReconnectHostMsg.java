@@ -5,8 +5,10 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.vpn.VpnConstant;
 
-@Action(services = {"tunnel", "vpn"}, category = HostConstant.ACTION_CATEGORY, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE, VpnConstant.ACTION_SERVICE}, category = HostConstant.ACTION_CATEGORY, adminOnly = true)
 public class APIReconnectHostMsg extends APIMessage implements HostMessage {
     /**
      * @desc host uuid

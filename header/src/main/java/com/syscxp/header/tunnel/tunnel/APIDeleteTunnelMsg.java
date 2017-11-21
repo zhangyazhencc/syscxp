@@ -9,7 +9,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Created by DCY on 2017-09-17
  */
-@Action(services = {"tunnel"}, category = TunnelConstant.ACTION_CATEGORY, names = {"delete"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"delete"})
 public class APIDeleteTunnelMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;

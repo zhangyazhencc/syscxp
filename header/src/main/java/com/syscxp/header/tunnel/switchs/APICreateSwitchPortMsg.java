@@ -4,12 +4,13 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.SwitchConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
 
 /**
  * Created by DCY on 2017-08-30
  */
-@Action(services = {"tunnel"}, category = SwitchConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = SwitchConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 
 public class APICreateSwitchPortMsg extends APIMessage {
 

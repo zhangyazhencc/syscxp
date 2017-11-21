@@ -37,12 +37,12 @@
     </message>
 
     <message>
-        <name>com.syscxp.vpn.header.host.APICreateVpnHostMsg</name>
+        <name>com.syscxp.header.vpn.host.APICreateVpnHostMsg</name>
         <interceptor>VpnHostApiInterceptor</interceptor>
     </message>
 
     <message>
-        <name>com.syscxp.vpn.header.host.APIUpdateVpnHostMsg</name>
+        <name>com.syscxp.header.vpn.host.APIUpdateVpnHostMsg</name>
         <interceptor>VpnHostApiInterceptor</interceptor>
     </message>
 

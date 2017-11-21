@@ -11,7 +11,7 @@ import com.syscxp.header.tunnel.switchs.SwitchPortVO;
 /**
  * Created by DCY on 2017-09-11
  */
-@Action(services = {"tunnel"}, category = TunnelConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreateInterfaceManualMsg extends APIMessage {
 
     @APIParam(emptyString = false, maxLength = 32)
