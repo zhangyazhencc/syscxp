@@ -13,7 +13,7 @@ import com.syscxp.header.notification.ApiNotification;
 /**
  * Created by frank on 7/9/2015.
  */
-@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, accountOnly = true)
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_USER)
 public class APIDeleteUserMsg extends APIDeleteMessage implements AccountMessage {
     @APIParam(resourceType = UserVO.class, checkAccount = true, operationTarget = true, successIfResourceNotExisting = true)
     private String uuid;
