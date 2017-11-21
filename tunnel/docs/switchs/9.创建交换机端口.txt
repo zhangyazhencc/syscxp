@@ -14,7 +14,7 @@
     "com.syscxp.header.tunnel.switchs.APICreateSwitchPortMsg":{
         "switchUuid":"a2bc2e1893e34aa1a7f3ce24f7285c31",
         "portName":"XGigabitEthernet0/0/27",
-        "portType":"SHARE",
+        "portOfferingUuid":"SHARE",
         "portAttribute":"SHARE",
         "autoAllot":1,
         "session":{
