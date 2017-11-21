@@ -12,6 +12,7 @@ import java.util.List;
  */
 public class StartSpeedRecordsInventory {
     private String uuid;
+    private String accountUuid;
     private String tunnelUuid;
     private String srcTunnelMonitorUuid;
     private String dstTunnelMonitorUuid;
@@ -28,6 +29,7 @@ public class StartSpeedRecordsInventory {
     public static StartSpeedRecordsInventory valueOf(SpeedRecordsVO vo, String hostIp){
         StartSpeedRecordsInventory inventory = new StartSpeedRecordsInventory();
         inventory.setUuid(vo.getUuid());
+        inventory.setAccountUuid(vo.getAccountUuid());
         inventory.setTunnelUuid(vo.getTunnelUuid());
         inventory.setSrcTunnelMonitorUuid(vo.getSrcTunnelMonitorUuid());
         inventory.setDstTunnelMonitorUuid(vo.getDstTunnelMonitorUuid());
@@ -153,5 +155,13 @@ public class StartSpeedRecordsInventory {
 
     public void setHostIp(String hostIp) {
         this.hostIp = hostIp;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

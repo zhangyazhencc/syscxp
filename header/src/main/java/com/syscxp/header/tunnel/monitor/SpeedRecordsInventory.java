@@ -15,6 +15,7 @@ import java.util.List;
 @Inventory(mappingVOClass = SpeedRecordsVO.class)
 public class SpeedRecordsInventory {
     private String uuid;
+    private String accountUuid;
     private String tunnelUuid;
     private String srcTunnelMonitorUuid;
     private String dstTunnelMonitorUuid;
@@ -30,6 +31,7 @@ public class SpeedRecordsInventory {
     public static SpeedRecordsInventory valueOf(SpeedRecordsVO vo){
         SpeedRecordsInventory inventory = new SpeedRecordsInventory();
         inventory.setUuid(vo.getUuid());
+        inventory.setAccountUuid(vo.getAccountUuid());
         inventory.setTunnelUuid(vo.getTunnelUuid());
         inventory.setSrcTunnelMonitorUuid(vo.getSrcTunnelMonitorUuid());
         inventory.setDstTunnelMonitorUuid(vo.getDstTunnelMonitorUuid());
@@ -62,6 +64,14 @@ public class SpeedRecordsInventory {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 
     public String getTunnelUuid() {
