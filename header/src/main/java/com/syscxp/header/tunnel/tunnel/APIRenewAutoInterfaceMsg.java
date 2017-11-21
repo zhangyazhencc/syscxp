@@ -8,7 +8,6 @@ import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 @InnerCredentialCheck
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
 public class APIRenewAutoInterfaceMsg extends APISyncCallMessage {
     @APIParam(emptyString = false, resourceType = InterfaceVO.class)
     private String uuid;

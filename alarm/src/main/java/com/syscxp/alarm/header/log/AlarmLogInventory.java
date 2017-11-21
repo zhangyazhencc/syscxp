@@ -20,12 +20,12 @@ public class AlarmLogInventory {
     private String accountUuid;
     private String smsContent;
     private String mailContent;
-//    private String policyName;
+    private String policyName;
     private String eventId;
     private Timestamp alarmTime;
     private Timestamp resumeTime;
     private int count;
-    private String regulationName;
+//    private String regulationName;
 
     public static AlarmLogInventory valueOf(AlarmLogVO vo){
         AlarmLogInventory inv = new AlarmLogInventory();
@@ -38,14 +38,14 @@ public class AlarmLogInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setSmsContent(vo.getSmsContent());
         inv.setMailContent(vo.getMailContent());
-//        if(vo.getPolicyVO() != null){
-//            inv.setPolicyName(vo.getPolicyVO().getName());
-//        }
+        if(vo.getPolicyVO() != null){
+            inv.setPolicyName(vo.getPolicyVO().getName());
+        }
         inv.setEventId(vo.getEventId());
         inv.setAlarmTime(vo.getAlarmTime());
         inv.setResumeTime(vo.getResumeTime());
         inv.setCount(vo.getCount());
-        inv.setRegulationName(vo.getRegulationName());
+//        inv.setRegulationName(vo.getRegulationName());
         return inv;
     }
 
@@ -162,11 +162,11 @@ public class AlarmLogInventory {
         this.resumeTime = resumeTime;
     }
 
-    public String getRegulationName() {
-        return regulationName;
+    public String getPolicyName() {
+        return policyName;
     }
 
-    public void setRegulationName(String regulationName) {
-        this.regulationName = regulationName;
+    public void setPolicyName(String policyName) {
+        this.policyName = policyName;
     }
 }

@@ -134,8 +134,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIRenewTunnelMsg) msg);
         } else if (msg instanceof APIRenewAutoTunnelMsg) {
             handle((APIRenewAutoTunnelMsg) msg);
-        } else if (msg instanceof APISalTunnelMsg) {
-            handle((APISalTunnelMsg) msg);
+        } else if (msg instanceof APISLATunnelMsg) {
+            handle((APISLATunnelMsg) msg);
         } else if (msg instanceof APIDeleteTunnelMsg) {
             handle((APIDeleteTunnelMsg) msg);
         } else if (msg instanceof APIDeleteForciblyTunnelMsg) {
@@ -1555,8 +1555,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         return reply;
     }
 
-    private void handle(APISalTunnelMsg msg) {
-        APISalTunnelReply reply = new APISalTunnelReply();
+    private void handle(APISLATunnelMsg msg) {
+        APISLATunnelReply reply = new APISLATunnelReply();
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
         Timestamp newTime = vo.getExpireDate();
@@ -2316,8 +2316,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             validate((APIRenewTunnelMsg) msg);
         } else if (msg instanceof APIRenewAutoTunnelMsg) {
             validate((APIRenewAutoTunnelMsg) msg);
-        } else if (msg instanceof APISalTunnelMsg) {
-            validate((APISalTunnelMsg) msg);
+        } else if (msg instanceof APISLATunnelMsg) {
+            validate((APISLATunnelMsg) msg);
         } else if (msg instanceof APIDeleteTunnelMsg) {
             validate((APIDeleteTunnelMsg) msg);
         } else if (msg instanceof APIDeleteForciblyTunnelMsg) {
@@ -2687,7 +2687,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         checkOrderNoPay(accountUuid, msg.getUuid());
     }
 
-    private void validate(APISalTunnelMsg msg) {
+    private void validate(APISLATunnelMsg msg) {
         String accountUuid = Q.New(TunnelVO.class)
                 .eq(TunnelVO_.uuid, msg.getUuid())
                 .select(TunnelVO_.accountUuid)
