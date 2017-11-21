@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.AliEdgeRouterConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
-@Action(services = {"tunnel"}, category = AliEdgeRouterConstant.ACTION_CATEGORY, names = {"delete"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = AliEdgeRouterConstant.ACTION_CATEGORY, names = {"delete"})
 public class APIDeleteAliEdgeRouterConfigMsg extends APIMessage {
     @APIParam(resourceType = AliEdgeRouterConfigVO.class)
     private String uuid;

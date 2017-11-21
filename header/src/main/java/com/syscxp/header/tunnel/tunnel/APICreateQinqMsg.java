@@ -8,7 +8,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Create by DCY on 2017/10/31
  */
-@Action(services = {"tunnel"}, category = TunnelConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreateQinqMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;

@@ -8,7 +8,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Create by DCY on 2017/11/20
  */
-@Action(services = {"tunnel"}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
 public class APIGetUnscribeInterfacePriceDiffMsg extends APISyncCallMessage {
     @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String uuid;

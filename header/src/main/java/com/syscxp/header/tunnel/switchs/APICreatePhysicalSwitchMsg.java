@@ -4,12 +4,13 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.SwitchConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.node.NodeVO;
 
 /**
  * Created by DCY on 2017-09-06
  */
-@Action(services = {"tunnel"}, category = SwitchConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = SwitchConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreatePhysicalSwitchMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32,resourceType = NodeVO.class)

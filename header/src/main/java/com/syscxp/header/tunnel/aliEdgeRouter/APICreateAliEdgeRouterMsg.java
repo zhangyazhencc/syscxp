@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.AliEdgeRouterConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
-@Action(services = {"tunnel"}, category = AliEdgeRouterConstant.ACTION_CATEGORY, names = {"creat"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = AliEdgeRouterConstant.ACTION_CATEGORY, names = {"creat"})
 public class APICreateAliEdgeRouterMsg extends APIMessage{
     @APIParam(required = false,maxLength = 32)
     private String accountUuid;

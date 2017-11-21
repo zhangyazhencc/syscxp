@@ -4,12 +4,13 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.NodeConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
 /**
  * Created by DCY on 8/21/17.
  */
 
-@Action(services = {"tunnel"}, category = NodeConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 
 public class APICreateNodeMsg extends APIMessage {
 

@@ -4,8 +4,9 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.AutoQuery;
 import com.syscxp.header.tunnel.SwitchConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
-@Action(services = {"tunnel"}, category = SwitchConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = SwitchConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
 @AutoQuery(replyClass = APIQueryPhysicalSwitchUpLinkRefReply.class, inventoryClass = PhysicalSwitchUpLinkRefInventory.class)
 public class APIQueryPhysicalSwitchUpLinkRefMsg extends APIQueryMessage{
 }

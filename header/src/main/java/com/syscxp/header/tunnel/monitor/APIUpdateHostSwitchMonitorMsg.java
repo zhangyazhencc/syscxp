@@ -4,6 +4,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.MonitorConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
 
 /**
@@ -12,7 +13,7 @@ import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
  * @Description: 更新监控主机与物理交换机关联.
  */
 
-@Action(services = {"tunnel"}, category = MonitorConstant.ACTION_CATEGORY)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
 public class APIUpdateHostSwitchMonitorMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = HostSwitchMonitorVO.class)
