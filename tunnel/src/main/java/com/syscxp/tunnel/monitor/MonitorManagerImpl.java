@@ -862,7 +862,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             if (physicalSwitch == null)
                 throw new IllegalArgumentException(String.format("No physical switch exist under switch port %s", tunnelPort.getSwitchPortUuid()));
 
-            //TODO: 流量传入metric数组，循环数组获取所有metric查询条件
             for (String metric : msg.getMetrics()) {
                 OpenTSDBCommands.tags tags = new OpenTSDBCommands.tags(physicalSwitch.getmIP(), "Vlanif" + tunnelPort.getVlan());
                 OpenTSDBCommands.Query query = new OpenTSDBCommands.Query("avg", metric, tags);
