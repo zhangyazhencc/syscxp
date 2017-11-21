@@ -559,7 +559,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                         dbf.getEntityManager().persist(vo);
                     }
                 } catch (UnknownHostException e) {
-                    event.setSuccess(false);
                     event.setError(Platform.operr("获取监控ip错误！" + e.getMessage()));
                 }
             }
