@@ -14,7 +14,7 @@ import com.syscxp.header.notification.ApiNotification;
  * modify by wangwg on 2017/09/14.
  */
 @SuppressUserCredentialCheck
-@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"})
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_USER, names = {"update"})
 public class APIUpdateUserEmailMsg extends APIMessage implements AccountMessage {
 
     @APIParam

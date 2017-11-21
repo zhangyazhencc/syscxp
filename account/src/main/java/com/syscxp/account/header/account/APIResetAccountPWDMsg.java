@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 
-@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, adminOnly = true)
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, adminOnly = true)
 public class APIResetAccountPWDMsg extends  APIMessage implements  AccountMessage {
 
     @APIParam(maxLength = 32)

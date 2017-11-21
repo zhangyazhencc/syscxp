@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import java.util.Map;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_PRICE)
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_PRICE)
 public class APICreateTunnelProductPriceUnitMsg extends APIMessage{
     @APIParam(maxLength = 50)
     private String areaCode;

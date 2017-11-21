@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIParam;
 
 import java.sql.Timestamp;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_ORDER, adminOnly = true)
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_ORDER, adminOnly = true)
 public class APIUpdateOrderExpiredTimeMsg extends APIMessage {
 
     @APIParam

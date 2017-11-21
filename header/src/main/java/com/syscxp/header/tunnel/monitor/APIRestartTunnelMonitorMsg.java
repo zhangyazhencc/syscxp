@@ -4,6 +4,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.MonitorConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 
 /**
@@ -12,7 +13,7 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
  * @Description: 创建监控通道.
  */
 
-@Action(services = {"tunnel"}, category = MonitorConstant.ACTION_CATEGORY)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
 public class APIRestartTunnelMonitorMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class,maxLength = 32)
     private String tunnelUuid;

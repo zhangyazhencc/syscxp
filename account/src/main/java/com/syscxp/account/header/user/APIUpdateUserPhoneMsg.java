@@ -11,7 +11,7 @@ import com.syscxp.header.message.APIParam;
  * Created by wangwg on 2017/8/8.
  */
 @SuppressUserCredentialCheck
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_USER)
 public class APIUpdateUserPhoneMsg extends APIMessage implements AccountMessage {
 
     @APIParam

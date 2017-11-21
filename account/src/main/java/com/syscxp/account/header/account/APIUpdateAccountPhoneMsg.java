@@ -9,7 +9,7 @@ import com.syscxp.header.message.APIParam;
 /**
  * Created by wangwg on 2017/8/8.
  */
-@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, accountOnly = true)
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, accountOnly = true)
 public class APIUpdateAccountPhoneMsg extends APIMessage implements AccountMessage{
 
     @APIParam

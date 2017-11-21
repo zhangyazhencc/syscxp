@@ -12,7 +12,7 @@ import com.syscxp.header.notification.ApiNotification;
  * Created by wangwg on 2017/9/26.
  */
 @SuppressUserCredentialCheck
-@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_TICKET, names = {"create"})
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_TICKET, names = {"create"})
 public class APICreateTicketRecordMsg extends APIMessage {
 
     @APIParam(maxLength = 32)

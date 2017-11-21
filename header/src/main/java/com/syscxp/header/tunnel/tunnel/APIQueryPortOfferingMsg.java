@@ -8,7 +8,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Create by DCY on 2017/10/30
  */
-@Action(services = {"tunnel"}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
 @AutoQuery(replyClass = APIQueryPortOfferingReply.class, inventoryClass = PortOfferingInventory.class)
 public class APIQueryPortOfferingMsg extends APIQueryMessage {
 }

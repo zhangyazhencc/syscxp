@@ -5,6 +5,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.MonitorConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 
@@ -14,7 +15,7 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
  * @Description: 网络工具测速.
  */
 
-@Action(services = {"tunnel"}, category = MonitorConstant.ACTION_CATEGORY)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
 public class APICreateNettoolRecordMsg extends APIMessage {
 
     @APIParam(emptyString = false)

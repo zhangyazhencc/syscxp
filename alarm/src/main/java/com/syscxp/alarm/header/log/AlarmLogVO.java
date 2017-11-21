@@ -41,9 +41,12 @@ public class AlarmLogVO extends BaseVO {
     @Column
     private String regulationUuid;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "policyUuid")
-    private PolicyVO policyVO;
+//    @OneToOne(fetch = FetchType.EAGER)
+//    @JoinColumn(name = "policyUuid")
+//    private PolicyVO policyVO;
+
+    @Column
+    private String regulationName;
 
 
     @Column
@@ -130,14 +133,6 @@ public class AlarmLogVO extends BaseVO {
         this.mailContent = mailContent;
     }
 
-    public PolicyVO getPolicyVO() {
-        return policyVO;
-    }
-
-    public void setPolicyVO(PolicyVO policyVO) {
-        this.policyVO = policyVO;
-    }
-
     public String getEventId() {
         return eventId;
     }
@@ -168,5 +163,13 @@ public class AlarmLogVO extends BaseVO {
 
     public void setCount(int count) {
         this.count = count;
+    }
+
+    public String getRegulationName() {
+        return regulationName;
+    }
+
+    public void setRegulationName(String regulationName) {
+        this.regulationName = regulationName;
     }
 }

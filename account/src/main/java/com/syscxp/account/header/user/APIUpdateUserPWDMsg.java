@@ -13,7 +13,7 @@ import com.syscxp.header.notification.ApiNotification;
  * Created by wangwg on 2017/8/8.
  */
 @SuppressUserCredentialCheck
-@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_USER)
 public class APIUpdateUserPWDMsg extends APIMessage implements AccountMessage {
 
     @APIParam(maxLength = 36,required = false)

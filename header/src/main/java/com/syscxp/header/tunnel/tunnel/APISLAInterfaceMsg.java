@@ -7,7 +7,7 @@ import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 @InnerCredentialCheck
-@Action(services = {"tunnel"}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
 public class APISLAInterfaceMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false, resourceType = InterfaceVO.class)

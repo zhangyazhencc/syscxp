@@ -200,7 +200,6 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                 ma.accountCheckFields.add(af);
             }
 
-
             actions.put(clz, ma);
         }
     }
@@ -249,7 +248,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
             this.msg = msg;
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
                 suppressCredentialCheck();
-            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)) {
+            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class) && this.msg.getSession() == null) {
                 innerCredentialCheck();
             } else {
                 DebugUtils.Assert(msg.getSession() != null, "session cannot be null");

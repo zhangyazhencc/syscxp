@@ -3,57 +3,57 @@
     <id>vpn</id>
     <interceptor>VpnManager</interceptor>
     <message>
-        <name>com.syscxp.vpn.header.vpn.APICreateVpnMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APICreateVpnMsg</name>
     </message>
     <message>
-        <name>com.syscxp.vpn.header.vpn.APIUpdateVpnMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIUpdateVpnMsg</name>
     </message>
     <message>
-        <name>com.syscxp.vpn.header.vpn.APIDeleteVpnMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIDeleteVpnMsg</name>
     </message>
     <message>
-        <name>com.syscxp.vpn.header.vpn.APIUpdateVpnBandwidthMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIUpdateVpnBandwidthMsg</name>
     </message>
     <message>
-        <name>com.syscxp.vpn.header.vpn.APIUpdateVpnExpireDateMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIUpdateVpnExpireDateMsg</name>
     </message>
     <message>
-        <name>com.syscxp.vpn.header.vpn.APIUpdateVpnCidrMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIUpdateVpnCidrMsg</name>
     </message>
     <message>
-        <name>com.syscxp.vpn.header.vpn.APIUpdateVpnStateMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIUpdateVpnStateMsg</name>
     </message>
     <message>
-        <name>com.syscxp.vpn.header.vpn.APIDownloadCertificateMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIDownloadCertificateMsg</name>
     </message>
     <message>
-        <name>com.syscxp.vpn.header.vpn.APIResetCertificateMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.vpn.header.vpn.APICreateVpnInterfaceMsg</name>
-    </message>
-    <message>
-        <name>com.syscxp.vpn.header.vpn.APIDeleteVpnInterfaceMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIResetCertificateMsg</name>
     </message>
 
-
     <message>
-        <name>com.syscxp.vpn.header.vpn.APICreateVpnRouteMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APICreateVpnInterfaceMsg</name>
     </message>
     <message>
-        <name>com.syscxp.vpn.header.vpn.APIDeleteVpnRouteMsg</name>
-    </message>
-    <message>
-        <name>com.syscxp.vpn.header.vpn.APIGetVpnMsg</name>
-    </message>
-    <message>
-        <name>com.syscxp.vpn.header.vpn.APIGetVpnPriceMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIDeleteVpnInterfaceMsg</name>
     </message>
 
 
     <message>
-        <name>com.syscxp.vpn.header.vpn.APIQueryVpnMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APICreateVpnRouteMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIDeleteVpnRouteMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIGetVpnMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIGetVpnPriceMsg</name>
+    </message>
+
+
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIQueryVpnMsg</name>
         <serviceId>query</serviceId>
     </message>
 

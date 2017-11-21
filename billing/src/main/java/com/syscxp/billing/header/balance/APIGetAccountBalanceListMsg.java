@@ -7,7 +7,7 @@ import com.syscxp.header.message.APISyncCallMessage;
 
 import java.util.List;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_BILLING, names = {"read"})
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_BILLING, names = {"read"})
 public class APIGetAccountBalanceListMsg  extends APISyncCallMessage {
 
     @APIParam(nonempty = false)
