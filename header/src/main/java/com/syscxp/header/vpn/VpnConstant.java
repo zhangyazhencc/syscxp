@@ -6,7 +6,8 @@ public interface VpnConstant {
     String HOST_TYPE = "VPN";
     String BANDWIDTH_UNIT = "M";
     String GENERATE_KEY = "asdjhsajfhasowjl234jhfv";
-    String ACTION_CATEGORY = "vpn";
+    String ACTION_CATEGORY_VPN = "vpn";
+    String ACTION_CATEGORY_HOST = "host";
     String ACTION_SERVICE = "vpn";
 
     String SERVICE_PATH = "/vpn/service_vpn";
