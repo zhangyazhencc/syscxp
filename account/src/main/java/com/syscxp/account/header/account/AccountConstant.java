@@ -22,6 +22,7 @@ public interface AccountConstant {
 
     public static final String ACTION_SERVICE = "account";
     public static final String ACTION_CATEGORY_ACCOUNT = "account";
+    public static final String ACTION_CATEGORY_USER = "user";
     public static final String ACTION_CATEGORY_TICKET = "ticket";
 
     enum RoleDecision {
