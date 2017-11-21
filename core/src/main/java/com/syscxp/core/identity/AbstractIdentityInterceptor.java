@@ -200,7 +200,6 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                 ma.accountCheckFields.add(af);
             }
 
-
             actions.put(clz, ma);
         }
     }

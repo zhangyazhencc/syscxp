@@ -8,6 +8,7 @@ import com.syscxp.header.notification.ApiNotification;
 
 /**
  * Created by wangwg on 2017/9/4.
+ * 用户找回密码，手机短信重置
  */
 @SuppressCredentialCheck
 public class APIUserPWDBackMsg extends APIMessage  {
