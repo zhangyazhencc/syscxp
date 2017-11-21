@@ -9,7 +9,7 @@ import com.syscxp.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/09/14.
  */
-@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, accountOnly = true)
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, accountOnly = true)
 public class APIAccountMailAuthenticationMsg extends APIMessage implements AccountMessage {
 
     @APIParam

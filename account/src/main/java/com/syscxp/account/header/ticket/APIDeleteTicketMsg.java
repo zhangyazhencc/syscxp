@@ -16,7 +16,7 @@ import com.syscxp.header.notification.ApiNotification;
  * Created by wangwg on 2017/09/26.
  */
 @SuppressUserCredentialCheck
-@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_TICKET, names = {"delete"})
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_TICKET, names = {"delete"})
 public class APIDeleteTicketMsg extends APIDeleteMessage {
 
     @APIParam(resourceType = TicketVO.class, checkAccount = true, operationTarget = true, required = false)

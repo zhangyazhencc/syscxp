@@ -9,7 +9,7 @@ import com.syscxp.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/8/9.
  */
-@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"}, accountOnly = true)
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"update"}, accountOnly = true)
 public class APIUpdateAccountEmailMsg extends APIMessage implements AccountMessage{
     @APIParam
     private String oldEmail;

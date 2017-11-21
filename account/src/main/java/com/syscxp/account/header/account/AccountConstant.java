@@ -20,6 +20,7 @@ public interface AccountConstant {
     int RESOURCE_PERMISSION_READ = 1;
     int RESOURCE_PERMISSION_WRITE = 2;
 
+    public static final String ACTION_SERVICE = "account";
     public static final String ACTION_CATEGORY_ACCOUNT = "account";
     public static final String ACTION_CATEGORY_TICKET = "ticket";
 
