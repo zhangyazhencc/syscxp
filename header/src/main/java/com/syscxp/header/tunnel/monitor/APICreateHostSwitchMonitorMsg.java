@@ -15,7 +15,7 @@ import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
  * @Description: 创建监控主机与物理交换机关联.
  */
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = HostConstant.ACTION_CATEGORY, adminOnly = true)
 public class APICreateHostSwitchMonitorMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = HostVO.class)
