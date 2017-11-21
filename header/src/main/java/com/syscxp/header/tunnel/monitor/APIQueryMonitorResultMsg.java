@@ -1,7 +1,11 @@
 package com.syscxp.header.tunnel.monitor;
 
+import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
+import com.syscxp.header.tunnel.MonitorConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 
 /**
@@ -9,6 +13,8 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
  * @Cretion Date: 2017-11-13.
  * @Description: 实时查询测速结果.
  */
+
+@SuppressCredentialCheck
 public class APIQueryMonitorResultMsg extends APISyncCallMessage {
     @APIParam(emptyString = false)
     private Long start;
@@ -17,9 +23,9 @@ public class APIQueryMonitorResultMsg extends APISyncCallMessage {
     private Long end;
 
     @APIParam(emptyString = false)
-    private String metric;
+    private String[] metrics;
 
-    @APIParam(emptyString = false,resourceType = TunnelVO.class)
+    @APIParam(emptyString = false, resourceType = TunnelVO.class)
     private String tunnelUuid;
 
     public Long getStart() {
@@ -38,19 +44,19 @@ public class APIQueryMonitorResultMsg extends APISyncCallMessage {
         this.end = end;
     }
 
-    public String getMetric() {
-        return metric;
-    }
-
-    public void setMetric(String metric) {
-        this.metric = metric;
-    }
-
     public String getTunnelUuid() {
         return tunnelUuid;
     }
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
+    }
+
+    public String[] getMetrics() {
+        return metrics;
+    }
+
+    public void setMetrics(String[] metrics) {
+        this.metrics = metrics;
     }
 }

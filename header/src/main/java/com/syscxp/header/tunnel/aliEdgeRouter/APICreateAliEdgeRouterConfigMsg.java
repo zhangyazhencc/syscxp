@@ -3,9 +3,10 @@ package com.syscxp.header.tunnel.aliEdgeRouter;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.tunnel.AliEdgeRouterConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
-@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"creat"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = AliEdgeRouterConstant.ACTION_CATEGORY)
 public class APICreateAliEdgeRouterConfigMsg extends APIMessage {
     @APIParam(maxLength = 64)
     private String aliRegionId;

@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Created by DCY on 2017-09-17
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
 @InnerCredentialCheck
 public class APIQueryTunnelDetailForAlarmMsg extends APISyncCallMessage {
     @APIParam(emptyString = false,maxLength = 32)

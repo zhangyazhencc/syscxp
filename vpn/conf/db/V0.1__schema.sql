@@ -70,31 +70,6 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `syscxp_vpn`.VpnInterfaceVO (
-	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-	`vpnUuid` VARCHAR(32) NOT NULL COMMENT 'VPN网关',
-	`hostUuid` VARCHAR(32) NOT NULL COMMENT '主机UUID',
-	`name` varchar(255) NOT NULL COMMENT '名称',
-	`networkUuid` VARCHAR(128) NOT NULL COMMENT '专线网络uuid',
-	`localIp` varchar(128) NOT NULL COMMENT '接口地址',
-	`netmask` VARCHAR(128) NOT NULL COMMENT '子网掩码',
-	`vlan` INT NOT NULL COMMENT '端口外部vlan',
-	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-	`createDate` timestamp,
-	PRIMARY KEY  (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-CREATE TABLE  `syscxp_vpn`.`VpnRouteVO` (
-	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-	`vpnUuid` VARCHAR(32) NOT NULL COMMENT 'VPN网关',
-	`routeType` varchar(32) NOT NULL COMMENT '类型',
-	`nextInterface` VARCHAR(32) NOT NULL COMMENT '下一跳接口',
-	`targetCidr` VARCHAR(32) NOT NULL COMMENT '目标网段',
-	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-	`createDate` timestamp,
-	PRIMARY KEY  (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE  `syscxp_vpn`.`ZoneVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`name` varchar(255) NOT NULL UNIQUE COMMENT '名称',
@@ -170,5 +145,3 @@ ALTER TABLE VpnHostVO ADD CONSTRAINT fkMonitorHostVOHostEO FOREIGN KEY (uuid) RE
 ALTER TABLE VpnHostVO ADD CONSTRAINT fkVpnHostVOZoneVO FOREIGN KEY (zoneUuid) REFERENCES ZoneVO (uuid) ON DELETE RESTRICT;
 ALTER TABLE HostInterfaceVO ADD CONSTRAINT fkHostInterfaceVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE CASCADE;
 ALTER TABLE VpnVO ADD CONSTRAINT fkVpnVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE RESTRICT;
-ALTER TABLE VpnInterfaceVO ADD CONSTRAINT fkTunnelIfaceVOVpnVO FOREIGN KEY (vpnUuid) REFERENCES VpnVO (uuid) ON DELETE CASCADE;
-ALTER TABLE VpnRouteVO ADD CONSTRAINT fkVpnRouteVOVpnVO FOREIGN KEY (vpnUuid) REFERENCES VpnVO (uuid) ON DELETE CASCADE;

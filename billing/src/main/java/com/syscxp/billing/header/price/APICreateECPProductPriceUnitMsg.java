@@ -6,7 +6,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_PRICE)
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_PRICE)
 public class APICreateECPProductPriceUnitMsg extends APIMessage{
     @APIParam(maxLength = 256,emptyString = false)
     private String productCategoryUuid;

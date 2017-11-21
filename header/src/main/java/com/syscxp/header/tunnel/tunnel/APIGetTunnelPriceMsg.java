@@ -12,7 +12,7 @@ import com.syscxp.header.tunnel.node.NodeVO;
 /**
  * Create by DCY on 2017/11/1
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
 public class APIGetTunnelPriceMsg extends APISyncCallMessage {
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;

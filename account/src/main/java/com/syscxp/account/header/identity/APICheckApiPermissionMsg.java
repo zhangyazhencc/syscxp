@@ -14,7 +14,7 @@ import static com.syscxp.utils.CollectionDSL.list;
 /**
  * Created by xing5 on 2016/3/10.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
 public class APICheckApiPermissionMsg extends APISyncCallMessage {
     @APIParam(required = false, resourceType = UserVO.class)
     private String userUuid;

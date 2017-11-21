@@ -39,10 +39,7 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -108,6 +105,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             bus.dealWithUnknownMessage(msg);
         }
     }
+
 
     private void handle(APIGetHasNotifyMsg msg) {
         APIGetHasNotifyReply reply = new APIGetHasNotifyReply();
@@ -388,7 +386,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         slaLogVO.setAccountUuid(msg.getAccountUuid());
         slaLogVO.setProductUuid(msg.getProductUuid());
         slaLogVO.setDuration(msg.getDuration());
-        slaLogVO.setTimeEnd(orderVo.getProductEffectTimeStart());
+        slaLogVO.setTimeStart(Timestamp.valueOf(orderVo.getProductEffectTimeEnd().toLocalDateTime().minusDays(msg.getDuration())));
         slaLogVO.setTimeEnd(orderVo.getProductEffectTimeEnd());
         slaLogVO.setSlaPrice(renewVO.getPriceOneMonth());
 
@@ -424,10 +422,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         Timestamp startTime = msg.getStartTime();
         Timestamp endTime = msg.getExpiredTime();
         LocalDateTime now = LocalDateTime.now();
-        LocalDate today = LocalDate.now();
         LocalDateTime expiredDay = endTime.toLocalDateTime();
         ;
-        long notUseDays = ChronoUnit.DAYS.between(now, expiredDay)-1;
+        long notUseDays = ChronoUnit.DAYS.between(now, expiredDay);
         SimpleQuery<RenewVO> query = dbf.createQuery(RenewVO.class);
         query.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         query.add(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
@@ -437,10 +434,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             throw new IllegalArgumentException("could not find the product purchased history ");
         }
 
-        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(renewVO.getLastOpDate().toLocalDateTime().toLocalDate().lengthOfMonth()), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(now.toLocalDate().lengthOfMonth()), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal valuePayCash = getValueblePayCash(msg.getAccountUuid(), msg.getProductUuid());
         orderVo.setType(OrderType.UN_SUBCRIBE);
-        remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(),  BigDecimal.ZERO));
+        remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO));
         if (remainMoney.compareTo(valuePayCash) > 0) {
             remainMoney = valuePayCash;
         }
@@ -567,8 +564,6 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductUuid(msg.getProductUuid());
         orderVo.setCallBackData(msg.getCallBackData());
 
-
-        Timestamp startTime = msg.getStartTime();
         Timestamp endTime = msg.getExpiredTime();
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime expiredDay = endTime.toLocalDateTime();
@@ -582,10 +577,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         if (renewVO == null) {
             throw new IllegalArgumentException("could not find the product purchased history ");
         }
-        LocalDate thatDay = renewVO.getLastOpDate().toLocalDateTime().toLocalDate();
-        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(thatDay.lengthOfMonth()), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
-        BigDecimal needPayMoney = discountPrice.divide(BigDecimal.valueOf(thatDay.lengthOfMonth()), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
-        BigDecimal needPayOriginMoney = originalPrice.divide(BigDecimal.valueOf(thatDay.lengthOfMonth()), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(now.toLocalDate().lengthOfMonth()), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal needPayMoney = discountPrice.divide(BigDecimal.valueOf(now.toLocalDate().lengthOfMonth()), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal needPayOriginMoney = originalPrice.divide(BigDecimal.valueOf(now.toLocalDate().lengthOfMonth()), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal subMoney = needPayMoney.subtract(remainMoney);
         if (subMoney.compareTo(BigDecimal.ZERO) >= 0) { //upgrade
             if (subMoney.compareTo(mayPayTotal) > 0) {
@@ -601,7 +595,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         } else { //downgrade
             BigDecimal valuePayCash = getValueblePayCash(msg.getAccountUuid(), msg.getProductUuid());
             orderVo.setType(OrderType.DOWNGRADE);
-            subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(),  discountPrice));
+            subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), discountPrice));
             if (subMoney.compareTo(valuePayCash.negate()) < 0) {
                 subMoney = valuePayCash.negate();
             }
@@ -668,14 +662,14 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 LocalDateTime startTime = slaLogVO.getTimeStart().toLocalDateTime();
                 long duration = slaLogVO.getDuration();
                 if (startTime.isBefore(LocalDateTime.now())) {
-                    duration = ChronoUnit.DAYS.between(slaLogVO.getTimeEnd().toLocalDateTime(), LocalDateTime.now());
+                    duration = Math.abs(ChronoUnit.DAYS.between(LocalDateTime.now(),slaLogVO.getTimeEnd().toLocalDateTime())) + 1;
                 }
                 if (priceDownTo.compareTo(slaLogVO.getSlaPrice()) < 0) {
-                    if (priceDownTo.compareTo(slaLogVO.getSlaPrice()) > 0) {
-                        returnMoney = returnMoney.add(slaLogVO.getSlaPrice().subtract(priceDownTo).divide(BigDecimal.valueOf(slaLogVO.getTimeEnd().toLocalDateTime().toLocalDate().lengthOfMonth()), 4, RoundingMode.HALF_UP)).multiply(BigDecimal.valueOf(duration));
-                        slaLogVO.setSlaPrice(priceDownTo);
-                        dbf.getEntityManager().persist(slaLogVO);
-                    }
+                    returnMoney = returnMoney.add(slaLogVO.getSlaPrice().subtract(priceDownTo).divide(BigDecimal.valueOf(LocalDate.now().lengthOfMonth()), 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(duration)));
+                    slaLogVO.setSlaPrice(priceDownTo);
+                    slaLogVO.setTimeStart(slaLogVO.getTimeStart());
+                    slaLogVO.setTimeEnd(slaLogVO.getTimeEnd());
+                    dbf.getEntityManager().merge(slaLogVO);
                 }
 
             }
@@ -990,7 +984,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             throw new IllegalArgumentException("could not find the product purchased history ");
         }
 
-        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(BigDecimal.valueOf(renewVO.getLastOpDate().toLocalDateTime().toLocalDate().lengthOfMonth()), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal needPayMoney = discountPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal needPayOriginMoney = originalPrice.divide(BigDecimal.valueOf(30), 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
         BigDecimal subMoney = needPayMoney.subtract(remainMoney);

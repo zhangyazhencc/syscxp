@@ -1,6 +1,6 @@
 package com.syscxp.vpn.host;
 
-import com.syscxp.vpn.header.host.VpnHostInventory;
+import com.syscxp.header.vpn.host.VpnHostInventory;
 
 /**
  */

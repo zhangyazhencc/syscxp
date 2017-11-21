@@ -27,4 +27,7 @@ public class VpnGlobalProperty {
     @GlobalProperty(name="MonitorAgent.syncOnHostPing", defaultValue = "true")
     public static Boolean AGENT_SYNC_ON_HOST_PING;
 
+    @GlobalProperty(name = "vpn.vpnStatusCheckWorkerInterval", defaultValue = "60")
+    public static int VPN_STATUS_CHECK_WORKER_INTERVAL;
+
 }

@@ -4,18 +4,6 @@
     <interceptor>MonitorManager</interceptor>
 
     <message>
-        <name>com.syscxp.header.tunnel.monitor.APICreateHostSwitchMonitorMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.monitor.APIUpdateHostSwitchMonitorMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.tunnel.monitor.APIDeleteHostSwitchMonitorMsg</name>
-    </message>
-
-    <message>
         <name>com.syscxp.header.tunnel.monitor.APIStartTunnelMonitorMsg</name>
     </message>
 
@@ -64,12 +52,11 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.monitor.APIQuerySpeedRecordsMsg</name>
-        <serviceId>query</serviceId>
+        <name>com.syscxp.header.tunnel.monitor.APIGetEndpointTunnelsMsg</name>
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.monitor.APIQueryHostSwitchMonitorMsg</name>
+        <name>com.syscxp.header.tunnel.monitor.APIQuerySpeedRecordsMsg</name>
         <serviceId>query</serviceId>
     </message>
 

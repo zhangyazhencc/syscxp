@@ -4,11 +4,12 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.NodeConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
 /**
  * Create by DCY on 2017/11/1
  */
-@Action(category = NodeConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
 public class APIDeleteInnerEndpointMsg extends APIMessage {
     @APIParam(emptyString = false, resourceType = InnerConnectedEndpointVO.class)
     private String uuid;

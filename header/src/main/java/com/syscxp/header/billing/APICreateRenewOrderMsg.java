@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIParam;
 
 import java.sql.Timestamp;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_ORDER)
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_ORDER)
 @InnerCredentialCheck
 public class APICreateRenewOrderMsg  extends APICreateOrderMsg {
 

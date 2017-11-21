@@ -1,7 +1,10 @@
 package com.syscxp.header.tunnel.monitor;
 
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.tunnel.MonitorConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 
 /**
@@ -9,9 +12,11 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
  * @Cretion Date: 2017-09-11.
  * @Description: 创建监控通道.
  */
+
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
 public class APIStartTunnelMonitorMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = TunnelVO.class,maxLength = 32)
+    @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true, maxLength = 32)
     private String tunnelUuid;
 
     @APIParam(required = true,maxLength = 64)

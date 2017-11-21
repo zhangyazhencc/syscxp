@@ -1,8 +1,12 @@
 package com.syscxp.header.tunnel.monitor;
 
 import com.syscxp.header.host.HostVO;
+import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.tunnel.MonitorConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.tunnel.TunnelVO;
 
@@ -11,6 +15,8 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
  * @Cretion Date: 2017-09-17.
  * @Description: 创建测速纪录.
  */
+
+@SuppressCredentialCheck
 public class APICreateSpeedRecordsMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = TunnelVO.class)

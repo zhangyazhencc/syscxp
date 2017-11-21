@@ -30,10 +30,10 @@ import com.syscxp.utils.path.PathUtil;
 import com.syscxp.utils.ssh.Ssh;
 import com.syscxp.utils.ssh.SshResult;
 import com.syscxp.utils.ssh.SshShell;
-import com.syscxp.vpn.header.host.APIUpdateVpnHostMsg;
-import com.syscxp.vpn.header.host.VpnHostInventory;
+import com.syscxp.header.vpn.host.APIUpdateVpnHostMsg;
+import com.syscxp.header.vpn.host.VpnHostInventory;
 import com.syscxp.vpn.host.VpnHostCommands.*;
-import com.syscxp.vpn.header.host.VpnHostVO;
+import com.syscxp.header.vpn.host.VpnHostVO;
 import com.syscxp.vpn.vpn.VpnGlobalProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -175,69 +175,6 @@ public class VpnHost extends HostBase implements Host {
                                 return PingResponse.class;
                             }
                         }, TimeUnit.SECONDS, 60);
-                    }
-                });
-
-                flow(new NoRollbackFlow() {
-                    String __name__ = "call-ping-no-failure-plugins";
-
-                    @Override
-                    public void run(FlowTrigger trigger, Map data) {
-                        List<VpnPingAgentNoFailureExtensionPoint> exts = pluginRgty.getExtensionList
-                                (VpnPingAgentNoFailureExtensionPoint.class);
-                        if (exts.isEmpty()) {
-                            trigger.next();
-                            return;
-                        }
-
-                        AsyncLatch latch = new AsyncLatch(exts.size(), new NoErrorCompletion(trigger) {
-                            @Override
-                            public void done() {
-                                trigger.next();
-                            }
-                        });
-
-                        VpnHostInventory inv = (VpnHostInventory) getSelfInventory();
-                        for (VpnPingAgentNoFailureExtensionPoint ext : exts) {
-                            ext.vpnPingAgentNoFailure(inv, new NoErrorCompletion(latch) {
-                                @Override
-                                public void done() {
-                                    latch.ack();
-                                }
-                            });
-                        }
-                    }
-                });
-
-                flow(new NoRollbackFlow() {
-                    String __name__ = "call-ping-plugins";
-
-                    @Override
-                    public void run(FlowTrigger trigger, Map data) {
-                        List<VpnPingAgentExtensionPoint> exts = pluginRgty.getExtensionList(VpnPingAgentExtensionPoint.class);
-                        Iterator<VpnPingAgentExtensionPoint> it = exts.iterator();
-                        callPlugin(it, trigger);
-                    }
-
-                    private void callPlugin(Iterator<VpnPingAgentExtensionPoint> it, FlowTrigger trigger) {
-                        if (!it.hasNext()) {
-                            trigger.next();
-                            return;
-                        }
-
-                        VpnPingAgentExtensionPoint ext = it.next();
-                        logger.debug(String.format("calling VpnHostPingAgentExtensionPoint[%s]", ext.getClass()));
-                        ext.vpnPingAgent((VpnHostInventory) getSelfInventory(), new Completion(trigger) {
-                            @Override
-                            public void success() {
-                                callPlugin(it, trigger);
-                            }
-
-                            @Override
-                            public void fail(ErrorCode errorCode) {
-                                trigger.fail(errorCode);
-                            }
-                        });
                     }
                 });
 

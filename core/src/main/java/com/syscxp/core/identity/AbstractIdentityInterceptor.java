@@ -174,8 +174,12 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
             ma.actions = new ArrayList<String>();
             ma.accountControl = a.accountControl();
             ma.accountCheckFields = new ArrayList<AccountCheckField>();
-            for (String ac : a.names()) {
-                ma.actions.add(String.format("%s:%s", ma.category, ac));
+            for (String p : a.services()) {
+                for (String ac : a.names()) {
+                    ma.actions.add(String.format("%s:%s:%s", p, ma.category, ac));
+                }
+                ma.actions.add(String.format("%s:%s:%s", p, ma.category, clz.getName()));
+                ma.actions.add(String.format("%s:%s:%s", p, ma.category, clz.getSimpleName()));
             }
 
             List<Field> allFields = FieldUtils.getAllFields(clz);
@@ -195,9 +199,6 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                 af.param = at;
                 ma.accountCheckFields.add(af);
             }
-
-            ma.actions.add(String.format("%s:%s", ma.category, clz.getName()));
-            ma.actions.add(String.format("%s:%s", ma.category, clz.getSimpleName()));
 
             actions.put(clz, ma);
         }
@@ -247,7 +248,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
             this.msg = msg;
             if (msg.getClass().isAnnotationPresent(SuppressCredentialCheck.class)) {
                 suppressCredentialCheck();
-            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class)) {
+            } else if (msg.getClass().isAnnotationPresent(InnerCredentialCheck.class) && this.msg.getSession() == null) {
                 innerCredentialCheck();
             } else {
                 DebugUtils.Assert(msg.getSession() != null, "session cannot be null");
