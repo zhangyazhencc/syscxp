@@ -28,8 +28,6 @@ public class VpnInventory {
     private String certKey;
     private Payment payment;
     private VpnHostInventory hostInventory;
-    private List<VpnInterfaceInventory> interfaceInventories;
-    private List<VpnRouteInventory> routeInventories;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -54,8 +52,6 @@ public class VpnInventory {
         inv.setMaxModifies(vo.getMaxModifies());
         inv.setPayment(vo.getPayment());
         inv.setHostInventory(VpnHostInventory.valueOf(vo.getVpnHost()));
-        inv.setInterfaceInventories(VpnInterfaceInventory.valueOf(vo.getVpnInterfaces()));
-        inv.setRouteInventories(VpnRouteInventory.valueOf(vo.getVpnRoutes()));
         return inv;
     }
 
@@ -210,22 +206,6 @@ public class VpnInventory {
 
     public void setHostInventory(VpnHostInventory hostInventory) {
         this.hostInventory = hostInventory;
-    }
-
-    public List<VpnInterfaceInventory> getInterfaceInventories() {
-        return interfaceInventories;
-    }
-
-    public void setInterfaceInventories(List<VpnInterfaceInventory> interfaceInventories) {
-        this.interfaceInventories = interfaceInventories;
-    }
-
-    public List<VpnRouteInventory> getRouteInventories() {
-        return routeInventories;
-    }
-
-    public void setRouteInventories(List<VpnRouteInventory> routeInventories) {
-        this.routeInventories = routeInventories;
     }
 
     public Timestamp getLastOpDate() {

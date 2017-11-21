@@ -74,6 +74,18 @@ public class VpnVO {
         this.memo = memo;
     }
 
+    public void setHostUuid(String hostUuid) {
+        this.hostUuid = hostUuid;
+    }
+
+    public VpnHostVO getVpnHost() {
+        return vpnHost;
+    }
+
+    public void setVpnHost(VpnHostVO vpnHost) {
+        this.vpnHost = vpnHost;
+    }
+
     public Integer getMaxModifies() {
         return maxModifies;
     }
@@ -108,42 +120,6 @@ public class VpnVO {
 
     public String getHostUuid() {
         return hostUuid;
-    }
-
-    public void setHostUuid(String hostUuid) {
-        this.hostUuid = hostUuid;
-    }
-
-    @OneToMany(fetch= FetchType.EAGER)
-    @JoinColumn(name = "vpnUuid", insertable = false, updatable = false)
-    private List<VpnInterfaceVO> vpnInterfaces;
-
-    @OneToMany(fetch= FetchType.EAGER)
-    @JoinColumn(name = "vpnUuid", insertable = false, updatable = false)
-    private List<VpnRouteVO> vpnRoutes;
-
-    public VpnHostVO getVpnHost() {
-        return vpnHost;
-    }
-
-    public void setVpnHost(VpnHostVO vpnHost) {
-        this.vpnHost = vpnHost;
-    }
-
-    public List<VpnInterfaceVO> getVpnInterfaces() {
-        return vpnInterfaces;
-    }
-
-    public void setVpnInterfaces(List<VpnInterfaceVO> vpnInterfaces) {
-        this.vpnInterfaces = vpnInterfaces;
-    }
-
-    public List<VpnRouteVO> getVpnRoutes() {
-        return vpnRoutes;
-    }
-
-    public void setVpnRoutes(List<VpnRouteVO> vpnRoutes) {
-        this.vpnRoutes = vpnRoutes;
     }
 
     public String getUuid() {
