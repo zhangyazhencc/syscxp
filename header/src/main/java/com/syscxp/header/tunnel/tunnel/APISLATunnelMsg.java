@@ -11,7 +11,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
  */
 @InnerCredentialCheck
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
-public class APISalTunnelMsg extends APISyncCallMessage {
+public class APISLATunnelMsg extends APISyncCallMessage {
     @APIParam(emptyString = false, resourceType = TunnelVO.class)
     private String uuid;
     @APIParam

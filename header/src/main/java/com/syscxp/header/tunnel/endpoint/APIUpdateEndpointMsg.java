@@ -9,8 +9,6 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Created by DCY on 2017-08-23
  */
-
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUpdateEndpointMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
     private String uuid;

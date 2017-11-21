@@ -10,8 +10,6 @@ import com.syscxp.header.tunnel.TunnelConstant;
  * Created by DCY on 8/21/17.
  */
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
-
 public class APICreateNodeMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 255)
