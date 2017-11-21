@@ -11,7 +11,6 @@ import com.syscxp.header.tunnel.NodeConstant;
  * @Description: 删除节点数据.
  */
 
-@Action(category = NodeConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
 public class APIDeleteNodeMsg extends APIMessage {
     @APIParam(emptyString = false, resourceType = NodeEO.class, checkAccount = true)
     private String uuid;

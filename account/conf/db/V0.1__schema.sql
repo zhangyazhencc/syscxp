@@ -266,23 +266,27 @@ ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVOUserVO FOREIGN KEY (user
 ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE RESTRICT;
 ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVOPolicyVO FOREIGN KEY (policyUuid) REFERENCES PolicyVO (uuid) ON DELETE RESTRICT;
 
-INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Normal',0,'{"actions":["tunnel:read","node:read","monitor:read"],"effect":"Allow"}');
-INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelFullAccess','管理专线网络权限','tunnel','Normal','1','{"actions":["tunnel:.*","node:read","monitor:.*"],"effect":"Allow"}');
-INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('NodeReadOnlyAccess','只读访问节点的权限','tunnel','SystemAdmin','0','{"actions":["node:read"],"effect":"Allow"}');
-INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('NodeFullAccess','管理节点权限','tunnel','SystemAdmin','1','{"actions":["node:.*"],"effect":"Allow"}');
-INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('SwitchReadOnlyAccess','只读访问交换机的权限','tunnel','SystemAdmin','0','{"actions":["switch:read"],"effect":"Allow"}');
-INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('SwitchFullAccess','管理交换机权限','tunnel','SystemAdmin','1','{"actions":["switch:.*","node:read"],"effect":"Allow"}');
-INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelHostReadOnlyAccess','只读访问监控主机的权限','tunnel','SystemAdmin','0','{"actions":["tunnelHost:read"],"effect":"Allow"}');
-INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelHostFullAccess','管理监控主机权限','tunnel','SystemAdmin','1','{"actions":["tunnelHost:.*","node:read"],"effect":"Allow"}');
-INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('VPNReadOnlyAccess','只读访问VPN权限','vpn','Normal','0	','{"actions":["vpn:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Normal','0','{"actions":["tunnel:.*:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelFullAccess','管理专线网络权限','tunnel','Normal','1','{"actions":["tunnel:.*"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('SolutionReadOnlyAccess','只读访问专线解决方案的权限','tunnel','Normal','2','{"actions":["tunnel:solution:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('SolutionFullAccess','管理专线解决方案权限','tunnel','Normal','3','{"actions":["tunnel:solution:.*","tunnel:node:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('NodeReadOnlyAccess','只读访问节点的权限','tunnel','SystemAdmin','4','{"actions":["tunnel:node:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('NodeFullAccess','管理节点权限','tunnel','SystemAdmin','5','{"actions":["tunnel:node:.*"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('SwitchReadOnlyAccess','只读访问交换机的权限','tunnel','SystemAdmin','6','{"actions":["tunnel:switch:read","tunnel:node:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('SwitchFullAccess','管理交换机权限','tunnel','SystemAdmin','7','{"actions":["tunnel:switch:.*","tunnel:node:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelHostReadOnlyAccess','只读访问监控主机的权限','tunnel','SystemAdmin','8','{"actions":["tunnel:host:read","tunnel:node:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelHostFullAccess','管理监控主机权限','tunnel','SystemAdmin','9','{"actions":["tunnel:host:.*","tunnel:node:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('VPNReadOnlyAccess','只读访问VPN权限','vpn','Normal','0','{"actions":["vpn:.*:read"],"effect":"Allow"}');
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('VPNFullAccess','管理VPN权限','vpn','Normal','1','{"actions":["vpn:.*"],"effect":"Allow"}');
-INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('BillingReadOnlyAccess','只读访问费用中心的权限','billing','Normal','0','{"actions":["order:read","recharge:read","receipt:read","renew:read","sla:read"],"effect":"Allow"}');
-INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('BillingFullAccess','管理费用中心的权限','billing','Normal','1','{"actions":["order:.*","recharge:.*","receipt:.*","renew:.*","sla:.*"],"effect":"Allow"}');
-INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('AccountReadOnlyAccess','只读访问账户中心的权限','account','Normal','0','{"actions":["account:read"],"effect":"Allow"}');
-INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('AccountFullAccess','管理账户中心的权限','account','Normal','1','{"actions":["account:.*", "user:.*"],"effect":"Allow"}');
-INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('UserFullAccess','管理User的权限','account','Normal','2','{"actions": ["user:.*"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('BillingReadOnlyAccess','只读访问费用中心的权限','billing','Normal','0','{"actions":["billing:.*:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('BillingFullAccess','管理费用中心的权限','billing','Normal','1','{"actions":["billing:.*"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('AccountReadOnlyAccess','只读访问账户中心的权限','account','Normal','0','{"actions":["account:.*:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('AccountFullAccess','管理账户中心的权限','account','Normal','1','{"actions":["account:.*"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('UserFullAccess','管理User的权限','account','Normal','2','{"actions": ["account:user:.*"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('ECPReadOnlyAccess','只读访问互联云的权限','ecp','Normal','0','{"actions":["ecp:.*:read"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('ECPFullAccess','管理互联云的权限','ecp','Normal','1','{"actions":["ecp:.*"],"effect":"Allow"}');
 
-UPDATE `PolicyVO` p set p.createDate = current_timestamp();
+UPDATE `PolicyVO` p set p.lastOpDate = current_timestamp(), p.createDate = current_timestamp();
 
 
 CREATE TABLE `TicketVO` (
