@@ -7,7 +7,6 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.vpn.VpnConstant;
 
-@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUpdateZoneMsg extends APIMessage{
     @APIParam
     private String uuid;

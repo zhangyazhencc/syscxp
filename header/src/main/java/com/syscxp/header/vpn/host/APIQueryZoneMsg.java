@@ -6,6 +6,6 @@ import com.syscxp.header.query.AutoQuery;
 import com.syscxp.header.vpn.VpnConstant;
 
 @AutoQuery(replyClass = APIQueryZoneReply.class, inventoryClass = ZoneInventory.class)
-@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY, names = {"read"})
+@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_HOST, names = {"read"})
 public class APIQueryZoneMsg extends APIQueryMessage {
 }
