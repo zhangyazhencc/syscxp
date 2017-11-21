@@ -39,5 +39,18 @@
         <serviceId>query</serviceId>
     </message>
 
+    <message>
+        <name>com.syscxp.header.tunnel.solution.APIDeleteSolutionMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.tunnel.solution.APIDeleteSolutionInterfaceMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.tunnel.solution.APIDeleteSolutionTunnelMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.tunnel.solution.APIDeleteSolutionVpnMsg</name>
+    </message>
+
 
 </service>
