@@ -14,7 +14,7 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
  * @Description: 创建测速专线.
  */
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY, adminOnly = true)
 public class APICreateSpeedTestTunnelMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class)
     private String tunnelUuid;

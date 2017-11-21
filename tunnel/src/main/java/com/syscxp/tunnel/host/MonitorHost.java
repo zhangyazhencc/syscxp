@@ -179,69 +179,6 @@ public class MonitorHost extends HostBase implements Host {
                     }
                 });
 
-                flow(new NoRollbackFlow() {
-                    String __name__ = "call-ping-no-failure-plugins";
-
-                    @Override
-                    public void run(FlowTrigger trigger, Map data) {
-                        List<MonitorPingAgentNoFailureExtensionPoint> exts = pluginRgty.getExtensionList
-                                (MonitorPingAgentNoFailureExtensionPoint.class);
-                        if (exts.isEmpty()) {
-                            trigger.next();
-                            return;
-                        }
-
-                        AsyncLatch latch = new AsyncLatch(exts.size(), new NoErrorCompletion(trigger) {
-                            @Override
-                            public void done() {
-                                trigger.next();
-                            }
-                        });
-
-                        MonitorHostInventory inv = (MonitorHostInventory) getSelfInventory();
-                        for (MonitorPingAgentNoFailureExtensionPoint ext : exts) {
-                            ext.monitorPingAgentNoFailure(inv, new NoErrorCompletion(latch) {
-                                @Override
-                                public void done() {
-                                    latch.ack();
-                                }
-                            });
-                        }
-                    }
-                });
-
-                flow(new NoRollbackFlow() {
-                    String __name__ = "call-ping-plugins";
-
-                    @Override
-                    public void run(FlowTrigger trigger, Map data) {
-                        List<MonitorPingAgentExtensionPoint> exts = pluginRgty.getExtensionList(MonitorPingAgentExtensionPoint.class);
-                        Iterator<MonitorPingAgentExtensionPoint> it = exts.iterator();
-                        callPlugin(it, trigger);
-                    }
-
-                    private void callPlugin(Iterator<MonitorPingAgentExtensionPoint> it, FlowTrigger trigger) {
-                        if (!it.hasNext()) {
-                            trigger.next();
-                            return;
-                        }
-
-                        MonitorPingAgentExtensionPoint ext = it.next();
-                        logger.debug(String.format("calling MonitorHostPingAgentExtensionPoint[%s]", ext.getClass()));
-                        ext.monitorPingAgent((MonitorHostInventory) getSelfInventory(), new Completion(trigger) {
-                            @Override
-                            public void success() {
-                                callPlugin(it, trigger);
-                            }
-
-                            @Override
-                            public void fail(ErrorCode errorCode) {
-                                trigger.fail(errorCode);
-                            }
-                        });
-                    }
-                });
-
                 done(new FlowDoneHandler(completion) {
                     @Override
                     public void handle(Map data) {

@@ -1,0 +1,15 @@
+<error>
+    <prefix>HOST</prefix>
+
+    <code>
+        <id>1000</id>
+        <description>Unable to pay</description>
+    </code>
+
+    <code>
+        <id>1001</id>
+        <description>An error happened when call billing</description>
+    </code>
+
+</error>
+

@@ -7,13 +7,13 @@ import com.syscxp.header.rest.RestResponse;
 import java.util.List;
 
 @RestResponse(allTo = "inventory")
-public class APICreateVHostProductPriceUnitEvent extends APIEvent{
+public class APICreateECPProductPriceUnitEvent extends APIEvent{
     private ProductPriceUnitInventory inventory;
 
-    public APICreateVHostProductPriceUnitEvent(){}
+    public APICreateECPProductPriceUnitEvent(){}
 
 
-    public APICreateVHostProductPriceUnitEvent(String apiId) {
+    public APICreateECPProductPriceUnitEvent(String apiId) {
         super(apiId);
     }
 

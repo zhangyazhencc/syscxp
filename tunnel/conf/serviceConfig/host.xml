@@ -50,4 +50,22 @@
         <interceptor>MonitorApiInterceptor</interceptor>
     </message>
 
+
+    <message>
+        <name>com.syscxp.header.tunnel.host.APICreateHostSwitchMonitorMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.host.APIUpdateHostSwitchMonitorMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.host.APIDeleteHostSwitchMonitorMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.host.APIQueryHostSwitchMonitorMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
 </service>

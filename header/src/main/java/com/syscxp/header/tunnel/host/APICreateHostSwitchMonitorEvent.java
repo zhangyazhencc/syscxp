@@ -1,4 +1,4 @@
-package com.syscxp.header.tunnel.monitor;
+package com.syscxp.header.tunnel.host;
 
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.rest.RestResponse;
@@ -9,12 +9,12 @@ import com.syscxp.header.rest.RestResponse;
  * @Description: .
  */
 @RestResponse(allTo = "inventory")
-public class APIDeleteHostSwitchMonitorEvent extends APIEvent {
+public class APICreateHostSwitchMonitorEvent extends APIEvent {
     private HostSwitchMonitorInventory inventory;
 
-    public APIDeleteHostSwitchMonitorEvent(){};
+    public APICreateHostSwitchMonitorEvent(){};
 
-    public APIDeleteHostSwitchMonitorEvent(String apiId){super(apiId);}
+    public APICreateHostSwitchMonitorEvent(String apiId){super(apiId);}
 
     public HostSwitchMonitorInventory getInventory() {
         return inventory;

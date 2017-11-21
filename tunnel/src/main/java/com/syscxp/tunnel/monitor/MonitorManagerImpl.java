@@ -25,10 +25,7 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.MonitorConstant;
-import com.syscxp.header.tunnel.host.APICreateMonitorHostMsg;
-import com.syscxp.header.tunnel.host.MonitorHostVO;
-import com.syscxp.header.tunnel.host.MonitorHostVO_;
-import com.syscxp.header.tunnel.host.MonitorType;
+import com.syscxp.header.tunnel.host.*;
 import com.syscxp.header.tunnel.monitor.*;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
@@ -562,7 +559,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                         dbf.getEntityManager().persist(vo);
                     }
                 } catch (UnknownHostException e) {
-                    event.setSuccess(false);
                     event.setError(Platform.operr("获取监控ip错误！" + e.getMessage()));
                 }
             }

@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.monitor;
 
+import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
@@ -8,6 +9,7 @@ import com.syscxp.header.message.APISyncCallMessage;
  * @Cretion Date: 2017-11-17.
  * @Description: falcon-alarm获取端点数据.
  */
+@InnerCredentialCheck
 public class APIGetEndpointTunnelsMsg extends APISyncCallMessage {
     @APIParam(emptyString = false,maxLength = 64)
     private String physicalSwitchMip;
