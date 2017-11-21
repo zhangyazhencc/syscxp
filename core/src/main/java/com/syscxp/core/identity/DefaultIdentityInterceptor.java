@@ -24,7 +24,7 @@ public class DefaultIdentityInterceptor extends AbstractIdentityInterceptor {
     }
 
     @Override
-    protected SessionInventory getSessionInventory(String sessionUuid) {
+    public SessionInventory getSessionInventory(String sessionUuid) {
 
         APIGetSessionPolicyMsg aMsg = new APIGetSessionPolicyMsg();
         aMsg.setSessionUuid(sessionUuid);
