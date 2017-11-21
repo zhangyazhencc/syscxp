@@ -226,48 +226,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
-        if (msg instanceof APIMonitorRunShellMsg) {
-            handle((APIMonitorRunShellMsg) msg);
-        } else {
-            bus.dealWithUnknownMessage(msg);
-        }
-
-    }
-
-    private void handle(final APIMonitorRunShellMsg msg) {
-        final APIMonitorRunShellEvent evt = new APIMonitorRunShellEvent(msg.getId());
-
-        final List<MonitorRunShellMsg> kmsgs = CollectionUtils.transformToList(msg.getHostUuids(),
-                (Function<MonitorRunShellMsg, String>) arg -> {
-            MonitorRunShellMsg kmsg = new MonitorRunShellMsg();
-            kmsg.setHostUuid(arg);
-            kmsg.setScript(msg.getScript());
-            bus.makeLocalServiceId(kmsg, HostConstant.SERVICE_ID);
-            return kmsg;
-        });
-
-        bus.send(kmsgs, new CloudBusListCallBack(msg) {
-            @Override
-            public void run(List<MessageReply> replies) {
-                for (MessageReply r : replies) {
-                    String hostUuid = kmsgs.get(replies.indexOf(r)).getHostUuid();
-
-                    APIMonitorRunShellEvent.ShellResult result = new APIMonitorRunShellEvent.ShellResult();
-                    if (!r.isSuccess()) {
-                        result.setErrorCode(r.getError());
-                    } else {
-                        MonitorRunShellReply kr = r.castReply();
-                        result.setReturnCode(kr.getReturnCode());
-                        result.setStderr(kr.getStderr());
-                        result.setStdout(kr.getStdout());
-                    }
-
-                    evt.getInventory().put(hostUuid, result);
-                }
-
-                bus.publish(evt);
-            }
-        });
+        bus.dealWithUnknownMessage(msg);
     }
 
 
