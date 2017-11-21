@@ -18,7 +18,7 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
 public class APICreateNettoolRecordMsg extends APIMessage {
 
-    @APIParam(emptyString = false)
+    @APIParam(validValues = {"ping", "trace"}, emptyString = false)
     private String command;
 
     @APIParam(emptyString = false,resourceType = NodeVO.class)
