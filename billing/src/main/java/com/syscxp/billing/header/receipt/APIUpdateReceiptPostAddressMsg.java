@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
-@Action(category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"update"})
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"update"})
 public class APIUpdateReceiptPostAddressMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = ReceiptPostAddressVO.class, checkAccount = true)

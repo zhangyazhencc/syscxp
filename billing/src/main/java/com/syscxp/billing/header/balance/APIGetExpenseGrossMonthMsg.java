@@ -5,7 +5,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_BILLING, names = {"read"})
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_BILLING, names = {"read"})
 public class APIGetExpenseGrossMonthMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false)

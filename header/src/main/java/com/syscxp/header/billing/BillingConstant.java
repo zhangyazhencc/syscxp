@@ -9,6 +9,7 @@ public interface BillingConstant {
     public static final String SERVICE_ID_RENEW = "renew";
     public static final String SERVICE_ID_SLA = "sla";
 
+    public static final String ACTION_SERVICE = "billing";
     public static final String ACTION_CATEGORY_BILLING = "billing";
     public static final String ACTION_CATEGORY_PRICE = "price";
     public static final String ACTION_CATEGORY_SLA = "sla";

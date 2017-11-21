@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
 @InnerCredentialCheck
-@Action(category = BillingConstant.ACTION_CATEGORY_ORDER, names = {"read"})
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_ORDER, names = {"read"})
 public class APIGetHasNotifyMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false)

@@ -4,7 +4,7 @@ import com.syscxp.header.billing.BillingConstant;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-@Action(category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"create"})
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"create"})
 public class APICreateReceiptInfoMsg extends APIMessage {
 
     @APIParam(emptyString = false)

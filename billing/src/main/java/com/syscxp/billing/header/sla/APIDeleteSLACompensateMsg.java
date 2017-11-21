@@ -5,8 +5,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_SLA, names = {"delete"})
-
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_SLA, names = {"delete"}, adminOnly = true)
 public class APIDeleteSLACompensateMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = SLACompensateVO.class)

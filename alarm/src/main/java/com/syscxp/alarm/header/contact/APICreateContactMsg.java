@@ -9,7 +9,7 @@ import com.syscxp.header.message.APIParam;
 
 import java.util.List;
 
-@Action(category = AlarmConstant.ACTION_CATEGORY_ALARM, names = {"create"})
+@Action(services = {AlarmConstant.ACTION_SERVICE}, category = AlarmConstant.ACTION_CATEGORY_ALARM, names = {"create"})
 public class APICreateContactMsg extends APIMessage{
 
     @APIParam(emptyString = false,required = false)

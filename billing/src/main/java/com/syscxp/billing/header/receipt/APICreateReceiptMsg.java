@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
 import java.math.BigDecimal;
-@Action(category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"create"})
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"create"})
 public class APICreateReceiptMsg extends APIMessage {
 
     @APIParam
