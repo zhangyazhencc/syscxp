@@ -13,9 +13,9 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
  * @Description: 删除测速专线.
  */
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY, adminOnly = true)
 public class APIDeleteSpeedTestTunnelMsg extends APIMessage {
-    @APIParam(emptyString = false,resourceType = SpeedTestTunnelVO.class)
+    @APIParam(emptyString = false, resourceType = SpeedTestTunnelVO.class)
     private String uuid;
 
     public String getUuid() {
