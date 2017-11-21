@@ -63,6 +63,33 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         }
     }
 
+    private void hand(APICreateSolutionVpnMsg msg) {
+    }
+
+    private void hand(APICreateSolutionTunnelMsg msg) {
+        SolutionTunnelVO vo = new SolutionTunnelVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setCost(msg.getCost());
+        vo.setDuration(msg.getDuration());
+        vo.setProductChargeModel(msg.getProductChargeModel());
+        vo.setSolutionUuid(msg.getSolutionUuid());
+        if(msg.getDescription() != null){
+            vo.setDescription(msg.getDescription());
+        }
+        if(msg.getName() != null){
+            vo.setName(msg.getName());
+        }
+
+        vo.setBandwidth(msg.getBandwidth());
+        vo.setEndpointNameA(msg.getEndpointNameA());
+        vo.setEndpointNameZ(msg.getEndpointNameZ());
+
+        APICreateSolutionTunnelEvent event = new APICreateSolutionTunnelEvent(msg.getId());
+        event.setInventory(SolutionTunnelInventory.valueOf(dbf.persistAndRefresh(vo)));
+        bus.publish(event);
+
+    }
+
     private void hand(APICreateSolutionInterfaceMsg msg) {
         SolutionInterfaceVO vo = new SolutionInterfaceVO();
         vo.setUuid(Platform.getUuid());
