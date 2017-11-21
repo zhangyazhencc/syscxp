@@ -5,7 +5,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-@Action(category = AlarmConstant.ACTION_CATEGORY_ALARM, names = {"delete"})
+@Action(services = {AlarmConstant.ACTION_SERVICE}, category = AlarmConstant.ACTION_CATEGORY_ALARM, names = {"delete"})
 public class APIDeleteResourceMsg extends APIMessage{
     @APIParam
     private String tunnel_id;

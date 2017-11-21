@@ -7,7 +7,7 @@ import com.syscxp.header.message.APISyncCallMessage;
 
 import java.math.BigDecimal;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_RECHARGE)
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_RECHARGE, names = "update")
 public class APIRechargeMsg extends APISyncCallMessage {
 
     @APIParam(required = false)

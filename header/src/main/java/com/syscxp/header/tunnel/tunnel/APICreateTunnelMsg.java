@@ -12,7 +12,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Created by DCY on 2017-09-11
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"create"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateTunnelMsg extends APIMessage {
 
     @APIParam(emptyString = false,required = false,maxLength = 32)
@@ -21,10 +21,6 @@ public class APICreateTunnelMsg extends APIMessage {
     private String name;
     @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
-    @APIParam(emptyString = false,resourceType = NodeVO.class)
-    private String nodeAUuid;
-    @APIParam(emptyString = false,resourceType = NodeVO.class)
-    private String nodeZUuid;
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
     private String endpointAUuid;
     @APIParam(emptyString = false,resourceType = EndpointVO.class)
@@ -93,22 +89,6 @@ public class APICreateTunnelMsg extends APIMessage {
 
     public void setDescription(String description) {
         this.description = description;
-    }
-
-    public String getNodeAUuid() {
-        return nodeAUuid;
-    }
-
-    public void setNodeAUuid(String nodeAUuid) {
-        this.nodeAUuid = nodeAUuid;
-    }
-
-    public String getNodeZUuid() {
-        return nodeZUuid;
-    }
-
-    public void setNodeZUuid(String nodeZUuid) {
-        this.nodeZUuid = nodeZUuid;
     }
 
     public Integer getDuration() {

@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.tunnel.TunnelConstant;
 
-@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
 public class APIRenewInterfaceMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)

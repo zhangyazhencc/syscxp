@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT)
 public class APICreateAccountMsg  extends APIMessage implements AccountMessage{
     @APIParam(maxLength = 128)
     private String name;

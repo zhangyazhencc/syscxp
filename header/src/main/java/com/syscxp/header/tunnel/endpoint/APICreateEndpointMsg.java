@@ -4,13 +4,14 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.NodeConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.node.NodeVO;
 
 /**
  * Created by DCY on 2017-08-23
  */
 
-@Action(category = NodeConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreateEndpointMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32,resourceType = NodeVO.class)

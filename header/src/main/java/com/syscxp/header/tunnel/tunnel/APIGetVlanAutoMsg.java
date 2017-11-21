@@ -8,7 +8,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Create by DCY on 2017/11/3
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
 public class APIGetVlanAutoMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)

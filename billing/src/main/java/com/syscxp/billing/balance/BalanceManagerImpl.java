@@ -7,11 +7,10 @@ import com.alipay.api.internal.util.AlipaySignature;
 import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.syscxp.billing.BillingGlobalProperty;
 import com.syscxp.billing.header.balance.*;
-import com.syscxp.core.db.UpdateQuery;
+import com.syscxp.header.account.*;
 import com.syscxp.header.billing.ProductCategoryVO;
 import com.syscxp.header.billing.ProductCategoryVO_;
 import com.syscxp.header.billing.*;
-import org.hibernate.sql.Update;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,8 +26,6 @@ import com.syscxp.core.identity.IdentityGlobalProperty;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.AbstractService;
-import com.syscxp.header.account.APIValidateAccountMsg;
-import com.syscxp.header.account.APIValidateAccountReply;
 import com.syscxp.header.alipay.APIVerifyNotifyMsg;
 import com.syscxp.header.alipay.APIVerifyNotifyReply;
 import com.syscxp.header.alipay.APIVerifyReturnMsg;
@@ -131,16 +128,16 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             throw new IllegalArgumentException("you hava not permission");
         }
         AccountDiscountVO accountDiscountVO = dbf.findByUuid(msg.getUuid(), AccountDiscountVO.class);
-        APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
-        aMsg.setUuid(accountDiscountVO.getAccountUuid());
+        APIGetAccountUuidListByProxyMsg aMsg = new APIGetAccountUuidListByProxyMsg();
+        aMsg.setAccountUuid(accountDiscountVO.getAccountUuid());
         InnerMessageHelper.setMD5(aMsg);
         String gstr = RESTApiDecoder.dump(aMsg);
         RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
         if (rsp.getState().equals(RestAPIState.Done.toString())) {
-            APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
-            List<String> customerUuids = replay.getAccountUuidOwnProxy();
+            APIGetAccountUuidListByProxyReply replay = (APIGetAccountUuidListByProxyReply) RESTApiDecoder.loads(rsp.getResult());
+            List<String> customerUuids = replay.getAccountUuids();
             if (customerUuids != null && customerUuids.size() > 0) {
-                for(String id : customerUuids){
+                for (String id : customerUuids) {
                     SimpleQuery<AccountDiscountVO> query = dbf.createQuery(AccountDiscountVO.class);
                     query.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, id);
                     query.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, accountDiscountVO.getProductCategoryUuid());
@@ -161,52 +158,8 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
     }
 
     private void handle(APICreateAccountDiscountMsg msg) {
-        SimpleQuery<ProductCategoryVO> queryEO = dbf.createQuery(ProductCategoryVO.class);
-        queryEO.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ, msg.getProductType());
-        queryEO.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, msg.getCategory());
-        ProductCategoryVO productCategoryEO = queryEO.find();
-        if (productCategoryEO == null) {
-            throw new IllegalArgumentException("check the input value");
-        }
 
-
-        SimpleQuery<AccountDiscountVO> query = dbf.createQuery(AccountDiscountVO.class);
-        query.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-        query.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryEO.getUuid());
-        boolean exists = query.isExists();
-        if (exists) {
-            throw new IllegalArgumentException("the account has the discount");
-        }
-        if (msg.getSession().getType().equals(AccountType.Proxy)) {
-            SimpleQuery<AccountDiscountVO> q = dbf.createQuery(AccountDiscountVO.class);
-            q.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
-            q.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryEO.getUuid());
-            AccountDiscountVO accountDiscountVO = q.find();
-            if (accountDiscountVO != null) {
-                if (accountDiscountVO.getDiscount() > msg.getDiscount()) {
-                    throw new IllegalArgumentException("the discount must be less than yourself");
-                }
-            } else {
-                if (msg.getDiscount() != 100) {
-                    throw new IllegalArgumentException("yourself do not have the discount so your customer must set to 100");
-                }
-            }
-        }
-        APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
-        aMsg.setUuid(msg.getAccountUuid());
-        InnerMessageHelper.setMD5(aMsg);
-        String gstr = RESTApiDecoder.dump(aMsg);
-        RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
-        if (rsp.getState().equals(RestAPIState.Done.toString())) {
-            APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
-            if (replay.isNormalAccountHasProxy() && msg.getSession().getType().equals(AccountType.SystemAdmin)) {
-                throw new IllegalArgumentException("the account has agency, must let agency set the discount");
-            }
-        }
-//        SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-//        q.add(ProductPriceUnitVO_.categoryCode, SimpleQuery.Op.EQ,msg.getCategory());
-//        q.groupBy(ProductPriceUnitVO_.categoryCode);
-//        ProductPriceUnitVO productPriceUnitVO = q.find();
+        ProductCategoryVO productCategoryEO = findProductCategory(msg.getProductType(), msg.getCategory());
 
         AccountDiscountVO accountDiscountVO = new AccountDiscountVO();
         accountDiscountVO.setUuid(Platform.getUuid());
@@ -337,14 +290,14 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
 
         }
         if (msg.getSession().getType().equals(AccountType.SystemAdmin)) {
-            APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
-            aMsg.setUuid(accountDiscountVO.getAccountUuid());
+            APIGetAccountUuidListByProxyMsg aMsg = new APIGetAccountUuidListByProxyMsg();
+            aMsg.setAccountUuid(accountDiscountVO.getAccountUuid());
             InnerMessageHelper.setMD5(aMsg);
             String gstr = RESTApiDecoder.dump(aMsg);
             RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
             if (rsp.getState().equals(RestAPIState.Done.toString())) {
-                APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
-                List<String> customerUuids = replay.getAccountUuidOwnProxy();
+                APIGetAccountUuidListByProxyReply replay = (APIGetAccountUuidListByProxyReply) RESTApiDecoder.loads(rsp.getResult());
+                List<String> customerUuids = replay.getAccountUuids();
                 if (customerUuids != null && customerUuids.size() > 0) {
                     for (String accountUuid : customerUuids) {
                         SimpleQuery<AccountDiscountVO> query = dbf.createQuery(AccountDiscountVO.class);
@@ -714,6 +667,95 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
 
     @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
+        if (msg instanceof APICreateAccountDiscountMsg) {
+            validate((APICreateAccountDiscountMsg) msg);
+        }
         return msg;
+    }
+
+    private void validate(APICreateAccountDiscountMsg msg) {
+
+        if (msg.getSession().getType() == AccountType.Normal) {
+            throw new IllegalArgumentException("you are not the permit");
+        }
+
+        ProductCategoryVO productCategoryEO = findProductCategory(msg.getProductType(), msg.getCategory());
+        if (productCategoryEO == null) {
+            throw new IllegalArgumentException("check the input value");
+        }
+
+        if (getAccountDiscountVO(msg.getAccountUuid(), productCategoryEO.getUuid()) != null) {
+            throw new IllegalArgumentException("the account has the discount");
+        }
+
+        if (!isBoundAccountWithProxy(msg.getAccountUuid(), msg.getSession().getAccountUuid())) {
+            throw new IllegalArgumentException("you can only set yourself customers");
+        }
+
+        if (msg.getSession().getType().equals(AccountType.Proxy)) {
+            AccountDiscountVO accountDiscountVO = getAccountDiscountVO(msg.getSession().getAccountUuid(), productCategoryEO.getUuid());
+            if (accountDiscountVO != null) {
+                if (accountDiscountVO.getDiscount() > msg.getDiscount()) {
+                    throw new IllegalArgumentException("the discount must be less than yourself");
+                }
+            } else {
+                if (msg.getDiscount() != 100) {
+                    throw new IllegalArgumentException("yourself do not have the discount so your customer must set to 100");
+                }
+            }
+        }
+
+        if (msg.getSession().getType().equals(AccountType.SystemAdmin)) {
+            if (validAccount(msg.getAccountUuid()) == AccountType.Normal) {
+                throw new IllegalArgumentException("the account has proxy,proxy can set his customer discount");
+            }
+        }
+
+    }
+
+    private ProductCategoryVO findProductCategory(ProductType type, Category category) {
+        SimpleQuery<ProductCategoryVO> queryEO = dbf.createQuery(ProductCategoryVO.class);
+        queryEO.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ, type);
+        queryEO.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, category);
+        return queryEO.find();
+    }
+
+    private AccountDiscountVO getAccountDiscountVO(String accountUuid, String productCategoryUuid) {
+        SimpleQuery<AccountDiscountVO> query = dbf.createQuery(AccountDiscountVO.class);
+        query.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
+        query.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryUuid);
+        return query.find();
+    }
+
+    private boolean isBoundAccountWithProxy(String accountUuid, String proxyUuid) {
+        APIValidateAccountWithProxyMsg aMsg = new APIValidateAccountWithProxyMsg();
+        aMsg.setAccountUuid(accountUuid);
+        aMsg.setProxyUuid(proxyUuid);
+        InnerMessageHelper.setMD5(aMsg);
+        String gStr = RESTApiDecoder.dump(aMsg);
+        RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gStr, RestAPIResponse.class);
+        if (rsp.getState().equals(RestAPIState.Done.toString())) {
+            APIValidateAccountWithProxyReply replay = (APIValidateAccountWithProxyReply) RESTApiDecoder.loads(rsp.getResult());
+            return replay.isHasRelativeAccountWithProxy();
+        }
+        return false;
+    }
+
+    private AccountType validAccount(String accountUuid) {
+        APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
+        aMsg.setUuid(accountUuid);
+        InnerMessageHelper.setMD5(aMsg);
+        String gStr = RESTApiDecoder.dump(aMsg);
+        RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gStr, RestAPIResponse.class);
+        if (rsp.getState().equals(RestAPIState.Done.toString())) {
+            APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
+            if (!replay.isValidAccount()) {
+                throw new IllegalArgumentException("the account is not valid");
+            }
+            return replay.getType();
+        }
+
+        return null;
+
     }
 }

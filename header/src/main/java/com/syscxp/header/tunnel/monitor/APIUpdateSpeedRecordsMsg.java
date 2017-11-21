@@ -1,7 +1,10 @@
 package com.syscxp.header.tunnel.monitor;
 
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.tunnel.MonitorConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
 import javax.print.DocFlavor;
 
@@ -10,6 +13,8 @@ import javax.print.DocFlavor;
  * @Cretion Date: 2017-09-18.
  * @Description: 速度测试结果更新.
  */
+
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
 public class APIUpdateSpeedRecordsMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = SpeedRecordsVO.class)

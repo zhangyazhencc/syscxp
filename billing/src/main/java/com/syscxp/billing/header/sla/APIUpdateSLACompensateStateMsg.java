@@ -5,7 +5,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_SLA)
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_SLA, names = "update")
 public class APIUpdateSLACompensateStateMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = SLACompensateVO.class)

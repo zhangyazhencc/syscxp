@@ -1,9 +1,13 @@
 package com.syscxp.header.tunnel.aliEdgeRouter;
 
 import com.syscxp.header.identity.AccountType;
+import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
+import com.syscxp.header.tunnel.AliEdgeRouterConstant;
+import com.syscxp.header.tunnel.TunnelConstant;
 
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = AliEdgeRouterConstant.ACTION_CATEGORY)
 public class AliEdgeRouterInformationMsg extends APISyncCallMessage{
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String aliAccessKeyID;

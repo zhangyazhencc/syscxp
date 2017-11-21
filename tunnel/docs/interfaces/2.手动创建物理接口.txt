@@ -1,0 +1,64 @@
+消息：APICreateInterfaceManualMsg
+
+权限：category = TunnelConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true
+
+参数（默认必填）：
+    客户：
+    名称
+    描述：非必填
+
+    连接点：1.若选云
+            从CloudVO中列出所有云类型,页面显示name,选择一个传参uuid(通用查询：APIQueryCloudMsg)
+            再选择，cloudType为选择的云类型uuid,state为Enabled 的连接点（通用查询：APIQueryEndpointMsg）
+           2.若选IDC
+            通过Province选择节点（查询：APIListProvinceNodeMsg | APIQueryNodeMsg）
+            再选择该节点下，endpointType为ACCESSIN，state为Enabled 的连接点（通用查询：APIQueryEndpointMsg）
+
+    类型：即端口规格，列出所选连接点获取可用端口规格，显示name,传参uuid（查询：APIGetInterfaceTypeMsg）
+    端口选择：列出通过连接点和端口规格获取可用的端口（查询：APIListSwitchPortByTypeMsg）
+    端口用途：若端口类型不为共享口，选择用途：TRUNK，ACCESS，QINQ
+    付费类型
+    付费时长
+
+
+请求消息体示例：
+{
+    "com.syscxp.header.tunnel.tunnel.APICreateInterfaceManualMsg":{
+        "accountUuid":"01d5fde22afe49b285dd54a06b369525",
+        "name":"MPLS接入昆山2",
+        "description":"测试",
+        "endpointUuid":"ccaabf7d071d41a1ae15936d451522e2",
+        "portOfferingUuid":"SFP_1G",
+        "switchPortUuid":"fe7a91bbb89c448fb021fe312d83a0bb",
+        "networkType":"QINQ",
+        "duration":2,
+        "productChargeModel":"BY_MONTH",
+
+        "session":{
+            "uuid":"ba96d6a1c45847e084f67336bb4235d5"
+        }
+    }
+}
+
+后台验证（validate）：
+    1.判断同一个用户的接口名称是否已经存在
+    2.判断同一个用户在同一个连接点下是否已经购买共享端口
+    3.判断账户金额是否充足
+
+业务流程：
+    1.保存数据：
+        accountUuid = null
+        state = Unpaid
+        expireDate = dbf.getCurrentSqlTime()
+    2.调用支付：
+        支付成功：
+            记录生效订单
+            accountUuid = ownerAccountUuid
+            state = Paid
+            expireDate = dbf.getCurrentSqlTime()+时长
+        支付失败：
+            不变
+
+
+
+

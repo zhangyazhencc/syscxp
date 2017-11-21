@@ -8,10 +8,10 @@
     编号：唯一
 
 若  类型：接入（ACCESS）
-    连接点：选择endpointType为CLOUD或ACCESSIN，state为Enabled 的连接点（通用查询：APIGetDistinctNodeCityMsg | APIQueryNodeMsg | APIQueryEndpointMsg）
+    连接点：选择endpointType为CLOUD或ACCESSIN，state为Enabled 的连接点（查询：APIListProvinceNodeMsg | APIQueryNodeMsg | APIQueryEndpointMsg）
     物理交换机：选择该节点下，且accessType不为TRANSPORT 的物理交换机（通用查询：APIQueryPhysicalSwitchMsg）
 若  类型：内联（INNER），外联（OUTER）
-    连接点：选择endpointType为INTERCONNECTED，state为Enabled 的连接点（通用查询：APIGetDistinctNodeCityMsg | APIQueryNodeMsg | APIQueryEndpointMsg）
+    连接点：选择endpointType为INTERCONNECTED，state为Enabled 的连接点（查询：APIListProvinceNodeMsg | APIQueryNodeMsg | APIQueryEndpointMsg）
     物理交换机：选择该节点下，且accessType不为TRANSPORT 且 type为MPLS 的物理交换机（通用查询：APIQueryPhysicalSwitchMsg）
 
 

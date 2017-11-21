@@ -5,7 +5,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.AutoQuery;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"read"})
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"read"})
 @AutoQuery(replyClass = APIQueryReceiptInfoReply.class, inventoryClass = ReceiptInfoInventory.class)
 public class APIQueryReceiptInfoMsg extends APIQueryMessage {
 }

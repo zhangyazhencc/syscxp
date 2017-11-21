@@ -9,7 +9,7 @@ import com.syscxp.header.query.AutoQuery;
  * Created by frank on 7/14/2015.
  */
 @AutoQuery(replyClass = APIQueryUserReply.class, inventoryClass = UserInventory.class)
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"}, accountOnly = true)
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"}, accountOnly = true)
 public class APIQueryUserMsg extends APIQueryMessage {
 
 }

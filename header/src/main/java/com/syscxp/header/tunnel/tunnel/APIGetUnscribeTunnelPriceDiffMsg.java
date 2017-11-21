@@ -9,7 +9,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Create by DCY on 2017/11/20
  */
-@Action(category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"read"})
 public class APIGetUnscribeTunnelPriceDiffMsg extends APISyncCallMessage {
     @APIParam(emptyString = false,required = false,maxLength = 32)
     private String accountUuid;

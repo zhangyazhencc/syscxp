@@ -45,6 +45,12 @@
     <message>
         <name>com.syscxp.header.account.APIValidateAccountMsg</name>
     </message>
+    <message>
+        <name>com.syscxp.header.account.APIGetAccountUuidListByProxyMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.account.APIValidateAccountWithProxyMsg</name>
+    </message>
 
     <message>
         <name>com.syscxp.account.header.user.APIQueryUserMsg</name>
