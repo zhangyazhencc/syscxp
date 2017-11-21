@@ -21,7 +21,7 @@ public class APIUpdateInterfacePortMsg extends APIMessage {
     private NetworkType networkType;
     @APIParam(required = false)
     private List<InnerVlanSegment> segments;
-    @APIParam
+    @APIParam(required = false)
     private boolean issue = false;
 
     public boolean isIssue() {

@@ -4,7 +4,7 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.tunnel.host.APICreateMonitorHostMsg;
-import com.syscxp.header.tunnel.host.MonitorConstant;
+import com.syscxp.header.tunnel.host.MonitorHostConstant;
 
 
 public class MonitorApiInterceptor implements ApiMessageInterceptor {
@@ -18,6 +18,6 @@ public class MonitorApiInterceptor implements ApiMessageInterceptor {
     }
 
     private void validate(APICreateMonitorHostMsg msg) {
-        msg.setHostType(MonitorConstant.HOST_TYPE);
+        msg.setHostType(MonitorHostConstant.HOST_TYPE);
     }
 }

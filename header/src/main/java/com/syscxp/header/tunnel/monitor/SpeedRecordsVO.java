@@ -22,6 +22,9 @@ public class SpeedRecordsVO {
     private String uuid;
 
     @Column
+    private String accountUuid;
+
+    @Column
     private String tunnelUuid;
 
     @Column
@@ -66,6 +69,14 @@ public class SpeedRecordsVO {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 
     public String getTunnelUuid() {

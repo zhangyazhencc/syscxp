@@ -23,9 +23,7 @@ import com.syscxp.header.message.NeedReplyMessage;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.host.*;
 import com.syscxp.tunnel.host.MonitorAgentCommands.*;
-import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
-import com.syscxp.utils.function.Function;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -37,7 +35,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
         ManagementNodeReadyExtensionPoint {
     private static final CLogger logger = Utils.getLogger(MonitorHostFactory.class);
 
-    public static final HostType hostType = new HostType(MonitorConstant.HOST_TYPE);
+    public static final HostType hostType = new HostType(MonitorHostConstant.HOST_TYPE);
     private List<MonitorHostConnectExtensionPoint> connectExtensions = new ArrayList<>();
 
     @Autowired
@@ -123,7 +121,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
             return;
         }
 
-        asf.deployModule(MonitorConstant.ANSIBLE_MODULE_PATH, MonitorConstant.ANSIBLE_PLAYBOOK_NAME);
+        asf.deployModule(MonitorHostConstant.ANSIBLE_MODULE_PATH, MonitorHostConstant.ANSIBLE_PLAYBOOK_NAME);
     }
 
     private void populateExtensions() {
@@ -139,7 +137,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
         deployAnsibleModule();
         populateExtensions();
 
-        restf.registerSyncHttpCallHandler(MonitorConstant.AGENT_RECONNECT_ME, ReconnectMeCmd.class,
+        restf.registerSyncHttpCallHandler(MonitorHostConstant.AGENT_RECONNECT_ME, ReconnectMeCmd.class,
                 cmd -> {
                     N.New(HostVO.class, cmd.hostUuid).info_("the monitor host[uuid:%s] asks the management server to " +
                             "reconnect it for %s", cmd.hostUuid, cmd.reason);
@@ -186,7 +184,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
             return;
         }
 
-        if (!asf.isModuleChanged(MonitorConstant.ANSIBLE_PLAYBOOK_NAME)) {
+        if (!asf.isModuleChanged(MonitorHostConstant.ANSIBLE_PLAYBOOK_NAME)) {
             return;
         }
 
@@ -205,7 +203,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
             ConnectHostMsg msg = new ConnectHostMsg();
             msg.setNewAdd(false);
             msg.setUuid(huuid);
-            bus.makeTargetServiceIdByResourceUuid(msg, MonitorConstant.SERVICE_ID, huuid);
+            bus.makeTargetServiceIdByResourceUuid(msg, MonitorHostConstant.SERVICE_ID, huuid);
             msgs.add(msg);
         }
 
@@ -232,6 +230,6 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
 
     @Override
     public String getId() {
-        return bus.makeLocalServiceId(MonitorConstant.SERVICE_ID);
+        return bus.makeLocalServiceId(MonitorHostConstant.SERVICE_ID);
     }
 }
