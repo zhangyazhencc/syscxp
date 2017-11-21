@@ -17,7 +17,7 @@ public class APIQueryMonitorResultMsg extends APISyncCallMessage {
     private Long end;
 
     @APIParam(emptyString = false)
-    private String metric;
+    private String[] metrics;
 
     @APIParam(emptyString = false,resourceType = TunnelVO.class)
     private String tunnelUuid;
@@ -38,19 +38,19 @@ public class APIQueryMonitorResultMsg extends APISyncCallMessage {
         this.end = end;
     }
 
-    public String getMetric() {
-        return metric;
-    }
-
-    public void setMetric(String metric) {
-        this.metric = metric;
-    }
-
     public String getTunnelUuid() {
         return tunnelUuid;
     }
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
+    }
+
+    public String[] getMetrics() {
+        return metrics;
+    }
+
+    public void setMetrics(String[] metrics) {
+        this.metrics = metrics;
     }
 }
