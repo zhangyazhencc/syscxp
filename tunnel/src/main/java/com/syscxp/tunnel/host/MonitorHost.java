@@ -11,9 +11,7 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.host.HostBase;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.core.workflow.ShareFlow;
-import com.syscxp.header.core.AsyncLatch;
 import com.syscxp.header.core.Completion;
-import com.syscxp.header.core.NoErrorCompletion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
@@ -40,7 +38,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -77,15 +74,15 @@ public class MonitorHost extends HostBase implements Host {
         baseUrl = context.getBaseUrl();
 
         UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(baseUrl);
-        ub.path(MonitorConstant.AGENT_CONNECT_PATH);
+        ub.path(MonitorHostConstant.AGENT_CONNECT_PATH);
         connectPath = ub.build().toUriString();
 
         ub = UriComponentsBuilder.fromHttpUrl(baseUrl);
-        ub.path(MonitorConstant.AGENT_PING_PATH);
+        ub.path(MonitorHostConstant.AGENT_PING_PATH);
         pingPath = ub.build().toUriString();
 
         ub = UriComponentsBuilder.fromHttpUrl(baseUrl);
-        ub.path(MonitorConstant.AGENT_ECHO_PATH);
+        ub.path(MonitorHostConstant.AGENT_ECHO_PATH);
         echoPath = ub.build().toString();
 
     }
@@ -132,7 +129,7 @@ public class MonitorHost extends HostBase implements Host {
 //                                        logger.warn(info);
 //                                        ReconnectHostMsg rmsg = new ReconnectHostMsg();
 //                                        rmsg.setHostUuid(self.getUuid());
-//                                        bus.makeTargetServiceIdByResourceUuid(rmsg, MonitorConstant.SERVICE_ID, self.getUuid());
+//                                        bus.makeTargetServiceIdByResourceUuid(rmsg, MonitorHostConstant.SERVICE_ID, self.getUuid());
 //                                        bus.send(rmsg);
 //                                    });
 //                                    trigger.next();
@@ -153,8 +150,8 @@ public class MonitorHost extends HostBase implements Host {
                                             logger.warn(info);
                                             ReconnectHostMsg rmsg = new ReconnectHostMsg();
                                             rmsg.setHostUuid(self.getUuid());
-//                                            bus.makeTargetServiceIdByResourceUuid(rmsg, MonitorConstant.SERVICE_ID, self.getUuid());
-                                            bus.makeLocalServiceId(rmsg, MonitorConstant.SERVICE_ID);
+//                                            bus.makeTargetServiceIdByResourceUuid(rmsg, MonitorHostConstant.SERVICE_ID, self.getUuid());
+                                            bus.makeLocalServiceId(rmsg, MonitorHostConstant.SERVICE_ID);
                                             bus.send(rmsg);
                                         });
                                     }
@@ -256,7 +253,7 @@ public class MonitorHost extends HostBase implements Host {
                         runner.installChecker(checker);
                         runner.setAgentPort(MonitorGlobalProperty.AGENT_PORT);
                         runner.setTargetIp(getSelf().getHostIp());
-                        runner.setPlayBookName(MonitorConstant.ANSIBLE_PLAYBOOK_NAME);
+                        runner.setPlayBookName(MonitorHostConstant.ANSIBLE_PLAYBOOK_NAME);
                         runner.setUsername(getSelf().getUsername());
                         runner.setPassword(getSelf().getPassword());
                         runner.setSshPort(getSelf().getSshPort());

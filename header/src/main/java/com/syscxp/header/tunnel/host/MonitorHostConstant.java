@@ -1,6 +1,6 @@
 package com.syscxp.header.tunnel.host;
 
-public interface MonitorConstant {
+public interface MonitorHostConstant {
 
     String SERVICE_ID = "agent";
 

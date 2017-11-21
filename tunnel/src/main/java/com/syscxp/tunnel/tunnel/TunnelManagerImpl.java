@@ -565,9 +565,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         vo = dbf.persistAndRefresh(vo);
 
+        String portType = Q.New(SwitchPortVO.class)
+                .eq(SwitchPortVO_.uuid, msg.getSwitchPortUuid())
+                .select(SwitchPortVO_.portType).find();
+
         //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
-        ProductInfoForOrder productInfoForOrder = createBuyOrderForInterface(vo, msg.getPortOfferingUuid(), new CreateInterfaceCallBack());
+        ProductInfoForOrder productInfoForOrder = createBuyOrderForInterface(vo, portType, new CreateInterfaceCallBack());
         productInfoForOrder.setOpAccountUuid(msg.getAccountUuid());
         orderMsg.setProducts(CollectionDSL.list(productInfoForOrder));
 
@@ -2392,9 +2396,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("物理接口名称【%s】已经存在!", msg.getName()));
         }
-
+        String portType = Q.New(SwitchPortVO.class)
+                .eq(SwitchPortVO_.uuid, msg.getSwitchPortUuid())
+                .select(SwitchPortVO_.portType).find();
         //判断同一个用户在同一个连接点下是否已经购买共享端口
-        if(msg.getPortOfferingUuid().equals("SHARE")){
+        if(portType.equals("SHARE")){
             String sql = "select a from InterfaceVO a,SwitchPortVO b " +
                     "where a.switchPortUuid = b.uuid " +
                     "and a.accountUuid = :accountUuid " +
@@ -2413,7 +2419,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
+        priceMsg.setUnits(getInterfacePriceUnit(portType));
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
@@ -2428,7 +2434,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             throw new ApiMessageInterceptionException(
                     argerr("The Interface[uuid:%s] has expired！", msg.getUuid()));
 
-        //判断同一个用户的网络名称是否已经存在
+        //判断同一个用户的物理接口名称是否已经存在
         if (!StringUtils.isEmpty(msg.getName()) && !msg.getName().equals(iface.getName())) {
             if (checkResourceName(InterfaceVO.class.getSimpleName(), msg.getName(), iface.getAccountUuid())) {
                 throw new ApiMessageInterceptionException(argerr("物理接口名称【%s】已经存在!", msg.getName()));
