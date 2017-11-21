@@ -69,9 +69,53 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             hand((APIDeleteSolutionTunnelMsg) msg);
         }else if(msg instanceof APIDeleteSolutionVpnMsg){
             hand((APIDeleteSolutionVpnMsg) msg);
+        }else if(msg instanceof APIUpdateSolutionMsg){
+            hand((APIUpdateSolutionMsg) msg);
+        }else if(msg instanceof APIUpdateSolutionTunnelMsg){
+            hand((APIUpdateSolutionTunnelMsg) msg);
+        }else if(msg instanceof APIUpdateSolutionVpnMsg){
+            hand((APIUpdateSolutionVpnMsg) msg);
         }else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void hand(APIUpdateSolutionVpnMsg msg) {
+
+        SolutionVpnVO vo = dbf.findByUuid(msg.getUuid(),SolutionVpnVO.class);
+        vo.setBandwidth(msg.getBandwidth());
+
+        APIUpdateSolutionVpnEvent event = new APIUpdateSolutionVpnEvent(msg.getId());
+        event.setInventory(SolutionVpnInventory.valueOf(dbf.updateAndRefresh(vo)));
+        bus.publish(event);
+
+    }
+
+    private void hand(APIUpdateSolutionTunnelMsg msg) {
+
+        SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(),SolutionTunnelVO.class);
+        vo.setBandwidth(msg.getBandwidth());
+
+        APIUpdateSolutionTunnelEvent event = new APIUpdateSolutionTunnelEvent(msg.getId());
+        event.setInventory(SolutionTunnelInventory.valueOf(dbf.updateAndRefresh(vo)));
+        bus.publish(event);
+
+    }
+
+    private void hand(APIUpdateSolutionMsg msg) {
+
+        SolutionVO vo = dbf.findByUuid(msg.getUuid(),SolutionVO.class);
+        if(msg.getName() != null){
+            vo.setName(msg.getName());
+        }
+
+        if(msg.getDescription() != null){
+            vo.setDescription(msg.getDescription());
+        }
+
+        APIUpdateSolutionEvent event = new APIUpdateSolutionEvent(msg.getId());
+        event.setInventory(SolutionInventory.valueOf(dbf.updateAndRefresh(vo)));
+        bus.publish(event);
     }
 
     private void hand(APIDeleteSolutionVpnMsg msg) {
