@@ -1387,22 +1387,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo.setName(msg.getName());
             update = true;
         }
-        if (msg.getDistance() != null) {
-            vo.setDistance(msg.getDistance());
-            update = true;
-        }
-        if (msg.getState() != null) {
-            vo.setState(msg.getState());
-            update = true;
-        }
-        if (msg.getStatus() != null) {
-            vo.setStatus(msg.getStatus());
-            update = true;
-        }
-        if (msg.getMonitorState() != null) {
-            vo.setMonitorState(msg.getMonitorState());
-            update = true;
-        }
+
         if (msg.getDescription() != null) {
             vo.setDescription(msg.getDescription());
             update = true;
@@ -2638,11 +2623,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APIUpdateTunnelMsg msg) {
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
         //判断同一个用户tunnel名称是否已经存在
         if (msg.getName() != null) {
             SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
             q.add(TunnelVO_.name, SimpleQuery.Op.EQ, msg.getName());
-            q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+            q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ, vo.getAccountUuid());
             q.add(TunnelVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
             if (q.isExists()) {
                 throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ", msg.getName()));
