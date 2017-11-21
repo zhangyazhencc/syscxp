@@ -5,7 +5,7 @@ import com.syscxp.header.message.APIReply;
 /**
  * Create by DCY on 2017/11/15
  */
-public class APISalTunnelReply extends APIReply {
+public class APISLATunnelReply extends APIReply {
     private TunnelInventory inventory;
 
     public TunnelInventory getInventory() {

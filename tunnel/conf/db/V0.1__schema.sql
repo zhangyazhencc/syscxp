@@ -1,6 +1,7 @@
 
 CREATE TABLE `syscxp_tunnel`.`SpeedRecordsVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'uuid',
+  `accountUuid` varchar(32) NOT  NULL COMMENT '账户uuid',
   `tunnelUuid` varchar(32) NOT NULL COMMENT 'TunnelVO.uuid',
   `srcTunnelMonitorUuid` varchar(32) NOT NULL COMMENT '源监控机uuid',
   `dstTunnelMonitorUuid` varchar(32) NOT NULL COMMENT '源监控IP',

@@ -20,6 +20,7 @@ import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.falconapi.FalconApiRestConstant;
 import com.syscxp.header.host.HostState;
 import com.syscxp.header.host.HostStatus;
+import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
@@ -29,6 +30,7 @@ import com.syscxp.header.tunnel.host.*;
 import com.syscxp.header.tunnel.monitor.*;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
+import com.syscxp.tunnel.identity.IdentityInterceptor;
 import com.syscxp.tunnel.sdnController.ControllerCommands;
 import com.syscxp.tunnel.sdnController.ControllerRestConstant;
 import com.syscxp.utils.Utils;
@@ -68,6 +70,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private ThreadFacade thdf;
     @Autowired
     private RESTFacade evtf;
+    @Autowired
+    private IdentityInterceptor identityInterceptor;
 
     @Override
     @MessageSafe
@@ -619,6 +623,13 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         vo.setProtocolType(msg.getProtocolType());
         vo.setDuration(msg.getDuration());
         vo.setStatus(SpeedRecordStatus.TESTING);
+
+        if (msg.getSession() != null) {
+            if(StringUtils.isNotEmpty(msg.getSession().getUuid())){
+                SessionInventory sessionInventory = identityInterceptor.getSessionInventory(msg.getSession().getUuid());
+                vo.setAccountUuid(sessionInventory.getAccountUuid());
+            }
+        }
 
         TunnelMonitorVO srcTunnelMonitor = getTunnelMonitorByNodeAndTunnel(msg.getSrcNodeUuid(), msg.getTunnelUuid());
         vo.setSrcTunnelMonitorUuid(srcTunnelMonitor.getUuid());

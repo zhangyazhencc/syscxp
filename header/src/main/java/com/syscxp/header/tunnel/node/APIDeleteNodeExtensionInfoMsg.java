@@ -9,7 +9,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Created by wangwg on 2017/10/09
  */
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"delete"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
 public class APIDeleteNodeExtensionInfoMsg extends APIDeleteMessage {
 
     @APIParam(emptyString = false)

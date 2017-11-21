@@ -5,7 +5,7 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "create")
+@Action(category = SolutionConstant.ACTION_CATEGORY, names = "create")
 public class APICreateSolutionMsg extends  APIMessage {
 
     @APIParam(maxLength = 32)

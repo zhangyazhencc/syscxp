@@ -13,7 +13,7 @@ CREATE TABLE `SolutionVO` (
 CREATE TABLE `SolutionInterfaceVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `solutionUuid` varchar(32) NOT NULL COMMENT '方案UUID',
-  `name` varchar(128) NOT NULL COMMENT '名称',
+  `name` varchar(128) COMMENT '名称',
   `cost` varchar(20) DEFAULT NULL COMMENT '费用',
   `productChargeModel` varchar(32) NOT NULL COMMENT '付费方式',
   `duration` int(11) NOT NULL COMMENT '购买时长',
@@ -31,7 +31,7 @@ CREATE TABLE `SolutionInterfaceVO` (
 CREATE TABLE `SolutionTunnelVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `solutionUuid` varchar(32) NOT NULL COMMENT '方案UUID',
-  `name` varchar(128) NOT NULL COMMENT '名称',
+  `name` varchar(128) COMMENT '名称',
   `cost` varchar(20) DEFAULT NULL COMMENT '费用',
   `productChargeModel` varchar(32) NOT NULL COMMENT '付费方式',
   `duration` int(11) NOT NULL COMMENT '购买时长',
@@ -50,7 +50,7 @@ CREATE TABLE `SolutionTunnelVO` (
 CREATE TABLE SolutionVpnVO (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `solutionUuid` varchar(32) NOT NULL COMMENT '方案UUID',
-  `name` varchar(128) NOT NULL COMMENT '名称',
+  `name` varchar(128) COMMENT '名称',
   `cost` varchar(20) DEFAULT NULL COMMENT '费用',
   `productChargeModel` varchar(32) NOT NULL COMMENT '付费方式',
   `duration` int(11) NOT NULL COMMENT '购买时长',

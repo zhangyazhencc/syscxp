@@ -2,6 +2,7 @@ package com.syscxp.header.tunnel.monitor;
 
 import com.syscxp.header.host.HostVO;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.MonitorConstant;
@@ -15,7 +16,7 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
  * @Description: 创建测速纪录.
  */
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
+@SuppressCredentialCheck
 public class APICreateSpeedRecordsMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = TunnelVO.class)

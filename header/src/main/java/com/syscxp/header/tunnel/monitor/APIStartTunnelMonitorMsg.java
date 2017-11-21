@@ -16,7 +16,7 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
 public class APIStartTunnelMonitorMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = TunnelVO.class,maxLength = 32)
+    @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true, maxLength = 32)
     private String tunnelUuid;
 
     @APIParam(required = true,maxLength = 64)

@@ -8,8 +8,6 @@ import com.syscxp.header.tunnel.NodeConstant;
 /**
  * Created by DCY on 2017-08-21
  */
-@Action(category = NodeConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
-
 public class APIUpdateNodeMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = NodeVO.class)
