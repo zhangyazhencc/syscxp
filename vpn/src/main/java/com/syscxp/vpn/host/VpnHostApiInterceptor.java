@@ -4,10 +4,7 @@ import com.syscxp.core.db.Q;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
-import com.syscxp.vpn.header.host.*;
-import com.syscxp.vpn.header.vpn.VpnState;
-import com.syscxp.vpn.header.vpn.VpnVO;
-import com.syscxp.vpn.header.vpn.VpnVO_;
+import com.syscxp.header.vpn.host.*;
 
 import static com.syscxp.core.Platform.argerr;
 

@@ -245,6 +245,56 @@ public class MonitorAgentCommands {
         }
     }
 
+    /***
+     * falcon alarm获取tunnel信息
+     */
+    public static class EndpointTunnel{
+        private String tunnelUuid;
+        private String tunnelName;
+        private String nodeA;
+        private String nodeZ;
+        private long bandwidth;
+
+        public String getTunnelUuid() {
+            return tunnelUuid;
+        }
+
+        public void setTunnelUuid(String tunnelUuid) {
+            this.tunnelUuid = tunnelUuid;
+        }
+
+        public String getTunnelName() {
+            return tunnelName;
+        }
+
+        public void setTunnelName(String tunnelName) {
+            this.tunnelName = tunnelName;
+        }
+
+        public String getNodeA() {
+            return nodeA;
+        }
+
+        public void setNodeA(String nodeA) {
+            this.nodeA = nodeA;
+        }
+
+        public String getNodeZ() {
+            return nodeZ;
+        }
+
+        public void setNodeZ(String nodeZ) {
+            this.nodeZ = nodeZ;
+        }
+
+        public long getBandwidth() {
+            return bandwidth;
+        }
+
+        public void setBandwidth(long bandwidth) {
+            this.bandwidth = bandwidth;
+        }
+    }
 
     /**
      * 获取端口

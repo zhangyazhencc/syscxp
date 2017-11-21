@@ -1,0 +1,11 @@
+package com.syscxp.header.vpn.host;
+
+import com.syscxp.header.identity.Action;
+import com.syscxp.header.query.APIQueryMessage;
+import com.syscxp.header.query.AutoQuery;
+import com.syscxp.header.vpn.VpnConstant;
+
+@AutoQuery(replyClass = APIQueryHostInterfaceReply.class, inventoryClass = HostInterfaceInventory.class)
+@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY, names = {"read"})
+public class APIQueryHostInterfaceMsg extends APIQueryMessage {
+}

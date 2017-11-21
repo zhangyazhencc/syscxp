@@ -11,7 +11,7 @@ import com.syscxp.header.query.AutoQuery;
  */
 @AutoQuery(replyClass = APIQueryTicketTypeReply.class, inventoryClass = TicketTypeInventory.class)
 @SuppressUserCredentialCheck
-@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_TICKET, names = "read")
+@Action(services = {AccountConstant.ACTION_SERVICE}, category = AccountConstant.ACTION_CATEGORY_TICKET, names = "read")
 public class APIQueryTicketTypeMsg extends APIQueryMessage {
 
 }

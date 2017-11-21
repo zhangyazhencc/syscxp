@@ -4,11 +4,12 @@ import com.syscxp.header.host.HostConstant;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.tunnel.TunnelConstant;
 
 
 import java.util.Set;
 
-@Action(services = {"tunnel"}, category = HostConstant.ACTION_CATEGORY, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = HostConstant.ACTION_CATEGORY, adminOnly = true)
 public class APIMonitorRunShellMsg extends APIMessage {
     @APIParam(resourceType = MonitorHostVO.class, nonempty = true)
     private Set<String> hostUuids;

@@ -8,7 +8,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Create by DCY on 2017/11/6
  */
-@Action(services = {"tunnel"}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUpdateForciblyTunnelVlanMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
