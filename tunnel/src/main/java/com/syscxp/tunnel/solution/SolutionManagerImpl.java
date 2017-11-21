@@ -81,9 +81,11 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         }
 
         vo.setBandwidth(msg.getBandwidth());
+        vo.setEndpointNameA(msg.getEndpointNameA());
+        vo.setEndpointNameZ(msg.getEndpointNameZ());
 
-        APICreateSolutionInterfaceEvent event = new APICreateSolutionInterfaceEvent(msg.getId());
-        event.setInventory(SolutionInterfaceInventory.valueOf(dbf.persistAndRefresh(vo)));
+        APICreateSolutionTunnelEvent event = new APICreateSolutionTunnelEvent(msg.getId());
+        event.setInventory(SolutionTunnelInventory.valueOf(dbf.persistAndRefresh(vo)));
         bus.publish(event);
 
     }
