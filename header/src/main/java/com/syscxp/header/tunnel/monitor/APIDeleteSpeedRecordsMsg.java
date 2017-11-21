@@ -14,7 +14,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
 public class APIDeleteSpeedRecordsMsg extends APIMessage {
-    @APIParam(emptyString = false,resourceType = SpeedRecordsVO.class)
+    @APIParam(emptyString = false, resourceType = SpeedRecordsVO.class)
     private String uuid;
 
     public String getUuid() {

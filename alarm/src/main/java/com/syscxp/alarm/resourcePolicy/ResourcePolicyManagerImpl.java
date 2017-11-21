@@ -328,7 +328,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }
 
         APIDeleteResourceEvent evt = new APIDeleteResourceEvent(msg.getId());
-        evt.setSuccess(response.isSuccess());
         if (!response.isSuccess()) {
             evt.setError(Platform.operr(response.getMsg()));
         }

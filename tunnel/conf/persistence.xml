@@ -45,8 +45,8 @@
         <class>com.syscxp.header.host.HostEO</class>
         <class>com.syscxp.header.tunnel.host.MonitorHostVO</class>
 
-        <class>com.syscxp.header.tunnel.monitor.HostSwitchMonitorVO</class>
-        <class>com.syscxp.header.tunnel.monitor.HostSwitchMonitorEO</class>
+        <class>com.syscxp.header.tunnel.host.HostSwitchMonitorVO</class>
+        <class>com.syscxp.header.tunnel.host.HostSwitchMonitorEO</class>
 
         <class>com.syscxp.header.tunnel.monitor.TunnelMonitorVO</class>
         <class>com.syscxp.header.tunnel.monitor.SpeedRecordsVO</class>

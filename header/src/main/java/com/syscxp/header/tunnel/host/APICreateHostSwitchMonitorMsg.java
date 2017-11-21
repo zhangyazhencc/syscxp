@@ -1,5 +1,7 @@
-package com.syscxp.header.tunnel.monitor;
+package com.syscxp.header.tunnel.host;
 
+import com.syscxp.header.host.HostConstant;
+import com.syscxp.header.host.HostVO;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -10,14 +12,14 @@ import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-09-11.
- * @Description: 更新监控主机与物理交换机关联.
+ * @Description: 创建监控主机与物理交换机关联.
  */
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
-public class APIUpdateHostSwitchMonitorMsg extends APIMessage {
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = HostConstant.ACTION_CATEGORY, adminOnly = true)
+public class APICreateHostSwitchMonitorMsg extends APIMessage {
 
-    @APIParam(emptyString = false,resourceType = HostSwitchMonitorVO.class)
-    private String uuid;
+    @APIParam(emptyString = false,resourceType = HostVO.class)
+    private String hostUuid;
 
     @APIParam(emptyString = false,resourceType = PhysicalSwitchVO.class)
     private String physicalSwitchUuid;
@@ -28,12 +30,12 @@ public class APIUpdateHostSwitchMonitorMsg extends APIMessage {
     @APIParam(emptyString = false,maxLength = 128)
     private String interfaceName;
 
-    public String getUuid() {
-        return uuid;
+    public String getHostUuid() {
+        return hostUuid;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setHostUuid(String hostUuid) {
+        this.hostUuid = hostUuid;
     }
 
     public String getPhysicalSwitchUuid() {

@@ -12,7 +12,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
  * @Description: 速度测试查询.
  */
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY, names = {"read"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
 @AutoQuery(replyClass = APIQuerySpeedTestTunnelReply.class, inventoryClass = SpeedTestTunnelInventory.class)
 public class APIQuerySpeedTestTunnelMsg extends APIQueryMessage {
 }

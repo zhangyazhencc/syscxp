@@ -1,6 +1,7 @@
 package com.syscxp.header.tunnel.monitor;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.MonitorConstant;
@@ -14,7 +15,7 @@ import javax.print.DocFlavor;
  * @Description: 速度测试结果更新.
  */
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = MonitorConstant.ACTION_CATEGORY)
+@SuppressCredentialCheck
 public class APIUpdateSpeedRecordsMsg extends APIMessage {
 
     @APIParam(emptyString = false,resourceType = SpeedRecordsVO.class)

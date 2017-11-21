@@ -21,7 +21,7 @@ public class APICreateSLACompensateMsg extends APIMessage {
     @APIParam(emptyString = false,required = false)
     private String productName;
 
-      private String reason;
+    private String reason;
 
     @APIParam(emptyString = false)
     private int duration;
