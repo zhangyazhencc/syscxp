@@ -7,7 +7,7 @@ import com.syscxp.header.message.APIParam;
 
 import java.util.List;
 
-@Action(category = AlarmConstant.ACTION_CATEGORY_CONTACT)
+@Action(services = {AlarmConstant.ACTION_SERVICE}, category = AlarmConstant.ACTION_CATEGORY_ALARM, names = {"update"})
 public class APIUpdateContactMsg extends APIMessage {
 
     @APIParam(emptyString = false, resourceType = ContactVO.class)

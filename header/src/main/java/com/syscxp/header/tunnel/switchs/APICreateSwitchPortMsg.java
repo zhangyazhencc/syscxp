@@ -9,7 +9,7 @@ import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
 /**
  * Created by DCY on 2017-08-30
  */
-@Action(category = SwitchConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
+@Action(services = {"tunnel"}, category = SwitchConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 
 public class APICreateSwitchPortMsg extends APIMessage {
 

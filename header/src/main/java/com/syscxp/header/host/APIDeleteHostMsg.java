@@ -9,7 +9,7 @@ import com.syscxp.header.notification.ApiNotification;
 
 import static com.syscxp.header.message.APIDeleteMessage.DeletionMode.Permissive;
 
-@Action(category = HostConstant.ACTION_CATEGORY, adminOnly = true)
+@Action(services = {"tunnel", "vpn"}, category = HostConstant.ACTION_CATEGORY, adminOnly = true)
 public class APIDeleteHostMsg extends APIDeleteMessage implements HostMessage {
     /**
      * @desc host uuid

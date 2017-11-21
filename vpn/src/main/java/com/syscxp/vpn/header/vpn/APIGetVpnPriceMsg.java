@@ -5,7 +5,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.vpn.vpn.VpnConstant;
 
-@Action(category = VpnConstant.ACTION_CATEGORY_VPN, names = {"read"})
+@Action(services = {"vpn"}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"read"})
 public class APIGetVpnPriceMsg extends APISyncCallMessage {
     @APIParam
     private Long bandwidth;

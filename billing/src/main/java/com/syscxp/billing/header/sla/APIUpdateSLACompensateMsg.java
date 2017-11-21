@@ -8,7 +8,7 @@ import com.syscxp.header.message.APIParam;
 
 import java.sql.Timestamp;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_SLA, names = {"update"})
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_SLA, names = {"update"}, adminOnly = true)
 public class APIUpdateSLACompensateMsg extends APIMessage {
     @APIParam(emptyString =false,resourceType = SLACompensateVO.class)
     private String uuid;

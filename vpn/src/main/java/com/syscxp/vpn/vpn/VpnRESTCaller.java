@@ -104,7 +104,7 @@ public class VpnRESTCaller {
     }
 
     private String buildUrl(String path) {
-        return URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.VPN_ROOT_PATH, path);
+        return URLBuilder.buildUrlFromBase(baseUrl, path);
     }
 
     /**

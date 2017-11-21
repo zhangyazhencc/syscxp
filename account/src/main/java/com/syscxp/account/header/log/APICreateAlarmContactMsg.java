@@ -10,7 +10,6 @@ import com.syscxp.header.notification.ApiNotification;
 
 import java.util.List;
 
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, adminOnly = true)
 public class APICreateAlarmContactMsg extends APICreateMessage {
     @APIParam(maxLength = 32, required = false)
     private String accountName;

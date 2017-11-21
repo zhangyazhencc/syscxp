@@ -9,7 +9,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 
 import java.util.List;
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT, names = {"read"})
+
 public class APIUpdateAlarmContactMsg extends APICreateMessage {
     @APIParam(resourceType = AlarmContactVO.class,checkAccount = true, emptyString = false)
     private String uuid;

@@ -8,7 +8,7 @@ import com.syscxp.header.tunnel.NodeConstant;
 /**
  * Create by DCY on 2017/11/1
  */
-@Action(category = NodeConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
+@Action(services = {"tunnel"}, category = NodeConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreateInnerEndpointMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32,resourceType = EndpointVO.class)

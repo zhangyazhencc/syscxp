@@ -5,7 +5,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 
-@Action(category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"update"})
+@Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_RECEIPT, names = {"update"})
 public class APIUpdateReceiptMsg extends APIMessage{
 
     @APIParam(emptyString = false)

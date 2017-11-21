@@ -8,7 +8,7 @@ import com.syscxp.header.tunnel.NodeConstant;
 /**
  * Created by DCY on 2017-08-21
  */
-@Action(category = NodeConstant.ACTION_CATEGORY, names = {"read"})
+@Action(services = {"tunnel"}, category = NodeConstant.ACTION_CATEGORY, names = {"read"})
 
 @AutoQuery(replyClass = APIQueryNodeReply.class, inventoryClass = NodeInventory.class)
 public class APIQueryNodeMsg extends APIQueryMessage {

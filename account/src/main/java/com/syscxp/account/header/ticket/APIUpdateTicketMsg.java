@@ -2,6 +2,7 @@ package com.syscxp.account.header.ticket;
 
 import com.syscxp.account.header.account.AccountConstant;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.SuppressUserCredentialCheck;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -10,10 +11,11 @@ import com.syscxp.header.notification.ApiNotification;
 /**
  * Created by wangwg on 2017/9/26.
  */
-@Action(category = AccountConstant.ACTION_CATEGORY_ACCOUNT,names = "update")
+@SuppressUserCredentialCheck
+@Action(services = {"account"}, category = AccountConstant.ACTION_CATEGORY_TICKET, names = {"update"})
 public class APIUpdateTicketMsg extends APIMessage {
 
-    @APIParam(maxLength = 128)
+    @APIParam(maxLength = 32, resourceType = TicketVO.class, checkAccount = true, operationTarget = true, required = false)
     private String uuid;
 
     @APIParam(maxLength = 128, required = false)

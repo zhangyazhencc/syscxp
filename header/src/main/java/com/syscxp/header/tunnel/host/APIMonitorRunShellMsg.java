@@ -8,7 +8,7 @@ import com.syscxp.header.message.APIParam;
 
 import java.util.Set;
 
-@Action(category = HostConstant.ACTION_CATEGORY, adminOnly = true)
+@Action(services = {"tunnel"}, category = HostConstant.ACTION_CATEGORY, adminOnly = true)
 public class APIMonitorRunShellMsg extends APIMessage {
     @APIParam(resourceType = MonitorHostVO.class, nonempty = true)
     private Set<String> hostUuids;

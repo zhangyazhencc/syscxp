@@ -45,7 +45,7 @@ public class SpeedRecordsInventory {
         return  inventory;
     }
 
-    public static List<SpeedRecordsInventory> valueOf(Collection<SpeedRecordsVO> vos) {
+    public static List<SpeedRecordsInventory> valueOf(Collection<SpeedRecordsVO> vos ) {
         List<SpeedRecordsInventory> lst = new ArrayList<SpeedRecordsInventory>(vos.size());
         for (SpeedRecordsVO vo : vos) {
             lst.add(SpeedRecordsInventory.valueOf(vo));
@@ -147,4 +147,5 @@ public class SpeedRecordsInventory {
     public Timestamp getCreateDate() {
         return createDate;
     }
+
 }
