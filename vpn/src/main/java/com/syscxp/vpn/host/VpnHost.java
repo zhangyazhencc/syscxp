@@ -178,69 +178,6 @@ public class VpnHost extends HostBase implements Host {
                     }
                 });
 
-                flow(new NoRollbackFlow() {
-                    String __name__ = "call-ping-no-failure-plugins";
-
-                    @Override
-                    public void run(FlowTrigger trigger, Map data) {
-                        List<VpnPingAgentNoFailureExtensionPoint> exts = pluginRgty.getExtensionList
-                                (VpnPingAgentNoFailureExtensionPoint.class);
-                        if (exts.isEmpty()) {
-                            trigger.next();
-                            return;
-                        }
-
-                        AsyncLatch latch = new AsyncLatch(exts.size(), new NoErrorCompletion(trigger) {
-                            @Override
-                            public void done() {
-                                trigger.next();
-                            }
-                        });
-
-                        VpnHostInventory inv = (VpnHostInventory) getSelfInventory();
-                        for (VpnPingAgentNoFailureExtensionPoint ext : exts) {
-                            ext.vpnPingAgentNoFailure(inv, new NoErrorCompletion(latch) {
-                                @Override
-                                public void done() {
-                                    latch.ack();
-                                }
-                            });
-                        }
-                    }
-                });
-
-                flow(new NoRollbackFlow() {
-                    String __name__ = "call-ping-plugins";
-
-                    @Override
-                    public void run(FlowTrigger trigger, Map data) {
-                        List<VpnPingAgentExtensionPoint> exts = pluginRgty.getExtensionList(VpnPingAgentExtensionPoint.class);
-                        Iterator<VpnPingAgentExtensionPoint> it = exts.iterator();
-                        callPlugin(it, trigger);
-                    }
-
-                    private void callPlugin(Iterator<VpnPingAgentExtensionPoint> it, FlowTrigger trigger) {
-                        if (!it.hasNext()) {
-                            trigger.next();
-                            return;
-                        }
-
-                        VpnPingAgentExtensionPoint ext = it.next();
-                        logger.debug(String.format("calling VpnHostPingAgentExtensionPoint[%s]", ext.getClass()));
-                        ext.vpnPingAgent((VpnHostInventory) getSelfInventory(), new Completion(trigger) {
-                            @Override
-                            public void success() {
-                                callPlugin(it, trigger);
-                            }
-
-                            @Override
-                            public void fail(ErrorCode errorCode) {
-                                trigger.fail(errorCode);
-                            }
-                        });
-                    }
-                });
-
                 done(new FlowDoneHandler(completion) {
                     @Override
                     public void handle(Map data) {

@@ -11,7 +11,6 @@ import com.syscxp.header.tunnel.TunnelConstant;
  * Create by DCY on 2017/11/15
  */
 @InnerCredentialCheck
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
 public class APIRenewAutoTunnelMsg extends APISyncCallMessage {
     @APIParam(emptyString = false, resourceType = TunnelVO.class)
     private String uuid;

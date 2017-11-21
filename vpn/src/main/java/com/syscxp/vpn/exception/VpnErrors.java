@@ -2,9 +2,8 @@ package com.syscxp.vpn.exception;
 
 public enum VpnErrors {
 
-    UNPAYABLE(1001),
-    BILLING_ERROR(1002),
-    VPN_CONTROLLER_ERROR(1003);
+    UNPAYABLE(1000),
+    BILLING_ERROR(1001);
 
     private String code;
 
