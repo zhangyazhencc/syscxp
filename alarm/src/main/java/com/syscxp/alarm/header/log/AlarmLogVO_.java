@@ -23,5 +23,6 @@ public class AlarmLogVO_  extends BaseVO_ {
     public static volatile SingularAttribute<AlarmLogVO, String> eventId;
     public static volatile SingularAttribute<AlarmLogVO, Timestamp> alarmTime;
     public static volatile SingularAttribute<AlarmLogVO, Timestamp> resumeTime;
+    public static volatile SingularAttribute<AlarmLogVO, Integer> count;
 
 }

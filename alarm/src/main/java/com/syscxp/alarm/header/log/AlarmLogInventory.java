@@ -24,6 +24,7 @@ public class AlarmLogInventory {
     private String eventId;
     private Timestamp alarmTime;
     private Timestamp resumeTime;
+    private int count;
 
     public static AlarmLogInventory valueOf(AlarmLogVO vo){
         AlarmLogInventory inv = new AlarmLogInventory();
@@ -36,10 +37,13 @@ public class AlarmLogInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setSmsContent(vo.getSmsContent());
         inv.setMailContent(vo.getMailContent());
-        inv.setPolicyName(vo.getPolicyVO().getName());
+        if(vo.getPolicyVO() != null){
+            inv.setPolicyName(vo.getPolicyVO().getName());
+        }
         inv.setEventId(vo.getEventId());
         inv.setAlarmTime(vo.getAlarmTime());
         inv.setResumeTime(vo.getResumeTime());
+        inv.setCount(vo.getCount());
         return inv;
     }
 
@@ -50,6 +54,14 @@ public class AlarmLogInventory {
             lst.add(AlarmLogInventory.valueOf(vo));
         }
         return lst;
+    }
+
+    public int getCount() {
+        return count;
+    }
+
+    public void setCount(int count) {
+        this.count = count;
     }
 
     public String getUuid() {
