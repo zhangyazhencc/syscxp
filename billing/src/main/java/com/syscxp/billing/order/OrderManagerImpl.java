@@ -105,25 +105,19 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         bus.reply(msg, reply);
     }
 
+    @Transactional
     private void handle(APIUpdateOrderExpiredTimeMsg msg) {
         SimpleQuery<OrderVO> query = dbf.createQuery(OrderVO.class);
         query.add(OrderVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
         query.add(OrderVO_.productStatus, SimpleQuery.Op.EQ, 0);
         OrderVO orderVO = query.find();
-        if (orderVO == null) {
-            throw new RuntimeException("cannot find the order");
-        }
+        if (orderVO == null) {  throw new RuntimeException("cannot find the order"); }
         orderVO.setProductEffectTimeStart(msg.getStartTime());
         orderVO.setProductEffectTimeEnd(msg.getEndTime());
         orderVO.setProductStatus(1);
 
-        SimpleQuery<RenewVO> queryRenew = dbf.createQuery(RenewVO.class);
-        queryRenew.add(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
-        queryRenew.add(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
-        RenewVO renewVO = queryRenew.find();
-        if (renewVO == null) {
-            throw new IllegalArgumentException("could not find the product purchased history ");
-        }
+        RenewVO renewVO = getRenewVO(msg.getSession().getAccountUuid(), msg.getProductUuid());
+        if (renewVO == null) { throw new IllegalArgumentException("could not find the product purchased history "); }
         renewVO.setExpiredTime(msg.getEndTime());
         dbf.getEntityManager().merge(renewVO);
         dbf.getEntityManager().persist(orderVO);
@@ -134,10 +128,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    private void payMethod(String accountUuid, String opAccountUuid, OrderVO orderVo, AccountBalanceVO abvo, BigDecimal total, Timestamp currentTimeStamp) {
+    private void payMethod(String accountUuid, String opAccountUuid, OrderVO orderVo, AccountBalanceVO abvo, BigDecimal total, Timestamp currentTimeStamp,int i) {
 
         int hash = accountUuid.hashCode() < 0 ? ~accountUuid.hashCode() : accountUuid.hashCode();
-        String outTradeNO = currentTimeStamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
+        String outTradeNO = currentTimeStamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash))+i;
         if (abvo.getPresentBalance().compareTo(BigDecimal.ZERO) > 0) {
             if (abvo.getPresentBalance().compareTo(total) > 0) {
                 BigDecimal presentNow = abvo.getPresentBalance().subtract(total);
@@ -192,7 +186,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         if (discountPrice.compareTo(mayPayTotal) > 0) {
             throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
         }
-        payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, discountPrice, currentTimestamp);
+        payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, discountPrice, currentTimestamp,0);
         orderVo.setType(OrderType.RENEW);
         orderVo.setOriginalPrice(discountPrice);
         orderVo.setPrice(discountPrice);
@@ -361,7 +355,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setType(OrderType.UPGRADE);
             orderVo.setOriginalPrice(needPayOriginMoney.subtract(remainMoney));
             orderVo.setPrice(subMoney);
-            payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, subMoney, currentTimestamp);
+            payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, subMoney, currentTimestamp,0);
 
         } else { //downgrade
             BigDecimal valuePayCash = getValueblePayCash(msg.getAccountUuid(), msg.getProductUuid());
@@ -609,7 +603,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         List<OrderInventory> inventories = new ArrayList<>();
-
+        int i = 0;
         for (ProductInfoForOrder msg : apiCreateBuyOrderMsg.getProducts()) {
 
             OrderTempProp orderTempProp = calculatePrice(msg.getUnits(), msg.getAccountUuid());
@@ -635,7 +629,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             if (msg.getProductType() == ProductType.TUNNEL) {
                 orderVo.setProductStatus(0);
             }
-            payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, discountPrice, currentTimestamp);
+            payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, discountPrice, currentTimestamp,i++);
             LocalDateTime expiredTime = LocalDateTime.now().plusMonths(duration.intValue());
             orderVo.setProductEffectTimeStart(currentTimestamp);
             orderVo.setProductEffectTimeEnd(Timestamp.valueOf(expiredTime));
@@ -653,10 +647,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             inventories.add(OrderInventory.valueOf(orderVo));
         }
 
-
         APICreateBuyOrderReply reply = new APICreateBuyOrderReply();
         reply.setInventories(inventories);
-
         bus.reply(apiCreateBuyOrderMsg, reply);
 
     }
