@@ -12,6 +12,7 @@ import java.sql.Timestamp;
 @StaticMetamodel(SolutionVO.class)
 public class SolutionVO_ {
     public static volatile SingularAttribute<SolutionVO, String> uuid;
+    public static volatile SingularAttribute<SolutionVO, String> accountUuid;
     public static volatile SingularAttribute<SolutionVO, String> name;
     public static volatile SingularAttribute<SolutionVO, String> description;
     public static volatile SingularAttribute<SolutionVO, String> totalCost;

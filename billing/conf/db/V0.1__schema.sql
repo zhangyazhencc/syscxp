@@ -93,8 +93,7 @@ CREATE TABLE `DealDetailVO` (
   `opAccountUuid` varchar(32) DEFAULT NULL COMMENT '操作人',
    `comment` varchar(2000) DEFAULT NULL,
   PRIMARY KEY (`uuid`),
-  UNIQUE KEY `NewIndex1` (`outTradeNO`),
-  UNIQUE KEY `NewIndex2` (`tradeNO`)
+  UNIQUE KEY `NewIndex1` (`outTradeNO`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `DealDetailVO` */

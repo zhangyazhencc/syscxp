@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 public class SolutionManagerImpl extends AbstractService implements SolutionManager , ApiMessageInterceptor{
 
-    private static final CLogger logger = Utils.getLogger(TunnelManagerImpl.class);
+    private static final CLogger logger = Utils.getLogger(SolutionManagerImpl.class);
 
     @Autowired
     private CloudBus bus;
@@ -175,8 +175,8 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         }
 
         vo.setBandwidth(msg.getBandwidth());
-        vo.setEndpointName(msg.getEndpointName());
-        vo.setZoneName(msg.getZoneName());
+        vo.setEndpointUuid(msg.getEndpointUuid());
+        vo.setZoneUuid(msg.getZoneUuid());
 
         APICreateSolutionVpnEvent event = new APICreateSolutionVpnEvent(msg.getId());
         event.setInventory(SolutionVpnInventory.valueOf(dbf.persistAndRefresh(vo)));
@@ -199,8 +199,8 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         }
 
         vo.setBandwidth(msg.getBandwidth());
-        vo.setEndpointNameA(msg.getEndpointNameA());
-        vo.setEndpointNameZ(msg.getEndpointNameZ());
+        vo.setEndpointUuidA(msg.getEndpointUuidA());
+        vo.setEndpointUuidZ(msg.getEndpointUuidZ());
 
         APICreateSolutionTunnelEvent event = new APICreateSolutionTunnelEvent(msg.getId());
         event.setInventory(SolutionTunnelInventory.valueOf(dbf.persistAndRefresh(vo)));
@@ -222,8 +222,8 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             vo.setName(msg.getName());
         }
 
-        vo.setEndpointName(msg.getEndpointName());
-        vo.setPortOfferingName(msg.getPortOfferingName());
+        vo.setEndpointUuid(msg.getEndpointUuid());
+        vo.setPortOfferingUuid(msg.getPortOfferingUuid());
 
         APICreateSolutionInterfaceEvent event = new APICreateSolutionInterfaceEvent(msg.getId());
         event.setInventory(SolutionInterfaceInventory.valueOf(dbf.persistAndRefresh(vo)));

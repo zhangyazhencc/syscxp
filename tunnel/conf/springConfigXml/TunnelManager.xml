@@ -22,6 +22,8 @@
             <list>
                 <value>com.syscxp.header.tunnel.tunnel.InterfaceVO</value>
                 <value>com.syscxp.header.tunnel.tunnel.TunnelVO</value>
+                <value>com.syscxp.header.tunnel.solution.SolutionVO</value>
+                <value>com.syscxp.header.tunnel.monitor.SpeedRecordsVO</value>
             </list>
         </property>
     </bean>

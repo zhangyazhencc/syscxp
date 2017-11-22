@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.solution;
 
+import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.search.Inventory;
 
 import java.sql.Timestamp;
@@ -14,14 +15,14 @@ public class SolutionVpnInventory {
     private String name;
     private String description;
     private String cost;
-    private String productChargeModel;
+    private ProductChargeModel productChargeModel;
     private int duration;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    private String zoneName;
-    private String endpointName;
-    private Long bandwidth;
+    private String zoneUuid;
+    private String endpointUuid;
+    private long bandwidth;
 
     public static SolutionVpnInventory valueOf(SolutionVpnVO vo) {
         SolutionVpnInventory inv = new SolutionVpnInventory();
@@ -35,8 +36,8 @@ public class SolutionVpnInventory {
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
 
-        inv.setEndpointName(vo.getEndpointName());
-        inv.setZoneName(vo.getZoneName());
+        inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setZoneUuid(vo.getZoneUuid());
         inv.setBandwidth(vo.getBandwidth());
 
         return inv;
@@ -90,11 +91,11 @@ public class SolutionVpnInventory {
         this.cost = cost;
     }
 
-    public String getProductChargeModel() {
+    public ProductChargeModel getProductChargeModel() {
         return productChargeModel;
     }
 
-    public void setProductChargeModel(String productChargeModel) {
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
         this.productChargeModel = productChargeModel;
     }
 
@@ -130,19 +131,19 @@ public class SolutionVpnInventory {
         this.bandwidth = bandwidth;
     }
 
-    public String getZoneName() {
-        return zoneName;
+    public String getZoneUuid() {
+        return zoneUuid;
     }
 
-    public void setZoneName(String zoneName) {
-        this.zoneName = zoneName;
+    public void setZoneUuid(String zoneUuid) {
+        this.zoneUuid = zoneUuid;
     }
 
-    public String getEndpointName() {
-        return endpointName;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setEndpointName(String endpointName) {
-        this.endpointName = endpointName;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 }

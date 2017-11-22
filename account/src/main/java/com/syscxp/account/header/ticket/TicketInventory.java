@@ -13,7 +13,7 @@ public class TicketInventory {
     private String uuid;
     private String accountUuid;
     private String userUuid;
-    private String AdminUserUuid;
+    private String adminUserUuid;
 
     private String ticketTypeUuid;
     private String phone;
@@ -146,11 +146,11 @@ public class TicketInventory {
     }
 
     public String getAdminUserUuid() {
-        return AdminUserUuid;
+        return adminUserUuid;
     }
 
     public void setAdminUserUuid(String adminUserUuid) {
-        AdminUserUuid = adminUserUuid;
+        this.adminUserUuid = adminUserUuid;
     }
 
     public String getPhone() {

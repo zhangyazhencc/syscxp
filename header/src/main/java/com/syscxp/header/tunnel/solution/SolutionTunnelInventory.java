@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.solution;
 
+import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.search.Inventory;
 
 import java.sql.Timestamp;
@@ -14,14 +15,14 @@ public class SolutionTunnelInventory {
     private String name;
     private String description;
     private String cost;
-    private String productChargeModel;
+    private ProductChargeModel productChargeModel;
     private int duration;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    private String endpointNameA;
-    private String endpointNameZ;
-    private Long bandwidth;
+    private String endpointUuidA;
+    private String endpointUuidZ;
+    private long bandwidth;
 
     public static SolutionTunnelInventory valueOf(SolutionTunnelVO vo) {
         SolutionTunnelInventory inv = new SolutionTunnelInventory();
@@ -35,8 +36,8 @@ public class SolutionTunnelInventory {
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
 
-        inv.setEndpointNameA(vo.getEndpointNameA());
-        inv.setEndpointNameZ(vo.getEndpointNameZ());
+        inv.setEndpointUuidA(vo.getEndpointUuidA());
+        inv.setEndpointUuidZ(vo.getEndpointUuidZ());
         inv.setBandwidth(vo.getBandwidth());
 
         return inv;
@@ -90,11 +91,11 @@ public class SolutionTunnelInventory {
         this.cost = cost;
     }
 
-    public String getProductChargeModel() {
+    public ProductChargeModel getProductChargeModel() {
         return productChargeModel;
     }
 
-    public void setProductChargeModel(String productChargeModel) {
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
         this.productChargeModel = productChargeModel;
     }
 
@@ -122,27 +123,27 @@ public class SolutionTunnelInventory {
         this.createDate = createDate;
     }
 
-    public String getEndpointNameA() {
-        return endpointNameA;
+    public String getEndpointUuidA() {
+        return endpointUuidA;
     }
 
-    public void setEndpointNameA(String endpointNameA) {
-        this.endpointNameA = endpointNameA;
+    public void setEndpointUuidA(String endpointUuidA) {
+        this.endpointUuidA = endpointUuidA;
     }
 
-    public String getEndpointNameZ() {
-        return endpointNameZ;
+    public String getEndpointUuidZ() {
+        return endpointUuidZ;
     }
 
-    public void setEndpointNameZ(String endpointNameZ) {
-        this.endpointNameZ = endpointNameZ;
+    public void setEndpointUuidZ(String endpointUuidZ) {
+        this.endpointUuidZ = endpointUuidZ;
     }
 
-    public Long getBandwidth() {
+    public long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Long bandwidth) {
+    public void setBandwidth(long bandwidth) {
         this.bandwidth = bandwidth;
     }
 }

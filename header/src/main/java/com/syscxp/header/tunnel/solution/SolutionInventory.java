@@ -11,6 +11,7 @@ import java.util.List;
 public class SolutionInventory {
     private String uuid;
     private String name;
+    private String accountUuid;
     private String description;
     private String totalCost;
     private Timestamp lastOpDate;
@@ -24,6 +25,7 @@ public class SolutionInventory {
         inv.setDescription(vo.getDescription());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        inv.setAccountUuid(vo.getAccountUuid());
         return inv;
     }
 
@@ -41,6 +43,14 @@ public class SolutionInventory {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 
     public String getName() {
