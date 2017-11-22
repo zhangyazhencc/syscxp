@@ -322,12 +322,12 @@ CREATE TABLE `TicketRecordVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `TicketTypeVO` (
-  `uuid` varchar(50) NOT NULL COMMENT '枚举值',
+  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'uuid',
   `name` varchar(36) NOT NULL COMMENT '枚举值名称',
   `category` varchar(36) NOT NULL COMMENT '枚举值分类',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
   `createDate` timestamp,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('Tunnel','云专线', 'console');
