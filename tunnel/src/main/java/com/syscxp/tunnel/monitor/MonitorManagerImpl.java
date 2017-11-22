@@ -10,8 +10,8 @@ import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.Q;
-import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
@@ -20,6 +20,7 @@ import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.falconapi.FalconApiRestConstant;
 import com.syscxp.header.host.HostState;
 import com.syscxp.header.host.HostStatus;
+import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
@@ -29,6 +30,7 @@ import com.syscxp.header.tunnel.host.*;
 import com.syscxp.header.tunnel.monitor.*;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
+import com.syscxp.tunnel.identity.IdentityInterceptor;
 import com.syscxp.tunnel.sdnController.ControllerCommands;
 import com.syscxp.tunnel.sdnController.ControllerRestConstant;
 import com.syscxp.utils.Utils;
@@ -39,9 +41,12 @@ import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.TypedQuery;
 import java.net.UnknownHostException;
+import java.text.SimpleDateFormat;
+import java.time.LocalTime;
 import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.argerr;
 
@@ -68,6 +73,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private ThreadFacade thdf;
     @Autowired
     private RESTFacade evtf;
+    @Autowired
+    private IdentityInterceptor identityInterceptor;
 
     @Override
     @MessageSafe
@@ -84,13 +91,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     private void handleApiMessage(APIMessage msg) {
-        if (msg instanceof APICreateHostSwitchMonitorMsg) {
-            handle((APICreateHostSwitchMonitorMsg) msg);
-        } else if (msg instanceof APIUpdateHostSwitchMonitorMsg) {
-            handle((APIUpdateHostSwitchMonitorMsg) msg);
-        } else if (msg instanceof APIDeleteHostSwitchMonitorMsg) {
-            handle((APIDeleteHostSwitchMonitorMsg) msg);
-        } else if (msg instanceof APIStartTunnelMonitorMsg) {
+        if (msg instanceof APIStartTunnelMonitorMsg) {
             handle((APIStartTunnelMonitorMsg) msg);
         } else if (msg instanceof APIRestartTunnelMonitorMsg) {
             handle((APIRestartTunnelMonitorMsg) msg);
@@ -154,7 +155,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
             // 更新tunnel状态
             if (event.isSuccess()) {
-                updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled);
+                updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled, TunnelStatus.Connected);
                 event.setInventories(TunnelMonitorInventory.valueOf(tunnelMonitorVOS));
             } else
                 logger.error(event.getError().toString());
@@ -330,8 +331,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     /***
      * 开启agnet监控
-     * @param hostIp
-     * @param command
      * @return
      */
     private MonitorAgentCommands.RestResponse startMonitor(String accountUuid, String tunnelUuid, String monitorCidr, List<TunnelMonitorVO> tunnelMonitorVOS) {
@@ -574,7 +573,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         // 更新tunnel状态
         if (event.isSuccess())
-            updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled);
+            updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled, TunnelStatus.Connected);
         else
             logger.error(String.format("tunnelUuid: %s 重启监控失败 Error: %s", msg.getTunnelUuid(), event.getError().toString()));
 
@@ -619,6 +618,13 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         vo.setProtocolType(msg.getProtocolType());
         vo.setDuration(msg.getDuration());
         vo.setStatus(SpeedRecordStatus.TESTING);
+
+        if (msg.getSession() != null) {
+            if (StringUtils.isNotEmpty(msg.getSession().getUuid())) {
+                SessionInventory sessionInventory = identityInterceptor.getSessionInventory(msg.getSession().getUuid());
+                vo.setAccountUuid(sessionInventory.getAccountUuid());
+            }
+        }
 
         TunnelMonitorVO srcTunnelMonitor = getTunnelMonitorByNodeAndTunnel(msg.getSrcNodeUuid(), msg.getTunnelUuid());
         vo.setSrcTunnelMonitorUuid(srcTunnelMonitor.getUuid());
@@ -830,7 +836,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                         .list();
 
                 if (physicalSwitchVOS.isEmpty())
-                    reply.setError(Platform.argerr("Fail to get physical switch by mIP %S", mIP));
+                    reply.setError(Platform.argerr("Fail to get physical switch by mIP %s", mIP));
 
                 result.setNodeUuid(physicalSwitchVOS.get(0).getNodeUuid());
             }
@@ -854,17 +860,19 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, msg.getTunnelUuid()).find();
         for (TunnelSwitchPortVO tunnelPort : tunnel.getTunnelSwitchPortVOS()) {
-            PhysicalSwitchVO physicalSwitch = getPhysicalSwitchBySwitchPort(tunnelPort.getSwitchPortUuid());
-            if (physicalSwitch == null)
-                throw new IllegalArgumentException(String.format("No physical switch exist under switch port %s", tunnelPort.getSwitchPortUuid()));
+            if (tunnelPort.getSortTag().equals(InterfaceType.A.toString()) ||
+                    tunnelPort.getSortTag().equals(InterfaceType.Z.toString())) {
+                PhysicalSwitchVO physicalSwitch = getPhysicalSwitchBySwitchPort(tunnelPort.getSwitchPortUuid());
+                if (physicalSwitch == null)
+                    throw new IllegalArgumentException(String.format("No physical switch exist under switch port %s", tunnelPort.getSwitchPortUuid()));
 
-            for (String metric : msg.getMetrics()) {
-                OpenTSDBCommands.tags tags = new OpenTSDBCommands.tags(physicalSwitch.getmIP(), "Vlanif" + tunnelPort.getVlan());
-                OpenTSDBCommands.Query query = new OpenTSDBCommands.Query("avg", metric, tags);
-                queries.add(query);
+                for (String metric : msg.getMetrics()) {
+                    OpenTSDBCommands.Tags tags = new OpenTSDBCommands.Tags(physicalSwitch.getmIP(), "Vlanif" + tunnelPort.getVlan());
+                    OpenTSDBCommands.Query query = new OpenTSDBCommands.Query("avg", metric, tags);
+                    queries.add(query);
+                }
             }
         }
-
         OpenTSDBCommands.QueryCondition condition = new OpenTSDBCommands.QueryCondition();
         condition.setStart(msg.getStart());
         condition.setEnd(msg.getEnd());
@@ -995,7 +1003,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         // 更新tunnel状态
         if (event.isSuccess())
-            updateTunnel(tunnelUuid, "", TunnelMonitorState.Disabled);
+            updateTunnel(tunnelUuid, "", TunnelMonitorState.Disabled, TunnelStatus.Connected);
         else
             logger.error(String.format("tunnelUuid: %s 关闭监控失败 Error: %s", tunnelUuid, event.getError().toString()));
     }
@@ -1021,7 +1029,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         // 更新tunnel状态
         if (!event.isSuccess()) {
-            updateTunnel(tunnelUuid, "", TunnelMonitorState.Disabled);
+            updateTunnel(tunnelUuid, "", TunnelMonitorState.Disabled, TunnelStatus.Connected);
             logger.error("tunnelUuid:" + tunnelUuid + " 重新开启监控失败" + event.getError().toString());
         }
     }
@@ -1051,7 +1059,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         if (event.isSuccess()) {
             // 删除监控通道数据
             // UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).delete();
-            updateTunnel(tunnelUuid, "", TunnelMonitorState.Disabled);
+            updateTunnel(tunnelUuid, "", TunnelMonitorState.Disabled, TunnelStatus.Connected);
         } else
             logger.error("tunnelUuid:" + tunnelUuid + " 关闭监控失败" + event.getError().toString());
     }
@@ -1062,7 +1070,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param monitorCidr
      * @param monitorState
      */
-    private void updateTunnel(String tunnelUuid, String monitorCidr, TunnelMonitorState monitorState) {
+    private void updateTunnel(String tunnelUuid, String monitorCidr, TunnelMonitorState monitorState, TunnelStatus tunnelStatus) {
         // 更新tunnel状态
         TunnelVO tunnelVO = Q.New(TunnelVO.class)
                 .eq(TunnelVO_.uuid, tunnelUuid)
@@ -1072,6 +1080,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         if (StringUtils.isNotEmpty(monitorCidr)) {
             tunnelVO.setMonitorCidr(monitorCidr);
         }
+        if (StringUtils.isNotEmpty(tunnelStatus.toString())) {
+            tunnelVO.setStatus(tunnelStatus);
+        }
+
         dbf.getEntityManager().persist(tunnelVO);
     }
 
@@ -1139,46 +1151,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
     }
 
-    private void handle(APICreateHostSwitchMonitorMsg msg) {
-        HostSwitchMonitorVO vo = new HostSwitchMonitorVO();
 
-        vo.setUuid(Platform.getUuid());
-        vo.setHostUuid(msg.getHostUuid());
-        vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
-        vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
-        vo.setInterfaceName(msg.getInterfaceName());
-
-        vo = dbf.persistAndRefresh(vo);
-
-        APICreateHostSwitchMonitorEvent event = new APICreateHostSwitchMonitorEvent(msg.getId());
-        event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
-        bus.publish(event);
-    }
-
-    private void handle(APIUpdateHostSwitchMonitorMsg msg) {
-        HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
-
-        vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
-        vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
-        vo.setInterfaceName(msg.getInterfaceName());
-        vo = dbf.updateAndRefresh(vo);
-
-        APIUpdateHostSwitchMonitorEvent event = new APIUpdateHostSwitchMonitorEvent(msg.getId());
-        event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
-        bus.publish(event);
-    }
-
-    private void handle(APIDeleteHostSwitchMonitorMsg msg) {
-
-        HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
-
-        dbf.remove(vo);
-
-        APIDeleteHostSwitchMonitorEvent event = new APIDeleteHostSwitchMonitorEvent(msg.getId());
-        event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
-
-        bus.publish(event);
-    }
 
     /***
      * 按switchPortUuid查询SwitchVO
@@ -1456,79 +1429,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     @Override
-    public boolean start() {
-        return true;
-    }
-
-    @Override
-    public boolean stop() {
-        return true;
-    }
-
-    @Override
-    public String getId() {
-        return bus.makeLocalServiceId(MonitorConstant.SERVICE_ID);
-    }
-
-    @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        if (msg instanceof APICreateMonitorHostMsg) {
-            validate((APICreateMonitorHostMsg) msg);
-        } else if (msg instanceof APICreateHostSwitchMonitorMsg) {
-            validate((APICreateHostSwitchMonitorMsg) msg);
-        } else if (msg instanceof APICreateSpeedRecordsMsg) {
+        if (msg instanceof APICreateSpeedRecordsMsg) {
             validate((APICreateSpeedRecordsMsg) msg);
         } else if (msg instanceof APICreateSpeedTestTunnelMsg) {
             validate((APICreateSpeedTestTunnelMsg) msg);
         }
 
         return msg;
-    }
-
-    private void validate(APICreateHostSwitchMonitorMsg msg) {
-        //判断监控机和物理交换机所属节点是否一样
-        MonitorHostVO hostVO = dbf.findByUuid(msg.getHostUuid(), MonitorHostVO.class);
-        String hostNodeUuid = hostVO.getNodeUuid();
-        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(msg.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
-        String physicalNodeUuid = physicalSwitchVO.getNodeUuid();
-        if (!hostNodeUuid.equals(physicalNodeUuid)) {
-            throw new ApiMessageInterceptionException(argerr("该监控机不能监控非该节点下的物理交换机 "));
-        }
-
-        //判断监控口在该物理交换机下是否开了业务
-        String sql = "select count(a.uuid) from SwitchPortVO a, SwitchVO b " +
-                "where a.switchUuid = b.uuid " +
-                "and b.physicalSwitchUuid = :physicalSwitchUuid and a.portName = :portName ";
-        TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-        vq.setParameter("physicalSwitchUuid", msg.getPhysicalSwitchUuid());
-        vq.setParameter("portName", msg.getPhysicalSwitchPortName());
-        Long count = vq.getSingleResult();
-        if (count > 0) {
-            throw new ApiMessageInterceptionException(argerr("该端口已经在业务口被录用，不能创建监控口 "));
-        }
-
-        //判断监控口名称在该物理交换机下是否存在
-        SimpleQuery<HostSwitchMonitorVO> q = dbf.createQuery(HostSwitchMonitorVO.class);
-        q.add(HostSwitchMonitorVO_.physicalSwitchUuid, SimpleQuery.Op.EQ, msg.getPhysicalSwitchUuid());
-        q.add(HostSwitchMonitorVO_.physicalSwitchPortName, SimpleQuery.Op.EQ, msg.getPhysicalSwitchPortName());
-        if (q.isExists())
-            throw new ApiMessageInterceptionException(argerr("physicalSwitchPortName %s is already exist ", msg.getPhysicalSwitchPortName()));
-
-        //同一个监控机的网卡名称要唯一
-        SimpleQuery<HostSwitchMonitorVO> q2 = dbf.createQuery(HostSwitchMonitorVO.class);
-        q2.add(HostSwitchMonitorVO_.hostUuid, SimpleQuery.Op.EQ, msg.getHostUuid());
-        q2.add(HostSwitchMonitorVO_.interfaceName, SimpleQuery.Op.EQ, msg.getInterfaceName());
-        if (q2.isExists())
-            throw new ApiMessageInterceptionException(argerr("interfaceName %s is already exist ", msg.getInterfaceName()));
-
-    }
-
-    private void validate(APICreateMonitorHostMsg msg) {
-        //判断code是否已经存在
-        SimpleQuery<MonitorHostVO> q = dbf.createQuery(MonitorHostVO.class);
-        q.add(MonitorHostVO_.code, SimpleQuery.Op.EQ, msg.getCode());
-        if (q.isExists())
-            throw new ApiMessageInterceptionException(argerr("host's code %s is already exist ", msg.getCode()));
     }
 
     private void validate(APICreateSpeedRecordsMsg msg) {
@@ -1552,9 +1460,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(), TunnelVO.class);
         if (tunnelVO.getState() != TunnelState.Enabled)
             throw new ApiMessageInterceptionException(argerr("Tunnel %s is not enabled!", tunnelVO.getName()));
-
-        if (tunnelVO.getStatus() != TunnelStatus.Connected)
-            throw new ApiMessageInterceptionException(argerr("Tunnel %s is not connected!", tunnelVO.getName()));
 
         if (tunnelVO.getMonitorState() != TunnelMonitorState.Enabled)
             throw new ApiMessageInterceptionException(argerr("Tunnel %s monitor state is not enabled!", tunnelVO.getName()));
@@ -1582,5 +1487,87 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         if (!NetworkUtils.isIpv4Address(ip))
             throw new ApiMessageInterceptionException(argerr("Illegal host IP %s！", ip));
+    }
+
+    private void resetSpeedRecordStatus() {
+        resetSpeedrecordInterval = CoreGlobalProperty.RESET_SPEEDRECORD_INTERVAL;
+        expiredSpeedRecordTime = CoreGlobalProperty.EXPIRED_SPEEDRECORD_TIME;
+        if (resetSpeedRecordStatusThread != null) {
+            resetSpeedRecordStatusThread.cancel(true);
+        }
+
+        resetSpeedRecordStatusThread = thdf.submitPeriodicTask(new ResetSpeedRecordStatusThread(), 10);
+    }
+
+    private Future<Void> resetSpeedRecordStatusThread = null;
+    private int resetSpeedrecordInterval;
+    private int expiredSpeedRecordTime;
+
+    private class ResetSpeedRecordStatusThread implements PeriodicTask {
+
+        @Override
+        public TimeUnit getTimeUnit() {
+            return TimeUnit.SECONDS;
+        }
+
+        @Override
+        public long getInterval() {
+            return TimeUnit.SECONDS.toSeconds(resetSpeedrecordInterval);
+        }
+
+        @Override
+        public String getName() {
+            return "reset-speedrecord-status-" + Platform.getManagementServerId();
+        }
+
+        private long getExpiredTime(Date createDate,int duration){
+            return createDate.getTime() + (expiredSpeedRecordTime + duration) * 1000;
+        }
+
+        @Override
+        public void run() {
+            try {
+                logger.info(LocalTime.now() + "###############开始重置测速纪录状态###################");
+                List<SpeedRecordsVO> list = Q.New(SpeedRecordsVO.class)
+                        .eq(SpeedRecordsVO_.status, SpeedRecordStatus.TESTING)
+                        .list();
+
+                if (!list.isEmpty()) {
+                    for (SpeedRecordsVO vo : list) {
+                        long expiredTime = getExpiredTime(vo.getCreateDate(),vo.getDuration());
+                        long currentTime = System.currentTimeMillis();
+                        SimpleDateFormat format =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        String d = format.format(expiredTime);
+                        String c = format.format(currentTime);
+
+                        if(System.currentTimeMillis() > expiredTime){
+                            vo.setStatus(SpeedRecordStatus.FAILURE);
+                            dbf.update(vo);
+                        }
+                    }
+                }
+
+                // 查询要更新的测速纪录  当前时间 > creation_date + duration + 120秒
+            } catch (Throwable t) {
+                logger.warn("unhandled exception!");
+            }
+        }
+    }
+
+
+    @Override
+    public boolean start() {
+        resetSpeedRecordStatus();
+        return true;
+    }
+
+    @Override
+    public boolean stop() {
+        return true;
+    }
+
+    @Override
+    public String getId() {
+        return bus.makeLocalServiceId(MonitorConstant.SERVICE_ID);
     }
 }

@@ -4,15 +4,14 @@ import com.syscxp.billing.header.renew.RenewVO;
 import com.syscxp.billing.header.renew.RenewVO_;
 import com.syscxp.billing.header.sla.*;
 import com.syscxp.core.db.SimpleQuery;
-import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
 import com.syscxp.header.tunnel.tunnel.APISLAInterfaceMsg;
 import com.syscxp.header.tunnel.tunnel.APISLAInterfaceReply;
-import com.syscxp.header.tunnel.tunnel.APISalTunnelMsg;
-import com.syscxp.header.tunnel.tunnel.APISalTunnelReply;
+import com.syscxp.header.tunnel.tunnel.APISLATunnelMsg;
+import com.syscxp.header.tunnel.tunnel.APISLATunnelReply;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -96,7 +95,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
 
             ProductCaller caller = new ProductCaller(slaCompensateVO.getProductType());
             if(slaCompensateVO.getProductType().equals(ProductType.TUNNEL)){
-                APISalTunnelMsg aMsg = new APISalTunnelMsg();
+                APISLATunnelMsg aMsg = new APISLATunnelMsg();
                 aMsg.setUuid(slaCompensateVO.getProductUuid());
                 aMsg.setDuration(slaCompensateVO.getDuration());
                 aMsg.setAccountUuid(slaCompensateVO.getAccountUuid());
@@ -106,7 +105,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
 
                 if (rsp.getState().equals(RestAPIState.Done.toString())) {
                     try {
-                        APISalTunnelReply reply = (APISalTunnelReply) RESTApiDecoder.loads(rsp.getResult());
+                        APISLATunnelReply reply = (APISLATunnelReply) RESTApiDecoder.loads(rsp.getResult());
                         if(reply!=null && reply.getInventory()!=null){
                             slaCompensateVO.setTimeEnd(reply.getInventory().getExpireDate());
                             slaCompensateVO.setTimeStart(new Timestamp(reply.getInventory().getExpireDate().getTime()-slaCompensateVO.getDuration()*24*60*60*1000));

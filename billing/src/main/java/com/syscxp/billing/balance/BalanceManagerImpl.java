@@ -62,10 +62,6 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
     @Autowired
     private DatabaseFacade dbf;
     @Autowired
-    private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
     private RESTFacade restf;
 
     @Override
@@ -91,8 +87,6 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             handle((APIGetExpenseGrossMonthMsg) msg);
         } else if (msg instanceof APIUpdateAccountDiscountMsg) {
             handle((APIUpdateAccountDiscountMsg) msg);
-        } else if (msg instanceof APIGetProductPriceMsg) {
-            handle((APIGetProductPriceMsg) msg);
         } else if (msg instanceof APIGetAccountBalanceListMsg) {
             handle((APIGetAccountBalanceListMsg) msg);
         } else if (msg instanceof APICreateAccountDiscountMsg) {
@@ -127,46 +121,52 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         if (msg.getSession().getType() == AccountType.Normal) {
             throw new IllegalArgumentException("you hava not permission");
         }
-        AccountDiscountVO accountDiscountVO = dbf.findByUuid(msg.getUuid(), AccountDiscountVO.class);
-        APIGetAccountUuidListByProxyMsg aMsg = new APIGetAccountUuidListByProxyMsg();
-        aMsg.setAccountUuid(accountDiscountVO.getAccountUuid());
-        InnerMessageHelper.setMD5(aMsg);
-        String gstr = RESTApiDecoder.dump(aMsg);
-        RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
-        if (rsp.getState().equals(RestAPIState.Done.toString())) {
-            APIGetAccountUuidListByProxyReply replay = (APIGetAccountUuidListByProxyReply) RESTApiDecoder.loads(rsp.getResult());
-            List<String> customerUuids = replay.getAccountUuids();
-            if (customerUuids != null && customerUuids.size() > 0) {
-                for (String id : customerUuids) {
-                    SimpleQuery<AccountDiscountVO> query = dbf.createQuery(AccountDiscountVO.class);
-                    query.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, id);
-                    query.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, accountDiscountVO.getProductCategoryUuid());
-                    List<AccountDiscountVO> accountDiscountVOS = query.list();
-                    if (accountDiscountVOS != null && accountDiscountVOS.size() > 0) {
-                        for (AccountDiscountVO vo : accountDiscountVOS) {
-                            dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
-                        }
-                    }
-                }
 
-            }
-        }
+        AccountDiscountVO accountDiscountVO = dbf.findByUuid(msg.getUuid(), AccountDiscountVO.class);
+        List<String> customerUuids = getCustomerUuidsFromAccount(accountDiscountVO.getAccountUuid());
+        deleteCustomerDiscount(customerUuids, accountDiscountVO.getProductCategoryUuid());
         dbf.getEntityManager().remove(dbf.getEntityManager().merge(accountDiscountVO));
         APIDeleteAccountDiscountEvent event = new APIDeleteAccountDiscountEvent(msg.getId());
         event.setInventory(AccountDiscountInventory.valueOf(accountDiscountVO));
         bus.publish(event);
     }
 
+    @Transactional
+    private void deleteCustomerDiscount(List<String> customerUuids, String productCategoryUuid) {
+        if (customerUuids != null && customerUuids.size() > 0) {
+            for (String customerUuid : customerUuids) {
+                AccountDiscountVO customerDiscount = getAccountDiscountVO(customerUuid, productCategoryUuid);
+                dbf.getEntityManager().remove(dbf.getEntityManager().merge(customerDiscount));
+            }
+
+        }
+    }
+
+
+    @Transactional
+    private List<String> getCustomerUuidsFromAccount(String proxyUuid) {
+        APIGetAccountUuidListByProxyMsg aMsg = new APIGetAccountUuidListByProxyMsg();
+        aMsg.setAccountUuid(proxyUuid);
+        InnerMessageHelper.setMD5(aMsg);
+        String gstr = RESTApiDecoder.dump(aMsg);
+        RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
+        if (rsp.getState().equals(RestAPIState.Done.toString())) {
+            APIGetAccountUuidListByProxyReply replay = (APIGetAccountUuidListByProxyReply) RESTApiDecoder.loads(rsp.getResult());
+            return replay.getAccountUuids();
+        }
+        return null;
+    }
+
     private void handle(APICreateAccountDiscountMsg msg) {
 
         ProductCategoryVO productCategoryEO = findProductCategory(msg.getProductType(), msg.getCategory());
-
         AccountDiscountVO accountDiscountVO = new AccountDiscountVO();
         accountDiscountVO.setUuid(Platform.getUuid());
         accountDiscountVO.setAccountUuid(msg.getAccountUuid());
         accountDiscountVO.setProductCategoryUuid(productCategoryEO.getUuid());
         accountDiscountVO.setDiscount(msg.getDiscount());
         dbf.persistAndRefresh(accountDiscountVO);
+
         APICreateAccountDiscountEvent event = new APICreateAccountDiscountEvent(msg.getId());
         AccountDiscountInventory inventory = AccountDiscountInventory.valueOf(accountDiscountVO);
         inventory.setProductType(productCategoryEO.getProductTypeCode().toString());
@@ -190,134 +190,14 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         bus.reply(msg, reply);
     }
 
-    private void handle(APIGetProductPriceMsg msg) {
-        List<ProductPriceUnit> units = msg.getUnits();
-        List<ProductPriceUnitInventory> productPriceUnits = new ArrayList<>();
-
-        AccountBalanceVO accountBalanceVO = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-
-        BigDecimal discountPrice = BigDecimal.ZERO;
-        BigDecimal originalPrice = BigDecimal.ZERO;
-
-        for (ProductPriceUnit unit : units) {
-
-            int times = 1;
-
-            if (unit.getProductTypeCode().equals(ProductType.ECP) && unit.getCategoryCode().equals(Category.BANDWIDTH)) {
-                String configCode = unit.getConfigCode().replaceAll("\\D", "");
-                times = Integer.parseInt(configCode);
-                unit.setConfigCode("1M");
-            }
-
-            SimpleQuery<ProductCategoryVO> queryEO = dbf.createQuery(ProductCategoryVO.class);
-            queryEO.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ, unit.getProductTypeCode());
-            queryEO.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, unit.getCategoryCode());
-            ProductCategoryVO productCategoryEO = queryEO.find();
-            if (productCategoryEO == null) {
-                throw new IllegalArgumentException(" not found this type product, check it");
-            }
-            SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-            q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryEO.getUuid());
-            q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, unit.getAreaCode());
-            q.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, unit.getLineCode());
-            q.add(ProductPriceUnitVO_.configCode, SimpleQuery.Op.EQ, unit.getConfigCode());
-            ProductPriceUnitVO productPriceUnitVO = q.find();
-            if (productPriceUnitVO == null) {
-                throw new IllegalArgumentException("please check the argurment");
-            }
-            ProductPriceUnitInventory inventory = ProductPriceUnitInventory.valueOf(productPriceUnitVO);
-            SimpleQuery<AccountDiscountVO> qDiscount = dbf.createQuery(AccountDiscountVO.class);
-            qDiscount.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryEO.getUuid());
-            qDiscount.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-            AccountDiscountVO accountDiscountVO = qDiscount.find();
-            int discount = 100;
-            if (accountDiscountVO != null) {
-                discount = accountDiscountVO.getDiscount() == 0 ? 100 : accountDiscountVO.getDiscount();
-            }
-            originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice() * times));
-            BigDecimal currentDiscount = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(discount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_EVEN);
-            discountPrice = discountPrice.add(currentDiscount);
-            inventory.setDiscount(discount);
-            productPriceUnits.add(inventory);
-        }
-
-        BigDecimal duration = BigDecimal.valueOf(msg.getDuration());
-        if (msg.getProductChargeModel().equals(ProductChargeModel.BY_YEAR)) {
-            duration = duration.multiply(BigDecimal.valueOf(12));
-        }
-
-        AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        BigDecimal cashBalance = abvo.getCashBalance();
-        BigDecimal presentBalance = abvo.getPresentBalance();
-        BigDecimal creditPoint = abvo.getCreditPoint();
-        BigDecimal mayPayTotal = cashBalance.add(presentBalance).add(creditPoint);//可支付金额
-
-        originalPrice = originalPrice.multiply(duration);
-        discountPrice = discountPrice.multiply(duration);
-        boolean payable = discountPrice.compareTo(mayPayTotal) <= 0;
-
-
-//        AccountBalanceInventory accountBalanceInventory = AccountBalanceInventory.valueOf(accountBalanceVO);
-        APIGetProductPriceReply reply = new APIGetProductPriceReply();
-//        reply.setAccountBalanceInventory(accountBalanceInventory);
-        reply.setProductPriceInventories(productPriceUnits);
-        reply.setMayPayTotal(mayPayTotal);
-        reply.setOriginalPrice(originalPrice);
-        reply.setDiscountPrice(discountPrice);
-        reply.setPayable(payable);
-        bus.reply(msg, reply);
-    }
 
     @Transactional
     private void handle(APIUpdateAccountDiscountMsg msg) {
 
         AccountDiscountVO accountDiscountVO = dbf.findByUuid(msg.getUuid(), AccountDiscountVO.class);
-        if (msg.getSession().getType().equals(AccountType.Proxy)) {
-            SimpleQuery<AccountDiscountVO> q = dbf.createQuery(AccountDiscountVO.class);
-            q.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, msg.getSession().getAccountUuid());
-            q.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, accountDiscountVO.getProductCategoryUuid());
-            AccountDiscountVO adVO = q.find();
-            if (adVO != null) {
-                int discount = adVO.getDiscount();
-                if (msg.getDiscount() < discount) {
-                    throw new IllegalArgumentException("cannot give a discount large than self");
-                }
-            } else {
-                if (msg.getDiscount() != 100) {
-                    throw new IllegalArgumentException("just can be set 100");
-                }
-            }
-
-        }
         if (msg.getSession().getType().equals(AccountType.SystemAdmin)) {
-            APIGetAccountUuidListByProxyMsg aMsg = new APIGetAccountUuidListByProxyMsg();
-            aMsg.setAccountUuid(accountDiscountVO.getAccountUuid());
-            InnerMessageHelper.setMD5(aMsg);
-            String gstr = RESTApiDecoder.dump(aMsg);
-            RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
-            if (rsp.getState().equals(RestAPIState.Done.toString())) {
-                APIGetAccountUuidListByProxyReply replay = (APIGetAccountUuidListByProxyReply) RESTApiDecoder.loads(rsp.getResult());
-                List<String> customerUuids = replay.getAccountUuids();
-                if (customerUuids != null && customerUuids.size() > 0) {
-                    for (String accountUuid : customerUuids) {
-                        SimpleQuery<AccountDiscountVO> query = dbf.createQuery(AccountDiscountVO.class);
-                        query.add(AccountDiscountVO_.accountUuid, SimpleQuery.Op.EQ, accountDiscountVO.getAccountUuid());
-                        query.add(AccountDiscountVO_.productCategoryUuid, SimpleQuery.Op.EQ, accountDiscountVO.getProductCategoryUuid());
-                        AccountDiscountVO accountDiscountVO1 = query.find();
-                        if (accountDiscountVO1 != null) {
-                            int discount = accountDiscountVO1.getDiscount();
-                            if (discount < msg.getDiscount()) {
-                                accountDiscountVO1.setDiscount(msg.getDiscount());
-                                dbf.getEntityManager().merge(accountDiscountVO1);
-                            }
-                        }
-
-                    }
-                }
-            }
-        }
-        if (msg.getSession().getType() == AccountType.Normal) {
-            throw new IllegalArgumentException("you are not permit");
+            List<String> customerUuids = getCustomerUuidsFromAccount(accountDiscountVO.getAccountUuid());
+            updateCustomerDiscount(customerUuids,accountDiscountVO.getProductCategoryUuid(),msg.getDiscount());
         }
 
         accountDiscountVO.setDiscount(msg.getDiscount());
@@ -329,18 +209,28 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         bus.publish(evt);
     }
 
+    @Transactional
+    private void updateCustomerDiscount(List<String> customerUuids,String productCategoryUuid,int discount) {
+        for (String accountUuid : customerUuids) {
+            AccountDiscountVO accountDiscountVO = getAccountDiscountVO(accountUuid,productCategoryUuid);
+            if (accountDiscountVO != null) {
+                if (accountDiscountVO.getDiscount() <discount) {
+                    accountDiscountVO.setDiscount(discount);
+                    dbf.getEntityManager().merge(accountDiscountVO);
+                }
+            }
+        }
+    }
+
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     private AccountBalanceVO initAccountBlance(String accountUuid) {
-        APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
-        aMsg.setUuid(accountUuid);
-        InnerMessageHelper.setMD5(aMsg);
-        String gstr = RESTApiDecoder.dump(aMsg);
-        RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
-        if (rsp.getState().equals(RestAPIState.Done.toString())) {
-            APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
-            if (!replay.isValidAccount()) {
-                throw new IllegalArgumentException("the account uuid is not valid");
-            }
+
+        APIValidateAccountReply reply = validAccount(accountUuid);
+        if (reply == null) {
+            throw new IllegalArgumentException(" the network must be loss");
+        }
+        if(!reply.isValidAccount()){
+            throw new IllegalArgumentException("the account uuid is not valid");
         }
         AccountBalanceVO accountBalanceVO = new AccountBalanceVO();
         accountBalanceVO.setUuid(accountUuid);
@@ -351,12 +241,31 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         return accountBalanceVO;
     }
 
+    @Transactional
+    private APIValidateAccountReply validAccount(String accountUuid) {
+        APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
+        aMsg.setUuid(accountUuid);
+        InnerMessageHelper.setMD5(aMsg);
+        String gstr = RESTApiDecoder.dump(aMsg);
+        RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
+        if (rsp.getState().equals(RestAPIState.Done.toString())) {
+            try {
+                APIValidateAccountReply reply = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
+                return reply;
+            } catch (Exception e){
+                logger.error(e.getMessage());
+            }
+
+        }
+        return null;
+    }
+
     private void handle(APIGetExpenseGrossMonthMsg msg) {
 
         DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM");
         LocalDate start = LocalDate.parse(msg.getDateStart());
         LocalDate end = LocalDate.parse(msg.getDateEnd());
-        List<ExpenseGross> list = new ArrayList<ExpenseGross>();
+        List<ExpenseGross> list = new ArrayList<>();
         long duration = ChronoUnit.MONTHS.between(start, end);
         for (int i = 0; i <= duration; i++) {
             ExpenseGross e = new ExpenseGross();
@@ -397,45 +306,14 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         }
 
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
-
-        int hash = msg.getAccountUuid().hashCode();
-        if (hash < 0) {
-            hash = ~hash;
-        }
+        int hash = msg.getAccountUuid().hashCode() < 0 ? ~msg.getAccountUuid().hashCode() : msg.getAccountUuid().hashCode();
         String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
         if (msg.getPresent() != null) {
             vo.setPresentBalance(vo.getPresentBalance().add(msg.getPresent()));
-            DealDetailVO dVO = new DealDetailVO();
-            dVO.setUuid(Platform.getUuid());
-            dVO.setAccountUuid(msg.getAccountUuid());
-            dVO.setDealWay(DealWay.PRESENT_BILL);
-            dVO.setIncome(msg.getPresent());
-            dVO.setExpend(BigDecimal.ZERO);
-            dVO.setFinishTime(dbf.getCurrentSqlTime());
-            dVO.setType(DealType.PRESENT);
-            dVO.setState(DealState.SUCCESS);
-            dVO.setBalance(vo.getCashBalance() == null ? BigDecimal.ZERO : vo.getCashBalance());
-            dVO.setOutTradeNO(outTradeNO);
-            dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
-            dVO.setComment(msg.getComment());
-            dbf.getEntityManager().persist(dVO);
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.PRESENT_BILL, msg.getPresent(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PRESENT, DealState.SUCCESS, vo.getCashBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment());
         } else if (msg.getCash() != null) {
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, msg.getCash(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getCashBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment());
             vo.setCashBalance(vo.getCashBalance().add(msg.getCash()));
-            DealDetailVO dVO = new DealDetailVO();
-            dVO.setUuid(Platform.getUuid());
-            dVO.setAccountUuid(msg.getAccountUuid());
-            dVO.setDealWay(DealWay.CASH_BILL);
-            dVO.setIncome(msg.getCash());
-            dVO.setExpend(BigDecimal.ZERO);
-            dVO.setFinishTime(dbf.getCurrentSqlTime());
-            dVO.setType(DealType.PROXY_RECHARGE);
-            dVO.setState(DealState.SUCCESS);
-            dVO.setBalance(vo.getCashBalance());
-            dVO.setOpAccountUuid(msg.getSession().getAccountUuid());
-            dVO.setOutTradeNO(msg.getTradeNO());
-            dVO.setComment(msg.getComment());
-
-            dbf.getEntityManager().persist(dVO);
         } else if (msg.getCredit() != null) {
             vo.setCreditPoint(msg.getCredit());
         }
@@ -475,25 +353,11 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         BigDecimal total = msg.getTotal().setScale(2, BigDecimal.ROUND_HALF_UP);
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
 
-        int hash = accountUuid.hashCode();
-        if (hash < 0) {
-            hash = ~hash;
-        }
+        int hash = accountUuid.hashCode() < 0 ? ~accountUuid.hashCode() : accountUuid.hashCode();
         String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
-        DealDetailVO vo = new DealDetailVO();
-        vo.setUuid(Platform.getUuid());
-        vo.setOutTradeNO(outTradeNO);
-        vo.setState(DealState.FAILURE);
-        vo.setType(DealType.RECHARGE);
-        vo.setDealWay(DealWay.CASH_BILL);
-        vo.setIncome(total == null ? BigDecimal.ZERO : total);
-        vo.setExpend(BigDecimal.ZERO);
         AccountBalanceVO accountBalanceVO = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        vo.setBalance(accountBalanceVO.getCashBalance());
-        vo.setFinishTime(currentTimestamp);
-        vo.setAccountUuid(accountUuid);
-        vo.setOpAccountUuid(msg.getSession().getAccountUuid());
-        dbf.getEntityManager().persist(vo);
+        new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, total, BigDecimal.ZERO, currentTimestamp, DealType.RECHARGE, DealState.FAILURE, accountBalanceVO.getCashBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),null);
+
         AlipayClient alipayClient = new DefaultAlipayClient(BillingGlobalProperty.GATEWAYURL, BillingGlobalProperty.APP_ID, BillingGlobalProperty.MERCHANT_PRIVATE_KEY, "json", BillingGlobalProperty.CHARSET, BillingGlobalProperty.ALIPAY_PUBLIC_KEY, BillingGlobalProperty.SIGN_TYPE);
         AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();
         alipayRequest.setReturnUrl(BillingGlobalProperty.RETURN_URL);
@@ -669,8 +533,36 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
         if (msg instanceof APICreateAccountDiscountMsg) {
             validate((APICreateAccountDiscountMsg) msg);
+        }else if(msg instanceof  APIUpdateAccountDiscountMsg){
+            validate((APIUpdateAccountDiscountMsg) msg);
         }
         return msg;
+    }
+
+    private void validate(APIUpdateAccountDiscountMsg msg) {
+        if (msg.getSession().getType() == AccountType.Normal) {
+            throw new IllegalArgumentException("you are not the permit");
+        }
+
+        AccountDiscountVO accountDiscountVO = dbf.findByUuid(msg.getUuid(), AccountDiscountVO.class);
+        validateDiscount(msg.getSession().getType(), msg.getSession().getAccountUuid(), accountDiscountVO.getProductCategoryUuid(),msg.getDiscount());
+
+    }
+
+    private void validateDiscount(AccountType type,String accountUuid,String productCategoryUuid,int discount) {
+        if (type.equals(AccountType.Proxy)) {
+            AccountDiscountVO adVO = getAccountDiscountVO(accountUuid, productCategoryUuid);
+            if (adVO != null) {
+                if (discount <  adVO.getDiscount()) {
+                    throw new IllegalArgumentException("cannot give a discount large than self");
+                }
+            } else {
+                if (discount != 100) {
+                    throw new IllegalArgumentException("just can be set 100");
+                }
+            }
+
+        }
     }
 
     private void validate(APICreateAccountDiscountMsg msg) {
@@ -692,21 +584,14 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             throw new IllegalArgumentException("you can only set yourself customers");
         }
 
-        if (msg.getSession().getType().equals(AccountType.Proxy)) {
-            AccountDiscountVO accountDiscountVO = getAccountDiscountVO(msg.getSession().getAccountUuid(), productCategoryEO.getUuid());
-            if (accountDiscountVO != null) {
-                if (accountDiscountVO.getDiscount() > msg.getDiscount()) {
-                    throw new IllegalArgumentException("the discount must be less than yourself");
-                }
-            } else {
-                if (msg.getDiscount() != 100) {
-                    throw new IllegalArgumentException("yourself do not have the discount so your customer must set to 100");
-                }
-            }
-        }
+        validateDiscount(msg.getSession().getType(), msg.getSession().getAccountUuid(), productCategoryEO.getUuid(),msg.getDiscount());
 
         if (msg.getSession().getType().equals(AccountType.SystemAdmin)) {
-            if (validAccount(msg.getAccountUuid()) == AccountType.Normal) {
+            APIValidateAccountReply reply = validAccount(msg.getAccountUuid());
+            if (reply == null) {
+                throw new IllegalArgumentException(" the network must be loss");
+            }
+            if (reply.getType() == AccountType.Normal) {
                 throw new IllegalArgumentException("the account has proxy,proxy can set his customer discount");
             }
         }
@@ -741,21 +626,4 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         return false;
     }
 
-    private AccountType validAccount(String accountUuid) {
-        APIValidateAccountMsg aMsg = new APIValidateAccountMsg();
-        aMsg.setUuid(accountUuid);
-        InnerMessageHelper.setMD5(aMsg);
-        String gStr = RESTApiDecoder.dump(aMsg);
-        RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gStr, RestAPIResponse.class);
-        if (rsp.getState().equals(RestAPIState.Done.toString())) {
-            APIValidateAccountReply replay = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
-            if (!replay.isValidAccount()) {
-                throw new IllegalArgumentException("the account is not valid");
-            }
-            return replay.getType();
-        }
-
-        return null;
-
-    }
 }

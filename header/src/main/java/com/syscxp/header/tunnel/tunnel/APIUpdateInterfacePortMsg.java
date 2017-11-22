@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Create by DCY on 2017/9/28
  */
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUpdateInterfacePortMsg extends APIMessage {
     @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String uuid;
@@ -21,7 +21,7 @@ public class APIUpdateInterfacePortMsg extends APIMessage {
     private NetworkType networkType;
     @APIParam(required = false)
     private List<InnerVlanSegment> segments;
-    @APIParam
+    @APIParam(required = false)
     private boolean issue = false;
 
     public boolean isIssue() {

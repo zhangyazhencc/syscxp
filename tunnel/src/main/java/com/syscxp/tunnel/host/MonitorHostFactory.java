@@ -1,6 +1,7 @@
 package com.syscxp.tunnel.host;
 
 import com.syscxp.core.CoreGlobalProperty;
+import com.syscxp.core.Platform;
 import com.syscxp.core.ansible.AnsibleFacade;
 import com.syscxp.core.cloudbus.*;
 import com.syscxp.core.componentloader.PluginRegistry;
@@ -17,15 +18,14 @@ import com.syscxp.header.host.HostStatus;
 import com.syscxp.header.host.HostVO;
 import com.syscxp.header.host.HostVO_;
 import com.syscxp.header.managementnode.ManagementNodeReadyExtensionPoint;
+import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.message.NeedReplyMessage;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.host.*;
 import com.syscxp.tunnel.host.MonitorAgentCommands.*;
-import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
-import com.syscxp.utils.function.Function;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -37,7 +37,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
         ManagementNodeReadyExtensionPoint {
     private static final CLogger logger = Utils.getLogger(MonitorHostFactory.class);
 
-    public static final HostType hostType = new HostType(MonitorConstant.HOST_TYPE);
+    public static final HostType hostType = new HostType(MonitorHostConstant.HOST_TYPE);
     private List<MonitorHostConnectExtensionPoint> connectExtensions = new ArrayList<>();
 
     @Autowired
@@ -123,7 +123,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
             return;
         }
 
-        asf.deployModule(MonitorConstant.ANSIBLE_MODULE_PATH, MonitorConstant.ANSIBLE_PLAYBOOK_NAME);
+        asf.deployModule(MonitorHostConstant.ANSIBLE_MODULE_PATH, MonitorHostConstant.ANSIBLE_PLAYBOOK_NAME);
     }
 
     private void populateExtensions() {
@@ -139,7 +139,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
         deployAnsibleModule();
         populateExtensions();
 
-        restf.registerSyncHttpCallHandler(MonitorConstant.AGENT_RECONNECT_ME, ReconnectMeCmd.class,
+        restf.registerSyncHttpCallHandler(MonitorHostConstant.AGENT_RECONNECT_ME, ReconnectMeCmd.class,
                 cmd -> {
                     N.New(HostVO.class, cmd.hostUuid).info_("the monitor host[uuid:%s] asks the management server to " +
                             "reconnect it for %s", cmd.hostUuid, cmd.reason);
@@ -186,7 +186,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
             return;
         }
 
-        if (!asf.isModuleChanged(MonitorConstant.ANSIBLE_PLAYBOOK_NAME)) {
+        if (!asf.isModuleChanged(MonitorHostConstant.ANSIBLE_PLAYBOOK_NAME)) {
             return;
         }
 
@@ -205,7 +205,8 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
             ConnectHostMsg msg = new ConnectHostMsg();
             msg.setNewAdd(false);
             msg.setUuid(huuid);
-            bus.makeTargetServiceIdByResourceUuid(msg, MonitorConstant.SERVICE_ID, huuid);
+//            bus.makeTargetServiceIdByResourceUuid(msg, MonitorHostConstant.SERVICE_ID, huuid);
+            bus.makeLocalServiceId(msg, MonitorHostConstant.SERVICE_ID);
             msgs.add(msg);
         }
 
@@ -223,15 +224,77 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
         });
     }
 
+    private void handle(APICreateHostSwitchMonitorMsg msg) {
+        HostSwitchMonitorVO vo = new HostSwitchMonitorVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setHostUuid(msg.getHostUuid());
+        vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
+        vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
+        vo.setInterfaceName(msg.getInterfaceName());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateHostSwitchMonitorEvent event = new APICreateHostSwitchMonitorEvent(msg.getId());
+        event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+        bus.publish(event);
+    }
+
+    private void handle(APIUpdateHostSwitchMonitorMsg msg) {
+        HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
+
+        vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
+        vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
+        vo.setInterfaceName(msg.getInterfaceName());
+        vo = dbf.updateAndRefresh(vo);
+
+        APIUpdateHostSwitchMonitorEvent event = new APIUpdateHostSwitchMonitorEvent(msg.getId());
+        event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+        bus.publish(event);
+    }
+
+    private void handle(APIDeleteHostSwitchMonitorMsg msg) {
+
+        HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
+
+        dbf.remove(vo);
+
+        APIDeleteHostSwitchMonitorEvent event = new APIDeleteHostSwitchMonitorEvent(msg.getId());
+        event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+
+        bus.publish(event);
+    }
+
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
-        bus.dealWithUnknownMessage(msg);
+        if (msg instanceof APIMessage) {
+            handleApiMessage((APIMessage) msg);
+        } else {
+            handleLocalMessage(msg);
+        }
     }
 
 
-    @Override
+    private void handleLocalMessage(Message msg) {
+        bus.dealWithUnknownMessage(msg);
+    }
+
+    private void handleApiMessage(APIMessage msg) {
+        if (msg instanceof APICreateHostSwitchMonitorMsg) {
+            handle((APICreateHostSwitchMonitorMsg) msg);
+        } else if (msg instanceof APIUpdateHostSwitchMonitorMsg) {
+            handle((APIUpdateHostSwitchMonitorMsg) msg);
+        } else if (msg instanceof APIDeleteHostSwitchMonitorMsg) {
+            handle((APIDeleteHostSwitchMonitorMsg) msg);
+        }else {
+            bus.dealWithUnknownMessage(msg);
+        }
+    }
+
+
+        @Override
     public String getId() {
-        return bus.makeLocalServiceId(MonitorConstant.SERVICE_ID);
+        return bus.makeLocalServiceId(MonitorHostConstant.SERVICE_ID);
     }
 }

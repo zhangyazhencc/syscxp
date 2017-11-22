@@ -20,6 +20,7 @@ public class EndpointInventory {
     private String name;
     private String code;
     private EndpointType endpointType;
+    private String cloudType;
     private EndpointState state;
     private EndpointStatus status;
     private String description;
@@ -34,6 +35,7 @@ public class EndpointInventory {
         inv.setName(vo.getName());
         inv.setCode(vo.getCode());
         inv.setEndpointType(vo.getEndpointType());
+        inv.setCloudType(vo.getCloudType());
         inv.setState(vo.getState());
         inv.setStatus(vo.getStatus());
         inv.setDescription(vo.getDescription());
@@ -136,5 +138,13 @@ public class EndpointInventory {
 
     public void setStatus(EndpointStatus status) {
         this.status = status;
+    }
+
+    public String getCloudType() {
+        return cloudType;
+    }
+
+    public void setCloudType(String cloudType) {
+        this.cloudType = cloudType;
     }
 }

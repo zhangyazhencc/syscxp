@@ -10,8 +10,6 @@ import com.syscxp.header.tunnel.node.NodeVO;
 /**
  * Created by DCY on 2017-08-23
  */
-
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreateEndpointMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32,resourceType = NodeVO.class)

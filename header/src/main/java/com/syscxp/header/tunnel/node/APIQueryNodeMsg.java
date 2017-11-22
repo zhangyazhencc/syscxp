@@ -10,7 +10,6 @@ import com.syscxp.header.tunnel.TunnelConstant;
  * Created by DCY on 2017-08-21
  */
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"read"})
-
 @AutoQuery(replyClass = APIQueryNodeReply.class, inventoryClass = NodeInventory.class)
 public class APIQueryNodeMsg extends APIQueryMessage {
 }

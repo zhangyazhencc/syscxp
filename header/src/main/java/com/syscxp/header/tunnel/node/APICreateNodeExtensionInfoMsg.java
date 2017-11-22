@@ -11,7 +11,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
  * Created by wangwg on 2017/10/09.
  */
 
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"create"})
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreateNodeExtensionInfoMsg extends APIMessage {
 
     @APIParam(emptyString = false)

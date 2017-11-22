@@ -6,5 +6,6 @@ package com.syscxp.header.tunnel.tunnel;
 public enum TunnelStatus {
     Connecting,
     Connected,
-    Disconnected
+    Disconnected,
+    Warning
 }

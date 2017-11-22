@@ -22,8 +22,6 @@ public class APICreateInterfaceManualMsg extends APIMessage {
     private String switchPortUuid;
     @APIParam(emptyString = false, maxLength = 32, resourceType = EndpointVO.class)
     private String endpointUuid;
-    @APIParam(emptyString = false,maxLength = 32,resourceType = PortOfferingVO.class)
-    private String portOfferingUuid;
     @APIParam(validValues = {"TRUNK", "ACCESS", "QINQ"})
     private NetworkType networkType;
     @APIParam(required = false, maxLength = 255)
@@ -95,13 +93,5 @@ public class APICreateInterfaceManualMsg extends APIMessage {
 
     public void setNetworkType(NetworkType networkType) {
         this.networkType = networkType;
-    }
-
-    public String getPortOfferingUuid() {
-        return portOfferingUuid;
-    }
-
-    public void setPortOfferingUuid(String portOfferingUuid) {
-        this.portOfferingUuid = portOfferingUuid;
     }
 }

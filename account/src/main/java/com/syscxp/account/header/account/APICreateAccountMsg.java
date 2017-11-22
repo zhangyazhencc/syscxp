@@ -12,7 +12,7 @@ public class APICreateAccountMsg  extends APIMessage implements AccountMessage{
     private String name;
     @APIParam(maxLength = 128)
     private String password;
-    @APIParam(maxLength = 36)
+    @APIParam(maxLength = 36, required = false)
     private String email;
     @APIParam(maxLength = 32)
     private String phone;

@@ -9,7 +9,7 @@ import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.vpn.VpnConstant;
 
 @SuppressCredentialCheck
-@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY)
+@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"read"})
 public class APIDownloadCertificateMsg extends APIMessage {
     @APIParam(resourceType = VpnVO.class)
     private String sid;

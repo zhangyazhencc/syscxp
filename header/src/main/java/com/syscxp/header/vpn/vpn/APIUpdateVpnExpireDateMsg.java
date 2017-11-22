@@ -8,7 +8,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.vpn.VpnConstant;
 
-@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY, names = {"update"})
+@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"})
 public class APIUpdateVpnExpireDateMsg extends APIVpnMessage {
     @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String uuid;

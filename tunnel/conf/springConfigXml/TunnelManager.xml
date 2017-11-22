@@ -62,4 +62,11 @@
             <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
         </syscxp:plugin>
     </bean>
+
+
+    <bean id="TunnelStatusChecker" class="com.syscxp.tunnel.tunnel.TunnelStatusChecker">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.Component" />
+        </syscxp:plugin>
+    </bean>
 </beans>
