@@ -31,7 +31,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.account.header.ticket.APIUpdateTicketMsg</name>
+        <name>com.syscxp.account.header.ticket.APICloseTicketMsg</name>
     </message>
 
 </service>

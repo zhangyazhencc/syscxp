@@ -2,14 +2,14 @@ package com.syscxp.account.header.ticket;
 
 import com.syscxp.header.message.APIEvent;
 
-public class APIUpdateTicketEvent extends APIEvent {
+public class APICloseTicketEvent extends APIEvent {
     private TicketInventory inventory;
 
-    public APIUpdateTicketEvent(String apiId) {
+    public APICloseTicketEvent(String apiId) {
         super(apiId);
     }
 
-    public APIUpdateTicketEvent() {
+    public APICloseTicketEvent() {
         super(null);
     }
 

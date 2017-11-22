@@ -2,6 +2,7 @@ package com.syscxp.account.ticket;
 
 import com.syscxp.account.header.identity.SessionVO;
 import com.syscxp.account.header.ticket.*;
+import com.syscxp.header.identity.AccountType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.account.identity.IdentiyInterceptor;
@@ -55,61 +56,26 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
             handle((APICreateTicketMsg)msg);
         }else if(msg instanceof APIDeleteTicketMsg){
             handle((APIDeleteTicketMsg)msg);
-        }else if(msg instanceof APIUpdateTicketMsg){
-            handle((APIUpdateTicketMsg)msg);
+        }else if(msg instanceof APICloseTicketMsg){
+            handle((APICloseTicketMsg)msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
 
     }
 
-    private void handle(APIUpdateTicketMsg msg) {
+    private void handle(APICloseTicketMsg msg) {
 
         TicketVO vo = dbf.findByUuid(msg.getUuid(),TicketVO.class);
-        boolean isupdate = false;
-        if(msg.getContent() != null){
-            vo.setContent(msg.getContent());
-            isupdate = true;
-        }
-        if(msg.getEmail() != null){
-            vo.setEmail(msg.getEmail());
-            isupdate = true;
-        }
-        if(msg.getPhone() != null){
-            vo.setPhone(msg.getPhone());
-            isupdate = true;
-        }
-        if(msg.getStatus() != null){
-            vo.setStatus(msg.getStatus());
-            isupdate = true;
-        }
-        if(msg.getAdminUserUuid() != null){
-            vo.setAdminUserUuid(msg.getAdminUserUuid());
-            isupdate = true;
+        APICloseTicketEvent event = new APICloseTicketEvent(msg.getId());
+
+        if(msg.getSession().getAccountUuid().equals(vo.getAccountUuid())){
+            vo.setStatus(TicketStatus.resolved);
+            event.setInventory(TicketInventory.valueOf(vo));
+        }else{
+            event.setError(Platform.argerr("this ticket is not belong to this account"));
         }
 
-        if(msg.getTicketTypeCode() != null){
-            List<TicketTypeVO> list =  dbf.createQuery(TicketTypeVO.class).list();
-            boolean is = false;
-            for(TicketTypeVO tyvo : list){
-                if(tyvo.getCode().equals(msg.getTicketTypeCode())){
-                    is = true;
-                }
-            }
-            if(!is){
-                throw new ApiMessageInterceptionException(argerr("value[%s] of type is not exist",
-                        msg.getTicketTypeCode()));
-            }
-            vo.setTicketTypeCode(msg.getTicketTypeCode());
-            isupdate = true;
-        }
-        if(isupdate){
-           vo = dbf.updateAndRefresh(vo);
-        }
-
-        APIUpdateTicketEvent event = new APIUpdateTicketEvent(msg.getId());
-
-        event.setInventory(TicketInventory.valueOf(vo));
         bus.publish(event);
 
     }
