@@ -38,18 +38,15 @@ CREATE TABLE `AccountBalanceVO` (
 DROP TABLE IF EXISTS `AccountDiscountVO`;
 
 CREATE TABLE `AccountDiscountVO` (
-  `uuid` varchar(32) NOT NULL COMMENT '主键',
-  `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户id',
-  `productType` varchar(50) DEFAULT NULL COMMENT '产品类型',
-  `category` varchar(50) DEFAULT NULL COMMENT '产品小分类',
-  `discount` tinyint(3) unsigned DEFAULT 100 COMMENT '折扣',
-  `lastOpDate` timestamp NOT NULL  DEFAULT current_timestamp(),
-  `createDate` timestamp  ,
-  `categoryName` varchar(256) DEFAULT NULL,
-   `productTypeName` varchar(256) DEFAULT NULL,
+  `uuid` VARCHAR(32) NOT NULL COMMENT '主键',
+  `accountUuid` VARCHAR(32) DEFAULT NULL COMMENT '账户id',
+  `discount` TINYINT(3) UNSIGNED DEFAULT '100' COMMENT '折扣',
+  `lastOpDate` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createDate` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `productCategoryUuid` VARCHAR(32) DEFAULT NULL,
   PRIMARY KEY (`uuid`),
-  KEY `Uni_accountUuid_productType` (`accountUuid`,`productType`,`category`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  UNIQUE KEY `account_unique` (`accountUuid`,`productCategoryUuid`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
 /*Data for the table `AccountDiscountVO` */
 
