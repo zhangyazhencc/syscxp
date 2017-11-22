@@ -30,38 +30,21 @@ public class InterfaceQuotaOperator implements Quota.QuotaOperator {
 
     @Transactional(readOnly = true)
     private void check(APICreateInterfaceMsg msg, Map<String, Quota.QuotaPair> pairs) {
-        String currentAccountUuid = msg.getSession().getAccountUuid();
-        String ownerAccountUuid = msg.getAccountUuid();
+        long quotaNum = pairs.get(TunnelConstant.QUOTA_INTERFACE_NUM).getValue();
+        long currentUsed = getUsedInterfaceNum(msg.getAccountUuid());
 
-        checkQuota(currentAccountUuid, ownerAccountUuid, pairs);
+        new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_INTERFACE_NUM, currentUsed, quotaNum);
 
     }
 
     @Transactional(readOnly = true)
     private void check(APICreateInterfaceManualMsg msg, Map<String, Quota.QuotaPair> pairs) {
-        String currentAccountUuid = msg.getSession().getAccountUuid();
-        String ownerAccountUuid = msg.getAccountUuid();
-
-        checkQuota(currentAccountUuid, ownerAccountUuid, pairs);
-    }
-
-    private void checkQuota(String currentAccountUuid, String ownerAccountUuid, Map<String, Quota.QuotaPair> pairs) {
-
         long quotaNum = pairs.get(TunnelConstant.QUOTA_INTERFACE_NUM).getValue();
-        long askedNum = 1;
+        long currentUsed = getUsedInterfaceNum(msg.getAccountUuid());
 
-        QuotaUtil.QuotaCompareInfo quotaCompareInfo;
-        {
-            quotaCompareInfo = new QuotaUtil.QuotaCompareInfo();
-            quotaCompareInfo.currentAccountUuid = currentAccountUuid;
-            quotaCompareInfo.ownerAccountUuid = ownerAccountUuid;
-            quotaCompareInfo.quotaName = TunnelConstant.QUOTA_INTERFACE_NUM;
-            quotaCompareInfo.quotaValue = quotaNum;
-            quotaCompareInfo.currentUsed = getUsedInterfaceNum(ownerAccountUuid);
-            quotaCompareInfo.request = askedNum;
-            new QuotaUtil().CheckQuota(quotaCompareInfo);
-        }
+        new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_INTERFACE_NUM, currentUsed, quotaNum);
     }
+
 
     @Transactional(readOnly = true)
     public InterfaceQuota getUsedInterface(String accountUUid) {
