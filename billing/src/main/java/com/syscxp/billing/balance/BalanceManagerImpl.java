@@ -249,8 +249,13 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         String gstr = RESTApiDecoder.dump(aMsg);
         RestAPIResponse rsp = restf.syncJsonPost(IdentityGlobalProperty.ACCOUNT_SERVER_URL, gstr, RestAPIResponse.class);
         if (rsp.getState().equals(RestAPIState.Done.toString())) {
-            APIValidateAccountReply reply = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
-            return reply;
+            try {
+                APIValidateAccountReply reply = (APIValidateAccountReply) RESTApiDecoder.loads(rsp.getResult());
+                return reply;
+            } catch (Exception e){
+                logger.error(e.getMessage());
+            }
+
         }
         return null;
     }
