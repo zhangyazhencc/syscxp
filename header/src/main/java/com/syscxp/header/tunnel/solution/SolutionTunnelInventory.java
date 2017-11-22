@@ -22,7 +22,7 @@ public class SolutionTunnelInventory {
 
     private String endpointUuidA;
     private String endpointUuidZ;
-    private Long bandwidth;
+    private long bandwidth;
 
     public static SolutionTunnelInventory valueOf(SolutionTunnelVO vo) {
         SolutionTunnelInventory inv = new SolutionTunnelInventory();
@@ -139,11 +139,11 @@ public class SolutionTunnelInventory {
         this.endpointUuidZ = endpointUuidZ;
     }
 
-    public Long getBandwidth() {
+    public long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Long bandwidth) {
+    public void setBandwidth(long bandwidth) {
         this.bandwidth = bandwidth;
     }
 }

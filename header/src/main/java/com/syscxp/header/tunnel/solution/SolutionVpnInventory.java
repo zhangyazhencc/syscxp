@@ -22,7 +22,7 @@ public class SolutionVpnInventory {
 
     private String zoneUuid;
     private String endpointUuid;
-    private Long bandwidth;
+    private long bandwidth;
 
     public static SolutionVpnInventory valueOf(SolutionVpnVO vo) {
         SolutionVpnInventory inv = new SolutionVpnInventory();

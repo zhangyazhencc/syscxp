@@ -10,8 +10,8 @@ import javax.persistence.metamodel.StaticMetamodel;
 @StaticMetamodel(SolutionVpnVO.class)
 public class SolutionVpnVO_ extends SolutionBaseVO_ {
 
-    public static volatile SingularAttribute<SolutionVpnVO, String> zoneName;
-    public static volatile SingularAttribute<SolutionVpnVO, String> endpointName;
+    public static volatile SingularAttribute<SolutionVpnVO, String> zoneUuid;
+    public static volatile SingularAttribute<SolutionVpnVO, String> endpointUuid;
     public static volatile SingularAttribute<SolutionVpnVO, Long> bandwidth;
 
 }
