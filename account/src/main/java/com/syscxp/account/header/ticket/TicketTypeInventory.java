@@ -10,7 +10,7 @@ import java.util.List;
 @Inventory(mappingVOClass = TicketTypeVO.class)
 public class TicketTypeInventory {
 
-    private String Uuid;
+    private String uuid;
     private String name;
     private String category;
 
@@ -45,11 +45,11 @@ public class TicketTypeInventory {
     }
 
     public String getUuid() {
-        return Uuid;
+        return uuid;
     }
 
     public void setUuid(String uuid) {
-        Uuid = uuid;
+        this.uuid = uuid;
     }
 
     public String getName() {
