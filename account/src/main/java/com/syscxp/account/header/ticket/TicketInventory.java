@@ -13,9 +13,9 @@ public class TicketInventory {
     private String uuid;
     private String accountUuid;
     private String userUuid;
-    private String AdminUserUuid;
+    private String adminUserUuid;
 
-    private String ticketTypeCode;
+    private String ticketTypeUuid;
     private String phone;
     private String email;
 
@@ -27,6 +27,8 @@ public class TicketInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
+    private TicketTypeVO ticketType;
+
 
     public static TicketInventory valueOf(TicketVO vo) {
         TicketInventory inv = new TicketInventory();
@@ -36,8 +38,9 @@ public class TicketInventory {
         inv.setAdminUserUuid(vo.getAdminUserUuid());
         inv.setContentExtra(vo.getContentExtra());
         inv.setTicketFrom(vo.getTicketFrom().toString());
-        inv.setTicketTypeCode(vo.getTicketTypeCode());
         inv.setContent(vo.getContent());
+        inv.setTicketTypeUuid(vo.getTicketTypeUuid());
+        inv.setTicketType(vo.getTicketType());
         inv.setStatus(vo.getStatus().toString());
         inv.setPhone(vo.getPhone());
         inv.setEmail(vo.getEmail());
@@ -78,12 +81,20 @@ public class TicketInventory {
         this.userUuid = userUuid;
     }
 
-    public String getTicketTypeCode() {
-        return ticketTypeCode;
+    public String getTicketTypeUuid() {
+        return ticketTypeUuid;
     }
 
-    public void setTicketTypeCode(String ticketTypeCode) {
-        this.ticketTypeCode = ticketTypeCode;
+    public void setTicketTypeUuid(String ticketTypeUuid) {
+        this.ticketTypeUuid = ticketTypeUuid;
+    }
+
+    public TicketTypeVO getTicketType() {
+        return ticketType;
+    }
+
+    public void setTicketType(TicketTypeVO ticketType) {
+        this.ticketType = ticketType;
     }
 
     public String getContentExtra() {
@@ -135,11 +146,11 @@ public class TicketInventory {
     }
 
     public String getAdminUserUuid() {
-        return AdminUserUuid;
+        return adminUserUuid;
     }
 
     public void setAdminUserUuid(String adminUserUuid) {
-        AdminUserUuid = adminUserUuid;
+        this.adminUserUuid = adminUserUuid;
     }
 
     public String getPhone() {

@@ -12,33 +12,33 @@ import javax.persistence.Table;
 public class SolutionTunnelVO extends SolutionBaseVO{
 
     @Column
-    private String endpointNameA;
+    private String endpointUuidA;
     @Column
-    private String endpointNameZ;
+    private String endpointUuidZ;
     @Column
-    private Long bandwidth;
+    private long bandwidth;
 
-    public String getEndpointNameA() {
-        return endpointNameA;
+    public String getEndpointUuidA() {
+        return endpointUuidA;
     }
 
-    public void setEndpointNameA(String endpointNameA) {
-        this.endpointNameA = endpointNameA;
+    public void setEndpointUuidA(String endpointUuidA) {
+        this.endpointUuidA = endpointUuidA;
     }
 
-    public String getEndpointNameZ() {
-        return endpointNameZ;
+    public String getEndpointUuidZ() {
+        return endpointUuidZ;
     }
 
-    public void setEndpointNameZ(String endpointNameZ) {
-        this.endpointNameZ = endpointNameZ;
+    public void setEndpointUuidZ(String endpointUuidZ) {
+        this.endpointUuidZ = endpointUuidZ;
     }
 
-    public Long getBandwidth() {
+    public long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Long bandwidth) {
+    public void setBandwidth(long bandwidth) {
         this.bandwidth = bandwidth;
     }
 }

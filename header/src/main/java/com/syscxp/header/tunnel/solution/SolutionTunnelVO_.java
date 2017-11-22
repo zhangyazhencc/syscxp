@@ -10,8 +10,8 @@ import javax.persistence.metamodel.StaticMetamodel;
 @StaticMetamodel(SolutionTunnelVO.class)
 public class SolutionTunnelVO_ extends SolutionBaseVO_ {
 
-    public static volatile SingularAttribute<SolutionTunnelVO, String> endpointNameA;
-    public static volatile SingularAttribute<SolutionTunnelVO, String> endpointNameZ;
+    public static volatile SingularAttribute<SolutionTunnelVO, String> endpointUuidA;
+    public static volatile SingularAttribute<SolutionTunnelVO, String> endpointUuidZ;
     public static volatile SingularAttribute<SolutionTunnelVO, Long> bandwidth;
 
 }

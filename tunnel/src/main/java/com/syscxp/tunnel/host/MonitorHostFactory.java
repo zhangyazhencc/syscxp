@@ -205,7 +205,8 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
             ConnectHostMsg msg = new ConnectHostMsg();
             msg.setNewAdd(false);
             msg.setUuid(huuid);
-            bus.makeTargetServiceIdByResourceUuid(msg, MonitorHostConstant.SERVICE_ID, huuid);
+//            bus.makeTargetServiceIdByResourceUuid(msg, MonitorHostConstant.SERVICE_ID, huuid);
+            bus.makeLocalServiceId(msg, MonitorHostConstant.SERVICE_ID);
             msgs.add(msg);
         }
 

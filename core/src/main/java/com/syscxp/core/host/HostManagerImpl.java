@@ -247,7 +247,6 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
                 ConnectHostMsg connectMsg = new ConnectHostMsg(vo.getUuid());
                 connectMsg.setNewAdd(true);
                 connectMsg.setStartPingTaskOnFailure(false);
-//                bus.makeTargetServiceIdByResourceUuid(connectMsg, HostConstant.SERVICE_ID, hvo.getUuid());
                 bus.makeLocalServiceId(connectMsg, HostConstant.SERVICE_ID);
                 bus.send(connectMsg, new CloudBusCallBack(trigger) {
                     @Override
@@ -459,11 +458,11 @@ public class HostManagerImpl extends AbstractService implements HostManager, Man
         String serviceId = bus.makeLocalServiceId(HostConstant.SERVICE_ID);
         final List<ConnectHostMsg> msgs = new ArrayList<>(hostsToLoad.size());
         for (String uuid : hostsToLoad) {
-            ConnectHostMsg connectMsg = new ConnectHostMsg(uuid);
-            connectMsg.setNewAdd(false);
-            connectMsg.setServiceId(serviceId);
-            connectMsg.setStartPingTaskOnFailure(true);
-            msgs.add(connectMsg);
+            ConnectHostMsg msg = new ConnectHostMsg(uuid);
+            msg.setNewAdd(false);
+            msg.setServiceId(serviceId);
+            msg.setStartPingTaskOnFailure(true);
+            msgs.add(msg);
         }
 
         bus.send(msgs, HostGlobalProperty.HOST_LOAD_PARALLELISM_DEGREE,

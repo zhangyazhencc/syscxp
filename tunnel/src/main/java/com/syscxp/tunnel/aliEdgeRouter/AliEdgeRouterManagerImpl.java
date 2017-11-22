@@ -221,8 +221,6 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         dbf.persistAndRefresh(vo);
 
-
-
         APICreateAliEdgeRouterConfigEvent evt = new APICreateAliEdgeRouterConfigEvent(msg.getId());
         evt.setInventory(AliEdgeRouterConfigInventory.valueOf(vo));
         bus.publish(evt);
@@ -297,23 +295,17 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         String AliAccessKeyId = null;
         String AliAccessKeySecret = null;
-        Boolean flag = true;
-
+        boolean flag = true;
 
         if(msg.getAliAccessKeyID() != null && msg.getAliAccessKeySecret() != null){
             AliAccessKeyId = msg.getAliAccessKeyID();
             AliAccessKeySecret = msg.getAliAccessKeySecret();
         }else{
-            SimpleQuery<AliUserVO> q = dbf.createQuery(AliUserVO.class);
-            q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ, vo.getAliAccountUuid());
-            q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ, vo.getAccountUuid());
-            AliUserVO user = q.find();
-
+            AliUserVO user = findAliUser(vo);
             if(user != null){
                 AliAccessKeyId = user.getAliAccessKeyID();
                 AliAccessKeySecret = user.getAliAccessKeySecret();
             }
-
         }
 
         // 创建DefaultAcsClient实例并初始化
@@ -334,7 +326,6 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         request.setFilters(list);
 
-
         DescribeVirtualBorderRoutersResponse response ;
         try{
             response = client.getAcsResponse(request);
@@ -351,7 +342,6 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
                 routerInventory.setAliRegionId(vo.getAliRegionId());
                 routerInventory.setPhysicalLineUuid(vo.getPhysicalLineUuid());
 
-
                 inventory.setAccessPoint(virtualBorderRouterType.getAccessPointId());
                 inventory.setStatus(virtualBorderRouterType.getStatus());
                 inventory.setPhysicalLineOwerUuid(virtualBorderRouterType.getPhysicalConnectionOwnerUid());
@@ -359,9 +349,6 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
                 inventory.setPeerGatewayIp(virtualBorderRouterType.getPeerGatewayIp());
                 inventory.setPeeringSubnetMask(virtualBorderRouterType.getPeeringSubnetMask());
             }
-
-
-
         }catch (ClientException e){
             e.printStackTrace();
             if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")||e.getErrCode().equals("IncompleteSignature")){
@@ -370,7 +357,6 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             }else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
-
         }
 
         APIGetAliEdgeRouterReply reply = new APIGetAliEdgeRouterReply();
@@ -382,8 +368,6 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             reply.setAliIdentityFailure(true);
         }
         bus.reply(msg,reply);
-
-
     }
 
     private void DeleteAliUser(String aliAccessKeyId, String aliAccessKeySecret) {
@@ -405,14 +389,13 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     private void handle(APIDeleteAliEdgeRouterMsg msg){
         AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
 
-        Boolean flag = true;
+        boolean flag = true;
         String RegionId = vo.getAliRegionId();
         String AliAccessKeyId = null;
         String AliAccessKeySecret = null;
 
         if(vo.isCreateFlag()){
             if(msg.getAliAccessKeyID() == null && msg.getAliAccessKeySecret() == null){
-
                 AliUserVO user = findAliUser(vo);
                 if(user != null){
                     AliAccessKeyId = user.getAliAccessKeyID();
@@ -422,12 +405,10 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
                 AliAccessKeyId = msg.getAliAccessKeyID();
                 AliAccessKeySecret = msg.getAliAccessKeySecret();
             }
-
         }else{
             AliAccessKeyId = AliUserGlobalProperty.ALI_KEY;
             AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
         }
-
 
         // 创建DefaultAcsClient实例并初始化
         DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);
@@ -442,7 +423,6 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         try{
             response = client.getAcsResponse(request);
             dbf.remove(vo);
-
         }catch (ClientException e){
             e.printStackTrace();
             if(e.getErrCode().equals("InvalidAccessKeyId.NotFound")||e.getErrCode().equals("IncompleteSignature")){
@@ -492,6 +472,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             q.add(AliUserVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
             q.add(AliUserVO_.aliAccountUuid, SimpleQuery.Op.EQ, vo.getAliAccountUuid());
             AliUserVO user = q.find();
+//            AliUserVO user = findAliUser(vo);
 
             if (user != null) {
                 AliAccessKeyId = user.getAliAccessKeyID();
@@ -499,9 +480,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             }
         }
 
-
         String RegionId = vo.getAliRegionId();
-
 
         // 创建DefaultAcsClient实例并初始化
         DefaultProfile profile = DefaultProfile.getProfile(RegionId, AliAccessKeyId, AliAccessKeySecret);
@@ -520,7 +499,6 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         try{
             response = client.getAcsResponse(request);
             logger.info(response.toString());
-
 
             // 创建API请求并设置参数
             DescribeVirtualBorderRoutersRequest requestGet = new DescribeVirtualBorderRoutersRequest();
@@ -547,12 +525,10 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
                 inventory.setPeeringSubnetMask(virtualBorderRouterType.getPeeringSubnetMask());
             }
 
-
             if (update){
                 vo.setCreateFlag(true);
                 vo = dbf.updateAndRefresh(vo);
             }
-
 
         }catch (ClientException e){
             e.printStackTrace();
@@ -563,8 +539,6 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             }else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
-
-
         }
 
         if(flag){
@@ -592,7 +566,6 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         String RegionId = msg.getAliRegionId();
         String AliAccessKeyId = AliUserGlobalProperty.ALI_KEY;
         String AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
-
 
         // 创建DefaultAcsClient实例并初始化
         DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);

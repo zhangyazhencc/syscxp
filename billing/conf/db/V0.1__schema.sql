@@ -38,18 +38,15 @@ CREATE TABLE `AccountBalanceVO` (
 DROP TABLE IF EXISTS `AccountDiscountVO`;
 
 CREATE TABLE `AccountDiscountVO` (
-  `uuid` varchar(32) NOT NULL COMMENT '主键',
-  `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户id',
-  `productType` varchar(50) DEFAULT NULL COMMENT '产品类型',
-  `category` varchar(50) DEFAULT NULL COMMENT '产品小分类',
-  `discount` tinyint(3) unsigned DEFAULT 100 COMMENT '折扣',
-  `lastOpDate` timestamp NOT NULL  DEFAULT current_timestamp(),
-  `createDate` timestamp  ,
-  `categoryName` varchar(256) DEFAULT NULL,
-   `productTypeName` varchar(256) DEFAULT NULL,
+  `uuid` VARCHAR(32) NOT NULL COMMENT '主键',
+  `accountUuid` VARCHAR(32) DEFAULT NULL COMMENT '账户id',
+  `discount` TINYINT(3) UNSIGNED DEFAULT '100' COMMENT '折扣',
+  `lastOpDate` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createDate` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `productCategoryUuid` VARCHAR(32) DEFAULT NULL,
   PRIMARY KEY (`uuid`),
-  KEY `Uni_accountUuid_productType` (`accountUuid`,`productType`,`category`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+  UNIQUE KEY `account_unique` (`accountUuid`,`productCategoryUuid`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
 /*Data for the table `AccountDiscountVO` */
 
@@ -96,8 +93,7 @@ CREATE TABLE `DealDetailVO` (
   `opAccountUuid` varchar(32) DEFAULT NULL COMMENT '操作人',
    `comment` varchar(2000) DEFAULT NULL,
   PRIMARY KEY (`uuid`),
-  UNIQUE KEY `NewIndex1` (`outTradeNO`),
-  UNIQUE KEY `NewIndex2` (`tradeNO`)
+  UNIQUE KEY `NewIndex1` (`outTradeNO`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `DealDetailVO` */
@@ -198,6 +194,7 @@ CREATE TABLE `OrderVO` (
   `productChargeModel` varchar(50) DEFAULT NULL COMMENT '计费方式--按月，按年',
   `duration` int(10) unsigned NOT NULL DEFAULT 0,
   `productStatus` tinyint(1) unsigned DEFAULT 1 COMMENT '产品是否开通',
+  `callBackData` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -505,7 +502,37 @@ CREATE TABLE `SLALogVO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `ProductCategoryVO`;
+CREATE TABLE `ProductCategoryVO` (
+  `uuid` VARCHAR(32) NOT NULL COMMENT 'uuid',
+  `code` VARCHAR(255) NOT NULL,
+  `name` VARCHAR(255) NOT NULL,
+  `productTypeCode` VARCHAR(255) NOT NULL,
+  `productTypeName` VARCHAR(255) NOT NULL,
+  `status` VARCHAR(255) NOT NULL,
+  `lastOpDate` TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'last operation date',
+  `createDate` TIMESTAMP NOT NULL ,
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `uuid` (`code`,`productTypeCode`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
+
+DROP TABLE IF EXISTS `ProductPriceUnitVO`;
+CREATE TABLE `ProductPriceUnitVO` (
+  `uuid` VARCHAR(32) NOT NULL,
+  `productCategoryUuid` VARCHAR(32) DEFAULT NULL,
+  `areaCode` VARCHAR(50) DEFAULT NULL,
+  `areaName` VARCHAR(125) DEFAULT NULL,
+  `lineCode` VARCHAR(50) DEFAULT NULL,
+  `lineName` VARCHAR(125) DEFAULT NULL,
+  `configCode` VARCHAR(50) DEFAULT NULL,
+  `configName` VARCHAR(125) DEFAULT NULL,
+  `unitPrice` INT(10) DEFAULT NULL,
+  `lastOpDate` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `unique_1` (`productCategoryUuid`,`areaCode`,`lineCode`,`configCode`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
 
 

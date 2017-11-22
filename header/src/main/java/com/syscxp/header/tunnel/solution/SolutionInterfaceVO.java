@@ -10,23 +10,23 @@ import javax.persistence.*;
 public class SolutionInterfaceVO extends SolutionBaseVO{
 
     @Column
-    private String endpointName;
+    private String endpointUuid;
     @Column
-    private String portOfferingName;
+    private String portOfferingUuid;
 
-    public String getEndpointName() {
-        return endpointName;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setEndpointName(String endpointName) {
-        this.endpointName = endpointName;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 
-    public String getPortOfferingName() {
-        return portOfferingName;
+    public String getPortOfferingUuid() {
+        return portOfferingUuid;
     }
 
-    public void setPortOfferingName(String portOfferingName) {
-        this.portOfferingName = portOfferingName;
+    public void setPortOfferingUuid(String portOfferingUuid) {
+        this.portOfferingUuid = portOfferingUuid;
     }
 }

@@ -46,6 +46,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class OrderManagerImpl extends AbstractService implements ApiMessageInterceptor {
 
@@ -57,6 +58,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     private DatabaseFacade dbf;
     @Autowired
     private ErrorFacade errf;
+
+    private  AtomicInteger atomicInteger = new AtomicInteger();
 
     public OrderManagerImpl() {
     }
@@ -131,10 +134,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     }
 
     @Transactional(propagation = Propagation.REQUIRED)
-    private void payMethod(String accountUuid, String opAccountUuid, OrderVO orderVo, AccountBalanceVO abvo, BigDecimal total, Timestamp currentTimeStamp,int i) {
+    private void payMethod(String accountUuid, String opAccountUuid, OrderVO orderVo, AccountBalanceVO abvo, BigDecimal total, Timestamp currentTimeStamp) {
 
         int hash = accountUuid.hashCode() < 0 ? ~accountUuid.hashCode() : accountUuid.hashCode();
-        String outTradeNO = currentTimeStamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash))+i;
+        String outTradeNO = currentTimeStamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash))+atomicInteger.getAndIncrement();
         if (abvo.getPresentBalance().compareTo(BigDecimal.ZERO) > 0) {
             if (abvo.getPresentBalance().compareTo(total) > 0) {
                 BigDecimal presentNow = abvo.getPresentBalance().subtract(total);
@@ -189,7 +192,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         if (discountPrice.compareTo(mayPayTotal) > 0) {
             throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
         }
-        payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, discountPrice, currentTimestamp,0);
+        payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, discountPrice, currentTimestamp);
         orderVo.setType(OrderType.RENEW);
         orderVo.setOriginalPrice(discountPrice);
         orderVo.setPrice(discountPrice);
@@ -358,7 +361,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setType(OrderType.UPGRADE);
             orderVo.setOriginalPrice(needPayOriginMoney.subtract(remainMoney));
             orderVo.setPrice(subMoney);
-            payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, subMoney, currentTimestamp,0);
+            payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, subMoney, currentTimestamp);
 
         } else { //downgrade
             BigDecimal valuePayCash = getValueblePayCash(msg.getAccountUuid(), msg.getProductUuid());
@@ -590,7 +593,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         List<OrderInventory> inventories = new ArrayList<>();
-        int i = 0;
+
         for (ProductInfoForOrder msg : apiCreateBuyOrderMsg.getProducts()) {
 
             OrderTempProp orderTempProp = calculatePrice(msg.getUnits(), msg.getAccountUuid());
@@ -616,7 +619,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             if (msg.getProductType() == ProductType.TUNNEL) {
                 orderVo.setProductStatus(0);
             }
-            payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, discountPrice, currentTimestamp,i++);
+            payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, discountPrice, currentTimestamp);
             LocalDateTime expiredTime = LocalDateTime.now().plusMonths(duration.intValue());
             orderVo.setProductEffectTimeStart(currentTimestamp);
             orderVo.setProductEffectTimeEnd(Timestamp.valueOf(expiredTime));

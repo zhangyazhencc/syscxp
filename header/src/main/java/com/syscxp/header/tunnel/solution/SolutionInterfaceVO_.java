@@ -10,7 +10,7 @@ import javax.persistence.metamodel.StaticMetamodel;
 @StaticMetamodel(SolutionInterfaceVO.class)
 public class SolutionInterfaceVO_ extends SolutionBaseVO_ {
 
-    public static volatile SingularAttribute<SolutionInterfaceVO, String> endpointName;
-    public static volatile SingularAttribute<SolutionInterfaceVO, String> portOfferingName;
+    public static volatile SingularAttribute<SolutionInterfaceVO, String> endpointUuid;
+    public static volatile SingularAttribute<SolutionInterfaceVO, String> portOfferingUuid;
 
 }

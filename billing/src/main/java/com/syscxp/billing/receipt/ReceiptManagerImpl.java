@@ -40,11 +40,7 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
     @Autowired
     private DatabaseFacade dbf;
     @Autowired
-    private DbEntityLister dl;
-    @Autowired
     private ErrorFacade errf;
-    @Autowired
-    private RESTFacade restf;
 
     @Override
     @MessageSafe
