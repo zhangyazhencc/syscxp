@@ -505,7 +505,37 @@ CREATE TABLE `SLALogVO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
+DROP TABLE IF EXISTS `ProductCategoryVO`;
+CREATE TABLE `ProductCategoryVO` (
+  `uuid` VARCHAR(32) NOT NULL COMMENT 'uuid',
+  `code` VARCHAR(255) NOT NULL,
+  `name` VARCHAR(255) NOT NULL,
+  `productTypeCode` VARCHAR(255) NOT NULL,
+  `productTypeName` VARCHAR(255) NOT NULL,
+  `status` VARCHAR(255) NOT NULL,
+  `lastOpDate` TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'last operation date',
+  `createDate` TIMESTAMP NOT NULL ,
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `uuid` (`code`,`productTypeCode`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
+
+DROP TABLE IF EXISTS `ProductPriceUnitVO`;
+CREATE TABLE `ProductPriceUnitVO` (
+  `uuid` VARCHAR(32) NOT NULL,
+  `productCategoryUuid` VARCHAR(32) DEFAULT NULL,
+  `areaCode` VARCHAR(50) DEFAULT NULL,
+  `areaName` VARCHAR(125) DEFAULT NULL,
+  `lineCode` VARCHAR(50) DEFAULT NULL,
+  `lineName` VARCHAR(125) DEFAULT NULL,
+  `configCode` VARCHAR(50) DEFAULT NULL,
+  `configName` VARCHAR(125) DEFAULT NULL,
+  `unitPrice` INT(10) DEFAULT NULL,
+  `lastOpDate` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `createDate` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+  PRIMARY KEY (`uuid`),
+  UNIQUE KEY `unique_1` (`productCategoryUuid`,`areaCode`,`lineCode`,`configCode`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
 
 
