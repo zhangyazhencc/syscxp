@@ -46,6 +46,7 @@ public class TunnelRESTCaller {
         RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
         APIReply reply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
         if (!reply.isSuccess()){
+            logger.debug(String.format("call billing failed: %s", reply.getError()));
             throw new ApiMessageInterceptionException(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, reply.getError()));
         }else{
             return reply.castReply();

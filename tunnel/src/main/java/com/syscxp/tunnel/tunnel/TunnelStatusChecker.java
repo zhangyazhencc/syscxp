@@ -18,7 +18,6 @@ import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -84,7 +83,6 @@ public class TunnelStatusChecker implements Component {
                     return;
                 for (TunnelVO vo : tunnelVOs) {
                     Long endTime = Instant.now().getEpochSecond();
-//                    Long endTime = 1511251350L;
                     Long startTime = endTime - 5 * 30;
 
                     String condition = getOpenTSDBQueryCondition(vo.getUuid(), TUNNEL_PACKETS_LOST, startTime, endTime);
@@ -146,11 +144,9 @@ public class TunnelStatusChecker implements Component {
 
     }
 
-
     @Override
     public boolean start() {
         startCleanExpiredProduct();
-
         return true;
     }
 
