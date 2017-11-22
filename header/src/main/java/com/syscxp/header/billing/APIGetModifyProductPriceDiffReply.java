@@ -7,9 +7,9 @@ import java.math.RoundingMode;
 
 public class APIGetModifyProductPriceDiffReply extends APIReply {
 
-    private BigDecimal remainMoney ;
-    private BigDecimal needPayMoney;
-    private BigDecimal needPayOriginMoney ;
+    private BigDecimal remainMoney ;//产品还剩的金额
+    private BigDecimal needPayMoney;//打折后的
+    private BigDecimal needPayOriginMoney ;//原价
     private BigDecimal subMoney ;
 
     public BigDecimal getRemainMoney() {

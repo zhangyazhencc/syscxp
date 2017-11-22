@@ -2,6 +2,8 @@ package com.syscxp.account.ticket;
 
 import com.syscxp.account.header.identity.SessionVO;
 import com.syscxp.account.header.ticket.*;
+import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.header.identity.AccountType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,7 +84,11 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
 
     private void handle(APIDeleteTicketMsg msg) {
 
+        UpdateQuery.New(TicketRecordVO.class).condAnd(TicketRecordVO_.ticketUuid,
+                SimpleQuery.Op.EQ,msg.getUuid()).delete();
+
         dbf.removeByPrimaryKey(msg.getUuid(), TicketVO.class);
+
         APIDeleteTicketEvent evt = new APIDeleteTicketEvent(msg.getId());
 
         bus.publish(evt);
@@ -134,7 +140,7 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
             }
 
         }
-        vo.setTicketTypeCode(msg.getTicketTypeCode());
+        vo.setTicketTypeUuid(msg.getTicketTypeUuid());
 
         if(msg.getContentExtra() != null){
             vo.setContentExtra(msg.getContentExtra());
@@ -184,13 +190,13 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
 
         boolean is = false;
         for(TicketTypeVO vo : list){
-            if(vo.getCode().equals(msg.getTicketTypeCode())){
+            if(vo.getUuid().equals(msg.getTicketTypeUuid())){
                 is = true;
             }
         }
         if(!is){
             throw new ApiMessageInterceptionException(argerr("value[%s] of type is not exist",
-                    msg.getTicketTypeCode()));
+                    msg.getTicketTypeUuid()));
         }
 
     }

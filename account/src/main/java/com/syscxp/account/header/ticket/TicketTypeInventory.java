@@ -10,8 +10,7 @@ import java.util.List;
 @Inventory(mappingVOClass = TicketTypeVO.class)
 public class TicketTypeInventory {
 
-    private long id;
-    private String code;
+    private String uuid;
     private String name;
     private String category;
 
@@ -21,9 +20,8 @@ public class TicketTypeInventory {
 
     public static TicketTypeInventory valueOf(TicketTypeVO vo) {
         TicketTypeInventory inv = new TicketTypeInventory();
-        inv.setId(vo.getId());
+        inv.setUuid(vo.getUuid());
         inv.setName(vo.getName());
-        inv.setCode(vo.getCode());
         inv.setCategory(vo.getCategory());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -46,20 +44,12 @@ public class TicketTypeInventory {
         this.category = category;
     }
 
-    public long getId() {
-        return id;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String code) {
-        this.code = code;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getName() {

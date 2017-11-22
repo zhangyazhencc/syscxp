@@ -119,23 +119,6 @@ public class MonitorHost extends HostBase implements Host {
                             @Override
                             public void fail(ErrorCode err) {
                                 trigger.fail(err);
-//                                if (isSshPortOpen()) {
-//                                    logger.debug(String.format("ssh port of host[uuid:%s, ip:%s] is open, ping success",
-//                                            self.getUuid(), self.getHostIp()));
-//                                    afterDone.add(() -> {
-//                                        String info = String.format("ssh port of host[uuid:%s, ip:%s] is open, but " +
-//                                                        "monitoragent dead, it will issue a reconnect soon",
-//                                                self.getUuid(), self.getHostIp());
-//                                        logger.warn(info);
-//                                        ReconnectHostMsg rmsg = new ReconnectHostMsg();
-//                                        rmsg.setHostUuid(self.getUuid());
-//                                        bus.makeTargetServiceIdByResourceUuid(rmsg, MonitorHostConstant.SERVICE_ID, self.getUuid());
-//                                        bus.send(rmsg);
-//                                    });
-//                                    trigger.next();
-//                                } else {
-//                                    trigger.fail(err);
-//                                }
                             }
 
                             @Override
@@ -150,7 +133,6 @@ public class MonitorHost extends HostBase implements Host {
                                             logger.warn(info);
                                             ReconnectHostMsg rmsg = new ReconnectHostMsg();
                                             rmsg.setHostUuid(self.getUuid());
-//                                            bus.makeTargetServiceIdByResourceUuid(rmsg, MonitorHostConstant.SERVICE_ID, self.getUuid());
                                             bus.makeLocalServiceId(rmsg, MonitorHostConstant.SERVICE_ID);
                                             bus.send(rmsg);
                                         });
