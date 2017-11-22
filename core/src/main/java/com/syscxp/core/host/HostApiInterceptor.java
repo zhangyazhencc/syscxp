@@ -1,5 +1,7 @@
 package com.syscxp.core.host;
 
+import com.syscxp.header.tunnel.host.MonitorHostVO;
+import com.syscxp.header.tunnel.host.MonitorHostVO_;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
@@ -81,6 +83,11 @@ public class HostApiInterceptor implements ApiMessageInterceptor {
             throw new ApiMessageInterceptionException(argerr(
                     "The Host[name:%s] is already exist.", msg.getName()
             ));
+
+        //判断code是否已经存在
+        q = Q.New(HostVO.class).eq(HostVO_.code, msg.getCode());
+        if (q.isExists())
+            throw new ApiMessageInterceptionException(argerr("host's code %s is already exist ", msg.getCode()));
     }
 
     private void validate(APIChangeHostStateMsg msg){

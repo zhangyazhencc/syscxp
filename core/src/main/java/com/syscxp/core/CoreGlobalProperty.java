@@ -58,6 +58,9 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "interfaceMaxMotifies", defaultValue = "5")
     public static Integer INTERFACE_MAX_MOTIFIES;
 
+    @GlobalProperty(name = "", defaultValue = "5")
+    public static Integer CHECK_TUNNEL_STATUS_INTERVAL;
+
     @GlobalProperty(name = "tunnelMaxMotifies", defaultValue = "5")
     public static Integer TUNNEL_MAX_MOTIFIES;
 

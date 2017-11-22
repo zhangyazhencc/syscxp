@@ -1,6 +1,5 @@
 package com.syscxp.header.tunnel.monitor;
 
-import javax.naming.InvalidNameException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -14,7 +13,7 @@ import java.util.Map;
 public class OpenTSDBResultInventory {
     private String nodeUuid;
     private String metric;
-    private OpenTSDBCommands.tags tags;
+    private OpenTSDBCommands.Tags tags;
     private List aggregateTags;
     private Map dps;
 
@@ -45,11 +44,11 @@ public class OpenTSDBResultInventory {
         this.metric = metric;
     }
 
-    public OpenTSDBCommands.tags getTags() {
+    public OpenTSDBCommands.Tags getTags() {
         return tags;
     }
 
-    public void setTags(OpenTSDBCommands.tags tags) {
+    public void setTags(OpenTSDBCommands.Tags tags) {
         this.tags = tags;
     }
 
