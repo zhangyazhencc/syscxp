@@ -117,7 +117,13 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                         SimpleQuery<AlarmLogVO> query = dbf.createQuery(AlarmLogVO.class);
                         query.add(AlarmLogVO_.productUuid, SimpleQuery.Op.EQ, cmd.getTunnelUuid());
                         query.add(AlarmLogVO_.regulationUuid, SimpleQuery.Op.EQ, cmd.getRegulationUuid());
-                        AlarmLogVO log = query.find();
+                        query.orderBy(AlarmLogVO_.createDate, SimpleQuery.Od.DESC);
+                        List<AlarmLogVO> alarmLogVOS = query.list();
+                        AlarmLogVO log = null;
+                        if (alarmLogVOS != null && alarmLogVOS.size() > 0) {
+                             log = alarmLogVOS.get(0);
+                        }
+
 
                         if (log == null){
                             if (AlarmStatus.PROBLEM.equals(cmd.getStatus())) {
@@ -191,7 +197,7 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
 
             PolicyVO policyVO = dbf.findByUuid(regulationVO.getPolicyUuid(), PolicyVO.class);
             if (policyVO != null) {
-                alarmLogVO.setProductUuid(policyVO.getUuid());
+                alarmLogVO.setPolicyVO(policyVO);
             }
         }
         alarmLogVO.setEventId(cmd.getEventId());

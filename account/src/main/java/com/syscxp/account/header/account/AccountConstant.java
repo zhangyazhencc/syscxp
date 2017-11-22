@@ -20,10 +20,17 @@ public interface AccountConstant {
     int RESOURCE_PERMISSION_READ = 1;
     int RESOURCE_PERMISSION_WRITE = 2;
 
-    public static final String ACTION_SERVICE = "account";
-    public static final String ACTION_CATEGORY_ACCOUNT = "account";
-    public static final String ACTION_CATEGORY_USER = "user";
-    public static final String ACTION_CATEGORY_TICKET = "ticket";
+    String ACTION_SERVICE = "account";
+    String ACTION_CATEGORY_ACCOUNT = "account";
+    String ACTION_CATEGORY_USER = "user";
+    String ACTION_CATEGORY_TICKET = "ticket";
+
+
+    String QUOTA_USER_NUM = "user.num";
+    String QUOTA_TICKET_NUM = "ticket.num";
+    String QUOTA_TICKET_NO_SESSION_NUM = "ticket.noSession.num";
+    String QUOTA_TICKET_RECORD_NUM = "ticketRecord.num";
+
 
     enum RoleDecision {
         EXPLICIT_DENY,

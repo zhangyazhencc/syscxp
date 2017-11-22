@@ -12,7 +12,10 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.solution.*;
+import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
+import com.syscxp.header.vpn.host.ZoneVO;
 import com.syscxp.tunnel.tunnel.TunnelBase;
 import com.syscxp.tunnel.tunnel.TunnelManagerImpl;
 import com.syscxp.utils.Utils;
@@ -175,7 +178,11 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         }
 
         vo.setBandwidth(msg.getBandwidth());
-        vo.setEndpointUuid(msg.getEndpointUuid());
+
+        EndpointVO endpointVO = dbf.findByUuid(msg.getEndpointUuid(),EndpointVO.class);
+        if(endpointVO != null){
+            vo.setEndpointVO(endpointVO);
+        }
         vo.setZoneUuid(msg.getZoneUuid());
 
         APICreateSolutionVpnEvent event = new APICreateSolutionVpnEvent(msg.getId());
@@ -199,8 +206,15 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         }
 
         vo.setBandwidth(msg.getBandwidth());
-        vo.setEndpointUuidA(msg.getEndpointUuidA());
-        vo.setEndpointUuidZ(msg.getEndpointUuidZ());
+        EndpointVO endpointVOA = dbf.findByUuid(msg.getEndpointUuidA(),EndpointVO.class);
+        if(endpointVOA != null){
+            vo.setEndpointVOA(endpointVOA);
+        }
+
+        EndpointVO endpointVOZ= dbf.findByUuid(msg.getEndpointUuidZ(),EndpointVO.class);
+        if(endpointVOZ != null){
+            vo.setEndpointVOZ(endpointVOZ);
+        }
 
         APICreateSolutionTunnelEvent event = new APICreateSolutionTunnelEvent(msg.getId());
         event.setInventory(SolutionTunnelInventory.valueOf(dbf.persistAndRefresh(vo)));
@@ -222,8 +236,14 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             vo.setName(msg.getName());
         }
 
-        vo.setEndpointUuid(msg.getEndpointUuid());
-        vo.setPortOfferingUuid(msg.getPortOfferingUuid());
+        EndpointVO endpointVO = dbf.findByUuid(msg.getEndpointUuid(),EndpointVO.class);
+        if(endpointVO != null){
+            vo.setEndpointVO(endpointVO);
+        }
+        PortOfferingVO portOfferingVO = dbf.findByUuid(msg.getPortOfferingUuid(),PortOfferingVO.class);
+        if(portOfferingVO != null){
+            vo.setPortOfferingVO(portOfferingVO);
+        }
 
         APICreateSolutionInterfaceEvent event = new APICreateSolutionInterfaceEvent(msg.getId());
         event.setInventory(SolutionInterfaceInventory.valueOf(dbf.persistAndRefresh(vo)));
@@ -236,6 +256,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setUuid(Platform.getUuid());
         vo.setName(msg.getName());
         vo.setDescription(msg.getDescription());
+        vo.setAccountUuid(msg.getAccountUuid());
 
         APICreateSolutionEvent event = new APICreateSolutionEvent(msg.getId());
         event.setInventory(SolutionInventory.valueOf(dbf.persistAndRefresh(vo)));

@@ -1,5 +1,8 @@
 package com.syscxp.header.tunnel.solution;
 
+import com.syscxp.header.tunnel.endpoint.EndpointVO;
+import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
+
 import javax.persistence.*;
 
 /**
@@ -9,24 +12,32 @@ import javax.persistence.*;
 @Table
 public class SolutionInterfaceVO extends SolutionBaseVO{
 
-    @Column
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "endpointUuid")
+    private EndpointVO endpointVO;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "portOfferingUuid")
+    private PortOfferingVO portOfferingVO;
+
+   /* @Column
     private String endpointUuid;
     @Column
-    private String portOfferingUuid;
+    private String portOfferingUuid;*/
 
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public EndpointVO getEndpointVO() {
+        return endpointVO;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setEndpointVO(EndpointVO endpointVO) {
+        this.endpointVO = endpointVO;
     }
 
-    public String getPortOfferingUuid() {
-        return portOfferingUuid;
+    public PortOfferingVO getPortOfferingVO() {
+        return portOfferingVO;
     }
 
-    public void setPortOfferingUuid(String portOfferingUuid) {
-        this.portOfferingUuid = portOfferingUuid;
+    public void setPortOfferingVO(PortOfferingVO portOfferingVO) {
+        this.portOfferingVO = portOfferingVO;
     }
 }

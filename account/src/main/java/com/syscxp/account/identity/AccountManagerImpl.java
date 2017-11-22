@@ -3,12 +3,17 @@ package com.syscxp.account.identity;
 import com.syscxp.account.header.account.*;
 import com.syscxp.account.header.identity.*;
 import com.syscxp.account.header.user.*;
+import com.syscxp.account.quota.UserQuotaOperator;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.header.account.*;
 import com.syscxp.header.identity.*;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
+import com.syscxp.header.quota.Quota;
+import com.syscxp.header.quota.QuotaConstant;
+import com.syscxp.header.quota.ReportQuotaExtensionPoint;
+import com.syscxp.header.tunnel.tunnel.APICreateInterfaceManualMsg;
 import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsService;
 import com.syscxp.utils.Utils;
@@ -39,12 +44,13 @@ import java.util.*;
 
 import static com.syscxp.core.Platform.argerr;
 import static com.syscxp.core.Platform.operr;
+import static com.syscxp.utils.CollectionDSL.list;
 
 /**
  * Created by zxhread on 17/8/3.
  */
 public class AccountManagerImpl extends AbstractService implements AccountManager, PrepareDbInitialValueExtensionPoint,
-        ApiMessageInterceptor {
+        ApiMessageInterceptor, ReportQuotaExtensionPoint {
     private static final CLogger logger = Utils.getLogger(AccountManagerImpl.class);
 
     @Autowired
@@ -906,5 +912,23 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             sb.append(base.charAt(number));
         }
         return sb.toString();
+    }
+
+    @Override
+    public List<Quota> reportQuota() {
+
+        UserQuotaOperator quotaOperator = new UserQuotaOperator();
+        // interface quota
+        Quota quota = new Quota();
+        quota.setOperator(quotaOperator);
+        quota.addMessageNeedValidation(APICreateUserMsg.class);
+
+        Quota.QuotaPair p = new Quota.QuotaPair();
+        p.setName(AccountConstant.QUOTA_USER_NUM);
+        p.setValue(QuotaConstant.QUOTA_USER_NUM);
+        quota.addPair(p);
+
+
+        return list(quota);
     }
 }

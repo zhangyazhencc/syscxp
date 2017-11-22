@@ -2,6 +2,7 @@ package com.syscxp.alarm.resourcePolicy;
 
 import com.syscxp.alarm.AlarmGlobalProperty;
 import com.syscxp.alarm.header.resourcePolicy.*;
+import com.syscxp.alarm.quota.AlarmQuotaOperator;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -23,6 +24,9 @@ import com.syscxp.header.falconapi.FalconApiRestConstant;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
+import com.syscxp.header.quota.Quota;
+import com.syscxp.header.quota.QuotaConstant;
+import com.syscxp.header.quota.ReportQuotaExtensionPoint;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
@@ -41,8 +45,10 @@ import org.springframework.util.StringUtils;
 
 import java.util.*;
 
+import static com.syscxp.utils.CollectionDSL.list;
 
-public class ResourcePolicyManagerImpl extends AbstractService implements ApiMessageInterceptor {
+
+public class ResourcePolicyManagerImpl extends AbstractService implements ApiMessageInterceptor, ReportQuotaExtensionPoint {
 
     private static final CLogger logger = Utils.getLogger(ResourcePolicyManagerImpl.class);
 
@@ -617,4 +623,26 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         return null;
     }
 
+    @Override
+    public List<Quota> reportQuota() {
+        AlarmQuotaOperator quotaOperator = new AlarmQuotaOperator();
+        // interface quota
+        Quota quota = new Quota();
+        quota.setOperator(quotaOperator);
+        quota.addMessageNeedValidation(APICreatePolicyMsg.class);
+        quota.addMessageNeedValidation(APICreateRegulationMsg.class);
+
+        Quota.QuotaPair p = new Quota.QuotaPair();
+        p.setName(AlarmConstant.QUOTA_ALARM_POLICY_NUM);
+        p.setValue(QuotaConstant.QUOTA_ALARM_POLICY_NUM);
+        quota.addPair(p);
+
+        p = new Quota.QuotaPair();
+        p.setName(AlarmConstant.QUOTA_POLICY_RULE_NUM);
+        p.setValue(QuotaConstant.QUOTA_POLICY_RULE_NUM);
+        quota.addPair(p);
+
+
+        return list(quota);
+    }
 }
