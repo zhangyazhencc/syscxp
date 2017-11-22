@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.solution;
 
+import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -13,19 +14,19 @@ public class APICreateSolutionVpnMsg extends  APIMessage {
     private String name;
     @APIParam(maxLength = 32)
     private String cost;
-    @APIParam(maxLength = 32)
-    private String productChargeModel;
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
+    private ProductChargeModel productChargeModel;
     @APIParam(maxLength = 32)
     private int duration;
     @APIParam(maxLength = 128,required = false)
     private String description;
 
     @APIParam(maxLength = 128)
-    private String zoneName;
+    private String zoneUuid;
     @APIParam(maxLength = 128)
-    private String endpointName;
+    private String endpointUuid;
     @APIParam(maxLength = 128)
-    private Long bandwidth;
+    private long bandwidth;
 
     public String getSolutionUuid() {
         return solutionUuid;
@@ -51,11 +52,11 @@ public class APICreateSolutionVpnMsg extends  APIMessage {
         this.cost = cost;
     }
 
-    public String getProductChargeModel() {
+    public ProductChargeModel getProductChargeModel() {
         return productChargeModel;
     }
 
-    public void setProductChargeModel(String productChargeModel) {
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
         this.productChargeModel = productChargeModel;
     }
 
@@ -75,27 +76,27 @@ public class APICreateSolutionVpnMsg extends  APIMessage {
         this.description = description;
     }
 
-    public String getZoneName() {
-        return zoneName;
+    public String getZoneUuid() {
+        return zoneUuid;
     }
 
-    public void setZoneName(String zoneName) {
-        this.zoneName = zoneName;
+    public void setZoneUuid(String zoneUuid) {
+        this.zoneUuid = zoneUuid;
     }
 
-    public String getEndpointName() {
-        return endpointName;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setEndpointName(String endpointName) {
-        this.endpointName = endpointName;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 
-    public Long getBandwidth() {
+    public long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Long bandwidth) {
+    public void setBandwidth(long bandwidth) {
         this.bandwidth = bandwidth;
     }
 }

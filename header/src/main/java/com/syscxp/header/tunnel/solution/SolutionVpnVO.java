@@ -13,33 +13,33 @@ import javax.persistence.Table;
 public class SolutionVpnVO extends SolutionBaseVO{
 
     @Column
-    private String zoneName;
+    private String zoneUuid;
     @Column
-    private String endpointName;
+    private String endpointUuid;
     @Column
-    private Long bandwidth;
+    private long bandwidth;
 
-    public String getZoneName() {
-        return zoneName;
+    public String getZoneUuid() {
+        return zoneUuid;
     }
 
-    public void setZoneName(String zoneName) {
-        this.zoneName = zoneName;
+    public void setZoneUuid(String zoneUuid) {
+        this.zoneUuid = zoneUuid;
     }
 
-    public String getEndpointName() {
-        return endpointName;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setEndpointName(String endpointName) {
-        this.endpointName = endpointName;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 
-    public Long getBandwidth() {
+    public long getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Long bandwidth) {
+    public void setBandwidth(long bandwidth) {
         this.bandwidth = bandwidth;
     }
 }

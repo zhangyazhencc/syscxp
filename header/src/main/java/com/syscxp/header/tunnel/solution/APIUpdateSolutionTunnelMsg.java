@@ -11,7 +11,7 @@ public class APIUpdateSolutionTunnelMsg extends  APIMessage {
     private String uuid;
 
     @APIParam(maxLength = 128)
-    private Long bandwidth;
+    private long bandwidth;
 
     public String getUuid() {
         return uuid;

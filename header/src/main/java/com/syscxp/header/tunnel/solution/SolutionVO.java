@@ -14,6 +14,9 @@ public class SolutionVO {
     private String uuid;
 
     @Column
+    private String accountUuid;
+
+    @Column
     private String name;
 
     @Column
@@ -39,6 +42,14 @@ public class SolutionVO {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 
     public String getName() {

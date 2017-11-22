@@ -11,7 +11,7 @@ public class APIUpdateSolutionVpnMsg extends  APIMessage {
     private String uuid;
 
     @APIParam(maxLength = 32)
-    private Long bandwidth;
+    private long bandwidth;
 
     public String getUuid() {
         return uuid;

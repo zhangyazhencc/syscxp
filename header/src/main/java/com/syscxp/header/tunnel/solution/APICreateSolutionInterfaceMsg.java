@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.solution;
 
+import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -13,16 +14,16 @@ public class APICreateSolutionInterfaceMsg extends  APIMessage {
     private String name;
     @APIParam(maxLength = 32)
     private String cost;
-    @APIParam(maxLength = 32)
-    private String productChargeModel;
+    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
+    private ProductChargeModel productChargeModel;
     @APIParam(maxLength = 32)
     private int duration;
     @APIParam(maxLength = 128,required = false)
     private String description;
     @APIParam(maxLength = 128)
-    private String endpointName;
+    private String endpointUuid;
     @APIParam(maxLength = 128)
-    private String portOfferingName;
+    private String portOfferingUuid;
 
     public String getSolutionUuid() {
         return solutionUuid;
@@ -48,11 +49,11 @@ public class APICreateSolutionInterfaceMsg extends  APIMessage {
         this.cost = cost;
     }
 
-    public String getProductChargeModel() {
+    public ProductChargeModel getProductChargeModel() {
         return productChargeModel;
     }
 
-    public void setProductChargeModel(String productChargeModel) {
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
         this.productChargeModel = productChargeModel;
     }
 
@@ -72,19 +73,19 @@ public class APICreateSolutionInterfaceMsg extends  APIMessage {
         this.description = description;
     }
 
-    public String getEndpointName() {
-        return endpointName;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setEndpointName(String endpointName) {
-        this.endpointName = endpointName;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 
-    public String getPortOfferingName() {
-        return portOfferingName;
+    public String getPortOfferingUuid() {
+        return portOfferingUuid;
     }
 
-    public void setPortOfferingName(String portOfferingName) {
-        this.portOfferingName = portOfferingName;
+    public void setPortOfferingUuid(String portOfferingUuid) {
+        this.portOfferingUuid = portOfferingUuid;
     }
 }
