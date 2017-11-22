@@ -11,11 +11,15 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
+import com.syscxp.header.quota.Quota;
+import com.syscxp.header.quota.ReportQuotaExtensionPoint;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.solution.*;
 import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
 import com.syscxp.header.vpn.host.ZoneVO;
+import com.syscxp.tunnel.quota.SolutionQuotaOperator;
 import com.syscxp.tunnel.tunnel.TunnelBase;
 import com.syscxp.tunnel.tunnel.TunnelManagerImpl;
 import com.syscxp.utils.Utils;
@@ -23,12 +27,16 @@ import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
+import static com.syscxp.utils.CollectionDSL.list;
+
 
 /**
  * Created by wangwg on 2017/11/20.
  */
 
-public class SolutionManagerImpl extends AbstractService implements SolutionManager , ApiMessageInterceptor{
+public class SolutionManagerImpl extends AbstractService implements SolutionManager , ApiMessageInterceptor, ReportQuotaExtensionPoint{
 
     private static final CLogger logger = Utils.getLogger(SolutionManagerImpl.class);
 
@@ -284,5 +292,38 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         return null;
     }
 
+    @Override
+    public List<Quota> reportQuota() {
 
+        SolutionQuotaOperator quotaOperator = new SolutionQuotaOperator();
+        // interface quota
+        Quota quota = new Quota();
+        quota.setOperator(quotaOperator);
+        quota.addMessageNeedValidation(APICreateSolutionMsg.class);
+        quota.addMessageNeedValidation(APICreateSolutionInterfaceMsg.class);
+        quota.addMessageNeedValidation(APICreateSolutionTunnelMsg.class);
+        quota.addMessageNeedValidation(APICreateSolutionVpnMsg.class);
+
+        Quota.QuotaPair p = new Quota.QuotaPair();
+        p.setName(TunnelConstant.QUOTA_SOLUTION_NUM);
+        p.setValue(50);
+        quota.addPair(p);
+
+        p = new Quota.QuotaPair();
+        p.setName(TunnelConstant.QUOTA_SOLUTION_INTERFACE_NUM);
+        p.setValue(100);
+        quota.addPair(p);
+
+        p = new Quota.QuotaPair();
+        p.setName(TunnelConstant.QUOTA_SOLUTION_TUNNEL_NUM);
+        p.setValue(100);
+        quota.addPair(p);
+
+        p = new Quota.QuotaPair();
+        p.setName(TunnelConstant.QUOTA_SOLUTION_VPN_NUM);
+        p.setValue(100);
+        quota.addPair(p);
+
+        return list(quota);
+    }
 }
