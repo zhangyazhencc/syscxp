@@ -1465,9 +1465,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         if (tunnelVO.getState() != TunnelState.Enabled)
             throw new ApiMessageInterceptionException(argerr("Tunnel %s is not enabled!", tunnelVO.getName()));
 
-        if (tunnelVO.getStatus() != TunnelStatus.Connected)
-            throw new ApiMessageInterceptionException(argerr("Tunnel %s is not connected!", tunnelVO.getName()));
-
         if (tunnelVO.getMonitorState() != TunnelMonitorState.Enabled)
             throw new ApiMessageInterceptionException(argerr("Tunnel %s monitor state is not enabled!", tunnelVO.getName()));
     }
