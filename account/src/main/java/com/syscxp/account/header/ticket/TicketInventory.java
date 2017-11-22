@@ -150,7 +150,7 @@ public class TicketInventory {
     }
 
     public void setAdminUserUuid(String adminUserUuid) {
-        adminUserUuid = adminUserUuid;
+        this.adminUserUuid = adminUserUuid;
     }
 
     public String getPhone() {
