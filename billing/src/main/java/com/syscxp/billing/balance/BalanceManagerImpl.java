@@ -62,10 +62,6 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
     @Autowired
     private DatabaseFacade dbf;
     @Autowired
-    private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
     private RESTFacade restf;
 
     @Override
