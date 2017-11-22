@@ -2,6 +2,8 @@ package com.syscxp.header.tunnel.solution;
 
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.search.Inventory;
+import com.syscxp.header.tunnel.endpoint.EndpointVO;
+import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -20,8 +22,10 @@ public class SolutionInterfaceInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    private String endpointUuid;
-    private String portOfferingUuid;
+    private String  endpointName;
+    private String  portOfferingName;
+    /*private String endpointUuid;
+    private String portOfferingUuid;*/
 
     public static SolutionInterfaceInventory valueOf(SolutionInterfaceVO vo) {
         SolutionInterfaceInventory inv = new SolutionInterfaceInventory();
@@ -35,8 +39,12 @@ public class SolutionInterfaceInventory {
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
 
-        inv.setEndpointUuid(vo.getEndpointUuid());
-        inv.setPortOfferingUuid(vo.getPortOfferingUuid());
+        if(vo.getEndpointVO() != null){
+            inv.setEndpointName(vo.getEndpointVO().getName());
+        }
+        if(vo.getPortOfferingVO() != null){
+            inv.setPortOfferingName(vo.getPortOfferingVO().getName());
+        }
         return inv;
     }
 
@@ -120,19 +128,19 @@ public class SolutionInterfaceInventory {
         this.createDate = createDate;
     }
 
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public String getEndpointName() {
+        return endpointName;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setEndpointName(String endpointName) {
+        this.endpointName = endpointName;
     }
 
-    public String getPortOfferingUuid() {
-        return portOfferingUuid;
+    public String getPortOfferingName() {
+        return portOfferingName;
     }
 
-    public void setPortOfferingUuid(String portOfferingUuid) {
-        this.portOfferingUuid = portOfferingUuid;
+    public void setPortOfferingName(String portOfferingName) {
+        this.portOfferingName = portOfferingName;
     }
 }
