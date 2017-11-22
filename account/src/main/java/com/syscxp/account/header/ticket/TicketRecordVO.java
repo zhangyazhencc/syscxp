@@ -26,7 +26,10 @@ public class TicketRecordVO {
     private RecordBy recordBy;
 
     @Column
-    private String adminUserUuid;
+    private String accountUuid;
+
+    @Column
+    private String userUuid;
 
     @Column
     private String content;
@@ -102,11 +105,19 @@ public class TicketRecordVO {
         this.lastOpDate = lastOpDate;
     }
 
-    public String getAdminUserUuid() {
-        return adminUserUuid;
+    public String getUserUuid() {
+        return userUuid;
     }
 
-    public void setAdminUserUuid(String adminUserUuid) {
-        this.adminUserUuid = adminUserUuid;
+    public void setUserUuid(String userUuid) {
+        this.userUuid = userUuid;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

@@ -13,18 +13,14 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
-import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static com.syscxp.core.Platform.argerr;
-import static com.syscxp.core.Platform.operr;
 
 /**
  * Created by wangwg on 2017/09/25.
@@ -135,15 +131,14 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
         vo.setRecordBy(msg.getRecordBy());
         vo.setContent(msg.getContent());
         vo.setStatus(msg.getStatus());
-        if(msg.getRecordBy() == RecordBy.AdminUser ){
-            vo.setAdminUserUuid(msg.getSession().getUserUuid());
-        }
+        vo.setAccountUuid(msg.getSession().getAccountUuid());
+        vo.setUserUuid(msg.getSession().getUserUuid());
 
         vo = dbf.persistAndRefresh(vo);
 
         TicketVO tvo = dbf.findByUuid(msg.getTicketUuid(),TicketVO.class);
         tvo.setStatus(msg.getStatus());
-        if(msg.getSession() != null){
+        if(msg.getSession() != null && vo.getRecordBy() == RecordBy.AdminUser){
             tvo.setAdminUserUuid(msg.getSession().getUserUuid());
         }
 
