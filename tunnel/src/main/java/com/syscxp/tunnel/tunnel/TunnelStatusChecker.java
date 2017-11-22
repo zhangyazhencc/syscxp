@@ -18,10 +18,10 @@ import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.function.BiConsumer;
 
 public class TunnelStatusChecker implements Component {
     private static final CLogger logger = Utils.getLogger(TunnelStatusChecker.class);
@@ -35,8 +35,8 @@ public class TunnelStatusChecker implements Component {
     private int checkTunnelStatusInterval;
     public static final String TUNNEL_PACKETS_LOST = "tunnel.packets.lost";
     public static final String OPENTSDB_SERVER_URL = CoreGlobalProperty.OPENTSDB_SERVER_URL + "/api/query";
-    public static final double PACKETS_LOST_MIN = 0.05;
-    public static final double PACKETS_LOST_MAX = 0.20;
+    public static final double PACKETS_LOST_MIN = 5;
+    public static final double PACKETS_LOST_MAX = 20;
 
     private void startCleanExpiredProduct() {
         checkTunnelStatusInterval = CoreGlobalProperty.CHECK_TUNNEL_STATUS_INTERVAL;
@@ -79,15 +79,17 @@ public class TunnelStatusChecker implements Component {
         public void run() {
             try {
                 List<TunnelVO> tunnelVOs = getTunnels();
-                logger.debug("delete expired tunnel.");
+                logger.debug("tunnel status check.");
                 if (tunnelVOs.isEmpty())
                     return;
                 for (TunnelVO vo : tunnelVOs) {
                     Long endTime = Instant.now().getEpochSecond();
+//                    Long endTime = 1511251350L;
                     Long startTime = endTime - 5 * 30;
+
                     String condition = getOpenTSDBQueryCondition(vo.getUuid(), TUNNEL_PACKETS_LOST, startTime, endTime);
                     String resp = restf.getRESTTemplate().postForObject(OPENTSDB_SERVER_URL, condition, String.class);
-                    List<QueryResult> results = JSON.parseArray(resp, QueryResult.class);
+                    List<QueryResult> results = JSONObjectUtil.toCollection(resp, ArrayList.class, QueryResult.class);
 
                     QueryResult result = results.get(0);
                     Double max = Collections.max(result.getDps().values());
@@ -99,7 +101,7 @@ public class TunnelStatusChecker implements Component {
                     else if (max < PACKETS_LOST_MIN)
                         status = TunnelStatus.Connected;
                     else
-                        status = TunnelStatus.Disconnected;
+                        status = TunnelStatus.Warning;
                     if (vo.getStatus() != status)
                         UpdateQuery.New(TunnelVO.class).eq(TunnelVO_.uuid, vo.getUuid()).set(TunnelVO_.status, status).update();
                 }
@@ -113,7 +115,7 @@ public class TunnelStatusChecker implements Component {
 
             TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelUuid).find();
             for (TunnelSwitchPortVO tunnelPort : tunnel.getTunnelSwitchPortVOS()) {
-                if (!tunnelPort.getSortTag().equals("A") || !tunnelPort.getSortTag().equals("Z"))
+                if (!tunnelPort.getSortTag().equals("A") && !tunnelPort.getSortTag().equals("Z"))
                     continue;
                 PhysicalSwitchVO physicalSwitch = getPhysicalSwitchBySwitchPort(tunnelPort.getSwitchPortUuid());
                 Tags tags = new Tags(physicalSwitch.getmIP(), "Vlanif" + tunnelPort.getVlan());
@@ -122,15 +124,11 @@ public class TunnelStatusChecker implements Component {
                 break;
             }
 
-            QueryCondition condition = new QueryCondition();
-            condition.setStart(startTime);
-            condition.setEnd(endTime);
-            condition.setQueries(queries);
-
+            QueryCondition condition = new QueryCondition(startTime, endTime, queries);
             return JSONObjectUtil.toJsonString(condition);
         }
 
-        public PhysicalSwitchVO getPhysicalSwitchBySwitchPort(String switchPortUuid) {
+        private PhysicalSwitchVO getPhysicalSwitchBySwitchPort(String switchPortUuid) {
             String switchUuid = Q.New(SwitchPortVO.class)
                     .eq(SwitchPortVO_.uuid, switchPortUuid)
                     .select(SwitchPortVO_.switchUuid)
