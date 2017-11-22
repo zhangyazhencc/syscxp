@@ -391,7 +391,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         pmsg.setDuration(msg.getDuration());
         pmsg.setAccountUuid(msg.getAccountUuid());
         pmsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
+        APIGetProductPriceReply reply = new TunnelRESTCaller().syncJsonPost(pmsg);
         bus.reply(msg, new APIGetInterfacePriceReply(reply));
     }
 
