@@ -438,15 +438,15 @@ DROP TABLE IF EXISTS `RenewVO`;
 CREATE TABLE `RenewVO` (
   `uuid` varchar(32) NOT NULL COMMENT '主键',
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账号主键',
-  `isRenewAuto` tinyint(2) unsigned DEFAULT 1 COMMENT '是否自动续费，1，自动，2关闭',
+  `isRenewAuto` tinyint(2) unsigned DEFAULT '1' COMMENT '是否自动续费，1，自动，2关闭',
   `productUuid` varchar(32) NOT NULL COMMENT '产品ID',
   `productName` varchar(100) NOT NULL COMMENT '产品名称',
   `productType` varchar(50) DEFAULT NULL COMMENT '产品类型',
   `descriptionData` varchar(2000) DEFAULT NULL,
   `productChargeModel` varchar(50) DEFAULT NULL COMMENT '计费方式--按月，按年',
-  `lastOpDate` timestamp NOT NULL DEFAULT  current_timestamp(),
-  `createDate` timestamp ,
-  `pricePerDay` decimal(12,4) DEFAULT NULL,
+  `lastOpDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `priceOneMonth` decimal(12,4) DEFAULT NULL,
   `expiredTime` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `UNI_ACCOUNT_PRODUCT_ID` (`accountUuid`,`productUuid`)
@@ -476,15 +476,34 @@ CREATE TABLE `SLACompensateVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 DROP TABLE IF EXISTS `NotifyOrderVO`;
-create table `NotifyOrderVO` (
-	`uuid` varchar (32),
-	`orderUuid` varchar (32),
-	`status` varchar (255),
-	`notifyTimes` tinyint (2),
-	`createDate` timestamp ,
-	`lastOpDate` timestamp ,
-	`url` varchar (255)
-);
+CREATE TABLE `NotifyOrderVO` (
+  `uuid` varchar(32) NOT NULL,
+  `orderUuid` varchar(32) NOT NULL COMMENT '订单id',
+  `status` varchar(255) DEFAULT NULL,
+  `notifyTimes` tinyint(2) DEFAULT '0' COMMENT '通知次数',
+  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `url` varchar(255) NOT NULL COMMENT '通知路径',
+  `accountUuid` varchar(32) DEFAULT NULL,
+  `productUuid` varchar(32) DEFAULT NULL,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+
+DROP TABLE IF EXISTS `SLALogVO`;
+CREATE TABLE `SLALogVO` (
+  `uuid` VARCHAR(32) NOT NULL COMMENT '主键',
+  `accountUuid` VARCHAR(32) DEFAULT NULL,
+  `productUuid` VARCHAR(32) DEFAULT NULL,
+  `timeStart` TIMESTAMP  ,
+  `timeEnd` TIMESTAMP  ,
+  `slaPrice` DECIMAL(12,4) DEFAULT NULL COMMENT '赔偿时价格',
+  `createDate` TIMESTAMP ,
+  `lastOpDate` TIMESTAMP  ,
+  `duration` INT(11) DEFAULT NULL,
+  `consumePrice` DECIMAL(12,4) DEFAULT NULL COMMENT '用户在赔偿时段的消费价格',
+  PRIMARY KEY (`uuid`)
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
 
 
