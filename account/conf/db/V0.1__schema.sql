@@ -195,12 +195,12 @@ CREATE TABLE  `NotificationVO` (
     `opAccountUuid` VARCHAR(32) DEFAULT NULL ,
     `opUserUuid` VARCHAR(32) DEFAULT NULL,
     `name` VARCHAR(255) DEFAULT NULL COMMENT '消息类型',
-	`category` VARCHAR(32) DEFAULT NULL,
+    `category` VARCHAR(32) DEFAULT NULL,
     `content` VARCHAR(128) DEFAULT NULL,
     `msgfields` TEXT DEFAULT NULL,
     `sender` VARCHAR(32) NOT NULL,
-	`remoteIp` VARCHAR(20) NOT NULL,
-	`success` BOOLEAN DEFAULT FALSE COMMENT '操作状态',
+    `remoteIp` VARCHAR(20) NOT NULL,
+    `success` BOOLEAN DEFAULT FALSE COMMENT '操作状态',
     `status` VARCHAR(32) DEFAULT NULL,
     `resourceUuid` VARCHAR(32) DEFAULT NULL,
     `resourceType` VARCHAR(32) NOT NULL,
@@ -261,9 +261,9 @@ ALTER TABLE AccountApiSecurityVO ADD CONSTRAINT fkAccountApiSecurityVOAccountVO 
 ALTER TABLE ProxyAccountRefVO ADD CONSTRAINT fkProxyAccountRefVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
 
 ALTER TABLE RoleVO ADD CONSTRAINT fkRoleVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
-ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE RESTRICT;
-ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVOUserVO FOREIGN KEY (userUuid) REFERENCES UserVO (uuid) ON DELETE RESTRICT;
-ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE RESTRICT;
+ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE CASCADE;
+ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVOUserVO FOREIGN KEY (userUuid) REFERENCES UserVO (uuid) ON DELETE CASCADE;
+ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE CASCADE;
 ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVOPolicyVO FOREIGN KEY (policyUuid) REFERENCES PolicyVO (uuid) ON DELETE RESTRICT;
 
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Normal','0','{"actions":["tunnel:.*:read"],"effect":"Allow"}');
