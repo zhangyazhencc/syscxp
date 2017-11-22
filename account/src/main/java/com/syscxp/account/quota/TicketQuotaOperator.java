@@ -71,8 +71,7 @@ public class TicketQuotaOperator implements Quota.QuotaOperator {
         LocalDateTime dateTime =
                 LocalDate.now().atTime(LocalTime.MIN);
         Q q = Q.New(TicketVO.class)
-                .gte(TicketVO_.createDate, Timestamp.valueOf(dateTime))
-                .lt(TicketVO_.createDate, Timestamp.valueOf(dateTime.plusDays(1)));
+                .gte(TicketVO_.createDate, Timestamp.valueOf(dateTime));
         if (accountUuid != null)
             q = q.eq(TicketVO_.accountUuid, accountUuid);
         else
