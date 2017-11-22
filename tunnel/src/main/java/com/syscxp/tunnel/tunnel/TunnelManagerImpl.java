@@ -3105,7 +3105,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private TaskResourceVO newTaskResourceVO(TunnelVO vo, TaskType taskType) {
         TaskResourceVO taskResourceVO = new TaskResourceVO();
         taskResourceVO.setUuid(Platform.getUuid());
-        taskResourceVO.setAccountUuid(vo.getAccountUuid());
+        taskResourceVO.setAccountUuid(vo.getOwnerAccountUuid());
         taskResourceVO.setResourceUuid(vo.getUuid());
         taskResourceVO.setResourceType(vo.getClass().getSimpleName());
         taskResourceVO.setTaskType(taskType);
