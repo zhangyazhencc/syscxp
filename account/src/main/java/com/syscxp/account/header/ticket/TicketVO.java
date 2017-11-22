@@ -30,7 +30,7 @@ public class TicketVO {
     private String adminUserUuid;
 
     @Column
-    private String ticketTypeCode;
+    private String ticketTypeUuid;
 
     @Column
     private String content;
@@ -51,9 +51,9 @@ public class TicketVO {
     @Enumerated(EnumType.STRING)
     private TicketStatus status;
 
-    @OneToMany(cascade={CascadeType.REMOVE})
-    @JoinColumn(name = "ticketUuid", insertable = false, updatable = false)
-    private List<TicketRecordVO> ticketRecordVOS;
+    @OneToOne(cascade = CascadeType.REFRESH,fetch=FetchType.EAGER)
+    @JoinColumn(name ="ticketTypeUuid", insertable = false,updatable = false)
+    private TicketTypeVO ticketType;
 
     @Column
     private Timestamp createDate;
@@ -90,13 +90,6 @@ public class TicketVO {
         this.userUuid = userUuid;
     }
 
-    public String getTicketTypeCode() {
-        return ticketTypeCode;
-    }
-
-    public void setTicketTypeCode(String ticketTypeCode) {
-        this.ticketTypeCode = ticketTypeCode;
-    }
 
     public String getContent() {
         return content;
@@ -154,14 +147,6 @@ public class TicketVO {
         this.adminUserUuid = adminUserUuid;
     }
 
-    public void setTicketRecordVOS(List<TicketRecordVO> ticketRecordVOS) {
-        this.ticketRecordVOS = ticketRecordVOS;
-    }
-
-    public List<TicketRecordVO> getTicketRecordVOS() {
-        return ticketRecordVOS;
-    }
-
     public String getContentExtra() {
         return contentExtra;
     }
@@ -176,5 +161,21 @@ public class TicketVO {
 
     public void setTicketFrom(TicketFrom ticketFrom) {
         this.ticketFrom = ticketFrom;
+    }
+
+    public String getTicketTypeUuid() {
+        return ticketTypeUuid;
+    }
+
+    public void setTicketTypeUuid(String ticketTypeUuid) {
+        this.ticketTypeUuid = ticketTypeUuid;
+    }
+
+    public TicketTypeVO getTicketType() {
+        return ticketType;
+    }
+
+    public void setTicketType(TicketTypeVO ticketType) {
+        this.ticketType = ticketType;
     }
 }
