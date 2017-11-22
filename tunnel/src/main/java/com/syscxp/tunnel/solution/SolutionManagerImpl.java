@@ -183,10 +183,8 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         if(endpointVO != null){
             vo.setEndpointVO(endpointVO);
         }
-        ZoneVO zoneVO = dbf.findByUuid(msg.getZoneUuid(),ZoneVO.class);
-        if(zoneVO != null){
-            vo.setZoneVO(zoneVO);
-        }
+        vo.setZoneUuid(msg.getZoneUuid());
+
         APICreateSolutionVpnEvent event = new APICreateSolutionVpnEvent(msg.getId());
         event.setInventory(SolutionVpnInventory.valueOf(dbf.persistAndRefresh(vo)));
         bus.publish(event);
