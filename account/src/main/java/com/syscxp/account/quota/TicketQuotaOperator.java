@@ -5,13 +5,11 @@ import com.syscxp.account.header.ticket.APICreateTicketMsg;
 import com.syscxp.account.header.ticket.APICreateTicketRecordMsg;
 import com.syscxp.account.header.ticket.TicketVO;
 import com.syscxp.account.header.ticket.TicketVO_;
-import com.syscxp.account.header.user.APICreateUserMsg;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.identity.QuotaUtil;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.NeedQuotaCheckMessage;
 import com.syscxp.header.quota.Quota;
-import com.syscxp.header.tunnel.tunnel.TunnelMotifyRecordVO_;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
@@ -46,7 +44,7 @@ public class TicketQuotaOperator implements Quota.QuotaOperator {
         long quotaNum = pairs.get(quotaName).getValue();
         long currentUsed = getUsedTicketNum(currentAccountUuid);
 
-        CheckTunnelQuota(currentAccountUuid, currentAccountUuid, quotaName, quotaNum, currentUsed);
+        checkQuota(currentAccountUuid, currentAccountUuid, quotaName, quotaNum, currentUsed);
     }
 
     @Transactional(readOnly = true)
@@ -58,10 +56,10 @@ public class TicketQuotaOperator implements Quota.QuotaOperator {
         long quotaNum = pairs.get(quotaName).getValue();
         long currentUsed = getUsedTicketNum(currentAccountUuid);
 
-        CheckTunnelQuota(currentAccountUuid, currentAccountUuid, quotaName, quotaNum, currentUsed);
+        checkQuota(currentAccountUuid, currentAccountUuid, quotaName, quotaNum, currentUsed);
     }
 
-    private void CheckTunnelQuota(String currentAccountUuid, String ownerAccountUuid, String quotaName, long quotaNum, long currentUsed) {
+    private void checkQuota(String currentAccountUuid, String ownerAccountUuid, String quotaName, long quotaNum, long currentUsed) {
         long askedNum = 1;
         QuotaUtil.QuotaCompareInfo quotaCompareInfo;
         {

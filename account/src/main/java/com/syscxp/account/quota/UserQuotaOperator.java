@@ -36,10 +36,10 @@ public class UserQuotaOperator implements Quota.QuotaOperator {
         long quotaNum = pairs.get(quotaName).getValue();
         long currentUsed = getUsedUserNum(ownerAccountUuid);
 
-        CheckTunnelQuota(currentAccountUuid, ownerAccountUuid, quotaName, quotaNum, currentUsed);
+        checkQuota(currentAccountUuid, ownerAccountUuid, quotaName, quotaNum, currentUsed);
     }
 
-    private void CheckTunnelQuota(String currentAccountUuid, String ownerAccountUuid, String quotaName, long quotaNum, long currentUsed) {
+    private void checkQuota(String currentAccountUuid, String ownerAccountUuid, String quotaName, long quotaNum, long currentUsed) {
         long askedNum = 1;
         QuotaUtil.QuotaCompareInfo quotaCompareInfo;
         {

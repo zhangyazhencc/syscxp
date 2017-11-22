@@ -33,7 +33,7 @@ public class InterfaceQuotaOperator implements Quota.QuotaOperator {
         String currentAccountUuid = msg.getSession().getAccountUuid();
         String ownerAccountUuid = msg.getAccountUuid();
 
-        CheckQuota(currentAccountUuid, ownerAccountUuid, pairs);
+        checkQuota(currentAccountUuid, ownerAccountUuid, pairs);
 
     }
 
@@ -42,10 +42,10 @@ public class InterfaceQuotaOperator implements Quota.QuotaOperator {
         String currentAccountUuid = msg.getSession().getAccountUuid();
         String ownerAccountUuid = msg.getAccountUuid();
 
-        CheckQuota(currentAccountUuid, ownerAccountUuid, pairs);
+        checkQuota(currentAccountUuid, ownerAccountUuid, pairs);
     }
 
-    private void CheckQuota(String currentAccountUuid, String ownerAccountUuid, Map<String, Quota.QuotaPair> pairs) {
+    private void checkQuota(String currentAccountUuid, String ownerAccountUuid, Map<String, Quota.QuotaPair> pairs) {
 
         long quotaNum = pairs.get(TunnelConstant.QUOTA_INTERFACE_NUM).getValue();
         long askedNum = 1;

@@ -39,7 +39,7 @@ public class AlarmQuotaOperator implements Quota.QuotaOperator {
         long quotaNum = pairs.get(quotaName).getValue();
         long currentUsed = getUsedPolicyNum(ownerAccountUuid, msg.getProductType());
 
-        CheckTunnelQuota(currentAccountUuid, ownerAccountUuid, quotaName, quotaNum, currentUsed);
+        checkQuota(currentAccountUuid, ownerAccountUuid, quotaName, quotaNum, currentUsed);
     }
 
     @Transactional(readOnly = true)
@@ -49,10 +49,10 @@ public class AlarmQuotaOperator implements Quota.QuotaOperator {
         long quotaNum = pairs.get(quotaName).getValue();
         long currentUsed = getUsedRuleNum(currentAccountUuid);
 
-        CheckTunnelQuota(currentAccountUuid, currentAccountUuid, quotaName, quotaNum, currentUsed);
+        checkQuota(currentAccountUuid, currentAccountUuid, quotaName, quotaNum, currentUsed);
     }
 
-    private void CheckTunnelQuota(String currentAccountUuid, String ownerAccountUuid, String quotaName, long quotaNum, long currentUsed) {
+    private void checkQuota(String currentAccountUuid, String ownerAccountUuid, String quotaName, long quotaNum, long currentUsed) {
         long askedNum = 1;
         QuotaUtil.QuotaCompareInfo quotaCompareInfo;
         {
