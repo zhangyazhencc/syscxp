@@ -1,11 +1,9 @@
 package com.syscxp.header.tunnel.solution;
 
+import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.vo.ForeignKey;
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.PreUpdate;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
 /**
@@ -30,7 +28,8 @@ public class SolutionBaseVO {
     private String cost;
 
     @Column
-    private String productChargeModel;
+    @Enumerated(EnumType.STRING)
+    private ProductChargeModel productChargeModel;
 
     @Column
     private int duration;
@@ -81,11 +80,11 @@ public class SolutionBaseVO {
         this.cost = cost;
     }
 
-    public String getProductChargeModel() {
+    public ProductChargeModel getProductChargeModel() {
         return productChargeModel;
     }
 
-    public void setProductChargeModel(String productChargeModel) {
+    public void setProductChargeModel(ProductChargeModel productChargeModel) {
         this.productChargeModel = productChargeModel;
     }
 
