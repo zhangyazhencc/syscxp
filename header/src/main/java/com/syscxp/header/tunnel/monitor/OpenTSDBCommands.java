@@ -64,9 +64,9 @@ public class OpenTSDBCommands {
     public static class Query{
         private String aggregator;
         private String metric;
-        private tags tags;
+        private Tags tags;
 
-        public Query(String aggregator, String metric, OpenTSDBCommands.tags tags) {
+        public Query(String aggregator, String metric, Tags tags) {
             this.aggregator = aggregator;
             this.metric = metric;
             this.tags = tags;
@@ -91,25 +91,25 @@ public class OpenTSDBCommands {
             this.metric = metric;
         }
 
-        public OpenTSDBCommands.tags getTags() {
+        public Tags getTags() {
             return tags;
         }
 
-        public void setTags(OpenTSDBCommands.tags tags) {
+        public void setTags(Tags tags) {
             this.tags = tags;
         }
     }
 
-    public static class tags{
+    public static class Tags {
         private String endpoint;
         private String ifname;
 
-        public tags(String endpoint, String ifname) {
+        public Tags(String endpoint, String ifname) {
             this.endpoint = endpoint;
             this.ifname = ifname;
         }
 
-        public tags() {
+        public Tags() {
         }
 
         public String getEndpoint() {
@@ -149,9 +149,9 @@ public class OpenTSDBCommands {
     public static class QueryResult{
         private String nodeUuid;
         private String metric;
-        private tags tags;
+        private Tags tags;
         private List aggregateTags;
-        private Map dps;
+        private Map<Long, Double> dps;
 
         public QueryResult() {
         }
@@ -164,11 +164,11 @@ public class OpenTSDBCommands {
             this.metric = metric;
         }
 
-        public OpenTSDBCommands.tags getTags() {
+        public Tags getTags() {
             return tags;
         }
 
-        public void setTags(OpenTSDBCommands.tags tags) {
+        public void setTags(Tags tags) {
             this.tags = tags;
         }
 
@@ -180,11 +180,11 @@ public class OpenTSDBCommands {
             this.aggregateTags = aggregateTags;
         }
 
-        public Map getDps() {
+        public Map<Long, Double> getDps() {
             return dps;
         }
 
-        public void setDps(Map dps) {
+        public void setDps(Map<Long, Double> dps) {
             this.dps = dps;
         }
 

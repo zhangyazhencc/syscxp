@@ -22,6 +22,8 @@
             <list>
                 <value>com.syscxp.header.tunnel.tunnel.InterfaceVO</value>
                 <value>com.syscxp.header.tunnel.tunnel.TunnelVO</value>
+                <value>com.syscxp.header.tunnel.solution.SolutionVO</value>
+                <value>com.syscxp.header.tunnel.monitor.SpeedRecordsVO</value>
             </list>
         </property>
     </bean>
@@ -60,6 +62,13 @@
     <bean id="MonitorApiInterceptor" class="com.syscxp.tunnel.host.MonitorApiInterceptor">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+        </syscxp:plugin>
+    </bean>
+
+
+    <bean id="TunnelStatusChecker" class="com.syscxp.tunnel.tunnel.TunnelStatusChecker">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.Component" />
         </syscxp:plugin>
     </bean>
 </beans>

@@ -13,12 +13,8 @@ import java.sql.Timestamp;
 public class TicketTypeVO {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column
-    private long id;
-
-    @Column
-    private String code;
+    private String uuid;
 
     @Column
     private String name;
@@ -37,20 +33,12 @@ public class TicketTypeVO {
         lastOpDate = null;
     }
 
-    public long getId() {
-        return id;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getCode() {
-        return code;
-    }
-
-    public void setCode(String typeValue) {
-        this.code = typeValue;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getName() {

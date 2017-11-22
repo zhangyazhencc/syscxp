@@ -4,8 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
-import com.syscxp.core.db.SimpleQuery;
-import com.syscxp.core.db.SimpleQuery.Op;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
@@ -81,6 +79,11 @@ public class HostApiInterceptor implements ApiMessageInterceptor {
             throw new ApiMessageInterceptionException(argerr(
                     "The Host[name:%s] is already exist.", msg.getName()
             ));
+
+        //判断code是否已经存在
+        q = Q.New(HostVO.class).eq(HostVO_.code, msg.getCode());
+        if (q.isExists())
+            throw new ApiMessageInterceptionException(argerr("host's code %s is already exist ", msg.getCode()));
     }
 
     private void validate(APIChangeHostStateMsg msg){

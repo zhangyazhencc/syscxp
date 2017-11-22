@@ -13,7 +13,7 @@ import com.syscxp.header.notification.ApiNotification;
 public class APICreateTicketMsg  extends APIMessage {
 
     @APIParam(maxLength = 128)
-    private String ticketTypeCode;
+    private String ticketTypeUuid;
 
     @APIParam(maxLength = 2048)
     private String content;
@@ -47,12 +47,12 @@ public class APICreateTicketMsg  extends APIMessage {
         this.contentExtra = contentExtra;
     }
 
-    public String getTicketTypeCode() {
-        return ticketTypeCode;
+    public String getTicketTypeUuid() {
+        return ticketTypeUuid;
     }
 
-    public void setTicketTypeCode(String ticketTypeCode) {
-        this.ticketTypeCode = ticketTypeCode;
+    public void setTicketTypeUuid(String ticketTypeUuid) {
+        this.ticketTypeUuid = ticketTypeUuid;
     }
 
     public String getContent() {
