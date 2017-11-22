@@ -27,6 +27,7 @@ public class SpeedTestTunnelNodeInventory {
         SpeedTestTunnelNodeInventory inventory = new SpeedTestTunnelNodeInventory();
         List<Map<String,String>> nodes = new ArrayList<>();
 
+        //TODO:修改为关联查询
         if(vo.getTunnelVO().getState().equals(TunnelState.Enabled ) &&
                 vo.getTunnelVO().getStatus().equals(TunnelStatus.Connected)&&
                 vo.getTunnelVO().getMonitorState().equals(TunnelMonitorState.Enabled)){

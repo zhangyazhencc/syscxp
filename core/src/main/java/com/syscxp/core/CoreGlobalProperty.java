@@ -88,4 +88,9 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "openTSDBServerUrl", defaultValue = "http://192.168.211.6:4242")
     public static String OPENTSDB_SERVER_URL;
 
+    @GlobalProperty(name = "resetSpeedrecordInterval", defaultValue = "10")
+    public static int RESET_SPEEDRECORD_INTERVAL;
+
+    @GlobalProperty(name = "expiredSpeedRecordTime", defaultValue = "120")
+    public static int EXPIRED_SPEEDRECORD_TIME;
 }
