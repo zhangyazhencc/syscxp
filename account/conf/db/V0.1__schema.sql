@@ -294,7 +294,7 @@ CREATE TABLE `TicketVO` (
   `accountUuid` varchar(32) COMMENT '创建账户',
   `userUuid` varchar(32) COMMENT '创建用户/账户',
   `adminUserUuid` varchar(32) COMMENT '工单处理人(管理员为空)',
-  `ticketTypeCode` varchar(128) NOT NULL COMMENT '工单类型(数据字典)',
+  `ticketTypeUuid` varchar(32) NOT NULL COMMENT '工单类型(数据字典)',
   `content` text NOT NULL COMMENT '工单内容',
   `contentExtra` text COMMENT '工单json数据',
   `status` varchar(32) NOT NULL COMMENT '工单最新状态(枚举)',
@@ -305,6 +305,7 @@ CREATE TABLE `TicketVO` (
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ALTER TABLE TicketVO ADD CONSTRAINT fkTicketVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
 
 CREATE TABLE `TicketRecordVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT '记录uuid',
@@ -316,7 +317,8 @@ CREATE TABLE `TicketRecordVO` (
   `status` text NOT NULL COMMENT '当前工单状态(枚举)',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
   `createDate` timestamp,
-  PRIMARY KEY  (`uuid`)
+  PRIMARY KEY  (`uuid`),
+  CONSTRAINT `fkTicketRecordVO` FOREIGN KEY (`ticketUuid`) REFERENCES `TicketVO` (`uuid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `TicketTypeVO` (
