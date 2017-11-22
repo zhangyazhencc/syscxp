@@ -1,10 +1,18 @@
 package com.syscxp.account.ticket;
 
+import com.syscxp.account.header.account.AccountConstant;
 import com.syscxp.account.header.identity.SessionVO;
 import com.syscxp.account.header.ticket.*;
+import com.syscxp.account.header.user.APICreateUserMsg;
+import com.syscxp.account.quota.TicketQuotaOperator;
+import com.syscxp.account.quota.UserQuotaOperator;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.header.identity.AccountType;
+import com.syscxp.header.quota.Quota;
+import com.syscxp.header.quota.QuotaConstant;
+import com.syscxp.header.quota.ReportQuotaExtensionPoint;
+import com.syscxp.header.tunnel.tunnel.APICreateTunnelMsg;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.account.identity.IdentiyInterceptor;
@@ -24,12 +32,13 @@ import com.syscxp.utils.logging.CLogger;
 import java.util.List;
 
 import static com.syscxp.core.Platform.argerr;
+import static com.syscxp.utils.CollectionDSL.list;
 
 /**
  * Created by wangwg on 2017/09/25.
  */
 public class TicketManagerImpl extends AbstractService implements TicketManager,
-        ApiMessageInterceptor {
+        ApiMessageInterceptor, ReportQuotaExtensionPoint {
     private static final CLogger logger = Utils.getLogger(TicketManagerImpl.class);
 
     @Autowired
@@ -201,4 +210,31 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
 
     }
 
+    @Override
+    public List<Quota> reportQuota() {
+        TicketQuotaOperator quotaOperator = new TicketQuotaOperator();
+        // interface quota
+        Quota quota = new Quota();
+        quota.setOperator(quotaOperator);
+        quota.addMessageNeedValidation(APICreateTicketMsg.class);
+        quota.addMessageNeedValidation(APICreateTicketRecordMsg.class);
+
+        Quota.QuotaPair p = new Quota.QuotaPair();
+        p.setName(AccountConstant.QUOTA_TICKET_NUM);
+        p.setValue(QuotaConstant.QUOTA_TICKET_NUM);
+        quota.addPair(p);
+
+        p = new Quota.QuotaPair();
+        p.setName(AccountConstant.QUOTA_TICKET_RECORD_NUM);
+        p.setValue(QuotaConstant.QUOTA_TICKET_RECORD_NUM);
+        quota.addPair(p);
+
+        p = new Quota.QuotaPair();
+        p.setName(AccountConstant.QUOTA_TICKET_NO_SESSION_NUM);
+        p.setValue(QuotaConstant.QUOTA_TICKET_NO_SESSION_NUM);
+        quota.addPair(p);
+
+
+        return list(quota);
+    }
 }

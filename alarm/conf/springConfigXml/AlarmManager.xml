@@ -38,6 +38,7 @@
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.header.Component"/>
             <syscxp:extension interface="com.syscxp.header.Service"/>
+            <syscxp:extension interface="com.syscxp.header.quota.ReportQuotaExtensionPoint" />
             <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
         </syscxp:plugin>
 
