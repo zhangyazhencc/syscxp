@@ -195,6 +195,7 @@ CREATE TABLE `OrderVO` (
   `productChargeModel` varchar(50) DEFAULT NULL COMMENT '计费方式--按月，按年',
   `duration` int(10) unsigned NOT NULL DEFAULT 0,
   `productStatus` tinyint(1) unsigned DEFAULT 1 COMMENT '产品是否开通',
+  `callBackData` varchar(1000) DEFAULT NULL,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
