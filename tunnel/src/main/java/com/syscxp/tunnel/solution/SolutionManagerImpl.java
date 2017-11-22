@@ -236,6 +236,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setUuid(Platform.getUuid());
         vo.setName(msg.getName());
         vo.setDescription(msg.getDescription());
+        vo.setAccountUuid(msg.getAccountUuid());
 
         APICreateSolutionEvent event = new APICreateSolutionEvent(msg.getId());
         event.setInventory(SolutionInventory.valueOf(dbf.persistAndRefresh(vo)));
