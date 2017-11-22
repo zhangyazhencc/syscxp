@@ -33,6 +33,7 @@ import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.identity.IdentityInterceptor;
 import com.syscxp.tunnel.sdnController.ControllerCommands;
 import com.syscxp.tunnel.sdnController.ControllerRestConstant;
+import com.syscxp.utils.TimeUtils;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -925,8 +926,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private List<MonitorAgentCommands.EndpointTunnel> getTunnelBySwitchAndVlan(Set<String> ports, APIGetEndpointTunnelsMsg msg) {
         List<MonitorAgentCommands.EndpointTunnel> endpointTunnels = new ArrayList<>();
 
-        MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
-        TunnelVO tunnelVO = new TunnelVO();
         for (String portUuid : ports) {
             List<TunnelSwitchPortVO> tunnelSwitchPorts = Q.New(TunnelSwitchPortVO.class)
                     .eq(TunnelSwitchPortVO_.switchPortUuid, portUuid)
@@ -935,19 +934,24 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             if (tunnelSwitchPorts.isEmpty())
                 continue;
 
-            tunnelVO = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelSwitchPorts.get(0).getTunnelUuid()).find();
-            for (TunnelSwitchPortVO tunnelPort : tunnelVO.getTunnelSwitchPortVOS()) {
-                if (tunnelPort.getSortTag().equals(InterfaceType.A.toString()))
-                    endpointTunnel.setNodeA(tunnelPort.getEndpointVO().getNodeVO().getName());
-                else if (tunnelPort.getSortTag().equals(InterfaceType.Z.toString()))
-                    endpointTunnel.setNodeZ(tunnelPort.getEndpointVO().getNodeVO().getName());
+            TunnelVO tunnelVO = new TunnelVO();
+            for(TunnelSwitchPortVO tunnelSwitchPortVO:tunnelSwitchPorts){
+                tunnelVO = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelSwitchPortVO.getTunnelUuid()).find();
+
+                MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
+                for (TunnelSwitchPortVO tunnelPort : tunnelVO.getTunnelSwitchPortVOS()) {
+                    if (tunnelPort.getSortTag().equals(InterfaceType.A.toString()))
+                        endpointTunnel.setNodeA(tunnelPort.getEndpointVO().getNodeVO().getName());
+                    else if (tunnelPort.getSortTag().equals(InterfaceType.Z.toString()))
+                        endpointTunnel.setNodeZ(tunnelPort.getEndpointVO().getNodeVO().getName());
+                }
+
+                endpointTunnel.setTunnelUuid(tunnelVO.getUuid());
+                endpointTunnel.setTunnelName(tunnelVO.getName());
+                endpointTunnel.setBandwidth(tunnelVO.getBandwidth());
+
+                endpointTunnels.add(endpointTunnel);
             }
-
-            endpointTunnel.setTunnelUuid(tunnelVO.getUuid());
-            endpointTunnel.setTunnelName(tunnelVO.getName());
-            endpointTunnel.setBandwidth(tunnelVO.getBandwidth());
-
-            endpointTunnels.add(endpointTunnel);
         }
 
         if (endpointTunnels.isEmpty())
@@ -1447,7 +1451,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 .list();
 
         if (vos.size() > 0) {
-            throw new ApiMessageInterceptionException(argerr("Uncompleted test records exists, please retry later!"));
+            long retryTime = TimeUnit.SECONDS.toMinutes(CoreGlobalProperty.RESET_SPEEDRECORD_INTERVAL);
+            throw new ApiMessageInterceptionException(argerr("Uncompleted test records exists, please retry %s miniters later!", retryTime));
         }
     }
 
@@ -1527,7 +1532,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         @Override
         public void run() {
             try {
-                logger.info(LocalTime.now() + "###############开始重置测速纪录状态###################");
+                logger.info(LocalTime.now() + ": 重置测速纪录状态");
                 List<SpeedRecordsVO> list = Q.New(SpeedRecordsVO.class)
                         .eq(SpeedRecordsVO_.status, SpeedRecordStatus.TESTING)
                         .list();
@@ -1546,8 +1551,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                         }
                     }
                 }
-
-                // 查询要更新的测速纪录  当前时间 > creation_date + duration + 120秒
             } catch (Throwable t) {
                 logger.warn("unhandled exception!");
             }
