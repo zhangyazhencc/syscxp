@@ -9,8 +9,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 /**
  * Created by DCY on 2017-09-01
  */
-@Action(services = {TunnelConstant.ACTION_SERVICE}, category = SwitchConstant.ACTION_CATEGORY, names = {"read"}, adminOnly = true)
-
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = SwitchConstant.ACTION_CATEGORY, names = {"read"})
 @AutoQuery(replyClass = APIQuerySwitchPortReply.class, inventoryClass = SwitchPortInventory.class)
 public class APIQuerySwitchPortMsg extends APIQueryMessage {
 }
