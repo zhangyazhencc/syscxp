@@ -20,8 +20,8 @@ public class SolutionTunnelInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    private String endpointUuidA;
-    private String endpointUuidZ;
+    private String endpointNameA;
+    private String endpointNameZ;
     private long bandwidth;
 
     public static SolutionTunnelInventory valueOf(SolutionTunnelVO vo) {
@@ -35,9 +35,12 @@ public class SolutionTunnelInventory {
         inv.setDuration(vo.getDuration());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
-
-        inv.setEndpointUuidA(vo.getEndpointUuidA());
-        inv.setEndpointUuidZ(vo.getEndpointUuidZ());
+        if(vo.getEndpointVOA() != null){
+            inv.setEndpointNameA(vo.getEndpointVOA().getName());
+        }
+        if(vo.getEndpointVOZ() != null){
+            inv.setEndpointNameZ(vo.getEndpointVOZ().getName());
+        }
         inv.setBandwidth(vo.getBandwidth());
 
         return inv;
@@ -123,20 +126,20 @@ public class SolutionTunnelInventory {
         this.createDate = createDate;
     }
 
-    public String getEndpointUuidA() {
-        return endpointUuidA;
+    public String getEndpointNameA() {
+        return endpointNameA;
     }
 
-    public void setEndpointUuidA(String endpointUuidA) {
-        this.endpointUuidA = endpointUuidA;
+    public void setEndpointNameA(String endpointNameA) {
+        this.endpointNameA = endpointNameA;
     }
 
-    public String getEndpointUuidZ() {
-        return endpointUuidZ;
+    public String getEndpointNameZ() {
+        return endpointNameZ;
     }
 
-    public void setEndpointUuidZ(String endpointUuidZ) {
-        this.endpointUuidZ = endpointUuidZ;
+    public void setEndpointNameZ(String endpointNameZ) {
+        this.endpointNameZ = endpointNameZ;
     }
 
     public long getBandwidth() {
