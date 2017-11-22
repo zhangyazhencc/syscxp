@@ -83,6 +83,7 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
     private void handle(APIDeleteTicketMsg msg) {
 
         dbf.removeByPrimaryKey(msg.getUuid(), TicketVO.class);
+
         APIDeleteTicketEvent evt = new APIDeleteTicketEvent(msg.getId());
 
         bus.publish(evt);

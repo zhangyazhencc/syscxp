@@ -51,7 +51,7 @@ public class TicketVO {
     @Enumerated(EnumType.STRING)
     private TicketStatus status;
 
-    @OneToMany
+    @OneToMany(cascade={CascadeType.REMOVE})
     @JoinColumn(name = "ticketUuid", insertable = false, updatable = false)
     private List<TicketRecordVO> ticketRecordVOS;
 
