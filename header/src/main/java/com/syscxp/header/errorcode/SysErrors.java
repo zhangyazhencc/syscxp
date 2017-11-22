@@ -20,7 +20,8 @@ public enum SysErrors {
     UNIMPLEMENTED_OPERATION_ERROR(1014),
     HTTP_ERROR(1015),
     IO_ERROR(1016),
-    EXTERNAL_ERROR(1017);
+    EXTERNAL_ERROR(1017),
+    BILLING_ERROR(1018);
 
     private String code;
 

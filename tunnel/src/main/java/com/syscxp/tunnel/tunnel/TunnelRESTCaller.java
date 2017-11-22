@@ -1,7 +1,9 @@
 package com.syscxp.tunnel.tunnel;
 
 import com.syscxp.core.CoreGlobalProperty;
-import com.syscxp.header.errorcode.OperationFailureException;
+import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.header.apimediator.ApiMessageInterceptionException;
+import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.header.message.APIReply;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,6 +26,8 @@ public class TunnelRESTCaller {
     private static final CLogger logger = Utils.getLogger(TunnelRESTCaller.class);
     @Autowired
     private RESTFacade restf;
+    @Autowired
+    private ErrorFacade errf;
 
     private String baseUrl;
 
@@ -35,14 +39,6 @@ public class TunnelRESTCaller {
         this.baseUrl = baseUrl;
     }
 
-//    public APIReply syncJsonPost(APIMessage innerMsg) {
-//        String url = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL);
-//        InnerMessageHelper.setMD5(innerMsg);
-//
-//        RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
-//        return (APIReply) RESTApiDecoder.loads(rsp.getResult());
-//    }
-
     public <T extends APIReply> T syncJsonPost(APIMessage innerMsg) {
         String url = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL);
         InnerMessageHelper.setMD5(innerMsg);
@@ -50,7 +46,7 @@ public class TunnelRESTCaller {
         RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
         APIReply reply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
         if (!reply.isSuccess()){
-            throw new OperationFailureException(reply.getError());
+            throw new ApiMessageInterceptionException(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, reply.getError()));
         }else{
             return reply.castReply();
         }
