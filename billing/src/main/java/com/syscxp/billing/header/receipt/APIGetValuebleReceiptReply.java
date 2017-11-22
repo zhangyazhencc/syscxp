@@ -5,10 +5,10 @@ import com.syscxp.header.message.APIReply;
 import java.math.BigDecimal;
 
 public class APIGetValuebleReceiptReply extends APIReply{
-    private BigDecimal valuebleReceipt;
-    private BigDecimal consumeCash;
-    private BigDecimal hadReceiptCash;
-    private BigDecimal hadConsumeCreditPoint;
+    private BigDecimal valuebleReceipt;  //可开票金额
+    private BigDecimal consumeCash;     //总消费金额
+    private BigDecimal hadReceiptCash;  //已开票金额
+    private BigDecimal hadConsumeCreditPoint; // 欠费（已用信用额度）
 
     public BigDecimal getConsumeCash() {
         return consumeCash;

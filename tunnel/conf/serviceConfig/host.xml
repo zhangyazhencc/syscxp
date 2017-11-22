@@ -53,14 +53,18 @@
 
     <message>
         <name>com.syscxp.header.tunnel.host.APICreateHostSwitchMonitorMsg</name>
+        <interceptor>MonitorApiInterceptor</interceptor>
+        <serviceId>agent</serviceId>
     </message>
 
     <message>
         <name>com.syscxp.header.tunnel.host.APIUpdateHostSwitchMonitorMsg</name>
+        <serviceId>agent</serviceId>
     </message>
 
     <message>
         <name>com.syscxp.header.tunnel.host.APIDeleteHostSwitchMonitorMsg</name>
+        <serviceId>agent</serviceId>
     </message>
 
     <message>

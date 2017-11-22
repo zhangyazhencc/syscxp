@@ -1,6 +1,7 @@
 package com.syscxp.tunnel.host;
 
 import com.syscxp.core.CoreGlobalProperty;
+import com.syscxp.core.Platform;
 import com.syscxp.core.ansible.AnsibleFacade;
 import com.syscxp.core.cloudbus.*;
 import com.syscxp.core.componentloader.PluginRegistry;
@@ -17,6 +18,7 @@ import com.syscxp.header.host.HostStatus;
 import com.syscxp.header.host.HostVO;
 import com.syscxp.header.host.HostVO_;
 import com.syscxp.header.managementnode.ManagementNodeReadyExtensionPoint;
+import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.message.NeedReplyMessage;
@@ -203,7 +205,8 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
             ConnectHostMsg msg = new ConnectHostMsg();
             msg.setNewAdd(false);
             msg.setUuid(huuid);
-            bus.makeTargetServiceIdByResourceUuid(msg, MonitorHostConstant.SERVICE_ID, huuid);
+//            bus.makeTargetServiceIdByResourceUuid(msg, MonitorHostConstant.SERVICE_ID, huuid);
+            bus.makeLocalServiceId(msg, MonitorHostConstant.SERVICE_ID);
             msgs.add(msg);
         }
 
@@ -221,14 +224,76 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
         });
     }
 
+    private void handle(APICreateHostSwitchMonitorMsg msg) {
+        HostSwitchMonitorVO vo = new HostSwitchMonitorVO();
+
+        vo.setUuid(Platform.getUuid());
+        vo.setHostUuid(msg.getHostUuid());
+        vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
+        vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
+        vo.setInterfaceName(msg.getInterfaceName());
+
+        vo = dbf.persistAndRefresh(vo);
+
+        APICreateHostSwitchMonitorEvent event = new APICreateHostSwitchMonitorEvent(msg.getId());
+        event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+        bus.publish(event);
+    }
+
+    private void handle(APIUpdateHostSwitchMonitorMsg msg) {
+        HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
+
+        vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
+        vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
+        vo.setInterfaceName(msg.getInterfaceName());
+        vo = dbf.updateAndRefresh(vo);
+
+        APIUpdateHostSwitchMonitorEvent event = new APIUpdateHostSwitchMonitorEvent(msg.getId());
+        event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+        bus.publish(event);
+    }
+
+    private void handle(APIDeleteHostSwitchMonitorMsg msg) {
+
+        HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
+
+        dbf.remove(vo);
+
+        APIDeleteHostSwitchMonitorEvent event = new APIDeleteHostSwitchMonitorEvent(msg.getId());
+        event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+
+        bus.publish(event);
+    }
+
     @Override
     @MessageSafe
     public void handleMessage(Message msg) {
-        bus.dealWithUnknownMessage(msg);
+        if (msg instanceof APIMessage) {
+            handleApiMessage((APIMessage) msg);
+        } else {
+            handleLocalMessage(msg);
+        }
     }
 
 
-    @Override
+    private void handleLocalMessage(Message msg) {
+        bus.dealWithUnknownMessage(msg);
+    }
+
+    private void handleApiMessage(APIMessage msg) {
+        if (msg instanceof APICreateHostSwitchMonitorMsg) {
+            handle((APICreateHostSwitchMonitorMsg) msg);
+        } else if (msg instanceof APIUpdateHostSwitchMonitorMsg) {
+            handle((APIUpdateHostSwitchMonitorMsg) msg);
+        } else if (msg instanceof APIDeleteHostSwitchMonitorMsg) {
+            handle((APIDeleteHostSwitchMonitorMsg) msg);
+        }else {
+            bus.dealWithUnknownMessage(msg);
+        }
+    }
+
+
+        @Override
     public String getId() {
         return bus.makeLocalServiceId(MonitorHostConstant.SERVICE_ID);
     }
