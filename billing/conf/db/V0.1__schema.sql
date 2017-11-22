@@ -387,10 +387,11 @@ CREATE TABLE `ReceiptInfoVO` (
   `identifyNumber` varchar(30) DEFAULT NULL COMMENT '纳税人识别号',
   `address` varchar(300) DEFAULT NULL COMMENT '注册场地地址',
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账号id',
-  `lastOpDate` timestamp NOT NULL DEFAULT  current_timestamp(),
-  `createDate` timestamp ,
-  `isDefault` tinyint(1) unsigned NOT NULL DEFAULT 0,
+  `lastOpDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `isDefault` tinyint(1) unsigned NOT NULL DEFAULT '0',
   `comment` varchar(500) DEFAULT NULL,
+  `isShow` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -402,31 +403,33 @@ CREATE TABLE `ReceiptPostAddressVO` (
   `uuid` varchar(32) NOT NULL COMMENT '主键',
   `accountUuid` varchar(32) DEFAULT NULL COMMENT '账号id',
   `name` varchar(200) DEFAULT NULL COMMENT '姓名',
-  `isDefault` tinyint(1) unsigned DEFAULT 0,
+  `isDefault` tinyint(1) unsigned DEFAULT '0',
   `telephone` varchar(30) DEFAULT NULL COMMENT '电话号码',
   `address` varchar(500) DEFAULT NULL COMMENT '详细地址',
-  `lastOpDate` timestamp NOT NULL DEFAULT current_timestamp(),
-  `createDate` timestamp,
+  `lastOpDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `isShow` tinyint(1) DEFAULT '1',
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `ReceiptVO` */
 
 DROP TABLE IF EXISTS `ReceiptVO`;
-
 CREATE TABLE `ReceiptVO` (
-  `uuid` varchar(32) NOT NULL COMMENT '主键',
-  `total` decimal(12,4) DEFAULT NULL COMMENT '开票金额',
-  `applyTime` timestamp  NULL  DEFAULT NULL COMMENT '申请时间',
-  `state` varchar(50) DEFAULT NULL COMMENT '状态',
-  `receiptInfoUuid` varchar(32) DEFAULT NULL COMMENT '发票开票信息id',
-  `receiptAddressUuid` varchar(32) DEFAULT NULL COMMENT '发票邮寄地址',
-  `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户id',
-  `lastOpDate` timestamp NOT NULL DEFAULT  current_timestamp(),
-  `createDate` timestamp ,
-  `commet` varchar(255) DEFAULT NULL COMMENT '备注',
+  `uuid` VARCHAR(32) NOT NULL COMMENT '主键',
+  `total` DECIMAL(12,4) DEFAULT NULL COMMENT '开票金额',
+  `applyTime` TIMESTAMP NULL DEFAULT NULL COMMENT '申请时间',
+  `state` VARCHAR(50) DEFAULT NULL COMMENT '状态',
+  `receiptInfoUuid` VARCHAR(32) DEFAULT NULL COMMENT '发票开票信息id',
+  `receiptAddressUuid` VARCHAR(32) DEFAULT NULL COMMENT '发票邮寄地址',
+  `accountUuid` VARCHAR(32) DEFAULT NULL COMMENT '账户id',
+  `lastOpDate` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `createDate` TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `commet` VARCHAR(255) DEFAULT NULL COMMENT '备注',
+  `receiptNO` VARCHAR(128) DEFAULT NULL COMMENT '发票编号',
+  `opMan` VARCHAR(32) DEFAULT NULL COMMENT '处理人',
   PRIMARY KEY (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+) ENGINE=INNODB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `RenewVO` */
 
