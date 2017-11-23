@@ -17,6 +17,7 @@ import com.syscxp.utils.DebugUtils;
 import com.syscxp.utils.ExceptionDSL;
 import com.syscxp.utils.Utils;
 import org.apache.http.HttpStatus;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.client.HttpClientErrorException;
@@ -35,6 +36,7 @@ import com.syscxp.utils.logging.CLogger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.List;
@@ -145,6 +147,7 @@ public class RESTFacadeImpl implements RESTFacade {
 
     void sendCommand(HttpServletRequest req, HttpServletResponse rsp) {
         String commandPath = req.getHeader(RESTConstant.COMMAND_PATH);
+        PrintWriter out = null;
         try {
             HttpEntity<String> entity = this.httpServletRequestToHttpEntity(req);
             if (commandPath == null) {
@@ -161,10 +164,13 @@ public class RESTFacadeImpl implements RESTFacade {
             }
             logger.info(String.format("from %s call back. body: %s", req.getRequestURL().toString(), entity.getBody()));
             String ret = handler.handle(entity);
-            if (ret == null) {
-                rsp.setStatus(HttpStatus.SC_OK);
-            } else {
-                rsp.setStatus(HttpStatus.SC_OK, ret);
+            rsp.setStatus(HttpStatus.SC_OK);
+            if (ret != null) {
+                rsp.setCharacterEncoding("UTF-8");
+                rsp.setContentType("application/json; charset=utf-8");
+                out = rsp.getWriter();
+                out.append(ret);
+                logger.debug(String.format("Command response: %s",ret));
             }
         } catch (IOException e) {
             logger.warn(e.getMessage(), e);
@@ -175,9 +181,12 @@ public class RESTFacadeImpl implements RESTFacade {
             } catch (IOException e) {
                 logger.warn(e.getMessage(), e);
             }
+        }finally {
+            if (out != null) {
+                out.close();
+            }
         }
     }
-
 
     public void setHostname(String hostname) {
         this.hostname = hostname;
