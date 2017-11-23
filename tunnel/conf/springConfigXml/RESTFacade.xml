@@ -18,7 +18,7 @@
     <bean id="RESTFacade" class="com.syscxp.core.rest.RESTFacadeImpl">
         <property name="hostname" value="${RESTFacade.hostname:AUTO}" />
         <property name="port" value="${RESTFacade.port:8080}" />
-        <property name="path" value="${RESTFacade.path:syscxp}" />
+        <property name="path" value="${RESTFacade.path:tunnel}" />
     </bean>
     
     <bean id="RESTApiFacade" class="com.syscxp.core.rest.RESTApiFacadeImpl">
