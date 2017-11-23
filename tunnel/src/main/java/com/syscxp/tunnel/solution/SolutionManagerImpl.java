@@ -87,6 +87,9 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         SolutionVpnVO vo = dbf.findByUuid(msg.getUuid(),SolutionVpnVO.class);
         vo.setBandwidth(msg.getBandwidth());
+        vo.setCost(msg.getCost());
+        vo.setProductChargeModel(msg.getProductChargeModel());
+        vo.setDuration(msg.getDuration());
 
         APIUpdateSolutionVpnEvent event = new APIUpdateSolutionVpnEvent(msg.getId());
         event.setInventory(SolutionVpnInventory.valueOf(dbf.updateAndRefresh(vo)));
@@ -98,6 +101,9 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(),SolutionTunnelVO.class);
         vo.setBandwidth(msg.getBandwidth());
+        vo.setCost(msg.getCost());
+        vo.setProductChargeModel(msg.getProductChargeModel());
+        vo.setDuration(msg.getDuration());
 
         APIUpdateSolutionTunnelEvent event = new APIUpdateSolutionTunnelEvent(msg.getId());
         event.setInventory(SolutionTunnelInventory.valueOf(dbf.updateAndRefresh(vo)));
