@@ -15,4 +15,10 @@ public interface TunnelConstant {
 
     String QUOTA_INTERFACE_NUM = "interface.num";
     String QUOTA_TUNNEL_NUM = "tunnel.num";
+
+    String QUOTA_SOLUTION_NUM = "solution.num";
+    String QUOTA_SOLUTION_INTERFACE_NUM = "solutionInterface.num";
+    String QUOTA_SOLUTION_TUNNEL_NUM = "solutionTunnel.num";
+    String QUOTA_SOLUTION_VPN_NUM = "solutionVpn.num";
+
 }

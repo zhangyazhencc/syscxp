@@ -5,13 +5,11 @@ import com.syscxp.account.header.ticket.APICreateTicketMsg;
 import com.syscxp.account.header.ticket.APICreateTicketRecordMsg;
 import com.syscxp.account.header.ticket.TicketVO;
 import com.syscxp.account.header.ticket.TicketVO_;
-import com.syscxp.account.header.user.APICreateUserMsg;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.identity.QuotaUtil;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.NeedQuotaCheckMessage;
 import com.syscxp.header.quota.Quota;
-import com.syscxp.header.tunnel.tunnel.TunnelMotifyRecordVO_;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
@@ -41,39 +39,22 @@ public class TicketQuotaOperator implements Quota.QuotaOperator {
 
     @Transactional(readOnly = true)
     private void check(APICreateTicketRecordMsg msg, Map<String, Quota.QuotaPair> pairs) {
-        String currentAccountUuid = msg.getSession().getAccountUuid();
-        String quotaName = AccountConstant.QUOTA_TICKET_RECORD_NUM;
-        long quotaNum = pairs.get(quotaName).getValue();
-        long currentUsed = getUsedTicketNum(currentAccountUuid);
+        String accountUuid = msg.getSession().getAccountUuid();
+        long quotaNum = pairs.get(AccountConstant.QUOTA_TICKET_RECORD_NUM).getValue();
+        long currentUsed = getUsedTicketNum(accountUuid);
 
-        CheckTunnelQuota(currentAccountUuid, currentAccountUuid, quotaName, quotaNum, currentUsed);
+        new QuotaUtil().CheckQuota(AccountConstant.QUOTA_TICKET_RECORD_NUM, currentUsed, quotaNum);
     }
 
     @Transactional(readOnly = true)
     private void check(APICreateTicketMsg msg, Map<String, Quota.QuotaPair> pairs) {
-        String currentAccountUuid = "system";
+        String accountUuid = null;
         if (msg.getSession() != null)
-            currentAccountUuid = msg.getSession().getAccountUuid();
-        String quotaName = AccountConstant.QUOTA_TICKET_NUM;
-        long quotaNum = pairs.get(quotaName).getValue();
-        long currentUsed = getUsedTicketNum(currentAccountUuid);
+            accountUuid = msg.getSession().getAccountUuid();
+        long quotaNum = pairs.get(AccountConstant.QUOTA_TICKET_NUM).getValue();
+        long currentUsed = getUsedTicketNum(accountUuid);
 
-        CheckTunnelQuota(currentAccountUuid, currentAccountUuid, quotaName, quotaNum, currentUsed);
-    }
-
-    private void CheckTunnelQuota(String currentAccountUuid, String ownerAccountUuid, String quotaName, long quotaNum, long currentUsed) {
-        long askedNum = 1;
-        QuotaUtil.QuotaCompareInfo quotaCompareInfo;
-        {
-            quotaCompareInfo = new QuotaUtil.QuotaCompareInfo();
-            quotaCompareInfo.currentAccountUuid = currentAccountUuid;
-            quotaCompareInfo.ownerAccountUuid = ownerAccountUuid;
-            quotaCompareInfo.quotaName = quotaName;
-            quotaCompareInfo.quotaValue = quotaNum;
-            quotaCompareInfo.currentUsed = currentUsed;
-            quotaCompareInfo.request = askedNum;
-            new QuotaUtil().CheckQuota(quotaCompareInfo);
-        }
+        new QuotaUtil().CheckQuota(AccountConstant.QUOTA_TICKET_NUM, currentUsed, quotaNum);
     }
 
     @Transactional(readOnly = true)
@@ -81,7 +62,7 @@ public class TicketQuotaOperator implements Quota.QuotaOperator {
         TicketQuota quota = new TicketQuota();
         quota.ticketNum = getUsedTicketNum(accountUUid);
         quota.ticketRecordNum = getUsedTicketRecordNum(accountUUid);
-        quota.ticketNoSessionNum = getUsedTicketNum("system");
+        quota.ticketNoSessionNum = getUsedTicketNum(null);
         return quota;
     }
 
@@ -90,9 +71,8 @@ public class TicketQuotaOperator implements Quota.QuotaOperator {
         LocalDateTime dateTime =
                 LocalDate.now().atTime(LocalTime.MIN);
         Q q = Q.New(TicketVO.class)
-                .gte(TicketVO_.createDate, Timestamp.valueOf(dateTime))
-                .lt(TicketVO_.createDate, Timestamp.valueOf(dateTime.plusDays(1)));
-        if (!"system".equals(accountUuid))
+                .gte(TicketVO_.createDate, Timestamp.valueOf(dateTime));
+        if (accountUuid != null)
             q = q.eq(TicketVO_.accountUuid, accountUuid);
         else
             q = q.isNull(TicketVO_.accountUuid);
