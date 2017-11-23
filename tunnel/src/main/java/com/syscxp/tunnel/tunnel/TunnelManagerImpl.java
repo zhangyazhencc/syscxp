@@ -1023,7 +1023,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo.setAccountUuid(vo.getOwnerAccountUuid());
             vo.setState(TunnelState.Deploying);
             vo.setStatus(TunnelStatus.Connecting);
-            vo = dbf.updateAndRefresh(vo);
+            final TunnelVO vo2 = dbf.updateAndRefresh(vo);
             //修改interface状态,生成到期时间
             if (newBuyInterfaceA) {
                 interfaceVOA.setAccountUuid(interfaceVOA.getOwnerAccountUuid());
@@ -1039,22 +1039,30 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
 
             //创建任务
-            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Create);
+            TaskResourceVO taskResourceVO = newTaskResourceVO(vo2, TaskType.Create);
 
             CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
-            createTunnelMsg.setTunnelUuid(vo.getUuid());
+            createTunnelMsg.setTunnelUuid(vo2.getUuid());
             createTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
             bus.makeLocalServiceId(createTunnelMsg, TunnelConstant.SERVICE_ID);
-            bus.send(createTunnelMsg);
+            bus.send(createTunnelMsg, new CloudBusCallBack(null) {
+                @Override
+                public void run(MessageReply reply) {
+                    if (reply.isSuccess()) {
+                        evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo2)));
+                    }else{
+                        evt.setError(reply.getError());
+                    }
+                }
+            });
 
         } else {                          //付款失败
             //付款失败
             vo.setExpireDate(dbf.getCurrentSqlTime());
-            vo = dbf.updateAndRefresh(vo);
+            dbf.updateAndRefresh(vo);
             evt.setError(errf.stringToOperationError("付款失败"));
         }
 
-        evt.setInventory(TunnelInventory.valueOf(vo));
         bus.publish(evt);
     }
 
@@ -1193,18 +1201,26 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setAccountUuid(vo.getOwnerAccountUuid());
         vo.setState(TunnelState.Deploying);
         vo.setStatus(TunnelStatus.Connecting);
-        vo = dbf.updateAndRefresh(vo);
+        final TunnelVO vo2 = dbf.updateAndRefresh(vo);
 
         //创建任务
-        TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Create);
+        TaskResourceVO taskResourceVO = newTaskResourceVO(vo2, TaskType.Create);
 
         CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
-        createTunnelMsg.setTunnelUuid(vo.getUuid());
+        createTunnelMsg.setTunnelUuid(vo2.getUuid());
         createTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
         bus.makeLocalServiceId(createTunnelMsg, TunnelConstant.SERVICE_ID);
-        bus.send(createTunnelMsg);
+        bus.send(createTunnelMsg, new CloudBusCallBack(null) {
+            @Override
+            public void run(MessageReply reply) {
+                if (reply.isSuccess()) {
+                    evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo2)));
+                }else{
+                    evt.setError(reply.getError());
+                }
+            }
+        });
 
-        evt.setInventory(TunnelInventory.valueOf(vo));
         bus.publish(evt);
     }
 
@@ -1308,8 +1324,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         public void run(MessageReply reply) {
                             if (reply.isSuccess()) {
                                 logger.info(String.format("Successfully update vlan of tunnel[uuid:%s].", vo.getUuid()));
+                                evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo)));
                             } else {
                                 logger.info(String.format("Failed update vlan of tunnel[uuid:%s].", vo.getUuid()));
+                                evt.setError(errf.stringToOperationError("update vlan failed!"));
                                 trigger.fail(reply.getError());
                             }
                         }
@@ -1326,7 +1344,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
-                evt.setInventory(TunnelInventory.valueOf(vo));
+
             }
         }).error(new FlowErrorHandler(null) {
             @Override
@@ -1603,9 +1621,17 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 deleteTunnelMsg.setTunnelUuid(vo.getUuid());
                 deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
                 bus.makeLocalServiceId(deleteTunnelMsg, TunnelConstant.SERVICE_ID);
-                bus.send(deleteTunnelMsg);
+                bus.send(deleteTunnelMsg, new CloudBusCallBack(null) {
+                    @Override
+                    public void run(MessageReply reply) {
+                        if (reply.isSuccess()) {
+                            evt.setInventory(TunnelInventory.valueOf(vo));
+                        }else{
+                            evt.setError(reply.getError());
+                        }
+                    }
+                });
 
-                evt.setInventory(TunnelInventory.valueOf(vo));
             } else {
                 //调用退订
                 DeleteTunnelCallBack dc = new DeleteTunnelCallBack();
@@ -1640,7 +1666,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         deleteTunnelMsg.setTunnelUuid(vo.getUuid());
                         deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
                         bus.makeLocalServiceId(deleteTunnelMsg, TunnelConstant.SERVICE_ID);
-                        bus.send(deleteTunnelMsg);
+                        bus.send(deleteTunnelMsg, new CloudBusCallBack(null) {
+                            @Override
+                            public void run(MessageReply reply) {
+                                if (reply.isSuccess()) {
+                                    evt.setInventory(TunnelInventory.valueOf(vo));
+                                }else{
+                                    evt.setError(reply.getError());
+                                }
+                            }
+                        });
 
                         evt.setInventory(TunnelInventory.valueOf(vo));
                     } else {                                            //退订删除：对于已关闭的产品
@@ -1728,6 +1763,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     vo.setState(TunnelState.Unsupport);
                     vo.setExpireDate(dbf.getCurrentSqlTime());
                     dbf.updateAndRefresh(vo);
+
+                    evt.setInventory(TunnelInventory.valueOf(vo));
                 }
             } else {
                 if (msg.isSaveOnly()) {
@@ -1741,6 +1778,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     }
 
                     dbf.updateAndRefresh(vo);
+
+                    evt.setInventory(TunnelInventory.valueOf(vo));
                 } else {
                     //创建任务
                     TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Enabled);
@@ -1749,7 +1788,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     enabledTunnelMsg.setTunnelUuid(vo.getUuid());
                     enabledTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
                     bus.makeLocalServiceId(enabledTunnelMsg, TunnelConstant.SERVICE_ID);
-                    bus.send(enabledTunnelMsg);
+                    bus.send(enabledTunnelMsg, new CloudBusCallBack(null) {
+                        @Override
+                        public void run(MessageReply reply) {
+                            if (reply.isSuccess()) {
+                                evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo)));
+                            }else{
+                                evt.setError(reply.getError());
+                            }
+                        }
+                    });
                 }
             }
 
@@ -1762,17 +1810,34 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 enabledTunnelMsg.setTunnelUuid(vo.getUuid());
                 enabledTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
                 bus.makeLocalServiceId(enabledTunnelMsg, TunnelConstant.SERVICE_ID);
-                bus.send(enabledTunnelMsg);
+                bus.send(enabledTunnelMsg, new CloudBusCallBack(null) {
+                    @Override
+                    public void run(MessageReply reply) {
+                        if (reply.isSuccess()) {
+                            evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo)));
+                        }else{
+                            evt.setError(reply.getError());
+                        }
+                    }
+                });
             } else {
                 DisabledTunnelMsg disabledTunnelMsg = new DisabledTunnelMsg();
                 disabledTunnelMsg.setTunnelUuid(vo.getUuid());
                 disabledTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
                 bus.makeLocalServiceId(disabledTunnelMsg, TunnelConstant.SERVICE_ID);
-                bus.send(disabledTunnelMsg);
+                bus.send(disabledTunnelMsg, new CloudBusCallBack(null) {
+                    @Override
+                    public void run(MessageReply reply) {
+                        if (reply.isSuccess()) {
+                            evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo)));
+                        }else{
+                            evt.setError(reply.getError());
+                        }
+                    }
+                });
             }
         }
 
-        evt.setInventory(TunnelInventory.valueOf(vo));
         bus.publish(evt);
     }
 
@@ -1823,8 +1888,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
                             logger.info(String.format("新增 tunnel[uuid:%s] 内部VLAN 成功.", vo.getUuid()));
+                            evt.setInventory(QinqInventory.valueOf(qinqVO));
                         } else {
                             logger.info(String.format("新增 tunnel[uuid:%s] 内部VLAN 失败.", vo.getUuid()));
+                            evt.setError(errf.stringToOperationError("create innervlan failed!"));
                             trigger.fail(reply.getError());
                         }
                     }
@@ -1840,7 +1907,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
-                evt.setInventory(QinqInventory.valueOf(qinqVO));
+
             }
         }).error(new FlowErrorHandler(null) {
             @Override
@@ -1890,8 +1957,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
                             logger.info(String.format("删除 tunnel[uuid:%s] 内部VLAN 成功.", vo.getUuid()));
+                            evt.setInventory(QinqInventory.valueOf(qinqVO));
                         } else {
                             logger.info(String.format("删除 tunnel[uuid:%s] 内部VLAN 失败.", vo.getUuid()));
+                            evt.setError(errf.stringToOperationError("delete innervlan failed!"));
                             trigger.fail(reply.getError());
                         }
                     }
@@ -1907,7 +1976,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
-                evt.setInventory(QinqInventory.valueOf(qinqVO));
+
             }
         }).error(new FlowErrorHandler(null) {
             @Override
@@ -2007,7 +2076,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         createTunnelMsg.setTunnelUuid(vo.getUuid());
         createTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
         bus.makeLocalServiceId(createTunnelMsg, TunnelConstant.SERVICE_ID);
-        bus.send(createTunnelMsg);
+        bus.send(createTunnelMsg, new CloudBusCallBack(null) {
+            @Override
+            public void run(MessageReply reply) {
+                if (reply.isSuccess()) {
+                    logger.info("billing通知回调并请求下发成功");
+                }else{
+                    logger.info("billing通知回调并请求下发失败");
+                }
+            }
+        });
 
     }
 
@@ -2049,7 +2127,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             deleteTunnelMsg.setTunnelUuid(vo.getUuid());
             deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
             bus.makeLocalServiceId(deleteTunnelMsg, TunnelConstant.SERVICE_ID);
-            bus.send(deleteTunnelMsg);
+            bus.send(deleteTunnelMsg, new CloudBusCallBack(null) {
+                @Override
+                public void run(MessageReply reply) {
+                    if (reply.isSuccess()) {
+                        logger.info("billing通知回调并请求下发成功");
+                    }else{
+                        logger.info("billing通知回调并请求下发失败");
+                    }
+                }
+            });
         } else if (message.getDescription().equals("delete") && vo.getState() == TunnelState.Disabled) {
             deleteTunnel(vo);
         } else if (message.getDescription().equals("unsupport")) {
