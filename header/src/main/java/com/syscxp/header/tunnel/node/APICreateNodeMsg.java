@@ -18,7 +18,7 @@ public class APICreateNodeMsg extends APIMessage {
     private String code;
     @APIParam(required = false,maxLength = 255)
     private String description;
-    private Double longtitude;
+    private Double longitude;
     private Double latitude;
     @APIParam(emptyString = false,maxLength = 128)
     private String property;
@@ -55,12 +55,12 @@ public class APICreateNodeMsg extends APIMessage {
         this.code = code;
     }
 
-    public Double getLongtitude() {
-        return longtitude;
+    public Double getLongitude() {
+        return longitude;
     }
 
-    public void setLongtitude(Double longtitude) {
-        this.longtitude = longtitude;
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 
     public Double getLatitude() {
