@@ -3292,23 +3292,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         return dbf.findByUuid(tunnelSwitch.getEndpointUuid(), EndpointVO.class).getNodeUuid();
     }
 
-    /**
-     * 修改interface 的 switchPort
-     */
-    private void updateInterfacePort(APIUpdateInterfacePortMsg msg) {
-
-        UpdateQuery.New(InterfaceVO.class)
-                .set(InterfaceVO_.switchPortUuid, msg.getSwitchPortUuid())
-                .set(InterfaceVO_.type, msg.getNetworkType())
-                .eq(InterfaceVO_.uuid, msg.getUuid())
-                .update();
-
-        UpdateQuery.New(TunnelSwitchPortVO.class)
-                .set(TunnelSwitchPortVO_.switchPortUuid, msg.getSwitchPortUuid())
-                .set(TunnelSwitchPortVO_.type, msg.getNetworkType())
-                .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
-                .update();
-    }
 
     /**
      * 通过连接点获取可用的端口规格
@@ -3321,17 +3304,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .param("state", SwitchPortState.Enabled)
                 .param("status", SwitchStatus.Connected)
                 .param("endpointUuid", endpointUuid)
-                .list();
-    }
-
-    /**
-     * 通过连接点获取可用的逻辑交换机
-     */
-    private List<SwitchVO> getSwitchByEndpoint(String endpointUuid) {
-        return Q.New(SwitchVO.class)
-                .eq(SwitchVO_.state, SwitchState.Enabled)
-                .eq(SwitchVO_.status, SwitchStatus.Connected)
-                .eq(SwitchVO_.endpointUuid, endpointUuid)
                 .list();
     }
 
