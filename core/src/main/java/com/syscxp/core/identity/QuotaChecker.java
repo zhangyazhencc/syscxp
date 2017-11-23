@@ -1,11 +1,9 @@
 package com.syscxp.core.identity;
 
-import com.syscxp.core.Platform;
 import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.config.GlobalConfigFacade;
 import com.syscxp.core.config.GlobalConfigVO;
 import com.syscxp.core.config.GlobalConfigVO_;
-import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.header.Component;
 import com.syscxp.header.exception.CloudRuntimeException;

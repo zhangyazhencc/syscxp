@@ -36,12 +36,6 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
-    private RESTFacade restf;
 
     @Override
     @MessageSafe

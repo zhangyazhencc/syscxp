@@ -77,6 +77,8 @@
 
         <Logger name="com.syscxp.core.workflow" level="TRACE"/>
 
+        <Logger name="com.syscxp.query" level="TRACE"/>
+
         <!--
                 <Logger name="com.syscxp.billing" level="TRACE" />
         -->

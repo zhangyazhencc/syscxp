@@ -33,7 +33,6 @@ import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.identity.IdentityInterceptor;
 import com.syscxp.tunnel.sdnController.ControllerCommands;
 import com.syscxp.tunnel.sdnController.ControllerRestConstant;
-import com.syscxp.utils.TimeUtils;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -116,9 +115,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APICreateSpeedTestTunnelMsg) msg);
         } else if (msg instanceof APIDeleteSpeedTestTunnelMsg) {
             handle((APIDeleteSpeedTestTunnelMsg) msg);
-        } else if (msg instanceof APIGetEndpointTunnelsMsg) {
-            handle((APIGetEndpointTunnelsMsg) msg);
-        } else {
+        }else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -730,11 +727,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             String resp = evtf.getRESTTemplate().postForObject(url, command, String.class);
 
             results = JSON.parseArray(resp, MonitorAgentCommands.SpeedResult.class);
-            // results = evtf.syncJsonPost(url, command, ArrayList.class);
-
-            if (!results.get(0).isSuccess())
-                reply.setError(Platform.argerr("Failure to fetch speed test result! %s", results.get(0).getMsg()));
-
         } catch (Exception e) {
             reply.setError(Platform.argerr("Failure to execute speed test command! %s", e.getMessage()));
         }
@@ -906,36 +898,36 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         bus.publish(event);
     }
 
-    private void handle(APIGetEndpointTunnelsMsg msg) {
-        APIGetEndpointTunnelsReply reply = new APIGetEndpointTunnelsReply();
-        try {
-            // 按物理交换机IP获取交换机端口
-            Set<String> ports = getPortsPhysicalSwitch(msg.getPhysicalSwitchMip());
+    /***
+     * 按物理交换机mIP与vlan查找所有共点专线
+     * @param cmd：查询你条件
+     * @return：共点专线清单
+     */
+    private List<EndpointTunnelsInventory> getEndpointTunnels(MonitorAgentCommands.FalconGetTunnelCommand cmd) {
+        List<EndpointTunnelsInventory> tunnels = new ArrayList<>();
 
-            // 按交换机端口、vlan获取tunnel
-            List<MonitorAgentCommands.EndpointTunnel> endpointTunnels = getTunnelBySwitchAndVlan(ports, msg);
+        // 按物理交换机IP获取交换机端口
+        Set<String> ports = getPortsPhysicalSwitch(cmd.getPhysicalSwitchMip());
 
-            reply.setInventories(EndpointTunnelsInventory.valueOf(endpointTunnels));
-        } catch (Exception e) {
-            reply.setError(Platform.argerr("Fail to get endpoint tunnels. Error: %s", e.getMessage()));
-        }
+        // 按交换机端口、vlan获取tunnel
+        List<MonitorAgentCommands.EndpointTunnel> endpointTunnels = getTunnelBySwitchAndVlan(ports, cmd.getPhysicalSwitchMip(), cmd.getVlan());
 
-        bus.reply(msg, reply);
+        return EndpointTunnelsInventory.valueOf(endpointTunnels);
     }
 
-    private List<MonitorAgentCommands.EndpointTunnel> getTunnelBySwitchAndVlan(Set<String> ports, APIGetEndpointTunnelsMsg msg) {
+    private List<MonitorAgentCommands.EndpointTunnel> getTunnelBySwitchAndVlan(Set<String> ports, String physicalSwitchMip, Integer vlan) {
         List<MonitorAgentCommands.EndpointTunnel> endpointTunnels = new ArrayList<>();
 
         for (String portUuid : ports) {
             List<TunnelSwitchPortVO> tunnelSwitchPorts = Q.New(TunnelSwitchPortVO.class)
                     .eq(TunnelSwitchPortVO_.switchPortUuid, portUuid)
-                    .eq(TunnelSwitchPortVO_.vlan, msg.getVlan()).list();
+                    .eq(TunnelSwitchPortVO_.vlan, vlan).list();
 
             if (tunnelSwitchPorts.isEmpty())
                 continue;
 
             TunnelVO tunnelVO = new TunnelVO();
-            for(TunnelSwitchPortVO tunnelSwitchPortVO:tunnelSwitchPorts){
+            for (TunnelSwitchPortVO tunnelSwitchPortVO : tunnelSwitchPorts) {
                 tunnelVO = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelSwitchPortVO.getTunnelUuid()).find();
 
                 MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
@@ -955,7 +947,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
 
         if (endpointTunnels.isEmpty())
-            throw new IllegalArgumentException(String.format("No tunnel exist under endpoint %s vlan %s ", msg.getPhysicalSwitchMip(), msg.getVlan()));
+            throw new IllegalArgumentException(String.format("No tunnel exist under endpoint %s vlan %s ", physicalSwitchMip, vlan));
 
         return endpointTunnels;
     }
@@ -1154,7 +1146,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             dbf.update(tunnelMonitorVO);
         }
     }
-
 
 
     /***
@@ -1525,7 +1516,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             return "reset-speedrecord-status-" + Platform.getManagementServerId();
         }
 
-        private long getExpiredTime(Date createDate,int duration){
+        private long getExpiredTime(Date createDate, int duration) {
             return createDate.getTime() + (expiredSpeedRecordTime + duration) * 1000;
         }
 
@@ -1539,13 +1530,13 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
                 if (!list.isEmpty()) {
                     for (SpeedRecordsVO vo : list) {
-                        long expiredTime = getExpiredTime(vo.getCreateDate(),vo.getDuration());
+                        long expiredTime = getExpiredTime(vo.getCreateDate(), vo.getDuration());
                         long currentTime = System.currentTimeMillis();
-                        SimpleDateFormat format =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         String d = format.format(expiredTime);
                         String c = format.format(currentTime);
 
-                        if(System.currentTimeMillis() > expiredTime){
+                        if (System.currentTimeMillis() > expiredTime) {
                             vo.setStatus(SpeedRecordStatus.FAILURE);
                             dbf.update(vo);
                         }
@@ -1561,6 +1552,25 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     @Override
     public boolean start() {
         resetSpeedRecordStatus();
+
+        evtf.registerSyncHttpCallHandler("FalconTunnel", MonitorAgentCommands.FalconGetTunnelCommand.class,
+                cmd -> {
+
+                    MonitorAgentCommands.FalconResponse falconResponse = new MonitorAgentCommands.FalconResponse();
+                    try {
+                        List<EndpointTunnelsInventory> tunnels = getEndpointTunnels(cmd);
+
+                        falconResponse.setSuccess(true);
+                        falconResponse.setMsg("success");
+                        falconResponse.setInventories(tunnels);
+                    }catch (Exception e){
+                        falconResponse.setSuccess(false);
+                        falconResponse.setMsg(String.format("Get tunnels failed, Error: %s",e.getMessage()));
+                    }
+
+                    return JSONObjectUtil.toJsonString(falconResponse);
+                });
+
         return true;
     }
 

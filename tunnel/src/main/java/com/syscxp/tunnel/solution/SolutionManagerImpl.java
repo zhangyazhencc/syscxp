@@ -18,10 +18,8 @@ import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.solution.*;
 import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
-import com.syscxp.header.vpn.host.ZoneVO;
 import com.syscxp.tunnel.quota.SolutionQuotaOperator;
 import com.syscxp.tunnel.tunnel.TunnelBase;
-import com.syscxp.tunnel.tunnel.TunnelManagerImpl;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,6 +93,9 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         SolutionVpnVO vo = dbf.findByUuid(msg.getUuid(),SolutionVpnVO.class);
         vo.setBandwidth(msg.getBandwidth());
+        vo.setCost(msg.getCost());
+        vo.setProductChargeModel(msg.getProductChargeModel());
+        vo.setDuration(msg.getDuration());
 
         APIUpdateSolutionVpnEvent event = new APIUpdateSolutionVpnEvent(msg.getId());
         event.setInventory(SolutionVpnInventory.valueOf(dbf.updateAndRefresh(vo)));
@@ -106,6 +107,9 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(),SolutionTunnelVO.class);
         vo.setBandwidth(msg.getBandwidth());
+        vo.setCost(msg.getCost());
+        vo.setProductChargeModel(msg.getProductChargeModel());
+        vo.setDuration(msg.getDuration());
 
         APIUpdateSolutionTunnelEvent event = new APIUpdateSolutionTunnelEvent(msg.getId());
         event.setInventory(SolutionTunnelInventory.valueOf(dbf.updateAndRefresh(vo)));
