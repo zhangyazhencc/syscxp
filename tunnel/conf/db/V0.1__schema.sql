@@ -514,7 +514,7 @@ CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterEO` (
 	  `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`AliEdgeRouterVO` AS SELECT uuid, tunnelUuid, accountUuid, aliAccountUuid, aliRegionId, name, description, vbrUuid, physicalLineUuid, vlan, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`AliEdgeRouterVO` AS SELECT uuid, tunnelUuid, accountUuid, aliAccountUuid, aliRegionId, name, description, vbrUuid, physicalLineUuid, vlan, isCreateFlag, lastOpDate, createDate
                                         FROM `AliEdgeRouterEO` WHERE deleted = 0;
 
 ##配置表
