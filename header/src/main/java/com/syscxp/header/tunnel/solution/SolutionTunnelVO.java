@@ -1,8 +1,8 @@
 package com.syscxp.header.tunnel.solution;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import com.syscxp.header.tunnel.endpoint.EndpointVO;
+
+import javax.persistence.*;
 
 /**
  * Created by wangwg on 2017/11/20.
@@ -11,27 +11,36 @@ import javax.persistence.Table;
 @Table
 public class SolutionTunnelVO extends SolutionBaseVO{
 
-    @Column
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "endpointUuidA")
+    private EndpointVO endpointVOA;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "endpointUuidZ")
+    private EndpointVO endpointVOZ;
+
+   /* @Column
     private String endpointUuidA;
     @Column
-    private String endpointUuidZ;
+    private String endpointUuidZ;*/
     @Column
     private long bandwidth;
 
-    public String getEndpointUuidA() {
-        return endpointUuidA;
+    public EndpointVO getEndpointVOA() {
+        return endpointVOA;
     }
 
-    public void setEndpointUuidA(String endpointUuidA) {
-        this.endpointUuidA = endpointUuidA;
+    public void setEndpointVOA(EndpointVO endpointVOA) {
+        this.endpointVOA = endpointVOA;
     }
 
-    public String getEndpointUuidZ() {
-        return endpointUuidZ;
+    public EndpointVO getEndpointVOZ() {
+        return endpointVOZ;
     }
 
-    public void setEndpointUuidZ(String endpointUuidZ) {
-        this.endpointUuidZ = endpointUuidZ;
+    public void setEndpointVOZ(EndpointVO endpointVOZ) {
+        this.endpointVOZ = endpointVOZ;
     }
 
     public long getBandwidth() {

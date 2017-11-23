@@ -6,7 +6,7 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.node.NodeEO;
 
-@Action(category = SolutionConstant.ACTION_CATEGORY, names = "delete")
+@Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "delete")
 public class APIDeleteSolutionMsg extends APIMessage {
 
     @APIParam(maxLength = 32, emptyString = false, resourceType = SolutionVO.class)

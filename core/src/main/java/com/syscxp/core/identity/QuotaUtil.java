@@ -63,6 +63,15 @@ public class QuotaUtil {
         }
     }
 
+    public void CheckQuota(String quotaName, long currentUsed, long quotaValue) {
+        if (currentUsed + 1 > quotaValue) {
+            throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.QUOTA_EXCEEDING,
+                    String.format("The resource  exceeds a quota[name: %s, value: %s], Current used:%s, Request:1. ",
+                            quotaName, quotaValue, currentUsed)
+            ));
+        }
+    }
+
     public Map<String, Quota.QuotaPair> makeQuotaPairs(String accountUuid) {
         SimpleQuery<QuotaVO> q = dbf.createQuery(QuotaVO.class);
         q.select(QuotaVO_.name, QuotaVO_.value);

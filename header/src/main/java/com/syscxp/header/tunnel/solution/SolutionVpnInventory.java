@@ -21,7 +21,7 @@ public class SolutionVpnInventory {
     private Timestamp createDate;
 
     private String zoneUuid;
-    private String endpointUuid;
+    private String endpointName;
     private long bandwidth;
 
     public static SolutionVpnInventory valueOf(SolutionVpnVO vo) {
@@ -35,11 +35,11 @@ public class SolutionVpnInventory {
         inv.setDuration(vo.getDuration());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
-
-        inv.setEndpointUuid(vo.getEndpointUuid());
+        if(vo.getEndpointVO() != null){
+            inv.setEndpointName(vo.getEndpointVO().getName());
+        }
         inv.setZoneUuid(vo.getZoneUuid());
         inv.setBandwidth(vo.getBandwidth());
-
         return inv;
     }
 
@@ -123,10 +123,6 @@ public class SolutionVpnInventory {
         this.createDate = createDate;
     }
 
-    public Long getBandwidth() {
-        return bandwidth;
-    }
-
     public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
     }
@@ -139,11 +135,19 @@ public class SolutionVpnInventory {
         this.zoneUuid = zoneUuid;
     }
 
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public String getEndpointName() {
+        return endpointName;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setEndpointName(String endpointName) {
+        this.endpointName = endpointName;
+    }
+
+    public void setBandwidth(long bandwidth) {
+        this.bandwidth = bandwidth;
+    }
+
+    public long getBandwidth() {
+        return bandwidth;
     }
 }

@@ -11,21 +11,30 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
+import com.syscxp.header.quota.Quota;
+import com.syscxp.header.quota.ReportQuotaExtensionPoint;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.solution.*;
+import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
+import com.syscxp.tunnel.quota.SolutionQuotaOperator;
 import com.syscxp.tunnel.tunnel.TunnelBase;
-import com.syscxp.tunnel.tunnel.TunnelManagerImpl;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
+import static com.syscxp.utils.CollectionDSL.list;
 
 
 /**
  * Created by wangwg on 2017/11/20.
  */
 
-public class SolutionManagerImpl extends AbstractService implements SolutionManager , ApiMessageInterceptor{
+public class SolutionManagerImpl extends AbstractService implements SolutionManager , ApiMessageInterceptor, ReportQuotaExtensionPoint{
 
     private static final CLogger logger = Utils.getLogger(SolutionManagerImpl.class);
 
@@ -84,6 +93,9 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         SolutionVpnVO vo = dbf.findByUuid(msg.getUuid(),SolutionVpnVO.class);
         vo.setBandwidth(msg.getBandwidth());
+        vo.setCost(msg.getCost());
+        vo.setProductChargeModel(msg.getProductChargeModel());
+        vo.setDuration(msg.getDuration());
 
         APIUpdateSolutionVpnEvent event = new APIUpdateSolutionVpnEvent(msg.getId());
         event.setInventory(SolutionVpnInventory.valueOf(dbf.updateAndRefresh(vo)));
@@ -95,6 +107,9 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(),SolutionTunnelVO.class);
         vo.setBandwidth(msg.getBandwidth());
+        vo.setCost(msg.getCost());
+        vo.setProductChargeModel(msg.getProductChargeModel());
+        vo.setDuration(msg.getDuration());
 
         APIUpdateSolutionTunnelEvent event = new APIUpdateSolutionTunnelEvent(msg.getId());
         event.setInventory(SolutionTunnelInventory.valueOf(dbf.updateAndRefresh(vo)));
@@ -175,7 +190,11 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         }
 
         vo.setBandwidth(msg.getBandwidth());
-        vo.setEndpointUuid(msg.getEndpointUuid());
+
+        EndpointVO endpointVO = dbf.findByUuid(msg.getEndpointUuid(),EndpointVO.class);
+        if(endpointVO != null){
+            vo.setEndpointVO(endpointVO);
+        }
         vo.setZoneUuid(msg.getZoneUuid());
 
         APICreateSolutionVpnEvent event = new APICreateSolutionVpnEvent(msg.getId());
@@ -199,8 +218,15 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         }
 
         vo.setBandwidth(msg.getBandwidth());
-        vo.setEndpointUuidA(msg.getEndpointUuidA());
-        vo.setEndpointUuidZ(msg.getEndpointUuidZ());
+        EndpointVO endpointVOA = dbf.findByUuid(msg.getEndpointUuidA(),EndpointVO.class);
+        if(endpointVOA != null){
+            vo.setEndpointVOA(endpointVOA);
+        }
+
+        EndpointVO endpointVOZ= dbf.findByUuid(msg.getEndpointUuidZ(),EndpointVO.class);
+        if(endpointVOZ != null){
+            vo.setEndpointVOZ(endpointVOZ);
+        }
 
         APICreateSolutionTunnelEvent event = new APICreateSolutionTunnelEvent(msg.getId());
         event.setInventory(SolutionTunnelInventory.valueOf(dbf.persistAndRefresh(vo)));
@@ -222,8 +248,14 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             vo.setName(msg.getName());
         }
 
-        vo.setEndpointUuid(msg.getEndpointUuid());
-        vo.setPortOfferingUuid(msg.getPortOfferingUuid());
+        EndpointVO endpointVO = dbf.findByUuid(msg.getEndpointUuid(),EndpointVO.class);
+        if(endpointVO != null){
+            vo.setEndpointVO(endpointVO);
+        }
+        PortOfferingVO portOfferingVO = dbf.findByUuid(msg.getPortOfferingUuid(),PortOfferingVO.class);
+        if(portOfferingVO != null){
+            vo.setPortOfferingVO(portOfferingVO);
+        }
 
         APICreateSolutionInterfaceEvent event = new APICreateSolutionInterfaceEvent(msg.getId());
         event.setInventory(SolutionInterfaceInventory.valueOf(dbf.persistAndRefresh(vo)));
@@ -236,6 +268,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setUuid(Platform.getUuid());
         vo.setName(msg.getName());
         vo.setDescription(msg.getDescription());
+        vo.setAccountUuid(msg.getAccountUuid());
 
         APICreateSolutionEvent event = new APICreateSolutionEvent(msg.getId());
         event.setInventory(SolutionInventory.valueOf(dbf.persistAndRefresh(vo)));
@@ -263,5 +296,38 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         return null;
     }
 
+    @Override
+    public List<Quota> reportQuota() {
 
+        SolutionQuotaOperator quotaOperator = new SolutionQuotaOperator();
+        // interface quota
+        Quota quota = new Quota();
+        quota.setOperator(quotaOperator);
+        quota.addMessageNeedValidation(APICreateSolutionMsg.class);
+        quota.addMessageNeedValidation(APICreateSolutionInterfaceMsg.class);
+        quota.addMessageNeedValidation(APICreateSolutionTunnelMsg.class);
+        quota.addMessageNeedValidation(APICreateSolutionVpnMsg.class);
+
+        Quota.QuotaPair p = new Quota.QuotaPair();
+        p.setName(TunnelConstant.QUOTA_SOLUTION_NUM);
+        p.setValue(50);
+        quota.addPair(p);
+
+        p = new Quota.QuotaPair();
+        p.setName(TunnelConstant.QUOTA_SOLUTION_INTERFACE_NUM);
+        p.setValue(100);
+        quota.addPair(p);
+
+        p = new Quota.QuotaPair();
+        p.setName(TunnelConstant.QUOTA_SOLUTION_TUNNEL_NUM);
+        p.setValue(100);
+        quota.addPair(p);
+
+        p = new Quota.QuotaPair();
+        p.setName(TunnelConstant.QUOTA_SOLUTION_VPN_NUM);
+        p.setValue(100);
+        quota.addPair(p);
+
+        return list(quota);
+    }
 }

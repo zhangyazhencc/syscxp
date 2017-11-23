@@ -5,7 +5,7 @@ CREATE TABLE `SolutionVO` (
   `name` varchar(128) NOT NULL COMMENT '名称',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
   `totalCost` varchar(20) DEFAULT NULL COMMENT '预估费用',
-  `lastOpDate` timestCamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

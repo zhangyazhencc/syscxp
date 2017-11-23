@@ -1,8 +1,9 @@
 package com.syscxp.header.tunnel.solution;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import com.syscxp.header.tunnel.endpoint.EndpointVO;
+import com.syscxp.header.vpn.host.ZoneVO;
+
+import javax.persistence.*;
 
 /**
  * Created by wangwg on 2017/11/20.
@@ -12,10 +13,16 @@ import javax.persistence.Table;
 @Table
 public class SolutionVpnVO extends SolutionBaseVO{
 
+
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "endpointUuid")
+    private EndpointVO endpointVO;
+
     @Column
     private String zoneUuid;
-    @Column
-    private String endpointUuid;
+    /*@Column
+    private String endpointUuid;*/
     @Column
     private long bandwidth;
 
@@ -27,12 +34,12 @@ public class SolutionVpnVO extends SolutionBaseVO{
         this.zoneUuid = zoneUuid;
     }
 
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public EndpointVO getEndpointVO() {
+        return endpointVO;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setEndpointVO(EndpointVO endpointVO) {
+        this.endpointVO = endpointVO;
     }
 
     public long getBandwidth() {

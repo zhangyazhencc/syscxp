@@ -195,12 +195,12 @@ CREATE TABLE  `NotificationVO` (
     `opAccountUuid` VARCHAR(32) DEFAULT NULL ,
     `opUserUuid` VARCHAR(32) DEFAULT NULL,
     `name` VARCHAR(255) DEFAULT NULL COMMENT '消息类型',
-	`category` VARCHAR(32) DEFAULT NULL,
+    `category` VARCHAR(32) DEFAULT NULL,
     `content` VARCHAR(128) DEFAULT NULL,
     `msgfields` TEXT DEFAULT NULL,
     `sender` VARCHAR(32) NOT NULL,
-	`remoteIp` VARCHAR(20) NOT NULL,
-	`success` BOOLEAN DEFAULT FALSE COMMENT '操作状态',
+    `remoteIp` VARCHAR(20) NOT NULL,
+    `success` BOOLEAN DEFAULT FALSE COMMENT '操作状态',
     `status` VARCHAR(32) DEFAULT NULL,
     `resourceUuid` VARCHAR(32) DEFAULT NULL,
     `resourceType` VARCHAR(32) NOT NULL,
@@ -261,9 +261,9 @@ ALTER TABLE AccountApiSecurityVO ADD CONSTRAINT fkAccountApiSecurityVOAccountVO 
 ALTER TABLE ProxyAccountRefVO ADD CONSTRAINT fkProxyAccountRefVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
 
 ALTER TABLE RoleVO ADD CONSTRAINT fkRoleVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
-ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE RESTRICT;
-ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVOUserVO FOREIGN KEY (userUuid) REFERENCES UserVO (uuid) ON DELETE RESTRICT;
-ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE RESTRICT;
+ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE CASCADE;
+ALTER TABLE UserRoleRefVO ADD CONSTRAINT fkUserRoleRefVOUserVO FOREIGN KEY (userUuid) REFERENCES UserVO (uuid) ON DELETE CASCADE;
+ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVORoleVO FOREIGN KEY (roleUuid) REFERENCES RoleVO (uuid) ON DELETE CASCADE;
 ALTER TABLE RolePolicyRefVO ADD CONSTRAINT fkRolePolicyRefVOPolicyVO FOREIGN KEY (policyUuid) REFERENCES PolicyVO (uuid) ON DELETE RESTRICT;
 
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelReadOnlyAccess','只读访问专线网络的权限','tunnel','Normal','0','{"actions":["tunnel:.*:read"],"effect":"Allow"}');
@@ -294,7 +294,7 @@ CREATE TABLE `TicketVO` (
   `accountUuid` varchar(32) COMMENT '创建账户',
   `userUuid` varchar(32) COMMENT '创建用户/账户',
   `adminUserUuid` varchar(32) COMMENT '工单处理人(管理员为空)',
-  `ticketTypeCode` varchar(128) NOT NULL COMMENT '工单类型(数据字典)',
+  `ticketTypeUuid` varchar(32) NOT NULL COMMENT '工单类型(数据字典)',
   `content` text NOT NULL COMMENT '工单内容',
   `contentExtra` text COMMENT '工单json数据',
   `status` varchar(32) NOT NULL COMMENT '工单最新状态(枚举)',
@@ -305,6 +305,7 @@ CREATE TABLE `TicketVO` (
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ALTER TABLE TicketVO ADD CONSTRAINT fkTicketVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
 
 CREATE TABLE `TicketRecordVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT '记录uuid',
@@ -316,16 +317,17 @@ CREATE TABLE `TicketRecordVO` (
   `status` text NOT NULL COMMENT '当前工单状态(枚举)',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
   `createDate` timestamp,
-  PRIMARY KEY  (`uuid`)
+  PRIMARY KEY  (`uuid`),
+  CONSTRAINT `fkTicketRecordVO` FOREIGN KEY (`ticketUuid`) REFERENCES `TicketVO` (`uuid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE `TicketTypeVO` (
-  `uuid` varchar(50) NOT NULL COMMENT '枚举值',
+  `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'uuid',
   `name` varchar(36) NOT NULL COMMENT '枚举值名称',
   `category` varchar(36) NOT NULL COMMENT '枚举值分类',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP,
   `createDate` timestamp,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('Tunnel','云专线', 'console');

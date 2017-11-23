@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.syscxp.core.Platform.operr;
 
 /**
  * Create by DCY on 2017/10/26
@@ -80,6 +79,8 @@ public class TunnelBase extends AbstractTunnel {
     private void handleApiMessage(APIMessage msg){}
 
     private void handle(CreateTunnelMsg msg){
+        CreateTunnelReply reply = new CreateTunnelReply();
+
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
@@ -106,6 +107,8 @@ public class TunnelBase extends AbstractTunnel {
                 taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
             }
 
             @Override
@@ -121,11 +124,16 @@ public class TunnelBase extends AbstractTunnel {
                 taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
             }
         });
     }
 
     private void handle(DeleteTunnelMsg msg){
+        DeleteTunnelReply reply = new DeleteTunnelReply();
+
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
@@ -144,6 +152,8 @@ public class TunnelBase extends AbstractTunnel {
                 taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
             }
 
             @Override
@@ -155,11 +165,16 @@ public class TunnelBase extends AbstractTunnel {
                 taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
             }
         });
     }
 
     private void handle(EnabledTunnelMsg msg){
+        EnabledTunnelReply reply = new EnabledTunnelReply();
+
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
@@ -189,6 +204,8 @@ public class TunnelBase extends AbstractTunnel {
                 taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
             }
 
             @Override
@@ -200,11 +217,16 @@ public class TunnelBase extends AbstractTunnel {
                 taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
             }
         });
     }
 
     private void handle(DisabledTunnelMsg msg){
+        DisabledTunnelReply reply = new DisabledTunnelReply();
+
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
@@ -225,6 +247,8 @@ public class TunnelBase extends AbstractTunnel {
                 taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
             }
 
             @Override
@@ -236,6 +260,9 @@ public class TunnelBase extends AbstractTunnel {
                 taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
             }
         });
     }
@@ -274,6 +301,7 @@ public class TunnelBase extends AbstractTunnel {
 
     private void handle(ModifyTunnelPortsMsg msg){
         ModifyTunnelPortsReply reply = new ModifyTunnelPortsReply();
+
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
