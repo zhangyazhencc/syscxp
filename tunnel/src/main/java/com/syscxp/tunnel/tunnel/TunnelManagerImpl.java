@@ -35,6 +35,7 @@ import com.syscxp.header.tunnel.node.ZoneNodeRefVO;
 import com.syscxp.header.tunnel.node.ZoneNodeRefVO_;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
+import com.syscxp.tunnel.identity.TunnelGlobalConfig;
 import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
 import com.syscxp.utils.CollectionDSL;
@@ -2540,6 +2541,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APIDeleteInterfaceMsg msg) {
+        InterfaceVO iface = Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).find();
+
+        int deleteDays = TunnelGlobalConfig.PRODUCT_DELETE_DAYS.value(Integer.class);
+        if (iface.getCreateDate().toLocalDateTime().plusDays(deleteDays).isAfter(LocalDateTime.now()))
+            throw new ApiMessageInterceptionException(
+                    argerr("物理接口[uuid:%s]购买未超过%s天,不能删除 !", msg.getUuid(), deleteDays));
         //判断云专线下是否有该物理接口
         Q q = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid());
@@ -2549,10 +2556,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         //判断该产品是否有未完成订单
-        String accountUuid = Q.New(InterfaceVO.class)
-                .eq(InterfaceVO_.uuid, msg.getUuid())
-                .select(InterfaceVO_.accountUuid).findValue();
-        checkOrderNoPay(accountUuid, msg.getUuid());
+        checkOrderNoPay(iface.getAccountUuid(), msg.getUuid());
     }
 
     private void validate(APICreateTunnelMsg msg) {
@@ -2957,7 +2961,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         apiGetHasNotifyMsg.setAccountUuid(accountUuid);
         apiGetHasNotifyMsg.setProductUuid(productUuid);
 
-        APIGetHasNotifyReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(apiGetHasNotifyMsg);
+        APIGetHasNotifyReply reply = new TunnelRESTCaller().syncJsonPost(apiGetHasNotifyMsg);
         if (reply.isInventory())
             throw new ApiMessageInterceptionException(
                     argerr("该订单[uuid:%s] 有未完成操作，请稍等！", productUuid));
@@ -2992,7 +2996,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 调用支付
      */
     private OrderInventory createOrder(APICreateOrderMsg orderMsg) {
-        //orderMsg.setNotifyUrl(TunnelConstant.NOTIFYURL);
         try {
             APICreateOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
 
