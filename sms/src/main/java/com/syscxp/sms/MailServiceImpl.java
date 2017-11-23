@@ -3,6 +3,7 @@ package com.syscxp.sms;
 import com.syscxp.sms.header.APIValidateMailCodeMsg;
 import com.syscxp.sms.header.APIValidateMailCodeReply;
 import com.syscxp.sms.header.*;
+import com.syscxp.utils.StringDSL;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -121,7 +122,7 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
     private void  handle(APIMailCodeSendMsg msg) throws OperationFailureException {
 
-        String code = String.valueOf(new Random().nextInt(1000000));
+        String code = StringDSL.getRandomNumbersString(6);
         boolean result = mailSend(msg.getMail(),"验证码", code);
         if(result){
             VerificationCode verificationCode = sessions.get(msg.getMail());

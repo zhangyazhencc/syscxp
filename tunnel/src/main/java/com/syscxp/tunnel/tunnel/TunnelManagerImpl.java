@@ -763,7 +763,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setMonitorState(TunnelMonitorState.Disabled);
         vo.setMaxModifies(CoreGlobalProperty.TUNNEL_MAX_MOTIFIES);
-        vo.setDistance(Distance.getDistance(nvoA.getLongtitude(), nvoA.getLatitude(), nvoZ.getLongtitude(), nvoZ.getLatitude()));
+        vo.setDistance(Distance.getDistance(nvoA.getLongitude(), nvoA.getLatitude(), nvoZ.getLongitude(), nvoZ.getLatitude()));
 
         if (msg.getInterfaceAUuid() != null && msg.getInterfaceZUuid() != null) {         //没有新购接口
             interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
@@ -1115,7 +1115,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setMonitorState(TunnelMonitorState.Disabled);
         vo.setMaxModifies(CoreGlobalProperty.TUNNEL_MAX_MOTIFIES);
-        vo.setDistance(Distance.getDistance(nvoA.getLongtitude(), nvoA.getLatitude(), nvoZ.getLongtitude(), nvoZ.getLatitude()));
+        vo.setDistance(Distance.getDistance(nvoA.getLongitude(), nvoA.getLatitude(), nvoZ.getLongitude(), nvoZ.getLatitude()));
 
         TunnelSwitchPortVO tsvoA = new TunnelSwitchPortVO();
         tsvoA.setUuid(Platform.getUuid());

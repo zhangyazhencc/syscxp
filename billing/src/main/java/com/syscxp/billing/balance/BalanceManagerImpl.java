@@ -571,6 +571,12 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             throw new IllegalArgumentException("you are not the permit");
         }
 
+        if (msg.getSession().getType().equals(AccountType.Proxy)) {
+            if (!isBoundAccountWithProxy(msg.getAccountUuid(), msg.getSession().getAccountUuid())) {
+                throw new IllegalArgumentException("you can only set yourself customers");
+            }
+        }
+
         ProductCategoryVO productCategoryEO = findProductCategory(msg.getProductType(), msg.getCategory());
         if (productCategoryEO == null) {
             throw new IllegalArgumentException("check the input value");
@@ -580,10 +586,6 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             throw new IllegalArgumentException("the account has the discount");
         }
 
-        if (!isBoundAccountWithProxy(msg.getAccountUuid(), msg.getSession().getAccountUuid())) {
-            throw new IllegalArgumentException("you can only set yourself customers");
-        }
-
         validateDiscount(msg.getSession().getType(), msg.getSession().getAccountUuid(), productCategoryEO.getUuid(),msg.getDiscount());
 
         if (msg.getSession().getType().equals(AccountType.SystemAdmin)) {
@@ -591,7 +593,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             if (reply == null) {
                 throw new IllegalArgumentException(" the network must be loss");
             }
-            if (reply.getType() == AccountType.Normal) {
+            if (reply.isHasProxy()) {
                 throw new IllegalArgumentException("the account has proxy,proxy can set his customer discount");
             }
         }

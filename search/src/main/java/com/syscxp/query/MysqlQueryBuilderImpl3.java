@@ -1039,11 +1039,11 @@ public class MysqlQueryBuilderImpl3 implements Component, QueryBuilder, GlobalAp
             String jpql = build(false);
             Query q = msg.isFieldQuery() ? dbf.getEntityManager().createQuery(jpql, Tuple.class) : dbf.getEntityManager().createQuery(jpql);
 
+            setQueryValue(q, root);
             if (logger.isTraceEnabled()) {
                 org.hibernate.Query hq = q.unwrap(org.hibernate.Query.class);
                 logger.trace(hq.getQueryString());
             }
-            setQueryValue(q, root);
             if (msg.getLimit() != null) {
                 q.setMaxResults(msg.getLimit());
             }
@@ -1064,11 +1064,11 @@ public class MysqlQueryBuilderImpl3 implements Component, QueryBuilder, GlobalAp
         long count() {
             String jpql = build(true);
             Query q = dbf.getEntityManager().createQuery(jpql);
+            setQueryValue(q, root);
             if (logger.isTraceEnabled()) {
                 org.hibernate.Query hq = q.unwrap(org.hibernate.Query.class);
                 logger.trace(hq.getQueryString());
             }
-            setQueryValue(q, root);
             return (Long) q.getSingleResult();
         }
     }

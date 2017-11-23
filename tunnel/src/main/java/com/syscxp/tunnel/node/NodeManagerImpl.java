@@ -438,7 +438,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         vo.setUuid(Platform.getUuid());
         vo.setCode(msg.getCode());
         vo.setName(msg.getName());
-        vo.setLongtitude(msg.getLongtitude());
+        vo.setLongitude(msg.getLongitude());
         vo.setLatitude(msg.getLatitude());
         vo.setProperty(msg.getProperty());
         vo.setCountry(msg.getCountry());
@@ -468,8 +468,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             vo.setName(msg.getName());
             update = true;
         }
-        if(msg.getLongtitude() != null){
-            vo.setLongtitude(msg.getLongtitude());
+        if(msg.getLongitude() != null){
+            vo.setLongitude(msg.getLongitude());
             update = true;
         }
         if(msg.getLatitude() != null){
@@ -693,7 +693,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
         //检查经纬度
         validateLongitudeAndLatitude(msg.getLatitude());
-        validateLongitudeAndLatitude(msg.getLongtitude());
+        validateLongitudeAndLatitude(msg.getLongitude());
     }
 
     private void validate(APIUpdateNodeMsg msg) {
@@ -709,7 +709,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
         //检查经纬度
         validateLongitudeAndLatitude(msg.getLatitude());
-        validateLongitudeAndLatitude(msg.getLongtitude());
+        validateLongitudeAndLatitude(msg.getLongitude());
     }
 
     private void validate(APIDeleteNodeMsg msg) {

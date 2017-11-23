@@ -106,7 +106,7 @@ CREATE TABLE `syscxp_tunnel`.`NodeEO` (
   `province` varchar(128) NOT NULL COMMENT '省',
   `city` varchar(128) NOT NULL COMMENT '市',
   `address` varchar(256) NOT NULL COMMENT '地址',
-  `longtitude` double(11,6) NOT NULL COMMENT '经度',
+  `longitude` double(11,6) NOT NULL COMMENT '经度',
   `latitude` double(11,6) NOT NULL COMMENT '纬度',
   `property` varchar(128) NOT NULL COMMENT '节点类型',
   `status` varchar(16) NOT NULL COMMENT '是否开放',
@@ -118,7 +118,7 @@ CREATE TABLE `syscxp_tunnel`.`NodeEO` (
   UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`NodeVO` AS SELECT uuid, name, code, description, contact, telephone, country, province, city, address, longtitude, latitude, property, status, extensionInfoUuid, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`NodeVO` AS SELECT uuid, name, code, description, contact, telephone, country, province, city, address, longitude, latitude, property, status, extensionInfoUuid, lastOpDate, createDate
                         FROM `NodeEO` WHERE deleted IS NULL;
 
 ## 区域字典表

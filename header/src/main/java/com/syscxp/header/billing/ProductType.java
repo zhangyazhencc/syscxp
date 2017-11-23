@@ -4,5 +4,7 @@ public enum ProductType {
     TUNNEL,
     ECP,
     PORT,
-    VPN
+    VPN,
+    HOST,
+    DISK
 }

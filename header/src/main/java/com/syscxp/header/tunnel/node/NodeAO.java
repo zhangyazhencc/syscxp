@@ -44,7 +44,7 @@ public class NodeAO {
     private String address;
 
     @Column
-    private Double longtitude;
+    private Double longitude;
 
     @Column
     private Double latitude;
@@ -147,12 +147,12 @@ public class NodeAO {
         this.address = address;
     }
 
-    public Double getLongtitude() {
-        return longtitude;
+    public Double getLongitude() {
+        return longitude;
     }
 
-    public void setLongtitude(Double longtitude) {
-        this.longtitude = longtitude;
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 
     public Double getLatitude() {
