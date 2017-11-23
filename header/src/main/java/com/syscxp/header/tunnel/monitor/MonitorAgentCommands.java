@@ -259,6 +259,7 @@ public class MonitorAgentCommands {
         private String nodeA;
         private String nodeZ;
         private long bandwidth;
+        private String accountUuid;
 
         public String getTunnelUuid() {
             return tunnelUuid;
@@ -314,6 +315,14 @@ public class MonitorAgentCommands {
 
         public void setEndpoingZMip(String endpoingZMip) {
             this.endpoingZMip = endpoingZMip;
+        }
+
+        public String getAccountUuid() {
+            return accountUuid;
+        }
+
+        public void setAccountUuid(String accountUuid) {
+            this.accountUuid = accountUuid;
         }
     }
 
