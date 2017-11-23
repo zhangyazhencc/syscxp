@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static com.syscxp.core.Platform.operr;
 
 /**
  * Create by DCY on 2017/10/26

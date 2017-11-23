@@ -18,7 +18,7 @@ public class AliEdgeRouterInventory {
     private Integer vlan;
     private Timestamp lastOpDate;
     private Timestamp createDate;
-
+    private boolean isCreateFlag;
 
 
     public static AliEdgeRouterInventory valueOf(AliEdgeRouterVO vo){
@@ -35,6 +35,7 @@ public class AliEdgeRouterInventory {
         inv.setVlan(vo.getVlan());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
+        inv.setCreateFlag(vo.isCreateFlag());
         return inv;
     }
 
@@ -142,5 +143,13 @@ public class AliEdgeRouterInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public boolean isCreateFlag() {
+        return isCreateFlag;
+    }
+
+    public void setCreateFlag(boolean createFlag) {
+        isCreateFlag = createFlag;
     }
 }
