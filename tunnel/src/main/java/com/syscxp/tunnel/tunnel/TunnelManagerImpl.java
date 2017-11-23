@@ -2747,8 +2747,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         LocalDateTime dateTime =
                 LocalDate.now().withDayOfMonth(LocalDate.MIN.getDayOfMonth()).atTime(LocalTime.MIN);
         Long times = Q.New(TunnelMotifyRecordVO.class).eq(TunnelMotifyRecordVO_.tunnelUuid, msg.getUuid())
-                .gte(TunnelMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime))
-                .lt(TunnelMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime.plusMonths(1))).count();
+                .gte(TunnelMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime)).count();
         Integer maxModifies =
                 Q.New(TunnelVO.class).eq(TunnelVO_.uuid, msg.getUuid()).select(TunnelVO_.maxModifies)
                         .findValue();
