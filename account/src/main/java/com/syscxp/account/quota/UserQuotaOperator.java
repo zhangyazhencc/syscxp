@@ -30,28 +30,11 @@ public class UserQuotaOperator implements Quota.QuotaOperator {
 
     @Transactional(readOnly = true)
     private void check(APICreateUserMsg msg, Map<String, Quota.QuotaPair> pairs) {
-        String currentAccountUuid = msg.getSession().getAccountUuid();
-        String ownerAccountUuid = msg.getAccountUuid();
-        String quotaName = AccountConstant.QUOTA_USER_NUM;
-        long quotaNum = pairs.get(quotaName).getValue();
-        long currentUsed = getUsedUserNum(ownerAccountUuid);
+        String accountUuid = msg.getAccountUuid();
+        long quotaNum = pairs.get(AccountConstant.QUOTA_USER_NUM).getValue();
+        long currentUsed = getUsedUserNum(accountUuid);
 
-        CheckTunnelQuota(currentAccountUuid, ownerAccountUuid, quotaName, quotaNum, currentUsed);
-    }
-
-    private void CheckTunnelQuota(String currentAccountUuid, String ownerAccountUuid, String quotaName, long quotaNum, long currentUsed) {
-        long askedNum = 1;
-        QuotaUtil.QuotaCompareInfo quotaCompareInfo;
-        {
-            quotaCompareInfo = new QuotaUtil.QuotaCompareInfo();
-            quotaCompareInfo.currentAccountUuid = currentAccountUuid;
-            quotaCompareInfo.ownerAccountUuid = ownerAccountUuid;
-            quotaCompareInfo.quotaName = quotaName;
-            quotaCompareInfo.quotaValue = quotaNum;
-            quotaCompareInfo.currentUsed = currentUsed;
-            quotaCompareInfo.request = askedNum;
-            new QuotaUtil().CheckQuota(quotaCompareInfo);
-        }
+        new QuotaUtil().CheckQuota(AccountConstant.QUOTA_USER_NUM, currentUsed, quotaNum);
     }
 
     @Transactional(readOnly = true)

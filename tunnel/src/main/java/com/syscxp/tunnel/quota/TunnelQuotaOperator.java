@@ -30,35 +30,19 @@ public class TunnelQuotaOperator implements Quota.QuotaOperator {
 
     @Transactional(readOnly = true)
     private void check(APICreateTunnelMsg msg, Map<String, Quota.QuotaPair> pairs) {
-        String currentAccountUuid = msg.getSession().getAccountUuid();
-        String ownerAccountUuid = msg.getAccountUuid();
+        long quotaNum = pairs.get(TunnelConstant.QUOTA_TUNNEL_NUM).getValue();
+        long currentUsed = getUsedTunnelNum(msg.getAccountUuid());
 
-        CheckTunnelQuota(currentAccountUuid, ownerAccountUuid, pairs);
+        new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_TUNNEL_NUM, currentUsed, quotaNum);
     }
 
     @Transactional(readOnly = true)
     private void check(APICreateTunnelManualMsg msg, Map<String, Quota.QuotaPair> pairs) {
-        String currentAccountUuid = msg.getSession().getAccountUuid();
-        String ownerAccountUuid = msg.getAccountUuid();
 
-        CheckTunnelQuota(currentAccountUuid, ownerAccountUuid, pairs);
-    }
-
-    private void CheckTunnelQuota(String currentAccountUuid, String ownerAccountUuid, Map<String, Quota.QuotaPair> pairs) {
         long quotaNum = pairs.get(TunnelConstant.QUOTA_TUNNEL_NUM).getValue();
-        long askedNum = 1;
+        long currentUsed = getUsedTunnelNum(msg.getAccountUuid());
 
-        QuotaUtil.QuotaCompareInfo quotaCompareInfo;
-        {
-            quotaCompareInfo = new QuotaUtil.QuotaCompareInfo();
-            quotaCompareInfo.currentAccountUuid = currentAccountUuid;
-            quotaCompareInfo.ownerAccountUuid = ownerAccountUuid;
-            quotaCompareInfo.quotaName = TunnelConstant.QUOTA_TUNNEL_NUM;
-            quotaCompareInfo.quotaValue = quotaNum;
-            quotaCompareInfo.currentUsed = getUsedTunnelNum(ownerAccountUuid);
-            quotaCompareInfo.request = askedNum;
-            new QuotaUtil().CheckQuota(quotaCompareInfo);
-        }
+        new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_TUNNEL_NUM, currentUsed, quotaNum);
     }
 
     @Transactional(readOnly = true)

@@ -162,8 +162,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             abvo.setCashBalance(remainCashBalance);
             orderVo.setPayPresent(BigDecimal.ZERO);
             orderVo.setPayCash(total);
-
-            new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, BigDecimal.ZERO, BigDecimal.ZERO, currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, remainCashBalance, outTradeNO, orderVo.getUuid(), opAccountUuid,null);
+            new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, BigDecimal.ZERO, total, currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, remainCashBalance, outTradeNO, orderVo.getUuid(), opAccountUuid,null);
         }
     }
 
@@ -270,7 +269,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), msg.getProductType(), null, currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), 0, msg.getCallBackData());
         orderVo.setType(OrderType.UN_SUBCRIBE);
 
-        long notUseDays = ChronoUnit.DAYS.between(LocalDateTime.now(), msg.getStartTime().toLocalDateTime());
+        long notUseDays = ChronoUnit.DAYS.between(LocalDateTime.now(), msg.getExpiredTime().toLocalDateTime());
 
         RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
         if (renewVO == null) {
@@ -290,7 +289,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setOriginalPrice(remainMoney);
         orderVo.setPrice(remainMoney);
         orderVo.setProductEffectTimeStart(msg.getStartTime());
-        orderVo.setProductEffectTimeEnd(currentTimestamp);
+        orderVo.setProductEffectTimeEnd(msg.getExpiredTime());
         BigDecimal remainCash = abvo.getCashBalance().add(remainMoney);
         abvo.setCashBalance(remainCash);
         orderVo.setPayPresent(refundPresent);
@@ -606,6 +605,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
 
             originalPrice = originalPrice.multiply(duration);
+            BigDecimal discountPriceOneMonth = discountPrice;
             discountPrice = discountPrice.multiply(duration);
 
             if (discountPrice.compareTo(mayPayTotal) > 0) {
@@ -624,7 +624,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setProductEffectTimeStart(currentTimestamp);
             orderVo.setProductEffectTimeEnd(Timestamp.valueOf(expiredTime));
 
-            RenewVO renewVO = saveRenewVO(orderVo.getProductChargeModel(), orderVo.getProductUuid(), orderVo.getAccountUuid(), orderVo.getProductName(), orderVo.getProductType(), orderVo.getDescriptionData(), Timestamp.valueOf(expiredTime), discountPrice);
+            RenewVO renewVO = saveRenewVO(orderVo.getProductChargeModel(), orderVo.getProductUuid(), orderVo.getAccountUuid(), orderVo.getProductName(), orderVo.getProductType(), orderVo.getDescriptionData(), Timestamp.valueOf(expiredTime), discountPriceOneMonth);
             savePriceRefRenewVO(productPriceUnitUuids, msg.getAccountUuid(), renewVO.getUuid());
 
             if (!StringUtils.isEmpty(msg.getNotifyUrl())) {

@@ -33,38 +33,19 @@ public class AlarmQuotaOperator implements Quota.QuotaOperator {
 
     @Transactional(readOnly = true)
     private void check(APICreatePolicyMsg msg, Map<String, Quota.QuotaPair> pairs) {
-        String currentAccountUuid = msg.getSession().getAccountUuid();
-        String ownerAccountUuid = msg.getAccountUuid();
-        String quotaName = AlarmConstant.QUOTA_ALARM_POLICY_NUM;
-        long quotaNum = pairs.get(quotaName).getValue();
-        long currentUsed = getUsedPolicyNum(ownerAccountUuid, msg.getProductType());
+        long quotaNum = pairs.get(AlarmConstant.QUOTA_ALARM_POLICY_NUM).getValue();
+        long currentUsed = getUsedPolicyNum(msg.getAccountUuid(), msg.getProductType());
 
-        CheckTunnelQuota(currentAccountUuid, ownerAccountUuid, quotaName, quotaNum, currentUsed);
+        new QuotaUtil().CheckQuota(AlarmConstant.QUOTA_ALARM_POLICY_NUM, currentUsed, quotaNum);
     }
 
     @Transactional(readOnly = true)
     private void check(APICreateRegulationMsg msg, Map<String, Quota.QuotaPair> pairs) {
-        String currentAccountUuid = msg.getSession().getAccountUuid();
-        String quotaName = AlarmConstant.QUOTA_POLICY_RULE_NUM;
-        long quotaNum = pairs.get(quotaName).getValue();
-        long currentUsed = getUsedRuleNum(currentAccountUuid);
 
-        CheckTunnelQuota(currentAccountUuid, currentAccountUuid, quotaName, quotaNum, currentUsed);
-    }
+        long quotaNum = pairs.get(AlarmConstant.QUOTA_POLICY_RULE_NUM).getValue();
+        long currentUsed = getUsedRuleNum(msg.getPolicyUuid());
 
-    private void CheckTunnelQuota(String currentAccountUuid, String ownerAccountUuid, String quotaName, long quotaNum, long currentUsed) {
-        long askedNum = 1;
-        QuotaUtil.QuotaCompareInfo quotaCompareInfo;
-        {
-            quotaCompareInfo = new QuotaUtil.QuotaCompareInfo();
-            quotaCompareInfo.currentAccountUuid = currentAccountUuid;
-            quotaCompareInfo.ownerAccountUuid = ownerAccountUuid;
-            quotaCompareInfo.quotaName = quotaName;
-            quotaCompareInfo.quotaValue = quotaNum;
-            quotaCompareInfo.currentUsed = currentUsed;
-            quotaCompareInfo.request = askedNum;
-            new QuotaUtil().CheckQuota(quotaCompareInfo);
-        }
+        new QuotaUtil().CheckQuota(AlarmConstant.QUOTA_POLICY_RULE_NUM, currentUsed, quotaNum);
     }
 
     @Transactional(readOnly = true)

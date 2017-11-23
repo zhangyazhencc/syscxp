@@ -719,8 +719,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         LocalDateTime dateTime =
                 LocalDate.now().withDayOfMonth(LocalDate.MIN.getDayOfMonth()).atTime(LocalTime.MIN);
         Long times = Q.New(VpnMotifyRecordVO.class).eq(VpnMotifyRecordVO_.vpnUuid, msg.getUuid())
-                .gte(VpnMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime))
-                .lt(VpnMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime.plusMonths(1))).count();
+                .gte(VpnMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime)).count();
         Integer maxModifies =
                 Q.New(VpnVO.class).eq(VpnVO_.uuid, msg.getUuid()).select(VpnVO_.maxModifies)
                         .findValue();

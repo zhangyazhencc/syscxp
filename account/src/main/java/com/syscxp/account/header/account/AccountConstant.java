@@ -28,7 +28,7 @@ public interface AccountConstant {
 
     String QUOTA_USER_NUM = "user.num";
     String QUOTA_TICKET_NUM = "ticket.num";
-    String QUOTA_TICKET_NO_SESSION_NUM = "ticket.noSession.num";
+    String QUOTA_TICKET_NO_SESSION_NUM = "ticketNoSession.num";
     String QUOTA_TICKET_RECORD_NUM = "ticketRecord.num";
 
 
