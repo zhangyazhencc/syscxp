@@ -174,15 +174,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handle(APIListCrossTunnelMsg msg) {
         APIListCrossTunnelReply reply = new APIListCrossTunnelReply();
         List<String> tunnelUuids = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.interfaceUuid,msg.getUuid())
+                .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
                 .select(TunnelSwitchPortVO_.tunnelUuid)
                 .listValues();
         List<TunnelVO> tunnelVOS = new ArrayList<>();
-        if(!tunnelUuids.isEmpty()){
+        if (!tunnelUuids.isEmpty()) {
             tunnelVOS = Q.New(TunnelVO.class).
-                    in(TunnelVO_.uuid,tunnelUuids).
-                    eq(TunnelVO_.accountUuid,msg.getAccountUuid()).
-                    eq(TunnelVO_.state,TunnelState.Enabled)
+                    in(TunnelVO_.uuid, tunnelUuids).
+                    eq(TunnelVO_.accountUuid, msg.getAccountUuid()).
+                    eq(TunnelVO_.state, TunnelState.Enabled)
                     .list();
         }
         reply.setInventories(TunnelInventory.valueOf(tunnelVOS));
@@ -193,23 +193,23 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIListInnerEndpointReply reply = new APIListInnerEndpointReply();
 
         //根据连接点查询节点
-        EndpointVO endpointVOA = dbf.findByUuid(msg.getEndpointAUuid(),EndpointVO.class);
-        EndpointVO endpointVOZ = dbf.findByUuid(msg.getEndpointZUuid(),EndpointVO.class);
+        EndpointVO endpointVOA = dbf.findByUuid(msg.getEndpointAUuid(), EndpointVO.class);
+        EndpointVO endpointVOZ = dbf.findByUuid(msg.getEndpointZUuid(), EndpointVO.class);
 
-        NodeVO nodeVOA = dbf.findByUuid(endpointVOA.getNodeUuid(),NodeVO.class);
-        NodeVO nodeVOZ = dbf.findByUuid(endpointVOZ.getNodeUuid(),NodeVO.class);
+        NodeVO nodeVOA = dbf.findByUuid(endpointVOA.getNodeUuid(), NodeVO.class);
+        NodeVO nodeVOZ = dbf.findByUuid(endpointVOZ.getNodeUuid(), NodeVO.class);
 
         String conntectedEndpoint = null;
         List<InnerConnectedEndpointVO> innerEndpoints = new ArrayList<>();
-        if(nodeVOA.getCountry().equals("CHINA") && !nodeVOZ.getCountry().equals("CHINA")){
+        if (nodeVOA.getCountry().equals("CHINA") && !nodeVOZ.getCountry().equals("CHINA")) {
             conntectedEndpoint = msg.getEndpointZUuid();
         }
-        if(!nodeVOA.getCountry().equals("CHINA") && nodeVOZ.getCountry().equals("CHINA")){
+        if (!nodeVOA.getCountry().equals("CHINA") && nodeVOZ.getCountry().equals("CHINA")) {
             conntectedEndpoint = msg.getEndpointAUuid();
         }
-        if(conntectedEndpoint != null){
+        if (conntectedEndpoint != null) {
             innerEndpoints = Q.New(InnerConnectedEndpointVO.class)
-                    .eq(InnerConnectedEndpointVO_.connectedEndpointUuid,conntectedEndpoint)
+                    .eq(InnerConnectedEndpointVO_.connectedEndpointUuid, conntectedEndpoint)
                     .list();
         }
 
@@ -719,8 +719,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         EndpointVO evoA = dbf.findByUuid(msg.getEndpointAUuid(), EndpointVO.class);
         EndpointVO evoZ = dbf.findByUuid(msg.getEndpointZUuid(), EndpointVO.class);
 
-        NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(),NodeVO.class);
-        NodeVO nvoZ = dbf.findByUuid(evoZ.getNodeUuid(),NodeVO.class);
+        NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
+        NodeVO nvoZ = dbf.findByUuid(evoZ.getNodeUuid(), NodeVO.class);
 
         InterfaceVO interfaceVOA = new InterfaceVO();
         InterfaceVO interfaceVOZ = new InterfaceVO();
@@ -821,7 +821,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
             //分配Z端口
             newBuyInterfaceZ = true;
-            String switchPortUuidZ = ts.getSwitchPortByStrategy(msg.getAccountUuid(),msg.getEndpointZUuid(), msg.getPortOfferingUuidZ());
+            String switchPortUuidZ = ts.getSwitchPortByStrategy(msg.getAccountUuid(), msg.getEndpointZUuid(), msg.getPortOfferingUuidZ());
             if (switchPortUuidZ == null) {
                 throw new ApiMessageInterceptionException(argerr("该连接点Z下无可用的端口"));
             }
@@ -951,9 +951,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //如果跨国,将出海口设备添加至TunnelSwitchPort
         if (msg.getInnerConnectedEndpointUuid() != null) {
-            if(nvoA.getCountry().equals("CHINA")){
+            if (nvoA.getCountry().equals("CHINA")) {
                 createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, true);
-            }else{
+            } else {
                 createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, false);
             }
 
@@ -1050,7 +1050,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 public void run(MessageReply reply) {
                     if (reply.isSuccess()) {
                         evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo2)));
-                    }else{
+                    } else {
                         evt.setError(reply.getError());
                     }
                 }
@@ -1094,8 +1094,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
         EndpointVO evoA = dbf.findByUuid(interfaceVOA.getEndpointUuid(), EndpointVO.class);
         EndpointVO evoZ = dbf.findByUuid(interfaceVOZ.getEndpointUuid(), EndpointVO.class);
-        NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(),NodeVO.class);
-        NodeVO nvoZ = dbf.findByUuid(evoZ.getNodeUuid(),NodeVO.class);
+        NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
+        NodeVO nvoZ = dbf.findByUuid(evoZ.getNodeUuid(), NodeVO.class);
 
         vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(null);
@@ -1136,9 +1136,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //如果跨国,将出海口设备添加至TunnelSwitchPort
         if (msg.getInnerConnectedEndpointUuid() != null) {
-            if(nvoA.getCountry().equals("CHINA")){
+            if (nvoA.getCountry().equals("CHINA")) {
                 createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, true);
-            }else{
+            } else {
                 createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, false);
             }
         }
@@ -1215,7 +1215,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
                     evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo2)));
-                }else{
+                } else {
                     evt.setError(reply.getError());
                 }
             }
@@ -1626,7 +1626,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
                             evt.setInventory(TunnelInventory.valueOf(vo));
-                        }else{
+                        } else {
                             evt.setError(reply.getError());
                         }
                     }
@@ -1671,7 +1671,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             public void run(MessageReply reply) {
                                 if (reply.isSuccess()) {
                                     evt.setInventory(TunnelInventory.valueOf(vo));
-                                }else{
+                                } else {
                                     evt.setError(reply.getError());
                                 }
                             }
@@ -1793,7 +1793,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         public void run(MessageReply reply) {
                             if (reply.isSuccess()) {
                                 evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo)));
-                            }else{
+                            } else {
                                 evt.setError(reply.getError());
                             }
                         }
@@ -1815,7 +1815,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
                             evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo)));
-                        }else{
+                        } else {
                             evt.setError(reply.getError());
                         }
                     }
@@ -1830,7 +1830,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
                             evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo)));
-                        }else{
+                        } else {
                             evt.setError(reply.getError());
                         }
                     }
@@ -2081,7 +2081,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
                     logger.info("billing通知回调并请求下发成功");
-                }else{
+                } else {
                     logger.info("billing通知回调并请求下发失败");
                 }
             }
@@ -2132,7 +2132,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 public void run(MessageReply reply) {
                     if (reply.isSuccess()) {
                         logger.info("billing通知回调并请求下发成功");
-                    }else{
+                    } else {
                         logger.info("billing通知回调并请求下发失败");
                     }
                 }
@@ -2472,16 +2472,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(SwitchPortVO_.uuid, msg.getSwitchPortUuid())
                 .select(SwitchPortVO_.portType).find();
         //判断同一个用户在同一个连接点下是否已经购买共享端口
-        if(portType.equals("SHARE")){
+        if (portType.equals("SHARE")) {
             String sql = "select a from InterfaceVO a,SwitchPortVO b " +
                     "where a.switchPortUuid = b.uuid " +
                     "and a.accountUuid = :accountUuid " +
                     "and a.endpointUuid = :endpointUuid " +
                     "and b.portType = 'SHARE'";
             TypedQuery<InterfaceVO> itq = dbf.getEntityManager().createQuery(sql, InterfaceVO.class);
-            itq.setParameter("accountUuid",msg.getAccountUuid());
-            itq.setParameter("endpointUuid",msg.getEndpointUuid());
-            if(!itq.getResultList().isEmpty()){
+            itq.setParameter("accountUuid", msg.getAccountUuid());
+            itq.setParameter("endpointUuid", msg.getEndpointUuid());
+            if (!itq.getResultList().isEmpty()) {
                 throw new ApiMessageInterceptionException(argerr("一个用户在同一个连接点下只能购买一个共享口！ "));
             }
         }
@@ -2716,7 +2716,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APIUpdateTunnelMsg msg) {
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
         //判断同一个用户tunnel名称是否已经存在
         if (msg.getName() != null) {
             SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
@@ -2843,14 +2843,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
 
         if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())) {
-            if(isCross(msg.getUuid(),msg.getOldInterfaceAUuid())){
+            if (isCross(msg.getUuid(), msg.getOldInterfaceAUuid())) {
                 throw new ApiMessageInterceptionException(argerr("该接口A为共点，不能修改配置！！"));
             }
             validateVlan(msg.getInterfaceAUuid(), msg.getaVlan());
         }
 
         if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
-            if(isCross(msg.getUuid(),msg.getOldInterfaceZUuid())){
+            if (isCross(msg.getUuid(), msg.getOldInterfaceZUuid())) {
                 throw new ApiMessageInterceptionException(argerr("该接口Z为共点，不能修改配置！！"));
             }
             validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
@@ -2861,14 +2861,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void validate(APIUpdateForciblyTunnelVlanMsg msg) {
 
         if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())) {
-            if(isCross(msg.getUuid(),msg.getOldInterfaceAUuid())){
+            if (isCross(msg.getUuid(), msg.getOldInterfaceAUuid())) {
                 throw new ApiMessageInterceptionException(argerr("该接口A为共点，不能修改配置！！"));
             }
             validateVlan(msg.getInterfaceAUuid(), msg.getaVlan());
         }
 
         if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
-            if(isCross(msg.getUuid(),msg.getOldInterfaceZUuid())){
+            if (isCross(msg.getUuid(), msg.getOldInterfaceZUuid())) {
                 throw new ApiMessageInterceptionException(argerr("该接口Z为共点，不能修改配置！！"));
             }
             validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
@@ -2879,8 +2879,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 判断物理接口是否是共点
      */
 
-    private boolean isCross(String tunnelUuid,String interfaceUuid){
-        TunnelVO vo = dbf.findByUuid(tunnelUuid,TunnelVO.class);
+    private boolean isCross(String tunnelUuid, String interfaceUuid) {
+        TunnelVO vo = dbf.findByUuid(tunnelUuid, TunnelVO.class);
         Integer vsi = vo.getVsi();
 
         String sql = "select b from TunnelVO a, TunnelSwitchPortVO b " +
@@ -2890,9 +2890,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TypedQuery<TunnelSwitchPortVO> vq = dbf.getEntityManager().createQuery(sql, TunnelSwitchPortVO.class);
         vq.setParameter("vsi", vsi);
         vq.setParameter("interfaceUuid", interfaceUuid);
-        if(vq.getResultList().size()==1){
+        if (vq.getResultList().size() == 1) {
             return false;
-        }else{
+        } else {
             return true;
         }
 
@@ -3080,13 +3080,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             NodeVO nodeB = dbf.findByUuid(endpointVO.getNodeUuid(), NodeVO.class);
             String zoneUuidB = getZoneUuid(nodeB.getUuid());
 
-            if(nodeA.getCountry().equals("CHINA")){
+            if (nodeA.getCountry().equals("CHINA")) {
                 ProductPriceUnit unitInner = getTunnelPriceUnitCN(bandwidthOfferingUuid, nodeA, nodeB, zoneUuidA, zoneUuidB);
                 ProductPriceUnit unitOuter = getTunnelPriceUnitCNToAb(bandwidthOfferingUuid, nodeB, nodeZ);
 
                 units.add(unitInner);
                 units.add(unitOuter);
-            }else{
+            } else {
                 ProductPriceUnit unitInner = getTunnelPriceUnitCN(bandwidthOfferingUuid, nodeZ, nodeB, zoneUuidZ, zoneUuidB);
                 ProductPriceUnit unitOuter = getTunnelPriceUnitCNToAb(bandwidthOfferingUuid, nodeB, nodeA);
 
@@ -3231,7 +3231,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelSwitchPortVO tsvoB = new TunnelSwitchPortVO();
         TunnelSwitchPortVO tsvoC = new TunnelSwitchPortVO();
 
-        if(isBInner){
+        if (isBInner) {
             tsvoB.setUuid(Platform.getUuid());
             tsvoB.setTunnelUuid(vo.getUuid());
             tsvoB.setEndpointUuid(innerConnectedEndpointUuid);
@@ -3251,7 +3251,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             tsvoC.setVlan(innerVlan);
             tsvoC.setSortTag("C");
 
-        }else{
+        } else {
             tsvoB.setUuid(Platform.getUuid());
             tsvoB.setTunnelUuid(vo.getUuid());
             tsvoB.setInterfaceUuid(null);
@@ -3309,19 +3309,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 通过连接点获取可用的端口规格
      */
     private List<PortOfferingVO> getPortTypeByEndpoint(String endpointUuid) {
-        List<String> switchs = CollectionUtils.transformToList(getSwitchByEndpoint(endpointUuid), SwitchAO::getUuid);
-        if (switchs.isEmpty())
-            return Collections.emptyList();
-        List<String> switchPorts = Q.New(SwitchPortVO.class)
-                .in(SwitchPortVO_.switchUuid, switchs)
-                .eq(SwitchPortVO_.state, SwitchPortState.Enabled)
-                .select(SwitchPortVO_.portType)
-                .groupBy(SwitchPortVO_.portType)
-                .listValues();
-        if (switchPorts.isEmpty())
-            return Collections.emptyList();
-        return Q.New(PortOfferingVO.class)
-                .in(PortOfferingVO_.uuid, switchPorts)
+        String sql = "SELECT DISTINCT sp.portType FROM SwitchPortVO sp WHERE sp.state = :state " +
+                "AND sp.switchUuid IN ( SELECT s.uuid FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid) " +
+                "AND ((SELECT count(1) AS n1 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0) ";
+        return SQL.New(sql)
+                .param("state", SwitchPortState.Enabled)
+                .param("endpointUuid", endpointUuid)
                 .list();
     }
 
@@ -3337,16 +3330,18 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     /**
+     *
+     *
      * 通过连接点和端口规格获取可用的端口
      */
     private List<SwitchPortVO> getSwitchPortByType(String endpointUuid, String type) {
-        List<String> switchs = CollectionUtils.transformToList(getSwitchByEndpoint(endpointUuid), SwitchAO::getUuid);
-        if (switchs.isEmpty())
-            return Collections.emptyList();
-        return Q.New(SwitchPortVO.class)
-                .in(SwitchPortVO_.switchUuid, switchs)
-                .eq(SwitchPortVO_.state, SwitchPortState.Enabled)
-                .eq(SwitchPortVO_.portType, type)
+        String sql = "SELECT sp FROM SwitchPortVO sp WHERE sp.state = :state AND sp.portType = :type " +
+                "AND sp.switchUuid IN ( SELECT s.uuid FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid) " +
+                "AND ((SELECT count(1) AS n1 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0) ";
+        return SQL.New(sql)
+                .param("state", SwitchPortState.Enabled)
+                .param("type", type)
+                .param("endpointUuid", endpointUuid)
                 .list();
     }
 
