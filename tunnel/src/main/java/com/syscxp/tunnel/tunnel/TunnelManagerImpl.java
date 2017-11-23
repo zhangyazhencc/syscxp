@@ -3301,7 +3301,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private List<PortOfferingVO> getPortTypeByEndpoint(String endpointUuid) {
         String sql = "SELECT t FROM PortOfferingVO t WHERE t.uuid IN (SELECT DISTINCT sp.portType FROM SwitchPortVO sp WHERE sp.state = :state " +
                 "AND (SELECT count(1) AS n1 FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid AND s.status = :status AND sp.switchUuid = s.uuid) = 1 " +
-                "AND ((SELECT count(1) AS n2 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0) ";
+                "AND (SELECT count(1) AS n2 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0) ";
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
                 .param("status", SwitchStatus.Connected)
@@ -3317,7 +3317,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private List<SwitchPortVO> getSwitchPortByType(String endpointUuid, String type) {
         String sql = "SELECT sp FROM SwitchPortVO sp WHERE sp.state = :state AND sp.portType = :portType " +
                 "AND (SELECT count(1) AS n1 FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid AND s.status = :status AND sp.switchUuid = s.uuid) = 1 " +
-                "AND ((SELECT count(1) AS n1 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0) ";
+                "AND (SELECT count(1) AS n1 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0 ";
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
                 .param("status", SwitchStatus.Connected)
