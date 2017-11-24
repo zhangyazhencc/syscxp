@@ -1,6 +1,7 @@
 package com.syscxp.header.tunnel.monitor;
 
 import com.syscxp.header.host.HostVO;
+import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIMessage;
@@ -19,6 +20,9 @@ import com.syscxp.header.tunnel.tunnel.TunnelVO;
 @SuppressCredentialCheck
 public class APICreateSpeedRecordsMsg extends APIMessage {
 
+    @APIParam(emptyString = false,required = false,maxLength = 32)
+    private String accountUuid;
+
     @APIParam(emptyString = false,resourceType = TunnelVO.class)
     private String tunnelUuid;
 
@@ -33,6 +37,18 @@ public class APICreateSpeedRecordsMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 11)
     private Integer duration;
+
+    public String getAccountUuid() {
+        if(getSession().getType() == AccountType.SystemAdmin){
+            return accountUuid;
+        }else{
+            return getSession().getAccountUuid();
+        }
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
 
     public String getTunnelUuid() {
         return tunnelUuid;
