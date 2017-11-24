@@ -16,6 +16,7 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
@@ -1643,6 +1644,38 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 });
 
             } else {
+                if (vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now()))) {
+                    if (vo.getState() == TunnelState.Enabled) {          //退订下发删除：对于已开通的产品
+
+                        vo.setAccountUuid(null);
+                        final TunnelVO vo2 = dbf.updateAndRefresh(vo);
+
+                        //创建任务
+                        TaskResourceVO taskResourceVO = newTaskResourceVO(vo2, TaskType.Delete);
+
+                        DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
+                        deleteTunnelMsg.setTunnelUuid(vo2.getUuid());
+                        deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+                        bus.makeLocalServiceId(deleteTunnelMsg, TunnelConstant.SERVICE_ID);
+                        bus.send(deleteTunnelMsg, new CloudBusCallBack(null) {
+                            @Override
+                            public void run(MessageReply reply) {
+                                if (reply.isSuccess()) {
+                                    evt.setInventory(TunnelInventory.valueOf(vo2));
+                                }else{
+                                    evt.setInventory(TunnelInventory.valueOf(vo2));
+                                    evt.setError(reply.getError());
+                                }
+                            }
+                        });
+
+                    }else{
+                        deleteTunnel(vo);
+                        evt.setInventory(TunnelInventory.valueOf(vo));
+                    }
+                    bus.publish(evt);
+                    return;
+                }
                 //调用退订
                 DeleteTunnelCallBack dc = new DeleteTunnelCallBack();
                 dc.setDescription("delete");
@@ -1706,6 +1739,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIDeleteForciblyTunnelEvent evt = new APIDeleteForciblyTunnelEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        if (vo.getExpireDate() != null && vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now()))) {
+            deleteTunnel(vo);
+            evt.setInventory(TunnelInventory.valueOf(vo));
+            bus.publish(evt);
+            return;
+        }
 
         //调用退订
         DeleteTunnelCallBack dc = new DeleteTunnelCallBack();
@@ -2789,6 +2829,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APIDeleteTunnelMsg msg) {
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+        if(msg.getSession().getType() != AccountType.SystemAdmin && (vo.getState()==TunnelState.Enabled || vo.getState()==TunnelState.Disabled)){
+            int deleteDays = TunnelGlobalConfig.PRODUCT_DELETE_DAYS.value(Integer.class);
+            if (vo.getCreateDate().toLocalDateTime().plusDays(deleteDays).isAfter(LocalDateTime.now()))
+                throw new ApiMessageInterceptionException(
+                        argerr("云专线[uuid:%s]购买未超过%s天,不能删除 !", msg.getUuid(), deleteDays));
+        }
         checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
     }
 
