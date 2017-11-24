@@ -28,6 +28,7 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.host.*;
 import com.syscxp.header.tunnel.monitor.*;
+import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.identity.IdentityInterceptor;
@@ -109,6 +110,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APICreateNettoolRecordMsg) msg);
         } else if (msg instanceof APIQueryNettoolResultMsg) {
             handle((APIQueryNettoolResultMsg) msg);
+        } else if (msg instanceof APIQueryNettoolNodeMsg) {
+            handle((APIQueryNettoolNodeMsg) msg);
         } else if (msg instanceof APIQueryMonitorResultMsg) {
             handle((APIQueryMonitorResultMsg) msg);
         } else if (msg instanceof APICreateSpeedTestTunnelMsg) {
@@ -811,6 +814,20 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             reply.setInventories(NettoolResultInventory.valueOf(result));
 
         bus.reply(msg, reply);
+    }
+
+    private void handle(APIQueryNettoolNodeMsg msg){
+        APIQueryNettoolNodeReply reply = new APIQueryNettoolNodeReply();
+
+        List<MonitorHostVO> monitorHostVOS = Q.New(MonitorHostVO.class)
+                .eq(MonitorHostVO_.monitorType,MonitorType.NETTOOL)
+                .eq(MonitorHostVO_.status,HostStatus.Connected)
+                .eq(MonitorHostVO_.state,HostState.Enabled)
+                .list();
+
+        reply.setInventories(MonitorHostInventory.valueOf1(monitorHostVOS));
+
+        bus.reply(msg,reply);
     }
 
     private void handle(APIQueryMonitorResultMsg msg) {
