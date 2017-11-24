@@ -125,6 +125,7 @@ public class SolutionQuotaOperator implements Quota.QuotaOperator {
         usage.setName(TunnelConstant.QUOTA_SOLUTION_INTERFACE_NUM);
         usage.setUsed(quota.solutionInterfaceNum);
         usages.add(usage);
+
         usage = new Quota.QuotaUsage();
         usage.setName(TunnelConstant.QUOTA_SOLUTION_TUNNEL_NUM);
         usage.setUsed(quota.solutionTunnelNum);

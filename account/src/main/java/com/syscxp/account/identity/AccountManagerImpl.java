@@ -158,7 +158,14 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             reply.setValidAccount(true);
             reply.setType(accountVO.getType());
         }
+        reply.setHasProxy(accountHasProxy(msg.getUuid()));
         bus.reply(msg, reply);
+    }
+
+    private boolean accountHasProxy(String accountUuid) {
+        SimpleQuery<ProxyAccountRefVO> q = dbf.createQuery(ProxyAccountRefVO.class);
+        q.add(ProxyAccountRefVO_.customerAccountUuid, Op.EQ, accountUuid);
+        return q.find()!=null;
     }
 
     private void handle(APIGetAccountUuidListByProxyMsg msg) {

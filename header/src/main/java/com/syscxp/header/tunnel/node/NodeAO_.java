@@ -20,7 +20,7 @@ public class NodeAO_ {
     public static volatile SingularAttribute<NodeAO, String> province;
     public static volatile SingularAttribute<NodeAO, String> city;
     public static volatile SingularAttribute<NodeAO, String> address;
-    public static volatile SingularAttribute<NodeAO, Double> longtitude;
+    public static volatile SingularAttribute<NodeAO, Double> longitude;
     public static volatile SingularAttribute<NodeAO, Double> latitude;
     public static volatile SingularAttribute<NodeAO, String> property;
     public static volatile SingularAttribute<NodeAO, NodeStatus> status;

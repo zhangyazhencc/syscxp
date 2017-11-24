@@ -251,9 +251,12 @@ public class MonitorAgentCommands {
     public static class EndpointTunnel{
         private String tunnelUuid;
         private String tunnelName;
+        private String endpoingAMip;
+        private String endpoingZMip;
         private String nodeA;
         private String nodeZ;
         private long bandwidth;
+        private String accountUuid;
 
         public String getTunnelUuid() {
             return tunnelUuid;
@@ -293,6 +296,30 @@ public class MonitorAgentCommands {
 
         public void setBandwidth(long bandwidth) {
             this.bandwidth = bandwidth;
+        }
+
+        public String getEndpoingAMip() {
+            return endpoingAMip;
+        }
+
+        public void setEndpoingAMip(String endpoingAMip) {
+            this.endpoingAMip = endpoingAMip;
+        }
+
+        public String getEndpoingZMip() {
+            return endpoingZMip;
+        }
+
+        public void setEndpoingZMip(String endpoingZMip) {
+            this.endpoingZMip = endpoingZMip;
+        }
+
+        public String getAccountUuid() {
+            return accountUuid;
+        }
+
+        public void setAccountUuid(String accountUuid) {
+            this.accountUuid = accountUuid;
         }
     }
 
@@ -355,6 +382,57 @@ public class MonitorAgentCommands {
 
         public void setSuccess(boolean success) {
             this.success = success;
+        }
+    }
+
+    public static class FalconGetTunnelCommand {
+        private String physicalSwitchMip;
+        private Integer vlan;
+
+        public String getPhysicalSwitchMip() {
+            return physicalSwitchMip;
+        }
+
+        public void setPhysicalSwitchMip(String physicalSwitchMip) {
+            this.physicalSwitchMip = physicalSwitchMip;
+        }
+
+        public Integer getVlan() {
+            return vlan;
+        }
+
+        public void setVlan(Integer vlan) {
+            this.vlan = vlan;
+        }
+    }
+
+    public static class FalconResponse{
+        private boolean success;
+        private String msg;
+        private List<EndpointTunnelsInventory> inventories;
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
+
+        public String getMsg() {
+            return msg;
+        }
+
+        public void setMsg(String msg) {
+            this.msg = msg;
+        }
+
+        public List<EndpointTunnelsInventory> getInventories() {
+            return inventories;
+        }
+
+        public void setInventories(List<EndpointTunnelsInventory> inventories) {
+            this.inventories = inventories;
         }
     }
 }

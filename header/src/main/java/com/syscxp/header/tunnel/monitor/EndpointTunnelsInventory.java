@@ -7,14 +7,17 @@ import java.util.List;
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-11-03.
- * @Description: 网络工具返回集合.
+ * @Description: falcon查询共点专线返回集合.
  */
 public class EndpointTunnelsInventory {
     private String tunnelUuid;
     private String tunnelName;
+    private String endpointAMip;
     private String nodeA;
+    private String endpointZMip;
     private String nodeZ;
     private long bandwidth;
+    private String accountUuid;
 
     public static EndpointTunnelsInventory valueOf(MonitorAgentCommands.EndpointTunnel vo){
         EndpointTunnelsInventory inventory = new EndpointTunnelsInventory();
@@ -23,6 +26,9 @@ public class EndpointTunnelsInventory {
         inventory.setNodeA(vo.getNodeA());
         inventory.setNodeZ(vo.getNodeZ());
         inventory.setBandwidth(vo.getBandwidth());
+        inventory.setEndpointAMip(vo.getEndpoingAMip());
+        inventory.setEndpointZMip(vo.getEndpoingZMip());
+        inventory.setAccountUuid(vo.getAccountUuid());
 
         return  inventory;
     }
@@ -73,5 +79,29 @@ public class EndpointTunnelsInventory {
 
     public void setBandwidth(long bandwidth) {
         this.bandwidth = bandwidth;
+    }
+
+    public String getEndpointAMip() {
+        return endpointAMip;
+    }
+
+    public void setEndpointAMip(String endpointAMip) {
+        this.endpointAMip = endpointAMip;
+    }
+
+    public String getEndpointZMip() {
+        return endpointZMip;
+    }
+
+    public void setEndpointZMip(String endpointZMip) {
+        this.endpointZMip = endpointZMip;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

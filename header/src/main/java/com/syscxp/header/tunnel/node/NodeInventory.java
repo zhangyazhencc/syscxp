@@ -24,7 +24,7 @@ public class NodeInventory {
     private String province;
     private String city;
     private String address;
-    private Double longtitude;
+    private Double longitude;
     private Double latitude;
     private String property;
     private NodeStatus status;
@@ -45,7 +45,7 @@ public class NodeInventory {
         inv.setCity(vo.getCity());
         inv.setAddress(vo.getAddress());
         inv.setLatitude(vo.getLatitude());
-        inv.setLongtitude(vo.getLongtitude());
+        inv.setLongitude(vo.getLongitude());
         inv.setProperty(vo.getProperty());
         inv.setStatus(vo.getStatus());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -141,12 +141,12 @@ public class NodeInventory {
         this.address = address;
     }
 
-    public Double getLongtitude() {
-        return longtitude;
+    public Double getLongitude() {
+        return longitude;
     }
 
-    public void setLongtitude(Double longtitude) {
-        this.longtitude = longtitude;
+    public void setLongitude(Double longitude) {
+        this.longitude = longitude;
     }
 
     public Double getLatitude() {

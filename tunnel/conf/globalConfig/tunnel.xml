@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<globalConfig xmlns="http://syscxp.com/schema/syscxp">
+    <config>
+        <category>tunnel</category>
+        <name>productDelete.days</name>
+        <description>How long a product can be deleted, in days</description>
+        <defaultValue>7</defaultValue>
+        <type>java.lang.Integer</type>
+    </config>
+</globalConfig>
