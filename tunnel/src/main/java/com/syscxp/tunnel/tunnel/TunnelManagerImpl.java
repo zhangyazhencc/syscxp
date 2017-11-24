@@ -3429,7 +3429,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 eq(PhysicalSwitchVO_.uuid, physicalSwitchUuid).
                 select(PhysicalSwitchVO_.mIP).findValue();
 
-        if (switchIp != null)
+        if (switchIp == null)
             throw new IllegalArgumentException("获取物理交换机IP失败");
 
         return switchIp;
