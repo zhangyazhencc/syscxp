@@ -687,6 +687,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
 
+        if (vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now()))) {
+            dbf.remove(vo);
+            bus.publish(evt);
+            return;
+        }
+
         //调用退订
         APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(getOrderMsgForInterface(vo, new UnsubcribeInterfaceCallBack()));
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
