@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.solution;
 
+import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
@@ -67,25 +68,25 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
     private void handleApiMessage(APIMessage msg) {
         if(msg instanceof APICreateSolutionMsg){
-            hand((APICreateSolutionMsg) msg);
+            handle((APICreateSolutionMsg) msg);
         } else if(msg instanceof APICreateSolutionInterfaceMsg){
-            hand((APICreateSolutionInterfaceMsg) msg);
+            handle((APICreateSolutionInterfaceMsg) msg);
         }else if(msg instanceof APICreateSolutionTunnelMsg){
-            hand((APICreateSolutionTunnelMsg) msg);
+            handle((APICreateSolutionTunnelMsg) msg);
         }else if(msg instanceof APICreateSolutionVpnMsg){
-            hand((APICreateSolutionVpnMsg) msg);
+            handle((APICreateSolutionVpnMsg) msg);
         }else if(msg instanceof APIDeleteSolutionMsg){
-            hand((APIDeleteSolutionMsg) msg);
+            handle((APIDeleteSolutionMsg) msg);
         }else if(msg instanceof APIDeleteSolutionInterfaceMsg){
-            hand((APIDeleteSolutionInterfaceMsg) msg);
+            handle((APIDeleteSolutionInterfaceMsg) msg);
         }else if(msg instanceof APIDeleteSolutionTunnelMsg){
-            hand((APIDeleteSolutionTunnelMsg) msg);
+            handle((APIDeleteSolutionTunnelMsg) msg);
         }else if(msg instanceof APIDeleteSolutionVpnMsg){
-            hand((APIDeleteSolutionVpnMsg) msg);
+            handle((APIDeleteSolutionVpnMsg) msg);
         }else if(msg instanceof APIUpdateSolutionMsg){
-            hand((APIUpdateSolutionMsg) msg);
+            handle((APIUpdateSolutionMsg) msg);
         }else if(msg instanceof APIUpdateSolutionTunnelMsg){
-            hand((APIUpdateSolutionTunnelMsg) msg);
+            handle((APIUpdateSolutionTunnelMsg) msg);
         }else if(msg instanceof APIUpdateSolutionVpnMsg){
             handle((APIUpdateSolutionVpnMsg) msg);
         }else if(msg instanceof APIRecountInterfacePriceMsg){
@@ -96,6 +97,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             bus.dealWithUnknownMessage(msg);
         }
     }
+
 
     private void handle(APIRecountTunnelPriceMsg msg) {
         SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(), SolutionTunnelVO.class);
@@ -283,7 +285,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
     }
 
-    private void hand(APICreateSolutionTunnelMsg msg) {
+    private void handle(APICreateSolutionTunnelMsg msg) {
         SolutionTunnelVO vo = new SolutionTunnelVO();
         vo.setUuid(Platform.getUuid());
         vo.setCost(msg.getCost());
