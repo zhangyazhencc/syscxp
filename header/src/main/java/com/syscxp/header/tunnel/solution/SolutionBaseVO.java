@@ -23,9 +23,6 @@ public class SolutionBaseVO {
     private String solutionUuid;
 
     @Column
-    private String name;
-
-    @Column
     private BigDecimal cost;
 
     @Column
@@ -34,9 +31,6 @@ public class SolutionBaseVO {
 
     @Column
     private int duration;
-
-    @Column
-    private String description;
 
     @Column
     private Timestamp createDate;
@@ -65,14 +59,6 @@ public class SolutionBaseVO {
         this.solutionUuid = solutionUuid;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public BigDecimal getCost() {
         return cost;
     }
@@ -95,14 +81,6 @@ public class SolutionBaseVO {
 
     public void setDuration(int duration) {
         this.duration = duration;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public Timestamp getCreateDate() {
