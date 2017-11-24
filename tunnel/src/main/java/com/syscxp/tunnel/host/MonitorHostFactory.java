@@ -198,20 +198,18 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
             return;
         }
 
-        logger.debug(String.format("need to connect hosts because kvm agent changed, uuids:%s", hostUuids));
+        logger.debug(String.format("need to connect hosts because agent changed, uuids:%s", hostUuids));
 
         List<ConnectHostMsg> msgs = new ArrayList<>();
         for (String huuid : hostUuids) {
             ConnectHostMsg msg = new ConnectHostMsg();
             msg.setNewAdd(false);
             msg.setUuid(huuid);
-//            bus.makeTargetServiceIdByResourceUuid(msg, MonitorHostConstant.SERVICE_ID, huuid);
-            bus.makeLocalServiceId(msg, MonitorHostConstant.SERVICE_ID);
+            bus.makeLocalServiceId(msg, HostConstant.SERVICE_ID);
             msgs.add(msg);
         }
 
-        bus.send(msgs, HostGlobalProperty.HOST_LOAD_PARALLELISM_DEGREE, new CloudBusSteppingCallback
-                (null) {
+        bus.send(msgs, HostGlobalProperty.HOST_LOAD_PARALLELISM_DEGREE, new CloudBusSteppingCallback(null) {
             @Override
             public void run(NeedReplyMessage msg, MessageReply reply) {
                 ConnectHostMsg cmsg = (ConnectHostMsg) msg;
