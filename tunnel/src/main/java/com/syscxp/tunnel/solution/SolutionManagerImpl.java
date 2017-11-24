@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.util.List;
 
 import static com.syscxp.utils.CollectionDSL.list;
@@ -90,8 +89,8 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             handle((APIUpdateSolutionTunnelMsg) msg);
         }else if(msg instanceof APIUpdateSolutionVpnMsg){
             handle((APIUpdateSolutionVpnMsg) msg);
-        }else if(msg instanceof APTRecountInterfacePriceMsg){
-            handle((APTRecountInterfacePriceMsg) msg);
+        }else if(msg instanceof APIRecountInterfacePriceMsg){
+            handle((APIRecountInterfacePriceMsg) msg);
         }else if(msg instanceof APIRecountTunnelPriceMsg){
             handle((APIRecountTunnelPriceMsg) msg);
         }else {
@@ -117,7 +116,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     }
 
     @Transactional
-    private void handle(APTRecountInterfacePriceMsg msg) {
+    private void handle(APIRecountInterfacePriceMsg msg) {
         SolutionInterfaceVO vo = dbf.findByUuid(msg.getUuid(), SolutionInterfaceVO.class);
         APIGetProductPriceReply reply = getInterfacePrice(vo, msg.getAccountUuid());
         vo.setCost(reply.getOriginalPrice());
@@ -128,7 +127,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         solutionVO.setTotalCost(totalCost);
         dbf.updateAndRefresh(solutionVO);
 
-        APTRecountInterfacePriceReply priceReply = new APTRecountInterfacePriceReply();
+        APIRecountInterfacePriceReply priceReply = new APIRecountInterfacePriceReply();
         priceReply.setInterfaceInventory(SolutionInterfaceInventory.valueOf(vo));
         priceReply.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
         bus.reply(msg,priceReply);

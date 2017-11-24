@@ -2,7 +2,7 @@ package com.syscxp.header.tunnel.solution;
 
 import com.syscxp.header.query.APIQueryReply;
 
-public class APTRecountInterfacePriceReply extends APIQueryReply {
+public class APIRecountInterfacePriceReply extends APIQueryReply {
     private SolutionInterfaceInventory interfaceInventory;
     private SolutionInventory solutionInventory;
 

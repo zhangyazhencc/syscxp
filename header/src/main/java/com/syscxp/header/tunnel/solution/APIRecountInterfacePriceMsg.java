@@ -7,7 +7,7 @@ import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "update")
-public class APTRecountInterfacePriceMsg extends APISyncCallMessage {
+public class APIRecountInterfacePriceMsg extends APISyncCallMessage {
     @APIParam(maxLength = 32)
     private String uuid;
 

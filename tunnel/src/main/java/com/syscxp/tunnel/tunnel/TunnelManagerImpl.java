@@ -3051,7 +3051,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 获取物理接口单价
      */
-    private List<ProductPriceUnit> getInterfacePriceUnit(String portOfferingUuid) {
+    public List<ProductPriceUnit> getInterfacePriceUnit(String portOfferingUuid) {
         List<ProductPriceUnit> units = new ArrayList<>();
         ProductPriceUnit unit = new ProductPriceUnit();
         unit.setProductTypeCode(ProductType.PORT);
@@ -3066,7 +3066,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 获取云专线单价
      */
-    private List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid, String nodeAUuid, String nodeZUuid, String innerEndpointUuid) {
+    public List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid, String nodeAUuid, String nodeZUuid, String innerEndpointUuid) {
         List<ProductPriceUnit> units = new ArrayList<>();
         NodeVO nodeA = dbf.findByUuid(nodeAUuid, NodeVO.class);
         NodeVO nodeZ = dbf.findByUuid(nodeZUuid, NodeVO.class);
