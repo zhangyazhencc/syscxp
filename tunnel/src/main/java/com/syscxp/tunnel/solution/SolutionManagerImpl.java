@@ -403,10 +403,12 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     private void createSolutionInterface(APICreateSolutionTunnelMsg msg, String endpointUuid, String portOfferingUuid) {
         SolutionInterfaceVO vo = new SolutionInterfaceVO();
         vo.setUuid(Platform.getUuid());
-        vo.setCost(msg.getCost());
+//        vo.setCost(msg.getCost());
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setSolutionUuid(msg.getSolutionUuid());
+        APIGetProductPriceReply reply = getInterfacePrice(vo, msg.getAccountUuid());
+        vo.setCost(reply.getOriginalPrice());
 
         EndpointVO endpointVO = dbf.findByUuid(endpointUuid, EndpointVO.class);
         if(endpointVO != null){
