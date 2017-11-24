@@ -139,7 +139,10 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         if (customerUuids != null && customerUuids.size() > 0) {
             for (String customerUuid : customerUuids) {
                 AccountDiscountVO customerDiscount = getAccountDiscountVO(customerUuid, productCategoryUuid);
-                dbf.getEntityManager().remove(dbf.getEntityManager().merge(customerDiscount));
+                if (customerDiscount != null) {
+                    dbf.getEntityManager().remove(dbf.getEntityManager().merge(customerDiscount));
+                }
+
             }
 
         }
