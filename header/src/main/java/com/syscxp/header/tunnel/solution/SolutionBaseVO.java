@@ -4,6 +4,7 @@ import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.vo.ForeignKey;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /**
@@ -25,7 +26,7 @@ public class SolutionBaseVO {
     private String name;
 
     @Column
-    private String cost;
+    private BigDecimal cost;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -72,11 +73,11 @@ public class SolutionBaseVO {
         this.name = name;
     }
 
-    public String getCost() {
+    public BigDecimal getCost() {
         return cost;
     }
 
-    public void setCost(String cost) {
+    public void setCost(BigDecimal cost) {
         this.cost = cost;
     }
 

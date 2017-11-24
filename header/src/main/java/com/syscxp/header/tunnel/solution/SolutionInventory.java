@@ -2,6 +2,7 @@ package com.syscxp.header.tunnel.solution;
 
 import com.syscxp.header.search.Inventory;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,7 +14,7 @@ public class SolutionInventory {
     private String name;
     private String accountUuid;
     private String description;
-    private String totalCost;
+    private BigDecimal totalCost;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -69,11 +70,11 @@ public class SolutionInventory {
         this.description = description;
     }
 
-    public String getTotalCost() {
+    public BigDecimal getTotalCost() {
         return totalCost;
     }
 
-    public void setTotalCost(String totalCost) {
+    public void setTotalCost(BigDecimal totalCost) {
         this.totalCost = totalCost;
     }
 

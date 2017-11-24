@@ -5,7 +5,8 @@ import com.syscxp.header.rest.RestResponse;
 
 @RestResponse(allTo = "inventory")
 public class APICreateSolutionInterfaceEvent extends APIEvent {
-    private SolutionInterfaceInventory inventory;
+    private SolutionInterfaceInventory InterfaceInventory;
+    private SolutionInventory solutionInventory;
 
     public APICreateSolutionInterfaceEvent(String apiId) {
         super(apiId);
@@ -15,11 +16,19 @@ public class APICreateSolutionInterfaceEvent extends APIEvent {
         super(null);
     }
 
-    public SolutionInterfaceInventory getInventory() {
-        return inventory;
+    public SolutionInterfaceInventory getInterfaceInventory() {
+        return InterfaceInventory;
     }
 
-    public void setInventory(SolutionInterfaceInventory inventory) {
-        this.inventory = inventory;
+    public void setInterfaceInventory(SolutionInterfaceInventory interfaceInventory) {
+        InterfaceInventory = interfaceInventory;
+    }
+
+    public SolutionInventory getSolutionInventory() {
+        return solutionInventory;
+    }
+
+    public void setSolutionInventory(SolutionInventory solutionInventory) {
+        this.solutionInventory = solutionInventory;
     }
 }
