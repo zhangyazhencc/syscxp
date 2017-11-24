@@ -6,6 +6,8 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
 
+import java.math.BigDecimal;
+
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "update")
 public class APIUpdateSolutionTunnelMsg extends  APIMessage {
 
@@ -15,8 +17,8 @@ public class APIUpdateSolutionTunnelMsg extends  APIMessage {
     @APIParam(maxLength = 128)
     private long bandwidth;
 
-    @APIParam(maxLength = 32)
-    private String cost;
+    @APIParam(numberRange = {0,Long.MAX_VALUE})
+    private BigDecimal cost;
     @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
     private ProductChargeModel productChargeModel;
     @APIParam(maxLength = 32)
@@ -38,11 +40,11 @@ public class APIUpdateSolutionTunnelMsg extends  APIMessage {
         this.bandwidth = bandwidth;
     }
 
-    public String getCost() {
+    public BigDecimal getCost() {
         return cost;
     }
 
-    public void setCost(String cost) {
+    public void setCost(BigDecimal cost) {
         this.cost = cost;
     }
 

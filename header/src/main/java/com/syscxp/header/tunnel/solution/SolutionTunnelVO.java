@@ -11,7 +11,6 @@ import javax.persistence.*;
 @Table
 public class SolutionTunnelVO extends SolutionBaseVO{
 
-
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "endpointUuidA")
     private EndpointVO endpointVOA;
@@ -20,10 +19,12 @@ public class SolutionTunnelVO extends SolutionBaseVO{
     @JoinColumn(name = "endpointUuidZ")
     private EndpointVO endpointVOZ;
 
-   /* @Column
-    private String endpointUuidA;
     @Column
-    private String endpointUuidZ;*/
+    private String bandwidthOfferingUuid;
+
+    @Column
+    private String innerEndpointUuid;
+
     @Column
     private long bandwidth;
 
@@ -49,5 +50,21 @@ public class SolutionTunnelVO extends SolutionBaseVO{
 
     public void setBandwidth(long bandwidth) {
         this.bandwidth = bandwidth;
+    }
+
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
+    }
+
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
+    }
+
+    public String getInnerEndpointUuid() {
+        return innerEndpointUuid;
+    }
+
+    public void setInnerEndpointUuid(String innerEndpointUuid) {
+        this.innerEndpointUuid = innerEndpointUuid;
     }
 }

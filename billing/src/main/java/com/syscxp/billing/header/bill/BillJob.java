@@ -35,16 +35,14 @@ public class BillJob extends QuartzJobBean {
         GLock lock = new GLock(String.format("id-%s","createBill"), 120);
         lock.lock();
         try {
+            logger.info("generate Bill start ..............");
             Timestamp billTimestamp = databaseFacade.getCurrentSqlTime();
-            logger.info(billTimestamp+"########");
-            LocalDateTime localDateTime =  billTimestamp.toLocalDateTime();
-            LocalDate date = LocalDate.of(localDateTime.getYear(),localDateTime.getMonth(),1);
-            LocalTime time = LocalTime.MIN;
-            localDateTime =  LocalDateTime.of(date,time);
+            LocalDateTime lastDayOfMonth = billTimestamp.toLocalDateTime().minusMonths(1);
+            LocalDate date = LocalDate.of(lastDayOfMonth.getYear(),lastDayOfMonth.getMonth(),1);
+            LocalDateTime lastMonthFirstDay =  LocalDateTime.of(date,LocalTime.MIN);
 
-            Timestamp startTime =  Timestamp.valueOf(localDateTime);
-            Timestamp endTime = Timestamp.valueOf(localDateTime.plusMonths(1).minusSeconds(1));
-
+            Timestamp startTime =  Timestamp.valueOf(lastMonthFirstDay);
+            Timestamp endTime = Timestamp.valueOf(lastMonthFirstDay.plusMonths(1).minusNanos(1));
             String sql = "select accountUuid,dealWay, sum(expend)as expend,sum(income)as income from DealDetailVO where  state = 'SUCCESS' and finishTime between :dateStart and  :dateEnd  group by accountUuid,dealWay";
             Query q = databaseFacade.getEntityManager().createNativeQuery(sql);
             q.setParameter("dateStart",startTime);
@@ -80,17 +78,16 @@ public class BillJob extends QuartzJobBean {
                         BigDecimal balance = abVO.getCashBalance();
                         if (balance.compareTo(BigDecimal.ZERO) < 0) {
                             vo.setRepay(balance);
-                            vo.setCashBalance(BigDecimal.ZERO);
                         } else {
                             vo.setRepay(BigDecimal.ZERO);
-                            vo.setCashBalance(balance);
                         }
+                        vo.setCashBalance(balance);
                         databaseFacade.persistAndRefresh(vo);
                     }
 
                 }
             }
-            //todo here send message to user
+            logger.info("generate Bill end ..............");
         }catch (Exception e){
             JobExecutionException ej = new JobExecutionException(e);
             e.printStackTrace();

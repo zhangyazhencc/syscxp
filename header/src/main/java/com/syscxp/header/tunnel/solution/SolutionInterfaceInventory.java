@@ -5,6 +5,7 @@ import com.syscxp.header.search.Inventory;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
 
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -16,7 +17,7 @@ public class SolutionInterfaceInventory {
     private String solutionUuid;
     private String name;
     private String description;
-    private String cost;
+    private BigDecimal cost;
     private ProductChargeModel productChargeModel;
     private int duration;
     private Timestamp lastOpDate;
@@ -88,11 +89,11 @@ public class SolutionInterfaceInventory {
         this.description = description;
     }
 
-    public String getCost() {
+    public BigDecimal getCost() {
         return cost;
     }
 
-    public void setCost(String cost) {
+    public void setCost(BigDecimal cost) {
         this.cost = cost;
     }
 

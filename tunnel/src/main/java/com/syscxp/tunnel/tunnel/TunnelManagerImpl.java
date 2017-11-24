@@ -687,6 +687,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
 
+        if (vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now()))) {
+            dbf.remove(vo);
+            bus.publish(evt);
+            return;
+        }
+
         //调用退订
         APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(getOrderMsgForInterface(vo, new UnsubcribeInterfaceCallBack()));
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -3053,7 +3059,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 获取物理接口单价
      */
-    private List<ProductPriceUnit> getInterfacePriceUnit(String portOfferingUuid) {
+    public List<ProductPriceUnit> getInterfacePriceUnit(String portOfferingUuid) {
         List<ProductPriceUnit> units = new ArrayList<>();
         ProductPriceUnit unit = new ProductPriceUnit();
         unit.setProductTypeCode(ProductType.PORT);
@@ -3068,7 +3074,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 获取云专线单价
      */
-    private List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid, String nodeAUuid, String nodeZUuid, String innerEndpointUuid) {
+    public List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid, String nodeAUuid, String nodeZUuid, String innerEndpointUuid) {
         List<ProductPriceUnit> units = new ArrayList<>();
         NodeVO nodeA = dbf.findByUuid(nodeAUuid, NodeVO.class);
         NodeVO nodeZ = dbf.findByUuid(nodeZUuid, NodeVO.class);
@@ -3299,9 +3305,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 通过连接点获取可用的端口规格
      */
     private List<PortOfferingVO> getPortTypeByEndpoint(String endpointUuid) {
-        String sql = "SELECT DISTINCT sp.portType FROM SwitchPortVO sp WHERE sp.state = :state " +
-                "AND sp.switchUuid IN ( SELECT s.uuid FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid AND s.status = :status) " +
-                "AND ((SELECT count(1) AS n1 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0) ";
+        String sql = "SELECT t FROM PortOfferingVO t WHERE t.uuid IN (SELECT DISTINCT sp.portType FROM SwitchPortVO sp WHERE sp.state = :state " +
+                "AND (SELECT count(1) AS n1 FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid AND s.status = :status AND sp.switchUuid = s.uuid) = 1 " +
+                "AND (SELECT count(1) AS n2 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0) ";
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
                 .param("status", SwitchStatus.Connected)
@@ -3316,8 +3322,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      */
     private List<SwitchPortVO> getSwitchPortByType(String endpointUuid, String type) {
         String sql = "SELECT sp FROM SwitchPortVO sp WHERE sp.state = :state AND sp.portType = :portType " +
-                "AND sp.switchUuid IN (SELECT s.uuid FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid AND s.status = :status) " +
-                "AND ((SELECT count(1) AS n1 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0) ";
+                "AND (SELECT count(1) AS n1 FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid AND s.status = :status AND sp.switchUuid = s.uuid) = 1 " +
+                "AND (SELECT count(1) AS n1 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0 ";
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
                 .param("status", SwitchStatus.Connected)

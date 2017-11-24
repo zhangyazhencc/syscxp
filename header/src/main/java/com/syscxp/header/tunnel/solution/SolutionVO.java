@@ -1,6 +1,7 @@
 package com.syscxp.header.tunnel.solution;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /**
@@ -23,7 +24,7 @@ public class SolutionVO {
     private String description;
 
     @Column
-    private String totalCost;
+    private BigDecimal totalCost;
 
     @Column
     private Timestamp createDate;
@@ -68,11 +69,11 @@ public class SolutionVO {
         this.description = description;
     }
 
-    public String getTotalCost() {
+    public BigDecimal getTotalCost() {
         return totalCost;
     }
 
-    public void setTotalCost(String totalCost) {
+    public void setTotalCost(BigDecimal totalCost) {
         this.totalCost = totalCost;
     }
 

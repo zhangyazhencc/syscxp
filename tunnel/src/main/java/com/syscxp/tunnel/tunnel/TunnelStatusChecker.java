@@ -89,19 +89,24 @@ public class TunnelStatusChecker implements Component {
                     String resp = restf.getRESTTemplate().postForObject(OPENTSDB_SERVER_URL, condition, String.class);
                     List<QueryResult> results = JSONObjectUtil.toCollection(resp, ArrayList.class, QueryResult.class);
 
-                    QueryResult result = results.get(0);
-                    Double max = Collections.max(result.getDps().values());
-                    Double min = Collections.min(result.getDps().values());
+                    if (!results.isEmpty()) {
+                        QueryResult result = results.get(0);
+                        Double max = Collections.max(result.getDps().values());
+                        Double min = Collections.min(result.getDps().values());
 
-                    TunnelStatus status;
-                    if (min > PACKETS_LOST_MAX)
-                        status = TunnelStatus.Disconnected;
-                    else if (max < PACKETS_LOST_MIN)
-                        status = TunnelStatus.Connected;
-                    else
-                        status = TunnelStatus.Warning;
-                    if (vo.getStatus() != status)
-                        UpdateQuery.New(TunnelVO.class).eq(TunnelVO_.uuid, vo.getUuid()).set(TunnelVO_.status, status).update();
+                        TunnelStatus status;
+                        if (min > PACKETS_LOST_MAX)
+                            status = TunnelStatus.Disconnected;
+                        else if (max < PACKETS_LOST_MIN)
+                            status = TunnelStatus.Connected;
+                        else
+                            status = TunnelStatus.Warning;
+                        if (vo.getStatus() != status)
+                            UpdateQuery.New(TunnelVO.class)
+                                    .eq(TunnelVO_.uuid, vo.getUuid())
+                                    .set(TunnelVO_.status, status)
+                                    .update();
+                    }
                 }
             } catch (Throwable t) {
                 logger.warn("unhandled exception", t);
