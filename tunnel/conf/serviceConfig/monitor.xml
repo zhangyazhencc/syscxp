@@ -52,6 +52,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.monitor.APIQueryNettoolNodeMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.monitor.APIQuerySpeedRecordsMsg</name>
         <serviceId>query</serviceId>
     </message>
