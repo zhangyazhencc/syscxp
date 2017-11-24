@@ -5,6 +5,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.tunnel.BandwidthOfferingVO;
 
 import java.math.BigDecimal;
 
@@ -14,6 +15,8 @@ public class APIUpdateSolutionTunnelMsg extends  APIMessage {
     @APIParam(maxLength = 32)
     private String uuid;
 
+    @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
+    private String bandwidthOfferingUuid;
     @APIParam(maxLength = 128)
     private long bandwidth;
 
@@ -62,5 +65,13 @@ public class APIUpdateSolutionTunnelMsg extends  APIMessage {
 
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
+    }
+
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 }
