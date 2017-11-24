@@ -163,6 +163,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(),SolutionTunnelVO.class);
         vo.setBandwidth(msg.getBandwidth());
+        vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setCost(msg.getCost());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDuration(msg.getDuration());
