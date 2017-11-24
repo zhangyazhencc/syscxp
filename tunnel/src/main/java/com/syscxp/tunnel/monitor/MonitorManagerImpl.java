@@ -28,7 +28,6 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.MonitorConstant;
 import com.syscxp.header.tunnel.host.*;
 import com.syscxp.header.tunnel.monitor.*;
-import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.identity.IdentityInterceptor;
