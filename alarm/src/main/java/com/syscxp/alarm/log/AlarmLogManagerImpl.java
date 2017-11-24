@@ -23,12 +23,14 @@ import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsService;
 import com.syscxp.utils.Utils;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.sql.Timestamp;
 import java.util.*;
 
+import static com.syscxp.core.Platform.childResourceToBaseResourceMap;
 import static com.syscxp.core.Platform.operr;
 
 public class AlarmLogManagerImpl extends AbstractService implements ApiMessageInterceptor {
@@ -114,55 +116,61 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
                 new SyncHttpCallHandler<AlarmLogCallbackCmd>() {
                     @Override
                     public String handleSyncHttpCall(AlarmLogCallbackCmd cmd) {
-                        SimpleQuery<AlarmLogVO> query = dbf.createQuery(AlarmLogVO.class);
-                        query.add(AlarmLogVO_.productUuid, SimpleQuery.Op.EQ, cmd.getTunnelUuid());
-                        query.add(AlarmLogVO_.regulationUuid, SimpleQuery.Op.EQ, cmd.getRegulationUuid());
-                        query.orderBy(AlarmLogVO_.createDate, SimpleQuery.Od.DESC);
-                        List<AlarmLogVO> alarmLogVOS = query.list();
-                        AlarmLogVO log = null;
-                        if (alarmLogVOS != null && alarmLogVOS.size() > 0) {
-                             log = alarmLogVOS.get(0);
-                        }
-
-
-                        if (log == null){
-                            if (AlarmStatus.PROBLEM.equals(cmd.getStatus())) {
-                                saveAlarmLog(cmd);
-                                sendMessage(cmd);
+                        Map map = new HashMap();
+                        try{
+                            SimpleQuery<AlarmLogVO> query = dbf.createQuery(AlarmLogVO.class);
+                            query.add(AlarmLogVO_.productUuid, SimpleQuery.Op.EQ, cmd.getTunnelUuid());
+                            query.add(AlarmLogVO_.regulationUuid, SimpleQuery.Op.EQ, cmd.getRegulationUuid());
+                            query.orderBy(AlarmLogVO_.createDate, SimpleQuery.Od.DESC);
+                            List<AlarmLogVO> alarmLogVOS = query.list();
+                            AlarmLogVO log = null;
+                            if (alarmLogVOS != null && alarmLogVOS.size() > 0) {
+                                log = alarmLogVOS.get(0);
                             }
-                        }else {
-                            if (log.getStatus() == AlarmStatus.OK) {
+
+                            if (log == null){
                                 if (AlarmStatus.PROBLEM.equals(cmd.getStatus())) {
                                     saveAlarmLog(cmd);
                                     sendMessage(cmd);
                                 }
-                            } else {
-                                if (AlarmStatus.PROBLEM.equals(cmd.getStatus())) {
-                                    if (log.getAlarmTime().before(new Timestamp(dbf.getCurrentSqlTime().getTime() - 3600 * 1000))){
+                            }else {
+                                if (log.getStatus() == AlarmStatus.OK) {
+                                    if (AlarmStatus.PROBLEM.equals(cmd.getStatus())) {
                                         saveAlarmLog(cmd);
                                         sendMessage(cmd);
-                                    }else{
-                                        if (log.getCount() < 2) {
-                                            log.setCount(log.getCount() + 1);
-                                            dbf.updateAndRefresh(log);
-                                        }
                                     }
                                 } else {
-                                    log.setCount(log.getCount() - 1);
-                                    if (log.getCount() == 0) {
-                                        log.setResumeTime(new Timestamp(System.currentTimeMillis()));
-                                        log.setStatus(cmd.getStatus());
-                                        long time = (System.currentTimeMillis() - log.getAlarmTime().getTime()) / 1000 + log.getDuration();
-                                        log.setDuration(time);
-                                        sendMessage(cmd);
+                                    if (AlarmStatus.PROBLEM.equals(cmd.getStatus())) {
+                                        if (log.getAlarmTime().before(new Timestamp(dbf.getCurrentSqlTime().getTime() - 3600 * 1000))){
+                                            saveAlarmLog(cmd);
+                                            sendMessage(cmd);
+                                        }else{
+                                            if (log.getCount() < 2) {
+                                                log.setCount(log.getCount() + 1);
+                                                dbf.updateAndRefresh(log);
+                                            }
+                                        }
+                                    } else {
+                                        log.setCount(log.getCount() - 1);
+                                        if (log.getCount() == 0) {
+                                            log.setResumeTime(new Timestamp(System.currentTimeMillis()));
+                                            log.setStatus(cmd.getStatus());
+                                            long time = (System.currentTimeMillis() - log.getAlarmTime().getTime()) / 1000 + log.getDuration();
+                                            log.setDuration(time);
+                                            sendMessage(cmd);
+                                        }
+                                        dbf.updateAndRefresh(log);
                                     }
-                                    dbf.updateAndRefresh(log);
+
                                 }
-
                             }
+                            map.put("success",true);
+                            map.put("msg","success");
+                        }catch (Exception e){
+                            map.put("success",false);
+                            map.put("msg",String.format("Failed to handle alarm data: %s",e.getMessage()));
                         }
-
-                        return null;
+                        return JSONObjectUtil.toJsonString(map);
                     }
                 });
 
