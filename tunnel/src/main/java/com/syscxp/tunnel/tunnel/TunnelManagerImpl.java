@@ -286,13 +286,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
             @Override
             public void rollback(FlowRollback trigger, Map data) {
+                logger.info(String.format("rollback to update InterfaceVO[uuid: %s]", iface.getUuid()));
                 dbf.updateAndRefresh(iface);
                 if (isUsed) {
                     List<QinqVO> qinqs = (List<QinqVO>) data.getOrDefault("qinqs", new ArrayList());
                     dbf.updateCollection(qinqs);
                 }
-                logger.info(String.format("rollback to update InterfaceVO[uuid: %s]", iface.getUuid()));
-
                 trigger.rollback();
             }
         }).then(new Flow() {

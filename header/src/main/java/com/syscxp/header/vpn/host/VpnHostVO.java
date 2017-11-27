@@ -13,7 +13,6 @@ import java.util.List;
 @Entity
 @Table
 @PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")
-@EO(EOClazz = HostEO.class, needView = false)
 public class VpnHostVO extends HostVO {
     @Column
     private String publicInterface;
