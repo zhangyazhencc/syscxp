@@ -2608,6 +2608,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APICreateTunnelMsg msg) {
+        //BOSS创建验证物理接口的账户是否一致
+        if(msg.getSession().getType() == AccountType.SystemAdmin){
+            if(msg.getInterfaceAUuid() != null){
+                String accountUuid = dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class).getAccountUuid();
+                if(!Objects.equals(msg.getAccountUuid(),accountUuid)){
+                    throw new ApiMessageInterceptionException(argerr("物理接口A不属于该用户！"));
+                }
+            }
+            if(msg.getInterfaceZUuid() != null){
+                String accountUuid = dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class).getAccountUuid();
+                if(!Objects.equals(msg.getAccountUuid(),accountUuid)){
+                    throw new ApiMessageInterceptionException(argerr("物理接口Z不属于该用户！"));
+                }
+            }
+        }
         //判断同一个用户的名称是否已经存在
         SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
         q.add(TunnelVO_.name, SimpleQuery.Op.EQ, msg.getName());
@@ -2680,6 +2695,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void validate(APICreateTunnelManualMsg msg) {
         InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
         InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
+        //BOSS创建验证物理接口的账户是否一致
+
+        if(!Objects.equals(msg.getAccountUuid(),interfaceVOA.getAccountUuid())){
+            throw new ApiMessageInterceptionException(argerr("物理接口A不属于该用户！"));
+        }
+
+        if(!Objects.equals(msg.getAccountUuid(),interfaceVOZ.getAccountUuid())){
+            throw new ApiMessageInterceptionException(argerr("物理接口Z不属于该用户！"));
+        }
+
         EndpointVO evoA = dbf.findByUuid(interfaceVOA.getEndpointUuid(), EndpointVO.class);
         EndpointVO evoZ = dbf.findByUuid(interfaceVOZ.getEndpointUuid(), EndpointVO.class);
 
@@ -3431,7 +3456,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 eq(PhysicalSwitchVO_.uuid, physicalSwitchUuid).
                 select(PhysicalSwitchVO_.mIP).findValue();
 
-        if (switchIp != null)
+        if (switchIp == null)
             throw new IllegalArgumentException("获取物理交换机IP失败");
 
         return switchIp;

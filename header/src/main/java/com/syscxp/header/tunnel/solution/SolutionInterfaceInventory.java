@@ -15,8 +15,6 @@ import java.util.List;
 public class SolutionInterfaceInventory {
     private String uuid;
     private String solutionUuid;
-    private String name;
-    private String description;
     private BigDecimal cost;
     private ProductChargeModel productChargeModel;
     private int duration;
@@ -32,8 +30,6 @@ public class SolutionInterfaceInventory {
         SolutionInterfaceInventory inv = new SolutionInterfaceInventory();
         inv.setUuid(vo.getUuid());
         inv.setSolutionUuid(vo.getSolutionUuid());
-        inv.setName(vo.getName());
-        inv.setDescription(vo.getDescription());
         inv.setCost(vo.getCost());
         inv.setProductChargeModel(vo.getProductChargeModel());
         inv.setDuration(vo.getDuration());
@@ -71,22 +67,6 @@ public class SolutionInterfaceInventory {
 
     public void setSolutionUuid(String solutionUuid) {
         this.solutionUuid = solutionUuid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public BigDecimal getCost() {
