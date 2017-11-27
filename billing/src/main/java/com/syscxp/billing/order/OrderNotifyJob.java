@@ -40,7 +40,7 @@ public class OrderNotifyJob {
     private TimeoutRestTemplate template;
 
     public OrderNotifyJob() {
-        template = RESTFacade.createRestTemplate(CoreGlobalProperty.REST_FACADE_READ_TIMEOUT, CoreGlobalProperty.REST_FACADE_CONNECT_TIMEOUT);
+        template = RESTFacade.createRestTemplate(3000,3000);
     }
 
     @Scheduled(cron = "0 0/1 * * * ? ")
