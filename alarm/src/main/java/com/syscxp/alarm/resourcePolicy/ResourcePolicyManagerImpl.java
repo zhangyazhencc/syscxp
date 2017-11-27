@@ -374,9 +374,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         if (vo != null) {
             dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
         }
-        SimpleQuery<RegulationVO> q = dbf.createQuery(RegulationVO.class);
-        q.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, msg.getUuid());
-        List<RegulationVO> regulationVOS = query.list();
+        List<RegulationVO> regulationVOS = getRegulationVOs(msg.getUuid());
         if (regulationVOS != null && regulationVOS.size() > 0) {
             for (RegulationVO regulationVO : regulationVOS) {
                 dbf.getEntityManager().remove(dbf.getEntityManager().merge(regulationVO));
@@ -387,6 +385,12 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         bus.publish(event);
     }
 
+    @Transactional
+    private List<RegulationVO> getRegulationVOs(String uuid){
+        SimpleQuery<RegulationVO> q = dbf.createQuery(RegulationVO.class);
+        q.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, uuid);
+        return q.list();
+    }
     private void handle(APIUpdatePolicyMsg msg) {
         PolicyVO vo = dbf.findByUuid(msg.getUuid(), PolicyVO.class);
         if (vo != null) {
