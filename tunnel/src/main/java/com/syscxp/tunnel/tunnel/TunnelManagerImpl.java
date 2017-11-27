@@ -324,7 +324,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
             @Override
             public void run(FlowTrigger trigger, Map data) {
-                if (msg.isIssue() && isUsed) {
+                if (isUsed && msg.isIssue()) {
                     TunnelVO tunnel = Q.New(TunnelVO.class)
                             .eq(TunnelVO_.uuid, tsPort.getTunnelUuid())
                             .find();
@@ -338,14 +338,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         public void run(MessageReply reply) {
                             if (reply.isSuccess()) {
                                 logger.info(String.format("Successfully restart tunnel[uuid:%s].", tunnel.getUuid()));
+                                trigger.next();
                             } else {
                                 logger.info(String.format("Failed to restart tunnel[uuid:%s].", tunnel.getUuid()));
                                 trigger.fail(reply.getError());
                             }
                         }
                     });
+                } else {
+                    trigger.next();
                 }
-                trigger.next();
             }
 
             @Override
@@ -356,15 +358,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void handle(Map data) {
                 evt.setInventory(InterfaceInventory.valueOf(dbf.reload(iface)));
+                bus.publish(evt);
             }
         }).error(new FlowErrorHandler(null) {
             @Override
             public void handle(ErrorCode errCode, Map data) {
                 evt.setError(errf.stringToOperationError("update interfacePort failed!"));
+                bus.publish(evt);
             }
         }).start();
-
-        bus.publish(evt);
     }
 
     private void handle(APIGetVlanAutoMsg msg) {
@@ -1058,9 +1060,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 public void run(MessageReply reply) {
                     if (reply.isSuccess()) {
                         evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo2)));
+                        bus.publish(evt);
                     }else{
                         evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo2)));
                         evt.setError(reply.getError());
+                        bus.publish(evt);
                     }
                 }
             });
@@ -1071,9 +1075,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo = dbf.updateAndRefresh(vo);
             evt.setInventory(TunnelInventory.valueOf(vo));
             evt.setError(errf.stringToOperationError("付款失败"));
+            bus.publish(evt);
         }
 
-        bus.publish(evt);
+
     }
 
     private ProductInfoForOrder createBuyOrderForTunnel(TunnelVO vo, APICreateTunnelMsg msg) {
@@ -1225,14 +1230,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
                     evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo2)));
+                    bus.publish(evt);
                 } else {
                     evt.setError(reply.getError());
                     evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo2)));
+                    bus.publish(evt);
                 }
             }
         });
 
-        bus.publish(evt);
+
     }
 
     private ProductInfoForOrder createBuyOrderForTunnelManual(TunnelVO vo, APICreateTunnelManualMsg msg) {
@@ -1497,11 +1504,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             bus.makeLocalServiceId(modifyTunnelBandwidthMsg, TunnelConstant.SERVICE_ID);
             bus.send(modifyTunnelBandwidthMsg);
             evt.setInventory(TunnelInventory.valueOf(vo));
+            bus.publish(evt);
         } else {
             evt.setError(errf.stringToOperationError("订单操作失败"));
+            bus.publish(evt);
         }
 
-        bus.publish(evt);
+
     }
 
     private void handle(APIRenewTunnelMsg msg) {
@@ -1623,6 +1632,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (vo.getState() == TunnelState.Unsupport) {         //仅删除：无法开通
             deleteTunnel(vo);
             evt.setInventory(TunnelInventory.valueOf(vo));
+            bus.publish(evt);
         } else {
             if (vo.getAccountUuid() == null) {                  //仅下发删除：退订成功但是下发失败了的再次下发，不需要再退订
                 //创建任务
@@ -1637,8 +1647,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
                             evt.setInventory(TunnelInventory.valueOf(vo));
+                            bus.publish(evt);
                         } else {
                             evt.setError(reply.getError());
+                            bus.publish(evt);
                         }
                     }
                 });
@@ -1662,9 +1674,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             public void run(MessageReply reply) {
                                 if (reply.isSuccess()) {
                                     evt.setInventory(TunnelInventory.valueOf(vo2));
+                                    bus.publish(evt);
                                 }else{
                                     evt.setInventory(TunnelInventory.valueOf(vo2));
                                     evt.setError(reply.getError());
+                                    bus.publish(evt);
                                 }
                             }
                         });
@@ -1672,8 +1686,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     }else{
                         deleteTunnel(vo);
                         evt.setInventory(TunnelInventory.valueOf(vo));
+                        bus.publish(evt);
                     }
-                    bus.publish(evt);
                     return;
                 }
                 //调用退订
@@ -1694,6 +1708,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 OrderInventory orderInventory = createOrder(orderMsg);
                 if (orderInventory == null) {
                     evt.setError(errf.stringToOperationError("退订失败"));
+                    bus.publish(evt);
                 } else {
                     if (vo.getState() == TunnelState.Enabled) {          //退订下发删除：对于已开通的产品
                         //退订成功,记录生效订单
@@ -1714,9 +1729,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             public void run(MessageReply reply) {
                                 if (reply.isSuccess()) {
                                     evt.setInventory(TunnelInventory.valueOf(vo2));
+                                    bus.publish(evt);
                                 }else{
                                     evt.setInventory(TunnelInventory.valueOf(vo2));
                                     evt.setError(reply.getError());
+                                    bus.publish(evt);
                                 }
                             }
                         });
@@ -1726,13 +1743,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
                         deleteTunnel(vo);
                         evt.setInventory(TunnelInventory.valueOf(vo));
+                        bus.publish(evt);
                     }
                 }
 
             }
         }
 
-        bus.publish(evt);
+
     }
 
     private void handle(APIDeleteForciblyTunnelMsg msg) {
@@ -1807,6 +1825,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 OrderInventory orderInventory = createOrder(orderMsg);
                 if (orderInventory == null) {
                     evt.setError(errf.stringToOperationError("退订失败"));
+                    bus.publish(evt);
                 } else {
                     //退订成功,记录生效订单
                     saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
@@ -1815,6 +1834,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     vo = dbf.updateAndRefresh(vo);
 
                     evt.setInventory(TunnelInventory.valueOf(vo));
+                    bus.publish(evt);
                 }
             } else {
                 if (msg.isSaveOnly()) {
@@ -1830,6 +1850,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     vo = dbf.updateAndRefresh(vo);
 
                     evt.setInventory(TunnelInventory.valueOf(vo));
+                    bus.publish(evt);
                 } else {
                     //创建任务
                     TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Enabled);
@@ -1844,8 +1865,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         public void run(MessageReply reply) {
                             if (reply.isSuccess()) {
                                 evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo2)));
+                                bus.publish(evt);
                             }else{
                                 evt.setError(reply.getError());
+                                bus.publish(evt);
                             }
                         }
                     });
@@ -1867,8 +1890,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
                             evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo2)));
+                            bus.publish(evt);
                         }else{
                             evt.setError(reply.getError());
+                            bus.publish(evt);
                         }
                     }
                 });
@@ -1882,15 +1907,17 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
                             evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo2)));
+                            bus.publish(evt);
                         }else{
                             evt.setError(reply.getError());
+                            bus.publish(evt);
                         }
                     }
                 });
             }
         }
 
-        bus.publish(evt);
+
     }
 
     private void handle(APICreateQinqMsg msg) {
@@ -2606,6 +2633,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APICreateTunnelMsg msg) {
+        //BOSS创建验证物理接口的账户是否一致
+        if(msg.getSession().getType() == AccountType.SystemAdmin){
+            if(msg.getInterfaceAUuid() != null){
+                String accountUuid = dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class).getAccountUuid();
+                if(!Objects.equals(msg.getAccountUuid(),accountUuid)){
+                    throw new ApiMessageInterceptionException(argerr("物理接口A不属于该用户！"));
+                }
+            }
+            if(msg.getInterfaceZUuid() != null){
+                String accountUuid = dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class).getAccountUuid();
+                if(!Objects.equals(msg.getAccountUuid(),accountUuid)){
+                    throw new ApiMessageInterceptionException(argerr("物理接口Z不属于该用户！"));
+                }
+            }
+        }
         //判断同一个用户的名称是否已经存在
         SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
         q.add(TunnelVO_.name, SimpleQuery.Op.EQ, msg.getName());
@@ -2678,6 +2720,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void validate(APICreateTunnelManualMsg msg) {
         InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
         InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
+        //BOSS创建验证物理接口的账户是否一致
+
+        if(!Objects.equals(msg.getAccountUuid(),interfaceVOA.getAccountUuid())){
+            throw new ApiMessageInterceptionException(argerr("物理接口A不属于该用户！"));
+        }
+
+        if(!Objects.equals(msg.getAccountUuid(),interfaceVOZ.getAccountUuid())){
+            throw new ApiMessageInterceptionException(argerr("物理接口Z不属于该用户！"));
+        }
+
         EndpointVO evoA = dbf.findByUuid(interfaceVOA.getEndpointUuid(), EndpointVO.class);
         EndpointVO evoZ = dbf.findByUuid(interfaceVOZ.getEndpointUuid(), EndpointVO.class);
 

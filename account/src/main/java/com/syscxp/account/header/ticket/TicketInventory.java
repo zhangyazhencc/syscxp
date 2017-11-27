@@ -16,6 +16,8 @@ public class TicketInventory {
     private String adminUserUuid;
 
     private String ticketTypeUuid;
+    private String ticketTypeName;
+
     private String phone;
     private String email;
 
@@ -27,9 +29,6 @@ public class TicketInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-    private TicketTypeVO ticketType;
-
-
     public static TicketInventory valueOf(TicketVO vo) {
         TicketInventory inv = new TicketInventory();
         inv.setUuid(vo.getUuid());
@@ -40,7 +39,8 @@ public class TicketInventory {
         inv.setTicketFrom(vo.getTicketFrom().toString());
         inv.setContent(vo.getContent());
         inv.setTicketTypeUuid(vo.getTicketTypeUuid());
-        inv.setTicketType(vo.getTicketType());
+        inv.setTicketTypeName(vo.getTicketType().getName());
+
         inv.setStatus(vo.getStatus().toString());
         inv.setPhone(vo.getPhone());
         inv.setEmail(vo.getEmail());
@@ -89,13 +89,6 @@ public class TicketInventory {
         this.ticketTypeUuid = ticketTypeUuid;
     }
 
-    public TicketTypeVO getTicketType() {
-        return ticketType;
-    }
-
-    public void setTicketType(TicketTypeVO ticketType) {
-        this.ticketType = ticketType;
-    }
 
     public String getContentExtra() {
         return contentExtra;
@@ -167,5 +160,13 @@ public class TicketInventory {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getTicketTypeName() {
+        return ticketTypeName;
+    }
+
+    public void setTicketTypeName(String ticketTypeName) {
+        this.ticketTypeName = ticketTypeName;
     }
 }
