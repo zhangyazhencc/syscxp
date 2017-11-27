@@ -82,28 +82,18 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
     }
 
     private List<String> getHostManagedByUs() {
-        int qun = 10000;
-        long amount = dbf.count(HostVO.class);
-        int times = (int) (amount / qun) + (amount % qun != 0 ? 1 : 0);
-        List<String> hostUuids = new ArrayList<String>();
-        int start = 0;
-        for (int i = 0; i < times; i++) {
-            SimpleQuery<HostVO> q = dbf.createQuery(HostVO.class);
-            q.select(HostVO_.uuid);
-            // disconnected host will be handled by HostManager
-            q.add(HostVO_.status, SimpleQuery.Op.EQ, HostStatus.Connected);
-            q.setLimit(qun);
-            q.setStart(start);
-            List<String> lst = q.listValue();
-            start += qun;
-            for (String huuid : lst) {
-                if (!destMaker.isManagedByUs(huuid)) {
-                    continue;
-                }
-                hostUuids.add(huuid);
+        List<String> hostUuids = new ArrayList<>();
+        SimpleQuery<HostVO> q = dbf.createQuery(HostVO.class);
+        q.select(HostVO_.uuid);
+        // disconnected host will be handled by HostManager
+        q.add(HostVO_.status, SimpleQuery.Op.EQ, HostStatus.Connected);
+        List<String> lst = q.listValue();
+        for (String huuid : lst) {
+            if (!destMaker.isManagedByUs(huuid)) {
+                continue;
             }
+            hostUuids.add(huuid);
         }
-
         return hostUuids;
     }
 
@@ -195,12 +185,11 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
             ConnectHostMsg msg = new ConnectHostMsg();
             msg.setNewAdd(false);
             msg.setUuid(huuid);
-            bus.makeLocalServiceId(msg, VpnConstant.SERVICE_ID);
+            bus.makeLocalServiceId(msg, HostConstant.SERVICE_ID);
             msgs.add(msg);
         }
 
-        bus.send(msgs, HostGlobalProperty.HOST_LOAD_PARALLELISM_DEGREE, new CloudBusSteppingCallback
-                (null) {
+        bus.send(msgs, HostGlobalProperty.HOST_LOAD_PARALLELISM_DEGREE, new CloudBusSteppingCallback(null) {
             @Override
             public void run(NeedReplyMessage msg, MessageReply reply) {
                 ConnectHostMsg cmsg = (ConnectHostMsg) msg;
@@ -232,9 +221,9 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
             handle((APIDeleteHostInterfaceMsg) msg);
         } else if (msg instanceof APIDeleteZoneMsg) {
             handle((APIDeleteZoneMsg) msg);
-        }  else if (msg instanceof APIUpdateZoneMsg) {
+        } else if (msg instanceof APIUpdateZoneMsg) {
             handle((APIUpdateZoneMsg) msg);
-        }  else if (msg instanceof APIUpdateVpnHostPortMsg) {
+        } else if (msg instanceof APIUpdateVpnHostPortMsg) {
             handle((APIUpdateVpnHostPortMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
@@ -244,6 +233,7 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
     private void handleLocalMessage(Message msg) {
         bus.dealWithUnknownMessage(msg);
     }
+
     private void handle(APIUpdateVpnHostPortMsg msg) {
         APIUpdateVpnHostPortEvent evt = new APIUpdateVpnHostPortEvent(msg.getId());
         VpnHostVO host = dbf.findByUuid(msg.getUuid(), VpnHostVO.class);
@@ -322,8 +312,6 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
         evt.setInventory(HostInterfaceInventory.valueOf(iface));
         bus.publish(evt);
     }
-
-
 
 
     @Override

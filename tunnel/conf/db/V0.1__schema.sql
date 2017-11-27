@@ -107,7 +107,7 @@ CREATE TABLE `syscxp_tunnel`.`NodeEO` (
   `province` varchar(128) NOT NULL COMMENT '省',
   `city` varchar(128) NOT NULL COMMENT '市',
   `address` varchar(256) NOT NULL COMMENT '地址',
-  `longtitude` double(11,6) NOT NULL COMMENT '经度',
+  `longitude` double(11,6) NOT NULL COMMENT '经度',
   `latitude` double(11,6) NOT NULL COMMENT '纬度',
   `property` varchar(128) NOT NULL COMMENT '节点类型',
   `status` varchar(16) NOT NULL COMMENT '是否开放',
@@ -119,7 +119,7 @@ CREATE TABLE `syscxp_tunnel`.`NodeEO` (
   UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE VIEW `syscxp_tunnel`.`NodeVO` AS SELECT uuid, name, code, description, contact, telephone, country, province, city, address, longtitude, latitude, property, status, extensionInfoUuid, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`NodeVO` AS SELECT uuid, name, code, description, contact, telephone, country, province, city, address, longitude, latitude, property, status, extensionInfoUuid, lastOpDate, createDate
                         FROM `NodeEO` WHERE deleted IS NULL;
 
 ## 区域字典表
@@ -459,8 +459,8 @@ CREATE TABLE `HostEO` (
   `hostIp` varchar(128) DEFAULT NULL,
   `hostType` VARCHAR(128) NOT NULL COMMENT 'host类型',
   `position` varchar(256) NOT NULL COMMENT '位置',
-  `state` varchar(32) NOT NULL DEFAULT 'Disable' COMMENT '监控状况：已部署，未部署',
-  `status` varchar(32) NOT NULL DEFAULT 'Connected' COMMENT '监控状态',
+  `state` varchar(32) NOT NULL DEFAULT 'Enabled',
+  `status` varchar(32) NOT NULL DEFAULT 'Connected',
   `deleted` varchar(255) DEFAULT NULL,
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
@@ -542,9 +542,9 @@ CREATE TABLE `syscxp_tunnel`.`CloudVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `syscxp_tunnel`.`CloudVO` (`uuid`,`name`,`description`,`lastOpDate`,`createDate`)
-VALUES ('ALiYun','阿里云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
-  ('huawei','华为云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
-  ('baidu','百度云','','2017-11-01 13:51:31','2017-11-01 13:51:31');
+VALUES ('AliYun','阿里云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('Huawei','华为云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('Baidu','百度云','','2017-11-01 13:51:31','2017-11-01 13:51:31');
 
 CREATE TABLE `syscxp_tunnel`.`ResourceVO` (
     `uuid` varchar(32) NOT NULL UNIQUE,
@@ -556,7 +556,7 @@ CREATE TABLE `syscxp_tunnel`.`ResourceVO` (
 CREATE TABLE  `syscxp_tunnel`.`MonitorHostVO` (
     `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'host uuid',
     `nodeUuid` varchar(32) DEFAULT NULL COMMENT '节点ID(NodeEO.uuid)',
-	  `username` varchar(128) NOT NULL COMMENT '用户名',
+	`username` varchar(128) NOT NULL COMMENT '用户名',
     `password` varchar(128) NOT NULL COMMENT '密码',
     `sshPort` INT NOT NULL DEFAULT 22 COMMENT 'ssh端口',
     `monitorType` VARCHAR(32) DEFAULT 'TUNNEL',

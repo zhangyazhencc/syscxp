@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.solution;
 
+import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
@@ -9,6 +10,7 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
+import com.syscxp.header.billing.*;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.quota.Quota;
@@ -18,15 +20,16 @@ import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.solution.*;
 import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
-import com.syscxp.header.vpn.host.ZoneVO;
 import com.syscxp.tunnel.quota.SolutionQuotaOperator;
 import com.syscxp.tunnel.tunnel.TunnelBase;
 import com.syscxp.tunnel.tunnel.TunnelManagerImpl;
+import com.syscxp.tunnel.tunnel.TunnelRESTCaller;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static com.syscxp.utils.CollectionDSL.list;
@@ -65,61 +68,120 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
     private void handleApiMessage(APIMessage msg) {
         if(msg instanceof APICreateSolutionMsg){
-            hand((APICreateSolutionMsg) msg);
+            handle((APICreateSolutionMsg) msg);
         } else if(msg instanceof APICreateSolutionInterfaceMsg){
-            hand((APICreateSolutionInterfaceMsg) msg);
+            handle((APICreateSolutionInterfaceMsg) msg);
         }else if(msg instanceof APICreateSolutionTunnelMsg){
-            hand((APICreateSolutionTunnelMsg) msg);
+            handle((APICreateSolutionTunnelMsg) msg);
         }else if(msg instanceof APICreateSolutionVpnMsg){
-            hand((APICreateSolutionVpnMsg) msg);
+            handle((APICreateSolutionVpnMsg) msg);
         }else if(msg instanceof APIDeleteSolutionMsg){
-            hand((APIDeleteSolutionMsg) msg);
+            handle((APIDeleteSolutionMsg) msg);
         }else if(msg instanceof APIDeleteSolutionInterfaceMsg){
-            hand((APIDeleteSolutionInterfaceMsg) msg);
+            handle((APIDeleteSolutionInterfaceMsg) msg);
         }else if(msg instanceof APIDeleteSolutionTunnelMsg){
-            hand((APIDeleteSolutionTunnelMsg) msg);
+            handle((APIDeleteSolutionTunnelMsg) msg);
         }else if(msg instanceof APIDeleteSolutionVpnMsg){
-            hand((APIDeleteSolutionVpnMsg) msg);
+            handle((APIDeleteSolutionVpnMsg) msg);
         }else if(msg instanceof APIUpdateSolutionMsg){
-            hand((APIUpdateSolutionMsg) msg);
+            handle((APIUpdateSolutionMsg) msg);
         }else if(msg instanceof APIUpdateSolutionTunnelMsg){
-            hand((APIUpdateSolutionTunnelMsg) msg);
+            handle((APIUpdateSolutionTunnelMsg) msg);
         }else if(msg instanceof APIUpdateSolutionVpnMsg){
-            hand((APIUpdateSolutionVpnMsg) msg);
+            handle((APIUpdateSolutionVpnMsg) msg);
+        }else if(msg instanceof APIRecountInterfacePriceMsg){
+            handle((APIRecountInterfacePriceMsg) msg);
+        }else if(msg instanceof APIRecountTunnelPriceMsg){
+            handle((APIRecountTunnelPriceMsg) msg);
         }else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void hand(APIUpdateSolutionVpnMsg msg) {
+
+    private void handle(APIRecountTunnelPriceMsg msg) {
+        SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(), SolutionTunnelVO.class);
+        APIGetProductPriceReply reply = getTunnelPrice(vo, msg.getAccountUuid());
+        vo.setCost(reply.getOriginalPrice());
+        dbf.getEntityManager().merge(vo);
+
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+        BigDecimal totalCost = totalCost(vo.getSolutionUuid());
+        solutionVO.setTotalCost(totalCost);
+        dbf.getEntityManager().merge( solutionVO);
+
+        APIRecountTunnelPriceReply priceReply = new APIRecountTunnelPriceReply();
+        priceReply.setTunnelInventory(SolutionTunnelInventory.valueOf(vo));
+        priceReply.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
+        bus.reply(msg,priceReply);
+    }
+
+    @Transactional
+    private void handle(APIRecountInterfacePriceMsg msg) {
+        SolutionInterfaceVO vo = dbf.findByUuid(msg.getUuid(), SolutionInterfaceVO.class);
+        APIGetProductPriceReply reply = getInterfacePrice(vo, msg.getAccountUuid());
+        vo.setCost(reply.getOriginalPrice());
+        dbf.getEntityManager().merge(vo);
+
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+        BigDecimal totalCost = totalCost(vo.getSolutionUuid());
+        solutionVO.setTotalCost(totalCost);
+        dbf.getEntityManager().merge(solutionVO);
+
+        APIRecountInterfacePriceReply priceReply = new APIRecountInterfacePriceReply();
+        priceReply.setInterfaceInventory(SolutionInterfaceInventory.valueOf(vo));
+        priceReply.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
+        bus.reply(msg,priceReply);
+
+    }
+
+
+
+    @Transactional
+    private void handle(APIUpdateSolutionVpnMsg msg) {
 
         SolutionVpnVO vo = dbf.findByUuid(msg.getUuid(),SolutionVpnVO.class);
         vo.setBandwidth(msg.getBandwidth());
         vo.setCost(msg.getCost());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDuration(msg.getDuration());
+        dbf.getEntityManager().merge(vo);
+
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+        solutionVO.setTotalCost(solutionVO.getTotalCost().add(msg.getCost()));
+        dbf.getEntityManager().merge(solutionVO);
 
         APIUpdateSolutionVpnEvent event = new APIUpdateSolutionVpnEvent(msg.getId());
-        event.setInventory(SolutionVpnInventory.valueOf(dbf.updateAndRefresh(vo)));
+        event.setVpnInventory(SolutionVpnInventory.valueOf(vo));
+        event.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
         bus.publish(event);
 
     }
 
-    private void hand(APIUpdateSolutionTunnelMsg msg) {
+    @Transactional
+    private void handle(APIUpdateSolutionTunnelMsg msg) {
 
         SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(),SolutionTunnelVO.class);
         vo.setBandwidth(msg.getBandwidth());
+        vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setCost(msg.getCost());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDuration(msg.getDuration());
+        dbf.getEntityManager().merge(vo);
+
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+        solutionVO.setTotalCost(solutionVO.getTotalCost().add(msg.getCost()));
+        dbf.getEntityManager().merge(solutionVO);
+
 
         APIUpdateSolutionTunnelEvent event = new APIUpdateSolutionTunnelEvent(msg.getId());
-        event.setInventory(SolutionTunnelInventory.valueOf(dbf.updateAndRefresh(vo)));
+        event.setTunnelInventory(SolutionTunnelInventory.valueOf(vo));
+        event.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
         bus.publish(event);
 
     }
 
-    private void hand(APIUpdateSolutionMsg msg) {
+    private void handle(APIUpdateSolutionMsg msg) {
 
         SolutionVO vo = dbf.findByUuid(msg.getUuid(),SolutionVO.class);
         if(msg.getName() != null){
@@ -135,32 +197,46 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         bus.publish(event);
     }
 
-    private void hand(APIDeleteSolutionVpnMsg msg) {
-        UpdateQuery.New(SolutionVpnVO.class).condAnd(SolutionVpnVO_.uuid,
-                SimpleQuery.Op.EQ, msg.getUuid()).delete();
+    @Transactional
+    private void handle(APIDeleteSolutionVpnMsg msg) {
+        SolutionVpnVO vo = dbf.findByUuid(msg.getUuid(),SolutionVpnVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+        solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()));
+        dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
+        dbf.getEntityManager().merge(solutionVO);
 
         APIDeleteSolutionVpnEvent event = new APIDeleteSolutionVpnEvent(msg.getId());
-        bus.publish(event);
-    }
-
-    private void hand(APIDeleteSolutionTunnelMsg msg) {
-        UpdateQuery.New(SolutionTunnelVO.class).condAnd(SolutionTunnelVO_.uuid,
-                SimpleQuery.Op.EQ, msg.getUuid()).delete();
-
-        APIDeleteSolutionTunnelEvent event = new APIDeleteSolutionTunnelEvent(msg.getId());
-        bus.publish(event);
-    }
-
-    private void hand(APIDeleteSolutionInterfaceMsg msg) {
-        UpdateQuery.New(SolutionInterfaceVO.class).condAnd(SolutionInterfaceVO_.uuid,
-                SimpleQuery.Op.EQ, msg.getUuid()).delete();
-
-        APIDeleteSolutionInterfaceEvent event = new APIDeleteSolutionInterfaceEvent(msg.getId());
+        event.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
         bus.publish(event);
     }
 
     @Transactional
-    private void hand(APIDeleteSolutionMsg msg) {
+    private void handle(APIDeleteSolutionTunnelMsg msg) {
+        SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(), SolutionTunnelVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+        solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()));
+        dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
+        dbf.getEntityManager().merge(solutionVO);
+
+        APIDeleteSolutionTunnelEvent event = new APIDeleteSolutionTunnelEvent(msg.getId());
+        event.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
+        bus.publish(event);
+    }
+    @Transactional
+    private void handle(APIDeleteSolutionInterfaceMsg msg) {
+        SolutionInterfaceVO vo = dbf.findByUuid(msg.getUuid(),SolutionInterfaceVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+        solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()));
+        dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
+        dbf.getEntityManager().merge(solutionVO);
+
+        APIDeleteSolutionInterfaceEvent event = new APIDeleteSolutionInterfaceEvent(msg.getId());
+        event.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
+        bus.publish(event);
+    }
+
+    @Transactional
+    private void handle(APIDeleteSolutionMsg msg) {
 
         UpdateQuery.New(SolutionInterfaceVO.class).condAnd(SolutionInterfaceVO_.uuid,
                 SimpleQuery.Op.EQ, msg.getUuid()).delete();
@@ -176,7 +252,8 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         bus.publish(event);
     }
 
-    private void hand(APICreateSolutionVpnMsg msg) {
+    @Transactional
+    private void handle(APICreateSolutionVpnMsg msg) {
 
         SolutionVpnVO vo = new SolutionVpnVO();
         vo.setUuid(Platform.getUuid());
@@ -184,12 +261,6 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setSolutionUuid(msg.getSolutionUuid());
-        if(msg.getDescription() != null){
-            vo.setDescription(msg.getDescription());
-        }
-        if(msg.getName() != null){
-            vo.setName(msg.getName());
-        }
 
         vo.setBandwidth(msg.getBandwidth());
 
@@ -198,28 +269,43 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             vo.setEndpointVO(endpointVO);
         }
         vo.setZoneUuid(msg.getZoneUuid());
+        dbf.getEntityManager().persist(vo);
+
+        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(),SolutionVO.class);
+        if(solutionVO != null){
+            BigDecimal totalCost = totalCost(solutionVO.getUuid());
+            solutionVO.setTotalCost(totalCost);
+        }
+        dbf.getEntityManager().merge(solutionVO);
+
 
         APICreateSolutionVpnEvent event = new APICreateSolutionVpnEvent(msg.getId());
-        event.setInventory(SolutionVpnInventory.valueOf(dbf.persistAndRefresh(vo)));
+        event.setVpnInventory(SolutionVpnInventory.valueOf(vo));
+        event.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
         bus.publish(event);
 
     }
 
-    private void hand(APICreateSolutionTunnelMsg msg) {
+    @Transactional
+    private void handle(APICreateSolutionTunnelMsg msg) {
         SolutionTunnelVO vo = new SolutionTunnelVO();
         vo.setUuid(Platform.getUuid());
         vo.setCost(msg.getCost());
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setSolutionUuid(msg.getSolutionUuid());
-        if(msg.getDescription() != null){
-            vo.setDescription(msg.getDescription());
+        vo.setBandwidth(msg.getBandwidth());
+        vo.setInnerEndpointUuid(msg.getInnerEndpointUuid());
+        vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
+
+        //创建物理接口
+        if(msg.getPortOfferingUuidA() != null){
+            createSolutionInterface(msg, msg.getEndpointUuidA(), msg.getPortOfferingUuidA());
         }
-        if(msg.getName() != null){
-            vo.setName(msg.getName());
+        if(msg.getPortOfferingUuidZ() != null){
+            createSolutionInterface(msg, msg.getEndpointUuidZ(), msg.getPortOfferingUuidZ());
         }
 
-        vo.setBandwidth(msg.getBandwidth());
         EndpointVO endpointVOA = dbf.findByUuid(msg.getEndpointUuidA(),EndpointVO.class);
         if(endpointVOA != null){
             vo.setEndpointVOA(endpointVOA);
@@ -229,26 +315,31 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         if(endpointVOZ != null){
             vo.setEndpointVOZ(endpointVOZ);
         }
+        dbf.getEntityManager().persist(vo);
+
+        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(),SolutionVO.class);
+        if(solutionVO != null){
+            BigDecimal totalCost = totalCost(solutionVO.getUuid());
+            solutionVO.setTotalCost(totalCost);
+        }
+        dbf.getEntityManager().merge(solutionVO);
+
 
         APICreateSolutionTunnelEvent event = new APICreateSolutionTunnelEvent(msg.getId());
-        event.setInventory(SolutionTunnelInventory.valueOf(dbf.persistAndRefresh(vo)));
+        event.setTunnelInventory(SolutionTunnelInventory.valueOf(vo));
+        event.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
         bus.publish(event);
 
     }
 
-    private void hand(APICreateSolutionInterfaceMsg msg) {
+    @Transactional
+    private void handle(APICreateSolutionInterfaceMsg msg) {
         SolutionInterfaceVO vo = new SolutionInterfaceVO();
         vo.setUuid(Platform.getUuid());
         vo.setCost(msg.getCost());
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setSolutionUuid(msg.getSolutionUuid());
-        if(msg.getDescription() != null){
-            vo.setDescription(msg.getDescription());
-        }
-        if(msg.getName() != null){
-            vo.setName(msg.getName());
-        }
 
         EndpointVO endpointVO = dbf.findByUuid(msg.getEndpointUuid(),EndpointVO.class);
         if(endpointVO != null){
@@ -258,14 +349,23 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         if(portOfferingVO != null){
             vo.setPortOfferingVO(portOfferingVO);
         }
+        dbf.getEntityManager().persist(vo);
+
+        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(),SolutionVO.class);
+        if(solutionVO != null){
+            BigDecimal totalCost = totalCost(solutionVO.getUuid());
+            solutionVO.setTotalCost(totalCost);
+        }
+        dbf.getEntityManager().merge(solutionVO);
 
         APICreateSolutionInterfaceEvent event = new APICreateSolutionInterfaceEvent(msg.getId());
-        event.setInventory(SolutionInterfaceInventory.valueOf(dbf.persistAndRefresh(vo)));
+        event.setInterfaceInventory(SolutionInterfaceInventory.valueOf(vo));
+        event.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
         bus.publish(event);
 
     }
 
-    private void hand(APICreateSolutionMsg msg) {
+    private void handle(APICreateSolutionMsg msg) {
         SolutionVO vo = new SolutionVO();
         vo.setUuid(Platform.getUuid());
         vo.setName(msg.getName());
@@ -295,7 +395,99 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
     @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        return null;
+        return msg;
+    }
+
+    /*创建物理接口*/
+    @Transactional
+    private void createSolutionInterface(APICreateSolutionTunnelMsg msg, String endpointUuid, String portOfferingUuid) {
+        SolutionInterfaceVO vo = new SolutionInterfaceVO();
+        vo.setUuid(Platform.getUuid());
+//        vo.setCost(msg.getCost());
+        vo.setDuration(msg.getDuration());
+        vo.setProductChargeModel(msg.getProductChargeModel());
+        vo.setSolutionUuid(msg.getSolutionUuid());
+        APIGetProductPriceReply reply = getInterfacePrice(vo, msg.getAccountUuid());
+        vo.setCost(reply.getOriginalPrice());
+
+        EndpointVO endpointVO = dbf.findByUuid(endpointUuid, EndpointVO.class);
+        if(endpointVO != null){
+            vo.setEndpointVO(endpointVO);
+        }
+        PortOfferingVO portOfferingVO = dbf.findByUuid(portOfferingUuid, PortOfferingVO.class);
+        if(portOfferingVO != null){
+            vo.setPortOfferingVO(portOfferingVO);
+        }
+        dbf.getEntityManager().persist(vo);
+
+        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(),SolutionVO.class);
+        if(solutionVO != null){
+            BigDecimal totalCost = totalCost(solutionVO.getUuid());
+            solutionVO.setTotalCost(totalCost);
+        }
+        dbf.getEntityManager().merge(solutionVO);
+
+    }
+
+    /* 获取接口的价格*/
+    private APIGetProductPriceReply getInterfacePrice(SolutionInterfaceVO vo, String accountUuid) {
+
+        APIGetProductPriceMsg pmsg = new APIGetProductPriceMsg();
+        pmsg.setProductChargeModel(vo.getProductChargeModel());
+        pmsg.setDuration(vo.getDuration());
+        pmsg.setAccountUuid(accountUuid);
+        pmsg.setUnits(new TunnelManagerImpl().getInterfacePriceUnit(vo.getPortOfferingVO().getUuid()));
+        APIGetProductPriceReply reply = new TunnelRESTCaller().syncJsonPost(pmsg);
+        return reply;
+    }
+
+    /*获取云专线的价格*/
+    private APIGetProductPriceReply getTunnelPrice(SolutionTunnelVO vo, String accountUuid) {
+
+        APIGetProductPriceMsg pmsg = new APIGetProductPriceMsg();
+        pmsg.setProductChargeModel(vo.getProductChargeModel());
+        pmsg.setDuration(vo.getDuration());
+        pmsg.setAccountUuid(accountUuid);
+        EndpointVO endpointVOA = dbf.findByUuid(vo.getEndpointVOA().getUuid(), EndpointVO.class);
+        EndpointVO endpointVOZ = dbf.findByUuid(vo.getEndpointVOZ().getUuid(),EndpointVO.class);
+
+        if(endpointVOA != null && endpointVOZ !=null){
+            pmsg.setUnits(new TunnelManagerImpl().getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
+                    endpointVOZ.getNodeUuid(), vo.getInnerEndpointUuid()));
+        }
+
+        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
+
+        return reply;
+    }
+
+
+
+    private BigDecimal totalCost(String solutionUuid){
+        BigDecimal totalCost = new BigDecimal(0);
+
+        SimpleQuery<SolutionInterfaceVO> queryInterface = dbf.createQuery(SolutionInterfaceVO.class);
+        queryInterface.add(SolutionInterfaceVO_.solutionUuid, SimpleQuery.Op.EQ, solutionUuid);
+        List<SolutionInterfaceVO> solutionInterfaceVOList = queryInterface.list();
+        for (SolutionInterfaceVO vo : solutionInterfaceVOList) {
+            totalCost = totalCost.add(vo.getCost());
+        }
+
+        SimpleQuery<SolutionTunnelVO> queryTunnel = dbf.createQuery(SolutionTunnelVO.class);
+        queryTunnel.add(SolutionTunnelVO_.solutionUuid, SimpleQuery.Op.EQ, solutionUuid);
+        List<SolutionTunnelVO> solutionTunnelVOList = queryTunnel.list();
+        for(SolutionTunnelVO vo : solutionTunnelVOList){
+            totalCost = totalCost.add(vo.getCost());
+        }
+
+        SimpleQuery<SolutionVpnVO> queryVPN = dbf.createQuery(SolutionVpnVO.class);
+        queryVPN.add(SolutionVpnVO_.solutionUuid, SimpleQuery.Op.EQ, solutionUuid);
+        List<SolutionVpnVO> solutionVpnVOList = queryVPN.list();
+        for(SolutionVpnVO vo : solutionVpnVOList){
+            totalCost = totalCost.add(vo.getCost());
+        }
+
+        return totalCost;
     }
 
     @Override

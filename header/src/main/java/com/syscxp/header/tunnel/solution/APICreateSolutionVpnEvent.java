@@ -5,7 +5,8 @@ import com.syscxp.header.rest.RestResponse;
 
 @RestResponse(allTo = "inventory")
 public class APICreateSolutionVpnEvent extends APIEvent {
-    private SolutionVpnInventory inventory;
+    private SolutionVpnInventory vpnInventory;
+    private SolutionInventory solutionInventory;
 
     public APICreateSolutionVpnEvent(String apiId) {
         super(apiId);
@@ -15,11 +16,19 @@ public class APICreateSolutionVpnEvent extends APIEvent {
         super(null);
     }
 
-    public SolutionVpnInventory getInventory() {
-        return inventory;
+    public SolutionVpnInventory getVpnInventory() {
+        return vpnInventory;
     }
 
-    public void setInventory(SolutionVpnInventory inventory) {
-        this.inventory = inventory;
+    public void setVpnInventory(SolutionVpnInventory vpnInventory) {
+        this.vpnInventory = vpnInventory;
+    }
+
+    public SolutionInventory getSolutionInventory() {
+        return solutionInventory;
+    }
+
+    public void setSolutionInventory(SolutionInventory solutionInventory) {
+        this.solutionInventory = solutionInventory;
     }
 }

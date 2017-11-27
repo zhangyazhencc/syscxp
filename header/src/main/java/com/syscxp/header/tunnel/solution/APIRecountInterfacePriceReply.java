@@ -1,19 +1,10 @@
 package com.syscxp.header.tunnel.solution;
 
-import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.rest.RestResponse;
+import com.syscxp.header.query.APIQueryReply;
 
-@RestResponse(allTo = "inventory")
-public class APICreateSolutionInterfaceEvent extends APIEvent {
+public class APIRecountInterfacePriceReply extends APIQueryReply {
     private SolutionInterfaceInventory interfaceInventory;
     private SolutionInventory solutionInventory;
-
-    public APICreateSolutionInterfaceEvent(String apiId) {
-        super(apiId);
-    }
-
-    public APICreateSolutionInterfaceEvent() {
-    }
 
     public SolutionInterfaceInventory getInterfaceInventory() {
         return interfaceInventory;

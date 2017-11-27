@@ -118,13 +118,16 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
 
     @Transactional
     private void handle(APIDeleteAccountDiscountMsg msg) {
-        if (msg.getSession().getType() == AccountType.Normal) {
-            throw new IllegalArgumentException("you hava not permission");
-        }
 
         AccountDiscountVO accountDiscountVO = dbf.findByUuid(msg.getUuid(), AccountDiscountVO.class);
-        List<String> customerUuids = getCustomerUuidsFromAccount(accountDiscountVO.getAccountUuid());
-        deleteCustomerDiscount(customerUuids, accountDiscountVO.getProductCategoryUuid());
+        APIValidateAccountReply reply =  validAccount(accountDiscountVO.getAccountUuid());
+        if(reply.isValidAccount()){
+            if(reply.getType() == AccountType.Proxy){
+                List<String> customerUuids = getCustomerUuidsFromAccount(accountDiscountVO.getAccountUuid());
+                deleteCustomerDiscount(customerUuids, accountDiscountVO.getProductCategoryUuid());
+            }
+        }
+
         dbf.getEntityManager().remove(dbf.getEntityManager().merge(accountDiscountVO));
         APIDeleteAccountDiscountEvent event = new APIDeleteAccountDiscountEvent(msg.getId());
         event.setInventory(AccountDiscountInventory.valueOf(accountDiscountVO));
@@ -136,7 +139,10 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         if (customerUuids != null && customerUuids.size() > 0) {
             for (String customerUuid : customerUuids) {
                 AccountDiscountVO customerDiscount = getAccountDiscountVO(customerUuid, productCategoryUuid);
-                dbf.getEntityManager().remove(dbf.getEntityManager().merge(customerDiscount));
+                if (customerDiscount != null) {
+                    dbf.getEntityManager().remove(dbf.getEntityManager().merge(customerDiscount));
+                }
+
             }
 
         }
@@ -195,9 +201,15 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
     private void handle(APIUpdateAccountDiscountMsg msg) {
 
         AccountDiscountVO accountDiscountVO = dbf.findByUuid(msg.getUuid(), AccountDiscountVO.class);
-        if (msg.getSession().getType().equals(AccountType.SystemAdmin)) {
-            List<String> customerUuids = getCustomerUuidsFromAccount(accountDiscountVO.getAccountUuid());
-            updateCustomerDiscount(customerUuids,accountDiscountVO.getProductCategoryUuid(),msg.getDiscount());
+        APIValidateAccountReply reply =  validAccount(accountDiscountVO.getAccountUuid());
+        if(reply.isValidAccount()){
+            if(reply.getType() == AccountType.Proxy){
+                if (!msg.getSession().getType().equals(AccountType.SystemAdmin)) {
+                    throw new IllegalArgumentException("you are have no permit");
+                }
+                List<String> customerUuids = getCustomerUuidsFromAccount(accountDiscountVO.getAccountUuid());
+                updateCustomerDiscount(customerUuids,accountDiscountVO.getProductCategoryUuid(),msg.getDiscount());
+            }
         }
 
         accountDiscountVO.setDiscount(msg.getDiscount());
@@ -310,10 +322,10 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
         if (msg.getPresent() != null) {
             vo.setPresentBalance(vo.getPresentBalance().add(msg.getPresent()));
-            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.PRESENT_BILL, msg.getPresent(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PRESENT, DealState.SUCCESS, vo.getCashBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment());
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.PRESENT_BILL, msg.getPresent(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PRESENT, DealState.SUCCESS, vo.getPresentBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment());
         } else if (msg.getCash() != null) {
-            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, msg.getCash(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getCashBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment());
             vo.setCashBalance(vo.getCashBalance().add(msg.getCash()));
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, msg.getCash(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getCashBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment());
         } else if (msg.getCredit() != null) {
             vo.setCreditPoint(msg.getCredit());
         }
@@ -356,7 +368,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         int hash = accountUuid.hashCode() < 0 ? ~accountUuid.hashCode() : accountUuid.hashCode();
         String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
         AccountBalanceVO accountBalanceVO = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, total, BigDecimal.ZERO, currentTimestamp, DealType.RECHARGE, DealState.FAILURE, accountBalanceVO.getCashBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),null);
+        new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, total, BigDecimal.ZERO, currentTimestamp, DealType.RECHARGE, DealState.FAILURE, accountBalanceVO.getCashBalance().add(total), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),null);
 
         AlipayClient alipayClient = new DefaultAlipayClient(BillingGlobalProperty.GATEWAYURL, BillingGlobalProperty.APP_ID, BillingGlobalProperty.MERCHANT_PRIVATE_KEY, "json", BillingGlobalProperty.CHARSET, BillingGlobalProperty.ALIPAY_PUBLIC_KEY, BillingGlobalProperty.SIGN_TYPE);
         AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();
@@ -535,18 +547,54 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             validate((APICreateAccountDiscountMsg) msg);
         }else if(msg instanceof  APIUpdateAccountDiscountMsg){
             validate((APIUpdateAccountDiscountMsg) msg);
+        }else if(msg instanceof  APIDeleteAccountDiscountMsg){
+            validate((APIDeleteAccountDiscountMsg) msg);
         }
         return msg;
     }
 
+    private void validate(APIDeleteAccountDiscountMsg msg) {
+        AccountDiscountVO accountDiscountVO = dbf.findByUuid(msg.getUuid(), AccountDiscountVO.class);
+        if (msg.getSession().getType() == AccountType.Normal) {
+            throw new IllegalArgumentException("you are not the permit");
+        }
+        if (msg.getSession().getType().equals(AccountType.Proxy)) {
+            if (!isBoundAccountWithProxy(accountDiscountVO.getAccountUuid(), msg.getSession().getAccountUuid())) {
+                throw new IllegalArgumentException("you can only delete yourself customers");
+            }
+        }
+        validateSysAdminHasPermit(msg.getSession().getType(), accountDiscountVO.getAccountUuid());
+    }
+
     private void validate(APIUpdateAccountDiscountMsg msg) {
+        AccountDiscountVO accountDiscountVO = dbf.findByUuid(msg.getUuid(), AccountDiscountVO.class);
         if (msg.getSession().getType() == AccountType.Normal) {
             throw new IllegalArgumentException("you are not the permit");
         }
 
-        AccountDiscountVO accountDiscountVO = dbf.findByUuid(msg.getUuid(), AccountDiscountVO.class);
+        if (msg.getSession().getType().equals(AccountType.Proxy)) {
+            if (!isBoundAccountWithProxy(accountDiscountVO.getAccountUuid(), msg.getSession().getAccountUuid())) {
+                throw new IllegalArgumentException("you can only set yourself customers");
+            }
+        }
+
+
+        validateSysAdminHasPermit(msg.getSession().getType(), accountDiscountVO.getAccountUuid());
+
         validateDiscount(msg.getSession().getType(), msg.getSession().getAccountUuid(), accountDiscountVO.getProductCategoryUuid(),msg.getDiscount());
 
+    }
+
+    public void validateSysAdminHasPermit(AccountType type,String accountUuid) {
+        if (type.equals(AccountType.SystemAdmin)) {
+            APIValidateAccountReply reply = validAccount(accountUuid);
+            if (reply == null) {
+                throw new IllegalArgumentException(" the network must be loss");
+            }
+            if (reply.isHasProxy()) {
+                throw new IllegalArgumentException("the account has proxy,proxy can set his customer discount");
+            }
+        }
     }
 
     private void validateDiscount(AccountType type,String accountUuid,String productCategoryUuid,int discount) {
@@ -571,6 +619,12 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             throw new IllegalArgumentException("you are not the permit");
         }
 
+        if (msg.getSession().getType().equals(AccountType.Proxy)) {
+            if (!isBoundAccountWithProxy(msg.getAccountUuid(), msg.getSession().getAccountUuid())) {
+                throw new IllegalArgumentException("you can only set yourself customers");
+            }
+        }
+
         ProductCategoryVO productCategoryEO = findProductCategory(msg.getProductType(), msg.getCategory());
         if (productCategoryEO == null) {
             throw new IllegalArgumentException("check the input value");
@@ -580,21 +634,9 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             throw new IllegalArgumentException("the account has the discount");
         }
 
-        if (!isBoundAccountWithProxy(msg.getAccountUuid(), msg.getSession().getAccountUuid())) {
-            throw new IllegalArgumentException("you can only set yourself customers");
-        }
-
         validateDiscount(msg.getSession().getType(), msg.getSession().getAccountUuid(), productCategoryEO.getUuid(),msg.getDiscount());
 
-        if (msg.getSession().getType().equals(AccountType.SystemAdmin)) {
-            APIValidateAccountReply reply = validAccount(msg.getAccountUuid());
-            if (reply == null) {
-                throw new IllegalArgumentException(" the network must be loss");
-            }
-            if (reply.getType() == AccountType.Normal) {
-                throw new IllegalArgumentException("the account has proxy,proxy can set his customer discount");
-            }
-        }
+        validateSysAdminHasPermit(msg.getSession().getType(), msg.getAccountUuid());
 
     }
 

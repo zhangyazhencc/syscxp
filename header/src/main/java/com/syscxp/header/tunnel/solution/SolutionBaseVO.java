@@ -4,6 +4,7 @@ import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.vo.ForeignKey;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /**
@@ -22,10 +23,7 @@ public class SolutionBaseVO {
     private String solutionUuid;
 
     @Column
-    private String name;
-
-    @Column
-    private String cost;
+    private BigDecimal cost;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -33,9 +31,6 @@ public class SolutionBaseVO {
 
     @Column
     private int duration;
-
-    @Column
-    private String description;
 
     @Column
     private Timestamp createDate;
@@ -64,19 +59,11 @@ public class SolutionBaseVO {
         this.solutionUuid = solutionUuid;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCost() {
+    public BigDecimal getCost() {
         return cost;
     }
 
-    public void setCost(String cost) {
+    public void setCost(BigDecimal cost) {
         this.cost = cost;
     }
 
@@ -94,14 +81,6 @@ public class SolutionBaseVO {
 
     public void setDuration(int duration) {
         this.duration = duration;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public Timestamp getCreateDate() {

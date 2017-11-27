@@ -6,21 +6,19 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
 
+import java.math.BigDecimal;
+
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "create")
 public class APICreateSolutionInterfaceMsg extends  APIMessage {
 
     @APIParam(maxLength = 32)
     private String solutionUuid;
-    @APIParam(maxLength = 32,required = false)
-    private String name;
-    @APIParam(maxLength = 32)
-    private String cost;
+    @APIParam(numberRange = {0,Long.MAX_VALUE})
+    private BigDecimal cost;
     @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
     private ProductChargeModel productChargeModel;
     @APIParam(maxLength = 32)
     private int duration;
-    @APIParam(maxLength = 128,required = false)
-    private String description;
     @APIParam(maxLength = 128)
     private String endpointUuid;
     @APIParam(maxLength = 128)
@@ -34,19 +32,11 @@ public class APICreateSolutionInterfaceMsg extends  APIMessage {
         this.solutionUuid = solutionUuid;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getCost() {
+    public BigDecimal getCost() {
         return cost;
     }
 
-    public void setCost(String cost) {
+    public void setCost(BigDecimal cost) {
         this.cost = cost;
     }
 
@@ -64,14 +54,6 @@ public class APICreateSolutionInterfaceMsg extends  APIMessage {
 
     public void setDuration(int duration) {
         this.duration = duration;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public String getEndpointUuid() {

@@ -8,7 +8,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "delete")
 public class APIDeleteSolutionVpnMsg extends APIMessage {
 
-    @APIParam(maxLength = 32, emptyString = false, resourceType = SolutionVO.class)
+    @APIParam(maxLength = 32, emptyString = false, resourceType = SolutionVpnVO.class)
     private String uuid;
 
     public String getUuid() {

@@ -5,11 +5,20 @@ import com.syscxp.header.rest.RestResponse;
 
 @RestResponse(allTo = "inventory")
 public class APIDeleteSolutionEvent extends APIEvent {
+    private SolutionInventory solutionInventory;
     public APIDeleteSolutionEvent(String apiId) {
         super(apiId);
     }
 
     public APIDeleteSolutionEvent() {
         super(null);
+    }
+
+    public SolutionInventory getSolutionInventory() {
+        return solutionInventory;
+    }
+
+    public void setSolutionInventory(SolutionInventory solutionInventory) {
+        this.solutionInventory = solutionInventory;
     }
 }

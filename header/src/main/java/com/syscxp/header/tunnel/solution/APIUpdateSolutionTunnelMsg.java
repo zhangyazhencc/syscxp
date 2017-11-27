@@ -5,6 +5,9 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.tunnel.BandwidthOfferingVO;
+
+import java.math.BigDecimal;
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "update")
 public class APIUpdateSolutionTunnelMsg extends  APIMessage {
@@ -12,11 +15,13 @@ public class APIUpdateSolutionTunnelMsg extends  APIMessage {
     @APIParam(maxLength = 32)
     private String uuid;
 
+    @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
+    private String bandwidthOfferingUuid;
     @APIParam(maxLength = 128)
     private long bandwidth;
 
-    @APIParam(maxLength = 32)
-    private String cost;
+    @APIParam(numberRange = {0,Long.MAX_VALUE})
+    private BigDecimal cost;
     @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
     private ProductChargeModel productChargeModel;
     @APIParam(maxLength = 32)
@@ -38,11 +43,11 @@ public class APIUpdateSolutionTunnelMsg extends  APIMessage {
         this.bandwidth = bandwidth;
     }
 
-    public String getCost() {
+    public BigDecimal getCost() {
         return cost;
     }
 
-    public void setCost(String cost) {
+    public void setCost(BigDecimal cost) {
         this.cost = cost;
     }
 
@@ -60,5 +65,13 @@ public class APIUpdateSolutionTunnelMsg extends  APIMessage {
 
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
+    }
+
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 }

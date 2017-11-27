@@ -11,6 +11,8 @@ public class APIValidateAccountReply extends APIReply {
 
     private AccountType type;
 
+    private boolean hasProxy;
+
     public boolean isValidAccount() {
         return validAccount;
     }
@@ -25,5 +27,13 @@ public class APIValidateAccountReply extends APIReply {
 
     public void setType(AccountType type) {
         this.type = type;
+    }
+
+    public boolean isHasProxy() {
+        return hasProxy;
+    }
+
+    public void setHasProxy(boolean hasProxy) {
+        this.hasProxy = hasProxy;
     }
 }

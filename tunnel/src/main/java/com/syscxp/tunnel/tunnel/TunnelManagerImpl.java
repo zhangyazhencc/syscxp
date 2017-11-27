@@ -16,6 +16,7 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
@@ -687,6 +688,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
 
+        if (vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now()))) {
+            dbf.remove(vo);
+            bus.publish(evt);
+            return;
+        }
+
         //调用退订
         APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(getOrderMsgForInterface(vo, new UnsubcribeInterfaceCallBack()));
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -763,7 +770,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setMonitorState(TunnelMonitorState.Disabled);
         vo.setMaxModifies(CoreGlobalProperty.TUNNEL_MAX_MOTIFIES);
-        vo.setDistance(Distance.getDistance(nvoA.getLongtitude(), nvoA.getLatitude(), nvoZ.getLongtitude(), nvoZ.getLatitude()));
+        vo.setDistance(Distance.getDistance(nvoA.getLongitude(), nvoA.getLatitude(), nvoZ.getLongitude(), nvoZ.getLatitude()));
 
         if (msg.getInterfaceAUuid() != null && msg.getInterfaceZUuid() != null) {         //没有新购接口
             interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
@@ -1115,7 +1122,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setMonitorState(TunnelMonitorState.Disabled);
         vo.setMaxModifies(CoreGlobalProperty.TUNNEL_MAX_MOTIFIES);
-        vo.setDistance(Distance.getDistance(nvoA.getLongtitude(), nvoA.getLatitude(), nvoZ.getLongtitude(), nvoZ.getLatitude()));
+        vo.setDistance(Distance.getDistance(nvoA.getLongitude(), nvoA.getLatitude(), nvoZ.getLongitude(), nvoZ.getLatitude()));
 
         TunnelSwitchPortVO tsvoA = new TunnelSwitchPortVO();
         tsvoA.setUuid(Platform.getUuid());
@@ -1637,6 +1644,38 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 });
 
             } else {
+                if (vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now()))) {
+                    if (vo.getState() == TunnelState.Enabled) {          //退订下发删除：对于已开通的产品
+
+                        vo.setAccountUuid(null);
+                        final TunnelVO vo2 = dbf.updateAndRefresh(vo);
+
+                        //创建任务
+                        TaskResourceVO taskResourceVO = newTaskResourceVO(vo2, TaskType.Delete);
+
+                        DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
+                        deleteTunnelMsg.setTunnelUuid(vo2.getUuid());
+                        deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+                        bus.makeLocalServiceId(deleteTunnelMsg, TunnelConstant.SERVICE_ID);
+                        bus.send(deleteTunnelMsg, new CloudBusCallBack(null) {
+                            @Override
+                            public void run(MessageReply reply) {
+                                if (reply.isSuccess()) {
+                                    evt.setInventory(TunnelInventory.valueOf(vo2));
+                                }else{
+                                    evt.setInventory(TunnelInventory.valueOf(vo2));
+                                    evt.setError(reply.getError());
+                                }
+                            }
+                        });
+
+                    }else{
+                        deleteTunnel(vo);
+                        evt.setInventory(TunnelInventory.valueOf(vo));
+                    }
+                    bus.publish(evt);
+                    return;
+                }
                 //调用退订
                 DeleteTunnelCallBack dc = new DeleteTunnelCallBack();
                 dc.setDescription("delete");
@@ -1700,6 +1739,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIDeleteForciblyTunnelEvent evt = new APIDeleteForciblyTunnelEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        if (vo.getExpireDate() != null && vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now()))) {
+            deleteTunnel(vo);
+            evt.setInventory(TunnelInventory.valueOf(vo));
+            bus.publish(evt);
+            return;
+        }
 
         //调用退订
         DeleteTunnelCallBack dc = new DeleteTunnelCallBack();
@@ -2544,7 +2590,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         InterfaceVO iface = Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).find();
 
         int deleteDays = TunnelGlobalConfig.PRODUCT_DELETE_DAYS.value(Integer.class);
-        if (iface.getCreateDate().toLocalDateTime().plusDays(deleteDays).isAfter(LocalDateTime.now()))
+        if (!msg.getSession().isAdminSession() && iface.getCreateDate().toLocalDateTime().plusDays(deleteDays).isAfter(LocalDateTime.now()))
             throw new ApiMessageInterceptionException(
                     argerr("物理接口[uuid:%s]购买未超过%s天,不能删除 !", msg.getUuid(), deleteDays));
         //判断云专线下是否有该物理接口
@@ -2747,8 +2793,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         LocalDateTime dateTime =
                 LocalDate.now().withDayOfMonth(LocalDate.MIN.getDayOfMonth()).atTime(LocalTime.MIN);
         Long times = Q.New(TunnelMotifyRecordVO.class).eq(TunnelMotifyRecordVO_.tunnelUuid, msg.getUuid())
-                .gte(TunnelMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime))
-                .lt(TunnelMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime.plusMonths(1))).count();
+                .gte(TunnelMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime)).count();
         Integer maxModifies =
                 Q.New(TunnelVO.class).eq(TunnelVO_.uuid, msg.getUuid()).select(TunnelVO_.maxModifies)
                         .findValue();
@@ -2784,6 +2829,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void validate(APIDeleteTunnelMsg msg) {
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+        if(msg.getSession().getType() != AccountType.SystemAdmin && (vo.getState()==TunnelState.Enabled || vo.getState()==TunnelState.Disabled)){
+            int deleteDays = TunnelGlobalConfig.PRODUCT_DELETE_DAYS.value(Integer.class);
+            if (vo.getCreateDate().toLocalDateTime().plusDays(deleteDays).isAfter(LocalDateTime.now()))
+                throw new ApiMessageInterceptionException(
+                        argerr("云专线[uuid:%s]购买未超过%s天,不能删除 !", msg.getUuid(), deleteDays));
+        }
         checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
     }
 
@@ -3054,7 +3106,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 获取物理接口单价
      */
-    private List<ProductPriceUnit> getInterfacePriceUnit(String portOfferingUuid) {
+    public List<ProductPriceUnit> getInterfacePriceUnit(String portOfferingUuid) {
         List<ProductPriceUnit> units = new ArrayList<>();
         ProductPriceUnit unit = new ProductPriceUnit();
         unit.setProductTypeCode(ProductType.PORT);
@@ -3069,7 +3121,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     /**
      * 获取云专线单价
      */
-    private List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid, String nodeAUuid, String nodeZUuid, String innerEndpointUuid) {
+    public List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid, String nodeAUuid, String nodeZUuid, String innerEndpointUuid) {
         List<ProductPriceUnit> units = new ArrayList<>();
         NodeVO nodeA = dbf.findByUuid(nodeAUuid, NodeVO.class);
         NodeVO nodeZ = dbf.findByUuid(nodeZUuid, NodeVO.class);
@@ -3300,9 +3352,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 通过连接点获取可用的端口规格
      */
     private List<PortOfferingVO> getPortTypeByEndpoint(String endpointUuid) {
-        String sql = "SELECT DISTINCT sp.portType FROM SwitchPortVO sp WHERE sp.state = :state " +
-                "AND sp.switchUuid IN ( SELECT s.uuid FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid AND s.status = :status) " +
-                "AND ((SELECT count(1) AS n1 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0) ";
+        String sql = "SELECT t FROM PortOfferingVO t WHERE t.uuid IN (SELECT DISTINCT sp.portType FROM SwitchPortVO sp WHERE sp.state = :state " +
+                "AND (SELECT count(1) AS n1 FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid AND s.status = :status AND sp.switchUuid = s.uuid) = 1 " +
+                "AND (SELECT count(1) AS n2 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0) ";
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
                 .param("status", SwitchStatus.Connected)
@@ -3317,8 +3369,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      */
     private List<SwitchPortVO> getSwitchPortByType(String endpointUuid, String type) {
         String sql = "SELECT sp FROM SwitchPortVO sp WHERE sp.state = :state AND sp.portType = :portType " +
-                "AND sp.switchUuid IN (SELECT s.uuid FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid AND s.status = :status) " +
-                "AND ((SELECT count(1) AS n1 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0) ";
+                "AND (SELECT count(1) AS n1 FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid AND s.status = :status AND sp.switchUuid = s.uuid) = 1 " +
+                "AND (SELECT count(1) AS n1 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0 ";
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
                 .param("status", SwitchStatus.Connected)
@@ -3377,7 +3429,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 eq(PhysicalSwitchVO_.uuid, physicalSwitchUuid).
                 select(PhysicalSwitchVO_.mIP).findValue();
 
-        if (switchIp != null)
+        if (switchIp == null)
             throw new IllegalArgumentException("获取物理交换机IP失败");
 
         return switchIp;

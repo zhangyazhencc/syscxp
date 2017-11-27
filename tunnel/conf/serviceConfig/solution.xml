@@ -62,4 +62,11 @@
         <name>com.syscxp.header.tunnel.solution.APIUpdateSolutionVpnMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.header.tunnel.solution.APIRecountTunnelPriceMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.tunnel.solution.APIRecountInterfacePriceMsg</name>
+    </message>
+
 </service>

@@ -52,7 +52,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.monitor.APIGetEndpointTunnelsMsg</name>
+        <name>com.syscxp.header.tunnel.monitor.APIQueryNettoolNodeMsg</name>
     </message>
 
     <message>

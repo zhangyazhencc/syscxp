@@ -33,7 +33,6 @@ import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.identity.IdentityInterceptor;
 import com.syscxp.tunnel.sdnController.ControllerCommands;
 import com.syscxp.tunnel.sdnController.ControllerRestConstant;
-import com.syscxp.utils.TimeUtils;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -110,14 +109,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APICreateNettoolRecordMsg) msg);
         } else if (msg instanceof APIQueryNettoolResultMsg) {
             handle((APIQueryNettoolResultMsg) msg);
+        } else if (msg instanceof APIQueryNettoolNodeMsg) {
+            handle((APIQueryNettoolNodeMsg) msg);
         } else if (msg instanceof APIQueryMonitorResultMsg) {
             handle((APIQueryMonitorResultMsg) msg);
         } else if (msg instanceof APICreateSpeedTestTunnelMsg) {
             handle((APICreateSpeedTestTunnelMsg) msg);
         } else if (msg instanceof APIDeleteSpeedTestTunnelMsg) {
             handle((APIDeleteSpeedTestTunnelMsg) msg);
-        } else if (msg instanceof APIGetEndpointTunnelsMsg) {
-            handle((APIGetEndpointTunnelsMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -730,11 +729,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             String resp = evtf.getRESTTemplate().postForObject(url, command, String.class);
 
             results = JSON.parseArray(resp, MonitorAgentCommands.SpeedResult.class);
-            // results = evtf.syncJsonPost(url, command, ArrayList.class);
-
-            if (!results.get(0).isSuccess())
-                reply.setError(Platform.argerr("Failure to fetch speed test result! %s", results.get(0).getMsg()));
-
         } catch (Exception e) {
             reply.setError(Platform.argerr("Failure to execute speed test command! %s", e.getMessage()));
         }
@@ -821,6 +815,20 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         bus.reply(msg, reply);
     }
 
+    private void handle(APIQueryNettoolNodeMsg msg){
+        APIQueryNettoolNodeReply reply = new APIQueryNettoolNodeReply();
+
+        List<MonitorHostVO> monitorHostVOS = Q.New(MonitorHostVO.class)
+                .eq(MonitorHostVO_.monitorType,MonitorType.NETTOOL)
+                .eq(MonitorHostVO_.status,HostStatus.Connected)
+                .eq(MonitorHostVO_.state,HostState.Enabled)
+                .list();
+
+        reply.setInventories(MonitorHostInventory.valueOf1(monitorHostVOS));
+
+        bus.reply(msg,reply);
+    }
+
     private void handle(APIQueryMonitorResultMsg msg) {
         APIQueryMonitorResultReply reply = new APIQueryMonitorResultReply();
 
@@ -904,84 +912,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         event.setInventory(SpeedTestTunnelInventory.valueOf(vo));
 
         bus.publish(event);
-    }
-
-    private void handle(APIGetEndpointTunnelsMsg msg) {
-        APIGetEndpointTunnelsReply reply = new APIGetEndpointTunnelsReply();
-        try {
-            // 按物理交换机IP获取交换机端口
-            Set<String> ports = getPortsPhysicalSwitch(msg.getPhysicalSwitchMip());
-
-            // 按交换机端口、vlan获取tunnel
-            List<MonitorAgentCommands.EndpointTunnel> endpointTunnels = getTunnelBySwitchAndVlan(ports, msg);
-
-            reply.setInventories(EndpointTunnelsInventory.valueOf(endpointTunnels));
-        } catch (Exception e) {
-            reply.setError(Platform.argerr("Fail to get endpoint tunnels. Error: %s", e.getMessage()));
-        }
-
-        bus.reply(msg, reply);
-    }
-
-    private List<MonitorAgentCommands.EndpointTunnel> getTunnelBySwitchAndVlan(Set<String> ports, APIGetEndpointTunnelsMsg msg) {
-        List<MonitorAgentCommands.EndpointTunnel> endpointTunnels = new ArrayList<>();
-
-        for (String portUuid : ports) {
-            List<TunnelSwitchPortVO> tunnelSwitchPorts = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.switchPortUuid, portUuid)
-                    .eq(TunnelSwitchPortVO_.vlan, msg.getVlan()).list();
-
-            if (tunnelSwitchPorts.isEmpty())
-                continue;
-
-            TunnelVO tunnelVO = new TunnelVO();
-            for(TunnelSwitchPortVO tunnelSwitchPortVO:tunnelSwitchPorts){
-                tunnelVO = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelSwitchPortVO.getTunnelUuid()).find();
-
-                MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
-                for (TunnelSwitchPortVO tunnelPort : tunnelVO.getTunnelSwitchPortVOS()) {
-                    if (tunnelPort.getSortTag().equals(InterfaceType.A.toString()))
-                        endpointTunnel.setNodeA(tunnelPort.getEndpointVO().getNodeVO().getName());
-                    else if (tunnelPort.getSortTag().equals(InterfaceType.Z.toString()))
-                        endpointTunnel.setNodeZ(tunnelPort.getEndpointVO().getNodeVO().getName());
-                }
-
-                endpointTunnel.setTunnelUuid(tunnelVO.getUuid());
-                endpointTunnel.setTunnelName(tunnelVO.getName());
-                endpointTunnel.setBandwidth(tunnelVO.getBandwidth());
-
-                endpointTunnels.add(endpointTunnel);
-            }
-        }
-
-        if (endpointTunnels.isEmpty())
-            throw new IllegalArgumentException(String.format("No tunnel exist under endpoint %s vlan %s ", msg.getPhysicalSwitchMip(), msg.getVlan()));
-
-        return endpointTunnels;
-    }
-
-    private Set<String> getPortsPhysicalSwitch(String physicalSwitchMip) {
-        // 查询物理交换机
-        List<PhysicalSwitchVO> physicalSwitchVOS = Q.New(PhysicalSwitchVO.class).eq(PhysicalSwitchVO_.mIP, physicalSwitchMip).list();
-        if (physicalSwitchVOS.isEmpty())
-            throw new IllegalArgumentException(String.format("No physicalSwitch exist under endpoint %s!", physicalSwitchMip));
-
-        // 查询逻辑交换机
-        List<SwitchVO> switchVOS = Q.New(SwitchVO.class).eq(SwitchVO_.physicalSwitchUuid, physicalSwitchVOS.get(0).getUuid()).list();
-        if (switchVOS.isEmpty())
-            throw new IllegalArgumentException(String.format("No logical switch exist under physical switch %s!", physicalSwitchVOS.get(0).getCode()));
-
-        // 逻辑交换机端口
-        List<String> portVOS = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.switchUuid, switchVOS.get(0).getUuid()).select(SwitchPortVO_.uuid).list();
-        // List<String> portVOS =  Q.New(SwitchVO.class).eq(SwitchVO_.physicalSwitchUuid,physicalSwitchVOS.get(0).getUuid()).select(SwitchVO_.uuid).list();
-        if (portVOS.isEmpty())
-            throw new IllegalArgumentException(String.format("No switch port exist under logical switch %s!", switchVOS.get(0).getCode()));
-
-        Set<String> portsSet = new HashSet();
-        for (String portUuid : portVOS)
-            portsSet.add(portUuid);
-
-        return portsSet;
     }
 
     /***
@@ -1154,7 +1084,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             dbf.update(tunnelMonitorVO);
         }
     }
-
 
 
     /***
@@ -1494,6 +1423,32 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             throw new ApiMessageInterceptionException(argerr("Illegal host IP %s！", ip));
     }
 
+    @Override
+    public boolean start() {
+        resetSpeedRecordStatus();
+
+        evtf.registerSyncHttpCallHandler("FalconTunnel", MonitorAgentCommands.FalconGetTunnelCommand.class,
+                cmd -> {
+
+                    MonitorAgentCommands.FalconResponse falconResponse = new MonitorAgentCommands.FalconResponse();
+                    try {
+                        List<EndpointTunnelsInventory> tunnels = getEndpointTunnels(cmd);
+
+                        falconResponse.setSuccess(true);
+                        falconResponse.setMsg("success");
+                        falconResponse.setInventories(tunnels);
+                    } catch (Exception e) {
+                        falconResponse.setSuccess(false);
+                        falconResponse.setMsg(String.format("Get tunnels failed, Error: %s", e.getMessage()));
+                    }
+
+                    return JSONObjectUtil.toJsonString(falconResponse);
+                });
+
+        return true;
+    }
+
+
     private void resetSpeedRecordStatus() {
         resetSpeedrecordInterval = CoreGlobalProperty.RESET_SPEEDRECORD_INTERVAL;
         expiredSpeedRecordTime = CoreGlobalProperty.EXPIRED_SPEEDRECORD_TIME;
@@ -1525,7 +1480,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             return "reset-speedrecord-status-" + Platform.getManagementServerId();
         }
 
-        private long getExpiredTime(Date createDate,int duration){
+        private long getExpiredTime(Date createDate, int duration) {
             return createDate.getTime() + (expiredSpeedRecordTime + duration) * 1000;
         }
 
@@ -1539,13 +1494,13 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
                 if (!list.isEmpty()) {
                     for (SpeedRecordsVO vo : list) {
-                        long expiredTime = getExpiredTime(vo.getCreateDate(),vo.getDuration());
+                        long expiredTime = getExpiredTime(vo.getCreateDate(), vo.getDuration());
                         long currentTime = System.currentTimeMillis();
-                        SimpleDateFormat format =  new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                        SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
                         String d = format.format(expiredTime);
                         String c = format.format(currentTime);
 
-                        if(System.currentTimeMillis() > expiredTime){
+                        if (System.currentTimeMillis() > expiredTime) {
                             vo.setStatus(SpeedRecordStatus.FAILURE);
                             dbf.update(vo);
                         }
@@ -1557,11 +1512,87 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
     }
 
+    /***
+     * 按物理交换机mIP与vlan查找所有共点专线
+     * @param cmd：查询你条件
+     * @return：共点专线清单
+     */
+    private List<EndpointTunnelsInventory> getEndpointTunnels(MonitorAgentCommands.FalconGetTunnelCommand cmd) {
+        List<EndpointTunnelsInventory> tunnels = new ArrayList<>();
 
-    @Override
-    public boolean start() {
-        resetSpeedRecordStatus();
-        return true;
+        // 按物理交换机IP获取交换机端口
+        Set<String> ports = getPortsByPhysicalSwitch(cmd.getPhysicalSwitchMip());
+
+        // 按交换机端口、vlan获取tunnel
+        List<MonitorAgentCommands.EndpointTunnel> endpointTunnels = getTunnelBySwitchAndVlan(ports, cmd.getPhysicalSwitchMip(), cmd.getVlan());
+
+        return EndpointTunnelsInventory.valueOf(endpointTunnels);
+    }
+
+    private List<MonitorAgentCommands.EndpointTunnel> getTunnelBySwitchAndVlan(Set<String> ports, String physicalSwitchMip, Integer vlan) {
+        List<MonitorAgentCommands.EndpointTunnel> endpointTunnels = new ArrayList<>();
+
+        for (String portUuid : ports) {
+            List<TunnelSwitchPortVO> portTunnels = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.switchPortUuid, portUuid)
+                    .eq(TunnelSwitchPortVO_.vlan, vlan).list();
+
+            if (portTunnels.isEmpty())
+                continue;
+
+            for(TunnelSwitchPortVO portTunnel : portTunnels){
+                TunnelVO tunnelVO = new TunnelVO();
+                tunnelVO = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, portTunnel.getTunnelUuid()).find();
+
+                MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
+                for (TunnelSwitchPortVO tunnelSwitchPort : tunnelVO.getTunnelSwitchPortVOS()) {
+                    if (tunnelSwitchPort.getSortTag().equals(InterfaceType.A.toString())){
+                        endpointTunnel.setNodeA(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
+                        endpointTunnel.setEndpoingAMip(getPhysicalSwitchBySwitchPort(tunnelSwitchPort.getSwitchPortUuid()).getmIP());
+                    }
+                    else if (tunnelSwitchPort.getSortTag().equals(InterfaceType.Z.toString())){
+                        endpointTunnel.setNodeZ(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
+                        endpointTunnel.setEndpoingZMip(getPhysicalSwitchBySwitchPort(tunnelSwitchPort.getSwitchPortUuid()).getmIP());
+                    }
+                }
+
+                endpointTunnel.setTunnelUuid(tunnelVO.getUuid());
+                endpointTunnel.setTunnelName(tunnelVO.getName());
+                endpointTunnel.setBandwidth(tunnelVO.getBandwidth());
+                endpointTunnel.setAccountUuid(tunnelVO.getAccountUuid());
+
+                endpointTunnels.add(endpointTunnel);
+            }
+        }
+
+        if (endpointTunnels.isEmpty())
+            throw new IllegalArgumentException(String.format("No tunnel exist under endpoint %s vlan %s ", physicalSwitchMip, vlan));
+
+        return endpointTunnels;
+    }
+
+    private Set<String> getPortsByPhysicalSwitch(String physicalSwitchMip) {
+        // 查询物理交换机
+        List<PhysicalSwitchVO> physicalSwitchVOS = Q.New(PhysicalSwitchVO.class).eq(PhysicalSwitchVO_.mIP, physicalSwitchMip).list();
+        if (physicalSwitchVOS.isEmpty())
+            throw new IllegalArgumentException(String.format("No physicalSwitch exist under endpoint %s!", physicalSwitchMip));
+
+        // 查询逻辑交换机
+        List<SwitchVO> switchVOS = Q.New(SwitchVO.class).eq(SwitchVO_.physicalSwitchUuid, physicalSwitchVOS.get(0).getUuid()).list();
+        if (switchVOS.isEmpty())
+            throw new IllegalArgumentException(String.format("No logical switch exist under physical switch %s!", physicalSwitchVOS.get(0).getCode()));
+
+        // 逻辑交换机端口
+        List<String> portVOS = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.switchUuid, switchVOS.get(0).getUuid()).select(SwitchPortVO_.uuid).list();
+        // List<String> portVOS =  Q.New(SwitchVO.class).eq(SwitchVO_.physicalSwitchUuid,physicalSwitchVOS.get(0).getUuid()).select(SwitchVO_.uuid).list();
+        if (portVOS.isEmpty())
+            throw new IllegalArgumentException(String.format("No switch port exist under logical switch %s!", switchVOS.get(0).getCode()));
+
+        Set<String> portsSet = new HashSet();
+        for (String portUuid : portVOS)
+            portsSet.add(portUuid);
+
+        return portsSet;
     }
 
     @Override
