@@ -542,7 +542,8 @@ CREATE TABLE `syscxp_tunnel`.`CloudVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 INSERT INTO `syscxp_tunnel`.`CloudVO` (`uuid`,`name`,`description`,`lastOpDate`,`createDate`)
-VALUES ('AliYun','阿里云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+VALUES ('Syscloud','犀思互联云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
+  ('AliYun','阿里云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('Huawei','华为云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('Baidu','百度云','','2017-11-01 13:51:31','2017-11-01 13:51:31');
 
