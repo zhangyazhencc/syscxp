@@ -372,7 +372,16 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         PolicyVO vo = dbf.findByUuid(msg.getUuid(), PolicyVO.class);
         APIDeletePolicyEvent event = new APIDeletePolicyEvent(msg.getId());
         if (vo != null) {
-            dbf.remove(vo);
+            dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
+        }
+        SimpleQuery<RegulationVO> q = dbf.createQuery(RegulationVO.class);
+        q.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, msg.getUuid());
+        List<RegulationVO> regulationVOS = query.list();
+        if (regulationVOS != null && regulationVOS.size() > 0) {
+            for (RegulationVO regulationVO : regulationVOS) {
+                dbf.getEntityManager().remove(dbf.getEntityManager().merge(regulationVO));
+            }
+
         }
         event.setInventory(PolicyInventory.valueOf(vo));
         bus.publish(event);
