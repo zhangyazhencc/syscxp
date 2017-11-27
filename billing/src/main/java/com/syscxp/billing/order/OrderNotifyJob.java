@@ -22,6 +22,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClientException;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +44,17 @@ public class OrderNotifyJob {
         template = RESTFacade.createRestTemplate(3000,3000);
     }
 
+
+    @PostConstruct
+    private void init(){
+        SimpleQuery<NotifyOrderVO> qNotifyOrder = dbf.createQuery(NotifyOrderVO.class);
+        qNotifyOrder.add(NotifyOrderVO_.status, SimpleQuery.Op.EQ, NotifyOrderStatus.PROCESSING);
+        List<NotifyOrderVO> notifyOrderVOs = qNotifyOrder.list();
+        for (NotifyOrderVO notifyOrderVO : notifyOrderVOs) {
+            notifyOrderVO.setStatus(NotifyOrderStatus.FAILURE);
+            dbf.updateAndRefresh(notifyOrderVO);
+        }
+    }
     @Scheduled(cron = "0 0/1 * * * ? ")
     public void scheduleMethod() {
         SimpleQuery<NotifyOrderVO> qNotifyOrder = dbf.createQuery(NotifyOrderVO.class);
