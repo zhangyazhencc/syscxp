@@ -11,25 +11,11 @@ public class APIRecountInterfacePriceMsg extends APISyncCallMessage {
     @APIParam(maxLength = 32)
     private String uuid;
 
-    @APIParam(required = false,maxLength = 32)
-    private String accountUuid;
-
     public String getUuid() {
         return uuid;
     }
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-    public String getAccountUuid() {
-        if(getSession().getType() == AccountType.SystemAdmin){
-            return accountUuid;
-        }else{
-            return getSession().getAccountUuid();
-        }
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
     }
 }
