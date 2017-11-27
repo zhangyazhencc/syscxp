@@ -307,6 +307,9 @@ CREATE TABLE `TicketVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ALTER TABLE TicketVO ADD CONSTRAINT fkTicketVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
 
+# Index for table TicketVO
+CREATE INDEX idxTicketVOcreateDate ON TicketVO (createDate);
+
 CREATE TABLE `TicketRecordVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT '记录uuid',
   `ticketUuid` varchar(32) NOT NULL COMMENT '工单uuid',
