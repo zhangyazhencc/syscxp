@@ -198,8 +198,8 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             return false;
         } else {
             FalconApiCommands.Tunnel tunnel = (FalconApiCommands.Tunnel) map.get(ResourceUuid);
-            tunnelparameter.setEndpointA_vid(tunnel.getEndpointA_vid());
-            tunnelparameter.setEndpointB_vid(tunnel.getEndpointB_vid());
+            tunnelparameter.setEndpointA_vid(tunnel.getEndpointA_vlan());
+            tunnelparameter.setEndpointB_vid(tunnel.getEndpointB_vlan());
             tunnelparameter.setEndpointA_ip(tunnel.getEndpointA_ip());
             tunnelparameter.setEndpointB_ip(tunnel.getEndpointB_ip());
             tunnelparameter.setBandwidth(tunnel.getBandwidth());
@@ -540,15 +540,15 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                     return false;
                 } else {
                     FalconApiCommands.Tunnel tunnel = (FalconApiCommands.Tunnel) map.get(resource.getResourceUuid());
-                    tunnelparameter.setEndpointA_vid(tunnel.getEndpointA_vid());
-                    tunnelparameter.setEndpointB_vid(tunnel.getEndpointB_vid());
+                    tunnelparameter.setEndpointA_vid(tunnel.getEndpointA_vlan());
+                    tunnelparameter.setEndpointB_vid(tunnel.getEndpointB_vlan());
                     tunnelparameter.setEndpointA_ip(tunnel.getEndpointA_ip());
                     tunnelparameter.setEndpointB_ip(tunnel.getEndpointB_ip());
                     tunnelparameter.setBandwidth(tunnel.getBandwidth());
                 }
 
-//                tunnelparameter.setEndpointA_vid(192264588);
-//                tunnelparameter.setEndpointB_vid(192264588);
+//                tunnelparameter.setEndpointA_vlan(192264588);
+//                tunnelparameter.setEndpointB_vlan(192264588);
 //                tunnelparameter.setEndpointA_ip("192264588");
 //                tunnelparameter.setEndpointB_ip("192264588");
 //                tunnelparameter.setBandwidth(1922L);
