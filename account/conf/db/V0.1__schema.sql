@@ -307,6 +307,9 @@ CREATE TABLE `TicketVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 ALTER TABLE TicketVO ADD CONSTRAINT fkTicketVOAccountVO FOREIGN KEY (accountUuid) REFERENCES AccountVO (uuid) ON DELETE CASCADE;
 
+# Index for table TicketVO
+CREATE INDEX idxTicketVOcreateDate ON TicketVO (createDate);
+
 CREATE TABLE `TicketRecordVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT '记录uuid',
   `ticketUuid` varchar(32) NOT NULL COMMENT '工单uuid',
@@ -341,4 +344,5 @@ INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('leadCable','申请引�
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('crossConnection','申请交叉互联工单','officialWebsite');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('internetEntrance','申请互联网工单','officialWebsite');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('cloudTransmission','申请云传输工单','officialWebsite');
+update TicketTypeVO set lastOpDate = now(), createDate = now();
 

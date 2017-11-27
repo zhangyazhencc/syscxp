@@ -15,7 +15,7 @@
     <bean id="TimeoutManager" class="com.syscxp.core.timeout.ApiTimeoutManagerImpl" />
 
     <bean id="CloudBus" class = "com.syscxp.core.cloudbus.CloudBusImpl2" depends-on="ThreadFacade,ThreadAspectj">
-		<property name="busProjectId" value="billing" />
+		<property name="busProjectId" value="billing11" />
     	<syscxp:plugin>
 			<syscxp:extension interface="com.syscxp.header.managementnode.ManagementNodeChangeListener" order="9999"/>
 		</syscxp:plugin>

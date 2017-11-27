@@ -1,0 +1,31 @@
+HOST: http://192.168.211.99/
+
+# Interface [/tunnel/api]
+
+### 修改GlobalConfig [APIUpdateGlobalConfigMsg]
+
++ 权限(action)
+    
+        admin
+        
++ 参数
+    + category (string)
+    + name (string)
+    + value (string, optional)
+
++ 请求 (application/json;charset=UTF-8)
+
+    + Body
+    
+            {
+	            "com.syscxp.core.config.APIUpdateGlobalConfigMsg":{
+            	    "category":"tunnel",
+            	    "name":"productDelete.days",
+            	    "value":"0",
+            	    "session":{
+            	        "uuid":{{session}}
+	                }
+	            }
+            }
+
++ 直接修改数据库GlobalConfig不更新，通过APIUpdateGlobalConfigMsg更改

@@ -48,37 +48,6 @@ public class ControllerCommands {
     }
 
     /**
-     * 下发tunnel命令：开启，关闭，修改
-     */
-    public static class IssuedTunnelCommand {
-        private List<TunnelConfig> tunnel;
-        private List<ConnectionsConfig> connections;
-
-        public static IssuedTunnelCommand valueOf(List<TunnelConfig> tunnelList,List<ConnectionsConfig> connectionsList){
-            IssuedTunnelCommand issuedTunnelCommand = new IssuedTunnelCommand();
-            issuedTunnelCommand.setTunnel(tunnelList);
-            issuedTunnelCommand.setConnections(connectionsList);
-            return issuedTunnelCommand;
-        }
-
-        public List<TunnelConfig> getTunnel() {
-            return tunnel;
-        }
-
-        public void setTunnel(List<TunnelConfig> tunnel) {
-            this.tunnel = tunnel;
-        }
-
-        public List<ConnectionsConfig> getConnections() {
-            return connections;
-        }
-
-        public void setConnections(List<ConnectionsConfig> connections) {
-            this.connections = connections;
-        }
-    }
-
-    /**
      * @Author: sunxuelong.
      * @Cretion Date: 2017-09-26.
      * @Description: RYU 控制器监控下发信息.
@@ -237,6 +206,63 @@ public class ControllerCommands {
 
         public void setBandwidth(Long bandwidth) {
             this.bandwidth = bandwidth;
+        }
+    }
+
+    /**
+     * @Author: sunxuelong.
+     * @Cretion Date: 2017-10-11.
+     * @Description: RYU控制器返回.
+     */
+    public static class ControllerRestResponse {
+        private boolean success;
+        private String msg;
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
+
+        public String getMsg() {
+            return msg;
+        }
+
+        public void setMsg(String msg) {
+            this.msg = msg;
+        }
+    }
+
+    /**
+     * 下发tunnel命令：开启，关闭，修改
+     */
+    public static class IssuedTunnelCommand {
+        private List<TunnelConfig> tunnel;
+        private List<ConnectionsConfig> connections;
+
+        public static IssuedTunnelCommand valueOf(List<TunnelConfig> tunnelList,List<ConnectionsConfig> connectionsList){
+            IssuedTunnelCommand issuedTunnelCommand = new IssuedTunnelCommand();
+            issuedTunnelCommand.setTunnel(tunnelList);
+            issuedTunnelCommand.setConnections(connectionsList);
+            return issuedTunnelCommand;
+        }
+
+        public List<TunnelConfig> getTunnel() {
+            return tunnel;
+        }
+
+        public void setTunnel(List<TunnelConfig> tunnel) {
+            this.tunnel = tunnel;
+        }
+
+        public List<ConnectionsConfig> getConnections() {
+            return connections;
+        }
+
+        public void setConnections(List<ConnectionsConfig> connections) {
+            this.connections = connections;
         }
     }
 
@@ -538,29 +564,5 @@ public class ControllerCommands {
         }
     }
 
-    /**
-     * @Author: sunxuelong.
-     * @Cretion Date: 2017-10-11.
-     * @Description: RYU控制器返回.
-     */
-    public static class ControllerRestResponse {
-        private boolean success;
-        private String msg;
 
-        public boolean isSuccess() {
-            return success;
-        }
-
-        public void setSuccess(boolean success) {
-            this.success = success;
-        }
-
-        public String getMsg() {
-            return msg;
-        }
-
-        public void setMsg(String msg) {
-            this.msg = msg;
-        }
-    }
 }

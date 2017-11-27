@@ -327,6 +327,9 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             vo.setCashBalance(vo.getCashBalance().add(msg.getCash()));
             new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, msg.getCash(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getCashBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment());
         } else if (msg.getCredit() != null) {
+            if(vo.getCashBalance().compareTo(BigDecimal.ZERO)<0 && vo.getCashBalance().add(msg.getCredit()).compareTo(BigDecimal.ZERO)<0){
+                throw new IllegalArgumentException(" the credit point value can not  less than the repay value");
+            }
             vo.setCreditPoint(msg.getCredit());
         }
         dbf.getEntityManager().merge(vo);

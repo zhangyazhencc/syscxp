@@ -34,7 +34,6 @@
     </bean>
 
     <import resource="springConfigXml/NotificationManager.xml"/>
-    <import resource="springConfigXml/BillingJob.xml"/>
     <import resource="springConfigXml/BillingManager.xml"/>
     <import resource="springConfigXml/ApiMediator.xml"/>
     <import resource="springConfigXml/Aspect.xml"/>

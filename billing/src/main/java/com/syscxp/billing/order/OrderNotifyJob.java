@@ -1,8 +1,8 @@
 package com.syscxp.billing.order;
 
-import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.retry.Retry;
 import com.syscxp.core.retry.RetryCondition;
 import com.syscxp.core.thread.ThreadFacade;
@@ -16,12 +16,17 @@ import com.syscxp.header.rest.TimeoutRestTemplate;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -29,7 +34,8 @@ import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Component
-public class OrderNotifyJob {
+@Configurable(preConstruction = true, dependencyCheck = true, autowire = Autowire.BY_TYPE)
+public class OrderNotifyJob{
     private static final CLogger logger = Utils.getLogger(OrderNotifyJob.class);
 
     @Autowired
@@ -37,10 +43,21 @@ public class OrderNotifyJob {
 
     @Autowired
     private ThreadFacade threadFacade;
+
     private TimeoutRestTemplate template;
 
     public OrderNotifyJob() {
-        template = RESTFacade.createRestTemplate(CoreGlobalProperty.REST_FACADE_READ_TIMEOUT, CoreGlobalProperty.REST_FACADE_CONNECT_TIMEOUT);
+        template = RESTFacade.createRestTemplate(3000,3000);
+
+    }
+
+    @PostConstruct
+    @Transactional(readOnly = true)
+    public void refixNotifyOrder(){
+        UpdateQuery q = UpdateQuery.New(NotifyOrderVO.class);
+        q.condAnd(NotifyOrderVO_.status, SimpleQuery.Op.EQ,  NotifyOrderStatus.PROCESSING);
+        q.set(NotifyOrderVO_.status, NotifyOrderStatus.FAILURE);
+        q.update();
     }
 
     @Scheduled(cron = "0 0/1 * * * ? ")
