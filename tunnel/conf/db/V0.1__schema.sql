@@ -1,3 +1,4 @@
+use syscxp_tunnel;
 
 CREATE TABLE `syscxp_tunnel`.`SpeedRecordsVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'uuid',
@@ -47,7 +48,7 @@ select uuid,hostUuid,physicalSwitchUuid,physicalSwitchPortName,interfaceName,las
  where deleted IS NULL;
 
 #######################################################################################################
-use syscxp_tunnel;
+
 CREATE TABLE  `syscxp_tunnel`.`ManagementNodeVO` (
   `uuid` varchar(32) NOT NULL UNIQUE,
   `hostName` varchar(255) DEFAULT NULL,
@@ -564,3 +565,71 @@ CREATE TABLE  `syscxp_tunnel`.`MonitorHostVO` (
 
 ALTER TABLE MonitorHostVO ADD CONSTRAINT fkMonitorHostVOHostEO FOREIGN KEY (uuid) REFERENCES HostEO (uuid) ON UPDATE RESTRICT ON DELETE CASCADE;
 ALTER TABLE MonitorHostVO ADD CONSTRAINT fkMonitorHostVONodeEO FOREIGN KEY (nodeUuid) REFERENCES NodeEO (uuid) ON UPDATE RESTRICT ON DELETE CASCADE;
+
+########################################################
+#解决方案#
+CREATE TABLE `SolutionVO` (
+  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+  `accountUuid` varchar(32) NOT  NULL COMMENT '账户uuid',
+  `name` varchar(128) NOT NULL COMMENT '名称',
+  `description` varchar(255) DEFAULT NULL COMMENT '描述',
+  `totalCost` varchar(20) DEFAULT NULL COMMENT '预估费用',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+#物理接口#
+CREATE TABLE `SolutionInterfaceVO` (
+  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+  `solutionUuid` varchar(32) NOT NULL COMMENT '方案UUID',
+  `name` varchar(128) COMMENT '名称',
+  `cost` varchar(20) DEFAULT NULL COMMENT '费用',
+  `productChargeModel` varchar(32) NOT NULL COMMENT '付费方式',
+  `duration` int(11) NOT NULL COMMENT '购买时长',
+  `description` varchar(255) DEFAULT NULL COMMENT '描述',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  `endpointUuid` varchar(32) NOT NULL COMMENT '连接点',
+  `portOfferingUuid` varchar(32) NOT NULL COMMENT '端口规格(类型)',
+  PRIMARY KEY  (`uuid`),
+  CONSTRAINT `fkSolutionInterfaceVO` FOREIGN KEY (`solutionUuid`) REFERENCES `SolutionVO` (`uuid`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+#云专线#
+CREATE TABLE `SolutionTunnelVO` (
+  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+  `solutionUuid` varchar(32) NOT NULL COMMENT '方案UUID',
+  `name` varchar(128) COMMENT '名称',
+  `cost` varchar(20) DEFAULT NULL COMMENT '费用',
+  `productChargeModel` varchar(32) NOT NULL COMMENT '付费方式',
+  `duration` int(11) NOT NULL COMMENT '购买时长',
+  `description` varchar(255) DEFAULT NULL COMMENT '描述',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  `endpointUuidA` varchar(32) NOT NULL COMMENT '连接点A',
+  `endpointUuidZ` varchar(32) NOT NULL COMMENT '连接点Z',
+  `bandwidth` BIGINT NOT NULL COMMENT '带宽',
+  PRIMARY KEY  (`uuid`),
+  CONSTRAINT `fkSolutionTunnelVO` FOREIGN KEY (`solutionUuid`) REFERENCES `SolutionVO` (`uuid`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+#VPN网关#
+CREATE TABLE SolutionVpnVO (
+  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+  `solutionUuid` varchar(32) NOT NULL COMMENT '方案UUID',
+  `name` varchar(128) COMMENT '名称',
+  `cost` varchar(20) DEFAULT NULL COMMENT '费用',
+  `productChargeModel` varchar(32) NOT NULL COMMENT '付费方式',
+  `duration` int(11) NOT NULL COMMENT '购买时长',
+  `description` varchar(255) DEFAULT NULL COMMENT '描述',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  `zoneUuid` varchar(32) NOT NULL COMMENT '区域',
+  `endpointUuid` varchar(32) NOT NULL COMMENT '连接点',
+  `bandwidth` BIGINT NOT NULL COMMENT '带宽',
+  PRIMARY KEY  (`uuid`),
+  CONSTRAINT `fkSolutionVpnVO` FOREIGN KEY (`solutionUuid`) REFERENCES `SolutionVO` (`uuid`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+########################################################
