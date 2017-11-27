@@ -27,7 +27,9 @@ import com.syscxp.tunnel.tunnel.TunnelRESTCaller;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -99,13 +101,15 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     }
 
 
+    @Transactional
     private void handle(APIRecountTunnelPriceMsg msg) {
         SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(), SolutionTunnelVO.class);
-        APIGetProductPriceReply reply = getTunnelPrice(vo, msg.getAccountUuid());
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+
+        APIGetProductPriceReply reply = getTunnelPrice(vo, solutionVO.getAccountUuid());
         vo.setCost(reply.getOriginalPrice());
         dbf.getEntityManager().merge(vo);
 
-        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
         BigDecimal totalCost = totalCost(vo.getSolutionUuid());
         solutionVO.setTotalCost(totalCost);
         dbf.getEntityManager().merge( solutionVO);
@@ -119,11 +123,12 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     @Transactional
     private void handle(APIRecountInterfacePriceMsg msg) {
         SolutionInterfaceVO vo = dbf.findByUuid(msg.getUuid(), SolutionInterfaceVO.class);
-        APIGetProductPriceReply reply = getInterfacePrice(vo, msg.getAccountUuid());
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+
+        APIGetProductPriceReply reply = getInterfacePrice(vo,solutionVO.getAccountUuid());
         vo.setCost(reply.getOriginalPrice());
         dbf.getEntityManager().merge(vo);
 
-        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
         BigDecimal totalCost = totalCost(vo.getSolutionUuid());
         solutionVO.setTotalCost(totalCost);
         dbf.getEntityManager().merge(solutionVO);
@@ -440,7 +445,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         pmsg.setProductChargeModel(vo.getProductChargeModel());
         pmsg.setDuration(vo.getDuration());
         pmsg.setAccountUuid(accountUuid);
-        pmsg.setUnits(new TunnelManagerImpl().getInterfacePriceUnit(vo.getPortOfferingVO().getUuid()));
+        pmsg.setUnits(new CountPriveHelper(dbf).getInterfacePriceUnit(vo.getPortOfferingVO().getUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller().syncJsonPost(pmsg);
         return reply;
     }
@@ -456,7 +461,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         EndpointVO endpointVOZ = dbf.findByUuid(vo.getEndpointVOZ().getUuid(),EndpointVO.class);
 
         if(endpointVOA != null && endpointVOZ !=null){
-            pmsg.setUnits(new TunnelManagerImpl().getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
+            pmsg.setUnits(new CountPriveHelper(dbf).getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
                     endpointVOZ.getNodeUuid(), vo.getInnerEndpointUuid()));
         }
 
