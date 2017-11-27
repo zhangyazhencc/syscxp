@@ -1342,17 +1342,18 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         public void run(MessageReply reply) {
                             if (reply.isSuccess()) {
                                 logger.info(String.format("Successfully update vlan of tunnel[uuid:%s].", vo.getUuid()));
-                                evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo)));
+                                trigger.next();
                             } else {
                                 logger.info(String.format("Failed update vlan of tunnel[uuid:%s].", vo.getUuid()));
-                                evt.setError(errf.stringToOperationError("update vlan failed!"));
                                 trigger.fail(reply.getError());
                             }
                         }
                     });
+                }else{
+                    trigger.next();
                 }
 
-                trigger.next();
+
             }
 
             @Override
@@ -1362,16 +1363,18 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
-
+                evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo)));
+                bus.publish(evt);
             }
         }).error(new FlowErrorHandler(null) {
             @Override
             public void handle(ErrorCode errCode, Map data) {
                 evt.setError(errf.stringToOperationError("update vlan failed!"));
+                bus.publish(evt);
             }
         }).start();
 
-        bus.publish(evt);
+
 
     }
 
@@ -1967,16 +1970,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
                             logger.info(String.format("新增 tunnel[uuid:%s] 内部VLAN 成功.", vo.getUuid()));
-                            evt.setInventory(QinqInventory.valueOf(qinqVO));
+                            trigger.next();
                         } else {
                             logger.info(String.format("新增 tunnel[uuid:%s] 内部VLAN 失败.", vo.getUuid()));
-                            evt.setError(errf.stringToOperationError("create innervlan failed!"));
                             trigger.fail(reply.getError());
                         }
                     }
                 });
 
-                trigger.next();
+
             }
 
             @Override
@@ -1986,16 +1988,18 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
-
+                evt.setInventory(QinqInventory.valueOf(qinqVO));
+                bus.publish(evt);
             }
         }).error(new FlowErrorHandler(null) {
             @Override
             public void handle(ErrorCode errCode, Map data) {
                 evt.setError(errf.stringToOperationError("create innervlan failed!"));
+                bus.publish(evt);
             }
         }).start();
 
-        bus.publish(evt);
+
     }
 
     private void handle(APIDeleteQinqMsg msg) {
@@ -2036,16 +2040,17 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     public void run(MessageReply reply) {
                         if (reply.isSuccess()) {
                             logger.info(String.format("删除 tunnel[uuid:%s] 内部VLAN 成功.", vo.getUuid()));
-                            evt.setInventory(QinqInventory.valueOf(qinqVO));
+
+                            trigger.next();
                         } else {
                             logger.info(String.format("删除 tunnel[uuid:%s] 内部VLAN 失败.", vo.getUuid()));
-                            evt.setError(errf.stringToOperationError("delete innervlan failed!"));
+
                             trigger.fail(reply.getError());
                         }
                     }
                 });
 
-                trigger.next();
+
             }
 
             @Override
@@ -2055,16 +2060,19 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
+                evt.setInventory(QinqInventory.valueOf(qinqVO));
+                bus.publish(evt);
 
             }
         }).error(new FlowErrorHandler(null) {
             @Override
             public void handle(ErrorCode errCode, Map data) {
                 evt.setError(errf.stringToOperationError("delete innervlan failed!"));
+                bus.publish(evt);
             }
         }).start();
 
-        bus.publish(evt);
+
     }
 
     private void handle(APIQueryTunnelDetailForAlarmMsg msg) {
