@@ -141,14 +141,17 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     private void handle(APIUpdateSolutionVpnMsg msg) {
 
         SolutionVpnVO vo = dbf.findByUuid(msg.getUuid(),SolutionVpnVO.class);
-        vo.setBandwidth(msg.getBandwidth());
+        vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setCost(msg.getCost());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDuration(msg.getDuration());
         dbf.getEntityManager().merge(vo);
 
         SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
-        solutionVO.setTotalCost(solutionVO.getTotalCost().add(msg.getCost()));
+        if(solutionVO != null){
+            BigDecimal totalCost = totalCost(solutionVO.getUuid());
+            solutionVO.setTotalCost(totalCost);
+        }
         dbf.getEntityManager().merge(solutionVO);
 
         APIUpdateSolutionVpnEvent event = new APIUpdateSolutionVpnEvent(msg.getId());
@@ -162,7 +165,6 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     private void handle(APIUpdateSolutionTunnelMsg msg) {
 
         SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(),SolutionTunnelVO.class);
-        vo.setBandwidth(msg.getBandwidth());
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setCost(msg.getCost());
         vo.setProductChargeModel(msg.getProductChargeModel());
@@ -170,7 +172,10 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         dbf.getEntityManager().merge(vo);
 
         SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
-        solutionVO.setTotalCost(solutionVO.getTotalCost().add(msg.getCost()));
+        if(solutionVO != null){
+            BigDecimal totalCost = totalCost(solutionVO.getUuid());
+            solutionVO.setTotalCost(totalCost);
+        }
         dbf.getEntityManager().merge(solutionVO);
 
 
@@ -262,7 +267,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setSolutionUuid(msg.getSolutionUuid());
 
-        vo.setBandwidth(msg.getBandwidth());
+        vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
 
         EndpointVO endpointVO = dbf.findByUuid(msg.getEndpointUuid(),EndpointVO.class);
         if(endpointVO != null){
@@ -294,7 +299,6 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setSolutionUuid(msg.getSolutionUuid());
-        vo.setBandwidth(msg.getBandwidth());
         vo.setInnerEndpointUuid(msg.getInnerEndpointUuid());
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
 
