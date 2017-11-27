@@ -15,7 +15,7 @@ public class APIUpdateSolutionVpnMsg extends  APIMessage {
     private String uuid;
 
     @APIParam(maxLength = 32)
-    private long bandwidth;
+    private String bandwidthOfferingUuid;
 
     @APIParam(numberRange = {0,Long.MAX_VALUE})
     private BigDecimal cost;
@@ -32,12 +32,12 @@ public class APIUpdateSolutionVpnMsg extends  APIMessage {
         this.uuid = uuid;
     }
 
-    public long getBandwidth() {
-        return bandwidth;
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
     }
 
-    public void setBandwidth(long bandwidth) {
-        this.bandwidth = bandwidth;
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
     public BigDecimal getCost() {

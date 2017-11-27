@@ -25,7 +25,7 @@ public class APICreateSolutionVpnMsg extends  APIMessage {
     @APIParam(maxLength = 128)
     private String endpointUuid;
     @APIParam(maxLength = 128)
-    private long bandwidth;
+    private String bandwidthOfferingUuid;
 
     public String getSolutionUuid() {
         return solutionUuid;
@@ -75,11 +75,11 @@ public class APICreateSolutionVpnMsg extends  APIMessage {
         this.endpointUuid = endpointUuid;
     }
 
-    public long getBandwidth() {
-        return bandwidth;
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
     }
 
-    public void setBandwidth(long bandwidth) {
-        this.bandwidth = bandwidth;
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 }

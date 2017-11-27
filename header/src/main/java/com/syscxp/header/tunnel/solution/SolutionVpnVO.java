@@ -24,7 +24,7 @@ public class SolutionVpnVO extends SolutionBaseVO{
     /*@Column
     private String endpointUuid;*/
     @Column
-    private long bandwidth;
+    private String bandwidthOfferingUuid;
 
     public String getZoneUuid() {
         return zoneUuid;
@@ -42,11 +42,11 @@ public class SolutionVpnVO extends SolutionBaseVO{
         this.endpointVO = endpointVO;
     }
 
-    public long getBandwidth() {
-        return bandwidth;
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
     }
 
-    public void setBandwidth(long bandwidth) {
-        this.bandwidth = bandwidth;
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 }
