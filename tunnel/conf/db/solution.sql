@@ -42,7 +42,6 @@ CREATE TABLE `SolutionTunnelVO` (
 
   `endpointUuidA` varchar(32) NOT NULL COMMENT '连接点A',
   `endpointUuidZ` varchar(32) NOT NULL COMMENT '连接点Z',
-  `bandwidth` BIGINT NOT NULL COMMENT '带宽',
   `bandwidthOfferingUuid` varchar(32) NOT NULL COMMENT '带宽Uuid',
   `innerEndpointUuid` varchar(32) DEFAULT NULL COMMENT '中间点UUID',
 
@@ -61,7 +60,7 @@ CREATE TABLE SolutionVpnVO (
   `createDate` timestamp,
   `zoneUuid` varchar(32) NOT NULL COMMENT '区域',
   `endpointUuid` varchar(32) NOT NULL COMMENT '连接点',
-  `bandwidth` BIGINT NOT NULL COMMENT '带宽',
+  `bandwidthOfferingUuid` BIGINT NOT NULL COMMENT '带宽',
 
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
