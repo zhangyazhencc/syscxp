@@ -324,7 +324,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
             @Override
             public void run(FlowTrigger trigger, Map data) {
-                if (msg.isIssue() && isUsed) {
+                if (isUsed && msg.isIssue()) {
                     TunnelVO tunnel = Q.New(TunnelVO.class)
                             .eq(TunnelVO_.uuid, tsPort.getTunnelUuid())
                             .find();
@@ -338,14 +338,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         public void run(MessageReply reply) {
                             if (reply.isSuccess()) {
                                 logger.info(String.format("Successfully restart tunnel[uuid:%s].", tunnel.getUuid()));
+                                trigger.next();
                             } else {
                                 logger.info(String.format("Failed to restart tunnel[uuid:%s].", tunnel.getUuid()));
                                 trigger.fail(reply.getError());
                             }
                         }
                     });
+                } else {
+                    trigger.next();
                 }
-                trigger.next();
             }
 
             @Override
@@ -356,15 +358,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void handle(Map data) {
                 evt.setInventory(InterfaceInventory.valueOf(dbf.reload(iface)));
+                bus.publish(evt);
             }
         }).error(new FlowErrorHandler(null) {
             @Override
             public void handle(ErrorCode errCode, Map data) {
                 evt.setError(errf.stringToOperationError("update interfacePort failed!"));
+                bus.publish(evt);
             }
         }).start();
-
-        bus.publish(evt);
     }
 
     private void handle(APIGetVlanAutoMsg msg) {
