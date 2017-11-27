@@ -13,8 +13,6 @@ import java.util.List;
 public class SolutionVpnInventory {
     private String uuid;
     private String solutionUuid;
-    private String name;
-    private String description;
     private BigDecimal cost;
     private ProductChargeModel productChargeModel;
     private int duration;
@@ -23,14 +21,12 @@ public class SolutionVpnInventory {
 
     private String zoneUuid;
     private String endpointName;
-    private long bandwidth;
+    private String bandwidthOfferingUuid;
 
     public static SolutionVpnInventory valueOf(SolutionVpnVO vo) {
         SolutionVpnInventory inv = new SolutionVpnInventory();
         inv.setUuid(vo.getUuid());
         inv.setSolutionUuid(vo.getSolutionUuid());
-        inv.setName(vo.getName());
-        inv.setDescription(vo.getDescription());
         inv.setCost(vo.getCost());
         inv.setProductChargeModel(vo.getProductChargeModel());
         inv.setDuration(vo.getDuration());
@@ -40,7 +36,7 @@ public class SolutionVpnInventory {
             inv.setEndpointName(vo.getEndpointVO().getName());
         }
         inv.setZoneUuid(vo.getZoneUuid());
-        inv.setBandwidth(vo.getBandwidth());
+        inv.setBandwidthOfferingUuid(vo.getBandwidthOfferingUuid());
         return inv;
     }
 
@@ -66,22 +62,6 @@ public class SolutionVpnInventory {
 
     public void setSolutionUuid(String solutionUuid) {
         this.solutionUuid = solutionUuid;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public BigDecimal getCost() {
@@ -124,10 +104,6 @@ public class SolutionVpnInventory {
         this.createDate = createDate;
     }
 
-    public void setBandwidth(Long bandwidth) {
-        this.bandwidth = bandwidth;
-    }
-
     public String getZoneUuid() {
         return zoneUuid;
     }
@@ -144,11 +120,11 @@ public class SolutionVpnInventory {
         this.endpointName = endpointName;
     }
 
-    public void setBandwidth(long bandwidth) {
-        this.bandwidth = bandwidth;
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
     }
 
-    public long getBandwidth() {
-        return bandwidth;
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 }

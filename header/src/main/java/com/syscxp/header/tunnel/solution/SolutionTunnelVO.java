@@ -25,8 +25,6 @@ public class SolutionTunnelVO extends SolutionBaseVO{
     @Column
     private String innerEndpointUuid;
 
-    @Column
-    private long bandwidth;
 
     public EndpointVO getEndpointVOA() {
         return endpointVOA;
@@ -42,14 +40,6 @@ public class SolutionTunnelVO extends SolutionBaseVO{
 
     public void setEndpointVOZ(EndpointVO endpointVOZ) {
         this.endpointVOZ = endpointVOZ;
-    }
-
-    public long getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(long bandwidth) {
-        this.bandwidth = bandwidth;
     }
 
     public String getBandwidthOfferingUuid() {

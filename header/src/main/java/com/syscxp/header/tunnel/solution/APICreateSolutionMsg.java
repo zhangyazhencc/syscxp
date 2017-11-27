@@ -9,9 +9,9 @@ import com.syscxp.header.tunnel.TunnelConstant;
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "create")
 public class APICreateSolutionMsg extends  APIMessage {
 
-    @APIParam(maxLength = 32)
+    @APIParam(maxLength = 128)
     private String name;
-    @APIParam(maxLength = 128,required = false)
+    @APIParam(maxLength = 255,required = false)
     private String description;
     @APIParam(maxLength = 32)
     private String accountUuid;

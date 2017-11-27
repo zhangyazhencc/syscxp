@@ -5,7 +5,7 @@ import com.syscxp.header.rest.RestResponse;
 
 @RestResponse(allTo = "inventory")
 public class APICreateSolutionTunnelEvent extends APIEvent {
-    private SolutionTunnelInventory TunnelInventory;
+    private SolutionTunnelInventory tunnelInventory;
     private SolutionInventory solutionInventory;
 
     public APICreateSolutionTunnelEvent(String apiId) {
@@ -17,11 +17,11 @@ public class APICreateSolutionTunnelEvent extends APIEvent {
     }
 
     public SolutionTunnelInventory getTunnelInventory() {
-        return TunnelInventory;
+        return tunnelInventory;
     }
 
     public void setTunnelInventory(SolutionTunnelInventory tunnelInventory) {
-        TunnelInventory = tunnelInventory;
+        this.tunnelInventory = tunnelInventory;
     }
 
     public SolutionInventory getSolutionInventory() {
