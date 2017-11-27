@@ -358,15 +358,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void handle(Map data) {
                 evt.setInventory(InterfaceInventory.valueOf(dbf.reload(iface)));
+                bus.publish(evt);
             }
         }).error(new FlowErrorHandler(null) {
             @Override
             public void handle(ErrorCode errCode, Map data) {
                 evt.setError(errf.stringToOperationError("update interfacePort failed!"));
+                bus.publish(evt);
             }
         }).start();
-
-        bus.publish(evt);
     }
 
     private void handle(APIGetVlanAutoMsg msg) {
