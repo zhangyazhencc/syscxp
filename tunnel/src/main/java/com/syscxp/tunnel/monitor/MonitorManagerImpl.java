@@ -542,14 +542,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             if (InterfaceType.A.toString().equals(tunnelSwitchPortVO.getSortTag())) {
                 icmp.setHostA_ip(monitorHostVO.getHostIp());
                 icmp.setEndpointA_mip(tunnelMonitorVO.getMonitorIp().substring(0, tunnelMonitorVO.getMonitorIp().indexOf("/")));
-                icmp.setEndpointA_vlan(tunnelSwitchPortVO.getVlan());
+                icmp.setEndpointA_vid(tunnelSwitchPortVO.getVlan());
                 icmp.setEndpointA_id(switchVO.getEndpointUuid());
                 icmp.setEndpointA_ip(switchVO.getPhysicalSwitch().getmIP());
                 icmp.setEndpointA_interface(hostSwitchMonitorVO.getInterfaceName());
             } else if (InterfaceType.Z.toString().equals(tunnelSwitchPortVO.getSortTag())) {
                 icmp.setHostB_ip(monitorHostVO.getHostIp());
                 icmp.setEndpointB_mip(tunnelMonitorVO.getMonitorIp().substring(0, tunnelMonitorVO.getMonitorIp().indexOf("/")));
-                icmp.setEndpointB_vlan(tunnelSwitchPortVO.getVlan());
+                icmp.setEndpointB_vid(tunnelSwitchPortVO.getVlan());
                 icmp.setEndpointB_id(switchVO.getEndpointUuid());
                 icmp.setEndpointB_ip(switchVO.getPhysicalSwitch().getmIP());
                 icmp.setEndpointB_interface(hostSwitchMonitorVO.getInterfaceName());
