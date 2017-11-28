@@ -12,6 +12,7 @@ public class SolutionTunnelVO_ extends SolutionBaseVO_ {
 
     public static volatile SingularAttribute<SolutionTunnelVO, String> endpointUuidA;
     public static volatile SingularAttribute<SolutionTunnelVO, String> endpointUuidZ;
-    public static volatile SingularAttribute<SolutionTunnelVO, Long> bandwidthOfferingUuid;
+    public static volatile SingularAttribute<SolutionTunnelVO, String> bandwidthOfferingUuid;
+    public static volatile SingularAttribute<SolutionTunnelVO, String> innerEndpointUuid;
 
 }
