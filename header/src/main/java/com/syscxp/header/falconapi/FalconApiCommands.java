@@ -1,5 +1,7 @@
 package com.syscxp.header.falconapi;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -271,6 +273,92 @@ public class FalconApiCommands {
 
         public void setSuccess(boolean success) {
             this.success = success;
+        }
+    }
+
+    public static class FalconTunnelInventory {
+        private String tunnel_id;
+        private String user_id;
+        private String endpointA_ip;
+        private String endpointB_ip;
+        private Integer endpointA_vlan;
+        private Integer endpointB_vlan;
+        private Long bandwidth;
+
+        public static FalconTunnelInventory valueOf(Tunnel vo){
+            FalconTunnelInventory inv = new FalconTunnelInventory();
+            inv.setTunnel_id(vo.getTunnel_id());
+            inv.setUser_id(vo.getUser_id());
+            inv.setEndpointA_ip(vo.getEndpointA_ip());
+            inv.setEndpointA_vlan(vo.getEndpointA_vlan());
+            inv.setEndpointB_ip(vo.getEndpointB_ip());
+            inv.setEndpointB_vlan(vo.getEndpointB_vlan());
+            inv.setBandwidth(vo.getBandwidth());
+            return inv;
+        }
+
+        public static List<FalconTunnelInventory> valueOf(Collection<Tunnel> vos) {
+            List<FalconTunnelInventory> lst = new ArrayList<FalconTunnelInventory>(vos.size());
+            for (Tunnel vo : vos) {
+                lst.add(FalconTunnelInventory.valueOf(vo));
+            }
+            return lst;
+        }
+
+        public String getTunnel_id() {
+            return tunnel_id;
+        }
+
+        public void setTunnel_id(String tunnel_id) {
+            this.tunnel_id = tunnel_id;
+        }
+
+        public String getUser_id() {
+            return user_id;
+        }
+
+        public void setUser_id(String user_id) {
+            this.user_id = user_id;
+        }
+
+        public String getEndpointA_ip() {
+            return endpointA_ip;
+        }
+
+        public void setEndpointA_ip(String endpointA_ip) {
+            this.endpointA_ip = endpointA_ip;
+        }
+
+        public String getEndpointB_ip() {
+            return endpointB_ip;
+        }
+
+        public void setEndpointB_ip(String endpointB_ip) {
+            this.endpointB_ip = endpointB_ip;
+        }
+
+        public Integer getEndpointA_vlan() {
+            return endpointA_vlan;
+        }
+
+        public void setEndpointA_vlan(Integer endpointA_vlan) {
+            this.endpointA_vlan = endpointA_vlan;
+        }
+
+        public Integer getEndpointB_vlan() {
+            return endpointB_vlan;
+        }
+
+        public void setEndpointB_vlan(Integer endpointB_vlan) {
+            this.endpointB_vlan = endpointB_vlan;
+        }
+
+        public Long getBandwidth() {
+            return bandwidth;
+        }
+
+        public void setBandwidth(Long bandwidth) {
+            this.bandwidth = bandwidth;
         }
     }
 }
