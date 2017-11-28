@@ -15,14 +15,14 @@ public class SolutionTunnelVO extends SolutionBaseVO{
     private String endpointUuidA;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "endpointUuidA")
+    @JoinColumn(name = "endpointUuidA", insertable = false, updatable = false)
     private EndpointVO endpointVOA;
 
     @Column
     private String endpointUuidZ;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "endpointUuidZ")
+    @JoinColumn(name = "endpointUuidZ", insertable = false, updatable = false)
     private EndpointVO endpointVOZ;
 
     @Column
