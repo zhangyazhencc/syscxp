@@ -57,12 +57,11 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
         host.setPublicInterface(amsg.getPublicInterface());
         host.setPublicIp(amsg.getPublicIp());
         host.setZoneUuid(amsg.getZoneUuid());
-        host.setVpnInterfaceName(amsg.getVpnInterfaceName());
         host.setUsername(amsg.getUsername());
         host.setPassword(amsg.getPassword());
         host.setSshPort(amsg.getSshPort());
         host.setStartPort(VpnHostConstant.HOST_START_PORT);
-        host.setStartPort(VpnHostConstant.HOST_START_PORT + 1000);
+        host.setEndPort(VpnHostConstant.HOST_START_PORT + 1000);
         return dbf.persistAndRefresh(host);
     }
 

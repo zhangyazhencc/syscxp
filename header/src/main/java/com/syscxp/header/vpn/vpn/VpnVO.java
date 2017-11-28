@@ -32,6 +32,8 @@ public class VpnVO {
     @Column
     private Integer port;
     @Column
+    private String tunnelInterface;
+    @Column
     private Integer vlan;
     @Column
     @Enumerated(EnumType.STRING)
@@ -62,6 +64,13 @@ public class VpnVO {
         lastOpDate = null;
     }
 
+    public String getTunnelInterface() {
+        return tunnelInterface;
+    }
+
+    public void setTunnelInterface(String tunnelInterface) {
+        this.tunnelInterface = tunnelInterface;
+    }
 
     public void setHostUuid(String hostUuid) {
         this.hostUuid = hostUuid;

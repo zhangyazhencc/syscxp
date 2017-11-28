@@ -1,65 +1,16 @@
 package com.syscxp.vpn.vpn;
 
-import com.syscxp.header.vpn.host.VpnHostVO;
 import com.syscxp.header.vpn.vpn.VpnVO;
 
 
-/**
- * VPN接口参数
- */
 public class VpnCommands {
     public static class VpnAgentCommand {
-        private String host_ip;
-        private String uuid;
-        private Integer port;
-        private String public_ip;
-
-        public Integer getPort() {
-            return port;
-        }
-
-        public void setPort(Integer port) {
-            this.port = port;
-        }
-
-        public String getHostIp() {
-            return host_ip;
-        }
-
-        public void setHostIp(String hostIp) {
-            this.host_ip = hostIp;
-        }
-
-        public String getVpnUuid() {
-            return uuid;
-        }
-
-        public void setVpnUuid(String vpnUuid) {
-            this.uuid = vpnUuid;
-        }
-
-        public String getPublicIp() {
-            return public_ip;
-        }
-
-        public void setPublicIp(String publicIp) {
-            this.public_ip = publicIp;
-        }
+        String vpnuuid;
     }
 
     public static class VpnAgentResponse {
-        // 任务结果
-        private TaskResult result;
-        // 运行状态
-        private RunStatus status;
-
-        public RunStatus getStatus() {
-            return status;
-        }
-
-        public void setStatus(RunStatus status) {
-            this.status = status;
-        }
+        TaskResult result;
+        RunStatus status;
 
         public TaskResult getResult() {
             return result;
@@ -69,11 +20,18 @@ public class VpnCommands {
             this.result = result;
         }
 
+        public RunStatus getStatus() {
+            return status;
+        }
 
+        public void setStatus(RunStatus status) {
+            this.status = status;
+        }
     }
+
     public static class TaskResult {
-        private String message;
-        private boolean success = false;
+        String message;
+        boolean success = false;
 
         public String getMessage() {
             return message;
@@ -91,6 +49,7 @@ public class VpnCommands {
             this.success = success;
         }
     }
+
     /**
      * 物理机或VPN运行状态
      */
@@ -99,243 +58,154 @@ public class VpnCommands {
         UP,
         UNKOWN
     }
+
     /**
-     * 查询物理机状态：/vpn/agent-status
+     * c初始化证书：/vpn/init_cert
      */
-    public static class CheckVpnHostStatusCmd extends VpnAgentCommand {
-        public static CheckVpnHostStatusCmd valueOf(VpnHostVO vo) {
-            CheckVpnHostStatusCmd cmd = new CheckVpnHostStatusCmd();
-            cmd.setHostIp(vo.getHostIp());
+    public static class InitCertCmd extends VpnAgentCommand {
+        public static InitCertCmd valueOf(VpnVO vo) {
+            InitCertCmd cmd = new InitCertCmd();
+            cmd.vpnuuid = vo.getUuid();
             return cmd;
         }
     }
 
-    public static class CheckStatusResponse extends VpnAgentResponse {
-        private RunStatus status;
-
-
-        public RunStatus getStatus() {
-            return status;
-        }
-
-        public void setStatus(RunStatus status) {
-            this.status = status;
-        }
+    public static class InitCertResponse extends VpnAgentResponse {
     }
 
     /**
-     * 添加物理机：/vpn/add-host
+     * VPN服务：/vpn/vpn_service
      */
-    public static class AddVpnHostCmd extends VpnAgentCommand {
+    public static class VpnServiceCmd extends VpnAgentCommand {
+        String vpnvlanid;
+        String vpnport;
+        // start,stop,status
+        String command;
 
-        public static AddVpnHostCmd valueOf(VpnHostVO vo) {
-            AddVpnHostCmd cmd = new AddVpnHostCmd();
-            cmd.setPublicIp(vo.getPublicIp());
-            cmd.setHostIp(vo.getHostIp());
+        public static VpnServiceCmd valueOf(VpnVO vo) {
+            VpnServiceCmd cmd = new VpnServiceCmd();
+            cmd.vpnuuid = vo.getUuid();
+            cmd.vpnvlanid = vo.getVlan().toString();
+            cmd.vpnport = vo.getPort().toString();
             return cmd;
         }
     }
 
-    public static class AddVpnHostResponse extends VpnAgentResponse {
-
+    public static class VpnServiceResponse extends VpnAgentResponse {
     }
 
     /**
-     * 删除物理机：
+     * vpn配置：/vpn/conf_vpn
      */
-    public static class DeleteVpnHostCmd extends VpnAgentCommand {
+    public static class VpnConfCmd extends VpnAgentCommand {
+        String hostip;
+        String vpnport;
 
-        public static DeleteVpnHostCmd valueOf(VpnHostVO vo) {
-            DeleteVpnHostCmd cmd = new DeleteVpnHostCmd();
-            cmd.setPublicIp(vo.getPublicIp());
-            cmd.setHostIp(vo.getHostIp());
+        public static VpnConfCmd valueOf(VpnVO vo) {
+            VpnConfCmd cmd = new VpnConfCmd();
+            cmd.vpnuuid = vo.getUuid();
+            cmd.hostip = vo.getVpnHost().getHostIp();
+            cmd.vpnport = vo.getPort().toString();
             return cmd;
         }
     }
 
-    public static class DeleteVpnHostResponse extends VpnAgentResponse {
-
+    public static class VpnConfResponse extends VpnAgentResponse {
     }
 
     /**
-     * 物理机重连：/vpn/recconnect
+     * Vpn接口：/vpn/vport
      */
-    public static class ReconnectVpnHostCmd extends VpnAgentCommand {
-
-        public static ReconnectVpnHostCmd valueOf(VpnHostVO vo) {
-            ReconnectVpnHostCmd cmd = new ReconnectVpnHostCmd();
-            cmd.setPublicIp(vo.getPublicIp());
-            cmd.setHostIp(vo.getHostIp());
+    public static class VportCmd extends VpnAgentCommand {
+        String vpnvlanid;
+        String ddnport;
+        String vpnport;
+        // add,del
+        String command;
+        public static VportCmd valueOf(VpnVO vo) {
+            VportCmd cmd = new VportCmd();
+            cmd.ddnport = vo.getTunnelInterface();
+            cmd.vpnvlanid = vo.getVlan().toString();
+            cmd.vpnport = vo.getPort().toString();
             return cmd;
         }
     }
 
-    public static class ReconnectVpnHostResponse extends VpnAgentResponse {
-
+    public static class VportResponse extends VpnAgentResponse {
     }
 
     /**
-     * 查询VPN状态：/vpn/vpn-status
+     * 限速：/vpn/rate_limiting
      */
-    public static class CheckVpnStatusCmd extends VpnAgentCommand {
-
-        public static CheckVpnStatusCmd valueOf(VpnVO vo) {
-            CheckVpnStatusCmd cmd = new CheckVpnStatusCmd();
-            cmd.setVpnUuid(vo.getUuid());
-            cmd.setHostIp(vo.getVpnHost().getHostIp());
-            cmd.setPort(vo.getPort());
+    public static class RateLimitingCmd extends VpnAgentCommand {
+        String vpnport;
+        String speed;
+        String command;
+        public static RateLimitingCmd valueOf(VpnVO vo) {
+            RateLimitingCmd cmd = new RateLimitingCmd();
+            cmd.vpnport = vo.getPort().toString();
+            cmd.speed = vo.getBandwidthOfferingUuid();
+            cmd.command = "clean";
             return cmd;
         }
-
+    }
+    public static class RateLimitingResponse extends VpnAgentResponse {
     }
 
     /**
-     * 创建VPN：/vpn/init-vpn
-     * VPN重连:/vpn/start-vpn
+     * VPN重连:/vpn/start-all
      */
-    public static class CreateVpnCmd extends VpnAgentCommand {
-        private String cidr;
-        private Long bandwidth;
-        private Integer duration;
+    public static class StartAllCmd extends VpnAgentCommand {
+        String vpnvlanid;
+        String ddnport;
+        String vpnport;
+        String speed;
 
-        public static CreateVpnCmd valueOf(VpnVO vo) {
-            CreateVpnCmd cmd = new CreateVpnCmd();
-            cmd.setHostIp(vo.getVpnHost().getHostIp());
-            cmd.setVpnUuid(vo.getUuid());
-            cmd.setPublicIp(vo.getVpnHost().getPublicIp());
-            cmd.setPort(vo.getPort());
-            cmd.setVpnCidr(vo.getVpnCidr());
-            cmd.setBandwidth(vo.getBandwidthOfferingUuid());
-            cmd.setDuration(vo.getDuration());
+        public static StartAllCmd valueOf(VpnVO vo) {
+            StartAllCmd cmd = new StartAllCmd();
+            cmd.vpnuuid = vo.getUuid();
+            cmd.vpnvlanid = vo.getVlan().toString();
+            cmd.vpnport = vo.getPort().toString();
+            cmd.ddnport = vo.getTunnelInterface();
+            cmd.speed = vo.getBandwidthOfferingUuid();
             return cmd;
         }
-
-        public String getVpnCidr() {
-            return cidr;
-        }
-
-        public void setVpnCidr(String vpnCidr) {
-            this.cidr = vpnCidr;
-        }
-
-        public Long getBandwidth() {
-            return bandwidth;
-        }
-
-        public void setBandwidth(Long bandwidth) {
-            this.bandwidth = bandwidth;
-        }
-
-        public Integer getDuration() {
-            return duration;
-        }
-
-        public void setDuration(Integer duration) {
-            this.duration = duration;
-        }
     }
 
-    public static class CreateVpnResponse extends VpnAgentResponse {
+    public static class StartAllResponse extends VpnAgentResponse {
     }
-
 
     /**
-     * 关闭VPN：/vpn/close-vpn
      * 删除VPN：/vpn/destroy-vpn
      */
-    public static class DeleteVpnCmd extends VpnAgentCommand{
-
-        public static DeleteVpnCmd valueOf(VpnVO vo) {
-            DeleteVpnCmd cmd = new DeleteVpnCmd();
+    public static class DestroyVpnCmd extends VpnAgentCommand {
+        String vpnvlanid;
+        String ddnport;
+        String vpnport;
+        public static DestroyVpnCmd valueOf(VpnVO vo) {
+            DestroyVpnCmd cmd = new DestroyVpnCmd();
+            cmd.vpnuuid = vo.getUuid();
+            cmd.vpnvlanid = vo.getVlan().toString();
+            cmd.vpnport = vo.getPort().toString();
+            cmd.ddnport = vo.getTunnelInterface();
             return cmd;
-        }
-
-    }
-
-    public static class UpdateVpnBandWidthCmd  extends VpnCommands.VpnAgentCommand {
-        private Long bandwidth;
-
-        public static UpdateVpnBandWidthCmd valueOf(VpnVO vo) {
-            UpdateVpnBandWidthCmd cmd = new UpdateVpnBandWidthCmd();
-            cmd.setHostIp(vo.getVpnHost().getHostIp());
-            cmd.setVpnUuid(vo.getUuid());
-            cmd.setBandwidth(vo.getBandwidthOfferingUuid());
-            return cmd;
-        }
-
-        public Long getBandwidth() {
-            return bandwidth;
-        }
-
-        public void setBandwidth(Long bandwidth) {
-            this.bandwidth = bandwidth;
         }
     }
 
-    public static class UpdateVpnBandWidthResponse extends VpnAgentResponse {
-
+    public static class DestroyVpnResponse extends VpnAgentResponse {
     }
 
     /**
-     * 修改VPN网段
+     * 下载证书：/vpn/download-cert
      */
-    public static class UpdateVpnCidrCmd extends VpnAgentCommand {
-        private String cidr;
-        private Long bandwidth;
+    public static class DownloadCertCmd extends VpnAgentCommand {
 
-        public static UpdateVpnCidrCmd valueOf(VpnVO vo) {
-            UpdateVpnCidrCmd cmd = new UpdateVpnCidrCmd();
-            cmd.setBandwidth(vo.getBandwidthOfferingUuid());
-            cmd.setCidr(vo.getVpnCidr());
+        public static DownloadCertCmd valueOf(VpnVO vo) {
+            DownloadCertCmd cmd = new DownloadCertCmd();
             return cmd;
-        }
-
-        public Long getBandwidth() {
-            return bandwidth;
-        }
-
-        public void setBandwidth(Long bandwidth) {
-            this.bandwidth = bandwidth;
-        }
-
-        public String getCidr() {
-            return cidr;
-        }
-
-        public void setCidr(String cidr) {
-            this.cidr = cidr;
         }
     }
 
-    /**
-     * 重置证书：/vpn/reset-cert
-     */
-    public static class ResetCertificateCmd extends VpnAgentCommand {
-        private String cidr;
-        private Long bandwidth;
-
-
-        public static ResetCertificateCmd valueOf(VpnVO vo) {
-            ResetCertificateCmd cmd = new ResetCertificateCmd();
-            cmd.setBandwidth(vo.getBandwidthOfferingUuid());
-            cmd.setCidr(vo.getVpnCidr());
-            return cmd;
-        }
-
-        public String getCidr() {
-            return cidr;
-        }
-
-        public void setCidr(String cidr) {
-            this.cidr = cidr;
-        }
-
-        public Long getBandwidth() {
-            return bandwidth;
-        }
-
-        public void setBandwidth(Long bandwidth) {
-            this.bandwidth = bandwidth;
-        }
+    public static class DownloadCertResponse extends VpnAgentResponse {
     }
 }
