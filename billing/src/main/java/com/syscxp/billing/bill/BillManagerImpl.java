@@ -1,6 +1,7 @@
 package com.syscxp.billing.bill;
 
 import com.syscxp.billing.header.bill.*;
+import com.syscxp.core.db.GLock;
 import com.syscxp.header.billing.BillingConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -55,7 +56,7 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APIGetBillMsg) {
             handle((APIGetBillMsg) msg);
-        }  else {
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
@@ -64,16 +65,14 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
         BillVO vo = dbf.findByUuid(msg.getUuid(), BillVO.class);
 
         Timestamp billTimestamp = vo.getBillDate();
-        LocalDateTime localDateTime =  billTimestamp.toLocalDateTime();
-        LocalDate date = LocalDate.of(localDateTime.getYear(),localDateTime.getMonth(),1);
-        LocalTime time = LocalTime.MIN;
-        localDateTime =  LocalDateTime.of(date,time);
+        Timestamp startTime = new BillJob(dbf).getLastMonthFirstDay(billTimestamp);
+        Timestamp endTime = new BillJob(dbf).getLastMonthLastDay(billTimestamp);
         String accountUuid = msg.getSession().getAccountUuid();
         String sql = "select productType, count(*) as categoryCount, sum(payPresent) as payPresentTotal,sum(payCash) as payCashTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and payTime BETWEEN :dateStart and  :dateEnd  group by productType ";
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("accountUuid", accountUuid);
-        q.setParameter("dateStart", Timestamp.valueOf(localDateTime));
-        q.setParameter("dateEnd", Timestamp.valueOf(localDateTime.plusMonths(1).minusSeconds(1)));
+        q.setParameter("dateStart", startTime);
+        q.setParameter("dateEnd", endTime);
         List<Object[]> objs = q.getResultList();
         List<Monetary> bills = objs.stream().map(Monetary::new).collect(Collectors.toList());
         BillInventory inventory = BillInventory.valueOf(vo);
@@ -91,10 +90,14 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
 
     @Override
     public boolean start() {
+        GLock lock = new GLock(String.format("id-%s", "initBill"), 120);
+        lock.lock();
         try {
-
+            new BillJob(dbf).generateBill();
         } catch (Exception e) {
             throw new CloudRuntimeException(e);
+        } finally {
+            lock.unlock();
         }
         return true;
     }
