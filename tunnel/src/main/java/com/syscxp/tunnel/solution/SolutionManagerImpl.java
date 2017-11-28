@@ -104,7 +104,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     @Transactional
     private void handle(APIRecountTunnelPriceMsg msg) {
         SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(), SolutionTunnelVO.class);
-        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
 
         APIGetProductPriceReply reply = getTunnelPrice(vo, solutionVO.getAccountUuid());
         vo.setCost(reply.getOriginalPrice());
@@ -123,7 +123,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     @Transactional
     private void handle(APIRecountInterfacePriceMsg msg) {
         SolutionInterfaceVO vo = dbf.findByUuid(msg.getUuid(), SolutionInterfaceVO.class);
-        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
 
         APIGetProductPriceReply reply = getInterfacePrice(vo,solutionVO.getAccountUuid());
         vo.setCost(reply.getOriginalPrice());
@@ -136,7 +136,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         APIRecountInterfacePriceReply priceReply = new APIRecountInterfacePriceReply();
         priceReply.setInterfaceInventory(SolutionInterfaceInventory.valueOf(vo));
         priceReply.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
-        bus.reply(msg,priceReply);
+        bus.reply(msg, priceReply);
 
     }
 
@@ -145,14 +145,14 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     @Transactional
     private void handle(APIUpdateSolutionVpnMsg msg) {
 
-        SolutionVpnVO vo = dbf.findByUuid(msg.getUuid(),SolutionVpnVO.class);
+        SolutionVpnVO vo = dbf.findByUuid(msg.getUuid(), SolutionVpnVO.class);
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setCost(msg.getCost());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDuration(msg.getDuration());
         dbf.getEntityManager().merge(vo);
 
-        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
         if(solutionVO != null){
             BigDecimal totalCost = totalCost(solutionVO.getUuid());
             solutionVO.setTotalCost(totalCost);
@@ -169,14 +169,14 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     @Transactional
     private void handle(APIUpdateSolutionTunnelMsg msg) {
 
-        SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(),SolutionTunnelVO.class);
+        SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(), SolutionTunnelVO.class);
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setCost(msg.getCost());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDuration(msg.getDuration());
         dbf.getEntityManager().merge(vo);
 
-        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
         if(solutionVO != null){
             BigDecimal totalCost = totalCost(solutionVO.getUuid());
             solutionVO.setTotalCost(totalCost);
@@ -193,7 +193,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
     private void handle(APIUpdateSolutionMsg msg) {
 
-        SolutionVO vo = dbf.findByUuid(msg.getUuid(),SolutionVO.class);
+        SolutionVO vo = dbf.findByUuid(msg.getUuid(), SolutionVO.class);
         if(msg.getName() != null){
             vo.setName(msg.getName());
         }
@@ -209,8 +209,8 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
     @Transactional
     private void handle(APIDeleteSolutionVpnMsg msg) {
-        SolutionVpnVO vo = dbf.findByUuid(msg.getUuid(),SolutionVpnVO.class);
-        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+        SolutionVpnVO vo = dbf.findByUuid(msg.getUuid(), SolutionVpnVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
         solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()));
         dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
         dbf.getEntityManager().merge(solutionVO);
@@ -223,7 +223,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     @Transactional
     private void handle(APIDeleteSolutionTunnelMsg msg) {
         SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(), SolutionTunnelVO.class);
-        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
         solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()));
         dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
         dbf.getEntityManager().merge(solutionVO);
@@ -234,8 +234,8 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     }
     @Transactional
     private void handle(APIDeleteSolutionInterfaceMsg msg) {
-        SolutionInterfaceVO vo = dbf.findByUuid(msg.getUuid(),SolutionInterfaceVO.class);
-        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(),SolutionVO.class);
+        SolutionInterfaceVO vo = dbf.findByUuid(msg.getUuid(), SolutionInterfaceVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
         solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()));
         dbf.getEntityManager().remove(dbf.getEntityManager().merge(vo));
         dbf.getEntityManager().merge(solutionVO);
@@ -277,7 +277,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         dbf.getEntityManager().persist(vo);
 
-        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(),SolutionVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(), SolutionVO.class);
         if(solutionVO != null){
             BigDecimal totalCost = totalCost(solutionVO.getUuid());
             solutionVO.setTotalCost(totalCost);
@@ -319,7 +319,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         dbf.getEntityManager().persist(vo);
 
-        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(),SolutionVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(), SolutionVO.class);
         if(solutionVO != null){
             BigDecimal totalCost = totalCost(solutionVO.getUuid());
             solutionVO.setTotalCost(totalCost);
@@ -397,7 +397,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     /*创建物理接口*/
     @Transactional
     private void createSolutionInterface(APICreateSolutionTunnelMsg msg, String endpointUuid, String portOfferingUuid) {
-        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(),SolutionVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(), SolutionVO.class);
 
         SolutionInterfaceVO vo = new SolutionInterfaceVO();
         vo.setUuid(Platform.getUuid());
