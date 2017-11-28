@@ -18,7 +18,7 @@ public class RegulationInventory {
 
     private MonitorTargetVO monitorTargetVO;
 
-    private int alarmThreshold;
+    private float alarmThreshold;
 
     private int detectPeriod;
 
@@ -48,6 +48,14 @@ public class RegulationInventory {
             lst.add(RegulationInventory.valueOf(vo));
         }
         return lst;
+    }
+
+    public float getAlarmThreshold() {
+        return alarmThreshold;
+    }
+
+    public void setAlarmThreshold(float alarmThreshold) {
+        this.alarmThreshold = alarmThreshold;
     }
 
     public String getUuid() {
@@ -80,14 +88,6 @@ public class RegulationInventory {
 
     public void setMonitorTargetVO(MonitorTargetVO monitorTargetVO) {
         this.monitorTargetVO = monitorTargetVO;
-    }
-
-    public int getAlarmThreshold() {
-        return alarmThreshold;
-    }
-
-    public void setAlarmThreshold(int alarmThreshold) {
-        this.alarmThreshold = alarmThreshold;
     }
 
     public int getDetectPeriod() {
