@@ -20,7 +20,7 @@ public class TunnelSwitchPortInventory {
     private String endpointUuid;
     private EndpointInventory endpoint;
     private String switchPortUuid;
-    private NetworkType type;
+    private String type;
     private Integer vlan;
     private String sortTag;
     private Timestamp createDate;
@@ -34,7 +34,7 @@ public class TunnelSwitchPortInventory {
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpointVO()));
         inv.setSwitchPortUuid(vo.getSwitchPortUuid());
-        inv.setType(vo.getType());
+        inv.setType(vo.getType().toString());
         inv.setVlan(vo.getVlan());
         inv.setSortTag(vo.getSortTag());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -90,11 +90,11 @@ public class TunnelSwitchPortInventory {
         this.switchPortUuid = switchPortUuid;
     }
 
-    public NetworkType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(NetworkType type) {
+    public void setType(String type) {
         this.type = type;
     }
 

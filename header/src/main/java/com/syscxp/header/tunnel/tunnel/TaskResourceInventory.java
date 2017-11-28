@@ -17,10 +17,10 @@ public class TaskResourceInventory {
     private String accountUuid;
     private String resourceUuid;
     private String resourceType;
-    private TaskType taskType;
+    private String taskType;
     private String body;
     private String result;
-    private TaskStatus status;
+    private String status;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
@@ -30,10 +30,10 @@ public class TaskResourceInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setResourceUuid(vo.getResourceUuid());
         inv.setResourceType(vo.getResourceType());
-        inv.setTaskType(vo.getTaskType());
+        inv.setTaskType(vo.getTaskType().toString());
         inv.setBody(vo.getBody());
         inv.setResult(vo.getResult());
-        inv.setStatus(vo.getStatus());
+        inv.setStatus(vo.getStatus().toString());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
@@ -71,11 +71,11 @@ public class TaskResourceInventory {
         this.resourceType = resourceType;
     }
 
-    public TaskType getTaskType() {
+    public String getTaskType() {
         return taskType;
     }
 
-    public void setTaskType(TaskType taskType) {
+    public void setTaskType(String taskType) {
         this.taskType = taskType;
     }
 
@@ -95,11 +95,11 @@ public class TaskResourceInventory {
         this.result = result;
     }
 
-    public TaskStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(TaskStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

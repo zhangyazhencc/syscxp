@@ -3,6 +3,7 @@ package com.syscxp.vpn.vpn;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.*;
 import com.syscxp.core.defer.Defer;
 import com.syscxp.core.defer.Deferred;
@@ -20,7 +21,6 @@ import com.syscxp.header.core.Completion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.errorcode.SysErrors;
-import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.host.HostStatus;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.message.APIMessage;
@@ -30,7 +30,6 @@ import com.syscxp.header.query.QueryOp;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
-import com.syscxp.header.rest.SyncHttpCallHandler;
 import com.syscxp.header.vpn.VpnConstant;
 import com.syscxp.header.vpn.billingCallBack.*;
 import com.syscxp.utils.CollectionDSL;
@@ -48,7 +47,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -77,6 +75,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     @Autowired
     private ThreadFacade thdf;
 
+    @Override
+    @MessageSafe
     public void handleMessage(Message msg) {
         if (msg instanceof APIMessage) {
             handleApiMessage((APIMessage) msg);
@@ -102,9 +102,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APIUpdateVpnStateMsg) msg);
         } else if (msg instanceof APIDownloadCertificateMsg) {
             handle((APIDownloadCertificateMsg) msg);
-        } else if (msg instanceof APIResetCertificateMsg) {
-            handle((APIResetCertificateMsg) msg);
-        }else if (msg instanceof APIRenewVpnMsg) {
+        } else if (msg instanceof APIRenewVpnMsg) {
             handle((APIRenewVpnMsg) msg);
         } else if (msg instanceof APIRenewAutoVpnMsg) {
             handle((APIRenewAutoVpnMsg) msg);
@@ -113,31 +111,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         } else {
             bus.dealWithUnknownMessage(msg);
         }
-    }
-
-    private void handle(APIResetCertificateMsg msg) {
-        final APIResetCertificateEvent evt = new APIResetCertificateEvent(msg.getId());
-
-        VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        vpn.setSid(Platform.getUuid());
-        vpn.setCertKey(generateCertKey(msg.getAccountUuid(), vpn.getSid()));
-
-        InitCertCmd cmd = InitCertCmd.valueOf(vpn);
-
-        new VpnRESTCaller().sendCommand(VpnConstant.SERVICE_PATH, cmd, new Completion(evt) {
-            @Override
-            public void success() {
-                evt.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vpn)));
-            }
-
-            @Override
-            public void fail(ErrorCode errorCode) {
-                evt.setError(errorCode);
-            }
-        });
-
-        bus.publish(evt);
-
     }
 
     private void handle(APIDownloadCertificateMsg msg) {

@@ -19,12 +19,12 @@ public class SwitchInventory {
     private EndpointInventory endpoint;
     private String code;
     private String name;
-    private SwitchType type;
+    private String type;
     private String physicalSwitchUuid;
     private PhysicalSwitchInventory physicalSwitch;
     private String description;
-    private SwitchState state;
-    private SwitchStatus status;
+    private String state;
+    private String status;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -36,12 +36,12 @@ public class SwitchInventory {
         inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpoint()));
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
-        inv.setType(vo.getType());
+        inv.setType(vo.getType().toString());
         inv.setPhysicalSwitchUuid(vo.getPhysicalSwitchUuid());
         inv.setPhysicalSwitch(PhysicalSwitchInventory.valueOf(vo.getPhysicalSwitch()));
         inv.setDescription(vo.getDescription());
-        inv.setState(vo.getState());
-        inv.setStatus(vo.getStatus());
+        inv.setState(vo.getState().toString());
+        inv.setStatus(vo.getStatus().toString());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
 
@@ -56,11 +56,11 @@ public class SwitchInventory {
         return lst;
     }
 
-    public SwitchState getState() {
+    public String getState() {
         return state;
     }
 
-    public void setState(SwitchState state) {
+    public void setState(String state) {
         this.state = state;
     }
 
@@ -112,11 +112,11 @@ public class SwitchInventory {
         this.description = description;
     }
 
-    public SwitchStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(SwitchStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
@@ -152,11 +152,11 @@ public class SwitchInventory {
         this.physicalSwitch = physicalSwitch;
     }
 
-    public SwitchType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(SwitchType type) {
+    public void setType(String type) {
         this.type = type;
     }
 }

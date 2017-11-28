@@ -16,7 +16,7 @@ public class MonitorHostInventory extends HostInventory {
 
     private String username;
     private Integer sshPort;
-    private MonitorType monitorType;
+    private String monitorType;
 
     private NodeInventory nodeInventory;
 
@@ -32,7 +32,7 @@ public class MonitorHostInventory extends HostInventory {
         super(vo);
         this.setUsername(vo.getUsername());
         this.setSshPort(vo.getSshPort());
-        this.setMonitorType(vo.getMonitorType());
+        this.setMonitorType(vo.getMonitorType().toString());
         if (vo.getNode() != null)
             this.setNodeInventory(NodeInventory.valueOf(vo.getNode()));
     }
@@ -65,11 +65,11 @@ public class MonitorHostInventory extends HostInventory {
         this.sshPort = sshPort;
     }
 
-    public MonitorType getMonitorType() {
+    public String getMonitorType() {
         return monitorType;
     }
 
-    public void setMonitorType(MonitorType monitorType) {
+    public void setMonitorType(String monitorType) {
         this.monitorType = monitorType;
     }
 }

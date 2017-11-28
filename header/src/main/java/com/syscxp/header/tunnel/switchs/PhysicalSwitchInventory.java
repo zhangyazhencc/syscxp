@@ -21,8 +21,8 @@ public class PhysicalSwitchInventory {
     private String code;
     private String name;
     private String owner;
-    private PhysicalSwitchType type;
-    private PhysicalSwitchAccessType accessType;
+    private String type;
+    private String accessType;
     private String rack;
     private String description;
     private String mIP;
@@ -43,8 +43,8 @@ public class PhysicalSwitchInventory {
         inv.setCode(vo.getCode());
         inv.setName(vo.getName());
         inv.setOwner(vo.getOwner());
-        inv.setType(vo.getType());
-        inv.setAccessType(vo.getAccessType());
+        inv.setType(vo.getType().toString());
+        inv.setAccessType(vo.getAccessType().toString());
         inv.setRack(vo.getRack());
         inv.setDescription(vo.getDescription());
         inv.setmIP(vo.getmIP());
@@ -169,11 +169,11 @@ public class PhysicalSwitchInventory {
         this.lastOpDate = lastOpDate;
     }
 
-    public PhysicalSwitchType getType() {
+    public String getType() {
         return type;
     }
 
-    public void setType(PhysicalSwitchType type) {
+    public void setType(String type) {
         this.type = type;
     }
 
@@ -201,11 +201,11 @@ public class PhysicalSwitchInventory {
         this.switchModel = switchModel;
     }
 
-    public PhysicalSwitchAccessType getAccessType() {
+    public String getAccessType() {
         return accessType;
     }
 
-    public void setAccessType(PhysicalSwitchAccessType accessType) {
+    public void setAccessType(String accessType) {
         this.accessType = accessType;
     }
 }
