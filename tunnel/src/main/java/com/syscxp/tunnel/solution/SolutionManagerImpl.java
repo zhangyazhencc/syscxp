@@ -349,18 +349,12 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setSolutionUuid(msg.getSolutionUuid());
+        vo.setEndpointUuid(msg.getEndpointUuid());
+        vo.setPortOfferingUuid(msg.getPortOfferingUuid());
 
-        EndpointVO endpointVO = dbf.findByUuid(msg.getEndpointUuid(),EndpointVO.class);
-        if(endpointVO != null){
-            vo.setEndpointVO(endpointVO);
-        }
-        PortOfferingVO portOfferingVO = dbf.findByUuid(msg.getPortOfferingUuid(),PortOfferingVO.class);
-        if(portOfferingVO != null){
-            vo.setPortOfferingVO(portOfferingVO);
-        }
         dbf.getEntityManager().persist(vo);
 
-        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(),SolutionVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(), SolutionVO.class);
         if(solutionVO != null){
             BigDecimal totalCost = totalCost(solutionVO.getUuid());
             solutionVO.setTotalCost(totalCost);
