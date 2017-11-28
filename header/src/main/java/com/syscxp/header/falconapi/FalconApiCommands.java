@@ -27,8 +27,8 @@ public class FalconApiCommands {
         private String user_id;
         private String endpointA_ip;
         private String endpointB_ip;
-        private Integer endpointA_vid;
-        private Integer endpointB_vid;
+        private Integer endpointA_vlan;
+        private Integer endpointB_vlan;
         private Long bandwidth;
 
         public String getUser_id() {
@@ -55,20 +55,20 @@ public class FalconApiCommands {
             this.endpointB_ip = endpointB_ip;
         }
 
-        public Integer getEndpointA_vid() {
-            return endpointA_vid;
+        public Integer getEndpointA_vlan() {
+            return endpointA_vlan;
         }
 
-        public void setEndpointA_vid(Integer endpointA_vid) {
-            this.endpointA_vid = endpointA_vid;
+        public void setEndpointA_vlan(Integer endpointA_vlan) {
+            this.endpointA_vlan = endpointA_vlan;
         }
 
-        public Integer getEndpointB_vid() {
-            return endpointB_vid;
+        public Integer getEndpointB_vlan() {
+            return endpointB_vlan;
         }
 
-        public void setEndpointB_vid(Integer endpointB_vid) {
-            this.endpointB_vid = endpointB_vid;
+        public void setEndpointB_vlan(Integer endpointB_vlan) {
+            this.endpointB_vlan = endpointB_vlan;
         }
 
         public Long getBandwidth() {

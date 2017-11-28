@@ -367,7 +367,6 @@ public class TunnelBase extends AbstractTunnel {
     private ControllerCommands.IssuedTunnelCommand getTunnelConfigInfo(TunnelVO tunnelVO){
 
         List<ControllerCommands.TunnelConfig> tunnelList = new ArrayList<>();
-        List<ControllerCommands.ConnectionsConfig> connectionsList = new ArrayList<>();
 
         List<QinqVO> qinqVOs = Q.New(QinqVO.class)
                 .eq(QinqVO_.tunnelUuid,tunnelVO.getUuid())
@@ -377,146 +376,79 @@ public class TunnelBase extends AbstractTunnel {
                 .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelVO.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag,"B")
                 .isExists();
-        if(abroad){     //跨国发两端
-            List<ControllerCommands.TunnelMplsConfig> mplsListInner = new ArrayList<>();
-            List<ControllerCommands.TunnelSdnConfig> sdnListInner = new ArrayList<>();
-            List<ControllerCommands.TunnelMplsConfig> mplsListOuter = new ArrayList<>();
-            List<ControllerCommands.TunnelSdnConfig> sdnListOuter = new ArrayList<>();
-            ControllerCommands.TunnelConfig tunnelConfigInner = new ControllerCommands.TunnelConfig();
-            ControllerCommands.ConnectionsConfig connectionsConfigInner = new ControllerCommands.ConnectionsConfig();
-            ControllerCommands.TunnelConfig tunnelConfigOuter = new ControllerCommands.TunnelConfig();
-            ControllerCommands.ConnectionsConfig connectionsConfigOuter = new ControllerCommands.ConnectionsConfig();
 
-            TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelVO.getUuid())
-                    .eq(TunnelSwitchPortVO_.sortTag,"A")
-                    .find();
-            TunnelSwitchPortVO tunnelSwitchPortB = Q.New(TunnelSwitchPortVO.class)
+        List<ControllerCommands.TunnelMplsConfig> mplsList = new ArrayList<>();
+        List<ControllerCommands.TunnelSdnConfig> sdnList = new ArrayList<>();
+        ControllerCommands.TunnelConfig tunnelConfig = new ControllerCommands.TunnelConfig();
+
+        TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelVO.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag,"A")
+                .find();
+        TunnelSwitchPortVO tunnelSwitchPortZ = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelVO.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag,"Z")
+                .find();
+        TunnelSwitchPortVO tunnelSwitchPortB = null;
+        TunnelSwitchPortVO tunnelSwitchPortC = null;
+        ControllerCommands.TunnelMplsConfig tmcA = null;
+        ControllerCommands.TunnelMplsConfig tmcB = null;
+        ControllerCommands.TunnelMplsConfig tmcC = null;
+        ControllerCommands.TunnelMplsConfig tmcZ = null;
+
+        if(abroad){
+            tunnelSwitchPortB = Q.New(TunnelSwitchPortVO.class)
                     .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelVO.getUuid())
                     .eq(TunnelSwitchPortVO_.sortTag,"B")
                     .find();
-            TunnelSwitchPortVO tunnelSwitchPortC = Q.New(TunnelSwitchPortVO.class)
+            tunnelSwitchPortC = Q.New(TunnelSwitchPortVO.class)
                     .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelVO.getUuid())
                     .eq(TunnelSwitchPortVO_.sortTag,"C")
                     .find();
-            TunnelSwitchPortVO tunnelSwitchPortZ = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelVO.getUuid())
-                    .eq(TunnelSwitchPortVO_.sortTag,"Z")
-                    .find();
-
-            ControllerCommands.TunnelMplsConfig tmcA = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortA,tunnelSwitchPortB,qinqVOs);
-            ControllerCommands.TunnelMplsConfig tmcB = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortB,tunnelSwitchPortA,qinqVOs);
-            ControllerCommands.TunnelMplsConfig tmcC = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortC,tunnelSwitchPortZ,qinqVOs);
-            ControllerCommands.TunnelMplsConfig tmcZ = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortZ,tunnelSwitchPortC,qinqVOs);
-            ControllerCommands.TunnelSdnConfig tscA = getTunnelSdnConfig(tunnelVO.getBandwidth(),tunnelSwitchPortA,qinqVOs);
-            ControllerCommands.TunnelSdnConfig tscB = getTunnelSdnConfig(tunnelVO.getBandwidth(),tunnelSwitchPortB,qinqVOs);
-            ControllerCommands.TunnelSdnConfig tscC = getTunnelSdnConfig(tunnelVO.getBandwidth(),tunnelSwitchPortC,qinqVOs);
-            ControllerCommands.TunnelSdnConfig tscZ = getTunnelSdnConfig(tunnelVO.getBandwidth(),tunnelSwitchPortZ,qinqVOs);
-
-            mplsListInner.add(tmcA);
-            mplsListInner.add(tmcB);
-            mplsListOuter.add(tmcC);
-            mplsListOuter.add(tmcZ);
-            if(tscA != null){
-                sdnListInner.add(tscA);
-                connectionsConfigInner.setSdn_interface_A(tscA.getUuid());
-            }
-            if(tscB != null){
-                sdnListInner.add(tscB);
-                connectionsConfigInner.setSdn_interface_Z(tscB.getUuid());
-            }
-            if(tscC != null){
-                sdnListOuter.add(tscC);
-                connectionsConfigOuter.setSdn_interface_A(tscC.getUuid());
-            }
-            if(tscZ != null){
-                sdnListOuter.add(tscZ);
-                connectionsConfigOuter.setSdn_interface_Z(tscZ.getUuid());
-            }
-
-            tunnelConfigInner.setTunnel_id(tunnelVO.getUuid());
-            tunnelConfigInner.setIs_on_local(isOnLock(tunnelSwitchPortA,tunnelSwitchPortB));
-            tunnelConfigInner.setMpls_switches(mplsListInner);
-            if(sdnListInner.size()>0){
-                tunnelConfigInner.setSdn_switches(sdnListInner);
-            }
-
-            connectionsConfigInner.setTunnel_id(tunnelVO.getUuid());
-            connectionsConfigInner.setMpls_interface_A(tmcA.getUuid());
-            connectionsConfigInner.setMpls_interface_Z(tmcB.getUuid());
-
-            tunnelConfigOuter.setTunnel_id(tunnelVO.getUuid());
-            tunnelConfigOuter.setIs_on_local(isOnLock(tunnelSwitchPortC,tunnelSwitchPortZ));
-            tunnelConfigOuter.setMpls_switches(mplsListOuter);
-            if(sdnListOuter.size()>0){
-                tunnelConfigOuter.setSdn_switches(sdnListOuter);
-            }
-
-            connectionsConfigOuter.setTunnel_id(tunnelVO.getUuid());
-            connectionsConfigOuter.setMpls_interface_A(tmcC.getUuid());
-            connectionsConfigOuter.setMpls_interface_Z(tmcZ.getUuid());
-
-            tunnelList.add(tunnelConfigInner);
-            connectionsList.add(connectionsConfigInner);
-            tunnelList.add(tunnelConfigOuter);
-            connectionsList.add(connectionsConfigOuter);
-
-
+            tmcB = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortB,tunnelSwitchPortA,qinqVOs,"B");
+            tmcC = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortC,tunnelSwitchPortZ,qinqVOs,"C");
+            tmcA = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortA,tunnelSwitchPortB,qinqVOs,"A");
+            tmcZ = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortZ,tunnelSwitchPortC,qinqVOs,"Z");
         }else{
-            List<ControllerCommands.TunnelMplsConfig> mplsList = new ArrayList<>();
-            List<ControllerCommands.TunnelSdnConfig> sdnList = new ArrayList<>();
-            ControllerCommands.TunnelConfig tunnelConfig = new ControllerCommands.TunnelConfig();
-            ControllerCommands.ConnectionsConfig connectionsConfig = new ControllerCommands.ConnectionsConfig();
+            tmcA = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortA,tunnelSwitchPortZ,qinqVOs,"A");
+            tmcZ = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortZ,tunnelSwitchPortA,qinqVOs,"Z");
+        }
+        ControllerCommands.TunnelSdnConfig tscA = getTunnelSdnConfig(tunnelVO.getBandwidth(),tunnelSwitchPortA,qinqVOs,"A");
+        ControllerCommands.TunnelSdnConfig tscZ = getTunnelSdnConfig(tunnelVO.getBandwidth(),tunnelSwitchPortZ,qinqVOs,"Z");
 
-            TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelVO.getUuid())
-                    .eq(TunnelSwitchPortVO_.sortTag,"A")
-                    .find();
+        mplsList.add(tmcA);
+        if(tmcB != null){
+            mplsList.add(tmcB);
+        }
+        if(tmcC != null){
+            mplsList.add(tmcC);
+        }
+        mplsList.add(tmcZ);
 
-            TunnelSwitchPortVO tunnelSwitchPortZ = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelVO.getUuid())
-                    .eq(TunnelSwitchPortVO_.sortTag,"Z")
-                    .find();
-
-            ControllerCommands.TunnelMplsConfig tmcA = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortA,tunnelSwitchPortZ,qinqVOs);
-            ControllerCommands.TunnelMplsConfig tmcZ = getTunnelMplsConfig(tunnelVO,tunnelSwitchPortZ,tunnelSwitchPortA,qinqVOs);
-            ControllerCommands.TunnelSdnConfig tscA = getTunnelSdnConfig(tunnelVO.getBandwidth(),tunnelSwitchPortA,qinqVOs);
-            ControllerCommands.TunnelSdnConfig tscZ = getTunnelSdnConfig(tunnelVO.getBandwidth(),tunnelSwitchPortZ,qinqVOs);
-
-            mplsList.add(tmcA);
-            mplsList.add(tmcZ);
-            if(tscA != null){
-                sdnList.add(tscA);
-                connectionsConfig.setSdn_interface_A(tscA.getUuid());
-            }
-            if(tscZ != null){
-                sdnList.add(tscZ);
-                connectionsConfig.setSdn_interface_Z(tscZ.getUuid());
-            }
-
-
-            tunnelConfig.setTunnel_id(tunnelVO.getUuid());
-            tunnelConfig.setIs_on_local(isOnLock(tunnelSwitchPortA,tunnelSwitchPortZ));
-            tunnelConfig.setMpls_switches(mplsList);
-            if(sdnList.size()>0){
-                tunnelConfig.setSdn_switches(sdnList);
-            }
-
-            connectionsConfig.setTunnel_id(tunnelVO.getUuid());
-            connectionsConfig.setMpls_interface_A(tmcA.getUuid());
-            connectionsConfig.setMpls_interface_Z(tmcZ.getUuid());
-
-            tunnelList.add(tunnelConfig);
-            connectionsList.add(connectionsConfig);
+        if(tscA != null){
+            sdnList.add(tscA);
+        }
+        if(tscZ != null){
+            sdnList.add(tscZ);
         }
 
-        return ControllerCommands.IssuedTunnelCommand.valueOf(tunnelList,connectionsList);
+        tunnelConfig.setTunnel_id(tunnelVO.getUuid());
+        tunnelConfig.setIs_on_local(isOnLock(tunnelSwitchPortA,tunnelSwitchPortZ));
+        tunnelConfig.setMpls_switches(mplsList);
+        if(sdnList.size()>0){
+            tunnelConfig.setSdn_switches(sdnList);
+        }
+
+        tunnelList.add(tunnelConfig);
+
+
+        return ControllerCommands.IssuedTunnelCommand.valueOf(tunnelList);
     }
 
     /**
      *  MPLS 下发配置
      */
-    private ControllerCommands.TunnelMplsConfig getTunnelMplsConfig(TunnelVO tunnelVO, TunnelSwitchPortVO tunnelSwitchPortVO, TunnelSwitchPortVO remoteSwitchPortVO, List<QinqVO> qinqVOs){
+    private ControllerCommands.TunnelMplsConfig getTunnelMplsConfig(TunnelVO tunnelVO, TunnelSwitchPortVO tunnelSwitchPortVO, TunnelSwitchPortVO remoteSwitchPortVO, List<QinqVO> qinqVOs, String sortTag){
         ControllerCommands.TunnelMplsConfig tmc = new ControllerCommands.TunnelMplsConfig();
         SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
         PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitch(switchPortVO);
@@ -543,6 +475,7 @@ public class TunnelBase extends AbstractTunnel {
             tmc.setUsername(mplsPhysicalSwitch.getUsername());
             tmc.setPassword(mplsPhysicalSwitch.getPassword());
             tmc.setNetwork_type("TRUNK");
+            tmc.setSortTag(sortTag);
 
         }else if(physicalSwitchVO.getType() == PhysicalSwitchType.MPLS){  //Mpls接入
             SwitchModelVO switchModel = dbf.findByUuid(physicalSwitchVO.getSwitchModelUuid(),SwitchModelVO.class);
@@ -564,6 +497,7 @@ public class TunnelBase extends AbstractTunnel {
                 tmc.setInner_vlan_id(getInnerVlanToString(qinqVOs));
             }
             tmc.setBandwidth(tunnelVO.getBandwidth()/1024);
+            tmc.setSortTag(sortTag);
         }
 
         return tmc;
@@ -572,7 +506,7 @@ public class TunnelBase extends AbstractTunnel {
     /**
      *  SDN 下发配置
      */
-    private ControllerCommands.TunnelSdnConfig getTunnelSdnConfig(Long bandwidth, TunnelSwitchPortVO tunnelSwitchPortVO, List<QinqVO> qinqVOs){
+    private ControllerCommands.TunnelSdnConfig getTunnelSdnConfig(Long bandwidth, TunnelSwitchPortVO tunnelSwitchPortVO, List<QinqVO> qinqVOs, String sortTag){
         ControllerCommands.TunnelSdnConfig tsc = new ControllerCommands.TunnelSdnConfig();
         SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
         PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitch(switchPortVO);
@@ -591,6 +525,7 @@ public class TunnelBase extends AbstractTunnel {
             if(tunnelSwitchPortVO.getType() == NetworkType.QINQ){
                 tsc.setInner_vlan_id(getInnerVlanToString(qinqVOs));
             }
+            tsc.setSortTag(sortTag);
 
         }else if(physicalSwitchVO.getType() == PhysicalSwitchType.MPLS){  //Mpls接入
             tsc = null;

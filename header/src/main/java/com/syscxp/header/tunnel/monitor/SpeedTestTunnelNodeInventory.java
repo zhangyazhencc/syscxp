@@ -19,37 +19,33 @@ public class SpeedTestTunnelNodeInventory {
     private String uuid;
     private String tunnelUuid;
     private String tunnelName;
-    private List<Map<String,String>> nodes;
+    private List<Map<String, String>> nodes;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    public static SpeedTestTunnelNodeInventory valueOf(SpeedTestTunnelVO vo){
+    public static SpeedTestTunnelNodeInventory valueOf(SpeedTestTunnelVO vo) {
         SpeedTestTunnelNodeInventory inventory = new SpeedTestTunnelNodeInventory();
-        List<Map<String,String>> nodes = new ArrayList<>();
+        List<Map<String, String>> nodes = new ArrayList<>();
 
-        //TODO:修改为关联查询
-        if(vo.getTunnelVO().getState().equals(TunnelState.Enabled ) &&
-                vo.getTunnelVO().getStatus().equals(TunnelStatus.Connected)&&
-                vo.getTunnelVO().getMonitorState().equals(TunnelMonitorState.Enabled)){
-            inventory.setUuid(vo.getUuid());
-            inventory.setTunnelUuid(vo.getTunnelUuid());
-            inventory.setTunnelName(vo.getTunnelVO().getName());
-            inventory.setLastOpDate(vo.getLastOpDate());
-            inventory.setCreateDate(vo.getCreateDate());
 
-            for(TunnelSwitchPortVO tunnelSwitchPortVO :vo.getTunnelVO().getTunnelSwitchPortVOS()){
-                Map<String,String> node = new HashMap<>();
-                node.put("nodeUuid",tunnelSwitchPortVO.getEndpointVO().getNodeVO().getUuid());
-                node.put("nodeName",tunnelSwitchPortVO.getEndpointVO().getNodeVO().getName());
-                node.put("sortType",tunnelSwitchPortVO.getSortTag());
+        inventory.setUuid(vo.getUuid());
+        inventory.setTunnelUuid(vo.getTunnelUuid());
+        inventory.setTunnelName(vo.getTunnelVO().getName());
+        inventory.setLastOpDate(vo.getLastOpDate());
+        inventory.setCreateDate(vo.getCreateDate());
 
-                nodes.add(node);
-            }
+        for (TunnelSwitchPortVO tunnelSwitchPortVO : vo.getTunnelVO().getTunnelSwitchPortVOS()) {
+            Map<String, String> node = new HashMap<>();
+            node.put("nodeUuid", tunnelSwitchPortVO.getEndpointVO().getNodeVO().getUuid());
+            node.put("nodeName", tunnelSwitchPortVO.getEndpointVO().getNodeVO().getName());
+            node.put("sortType", tunnelSwitchPortVO.getSortTag());
+
+            nodes.add(node);
         }
 
         inventory.setNodes(nodes);
 
-        return  inventory;
+        return inventory;
     }
 
     public static List<SpeedTestTunnelNodeInventory> valueOf(Collection<SpeedTestTunnelVO> vos) {
