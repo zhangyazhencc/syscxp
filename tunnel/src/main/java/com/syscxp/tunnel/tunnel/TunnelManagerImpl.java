@@ -1,5 +1,7 @@
 package com.syscxp.tunnel.tunnel;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -43,7 +45,6 @@ import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
-import org.apache.logging.log4j.core.util.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -59,7 +60,6 @@ import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.argerr;
 import static com.syscxp.utils.CollectionDSL.list;
-import static com.syscxp.utils.CollectionDSL.map;
 
 /**
  * Create by DCY on 2017/10/26
@@ -2089,26 +2089,23 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             tunnelCmd.setTunnel_id(tunnel.getUuid());
             tunnelCmd.setBandwidth(tunnel.getBandwidth());
             tunnelCmd.setUser_id(null);
+            tunnelCmd.setRules(null);
 
             List<TunnelSwitchPortVO> tunnelSwitchPortVOS = Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.tunnelUuid, tunnelUuid).list();
             for (TunnelSwitchPortVO vo : tunnelSwitchPortVOS) {
                 if ("A".equals(vo.getSortTag())) {
                     tunnelCmd.setEndpointA_ip(getPhysicalSwitch(vo.getSwitchPortUuid()));
-                    tunnelCmd.setEndpointA_vlan(vo.getVlan());
+                    tunnelCmd.setEndpointA_vid(vo.getVlan());
                 } else if ("Z".equals(vo.getSortTag())) {
                     tunnelCmd.setEndpointB_ip(getPhysicalSwitch(vo.getSwitchPortUuid()));
-                    tunnelCmd.setEndpointB_vlan(vo.getVlan());
+                    tunnelCmd.setEndpointB_vid(vo.getVlan());
                 }
             }
 
-            // tunnels.add(tunnelCmd);
-
-            map.put(tunnelUuid,JSONObjectUtil.toJsonString(tunnelCmd));
+            map.put(tunnelUuid, JSON.toJSONString(tunnelCmd, SerializerFeature.WriteMapNullValue));
         }
 
-        //APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
-        //reply.setInventories(FalconApiCommands.FalconTunnelInventory.valueOf(tunnels));
-        APIQueryTunnelDetailMapForAlarmReply reply = new APIQueryTunnelDetailMapForAlarmReply();
+        APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
         reply.setMap(map);
         bus.reply(msg, reply);
     }

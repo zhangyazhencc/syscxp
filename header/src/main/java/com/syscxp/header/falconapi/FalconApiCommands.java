@@ -29,9 +29,10 @@ public class FalconApiCommands {
         private String user_id;
         private String endpointA_ip;
         private String endpointB_ip;
-        private Integer endpointA_vlan;
-        private Integer endpointB_vlan;
+        private Integer endpointA_vid;
+        private Integer endpointB_vid;
         private Long bandwidth;
+        private List<Rule> rules;
 
         public String getUser_id() {
             return user_id;
@@ -57,28 +58,36 @@ public class FalconApiCommands {
             this.endpointB_ip = endpointB_ip;
         }
 
-        public Integer getEndpointA_vlan() {
-            return endpointA_vlan;
-        }
-
-        public void setEndpointA_vlan(Integer endpointA_vlan) {
-            this.endpointA_vlan = endpointA_vlan;
-        }
-
-        public Integer getEndpointB_vlan() {
-            return endpointB_vlan;
-        }
-
-        public void setEndpointB_vlan(Integer endpointB_vlan) {
-            this.endpointB_vlan = endpointB_vlan;
-        }
-
         public Long getBandwidth() {
             return bandwidth;
         }
 
         public void setBandwidth(Long bandwidth) {
             this.bandwidth = bandwidth;
+        }
+
+        public Integer getEndpointA_vid() {
+            return endpointA_vid;
+        }
+
+        public void setEndpointA_vid(Integer endpointA_vid) {
+            this.endpointA_vid = endpointA_vid;
+        }
+
+        public Integer getEndpointB_vid() {
+            return endpointB_vid;
+        }
+
+        public void setEndpointB_vid(Integer endpointB_vid) {
+            this.endpointB_vid = endpointB_vid;
+        }
+
+        public List<Rule> getRules() {
+            return rules;
+        }
+
+        public void setRules(List<Rule> rules) {
+            this.rules = rules;
         }
     }
 
@@ -290,9 +299,9 @@ public class FalconApiCommands {
             inv.setTunnel_id(vo.getTunnel_id());
             inv.setUser_id(vo.getUser_id());
             inv.setEndpointA_ip(vo.getEndpointA_ip());
-            inv.setEndpointA_vlan(vo.getEndpointA_vlan());
+            inv.setEndpointA_vlan(vo.getEndpointA_vid());
             inv.setEndpointB_ip(vo.getEndpointB_ip());
-            inv.setEndpointB_vlan(vo.getEndpointB_vlan());
+            inv.setEndpointB_vlan(vo.getEndpointB_vid());
             inv.setBandwidth(vo.getBandwidth());
             return inv;
         }
