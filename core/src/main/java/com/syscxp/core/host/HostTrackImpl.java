@@ -1,5 +1,7 @@
 package com.syscxp.core.host;
 
+import com.syscxp.core.config.GlobalConfig;
+import com.syscxp.core.config.GlobalConfigUpdateExtensionPoint;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -49,7 +51,7 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
 
         @Override
         public long getInterval() {
-            return HostGlobalProperty.PING_HOST_INTERVAL;
+            return HostGlobalConfig.PING_HOST_INTERVAL.value(Long.class);
         }
 
         @Override
@@ -69,14 +71,14 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
             if (!r.isNoReconnect()) {
                 boolean needReconnect = false;
                 if (!r.isConnected() && HostStatus.Connected.toString().equals(r.getCurrentHostStatus())
-                        && HostGlobalProperty.AUTO_RECONNECT_ON_ERROR) {
+                        && HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.value(Boolean.class)) {
                     // cannot ping, but host is in Connected status
                     needReconnect = true;
-                } else if (r.isConnected() && HostGlobalProperty.AUTO_RECONNECT_ON_ERROR
+                } else if (r.isConnected() && HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.value(Boolean.class)
                         && HostStatus.Disconnected.toString().equals(r.getCurrentHostStatus())) {
                     // can ping, but host is in Disconnected status
                     needReconnect = true;
-                } else if (!r.isConnected() && HostGlobalProperty.AUTO_RECONNECT_ON_ERROR
+                } else if (!r.isConnected() && HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.value(Boolean.class)
                         && HostStatus.Disconnected.toString().equals(r.getCurrentHostStatus())) {
                     // cannot ping, host is in Disconnected status
                     needReconnect = true;
@@ -88,7 +90,7 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                 if (needReconnect) {
                     logger.debug(String.format("[Host Tracker]: detected host[uuid:%s] connection lost, " +
                                     "issue a reconnect because %s is set to true",
-                            hostUuid, HostGlobalProperty.AUTO_RECONNECT_ON_ERROR.toString()));
+                            hostUuid, HostGlobalConfig.AUTO_RECONNECT_ON_ERROR.toString()));
 
                     ReconnectHostMsg msg = new ReconnectHostMsg();
                     msg.setHostUuid(hostUuid);
@@ -131,7 +133,7 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                     return;
                 }
 
-                bus.send(msgs, HostGlobalProperty.HOST_TRACK_PARALLELISM_DEGREE,
+                bus.send(msgs, HostGlobalConfig.HOST_TRACK_PARALLELISM_DEGREE.value(Integer.class),
                         new CloudBusSteppingCallback(null) {
                             @Override
                             public void run(NeedReplyMessage msg, MessageReply reply) {
@@ -239,6 +241,14 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
 
     private void setupTracker() {
         startTracker();
+        HostGlobalConfig.PING_HOST_INTERVAL.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
+            @Override
+            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
+                logger.debug(String.format("%s change from %s to %s, restart tracker thread",
+                        oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
+                startTracker();
+            }
+        });
     }
 
     @Override

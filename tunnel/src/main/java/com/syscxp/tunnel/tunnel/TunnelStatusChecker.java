@@ -2,6 +2,8 @@ package com.syscxp.tunnel.tunnel;
 
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
+import com.syscxp.core.config.GlobalConfig;
+import com.syscxp.core.config.GlobalConfigUpdateExtensionPoint;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.thread.PeriodicTask;
@@ -11,7 +13,7 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.monitor.OpenTSDBCommands.*;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
-import com.syscxp.utils.CollectionDSL;
+import com.syscxp.tunnel.identity.TunnelGlobalConfig;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -39,7 +41,7 @@ public class TunnelStatusChecker implements Component {
     public static final double PACKETS_LOST_MAX = 20;
 
     private void startCleanExpiredProduct() {
-        checkTunnelStatusInterval = CoreGlobalProperty.CHECK_TUNNEL_STATUS_INTERVAL;
+        checkTunnelStatusInterval = TunnelGlobalConfig.CHECK_TUNNEL_STATUS_INTERVAL.value(Integer.class);
         if (checkTunnelStatusThread != null) {
             checkTunnelStatusThread.cancel(true);
         }
@@ -47,6 +49,19 @@ public class TunnelStatusChecker implements Component {
         checkTunnelStatusThread = thdf.submitPeriodicTask(new CheckTunnelStatus(), TimeUnit.SECONDS.toMillis(10));
         logger.debug(String
                 .format("security group cleanExpiredProductThread starts[cleanExpiredProductInterval: %s day]", checkTunnelStatusInterval));
+    }
+    private void restartCleanExpiredProduct() {
+
+        startCleanExpiredProduct();
+
+        TunnelGlobalConfig.CHECK_TUNNEL_STATUS_INTERVAL.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
+            @Override
+            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
+                logger.debug(String.format("%s change from %s to %s, restart startCleanExpiredProduct thread",
+                        oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
+                startCleanExpiredProduct();
+            }
+        });
     }
 
 
@@ -109,6 +124,8 @@ public class TunnelStatusChecker implements Component {
                         if (vo.getStatus() != status)
                             UpdateQuery.New(TunnelVO.class)
                                     .eq(TunnelVO_.uuid, vo.getUuid())
+                                    .eq(TunnelVO_.state, TunnelState.Enabled)
+                                    .eq(TunnelVO_.monitorState, TunnelMonitorState.Enabled)
                                     .set(TunnelVO_.status, status)
                                     .update();
                     }
@@ -158,7 +175,7 @@ public class TunnelStatusChecker implements Component {
 
     @Override
     public boolean start() {
-        startCleanExpiredProduct();
+        restartCleanExpiredProduct();
         return true;
     }
 

@@ -826,24 +826,25 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                         .eq(VpnVO_.vpnCertUuid, vpnCert.getUuid())
                         .select(VpnVO_.uuid)
                         .listValues();
-                if (vpnUuids != null) {
-                    List<PushCertMsg> msgs = new ArrayList<>();
-                    for (String vpnUuid : vpnUuids) {
-                        PushCertMsg pushCertMsg = new PushCertMsg();
-                        pushCertMsg.setVpnUuid(vpnUuid);
-                        bus.makeLocalServiceId(pushCertMsg, VpnConstant.SERVICE_ID);
-                        msgs.add(pushCertMsg);
-                    }
-
-                    bus.send(msgs, new CloudBusListCallBack(trigger) {
-                        @Override
-                        public void run(List<MessageReply> replies) {
-                            trigger.next();
-                        }
-                    });
-                } else {
+                if (vpnUuids.isEmpty()) {
                     trigger.next();
+                    return;
                 }
+
+                List<PushCertMsg> msgs = new ArrayList<>();
+                for (String vpnUuid : vpnUuids) {
+                    PushCertMsg pushCertMsg = new PushCertMsg();
+                    pushCertMsg.setVpnUuid(vpnUuid);
+                    bus.makeLocalServiceId(pushCertMsg, VpnConstant.SERVICE_ID);
+                    msgs.add(pushCertMsg);
+                }
+
+                bus.send(msgs, new CloudBusListCallBack(trigger) {
+                    @Override
+                    public void run(List<MessageReply> replies) {
+                        trigger.next();
+                    }
+                });
             }
         });
 
