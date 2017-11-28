@@ -103,17 +103,6 @@ public class VpnRESTCaller {
 
     }
 
-    /**
-     * http调用内部服务
-     */
-    public APIReply syncJsonPost(APIMessage innerMsg) {
-        String url = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL);
-        InnerMessageHelper.setMD5(innerMsg);
-        RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
-
-        return (APIReply) RESTApiDecoder.loads(rsp.getResult());
-    }
-
     public void sendCommand(String url, VpnAgentCommand cmd, final Completion completion) {
         sendCommandForResponce(url, cmd, new ReturnValueCompletion<VpnAgentResponse>(completion) {
             @Override

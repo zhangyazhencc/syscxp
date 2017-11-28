@@ -16,12 +16,12 @@ public class StartSpeedRecordsInventory {
     private String tunnelUuid;
     private String srcTunnelMonitorUuid;
     private String dstTunnelMonitorUuid;
-    private ProtocolType protocolType;
+    private String protocolType;
     private Integer duration;
     private Integer avgSpeed;
     private Integer maxSpeed;
     private Integer minSpeed;
-    private SpeedRecordStatus status;
+    private String status;
     private Timestamp lastOpDate;
     private Timestamp createDate;
     private String hostIp;
@@ -33,12 +33,12 @@ public class StartSpeedRecordsInventory {
         inventory.setTunnelUuid(vo.getTunnelUuid());
         inventory.setSrcTunnelMonitorUuid(vo.getSrcTunnelMonitorUuid());
         inventory.setDstTunnelMonitorUuid(vo.getDstTunnelMonitorUuid());
-        inventory.setProtocolType(vo.getProtocolType());
+        inventory.setProtocolType(vo.getProtocolType().toString());
         inventory.setDuration(vo.getDuration());
         inventory.setAvgSpeed(vo.getAvgSpeed());
         inventory.setMaxSpeed(vo.getMaxSpeed());
         inventory.setMinSpeed(vo.getMinSpeed());
-        inventory.setStatus(vo.getStatus());
+        inventory.setStatus(vo.getStatus().toString());
         inventory.setLastOpDate(vo.getLastOpDate());
         inventory.setCreateDate(vo.getCreateDate());
         inventory.setHostIp(hostIp);
@@ -89,11 +89,11 @@ public class StartSpeedRecordsInventory {
         this.dstTunnelMonitorUuid = dstTunnelMonitorUuid;
     }
 
-    public ProtocolType getProtocolType() {
+    public String getProtocolType() {
         return protocolType;
     }
 
-    public void setProtocolType(ProtocolType protocolType) {
+    public void setProtocolType(String protocolType) {
         this.protocolType = protocolType;
     }
 
@@ -129,11 +129,11 @@ public class StartSpeedRecordsInventory {
         this.minSpeed = minSpeed;
     }
 
-    public SpeedRecordStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(SpeedRecordStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

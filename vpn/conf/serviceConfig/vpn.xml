@@ -26,9 +26,6 @@
     <message>
         <name>com.syscxp.header.vpn.vpn.APIDownloadCertificateMsg</name>
     </message>
-    <message>
-        <name>com.syscxp.header.vpn.vpn.APIResetCertificateMsg</name>
-    </message>
 
     <message>
         <name>com.syscxp.header.vpn.vpn.APICreateVpnInterfaceMsg</name>

@@ -26,7 +26,7 @@ public class VpnInventory {
     private Integer maxModifies;
     private String sid;
     private String certKey;
-    private Payment payment;
+    private String payment;
     private VpnHostInventory hostInventory;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -51,7 +51,7 @@ public class VpnInventory {
         inv.setSid(vo.getSid());
         inv.setCertKey(vo.getCertKey());
         inv.setMaxModifies(vo.getMaxModifies());
-        inv.setPayment(vo.getPayment());
+        inv.setPayment(vo.getPayment().toString());
         inv.setHostInventory(VpnHostInventory.valueOf(vo.getVpnHost()));
         return inv;
     }
@@ -193,11 +193,11 @@ public class VpnInventory {
         this.certKey = certKey;
     }
 
-    public Payment getPayment() {
+    public String getPayment() {
         return payment;
     }
 
-    public void setPayment(Payment payment) {
+    public void setPayment(String payment) {
         this.payment = payment;
     }
 
