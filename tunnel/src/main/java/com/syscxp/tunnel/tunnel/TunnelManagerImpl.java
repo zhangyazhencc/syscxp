@@ -43,6 +43,7 @@ import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
+import org.apache.logging.log4j.core.util.JsonUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -58,6 +59,7 @@ import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.argerr;
 import static com.syscxp.utils.CollectionDSL.list;
+import static com.syscxp.utils.CollectionDSL.map;
 
 /**
  * Create by DCY on 2017/10/26
@@ -2074,6 +2076,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIQueryTunnelDetailForAlarmMsg msg) {
+        Map map = new HashMap();
         List<FalconApiCommands.Tunnel> tunnels = new ArrayList<>();
 
         for (String tunnelUuid : msg.getTunnelUuidList()) {
@@ -2098,11 +2101,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 }
             }
 
-            tunnels.add(tunnelCmd);
+            // tunnels.add(tunnelCmd);
+
+            map.put(tunnelUuid,JSONObjectUtil.toJsonString(tunnelCmd));
         }
 
-        APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
-        reply.setInventories(FalconApiCommands.FalconTunnelInventory.valueOf(tunnels));
+        //APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
+        //reply.setInventories(FalconApiCommands.FalconTunnelInventory.valueOf(tunnels));
+        APIQueryTunnelDetailMapForAlarmReply reply = new APIQueryTunnelDetailMapForAlarmReply();
+        reply.setMap(map);
         bus.reply(msg, reply);
     }
 
