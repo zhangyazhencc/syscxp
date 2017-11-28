@@ -1,5 +1,6 @@
 package com.syscxp.alarm.resourcePolicy;
 
+import com.alibaba.fastjson.JSON;
 import com.syscxp.alarm.AlarmGlobalProperty;
 import com.syscxp.alarm.header.resourcePolicy.*;
 import com.syscxp.alarm.quota.AlarmQuotaOperator;
@@ -30,9 +31,8 @@ import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
-import com.syscxp.header.rest.RestAPIState;
 import com.syscxp.header.tunnel.tunnel.APIQueryTunnelDetailForAlarmMsg;
-import com.syscxp.header.tunnel.tunnel.APIQueryTunnelDetailForAlarmReply;
+import com.syscxp.header.tunnel.tunnel.APIQueryTunnelDetailMapForAlarmReply;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -387,11 +387,12 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     }
 
     @Transactional
-    private List<RegulationVO> getRegulationVOs(String uuid){
+    private List<RegulationVO> getRegulationVOs(String uuid) {
         SimpleQuery<RegulationVO> q = dbf.createQuery(RegulationVO.class);
         q.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, uuid);
         return q.list();
     }
+
     private void handle(APIUpdatePolicyMsg msg) {
         PolicyVO vo = dbf.findByUuid(msg.getUuid(), PolicyVO.class);
         if (vo != null) {
@@ -553,6 +554,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 if (map == null || map.get(resource.getResourceUuid()) == null) {
                     return false;
                 } else {
+                    Object obj = map.get(resource.getResourceUuid());
                     FalconApiCommands.Tunnel tunnel = (FalconApiCommands.Tunnel) map.get(resource.getResourceUuid());
                     tunnelparameter.setEndpointA_vid(tunnel.getEndpointA_vlan());
                     tunnelparameter.setEndpointB_vid(tunnel.getEndpointB_vlan());
@@ -615,27 +617,34 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
     private Map getTunnelInfo(List<String> Resources) {
 
+        Map result = new HashMap();
         APIQueryTunnelDetailForAlarmMsg tunnelMsg = new APIQueryTunnelDetailForAlarmMsg();
         tunnelMsg.setTunnelUuidList(Resources);
-        InnerMessageHelper.getMD5(tunnelMsg);
+        InnerMessageHelper.setMD5(tunnelMsg);
 
+        APIQueryTunnelDetailMapForAlarmReply reply = new APIQueryTunnelDetailMapForAlarmReply();
+        RestAPIResponse raps = new RestAPIResponse();
         try {
-            RestAPIResponse raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
+            raps = restf.syncJsonPost(AlarmGlobalProperty.TUNNEL_SERVER_RUL,
                     RESTApiDecoder.dump(tunnelMsg), RestAPIResponse.class);
 
-            if (raps.getState().equals(RestAPIState.Done.toString())) {
-                APIQueryTunnelDetailForAlarmReply tunnelReply = JSONObjectUtil.toObject(raps.getResult(),
-                        APIQueryTunnelDetailForAlarmReply.class);
-                if (tunnelReply.isSuccess()) {
-                    return tunnelReply.getMap();
-                } else {
-                    throw new OperationFailureException(Platform.operr(tunnelReply.getError().toString()));
-                }
+            // reply = JSONObjectUtil.toObject(raps.getResult(),APIQueryTunnelDetailMapForAlarmReply.class);
+            reply = JSON.parseObject(raps.getResult(), APIQueryTunnelDetailMapForAlarmReply.class);
+
+            if (!reply.isSuccess())
+                reply.setError(Platform.operr("failed to get tunnelInfo! Error: ", reply.getError()));
+            else {
+                Map resultMap = (Map) JSON.parseObject(raps.getResult(), HashMap.class);
+
+                Map<String, Object> methodMap = (Map) resultMap.get("com.syscxp.header.tunnel.tunnel.APIQueryTunnelDetailMapForAlarmReply");
+
+                result = (Map) methodMap.get("map");
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            reply.setError(Platform.operr("failed to get tunnelInfo! Error: ", e.getMessage()));
         }
-        return null;
+
+        return result;
     }
 
     @Override
