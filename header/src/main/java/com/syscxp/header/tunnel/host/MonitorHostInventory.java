@@ -33,7 +33,8 @@ public class MonitorHostInventory extends HostInventory {
         this.setUsername(vo.getUsername());
         this.setSshPort(vo.getSshPort());
         this.setMonitorType(vo.getMonitorType());
-        this.setNodeInventory(NodeInventory.valueOf(vo.getNode()));
+        if (vo.getNode() != null)
+            this.setNodeInventory(NodeInventory.valueOf(vo.getNode()));
     }
 
     public static MonitorHostInventory valueOf(MonitorHostVO vo) {

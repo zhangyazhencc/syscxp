@@ -1,6 +1,5 @@
 package com.syscxp.header.host;
 
-import com.syscxp.header.vo.ResourceVO_;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
@@ -9,7 +8,8 @@ import java.sql.Timestamp;
 /**
  */
 @StaticMetamodel(HostAO.class)
-public class HostAO_ extends ResourceVO_ {
+public class HostAO_ {
+    public static volatile SingularAttribute<HostAO, String> uuid;
     public static volatile SingularAttribute<HostAO, String> position;
     public static volatile SingularAttribute<HostAO, String> name;
     public static volatile SingularAttribute<HostAO, String> code;

@@ -1,12 +1,8 @@
 package com.syscxp.header.quota;
 
 import com.syscxp.header.vo.BaseResource;
-import com.syscxp.header.vo.ResourceVO;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.PreUpdate;
-import javax.persistence.Table;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
 /**
@@ -15,7 +11,11 @@ import java.sql.Timestamp;
 @Entity
 @Table
 @BaseResource
-public class QuotaVO extends ResourceVO {
+public class QuotaVO {
+    @Id
+    @Column
+    protected String uuid;
+
     @Column
     private String name;
 
@@ -85,5 +85,13 @@ public class QuotaVO extends ResourceVO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public String getUuid() {
+        return uuid;
+    }
+
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 }

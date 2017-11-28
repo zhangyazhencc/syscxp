@@ -11,8 +11,6 @@
         <class>com.syscxp.core.notification.NotificationVO</class>
 
         <class>com.syscxp.header.vpn.vpn.VpnVO</class>
-        <class>com.syscxp.header.vpn.vpn.VpnRouteVO</class>
-        <class>com.syscxp.header.vpn.vpn.VpnInterfaceVO</class>
         <class>com.syscxp.header.vpn.host.VpnHostVO</class>
         <class>com.syscxp.header.vpn.host.ZoneVO</class>
         <class>com.syscxp.header.vpn.host.HostInterfaceVO</class>

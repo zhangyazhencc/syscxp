@@ -9,7 +9,7 @@ import java.security.Timestamp;
  */
 @StaticMetamodel(QuotaVO.class)
 public class QuotaVO_ {
-    public static volatile SingularAttribute<QuotaVO, Long> id;
+    public static volatile SingularAttribute<QuotaVO, String> uuid;
     public static volatile SingularAttribute<QuotaVO, String> name;
     public static volatile SingularAttribute<QuotaVO, String> identityUuid;
     public static volatile SingularAttribute<QuotaVO, String> identityType;

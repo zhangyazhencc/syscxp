@@ -252,17 +252,18 @@ public abstract class HostBase extends AbstractHost {
                 cmsg.setUuid(self.getUuid());
                 cmsg.setStateEvent(HostStateEvent.disable.toString());
                 bus.makeLocalServiceId(cmsg, HostConstant.SERVICE_ID);
-                bus.send(cmsg, new CloudBusCallBack(msg) {
+                bus.send(cmsg, new CloudBusCallBack(trigger) {
                     @Override
                     public void run(MessageReply reply) {
-                        if (!reply.isSuccess()) {
-                            APIDeleteHostEvent evt = new APIDeleteHostEvent(msg.getId());
-                            evt.setError(errf.instantiateErrorCode(HostErrors.FAILED_TO_STOP_AGNET, reply.getError()));
+                        if (reply.isSuccess()) {
+                            trigger.next();
+                        } else {
+                            trigger.fail(errf.instantiateErrorCode(HostErrors.FAILED_TO_STOP_AGNET, reply.getError()));
                             logger.debug(String.format("failed to stop host[uuid:%s] agent %s", self.getUuid(), reply.getError()));
                         }
                     }
                 });
-                trigger.next();
+
             }
         }).then(new NoRollbackFlow() {
             String __name__ = "send-delete-host-message";
@@ -285,7 +286,6 @@ public abstract class HostBase extends AbstractHost {
                 });
             }
         });
-
 
         chain.done(new FlowDoneHandler(msg) {
             @Override

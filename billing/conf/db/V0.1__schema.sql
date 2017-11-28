@@ -472,6 +472,7 @@ CREATE TABLE `SLACompensateVO` (
   `state` varchar(50) DEFAULT NULL COMMENT '状态',
   `lastOpDate` timestamp NOT NULL DEFAULT  current_timestamp(),
   `createDate` timestamp ,
+  `applyTime` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
