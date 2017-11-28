@@ -240,12 +240,10 @@ public class ControllerCommands {
      */
     public static class IssuedTunnelCommand {
         private List<TunnelConfig> tunnel;
-        private List<ConnectionsConfig> connections;
 
-        public static IssuedTunnelCommand valueOf(List<TunnelConfig> tunnelList,List<ConnectionsConfig> connectionsList){
+        public static IssuedTunnelCommand valueOf(List<TunnelConfig> tunnelList){
             IssuedTunnelCommand issuedTunnelCommand = new IssuedTunnelCommand();
             issuedTunnelCommand.setTunnel(tunnelList);
-            issuedTunnelCommand.setConnections(connectionsList);
             return issuedTunnelCommand;
         }
 
@@ -255,14 +253,6 @@ public class ControllerCommands {
 
         public void setTunnel(List<TunnelConfig> tunnel) {
             this.tunnel = tunnel;
-        }
-
-        public List<ConnectionsConfig> getConnections() {
-            return connections;
-        }
-
-        public void setConnections(List<ConnectionsConfig> connections) {
-            this.connections = connections;
         }
     }
 
@@ -311,58 +301,6 @@ public class ControllerCommands {
 
     /**
      * Create by DCY on 2017/10/12
-     * TUNNEL下发 tunnel 配置
-     */
-    public static class ConnectionsConfig{
-        private String tunnel_id;
-        private String mpls_interface_A;
-        private String mpls_interface_Z;
-        private String sdn_interface_A;
-        private String sdn_interface_Z;
-
-        public String getTunnel_id() {
-            return tunnel_id;
-        }
-
-        public void setTunnel_id(String tunnel_id) {
-            this.tunnel_id = tunnel_id;
-        }
-
-        public String getMpls_interface_A() {
-            return mpls_interface_A;
-        }
-
-        public void setMpls_interface_A(String mpls_interface_A) {
-            this.mpls_interface_A = mpls_interface_A;
-        }
-
-        public String getMpls_interface_Z() {
-            return mpls_interface_Z;
-        }
-
-        public void setMpls_interface_Z(String mpls_interface_Z) {
-            this.mpls_interface_Z = mpls_interface_Z;
-        }
-
-        public String getSdn_interface_A() {
-            return sdn_interface_A;
-        }
-
-        public void setSdn_interface_A(String sdn_interface_A) {
-            this.sdn_interface_A = sdn_interface_A;
-        }
-
-        public String getSdn_interface_Z() {
-            return sdn_interface_Z;
-        }
-
-        public void setSdn_interface_Z(String sdn_interface_Z) {
-            this.sdn_interface_Z = sdn_interface_Z;
-        }
-    }
-
-    /**
-     * Create by DCY on 2017/10/12
      * TUNNEL下发 MPLS 配置
      */
     public static class TunnelMplsConfig {
@@ -370,15 +308,16 @@ public class ControllerCommands {
         private String switch_type;
         private String sub_type;
         private Integer vni;
+        private String m_ip;
         private String remote_ip;
         private String port_name;
         private Integer vlan_id;
         private String inner_vlan_id;
-        private String m_ip;
         private String username;
         private String password;
         private String network_type;
         private Long bandwidth;
+        private String sortTag;
 
         public String getUuid() {
             return uuid;
@@ -483,6 +422,14 @@ public class ControllerCommands {
         public void setInner_vlan_id(String inner_vlan_id) {
             this.inner_vlan_id = inner_vlan_id;
         }
+
+        public String getSortTag() {
+            return sortTag;
+        }
+
+        public void setSortTag(String sortTag) {
+            this.sortTag = sortTag;
+        }
     }
 
     /**
@@ -498,6 +445,7 @@ public class ControllerCommands {
         private String uplink;
         private String network_type;
         private Long bandwidth;
+        private String sortTag;
 
         public String getUuid() {
             return uuid;
@@ -561,6 +509,14 @@ public class ControllerCommands {
 
         public void setBandwidth(Long bandwidth) {
             this.bandwidth = bandwidth;
+        }
+
+        public String getSortTag() {
+            return sortTag;
+        }
+
+        public void setSortTag(String sortTag) {
+            this.sortTag = sortTag;
         }
     }
 
