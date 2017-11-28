@@ -2074,13 +2074,18 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIQueryTunnelDetailForAlarmMsg msg) {
-        Map<String, Object> detailMap = new HashMap<>();
+        List<FalconApiCommands.Tunnel> tunnels = new ArrayList<>();
 
-        FalconApiCommands.Tunnel tunnelCmd = new FalconApiCommands.Tunnel();
         for (String tunnelUuid : msg.getTunnelUuidList()) {
             TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelUuid).findValue();
+
+            FalconApiCommands.Tunnel tunnelCmd = new FalconApiCommands.Tunnel();
+            if(tunnel == null)
+                throw new IllegalArgumentException(String.format("tunnel %s not exist!",tunnelUuid));
+
             tunnelCmd.setTunnel_id(tunnel.getUuid());
             tunnelCmd.setBandwidth(tunnel.getBandwidth());
+            tunnelCmd.setUser_id(null);
 
             List<TunnelSwitchPortVO> tunnelSwitchPortVOS = Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.tunnelUuid, tunnelUuid).list();
             for (TunnelSwitchPortVO vo : tunnelSwitchPortVOS) {
@@ -2093,11 +2098,11 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 }
             }
 
-            detailMap.put(tunnelUuid, tunnelCmd);
+            tunnels.add(tunnelCmd);
         }
 
         APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
-        reply.setMap(detailMap);
+        reply.setInventories(FalconApiCommands.FalconTunnelInventory.valueOf(tunnels));
         bus.reply(msg, reply);
     }
 

@@ -1,20 +1,22 @@
 package com.syscxp.header.tunnel.tunnel;
 
+import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.query.APIQueryReply;
 
+import java.util.List;
 import java.util.Map;
 
 /**
  * Created by DCY on 2017-09-17
  */
 public class APIQueryTunnelDetailForAlarmReply extends APIQueryReply {
-    private Map<String,Object> map;
+    private List<FalconApiCommands.FalconTunnelInventory> inventories ;
 
-    public Map<String, Object> getMap() {
-        return map;
+    public List<FalconApiCommands.FalconTunnelInventory> getInventories() {
+        return inventories;
     }
 
-    public void setMap(Map<String, Object> map) {
-        this.map = map;
+    public void setInventories(List<FalconApiCommands.FalconTunnelInventory> inventories) {
+        this.inventories = inventories;
     }
 }
