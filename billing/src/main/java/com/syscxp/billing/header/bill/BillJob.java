@@ -90,7 +90,7 @@ public class BillJob{
         } catch (Exception e) {
             e.printStackTrace();
             try {
-                TimeUnit.SECONDS.sleep(60);
+                TimeUnit.HOURS.sleep(1);
             } catch (InterruptedException e1) {
                 e1.printStackTrace();
             }

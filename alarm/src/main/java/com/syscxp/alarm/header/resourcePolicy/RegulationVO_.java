@@ -12,7 +12,7 @@ public class RegulationVO_  extends BaseVO_ {
     public static volatile SingularAttribute<RegulationVO, String> comparisonRuleUuid;
     public static volatile SingularAttribute<RegulationVO, String> policyUuid;
     public static volatile SingularAttribute<RegulationVO, String> monitorTargetUuid;
-    public static volatile SingularAttribute<RegulationVO, Integer> alarmThreshold;
+    public static volatile SingularAttribute<RegulationVO, Float> alarmThreshold;
     public static volatile SingularAttribute<RegulationVO, Integer> detectPeriod;
     public static volatile SingularAttribute<RegulationVO, Integer> triggerPeriod;
 }

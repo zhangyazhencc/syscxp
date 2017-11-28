@@ -20,7 +20,7 @@ public class RegulationVO  extends BaseVO{
     private MonitorTargetVO monitorTargetVO;
 
     @Column
-    private int alarmThreshold;
+    private float alarmThreshold;
 
     @Column
     private int detectPeriod;
@@ -28,11 +28,11 @@ public class RegulationVO  extends BaseVO{
     @Column
     private int triggerPeriod;
 
-    public int getAlarmThreshold() {
+    public float getAlarmThreshold() {
         return alarmThreshold;
     }
 
-    public void setAlarmThreshold(int alarmThreshold) {
+    public void setAlarmThreshold(float alarmThreshold) {
         this.alarmThreshold = alarmThreshold;
     }
 
