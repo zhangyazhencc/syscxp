@@ -18,7 +18,7 @@ public class SolutionVpnVO extends SolutionBaseVO{
     private String endpointUuid;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "endpointUuid")
+    @JoinColumn(name = "endpointUuid", insertable = false, updatable = false)
     private EndpointVO endpointVO;
 
     @Column
