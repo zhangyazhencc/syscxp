@@ -6,12 +6,13 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.AliEdgeRouterConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.tunnel.TunnelVO;
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = AliEdgeRouterConstant.ACTION_CATEGORY, names = {"create"})
 public class APICreateAliEdgeRouterMsg extends APIMessage{
     @APIParam(required = false,maxLength = 32)
     private String accountUuid;
-    @APIParam(maxLength = 32)
+    @APIParam(maxLength = 32, resourceType = TunnelVO.class)
     private String tunnelUuid;
     @APIParam(maxLength = 64)
     private String aliAccountUuid;
