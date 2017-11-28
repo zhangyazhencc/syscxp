@@ -7,7 +7,6 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
-import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
@@ -205,6 +204,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param monitorCidr
      * @return 创建的监控通道
      */
+    @Transactional
     private List<TunnelMonitorVO>  createTunnelMonitor(String tunnelUuid, String monitorCidr) {
         List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
                 .eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid)
@@ -628,8 +628,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
                 icmpSync(newIcmp);
 
-                 throw new RuntimeException("#################异常测试！");
-                //trigger.next();
+                trigger.next();
             }
 
             @Override
@@ -1173,6 +1172,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 .find();
 
         tunnelVO.setMonitorState(monitorState);
+        tunnelVO.setState(TunnelState.Enabled);
         if (StringUtils.isNotEmpty(monitorCidr)) {
             tunnelVO.setMonitorCidr(monitorCidr);
         }
