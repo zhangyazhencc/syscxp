@@ -1203,6 +1203,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             validate((APICreateVpnMsg) msg);
         } else if (msg instanceof APIQueryVpnMsg) {
             validate((APIQueryVpnMsg) msg);
+        } else if (msg instanceof APIQueryVpnCertMsg) {
+            validate((APIQueryVpnCertMsg) msg);
         } else if (msg instanceof APIUpdateVpnMsg) {
             validate((APIUpdateVpnMsg) msg);
         } else if (msg instanceof APIUpdateVpnBandwidthMsg) {
@@ -1284,6 +1286,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APIQueryVpnMsg msg) {
+        if (!msg.getSession().isAdminSession()) {
+            msg.addQueryCondition("accountUuid", QueryOp.EQ, msg.getSession().getAccountUuid());
+        }
+    }
+    private void validate(APIQueryVpnCertMsg msg) {
         if (!msg.getSession().isAdminSession()) {
             msg.addQueryCondition("accountUuid", QueryOp.EQ, msg.getSession().getAccountUuid());
         }
