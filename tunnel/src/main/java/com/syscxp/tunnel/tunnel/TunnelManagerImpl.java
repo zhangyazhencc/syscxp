@@ -40,7 +40,6 @@ import com.syscxp.tunnel.identity.TunnelGlobalConfig;
 import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
 import com.syscxp.utils.CollectionDSL;
-import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -2088,10 +2087,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             for (TunnelSwitchPortVO vo : tunnelSwitchPortVOS) {
                 if ("A".equals(vo.getSortTag())) {
                     tunnelCmd.setEndpointA_ip(getPhysicalSwitch(vo.getSwitchPortUuid()));
-                    tunnelCmd.setEndpointA_vid(vo.getVlan());
+                    tunnelCmd.setEndpointA_vlan(vo.getVlan());
                 } else if ("Z".equals(vo.getSortTag())) {
                     tunnelCmd.setEndpointB_ip(getPhysicalSwitch(vo.getSwitchPortUuid()));
-                    tunnelCmd.setEndpointB_vid(vo.getVlan());
+                    tunnelCmd.setEndpointB_vlan(vo.getVlan());
                 }
             }
 

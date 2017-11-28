@@ -2,6 +2,7 @@ package com.syscxp.header.tunnel.monitor;
 
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.identity.SuppressCredentialCheck;
+import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.AutoQuery;
 import com.syscxp.header.tunnel.MonitorConstant;
@@ -14,6 +15,5 @@ import com.syscxp.header.tunnel.TunnelConstant;
  */
 
 @SuppressCredentialCheck
-@AutoQuery(replyClass = APIQuerySpeedTestTunnelNodeReply.class, inventoryClass = SpeedTestTunnelNodeInventory.class)
-public class APIQuerySpeedTestTunnelNodeMsg extends APIQueryMessage {
+public class APIQuerySpeedTestTunnelNodeMsg extends APISyncCallMessage {
 }

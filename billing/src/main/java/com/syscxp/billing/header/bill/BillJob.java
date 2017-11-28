@@ -1,13 +1,11 @@
 package com.syscxp.billing.header.bill;
 
 import com.syscxp.billing.header.balance.DealWay;
-import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
+import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.header.billing.AccountBalanceVO;
 import com.syscxp.core.Platform;
 import com.syscxp.core.db.DatabaseFacade;
@@ -24,11 +22,11 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Component
+@Configurable(preConstruction = true, dependencyCheck = true, autowire = Autowire.BY_TYPE)
 public class BillJob {
 
     @Autowired
@@ -91,7 +89,7 @@ public class BillJob {
     }
 
     @PostConstruct
-    public void init(){
+    public void initBill(){
         GLock lock = new GLock(String.format("id-%s", "initBill"), 120);
         lock.lock();
         try {
