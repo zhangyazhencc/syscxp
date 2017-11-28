@@ -125,7 +125,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             List<TunnelMonitorVO> tunnelMonitorVOS = createTunnelMonitor(msg.getTunnelUuid(), msg.getMonitorCidr());
 
             // 控制器命令下发
-            startControllerCommand(msg.getTunnelUuid(), tunnelMonitorVOS);
+            // startControllerCommand(msg.getTunnelUuid(), tunnelMonitorVOS);
 
             // 同步icmp
             icmpSync(msg.getSession().getAccountUuid(), msg.getTunnelUuid(), msg.getMonitorCidr(), tunnelMonitorVOS);
@@ -542,14 +542,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             if (InterfaceType.A.toString().equals(tunnelSwitchPortVO.getSortTag())) {
                 icmp.setHostA_ip(monitorHostVO.getHostIp());
                 icmp.setEndpointA_mip(tunnelMonitorVO.getMonitorIp().substring(0, tunnelMonitorVO.getMonitorIp().indexOf("/")));
-                icmp.setEndpointA_vlan(tunnelSwitchPortVO.getVlan());
+                icmp.setEndpointA_vid(tunnelSwitchPortVO.getVlan());
                 icmp.setEndpointA_id(switchVO.getEndpointUuid());
                 icmp.setEndpointA_ip(switchVO.getPhysicalSwitch().getmIP());
                 icmp.setEndpointA_interface(hostSwitchMonitorVO.getInterfaceName());
             } else if (InterfaceType.Z.toString().equals(tunnelSwitchPortVO.getSortTag())) {
                 icmp.setHostB_ip(monitorHostVO.getHostIp());
                 icmp.setEndpointB_mip(tunnelMonitorVO.getMonitorIp().substring(0, tunnelMonitorVO.getMonitorIp().indexOf("/")));
-                icmp.setEndpointB_vlan(tunnelSwitchPortVO.getVlan());
+                icmp.setEndpointB_vid(tunnelSwitchPortVO.getVlan());
                 icmp.setEndpointB_id(switchVO.getEndpointUuid());
                 icmp.setEndpointB_ip(switchVO.getPhysicalSwitch().getmIP());
                 icmp.setEndpointB_interface(hostSwitchMonitorVO.getInterfaceName());
@@ -622,7 +622,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
 
         if (!response.isSuccess())
-            throw new RuntimeException(String.format("failed to send agent command! command! Error:", response.getMsg()));
+            throw new RuntimeException(String.format("failed to send agent command! command! Error: %s", response.getMsg()));
     }
 
     /***
@@ -642,8 +642,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     private void startAgentMonitor(String accountUuid, String tunnelUuid, String monitorCidr, List<TunnelMonitorVO> tunnelMonitorVOS) {
         FalconApiCommands.Icmp icmp = getIcmp(accountUuid, tunnelUuid, monitorCidr, tunnelMonitorVOS);
-        String icmpJson = JSONObjectUtil.toJsonString(icmp);
         // 下发监控agent配置
+        String icmpJson = formatIcmpCommand(icmp);
         MonitorAgentCommands.RestResponse agentResp = new MonitorAgentCommands.RestResponse();
         agentResp.setSuccess(true);
         for (TunnelMonitorVO tunnelMonitor : tunnelMonitorVOS) {
@@ -692,6 +692,21 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         // TODO: 修改监控接口
 
 
+    }
+
+    private String formatIcmpCommand(FalconApiCommands.Icmp icmp){
+        List<FalconApiCommands.Icmp> icmps = new ArrayList<>();
+        icmps.add(icmp);
+
+        Map<String,Object> strategies = new HashMap<>();
+        strategies.put("strategies",icmps);
+
+        Map<String,Object> strategyList = new HashMap<>();
+        strategyList.put("strategyList",strategies);
+
+        String icmpsJson = JSONObjectUtil.toJsonString(strategyList);
+
+        return icmpsJson;
     }
 
     /**

@@ -52,7 +52,7 @@ public class OrderNotifyJob{
     }
 
     @PostConstruct
-    @Transactional(readOnly = true)
+    @Transactional
     public void refixNotifyOrder(){
         UpdateQuery q = UpdateQuery.New(NotifyOrderVO.class);
         q.condAnd(NotifyOrderVO_.status, SimpleQuery.Op.EQ,  NotifyOrderStatus.PROCESSING);
