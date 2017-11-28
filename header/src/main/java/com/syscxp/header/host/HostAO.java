@@ -1,14 +1,16 @@
 package com.syscxp.header.host;
 
-import com.syscxp.header.vo.ResourceVO;
-
 import javax.persistence.*;
 import java.sql.Timestamp;
 
 /**
  */
 @MappedSuperclass
-public class HostAO extends ResourceVO {
+public class HostAO {
+
+    @Id
+    @Column
+    protected String uuid;
 
     @Column
     private String name;
