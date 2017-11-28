@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.tunnel;
 
+import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;

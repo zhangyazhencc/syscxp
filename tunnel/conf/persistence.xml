@@ -38,7 +38,7 @@
         <class>com.syscxp.header.tunnel.tunnel.TunnelMotifyRecordVO</class>
         <class>com.syscxp.header.tunnel.tunnel.QinqVO</class>
         <class>com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO</class>
-        <class>com.syscxp.header.tunnel.tunnel.BandwidthOfferingVO</class>
+        <class>com.syscxp.header.configuration.BandwidthOfferingVO</class>
         <class>com.syscxp.header.tunnel.tunnel.PortOfferingVO</class>
 
         <class>com.syscxp.header.host.HostVO</class>

@@ -5,7 +5,7 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
-import com.syscxp.header.tunnel.tunnel.BandwidthOfferingVO;
+import com.syscxp.header.configuration.BandwidthOfferingVO;
 
 import java.math.BigDecimal;
 

@@ -14,10 +14,9 @@ public class VpnInventory {
     private String accountUuid;
     private String name;
     private String description;
-    private String vpnCidr;
     private Integer port;
     private Integer vlan;
-    private Long bandwidth;
+    private String bandwidth;
     private String endpointUuid;
     private String status;
     private String state;
@@ -37,12 +36,12 @@ public class VpnInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
-        inv.setVpnCidr(vo.getVpnCidr());
-        inv.setBandwidth(vo.getBandwidth());
+        inv.setBandwidth(vo.getBandwidthOfferingUuid());
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setStatus(vo.getStatus().toString());
         inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
+        inv.setVlan(vo.getVlan());
         inv.setDuration(vo.getDuration());
         inv.setExpiredDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -96,14 +95,6 @@ public class VpnInventory {
         this.description = description;
     }
 
-    public String getVpnCidr() {
-        return vpnCidr;
-    }
-
-    public void setVpnCidr(String vpnCidr) {
-        this.vpnCidr = vpnCidr;
-    }
-
     public Integer getPort() {
         return port;
     }
@@ -120,11 +111,11 @@ public class VpnInventory {
         this.vlan = vlan;
     }
 
-    public Long getBandwidth() {
+    public String getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Long bandwidth) {
+    public void setBandwidth(String bandwidth) {
         this.bandwidth = bandwidth;
     }
 

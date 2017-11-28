@@ -52,19 +52,18 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`hostUuid` varchar(32) NOT NULL COMMENT '物理机',
 	`name` varchar(255) NOT NULL COMMENT '名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '描述',
-	`vpnCidr` VARCHAR(32) NOT NULL COMMENT 'VPN网段',
 	`bandwidth` BIGINT NOT NULL COMMENT '带宽',
 	`maxModifies` INT DEFAULT 5 COMMENT '最大调整次数',
 	`endpointUuid` VARCHAR(32) NOT NULL COMMENT '连接点uuid',
-	`port` VARCHAR(10) NOT NULL COMMENT 'VPN端口',
+	`port` INT(10) NOT NULL COMMENT 'VPN端口',
+	`vlan` INT(10) NOT NULL COMMENT 'vlan',
 	`state` VARCHAR(32) DEFAULT NULL COMMENT '启用状态',
 	`status` VARCHAR(32) DEFAULT NULL COMMENT '运行状态',
 	`duration` int(11) NOT NULL COMMENT '购买时长',
-	`memo` VARCHAR(255) DEFAULT NULL COMMENT '备注',
 	`sid` varchar(32) NOT NULL COMMENT 'SID',
 	`certKey` VARCHAR(32) NOT NULL COMMENT 'cert-key',
 	`payment` VARCHAR(32) NOT NULL COMMENT '支付状态',
-	`expireDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '截止时间',
+	`expireDate` timestamp DEFAULT NULL COMMENT '截止时间',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)
@@ -133,8 +132,33 @@ CREATE TABLE  `syscxp_vpn`.`VpnMotifyRecordVO` (
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+# 带宽配置表
+CREATE TABLE `syscxp_tunnel`.`BandwidthOfferingVO` (
+	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'uuid',
+	`name` varchar(255) NOT NULL UNIQUE COMMENT 'bandwidth offering name',
+	`description` varchar(255) DEFAULT NULL COMMENT '描述',
+	`bandwidth` BIGINT NOT NULL COMMENT '带宽',
+	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+	`createDate` timestamp,
+	PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE VpnHostVO ADD CONSTRAINT fkMonitorHostVOHostEO FOREIGN KEY (uuid) REFERENCES HostEO (uuid) ON UPDATE RESTRICT ON DELETE CASCADE;
 ALTER TABLE VpnHostVO ADD CONSTRAINT fkVpnHostVOZoneVO FOREIGN KEY (zoneUuid) REFERENCES ZoneVO (uuid) ON DELETE RESTRICT;
 ALTER TABLE HostInterfaceVO ADD CONSTRAINT fkHostInterfaceVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE CASCADE;
 ALTER TABLE VpnVO ADD CONSTRAINT fkVpnVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE RESTRICT;
+
+
+INSERT INTO `syscxp_tunnel`.`BandwidthOfferingVO` (`uuid`,`name`,`description`,`bandwidth`,`lastOpDate`,`createDate`)
+VALUES ('2G','2G','',2147483648,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('10G','10G','',10737418240,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('1G','1G','',1073741824,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('10M','10M','',10485760,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('20M','20M','',20971520,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('100M','100M','',104857600,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('5M','5M','',5242880,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('50M','50M','',52428800,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('500M','500M','',524288000,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('5G','5G','',5368709120,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('200M','200M','',209715200,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('2M','2M','',2097152,'2017-11-01 13:51:31','2017-11-01 13:51:31');

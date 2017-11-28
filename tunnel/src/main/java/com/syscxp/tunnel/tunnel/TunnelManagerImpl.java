@@ -16,6 +16,7 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;

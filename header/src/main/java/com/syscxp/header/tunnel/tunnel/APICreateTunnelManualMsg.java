@@ -1,11 +1,10 @@
 package com.syscxp.header.tunnel.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
+import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO;
-import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.TunnelConstant;
 

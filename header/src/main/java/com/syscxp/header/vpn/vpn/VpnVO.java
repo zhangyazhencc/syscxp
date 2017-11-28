@@ -18,22 +18,21 @@ public class VpnVO {
     private String accountUuid;
     @Column
     private String hostUuid;
-
-    @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="hostUuid", insertable=false, updatable=false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "hostUuid", insertable = false, updatable = false)
     private VpnHostVO vpnHost;
     @Column
     private String name;
     @Column
     private String description;
     @Column
-    private String vpnCidr;
-    @Column
-    private Long bandwidth;
+    private String bandwidthOfferingUuid;
     @Column
     private String endpointUuid;
     @Column
     private Integer port;
+    @Column
+    private Integer vlan;
     @Column
     @Enumerated(EnumType.STRING)
     private VpnState state;
@@ -57,20 +56,12 @@ public class VpnVO {
     private Payment payment;
     @Column
     private Integer maxModifies;
-    @Column
-    private String memo;
+
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
     }
 
-    public String getMemo() {
-        return memo;
-    }
-
-    public void setMemo(String memo) {
-        this.memo = memo;
-    }
 
     public void setHostUuid(String hostUuid) {
         this.hostUuid = hostUuid;
@@ -172,20 +163,12 @@ public class VpnVO {
         this.description = description;
     }
 
-    public String getVpnCidr() {
-        return vpnCidr;
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
     }
 
-    public void setVpnCidr(String vpnCidr) {
-        this.vpnCidr = vpnCidr;
-    }
-
-    public Long getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(Long bandwidth) {
-        this.bandwidth = bandwidth;
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
     public String getEndpointUuid() {
@@ -232,4 +215,11 @@ public class VpnVO {
         this.createDate = createDate;
     }
 
+    public Integer getVlan() {
+        return vlan;
+    }
+
+    public void setVlan(Integer vlan) {
+        this.vlan = vlan;
+    }
 }

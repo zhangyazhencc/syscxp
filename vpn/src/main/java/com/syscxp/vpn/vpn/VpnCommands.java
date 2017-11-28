@@ -205,7 +205,7 @@ public class VpnCommands {
             cmd.setPublicIp(vo.getVpnHost().getPublicIp());
             cmd.setPort(vo.getPort());
             cmd.setVpnCidr(vo.getVpnCidr());
-            cmd.setBandwidth(vo.getBandwidth());
+            cmd.setBandwidth(vo.getBandwidthOfferingUuid());
             cmd.setDuration(vo.getDuration());
             return cmd;
         }
@@ -259,7 +259,7 @@ public class VpnCommands {
             UpdateVpnBandWidthCmd cmd = new UpdateVpnBandWidthCmd();
             cmd.setHostIp(vo.getVpnHost().getHostIp());
             cmd.setVpnUuid(vo.getUuid());
-            cmd.setBandwidth(vo.getBandwidth());
+            cmd.setBandwidth(vo.getBandwidthOfferingUuid());
             return cmd;
         }
 
@@ -285,7 +285,7 @@ public class VpnCommands {
 
         public static UpdateVpnCidrCmd valueOf(VpnVO vo) {
             UpdateVpnCidrCmd cmd = new UpdateVpnCidrCmd();
-            cmd.setBandwidth(vo.getBandwidth());
+            cmd.setBandwidth(vo.getBandwidthOfferingUuid());
             cmd.setCidr(vo.getVpnCidr());
             return cmd;
         }
@@ -317,7 +317,7 @@ public class VpnCommands {
 
         public static ResetCertificateCmd valueOf(VpnVO vo) {
             ResetCertificateCmd cmd = new ResetCertificateCmd();
-            cmd.setBandwidth(vo.getBandwidth());
+            cmd.setBandwidth(vo.getBandwidthOfferingUuid());
             cmd.setCidr(vo.getVpnCidr());
             return cmd;
         }
