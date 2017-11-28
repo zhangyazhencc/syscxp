@@ -278,6 +278,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     }
 
     private void handle(APIUpdateTunnelInfoForFalconMsg msg) {
+
         FalconApiCommands.Tunnel tunnel = new FalconApiCommands.Tunnel();
         tunnel.setTunnel_id(msg.getTunnelUuid());
         tunnel.setUser_id(msg.getAccountUuid());
@@ -352,9 +353,17 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }
 
         if (response.isSuccess()) {
-            UpdateQuery q = UpdateQuery.New(ResourcePolicyRefVO.class);
-            q.condAnd(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnelUuid());
-            q.delete();
+            SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
+            query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnelUuid());
+            ResourcePolicyRefVO resourcePolicyRefVO = query.find();
+            if (resourcePolicyRefVO != null) {
+                String policyUuid = resourcePolicyRefVO.getPolicyUuid();
+                dbf.remove(resourcePolicyRefVO);
+                PolicyVO policyVO = dbf.findByUuid(policyUuid, PolicyVO.class);
+                policyVO.setBindResources(policyVO.getBindResources() - 1);
+                dbf.updateAndRefresh(policyVO);
+
+            }
 
         }
         bus.reply(msg,reply);

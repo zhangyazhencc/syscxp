@@ -83,13 +83,13 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             throw new IllegalArgumentException("can not find the product type or category");
         }
         String sql = "SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND areaCode = :areaCode  GROUP BY lineCode";
-        if (msg.getCategory().equals(Category.AREA)) {
+        if (msg.getCategory().equals(Category.REGION)) {
             sql = "SELECT lineCode,areaCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode";
         }
 
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("productCategoryUuid", vo.getUuid());
-        if (!msg.getCategory().equals(Category.AREA)) {
+        if (!msg.getCategory().equals(Category.REGION)) {
             q.setParameter("areaCode", msg.getAreaCode());
         }
         List<Object[]> objs = q.getResultList();
