@@ -1,6 +1,5 @@
 package com.syscxp.header.host;
 
-import com.syscxp.header.vo.ResourceVO_;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;

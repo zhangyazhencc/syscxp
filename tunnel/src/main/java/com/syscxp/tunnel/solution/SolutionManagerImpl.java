@@ -271,14 +271,10 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setSolutionUuid(msg.getSolutionUuid());
-
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
-
-        EndpointVO endpointVO = dbf.findByUuid(msg.getEndpointUuid(),EndpointVO.class);
-        if(endpointVO != null){
-            vo.setEndpointVO(endpointVO);
-        }
+        vo.setEndpointUuid(msg.getEndpointUuid());
         vo.setZoneUuid(msg.getZoneUuid());
+
         dbf.getEntityManager().persist(vo);
 
         SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(),SolutionVO.class);
@@ -304,8 +300,13 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setSolutionUuid(msg.getSolutionUuid());
-        vo.setInnerEndpointUuid(msg.getInnerEndpointUuid());
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
+        vo.setEndpointUuidA(msg.getEndpointUuidA());
+        vo.setEndpointUuidZ(msg.getEndpointUuidZ());
+
+        if(msg.getInnerEndpointUuid() != null){
+            vo.setInnerEndpointUuid(msg.getInnerEndpointUuid());
+        }
 
         //创建物理接口
         if(msg.getPortOfferingUuidA() != null){
@@ -315,15 +316,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             createSolutionInterface(msg, msg.getEndpointUuidZ(), msg.getPortOfferingUuidZ());
         }
 
-        EndpointVO endpointVOA = dbf.findByUuid(msg.getEndpointUuidA(),EndpointVO.class);
-        if(endpointVOA != null){
-            vo.setEndpointVOA(endpointVOA);
-        }
 
-        EndpointVO endpointVOZ= dbf.findByUuid(msg.getEndpointUuidZ(),EndpointVO.class);
-        if(endpointVOZ != null){
-            vo.setEndpointVOZ(endpointVOZ);
-        }
         dbf.getEntityManager().persist(vo);
 
         SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(),SolutionVO.class);
@@ -349,18 +342,12 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setSolutionUuid(msg.getSolutionUuid());
+        vo.setEndpointUuid(msg.getEndpointUuid());
+        vo.setPortOfferingUuid(msg.getPortOfferingUuid());
 
-        EndpointVO endpointVO = dbf.findByUuid(msg.getEndpointUuid(),EndpointVO.class);
-        if(endpointVO != null){
-            vo.setEndpointVO(endpointVO);
-        }
-        PortOfferingVO portOfferingVO = dbf.findByUuid(msg.getPortOfferingUuid(),PortOfferingVO.class);
-        if(portOfferingVO != null){
-            vo.setPortOfferingVO(portOfferingVO);
-        }
         dbf.getEntityManager().persist(vo);
 
-        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(),SolutionVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(), SolutionVO.class);
         if(solutionVO != null){
             BigDecimal totalCost = totalCost(solutionVO.getUuid());
             solutionVO.setTotalCost(totalCost);
@@ -410,26 +397,21 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     /*创建物理接口*/
     @Transactional
     private void createSolutionInterface(APICreateSolutionTunnelMsg msg, String endpointUuid, String portOfferingUuid) {
+        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(),SolutionVO.class);
+
         SolutionInterfaceVO vo = new SolutionInterfaceVO();
         vo.setUuid(Platform.getUuid());
-//        vo.setCost(msg.getCost());
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setSolutionUuid(msg.getSolutionUuid());
-        APIGetProductPriceReply reply = getInterfacePrice(vo, msg.getAccountUuid());
+        APIGetProductPriceReply reply = getInterfacePrice(vo, solutionVO.getAccountUuid());
         vo.setCost(reply.getOriginalPrice());
+        vo.setEndpointUuid(endpointUuid);
+        vo.setPortOfferingUuid(portOfferingUuid);
 
-        EndpointVO endpointVO = dbf.findByUuid(endpointUuid, EndpointVO.class);
-        if(endpointVO != null){
-            vo.setEndpointVO(endpointVO);
-        }
-        PortOfferingVO portOfferingVO = dbf.findByUuid(portOfferingUuid, PortOfferingVO.class);
-        if(portOfferingVO != null){
-            vo.setPortOfferingVO(portOfferingVO);
-        }
         dbf.getEntityManager().persist(vo);
 
-        SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(),SolutionVO.class);
+
         if(solutionVO != null){
             BigDecimal totalCost = totalCost(solutionVO.getUuid());
             solutionVO.setTotalCost(totalCost);

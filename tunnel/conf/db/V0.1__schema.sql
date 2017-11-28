@@ -547,13 +547,6 @@ VALUES ('Syscloud','犀思互联云','','2017-11-01 13:51:31','2017-11-01 13:51:
   ('Huawei','华为云','','2017-11-01 13:51:31','2017-11-01 13:51:31'),
   ('Baidu','百度云','','2017-11-01 13:51:31','2017-11-01 13:51:31');
 
-CREATE TABLE `syscxp_tunnel`.`ResourceVO` (
-    `uuid` varchar(32) NOT NULL UNIQUE,
-    `resourceName` varchar(255) DEFAULT NULL,
-    `resourceType` varchar(255) DEFAULT NULL,
-    PRIMARY KEY (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE  `syscxp_tunnel`.`MonitorHostVO` (
     `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'host uuid',
     `nodeUuid` varchar(32) DEFAULT NULL COMMENT '节点ID(NodeEO.uuid)',

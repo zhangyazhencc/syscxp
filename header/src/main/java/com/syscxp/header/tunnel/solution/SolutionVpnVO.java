@@ -14,6 +14,8 @@ import javax.persistence.*;
 public class SolutionVpnVO extends SolutionBaseVO{
 
 
+    @Column
+    private String endpointUuid;
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "endpointUuid")
@@ -21,8 +23,6 @@ public class SolutionVpnVO extends SolutionBaseVO{
 
     @Column
     private String zoneUuid;
-    /*@Column
-    private String endpointUuid;*/
     @Column
     private String bandwidthOfferingUuid;
 
@@ -48,5 +48,13 @@ public class SolutionVpnVO extends SolutionBaseVO{
 
     public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
+    }
+
+    public String getEndpointUuid() {
+        return endpointUuid;
+    }
+
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 }

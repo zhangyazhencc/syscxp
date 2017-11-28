@@ -23,7 +23,6 @@ import com.syscxp.header.host.HostStatus;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
-import com.syscxp.header.message.Event;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.MonitorConstant;
@@ -62,14 +61,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private PluginRegistry pluginRgty;
-    @Autowired
-    private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
-    private ResourceDestinationMaker destMaker;
     @Autowired
     private ThreadFacade thdf;
     @Autowired
@@ -316,7 +307,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     /***
      * 监控关闭、tunnel中止
      * @param tunnelUuid
-     * @param event
      */
     public void stopTunnelMonitor(String tunnelUuid) {
         // 获取监控通道数据
@@ -339,7 +329,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     /***
      * 重启监控通道：tunnel修改vlan、调整带宽、修改端口调用
      * @param tunnelUuid
-     * @param event
      */
     public void restartTunnelMonitor(String tunnelUuid, String accountUuid, String monitorCidr, ControllerCommands.TunnelMonitorCommand monitorCommand) {
         // 控制器命令删除
@@ -496,7 +485,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     /**
      * 控制器命令删除：关闭监控、中止tunnel
      *
-     * @param event
      */
     private void stopControllerCommand(ControllerCommands.TunnelMonitorCommand cmd) {
         String url = CoreGlobalProperty.CONTROLLER_MANAGER_URL;
@@ -675,7 +663,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * 关闭agent监控
      * @param tunnelUuid
      * @param tunnelMonitorVOS
-     * @param event
      */
     private void stopAgentMonitor(String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS) {
         for (TunnelMonitorVO tunnelMonitor : tunnelMonitorVOS) {

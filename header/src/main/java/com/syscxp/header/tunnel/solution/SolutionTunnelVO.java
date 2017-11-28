@@ -11,9 +11,15 @@ import javax.persistence.*;
 @Table
 public class SolutionTunnelVO extends SolutionBaseVO{
 
+    @Column
+    private String endpointUuidA;
+
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "endpointUuidA")
     private EndpointVO endpointVOA;
+
+    @Column
+    private String endpointUuidZ;
 
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "endpointUuidZ")
@@ -56,5 +62,21 @@ public class SolutionTunnelVO extends SolutionBaseVO{
 
     public void setInnerEndpointUuid(String innerEndpointUuid) {
         this.innerEndpointUuid = innerEndpointUuid;
+    }
+
+    public String getEndpointUuidA() {
+        return endpointUuidA;
+    }
+
+    public void setEndpointUuidA(String endpointUuidA) {
+        this.endpointUuidA = endpointUuidA;
+    }
+
+    public String getEndpointUuidZ() {
+        return endpointUuidZ;
+    }
+
+    public void setEndpointUuidZ(String endpointUuidZ) {
+        this.endpointUuidZ = endpointUuidZ;
     }
 }

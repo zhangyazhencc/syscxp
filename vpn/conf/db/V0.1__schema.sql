@@ -81,13 +81,6 @@ CREATE TABLE  `syscxp_vpn`.`ZoneVO` (
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE `syscxp_vpn`.`ResourceVO` (
-	`uuid` varchar(32) NOT NULL UNIQUE,
-	`resourceName` varchar(255) DEFAULT NULL,
-	`resourceType` varchar(255) DEFAULT NULL,
-	PRIMARY KEY (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE `syscxp_vpn`.`HostEO` (
 	`uuid` varchar(32) NOT NULL COMMENT 'UUID',
 	`name` varchar(128) NOT NULL COMMENT '名称',
