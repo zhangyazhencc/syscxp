@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.sdnController;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -234,6 +235,34 @@ public class ControllerCommands {
             this.msg = msg;
         }
     }
+
+    /**
+     * @Author: DCY.
+     * @Cretion Date: 2017-11-28.
+     * @Description: Trace返回.
+     */
+    public static class ControllerTraceResponse {
+        private boolean success;
+
+        private List<List<String>> results;
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
+        }
+
+        public List<List<String>> getResults() {
+            return results;
+        }
+
+        public void setResults(List<List<String>> results) {
+            this.results = results;
+        }
+    }
+
 
     /**
      * 下发tunnel命令：开启，关闭，修改

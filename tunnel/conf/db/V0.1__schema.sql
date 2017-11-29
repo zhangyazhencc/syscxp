@@ -386,6 +386,20 @@ CREATE TABLE `syscxp_tunnel`.`TaskResourceVO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+##TraceRoute
+CREATE TABLE `syscxp_tunnel`.`TraceRouteVO` (
+  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `tunnelUuid` varchar(32) NOT NULL COMMENT 'tunnelUuid',
+  `traceSort` int(11) NOT NULL COMMENT '排序',
+  `routeIP` varchar(255) NOT NULL COMMENT '路由IP',
+  `timesFirst` varchar(255) NOT NULL COMMENT '第一次时间',
+  `timesSecond` varchar(255)  NOT NULL COMMENT '第二次时间',
+  `timesThird` varchar(255)  NOT NULL COMMENT '第三次时间',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 CREATE TABLE  `syscxp_tunnel`.`InterfaceMotifyRecordVO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `interfaceUuid` varchar(32) NOT NULL COMMENT '物理接口Uuid',
