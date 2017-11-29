@@ -99,7 +99,7 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
         if(sessions.get(imageUuid) != null && sessions.get(imageUuid).equals(imageCode)){
             return true;
         }
-        
+
         return false;
     }
 
@@ -141,7 +141,7 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
     }
 
     private Random random = new Random();
-    private String randString = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private String randString = "0123456789";
     private int width = 80;
     private int height = 23;
     private int lineSize = 40;
@@ -208,6 +208,7 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
             data = tmp.toByteArray();
             BASE64Encoder encoder = new BASE64Encoder();
             base64Code = encoder.encode(data);
+            base64Code = base64Code.replaceAll("\r|\n", "");
         } catch (Exception e) {
             e.printStackTrace();
         }finally {

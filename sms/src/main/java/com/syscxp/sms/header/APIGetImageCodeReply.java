@@ -26,4 +26,5 @@ public class APIGetImageCodeReply extends APIReply {
     public void setImageCode(String imageCode) {
         this.imageCode = imageCode;
     }
+
 }
