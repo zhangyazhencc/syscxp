@@ -226,11 +226,11 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
         vo.setType(msg.getType());
         vo.setAccountUuid(msg.getSession().getAccountUuid());
         vo.setShow(true);
+        vo.setIdentifyNumber(msg.getIdentifyNumber());
         if (msg.getType().equals(ReceiptType.VAT_SPECIAL_RECEIPT)) {
             vo.setAddress(msg.getAddress());
             vo.setBankAccountNumber(msg.getBankAccountNumber());
             vo.setBankName(msg.getBankName());
-            vo.setIdentifyNumber(msg.getIdentifyNumber());
             vo.setComment(msg.getComment());
             vo.setTelephone(msg.getTelephone());
         }
