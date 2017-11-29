@@ -728,7 +728,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             update = true;
         }
         if (!StringUtils.isEmpty(msg.getDescription())) {
-            vpnCert.setName(msg.getName());
+            vpnCert.setDescription(msg.getDescription());
             update = true;
         }
         if (update) {
