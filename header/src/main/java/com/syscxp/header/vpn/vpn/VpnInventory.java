@@ -14,10 +14,10 @@ public class VpnInventory {
     private String accountUuid;
     private String name;
     private String description;
-    private String vpnCidr;
     private Integer port;
     private Integer vlan;
-    private Long bandwidth;
+    private String tunnelInterface;
+    private String bandwidth;
     private String endpointUuid;
     private String status;
     private String state;
@@ -26,7 +26,7 @@ public class VpnInventory {
     private Integer maxModifies;
     private String sid;
     private String certKey;
-    private Payment payment;
+    private String payment;
     private VpnHostInventory hostInventory;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -37,12 +37,13 @@ public class VpnInventory {
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
-        inv.setVpnCidr(vo.getVpnCidr());
-        inv.setBandwidth(vo.getBandwidth());
+        inv.setBandwidth(vo.getBandwidthOfferingUuid());
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setStatus(vo.getStatus().toString());
         inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
+        inv.setVlan(vo.getVlan());
+        inv.setTunnelInterface(vo.getTunnelInterface());
         inv.setDuration(vo.getDuration());
         inv.setExpiredDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -50,7 +51,7 @@ public class VpnInventory {
         inv.setSid(vo.getSid());
         inv.setCertKey(vo.getCertKey());
         inv.setMaxModifies(vo.getMaxModifies());
-        inv.setPayment(vo.getPayment());
+        inv.setPayment(vo.getPayment().toString());
         inv.setHostInventory(VpnHostInventory.valueOf(vo.getVpnHost()));
         return inv;
     }
@@ -62,6 +63,14 @@ public class VpnInventory {
         }
 
         return invs;
+    }
+
+    public String getTunnelInterface() {
+        return tunnelInterface;
+    }
+
+    public void setTunnelInterface(String tunnelInterface) {
+        this.tunnelInterface = tunnelInterface;
     }
 
     public String getUuid() {
@@ -96,14 +105,6 @@ public class VpnInventory {
         this.description = description;
     }
 
-    public String getVpnCidr() {
-        return vpnCidr;
-    }
-
-    public void setVpnCidr(String vpnCidr) {
-        this.vpnCidr = vpnCidr;
-    }
-
     public Integer getPort() {
         return port;
     }
@@ -120,11 +121,11 @@ public class VpnInventory {
         this.vlan = vlan;
     }
 
-    public Long getBandwidth() {
+    public String getBandwidth() {
         return bandwidth;
     }
 
-    public void setBandwidth(Long bandwidth) {
+    public void setBandwidth(String bandwidth) {
         this.bandwidth = bandwidth;
     }
 
@@ -192,11 +193,11 @@ public class VpnInventory {
         this.certKey = certKey;
     }
 
-    public Payment getPayment() {
+    public String getPayment() {
         return payment;
     }
 
-    public void setPayment(Payment payment) {
+    public void setPayment(String payment) {
         this.payment = payment;
     }
 

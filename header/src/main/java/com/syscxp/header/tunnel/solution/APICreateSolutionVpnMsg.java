@@ -1,17 +1,19 @@
 package com.syscxp.header.tunnel.solution;
 
 import com.syscxp.header.billing.ProductChargeModel;
+import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.endpoint.EndpointVO;
 
 import java.math.BigDecimal;
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "create")
 public class APICreateSolutionVpnMsg extends  APIMessage {
 
-    @APIParam(maxLength = 32)
+    @APIParam(maxLength = 32, resourceType = SolutionVO.class)
     private String solutionUuid;
     @APIParam(numberRange = {0,Long.MAX_VALUE})
     private BigDecimal cost;
@@ -22,9 +24,9 @@ public class APICreateSolutionVpnMsg extends  APIMessage {
 
     @APIParam(maxLength = 128)
     private String zoneUuid;
-    @APIParam(maxLength = 128)
+    @APIParam(maxLength = 128, resourceType = EndpointVO.class)
     private String endpointUuid;
-    @APIParam(maxLength = 128)
+    @APIParam(maxLength = 128, resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
 
     public String getSolutionUuid() {

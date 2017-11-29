@@ -12,14 +12,14 @@ public class VpnMotifyRecordInventory {
     private String uuid;
     private String vpnUuid;
     private String opAccountUuid;
-    private MotifyType motifyType;
+    private String motifyType;
     private Timestamp createDate;
 
     public static VpnMotifyRecordInventory valueOf(VpnMotifyRecordVO vo) {
         VpnMotifyRecordInventory inv = new VpnMotifyRecordInventory();
         inv.setUuid(vo.getUuid());
         inv.setVpnUuid(vo.getVpnUuid());
-        inv.setMotifyType(vo.getMotifyType());
+        inv.setMotifyType(vo.getMotifyType().toString());
         inv.setOpAccountUuid(vo.getOpAccountUuid());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
@@ -56,11 +56,11 @@ public class VpnMotifyRecordInventory {
         this.opAccountUuid = opAccountUuid;
     }
 
-    public MotifyType getMotifyType() {
+    public String getMotifyType() {
         return motifyType;
     }
 
-    public void setMotifyType(MotifyType motifyType) {
+    public void setMotifyType(String motifyType) {
         this.motifyType = motifyType;
     }
 

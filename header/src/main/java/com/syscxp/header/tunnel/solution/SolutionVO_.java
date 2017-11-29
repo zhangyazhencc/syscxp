@@ -3,6 +3,7 @@ package com.syscxp.header.tunnel.solution;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 /**
@@ -15,7 +16,7 @@ public class SolutionVO_ {
     public static volatile SingularAttribute<SolutionVO, String> accountUuid;
     public static volatile SingularAttribute<SolutionVO, String> name;
     public static volatile SingularAttribute<SolutionVO, String> description;
-    public static volatile SingularAttribute<SolutionVO, String> totalCost;
+    public static volatile SingularAttribute<SolutionVO, BigDecimal> totalCost;
     public static volatile SingularAttribute<SolutionVO, Timestamp> createDate;
     public static volatile SingularAttribute<SolutionVO, Timestamp> lastOpDate;
 }

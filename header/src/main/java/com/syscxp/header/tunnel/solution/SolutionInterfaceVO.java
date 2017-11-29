@@ -12,18 +12,19 @@ import javax.persistence.*;
 @Table
 public class SolutionInterfaceVO extends SolutionBaseVO{
 
+    @Column
+    private String endpointUuid;
+
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "endpointUuid")
+    @JoinColumn(name = "endpointUuid", insertable = false, updatable = false)
     private EndpointVO endpointVO;
 
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "portOfferingUuid")
-    private PortOfferingVO portOfferingVO;
-
-   /* @Column
-    private String endpointUuid;
     @Column
-    private String portOfferingUuid;*/
+    private String portOfferingUuid;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "portOfferingUuid", insertable = false, updatable = false)
+    private PortOfferingVO portOfferingVO;
 
     public EndpointVO getEndpointVO() {
         return endpointVO;
@@ -39,5 +40,21 @@ public class SolutionInterfaceVO extends SolutionBaseVO{
 
     public void setPortOfferingVO(PortOfferingVO portOfferingVO) {
         this.portOfferingVO = portOfferingVO;
+    }
+
+    public String getEndpointUuid() {
+        return endpointUuid;
+    }
+
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
+    }
+
+    public String getPortOfferingUuid() {
+        return portOfferingUuid;
+    }
+
+    public void setPortOfferingUuid(String portOfferingUuid) {
+        this.portOfferingUuid = portOfferingUuid;
     }
 }

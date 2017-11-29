@@ -27,7 +27,7 @@ public class NodeInventory {
     private Double longitude;
     private Double latitude;
     private String property;
-    private NodeStatus status;
+    private String status;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -47,7 +47,7 @@ public class NodeInventory {
         inv.setLatitude(vo.getLatitude());
         inv.setLongitude(vo.getLongitude());
         inv.setProperty(vo.getProperty());
-        inv.setStatus(vo.getStatus());
+        inv.setStatus(vo.getStatus().toString());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
@@ -165,11 +165,11 @@ public class NodeInventory {
         this.property = property;
     }
 
-    public NodeStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(NodeStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

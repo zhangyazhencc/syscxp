@@ -6,6 +6,7 @@ import com.syscxp.core.ansible.AnsibleConstant;
 import com.syscxp.core.ansible.AnsibleGlobalProperty;
 import com.syscxp.core.ansible.AnsibleRunner;
 import com.syscxp.core.ansible.SshFileMd5Checker;
+import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.host.HostBase;
 import com.syscxp.core.workflow.FlowChainBuilder;
@@ -392,6 +393,7 @@ public class VpnHost extends HostBase implements Host {
     }
 
     @Override
+    @MessageSafe
     public void handleMessage(Message msg) {
         try {
             if (msg instanceof APIMessage) {

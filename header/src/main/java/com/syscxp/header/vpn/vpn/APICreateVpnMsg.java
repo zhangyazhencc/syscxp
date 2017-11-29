@@ -14,46 +14,14 @@ public class APICreateVpnMsg extends APIVpnMessage {
     private String name;
     @APIParam(required = false, maxLength = 255)
     private String description;
-    @APIParam(emptyString = false)
-    private String vpnCidr;
     @APIParam
-    private Long bandwidth;
+    private String bandwidthOfferingUuid;
     @APIParam(emptyString = false)
     private String endpointUuid;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private Integer duration;
-    @APIParam(emptyString = false)
-    private String networkUuid;
-    @APIParam(emptyString = false)
-    private String localIp;
-    @APIParam(emptyString = false)
-    private String netmask;
     @APIParam
     private String vlan;
-
-    public String getNetworkUuid() {
-        return networkUuid;
-    }
-
-    public void setNetworkUuid(String networkUuid) {
-        this.networkUuid = networkUuid;
-    }
-
-    public String getLocalIp() {
-        return localIp;
-    }
-
-    public void setLocalIp(String localIp) {
-        this.localIp = localIp;
-    }
-
-    public String getNetmask() {
-        return netmask;
-    }
-
-    public void setNetmask(String netmask) {
-        this.netmask = netmask;
-    }
 
     public String getVlan() {
         return vlan;
@@ -79,20 +47,12 @@ public class APICreateVpnMsg extends APIVpnMessage {
         this.description = description;
     }
 
-    public String getVpnCidr() {
-        return vpnCidr;
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
     }
 
-    public void setVpnCidr(String vpnCidr) {
-        this.vpnCidr = vpnCidr;
-    }
-
-    public Long getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(Long bandwidth) {
-        this.bandwidth = bandwidth;
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
     public String getEndpointUuid() {

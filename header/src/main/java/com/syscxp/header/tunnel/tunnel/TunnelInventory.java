@@ -21,11 +21,11 @@ public class TunnelInventory {
     private String name;
     private Long bandwidth;
     private Double distance;
-    private TunnelState state;
-    private TunnelStatus status;
-    private TunnelMonitorState monitorState;
+    private String state;
+    private String status;
+    private String monitorState;
     private Integer duration;
-    private ProductChargeModel productChargeModel;
+    private String productChargeModel;
     private Integer maxModifies;
     private String description;
     private Timestamp expireDate;
@@ -43,11 +43,11 @@ public class TunnelInventory {
         inv.setName(vo.getName());
         inv.setBandwidth(vo.getBandwidth());
         inv.setDistance(vo.getDistance());
-        inv.setState(vo.getState());
-        inv.setStatus(vo.getStatus());
-        inv.setMonitorState(vo.getMonitorState());
+        inv.setState(vo.getState().toString());
+        inv.setStatus(vo.getStatus().toString());
+        inv.setMonitorState(vo.getMonitorState().toString());
         inv.setDuration(vo.getDuration());
-        inv.setProductChargeModel(vo.getProductChargeModel());
+        inv.setProductChargeModel(vo.getProductChargeModel().toString());
         inv.setMaxModifies(vo.getMaxModifies());
         inv.setDescription(vo.getDescription());
         inv.setExpireDate(vo.getExpireDate());
@@ -104,27 +104,27 @@ public class TunnelInventory {
         this.distance = distance;
     }
 
-    public TunnelState getState() {
+    public String getState() {
         return state;
     }
 
-    public void setState(TunnelState state) {
+    public void setState(String state) {
         this.state = state;
     }
 
-    public TunnelStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(TunnelStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 
-    public TunnelMonitorState getMonitorState() {
+    public String getMonitorState() {
         return monitorState;
     }
 
-    public void setMonitorState(TunnelMonitorState monitorState) {
+    public void setMonitorState(String monitorState) {
         this.monitorState = monitorState;
     }
 
@@ -160,11 +160,11 @@ public class TunnelInventory {
         this.duration = duration;
     }
 
-    public ProductChargeModel getProductChargeModel() {
+    public String getProductChargeModel() {
         return productChargeModel;
     }
 
-    public void setProductChargeModel(ProductChargeModel productChargeModel) {
+    public void setProductChargeModel(String productChargeModel) {
         this.productChargeModel = productChargeModel;
     }
 

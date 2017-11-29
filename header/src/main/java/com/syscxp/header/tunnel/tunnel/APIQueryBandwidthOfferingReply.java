@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.tunnel;
 
+import com.syscxp.header.configuration.BandwidthOfferingInventory;
 import com.syscxp.header.query.APIQueryReply;
 
 import java.util.List;

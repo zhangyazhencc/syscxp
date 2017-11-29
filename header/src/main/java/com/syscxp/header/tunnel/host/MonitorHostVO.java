@@ -15,7 +15,6 @@ import javax.persistence.*;
 @Entity
 @Table
 @PrimaryKeyJoinColumn(name="uuid", referencedColumnName="uuid")
-@EO(EOClazz = HostEO.class, needView = false)
 public class MonitorHostVO extends HostVO {
     @Column
     private String username;

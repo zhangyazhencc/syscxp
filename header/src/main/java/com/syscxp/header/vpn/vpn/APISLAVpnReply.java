@@ -1,8 +1,12 @@
 package com.syscxp.header.vpn.vpn;
 
-import com.syscxp.header.message.APIEvent;
+import com.syscxp.header.message.APIReply;
+import com.syscxp.header.rest.RestResponse;
+import com.syscxp.header.tunnel.tunnel.InterfaceInventory;
 
-public class APIResetCertificateEvent extends APIEvent {
+@RestResponse(allTo = "inventory")
+public class APISLAVpnReply extends APIReply {
+
     private VpnInventory inventory;
 
     public VpnInventory getInventory() {
@@ -12,12 +16,4 @@ public class APIResetCertificateEvent extends APIEvent {
     public void setInventory(VpnInventory inventory) {
         this.inventory = inventory;
     }
-
-    public APIResetCertificateEvent() {
-    }
-
-    public APIResetCertificateEvent(String apiId) {
-        super(apiId);
-    }
-
 }

@@ -16,7 +16,6 @@ public class VpnHostInventory extends HostInventory{
     private String publicIp;
     private Integer sshPort;
     private String username;
-    private String vpnInterfaceName;
     private Integer startPort;
     private Integer endPort;
     private ZoneInventory zoneInventory;
@@ -28,12 +27,10 @@ public class VpnHostInventory extends HostInventory{
         this.setPublicIp(vo.getPublicIp());
         this.setUsername(vo.getUsername());
         this.setSshPort(vo.getSshPort());
-        this.setVpnInterfaceName(vo.getVpnInterfaceName());
         this.setStartPort(vo.getStartPort());
         this.setEndPort(vo.getEndPort());
         this.setZoneInventory(ZoneInventory.valueOf(vo.getZone()));
         this.setHostInterfaceInventories(HostInterfaceInventory.valueOf(vo.getHostInterfaces()));
-
     }
 
     public static VpnHostInventory valueOf(VpnHostVO vo){
@@ -62,14 +59,6 @@ public class VpnHostInventory extends HostInventory{
 
     public void setEndPort(Integer endPort) {
         this.endPort = endPort;
-    }
-
-    public String getVpnInterfaceName() {
-        return vpnInterfaceName;
-    }
-
-    public void setVpnInterfaceName(String vpnInterfaceName) {
-        this.vpnInterfaceName = vpnInterfaceName;
     }
 
     public List<HostInterfaceInventory> getHostInterfaceInventories() {

@@ -9,6 +9,7 @@ import javax.persistence.*;
 @Table
 @EO(EOClazz = HostEO.class)
 @BaseResource
+@Inheritance(strategy = InheritanceType.JOINED)
 public class HostVO extends HostAO {
 
     public HostVO() {

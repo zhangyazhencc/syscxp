@@ -74,9 +74,6 @@ public class SolutionQuotaOperator implements Quota.QuotaOperator {
     public SolutionQuota getUsedSolution(String accountUUid) {
         SolutionQuota quota = new SolutionQuota();
         quota.solutionNum = getUsedSolutionNum(accountUUid);
-        quota.solutionInterfaceNum = getUsedSolutionNum(accountUUid);
-        quota.solutionTunnelNum = getUsedSolutionNum(accountUUid);
-        quota.solutionVpnNum = getUsedSolutionNum(accountUUid);
         return quota;
     }
 

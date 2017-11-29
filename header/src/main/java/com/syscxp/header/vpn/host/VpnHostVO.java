@@ -13,7 +13,6 @@ import java.util.List;
 @Entity
 @Table
 @PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")
-@EO(EOClazz = HostEO.class, needView = false)
 public class VpnHostVO extends HostVO {
     @Column
     private String publicInterface;
@@ -30,8 +29,6 @@ public class VpnHostVO extends HostVO {
     private Integer startPort;
     @Column
     private Integer endPort;
-    @Column
-    private String vpnInterfaceName;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "zoneUuid", insertable = false, updatable = false)
@@ -51,10 +48,6 @@ public class VpnHostVO extends HostVO {
         super(vo);
     }
 
-    public String getVpnInterfaceName() {
-        return vpnInterfaceName;
-    }
-
     public Integer getEndPort() {
         return endPort;
     }
@@ -69,10 +62,6 @@ public class VpnHostVO extends HostVO {
 
     public void setStartPort(Integer startPort) {
         this.startPort = startPort;
-    }
-
-    public void setVpnInterfaceName(String vpnInterfaceName) {
-        this.vpnInterfaceName = vpnInterfaceName;
     }
 
     public String getZoneUuid() {

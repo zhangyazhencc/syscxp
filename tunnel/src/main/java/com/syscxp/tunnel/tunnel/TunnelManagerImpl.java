@@ -1,5 +1,7 @@
 package com.syscxp.tunnel.tunnel;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -16,6 +18,7 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.quota.Quota;
@@ -291,13 +294,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
             @Override
             public void rollback(FlowRollback trigger, Map data) {
+                logger.info(String.format("rollback to update InterfaceVO[uuid: %s]", iface.getUuid()));
                 dbf.updateAndRefresh(iface);
                 if (isUsed) {
                     List<QinqVO> qinqs = (List<QinqVO>) data.getOrDefault("qinqs", new ArrayList());
                     dbf.updateCollection(qinqs);
                 }
-                logger.info(String.format("rollback to update InterfaceVO[uuid: %s]", iface.getUuid()));
-
                 trigger.rollback();
             }
         }).then(new Flow() {
@@ -2081,30 +2083,37 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIQueryTunnelDetailForAlarmMsg msg) {
-        Map<String, Object> detailMap = new HashMap<>();
+        Map map = new HashMap();
+        List<FalconApiCommands.Tunnel> tunnels = new ArrayList<>();
 
-        FalconApiCommands.Tunnel tunnelCmd = new FalconApiCommands.Tunnel();
         for (String tunnelUuid : msg.getTunnelUuidList()) {
             TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelUuid).findValue();
+
+            FalconApiCommands.Tunnel tunnelCmd = new FalconApiCommands.Tunnel();
+            if(tunnel == null)
+                throw new IllegalArgumentException(String.format("tunnel %s not exist!",tunnelUuid));
+
             tunnelCmd.setTunnel_id(tunnel.getUuid());
             tunnelCmd.setBandwidth(tunnel.getBandwidth());
+            tunnelCmd.setUser_id(null);
+            tunnelCmd.setRules(null);
 
             List<TunnelSwitchPortVO> tunnelSwitchPortVOS = Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.tunnelUuid, tunnelUuid).list();
             for (TunnelSwitchPortVO vo : tunnelSwitchPortVOS) {
                 if ("A".equals(vo.getSortTag())) {
                     tunnelCmd.setEndpointA_ip(getPhysicalSwitch(vo.getSwitchPortUuid()));
-                    tunnelCmd.setEndpointA_vlan(vo.getVlan());
+                    tunnelCmd.setEndpointA_vid(vo.getVlan());
                 } else if ("Z".equals(vo.getSortTag())) {
                     tunnelCmd.setEndpointB_ip(getPhysicalSwitch(vo.getSwitchPortUuid()));
-                    tunnelCmd.setEndpointB_vlan(vo.getVlan());
+                    tunnelCmd.setEndpointB_vid(vo.getVlan());
                 }
             }
 
-            detailMap.put(tunnelUuid, tunnelCmd);
+            map.put(tunnelUuid, JSON.toJSONString(tunnelCmd, SerializerFeature.WriteMapNullValue));
         }
 
         APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
-        reply.setMap(detailMap);
+        reply.setMap(map);
         bus.reply(msg, reply);
     }
 

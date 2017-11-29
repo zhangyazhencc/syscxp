@@ -1,5 +1,6 @@
 package com.syscxp.vpn.vpn;
 
+import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.ThreadFacade;
@@ -8,6 +9,7 @@ import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
+import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +27,6 @@ import com.syscxp.utils.logging.CLogger;
 import org.springframework.http.*;
 import com.syscxp.vpn.vpn.VpnCommands.*;
 
-import static com.syscxp.core.Platform.argerr;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class VpnRESTCaller {
@@ -50,15 +51,15 @@ public class VpnRESTCaller {
     /**
      * 获取任务处理结果
      */
-    public TaskResult syncPostForResult(String path, VpnAgentCommand cmd) {
-        return syncPostForResponseNoretry(path, cmd).getResult();
+    public TaskResult syncPostForResult(String url, VpnAgentCommand cmd) {
+        return syncPostForResponseNoretry(url, cmd).getResult();
     }
 
     /**
      * 获取返回结果
      */
-    public VpnAgentResponse syncPostForResponse(String path, VpnAgentCommand cmd) {
-        return restf.syncJsonPost(buildUrl(path), cmd, VpnAgentResponse.class);
+    public VpnAgentResponse syncPostForResponse(String url, VpnAgentCommand cmd) {
+        return restf.syncJsonPost(url, cmd, VpnAgentResponse.class);
     }
 
     public VpnAgentResponse syncPostForResponseNoretry(String url, VpnAgentCommand cmd) {
@@ -90,8 +91,7 @@ public class VpnRESTCaller {
     /**
      * 检查状态
      */
-    public RunStatus checkStatus(String path, VpnAgentCommand cmd) {
-        String url = buildUrl(path);
+    public RunStatus checkStatus(String url, VpnAgentCommand cmd) {
         try {
             VpnAgentResponse response = syncPostForResponseNoretry(url, cmd);
             logger.debug(String.format("successfully post %s", url));
@@ -103,26 +103,7 @@ public class VpnRESTCaller {
 
     }
 
-    private String buildUrl(String path) {
-        return URLBuilder.buildUrlFromBase(baseUrl, path);
-    }
-
-    /**
-     * http调用内部服务
-     */
-    public <T extends APIReply> T syncJsonPost(APIMessage innerMsg) {
-        String url = URLBuilder.buildUrlFromBase(baseUrl, RESTConstant.REST_API_CALL);
-        InnerMessageHelper.setMD5(innerMsg);
-        RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(innerMsg), RestAPIResponse.class);
-        APIReply reply =(APIReply) RESTApiDecoder.loads(rsp.getResult());
-
-        if (!reply.isSuccess())
-            throw new ApiMessageInterceptionException(argerr("call url[%s] failed.", url));
-        return reply.castReply();
-    }
-
-    public void sendCommand(String path, VpnAgentCommand cmd, final Completion completion) {
-        String url = buildUrl(path);
+    public void sendCommand(String url, VpnAgentCommand cmd, final Completion completion) {
         sendCommandForResponce(url, cmd, new ReturnValueCompletion<VpnAgentResponse>(completion) {
             @Override
             public void success(VpnAgentResponse returnValue) {

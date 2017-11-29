@@ -21,16 +21,6 @@ public class APICreateVpnHostMsg extends APIAddHostMsg {
     private String username;
     @APIParam(emptyString = false)
     private String password;
-    @APIParam(emptyString = false)
-    private String vpnInterfaceName;
-
-    public String getVpnInterfaceName() {
-        return vpnInterfaceName;
-    }
-
-    public void setVpnInterfaceName(String vpnInterfaceName) {
-        this.vpnInterfaceName = vpnInterfaceName;
-    }
 
     public String getPublicIp() {
         return publicIp;
