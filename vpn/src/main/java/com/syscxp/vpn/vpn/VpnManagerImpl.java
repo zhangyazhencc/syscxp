@@ -744,21 +744,22 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void createCert(VpnCertVO vpnCert, Completion completion) {
         try {
-            String output = ShellUtils.run(String.format("PYTHONPATH=%s %s %s -d '%s'",
+            String output = ShellUtils.run(String.format("PYTHONPATH=%s %s %s -d '%s' ",
                     AnsibleConstant.ROOT_DIR, "python", VpnHostConstant.CREATE_CERT_PATH, AnsibleConstant.ROOT_DIR),
                     AnsibleConstant.ROOT_DIR);
+            ShellUtils.run(String.format("chmod -R 755 %s", VpnHostConstant.EASY_RSA_PATH), AnsibleConstant.ROOT_DIR);
             logger.debug(String.format("run command: python create_cert.py %s, output: %s", AnsibleConstant.ROOT_DIR, output));
             if (output.contains("Error")) {
                 completion.fail(operr(output));
             }
 
-            vpnCert.setCaCert(FileUtils.readFileToString(new File(VpnHostConstant.RSA_KEYS_PATH, VpnConstant.CA_CRT_PATH)));
-            vpnCert.setCaKey(FileUtils.readFileToString(new File(VpnHostConstant.RSA_KEYS_PATH, VpnConstant.CA_KEY_PATH)));
-            vpnCert.setClientCert(FileUtils.readFileToString(new File(VpnHostConstant.RSA_KEYS_PATH, VpnConstant.CLIENT_CRT_PATH)));
-            vpnCert.setClientKey(FileUtils.readFileToString(new File(VpnHostConstant.RSA_KEYS_PATH, VpnConstant.CLIENT_KEY_PATH)));
-            vpnCert.setServerCert(FileUtils.readFileToString(new File(VpnHostConstant.RSA_KEYS_PATH, VpnConstant.SERVER_CRT_PATH)));
-            vpnCert.setServerKey(FileUtils.readFileToString(new File(VpnHostConstant.RSA_KEYS_PATH, VpnConstant.SERVER_KEY_PATH)));
-            vpnCert.setDh1024Pem(FileUtils.readFileToString(new File(VpnHostConstant.RSA_KEYS_PATH, VpnConstant.DH1024_PEM_PATH)));
+            vpnCert.setCaCert(FileUtils.readFileToString(new File(VpnHostConstant.EASY_RSA_PATH, VpnConstant.CA_CRT_PATH)));
+            vpnCert.setCaKey(FileUtils.readFileToString(new File(VpnHostConstant.EASY_RSA_PATH, VpnConstant.CA_KEY_PATH)));
+            vpnCert.setClientCert(FileUtils.readFileToString(new File(VpnHostConstant.EASY_RSA_PATH, VpnConstant.CLIENT_CRT_PATH)));
+            vpnCert.setClientKey(FileUtils.readFileToString(new File(VpnHostConstant.EASY_RSA_PATH, VpnConstant.CLIENT_KEY_PATH)));
+            vpnCert.setServerCert(FileUtils.readFileToString(new File(VpnHostConstant.EASY_RSA_PATH, VpnConstant.SERVER_CRT_PATH)));
+            vpnCert.setServerKey(FileUtils.readFileToString(new File(VpnHostConstant.EASY_RSA_PATH, VpnConstant.SERVER_KEY_PATH)));
+            vpnCert.setDh1024Pem(FileUtils.readFileToString(new File(VpnHostConstant.EASY_RSA_PATH, VpnConstant.DH1024_PEM_PATH)));
             vpnCert.setVersion(vpnCert.getVersion() + 1);
 
             dbf.updateAndRefresh(vpnCert);
