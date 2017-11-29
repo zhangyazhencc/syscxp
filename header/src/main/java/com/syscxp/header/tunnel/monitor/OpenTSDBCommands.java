@@ -103,12 +103,12 @@ public class OpenTSDBCommands {
     public static class Tags {
         private String endpoint;
         private String ifname;
-        private String tunnelId;
+        private String tunnelid;
 
-        public Tags(String endpoint, String ifname, String tunnelId) {
+        public Tags(String endpoint, String ifname, String tunnelid) {
             this.endpoint = endpoint;
             this.ifname = ifname;
-            this.tunnelId = tunnelId;
+            this.tunnelid = tunnelid;
         }
 
         public Tags(String endpoint, String ifname) {
@@ -135,12 +135,12 @@ public class OpenTSDBCommands {
             this.ifname = ifname;
         }
 
-        public String getTunnelId() {
-            return tunnelId;
+        public String getTunnelid() {
+            return tunnelid;
         }
 
-        public void setTunnelId(String tunnelId) {
-            this.tunnelId = tunnelId;
+        public void setTunnelid(String tunnelid) {
+            this.tunnelid = tunnelid;
         }
     }
 
