@@ -16,4 +16,6 @@ public interface QuotaConstant {
     long QUOTA_ALARM_POLICY_NUM = 5;
     long QUOTA_POLICY_RULE_NUM = 10;
 
+    long QUOTA_VPN_CERT_NUM = 2;
+    long QUOTA_VPN_NUM = 2;
 }

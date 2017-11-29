@@ -5,7 +5,6 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
-import com.syscxp.header.vpn.VpnConstant;
 
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"})
 public class APICreateVpnCertMsg extends APIVpnMessage {
