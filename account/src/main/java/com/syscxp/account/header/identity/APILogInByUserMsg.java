@@ -23,6 +23,12 @@ public class APILogInByUserMsg extends APISessionMessage {
     @APIParam
     private String password;
 
+    @APIParam
+    private String imageUuid;
+
+    @APIParam
+    private String imageCode;
+
     public String getAccountName() {
         return accountName;
     }
@@ -74,5 +80,21 @@ public class APILogInByUserMsg extends APISessionMessage {
     }
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getImageUuid() {
+        return imageUuid;
+    }
+
+    public void setImageUuid(String imageUuid) {
+        this.imageUuid = imageUuid;
+    }
+
+    public String getImageCode() {
+        return imageCode;
+    }
+
+    public void setImageCode(String imageCode) {
+        this.imageCode = imageCode;
     }
 }

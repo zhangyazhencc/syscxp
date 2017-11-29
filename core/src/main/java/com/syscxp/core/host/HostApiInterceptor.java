@@ -58,13 +58,6 @@ public class HostApiInterceptor implements ApiMessageInterceptor {
             bus.publish(evt);
             throw new StopRoutingException();
         }
-
-        List<HostSwitchMonitorVO> hostSwitchMonitorVOS = Q.New(HostSwitchMonitorVO.class)
-                .eq(HostSwitchMonitorVO_.hostUuid,msg.getUuid())
-                .list();
-
-        if(!hostSwitchMonitorVOS.isEmpty())
-            throw new ApiMessageInterceptionException(argerr("can not delete host whitch exist monitor interface!"));
     }
 
     private void validate(APIUpdateHostMsg msg) {

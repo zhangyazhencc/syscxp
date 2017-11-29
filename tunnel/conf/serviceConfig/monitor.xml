@@ -56,6 +56,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.host.APIQueryNettoolMonitorHostMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.monitor.APIQuerySpeedTestTunnelNodeMsg</name>
     </message>
 

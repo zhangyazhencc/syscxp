@@ -49,7 +49,7 @@ public class DeleteResourcePolicyRefJob implements Job {
             APIDeleteResourcePolicyRefMsg msg = new APIDeleteResourcePolicyRefMsg();
             msg.setTunnelUuid(tunnelUuid);
 
-            String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.ALARM_SERVER_URL, RESTConstant.REST_API_CALL);
+            String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.ALARM_SERVER_URL, "/alarm/api");
             InnerMessageHelper.setMD5(msg);
 
             RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(msg), RestAPIResponse.class);

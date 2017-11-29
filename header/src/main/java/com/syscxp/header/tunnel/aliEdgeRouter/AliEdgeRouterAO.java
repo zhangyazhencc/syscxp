@@ -1,10 +1,7 @@
 package com.syscxp.header.tunnel.aliEdgeRouter;
 
 
-import javax.persistence.Column;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.PreUpdate;
+import javax.persistence.*;
 import java.sql.Timestamp;
 
 @MappedSuperclass
@@ -48,6 +45,10 @@ public class AliEdgeRouterAO {
 
     @Column
     private boolean isCreateFlag;
+
+    @Column
+    @Enumerated(EnumType.STRING)
+    private AliEdgeRouterStatus status;
 
     @PreUpdate
     private void preUpdate() {
@@ -156,5 +157,13 @@ public class AliEdgeRouterAO {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
+    }
+
+    public AliEdgeRouterStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AliEdgeRouterStatus status) {
+        this.status = status;
     }
 }

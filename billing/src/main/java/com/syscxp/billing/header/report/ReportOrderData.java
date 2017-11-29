@@ -8,7 +8,7 @@ import java.sql.Timestamp;
 
 public class ReportOrderData {
 
-    private Timestamp payTime;
+    private String payTime;
     private OrderType type;
     private ProductType productType;
     private BigDecimal originalPrice;
@@ -17,7 +17,7 @@ public class ReportOrderData {
     private BigDecimal payCash;
     public ReportOrderData(){}
     public ReportOrderData(Object[] objs) {
-        payTime = (Timestamp) objs[0];
+        payTime = (String) objs[0];
         type = (OrderType) objs[1];
         productType = (ProductType) objs[2];
         originalPrice = (BigDecimal) objs[3];
@@ -26,11 +26,11 @@ public class ReportOrderData {
         payCash = (BigDecimal) objs[6];
     }
 
-    public Timestamp getPayTime() {
+    public String getPayTime() {
         return payTime;
     }
 
-    public void setPayTime(Timestamp payTime) {
+    public void setPayTime(String payTime) {
         this.payTime = payTime;
     }
 
