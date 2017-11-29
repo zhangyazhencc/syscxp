@@ -24,7 +24,7 @@
         <name>com.syscxp.header.vpn.vpn.APIUpdateVpnStateMsg</name>
     </message>
     <message>
-        <name>com.syscxp.header.vpn.vpn.APIDownloadCertificateMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIDownloadCertMsg</name>
     </message>
 
     <message>
@@ -51,6 +51,11 @@
 
     <message>
         <name>com.syscxp.header.vpn.vpn.APIQueryVpnMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIQueryVpnCertMsg</name>
         <serviceId>query</serviceId>
     </message>
 

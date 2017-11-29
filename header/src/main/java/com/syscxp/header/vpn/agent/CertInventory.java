@@ -1,9 +1,9 @@
-package com.syscxp.header.vpn.vpn;
+package com.syscxp.header.vpn.agent;
 
-public class CertificateInventory {
+public class CertInventory {
+    private String caCert;
     private String clientCert;
     private String clientKey;
-    private String caCert;
     private String clientConf;
 
     public String getClientCert() {
