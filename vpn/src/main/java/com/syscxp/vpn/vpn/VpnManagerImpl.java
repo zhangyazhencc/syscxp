@@ -1411,9 +1411,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     @Override
     public List<Quota> reportQuota() {
 
-        VpnQuotaOperator interfaceQuotaOperator = new VpnQuotaOperator();
+        VpnQuotaOperator vpnQuotaOperator = new VpnQuotaOperator();
         Quota vQuota = new Quota();
-        vQuota.setOperator(interfaceQuotaOperator);
+        vQuota.setOperator(vpnQuotaOperator);
         vQuota.addMessageNeedValidation(APICreateVpnCertMsg.class);
         vQuota.addMessageNeedValidation(APICreateVpnMsg.class);
 
