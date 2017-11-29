@@ -253,7 +253,7 @@ public class VpnHost extends HostBase implements Host {
                             runner.putArgument("init", "true");
                             runner.setFullDeploy(true);
                         }
-                        runner.putArgument("pkg_Vpnagent", agentPackageName);
+                        runner.putArgument("pkg_vpnagent", agentPackageName);
                         runner.putArgument("hostname", String.format("%s.syscxp.com", self.getHostIp().replaceAll("\\.", "-")));
 
                         UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(restf.getBaseUrl());

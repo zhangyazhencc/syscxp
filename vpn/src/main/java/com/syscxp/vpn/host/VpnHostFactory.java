@@ -301,7 +301,7 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
     private void handle(APICreateHostInterfaceMsg msg) {
         HostInterfaceVO iface = new HostInterfaceVO();
         iface.setUuid(Platform.getUuid());
-        iface.setInterfaceName(msg.getInterfaceName());
+        iface.setName(msg.getName());
         iface.setHostUuid(msg.getHostUuid());
         iface.setEndpointUuid(msg.getEndpointUuid());
 

@@ -121,7 +121,6 @@ CREATE TABLE  `syscxp_vpn`.`VpnHostVO` (
 	`password` VARCHAR(255) NOT NULL COMMENT '密码',
 	`startPort` INT COMMENT '起始端口',
 	`endPort` INT COMMENT '末尾端口',
-	`vpnInterfaceName` VARCHAR(30) NOT NULL COMMENT 'VPN借口名称',
 	`zoneUuid` VARCHAR(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

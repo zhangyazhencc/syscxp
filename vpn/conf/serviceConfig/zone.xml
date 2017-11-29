@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <service xmlns="http://syscxp.com/schema/syscxp">
-    <id>zone</id>
+    <id>agent</id>
     <interceptor>VpnHostApiInterceptor</interceptor>
 
     <message>
