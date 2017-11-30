@@ -7,6 +7,7 @@ import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.cloudbus.MessageSafe;
+import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
@@ -78,6 +79,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private ErrorFacade errf;
     @Autowired
     private ThreadFacade thdf;
+    @Autowired
+    private PluginRegistry pluginRgty;
 
     @Override
     @MessageSafe
@@ -1634,6 +1637,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIDeleteTunnelEvent evt = new APIDeleteTunnelEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        for (TunnelDeletionExtensionPoint extp : pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class)) {
+            extp.preDelete();
+        }
 
         if (vo.getState() == TunnelState.Unsupport) {         //仅删除：无法开通
             deleteTunnel(vo);
