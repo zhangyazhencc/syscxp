@@ -38,9 +38,20 @@ public class SolutionBaseVO {
     @Column
     private Timestamp lastOpDate;
 
+    @Column
+    private String name;
+
     @PreUpdate
     void preUpdate() {
         lastOpDate = null;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getUuid() {
