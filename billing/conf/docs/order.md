@@ -55,11 +55,28 @@
      
 3. 执行逻辑
    ```
-      通过accountUUid 和productUuid 找到用户续费表里保存有改产品话费的记录并除以30获得每天的单价 a
-      通过传入过来的产品过期时间计算到现在还剩多少天 b
-      
-      a*b 获得改产品还剩得的价格
-      
-      
+      如果是用户自己删除产品调用此接口会扣除一天的费用且购买使用的赠送金额不返还
+      如果是公司没有开通成功产生退费则全部退还包括赠送金额
+      通过accountUUid 和productUuid 找到用户续费表里保存有该产品当时购买是的价格a
+      通过传入过来的产品过期时间计算到现在还剩多少时间b，
+      剩余时间算法：未满一个月按还剩天数除以该月的天数，小数位后保留4位
+      计算出该产品赔偿的天数的价格c，计算原理同上
+      a*b-c 获得该产品还剩得的价格
+      生成退费订单
+      删除用户该产品的续费记录
+      生成该交易记录
   
    ```
+
+##修改产品订单
+1. 消息uri com.syscxp.header.billing.APICreateModifyOrderMsg
+2. 参数
+     * private Timestamp startTime;
+     * private Timestamp expiredTime;
+     * APICreateOrderMsg 字段
+     
+3. 执行逻辑
+
+      ```
+         
+      ```

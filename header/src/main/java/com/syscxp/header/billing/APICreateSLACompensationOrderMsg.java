@@ -14,9 +14,20 @@ public class APICreateSLACompensationOrderMsg extends APICreateOrderMsg {
     private int duration;
 
     @APIParam
+    private String slaUuid;
+
+    @APIParam
     private Timestamp startTime;
     @APIParam
     private Timestamp expiredTime;
+
+    public String getSlaUuid() {
+        return slaUuid;
+    }
+
+    public void setSlaUuid(String slaUuid) {
+        this.slaUuid = slaUuid;
+    }
 
     public Timestamp getStartTime() {
         return startTime;

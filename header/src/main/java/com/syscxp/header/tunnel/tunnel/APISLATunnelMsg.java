@@ -14,6 +14,9 @@ import com.syscxp.header.tunnel.TunnelConstant;
 public class APISLATunnelMsg extends APISyncCallMessage {
     @APIParam(emptyString = false, resourceType = TunnelVO.class)
     private String uuid;
+
+    @APIParam
+    private String slaUuid;
     @APIParam
     private Integer duration;
     @APIParam(emptyString = false,maxLength = 32)
@@ -41,5 +44,13 @@ public class APISLATunnelMsg extends APISyncCallMessage {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public String getSlaUuid() {
+        return slaUuid;
+    }
+
+    public void setSlaUuid(String slaUuid) {
+        this.slaUuid = slaUuid;
     }
 }

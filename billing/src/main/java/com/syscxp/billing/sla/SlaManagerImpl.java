@@ -1,17 +1,18 @@
 package com.syscxp.billing.sla;
 
+import com.syscxp.billing.BillingGlobalProperty;
 import com.syscxp.billing.header.renew.RenewVO;
 import com.syscxp.billing.header.renew.RenewVO_;
 import com.syscxp.billing.header.sla.*;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.rest.RestAPIState;
 import com.syscxp.header.tunnel.tunnel.APISLAInterfaceMsg;
-import com.syscxp.header.tunnel.tunnel.APISLAInterfaceReply;
 import com.syscxp.header.tunnel.tunnel.APISLATunnelMsg;
-import com.syscxp.header.tunnel.tunnel.APISLATunnelReply;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -29,6 +30,8 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
 import java.sql.Timestamp;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SlaManagerImpl  extends AbstractService implements  ApiMessageInterceptor {
 
@@ -82,7 +85,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
             }
 
             Timestamp expiredTime = renewVO.getExpiredTime();
-            Timestamp endTime = new Timestamp(expiredTime.getTime()+slaCompensateVO.getDuration()*24*60*60*1000);
+            Timestamp endTime = Timestamp.valueOf(expiredTime.toLocalDateTime().plusDays(slaCompensateVO.getDuration()));
             slaCompensateVO.setTimeStart(expiredTime);
             slaCompensateVO.setTimeEnd(endTime);
             slaCompensateVO.setState(SLAState.APPLIED);
@@ -97,50 +100,47 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
             if(slaCompensateVO.getProductType().equals(ProductType.TUNNEL)){
                 APISLATunnelMsg aMsg = new APISLATunnelMsg();
                 aMsg.setUuid(slaCompensateVO.getProductUuid());
+                aMsg.setSlaUuid(slaCompensateVO.getUuid());
                 aMsg.setDuration(slaCompensateVO.getDuration());
                 aMsg.setAccountUuid(slaCompensateVO.getAccountUuid());
                 aMsg.setSession(msg.getSession());
                 String gstr = RESTApiDecoder.dumpWithSession(aMsg);
                 RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class);
 
-                if (rsp.getState().equals(RestAPIState.Done.toString())) {
-                    try {
-                        APISLATunnelReply reply = (APISLATunnelReply) RESTApiDecoder.loads(rsp.getResult());
-                        if(reply!=null && reply.getInventory()!=null){
-                            slaCompensateVO.setTimeEnd(reply.getInventory().getExpireDate());
-                            slaCompensateVO.setTimeStart(new Timestamp(reply.getInventory().getExpireDate().getTime()-slaCompensateVO.getDuration()*24*60*60*1000));
-                        }
-                    }catch (Exception e){
-                        throw new IllegalArgumentException(e);
-                    }
-                } else {
+                if (!rsp.getState().equals(RestAPIState.Done.toString())) {
                     throw new IllegalArgumentException("the network is not fine ,try for a moment");
                 }
             } else if (slaCompensateVO.getProductType().equals(ProductType.PORT)) {
                 APISLAInterfaceMsg aMsg = new APISLAInterfaceMsg();
                 aMsg.setUuid(slaCompensateVO.getProductUuid());
+                aMsg.setSlaUuid(slaCompensateVO.getUuid());
                 aMsg.setDuration(slaCompensateVO.getDuration());
                 aMsg.setSession(msg.getSession());
                 String gstr = RESTApiDecoder.dumpWithSession(aMsg);
                 RestAPIResponse rsp = restf.syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class);
 
-                if (rsp.getState().equals(RestAPIState.Done.toString())) {
-                    try {
-                        APISLAInterfaceReply reply = (APISLAInterfaceReply) RESTApiDecoder.loads(rsp.getResult());
-                        if(reply!=null && reply.getInventory()!=null){
-                            slaCompensateVO.setTimeEnd(reply.getInventory().getExpireDate());
-                            slaCompensateVO.setTimeStart(new Timestamp(reply.getInventory().getExpireDate().getTime()-slaCompensateVO.getDuration()*24*60*60*1000));
-                        }
-                    }catch (Exception e){
-                        throw new IllegalArgumentException(e);
-                    }
-                } else {
+                if (!rsp.getState().equals(RestAPIState.Done.toString())) {
                     throw new IllegalArgumentException("the network is not fine ,try for a moment");
                 }
+            } else if (slaCompensateVO.getProductType().equals(ProductType.HOST) || slaCompensateVO.getProductType().equals(ProductType.DISK)) {
+                Map<String, String> header = new HashMap<>();
+                header.put(RESTConstant.COMMAND_PATH, "compensate");
+                SLACmd slaCmd = new SLACmd();
+                slaCmd.setAccountUuid(slaCompensateVO.getAccountUuid());
+                slaCmd.setDuration(slaCompensateVO.getDuration());
+                slaCmd.setProductType(slaCompensateVO.getProductType());
+                slaCmd.setUuid(slaCompensateVO.getProductUuid());
+                String body = JSONObjectUtil.toJsonString(slaCmd);
+
+                try {
+                    restf.syncJsonPost(BillingGlobalProperty.ECP_SERVER_URL, body, header, Object.class);
+                } catch (Exception e){
+                    throw new RuntimeException(e.getMessage());
+                }
+
+
             }
 
-            slaCompensateVO.setState(SLAState.DONE);
-            dbf.updateAndRefresh(slaCompensateVO);
         }
         SLACompensateInventory ri = SLACompensateInventory.valueOf(slaCompensateVO);
         APIUpdateSLACompensateStateEvent evt = new APIUpdateSLACompensateStateEvent(msg.getId());
