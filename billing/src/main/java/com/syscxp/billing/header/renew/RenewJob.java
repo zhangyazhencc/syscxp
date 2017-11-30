@@ -1,9 +1,7 @@
 package com.syscxp.billing.header.renew;
 
 import com.syscxp.billing.header.sla.ProductCaller;
-import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
-import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.retry.Retry;
