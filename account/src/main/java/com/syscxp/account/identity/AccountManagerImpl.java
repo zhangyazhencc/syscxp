@@ -410,6 +410,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             }
         }
 
+        if(valid) {
+            reply.setAccountUuid(s.getAccountUuid());
+            reply.setUserUuid(s.getUserUuid());
+            reply.setType(s.getType());
+        }
+
         reply.setValidSession(valid);
 
         bus.reply(msg, reply);

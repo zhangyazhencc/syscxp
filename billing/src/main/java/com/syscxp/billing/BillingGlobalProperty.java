@@ -43,5 +43,8 @@ public class BillingGlobalProperty {
     @GlobalProperty(name = "tunnelServerUrl")
     public static String TUNNEL_SERVER_URL;
 
+    @GlobalProperty(name = "ecpServerUrl")
+    public static String ECP_SERVER_URL;
+
 }
 
