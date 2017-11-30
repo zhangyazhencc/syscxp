@@ -115,6 +115,7 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
             VlanUsedInventory inventory = new VlanUsedInventory();
             inventory.setCode(t.get(0, String.class));
             inventory.setPortName(t.get(1, String.class));
+            inventory.setVlan(t.get(2,Integer.class));
             switchPortUsedInventoryList.add(inventory);
         }
 
