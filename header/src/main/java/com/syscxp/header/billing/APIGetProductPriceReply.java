@@ -11,7 +11,7 @@ public class APIGetProductPriceReply extends APIReply {
 //    private AccountBalanceInventory accountBalanceInventory;
     private BigDecimal originalPrice;
     private BigDecimal discountPrice;
-    private BigDecimal mayPayTotal;
+    private BigDecimal mayPayTotal; //账户可用资金总额＝现金＋赠送＋信用额度
     private boolean payable;
 
     public List<ProductPriceUnitInventory> getProductPriceInventories() {
