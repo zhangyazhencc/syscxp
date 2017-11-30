@@ -399,10 +399,11 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setDuration(msg.getDuration());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setSolutionUuid(msg.getSolutionUuid());
-        APIGetProductPriceReply reply = getInterfacePrice(vo, msg.getSession().getAccountUuid());
-        vo.setCost(reply.getOriginalPrice());
         vo.setEndpointUuid(endpointUuid);
         vo.setPortOfferingUuid(portOfferingUuid);
+        APIGetProductPriceReply reply = getInterfacePrice(vo, msg.getSession().getAccountUuid());
+        vo.setCost(reply.getOriginalPrice());
+
 
         dbf.getEntityManager().persist(vo);
 
@@ -416,7 +417,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         pmsg.setProductChargeModel(vo.getProductChargeModel());
         pmsg.setDuration(vo.getDuration());
         pmsg.setAccountUuid(accountUuid);
-        pmsg.setUnits(new CountPriveHelper(dbf).getInterfacePriceUnit(vo.getPortOfferingVO().getUuid()));
+        pmsg.setUnits(new CountPriveHelper(dbf).getInterfacePriceUnit(vo.getPortOfferingUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller().syncJsonPost(pmsg);
         return reply;
     }
