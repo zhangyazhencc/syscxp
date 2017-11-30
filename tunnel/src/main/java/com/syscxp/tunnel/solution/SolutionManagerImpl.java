@@ -347,6 +347,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         dbf.getEntityManager().persist(vo);
 
         SolutionVO solutionVO = dbf.findByUuid(msg.getSolutionUuid(), SolutionVO.class);
+        System.out.println(vo.getCost());
         solutionVO.setTotalCost(solutionVO.getTotalCost().add(vo.getCost()));
         dbf.getEntityManager().merge(solutionVO);
 
@@ -363,6 +364,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setName(msg.getName());
         vo.setDescription(msg.getDescription());
         vo.setAccountUuid(msg.getAccountUuid());
+        vo.setTotalCost(BigDecimal.ZERO);
 
         APICreateSolutionEvent event = new APICreateSolutionEvent(msg.getId());
         event.setInventory(SolutionInventory.valueOf(dbf.persistAndRefresh(vo)));
