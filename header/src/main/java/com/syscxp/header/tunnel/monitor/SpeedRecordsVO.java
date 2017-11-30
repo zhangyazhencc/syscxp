@@ -75,6 +75,7 @@ public class SpeedRecordsVO {
     private Integer minSpeed;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private SpeedRecordStatus status;
 
     @Column
