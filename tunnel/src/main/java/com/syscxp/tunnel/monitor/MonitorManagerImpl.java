@@ -1,7 +1,6 @@
 package com.syscxp.tunnel.monitor;
 
 import com.alibaba.fastjson.JSON;
-import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
