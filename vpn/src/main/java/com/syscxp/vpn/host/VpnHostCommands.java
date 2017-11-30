@@ -82,34 +82,6 @@ public class VpnHostCommands {
     }
 
     public static class ConnectResponse extends AgentResponse {
-        private String libvirtVersion;
-        private String qemuVersion;
-
-        public boolean isIptablesSucc() {
-            return iptablesSucc;
-        }
-
-        public void setIptablesSucc(boolean iptablesSucc) {
-            this.iptablesSucc = iptablesSucc;
-        }
-
-        boolean iptablesSucc;
-
-        public String getLibvirtVersion() {
-            return libvirtVersion;
-        }
-
-        public void setLibvirtVersion(String libvirtVersion) {
-            this.libvirtVersion = libvirtVersion;
-        }
-
-        public String getQemuVersion() {
-            return qemuVersion;
-        }
-
-        public void setQemuVersion(String qemuVersion) {
-            this.qemuVersion = qemuVersion;
-        }
     }
 
     public static class ReconnectMeCmd {

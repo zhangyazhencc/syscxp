@@ -10,9 +10,11 @@ import com.syscxp.header.vpn.VpnConstant;
 
 @SuppressCredentialCheck
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"read"})
-public class APIDownloadCertificateMsg extends APIMessage {
+public class APIDownloadCertMsg extends APIMessage {
     @APIParam(resourceType = VpnVO.class)
     private String sid;
+    @APIParam(resourceType = VpnVO.class)
+    private String key;
     @APIParam
     private long timestamp;
 
@@ -22,6 +24,14 @@ public class APIDownloadCertificateMsg extends APIMessage {
 
     public void setSid(String sid) {
         this.sid = sid;
+    }
+
+    public String getKey() {
+        return key;
+    }
+
+    public void setKey(String key) {
+        this.key = key;
     }
 
     public long getTimestamp() {

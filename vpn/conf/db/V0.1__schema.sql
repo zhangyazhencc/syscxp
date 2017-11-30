@@ -52,10 +52,10 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`hostUuid` varchar(32) NOT NULL COMMENT '物理机',
 	`name` varchar(255) NOT NULL COMMENT '名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '描述',
-	`bandwidth` BIGINT NOT NULL COMMENT '带宽',
-	`maxModifies` INT DEFAULT 5 COMMENT '最大调整次数',
+	`bandwidthOfferingUuid` BIGINT NOT NULL COMMENT '带宽',
 	`endpointUuid` VARCHAR(32) NOT NULL COMMENT '连接点uuid',
 	`port` INT(10) NOT NULL COMMENT 'VPN端口',
+	`tunnelInterface` VARCHAR(128) NOT NULL COMMENT 'tunnel接口名',
 	`vlan` INT(10) NOT NULL COMMENT 'vlan',
 	`state` VARCHAR(32) DEFAULT NULL COMMENT '启用状态',
 	`status` VARCHAR(32) DEFAULT NULL COMMENT '运行状态',
@@ -63,7 +63,20 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`sid` varchar(32) NOT NULL COMMENT 'SID',
 	`certKey` VARCHAR(32) NOT NULL COMMENT 'cert-key',
 	`payment` VARCHAR(32) NOT NULL COMMENT '支付状态',
-	`expireDate` timestamp DEFAULT NULL COMMENT '截止时间',
+	`maxModifies` INT DEFAULT 5 COMMENT '最大调整次数',
+	`expireDate` timestamp COMMENT '截止时间',
+	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+	`createDate` timestamp,
+	PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  `syscxp_vpn`.`VpnCertVO` (
+	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+	`vpnUuid` varchar(32) NOT NULL COMMENT 'VPN',
+	`caCert` TEXT NOT NULL COMMENT '',
+	`clientCert` TEXT DEFAULT NULL COMMENT '',
+	`clientKey` TEXT NOT NULL COMMENT '',
+	`clientConf` TEXT NOT NULL COMMENT '',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)
@@ -96,7 +109,7 @@ CREATE TABLE `syscxp_vpn`.`HostEO` (
 	UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '监控主机';
 
-CREATE VIEW `syscxp_tunnel`.`HostVO` AS SELECT `uuid`,`name`,`code`,`hostIp`,`position`,`hostType`,`state`,`status`,`lastOpDate`,`createDate`
+CREATE VIEW `syscxp_vpn`.`HostVO` AS SELECT `uuid`,`name`,`code`,`hostIp`,`position`,`hostType`,`state`,`status`,`lastOpDate`,`createDate`
 	FROM `HostEO` WHERE deleted IS NULL;
 
 CREATE TABLE  `syscxp_vpn`.`VpnHostVO` (
@@ -108,7 +121,6 @@ CREATE TABLE  `syscxp_vpn`.`VpnHostVO` (
 	`password` VARCHAR(255) NOT NULL COMMENT '密码',
 	`startPort` INT COMMENT '起始端口',
 	`endPort` INT COMMENT '末尾端口',
-	`vpnInterfaceName` VARCHAR(30) NOT NULL COMMENT 'VPN借口名称',
 	`zoneUuid` VARCHAR(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -133,9 +145,9 @@ CREATE TABLE  `syscxp_vpn`.`VpnMotifyRecordVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 # 带宽配置表
-CREATE TABLE `syscxp_tunnel`.`BandwidthOfferingVO` (
+CREATE TABLE `syscxp_vpn`.`BandwidthOfferingVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'uuid',
-	`name` varchar(255) NOT NULL UNIQUE COMMENT 'bandwidth offering name',
+	`name` varchar(255) NOT NULL COMMENT 'bandwidth offering name',
 	`description` varchar(255) DEFAULT NULL COMMENT '描述',
 	`bandwidth` BIGINT NOT NULL COMMENT '带宽',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
@@ -149,7 +161,7 @@ ALTER TABLE HostInterfaceVO ADD CONSTRAINT fkHostInterfaceVOVpnHostVO FOREIGN KE
 ALTER TABLE VpnVO ADD CONSTRAINT fkVpnVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE RESTRICT;
 
 
-INSERT INTO `syscxp_tunnel`.`BandwidthOfferingVO` (`uuid`,`name`,`description`,`bandwidth`,`lastOpDate`,`createDate`)
+INSERT INTO `syscxp_vpn`.`BandwidthOfferingVO` (`uuid`,`name`,`description`,`bandwidth`,`lastOpDate`,`createDate`)
 VALUES ('2G','2G','',2147483648,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
 	('10G','10G','',10737418240,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
 	('1G','1G','',1073741824,'2017-11-01 13:51:31','2017-11-01 13:51:31'),

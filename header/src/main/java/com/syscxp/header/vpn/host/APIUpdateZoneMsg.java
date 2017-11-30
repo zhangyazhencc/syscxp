@@ -1,11 +1,9 @@
 package com.syscxp.header.vpn.host;
 
-import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
-import com.syscxp.header.vpn.VpnConstant;
 
 public class APIUpdateZoneMsg extends APIMessage{
     @APIParam

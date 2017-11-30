@@ -44,12 +44,6 @@ public class VpnVO {
     @Column
     private Integer duration;
     @Column
-    private Timestamp expireDate;
-    @Column
-    private Timestamp lastOpDate;
-    @Column
-    private Timestamp createDate;
-    @Column
     private String sid;
     @Column
     private String certKey;
@@ -58,6 +52,12 @@ public class VpnVO {
     private Payment payment;
     @Column
     private Integer maxModifies;
+    @Column
+    private Timestamp expireDate;
+    @Column
+    private Timestamp lastOpDate;
+    @Column
+    private Timestamp createDate;
 
     @PreUpdate
     private void preUpdate() {

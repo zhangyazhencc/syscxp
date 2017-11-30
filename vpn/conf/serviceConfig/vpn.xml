@@ -15,31 +15,10 @@
         <name>com.syscxp.header.vpn.vpn.APIUpdateVpnBandwidthMsg</name>
     </message>
     <message>
-        <name>com.syscxp.header.vpn.vpn.APIUpdateVpnExpireDateMsg</name>
-    </message>
-    <message>
-        <name>com.syscxp.header.vpn.vpn.APIUpdateVpnCidrMsg</name>
-    </message>
-    <message>
         <name>com.syscxp.header.vpn.vpn.APIUpdateVpnStateMsg</name>
     </message>
     <message>
-        <name>com.syscxp.header.vpn.vpn.APIDownloadCertificateMsg</name>
-    </message>
-
-    <message>
-        <name>com.syscxp.header.vpn.vpn.APICreateVpnInterfaceMsg</name>
-    </message>
-    <message>
-        <name>com.syscxp.header.vpn.vpn.APIDeleteVpnInterfaceMsg</name>
-    </message>
-
-
-    <message>
-        <name>com.syscxp.header.vpn.vpn.APICreateVpnRouteMsg</name>
-    </message>
-    <message>
-        <name>com.syscxp.header.vpn.vpn.APIDeleteVpnRouteMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIDownloadCertMsg</name>
     </message>
     <message>
         <name>com.syscxp.header.vpn.vpn.APIGetVpnMsg</name>
@@ -47,10 +26,22 @@
     <message>
         <name>com.syscxp.header.vpn.vpn.APIGetVpnPriceMsg</name>
     </message>
-
-
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIRenewVpnMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIRenewAutoVpnMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APISLAVpnMsg</name>
+    </message>
     <message>
         <name>com.syscxp.header.vpn.vpn.APIQueryVpnMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIQueryVpnCertMsg</name>
         <serviceId>query</serviceId>
     </message>
 
