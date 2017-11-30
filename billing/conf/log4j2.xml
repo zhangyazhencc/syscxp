@@ -86,13 +86,13 @@
                 <Logger name="com.syscxp.billing" level="TRACE" />
         -->
 
-        <Logger name="org.hibernate" level="warn"/>
+        <Logger name="org.hibernate" level="info"/>
 
-        <Root level="warn" additivity="false">
+        <Root level="info" additivity="false">
             <AppenderRef ref="Async"/>
         </Root>
         <!--<Root level="debug">-->
-        <!--<AppenderRef ref="console_out_appender"/>-->
+            <!--<AppenderRef ref="console_out_appender"/>-->
         <!--</Root>-->
     </Loggers>
 </Configuration>

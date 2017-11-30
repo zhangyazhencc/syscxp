@@ -134,6 +134,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIListTraceRouteMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.tunnel.APIQueryInterfaceMsg</name>
         <serviceId>query</serviceId>
     </message>

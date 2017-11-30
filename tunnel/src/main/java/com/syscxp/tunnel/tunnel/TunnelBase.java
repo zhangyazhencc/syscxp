@@ -12,6 +12,7 @@ import com.syscxp.header.core.Completion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
+import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.tunnel.TunnelState;
 import com.syscxp.header.tunnel.tunnel.TunnelStatus;
 import com.syscxp.header.tunnel.switchs.*;
@@ -47,6 +48,8 @@ public class TunnelBase extends AbstractTunnel {
     private DatabaseFacade dbf;
     @Autowired
     private ErrorFacade errf;
+    @Autowired
+    private RESTFacade restf;
 
     @Override
     @MessageSafe
@@ -71,12 +74,46 @@ public class TunnelBase extends AbstractTunnel {
             handle((ModifyTunnelBandwidthMsg) msg);
         }else if(msg instanceof ModifyTunnelPortsMsg){
             handle((ModifyTunnelPortsMsg) msg);
+        }else if(msg instanceof ListTraceRouteMsg){
+            handle((ListTraceRouteMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
     }
 
     private void handleApiMessage(APIMessage msg){}
+
+    private void handle(ListTraceRouteMsg msg){
+        ListTraceRouteReply reply = new ListTraceRouteReply();
+
+        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+        ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
+
+        List<ControllerCommands.TunnelMplsConfig> tunnelMplsConfig = issuedTunnelCommand.getTunnel().get(0).getMpls_switches();
+        for (int i = 0; i < tunnelMplsConfig.size(); i++){
+            ControllerCommands.TunnelMplsConfig tc = tunnelMplsConfig.get(i);
+            if(tc.getSortTag().equals("B") || tc.getSortTag().equals("Z")){
+                tunnelMplsConfig.remove(tc);
+            }
+        }
+
+        String command = JSONObjectUtil.toJsonString(tunnelMplsConfig);
+        System.out.println("----TraceRoute----:"+command);
+
+        String url = CoreGlobalProperty.CONTROLLER_MANAGER_URL+ControllerRestConstant.TUNNEL_TRACE;
+        try {
+
+            ControllerCommands.ControllerTraceResponse traceResponse = restf.syncJsonPost(url, command, ControllerCommands.ControllerTraceResponse.class);
+            reply.setResults(traceResponse.getResults());
+
+            bus.reply(msg, reply);
+        } catch (Exception e) {
+            String errorMsg = String.format("unable to post TraceRoute %s. %s", url, e.getMessage());
+            reply.setError(errf.stringToOperationError(errorMsg));
+
+            bus.reply(msg, reply);
+        }
+    }
 
     private void handle(CreateTunnelMsg msg){
         CreateTunnelReply reply = new CreateTunnelReply();

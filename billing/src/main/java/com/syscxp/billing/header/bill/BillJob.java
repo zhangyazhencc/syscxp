@@ -3,10 +3,9 @@ package com.syscxp.billing.header.bill;
 import com.syscxp.billing.header.balance.DealWay;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.header.billing.AccountBalanceVO_;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import com.syscxp.header.billing.AccountBalanceVO;
@@ -16,7 +15,6 @@ import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
-import javax.annotation.PostConstruct;
 import javax.persistence.Query;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -28,7 +26,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
-public class BillJob{
+@EnableScheduling
+@Lazy(false)
+public class BillJob {
 
     @Autowired
     private DatabaseFacade dbf;
@@ -41,7 +41,7 @@ public class BillJob{
 
     private static final CLogger logger = Utils.getLogger(BillJob.class);
 
-    @Scheduled(cron = "0 0 2 1 * ?")
+    @Scheduled(cron = "0 0 2 1 * ? ")
     public void generateBill() {
 
         GLock lock = new GLock(String.format("id-%s", "createBill"), 120);

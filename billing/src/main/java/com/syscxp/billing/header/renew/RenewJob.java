@@ -1,9 +1,7 @@
 package com.syscxp.billing.header.renew;
 
 import com.syscxp.billing.header.sla.ProductCaller;
-import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
-import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.retry.Retry;
@@ -17,7 +15,9 @@ import com.syscxp.header.rest.TimeoutRestTemplate;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.*;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +35,8 @@ import java.util.List;
 import java.util.ListIterator;
 
 @Component
+@EnableScheduling
+@Lazy(false)
 public class RenewJob {
 
     @Autowired

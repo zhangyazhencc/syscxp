@@ -162,6 +162,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIListCrossTunnelMsg) msg);
         } else if (msg instanceof APIListInnerEndpointMsg) {
             handle((APIListInnerEndpointMsg) msg);
+        } else if (msg instanceof APIListTraceRouteMsg) {
+            handle((APIListTraceRouteMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -2109,6 +2111,63 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
         reply.setMap(map);
         bus.reply(msg, reply);
+    }
+
+    private void handle(APIListTraceRouteMsg msg){
+        APIListTraceRouteReply traceRouteReply = new APIListTraceRouteReply();
+        List<TraceRouteVO> traceRouteVOS = Q.New(TraceRouteVO.class)
+                .eq(TraceRouteVO_.tunnelUuid,msg.getTunnelUuid())
+                .list();
+        if(traceRouteVOS.isEmpty() || msg.isTraceAgain()){
+            ListTraceRouteMsg listTraceRouteMsg = new ListTraceRouteMsg();
+            listTraceRouteMsg.setTunnelUuid(msg.getTunnelUuid());
+
+            bus.makeLocalServiceId(listTraceRouteMsg, TunnelConstant.SERVICE_ID);
+            bus.send(listTraceRouteMsg, new CloudBusCallBack(null) {
+                @Override
+                public void run(MessageReply reply) {
+                    if (reply.isSuccess()) {
+                        if(!traceRouteVOS.isEmpty() && msg.isTraceAgain()){
+                            UpdateQuery.New(TraceRouteVO.class)
+                                    .eq(TraceRouteVO_.tunnelUuid,msg.getTunnelUuid())
+                                    .delete();
+                        }
+                        ListTraceRouteReply listTraceRouteReply = reply.castReply();
+                        List<List<String>> results = listTraceRouteReply.getResults();
+                        for(List<String> result :results){
+                            for(String s: result){
+                                s = s.trim().replaceAll("\\s+ms","ms");
+                                String[] arrS = s.split("\\s+");
+                                if(!arrS[1].equals("*")){
+                                    TraceRouteVO vo = new TraceRouteVO();
+                                    vo.setUuid(Platform.getUuid());
+                                    vo.setTunnelUuid(msg.getTunnelUuid());
+                                    vo.setTraceSort(new Integer(arrS[0]));
+                                    vo.setRouteIP(arrS[1]);
+                                    vo.setTimesFirst(arrS[2]);
+                                    vo.setTimesSecond(arrS[3]);
+                                    vo.setTimesThird(arrS[4]);
+                                    dbf.persistAndRefresh(vo);
+                                }
+                            }
+                        }
+                        List<TraceRouteVO> traceRouteList = Q.New(TraceRouteVO.class)
+                                .eq(TraceRouteVO_.tunnelUuid,msg.getTunnelUuid())
+                                .list();
+                        traceRouteReply.setInventories(TraceRouteInventory.valueOf(traceRouteList));
+                        bus.reply(msg, traceRouteReply);
+                    }else{
+                        traceRouteReply.setError(reply.getError());
+                        bus.reply(msg, traceRouteReply);
+                    }
+                }
+            });
+
+        }else{
+            traceRouteReply.setInventories(TraceRouteInventory.valueOf(traceRouteVOS));
+            bus.reply(msg, traceRouteReply);
+        }
+
     }
 
     //////////////////////////////////////////                 billing call back                  /////////////////////////////////////////

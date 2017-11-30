@@ -1,8 +1,8 @@
 use syscxp_tunnel;
 
 CREATE TABLE `syscxp_tunnel`.`SpeedRecordsVO` (
-  `uuid` varchar(32) NOT NULL COMMENT 'uuid',
-  `accountUuid` varchar(32) NOT  NULL COMMENT '账户uuid',
+  `uuid` varchar(32) NOT NULL UNIQUE,
+  `accountUuid` varchar(32) DEFAULT NULL COMMENT '账户uuid',
   `tunnelUuid` varchar(32) NOT NULL COMMENT 'TunnelVO.uuid',
   `srcTunnelMonitorUuid` varchar(32) NOT NULL COMMENT '源监控机uuid',
   `dstTunnelMonitorUuid` varchar(32) NOT NULL COMMENT '源监控IP',
@@ -14,21 +14,19 @@ CREATE TABLE `syscxp_tunnel`.`SpeedRecordsVO` (
   `status` varchar(32) NOT NULL DEFAULT 'TESTING' COMMENT '测速状态（COMPLETED\FAILURE\TESTING)',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
-  PRIMARY KEY (`uuid`),
-  UNIQUE KEY `uuid` (`uuid`)
+  PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='监控测速纪录';
 
 CREATE TABLE `syscxp_tunnel`.`SpeedTestTunnelVO` (
-  `uuid` varchar(32) NOT NULL COMMENT 'uuid',
+  `uuid` varchar(32) NOT NULL UNIQUE,
   `tunnelUuid` varchar(32) NOT NULL COMMENT 'TunnelVO.uuid',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
-  PRIMARY KEY (`uuid`),
-  UNIQUE KEY `uuid` (`uuid`)
+  PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='测速专线列表';
 
 CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`HostSwitchMonitorEO` (
-  `uuid` varchar(32) NOT NULL COMMENT 'UUID',
+  `uuid` varchar(32) NOT NULL UNIQUE,
   `hostUuid` varchar(32) NOT NULL COMMENT '主机UUID(HostEO.uuid)',
   `physicalSwitchUuid` VARCHAR(32) NOT NULL COMMENT '物理交换机UUID(PhysicalSwitchVO.uuid)',
   `physicalSwitchPortName` VARCHAR(128) NOT NULL COMMENT '物理交换机端口名称',
@@ -37,10 +35,7 @@ CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`HostSwitchMonitorEO` (
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
-  )
-ENGINE = InnoDB
-DEFAULT CHARACTER SET = utf8
-COMMENT '监控主机与交换机接口映射';
+)ENGINE = InnoDB DEFAULT CHARACTER SET = utf8 COMMENT '监控主机与交换机接口映射';
 
 create view syscxp_tunnel.HostSwitchMonitorVO as
 select uuid,hostUuid,physicalSwitchUuid,physicalSwitchPortName,interfaceName,lastOpDate,createDate
@@ -381,6 +376,20 @@ CREATE TABLE `syscxp_tunnel`.`TaskResourceVO` (
   `body` varchar(4000)  DEFAULT NULL COMMENT '请求消息体',
   `result` varchar(4000)  DEFAULT NULL COMMENT '请求返回',
   `status` varchar(32)  NOT NULL COMMENT '任务状态',
+  `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+  `createDate` timestamp,
+  PRIMARY KEY (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+##TraceRoute
+CREATE TABLE `syscxp_tunnel`.`TraceRouteVO` (
+  `uuid` VARCHAR(32) NOT NULL UNIQUE COMMENT 'UUID',
+  `tunnelUuid` varchar(32) NOT NULL COMMENT 'tunnelUuid',
+  `traceSort` int(11) NOT NULL COMMENT '排序',
+  `routeIP` varchar(255) NOT NULL COMMENT '路由IP',
+  `timesFirst` varchar(255) NOT NULL COMMENT '第一次时间',
+  `timesSecond` varchar(255)  NOT NULL COMMENT '第二次时间',
+  `timesThird` varchar(255)  NOT NULL COMMENT '第三次时间',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
