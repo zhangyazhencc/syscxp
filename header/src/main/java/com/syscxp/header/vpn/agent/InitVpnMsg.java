@@ -7,7 +7,7 @@ public class InitVpnMsg extends VpnMessage {
     public String hostIp;
     public String vpnVlan;
     public String vpnPort;
-    public String tunnelInterface;
+    public String interfaceName;
     public String speed;
     public String username;
     public String passwd;
@@ -17,7 +17,6 @@ public class InitVpnMsg extends VpnMessage {
         msg.setVpnUuid(vo.getUuid());
         msg.setHostIp(vo.getVpnHost().getHostIp());
         msg.setUsername(vo.getAccountUuid());
-        msg.setTunnelInterface(vo.getTunnelInterface());
         msg.setPasswd(vo.getCertKey());
         msg.setVpnPort(vo.getPort().toString());
         msg.setVpnVlan(vo.getVlan().toString());
@@ -48,12 +47,12 @@ public class InitVpnMsg extends VpnMessage {
         this.vpnPort = vpnPort;
     }
 
-    public String getTunnelInterface() {
-        return tunnelInterface;
+    public String getInterfaceName() {
+        return interfaceName;
     }
 
-    public void setTunnelInterface(String tunnelInterface) {
-        this.tunnelInterface = tunnelInterface;
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
     }
 
     public String getSpeed() {

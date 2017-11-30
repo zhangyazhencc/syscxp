@@ -16,9 +16,8 @@ public class VpnInventory {
     private String description;
     private Integer port;
     private Integer vlan;
-    private String tunnelInterface;
     private String bandwidth;
-    private String endpointUuid;
+    private String interfaceUuid;
     private String status;
     private String state;
     private Integer duration;
@@ -38,12 +37,11 @@ public class VpnInventory {
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
         inv.setBandwidth(vo.getBandwidthOfferingUuid());
-        inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setInterfaceUuid(vo.getInterfaceUuid());
         inv.setStatus(vo.getStatus().toString());
         inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
         inv.setVlan(vo.getVlan());
-        inv.setTunnelInterface(vo.getTunnelInterface());
         inv.setDuration(vo.getDuration());
         inv.setExpiredDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -63,14 +61,6 @@ public class VpnInventory {
         }
 
         return invs;
-    }
-
-    public String getTunnelInterface() {
-        return tunnelInterface;
-    }
-
-    public void setTunnelInterface(String tunnelInterface) {
-        this.tunnelInterface = tunnelInterface;
     }
 
     public String getUuid() {
@@ -129,12 +119,12 @@ public class VpnInventory {
         this.bandwidth = bandwidth;
     }
 
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public String getInterfaceUuid() {
+        return interfaceUuid;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setInterfaceUuid(String interfaceUuid) {
+        this.interfaceUuid = interfaceUuid;
     }
 
     public String getStatus() {

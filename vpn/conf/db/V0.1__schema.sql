@@ -53,9 +53,8 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`name` varchar(255) NOT NULL COMMENT '名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '描述',
 	`bandwidthOfferingUuid` BIGINT NOT NULL COMMENT '带宽',
-	`endpointUuid` VARCHAR(32) NOT NULL COMMENT '连接点uuid',
+	`interfaceUuid` VARCHAR(32) NOT NULL COMMENT '连接点uuid',
 	`port` INT(10) NOT NULL COMMENT 'VPN端口',
-	`tunnelInterface` VARCHAR(128) NOT NULL COMMENT 'tunnel接口名',
 	`vlan` INT(10) NOT NULL COMMENT 'vlan',
 	`state` VARCHAR(32) DEFAULT NULL COMMENT '启用状态',
 	`status` VARCHAR(32) DEFAULT NULL COMMENT '运行状态',
@@ -114,7 +113,6 @@ CREATE VIEW `syscxp_vpn`.`HostVO` AS SELECT `uuid`,`name`,`code`,`hostIp`,`posit
 
 CREATE TABLE  `syscxp_vpn`.`VpnHostVO` (
 	`uuid` varchar(32) NOT NULL COMMENT 'UUID',
-	`publicInterface` VARCHAR(255) NOT NULL COMMENT '公网物理接口',
 	`publicIp` VARCHAR(32) NOT NULL COMMENT '公网IP',
 	`sshPort` VARCHAR(10) NOT NULL COMMENT 'ssh端口',
 	`username` VARCHAR(255) NOT NULL COMMENT '用户名',

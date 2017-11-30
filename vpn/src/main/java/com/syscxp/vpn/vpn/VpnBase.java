@@ -225,7 +225,7 @@ public class VpnBase implements Vpn {
         InitVpnCmd cmd = new InitVpnCmd();
         cmd.vpnuuid = msg.getVpnUuid();
         cmd.hostip = msg.getHostIp();
-        cmd.ddnport = msg.getTunnelInterface();
+        cmd.ddnport = msg.getInterfaceName();
         cmd.vpnport = msg.getVpnPort();
         cmd.vpnvlanid = msg.getVpnVlan();
         cmd.username = msg.getUsername();
@@ -311,7 +311,7 @@ public class VpnBase implements Vpn {
 
         StartAllCmd cmd = new StartAllCmd();
         cmd.vpnuuid = msg.getVpnUuid();
-        cmd.ddnport = msg.getTunnelInterface();
+        cmd.ddnport = msg.getInterfaceName();
         cmd.vpnport = msg.getVpnPort();
         cmd.vpnvlanid = msg.getVpnVlan();
         cmd.speed = msg.getSpeed();
@@ -340,7 +340,7 @@ public class VpnBase implements Vpn {
 
         DestroyVpnCmd cmd = new DestroyVpnCmd();
         cmd.vpnuuid = msg.getVpnUuid();
-        cmd.ddnport = msg.getTunnelInterface();
+        cmd.ddnport = msg.getInterfaceName();
         cmd.vpnport = msg.getVpnPort();
         cmd.vpnvlanid = msg.getVpnVlan();
         new Http<>(destroyVpnPath, cmd, DestroyVpnRsp.class).call(new ReturnValueCompletion<DestroyVpnRsp>(msg) {
@@ -450,7 +450,7 @@ public class VpnBase implements Vpn {
 
         VpnPortCmd cmd = new VpnPortCmd();
         cmd.vpnport = msg.getVpnPort();
-        cmd.ddnport = msg.getTunnelInterface();
+        cmd.ddnport = msg.getInterfaceName();
         cmd.vpnport = msg.getVpnPort();
         cmd.command = msg.getCommand();
 

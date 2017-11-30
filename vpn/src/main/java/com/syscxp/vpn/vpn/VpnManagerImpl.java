@@ -172,7 +172,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setDescription(msg.getDescription());
         vpn.setName(msg.getName());
         vpn.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
-        vpn.setEndpointUuid(msg.getEndpointUuid());
+        vpn.setInterfaceUuid(msg.getInterfaceUuid());
+        vpn.setVlan(msg.getVlan());
         vpn.setPayment(Payment.UNPAID);
         vpn.setState(VpnState.Enabled);
         vpn.setStatus(VpnStatus.Connecting);
@@ -648,7 +649,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void updateMotifyRecord(OrderCallbackCmd cmd) {
         VpnMotifyRecordVO record = dbf.getEntityManager().find(VpnMotifyRecordVO.class, cmd.getPorductUuid());
-        record.setMotifyType(MotifyType.valueOf(cmd.getType().toString()));
+        record.setMotifyType(cmd.getType().toString());
         dbf.update(record);
     }
 
@@ -736,12 +737,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
         // 物理机
         String hostUuid = Q.New(HostInterfaceVO.class)
-                .eq(HostInterfaceVO_.endpointUuid, msg.getEndpointUuid())
+                .eq(HostInterfaceVO_.interfaceUuid, msg.getInterfaceUuid())
                 .select(HostInterfaceVO_.hostUuid).findValue();
 
         if (hostUuid == null)
             throw new ApiMessageInterceptionException(
-                    argerr("The Host of the endpoint[uuid:%s] does not exist.", msg.getEndpointUuid()));
+                    argerr("The interface of the interface[uuid:%s] does not exist.", msg.getInterfaceUuid()));
         msg.setHostUuid(hostUuid);
         APIGetVpnPriceReply reply = getVpnPrice(msg.getDuration(), msg.getBandwidthOfferingUuid());
         if (!reply.isPayable())
@@ -778,9 +779,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void deleteVpn(VpnVO vo, final Completion complete) {
         DestroyVpnMsg destroyVpnMsg = new DestroyVpnMsg();
         destroyVpnMsg.setVpnUuid(vo.getUuid());
-        destroyVpnMsg.setTunnelInterface(vo.getTunnelInterface());
         destroyVpnMsg.setVpnPort(vo.getPort().toString());
         destroyVpnMsg.setVpnVlan(vo.getVlan().toString());
+        String name = Q.New(HostInterfaceVO.class).eq(HostInterfaceVO_.interfaceUuid, vo.getInterfaceUuid())
+                .select(HostInterfaceVO_.name).findValue();
+        destroyVpnMsg.setInterfaceName(name);
         bus.makeLocalServiceId(destroyVpnMsg, VpnConstant.SERVICE_ID);
         bus.send(destroyVpnMsg, new CloudBusCallBack(null) {
             @Override
@@ -798,6 +801,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         InitVpnMsg initVpnMsg = InitVpnMsg.valueOf(vo);
         BandwidthOfferingVO bandwidth = dbf.findByUuid(vo.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
         initVpnMsg.setSpeed(String.valueOf(SizeUnit.BYTE.toKiloByte(bandwidth.getBandwidth())));
+        String name = Q.New(HostInterfaceVO.class).eq(HostInterfaceVO_.interfaceUuid, vo.getInterfaceUuid())
+                .select(HostInterfaceVO_.name).findValue();
+        initVpnMsg.setInterfaceName(name);
 
         bus.makeLocalServiceId(initVpnMsg, VpnConstant.SERVICE_ID);
         bus.send(initVpnMsg, new CloudBusCallBack(null) {

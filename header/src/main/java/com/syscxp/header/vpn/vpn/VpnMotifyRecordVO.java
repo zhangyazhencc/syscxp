@@ -15,7 +15,7 @@ public class VpnMotifyRecordVO {
     private String opAccountUuid;
     @Column
     @Enumerated(EnumType.STRING)
-    private MotifyType motifyType;
+    private String motifyType;
     @Column
     private Timestamp createDate;
 
@@ -51,11 +51,11 @@ public class VpnMotifyRecordVO {
         this.opAccountUuid = opAccountUuid;
     }
 
-    public MotifyType getMotifyType() {
+    public String getMotifyType() {
         return motifyType;
     }
 
-    public void setMotifyType(MotifyType motifyType) {
+    public void setMotifyType(String motifyType) {
         this.motifyType = motifyType;
     }
 }
