@@ -305,8 +305,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         abvo.setCashBalance(remainCash);
         orderVo.setPayPresent(refundPresent);
         orderVo.setPayCash(remainMoney.negate());
-
-        new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, remainMoney, BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, orderVo.getUuid(), orderVo.getUuid(), msg.getOpAccountUuid(), null);
+        int hash = msg.getAccountUuid().hashCode() < 0 ? ~msg.getAccountUuid().hashCode() : msg.getAccountUuid().hashCode();
+        String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
+        new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, remainMoney, BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, outTradeNO, orderVo.getUuid(), msg.getOpAccountUuid(), null);
         deletePriceRefRenews(renewVO.getUuid());
         dbf.getEntityManager().remove(dbf.getEntityManager().merge(renewVO));
 
@@ -387,7 +388,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
             BigDecimal remainCash = abvo.getCashBalance().add(subMoney.negate());
             abvo.setCashBalance(remainCash);
-            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, subMoney.negate(), BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, orderVo.getUuid(), orderVo.getUuid(), msg.getOpAccountUuid(), null);
+            int hash = msg.getAccountUuid().hashCode() < 0 ? ~msg.getAccountUuid().hashCode() : msg.getAccountUuid().hashCode();
+            String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, subMoney.negate(), BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, outTradeNO, orderVo.getUuid(), msg.getOpAccountUuid(), null);
 
         }
         renewVO.setPriceOneMonth(discountPrice);
