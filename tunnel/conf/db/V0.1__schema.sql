@@ -628,7 +628,7 @@ CREATE TABLE SolutionVpnVO (
   `createDate` timestamp,
   `zoneUuid` varchar(32) NOT NULL COMMENT '区域',
   `endpointUuid` varchar(32) NOT NULL COMMENT '连接点',
-  `bandwidth` BIGINT NOT NULL COMMENT '带宽',
+  `bandwidthOfferingUuid` varchar(32) NOT NULL COMMENT '带宽Uuid',
   PRIMARY KEY  (`uuid`),
   CONSTRAINT `fkSolutionVpnVO` FOREIGN KEY (`solutionUuid`) REFERENCES `SolutionVO` (`uuid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
