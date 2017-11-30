@@ -4,6 +4,7 @@ import com.syscxp.core.validation.ConditionalValidation;
 
 public class VpnCommands {
     public static class AgentCommand {
+        public String vpnuuid;
     }
 
     public static class AgentResponse implements ConditionalValidation {
@@ -45,7 +46,6 @@ public class VpnCommands {
      * 创建化证书：/vpn/create_cert
      */
     public static class CreateCertCmd extends AgentCommand {
-        public String vpnuuid;
     }
 
     public static class CreateCertRsp extends AgentResponse {
@@ -56,7 +56,6 @@ public class VpnCommands {
      * vpn配置：/vpn/conf_vpn
      */
     public static class VpnConfCmd extends AgentCommand {
-        public String vpnuuid;
         public String hostip;
         public String vpnport;
 
@@ -69,7 +68,6 @@ public class VpnCommands {
      * VPN服务：/vpn/vpn_service
      */
     public static class VpnServiceCmd extends AgentCommand {
-        public  String vpnuuid;
         public  String vpnvlanid;
         public String vpnport;
         public String command;
@@ -109,7 +107,6 @@ public class VpnCommands {
      * VPN重连:/vpn/start-all
      */
     public static class StartAllCmd extends AgentCommand {
-        public String vpnuuid;
         public  String vpnvlanid;
         public  String ddnport;
         public  String vpnport;
@@ -124,7 +121,6 @@ public class VpnCommands {
      * 删除VPN：/vpn/destroy-vpn
      */
     public static class DestroyVpnCmd extends AgentCommand {
-        public String vpnuuid;
         public String vpnvlanid;
         public String ddnport;
         public  String vpnport;
@@ -151,7 +147,6 @@ public class VpnCommands {
      * VPN信息：/vpn/login_info
      */
     public static class LoginInfoCmd extends AgentCommand {
-        public String vpnuuid;
         public String username;
         public String passwd;
     }
@@ -164,7 +159,6 @@ public class VpnCommands {
      * VPN初始化：/vpn/init_vpn
      */
     public static class InitVpnCmd extends AgentCommand {
-        public String vpnuuid;
         public String hostip;
         public String vpnvlanid;
         public String vpnport;
@@ -174,7 +168,7 @@ public class VpnCommands {
         public String passwd;
     }
 
-    public static class InitVpnRsp extends AgentResponse {
+    public static class InitVpnRsp extends VpnStatusResponse {
     }
 
 }

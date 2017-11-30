@@ -149,9 +149,14 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void handle(APIGetVpnPriceMsg msg) {
-        APIGetVpnPriceReply reply = getVpnPrice(msg.getDuration(), msg.getBandwidthOfferingUuid());
+        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
+        priceMsg.setDuration(msg.getDuration());
+        priceMsg.setAccountUuid(msg.getAccountUuid());
+        priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid()));
 
-        bus.reply(msg, reply);
+        APIGetProductPriceReply reply = createOrder(priceMsg);
+        bus.reply(msg, new APIGetVpnPriceReply(reply));
     }
 
     private String generateCertKey(String accountUuid, String sid) {
@@ -212,7 +217,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             public void fail(ErrorCode errorCode) {
                 vo.setStatus(VpnStatus.Disconnected);
                 evt.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vo)));
-                evt.setError(reply.getError());
+                evt.setError(errorCode);
                 bus.publish(evt);
             }
         });
@@ -570,7 +575,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     disconnectedVpn.add(vo.getUuid());
                 }
             }
-            updateVpnStatus(disconnectedVpn, VpnStatus.Disconnected);
         }
 
         @Override
@@ -744,20 +748,17 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             throw new ApiMessageInterceptionException(
                     argerr("The interface of the interface[uuid:%s] does not exist.", msg.getInterfaceUuid()));
         msg.setHostUuid(hostUuid);
-        APIGetVpnPriceReply reply = getVpnPrice(msg.getDuration(), msg.getBandwidthOfferingUuid());
+        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+        priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
+        priceMsg.setDuration(msg.getDuration());
+        priceMsg.setAccountUuid(msg.getAccountUuid());
+        priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid()));
+
+        APIGetProductPriceReply reply = createOrder(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
                     argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
     }
-
-    private APIGetVpnPriceReply getVpnPrice(Integer duration, String bandwidthOfferingUuid) {
-        APIGetProductPriceMsg msg = new APIGetProductPriceMsg();
-        msg.setProductChargeModel(ProductChargeModel.BY_MONTH);
-        msg.setDuration(duration);
-        msg.setUnits(generateUnits(bandwidthOfferingUuid));
-        return createOrder(msg);
-    }
-
 
     private boolean reconnectVpn(VpnVO vo) {
         checkState(vo);
@@ -770,7 +771,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void fail(ErrorCode errorCode) {
                 changVpnSatus(vo, VpnStatus.Disconnected);
-                logger.info(errorCode.getCode());
+                logger.info(String.format("ERROR[%s]: %s", errorCode.getCode(), errorCode.getDetails()));
             }
         });
         return true;

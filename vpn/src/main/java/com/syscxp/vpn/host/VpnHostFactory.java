@@ -303,6 +303,7 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
         iface.setName(msg.getName());
         iface.setHostUuid(msg.getHostUuid());
         iface.setEndpointUuid(msg.getEndpointUuid());
+        iface.setInterfaceUuid(msg.getInterfaceUuid());
 
         iface = dbf.persistAndRefresh(iface);
 
