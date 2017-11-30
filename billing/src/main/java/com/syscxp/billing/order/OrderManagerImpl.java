@@ -7,8 +7,10 @@ import com.syscxp.billing.header.renew.PriceRefRenewVO;
 import com.syscxp.billing.header.renew.PriceRefRenewVO_;
 import com.syscxp.billing.header.renew.RenewVO;
 import com.syscxp.billing.header.renew.RenewVO_;
+import com.syscxp.billing.header.sla.SLACompensateVO;
 import com.syscxp.billing.header.sla.SLALogVO;
 import com.syscxp.billing.header.sla.SLALogVO_;
+import com.syscxp.billing.header.sla.SLAState;
 import com.syscxp.header.billing.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Propagation;
@@ -34,6 +36,7 @@ import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
@@ -230,6 +233,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         }
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
 
+        updateSLA(msg.getSlaUuid(), orderVo.getProductEffectTimeStart(), orderVo.getProductEffectTimeEnd());
         saveSLALogVO(msg.getAccountUuid(), msg.getProductUuid(), msg.getDuration(), orderVo.getProductEffectTimeStart(), msg.getExpiredTime(), renewVO.getPriceOneMonth());
         dbf.getEntityManager().merge(renewVO);
         dbf.getEntityManager().persist(orderVo);
@@ -242,6 +246,17 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         bus.reply(msg, reply);
 
     }
+
+    @Transactional
+    private void updateSLA(String uuid, Timestamp startTime, Timestamp endTime) {
+        SLACompensateVO slaCompensateVO = dbf.findByUuid(uuid, SLACompensateVO.class);
+        slaCompensateVO.setTimeStart(startTime);
+        slaCompensateVO.setTimeEnd(endTime);
+        slaCompensateVO.setState(SLAState.DONE);
+        dbf.getEntityManager().merge(slaCompensateVO);
+
+    }
+
 
     @Transactional
     private void saveSLALogVO(String accountUuid, String productUuid, int duration, Timestamp startTime, Timestamp endTime, BigDecimal priceOnMonth) {
@@ -715,7 +730,11 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
             ProductPriceUnitVO productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), unit.getAreaCode(), unit.getLineCode(), unit.getConfigCode());
             if (productPriceUnitVO == null) {
-                throw new IllegalArgumentException("price uuid is not valid");
+                productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), unit.getAreaCode(), "DEFAULT", unit.getConfigCode());
+                if(productCategoryVO == null){
+                    productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), "DEFAULT", "DEFAULT", unit.getConfigCode());
+                }
+                if(productCategoryVO == null) throw new IllegalArgumentException("can not find the product price in database");
             }
 
             productPriceUnitUuids.add(productPriceUnitVO.getUuid());

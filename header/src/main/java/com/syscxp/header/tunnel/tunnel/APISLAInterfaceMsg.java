@@ -14,6 +14,17 @@ public class APISLAInterfaceMsg extends APISyncCallMessage {
     private String uuid;
 
     @APIParam
+    private String slaUuid;
+
+    public String getSlaUuid() {
+        return slaUuid;
+    }
+
+    public void setSlaUuid(String slaUuid) {
+        this.slaUuid = slaUuid;
+    }
+
+    @APIParam
     private Integer duration;
 
     public String getUuid() {
