@@ -437,9 +437,6 @@ public class VpnHost extends HostBase implements Host {
         vo = vo == null ? getSelf() : vo;
 
         APIUpdateVpnHostMsg umsg = (APIUpdateVpnHostMsg) msg;
-        if (umsg.getPublicInterface() != null) {
-            vo.setPublicInterface(umsg.getPublicInterface());
-        }
         if (umsg.getPublicIp() != null) {
             vo.setPublicIp(umsg.getPublicIp());
         }

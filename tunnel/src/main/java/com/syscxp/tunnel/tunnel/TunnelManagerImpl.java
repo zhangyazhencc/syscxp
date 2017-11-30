@@ -3479,12 +3479,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 通过连接点获取可用的端口规格
      */
     private List<PortOfferingVO> getPortTypeByEndpoint(String endpointUuid) {
-        String sql = "SELECT t FROM PortOfferingVO t WHERE t.uuid IN (SELECT DISTINCT sp.portType FROM SwitchPortVO sp WHERE sp.state = :state " +
-                "AND (SELECT count(1) AS n1 FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid AND s.status = :status AND sp.switchUuid = s.uuid) = 1 " +
-                "AND (SELECT count(1) AS n2 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0) ";
+
+        String sql ="SELECT t FROM PortOfferingVO t WHERE t.uuid IN (" +
+                "select DISTINCT sp.portType from SwitchPortVO sp, SwitchVO s where sp.switchUuid=s.uuid " +
+                "and s.endpointUuid=:endpointUuid and s.state=:switchState and sp.state=:state " +
+                "and sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid)) ";
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
-                .param("status", SwitchStatus.Connected)
+                .param("switchState", SwitchState.Enabled)
                 .param("endpointUuid", endpointUuid)
                 .list();
     }
@@ -3495,12 +3497,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 通过连接点和端口规格获取可用的端口
      */
     private List<SwitchPortVO> getSwitchPortByType(String endpointUuid, String type) {
-        String sql = "SELECT sp FROM SwitchPortVO sp WHERE sp.state = :state AND sp.portType = :portType " +
-                "AND (SELECT count(1) AS n1 FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid AND s.status = :status AND sp.switchUuid = s.uuid) = 1 " +
-                "AND (SELECT count(1) AS n1 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0 ";
+        String sql = "SELECT sp FROM SwitchPortVO sp, SwitchVO s WHERE sp.switchUuid=s.uuid " +
+                "AND s.endpointUuid = :endpointUuid AND s.state=:switchState AND sp.state=:state AND sp.portType = :portType " +
+                "AND sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid) ";
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
-                .param("status", SwitchStatus.Connected)
+                .param("switchState", SwitchState.Enabled)
                 .param("portType", type)
                 .param("endpointUuid", endpointUuid)
                 .list();
