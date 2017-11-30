@@ -24,6 +24,8 @@ public class VpnHostVO extends HostVO {
     @ENCRYPTParam
     private String password;
     @Column
+    private String interfaceName;
+    @Column
     private Integer startPort;
     @Column
     private Integer endPort;
@@ -44,6 +46,14 @@ public class VpnHostVO extends HostVO {
 
     public VpnHostVO(HostVO vo) {
         super(vo);
+    }
+
+    public String getInterfaceName() {
+        return interfaceName;
+    }
+
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
     }
 
     public Integer getEndPort() {

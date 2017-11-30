@@ -361,12 +361,12 @@ public class VpnBase extends AbstractVpn {
         httpCall(clientInfoPath, cmd, ClientInfoRsp.class, new ReturnValueCompletion<ClientInfoRsp>(msg) {
             @Override
             public void success(ClientInfoRsp ret) {
-                CertInventory inventory = new CertInventory();
-                inventory.setCaCert(ret.ca_crt);
-                inventory.setClientCert(ret.client_crt);
-                inventory.setClientConf(ret.client_conf);
-                inventory.setClientKey(ret.client_key);
-                reply.setInventory(inventory);
+                CertInfo certInfo = new CertInfo();
+                certInfo.setCaCert(ret.ca_crt);
+                certInfo.setClientCert(ret.client_crt);
+                certInfo.setClientConf(ret.client_conf);
+                certInfo.setClientKey(ret.client_key);
+                reply.setCertInfo(certInfo);
                 bus.reply(msg, reply);
             }
 

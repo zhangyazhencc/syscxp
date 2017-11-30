@@ -17,6 +17,8 @@ public class APICreateVpnHostMsg extends APIAddHostMsg {
     private String username;
     @APIParam(emptyString = false)
     private String password;
+    @APIParam(emptyString = false)
+    private String interfaceName;
 
     public String getPublicIp() {
         return publicIp;
@@ -56,6 +58,14 @@ public class APICreateVpnHostMsg extends APIAddHostMsg {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getInterfaceName() {
+        return interfaceName;
+    }
+
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
     }
 
     public ApiNotification __notification__() {
