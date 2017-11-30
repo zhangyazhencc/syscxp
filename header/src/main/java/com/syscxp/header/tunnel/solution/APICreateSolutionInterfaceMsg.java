@@ -25,6 +25,8 @@ public class APICreateSolutionInterfaceMsg extends  APIMessage {
     private String endpointUuid;
     @APIParam(maxLength = 32, resourceType = PortOfferingVO.class)
     private String portOfferingUuid;
+    @APIParam(maxLength = 255)
+    private String name;
 
     public String getSolutionUuid() {
         return solutionUuid;
@@ -72,5 +74,13 @@ public class APICreateSolutionInterfaceMsg extends  APIMessage {
 
     public void setPortOfferingUuid(String portOfferingUuid) {
         this.portOfferingUuid = portOfferingUuid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

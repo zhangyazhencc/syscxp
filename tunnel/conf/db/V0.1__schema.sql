@@ -571,6 +571,7 @@ ALTER TABLE MonitorHostVO ADD CONSTRAINT fkMonitorHostVONodeEO FOREIGN KEY (node
 
 ########################################################
 #解决方案#
+DROP TABLE IF EXISTS `SolutionVO`;
 CREATE TABLE `SolutionVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `accountUuid` varchar(32) NOT  NULL COMMENT '账户uuid',
@@ -583,6 +584,7 @@ CREATE TABLE `SolutionVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 #物理接口#
+DROP TABLE IF EXISTS `SolutionInterfaceVO`;
 CREATE TABLE `SolutionInterfaceVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `solutionUuid` varchar(32) NOT NULL COMMENT '方案UUID',
@@ -599,6 +601,7 @@ CREATE TABLE `SolutionInterfaceVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 #云专线#
+DROP TABLE IF EXISTS `SolutionTunnelVO`;
 CREATE TABLE `SolutionTunnelVO` (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `solutionUuid` varchar(32) NOT NULL COMMENT '方案UUID',
@@ -617,6 +620,7 @@ CREATE TABLE `SolutionTunnelVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 #VPN网关#
+DROP TABLE IF EXISTS `SolutionVpnVO`;
 CREATE TABLE SolutionVpnVO (
   `uuid` varchar(32) NOT NULL COMMENT 'UUID',
   `solutionUuid` varchar(32) NOT NULL COMMENT '方案UUID',

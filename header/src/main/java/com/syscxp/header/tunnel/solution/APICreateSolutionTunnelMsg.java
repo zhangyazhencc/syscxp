@@ -41,6 +41,9 @@ public class APICreateSolutionTunnelMsg extends  APIMessage {
     @APIParam(maxLength = 32, required = false, resourceType = PortOfferingVO.class)
     private String portOfferingUuidZ;
 
+    @APIParam(maxLength = 255)
+    private String name;
+
 
     public String getSolutionUuid() {
         return solutionUuid;
@@ -120,5 +123,13 @@ public class APICreateSolutionTunnelMsg extends  APIMessage {
 
     public void setInnerEndpointUuid(String innerEndpointUuid) {
         this.innerEndpointUuid = innerEndpointUuid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
