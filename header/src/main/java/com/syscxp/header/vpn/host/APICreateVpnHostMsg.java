@@ -8,12 +8,10 @@ import com.syscxp.header.notification.ApiNotification;
 
 public class APICreateVpnHostMsg extends APIAddHostMsg {
     @APIParam(emptyString = false)
-    private String publicInterface;
-    @APIParam(emptyString = false)
     private String publicIp;
     @APIParam(emptyString = false, resourceType = ZoneVO.class)
     private String zoneUuid;
-    @APIParam
+    @APIParam(required = false)
     private Integer sshPort;
     @APIParam(emptyString = false)
     private String username;
@@ -26,14 +24,6 @@ public class APICreateVpnHostMsg extends APIAddHostMsg {
 
     public void setPublicIp(String publicIp) {
         this.publicIp = publicIp;
-    }
-
-    public String getPublicInterface() {
-        return publicInterface;
-    }
-
-    public void setPublicInterface(String publicInterface) {
-        this.publicInterface = publicInterface;
     }
 
     public Integer getSshPort() {

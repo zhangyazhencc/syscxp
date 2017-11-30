@@ -12,7 +12,6 @@ import java.util.List;
 @Inventory(mappingVOClass = VpnHostVO.class, collectionValueOfMethod = "valueOf1",
         parent = {@Parent(inventoryClass = HostInventory.class, type = VpnConstant.HOST_TYPE)})
 public class VpnHostInventory extends HostInventory{
-    private String publicIface;
     private String publicIp;
     private Integer sshPort;
     private String username;
@@ -23,7 +22,6 @@ public class VpnHostInventory extends HostInventory{
 
     public VpnHostInventory(VpnHostVO vo) {
         super(vo);
-        this.setPublicIface(vo.getPublicInterface());
         this.setPublicIp(vo.getPublicIp());
         this.setUsername(vo.getUsername());
         this.setSshPort(vo.getSshPort());
@@ -84,15 +82,6 @@ public class VpnHostInventory extends HostInventory{
     public void setPublicIp(String publicIp) {
         this.publicIp = publicIp;
     }
-
-    public String getPublicIface() {
-        return publicIface;
-    }
-
-    public void setPublicIface(String publicIface) {
-        this.publicIface = publicIface;
-    }
-
 
     public Integer getSshPort() {
         return sshPort;
