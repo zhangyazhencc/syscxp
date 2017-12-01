@@ -45,7 +45,7 @@ public class AlarmLogVO extends BaseVO {
     private String policyUuid;
 
     @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "policyUuid")
+    @JoinColumn(name = "policyUuid", insertable = false, updatable = false)
     private PolicyVO policyVO;
 
 //    @Column

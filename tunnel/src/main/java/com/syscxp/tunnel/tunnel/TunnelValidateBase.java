@@ -80,7 +80,7 @@ public class TunnelValidateBase {
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(new TunnelBase().getInterfacePriceUnit(msg.getPortOfferingUuid()));
+        priceMsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(msg.getPortOfferingUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
@@ -119,7 +119,7 @@ public class TunnelValidateBase {
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(new TunnelBase().getInterfacePriceUnit(portType));
+        priceMsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(portType));
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
@@ -220,7 +220,7 @@ public class TunnelValidateBase {
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(new TunnelBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(),
+        priceMsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(),
                 evoZ.getNodeUuid(), msg.getInnerConnectedEndpointUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
@@ -363,7 +363,7 @@ public class TunnelValidateBase {
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(new TunnelBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(),
+        priceMsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(),
                 evoZ.getNodeUuid(), msg.getInnerConnectedEndpointUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
