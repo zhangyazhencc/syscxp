@@ -380,6 +380,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
 
+
         APICreateOrderReply reply = createOrder(orderMsg);
         afterRenewVpn(reply, vo, msg);
     }
@@ -397,14 +398,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         VpnVO vpn = dbf.getEntityManager().find(VpnVO.class, msg.getUuid());
 
-        APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg();
-        orderMsg.setProductUuid(vpn.getUuid());
-        orderMsg.setProductName(vpn.getName());
-        orderMsg.setDescriptionData(vpn.getDescription());
-        orderMsg.setProductType(ProductType.VPN);
-        orderMsg.setAccountUuid(msg.getAccountUuid());
+        APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg(getOrderMsgForVPN(vpn, new UpdateVpnBandwidthCallBack()));
         orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
-        orderMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid()));
         orderMsg.setStartTime(vpn.getCreateDate());
         orderMsg.setExpiredTime(vpn.getExpireDate());
 
@@ -493,11 +488,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         APIDeleteVpnEvent evt = new APIDeleteVpnEvent(msg.getId());
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
 
-        APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
-        orderMsg.setProductUuid(vpn.getUuid());
-        orderMsg.setProductType(ProductType.VPN);
-        orderMsg.setProductName(vpn.getName());
-        orderMsg.setAccountUuid(msg.getAccountUuid());
+        APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(getOrderMsgForVPN(vpn, new UnsubcribeVpnCallBack()));
         orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
         orderMsg.setStartTime(vpn.getCreateDate());
         orderMsg.setExpiredTime(vpn.getExpireDate());
@@ -749,14 +740,25 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     argerr("The Account[uuid:%s] is not a admin or proxy.",
                             msg.getSession().getAccountUuid()));
         }
+        Q q = Q.New(VpnVO.class).eq(VpnVO_.name, msg.getName()).eq(VpnVO_.accountUuid, msg.getAccountUuid());
+        if (q.isExists()){
+            throw new ApiMessageInterceptionException(
+                    argerr("The name[%s] of the vpn can not repeat.", msg.getName()));
+        }
         // 物理机
         String hostUuid = Q.New(HostInterfaceVO.class)
                 .eq(HostInterfaceVO_.interfaceUuid, msg.getInterfaceUuid())
                 .select(HostInterfaceVO_.hostUuid).findValue();
 
-        if (hostUuid == null)
+        if (hostUuid == null) {
             throw new ApiMessageInterceptionException(
-                    argerr("The interface of the interface[uuid:%s] does not exist.", msg.getInterfaceUuid()));
+                    argerr("The host of the interface[uuid:%s] does not exist.", msg.getInterfaceUuid()));
+        }
+        q = Q.New(VpnVO.class).eq(VpnVO_.hostUuid, hostUuid).eq(VpnVO_.vlan, msg.getVlan());
+        if (q.isExists()){
+            throw new ApiMessageInterceptionException(
+                    argerr("The vlan[%s] of the host[uuid:%s] already exist.", msg.getVlan(), hostUuid));
+        }
         msg.setHostUuid(hostUuid);
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
         priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
@@ -798,6 +800,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
+                    dbf.remove(vo);
                     complete.success();
                 } else {
                     complete.fail(reply.getError());

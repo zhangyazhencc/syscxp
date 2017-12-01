@@ -17,7 +17,7 @@ public class VpnHostInventory extends HostInventory{
     private String username;
     private Integer startPort;
     private Integer endPort;
-    private Integer interfaceName;
+    private String interfaceName;
     private ZoneInventory zoneInventory;
     private List<HostInterfaceInventory> hostInterfaceInventories;
 
@@ -45,11 +45,11 @@ public class VpnHostInventory extends HostInventory{
         return invs;
     }
 
-    public Integer getInterfaceName() {
+    public String getInterfaceName() {
         return interfaceName;
     }
 
-    public void setInterfaceName(Integer interfaceName) {
+    public void setInterfaceName(String interfaceName) {
         this.interfaceName = interfaceName;
     }
 
