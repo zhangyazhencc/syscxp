@@ -68,6 +68,8 @@ public class AccountBase extends AbstractAccount {
     private AccountVO vo;
 
     @Autowired
+    private IdentiyInterceptor identiyInterceptor;
+    @Autowired
     private SmsService smsService;
     @Autowired
     private MailService mailService;
@@ -555,7 +557,17 @@ public class AccountBase extends AbstractAccount {
 
             if (msg.getStatus() != null) {
                 account.setStatus(msg.getStatus());
+                if(msg.getStatus() == AccountStatus.Disabled){
+                    List<SessionVO> list = dbf.createQuery(SessionVO.class).add(SessionVO_.accountUuid,
+                            SimpleQuery.Op.EQ,msg.getUuid()).list();
+
+                    for(SessionVO vo: list){
+                        identiyInterceptor.logOutSession(vo.getUuid());
+
+                    }
+                }
             }
+
             if (msg.getType() != null) {
 
                 if(msg.getType().equals(AccountType.Proxy.toString()) &&

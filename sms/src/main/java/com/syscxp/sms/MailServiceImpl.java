@@ -122,7 +122,7 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
 
     private void  handle(APIMailCodeSendMsg msg) throws OperationFailureException {
 
-        String code = StringDSL.getRandomNumbersString(6);
+        String code = StringDSL.getRandomNumbersString(10);
         boolean result = mailSend(msg.getMail(),"验证码", code);
         if(result){
             VerificationCode verificationCode = sessions.get(msg.getMail());
