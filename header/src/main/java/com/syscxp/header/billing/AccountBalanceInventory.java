@@ -15,6 +15,7 @@ public class AccountBalanceInventory {
     private BigDecimal presentBalance;
     private BigDecimal creditPoint;
     private BigDecimal cashBalance;
+    private String outTradeNo;
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
@@ -87,4 +88,11 @@ public class AccountBalanceInventory {
         this.lastOpDate = lastOpDate;
     }
 
+    public String getOutTradeNo() {
+        return outTradeNo;
+    }
+
+    public void setOutTradeNo(String outTradeNo) {
+        this.outTradeNo = outTradeNo;
+    }
 }

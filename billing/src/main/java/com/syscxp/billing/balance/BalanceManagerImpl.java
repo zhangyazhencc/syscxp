@@ -336,6 +336,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         dbf.getEntityManager().merge(vo);
         dbf.getEntityManager().flush();
         AccountBalanceInventory abi = AccountBalanceInventory.valueOf(vo);
+        abi.setOutTradeNo(outTradeNO);
         APIUpdateAccountBalanceEvent evt = new APIUpdateAccountBalanceEvent(msg.getId());
         evt.setInventory(abi);
         bus.publish(evt);
