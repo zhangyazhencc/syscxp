@@ -1,5 +1,6 @@
 package com.syscxp.sms;
 
+import com.cloopen.rest.sdk.utils.encoder.BASE64Encoder;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
@@ -18,17 +19,26 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
+import javax.imageio.ImageIO;
+import javax.servlet.ServletException;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.operr;
 
-
+/**
+ * Created by wangwg on 2017/12/01.
+ */
 public class ImageCodeServiceImpl extends AbstractService implements ImageCodeService, ApiMessageInterceptor {
 
     private static final CLogger logger = Utils.getLogger(ImageCodeServiceImpl.class);
@@ -37,11 +47,6 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
     private CloudBus bus;
     @Autowired
     private ThreadFacade thdf;
-
-    @Override
-    public boolean ValidateImageCode(String imageId, String code) {
-        return false;
-    }
 
     private Map<String, String> sessions = new ConcurrentHashMap<>();
     private Future<Void> expiredSessionCollector;
@@ -55,10 +60,14 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
     }
 
     public void handleMessage(Message msg) {
+
         bus.dealWithUnknownMessage(msg);
     }
 
-
+    @Override
+    public boolean ValidateImageCode(String imageId, String code) {
+        return false;
+    }
 
     public void init() {
         try {
@@ -111,4 +120,66 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
         return null;
     }
+
+    public void getImage() throws ServletException, IOException {
+
+        int width=0,height=0;
+
+
+
+        BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
+        Graphics g = image.getGraphics();
+        Random random = new Random();
+        g.setColor(getRandColor(220, 250));
+        g.fillRect(0, 0, width, height);
+        g.setFont(new Font("Times New Roman", Font.PLAIN, 18));
+//g.drawRect(0,0,width-1,height-1);
+        g.draw3DRect(0, 0, width - 1, height - 1, true);
+        g.setColor(getRandColor(160, 200));
+        for (int i = 0; i < 155; i++) {
+            int x = random.nextInt(width);
+            int y = random.nextInt(height);
+            int xl = random.nextInt(12);
+            int yl = random.nextInt(12);
+            g.drawLine(x, y, x + xl, y + yl);
+        }
+        String sRand = "";
+        String s = "012345678901234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ012345678901234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        for (int i = 0; i < 4; i++) {
+            char rand = s.charAt(random.nextInt(s.length()));
+            sRand += rand;
+            g.setColor(new Color(20 + random.nextInt(110), 20 + random.nextInt(110), 20 + random.nextInt(110)));
+            g.drawString(String.valueOf(rand), 13 * i + 6, 16);
+        }
+        g.drawOval(0, 12, 60, 11);
+        g.dispose();
+        ByteArrayOutputStream output = null;
+        try {
+            ImageIO.write(image, "JPEG", output);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            output.close();
+        }
+
+        byte[] data = output.toByteArray();
+
+        // 对字节数组Base64编码
+        BASE64Encoder encoder = new BASE64Encoder();
+        String asdf =  encoder.encode(data);// 返回Base64编码过的字节数组字符串
+
+    }
+
+    private Color getRandColor(int fc, int bc) {
+        Random random = new Random();
+        if (fc > 255)
+            fc = 255;
+        if (bc > 255)
+            bc = 255;
+        int r = fc + random.nextInt(bc - fc);
+        int g = fc + random.nextInt(bc - fc);
+        int b = fc + random.nextInt(bc - fc);
+        return new Color(r, g, b);
+    }
+
 }
