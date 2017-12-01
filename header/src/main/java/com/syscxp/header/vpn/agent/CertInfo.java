@@ -1,10 +1,20 @@
 package com.syscxp.header.vpn.agent;
 
+import com.syscxp.header.vpn.vpn.VpnCertVO;
+
 public class CertInfo {
     private String caCert;
     private String clientCert;
     private String clientKey;
     private String clientConf;
+
+    public VpnCertVO toVO(VpnCertVO vo){
+        vo.setCaCert(this.caCert);
+        vo.setClientCert(this.clientCert);
+        vo.setClientKey(this.clientKey);
+        vo.setClientConf(this.clientConf);
+        return vo;
+    }
 
     public String getClientCert() {
         return clientCert;

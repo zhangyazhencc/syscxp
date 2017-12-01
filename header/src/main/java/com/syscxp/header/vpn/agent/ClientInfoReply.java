@@ -3,7 +3,7 @@ package com.syscxp.header.vpn.agent;
 import com.syscxp.header.message.MessageReply;
 
 public class ClientInfoReply extends MessageReply {
-    public CertInfo certInfo;
+    private CertInfo certInfo;
 
     public CertInfo getCertInfo() {
         return certInfo;
