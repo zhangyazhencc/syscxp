@@ -1,5 +1,6 @@
 package com.syscxp.vpn.vpn;
 
+import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
@@ -17,9 +18,7 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.*;
-import com.syscxp.header.vpn.vpn.VpnStatus;
-import com.syscxp.header.vpn.vpn.VpnVO;
-import com.syscxp.header.vpn.vpn.VpnVO_;
+import com.syscxp.header.vpn.vpn.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.vpn.exception.VpnErrors;
@@ -447,12 +446,8 @@ public class VpnBase extends AbstractVpn {
         httpCall(clientInfoPath, cmd, ClientInfoRsp.class, new ReturnValueCompletion<ClientInfoRsp>(msg) {
             @Override
             public void success(ClientInfoRsp ret) {
-                CertInfo certInfo = new CertInfo();
-                certInfo.setCaCert(ret.ca_crt);
-                certInfo.setClientCert(ret.client_crt);
-                certInfo.setClientConf(ret.client_conf);
-                certInfo.setClientKey(ret.client_key);
-                reply.setCertInfo(certInfo);
+                VpnCertVO vpnCert = saveVpnCert(ret, self.getAccountUuid());
+                reply.setInventory(VpnCertInventory.valueOf(vpnCert));
                 bus.reply(msg, reply);
             }
 
@@ -462,6 +457,17 @@ public class VpnBase extends AbstractVpn {
                 bus.reply(msg, reply);
             }
         });
+    }
+
+    private VpnCertVO saveVpnCert(ClientInfoRsp info, String accountUuid) {
+        VpnCertVO vo = new VpnCertVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setAccountUuid(accountUuid);
+        vo.setCaCert(info.ca_crt);
+        vo.setClientCert(info.client_crt);
+        vo.setClientKey(info.client_key);
+        vo.setClientConf(info.client_conf);
+        return dbf.updateAndRefresh(vo);
     }
 
     private void handle(final LoginInfoMsg msg) {

@@ -261,11 +261,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
-                getCertInfo(vpn.getUuid(), new ReturnValueCompletion<CertInfo>(trigger) {
+                getCertInfo(vpn.getUuid(), new ReturnValueCompletion<VpnCertInventory>(trigger) {
                     @Override
-                    public void success(CertInfo returnValue) {
-                        VpnCertVO vpnCert = saveVpnCert(returnValue, vpn.getAccountUuid());
-                        vpn.setVpnCertUuid(vpnCert.getUuid());
+                    public void success(VpnCertInventory returnValue) {
+                        vpn.setVpnCertUuid(returnValue.getUuid());
                         dbf.updateAndRefresh(vpn);
                     }
 
@@ -293,16 +292,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }).start();
     }
 
-    private VpnCertVO saveVpnCert(CertInfo info, String accountUuid) {
-        VpnCertVO vo = new VpnCertVO();
-        vo.setUuid(Platform.getUuid());
-        vo.setAccountUuid(accountUuid);
-        vo.setCaCert(info.getCaCert());
-        vo.setClientCert(info.getClientCert());
-        vo.setClientKey(info.getClientKey());
-        vo.setClientConf(info.getClientConf());
-        return dbf.updateAndRefresh(vo);
-    }
+
 
     private void handle(APICreateVpnMsg msg) {
         final APICreateVpnEvent evt = new APICreateVpnEvent(msg.getId());
@@ -589,7 +579,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vpn.setState(VpnState.Disabled);
         vpn.setStatus(VpnStatus.Disconnected);
         vpn.setVpnCertUuid(null);
-        dbf.remove(vpn.getVpnCert());
         final VpnVO vo = dbf.updateAndRefresh(vpn);
 
 
@@ -982,7 +971,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         });
     }
 
-    private void getCertInfo(String vpnUuid, final ReturnValueCompletion<CertInfo> complete) {
+    private void getCertInfo(String vpnUuid, final ReturnValueCompletion<VpnCertInventory> complete) {
         ClientInfoMsg msg = new ClientInfoMsg();
         msg.setVpnUuid(vpnUuid);
         bus.makeLocalServiceId(msg, VpnConstant.SERVICE_ID);
@@ -991,7 +980,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
                     ClientInfoReply infoReply = reply.castReply();
-                    complete.success(infoReply.getCertInfo());
+                    complete.success(infoReply.getInventory());
                 } else {
                     complete.fail(reply.getError());
                 }
