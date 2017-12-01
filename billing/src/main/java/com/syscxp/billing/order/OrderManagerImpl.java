@@ -276,11 +276,11 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        OrderVO orderVo = new OrderVO();
-        setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), msg.getProductType(), null, currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), 0, msg.getCallBackData());
-        orderVo.setType(OrderType.UN_SUBCRIBE);
 
         BigDecimal notUseMonth = getNotUseMonths(currentTimestamp.toLocalDateTime(),msg.getExpiredTime().toLocalDateTime());
+        OrderVO orderVo = new OrderVO();
+        setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), msg.getProductType(), ProductChargeModel.BY_MONTH, currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), notUseMonth.intValue(), msg.getCallBackData());
+        orderVo.setType(OrderType.UN_SUBCRIBE);
 
         RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
         if (renewVO == null) {
