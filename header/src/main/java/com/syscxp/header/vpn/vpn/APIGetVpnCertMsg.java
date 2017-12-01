@@ -13,8 +13,17 @@ import com.syscxp.header.vpn.VpnConstant;
 public class APIGetVpnCertMsg extends APIMessage {
     @APIParam
     private String uuid;
+
     @APIParam
-    private String certKey;
+    private long timestamp;
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
+    }
 
     public String getUuid() {
         return uuid;
@@ -22,14 +31,6 @@ public class APIGetVpnCertMsg extends APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public String getCertKey() {
-        return certKey;
-    }
-
-    public void setCertKey(String certKey) {
-        this.certKey = certKey;
     }
 
     public ApiNotification __notification__() {

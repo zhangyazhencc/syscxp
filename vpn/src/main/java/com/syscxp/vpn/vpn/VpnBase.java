@@ -152,8 +152,8 @@ public class VpnBase extends AbstractVpn {
         httpCall(initVpnPath, cmd, InitVpnRsp.class, new ReturnValueCompletion<InitVpnRsp>(msg, completion) {
             @Override
             public void success(InitVpnRsp ret) {
-                changVpnSatus(VpnStatus.Connected);
-                reply.setStatus(ret.vpnSatus);
+                VpnStatus next ="UP".equals(ret.vpnSatus)? VpnStatus.Connected:VpnStatus.Disconnected;
+                changVpnSatus(next);
                 bus.reply(msg, reply);
                 completion.done();
             }
@@ -171,6 +171,7 @@ public class VpnBase extends AbstractVpn {
         if (!Q.New(VpnVO.class).eq(VpnVO_.uuid, self.getUuid()).isExists()) {
             throw new CloudRuntimeException(String.format("change vpn status fail, can not find the vpn[%s]", self.getUuid()));
         }
+
         VpnStatus before = self.getStatus();
         if (before == next) {
             return false;
@@ -218,7 +219,6 @@ public class VpnBase extends AbstractVpn {
         httpCall(createCertPath, cmd, CreateCertRsp.class, new ReturnValueCompletion<CreateCertRsp>(msg, completion) {
             @Override
             public void success(CreateCertRsp ret) {
-                reply.setVpnCert(ret.vpnCert);
                 bus.reply(msg, reply);
                 completion.done();
             }
@@ -245,12 +245,14 @@ public class VpnBase extends AbstractVpn {
         httpCall(startAllPath, cmd, StartAllRsp.class, new ReturnValueCompletion<StartAllRsp>(msg) {
             @Override
             public void success(StartAllRsp ret) {
-                reply.setStatus(ret.vpnSatus);
+                VpnStatus next ="UP".equals(ret.vpnSatus)? VpnStatus.Connected:VpnStatus.Disconnected;
+                changVpnSatus(next);
                 bus.reply(msg, reply);
             }
 
             @Override
             public void fail(ErrorCode errorCode) {
+                changVpnSatus(VpnStatus.Disconnected);
                 reply.setError(errorCode);
                 bus.reply(msg, reply);
             }
@@ -268,12 +270,12 @@ public class VpnBase extends AbstractVpn {
         httpCall(destroyVpnPath, cmd, DestroyVpnRsp.class, new ReturnValueCompletion<DestroyVpnRsp>(msg) {
             @Override
             public void success(DestroyVpnRsp ret) {
-                reply.setStatus(ret.vpnSatus);
                 bus.reply(msg, reply);
             }
 
             @Override
             public void fail(ErrorCode errorCode) {
+                changVpnSatus(VpnStatus.Disconnected);
                 reply.setError(errorCode);
                 bus.reply(msg, reply);
             }
@@ -292,12 +294,14 @@ public class VpnBase extends AbstractVpn {
         httpCall(vpnServicePath, cmd, VpnServiceRsp.class, new ReturnValueCompletion<VpnServiceRsp>(msg) {
             @Override
             public void success(VpnServiceRsp ret) {
-                reply.setStatus(ret.vpnSatus);
+                VpnStatus next ="UP".equals(ret.vpnSatus)? VpnStatus.Connected:VpnStatus.Disconnected;
+                changVpnSatus(next);
                 bus.reply(msg, reply);
             }
 
             @Override
             public void fail(ErrorCode errorCode) {
+                changVpnSatus(VpnStatus.Disconnected);
                 reply.setError(errorCode);
                 bus.reply(msg, reply);
             }
@@ -338,7 +342,6 @@ public class VpnBase extends AbstractVpn {
         httpCall(vpnConfPath, cmd, VpnConfRsp.class, new ReturnValueCompletion<VpnConfRsp>(msg) {
             @Override
             public void success(VpnConfRsp ret) {
-                reply.setVpnSucc(ret.vpnSucc);
                 bus.reply(msg, reply);
             }
 
@@ -363,7 +366,6 @@ public class VpnBase extends AbstractVpn {
         httpCall(vpnPortPath, cmd, VpnPortRsp.class, new ReturnValueCompletion<VpnPortRsp>(msg) {
             @Override
             public void success(VpnPortRsp ret) {
-                reply.setStatus(ret.vpnSatus);
                 bus.reply(msg, reply);
             }
 

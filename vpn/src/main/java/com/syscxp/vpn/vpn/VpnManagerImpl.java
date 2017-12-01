@@ -776,9 +776,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APIGetVpnCertMsg msg) {
+
         VpnVO vpn = Q.New(VpnVO.class).eq(VpnVO_.uuid, msg.getUuid()).find();
 
-        if (!InnerMessageHelper.validSignature(msg, vpn.getCertKey())) {
+        String md5 = DigestUtils.md5Hex(msg.getUuid() + msg.getTimestamp() + vpn.getCertKey());
+
+        boolean flag = System.currentTimeMillis() - msg.getTimestamp() > CoreGlobalProperty.INNER_MESSAGE_EXPIRE * 1000;
+        if (!md5.equals(msg.getSignature()) || !flag) {
             throw new ApiMessageInterceptionException(errf.stringToInvalidArgumentError(
                     String.format("The parameters of the message[%s] are inconsistent ", msg.getMessageName())
             ));

@@ -181,7 +181,7 @@ public class TunnelControllerBase extends AbstractTunnel {
             public void success() {
                 logger.info("下发删除成功！");
 
-                new TunnelDbBase().deleteTunnel(tunnelVO);
+                new TunnelBase().deleteTunnel(tunnelVO);
 
                 //更新任务状态
                 taskResourceVO.setBody(command);
@@ -463,11 +463,11 @@ public class TunnelControllerBase extends AbstractTunnel {
      *  MPLS 下发配置
      */
     private ControllerCommands.TunnelMplsConfig getTunnelMplsConfig(TunnelVO tunnelVO, TunnelSwitchPortVO tunnelSwitchPortVO, TunnelSwitchPortVO remoteSwitchPortVO, List<QinqVO> qinqVOs, String sortTag){
-        TunnelDbBase tunnelDbBase = new TunnelDbBase();
+        TunnelBase tunnelBase = new TunnelBase();
 
         ControllerCommands.TunnelMplsConfig tmc = new ControllerCommands.TunnelMplsConfig();
         SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
-        PhysicalSwitchVO physicalSwitchVO = new TunnelDbBase().getPhysicalSwitch(switchPortVO);
+        PhysicalSwitchVO physicalSwitchVO = new TunnelBase().getPhysicalSwitch(switchPortVO);
 
         if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){   //SDN接入
 
@@ -478,7 +478,7 @@ public class TunnelControllerBase extends AbstractTunnel {
             PhysicalSwitchVO mplsPhysicalSwitch = dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
             SwitchModelVO mplsSwitchModel = dbf.findByUuid(mplsPhysicalSwitch.getSwitchModelUuid(),SwitchModelVO.class);
 
-            PhysicalSwitchVO remoteMplsPhysicalSwitch = tunnelDbBase.getRemotePhysicalSwitch(remoteSwitchPortVO);
+            PhysicalSwitchVO remoteMplsPhysicalSwitch = tunnelBase.getRemotePhysicalSwitch(remoteSwitchPortVO);
 
             tmc.setUuid(mplsPhysicalSwitch.getUuid());
             tmc.setSwitch_type(mplsSwitchModel.getModel());
@@ -496,7 +496,7 @@ public class TunnelControllerBase extends AbstractTunnel {
         }else if(physicalSwitchVO.getType() == PhysicalSwitchType.MPLS){  //Mpls接入
             SwitchModelVO switchModel = dbf.findByUuid(physicalSwitchVO.getSwitchModelUuid(),SwitchModelVO.class);
 
-            PhysicalSwitchVO remoteMplsPhysicalSwitch = tunnelDbBase.getRemotePhysicalSwitch(remoteSwitchPortVO);
+            PhysicalSwitchVO remoteMplsPhysicalSwitch = tunnelBase.getRemotePhysicalSwitch(remoteSwitchPortVO);
 
             tmc.setUuid(physicalSwitchVO.getUuid());
             tmc.setSwitch_type(switchModel.getModel());
@@ -525,7 +525,7 @@ public class TunnelControllerBase extends AbstractTunnel {
     private ControllerCommands.TunnelSdnConfig getTunnelSdnConfig(Long bandwidth, TunnelSwitchPortVO tunnelSwitchPortVO, List<QinqVO> qinqVOs, String sortTag){
         ControllerCommands.TunnelSdnConfig tsc = new ControllerCommands.TunnelSdnConfig();
         SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
-        PhysicalSwitchVO physicalSwitchVO = new TunnelDbBase().getPhysicalSwitch(switchPortVO);
+        PhysicalSwitchVO physicalSwitchVO = new TunnelBase().getPhysicalSwitch(switchPortVO);
         if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){   //SDN接入
             //找到SDN交换机的上联传输交换机
             PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
@@ -581,13 +581,13 @@ public class TunnelControllerBase extends AbstractTunnel {
      *  判断该通道是否onlock
      */
     private boolean isOnLock(TunnelSwitchPortVO tunnelSwitchPortA,TunnelSwitchPortVO tunnelSwitchPortZ){
-        TunnelDbBase tunnelDbBase = new TunnelDbBase();
+        TunnelBase tunnelBase = new TunnelBase();
         boolean isonlock = false;
         SwitchPortVO switchPortA = dbf.findByUuid(tunnelSwitchPortA.getSwitchPortUuid(),SwitchPortVO.class);
-        PhysicalSwitchVO physicalSwitchA = tunnelDbBase.getPhysicalSwitch(switchPortA);
+        PhysicalSwitchVO physicalSwitchA = tunnelBase.getPhysicalSwitch(switchPortA);
 
         SwitchPortVO switchPortZ = dbf.findByUuid(tunnelSwitchPortZ.getSwitchPortUuid(),SwitchPortVO.class);
-        PhysicalSwitchVO physicalSwitchZ = tunnelDbBase.getPhysicalSwitch(switchPortZ);
+        PhysicalSwitchVO physicalSwitchZ = tunnelBase.getPhysicalSwitch(switchPortZ);
 
         if(physicalSwitchA.getAccessType() == physicalSwitchZ.getAccessType()){
             if(physicalSwitchA.getUuid().equals(physicalSwitchZ.getUuid())){
