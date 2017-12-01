@@ -11,6 +11,7 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.monitor.OpenTSDBCommands.*;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
+import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -75,8 +76,9 @@ public class TunnelStatusChecker implements Component {
 
         @Override
         public void run() {
+            List<TunnelVO> tunnelVOs = new ArrayList<>();
             try {
-                List<TunnelVO> tunnelVOs = getTunnels();
+                tunnelVOs = getTunnels();
                 logger.debug("tunnel status check.");
                 if (tunnelVOs.isEmpty())
                     return;
@@ -107,8 +109,10 @@ public class TunnelStatusChecker implements Component {
                                     .update();
                     }
                 }
+                tunnelVOs.clear();
             } catch (Throwable t) {
                 logger.warn("unhandled exception", t);
+                tunnelVOs.clear();
             }
         }
 

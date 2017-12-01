@@ -405,6 +405,8 @@ public class VpnBase extends AbstractVpn {
         LoginInfoReply reply = new LoginInfoReply();
 
         LoginInfoCmd cmd = new LoginInfoCmd();
+        cmd.username = msg.getUsername();
+        cmd.passwd = msg.getPasswd();
         httpCall(loginInfoPath, cmd, LoginInfoRsp.class, new ReturnValueCompletion<LoginInfoRsp>(msg) {
             @Override
             public void success(LoginInfoRsp ret) {

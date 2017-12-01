@@ -10,11 +10,12 @@ import java.util.List;
 @Inventory(mappingVOClass = VpnCertVO.class)
 public class VpnCertInventory {
     private String uuid;
-    private String vpnUuid;
+    private String accountUuid;
     private String caCert;
     private String clientCert;
     private String clientKey;
     private String clientConf;
+    private Integer version;
     private VpnInventory vpnInventory;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -22,14 +23,14 @@ public class VpnCertInventory {
     public static VpnCertInventory valueOf(VpnCertVO vo) {
         VpnCertInventory inv = new VpnCertInventory();
         inv.setUuid(vo.getUuid());
-        inv.setVpnUuid(vo.getVpnUuid());
+        inv.setAccountUuid(vo.getAccountUuid());
         inv.setCaCert(vo.getCaCert());
         inv.setClientCert(vo.getClientCert());
         inv.setClientConf(vo.getClientConf());
         inv.setClientKey(vo.getClientKey());
+        inv.setVersion(vo.getVersion());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
-        inv.setVpnInventory(VpnInventory.valueOf(vo.getVpn()));
         return inv;
     }
 
@@ -42,6 +43,14 @@ public class VpnCertInventory {
         return invs;
     }
 
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
     public String getUuid() {
         return uuid;
     }
@@ -50,12 +59,12 @@ public class VpnCertInventory {
         this.uuid = uuid;
     }
 
-    public String getVpnUuid() {
-        return vpnUuid;
+    public String getAccountUuid() {
+        return accountUuid;
     }
 
-    public void setVpnUuid(String vpnUuid) {
-        this.vpnUuid = vpnUuid;
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 
     public String getCaCert() {

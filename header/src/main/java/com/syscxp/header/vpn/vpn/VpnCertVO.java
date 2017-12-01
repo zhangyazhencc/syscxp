@@ -14,10 +14,7 @@ public class VpnCertVO {
     @Column
     private String uuid;
     @Column
-    private String vpnUuid;
-    @OneToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "vpnUuid", insertable = false, updatable = false)
-    private VpnVO vpn;
+    private String accountUuid;
     @Column
     private String caCert;
     @Column
@@ -27,36 +24,44 @@ public class VpnCertVO {
     @Column
     private String clientConf;
     @Column
+    private Integer version;
+    @Column
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
+        version += 1;
+    }
+
+    @PrePersist
+    private void prePersistVersion() {
+        version = 0;
     }
 
     public String getUuid() {
         return uuid;
     }
 
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
+    }
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
+    }
+
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public String getVpnUuid() {
-        return vpnUuid;
-    }
-
-    public void setVpnUuid(String vpnUuid) {
-        this.vpnUuid = vpnUuid;
-    }
-
-    public VpnVO getVpn() {
-        return vpn;
-    }
-
-    public void setVpn(VpnVO vpn) {
-        this.vpn = vpn;
     }
 
     public String getCaCert() {

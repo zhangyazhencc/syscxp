@@ -133,7 +133,6 @@ public class VpnCommands {
      * VPN信息：/vpn/client_info
      */
     public static class ClientInfoCmd extends AgentCommand {
-        public String vpnuuid;
     }
 
     public static class ClientInfoRsp extends AgentResponse {

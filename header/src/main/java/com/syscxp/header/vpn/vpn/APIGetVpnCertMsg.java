@@ -12,24 +12,24 @@ import com.syscxp.header.vpn.VpnConstant;
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"read"})
 public class APIGetVpnCertMsg extends APIMessage {
     @APIParam
-    private String name;
+    private String uuid;
     @APIParam
-    private String sid;
+    private String certKey;
 
-    public String getName() {
-        return name;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
-    public String getSid() {
-        return sid;
+    public String getCertKey() {
+        return certKey;
     }
 
-    public void setSid(String sid) {
-        this.sid = sid;
+    public void setCertKey(String certKey) {
+        this.certKey = certKey;
     }
 
     public ApiNotification __notification__() {
@@ -39,7 +39,7 @@ public class APIGetVpnCertMsg extends APIMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Download certificate")
-                        .resource(sid, VpnVO.class)
+                        .resource(uuid, VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };
