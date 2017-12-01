@@ -12,6 +12,6 @@ public class SolutionVpnVO_ extends SolutionBaseVO_ {
 
     public static volatile SingularAttribute<SolutionVpnVO, String> zoneUuid;
     public static volatile SingularAttribute<SolutionVpnVO, String> endpointUuid;
-    public static volatile SingularAttribute<SolutionVpnVO, Long> bandwidth;
+    public static volatile SingularAttribute<SolutionVpnVO, Long> bandwidthOfferingUuid;
 
 }

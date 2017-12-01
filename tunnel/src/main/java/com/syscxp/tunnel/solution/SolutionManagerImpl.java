@@ -20,17 +20,14 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.solution.*;
-import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
 import com.syscxp.tunnel.quota.SolutionQuotaOperator;
 import com.syscxp.tunnel.tunnel.TunnelBase;
-import com.syscxp.tunnel.tunnel.TunnelManagerImpl;
+import com.syscxp.tunnel.tunnel.TunnelControllerBase;
 import com.syscxp.tunnel.tunnel.TunnelRESTCaller;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.context.support.WebApplicationContextUtils;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -65,7 +62,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     }
 
     private void handleLocalMessage(Message msg) {
-        TunnelBase base = new TunnelBase();
+        TunnelControllerBase base = new TunnelControllerBase();
         base.handleMessage(msg);
     }
 
@@ -412,7 +409,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         pmsg.setProductChargeModel(vo.getProductChargeModel());
         pmsg.setDuration(vo.getDuration());
         pmsg.setAccountUuid(accountUuid);
-        pmsg.setUnits(new CountPriveHelper(dbf).getInterfacePriceUnit(vo.getPortOfferingUuid()));
+        pmsg.setUnits(new TunnelBase().getInterfacePriceUnit(vo.getPortOfferingUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller().syncJsonPost(pmsg);
         return reply;
     }
@@ -428,7 +425,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         EndpointVO endpointVOZ = dbf.findByUuid(vo.getEndpointVOZ().getUuid(),EndpointVO.class);
 
         if(endpointVOA != null && endpointVOZ !=null){
-            pmsg.setUnits(new CountPriveHelper(dbf).getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
+            pmsg.setUnits(new TunnelBase().getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
                     endpointVOZ.getNodeUuid(), vo.getInnerConnectedEndpointUuid()));
         }
 

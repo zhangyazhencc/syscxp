@@ -20,7 +20,6 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.configuration.BandwidthOfferingVO;
-import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
@@ -36,26 +35,19 @@ import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointInventory;
 import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO;
 import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO_;
 import com.syscxp.header.tunnel.node.NodeVO;
-import com.syscxp.header.tunnel.node.ZoneNodeRefVO;
-import com.syscxp.header.tunnel.node.ZoneNodeRefVO_;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
-import com.syscxp.tunnel.identity.TunnelGlobalConfig;
 import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
 import com.syscxp.utils.CollectionDSL;
+import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
-import com.syscxp.utils.gson.JSONObjectUtil;
+import com.syscxp.utils.function.ForEachFunction;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-
-import javax.persistence.TypedQuery;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -66,7 +58,7 @@ import static com.syscxp.utils.CollectionDSL.list;
 /**
  * Create by DCY on 2017/10/26
  */
-public class TunnelManagerImpl extends AbstractService implements TunnelManager, ApiMessageInterceptor, ReportQuotaExtensionPoint {
+public class TunnelManagerImpl extends AbstractService implements TunnelManager, ApiMessageInterceptor, ReportQuotaExtensionPoint, TunnelDeletionExtensionPoint {
     private static final CLogger logger = Utils.getLogger(TunnelManagerImpl.class);
 
     @Autowired
@@ -94,7 +86,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handleLocalMessage(Message msg) {
-        TunnelBase base = new TunnelBase();
+        TunnelControllerBase base = new TunnelControllerBase();
         base.handleMessage(msg);
     }
 
@@ -174,7 +166,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
 
     private void handle(APIListSwitchPortByTypeMsg msg) {
-        List<SwitchPortVO> ports = getSwitchPortByType(msg.getUuid(), msg.getType());
+        List<SwitchPortVO> ports = new TunnelDbBase().getSwitchPortByType(msg.getUuid(), msg.getType());
         APIListSwitchPortByTypeReply reply = new APIListSwitchPortByTypeReply();
         reply.setInventories(SwitchPortInventory.valueOf(ports));
         bus.reply(msg, reply);
@@ -226,32 +218,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         bus.reply(msg, reply);
     }
 
-    private void updateNetworkType(InterfaceVO iface, String tunnelUuid, NetworkType newType, List<InnerVlanSegment> segments) {
-        UpdateQuery.New(InterfaceVO.class)
-                .set(InterfaceVO_.type, newType)
-                .eq(InterfaceVO_.uuid, iface.getUuid())
-                .update();
-
-        if (tunnelUuid == null)
-            return;
-
-        if (iface.getType() == NetworkType.QINQ)
-            UpdateQuery.New(QinqVO.class).eq(QinqVO_.tunnelUuid, tunnelUuid).delete();
-
-        if (newType == NetworkType.QINQ) {
-            List<QinqVO> vos = new ArrayList<>();
-            for (InnerVlanSegment segment : segments) {
-                QinqVO qinq = new QinqVO();
-                qinq.setUuid(Platform.getUuid());
-                qinq.setTunnelUuid(tunnelUuid);
-                qinq.setStartVlan(segment.getStartVlan());
-                qinq.setEndVlan(segment.getEndVlan());
-                vos.add(qinq);
-            }
-            dbf.persistCollection(vos);
-        }
-    }
-
     private void handle(APIUpdateInterfacePortMsg msg) {
         InterfaceVO iface = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
         logger.info(String.format("before update InterfaceVO: [%s]", iface));
@@ -284,7 +250,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             .update();
                 } else {
                     String tunnelUuid = isUsed ? tsPort.getTunnelUuid() : null;
-                    updateNetworkType(iface, tunnelUuid, msg.getNetworkType(), msg.getSegments());
+                    new TunnelDbBase().updateNetworkType(iface, tunnelUuid, msg.getNetworkType(), msg.getSegments());
                 }
                 logger.info(String.format("after update InterfaceVO[uuid: %s]", iface.getUuid()));
                 //throw new CloudRuntimeException("update interface port ...............");
@@ -334,7 +300,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     TunnelVO tunnel = Q.New(TunnelVO.class)
                             .eq(TunnelVO_.uuid, tsPort.getTunnelUuid())
                             .find();
-                    TaskResourceVO taskResource = newTaskResourceVO(tunnel, TaskType.ModifyPorts);
+                    TaskResourceVO taskResource = new TunnelBase().newTaskResourceVO(tunnel, TaskType.ModifyPorts);
                     ModifyTunnelPortsMsg modifyMsg = new ModifyTunnelPortsMsg();
                     modifyMsg.setTunnelUuid(tunnel.getUuid());
                     modifyMsg.setTaskUuid(taskResource.getUuid());
@@ -390,7 +356,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void handle(APIGetInterfaceTypeMsg msg) {
         APIGetInterfaceTypeReply reply = new APIGetInterfaceTypeReply();
-        reply.setInventories(PortOfferingInventory.valueOf(getPortTypeByEndpoint(msg.getUuid())));
+        reply.setInventories(PortOfferingInventory.valueOf(new TunnelDbBase().getPortTypeByEndpoint(msg.getUuid())));
         bus.reply(msg, reply);
     }
 
@@ -400,7 +366,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         pmsg.setProductChargeModel(msg.getProductChargeModel());
         pmsg.setDuration(msg.getDuration());
         pmsg.setAccountUuid(msg.getAccountUuid());
-        pmsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
+        pmsg.setUnits(new TunnelBase().getInterfacePriceUnit(msg.getPortOfferingUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller().syncJsonPost(pmsg);
         bus.reply(msg, new APIGetInterfacePriceReply(reply));
     }
@@ -426,7 +392,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         pmsg.setProductChargeModel(msg.getProductChargeModel());
         pmsg.setDuration(msg.getDuration());
         pmsg.setAccountUuid(msg.getAccountUuid());
-        pmsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getNodeAUuid(),
+        pmsg.setUnits(new TunnelBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getNodeAUuid(),
                 msg.getNodeZUuid(), msg.getInnerEndpointUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
         bus.reply(msg, new APIGetTunnelPriceReply(reply));
@@ -453,7 +419,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         EndpointVO endpointVOZ = dbf.findByUuid(tunnelSwitchPortVOZ.getEndpointUuid(), EndpointVO.class);
 
         APIGetModifyProductPriceDiffMsg pmsg = new APIGetModifyProductPriceDiffMsg();
-        pmsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
+        pmsg.setUnits(new TunnelBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
                 endpointVOZ.getNodeUuid(), innerEndpointUuid));
         pmsg.setProductUuid(msg.getUuid());
         pmsg.setAccountUuid(msg.getAccountUuid());
@@ -482,7 +448,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APICreateInterfaceMsg msg) {
-
+        TunnelBase tunnelBase = new TunnelBase();
         //分配资源:策略分配端口
         TunnelStrategy ts = new TunnelStrategy();
         String switchPortUuid = ts.getSwitchPortByStrategy(msg.getAccountUuid(), msg.getEndpointUuid(), msg.getPortOfferingUuid());
@@ -509,54 +475,17 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
-        ProductInfoForOrder productInfoForOrder = createBuyOrderForInterface(vo, msg.getPortOfferingUuid(), new CreateInterfaceCallBack());
+        ProductInfoForOrder productInfoForOrder = tunnelBase.createBuyOrderForInterface(vo, msg.getPortOfferingUuid(), new CreateInterfaceCallBack());
         productInfoForOrder.setOpAccountUuid(msg.getSession().getAccountUuid());
         productInfoForOrder.setNotifyUrl(restf.getSendCommandUrl());
         orderMsg.setProducts(CollectionDSL.list(productInfoForOrder));
 
-        List<OrderInventory> inventories = createBuyOrder(orderMsg);
+        List<OrderInventory> inventories = tunnelBase.createBuyOrder(orderMsg);
         afterCreateInterface(inventories, vo, msg);
     }
 
-    private ProductInfoForOrder createBuyOrderForInterface(InterfaceVO vo, String portOfferingUuid, NotifyCallBackData callBack) {
-        ProductInfoForOrder order = new ProductInfoForOrder();
-        order.setProductChargeModel(vo.getProductChargeModel());
-        order.setDuration(vo.getDuration());
-        order.setProductName(vo.getName());
-        order.setProductUuid(vo.getUuid());
-        order.setProductType(ProductType.PORT);
-        order.setDescriptionData(getDescriptionForInterface(vo));
-        order.setCallBackData(RESTApiDecoder.dump(callBack));
-        order.setUnits(getInterfacePriceUnit(portOfferingUuid));
-        order.setAccountUuid(vo.getOwnerAccountUuid());
-
-        return order;
-    }
-
-    private void afterCreateInterface(List<OrderInventory> inventories, InterfaceVO vo, APIMessage msg) {
-        APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
-
-        if (!inventories.isEmpty()) {
-
-            //付款成功,记录生效订单
-            saveResourceOrderEffective(inventories.get(0).getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
-            //状态修改已支付，生成到期时间
-            vo.setAccountUuid(vo.getOwnerAccountUuid());
-            vo.setState(InterfaceState.Paid);
-            vo.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), vo.getProductChargeModel(), vo.getDuration()));
-
-            vo = dbf.updateAndRefresh(vo);
-
-            evt.setInventory(InterfaceInventory.valueOf(vo));
-        } else {
-            //付款失败
-            evt.setError(errf.stringToOperationError("付款失败"));
-            evt.setInventory(InterfaceInventory.valueOf(vo));
-        }
-        bus.publish(evt);
-    }
-
     private void handle(APICreateInterfaceManualMsg msg) {
+        TunnelBase tunnelBase = new TunnelBase();
         //保存数据
         InterfaceVO vo = new InterfaceVO();
         vo.setUuid(Platform.getUuid());
@@ -581,12 +510,36 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
-        ProductInfoForOrder productInfoForOrder = createBuyOrderForInterface(vo, portType, new CreateInterfaceCallBack());
+        ProductInfoForOrder productInfoForOrder = tunnelBase.createBuyOrderForInterface(vo, portType, new CreateInterfaceCallBack());
         productInfoForOrder.setOpAccountUuid(msg.getAccountUuid());
         orderMsg.setProducts(CollectionDSL.list(productInfoForOrder));
 
-        List<OrderInventory> inventories = createBuyOrder(orderMsg);
+        List<OrderInventory> inventories = tunnelBase.createBuyOrder(orderMsg);
         afterCreateInterface(inventories, vo, msg);
+    }
+
+    private void afterCreateInterface(List<OrderInventory> inventories, InterfaceVO vo, APIMessage msg) {
+        TunnelBase tunnelBase = new TunnelBase();
+        APICreateInterfaceEvent evt = new APICreateInterfaceEvent(msg.getId());
+
+        if (!inventories.isEmpty()) {
+
+            //付款成功,记录生效订单
+            tunnelBase.saveResourceOrderEffective(inventories.get(0).getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+            //状态修改已支付，生成到期时间
+            vo.setAccountUuid(vo.getOwnerAccountUuid());
+            vo.setState(InterfaceState.Paid);
+            vo.setExpireDate(tunnelBase.getExpireDate(dbf.getCurrentSqlTime(), vo.getProductChargeModel(), vo.getDuration()));
+
+            vo = dbf.updateAndRefresh(vo);
+
+            evt.setInventory(InterfaceInventory.valueOf(vo));
+        } else {
+            //付款失败
+            evt.setError(errf.stringToOperationError("付款失败"));
+            evt.setInventory(InterfaceInventory.valueOf(vo));
+        }
+        bus.publish(evt);
     }
 
     private void handle(APIUpdateInterfaceMsg msg) {
@@ -610,48 +563,49 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIRenewInterfaceMsg msg) {
-
+        TunnelBase tunnelBase = new TunnelBase();
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
 
-        APICreateRenewOrderMsg orderMsg = new APICreateRenewOrderMsg(getOrderMsgForInterface(vo, new RenewInterfaceCallBack()));
+        APICreateRenewOrderMsg orderMsg = new APICreateRenewOrderMsg(tunnelBase.getOrderMsgForInterface(vo, new RenewInterfaceCallBack()));
         orderMsg.setDuration(msg.getDuration());
         orderMsg.setProductChargeModel(msg.getProductChargeModel());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
 
-        OrderInventory inventory = createOrder(orderMsg);
+        OrderInventory inventory = tunnelBase.createOrder(orderMsg);
 
         afterRenewInterface(inventory, vo, msg);
     }
 
     private void handle(APIRenewAutoInterfaceMsg msg) {
-
+        TunnelBase tunnelBase = new TunnelBase();
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
 
-        APICreateRenewOrderMsg orderMsg = new APICreateRenewOrderMsg(getOrderMsgForInterface(vo, new RenewAutoInterfaceCallBack()));
+        APICreateRenewOrderMsg orderMsg = new APICreateRenewOrderMsg(tunnelBase.getOrderMsgForInterface(vo, new RenewAutoInterfaceCallBack()));
         orderMsg.setDuration(msg.getDuration());
         orderMsg.setProductChargeModel(msg.getProductChargeModel());
         orderMsg.setOpAccountUuid("system");
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
 
-        OrderInventory inventory = createOrder(orderMsg);
+        OrderInventory inventory = tunnelBase.createOrder(orderMsg);
 
         afterRenewInterface(inventory, vo, msg);
 
     }
 
     private void afterRenewInterface(OrderInventory orderInventory, InterfaceVO vo, APIMessage msg) {
+        TunnelBase tunnelBase = new TunnelBase();
         APIRenewAutoInterfaceReply reply = new APIRenewAutoInterfaceReply();
 
         if (orderInventory != null) {
             //续费或者赔偿成功,记录生效订单
-            saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+            tunnelBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
             //更新到期时间
             vo.setDuration(orderInventory.getDuration());
             vo.setProductChargeModel(orderInventory.getProductChargeModel());
-            vo.setExpireDate(getExpireDate(vo.getExpireDate(), orderInventory.getProductChargeModel(), orderInventory.getDuration()));
+            vo.setExpireDate(tunnelBase.getExpireDate(vo.getExpireDate(), orderInventory.getProductChargeModel(), orderInventory.getDuration()));
 
             vo = dbf.updateAndRefresh(vo);
             reply.setInventory(InterfaceInventory.valueOf(vo));
@@ -663,24 +617,25 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APISLAInterfaceMsg msg) {
+        TunnelBase tunnelBase = new TunnelBase();
         APISLAInterfaceReply reply = new APISLAInterfaceReply();
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
         Timestamp newTime = vo.getExpireDate();
-        APICreateSLACompensationOrderMsg orderMsg = new APICreateSLACompensationOrderMsg(getOrderMsgForInterface(vo, new SlaInterfaceCallBack()));
+        APICreateSLACompensationOrderMsg orderMsg = new APICreateSLACompensationOrderMsg(tunnelBase.getOrderMsgForInterface(vo, new SlaInterfaceCallBack()));
         orderMsg.setDuration(msg.getDuration());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
 
-        OrderInventory orderInventory = createOrder(orderMsg);
+        OrderInventory orderInventory = tunnelBase.createOrder(orderMsg);
 
         if (orderInventory != null) {
             //续费或者赔偿成功,记录生效订单
-            saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+            tunnelBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
             //更新到期时间
             vo.setDuration(msg.getDuration());
-            vo.setExpireDate(getExpireDate(newTime, ProductChargeModel.BY_DAY, msg.getDuration()));
+            vo.setExpireDate(tunnelBase.getExpireDate(newTime, ProductChargeModel.BY_DAY, msg.getDuration()));
 
             vo = dbf.updateAndRefresh(vo);
             reply.setInventory(InterfaceInventory.valueOf(vo));
@@ -692,6 +647,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIDeleteInterfaceMsg msg) {
+        TunnelBase tunnelBase = new TunnelBase();
         APIDeleteInterfaceEvent evt = new APIDeleteInterfaceEvent(msg.getId());
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
@@ -703,15 +659,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         //调用退订
-        APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(getOrderMsgForInterface(vo, new UnsubcribeInterfaceCallBack()));
+        APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(tunnelBase.getOrderMsgForInterface(vo, new UnsubcribeInterfaceCallBack()));
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
 
-        OrderInventory orderInventory = createOrder(orderMsg);
+        OrderInventory orderInventory = tunnelBase.createOrder(orderMsg);
         if (orderInventory != null) {
             //退订成功,记录生效订单
-            saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+            tunnelBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
             //删除产品
             dbf.remove(vo);
             evt.setInventory(InterfaceInventory.valueOf(vo));
@@ -725,7 +681,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     @Transactional
     private void handle(APICreateTunnelMsg msg) {
-
+        TunnelBase tunnelBase = new TunnelBase();
         //保存数据，分配资源
         TunnelStrategy ts = new TunnelStrategy();
 
@@ -761,7 +717,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     .findValue();
             vo.setVsi(crossVsi);
         } else {
-            vo.setVsi(getVsiAuto());
+            vo.setVsi(tunnelBase.getVsiAuto());
         }
 
         vo.setUuid(Platform.getUuid());
@@ -968,9 +924,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         //如果跨国,将出海口设备添加至TunnelSwitchPort
         if (msg.getInnerConnectedEndpointUuid() != null) {
             if (nvoA.getCountry().equals("CHINA")) {
-                createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, true);
+                tunnelBase.createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, true);
             } else {
-                createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, false);
+                tunnelBase.createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, false);
             }
 
         }
@@ -991,25 +947,27 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                    boolean newBuyInterfaceZ,
                                    InterfaceVO interfaceVOA,
                                    InterfaceVO interfaceVOZ) {
+
+        TunnelBase tunnelBase = new TunnelBase();
         APICreateTunnelEvent evt = new APICreateTunnelEvent(msg.getId());
 
         //支付接口订单
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
         List<ProductInfoForOrder> products = new ArrayList<>();
         if (newBuyInterfaceA) {
-            ProductInfoForOrder productInfoForOrderA = createBuyOrderForInterface(interfaceVOA, msg.getPortOfferingUuidA(), new CreateInterfaceCallBack());
+            ProductInfoForOrder productInfoForOrderA = tunnelBase.createBuyOrderForInterface(interfaceVOA, msg.getPortOfferingUuidA(), new CreateInterfaceCallBack());
             productInfoForOrderA.setOpAccountUuid(msg.getSession().getAccountUuid());
             //productInfoForOrderA.setNotifyUrl(restf.getSendCommandUrl());
             products.add(productInfoForOrderA);
         }
         if (newBuyInterfaceZ) {
-            ProductInfoForOrder productInfoForOrderZ = createBuyOrderForInterface(interfaceVOZ, msg.getPortOfferingUuidZ(), new CreateInterfaceCallBack());
+            ProductInfoForOrder productInfoForOrderZ = tunnelBase.createBuyOrderForInterface(interfaceVOZ, msg.getPortOfferingUuidZ(), new CreateInterfaceCallBack());
             productInfoForOrderZ.setOpAccountUuid(msg.getSession().getAccountUuid());
             //productInfoForOrderZ.setNotifyUrl(restf.getSendCommandUrl());
             products.add(productInfoForOrderZ);
         }
         //支付专线订单
-        ProductInfoForOrder productInfoForOrderTunnel = createBuyOrderForTunnel(vo, msg);
+        ProductInfoForOrder productInfoForOrderTunnel = tunnelBase.createBuyOrderForTunnel(vo, msg);
 
         CreateTunnelCallBack createTunnelCallBack = new CreateTunnelCallBack();
         createTunnelCallBack.setInterfaceAUuid(interfaceVOA.getUuid());
@@ -1023,7 +981,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setProducts(products);
 
         //调用支付
-        List<OrderInventory> inventories = createBuyOrder(orderMsg);
+        List<OrderInventory> inventories = tunnelBase.createBuyOrder(orderMsg);
 
         if (!inventories.isEmpty()) {     //付款成功
             //支付成功修改状态,记录生效订单
@@ -1034,7 +992,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     break;
                 }
             }
-            saveResourceOrderEffective(orderUuid, vo.getUuid(), vo.getClass().getSimpleName());
+            tunnelBase.saveResourceOrderEffective(orderUuid, vo.getUuid(), vo.getClass().getSimpleName());
             //修改tunnel状态
             vo.setAccountUuid(vo.getOwnerAccountUuid());
             vo.setState(TunnelState.Deploying);
@@ -1044,18 +1002,18 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             if (newBuyInterfaceA) {
                 interfaceVOA.setAccountUuid(interfaceVOA.getOwnerAccountUuid());
                 interfaceVOA.setState(InterfaceState.Paid);
-                interfaceVOA.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), interfaceVOA.getProductChargeModel(), interfaceVOA.getDuration()));
+                interfaceVOA.setExpireDate(tunnelBase.getExpireDate(dbf.getCurrentSqlTime(), interfaceVOA.getProductChargeModel(), interfaceVOA.getDuration()));
                 dbf.updateAndRefresh(interfaceVOA);
             }
             if (newBuyInterfaceZ) {
                 interfaceVOZ.setState(InterfaceState.Paid);
                 interfaceVOZ.setAccountUuid(interfaceVOZ.getOwnerAccountUuid());
-                interfaceVOZ.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), interfaceVOZ.getProductChargeModel(), interfaceVOZ.getDuration()));
+                interfaceVOZ.setExpireDate(tunnelBase.getExpireDate(dbf.getCurrentSqlTime(), interfaceVOZ.getProductChargeModel(), interfaceVOZ.getDuration()));
                 dbf.updateAndRefresh(interfaceVOZ);
             }
 
             //创建任务
-            TaskResourceVO taskResourceVO = newTaskResourceVO(vo2, TaskType.Create);
+            TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo2, TaskType.Create);
 
             CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
             createTunnelMsg.setTunnelUuid(vo2.getUuid());
@@ -1087,27 +1045,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     }
 
-    private ProductInfoForOrder createBuyOrderForTunnel(TunnelVO vo, APICreateTunnelMsg msg) {
-        EndpointVO evoA = dbf.findByUuid(msg.getEndpointAUuid(), EndpointVO.class);
-        EndpointVO evoZ = dbf.findByUuid(msg.getEndpointZUuid(), EndpointVO.class);
-
-        ProductInfoForOrder order = new ProductInfoForOrder();
-        order.setProductUuid(vo.getUuid());
-        order.setProductType(ProductType.TUNNEL);
-        order.setProductChargeModel(vo.getProductChargeModel());
-        order.setDuration(vo.getDuration());
-        order.setProductName(vo.getName());
-        order.setAccountUuid(vo.getOwnerAccountUuid());
-        order.setOpAccountUuid(msg.getSession().getAccountUuid());
-        order.setDescriptionData(getDescriptionForTunnel(vo));
-        order.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(), evoZ.getNodeUuid(), msg.getInnerConnectedEndpointUuid()));
-        order.setNotifyUrl(restf.getSendCommandUrl());
-        return order;
-    }
-
     @Transactional
     private void handle(APICreateTunnelManualMsg msg) {
-
+        TunnelBase tunnelBase = new TunnelBase();
         //保存数据
         TunnelVO vo = new TunnelVO();
         BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
@@ -1121,7 +1061,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(null);
         vo.setOwnerAccountUuid(msg.getAccountUuid());
-        vo.setVsi(getVsiAuto());
+        vo.setVsi(tunnelBase.getVsiAuto());
         vo.setMonitorCidr(null);
         vo.setName(msg.getName());
         vo.setDuration(msg.getDuration());
@@ -1158,9 +1098,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         //如果跨国,将出海口设备添加至TunnelSwitchPort
         if (msg.getInnerConnectedEndpointUuid() != null) {
             if (nvoA.getCountry().equals("CHINA")) {
-                createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, true);
+                tunnelBase.createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, true);
             } else {
-                createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, false);
+                tunnelBase.createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, false);
             }
         }
 
@@ -1188,12 +1128,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 手动创建云专线的支付和下发
      */
     private void afterCreateTunnelManual(TunnelVO vo, APICreateTunnelManualMsg msg) {
+        TunnelBase tunnelBase = new TunnelBase();
         APICreateTunnelManualEvent evt = new APICreateTunnelManualEvent(msg.getId());
 
         //调用支付
         APICreateBuyOrderMsg orderMsg = new APICreateBuyOrderMsg();
         List<ProductInfoForOrder> products = new ArrayList<>();
-        ProductInfoForOrder productInfoForOrderTunnel = createBuyOrderForTunnelManual(vo, msg);
+        ProductInfoForOrder productInfoForOrderTunnel = tunnelBase.createBuyOrderForTunnelManual(vo, msg);
 
         CreateTunnelCallBack createTunnelCallBack = new CreateTunnelCallBack();
         createTunnelCallBack.setInterfaceAUuid(null);
@@ -1205,7 +1146,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         products.add(productInfoForOrderTunnel);
         orderMsg.setProducts(products);
-        List<OrderInventory> inventories = createBuyOrder(orderMsg);
+        List<OrderInventory> inventories = tunnelBase.createBuyOrder(orderMsg);
 
         if (inventories.isEmpty()) {
             vo.setExpireDate(dbf.getCurrentSqlTime());
@@ -1217,7 +1158,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         //支付成功修改状态,记录生效订单
-        saveResourceOrderEffective(inventories.get(0).getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+        tunnelBase.saveResourceOrderEffective(inventories.get(0).getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
         vo.setAccountUuid(vo.getOwnerAccountUuid());
         vo.setState(TunnelState.Deploying);
@@ -1225,7 +1166,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         final TunnelVO vo2 = dbf.updateAndRefresh(vo);
 
         //创建任务
-        TaskResourceVO taskResourceVO = newTaskResourceVO(vo2, TaskType.Create);
+        TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo2, TaskType.Create);
 
         CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
         createTunnelMsg.setTunnelUuid(vo2.getUuid());
@@ -1248,27 +1189,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     }
 
-    private ProductInfoForOrder createBuyOrderForTunnelManual(TunnelVO vo, APICreateTunnelManualMsg msg) {
-        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
-        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
-        EndpointVO evoA = dbf.findByUuid(interfaceVOA.getEndpointUuid(), EndpointVO.class);
-        EndpointVO evoZ = dbf.findByUuid(interfaceVOZ.getEndpointUuid(), EndpointVO.class);
-
-        ProductInfoForOrder order = new ProductInfoForOrder();
-        order.setProductUuid(vo.getUuid());
-        order.setProductType(ProductType.TUNNEL);
-        order.setProductChargeModel(vo.getProductChargeModel());
-        order.setProductName(vo.getName());
-        order.setDuration(vo.getDuration());
-        order.setAccountUuid(vo.getOwnerAccountUuid());
-        order.setOpAccountUuid(msg.getSession().getAccountUuid());
-        order.setDescriptionData(getDescriptionForTunnel(vo));
-        order.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(), evoZ.getNodeUuid(), msg.getInnerConnectedEndpointUuid()));
-        order.setNotifyUrl(restf.getSendCommandUrl());
-        return order;
-    }
-
     private void handle(APIUpdateTunnelVlanMsg msg) {
+        TunnelBase tunnelBase = new TunnelBase();
         APIUpdateTunnelVlanEvent evt = new APIUpdateTunnelVlanEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
@@ -1337,7 +1259,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void run(FlowTrigger trigger, Map data) {
                 if (!Objects.equals(msg.getInterfaceAUuid(), msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan()) || !Objects.equals(msg.getInterfaceZUuid(), msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
                     //创建任务
-                    TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyPorts);
+                    TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo, TaskType.ModifyPorts);
 
                     ModifyTunnelPortsMsg modifyTunnelPortsMsg = new ModifyTunnelPortsMsg();
                     modifyTunnelPortsMsg.setTunnelUuid(vo.getUuid());
@@ -1452,12 +1374,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     @Transactional
     private void handle(APIUpdateTunnelBandwidthMsg msg) {
+        TunnelBase tunnelBase = new TunnelBase();
+        TunnelDbBase tunnelDbBase = new TunnelDbBase();
         APIUpdateTunnelBandwidthEvent evt = new APIUpdateTunnelBandwidthEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
-        String nodeAUuid = getNodeUuid(vo, "A");
-        String nodeZUuid = getNodeUuid(vo, "Z");
+        String nodeAUuid = tunnelDbBase.getNodeUuid(vo, "A");
+        String nodeZUuid = tunnelDbBase.getNodeUuid(vo, "Z");
 
         String innerEndpointUuid = null;
         TunnelSwitchPortVO tunnelSwitchPort = Q.New(TunnelSwitchPortVO.class)
@@ -1485,9 +1409,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg();
         orderMsg.setProductUuid(vo.getUuid());
         orderMsg.setProductName(vo.getName());
-        orderMsg.setDescriptionData(getDescriptionForTunnel(vo));
+        orderMsg.setDescriptionData(tunnelBase.getDescriptionForTunnel(vo));
         orderMsg.setCallBackData(RESTApiDecoder.dump(uc));
-        orderMsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), nodeAUuid,
+        orderMsg.setUnits(tunnelBase.getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), nodeAUuid,
                 nodeZUuid, innerEndpointUuid));
         orderMsg.setProductType(ProductType.TUNNEL);
         orderMsg.setAccountUuid(msg.getAccountUuid());
@@ -1496,16 +1420,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setExpiredTime(vo.getExpireDate());
         orderMsg.setNotifyUrl(restf.getSendCommandUrl());
 
-        OrderInventory orderInventory = createOrder(orderMsg);
+        OrderInventory orderInventory = tunnelBase.createOrder(orderMsg);
         if (orderInventory != null) {
             //付款成功,记录生效订单
-            saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+            tunnelBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
             vo.setBandwidth(bandwidthOfferingVO.getBandwidth());
             vo = dbf.updateAndRefresh(vo);
 
             //创建任务
-            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyBandwidth);
+            TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo, TaskType.ModifyBandwidth);
 
             ModifyTunnelBandwidthMsg modifyTunnelBandwidthMsg = new ModifyTunnelBandwidthMsg();
             modifyTunnelBandwidthMsg.setTunnelUuid(vo.getUuid());
@@ -1551,6 +1475,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                             String accountUuid,
                                             String opAccountUuid) {
 
+        TunnelBase tunnelBase = new TunnelBase();
         APIRenewTunnelReply reply = new APIRenewTunnelReply();
 
         TunnelVO vo = dbf.findByUuid(uuid, TunnelVO.class);
@@ -1563,7 +1488,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         renewOrderMsg.setProductName(vo.getName());
         renewOrderMsg.setProductType(ProductType.TUNNEL);
         renewOrderMsg.setDuration(duration);
-        renewOrderMsg.setDescriptionData(getDescriptionForTunnel(vo));
+        renewOrderMsg.setDescriptionData(tunnelBase.getDescriptionForTunnel(vo));
         renewOrderMsg.setProductChargeModel(productChargeModel);
         renewOrderMsg.setAccountUuid(accountUuid);
         renewOrderMsg.setOpAccountUuid(opAccountUuid);
@@ -1572,15 +1497,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         renewOrderMsg.setNotifyUrl(restf.getSendCommandUrl());
         renewOrderMsg.setCallBackData(RESTApiDecoder.dump(rc));
 
-        OrderInventory orderInventory = createOrder(renewOrderMsg);
+        OrderInventory orderInventory = tunnelBase.createOrder(renewOrderMsg);
 
         if (orderInventory != null) {
             //续费或者自动续费成功,记录生效订单
-            saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+            tunnelBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
             //更新到期时间
             vo.setDuration(duration);
             vo.setProductChargeModel(productChargeModel);
-            vo.setExpireDate(getExpireDate(newTime, productChargeModel, duration));
+            vo.setExpireDate(tunnelBase.getExpireDate(newTime, productChargeModel, duration));
 
             vo = dbf.updateAndRefresh(vo);
             reply.setInventory(TunnelInventory.valueOf(vo));
@@ -1592,6 +1517,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APISLATunnelMsg msg) {
+        TunnelBase tunnelBase = new TunnelBase();
+
         APISLATunnelReply reply = new APISLATunnelReply();
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
@@ -1603,7 +1530,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 new APICreateSLACompensationOrderMsg();
         slaCompensationOrderMsg.setProductUuid(vo.getUuid());
         slaCompensationOrderMsg.setProductName(vo.getName());
-        slaCompensationOrderMsg.setDescriptionData(getDescriptionForTunnel(vo));
+        slaCompensationOrderMsg.setDescriptionData(tunnelBase.getDescriptionForTunnel(vo));
         slaCompensationOrderMsg.setProductType(ProductType.TUNNEL);
         slaCompensationOrderMsg.setDuration(msg.getDuration());
         slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
@@ -1613,15 +1540,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         slaCompensationOrderMsg.setCallBackData(RESTApiDecoder.dump(sc));
         slaCompensationOrderMsg.setNotifyUrl(restf.getSendCommandUrl());
 
-        OrderInventory orderInventory = createOrder(slaCompensationOrderMsg);
+        OrderInventory orderInventory = tunnelBase.createOrder(slaCompensationOrderMsg);
 
         if (orderInventory != null) {
             //续费或者赔偿成功,记录生效订单
-            saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+            tunnelBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
             //更新到期时间
             vo.setDuration(msg.getDuration());
             vo.setProductChargeModel(ProductChargeModel.BY_DAY);
-            vo.setExpireDate(getExpireDate(newTime, ProductChargeModel.BY_DAY, msg.getDuration()));
+            vo.setExpireDate(tunnelBase.getExpireDate(newTime, ProductChargeModel.BY_DAY, msg.getDuration()));
 
             vo = dbf.updateAndRefresh(vo);
             reply.setInventory(TunnelInventory.valueOf(vo));
@@ -1634,6 +1561,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     @Transactional
     private void handle(APIDeleteTunnelMsg msg) {
+        TunnelBase tunnelBase = new TunnelBase();
+        TunnelDbBase tunnelDbBase = new TunnelDbBase();
         APIDeleteTunnelEvent evt = new APIDeleteTunnelEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
@@ -1642,14 +1571,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             extp.preDelete();
         }
 
+        CollectionUtils.safeForEach(pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class), new ForEachFunction<TunnelDeletionExtensionPoint>() {
+            @Override
+            public void run(TunnelDeletionExtensionPoint arg) {
+                arg.beforeDelete();
+            }
+        });
+
         if (vo.getState() == TunnelState.Unsupport) {         //仅删除：无法开通
-            deleteTunnel(vo);
+            tunnelDbBase.deleteTunnel(vo);
             evt.setInventory(TunnelInventory.valueOf(vo));
             bus.publish(evt);
         } else {
             if (vo.getAccountUuid() == null) {                  //仅下发删除：退订成功但是下发失败了的再次下发，不需要再退订
                 //创建任务
-                TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
+                TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo, TaskType.Delete);
 
                 DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
                 deleteTunnelMsg.setTunnelUuid(vo.getUuid());
@@ -1676,7 +1612,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         final TunnelVO vo2 = dbf.updateAndRefresh(vo);
 
                         //创建任务
-                        TaskResourceVO taskResourceVO = newTaskResourceVO(vo2, TaskType.Delete);
+                        TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo2, TaskType.Delete);
 
                         DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
                         deleteTunnelMsg.setTunnelUuid(vo2.getUuid());
@@ -1697,7 +1633,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         });
 
                     }else{
-                        deleteTunnel(vo);
+                        tunnelDbBase.deleteTunnel(vo);
                         evt.setInventory(TunnelInventory.valueOf(vo));
                         bus.publish(evt);
                     }
@@ -1714,24 +1650,24 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
                 orderMsg.setStartTime(dbf.getCurrentSqlTime());
                 orderMsg.setExpiredTime(vo.getExpireDate());
-                orderMsg.setDescriptionData(getDescriptionForTunnel(vo));
+                orderMsg.setDescriptionData(tunnelBase.getDescriptionForTunnel(vo));
                 orderMsg.setCallBackData(RESTApiDecoder.dump(dc));
                 orderMsg.setNotifyUrl(restf.getSendCommandUrl());
 
-                OrderInventory orderInventory = createOrder(orderMsg);
+                OrderInventory orderInventory = tunnelBase.createOrder(orderMsg);
                 if (orderInventory == null) {
                     evt.setError(errf.stringToOperationError("退订失败"));
                     bus.publish(evt);
                 } else {
                     if (vo.getState() == TunnelState.Enabled) {          //退订下发删除：对于已开通的产品
                         //退订成功,记录生效订单
-                        saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+                        tunnelBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
                         vo.setAccountUuid(null);
                         final TunnelVO vo2 = dbf.updateAndRefresh(vo);
 
                         //创建任务
-                        TaskResourceVO taskResourceVO = newTaskResourceVO(vo2, TaskType.Delete);
+                        TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo2, TaskType.Delete);
 
                         DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
                         deleteTunnelMsg.setTunnelUuid(vo2.getUuid());
@@ -1753,8 +1689,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
                     } else {                                            //退订删除：对于已关闭的产品
                         //退订成功,记录生效订单
-                        saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
-                        deleteTunnel(vo);
+                        tunnelBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+                        tunnelDbBase.deleteTunnel(vo);
                         evt.setInventory(TunnelInventory.valueOf(vo));
                         bus.publish(evt);
                     }
@@ -1767,12 +1703,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIDeleteForciblyTunnelMsg msg) {
+        TunnelBase tunnelBase = new TunnelBase();
+        TunnelDbBase tunnelDbBase = new TunnelDbBase();
         APIDeleteForciblyTunnelEvent evt = new APIDeleteForciblyTunnelEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
         if (vo.getExpireDate() != null && vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now()))) {
-            deleteTunnel(vo);
+            tunnelDbBase.deleteTunnel(vo);
             evt.setInventory(TunnelInventory.valueOf(vo));
             bus.publish(evt);
             return;
@@ -1794,16 +1732,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         } else {
             orderMsg.setExpiredTime(vo.getExpireDate());
         }
-        orderMsg.setDescriptionData(getDescriptionForTunnel(vo));
+        orderMsg.setDescriptionData(tunnelBase.getDescriptionForTunnel(vo));
         orderMsg.setCallBackData(RESTApiDecoder.dump(dc));
         orderMsg.setNotifyUrl(restf.getSendCommandUrl());
 
-        OrderInventory orderInventory = createOrder(orderMsg);
+        OrderInventory orderInventory = tunnelBase.createOrder(orderMsg);
         if (orderInventory != null) {
             //退订成功,记录生效订单
-            saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+            tunnelBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
-            deleteTunnel(vo);
+            tunnelDbBase.deleteTunnel(vo);
 
             evt.setInventory(TunnelInventory.valueOf(vo));
         } else {
@@ -1813,6 +1751,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIUpdateTunnelStateMsg msg) {
+        TunnelBase tunnelBase = new TunnelBase();
         APIUpdateTunnelStateEvent evt = new APIUpdateTunnelStateEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
@@ -1831,17 +1770,17 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 orderMsg.setStartTime(dbf.getCurrentSqlTime());
                 orderMsg.setExpiredTime(dbf.getCurrentSqlTime());
                 orderMsg.setCreateFailure(true);
-                orderMsg.setDescriptionData(getDescriptionForTunnel(vo));
+                orderMsg.setDescriptionData(tunnelBase.getDescriptionForTunnel(vo));
                 orderMsg.setCallBackData(RESTApiDecoder.dump(dc));
                 orderMsg.setNotifyUrl(restf.getSendCommandUrl());
 
-                OrderInventory orderInventory = createOrder(orderMsg);
+                OrderInventory orderInventory = tunnelBase.createOrder(orderMsg);
                 if (orderInventory == null) {
                     evt.setError(errf.stringToOperationError("退订失败"));
                     bus.publish(evt);
                 } else {
                     //退订成功,记录生效订单
-                    saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+                    tunnelBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
                     vo.setState(TunnelState.Unsupport);
                     vo.setExpireDate(dbf.getCurrentSqlTime());
                     vo = dbf.updateAndRefresh(vo);
@@ -1866,7 +1805,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     bus.publish(evt);
                 } else {
                     //创建任务
-                    TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Enabled);
+                    TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo, TaskType.Enabled);
 
                     final TunnelVO vo2 = dbf.reload(vo);
                     EnabledTunnelMsg enabledTunnelMsg = new EnabledTunnelMsg();
@@ -1890,7 +1829,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         } else {                                           //恢复连接和关闭连接
             //创建任务
-            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.valueOf(msg.getState().toString()));
+            TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo, TaskType.valueOf(msg.getState().toString()));
 
             final TunnelVO vo2 = dbf.reload(vo);
             if (msg.getState() == TunnelState.Enabled) {
@@ -1969,7 +1908,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void run(FlowTrigger trigger, Map data) {
                 //创建任务
-                TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyPorts);
+                TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.ModifyPorts);
 
                 ModifyTunnelPortsMsg modifyTunnelPortsMsg = new ModifyTunnelPortsMsg();
                 modifyTunnelPortsMsg.setTunnelUuid(vo.getUuid());
@@ -2039,7 +1978,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void run(FlowTrigger trigger, Map data) {
                 //创建任务
-                TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyPorts);
+                TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.ModifyPorts);
 
                 ModifyTunnelPortsMsg modifyTunnelPortsMsg = new ModifyTunnelPortsMsg();
                 modifyTunnelPortsMsg.setTunnelUuid(vo.getUuid());
@@ -2086,6 +2025,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIQueryTunnelDetailForAlarmMsg msg) {
+        TunnelDbBase tunnelDbBase = new TunnelDbBase();
         Map map = new HashMap();
         List<FalconApiCommands.Tunnel> tunnels = new ArrayList<>();
 
@@ -2104,10 +2044,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             List<TunnelSwitchPortVO> tunnelSwitchPortVOS = Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.tunnelUuid, tunnelUuid).list();
             for (TunnelSwitchPortVO vo : tunnelSwitchPortVOS) {
                 if ("A".equals(vo.getSortTag())) {
-                    tunnelCmd.setEndpointA_ip(getPhysicalSwitch(vo.getSwitchPortUuid()));
+                    tunnelCmd.setEndpointA_ip(tunnelDbBase.getPhysicalSwitch(vo.getSwitchPortUuid()));
                     tunnelCmd.setEndpointA_vid(vo.getVlan());
                 } else if ("Z".equals(vo.getSortTag())) {
-                    tunnelCmd.setEndpointB_ip(getPhysicalSwitch(vo.getSwitchPortUuid()));
+                    tunnelCmd.setEndpointB_ip(tunnelDbBase.getPhysicalSwitch(vo.getSwitchPortUuid()));
                     tunnelCmd.setEndpointB_vid(vo.getVlan());
                 }
             }
@@ -2186,39 +2126,43 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void renewOrSla(OrderCallbackCmd cmd) {
+        TunnelBase tunnelBase = new TunnelBase();
+
         if (cmd.getProductType() == ProductType.PORT) {
             InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
-            vo.setExpireDate(getExpireDate(vo.getExpireDate(), cmd.getProductChargeModel(), cmd.getDuration()));
+            vo.setExpireDate(tunnelBase.getExpireDate(vo.getExpireDate(), cmd.getProductChargeModel(), cmd.getDuration()));
             vo.setDuration(cmd.getDuration());
             vo.setProductChargeModel(cmd.getProductChargeModel());
             dbf.updateAndRefresh(vo);
             //付款成功,记录生效订单
-            saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+            tunnelBase.saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
         } else if (cmd.getProductType() == ProductType.TUNNEL) {
             TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
-            vo.setExpireDate(getExpireDate(vo.getExpireDate(), cmd.getProductChargeModel(), cmd.getDuration()));
+            vo.setExpireDate(tunnelBase.getExpireDate(vo.getExpireDate(), cmd.getProductChargeModel(), cmd.getDuration()));
             vo.setDuration(cmd.getDuration());
             vo.setProductChargeModel(cmd.getProductChargeModel());
             dbf.updateAndRefresh(vo);
             //付款成功,记录生效订单
-            saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+            tunnelBase.saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
         }
     }
 
     private void buyTunnel(OrderCallbackCmd cmd, CreateTunnelCallBack message) {
+        TunnelBase tunnelBase = new TunnelBase();
+
         if (message.isNewBuyInterfaceA()) {
             InterfaceVO vo = dbf.findByUuid(message.getInterfaceAUuid(), InterfaceVO.class);
             vo.setAccountUuid(vo.getOwnerAccountUuid());
             vo.setState(InterfaceState.Paid);
-            vo.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), cmd.getProductChargeModel(), cmd.getDuration()));
+            vo.setExpireDate(tunnelBase.getExpireDate(dbf.getCurrentSqlTime(), cmd.getProductChargeModel(), cmd.getDuration()));
             dbf.updateAndRefresh(vo);
         }
         if (message.isNewBuyInterfaceZ()) {
             InterfaceVO vo = dbf.findByUuid(message.getInterfaceZUuid(), InterfaceVO.class);
             vo.setAccountUuid(vo.getOwnerAccountUuid());
             vo.setState(InterfaceState.Paid);
-            vo.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), cmd.getProductChargeModel(), cmd.getDuration()));
+            vo.setExpireDate(tunnelBase.getExpireDate(dbf.getCurrentSqlTime(), cmd.getProductChargeModel(), cmd.getDuration()));
             dbf.updateAndRefresh(vo);
         }
 
@@ -2228,10 +2172,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setStatus(TunnelStatus.Connecting);
         dbf.updateAndRefresh(vo);
         //付款成功,记录生效订单
-        saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+        tunnelBase.saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
         //创建任务
-        TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Create);
+        TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo, TaskType.Create);
 
         CreateTunnelMsg createTunnelMsg = new CreateTunnelMsg();
         createTunnelMsg.setTunnelUuid(vo.getUuid());
@@ -2251,38 +2195,40 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void buyInterface(OrderCallbackCmd cmd) {
+        TunnelBase tunnelBase = new TunnelBase();
 
         InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
         vo.setAccountUuid(vo.getOwnerAccountUuid());
         vo.setState(InterfaceState.Paid);
-        vo.setExpireDate(getExpireDate(dbf.getCurrentSqlTime(), cmd.getProductChargeModel(), cmd.getDuration()));
+        vo.setExpireDate(tunnelBase.getExpireDate(dbf.getCurrentSqlTime(), cmd.getProductChargeModel(), cmd.getDuration()));
         dbf.updateAndRefresh(vo);
         //付款成功,记录生效订单
-        saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+        tunnelBase.saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
     }
 
     private void unsubcribeInterface(OrderCallbackCmd cmd) {
         InterfaceVO vo = dbf.findByUuid(cmd.getPorductUuid(), InterfaceVO.class);
-        saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+        new TunnelBase().saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
         dbf.remove(vo);
 
     }
 
     private void unsubcribeTunnel(OrderCallbackCmd cmd, DeleteTunnelCallBack message) {
-
+        TunnelBase tunnelBase = new TunnelBase();
+        TunnelDbBase tunnelDbBase = new TunnelDbBase();
         TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
 
         //退订成功，记录生效订单
-        saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+        tunnelBase.saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
         if (message.getDescription().equals("forciblydelete")) {
-            deleteTunnel(vo);
+            tunnelDbBase.deleteTunnel(vo);
         } else if (message.getDescription().equals("delete") && vo.getState() == TunnelState.Enabled) {
             vo.setAccountUuid(null);
             dbf.updateAndRefresh(vo);
 
             //创建任务
-            TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.Delete);
+            TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo, TaskType.Delete);
 
             DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
             deleteTunnelMsg.setTunnelUuid(vo.getUuid());
@@ -2299,7 +2245,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 }
             });
         } else if (message.getDescription().equals("delete") && vo.getState() == TunnelState.Disabled) {
-            deleteTunnel(vo);
+            tunnelDbBase.deleteTunnel(vo);
         } else if (message.getDescription().equals("unsupport")) {
             vo.setState(TunnelState.Unsupport);
             vo.setExpireDate(dbf.getCurrentSqlTime());
@@ -2309,14 +2255,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void modifyBandwidth(OrderCallbackCmd cmd, UpdateTunnelBandwidthCallBack message) {
+        TunnelBase tunnelBase = new TunnelBase();
+
         TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
         vo.setBandwidth(message.getBandwidth());
         dbf.updateAndRefresh(vo);
         //付款成功,记录生效订单
-        saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+        tunnelBase.saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
         //创建任务
-        TaskResourceVO taskResourceVO = newTaskResourceVO(vo, TaskType.ModifyBandwidth);
+        TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo, TaskType.ModifyBandwidth);
 
         ModifyTunnelBandwidthMsg modifyTunnelBandwidthMsg = new ModifyTunnelBandwidthMsg();
         modifyTunnelBandwidthMsg.setTunnelUuid(vo.getUuid());
@@ -2465,6 +2413,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         @Override
         public void run() {
+            TunnelBase tunnelBase = new TunnelBase();
             Timestamp closeTime = Timestamp.valueOf(LocalDateTime.now().plusDays(expiredProductCloseTime));
             Timestamp deleteTime = Timestamp.valueOf(LocalDateTime.now().plusDays(expiredProductDeleteTime));
 
@@ -2478,7 +2427,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     if (vo.getExpireDate().before(deleteTime)) {
                         vo.setAccountUuid(null);
                         dbf.updateAndRefresh(vo);
-                        TaskResourceVO task = newTaskResourceVO(vo, TaskType.Delete);
+                        TaskResourceVO task = tunnelBase.newTaskResourceVO(vo, TaskType.Delete);
                         DeleteTunnelMsg msg = new DeleteTunnelMsg();
                         msg.setTaskUuid(task.getUuid());
                         msg.setTunnelUuid(vo.getUuid());
@@ -2487,9 +2436,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     }
                     if (vo.getExpireDate().before(closeTime)) {
                         if (vo.getState() == TunnelState.Unpaid) {
-                            deleteTunnel(vo);
+                            new TunnelDbBase().deleteTunnel(vo);
                         } else {
-                            TaskResourceVO task = newTaskResourceVO(vo, TaskType.Delete);
+                            TaskResourceVO task = tunnelBase.newTaskResourceVO(vo, TaskType.Delete);
                             DisabledTunnelMsg msg = new DisabledTunnelMsg();
                             msg.setTaskUuid(task.getUuid());
                             msg.setTunnelUuid(vo.getUuid());
@@ -2527,1073 +2476,53 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
+        TunnelValidateBase tunnelValidateBase = new TunnelValidateBase();
         if (msg instanceof APICreateInterfaceMsg) {
-            validate((APICreateInterfaceMsg) msg);
+            tunnelValidateBase.validate((APICreateInterfaceMsg) msg);
         } else if (msg instanceof APICreateInterfaceManualMsg) {
-            validate((APICreateInterfaceManualMsg) msg);
+            tunnelValidateBase.validate((APICreateInterfaceManualMsg) msg);
         } else if (msg instanceof APIUpdateInterfaceMsg) {
-            validate((APIUpdateInterfaceMsg) msg);
+            tunnelValidateBase.validate((APIUpdateInterfaceMsg) msg);
         } else if (msg instanceof APIRenewInterfaceMsg) {
-            validate((APIRenewInterfaceMsg) msg);
+            tunnelValidateBase.validate((APIRenewInterfaceMsg) msg);
         } else if (msg instanceof APIRenewAutoInterfaceMsg) {
-            validate((APIRenewAutoInterfaceMsg) msg);
+            tunnelValidateBase.validate((APIRenewAutoInterfaceMsg) msg);
         } else if (msg instanceof APISLAInterfaceMsg) {
-            validate((APISLAInterfaceMsg) msg);
+            tunnelValidateBase.validate((APISLAInterfaceMsg) msg);
         } else if (msg instanceof APIDeleteInterfaceMsg) {
-            validate((APIDeleteInterfaceMsg) msg);
+            tunnelValidateBase.validate((APIDeleteInterfaceMsg) msg);
         } else if (msg instanceof APICreateTunnelMsg) {
-            validate((APICreateTunnelMsg) msg);
+            tunnelValidateBase.validate((APICreateTunnelMsg) msg);
         } else if (msg instanceof APICreateTunnelManualMsg) {
-            validate((APICreateTunnelManualMsg) msg);
+            tunnelValidateBase.validate((APICreateTunnelManualMsg) msg);
         } else if (msg instanceof APIUpdateTunnelMsg) {
-            validate((APIUpdateTunnelMsg) msg);
+            tunnelValidateBase.validate((APIUpdateTunnelMsg) msg);
         } else if (msg instanceof APIUpdateTunnelBandwidthMsg) {
-            validate((APIUpdateTunnelBandwidthMsg) msg);
+            tunnelValidateBase.validate((APIUpdateTunnelBandwidthMsg) msg);
         } else if (msg instanceof APIRenewTunnelMsg) {
-            validate((APIRenewTunnelMsg) msg);
+            tunnelValidateBase.validate((APIRenewTunnelMsg) msg);
         } else if (msg instanceof APIRenewAutoTunnelMsg) {
-            validate((APIRenewAutoTunnelMsg) msg);
+            tunnelValidateBase.validate((APIRenewAutoTunnelMsg) msg);
         } else if (msg instanceof APISLATunnelMsg) {
-            validate((APISLATunnelMsg) msg);
+            tunnelValidateBase.validate((APISLATunnelMsg) msg);
         } else if (msg instanceof APIDeleteTunnelMsg) {
-            validate((APIDeleteTunnelMsg) msg);
+            tunnelValidateBase.validate((APIDeleteTunnelMsg) msg);
         } else if (msg instanceof APIDeleteForciblyTunnelMsg) {
-            validate((APIDeleteForciblyTunnelMsg) msg);
+            tunnelValidateBase.validate((APIDeleteForciblyTunnelMsg) msg);
         } else if (msg instanceof APIUpdateTunnelStateMsg) {
-            validate((APIUpdateTunnelStateMsg) msg);
+            tunnelValidateBase.validate((APIUpdateTunnelStateMsg) msg);
         } else if (msg instanceof APICreateQinqMsg) {
-            validate((APICreateQinqMsg) msg);
+            tunnelValidateBase.validate((APICreateQinqMsg) msg);
         } else if (msg instanceof APIDeleteQinqMsg) {
-            validate((APIDeleteQinqMsg) msg);
+            tunnelValidateBase.validate((APIDeleteQinqMsg) msg);
         } else if (msg instanceof APIUpdateTunnelVlanMsg) {
-            validate((APIUpdateTunnelVlanMsg) msg);
+            tunnelValidateBase.validate((APIUpdateTunnelVlanMsg) msg);
         } else if (msg instanceof APIUpdateForciblyTunnelVlanMsg) {
-            validate((APIUpdateForciblyTunnelVlanMsg) msg);
+            tunnelValidateBase.validate((APIUpdateForciblyTunnelVlanMsg) msg);
         } else if (msg instanceof APIUpdateInterfacePortMsg) {
-            validate((APIUpdateInterfacePortMsg) msg);
+            tunnelValidateBase.validate((APIUpdateInterfacePortMsg) msg);
         }
         return msg;
-    }
-
-    private void validate(APIUpdateInterfacePortMsg msg) {
-
-        InterfaceVO iface = Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).find();
-        if (iface.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())))
-            throw new ApiMessageInterceptionException(
-                    argerr("The Interface[uuid:%s] has expired！", msg.getUuid()));
-        Q q = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.interfaceUuid, iface.getUuid());
-        if (q.count() > 1)
-            throw new ApiMessageInterceptionException(
-                    argerr("The Interface[uuid:%s] has been used by two tunnel as least！", msg.getUuid()));
-        SwitchPortVO switchPort = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, iface.getSwitchPortUuid()).find();
-        if (switchPort.getPortType().equals("SHARE"))
-            throw new ApiMessageInterceptionException(
-                    argerr("The type of Interface[uuid:%s] is %s, could not modify！", msg.getUuid(), switchPort.getPortType()));
-
-        if (msg.getSwitchPortUuid().equals(iface.getSwitchPortUuid())
-                && (msg.getSegments() == null || msg.getSegments().isEmpty())) {
-            throw new ApiMessageInterceptionException(
-                    argerr("The InnerVlans cannot be empty！"));
-        }
-    }
-
-    private void validate(APICreateInterfaceMsg msg) {
-        //判断同一个用户的接口名称是否已经存在
-        Q q1 = Q.New(InterfaceVO.class)
-                .eq(InterfaceVO_.name, msg.getName())
-                .eq(InterfaceVO_.accountUuid, msg.getAccountUuid());
-        if (q1.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("物理接口名称【%s】已经存在!", msg.getName()));
-        }
-
-
-        //判断账户金额是否充足
-        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
-        priceMsg.setAccountUuid(msg.getAccountUuid());
-        priceMsg.setProductChargeModel(msg.getProductChargeModel());
-        priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(getInterfacePriceUnit(msg.getPortOfferingUuid()));
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
-        if (!reply.isPayable())
-            throw new ApiMessageInterceptionException(
-                    argerr("账户[uuid:%s]余额不足!", msg.getAccountUuid()));
-    }
-
-    private void validate(APICreateInterfaceManualMsg msg) {
-        //判断同一个用户的接口名称是否已经存在
-        Q q = Q.New(InterfaceVO.class)
-                .eq(InterfaceVO_.name, msg.getName())
-                .eq(InterfaceVO_.accountUuid, msg.getAccountUuid());
-
-        if (q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("物理接口名称【%s】已经存在!", msg.getName()));
-        }
-        String portType = Q.New(SwitchPortVO.class)
-                .eq(SwitchPortVO_.uuid, msg.getSwitchPortUuid())
-                .select(SwitchPortVO_.portType).find();
-        //判断同一个用户在同一个连接点下是否已经购买共享端口
-        if (portType.equals("SHARE")) {
-            String sql = "select a from InterfaceVO a,SwitchPortVO b " +
-                    "where a.switchPortUuid = b.uuid " +
-                    "and a.accountUuid = :accountUuid " +
-                    "and a.endpointUuid = :endpointUuid " +
-                    "and b.portType = 'SHARE'";
-            TypedQuery<InterfaceVO> itq = dbf.getEntityManager().createQuery(sql, InterfaceVO.class);
-            itq.setParameter("accountUuid", msg.getAccountUuid());
-            itq.setParameter("endpointUuid", msg.getEndpointUuid());
-            if (!itq.getResultList().isEmpty()) {
-                throw new ApiMessageInterceptionException(argerr("一个用户在同一个连接点下只能购买一个共享口！ "));
-            }
-        }
-
-        //判断账户金额是否充足
-        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
-        priceMsg.setAccountUuid(msg.getAccountUuid());
-        priceMsg.setProductChargeModel(msg.getProductChargeModel());
-        priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(getInterfacePriceUnit(portType));
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
-        if (!reply.isPayable())
-            throw new ApiMessageInterceptionException(
-                    argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
-
-    }
-
-    private void validate(APIUpdateInterfaceMsg msg) {
-
-        InterfaceVO iface = Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).find();
-        if (iface.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())))
-            throw new ApiMessageInterceptionException(
-                    argerr("The Interface[uuid:%s] has expired！", msg.getUuid()));
-
-        //判断同一个用户的物理接口名称是否已经存在
-        if (!StringUtils.isEmpty(msg.getName()) && !msg.getName().equals(iface.getName())) {
-            if (checkResourceName(InterfaceVO.class.getSimpleName(), msg.getName(), iface.getAccountUuid())) {
-                throw new ApiMessageInterceptionException(argerr("物理接口名称【%s】已经存在!", msg.getName()));
-            }
-        }
-
-    }
-
-    private void validate(APISLAInterfaceMsg msg) {
-        checkOrderNoPayForInterface(msg.getUuid());
-    }
-
-    private void validate(APIRenewInterfaceMsg msg) {
-        checkOrderNoPayForInterface(msg.getUuid());
-    }
-
-    private void validate(APIRenewAutoInterfaceMsg msg) {
-        checkOrderNoPayForInterface(msg.getUuid());
-    }
-
-    private void checkOrderNoPayForInterface(String productUuid) {
-        String accountUuid = Q.New(InterfaceVO.class)
-                .eq(InterfaceVO_.uuid, productUuid)
-                .select(InterfaceVO_.accountUuid).findValue();
-        checkOrderNoPay(accountUuid, productUuid);
-    }
-
-    private void validate(APIDeleteInterfaceMsg msg) {
-        InterfaceVO iface = Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).find();
-
-        int deleteDays = TunnelGlobalConfig.PRODUCT_DELETE_DAYS.value(Integer.class);
-        if (!msg.getSession().isAdminSession() && iface.getCreateDate().toLocalDateTime().plusDays(deleteDays).isAfter(LocalDateTime.now()))
-            throw new ApiMessageInterceptionException(
-                    argerr("物理接口[uuid:%s]购买未超过%s天,不能删除 !", msg.getUuid(), deleteDays));
-        //判断云专线下是否有该物理接口
-        Q q = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid());
-        if (q.isExists()) {
-            throw new ApiMessageInterceptionException(
-                    argerr("The interface[uuid:%s] is being used, cannot delete!", msg.getUuid()));
-        }
-
-        //判断该产品是否有未完成订单
-        checkOrderNoPay(iface.getAccountUuid(), msg.getUuid());
-    }
-
-    private void validate(APICreateTunnelMsg msg) {
-        //BOSS创建验证物理接口的账户是否一致
-        if(msg.getSession().getType() == AccountType.SystemAdmin){
-            if(msg.getInterfaceAUuid() != null){
-                String accountUuid = dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class).getAccountUuid();
-                if(!Objects.equals(msg.getAccountUuid(),accountUuid)){
-                    throw new ApiMessageInterceptionException(argerr("物理接口A不属于该用户！"));
-                }
-            }
-            if(msg.getInterfaceZUuid() != null){
-                String accountUuid = dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class).getAccountUuid();
-                if(!Objects.equals(msg.getAccountUuid(),accountUuid)){
-                    throw new ApiMessageInterceptionException(argerr("物理接口Z不属于该用户！"));
-                }
-            }
-        }
-        //判断同一个用户的名称是否已经存在
-        SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
-        q.add(TunnelVO_.name, SimpleQuery.Op.EQ, msg.getName());
-        q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-        if (q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ", msg.getName()));
-        }
-        //判断通道两端的连接点是否相同，不允许相同
-        if (Objects.equals(msg.getEndpointAUuid(), msg.getEndpointZUuid())) {
-            throw new ApiMessageInterceptionException(argerr("通道两端不允许在同一个连接点 "));
-        }
-        //如果跨国,验证互联连接点和内外联交换机配置
-        if (msg.getInnerConnectedEndpointUuid() != null) {
-            validateInnerConnectEndpoint(msg.getInnerConnectedEndpointUuid());
-        }
-        //判断账户金额是否充足
-        EndpointVO evoA = dbf.findByUuid(msg.getEndpointAUuid(), EndpointVO.class);
-        EndpointVO evoZ = dbf.findByUuid(msg.getEndpointZUuid(), EndpointVO.class);
-
-        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
-        priceMsg.setAccountUuid(msg.getAccountUuid());
-        priceMsg.setProductChargeModel(msg.getProductChargeModel());
-        priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(),
-                evoZ.getNodeUuid(), msg.getInnerConnectedEndpointUuid()));
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
-        if (!reply.isPayable())
-            throw new ApiMessageInterceptionException(
-                    argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
-
-    }
-
-    private void validateInnerConnectEndpoint(String innerConnectedEndpointUuid) {
-        TunnelStrategy ts = new TunnelStrategy();
-        //通过互联连接点找到内联交换机和内联端口
-        SwitchVO innerSwitch = Q.New(SwitchVO.class)
-                .eq(SwitchVO_.endpointUuid, innerConnectedEndpointUuid)
-                .eq(SwitchVO_.type, SwitchType.INNER)
-                .find();
-        if (innerSwitch == null) {
-            throw new ApiMessageInterceptionException(argerr("该互联连接点下未添加内联逻辑交换机 "));
-        }
-        SwitchPortVO innerSwitchPort = Q.New(SwitchPortVO.class)
-                .eq(SwitchPortVO_.switchUuid, innerSwitch.getUuid())
-                .find();
-        if (innerSwitchPort == null) {
-            throw new ApiMessageInterceptionException(argerr("该内联逻辑交换机下未添加端口 "));
-        }
-        //通过互联连接点找到外联交换机和外联端口
-        SwitchVO outerSwitch = Q.New(SwitchVO.class)
-                .eq(SwitchVO_.endpointUuid, innerConnectedEndpointUuid)
-                .eq(SwitchVO_.type, SwitchType.OUTER)
-                .find();
-        if (outerSwitch == null) {
-            throw new ApiMessageInterceptionException(argerr("该互联连接点下未添加外联逻辑交换机 "));
-        }
-        SwitchPortVO outerSwitchPort = Q.New(SwitchPortVO.class)
-                .eq(SwitchPortVO_.switchUuid, outerSwitch.getUuid())
-                .find();
-        if (outerSwitchPort == null) {
-            throw new ApiMessageInterceptionException(argerr("该外联逻辑交换机下未添加端口 "));
-        }
-        //获取互联设备的VLAN
-        Integer innerVlan = ts.getVlanBySwitch(innerSwitch.getUuid());
-        if (innerVlan == 0) {
-            throw new ApiMessageInterceptionException(argerr("该端口所属内联虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-        }
-    }
-
-    private void validate(APICreateTunnelManualMsg msg) {
-        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
-        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
-        //BOSS创建验证物理接口的账户是否一致
-
-        if(!Objects.equals(msg.getAccountUuid(),interfaceVOA.getAccountUuid())){
-            throw new ApiMessageInterceptionException(argerr("物理接口A不属于该用户！"));
-        }
-
-        if(!Objects.equals(msg.getAccountUuid(),interfaceVOZ.getAccountUuid())){
-            throw new ApiMessageInterceptionException(argerr("物理接口Z不属于该用户！"));
-        }
-
-        EndpointVO evoA = dbf.findByUuid(interfaceVOA.getEndpointUuid(), EndpointVO.class);
-        EndpointVO evoZ = dbf.findByUuid(interfaceVOZ.getEndpointUuid(), EndpointVO.class);
-
-        //判断同一个用户的名称是否已经存在
-        SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
-        q.add(TunnelVO_.name, SimpleQuery.Op.EQ, msg.getName());
-        q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
-        if (q.isExists()) {
-            throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ", msg.getName()));
-        }
-
-        //判断通道两端的连接点是否相同，不允许相同
-        if (Objects.equals(evoA.getUuid(), evoZ.getUuid())) {
-            throw new ApiMessageInterceptionException(argerr("通道两端不允许在同一个连接点 "));
-        }
-
-        //如果跨国,验证互联连接点和内外联交换机配置
-        if (msg.getInnerConnectedEndpointUuid() != null) {
-            validateInnerConnectEndpoint(msg.getInnerConnectedEndpointUuid());
-        }
-
-        //判断外部VLAN是否可用
-        validateVlan(msg.getInterfaceAUuid(), msg.getaVlan());
-        validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
-
-        //如果是ACCESS或是QINQ的物理接口，判断该物理接口是否已经开通通道
-        if (interfaceVOA.getType() == NetworkType.ACCESS || interfaceVOA.getType() == NetworkType.QINQ) {
-            boolean exists = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getInterfaceAUuid())
-                    .isExists();
-            if (exists) {
-                throw new ApiMessageInterceptionException(argerr("该物理接口不可复用"));
-            }
-        }
-        if (interfaceVOZ.getType() == NetworkType.ACCESS || interfaceVOZ.getType() == NetworkType.QINQ) {
-            boolean exists = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getInterfaceZUuid())
-                    .isExists();
-            if (exists) {
-                throw new ApiMessageInterceptionException(argerr("该物理接口不可复用"));
-            }
-        }
-
-        //判断同一个switchPort下内部VLAN段是否有重叠
-        String sql = "select count(a.uuid) from QinqVO a " +
-                "where a.tunnelUuid in (select b.tunnelUuid from TunnelSwitchPortVO b where b.switchPortUuid = :switchPortUuid and b.type = 'QINQ') " +
-                "and ((a.startVlan between :startVlan and :endVlan) " +
-                "or (a.endVlan between :startVlan and :endVlan) " +
-                "or (:startVlan between a.startVlan and a.endVlan) " +
-                "or (:endVlan between a.startVlan and a.endVlan))";
-        if (msg.getVlanSegment() != null) {
-            if (interfaceVOA.getType() == NetworkType.QINQ) {
-                List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
-                for (InnerVlanSegment vlanSegment : vlanSegments) {
-                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-                    vq.setParameter("switchPortUuid", interfaceVOA.getSwitchPortUuid());
-                    vq.setParameter("startVlan", vlanSegment.getStartVlan());
-                    vq.setParameter("endVlan", vlanSegment.getEndVlan());
-                    Long count = vq.getSingleResult();
-                    if (count > 0) {
-                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
-                    }
-                }
-            }
-            if (interfaceVOZ.getType() == NetworkType.QINQ) {
-                List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
-                for (InnerVlanSegment vlanSegment : vlanSegments) {
-                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-                    vq.setParameter("switchPortUuid", interfaceVOZ.getSwitchPortUuid());
-                    vq.setParameter("startVlan", vlanSegment.getStartVlan());
-                    vq.setParameter("endVlan", vlanSegment.getEndVlan());
-                    Long count = vq.getSingleResult();
-                    if (count > 0) {
-                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
-                    }
-                }
-            }
-        }
-
-        //判断账户金额是否充足
-        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
-        priceMsg.setAccountUuid(msg.getAccountUuid());
-        priceMsg.setProductChargeModel(msg.getProductChargeModel());
-        priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(),
-                evoZ.getNodeUuid(), msg.getInnerConnectedEndpointUuid()));
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
-        if (!reply.isPayable())
-            throw new ApiMessageInterceptionException(
-                    argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
-    }
-
-    private void validate(APIUpdateTunnelMsg msg) {
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
-        //判断同一个用户tunnel名称是否已经存在
-        if (msg.getName() != null) {
-            SimpleQuery<TunnelVO> q = dbf.createQuery(TunnelVO.class);
-            q.add(TunnelVO_.name, SimpleQuery.Op.EQ, msg.getName());
-            q.add(TunnelVO_.accountUuid, SimpleQuery.Op.EQ, vo.getAccountUuid());
-            q.add(TunnelVO_.uuid, SimpleQuery.Op.NOT_EQ, msg.getUuid());
-            if (q.isExists()) {
-                throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ", msg.getName()));
-            }
-        }
-
-    }
-
-    private void validate(APIUpdateTunnelBandwidthMsg msg) {
-        //判断该产品是否有未完成订单
-        checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
-
-        //调整次数当月是否达到上限
-        LocalDateTime dateTime =
-                LocalDate.now().withDayOfMonth(LocalDate.MIN.getDayOfMonth()).atTime(LocalTime.MIN);
-        Long times = Q.New(TunnelMotifyRecordVO.class).eq(TunnelMotifyRecordVO_.tunnelUuid, msg.getUuid())
-                .gte(TunnelMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime)).count();
-        Integer maxModifies =
-                Q.New(TunnelVO.class).eq(TunnelVO_.uuid, msg.getUuid()).select(TunnelVO_.maxModifies)
-                        .findValue();
-
-        if (times >= maxModifies) {
-            throw new ApiMessageInterceptionException(
-                    argerr("The Tunnel[uuid:%s] has motified %s times.", msg.getUuid(), times));
-        }
-    }
-
-    private void validate(APIRenewTunnelMsg msg) {
-        String accountUuid = Q.New(TunnelVO.class)
-                .eq(TunnelVO_.uuid, msg.getUuid())
-                .select(TunnelVO_.accountUuid)
-                .findValue();
-        checkOrderNoPay(accountUuid, msg.getUuid());
-    }
-
-    private void validate(APIRenewAutoTunnelMsg msg) {
-        String accountUuid = Q.New(TunnelVO.class)
-                .eq(TunnelVO_.uuid, msg.getUuid())
-                .select(TunnelVO_.accountUuid)
-                .findValue();
-        checkOrderNoPay(accountUuid, msg.getUuid());
-    }
-
-    private void validate(APISLATunnelMsg msg) {
-        String accountUuid = Q.New(TunnelVO.class)
-                .eq(TunnelVO_.uuid, msg.getUuid())
-                .select(TunnelVO_.accountUuid)
-                .findValue();
-        checkOrderNoPay(accountUuid, msg.getUuid());
-    }
-
-    private void validate(APIDeleteTunnelMsg msg) {
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
-        if(msg.getSession().getType() != AccountType.SystemAdmin && (vo.getState()==TunnelState.Enabled || vo.getState()==TunnelState.Disabled)){
-            int deleteDays = TunnelGlobalConfig.PRODUCT_DELETE_DAYS.value(Integer.class);
-            if (vo.getCreateDate().toLocalDateTime().plusDays(deleteDays).isAfter(LocalDateTime.now()))
-                throw new ApiMessageInterceptionException(
-                        argerr("云专线[uuid:%s]购买未超过%s天,不能删除 !", msg.getUuid(), deleteDays));
-        }
-        checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
-    }
-
-    private void validate(APIDeleteForciblyTunnelMsg msg) {
-        checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
-    }
-
-    private void validate(APIUpdateTunnelStateMsg msg) {
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
-        if (vo.getState() == msg.getState()) {
-            throw new ApiMessageInterceptionException(argerr("该云专线[uuid:%s] 已是该状况，不可重复操作 ", msg.getUuid()));
-        }
-    }
-
-    private void validate(APICreateQinqMsg msg) {
-
-        //判断同一个switchPort下内部VLAN段是否有重叠
-        String sql = "select count(a.uuid) from QinqVO a " +
-                "where a.tunnelUuid in (select b.tunnelUuid from TunnelSwitchPortVO b where b.switchPortUuid = :switchPortUuid and b.type = 'QINQ') " +
-                "and ((a.startVlan between :startVlan and :endVlan) " +
-                "or (a.endVlan between :startVlan and :endVlan) " +
-                "or (:startVlan between a.startVlan and a.endVlan) " +
-                "or (:endVlan between a.startVlan and a.endVlan))";
-        TunnelSwitchPortVO tunnelSwitchPortVOA = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "A")
-                .find();
-        TunnelSwitchPortVO tunnelSwitchPortVOZ = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "Z")
-                .find();
-        if (tunnelSwitchPortVOA.getType() == NetworkType.QINQ) {
-            TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-            vq.setParameter("switchPortUuid", tunnelSwitchPortVOA.getSwitchPortUuid());
-            vq.setParameter("startVlan", msg.getStartVlan());
-            vq.setParameter("endVlan", msg.getEndVlan());
-            Long count = vq.getSingleResult();
-            if (count > 0) {
-                throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
-            }
-        }
-        if (tunnelSwitchPortVOZ.getType() == NetworkType.QINQ) {
-            TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
-            vq.setParameter("switchPortUuid", tunnelSwitchPortVOZ.getSwitchPortUuid());
-            vq.setParameter("startVlan", msg.getStartVlan());
-            vq.setParameter("endVlan", msg.getEndVlan());
-            Long count = vq.getSingleResult();
-            if (count > 0) {
-                throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
-            }
-        }
-
-    }
-
-    private void validate(APIDeleteQinqMsg msg) {
-        QinqVO qinqVO = dbf.findByUuid(msg.getUuid(), QinqVO.class);
-        Long count = Q.New(QinqVO.class)
-                .eq(QinqVO_.tunnelUuid, qinqVO.getTunnelUuid())
-                .count();
-        if (count == 1) {
-            throw new ApiMessageInterceptionException(argerr("该云专线[uuid:%s] 至少要有一个内部VLAN段，不能删！ ", qinqVO.getTunnelUuid()));
-        }
-    }
-
-    private void validate(APIUpdateTunnelVlanMsg msg) {
-
-
-        if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())) {
-            if (isCross(msg.getUuid(), msg.getOldInterfaceAUuid())) {
-                throw new ApiMessageInterceptionException(argerr("该接口A为共点，不能修改配置！！"));
-            }
-            validateVlan(msg.getInterfaceAUuid(), msg.getaVlan());
-        }
-
-        if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
-            if (isCross(msg.getUuid(), msg.getOldInterfaceZUuid())) {
-                throw new ApiMessageInterceptionException(argerr("该接口Z为共点，不能修改配置！！"));
-            }
-            validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
-        }
-
-    }
-
-    private void validate(APIUpdateForciblyTunnelVlanMsg msg) {
-
-        if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())) {
-            if (isCross(msg.getUuid(), msg.getOldInterfaceAUuid())) {
-                throw new ApiMessageInterceptionException(argerr("该接口A为共点，不能修改配置！！"));
-            }
-            validateVlan(msg.getInterfaceAUuid(), msg.getaVlan());
-        }
-
-        if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
-            if (isCross(msg.getUuid(), msg.getOldInterfaceZUuid())) {
-                throw new ApiMessageInterceptionException(argerr("该接口Z为共点，不能修改配置！！"));
-            }
-            validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
-        }
-    }
-
-    /**
-     * 判断物理接口是否是共点
-     */
-
-    private boolean isCross(String tunnelUuid, String interfaceUuid) {
-        TunnelVO vo = dbf.findByUuid(tunnelUuid, TunnelVO.class);
-        Integer vsi = vo.getVsi();
-
-        String sql = "select b from TunnelVO a, TunnelSwitchPortVO b " +
-                "where a.uuid = b.tunnelUuid " +
-                "and a.vsi = :vsi " +
-                "and b.interfaceUuid = :interfaceUuid";
-        TypedQuery<TunnelSwitchPortVO> vq = dbf.getEntityManager().createQuery(sql, TunnelSwitchPortVO.class);
-        vq.setParameter("vsi", vsi);
-        vq.setParameter("interfaceUuid", interfaceUuid);
-        if (vq.getResultList().size() == 1) {
-            return false;
-        } else {
-            return true;
-        }
-
-    }
-
-    /**
-     * 判断外部VLAN是否可用
-     */
-    private void validateVlan(String interfaceUuid, Integer vlan) {
-        TunnelStrategy ts = new TunnelStrategy();
-        //查询该TUNNEL的物理接口所属的虚拟交换机
-        String switchUuid = ts.findSwitchByInterface(interfaceUuid);
-
-        //查询该虚拟交换机下所有的Vlan段
-        List<SwitchVlanVO> vlanList = ts.findSwitchVlanBySwitch(switchUuid);
-
-        if (vlanList.isEmpty()) {
-            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
-        }
-
-        //查询该虚拟交换机下已经分配的Vlan
-        List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid);
-
-        //判断外部VLAN是否在该虚拟交换机的VLAN段中
-        Boolean inner = false;
-        for (SwitchVlanVO switchVlanVO : vlanList) {
-            if (vlan >= switchVlanVO.getStartVlan() && vlan <= switchVlanVO.getEndVlan()) {
-                inner = true;
-                break;
-            }
-        }
-        if (!inner) {
-            throw new ApiMessageInterceptionException(argerr("avlan not in switchVlan"));
-        }
-        //判断外部vlan是否可用
-        if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
-            throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", vlan));
-        }
-    }
-
-    /**
-     * 判断同一用户下产品名称是否重复
-     */
-    private boolean checkResourceName(String resourceType, String name, String accountUuid) {
-        String uuid = SQL.New(String.format("SELECT r.uuid FROM %s r WHERE r.name = :name AND r.accountUuid = :accountUuid", resourceType), String.class)
-                .param("accountUuid", accountUuid)
-                .param("name", name).find();
-        return uuid != null;
-    }
-
-    /**
-     * 判断该产品是否有未完成订单
-     */
-    private void checkOrderNoPay(String accountUuid, String productUuid) {
-        //判断该产品是否有未完成订单
-        APIGetHasNotifyMsg apiGetHasNotifyMsg = new APIGetHasNotifyMsg();
-        apiGetHasNotifyMsg.setAccountUuid(accountUuid);
-        apiGetHasNotifyMsg.setProductUuid(productUuid);
-
-        APIGetHasNotifyReply reply = new TunnelRESTCaller().syncJsonPost(apiGetHasNotifyMsg);
-        if (reply.isInventory())
-            throw new ApiMessageInterceptionException(
-                    argerr("该订单[uuid:%s] 有未完成操作，请稍等！", productUuid));
-    }
-
-    /**
-     * 自动获取 VSI
-     */
-    private Integer getVsiAuto() {
-
-        GLock glock = new GLock("maxvsi", 120);
-        glock.lock();
-
-        Integer vsi;
-        String sql = "select max(vo.vsi) from TunnelVO vo";
-        try {
-            TypedQuery<Integer> vq = dbf.getEntityManager().createQuery(sql, Integer.class);
-            vsi = vq.getSingleResult();
-            if (vsi == null) {
-                vsi = CoreGlobalProperty.START_VSI;
-            } else {
-                vsi = vsi + 1;
-            }
-
-        } finally {
-            glock.unlock();
-        }
-        return vsi;
-    }
-
-    /**
-     * 调用支付
-     */
-    private OrderInventory createOrder(APICreateOrderMsg orderMsg) {
-        try {
-            APICreateOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
-
-            if (reply.isOrderSuccess()) {
-                return reply.getInventory();
-            }
-        } catch (Exception e) {
-            logger.error(String.format("无法创建订单, %s", e.getMessage()), e);
-        }
-        return null;
-    }
-
-    private List<OrderInventory> createBuyOrder(APICreateBuyOrderMsg orderMsg) {
-        try {
-            APICreateBuyOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
-
-            if (reply.isSuccess()) {
-                return reply.getInventories();
-            }
-        } catch (Exception e) {
-            logger.error(String.format("无法创建订单, %s", e.getMessage()), e);
-        }
-        return Collections.emptyList();
-    }
-
-    /**
-     * 获取到期时间
-     */
-    private Timestamp getExpireDate(Timestamp oldTime, ProductChargeModel chargeModel, int duration) {
-        Timestamp newTime = oldTime;
-        if (chargeModel == ProductChargeModel.BY_MONTH) {
-            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusMonths(duration));
-        } else if (chargeModel == ProductChargeModel.BY_YEAR) {
-            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusYears(duration));
-        } else if (chargeModel == ProductChargeModel.BY_DAY) {
-            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusDays(duration));
-        }
-        return newTime;
-    }
-
-    /**
-     * 获取物理接口订单信息
-     */
-    private APICreateOrderMsg getOrderMsgForInterface(InterfaceVO vo, NotifyCallBackData callBack) {
-        APICreateOrderMsg orderMsg = new APICreateOrderMsg();
-        orderMsg.setProductName(vo.getName());
-        orderMsg.setProductUuid(vo.getUuid());
-        orderMsg.setProductType(ProductType.PORT);
-        orderMsg.setDescriptionData(getDescriptionForInterface(vo));
-        orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
-        orderMsg.setCallBackData(RESTApiDecoder.dump(callBack));
-        orderMsg.setNotifyUrl(restf.getSendCommandUrl());
-        return orderMsg;
-    }
-
-    /**
-     * 获取物理接口单价
-     */
-    public List<ProductPriceUnit> getInterfacePriceUnit(String portOfferingUuid) {
-        List<ProductPriceUnit> units = new ArrayList<>();
-        ProductPriceUnit unit = new ProductPriceUnit();
-        unit.setProductTypeCode(ProductType.PORT);
-        unit.setCategoryCode(Category.PORT);
-        unit.setAreaCode("DEFAULT");
-        unit.setLineCode("DEFAULT");
-        unit.setConfigCode(portOfferingUuid);
-        units.add(unit);
-        return units;
-    }
-
-    /**
-     * 获取云专线单价
-     */
-    public List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid, String nodeAUuid, String nodeZUuid, String innerEndpointUuid) {
-        List<ProductPriceUnit> units = new ArrayList<>();
-        NodeVO nodeA = dbf.findByUuid(nodeAUuid, NodeVO.class);
-        NodeVO nodeZ = dbf.findByUuid(nodeZUuid, NodeVO.class);
-        String zoneUuidA = getZoneUuid(nodeA.getUuid());
-        String zoneUuidZ = getZoneUuid(nodeZ.getUuid());
-        if (innerEndpointUuid == null) {  //国内互传  或者 国外到国外
-            if (nodeA.getCountry().equals("CHINA") && nodeZ.getCountry().equals("CHINA")) {  //国内互传
-                ProductPriceUnit unit = getTunnelPriceUnitCN(bandwidthOfferingUuid, nodeA, nodeZ, zoneUuidA, zoneUuidZ);
-                units.add(unit);
-            } else {                          //国外到国外
-                ProductPriceUnit unit = getTunnelPriceUnitAb(bandwidthOfferingUuid, nodeA, nodeZ);
-                units.add(unit);
-            }
-        } else {                          //跨国
-            EndpointVO endpointVO = dbf.findByUuid(innerEndpointUuid, EndpointVO.class);
-            NodeVO nodeB = dbf.findByUuid(endpointVO.getNodeUuid(), NodeVO.class);
-            String zoneUuidB = getZoneUuid(nodeB.getUuid());
-
-            if (nodeA.getCountry().equals("CHINA")) {
-                ProductPriceUnit unitInner = getTunnelPriceUnitCN(bandwidthOfferingUuid, nodeA, nodeB, zoneUuidA, zoneUuidB);
-                ProductPriceUnit unitOuter = getTunnelPriceUnitCNToAb(bandwidthOfferingUuid, nodeB, nodeZ);
-
-                units.add(unitInner);
-                units.add(unitOuter);
-            } else {
-                ProductPriceUnit unitInner = getTunnelPriceUnitCN(bandwidthOfferingUuid, nodeZ, nodeB, zoneUuidZ, zoneUuidB);
-                ProductPriceUnit unitOuter = getTunnelPriceUnitCNToAb(bandwidthOfferingUuid, nodeB, nodeA);
-
-                units.add(unitInner);
-                units.add(unitOuter);
-            }
-
-        }
-        return units;
-    }
-
-    /**
-     * 获取云专线单价--国内互传单价
-     */
-    private ProductPriceUnit getTunnelPriceUnitCN(String bandwidthOfferingUuid, NodeVO nodeA, NodeVO nodeZ, String zoneUuidA, String zoneUuidZ) {
-        ProductPriceUnit unit = new ProductPriceUnit();
-
-        Category category;
-        String areaCode;
-        String lineCode;
-
-        if (nodeA.getCity().equals(nodeZ.getCity())) {  //同城
-            category = Category.CITY;
-            areaCode = "DEFAULT";
-            lineCode = "DEFAULT";
-        } else if (zoneUuidA != null && zoneUuidZ != null && zoneUuidA.equals(zoneUuidZ)) { //同区域
-            category = Category.REGION;
-            areaCode = zoneUuidA;
-            lineCode = "DEFAULT";
-        } else {                      //长传
-            category = Category.LONG;
-            areaCode = "DEFAULT";
-            lineCode = "DEFAULT";
-        }
-        unit.setProductTypeCode(ProductType.TUNNEL);
-        unit.setCategoryCode(category);
-        unit.setAreaCode(areaCode);
-        unit.setLineCode(lineCode);
-        unit.setConfigCode(bandwidthOfferingUuid);
-
-        return unit;
-    }
-
-    /**
-     * 获取云专线单价--国内到国外单价
-     */
-    private ProductPriceUnit getTunnelPriceUnitCNToAb(String bandwidthOfferingUuid, NodeVO nodeB, NodeVO nodeZ) {
-        ProductPriceUnit unit = new ProductPriceUnit();
-
-        unit.setProductTypeCode(ProductType.TUNNEL);
-        unit.setCategoryCode(Category.ABROAD);
-        unit.setAreaCode("CHINA2ABROAD");
-        unit.setLineCode(nodeB.getCity() + "/" + nodeZ.getCountry());
-        unit.setConfigCode(bandwidthOfferingUuid);
-
-        return unit;
-    }
-
-    /**
-     * 获取云专线单价--国外到国外单价
-     */
-    private ProductPriceUnit getTunnelPriceUnitAb(String bandwidthOfferingUuid, NodeVO nodeA, NodeVO nodeZ) {
-        ProductPriceUnit unit = new ProductPriceUnit();
-
-        unit.setProductTypeCode(ProductType.TUNNEL);
-        unit.setCategoryCode(Category.ABROAD);
-        unit.setAreaCode("ABROAD");
-        unit.setLineCode(nodeA.getCountry() + "/" + nodeZ.getCountry());
-        unit.setConfigCode(bandwidthOfferingUuid);
-
-        return unit;
-    }
-
-    /**
-     * 根据节点找到所属区域
-     */
-    private String getZoneUuid(String nodeUuid) {
-        String zoneUuid = null;
-        ZoneNodeRefVO zoneNodeRefVO = Q.New(ZoneNodeRefVO.class)
-                .eq(ZoneNodeRefVO_.nodeUuid, nodeUuid)
-                .find();
-        if (zoneNodeRefVO != null) {
-            zoneUuid = zoneNodeRefVO.getZoneUuid();
-        }
-        return zoneUuid;
-    }
-
-    /**
-     * 付款成功,记录生效订单
-     */
-    private void saveResourceOrderEffective(String orderUuid, String resourceUuid, String resourceType) {
-        ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
-        resourceOrderEffectiveVO.setUuid(Platform.getUuid());
-        resourceOrderEffectiveVO.setResourceUuid(resourceUuid);
-        resourceOrderEffectiveVO.setResourceType(resourceType);
-        resourceOrderEffectiveVO.setOrderUuid(orderUuid);
-        dbf.persistAndRefresh(resourceOrderEffectiveVO);
-    }
-
-    /**
-     * 创建云专线 支付成功创建下发任务
-     */
-    private TaskResourceVO newTaskResourceVO(TunnelVO vo, TaskType taskType) {
-        TaskResourceVO taskResourceVO = new TaskResourceVO();
-        taskResourceVO.setUuid(Platform.getUuid());
-        taskResourceVO.setAccountUuid(vo.getOwnerAccountUuid());
-        taskResourceVO.setResourceUuid(vo.getUuid());
-        taskResourceVO.setResourceType(vo.getClass().getSimpleName());
-        taskResourceVO.setTaskType(taskType);
-        taskResourceVO.setBody(null);
-        taskResourceVO.setResult(null);
-        taskResourceVO.setStatus(TaskStatus.Preexecute);
-        taskResourceVO = dbf.persistAndRefresh(taskResourceVO);
-        return taskResourceVO;
-    }
-
-    /**
-     * 创建云专线 如果跨国,将出海口设备添加至TunnelSwitchPort
-     */
-    private void createTunnelSwitchPortForAbroad(String innerConnectedEndpointUuid, TunnelVO vo, boolean isBInner) {
-        TunnelStrategy ts = new TunnelStrategy();
-
-        //通过互联连接点找到内联交换机和内联端口
-        SwitchVO innerSwitch = Q.New(SwitchVO.class)
-                .eq(SwitchVO_.endpointUuid, innerConnectedEndpointUuid)
-                .eq(SwitchVO_.type, SwitchType.INNER)
-                .find();
-        SwitchPortVO innerSwitchPort = Q.New(SwitchPortVO.class)
-                .eq(SwitchPortVO_.switchUuid, innerSwitch.getUuid())
-                .find();
-        //通过互联连接点找到外联交换机和外联端口
-        SwitchVO outerSwitch = Q.New(SwitchVO.class)
-                .eq(SwitchVO_.endpointUuid, innerConnectedEndpointUuid)
-                .eq(SwitchVO_.type, SwitchType.OUTER)
-                .find();
-        SwitchPortVO outerSwitchPort = Q.New(SwitchPortVO.class)
-                .eq(SwitchPortVO_.switchUuid, outerSwitch.getUuid())
-                .find();
-        //获取互联设备的VLAN
-        Integer innerVlan = ts.getVlanBySwitch(innerSwitch.getUuid());
-
-        TunnelSwitchPortVO tsvoB = new TunnelSwitchPortVO();
-        TunnelSwitchPortVO tsvoC = new TunnelSwitchPortVO();
-
-        if (isBInner) {
-            tsvoB.setUuid(Platform.getUuid());
-            tsvoB.setTunnelUuid(vo.getUuid());
-            tsvoB.setEndpointUuid(innerConnectedEndpointUuid);
-            tsvoB.setInterfaceUuid(null);
-            tsvoB.setSwitchPortUuid(innerSwitchPort.getUuid());
-            tsvoB.setType(NetworkType.TRUNK);
-            tsvoB.setVlan(innerVlan);
-            tsvoB.setSortTag("B");
-
-
-            tsvoC.setUuid(Platform.getUuid());
-            tsvoC.setTunnelUuid(vo.getUuid());
-            tsvoC.setInterfaceUuid(null);
-            tsvoC.setEndpointUuid(innerConnectedEndpointUuid);
-            tsvoC.setSwitchPortUuid(outerSwitchPort.getUuid());
-            tsvoC.setType(NetworkType.TRUNK);
-            tsvoC.setVlan(innerVlan);
-            tsvoC.setSortTag("C");
-
-        } else {
-            tsvoB.setUuid(Platform.getUuid());
-            tsvoB.setTunnelUuid(vo.getUuid());
-            tsvoB.setInterfaceUuid(null);
-            tsvoB.setEndpointUuid(innerConnectedEndpointUuid);
-            tsvoB.setSwitchPortUuid(outerSwitchPort.getUuid());
-            tsvoB.setType(NetworkType.TRUNK);
-            tsvoB.setVlan(innerVlan);
-            tsvoB.setSortTag("B");
-
-            tsvoC.setUuid(Platform.getUuid());
-            tsvoC.setTunnelUuid(vo.getUuid());
-            tsvoC.setInterfaceUuid(null);
-            tsvoC.setEndpointUuid(innerConnectedEndpointUuid);
-            tsvoC.setSwitchPortUuid(innerSwitchPort.getUuid());
-            tsvoC.setType(NetworkType.TRUNK);
-            tsvoC.setVlan(innerVlan);
-            tsvoC.setSortTag("C");
-
-        }
-        dbf.persistAndRefresh(tsvoB);
-        dbf.persistAndRefresh(tsvoC);
-
-    }
-
-    /**
-     * 根据TunnelSwicth获取两端节点
-     */
-    private String getNodeUuid(TunnelVO vo, String sortTag) {
-        TunnelSwitchPortVO tunnelSwitch = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, sortTag)
-                .find();
-        return dbf.findByUuid(tunnelSwitch.getEndpointUuid(), EndpointVO.class).getNodeUuid();
-    }
-
-
-    /**
-     * 通过连接点获取可用的端口规格
-     */
-    private List<PortOfferingVO> getPortTypeByEndpoint(String endpointUuid) {
-
-        String sql ="SELECT t FROM PortOfferingVO t WHERE t.uuid IN (" +
-                "select DISTINCT sp.portType from SwitchPortVO sp, SwitchVO s where sp.switchUuid=s.uuid " +
-                "and s.endpointUuid=:endpointUuid and s.state=:switchState and sp.state=:state " +
-                "and sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid)) ";
-        return SQL.New(sql)
-                .param("state", SwitchPortState.Enabled)
-                .param("switchState", SwitchState.Enabled)
-                .param("endpointUuid", endpointUuid)
-                .list();
-    }
-
-    /**
-     *
-     *
-     * 通过连接点和端口规格获取可用的端口
-     */
-    private List<SwitchPortVO> getSwitchPortByType(String endpointUuid, String type) {
-        String sql = "SELECT sp FROM SwitchPortVO sp, SwitchVO s WHERE sp.switchUuid=s.uuid " +
-                "AND s.endpointUuid = :endpointUuid AND s.state=:switchState AND sp.state=:state AND sp.portType = :portType " +
-                "AND sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid) ";
-        return SQL.New(sql)
-                .param("state", SwitchPortState.Enabled)
-                .param("switchState", SwitchState.Enabled)
-                .param("portType", type)
-                .param("endpointUuid", endpointUuid)
-                .list();
-    }
-
-    private String getDescriptionForInterface(InterfaceVO vo) {
-        DescriptionData data = new DescriptionData();
-        data.add(new DescriptionItem("name", vo.getName()));
-        data.add(new DescriptionItem("NetworkType", vo.getType().toString()));
-        String portType = Q.New(SwitchPortVO.class)
-                .eq(SwitchPortVO_.uuid, vo.getSwitchPortUuid())
-                .select(SwitchPortVO_.portType).findValue();
-        data.add(new DescriptionItem("PortType", portType));
-
-        return JSONObjectUtil.toJsonString(data);
-    }
-
-    private String getDescriptionForTunnel(TunnelVO vo) {
-        DescriptionData data = new DescriptionData();
-
-        TunnelSwitchPortVO tunnelSwitchPortVOA = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "A")
-                .find();
-        TunnelSwitchPortVO tunnelSwitchPortVOZ = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "Z")
-                .find();
-        String endpointNameA = dbf.findByUuid(tunnelSwitchPortVOA.getEndpointUuid(), EndpointVO.class).getName();
-        String endpointNameZ = dbf.findByUuid(tunnelSwitchPortVOZ.getEndpointUuid(), EndpointVO.class).getName();
-
-        data.add(new DescriptionItem("endpointNameA", endpointNameA));
-        data.add(new DescriptionItem("endpointNameZ", endpointNameZ));
-        data.add(new DescriptionItem("bandwidth", vo.getBandwidth().toString()));
-
-        return JSONObjectUtil.toJsonString(data);
-    }
-
-    /**
-     * 通过端口获取物理交换机的管理IP
-     */
-    private String getPhysicalSwitch(String switchPortUuid) {
-        String switcUuid = Q.New(SwitchPortVO.class).
-                eq(SwitchPortVO_.uuid, switchPortUuid)
-                .select(SwitchPortVO_.switchUuid)
-                .findValue();
-
-        String physicalSwitchUuid = Q.New(SwitchVO.class).
-                eq(SwitchVO_.uuid, switcUuid)
-                .select(SwitchVO_.physicalSwitchUuid).findValue();
-
-        String switchIp = Q.New(PhysicalSwitchVO.class).
-                eq(PhysicalSwitchVO_.uuid, physicalSwitchUuid).
-                select(PhysicalSwitchVO_.mIP).findValue();
-
-        if (switchIp == null)
-            throw new IllegalArgumentException("获取物理交换机IP失败");
-
-        return switchIp;
-    }
-
-    /**
-     * 删除TUNNEL及其关联表
-     */
-    private void deleteTunnel(TunnelVO vo) {
-        dbf.remove(vo);
-        //删除对应的  TunnelSwitchPortVO 和 QingqVO
-        SimpleQuery<TunnelSwitchPortVO> q = dbf.createQuery(TunnelSwitchPortVO.class);
-        q.add(TunnelSwitchPortVO_.tunnelUuid, SimpleQuery.Op.EQ, vo.getUuid());
-        List<TunnelSwitchPortVO> tivList = q.list();
-        if (tivList.size() > 0) {
-            for (TunnelSwitchPortVO tiv : tivList) {
-                dbf.remove(tiv);
-            }
-        }
-
-        SimpleQuery<QinqVO> q2 = dbf.createQuery(QinqVO.class);
-        q2.add(QinqVO_.tunnelUuid, SimpleQuery.Op.EQ, vo.getUuid());
-        List<QinqVO> qinqList = q2.list();
-        if (qinqList.size() > 0) {
-            for (QinqVO qv : qinqList) {
-                dbf.remove(qv);
-            }
-        }
     }
 
     @Override
@@ -3625,4 +2554,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         return list(iQuota, tQuota);
     }
+
+    public void preDelete(){};
+
+    public void beforeDelete(){};
+
+    public void afterDelete(){};
 }
