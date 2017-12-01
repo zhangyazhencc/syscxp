@@ -2,15 +2,13 @@ package com.syscxp.header.vpn.vpn;
 
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.identity.SuppressCredentialCheck;
-import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.message.APIMessage;
-import com.syscxp.header.message.APIParam;
+import com.syscxp.header.message.*;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.vpn.VpnConstant;
 
 @SuppressCredentialCheck
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"read"})
-public class APIGetVpnCertMsg extends APIMessage {
+public class APIGetVpnCertMsg extends APISyncCallMessage {
     @APIParam
     private String uuid;
 
@@ -33,16 +31,4 @@ public class APIGetVpnCertMsg extends APIMessage {
         this.uuid = uuid;
     }
 
-    public ApiNotification __notification__() {
-        final APIMessage that = this;
-
-        return new ApiNotification() {
-            @Override
-            public void after(APIEvent evt) {
-                ntfy("Download certificate")
-                        .resource(uuid, VpnVO.class)
-                        .messageAndEvent(that, evt).done();
-            }
-        };
-    }
 }
