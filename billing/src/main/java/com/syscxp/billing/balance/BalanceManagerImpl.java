@@ -326,7 +326,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.PRESENT_BILL, msg.getPresent(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getPresentBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment(),null);
         } else if (msg.getCash() != null) {
             vo.setCashBalance(vo.getCashBalance().add(msg.getCash()));
-            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, msg.getCash(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getCashBalance(), msg.getTradeNO(), outTradeNO, msg.getSession().getAccountUuid(),msg.getComment(),null);
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, msg.getCash(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getCashBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment(),null);
         } else if (msg.getCredit() != null) {
             if(vo.getCashBalance().compareTo(BigDecimal.ZERO)<0 && vo.getCashBalance().add(msg.getCredit()).compareTo(BigDecimal.ZERO)<0){
                 throw new IllegalArgumentException(" the credit point value can not  less than the repay value");
