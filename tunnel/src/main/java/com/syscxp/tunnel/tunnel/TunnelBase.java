@@ -37,9 +37,7 @@ public class TunnelBase {
     @Autowired
     private RESTFacade restf;
 
-    public TunnelBase(DatabaseFacade dbf){
-        this.dbf = dbf;
-    }
+
 
     /**
      * 自动获取 VSI
