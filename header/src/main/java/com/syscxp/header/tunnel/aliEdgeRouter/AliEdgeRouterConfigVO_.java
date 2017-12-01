@@ -8,6 +8,7 @@ import java.sql.Timestamp;
 public class AliEdgeRouterConfigVO_ {
     public static volatile SingularAttribute<AliEdgeRouterConfigVO,String> uuid;
     public static volatile SingularAttribute<AliEdgeRouterConfigVO,String> aliRegionId;
+    public static volatile SingularAttribute<AliEdgeRouterConfigVO,String> aliRegionName;
     public static volatile SingularAttribute<AliEdgeRouterConfigVO,String> physicalLineUuid;
     public static volatile SingularAttribute<AliEdgeRouterConfigVO,String> switchPortUuid;
     public static volatile SingularAttribute<AliEdgeRouterConfigVO,Timestamp> lastOpDate;
