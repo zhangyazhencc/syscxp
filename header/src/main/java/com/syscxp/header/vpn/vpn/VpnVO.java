@@ -18,22 +18,21 @@ public class VpnVO {
     private String accountUuid;
     @Column
     private String hostUuid;
-
-    @ManyToOne(fetch= FetchType.EAGER)
-    @JoinColumn(name="hostUuid", insertable=false, updatable=false)
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "hostUuid", insertable = false, updatable = false)
     private VpnHostVO vpnHost;
     @Column
     private String name;
     @Column
     private String description;
     @Column
-    private String vpnCidr;
+    private String bandwidthOfferingUuid;
     @Column
-    private Long bandwidth;
-    @Column
-    private String endpointUuid;
+    private String interfaceUuid;
     @Column
     private Integer port;
+    @Column
+    private Integer vlan;
     @Column
     @Enumerated(EnumType.STRING)
     private VpnState state;
@@ -42,12 +41,6 @@ public class VpnVO {
     private VpnStatus status;
     @Column
     private Integer duration;
-    @Column
-    private Timestamp expireDate;
-    @Column
-    private Timestamp lastOpDate;
-    @Column
-    private Timestamp createDate;
     @Column
     private String sid;
     @Column
@@ -58,18 +51,15 @@ public class VpnVO {
     @Column
     private Integer maxModifies;
     @Column
-    private String memo;
+    private Timestamp expireDate;
+    @Column
+    private Timestamp lastOpDate;
+    @Column
+    private Timestamp createDate;
+
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
-    }
-
-    public String getMemo() {
-        return memo;
-    }
-
-    public void setMemo(String memo) {
-        this.memo = memo;
     }
 
     public void setHostUuid(String hostUuid) {
@@ -172,28 +162,20 @@ public class VpnVO {
         this.description = description;
     }
 
-    public String getVpnCidr() {
-        return vpnCidr;
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
     }
 
-    public void setVpnCidr(String vpnCidr) {
-        this.vpnCidr = vpnCidr;
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
-    public Long getBandwidth() {
-        return bandwidth;
+    public String getInterfaceUuid() {
+        return interfaceUuid;
     }
 
-    public void setBandwidth(Long bandwidth) {
-        this.bandwidth = bandwidth;
-    }
-
-    public String getEndpointUuid() {
-        return endpointUuid;
-    }
-
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setInterfaceUuid(String interfaceUuid) {
+        this.interfaceUuid = interfaceUuid;
     }
 
     public VpnStatus getStatus() {
@@ -232,4 +214,11 @@ public class VpnVO {
         this.createDate = createDate;
     }
 
+    public Integer getVlan() {
+        return vlan;
+    }
+
+    public void setVlan(Integer vlan) {
+        this.vlan = vlan;
+    }
 }

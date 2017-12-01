@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.tunnel;
 
+import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.AutoQuery;

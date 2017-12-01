@@ -7,14 +7,16 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
-import com.syscxp.header.tunnel.tunnel.BandwidthOfferingVO;
+import com.syscxp.header.configuration.BandwidthOfferingVO;
+import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO;
+import com.syscxp.header.tunnel.tunnel.PortOfferingVO;
 
 import java.math.BigDecimal;
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "create")
 public class APICreateSolutionTunnelMsg extends  APIMessage {
 
-    @APIParam(maxLength = 32)
+    @APIParam(maxLength = 32, resourceType = SolutionVO.class)
     private String solutionUuid;
     @APIParam(numberRange = {0,Long.MAX_VALUE})
     private BigDecimal cost;
@@ -23,37 +25,24 @@ public class APICreateSolutionTunnelMsg extends  APIMessage {
     @APIParam(maxLength = 32)
     private int duration;
 
-    @APIParam(maxLength = 128)
+    @APIParam(maxLength = 32, resourceType = EndpointVO.class)
     private String endpointUuidA;
-    @APIParam(maxLength = 128)
+    @APIParam(maxLength = 32, resourceType = EndpointVO.class)
     private String endpointUuidZ;
 
     @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
-    @APIParam(maxLength = 128)
-    private long bandwidth;
 
-    @APIParam(emptyString = false,required = false,resourceType = EndpointVO.class)
-    private String innerEndpointUuid;
+    @APIParam(emptyString = false,required = false,resourceType = InnerConnectedEndpointVO.class)
+    private String innerConnectedEndpointUuid;
 
-    @APIParam(maxLength = 128, required = false)
+    @APIParam(maxLength = 32, required = false, resourceType = PortOfferingVO.class)
     private String portOfferingUuidA;
-    @APIParam(maxLength = 128, required = false)
+    @APIParam(maxLength = 32, required = false, resourceType = PortOfferingVO.class)
     private String portOfferingUuidZ;
-    @APIParam(required = false,maxLength = 32)
-    private String accountUuid;
 
-    public String getAccountUuid() {
-        if(getSession().getType() == AccountType.SystemAdmin){
-            return accountUuid;
-        }else{
-            return getSession().getAccountUuid();
-        }
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
+    @APIParam(maxLength = 255)
+    private String name;
 
 
     public String getSolutionUuid() {
@@ -104,14 +93,6 @@ public class APICreateSolutionTunnelMsg extends  APIMessage {
         this.endpointUuidZ = endpointUuidZ;
     }
 
-    public long getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(long bandwidth) {
-        this.bandwidth = bandwidth;
-    }
-
     public String getPortOfferingUuidA() {
         return portOfferingUuidA;
     }
@@ -136,11 +117,19 @@ public class APICreateSolutionTunnelMsg extends  APIMessage {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
-    public String getInnerEndpointUuid() {
-        return innerEndpointUuid;
+    public String getInnerConnectedEndpointUuid() {
+        return innerConnectedEndpointUuid;
     }
 
-    public void setInnerEndpointUuid(String innerEndpointUuid) {
-        this.innerEndpointUuid = innerEndpointUuid;
+    public void setInnerConnectedEndpointUuid(String innerConnectedEndpointUuid) {
+        this.innerConnectedEndpointUuid = innerConnectedEndpointUuid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

@@ -1,5 +1,5 @@
 <error>
-    <prefix>HOST</prefix>
+    <prefix>VPN</prefix>
 
     <code>
         <id>1000</id>
@@ -9,6 +9,11 @@
     <code>
         <id>1001</id>
         <description>An error happened when call billing</description>
+    </code>
+
+    <code>
+        <id>1002</id>
+        <description>An error happened when init vpn</description>
     </code>
 
 </error>

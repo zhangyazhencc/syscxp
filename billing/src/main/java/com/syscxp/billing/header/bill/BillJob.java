@@ -1,20 +1,20 @@
 package com.syscxp.billing.header.bill;
 
 import com.syscxp.billing.header.balance.DealWay;
-import org.springframework.beans.factory.annotation.Autowire;
+import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.header.billing.AccountBalanceVO_;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.context.annotation.Lazy;
+import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import com.syscxp.header.billing.AccountBalanceVO;
 import com.syscxp.core.Platform;
-import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.GLock;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
-import javax.annotation.PostConstruct;
 import javax.persistence.Query;
 import java.math.BigDecimal;
 import java.sql.Timestamp;
@@ -22,20 +22,26 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Component
-@Configurable(preConstruction = true, dependencyCheck = true, autowire = Autowire.BY_TYPE)
+@EnableScheduling
+@Lazy(false)
 public class BillJob {
 
     @Autowired
     private DatabaseFacade dbf;
 
-    private AtomicBoolean isCrash = new AtomicBoolean(true);
+    public BillJob(){}
+
+    public BillJob(DatabaseFacade dbf){
+        this.dbf = dbf;
+    }
+
     private static final CLogger logger = Utils.getLogger(BillJob.class);
 
-    @Scheduled(cron = "0 0 2 1 * ?")
+    @Scheduled(cron = "0 0 10 1 * ? ")
     public void generateBill() {
 
         GLock lock = new GLock(String.format("id-%s", "createBill"), 120);
@@ -67,7 +73,7 @@ public class BillJob {
                         vo.setTimeStart(startTime);
                         vo.setTimeEnd(endTime);
                         calculateBalance(bill, vo);
-                        AccountBalanceVO abVO = dbf.findByUuid(accountUuid, AccountBalanceVO.class);
+                        AccountBalanceVO abVO =getAccountBalance(accountUuid);
                         BigDecimal balance = abVO.getCashBalance();
                         if (balance.compareTo(BigDecimal.ZERO) < 0) {
                             vo.setRepay(balance);
@@ -82,44 +88,29 @@ public class BillJob {
             }
             logger.info("generate Bill end ..............");
         } catch (Exception e) {
-            isCrash.set(false);
+            e.printStackTrace();
+            try {
+                TimeUnit.HOURS.sleep(1);
+            } catch (InterruptedException e1) {
+                e1.printStackTrace();
+            }
+            generateBill();
         } finally {
             lock.unlock();
         }
     }
-
-    @PostConstruct
-    public void initBill(){
-        GLock lock = new GLock(String.format("id-%s", "initBill"), 120);
-        lock.lock();
-        try {
-            generateBill();
-        }finally {
-            lock.unlock();
-        }
-
-    }
-
-    @Scheduled(cron = "0 0 3 * * ?")
-    private void reBillJob() {
-        GLock lock = new GLock(String.format("id-%s", "crashBill"), 120);
-        lock.lock();
-        try {
-            if(!isCrash.get()){
-                generateBill();
-            }
-        }finally {
-            lock.unlock();
-        }
-
-    }
-
 
     private BillVO getBillVO(String accountUuid,Timestamp startTime,Timestamp endTime) {
         SimpleQuery<BillVO> sq = dbf.createQuery(BillVO.class);
         sq.add(BillVO_.accountUuid, SimpleQuery.Op.EQ, accountUuid);
         sq.add(BillVO_.timeStart, SimpleQuery.Op.EQ, startTime);
         sq.add(BillVO_.timeEnd, SimpleQuery.Op.EQ, endTime);
+        return sq.find();
+    }
+
+    private AccountBalanceVO getAccountBalance(String uuid) {
+        SimpleQuery<AccountBalanceVO> sq = dbf.createQuery(AccountBalanceVO.class);
+        sq.add(AccountBalanceVO_.uuid, SimpleQuery.Op.EQ, uuid);
         return sq.find();
     }
 
@@ -133,7 +124,7 @@ public class BillJob {
     }
 
 
-    private Timestamp getLastMonthFirstDay(Timestamp currentTimestamp){
+    public Timestamp getLastMonthFirstDay(Timestamp currentTimestamp){
         LocalDateTime lastDayOfMonth = currentTimestamp.toLocalDateTime().minusMonths(1);
         LocalDate date = LocalDate.of(lastDayOfMonth.getYear(), lastDayOfMonth.getMonth(), 1);
         LocalDateTime lastMonthFirstDay = LocalDateTime.of(date, LocalTime.MIN);
@@ -141,7 +132,7 @@ public class BillJob {
         return Timestamp.valueOf(lastMonthFirstDay);
     }
 
-    private Timestamp getLastMonthLastDay(Timestamp currentTimestamp){
+    public Timestamp getLastMonthLastDay(Timestamp currentTimestamp){
         LocalDateTime lastDayOfMonth = currentTimestamp.toLocalDateTime().minusMonths(1);
         LocalDate date = LocalDate.of(lastDayOfMonth.getYear(), lastDayOfMonth.getMonth(), 1);
         LocalDateTime lastMonthFirstDay = LocalDateTime.of(date, LocalTime.MIN);

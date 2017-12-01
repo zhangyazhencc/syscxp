@@ -7,13 +7,12 @@ import com.syscxp.billing.header.renew.PriceRefRenewVO;
 import com.syscxp.billing.header.renew.PriceRefRenewVO_;
 import com.syscxp.billing.header.renew.RenewVO;
 import com.syscxp.billing.header.renew.RenewVO_;
+import com.syscxp.billing.header.sla.SLACompensateVO;
 import com.syscxp.billing.header.sla.SLALogVO;
 import com.syscxp.billing.header.sla.SLALogVO_;
-import com.syscxp.core.CoreGlobalProperty;
+import com.syscxp.billing.header.sla.SLAState;
 import com.syscxp.header.billing.*;
-import com.syscxp.header.rest.TimeoutRestTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.annotation.Order;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.billing.header.order.APIUpdateOrderExpiredTimeMsg;
@@ -23,26 +22,22 @@ import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.DbEntityLister;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
 
-import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
-import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.util.StringUtils;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.sql.Time;
 import java.sql.Timestamp;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
@@ -59,9 +54,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     @Autowired
     private ErrorFacade errf;
 
-    private static final BigDecimal daysOfMonth = new BigDecimal(30);
-
-    private  AtomicInteger atomicInteger = new AtomicInteger();
+    private AtomicInteger atomicInteger = new AtomicInteger();
 
     public OrderManagerImpl() {
     }
@@ -100,7 +93,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             handle((APIGetUnscribeProductPriceDiffMsg) msg);
         } else if (msg instanceof APIGetModifyProductPriceDiffMsg) {
             handle((APIGetModifyProductPriceDiffMsg) msg);
-        }else if (msg instanceof APIGetProductPriceMsg) {
+        } else if (msg instanceof APIGetProductPriceMsg) {
             handle((APIGetProductPriceMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
@@ -119,13 +112,17 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         query.add(OrderVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
         query.add(OrderVO_.productStatus, SimpleQuery.Op.EQ, 0);
         OrderVO orderVO = query.find();
-        if (orderVO == null) {  throw new RuntimeException("cannot find the order"); }
+        if (orderVO == null) {
+            throw new RuntimeException("cannot find the order");
+        }
         orderVO.setProductEffectTimeStart(msg.getStartTime());
         orderVO.setProductEffectTimeEnd(msg.getEndTime());
         orderVO.setProductStatus(1);
 
         RenewVO renewVO = getRenewVO(msg.getSession().getAccountUuid(), msg.getProductUuid());
-        if (renewVO == null) { throw new IllegalArgumentException("could not find the product purchased history "); }
+        if (renewVO == null) {
+            throw new IllegalArgumentException("could not find the product purchased history ");
+        }
         renewVO.setExpiredTime(msg.getEndTime());
         dbf.getEntityManager().merge(renewVO);
         dbf.getEntityManager().persist(orderVO);
@@ -139,14 +136,14 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     private void payMethod(String accountUuid, String opAccountUuid, OrderVO orderVo, AccountBalanceVO abvo, BigDecimal total, Timestamp currentTimeStamp) {
 
         int hash = accountUuid.hashCode() < 0 ? ~accountUuid.hashCode() : accountUuid.hashCode();
-        String outTradeNO = currentTimeStamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash))+atomicInteger.getAndIncrement();
+        String outTradeNO = currentTimeStamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash)) + atomicInteger.getAndIncrement();
         if (abvo.getPresentBalance().compareTo(BigDecimal.ZERO) > 0) {
             if (abvo.getPresentBalance().compareTo(total) > 0) {
                 BigDecimal presentNow = abvo.getPresentBalance().subtract(total);
                 abvo.setPresentBalance(presentNow);
                 orderVo.setPayPresent(total);
                 orderVo.setPayCash(BigDecimal.ZERO);
-                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.PRESENT_BILL, BigDecimal.ZERO, total.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, presentNow, outTradeNO, orderVo.getUuid(), opAccountUuid,null);
+                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.PRESENT_BILL, BigDecimal.ZERO, total.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, presentNow, outTradeNO, orderVo.getUuid(), opAccountUuid, null);
             } else {
                 BigDecimal payPresent = abvo.getPresentBalance();
                 BigDecimal payCash = total.subtract(payPresent);
@@ -156,15 +153,15 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 orderVo.setPayPresent(payPresent);
                 orderVo.setPayCash(payCash);
 
-                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.PRESENT_BILL, BigDecimal.ZERO, payPresent.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, BigDecimal.ZERO, outTradeNO + "-1", orderVo.getUuid(), opAccountUuid,null);
-                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, BigDecimal.ZERO, payCash.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, remainCash, outTradeNO + "-2", orderVo.getUuid(), opAccountUuid,null);
+                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.PRESENT_BILL, BigDecimal.ZERO, payPresent.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, BigDecimal.ZERO, outTradeNO + "-1", orderVo.getUuid(), opAccountUuid, null);
+                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, BigDecimal.ZERO, payCash.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, remainCash, outTradeNO + "-2", orderVo.getUuid(), opAccountUuid, null);
             }
         } else {
             BigDecimal remainCashBalance = abvo.getCashBalance().subtract(total);
             abvo.setCashBalance(remainCashBalance);
             orderVo.setPayPresent(BigDecimal.ZERO);
             orderVo.setPayCash(total);
-            new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, BigDecimal.ZERO, total, currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, remainCashBalance, outTradeNO, orderVo.getUuid(), opAccountUuid,null);
+            new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, BigDecimal.ZERO, total, currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, remainCashBalance, outTradeNO, orderVo.getUuid(), opAccountUuid, null);
         }
     }
 
@@ -236,6 +233,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         }
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
 
+        updateSLA(msg.getSlaUuid(), orderVo.getProductEffectTimeStart(), orderVo.getProductEffectTimeEnd());
         saveSLALogVO(msg.getAccountUuid(), msg.getProductUuid(), msg.getDuration(), orderVo.getProductEffectTimeStart(), msg.getExpiredTime(), renewVO.getPriceOneMonth());
         dbf.getEntityManager().merge(renewVO);
         dbf.getEntityManager().persist(orderVo);
@@ -248,6 +246,17 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         bus.reply(msg, reply);
 
     }
+
+    @Transactional
+    private void updateSLA(String uuid, Timestamp startTime, Timestamp endTime) {
+        SLACompensateVO slaCompensateVO = dbf.findByUuid(uuid, SLACompensateVO.class);
+        slaCompensateVO.setTimeStart(startTime);
+        slaCompensateVO.setTimeEnd(endTime);
+        slaCompensateVO.setState(SLAState.DONE);
+        dbf.getEntityManager().merge(slaCompensateVO);
+
+    }
+
 
     @Transactional
     private void saveSLALogVO(String accountUuid, String productUuid, int duration, Timestamp startTime, Timestamp endTime, BigDecimal priceOnMonth) {
@@ -271,14 +280,14 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), msg.getProductType(), null, currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), 0, msg.getCallBackData());
         orderVo.setType(OrderType.UN_SUBCRIBE);
 
-        long notUseDays = ChronoUnit.DAYS.between(LocalDateTime.now(), msg.getExpiredTime().toLocalDateTime());
+        BigDecimal notUseMonth = getNotUseMonths(currentTimestamp.toLocalDateTime(),msg.getExpiredTime().toLocalDateTime());
 
         RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
         if (renewVO == null) {
             throw new IllegalArgumentException("could not find the product purchased history ");
         }
 
-        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(daysOfMonth, 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
         BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
 
         remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO));
@@ -296,8 +305,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         abvo.setCashBalance(remainCash);
         orderVo.setPayPresent(refundPresent);
         orderVo.setPayCash(remainMoney.negate());
-
-        new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, remainMoney, BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, orderVo.getUuid(), orderVo.getUuid(), msg.getOpAccountUuid(),null);
+        int hash = msg.getAccountUuid().hashCode() < 0 ? ~msg.getAccountUuid().hashCode() : msg.getAccountUuid().hashCode();
+        String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
+        new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, remainMoney, BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, outTradeNO, orderVo.getUuid(), msg.getOpAccountUuid(), null);
         deletePriceRefRenews(renewVO.getUuid());
         dbf.getEntityManager().remove(dbf.getEntityManager().merge(renewVO));
 
@@ -341,16 +351,16 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), msg.getProductType(), null, currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), 0, msg.getCallBackData());
 
         Timestamp endTime = msg.getExpiredTime();
-        long notUseDays = ChronoUnit.DAYS.between(LocalDateTime.now(), msg.getExpiredTime().toLocalDateTime());
+        BigDecimal notUseMonth = getNotUseMonths(currentTimestamp.toLocalDateTime(),msg.getExpiredTime().toLocalDateTime());
 
         RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
         if (renewVO == null) {
             throw new IllegalArgumentException("could not find the product purchased history ");
         }
 
-        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(daysOfMonth, 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
-        BigDecimal needPayMoney = discountPrice.divide(daysOfMonth, 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
-        BigDecimal needPayOriginMoney = originalPrice.divide(daysOfMonth, 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
+        BigDecimal needPayMoney = discountPrice.multiply(notUseMonth);
+        BigDecimal needPayOriginMoney = originalPrice.multiply(notUseMonth);
         BigDecimal subMoney = needPayMoney.subtract(remainMoney);
         orderVo.setProductEffectTimeStart(currentTimestamp);
         orderVo.setProductEffectTimeEnd(endTime);
@@ -378,7 +388,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
             BigDecimal remainCash = abvo.getCashBalance().add(subMoney.negate());
             abvo.setCashBalance(remainCash);
-            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, subMoney.negate(), BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, orderVo.getUuid(), orderVo.getUuid(), msg.getOpAccountUuid(),null);
+            int hash = msg.getAccountUuid().hashCode() < 0 ? ~msg.getAccountUuid().hashCode() : msg.getAccountUuid().hashCode();
+            String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, subMoney.negate(), BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, outTradeNO, orderVo.getUuid(), msg.getOpAccountUuid(), null);
 
         }
         renewVO.setPriceOneMonth(discountPrice);
@@ -422,20 +434,19 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     }
 
 
-
     @Transactional
     private BigDecimal getDownGradeDiffMoney(String accountUuid, String productUuid, BigDecimal priceDownTo) {
         List<SLALogVO> slaLogVOS = getSLALogVO(accountUuid, productUuid);
         BigDecimal returnMoney = BigDecimal.ZERO;
         if (slaLogVOS != null && slaLogVOS.size() > 0) {
             for (SLALogVO slaLogVO : slaLogVOS) {
-                LocalDateTime startTime = slaLogVO.getTimeStart().toLocalDateTime();
-                long duration = slaLogVO.getDuration();
+                LocalDateTime startTime = slaLogVO.getTimeStart().toLocalDateTime().minusDays(1);
+                BigDecimal duration = getNotUseMonths(startTime, slaLogVO.getTimeEnd().toLocalDateTime());
                 if (startTime.isBefore(LocalDateTime.now())) {
-                    duration = Math.abs(ChronoUnit.DAYS.between(LocalDateTime.now(), slaLogVO.getTimeEnd().toLocalDateTime())) + 1;
+                    duration =  getNotUseMonths(LocalDateTime.now(), slaLogVO.getTimeEnd().toLocalDateTime());
                 }
                 if (priceDownTo.compareTo(slaLogVO.getSlaPrice()) < 0) {
-                    returnMoney = returnMoney.add(slaLogVO.getSlaPrice().subtract(priceDownTo).divide(daysOfMonth, 4, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(duration)));
+                    returnMoney = returnMoney.add(slaLogVO.getSlaPrice().subtract(priceDownTo).multiply(duration));
                     slaLogVO.setSlaPrice(priceDownTo);
                     slaLogVO.setTimeStart(slaLogVO.getTimeStart());
                     slaLogVO.setTimeEnd(slaLogVO.getTimeEnd());
@@ -475,6 +486,14 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         notifyOrderVO.setAccountUuid(accountUuid);
         notifyOrderVO.setProductUuid(productUuid);
         dbf.getEntityManager().persist(notifyOrderVO);
+    }
+
+    @Transactional
+    private BigDecimal getNotUseMonths(LocalDateTime stateTime, LocalDateTime expiredTime) {
+        long months = ChronoUnit.MONTHS.between(stateTime, expiredTime);
+        long days = ChronoUnit.DAYS.between(stateTime, expiredTime.minusMonths(months));
+        BigDecimal thisMonthDays = BigDecimal.valueOf(stateTime.toLocalDate().lengthOfMonth());
+        return BigDecimal.valueOf(months).add(BigDecimal.valueOf(days).divide(thisMonthDays, 4, RoundingMode.HALF_UP)).setScale(2,RoundingMode.HALF_UP);
     }
 
     private boolean hasFailureNotify(String accountUuid, String productUuid) {
@@ -524,13 +543,13 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     private void handle(APIGetUnscribeProductPriceDiffMsg msg) {
         APIGetUnscribeProductPriceDiffReply reply = new APIGetUnscribeProductPriceDiffReply();
 
-        long notUseDays = ChronoUnit.DAYS.between(LocalDateTime.now(), msg.getExpiredTime().toLocalDateTime());
+        BigDecimal notUseMonth = getNotUseMonths(dbf.getCurrentSqlTime().toLocalDateTime(),msg.getExpiredTime().toLocalDateTime());
         RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
         if (renewVO == null) {
             throw new IllegalArgumentException("could not find the product purchased history ");
         }
 
-        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(daysOfMonth, 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
         BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
         remainMoney = remainMoney.subtract(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), BigDecimal.ZERO));
         if (remainMoney.compareTo(valuePayCash) > 0) {
@@ -563,10 +582,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         BigDecimal discountPrice = orderTempProp.getDiscountPrice();
         BigDecimal originalPrice = orderTempProp.getOriginalPrice();
 
-        long notUseDays = ChronoUnit.DAYS.between(LocalDateTime.now(), msg.getExpiredTime().toLocalDateTime());
-        BigDecimal remainMoney = renewVO.getPriceOneMonth().divide(daysOfMonth, 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
-        BigDecimal needPayMoney = discountPrice.divide(daysOfMonth, 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
-        BigDecimal needPayOriginMoney = originalPrice.divide(daysOfMonth, 4, RoundingMode.HALF_DOWN).multiply(BigDecimal.valueOf(notUseDays));
+        BigDecimal notUseMonth = getNotUseMonths(dbf.getCurrentSqlTime().toLocalDateTime(),msg.getExpiredTime().toLocalDateTime());
+        BigDecimal remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
+        BigDecimal needPayMoney = discountPrice.multiply(notUseMonth);
+        BigDecimal needPayOriginMoney = originalPrice.multiply(notUseMonth);
         BigDecimal subMoney = needPayMoney.subtract(remainMoney);
 
         if (subMoney.compareTo(BigDecimal.ZERO) < 0) {//downgrade substract sla
@@ -714,7 +733,11 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
             ProductPriceUnitVO productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), unit.getAreaCode(), unit.getLineCode(), unit.getConfigCode());
             if (productPriceUnitVO == null) {
-                throw new IllegalArgumentException("price uuid is not valid");
+                productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), unit.getAreaCode(), "DEFAULT", unit.getConfigCode());
+                if(productCategoryVO == null){
+                    productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), "DEFAULT", "DEFAULT", unit.getConfigCode());
+                }
+                if(productCategoryVO == null) throw new IllegalArgumentException("can not find the product price in database");
             }
 
             productPriceUnitUuids.add(productPriceUnitVO.getUuid());
@@ -725,7 +748,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 productDiscount = accountDiscountVO.getDiscount() <= 0 ? 100 : accountDiscountVO.getDiscount();
             }
             originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice() * base));
-            BigDecimal currentDiscount = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice()).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_DOWN);
+            BigDecimal currentDiscount = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice() * base).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_DOWN).setScale(2,RoundingMode.HALF_UP);
             discountPrice = discountPrice.add(currentDiscount);
 
         }

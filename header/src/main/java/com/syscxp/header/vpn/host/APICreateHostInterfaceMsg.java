@@ -1,19 +1,27 @@
 package com.syscxp.header.vpn.host;
 
-import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
-import com.syscxp.header.vpn.VpnConstant;
 
 public class APICreateHostInterfaceMsg extends APIMessage {
     @APIParam(emptyString = false)
-    private String interfaceName;
+    private String name;
     @APIParam(required = false)
     private String hostUuid;
     @APIParam(emptyString = false)
     private String endpointUuid;
+    @APIParam(emptyString = false)
+    private String interfaceUuid;
+
+    public String getInterfaceUuid() {
+        return interfaceUuid;
+    }
+
+    public void setInterfaceUuid(String interfaceUuid) {
+        this.interfaceUuid = interfaceUuid;
+    }
 
     public String getHostUuid() {
         return hostUuid;
@@ -31,12 +39,12 @@ public class APICreateHostInterfaceMsg extends APIMessage {
         this.endpointUuid = endpointUuid;
     }
 
-    public String getInterfaceName() {
-        return interfaceName;
+    public String getName() {
+        return name;
     }
 
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public ApiNotification __notification__() {

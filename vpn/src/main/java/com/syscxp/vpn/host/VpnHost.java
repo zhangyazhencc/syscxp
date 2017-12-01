@@ -6,6 +6,7 @@ import com.syscxp.core.ansible.AnsibleConstant;
 import com.syscxp.core.ansible.AnsibleGlobalProperty;
 import com.syscxp.core.ansible.AnsibleRunner;
 import com.syscxp.core.ansible.SshFileMd5Checker;
+import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.host.HostBase;
 import com.syscxp.core.workflow.FlowChainBuilder;
@@ -252,7 +253,7 @@ public class VpnHost extends HostBase implements Host {
                             runner.putArgument("init", "true");
                             runner.setFullDeploy(true);
                         }
-                        runner.putArgument("pkg_Vpnagent", agentPackageName);
+                        runner.putArgument("pkg_vpnagent", agentPackageName);
                         runner.putArgument("hostname", String.format("%s.syscxp.com", self.getHostIp().replaceAll("\\.", "-")));
 
                         UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(restf.getBaseUrl());
@@ -334,7 +335,7 @@ public class VpnHost extends HostBase implements Host {
             cmd.setSendCommandUrl(restf.getSendCommandUrl());
             cmd.setIptablesRules(VpnGlobalProperty.IPTABLES_RULES);
             ConnectResponse rsp = restf.syncJsonPost(connectPath, cmd, ConnectResponse.class);
-            if (!rsp.isSuccess() || !rsp.isIptablesSucc()) {
+            if (!rsp.isSuccess()) {
                 errCode = operr("unable to connect to host[uuid:%s, ip:%s, url:%s], because %s", self.getUuid(), self.getHostIp(), connectPath,
                         rsp.getError());
             }
@@ -392,6 +393,7 @@ public class VpnHost extends HostBase implements Host {
     }
 
     @Override
+    @MessageSafe
     public void handleMessage(Message msg) {
         try {
             if (msg instanceof APIMessage) {
@@ -435,9 +437,6 @@ public class VpnHost extends HostBase implements Host {
         vo = vo == null ? getSelf() : vo;
 
         APIUpdateVpnHostMsg umsg = (APIUpdateVpnHostMsg) msg;
-        if (umsg.getPublicInterface() != null) {
-            vo.setPublicInterface(umsg.getPublicInterface());
-        }
         if (umsg.getPublicIp() != null) {
             vo.setPublicIp(umsg.getPublicIp());
         }

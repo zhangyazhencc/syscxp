@@ -1,10 +1,13 @@
 package com.syscxp.tunnel.tunnel;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.cloudbus.MessageSafe;
+import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
@@ -16,6 +19,7 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
@@ -75,6 +79,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private ErrorFacade errf;
     @Autowired
     private ThreadFacade thdf;
+    @Autowired
+    private PluginRegistry pluginRgty;
 
     @Override
     @MessageSafe
@@ -159,6 +165,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIListCrossTunnelMsg) msg);
         } else if (msg instanceof APIListInnerEndpointMsg) {
             handle((APIListInnerEndpointMsg) msg);
+        } else if (msg instanceof APIListTraceRouteMsg) {
+            handle((APIListTraceRouteMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -1630,6 +1638,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
+        for (TunnelDeletionExtensionPoint extp : pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class)) {
+            extp.preDelete();
+        }
+
         if (vo.getState() == TunnelState.Unsupport) {         //仅删除：无法开通
             deleteTunnel(vo);
             evt.setInventory(TunnelInventory.valueOf(vo));
@@ -2074,31 +2086,95 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private void handle(APIQueryTunnelDetailForAlarmMsg msg) {
-        Map<String, Object> detailMap = new HashMap<>();
+        Map map = new HashMap();
+        List<FalconApiCommands.Tunnel> tunnels = new ArrayList<>();
 
-        FalconApiCommands.Tunnel tunnelCmd = new FalconApiCommands.Tunnel();
         for (String tunnelUuid : msg.getTunnelUuidList()) {
             TunnelVO tunnel = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, tunnelUuid).findValue();
+
+            FalconApiCommands.Tunnel tunnelCmd = new FalconApiCommands.Tunnel();
+            if(tunnel == null)
+                throw new IllegalArgumentException(String.format("tunnel %s not exist!",tunnelUuid));
+
             tunnelCmd.setTunnel_id(tunnel.getUuid());
             tunnelCmd.setBandwidth(tunnel.getBandwidth());
+            tunnelCmd.setUser_id(null);
+            tunnelCmd.setRules(null);
 
             List<TunnelSwitchPortVO> tunnelSwitchPortVOS = Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.tunnelUuid, tunnelUuid).list();
             for (TunnelSwitchPortVO vo : tunnelSwitchPortVOS) {
                 if ("A".equals(vo.getSortTag())) {
                     tunnelCmd.setEndpointA_ip(getPhysicalSwitch(vo.getSwitchPortUuid()));
-                    tunnelCmd.setEndpointA_vlan(vo.getVlan());
+                    tunnelCmd.setEndpointA_vid(vo.getVlan());
                 } else if ("Z".equals(vo.getSortTag())) {
                     tunnelCmd.setEndpointB_ip(getPhysicalSwitch(vo.getSwitchPortUuid()));
-                    tunnelCmd.setEndpointB_vlan(vo.getVlan());
+                    tunnelCmd.setEndpointB_vid(vo.getVlan());
                 }
             }
 
-            detailMap.put(tunnelUuid, tunnelCmd);
+            map.put(tunnelUuid, JSON.toJSONString(tunnelCmd, SerializerFeature.WriteMapNullValue));
         }
 
         APIQueryTunnelDetailForAlarmReply reply = new APIQueryTunnelDetailForAlarmReply();
-        reply.setMap(detailMap);
+        reply.setMap(map);
         bus.reply(msg, reply);
+    }
+
+    private void handle(APIListTraceRouteMsg msg){
+        APIListTraceRouteReply traceRouteReply = new APIListTraceRouteReply();
+        List<TraceRouteVO> traceRouteVOS = Q.New(TraceRouteVO.class)
+                .eq(TraceRouteVO_.tunnelUuid,msg.getTunnelUuid())
+                .list();
+        if(traceRouteVOS.isEmpty() || msg.isTraceAgain()){
+            ListTraceRouteMsg listTraceRouteMsg = new ListTraceRouteMsg();
+            listTraceRouteMsg.setTunnelUuid(msg.getTunnelUuid());
+
+            bus.makeLocalServiceId(listTraceRouteMsg, TunnelConstant.SERVICE_ID);
+            bus.send(listTraceRouteMsg, new CloudBusCallBack(null) {
+                @Override
+                public void run(MessageReply reply) {
+                    if (reply.isSuccess()) {
+                        if(!traceRouteVOS.isEmpty() && msg.isTraceAgain()){
+                            UpdateQuery.New(TraceRouteVO.class)
+                                    .eq(TraceRouteVO_.tunnelUuid,msg.getTunnelUuid())
+                                    .delete();
+                        }
+                        ListTraceRouteReply listTraceRouteReply = reply.castReply();
+                        List<List<String>> results = listTraceRouteReply.getResults();
+                        for(List<String> result :results){
+                            for(String s: result){
+                                s = s.trim().replaceAll("\\s+ms","ms");
+                                String[] arrS = s.split("\\s+");
+                                if(!arrS[1].equals("*")){
+                                    TraceRouteVO vo = new TraceRouteVO();
+                                    vo.setUuid(Platform.getUuid());
+                                    vo.setTunnelUuid(msg.getTunnelUuid());
+                                    vo.setTraceSort(new Integer(arrS[0]));
+                                    vo.setRouteIP(arrS[1]);
+                                    vo.setTimesFirst(arrS[2]);
+                                    vo.setTimesSecond(arrS[3]);
+                                    vo.setTimesThird(arrS[4]);
+                                    dbf.persistAndRefresh(vo);
+                                }
+                            }
+                        }
+                        List<TraceRouteVO> traceRouteList = Q.New(TraceRouteVO.class)
+                                .eq(TraceRouteVO_.tunnelUuid,msg.getTunnelUuid())
+                                .list();
+                        traceRouteReply.setInventories(TraceRouteInventory.valueOf(traceRouteList));
+                        bus.reply(msg, traceRouteReply);
+                    }else{
+                        traceRouteReply.setError(reply.getError());
+                        bus.reply(msg, traceRouteReply);
+                    }
+                }
+            });
+
+        }else{
+            traceRouteReply.setInventories(TraceRouteInventory.valueOf(traceRouteVOS));
+            bus.reply(msg, traceRouteReply);
+        }
+
     }
 
     //////////////////////////////////////////                 billing call back                  /////////////////////////////////////////
@@ -3410,12 +3486,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 通过连接点获取可用的端口规格
      */
     private List<PortOfferingVO> getPortTypeByEndpoint(String endpointUuid) {
-        String sql = "SELECT t FROM PortOfferingVO t WHERE t.uuid IN (SELECT DISTINCT sp.portType FROM SwitchPortVO sp WHERE sp.state = :state " +
-                "AND (SELECT count(1) AS n1 FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid AND s.status = :status AND sp.switchUuid = s.uuid) = 1 " +
-                "AND (SELECT count(1) AS n2 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0) ";
+
+        String sql ="SELECT t FROM PortOfferingVO t WHERE t.uuid IN (" +
+                "select DISTINCT sp.portType from SwitchPortVO sp, SwitchVO s where sp.switchUuid=s.uuid " +
+                "and s.endpointUuid=:endpointUuid and s.state=:switchState and sp.state=:state " +
+                "and sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid)) ";
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
-                .param("status", SwitchStatus.Connected)
+                .param("switchState", SwitchState.Enabled)
                 .param("endpointUuid", endpointUuid)
                 .list();
     }
@@ -3426,12 +3504,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 通过连接点和端口规格获取可用的端口
      */
     private List<SwitchPortVO> getSwitchPortByType(String endpointUuid, String type) {
-        String sql = "SELECT sp FROM SwitchPortVO sp WHERE sp.state = :state AND sp.portType = :portType " +
-                "AND (SELECT count(1) AS n1 FROM SwitchVO s WHERE s.endpointUuid = :endpointUuid AND s.status = :status AND sp.switchUuid = s.uuid) = 1 " +
-                "AND (SELECT count(1) AS n1 FROM InterfaceVO i WHERE i.switchPortUuid = sp.uuid ) = 0 ";
+        String sql = "SELECT sp FROM SwitchPortVO sp, SwitchVO s WHERE sp.switchUuid=s.uuid " +
+                "AND s.endpointUuid = :endpointUuid AND s.state=:switchState AND sp.state=:state AND sp.portType = :portType " +
+                "AND sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid) ";
         return SQL.New(sql)
                 .param("state", SwitchPortState.Enabled)
-                .param("status", SwitchStatus.Connected)
+                .param("switchState", SwitchState.Enabled)
                 .param("portType", type)
                 .param("endpointUuid", endpointUuid)
                 .list();

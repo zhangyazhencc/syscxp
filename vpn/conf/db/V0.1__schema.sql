@@ -52,19 +52,30 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`hostUuid` varchar(32) NOT NULL COMMENT '物理机',
 	`name` varchar(255) NOT NULL COMMENT '名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '描述',
-	`vpnCidr` VARCHAR(32) NOT NULL COMMENT 'VPN网段',
-	`bandwidth` BIGINT NOT NULL COMMENT '带宽',
-	`maxModifies` INT DEFAULT 5 COMMENT '最大调整次数',
-	`endpointUuid` VARCHAR(32) NOT NULL COMMENT '连接点uuid',
-	`port` VARCHAR(10) NOT NULL COMMENT 'VPN端口',
+	`bandwidthOfferingUuid` BIGINT NOT NULL COMMENT '带宽',
+	`interfaceUuid` VARCHAR(32) NOT NULL COMMENT '接口uuid',
+	`port` INT(10) NOT NULL COMMENT 'VPN端口',
+	`vlan` INT(10) NOT NULL COMMENT 'vlan',
 	`state` VARCHAR(32) DEFAULT NULL COMMENT '启用状态',
 	`status` VARCHAR(32) DEFAULT NULL COMMENT '运行状态',
 	`duration` int(11) NOT NULL COMMENT '购买时长',
-	`memo` VARCHAR(255) DEFAULT NULL COMMENT '备注',
 	`sid` varchar(32) NOT NULL COMMENT 'SID',
 	`certKey` VARCHAR(32) NOT NULL COMMENT 'cert-key',
 	`payment` VARCHAR(32) NOT NULL COMMENT '支付状态',
-	`expireDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '截止时间',
+	`maxModifies` INT DEFAULT 5 COMMENT '最大调整次数',
+	`expireDate` timestamp COMMENT '截止时间',
+	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+	`createDate` timestamp,
+	PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  `syscxp_vpn`.`VpnCertVO` (
+	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
+	`vpnUuid` varchar(32) NOT NULL COMMENT 'VPN',
+	`caCert` TEXT NOT NULL COMMENT '',
+	`clientCert` TEXT DEFAULT NULL COMMENT '',
+	`clientKey` TEXT NOT NULL COMMENT '',
+	`clientConf` TEXT NOT NULL COMMENT '',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)
@@ -97,19 +108,18 @@ CREATE TABLE `syscxp_vpn`.`HostEO` (
 	UNIQUE KEY `uuid` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT '监控主机';
 
-CREATE VIEW `syscxp_tunnel`.`HostVO` AS SELECT `uuid`,`name`,`code`,`hostIp`,`position`,`hostType`,`state`,`status`,`lastOpDate`,`createDate`
+CREATE VIEW `syscxp_vpn`.`HostVO` AS SELECT `uuid`,`name`,`code`,`hostIp`,`position`,`hostType`,`state`,`status`,`lastOpDate`,`createDate`
 	FROM `HostEO` WHERE deleted IS NULL;
 
 CREATE TABLE  `syscxp_vpn`.`VpnHostVO` (
 	`uuid` varchar(32) NOT NULL COMMENT 'UUID',
-	`publicInterface` VARCHAR(255) NOT NULL COMMENT '公网物理接口',
 	`publicIp` VARCHAR(32) NOT NULL COMMENT '公网IP',
 	`sshPort` VARCHAR(10) NOT NULL COMMENT 'ssh端口',
 	`username` VARCHAR(255) NOT NULL COMMENT '用户名',
 	`password` VARCHAR(255) NOT NULL COMMENT '密码',
+	`interfaceName` VARCHAR(255) NOT NULL COMMENT '',
 	`startPort` INT COMMENT '起始端口',
 	`endPort` INT COMMENT '末尾端口',
-	`vpnInterfaceName` VARCHAR(30) NOT NULL COMMENT 'VPN借口名称',
 	`zoneUuid` VARCHAR(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -133,8 +143,33 @@ CREATE TABLE  `syscxp_vpn`.`VpnMotifyRecordVO` (
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+# 带宽配置表
+CREATE TABLE `syscxp_vpn`.`BandwidthOfferingVO` (
+	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'uuid',
+	`name` varchar(255) NOT NULL COMMENT 'bandwidth offering name',
+	`description` varchar(255) DEFAULT NULL COMMENT '描述',
+	`bandwidth` BIGINT NOT NULL COMMENT '带宽',
+	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+	`createDate` timestamp,
+	PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE VpnHostVO ADD CONSTRAINT fkMonitorHostVOHostEO FOREIGN KEY (uuid) REFERENCES HostEO (uuid) ON UPDATE RESTRICT ON DELETE CASCADE;
 ALTER TABLE VpnHostVO ADD CONSTRAINT fkVpnHostVOZoneVO FOREIGN KEY (zoneUuid) REFERENCES ZoneVO (uuid) ON DELETE RESTRICT;
 ALTER TABLE HostInterfaceVO ADD CONSTRAINT fkHostInterfaceVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE CASCADE;
 ALTER TABLE VpnVO ADD CONSTRAINT fkVpnVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE RESTRICT;
+
+
+INSERT INTO `syscxp_vpn`.`BandwidthOfferingVO` (`uuid`,`name`,`description`,`bandwidth`,`lastOpDate`,`createDate`)
+VALUES ('2G','2G','',2147483648,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('10G','10G','',10737418240,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('1G','1G','',1073741824,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('10M','10M','',10485760,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('20M','20M','',20971520,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('100M','100M','',104857600,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('5M','5M','',5242880,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('50M','50M','',52428800,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('500M','500M','',524288000,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('5G','5G','',5368709120,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('200M','200M','',209715200,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
+	('2M','2M','',2097152,'2017-11-01 13:51:31','2017-11-01 13:51:31');

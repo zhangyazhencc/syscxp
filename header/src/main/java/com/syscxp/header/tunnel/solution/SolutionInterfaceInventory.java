@@ -16,7 +16,7 @@ public class SolutionInterfaceInventory {
     private String uuid;
     private String solutionUuid;
     private BigDecimal cost;
-    private ProductChargeModel productChargeModel;
+    private String productChargeModel;
     private int duration;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -31,7 +31,7 @@ public class SolutionInterfaceInventory {
         inv.setUuid(vo.getUuid());
         inv.setSolutionUuid(vo.getSolutionUuid());
         inv.setCost(vo.getCost());
-        inv.setProductChargeModel(vo.getProductChargeModel());
+        inv.setProductChargeModel(vo.getProductChargeModel().toString());
         inv.setDuration(vo.getDuration());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -77,11 +77,11 @@ public class SolutionInterfaceInventory {
         this.cost = cost;
     }
 
-    public ProductChargeModel getProductChargeModel() {
+    public String getProductChargeModel() {
         return productChargeModel;
     }
 
-    public void setProductChargeModel(ProductChargeModel productChargeModel) {
+    public void setProductChargeModel(String productChargeModel) {
         this.productChargeModel = productChargeModel;
     }
 

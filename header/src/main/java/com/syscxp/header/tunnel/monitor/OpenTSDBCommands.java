@@ -103,6 +103,13 @@ public class OpenTSDBCommands {
     public static class Tags {
         private String endpoint;
         private String ifname;
+        private String tunnelId;
+
+        public Tags(String endpoint, String ifname, String tunnelId) {
+            this.endpoint = endpoint;
+            this.ifname = ifname;
+            this.tunnelId = tunnelId;
+        }
 
         public Tags(String endpoint, String ifname) {
             this.endpoint = endpoint;
@@ -126,6 +133,14 @@ public class OpenTSDBCommands {
 
         public void setIfname(String ifname) {
             this.ifname = ifname;
+        }
+
+        public String getTunnelId() {
+            return tunnelId;
+        }
+
+        public void setTunnelId(String tunnelId) {
+            this.tunnelId = tunnelId;
         }
     }
 

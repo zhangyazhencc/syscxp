@@ -286,11 +286,12 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             start = start.plusMonths(1);
         }
 
-        String sql = "select DATE_FORMAT(payTime,'%Y-%m') mon,sum(payPresent)+sum(payCash) as payTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and DATE_FORMAT(payTime,'%Y-%m-%d  %T') between :dateStart and :dateEnd group by mon order by mon asc";
+        String sql = "select DATE_FORMAT(createDate,'%Y-%m') mon,sum(expend) as payTotal from DealDetailVO where accountUuid = :accountUuid and state = 'SUCCESS' and DATE_FORMAT(createDate,'%Y-%m-%d  %T') between :dateStart and :dateEnd and type = :type group by mon order by mon asc";
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("accountUuid", msg.getSession().getAccountUuid());
         q.setParameter("dateStart", msg.getDateStart());
         q.setParameter("dateEnd", msg.getDateEnd());
+        q.setParameter("type", DealType.DEDUCTION.toString());
         List<Object[]> objs = q.getResultList();
         List<ExpenseGross> vos = objs.stream().map(ExpenseGross::new).collect(Collectors.toList());
         for (ExpenseGross e : list) {
@@ -314,7 +315,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
     private void handle(APIUpdateAccountBalanceMsg msg) {
         AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         if (vo == null) {
-            initAccountBlance(msg.getAccountUuid());
+            vo = initAccountBlance(msg.getAccountUuid());
         }
 
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
@@ -322,10 +323,10 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
         if (msg.getPresent() != null) {
             vo.setPresentBalance(vo.getPresentBalance().add(msg.getPresent()));
-            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.PRESENT_BILL, msg.getPresent(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PRESENT, DealState.SUCCESS, vo.getPresentBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment());
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.PRESENT_BILL, msg.getPresent(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PRESENT, DealState.SUCCESS, vo.getPresentBalance(), msg.getTradeNO(), outTradeNO, msg.getSession().getAccountUuid(),msg.getComment());
         } else if (msg.getCash() != null) {
             vo.setCashBalance(vo.getCashBalance().add(msg.getCash()));
-            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, msg.getCash(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getCashBalance(), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),msg.getComment());
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, msg.getCash(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getCashBalance(), msg.getTradeNO(), outTradeNO, msg.getSession().getAccountUuid(),msg.getComment());
         } else if (msg.getCredit() != null) {
             if(vo.getCashBalance().compareTo(BigDecimal.ZERO)<0 && vo.getCashBalance().add(msg.getCredit()).compareTo(BigDecimal.ZERO)<0){
                 throw new IllegalArgumentException(" the credit point value can not  less than the repay value");
@@ -360,7 +361,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
             if (!dbf.isExist(msg.getAccountUuid(), AccountBalanceVO.class)) {
                 AccountBalanceVO vo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
                 if (vo == null) {
-                    initAccountBlance(msg.getAccountUuid());
+                     vo = initAccountBlance(msg.getAccountUuid());
                 }
             }
             accountUuid = msg.getAccountUuid();

@@ -1,0 +1,51 @@
+#!/bin/sh
+
+# the following is chkconfig init header
+# chkconfig: 2345 10 90
+# description: syscxp-vpnagent ....
+# syscxp-vpnagent:   syscxp vpn agent daemon
+#
+#
+# processname: vpnagent
+# pidfile: /var/run/syscxp/vpnagent.pid
+#
+
+check_status() {
+	pidfile='/var/run/syscxp/vpnagent.pid'
+	if [ ! -f $pidfile ]; then
+		echo "syscxp vpn agent is stopped"
+		exit 1
+	else
+		pid=`cat $pidfile`
+		ps -p $pid > /dev/null
+		if [ $? -eq 0 ]; then
+			echo "syscxp vpn agent is running, pid is $pid"
+			exit 0
+		else
+			echo "syscxp vpn agent is stopped, but pidfile at $pidfile is not cleaned. It may be caused by vpn agent crashed at last time, manually cleaning it would be ok"
+			exit 1
+		fi
+	fi
+}
+
+if [ $# -eq 0 ]; then
+	echo "usage: $0
+[start|stop|restart|status]"
+	exit 1
+fi
+
+if [ "$@" = "status" ]; then
+	check_status
+else
+	ulimit -Hn 16384
+	ulimit -Sn 16384
+	. /var/lib/syscxp/virtualenv/vpn/bin/activate && python -c "from vpnagent import mdaemon; mdaemon.main()" $@
+fi
+
+if [ $? -eq 0 ]; then
+    echo "$@ syscxp vpn agent .... SUCCESS"
+    exit 0
+else
+    echo "$@ syscxp vpn agent .... FAILED"
+    exit 1
+fi

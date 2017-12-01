@@ -54,15 +54,14 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
     public HostVO createHost(HostVO vo, AddHostMessage msg) {
         APICreateVpnHostMsg amsg = (APICreateVpnHostMsg) msg;
         VpnHostVO host = new VpnHostVO(vo);
-        host.setPublicInterface(amsg.getPublicInterface());
         host.setPublicIp(amsg.getPublicIp());
         host.setZoneUuid(amsg.getZoneUuid());
-        host.setVpnInterfaceName(amsg.getVpnInterfaceName());
         host.setUsername(amsg.getUsername());
         host.setPassword(amsg.getPassword());
-        host.setSshPort(amsg.getSshPort());
+        host.setInterfaceName(amsg.getInterfaceName());
+        host.setSshPort(amsg.getSshPort() != null ? amsg.getSshPort() : 22);
         host.setStartPort(VpnHostConstant.HOST_START_PORT);
-        host.setStartPort(VpnHostConstant.HOST_START_PORT + 1000);
+        host.setEndPort(VpnHostConstant.HOST_START_PORT + 1000);
         return dbf.persistAndRefresh(host);
     }
 
@@ -302,9 +301,10 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
     private void handle(APICreateHostInterfaceMsg msg) {
         HostInterfaceVO iface = new HostInterfaceVO();
         iface.setUuid(Platform.getUuid());
-        iface.setInterfaceName(msg.getInterfaceName());
+        iface.setName(msg.getName());
         iface.setHostUuid(msg.getHostUuid());
         iface.setEndpointUuid(msg.getEndpointUuid());
+        iface.setInterfaceUuid(msg.getInterfaceUuid());
 
         iface = dbf.persistAndRefresh(iface);
 

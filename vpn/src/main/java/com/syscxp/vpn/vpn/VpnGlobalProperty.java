@@ -11,20 +11,19 @@ public class VpnGlobalProperty {
     @GlobalProperty(name = "vpnMaxMotifies", defaultValue = "5")
     public static Integer VPN_MAX_MOTIFIES;
 
-
-    @GlobalProperty(name="MonitorAgent.agentPackageName", defaultValue = "monitoragent-2.2.0.tar.gz")
+    @GlobalProperty(name="VpnAgent.agentPackageName", defaultValue = "vpnagent-0.1.0.tar.gz")
     public static String AGENT_PACKAGE_NAME;
-    @GlobalProperty(name="MonitorAgent.agentUrlRootPath", defaultValue = "")
+    @GlobalProperty(name="VpnAgent.agentUrlRootPath", defaultValue = "")
     public static String AGENT_URL_ROOT_PATH;
-    @GlobalProperty(name="MonitorAgent.agentUrlScheme", defaultValue = "http")
+    @GlobalProperty(name="VpnAgent.agentUrlScheme", defaultValue = "http")
     public static String AGENT_URL_SCHEME;
-    @GlobalProperty(name="MonitorAgent.port", defaultValue = "7079")
+    @GlobalProperty(name="VpnAgent.port", defaultValue = "7078")
     public static int AGENT_PORT;
-    @GlobalProperty(name="MonitorAgentServer.port", defaultValue = "10001")
+    @GlobalProperty(name="VpnAgentServer.port", defaultValue = "10001")
     public static int AGENT_SERVER_PORT;
-    @GlobalProperty(name="MonitorHost.iptables.rule.", defaultValue = "")
+    @GlobalProperty(name="VpnHost.iptables.rule.", defaultValue = "")
     public static List<String> IPTABLES_RULES;
-    @GlobalProperty(name="MonitorAgent.syncOnHostPing", defaultValue = "true")
+    @GlobalProperty(name="VpnAgent.syncOnHostPing", defaultValue = "true")
     public static Boolean AGENT_SYNC_ON_HOST_PING;
 
     @GlobalProperty(name = "vpn.vpnStatusCheckWorkerInterval", defaultValue = "60")

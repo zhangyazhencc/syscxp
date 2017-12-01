@@ -19,10 +19,10 @@ public class EndpointInventory {
     private NodeInventory node;
     private String name;
     private String code;
-    private EndpointType endpointType;
+    private String endpointType;
     private String cloudType;
-    private EndpointState state;
-    private EndpointStatus status;
+    private String state;
+    private String status;
     private String description;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -34,10 +34,10 @@ public class EndpointInventory {
         inv.setNode(NodeInventory.valueOf(vo.getNodeVO()));
         inv.setName(vo.getName());
         inv.setCode(vo.getCode());
-        inv.setEndpointType(vo.getEndpointType());
+        inv.setEndpointType(vo.getEndpointType().toString());
         inv.setCloudType(vo.getCloudType());
-        inv.setState(vo.getState());
-        inv.setStatus(vo.getStatus());
+        inv.setState(vo.getState().toString());
+        inv.setStatus(vo.getStatus().toString());
         inv.setDescription(vo.getDescription());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
@@ -108,11 +108,11 @@ public class EndpointInventory {
         this.createDate = createDate;
     }
 
-    public EndpointType getEndpointType() {
+    public String getEndpointType() {
         return endpointType;
     }
 
-    public void setEndpointType(EndpointType endpointType) {
+    public void setEndpointType(String endpointType) {
         this.endpointType = endpointType;
     }
 
@@ -124,19 +124,19 @@ public class EndpointInventory {
         this.node = node;
     }
 
-    public EndpointState getState() {
+    public String getState() {
         return state;
     }
 
-    public void setState(EndpointState state) {
+    public void setState(String state) {
         this.state = state;
     }
 
-    public EndpointStatus getStatus() {
+    public String getStatus() {
         return status;
     }
 
-    public void setStatus(EndpointStatus status) {
+    public void setStatus(String status) {
         this.status = status;
     }
 

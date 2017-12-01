@@ -6,9 +6,9 @@ import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.vpn.VpnConstant;
 
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"read"})
-public class APIGetVpnPriceMsg extends APISyncCallMessage {
+public class APIGetVpnPriceMsg extends APIVpnMessage {
     @APIParam
-    private Long bandwidth;
+    private String bandwidthOfferingUuid;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private int duration;
 
@@ -20,11 +20,11 @@ public class APIGetVpnPriceMsg extends APISyncCallMessage {
         this.duration = duration;
     }
 
-    public Long getBandwidth() {
-        return bandwidth;
+    public String getBandwidthOfferingUuid() {
+        return bandwidthOfferingUuid;
     }
 
-    public void setBandwidth(Long bandwidth) {
-        this.bandwidth = bandwidth;
+    public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
+        this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 }

@@ -15,8 +15,6 @@ import java.util.List;
 @PrimaryKeyJoinColumn(name = "uuid", referencedColumnName = "uuid")
 public class VpnHostVO extends HostVO {
     @Column
-    private String publicInterface;
-    @Column
     private String publicIp;
     @Column
     private Integer sshPort;
@@ -26,11 +24,11 @@ public class VpnHostVO extends HostVO {
     @ENCRYPTParam
     private String password;
     @Column
+    private String interfaceName;
+    @Column
     private Integer startPort;
     @Column
     private Integer endPort;
-    @Column
-    private String vpnInterfaceName;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "zoneUuid", insertable = false, updatable = false)
@@ -50,8 +48,12 @@ public class VpnHostVO extends HostVO {
         super(vo);
     }
 
-    public String getVpnInterfaceName() {
-        return vpnInterfaceName;
+    public String getInterfaceName() {
+        return interfaceName;
+    }
+
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
     }
 
     public Integer getEndPort() {
@@ -68,10 +70,6 @@ public class VpnHostVO extends HostVO {
 
     public void setStartPort(Integer startPort) {
         this.startPort = startPort;
-    }
-
-    public void setVpnInterfaceName(String vpnInterfaceName) {
-        this.vpnInterfaceName = vpnInterfaceName;
     }
 
     public String getZoneUuid() {
@@ -112,14 +110,6 @@ public class VpnHostVO extends HostVO {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public String getPublicInterface() {
-        return publicInterface;
-    }
-
-    public void setPublicInterface(String publicInterface) {
-        this.publicInterface = publicInterface;
     }
 
     public Integer getSshPort() {

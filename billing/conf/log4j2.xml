@@ -50,6 +50,11 @@
         <Async name="Async" ignoreExceptions="false" bufferSize="512">
             <AppenderRef ref="RollingFile"/>
         </Async>
+        <Console name="console_out_appender" target="SYSTEM_OUT">
+            <ThresholdFilter level="DEBUG" onMatch="ACCEPT"
+                             onMismatch="DENY" />
+            <PatternLayout pattern="%5p [%t] %d{yyyy-MM-dd HH:mm:ss} (%F:%L) %m%n" />
+        </Console>
     </Appenders>
 
     <Loggers>
@@ -81,10 +86,13 @@
                 <Logger name="com.syscxp.billing" level="TRACE" />
         -->
 
-        <Logger name="org.hibernate" level="warn"/>
+        <Logger name="org.hibernate" level="info"/>
 
-        <Root level="warn" additivity="false">
+        <Root level="info" additivity="false">
             <AppenderRef ref="Async"/>
         </Root>
+        <!--<Root level="debug">-->
+            <!--<AppenderRef ref="console_out_appender"/>-->
+        <!--</Root>-->
     </Loggers>
 </Configuration>
