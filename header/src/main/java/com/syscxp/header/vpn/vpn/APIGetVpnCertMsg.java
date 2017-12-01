@@ -9,7 +9,7 @@ import com.syscxp.header.vpn.VpnConstant;
 @SuppressCredentialCheck
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"read"})
 public class APIGetVpnCertMsg extends APISyncCallMessage {
-    @APIParam
+    @APIParam(resourceType = VpnVO.class)
     private String uuid;
 
     @APIParam
