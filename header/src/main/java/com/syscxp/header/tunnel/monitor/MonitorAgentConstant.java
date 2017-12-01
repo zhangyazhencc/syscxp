@@ -12,5 +12,6 @@ public interface MonitorAgentConstant {
     static final String NETTOOL = "/netools/netools";
     static final String NETTOOL_RESULT = "/netools/results";
     static final String START_MONITOR = "/icmp/start_monitor";
+    static final String UPDATE_MONITOR = "/icmp/update_monitor";
     static final String STOP_MONITOR = "/icmp/stop_monitor";
 }
