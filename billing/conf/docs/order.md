@@ -91,3 +91,58 @@
       ```
       
 ## 续费订单
+1. 消息uri com.syscxp.header.billing.APICreateRenewOrderMsg
+2. 参数
+ @APIParam(emptyString = false)
+     * private ProductChargeModel productChargeModel;
+     * private int duration;
+     * private Timestamp startTime;
+     * private Timestamp expiredTime;
+     * APICreateOrderMsg 字段
+     
+3. 执行逻辑
+
+    ```
+        通过传入的accountUUid和productUuid 找到billing database里面的续费表RenewVO的相应记录
+        获得该续费产品原先购买的价格
+        根据传入过来的购买期限获得续约该产品需要的总额
+        判断账户余额是否充足
+        生成订单
+        生成交易记录
+        修改续费表该产品过期时间
+        通知回调
+    ```
+## 赔偿订单
+1. 消息uri com.syscxp.header.billing.APICreateSLACompensationOrderMsg
+2. 参数
+ @APIParam(emptyString = false)
+     * private int duration;
+     * private String slaUuid;
+     * private Timestamp startTime;
+     * private Timestamp expiredTime;
+     * APICreateOrderMsg 字段
+     
+3. 执行逻辑
+
+    ```
+      该订单不涉及金额
+      直接生成订单
+      修改续费表产品过期时间
+      修改赔偿记录表赔偿的起止时间，并把赔偿状态设置为完成
+    ```
+## 回调通知是否成功接口
+1. 消息uri com.syscxp.header.billing.APIGetHasNotifyMsg
+2. 参数
+     *  private String accountUuid;
+     *  private String productUuid;
+
+3. 执行逻辑
+
+    ``` 
+        到数据表 NotifyOrderVO 找到该产品回调的通知记录，如果状态非SUCCESS
+        则返回true,表示该产品还没有通知完成，不能进行下一步操作
+        否则返回false,表明该产品可以继续操作
+         
+    ```
+  
+## 

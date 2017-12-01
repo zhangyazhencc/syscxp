@@ -1,15 +1,16 @@
 package com.syscxp.header.vpn.agent;
 
 import com.syscxp.header.message.MessageReply;
+import com.syscxp.header.vpn.vpn.VpnStatus;
 
 public class VpnServiceReply extends MessageReply {
-    private String status;
+    private VpnStatus status;
 
-    public String getStatus() {
+    public VpnStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(VpnStatus status) {
         this.status = status;
     }
 }

@@ -36,6 +36,9 @@
         <name>com.syscxp.header.vpn.vpn.APISLAVpnMsg</name>
     </message>
     <message>
+        <name>com.syscxp.header.vpn.vpn.APIGetVpnCertMsg</name>
+    </message>
+    <message>
         <name>com.syscxp.header.vpn.vpn.APIQueryVpnMsg</name>
         <serviceId>query</serviceId>
     </message>
