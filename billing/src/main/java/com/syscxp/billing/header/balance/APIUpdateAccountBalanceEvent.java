@@ -20,4 +20,5 @@ public class APIUpdateAccountBalanceEvent extends APIEvent {
     public void setInventory(AccountBalanceInventory inventory) {
         this.inventory = inventory;
     }
+
 }
