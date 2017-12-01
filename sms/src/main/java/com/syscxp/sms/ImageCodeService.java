@@ -1,6 +1,6 @@
 package com.syscxp.sms;
 
 
-public interface ImageService {
+public interface ImageCodeService {
     boolean ValidateImageCode(String mail, String code);
 }
