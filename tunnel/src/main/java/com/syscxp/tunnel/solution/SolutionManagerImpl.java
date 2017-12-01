@@ -486,7 +486,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         p = new Quota.QuotaPair();
         p.setName(TunnelConstant.QUOTA_SOLUTION_TUNNEL_NUM);
-        p.setValue(100);
+        p.setValue(50);
         quota.addPair(p);
 
         p = new Quota.QuotaPair();
