@@ -16,10 +16,8 @@ public class HostGlobalProperty {
     public static Integer HOST_LOAD_PARALLELISM_DEGREE;
     @GlobalProperty(name = "Host.ping.parallelismDegree", defaultValue = "100")
     public static Integer HOST_TRACK_PARALLELISM_DEGREE;
-    @GlobalProperty(name = "Host.ping.interval", defaultValue = "60")
+    @GlobalProperty(name = "Host.ping.interval", defaultValue = "600")
     public static Integer PING_HOST_INTERVAL;
-    @GlobalProperty(name = "Host.maintenanceMode.ignoreError", defaultValue = "false")
-    public static Boolean IGNORE_ERROR_ON_MAINTENANCE_MODE;
     @GlobalProperty(name = "Host.reconnectAllOnBoot", defaultValue = "true")  // 是否所有host都重连
     public static Boolean RECONNECT_ALL_ON_BOOT;
 

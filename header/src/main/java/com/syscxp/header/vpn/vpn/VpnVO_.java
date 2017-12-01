@@ -9,6 +9,7 @@ public class VpnVO_ {
     public static volatile SingularAttribute<VpnVO, String> uuid;
     public static volatile SingularAttribute<VpnVO, String> accountUuid;
     public static volatile SingularAttribute<VpnVO, String> hostUuid;
+    public static volatile SingularAttribute<VpnVO, String> vpnCertUuid;
     public static volatile SingularAttribute<VpnVO, String> name;
     public static volatile SingularAttribute<VpnVO, Integer> port;
     public static volatile SingularAttribute<VpnVO, Integer> vlan;

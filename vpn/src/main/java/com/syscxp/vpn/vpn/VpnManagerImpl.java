@@ -152,8 +152,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void handle(APIGetVpnCertMsg msg) {
         APIGetVpnCertReply reply = new APIGetVpnCertReply();
-        String vpnUuid = Q.New(VpnVO.class).eq(VpnVO_.sid, msg.getSid()).select(VpnVO_.uuid).findValue();
-        VpnCertVO vpnCert = Q.New(VpnCertVO.class).eq(VpnCertVO_.vpnUuid, vpnUuid).find();
+        String vpnCertUuid = Q.New(VpnVO.class).eq(VpnVO_.uuid, msg.getUuid()).select(VpnVO_.vpnCertUuid).findValue();
+        VpnCertVO vpnCert = Q.New(VpnCertVO.class).eq(VpnCertVO_.uuid, vpnCertUuid).find();
         reply.setInventory(VpnCertInventory.valueOf(vpnCert));
         bus.reply(msg, reply);
     }
@@ -209,7 +209,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         final VpnVO vo = dbf.persistAndRefresh(vpn);
 
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
-        chain.setName(String.format("add-host-%s", vo.getUuid()));
+        chain.setName(String.format("add-vpn-%s", vo.getUuid()));
 
         chain.then(new NoRollbackFlow() {
             String __name__ = "pay-before-add-vpn";
@@ -260,7 +260,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 getCertInfo(vpn.getUuid(), new ReturnValueCompletion<CertInfo>(trigger) {
                     @Override
                     public void success(CertInfo returnValue) {
-                        saveVpnCert(returnValue, vpn.getUuid());
+                        saveVpnCert(returnValue, vpn.getAccountUuid());
                     }
 
                     @Override
@@ -287,10 +287,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }).start();
     }
 
-    private VpnCertVO saveVpnCert(CertInfo info, String vpnUuid) {
+    private VpnCertVO saveVpnCert(CertInfo info, String accountUuid) {
         VpnCertVO vo = new VpnCertVO();
         vo.setUuid(Platform.getUuid());
-        vo.setVpnUuid(vpnUuid);
+        vo.setAccountUuid(accountUuid);
         vo.setCaCert(info.getCaCert());
         vo.setClientCert(info.getClientCert());
         vo.setClientKey(info.getClientKey());
@@ -634,7 +634,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         private List<VpnVO> getAllVpns() {
             return Q.New(VpnVO.class)
                     .eq(VpnVO_.state, VpnState.Enabled)
-                    .notEq(VpnVO_.status, VpnStatus.Connecting)
                     .list();
         }
 
@@ -646,11 +645,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             if (vos.isEmpty()) {
                 return;
             }
-            for (VpnVO vo : vos) {
-                if (!reconnectVpn(vo)) {
-                    disconnectedVpn.add(vo.getUuid());
-                }
-            }
+//            for (VpnVO vo : vos) {
+//                if (!reconnectVpn(vo)) {
+//                    disconnectedVpn.add(vo.getUuid());
+//                }
+//            }
         }
 
         @Override
@@ -735,6 +734,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private VpnVO updateVpnFromOrder(OrderCallbackCmd cmd) {
         VpnVO vpn = dbf.getEntityManager().find(VpnVO.class, cmd.getPorductUuid());
+        if (vpn == null) {
+            return null;
+        }
         boolean update = false;
         if (vpn.getPayment() == Payment.UNPAID) {
             vpn.setPayment(Payment.PAID);
@@ -774,7 +776,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APIGetVpnCertMsg msg) {
-        VpnVO vpn = Q.New(VpnVO.class).eq(VpnVO_.sid, msg.getSid()).find();
+        VpnVO vpn = Q.New(VpnVO.class).eq(VpnVO_.uuid, msg.getUuid()).find();
 
         if (!InnerMessageHelper.validSignature(msg, vpn.getCertKey())) {
             throw new ApiMessageInterceptionException(errf.stringToInvalidArgumentError(
@@ -940,7 +942,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         ClientInfoMsg msg = new ClientInfoMsg();
         msg.setVpnUuid(vpnUuid);
         bus.makeLocalServiceId(msg, VpnConstant.SERVICE_ID);
-        bus.send(msg, new CloudBusCallBack(null) {
+        bus.send(msg, new CloudBusCallBack(complete) {
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
