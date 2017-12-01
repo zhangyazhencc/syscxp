@@ -230,13 +230,11 @@ public class TunnelBillingBase {
      */
     public String getDescriptionForInterface(InterfaceVO vo) {
         DescriptionData data = new DescriptionData();
-        data.add(new DescriptionItem("name", vo.getName()));
-        data.add(new DescriptionItem("NetworkType", vo.getType().toString()));
+        data.add(new DescriptionItem("名称", vo.getName()));
         String portType = Q.New(SwitchPortVO.class)
                 .eq(SwitchPortVO_.uuid, vo.getSwitchPortUuid())
                 .select(SwitchPortVO_.portType).findValue();
-        data.add(new DescriptionItem("PortType", portType));
-
+        data.add(new DescriptionItem("端口类型", portType));
         return JSONObjectUtil.toJsonString(data);
     }
 
