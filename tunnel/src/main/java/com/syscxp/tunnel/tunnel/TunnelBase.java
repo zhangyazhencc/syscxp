@@ -2,27 +2,21 @@ package com.syscxp.tunnel.tunnel;
 
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
-import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.GLock;
-import com.syscxp.core.db.Q;
-import com.syscxp.core.rest.RESTApiDecoder;
-import com.syscxp.header.billing.*;
-import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.core.db.*;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
-import com.syscxp.header.tunnel.node.NodeVO;
+import com.syscxp.header.tunnel.node.ZoneNodeRefVO;
+import com.syscxp.header.tunnel.node.ZoneNodeRefVO_;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.utils.Utils;
-import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.TypedQuery;
-import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -34,10 +28,6 @@ public class TunnelBase {
 
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private RESTFacade restf;
-
-
 
     /**
      * 自动获取 VSI
@@ -62,47 +52,6 @@ public class TunnelBase {
             glock.unlock();
         }
         return vsi;
-    }
-
-    /**
-     * 调用支付
-     */
-    public OrderInventory createOrder(APICreateOrderMsg orderMsg) {
-        try {
-            APICreateOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
-
-            if (reply.isOrderSuccess()) {
-                return reply.getInventory();
-            }
-        } catch (Exception e) {
-            logger.error(String.format("无法创建订单, %s", e.getMessage()), e);
-        }
-        return null;
-    }
-
-    public List<OrderInventory> createBuyOrder(APICreateBuyOrderMsg orderMsg) {
-        try {
-            APICreateBuyOrderReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(orderMsg);
-
-            if (reply.isSuccess()) {
-                return reply.getInventories();
-            }
-        } catch (Exception e) {
-            logger.error(String.format("无法创建订单, %s", e.getMessage()), e);
-        }
-        return Collections.emptyList();
-    }
-
-    /**
-     * 付款成功,记录生效订单
-     */
-    public void saveResourceOrderEffective(String orderUuid, String resourceUuid, String resourceType) {
-        ResourceOrderEffectiveVO resourceOrderEffectiveVO = new ResourceOrderEffectiveVO();
-        resourceOrderEffectiveVO.setUuid(Platform.getUuid());
-        resourceOrderEffectiveVO.setResourceUuid(resourceUuid);
-        resourceOrderEffectiveVO.setResourceType(resourceType);
-        resourceOrderEffectiveVO.setOrderUuid(orderUuid);
-        dbf.persistAndRefresh(resourceOrderEffectiveVO);
     }
 
     /**
@@ -196,252 +145,158 @@ public class TunnelBase {
     }
 
     /**
-     * 获取到期时间
+     *  修改接口类型
      */
-    public Timestamp getExpireDate(Timestamp oldTime, ProductChargeModel chargeModel, int duration) {
-        Timestamp newTime = oldTime;
-        if (chargeModel == ProductChargeModel.BY_MONTH) {
-            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusMonths(duration));
-        } else if (chargeModel == ProductChargeModel.BY_YEAR) {
-            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusYears(duration));
-        } else if (chargeModel == ProductChargeModel.BY_DAY) {
-            newTime = Timestamp.valueOf(oldTime.toLocalDateTime().plusDays(duration));
-        }
-        return newTime;
-    }
+    public void updateNetworkType(InterfaceVO iface, String tunnelUuid, NetworkType newType, List<InnerVlanSegment> segments) {
+        UpdateQuery.New(InterfaceVO.class)
+                .set(InterfaceVO_.type, newType)
+                .eq(InterfaceVO_.uuid, iface.getUuid())
+                .update();
 
-    /**
-     * 获取物理接口订单信息
-     */
-    public APICreateOrderMsg getOrderMsgForInterface(InterfaceVO vo, NotifyCallBackData callBack) {
-        APICreateOrderMsg orderMsg = new APICreateOrderMsg();
-        orderMsg.setProductName(vo.getName());
-        orderMsg.setProductUuid(vo.getUuid());
-        orderMsg.setProductType(ProductType.PORT);
-        orderMsg.setDescriptionData(getDescriptionForInterface(vo));
-        orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
-        orderMsg.setCallBackData(RESTApiDecoder.dump(callBack));
-        orderMsg.setNotifyUrl(restf.getSendCommandUrl());
-        return orderMsg;
-    }
+        if (tunnelUuid == null)
+            return;
 
-    /**
-     * 获取物理接口单价
-     */
-    public List<ProductPriceUnit> getInterfacePriceUnit(String portOfferingUuid) {
-        List<ProductPriceUnit> units = new ArrayList<>();
-        ProductPriceUnit unit = new ProductPriceUnit();
-        unit.setProductTypeCode(ProductType.PORT);
-        unit.setCategoryCode(Category.PORT);
-        unit.setAreaCode("DEFAULT");
-        unit.setLineCode("DEFAULT");
-        unit.setConfigCode(portOfferingUuid);
-        units.add(unit);
-        return units;
-    }
+        if (iface.getType() == NetworkType.QINQ)
+            UpdateQuery.New(QinqVO.class).eq(QinqVO_.tunnelUuid, tunnelUuid).delete();
 
-    /**
-     * 获取云专线单价
-     */
-    public List<ProductPriceUnit> getTunnelPriceUnit(String bandwidthOfferingUuid, String nodeAUuid, String nodeZUuid, String innerEndpointUuid) {
-        TunnelDbBase tunnelDbBase = new TunnelDbBase();
-
-        List<ProductPriceUnit> units = new ArrayList<>();
-        NodeVO nodeA = dbf.findByUuid(nodeAUuid, NodeVO.class);
-        NodeVO nodeZ = dbf.findByUuid(nodeZUuid, NodeVO.class);
-        String zoneUuidA = tunnelDbBase.getZoneUuid(nodeA.getUuid());
-        String zoneUuidZ = tunnelDbBase.getZoneUuid(nodeZ.getUuid());
-        if (innerEndpointUuid == null) {  //国内互传  或者 国外到国外
-            if (nodeA.getCountry().equals("CHINA") && nodeZ.getCountry().equals("CHINA")) {  //国内互传
-                ProductPriceUnit unit = getTunnelPriceUnitCN(bandwidthOfferingUuid, nodeA, nodeZ, zoneUuidA, zoneUuidZ);
-                units.add(unit);
-            } else {                          //国外到国外
-                ProductPriceUnit unit = getTunnelPriceUnitAb(bandwidthOfferingUuid, nodeA, nodeZ);
-                units.add(unit);
+        if (newType == NetworkType.QINQ) {
+            List<QinqVO> vos = new ArrayList<>();
+            for (InnerVlanSegment segment : segments) {
+                QinqVO qinq = new QinqVO();
+                qinq.setUuid(Platform.getUuid());
+                qinq.setTunnelUuid(tunnelUuid);
+                qinq.setStartVlan(segment.getStartVlan());
+                qinq.setEndVlan(segment.getEndVlan());
+                vos.add(qinq);
             }
-        } else {                          //跨国
-            EndpointVO endpointVO = dbf.findByUuid(innerEndpointUuid, EndpointVO.class);
-            NodeVO nodeB = dbf.findByUuid(endpointVO.getNodeUuid(), NodeVO.class);
-            String zoneUuidB = tunnelDbBase.getZoneUuid(nodeB.getUuid());
+            dbf.persistCollection(vos);
+        }
+    }
 
-            if (nodeA.getCountry().equals("CHINA")) {
-                ProductPriceUnit unitInner = getTunnelPriceUnitCN(bandwidthOfferingUuid, nodeA, nodeB, zoneUuidA, zoneUuidB);
-                ProductPriceUnit unitOuter = getTunnelPriceUnitCNToAb(bandwidthOfferingUuid, nodeB, nodeZ);
+    /**
+     *  删除Tunnel数据库及其关联
+     */
+    @Transactional
+    public void deleteTunnel(TunnelVO vo){
+        dbf.remove(vo);
 
-                units.add(unitInner);
-                units.add(unitOuter);
-            } else {
-                ProductPriceUnit unitInner = getTunnelPriceUnitCN(bandwidthOfferingUuid, nodeZ, nodeB, zoneUuidZ, zoneUuidB);
-                ProductPriceUnit unitOuter = getTunnelPriceUnitCNToAb(bandwidthOfferingUuid, nodeB, nodeA);
-
-                units.add(unitInner);
-                units.add(unitOuter);
+        //删除对应的 TunnelSwitchPortVO 和 QingqVO
+        SimpleQuery<TunnelSwitchPortVO> q = dbf.createQuery(TunnelSwitchPortVO.class);
+        q.add(TunnelSwitchPortVO_.tunnelUuid, SimpleQuery.Op.EQ, vo.getUuid());
+        List<TunnelSwitchPortVO> tivList = q.list();
+        if (tivList.size() > 0) {
+            for(TunnelSwitchPortVO tiv : tivList){
+                dbf.remove(tiv);
             }
-
         }
-        return units;
-    }
-
-    /**
-     * 获取云专线单价--国内互传单价
-     */
-    public ProductPriceUnit getTunnelPriceUnitCN(String bandwidthOfferingUuid, NodeVO nodeA, NodeVO nodeZ, String zoneUuidA, String zoneUuidZ) {
-        ProductPriceUnit unit = new ProductPriceUnit();
-
-        Category category;
-        String areaCode;
-        String lineCode;
-
-        if (nodeA.getCity().equals(nodeZ.getCity())) {  //同城
-            category = Category.CITY;
-            areaCode = "DEFAULT";
-            lineCode = "DEFAULT";
-        } else if (zoneUuidA != null && zoneUuidZ != null && zoneUuidA.equals(zoneUuidZ)) { //同区域
-            category = Category.REGION;
-            areaCode = zoneUuidA;
-            lineCode = "DEFAULT";
-        } else {                      //长传
-            category = Category.LONG;
-            areaCode = "DEFAULT";
-            lineCode = "DEFAULT";
+        SimpleQuery<QinqVO> q2 = dbf.createQuery(QinqVO.class);
+        q2.add(QinqVO_.tunnelUuid, SimpleQuery.Op.EQ, vo.getUuid());
+        List<QinqVO> qinqList = q2.list();
+        if (qinqList.size() > 0) {
+            for(QinqVO qv : qinqList){
+                dbf.remove(qv);
+            }
         }
-        unit.setProductTypeCode(ProductType.TUNNEL);
-        unit.setCategoryCode(category);
-        unit.setAreaCode(areaCode);
-        unit.setLineCode(lineCode);
-        unit.setConfigCode(bandwidthOfferingUuid);
+    }
 
-        return unit;
+    /**根据 switchPort 找出所属的 PhysicalSwitch */
+    public PhysicalSwitchVO getPhysicalSwitch(SwitchPortVO switchPortVO){
+        SwitchVO switchVO = dbf.findByUuid(switchPortVO.getSwitchUuid(),SwitchVO.class);
+        return dbf.findByUuid(switchVO.getPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+    }
+
+    /**根据 tunnelSwitchPortVO 获取对端MPLS交换机 */
+    public PhysicalSwitchVO getRemotePhysicalSwitch(TunnelSwitchPortVO tunnelSwitchPortVO){
+        SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
+        PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitch(switchPortVO);
+        if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN) {   //SDN接入
+            //找到SDN交换机的上联传输交换机
+            PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchVO.getUuid())
+                    .find();
+            physicalSwitchVO = dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+        }
+
+        return physicalSwitchVO;
     }
 
     /**
-     * 获取云专线单价--国内到国外单价
+     * 根据TunnelSwicth获取两端节点
      */
-    public ProductPriceUnit getTunnelPriceUnitCNToAb(String bandwidthOfferingUuid, NodeVO nodeB, NodeVO nodeZ) {
-        ProductPriceUnit unit = new ProductPriceUnit();
-
-        unit.setProductTypeCode(ProductType.TUNNEL);
-        unit.setCategoryCode(Category.ABROAD);
-        unit.setAreaCode("CHINA2ABROAD");
-        unit.setLineCode(nodeB.getCity() + "/" + nodeZ.getCountry());
-        unit.setConfigCode(bandwidthOfferingUuid);
-
-        return unit;
-    }
-
-    /**
-     * 获取云专线单价--国外到国外单价
-     */
-    public ProductPriceUnit getTunnelPriceUnitAb(String bandwidthOfferingUuid, NodeVO nodeA, NodeVO nodeZ) {
-        ProductPriceUnit unit = new ProductPriceUnit();
-
-        unit.setProductTypeCode(ProductType.TUNNEL);
-        unit.setCategoryCode(Category.ABROAD);
-        unit.setAreaCode("ABROAD");
-        unit.setLineCode(nodeA.getCountry() + "/" + nodeZ.getCountry());
-        unit.setConfigCode(bandwidthOfferingUuid);
-
-        return unit;
-    }
-
-    /**
-     * 获取interface Description
-     */
-    public String getDescriptionForInterface(InterfaceVO vo) {
-        DescriptionData data = new DescriptionData();
-        data.add(new DescriptionItem("name", vo.getName()));
-        data.add(new DescriptionItem("NetworkType", vo.getType().toString()));
-        String portType = Q.New(SwitchPortVO.class)
-                .eq(SwitchPortVO_.uuid, vo.getSwitchPortUuid())
-                .select(SwitchPortVO_.portType).findValue();
-        data.add(new DescriptionItem("PortType", portType));
-
-        return JSONObjectUtil.toJsonString(data);
-    }
-
-    /**
-     * 获取tunnel Description
-     */
-    public String getDescriptionForTunnel(TunnelVO vo) {
-        DescriptionData data = new DescriptionData();
-
-        TunnelSwitchPortVO tunnelSwitchPortVOA = Q.New(TunnelSwitchPortVO.class)
+    public String getNodeUuid(TunnelVO vo, String sortTag) {
+        TunnelSwitchPortVO tunnelSwitch = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "A")
+                .eq(TunnelSwitchPortVO_.sortTag, sortTag)
                 .find();
-        TunnelSwitchPortVO tunnelSwitchPortVOZ = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, "Z")
+        return dbf.findByUuid(tunnelSwitch.getEndpointUuid(), EndpointVO.class).getNodeUuid();
+    }
+
+
+    /**
+     * 通过连接点获取可用的端口规格
+     */
+    public List<PortOfferingVO> getPortTypeByEndpoint(String endpointUuid) {
+
+        String sql ="SELECT t FROM PortOfferingVO t WHERE t.uuid IN (" +
+                "select DISTINCT sp.portType from SwitchPortVO sp, SwitchVO s where sp.switchUuid=s.uuid " +
+                "and s.endpointUuid=:endpointUuid and s.state=:switchState and sp.state=:state " +
+                "and sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid)) ";
+        return SQL.New(sql)
+                .param("state", SwitchPortState.Enabled)
+                .param("switchState", SwitchState.Enabled)
+                .param("endpointUuid", endpointUuid)
+                .list();
+    }
+
+    /**
+     * 通过连接点和端口规格获取可用的端口
+     */
+    public List<SwitchPortVO> getSwitchPortByType(String endpointUuid, String type) {
+        String sql = "SELECT sp FROM SwitchPortVO sp, SwitchVO s WHERE sp.switchUuid=s.uuid " +
+                "AND s.endpointUuid = :endpointUuid AND s.state=:switchState AND sp.state=:state AND sp.portType = :portType " +
+                "AND sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid) ";
+        return SQL.New(sql)
+                .param("state", SwitchPortState.Enabled)
+                .param("switchState", SwitchState.Enabled)
+                .param("portType", type)
+                .param("endpointUuid", endpointUuid)
+                .list();
+    }
+
+    /**
+     * 通过端口获取物理交换机的管理IP
+     */
+    public String getPhysicalSwitch(String switchPortUuid) {
+        String switcUuid = Q.New(SwitchPortVO.class).
+                eq(SwitchPortVO_.uuid, switchPortUuid)
+                .select(SwitchPortVO_.switchUuid)
+                .findValue();
+
+        String physicalSwitchUuid = Q.New(SwitchVO.class).
+                eq(SwitchVO_.uuid, switcUuid)
+                .select(SwitchVO_.physicalSwitchUuid).findValue();
+
+        String switchIp = Q.New(PhysicalSwitchVO.class).
+                eq(PhysicalSwitchVO_.uuid, physicalSwitchUuid).
+                select(PhysicalSwitchVO_.mIP).findValue();
+
+        if (switchIp == null)
+            throw new IllegalArgumentException("获取物理交换机IP失败");
+
+        return switchIp;
+    }
+
+    /**
+     * 根据节点找到所属区域
+     */
+    public String getZoneUuid(String nodeUuid) {
+        String zoneUuid = null;
+        ZoneNodeRefVO zoneNodeRefVO = Q.New(ZoneNodeRefVO.class)
+                .eq(ZoneNodeRefVO_.nodeUuid, nodeUuid)
                 .find();
-        String endpointNameA = dbf.findByUuid(tunnelSwitchPortVOA.getEndpointUuid(), EndpointVO.class).getName();
-        String endpointNameZ = dbf.findByUuid(tunnelSwitchPortVOZ.getEndpointUuid(), EndpointVO.class).getName();
-
-        data.add(new DescriptionItem("endpointNameA", endpointNameA));
-        data.add(new DescriptionItem("endpointNameZ", endpointNameZ));
-        data.add(new DescriptionItem("bandwidth", vo.getBandwidth().toString()));
-
-        return JSONObjectUtil.toJsonString(data);
-    }
-
-    /**
-     * 手动创建Tunnel的订单
-     */
-    public ProductInfoForOrder createBuyOrderForTunnelManual(TunnelVO vo, APICreateTunnelManualMsg msg) {
-        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
-        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
-        EndpointVO evoA = dbf.findByUuid(interfaceVOA.getEndpointUuid(), EndpointVO.class);
-        EndpointVO evoZ = dbf.findByUuid(interfaceVOZ.getEndpointUuid(), EndpointVO.class);
-
-        ProductInfoForOrder order = new ProductInfoForOrder();
-        order.setProductUuid(vo.getUuid());
-        order.setProductType(ProductType.TUNNEL);
-        order.setProductChargeModel(vo.getProductChargeModel());
-        order.setProductName(vo.getName());
-        order.setDuration(vo.getDuration());
-        order.setAccountUuid(vo.getOwnerAccountUuid());
-        order.setOpAccountUuid(msg.getSession().getAccountUuid());
-        order.setDescriptionData(getDescriptionForTunnel(vo));
-        order.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(), evoZ.getNodeUuid(), msg.getInnerConnectedEndpointUuid()));
-        order.setNotifyUrl(restf.getSendCommandUrl());
-        return order;
-    }
-
-    /**
-     * 创建Tunnel的订单
-     */
-    public ProductInfoForOrder createBuyOrderForTunnel(TunnelVO vo, APICreateTunnelMsg msg) {
-        EndpointVO evoA = dbf.findByUuid(msg.getEndpointAUuid(), EndpointVO.class);
-        EndpointVO evoZ = dbf.findByUuid(msg.getEndpointZUuid(), EndpointVO.class);
-
-        ProductInfoForOrder order = new ProductInfoForOrder();
-        order.setProductUuid(vo.getUuid());
-        order.setProductType(ProductType.TUNNEL);
-        order.setProductChargeModel(vo.getProductChargeModel());
-        order.setDuration(vo.getDuration());
-        order.setProductName(vo.getName());
-        order.setAccountUuid(vo.getOwnerAccountUuid());
-        order.setOpAccountUuid(msg.getSession().getAccountUuid());
-        order.setDescriptionData(getDescriptionForTunnel(vo));
-        order.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(), evoZ.getNodeUuid(), msg.getInnerConnectedEndpointUuid()));
-        order.setNotifyUrl(restf.getSendCommandUrl());
-        return order;
-    }
-
-    /**
-     * 创建interface的订单
-     */
-    public ProductInfoForOrder createBuyOrderForInterface(InterfaceVO vo, String portOfferingUuid, NotifyCallBackData callBack) {
-        ProductInfoForOrder order = new ProductInfoForOrder();
-        order.setProductChargeModel(vo.getProductChargeModel());
-        order.setDuration(vo.getDuration());
-        order.setProductName(vo.getName());
-        order.setProductUuid(vo.getUuid());
-        order.setProductType(ProductType.PORT);
-        order.setDescriptionData(getDescriptionForInterface(vo));
-        order.setCallBackData(RESTApiDecoder.dump(callBack));
-        order.setUnits(getInterfacePriceUnit(portOfferingUuid));
-        order.setAccountUuid(vo.getOwnerAccountUuid());
-
-        return order;
+        if (zoneNodeRefVO != null) {
+            zoneUuid = zoneNodeRefVO.getZoneUuid();
+        }
+        return zoneUuid;
     }
 }
