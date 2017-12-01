@@ -14,7 +14,8 @@ public class TicketVO_ {
     public static volatile SingularAttribute<TicketVO, String> uuid;
     public static volatile SingularAttribute<TicketVO, String> accountUuid;
     public static volatile SingularAttribute<TicketVO, String> userUuid;
-    public static volatile SingularAttribute<TicketVO, String> ticketTypeCode;
+    public static volatile SingularAttribute<TicketVO, String> adminUserUuid;
+    public static volatile SingularAttribute<TicketVO, String> ticketTypeUuid;
     public static volatile SingularAttribute<TicketVO, String> content;
     public static volatile SingularAttribute<TicketVO, String> contentExtra;
     public static volatile SingularAttribute<TicketVO, String> phone;

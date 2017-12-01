@@ -34,7 +34,7 @@ public class APICreateSolutionTunnelMsg extends  APIMessage {
     private String bandwidthOfferingUuid;
 
     @APIParam(emptyString = false,required = false,resourceType = InnerConnectedEndpointVO.class)
-    private String innerEndpointUuid;
+    private String innerConnectedEndpointUuid;
 
     @APIParam(maxLength = 32, required = false, resourceType = PortOfferingVO.class)
     private String portOfferingUuidA;
@@ -117,12 +117,12 @@ public class APICreateSolutionTunnelMsg extends  APIMessage {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
-    public String getInnerEndpointUuid() {
-        return innerEndpointUuid;
+    public String getInnerConnectedEndpointUuid() {
+        return innerConnectedEndpointUuid;
     }
 
-    public void setInnerEndpointUuid(String innerEndpointUuid) {
-        this.innerEndpointUuid = innerEndpointUuid;
+    public void setInnerConnectedEndpointUuid(String innerConnectedEndpointUuid) {
+        this.innerConnectedEndpointUuid = innerConnectedEndpointUuid;
     }
 
     public String getName() {

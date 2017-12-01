@@ -15,7 +15,7 @@ public class TicketRecordVO_ {
     public static volatile SingularAttribute<TicketRecordVO, String> ticketUuid;
     public static volatile SingularAttribute<TicketRecordVO, String> accountUuid;
     public static volatile SingularAttribute<TicketRecordVO, String> userUuid;
-    public static volatile SingularAttribute<TicketRecordVO, String> recordBy;
+    public static volatile SingularAttribute<TicketRecordVO, RecordBy> recordBy;
     public static volatile SingularAttribute<TicketRecordVO, String> content;
     public static volatile SingularAttribute<TicketRecordVO, TicketStatus> status;
     public static volatile SingularAttribute<TicketRecordVO, Timestamp> createDate;

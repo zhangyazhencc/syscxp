@@ -614,7 +614,7 @@ CREATE TABLE `SolutionTunnelVO` (
   `endpointUuidA` varchar(32) NOT NULL COMMENT '连接点A',
   `endpointUuidZ` varchar(32) NOT NULL COMMENT '连接点Z',
   `bandwidthOfferingUuid` varchar(32) NOT NULL COMMENT '带宽Uuid',
-  `innerEndpointUuid` varchar(32) DEFAULT NULL COMMENT '中间点UUID',
+  `innerConnectedEndpointUuid` varchar(32) DEFAULT NULL COMMENT '中间点UUID',
   PRIMARY KEY  (`uuid`),
   CONSTRAINT `fkSolutionTunnelVO` FOREIGN KEY (`solutionUuid`) REFERENCES `SolutionVO` (`uuid`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

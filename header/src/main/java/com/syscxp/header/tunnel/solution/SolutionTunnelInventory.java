@@ -21,6 +21,7 @@ public class SolutionTunnelInventory {
     private String bandwidthOfferingUuid;
     private String endpointNameA;
     private String endpointNameZ;
+    private String innerConnectedEndpointName;
 
     public static SolutionTunnelInventory valueOf(SolutionTunnelVO vo) {
         SolutionTunnelInventory inv = new SolutionTunnelInventory();
@@ -36,6 +37,9 @@ public class SolutionTunnelInventory {
         }
         if(vo.getEndpointVOZ() != null){
             inv.setEndpointNameZ(vo.getEndpointVOZ().getName());
+        }
+        if(vo.getInnerConnectedEndpointVO() != null){
+            inv.setInnerConnectedEndpointName(vo.getInnerConnectedEndpointVO().getName());
         }
         inv.setBandwidthOfferingUuid(vo.getBandwidthOfferingUuid());
 
@@ -128,5 +132,13 @@ public class SolutionTunnelInventory {
 
     public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
+    }
+
+    public String getInnerConnectedEndpointName() {
+        return innerConnectedEndpointName;
+    }
+
+    public void setInnerConnectedEndpointName(String innerConnectedEndpointName) {
+        this.innerConnectedEndpointName = innerConnectedEndpointName;
     }
 }
