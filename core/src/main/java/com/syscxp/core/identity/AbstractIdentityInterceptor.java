@@ -400,12 +400,11 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
         }
 
         private void innerCredentialCheck() {
-            if (InnerMessageHelper.validSignature(msg)) {
-                return;
+            if (!InnerMessageHelper.validSignature(msg)) {
+                throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
+                        String.format("The parameters of the message[%s] are inconsistent ", msg.getMessageName())
+                ));
             }
-            throw new ApiMessageInterceptionException(errf.instantiateErrorCode(IdentityErrors.INVALID_SESSION,
-                    String.format("The parameters of the message[%s] are inconsistent ", msg.getMessageName())
-            ));
         }
 
         private void sessionCheck() {

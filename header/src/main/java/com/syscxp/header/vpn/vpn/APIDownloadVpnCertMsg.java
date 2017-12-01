@@ -1,7 +1,6 @@
 package com.syscxp.header.vpn.vpn;
 
 import com.syscxp.header.identity.Action;
-import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;

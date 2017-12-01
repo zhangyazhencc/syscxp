@@ -21,7 +21,7 @@ public class APICreateVpnMsg extends APIVpnMessage {
     private String interfaceUuid;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private Integer duration;
-    @APIParam
+    @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private Integer vlan;
 
     public Integer getVlan() {

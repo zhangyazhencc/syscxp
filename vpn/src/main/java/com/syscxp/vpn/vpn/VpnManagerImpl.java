@@ -26,6 +26,7 @@ import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.host.HostStatus;
 import com.syscxp.header.identity.AccountType;
+import com.syscxp.header.identity.IdentityErrors;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
@@ -58,6 +59,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.temporal.TemporalAdjusters;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -136,6 +138,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void handle(APIDownloadVpnCertMsg msg) {
+        // todo
+
         final APIDownloadVpnCertEvent evt = new APIDownloadVpnCertEvent(msg.getId());
         VpnCertVO vpnCert = Q.New(VpnCertVO.class).eq(VpnCertVO_.uuid, msg.getUuid()).find();
         evt.setInventory(VpnCertInventory.valueOf(vpnCert));
@@ -144,9 +148,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void handle(APIGetVpnCertMsg msg) {
         APIGetVpnCertReply reply = new APIGetVpnCertReply();
-
-        VpnCertVO vpnCert = Q.New(VpnCertVO.class).eq(VpnCertVO_.vpnUuid, msg.getUuid()).find();
-
+        String vpnUuid = Q.New(VpnVO.class).eq(VpnVO_.sid, msg.getSid()).select(VpnVO_.uuid).findValue();
+        VpnCertVO vpnCert = Q.New(VpnCertVO.class).eq(VpnCertVO_.vpnUuid, vpnUuid).find();
         reply.setInventory(VpnCertInventory.valueOf(vpnCert));
         bus.reply(msg, reply);
     }
@@ -691,26 +694,28 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void validate(APIDownloadVpnCertMsg msg) {
 
-        VpnCertVO vpnCert = Q.New(VpnCertVO.class).eq(VpnCertVO_.uuid, msg.getUuid()).find();
-
     }
 
     private void validate(APIGetVpnCertMsg msg) {
-
-        VpnCertVO vpnCert = Q.New(VpnCertVO.class).eq(VpnCertVO_.vpnUuid, msg.getUuid()).find();
         VpnVO vpn = Q.New(VpnVO.class).eq(VpnVO_.sid, msg.getSid()).find();
 
-
+        if (!InnerMessageHelper.validSignature(msg, vpn.getCertKey())) {
+            throw new ApiMessageInterceptionException(errf.stringToInvalidArgumentError(
+                    String.format("The parameters of the message[%s] are inconsistent ", msg.getMessageName())
+            ));
+        }
     }
 
     private void validate(APIUpdateVpnBandwidthMsg msg) {
-        LocalDateTime dateTime =
-                LocalDate.now().withDayOfMonth(LocalDate.MIN.getDayOfMonth()).atTime(LocalTime.MIN);
-        Long times = Q.New(VpnMotifyRecordVO.class).eq(VpnMotifyRecordVO_.vpnUuid, msg.getUuid())
-                .gte(VpnMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime)).count();
-        Integer maxModifies =
-                Q.New(VpnVO.class).eq(VpnVO_.uuid, msg.getUuid()).select(VpnVO_.maxModifies)
-                        .findValue();
+        LocalDateTime dateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atTime(LocalTime.MIN);
+        Long times = Q.New(VpnMotifyRecordVO.class)
+                .eq(VpnMotifyRecordVO_.vpnUuid, msg.getUuid())
+                .gte(VpnMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime))
+                .count();
+        Integer maxModifies = Q.New(VpnVO.class)
+                .eq(VpnVO_.uuid, msg.getUuid())
+                .select(VpnVO_.maxModifies)
+                .findValue();
 
         if (times >= maxModifies) {
             throw new OperationFailureException(
@@ -720,16 +725,20 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
 
     private void validate(APIUpdateVpnMsg msg) {
-        Q q = Q.New(VpnVO.class).eq(VpnVO_.name, msg.getName());
+        if (!msg.getSession().isAdminSession() && msg.getMaxModifies() != null) {
+            throw new ApiMessageInterceptionException(
+                    argerr("The account[name:%s] has no permission modify.", msg.getName()));
+        }
+
+        Q q = Q.New(VpnVO.class).eq(VpnVO_.name, msg.getName()).notEq(VpnVO_.uuid, msg.getUuid());
         if (q.isExists())
             throw new ApiMessageInterceptionException(
                     argerr("The Vpn[name:%s] is already exist.", msg.getName()));
     }
 
     private void validate(APIQueryVpnMsg msg) {
-        if (msg.getSession().getType() != AccountType.SystemAdmin) {
-            msg.addQueryCondition(VpnVO_.accountUuid.toString(), QueryOp.EQ,
-                    msg.getSession().getAccountUuid());
+        if (!msg.getSession().isAdminSession()) {
+            msg.addQueryCondition(VpnVO_.accountUuid.toString(), QueryOp.EQ, msg.getSession().getAccountUuid());
         }
     }
 
@@ -741,7 +750,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                             msg.getSession().getAccountUuid()));
         }
         Q q = Q.New(VpnVO.class).eq(VpnVO_.name, msg.getName()).eq(VpnVO_.accountUuid, msg.getAccountUuid());
-        if (q.isExists()){
+        if (q.isExists()) {
             throw new ApiMessageInterceptionException(
                     argerr("The name[%s] of the vpn can not repeat.", msg.getName()));
         }
@@ -755,9 +764,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     argerr("The host of the interface[uuid:%s] does not exist.", msg.getInterfaceUuid()));
         }
         q = Q.New(VpnVO.class).eq(VpnVO_.hostUuid, hostUuid).eq(VpnVO_.vlan, msg.getVlan());
-        if (q.isExists()){
+        if (q.isExists()) {
             throw new ApiMessageInterceptionException(
-                    argerr("The vlan[%s] of the host[uuid:%s] already exist.", msg.getVlan(), hostUuid));
+                    argerr("The vlan[%s] of the host[uuid:%s] is already exist.", msg.getVlan(), hostUuid));
         }
         msg.setHostUuid(hostUuid);
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
