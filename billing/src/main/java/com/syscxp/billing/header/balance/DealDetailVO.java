@@ -62,6 +62,17 @@ public class DealDetailVO {
     @Column
     private String opAccountUuid;
 
+    @Column
+    private String orderUuid;
+
+    public String getOrderUuid() {
+        return orderUuid;
+    }
+
+    public void setOrderUuid(String orderUuid) {
+        this.orderUuid = orderUuid;
+    }
+
     public String getOutTradeNO() {
         return outTradeNO;
     }

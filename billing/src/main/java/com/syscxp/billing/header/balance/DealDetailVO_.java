@@ -10,18 +10,19 @@ import java.sql.Timestamp;
 @StaticMetamodel(DealDetailVO.class)
 public class DealDetailVO_ {
 
-    public static volatile SingularAttribute<RenewVO, String> uuid;
-    public static volatile SingularAttribute<RenewVO, String> accountUuid;
-    public static volatile SingularAttribute<RenewVO, String> opAccountUuid;
-    public static volatile SingularAttribute<RenewVO, DealType> type;
-    public static volatile SingularAttribute<RenewVO, BigDecimal> expend;
-    public static volatile SingularAttribute<RenewVO, BigDecimal> income;
-    public static volatile SingularAttribute<RenewVO, DealWay> dealWay;
-    public static volatile SingularAttribute<RenewVO, DealState> state;
-    public static volatile SingularAttribute<RenewVO, Timestamp> finishTime;
-    public static volatile SingularAttribute<RenewVO, BigDecimal> balance;
-    public static volatile SingularAttribute<RenewVO, Timestamp> createDate;
-    public static volatile SingularAttribute<RenewVO, Timestamp> lastOpDate;
-    public static volatile SingularAttribute<RenewVO, String> outTradeNO;
-    public static volatile SingularAttribute<RenewVO, String> tradeNO;
+    public static volatile SingularAttribute<DealDetailVO, String> uuid;
+    public static volatile SingularAttribute<DealDetailVO, String> accountUuid;
+    public static volatile SingularAttribute<DealDetailVO, String> opAccountUuid;
+    public static volatile SingularAttribute<DealDetailVO, DealType> type;
+    public static volatile SingularAttribute<DealDetailVO, BigDecimal> expend;
+    public static volatile SingularAttribute<DealDetailVO, BigDecimal> income;
+    public static volatile SingularAttribute<DealDetailVO, DealWay> dealWay;
+    public static volatile SingularAttribute<DealDetailVO, DealState> state;
+    public static volatile SingularAttribute<DealDetailVO, Timestamp> finishTime;
+    public static volatile SingularAttribute<DealDetailVO, BigDecimal> balance;
+    public static volatile SingularAttribute<DealDetailVO, Timestamp> createDate;
+    public static volatile SingularAttribute<DealDetailVO, Timestamp> lastOpDate;
+    public static volatile SingularAttribute<DealDetailVO, String> outTradeNO;
+    public static volatile SingularAttribute<DealDetailVO, String> tradeNO;
+    public static volatile SingularAttribute<DealDetailVO, String> orderUuid;
 }
