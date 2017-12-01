@@ -147,18 +147,16 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     private void handle(APIUpdateSolutionVpnMsg msg) {
 
         SolutionVpnVO vo = dbf.findByUuid(msg.getUuid(), SolutionVpnVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
+
+        solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()).add(msg.getCost()));
+        dbf.getEntityManager().merge(solutionVO);
+
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setCost(msg.getCost());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDuration(msg.getDuration());
         dbf.getEntityManager().merge(vo);
-
-        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
-        if(solutionVO != null){
-            BigDecimal totalCost = totalCost(solutionVO.getUuid());
-            solutionVO.setTotalCost(totalCost);
-        }
-        dbf.getEntityManager().merge(solutionVO);
 
         APIUpdateSolutionVpnEvent event = new APIUpdateSolutionVpnEvent(msg.getId());
         event.setVpnInventory(SolutionVpnInventory.valueOf(vo));
@@ -171,25 +169,21 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     private void handle(APIUpdateSolutionTunnelMsg msg) {
 
         SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(), SolutionTunnelVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
+
+        solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()).add(msg.getCost()));
+        dbf.getEntityManager().merge(solutionVO);
+
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setCost(msg.getCost());
         vo.setProductChargeModel(msg.getProductChargeModel());
         vo.setDuration(msg.getDuration());
         dbf.getEntityManager().merge(vo);
 
-        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
-        if(solutionVO != null){
-            BigDecimal totalCost = totalCost(solutionVO.getUuid());
-            solutionVO.setTotalCost(totalCost);
-        }
-        dbf.getEntityManager().merge(solutionVO);
-
-
         APIUpdateSolutionTunnelEvent event = new APIUpdateSolutionTunnelEvent(msg.getId());
         event.setTunnelInventory(SolutionTunnelInventory.valueOf(vo));
         event.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
         bus.publish(event);
-
     }
 
     private void handle(APIUpdateSolutionMsg msg) {
@@ -302,8 +296,8 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setEndpointUuidZ(msg.getEndpointUuidZ());
         vo.setName(msg.getName());
 
-        if(msg.getInnerEndpointUuid() != null){
-            vo.setInnerEndpointUuid(msg.getInnerEndpointUuid());
+        if(msg.getInnerConnectedEndpointUuid() != null){
+            vo.setInnerConnectedEndpointUuid(msg.getInnerConnectedEndpointUuid());
         }
 
         BigDecimal tunnelCost = msg.getCost();
@@ -434,7 +428,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         if(endpointVOA != null && endpointVOZ !=null){
             pmsg.setUnits(new CountPriveHelper(dbf).getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
-                    endpointVOZ.getNodeUuid(), vo.getInnerEndpointUuid()));
+                    endpointVOZ.getNodeUuid(), vo.getInnerConnectedEndpointUuid()));
         }
 
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
@@ -443,7 +437,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     }
 
 
-
+    //计算方案总价
     private BigDecimal totalCost(String solutionUuid){
         BigDecimal totalCost = new BigDecimal(0);
 
