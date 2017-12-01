@@ -2,7 +2,7 @@ package com.syscxp.header.vpn.agent;
 
 public class VpnPortMsg extends VpnMessage {
     private String vpnVlan;
-    private String tunnelInterface;
+    private String interfaceName;
     private String vpnPort;
     private String command;
 
@@ -14,12 +14,12 @@ public class VpnPortMsg extends VpnMessage {
         this.vpnVlan = vpnVlan;
     }
 
-    public String getTunnelInterface() {
-        return tunnelInterface;
+    public String getInterfaceName() {
+        return interfaceName;
     }
 
-    public void setTunnelInterface(String tunnelInterface) {
-        this.tunnelInterface = tunnelInterface;
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
     }
 
     public String getVpnPort() {

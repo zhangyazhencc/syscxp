@@ -6,7 +6,7 @@ import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.vpn.VpnConstant;
 
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"read"})
-public class APIGetVpnPriceMsg extends APISyncCallMessage {
+public class APIGetVpnPriceMsg extends APIVpnMessage {
     @APIParam
     private String bandwidthOfferingUuid;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})

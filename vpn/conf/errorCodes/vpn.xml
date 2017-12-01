@@ -11,5 +11,10 @@
         <description>An error happened when call billing</description>
     </code>
 
+    <code>
+        <id>1002</id>
+        <description>An error happened when init vpn</description>
+    </code>
+
 </error>
 

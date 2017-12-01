@@ -10,6 +10,6 @@ public class VpnMotifyRecordVO_ {
     public static volatile SingularAttribute<VpnMotifyRecordVO, String> uuid;
     public static volatile SingularAttribute<VpnMotifyRecordVO, String> vpnUuid;
     public static volatile SingularAttribute<VpnMotifyRecordVO, String> opAccountUuid;
-    public static volatile SingularAttribute<VpnMotifyRecordVO, MotifyType> motifyType;
+    public static volatile SingularAttribute<VpnMotifyRecordVO, String> motifyType;
     public static volatile SingularAttribute<VpnMotifyRecordVO, Timestamp> createDate;
 }

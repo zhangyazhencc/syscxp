@@ -85,5 +85,15 @@
         <id>1016</id>
         <description>Cannot do an IO operation(e.g. network IO error, file IO error)</description>
     </code>
+
+    <code>
+        <id>1017</id>
+        <description>an external error</description>
+    </code>
+
+    <code>
+        <id>1018</id>
+        <description>Call billing failed</description>
+    </code>
 </error>
 

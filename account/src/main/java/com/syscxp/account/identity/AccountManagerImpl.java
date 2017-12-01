@@ -402,12 +402,17 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             }
         } else {
             SessionVO session = dbf.findByUuid(msg.getSessionUuid(), SessionVO.class);
-            if (session != null && current.after(session.getExpiredDate())) {
+            if (session == null) {
+                valid = false;
+            } else if (current.after(session.getExpiredDate())) {
                 valid = false;
                 identiyInterceptor.logOutSession(session.getUuid());
-            } else if (session == null) {
-                valid = false;
+            } else {
+                s = session.toSessionInventory();
             }
+
+
+
         }
 
         if(valid) {

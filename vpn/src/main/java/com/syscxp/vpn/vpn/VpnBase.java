@@ -3,51 +3,35 @@ package com.syscxp.vpn.vpn;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.ChainTask;
 import com.syscxp.core.thread.SyncTaskChain;
 import com.syscxp.core.thread.ThreadFacade;
-import com.syscxp.header.Constants;
 import com.syscxp.header.core.NoErrorCompletion;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.header.rest.JsonAsyncRESTCallback;
-import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.*;
 import com.syscxp.header.vpn.vpn.VpnVO;
-import com.syscxp.utils.URLBuilder;
 import com.syscxp.vpn.vpn.VpnCommands.*;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import static com.syscxp.core.Platform.operr;
-
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
-public class VpnBase implements Vpn {
+public class VpnBase extends AbstractVpn {
 
     @Autowired
     private CloudBus bus;
-    @Autowired
-    private RESTFacade restf;
+
     @Autowired
     private DatabaseFacade dbf;
     @Autowired
     private ThreadFacade thdf;
-    @Autowired
-    private ErrorFacade errf;
 
-    protected VpnVO self;
-    protected final String id;
+
     // ///////////////////// REST URL //////////////////////////
-    private String baseUrl;
     private String createCertPath;
     private String vpnConfPath;
     private String rateLimitingPath;
@@ -59,95 +43,21 @@ public class VpnBase implements Vpn {
     private String loginInfoPath;
     private String initVpnPath;
 
-    private String scheme = VpnGlobalProperty.AGENT_URL_SCHEME;
-    private int port = VpnGlobalProperty.AGENT_PORT;
-    private String rootPath = VpnGlobalProperty.AGENT_URL_ROOT_PATH;
 
     protected VpnBase(VpnVO self) {
-        this.self = self;
-        id = "Vpn-" + self.getUuid();
-
-        if (!"".equals(rootPath)) {
-            baseUrl = URLBuilder.buildUrl(scheme, self.getVpnHost().getHostIp(), port, rootPath);
-        } else {
-            baseUrl = URLBuilder.buildUrl(scheme, self.getVpnHost().getHostIp(), port);
-        }
-        createCertPath = URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.CREATE_CERT_PATH);
-        vpnConfPath = URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.VPN_CONF_PATH);
-        rateLimitingPath = URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.RATE_LIMITING_PATH);
-        vpnPortPath = URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.VPN_PORT_PATH);
-        vpnServicePath = URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.VPN_SERVICE_PATH);
-        startAllPath = URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.START_ALL_PATH);
-        destroyVpnPath = URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.DESTROY_VPN_PATH);
-        clientInfoPath = URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.CLIENT_INFO_PATH);
-        loginInfoPath = URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.LOGIN_INFO_PATH);
-        initVpnPath = URLBuilder.buildUrlFromBase(baseUrl, VpnConstant.INIT_VPN_PATH);
+        super(self);
+        createCertPath = VpnConstant.CREATE_CERT_PATH;
+        vpnConfPath = VpnConstant.VPN_CONF_PATH;
+        rateLimitingPath = VpnConstant.RATE_LIMITING_PATH;
+        vpnPortPath = VpnConstant.VPN_PORT_PATH;
+        vpnServicePath = VpnConstant.VPN_SERVICE_PATH;
+        startAllPath = VpnConstant.START_ALL_PATH;
+        destroyVpnPath = VpnConstant.DESTROY_VPN_PATH;
+        clientInfoPath = VpnConstant.CLIENT_INFO_PATH;
+        loginInfoPath = VpnConstant.LOGIN_INFO_PATH;
+        initVpnPath = VpnConstant.INIT_VPN_PATH;
     }
 
-    class Http<T> {
-        String path;
-        AgentCommand cmd;
-        Class<T> responseClass;
-        String commandStr;
-        TimeUnit unit;
-        Long timeout;
-
-        public Http(String path, String cmd, Class<T> rspClz, TimeUnit unit, Long timeout) {
-            this.path = path;
-            this.commandStr = cmd;
-            this.responseClass = rspClz;
-            this.unit = unit;
-            this.timeout = timeout;
-        }
-
-        public Http(String path, AgentCommand cmd, Class<T> rspClz) {
-            this.path = path;
-            this.cmd = cmd;
-            this.responseClass = rspClz;
-        }
-
-        void call(ReturnValueCompletion<T> completion) {
-            Map<String, String> header = new HashMap<>();
-            header.put(Constants.AGENT_HTTP_HEADER_RESOURCE_UUID, self.getUuid());
-            if (commandStr != null) {
-                restf.asyncJsonPost(path, commandStr, header, new JsonAsyncRESTCallback<T>(completion) {
-                    @Override
-                    public void fail(ErrorCode err) {
-                        completion.fail(err);
-                    }
-
-                    @Override
-                    public void success(T ret) {
-                        completion.success(ret);
-                    }
-
-                    @Override
-                    public Class<T> getReturnClass() {
-                        return responseClass;
-                    }
-                }, unit, timeout);
-            } else {
-                restf.asyncJsonPost(path, cmd, header, new JsonAsyncRESTCallback<T>(completion) {
-                    @Override
-                    public void fail(ErrorCode err) {
-                        completion.fail(err);
-                    }
-
-                    @Override
-                    public void success(T ret) {
-                        completion.success(ret);
-                    }
-
-                    @Override
-                    public Class<T> getReturnClass() {
-                        return responseClass;
-                    }
-                });
-            }
-        }
-    }
-
-    @Override
     @MessageSafe
     public void handleMessage(Message msg) {
         if (msg instanceof APIMessage) {
@@ -225,20 +135,17 @@ public class VpnBase implements Vpn {
         InitVpnCmd cmd = new InitVpnCmd();
         cmd.vpnuuid = msg.getVpnUuid();
         cmd.hostip = msg.getHostIp();
-        cmd.ddnport = msg.getTunnelInterface();
+        cmd.ddnport = msg.getInterfaceName();
         cmd.vpnport = msg.getVpnPort();
         cmd.vpnvlanid = msg.getVpnVlan();
         cmd.username = msg.getUsername();
         cmd.passwd = msg.getPasswd();
         cmd.speed = msg.getSpeed();
 
-        new Http<>(initVpnPath, cmd, InitVpnRsp.class).call(new ReturnValueCompletion<InitVpnRsp>(msg, completion) {
+        httpCall(initVpnPath, cmd, InitVpnRsp.class, new ReturnValueCompletion<InitVpnRsp>(msg, completion) {
             @Override
             public void success(InitVpnRsp ret) {
-                if (ret.isSuccess()) {
-                } else {
-                    reply.setError(operr(ret.getError()));
-                }
+                reply.setStatus(ret.vpnSatus);
                 bus.reply(msg, reply);
                 completion.done();
             }
@@ -285,14 +192,10 @@ public class VpnBase implements Vpn {
         CreateCertReply reply = new CreateCertReply();
         CreateCertCmd cmd = new CreateCertCmd();
         cmd.vpnuuid = msg.getVpnUuid();
-        new Http<>(createCertPath, cmd, CreateCertRsp.class).call(new ReturnValueCompletion<CreateCertRsp>(msg, completion) {
+        httpCall(createCertPath, cmd, CreateCertRsp.class, new ReturnValueCompletion<CreateCertRsp>(msg, completion) {
             @Override
             public void success(CreateCertRsp ret) {
-                if (ret.isSuccess()) {
-                    reply.setVpnCert(ret.vpnCert);
-                } else {
-                    reply.setError(operr(ret.getError()));
-                }
+                reply.setVpnCert(ret.vpnCert);
                 bus.reply(msg, reply);
                 completion.done();
             }
@@ -311,19 +214,15 @@ public class VpnBase implements Vpn {
 
         StartAllCmd cmd = new StartAllCmd();
         cmd.vpnuuid = msg.getVpnUuid();
-        cmd.ddnport = msg.getTunnelInterface();
+        cmd.ddnport = msg.getInterfaceName();
         cmd.vpnport = msg.getVpnPort();
         cmd.vpnvlanid = msg.getVpnVlan();
         cmd.speed = msg.getSpeed();
 
-        new Http<>(startAllPath, cmd, StartAllRsp.class).call(new ReturnValueCompletion<StartAllRsp>(msg) {
+        httpCall(startAllPath, cmd, StartAllRsp.class, new ReturnValueCompletion<StartAllRsp>(msg) {
             @Override
             public void success(StartAllRsp ret) {
-                if (ret.isSuccess()) {
-                    reply.setStatus(ret.vpnSatus);
-                } else {
-                    reply.setError(operr(ret.getError()));
-                }
+                reply.setStatus(ret.vpnSatus);
                 bus.reply(msg, reply);
             }
 
@@ -340,17 +239,13 @@ public class VpnBase implements Vpn {
 
         DestroyVpnCmd cmd = new DestroyVpnCmd();
         cmd.vpnuuid = msg.getVpnUuid();
-        cmd.ddnport = msg.getTunnelInterface();
+        cmd.ddnport = msg.getInterfaceName();
         cmd.vpnport = msg.getVpnPort();
         cmd.vpnvlanid = msg.getVpnVlan();
-        new Http<>(destroyVpnPath, cmd, DestroyVpnRsp.class).call(new ReturnValueCompletion<DestroyVpnRsp>(msg) {
+        httpCall(destroyVpnPath, cmd, DestroyVpnRsp.class, new ReturnValueCompletion<DestroyVpnRsp>(msg) {
             @Override
             public void success(DestroyVpnRsp ret) {
-                if (ret.isSuccess()) {
-                    reply.setStatus(ret.vpnSatus);
-                } else {
-                    reply.setError(operr(ret.getError()));
-                }
+                reply.setStatus(ret.vpnSatus);
                 bus.reply(msg, reply);
             }
 
@@ -371,14 +266,10 @@ public class VpnBase implements Vpn {
         cmd.vpnvlanid = msg.getVpnVlan();
         cmd.command = msg.getCommand();
 
-        new Http<>(vpnServicePath, cmd, VpnServiceRsp.class).call(new ReturnValueCompletion<VpnServiceRsp>(msg) {
+        httpCall(vpnServicePath, cmd, VpnServiceRsp.class, new ReturnValueCompletion<VpnServiceRsp>(msg) {
             @Override
             public void success(VpnServiceRsp ret) {
-                if (ret.isSuccess()) {
-                    reply.setStatus(ret.vpnSatus);
-                } else {
-                    reply.setError(operr(ret.getError()));
-                }
+                reply.setStatus(ret.vpnSatus);
                 bus.reply(msg, reply);
             }
 
@@ -398,14 +289,10 @@ public class VpnBase implements Vpn {
         cmd.vpnport = msg.getVpnPort();
         cmd.speed = msg.getSpeed();
         cmd.command = msg.getCommand();
-        new Http<>(rateLimitingPath, cmd, RateLimitingRsp.class).call(new ReturnValueCompletion<RateLimitingRsp>(msg) {
+        httpCall(rateLimitingPath, cmd, RateLimitingRsp.class, new ReturnValueCompletion<RateLimitingRsp>(msg) {
             @Override
             public void success(RateLimitingRsp ret) {
-                if (ret.isSuccess()) {
-                    reply.setVpnLimit(ret.vpnLimit);
-                } else {
-                    reply.setError(operr(ret.getError()));
-                }
+                reply.setVpnLimit(ret.vpnLimit);
                 bus.reply(msg, reply);
             }
 
@@ -425,14 +312,10 @@ public class VpnBase implements Vpn {
         cmd.vpnport = msg.getVpnPort();
         cmd.hostip = msg.getHostIp();
 
-        new Http<>(vpnConfPath, cmd, VpnConfRsp.class).call(new ReturnValueCompletion<VpnConfRsp>(msg) {
+        httpCall(vpnConfPath, cmd, VpnConfRsp.class, new ReturnValueCompletion<VpnConfRsp>(msg) {
             @Override
             public void success(VpnConfRsp ret) {
-                if (ret.isSuccess()) {
-                    reply.setVpnSucc(ret.vpnSucc);
-                } else {
-                    reply.setError(operr(ret.getError()));
-                }
+                reply.setVpnSucc(ret.vpnSucc);
                 bus.reply(msg, reply);
             }
 
@@ -449,19 +332,15 @@ public class VpnBase implements Vpn {
         VpnPortReply reply = new VpnPortReply();
 
         VpnPortCmd cmd = new VpnPortCmd();
-        cmd.vpnport = msg.getVpnPort();
-        cmd.ddnport = msg.getTunnelInterface();
+        cmd.vpnvlanid = msg.getVpnVlan();
+        cmd.ddnport = msg.getInterfaceName();
         cmd.vpnport = msg.getVpnPort();
         cmd.command = msg.getCommand();
 
-        new Http<>(vpnPortPath, cmd, VpnPortRsp.class).call(new ReturnValueCompletion<VpnPortRsp>(msg) {
+        httpCall(vpnPortPath, cmd, VpnPortRsp.class, new ReturnValueCompletion<VpnPortRsp>(msg) {
             @Override
             public void success(VpnPortRsp ret) {
-                if (ret.isSuccess()) {
-                    reply.setStatus(ret.vpnSatus);
-                } else {
-                    reply.setError(operr(ret.getError()));
-                }
+                reply.setStatus(ret.vpnSatus);
                 bus.reply(msg, reply);
             }
 
@@ -479,19 +358,15 @@ public class VpnBase implements Vpn {
         ClientInfoCmd cmd = new ClientInfoCmd();
         cmd.vpnuuid = msg.getVpnUuid();
 
-        new Http<>(clientInfoPath, cmd, ClientInfoRsp.class).call(new ReturnValueCompletion<ClientInfoRsp>(msg) {
+        httpCall(clientInfoPath, cmd, ClientInfoRsp.class, new ReturnValueCompletion<ClientInfoRsp>(msg) {
             @Override
             public void success(ClientInfoRsp ret) {
-                if (ret.isSuccess()) {
-                    CertInventory inventory = new CertInventory();
-                    inventory.setCaCert(ret.ca_crt);
-                    inventory.setClientCert(ret.client_crt);
-                    inventory.setClientConf(ret.client_conf);
-                    inventory.setClientKey(ret.client_key);
-                    reply.setInventory(inventory);
-                } else {
-                    reply.setError(operr(ret.getError()));
-                }
+                CertInfo certInfo = new CertInfo();
+                certInfo.setCaCert(ret.ca_crt);
+                certInfo.setClientCert(ret.client_crt);
+                certInfo.setClientConf(ret.client_conf);
+                certInfo.setClientKey(ret.client_key);
+                reply.setCertInfo(certInfo);
                 bus.reply(msg, reply);
             }
 
@@ -507,14 +382,10 @@ public class VpnBase implements Vpn {
         LoginInfoReply reply = new LoginInfoReply();
 
         LoginInfoCmd cmd = new LoginInfoCmd();
-        new Http<>(loginInfoPath, cmd, LoginInfoRsp.class).call(new ReturnValueCompletion<LoginInfoRsp>(msg) {
+        httpCall(loginInfoPath, cmd, LoginInfoRsp.class, new ReturnValueCompletion<LoginInfoRsp>(msg) {
             @Override
             public void success(LoginInfoRsp ret) {
-                if (ret.isSuccess()) {
-                    reply.setPasswdfile(ret.passwdfile);
-                } else {
-                    reply.setError(operr(ret.getError()));
-                }
+                reply.setPasswdfile(ret.passwdfile);
                 bus.reply(msg, reply);
             }
 
@@ -525,4 +396,6 @@ public class VpnBase implements Vpn {
             }
         });
     }
+
+
 }

@@ -13,6 +13,7 @@ public class HostInterfaceInventory {
     private String name;
     private String hostUuid;
     private String endpointUuid;
+    private String interfaceUuid;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -22,6 +23,7 @@ public class HostInterfaceInventory {
         inv.setName(vo.getName());
         inv.setHostUuid(vo.getHostUuid());
         inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setInterfaceUuid(vo.getInterfaceUuid());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
@@ -33,6 +35,14 @@ public class HostInterfaceInventory {
             invs.add(HostInterfaceInventory.valueOf(vo));
         }
         return invs;
+    }
+
+    public String getInterfaceUuid() {
+        return interfaceUuid;
+    }
+
+    public void setInterfaceUuid(String interfaceUuid) {
+        this.interfaceUuid = interfaceUuid;
     }
 
     public String getUuid() {

@@ -4,7 +4,7 @@ package com.syscxp.header.vpn.agent;
 public class DestroyVpnMsg extends VpnMessage {
     private String vpnVlan;
     private String vpnPort;
-    private String tunnelInterface;
+    private String interfaceName;
 
     public String getVpnVlan() {
         return vpnVlan;
@@ -22,11 +22,11 @@ public class DestroyVpnMsg extends VpnMessage {
         this.vpnPort = vpnPort;
     }
 
-    public String getTunnelInterface() {
-        return tunnelInterface;
+    public String getInterfaceName() {
+        return interfaceName;
     }
 
-    public void setTunnelInterface(String tunnelInterface) {
-        this.tunnelInterface = tunnelInterface;
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
     }
 }

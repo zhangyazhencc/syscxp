@@ -12,6 +12,16 @@ public class APICreateHostInterfaceMsg extends APIMessage {
     private String hostUuid;
     @APIParam(emptyString = false)
     private String endpointUuid;
+    @APIParam(emptyString = false)
+    private String interfaceUuid;
+
+    public String getInterfaceUuid() {
+        return interfaceUuid;
+    }
+
+    public void setInterfaceUuid(String interfaceUuid) {
+        this.interfaceUuid = interfaceUuid;
+    }
 
     public String getHostUuid() {
         return hostUuid;

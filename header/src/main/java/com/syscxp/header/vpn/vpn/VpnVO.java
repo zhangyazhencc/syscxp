@@ -28,11 +28,9 @@ public class VpnVO {
     @Column
     private String bandwidthOfferingUuid;
     @Column
-    private String endpointUuid;
+    private String interfaceUuid;
     @Column
     private Integer port;
-    @Column
-    private String tunnelInterface;
     @Column
     private Integer vlan;
     @Column
@@ -62,14 +60,6 @@ public class VpnVO {
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
-    }
-
-    public String getTunnelInterface() {
-        return tunnelInterface;
-    }
-
-    public void setTunnelInterface(String tunnelInterface) {
-        this.tunnelInterface = tunnelInterface;
     }
 
     public void setHostUuid(String hostUuid) {
@@ -180,12 +170,12 @@ public class VpnVO {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public String getInterfaceUuid() {
+        return interfaceUuid;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setInterfaceUuid(String interfaceUuid) {
+        this.interfaceUuid = interfaceUuid;
     }
 
     public VpnStatus getStatus() {
