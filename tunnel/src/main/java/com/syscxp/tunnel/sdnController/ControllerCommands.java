@@ -13,6 +13,7 @@ public class ControllerCommands {
      * 启动/停止监控命令
      */
     public static class TunnelMonitorCommand {
+        private String tunnel_id;
         private List<TunnelMonitorSdn> sdnConfig;
         private List<TunnelMonitorMpls> mplsConfig;
 
@@ -22,11 +23,12 @@ public class ControllerCommands {
          * @param mplsConfigList mpls交换机命令
          * @return 启动监控机命令
          */
-        public static TunnelMonitorCommand valueOf(List<TunnelMonitorSdn> sdnConfigList, List<TunnelMonitorMpls> mplsConfigList) {
+        public static TunnelMonitorCommand valueOf(String tunnel_id,List<TunnelMonitorSdn> sdnConfigList, List<TunnelMonitorMpls> mplsConfigList) {
 
             TunnelMonitorCommand tunnelMonitorCmd = new TunnelMonitorCommand();
             tunnelMonitorCmd.setSdnConfig(sdnConfigList);
             tunnelMonitorCmd.setMplsConfig(mplsConfigList);
+            tunnelMonitorCmd.setTunnel_id(tunnel_id);
 
             return tunnelMonitorCmd;
         }
@@ -45,6 +47,14 @@ public class ControllerCommands {
 
         public void setMplsConfig(List<TunnelMonitorMpls> mplsConfig) {
             this.mplsConfig = mplsConfig;
+        }
+
+        public String getTunnel_id() {
+            return tunnel_id;
+        }
+
+        public void setTunnel_id(String tunnel_id) {
+            this.tunnel_id = tunnel_id;
         }
     }
 

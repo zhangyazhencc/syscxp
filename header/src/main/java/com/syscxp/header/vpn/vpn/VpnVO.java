@@ -21,6 +21,11 @@ public class VpnVO {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "hostUuid", insertable = false, updatable = false)
     private VpnHostVO vpnHost;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "vpnCertUuid", insertable = false, updatable = false)
+    private VpnCertVO vpnCert;
+    @Column
+    private String vpnCertUuid;
     @Column
     private String name;
     @Column
@@ -60,6 +65,22 @@ public class VpnVO {
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
+    }
+
+    public VpnCertVO getVpnCert() {
+        return vpnCert;
+    }
+
+    public void setVpnCert(VpnCertVO vpnCert) {
+        this.vpnCert = vpnCert;
+    }
+
+    public String getVpnCertUuid() {
+        return vpnCertUuid;
+    }
+
+    public void setVpnCertUuid(String vpnCertUuid) {
+        this.vpnCertUuid = vpnCertUuid;
     }
 
     public void setHostUuid(String hostUuid) {
