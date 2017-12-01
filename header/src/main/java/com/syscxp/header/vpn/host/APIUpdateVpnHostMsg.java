@@ -10,8 +10,6 @@ public class APIUpdateVpnHostMsg extends APIUpdateHostMsg {
     @APIParam(resourceType = VpnHostVO.class)
     private String uuid;
     @APIParam(required = false)
-    private String publicInterface;
-    @APIParam(required = false)
     private String publicIp;
     @APIParam(required = false)
     private Integer sshPort;
@@ -34,14 +32,6 @@ public class APIUpdateVpnHostMsg extends APIUpdateHostMsg {
 
     public void setPublicIp(String publicIp) {
         this.publicIp = publicIp;
-    }
-
-    public String getPublicInterface() {
-        return publicInterface;
-    }
-
-    public void setPublicInterface(String publicInterface) {
-        this.publicInterface = publicInterface;
     }
 
     public Integer getSshPort() {

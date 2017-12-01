@@ -3,13 +3,13 @@ package com.syscxp.header.vpn.agent;
 import com.syscxp.header.message.MessageReply;
 
 public class ClientInfoReply extends MessageReply {
-    public CertInventory inventory;
+    public CertInfo certInfo;
 
-    public CertInventory getInventory() {
-        return inventory;
+    public CertInfo getCertInfo() {
+        return certInfo;
     }
 
-    public void setInventory(CertInventory inventory) {
-        this.inventory = inventory;
+    public void setCertInfo(CertInfo certInfo) {
+        this.certInfo = certInfo;
     }
 }
