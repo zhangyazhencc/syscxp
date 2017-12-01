@@ -13,7 +13,6 @@ import com.syscxp.header.message.Message;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
-import com.syscxp.header.tunnel.tunnel.APICreateInterfaceManualMsg;
 import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsService;
 import com.syscxp.utils.Utils;
@@ -119,8 +118,10 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             handle((APICheckApiPermissionMsg) msg);
         } else if (msg instanceof APIRegisterAccountMsg) {
             handle((APIRegisterAccountMsg) msg);
-        } else if (msg instanceof APIAccountPWDBackMsg) {
-            handle((APIAccountPWDBackMsg) msg);
+        } else if (msg instanceof APIAccountPWDBackByPhoneMsg) {
+            handle((APIAccountPWDBackByPhoneMsg) msg);
+        } else if (msg instanceof APIAccountPWDBackByEmailMsg) {
+            handle((APIAccountPWDBackByEmailMsg) msg);
         } else if (msg instanceof APIUserPWDBackMsg) {
             handle((APIUserPWDBackMsg) msg);
         } else if (msg instanceof APIVerifyRepetitionMsg) {
@@ -136,6 +137,23 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
 
+    }
+
+    private void handle(APIAccountPWDBackByEmailMsg msg) {
+        APIAccountPWDBackByEmailEvent evt = new APIAccountPWDBackByEmailEvent(msg.getId());
+
+        if (!mailService.ValidateMailCode(msg.getEmail(), msg.getCode())) {
+            throw new ApiMessageInterceptionException(argerr("Validation code does not match[%s, %s]", msg.getEmail(), msg.getCode()));
+        } else {
+
+            SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
+            q.add(AccountVO_.phone, Op.EQ, msg.getEmail());
+            AccountVO account = q.find();
+            account.setPassword(msg.getNewpassword());
+            evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
+        }
+
+        bus.publish(evt);
     }
 
     private void handle(APIValidateAccountWithProxyMsg msg) {
@@ -248,8 +266,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         bus.reply(msg, reply);
     }
 
-    private void handle(APIAccountPWDBackMsg msg) {
-        APIAccountPWDBackEvent evt = new APIAccountPWDBackEvent(msg.getId());
+    private void handle(APIAccountPWDBackByPhoneMsg msg) {
+        APIAccountPWDBackByPhoneEvent evt = new APIAccountPWDBackByPhoneEvent(msg.getId());
 
         if (!smsService.validateVerificationCode(msg.getPhone(), msg.getCode())) {
             throw new ApiMessageInterceptionException(argerr("Validation code does not match[%s, %s]", msg.getPhone(), msg.getCode()));
@@ -863,6 +881,10 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         }
 
 
+        if(msg.getName().equals("admin")){
+            throw new ApiMessageInterceptionException(argerr("can not use the name[admin]"));
+
+        }
     }
 
     private void validate(APIUpdateUserMsg msg) {

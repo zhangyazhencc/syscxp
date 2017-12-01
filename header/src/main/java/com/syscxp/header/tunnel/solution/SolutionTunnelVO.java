@@ -1,6 +1,7 @@
 package com.syscxp.header.tunnel.solution;
 
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
+import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO;
 
 import javax.persistence.*;
 
@@ -29,8 +30,11 @@ public class SolutionTunnelVO extends SolutionBaseVO{
     private String bandwidthOfferingUuid;
 
     @Column
-    private String innerEndpointUuid;
+    private String innerConnectedEndpointUuid;
 
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "innerConnectedEndpointUuid", insertable = false, updatable = false)
+    private InnerConnectedEndpointVO innerConnectedEndpointVO;
 
     public EndpointVO getEndpointVOA() {
         return endpointVOA;
@@ -56,12 +60,12 @@ public class SolutionTunnelVO extends SolutionBaseVO{
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
-    public String getInnerEndpointUuid() {
-        return innerEndpointUuid;
+    public String getInnerConnectedEndpointUuid() {
+        return innerConnectedEndpointUuid;
     }
 
-    public void setInnerEndpointUuid(String innerEndpointUuid) {
-        this.innerEndpointUuid = innerEndpointUuid;
+    public void setInnerConnectedEndpointUuid(String innerConnectedEndpointUuid) {
+        this.innerConnectedEndpointUuid = innerConnectedEndpointUuid;
     }
 
     public String getEndpointUuidA() {
@@ -78,5 +82,13 @@ public class SolutionTunnelVO extends SolutionBaseVO{
 
     public void setEndpointUuidZ(String endpointUuidZ) {
         this.endpointUuidZ = endpointUuidZ;
+    }
+
+    public InnerConnectedEndpointVO getInnerConnectedEndpointVO() {
+        return innerConnectedEndpointVO;
+    }
+
+    public void setInnerConnectedEndpointVO(InnerConnectedEndpointVO innerConnectedEndpointVO) {
+        this.innerConnectedEndpointVO = innerConnectedEndpointVO;
     }
 }

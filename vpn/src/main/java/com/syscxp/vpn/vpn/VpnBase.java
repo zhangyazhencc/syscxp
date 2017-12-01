@@ -3,17 +3,23 @@ package com.syscxp.vpn.vpn;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.Q;
 import com.syscxp.core.thread.ChainTask;
 import com.syscxp.core.thread.SyncTaskChain;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.core.NoErrorCompletion;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.errorcode.ErrorCode;
+import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.*;
+import com.syscxp.header.vpn.vpn.VpnStatus;
 import com.syscxp.header.vpn.vpn.VpnVO;
+import com.syscxp.header.vpn.vpn.VpnVO_;
+import com.syscxp.utils.Utils;
+import com.syscxp.utils.logging.CLogger;
 import com.syscxp.vpn.vpn.VpnCommands.*;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +27,7 @@ import org.springframework.beans.factory.annotation.Configurable;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class VpnBase extends AbstractVpn {
+    private static final CLogger logger = Utils.getLogger(VpnBase.class);
 
     @Autowired
     private CloudBus bus;
@@ -145,6 +152,7 @@ public class VpnBase extends AbstractVpn {
         httpCall(initVpnPath, cmd, InitVpnRsp.class, new ReturnValueCompletion<InitVpnRsp>(msg, completion) {
             @Override
             public void success(InitVpnRsp ret) {
+                changVpnSatus(VpnStatus.Connected);
                 reply.setStatus(ret.vpnSatus);
                 bus.reply(msg, reply);
                 completion.done();
@@ -152,11 +160,26 @@ public class VpnBase extends AbstractVpn {
 
             @Override
             public void fail(ErrorCode err) {
+                changVpnSatus(VpnStatus.Disconnected);
                 reply.setError(err);
                 bus.reply(msg, reply);
                 completion.done();
             }
         });
+    }
+    private boolean changVpnSatus(VpnStatus next) {
+        if (!Q.New(VpnVO.class).eq(VpnVO_.uuid, self.getUuid()).isExists()) {
+            throw new CloudRuntimeException(String.format("change vpn status fail, can not find the vpn[%s]", self.getUuid()));
+        }
+        VpnStatus before = self.getStatus();
+        if (before == next) {
+            return false;
+        }
+        self.setStatus(next);
+        self = dbf.updateAndRefresh(self);
+        logger.debug(String.format("Vpn %s [uuid:%s] changed status from %s to %s",
+                self.getName(), self.getUuid(), before, next));
+        return true;
     }
 
     private void handle(final CreateCertMsg msg) {
@@ -361,12 +384,12 @@ public class VpnBase extends AbstractVpn {
         httpCall(clientInfoPath, cmd, ClientInfoRsp.class, new ReturnValueCompletion<ClientInfoRsp>(msg) {
             @Override
             public void success(ClientInfoRsp ret) {
-                CertInventory inventory = new CertInventory();
-                inventory.setCaCert(ret.ca_crt);
-                inventory.setClientCert(ret.client_crt);
-                inventory.setClientConf(ret.client_conf);
-                inventory.setClientKey(ret.client_key);
-                reply.setInventory(inventory);
+                CertInfo certInfo = new CertInfo();
+                certInfo.setCaCert(ret.ca_crt);
+                certInfo.setClientCert(ret.client_crt);
+                certInfo.setClientConf(ret.client_conf);
+                certInfo.setClientKey(ret.client_key);
+                reply.setCertInfo(certInfo);
                 bus.reply(msg, reply);
             }
 

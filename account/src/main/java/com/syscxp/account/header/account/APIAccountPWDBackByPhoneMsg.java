@@ -10,7 +10,7 @@ import com.syscxp.header.notification.ApiNotification;
  * Created by wangwg on 2017/9/4.
  */
 @SuppressCredentialCheck
-public class APIAccountPWDBackMsg extends APIMessage  {
+public class APIAccountPWDBackByPhoneMsg extends APIMessage  {
 
     @APIParam
     private String phone;

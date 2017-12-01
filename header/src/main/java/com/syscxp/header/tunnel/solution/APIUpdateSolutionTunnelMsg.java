@@ -17,8 +17,6 @@ public class APIUpdateSolutionTunnelMsg extends  APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
-    @APIParam(maxLength = 128)
-    private long bandwidth;
 
     @APIParam(numberRange = {0,Long.MAX_VALUE})
     private BigDecimal cost;
@@ -33,14 +31,6 @@ public class APIUpdateSolutionTunnelMsg extends  APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public long getBandwidth() {
-        return bandwidth;
-    }
-
-    public void setBandwidth(long bandwidth) {
-        this.bandwidth = bandwidth;
     }
 
     public BigDecimal getCost() {
