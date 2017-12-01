@@ -3,7 +3,7 @@ package com.syscxp.header.billing;
 public class ProductPriceUnitFactory {
 
     public static ProductPriceUnit createVpnPriceUnit(String configCode) {
-        return createProductPriceUnit(Category.VPN, ProductType.VPN, configCode, null, null);
+        return createProductPriceUnit(configCode, "DEFAULT", "DEFAULT");
     }
 
     private static ProductPriceUnit createProductPriceUnit(Category category, ProductType type, String configCode,
@@ -15,5 +15,11 @@ public class ProductPriceUnitFactory {
         unit.setAreaCode(areaCode);
         unit.setLineCode(lineCode);
         return unit;
+    }
+
+    private static ProductPriceUnit createProductPriceUnit(String configCode,
+                                                           String areaCode, String lineCode){
+        return createProductPriceUnit(Category.VPN, ProductType.VPN, configCode, areaCode, lineCode);
+
     }
 }

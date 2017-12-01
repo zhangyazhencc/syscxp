@@ -2,7 +2,7 @@ package com.syscxp.account.header.account;
 
 import com.syscxp.header.message.APIEvent;
 
-public class APIAccountPWDBackEvent extends APIEvent {
+public class APIAccountPWDBackByEmailEvent extends APIEvent {
 
     private AccountInventory inventory;
 
@@ -14,11 +14,11 @@ public class APIAccountPWDBackEvent extends APIEvent {
         this.inventory = inventory;
     }
 
-    public APIAccountPWDBackEvent(String apiId) {
+    public APIAccountPWDBackByEmailEvent(String apiId) {
         super(apiId);
     }
 
-    public APIAccountPWDBackEvent() {
+    public APIAccountPWDBackByEmailEvent() {
         super(null);
     }
 

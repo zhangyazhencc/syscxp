@@ -13,17 +13,25 @@ public class InnerMessageHelper {
     }
 
     public static String getMD5(APIMessage message) {
-        return DigestUtils.md5Hex(JSONObjectUtil.toJsonString(message.getDeclaredFieldAndValues())
-                + CoreGlobalProperty.INNER_MESSAGE_MD5_KEY);
+        return getMD5(message, CoreGlobalProperty.INNER_MESSAGE_MD5_KEY);
+    }
+
+    public static String getMD5(APIMessage message, String key) {
+        return DigestUtils.md5Hex(JSONObjectUtil.toJsonString(message.getDeclaredFieldAndValues()) + key);
     }
 
     public static Boolean validSignature(APIMessage message) {
+        return validSignature(message, CoreGlobalProperty.INNER_MESSAGE_MD5_KEY);
+    }
+
+    public static Boolean validSignature(APIMessage message, String key) {
         if (StringUtils.isEmpty(message.getSignature()))
             return false;
         String signature = message.getSignature();
         message.setSignature(null);
-        return signature.equals(getMD5(message)) && !isExpirate(message);
+        return signature.equals(getMD5(message, key)) && !isExpirate(message);
     }
+
 
     public static Boolean isExpirate(APIMessage message) {
         return System.currentTimeMillis() - message.getCreatedTime() > CoreGlobalProperty.INNER_MESSAGE_EXPIRE * 1000;

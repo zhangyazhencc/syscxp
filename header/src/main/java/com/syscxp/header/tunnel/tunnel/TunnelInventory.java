@@ -1,6 +1,8 @@
 package com.syscxp.header.tunnel.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
+import com.syscxp.header.query.ExpandedQueries;
+import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
 
 import java.sql.Timestamp;
@@ -10,6 +12,11 @@ import java.util.*;
  * Created by DCY on 2017-09-11
  */
 @Inventory(mappingVOClass = TunnelVO.class)
+
+@ExpandedQueries({
+    @ExpandedQuery(expandedField = "tunnelSwitchPorts", inventoryClass = TunnelSwitchPortInventory.class,
+            foreignKey = "uuid", expandedInventoryKey = "tunnelUuid"),
+})
 public class TunnelInventory {
 
     private String uuid;

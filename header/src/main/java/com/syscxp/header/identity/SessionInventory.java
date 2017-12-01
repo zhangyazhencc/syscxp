@@ -1,6 +1,5 @@
 package com.syscxp.header.identity;
 
-import com.syscxp.header.rest.APINoSee;
 import com.syscxp.header.rest.APINoSession;
 
 import java.io.Serializable;

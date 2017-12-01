@@ -10,8 +10,11 @@
         <class>com.syscxp.core.job.JobQueueEntryVO</class>
 
         <class>com.syscxp.header.vpn.vpn.VpnVO</class>
+        <class>com.syscxp.header.vpn.vpn.VpnCertVO</class>
         <class>com.syscxp.header.configuration.BandwidthOfferingVO</class>
         <class>com.syscxp.header.vpn.host.VpnHostVO</class>
+        <class>com.syscxp.header.host.HostVO</class>
+        <class>com.syscxp.header.host.HostEO</class>
         <class>com.syscxp.header.vpn.host.ZoneVO</class>
         <class>com.syscxp.header.vpn.host.HostInterfaceVO</class>
     </persistence-unit>

@@ -1,18 +1,14 @@
 package com.syscxp.header.vpn.host;
 
 import com.syscxp.header.host.APIUpdateHostMsg;
-import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
-import com.syscxp.header.vpn.VpnConstant;
 
 public class APIUpdateVpnHostMsg extends APIUpdateHostMsg {
     @APIParam(resourceType = VpnHostVO.class)
     private String uuid;
-    @APIParam(required = false)
-    private String publicInterface;
     @APIParam(required = false)
     private String publicIp;
     @APIParam(required = false)
@@ -36,14 +32,6 @@ public class APIUpdateVpnHostMsg extends APIUpdateHostMsg {
 
     public void setPublicIp(String publicIp) {
         this.publicIp = publicIp;
-    }
-
-    public String getPublicInterface() {
-        return publicInterface;
-    }
-
-    public void setPublicInterface(String publicInterface) {
-        this.publicInterface = publicInterface;
     }
 
     public Integer getSshPort() {

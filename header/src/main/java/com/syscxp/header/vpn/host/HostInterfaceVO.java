@@ -2,10 +2,8 @@ package com.syscxp.header.vpn.host;
 
 import com.syscxp.header.vo.ForeignKey;
 import com.syscxp.header.vo.ForeignKey.ReferenceOption;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+
+import javax.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
@@ -15,16 +13,30 @@ public class HostInterfaceVO {
     @Column
     private String uuid;
     @Column
-    private String interfaceName;
+    private String name;
     @Column
     @ForeignKey(parentEntityClass = VpnHostVO.class, parentKey = "uuid", onDeleteAction = ReferenceOption.CASCADE)
     private String hostUuid;
     @Column
     private String endpointUuid;
     @Column
+    private String interfaceUuid;
+    @Column
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
+    @PreUpdate
+    private void preUpdate() {
+        lastOpDate = null;
+    }
+
+    public String getInterfaceUuid() {
+        return interfaceUuid;
+    }
+
+    public void setInterfaceUuid(String interfaceUuid) {
+        this.interfaceUuid = interfaceUuid;
+    }
 
     public String getUuid() {
         return uuid;
@@ -34,12 +46,12 @@ public class HostInterfaceVO {
         this.uuid = uuid;
     }
 
-    public String getInterfaceName() {
-        return interfaceName;
+    public String getName() {
+        return name;
     }
 
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getHostUuid() {

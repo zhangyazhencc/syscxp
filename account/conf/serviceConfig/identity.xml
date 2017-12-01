@@ -176,7 +176,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.account.header.account.APIAccountPWDBackMsg</name>
+        <name>com.syscxp.account.header.account.APIAccountPWDBackByPhoneMsg</name>
     </message>
 
     <message>
@@ -215,6 +215,10 @@
     <message>
         <name>com.syscxp.account.header.identity.APIQueryRolePolicyMsg</name>
         <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.account.header.account.APIAccountPWDBackByEmailMsg</name>
     </message>
 
 

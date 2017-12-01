@@ -19,7 +19,7 @@ public class VpnMotifyRecordInventory {
         VpnMotifyRecordInventory inv = new VpnMotifyRecordInventory();
         inv.setUuid(vo.getUuid());
         inv.setVpnUuid(vo.getVpnUuid());
-        inv.setMotifyType(vo.getMotifyType().toString());
+        inv.setMotifyType(vo.getMotifyType());
         inv.setOpAccountUuid(vo.getOpAccountUuid());
         inv.setCreateDate(vo.getCreateDate());
         return inv;

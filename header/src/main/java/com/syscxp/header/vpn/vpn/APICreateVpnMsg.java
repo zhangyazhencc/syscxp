@@ -1,5 +1,6 @@
 package com.syscxp.header.vpn.vpn;
 
+import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -14,20 +15,20 @@ public class APICreateVpnMsg extends APIVpnMessage {
     private String name;
     @APIParam(required = false, maxLength = 255)
     private String description;
-    @APIParam
+    @APIParam(resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
     @APIParam(emptyString = false)
-    private String endpointUuid;
+    private String interfaceUuid;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private Integer duration;
-    @APIParam
-    private String vlan;
+    @APIParam(numberRange = {1,Integer.MAX_VALUE})
+    private Integer vlan;
 
-    public String getVlan() {
+    public Integer getVlan() {
         return vlan;
     }
 
-    public void setVlan(String vlan) {
+    public void setVlan(Integer vlan) {
         this.vlan = vlan;
     }
 
@@ -55,12 +56,12 @@ public class APICreateVpnMsg extends APIVpnMessage {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
-    public String getEndpointUuid() {
-        return endpointUuid;
+    public String getInterfaceUuid() {
+        return interfaceUuid;
     }
 
-    public void setEndpointUuid(String endpointUuid) {
-        this.endpointUuid = endpointUuid;
+    public void setInterfaceUuid(String interfaceUuid) {
+        this.interfaceUuid = interfaceUuid;
     }
 
     public Integer getDuration() {

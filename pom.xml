@@ -30,6 +30,7 @@
         <module>sms</module>
         <module>vpn</module>
         <module>alarm</module>
+        <module>sdk</module>
     </modules>
 
     <dependencyManagement>

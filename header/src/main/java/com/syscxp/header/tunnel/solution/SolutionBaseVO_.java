@@ -18,7 +18,6 @@ public class SolutionBaseVO_ {
     public static volatile SingularAttribute<SolutionBaseVO, BigDecimal> cost;
     public static volatile SingularAttribute<SolutionBaseVO, String> productChargeModel;
     public static volatile SingularAttribute<SolutionBaseVO, Integer> duration;
-    public static volatile SingularAttribute<SolutionBaseVO, String> description;
     public static volatile SingularAttribute<SolutionBaseVO, Timestamp> createDate;
     public static volatile SingularAttribute<SolutionBaseVO, Timestamp> lastOpDate;
 

@@ -1,45 +1,15 @@
 package com.syscxp.vpn.vpn;
 
-import com.syscxp.header.vpn.vpn.VpnVO;
-
+import com.syscxp.core.validation.ConditionalValidation;
 
 public class VpnCommands {
-    public static class VpnAgentCommand {
-        String vpnuuid;
+    public static class AgentCommand {
+        public String vpnuuid;
     }
 
-    public static class VpnAgentResponse {
-        TaskResult result;
-        RunStatus status;
-
-        public TaskResult getResult() {
-            return result;
-        }
-
-        public void setResult(TaskResult result) {
-            this.result = result;
-        }
-
-        public RunStatus getStatus() {
-            return status;
-        }
-
-        public void setStatus(RunStatus status) {
-            this.status = status;
-        }
-    }
-
-    public static class TaskResult {
-        String message;
-        boolean success = false;
-
-        public String getMessage() {
-            return message;
-        }
-
-        public void setMessage(String message) {
-            this.message = message;
-        }
+    public static class AgentResponse implements ConditionalValidation {
+        private boolean success = true;
+        private String error;
 
         public boolean isSuccess() {
             return success;
@@ -48,164 +18,157 @@ public class VpnCommands {
         public void setSuccess(boolean success) {
             this.success = success;
         }
-    }
 
-    /**
-     * 物理机或VPN运行状态
-     */
-    public enum RunStatus {
-        DOWN,
-        UP,
-        UNKOWN
-    }
+        public String getError() {
+            return error;
+        }
 
-    /**
-     * c初始化证书：/vpn/init_cert
-     */
-    public static class InitCertCmd extends VpnAgentCommand {
-        public static InitCertCmd valueOf(VpnVO vo) {
-            InitCertCmd cmd = new InitCertCmd();
-            cmd.vpnuuid = vo.getUuid();
-            return cmd;
+        public void setError(String error) {
+            this.error = error;
+            this.success = false;
+        }
+
+        @Override
+        public boolean needValidation() {
+            return success;
         }
     }
 
-    public static class InitCertResponse extends VpnAgentResponse {
+    public static class ConnectResponse extends AgentResponse {
+        public String vpnSucc;
+    }
+
+    public static class VpnStatusResponse extends AgentResponse {
+        public String vpnSatus;
     }
 
     /**
-     * VPN服务：/vpn/vpn_service
+     * 创建化证书：/vpn/create_cert
      */
-    public static class VpnServiceCmd extends VpnAgentCommand {
-        String vpnvlanid;
-        String vpnport;
-        // start,stop,status
-        String command;
-
-        public static VpnServiceCmd valueOf(VpnVO vo) {
-            VpnServiceCmd cmd = new VpnServiceCmd();
-            cmd.vpnuuid = vo.getUuid();
-            cmd.vpnvlanid = vo.getVlan().toString();
-            cmd.vpnport = vo.getPort().toString();
-            return cmd;
-        }
+    public static class CreateCertCmd extends AgentCommand {
     }
 
-    public static class VpnServiceResponse extends VpnAgentResponse {
+    public static class CreateCertRsp extends AgentResponse {
+        public  String vpnCert;
     }
 
     /**
      * vpn配置：/vpn/conf_vpn
      */
-    public static class VpnConfCmd extends VpnAgentCommand {
-        String hostip;
-        String vpnport;
+    public static class VpnConfCmd extends AgentCommand {
+        public String hostip;
+        public String vpnport;
 
-        public static VpnConfCmd valueOf(VpnVO vo) {
-            VpnConfCmd cmd = new VpnConfCmd();
-            cmd.vpnuuid = vo.getUuid();
-            cmd.hostip = vo.getVpnHost().getHostIp();
-            cmd.vpnport = vo.getPort().toString();
-            return cmd;
-        }
     }
 
-    public static class VpnConfResponse extends VpnAgentResponse {
+    public static class VpnConfRsp extends ConnectResponse {
+    }
+
+    /**
+     * VPN服务：/vpn/vpn_service
+     */
+    public static class VpnServiceCmd extends AgentCommand {
+        public  String vpnvlanid;
+        public String vpnport;
+        public String command;
+    }
+
+
+    public static class VpnServiceRsp extends VpnStatusResponse {
     }
 
     /**
      * Vpn接口：/vpn/vport
      */
-    public static class VportCmd extends VpnAgentCommand {
-        String vpnvlanid;
-        String ddnport;
-        String vpnport;
-        // add,del
-        String command;
-        public static VportCmd valueOf(VpnVO vo) {
-            VportCmd cmd = new VportCmd();
-            cmd.ddnport = vo.getTunnelInterface();
-            cmd.vpnvlanid = vo.getVlan().toString();
-            cmd.vpnport = vo.getPort().toString();
-            return cmd;
-        }
+    public static class VpnPortCmd extends AgentCommand {
+        public  String vpnvlanid;
+        public  String ddnport;
+        public String vpnport;
+        public String command;
     }
 
-    public static class VportResponse extends VpnAgentResponse {
+    public static class VpnPortRsp extends VpnStatusResponse {
     }
 
     /**
      * 限速：/vpn/rate_limiting
      */
-    public static class RateLimitingCmd extends VpnAgentCommand {
-        String vpnport;
-        String speed;
-        String command;
-        public static RateLimitingCmd valueOf(VpnVO vo) {
-            RateLimitingCmd cmd = new RateLimitingCmd();
-            cmd.vpnport = vo.getPort().toString();
-            cmd.speed = vo.getBandwidthOfferingUuid();
-            cmd.command = "clean";
-            return cmd;
-        }
+    public static class RateLimitingCmd extends AgentCommand {
+        public  String vpnport;
+        public  String speed;
+        public String command;
     }
-    public static class RateLimitingResponse extends VpnAgentResponse {
+
+    public static class RateLimitingRsp extends AgentResponse {
+        String vpnLimit;
     }
 
     /**
      * VPN重连:/vpn/start-all
      */
-    public static class StartAllCmd extends VpnAgentCommand {
-        String vpnvlanid;
-        String ddnport;
-        String vpnport;
-        String speed;
+    public static class StartAllCmd extends AgentCommand {
+        public  String vpnvlanid;
+        public  String ddnport;
+        public  String vpnport;
+        public String speed;
 
-        public static StartAllCmd valueOf(VpnVO vo) {
-            StartAllCmd cmd = new StartAllCmd();
-            cmd.vpnuuid = vo.getUuid();
-            cmd.vpnvlanid = vo.getVlan().toString();
-            cmd.vpnport = vo.getPort().toString();
-            cmd.ddnport = vo.getTunnelInterface();
-            cmd.speed = vo.getBandwidthOfferingUuid();
-            return cmd;
-        }
     }
 
-    public static class StartAllResponse extends VpnAgentResponse {
+    public static class StartAllRsp extends VpnStatusResponse {
     }
 
     /**
      * 删除VPN：/vpn/destroy-vpn
      */
-    public static class DestroyVpnCmd extends VpnAgentCommand {
-        String vpnvlanid;
-        String ddnport;
-        String vpnport;
-        public static DestroyVpnCmd valueOf(VpnVO vo) {
-            DestroyVpnCmd cmd = new DestroyVpnCmd();
-            cmd.vpnuuid = vo.getUuid();
-            cmd.vpnvlanid = vo.getVlan().toString();
-            cmd.vpnport = vo.getPort().toString();
-            cmd.ddnport = vo.getTunnelInterface();
-            return cmd;
-        }
+    public static class DestroyVpnCmd extends AgentCommand {
+        public String vpnvlanid;
+        public String ddnport;
+        public  String vpnport;
     }
 
-    public static class DestroyVpnResponse extends VpnAgentResponse {
+    public static class DestroyVpnRsp extends VpnStatusResponse {
     }
 
     /**
-     * 下载证书：/vpn/download-cert
+     * VPN信息：/vpn/client_info
      */
-    public static class DownloadCertCmd extends VpnAgentCommand {
-
-        public static DownloadCertCmd valueOf(VpnVO vo) {
-            DownloadCertCmd cmd = new DownloadCertCmd();
-            return cmd;
-        }
+    public static class ClientInfoCmd extends AgentCommand {
+        public String vpnuuid;
     }
 
-    public static class DownloadCertResponse extends VpnAgentResponse {
+    public static class ClientInfoRsp extends AgentResponse {
+        public String ca_crt;
+        public String client_crt;
+        public String client_key;
+        public String client_conf;
     }
+
+    /**
+     * VPN信息：/vpn/login_info
+     */
+    public static class LoginInfoCmd extends AgentCommand {
+        public String username;
+        public String passwd;
+    }
+
+    public static class LoginInfoRsp extends AgentResponse {
+        String passwdfile;
+    }
+
+    /**
+     * VPN初始化：/vpn/init_vpn
+     */
+    public static class InitVpnCmd extends AgentCommand {
+        public String hostip;
+        public String vpnvlanid;
+        public String vpnport;
+        public String ddnport;
+        public String speed;
+        public String username;
+        public String passwd;
+    }
+
+    public static class InitVpnRsp extends VpnStatusResponse {
+    }
+
 }

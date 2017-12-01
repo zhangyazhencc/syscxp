@@ -12,23 +12,23 @@ import java.util.List;
 @Inventory(mappingVOClass = VpnHostVO.class, collectionValueOfMethod = "valueOf1",
         parent = {@Parent(inventoryClass = HostInventory.class, type = VpnConstant.HOST_TYPE)})
 public class VpnHostInventory extends HostInventory{
-    private String publicIface;
     private String publicIp;
     private Integer sshPort;
     private String username;
     private Integer startPort;
     private Integer endPort;
+    private String interfaceName;
     private ZoneInventory zoneInventory;
     private List<HostInterfaceInventory> hostInterfaceInventories;
 
     public VpnHostInventory(VpnHostVO vo) {
         super(vo);
-        this.setPublicIface(vo.getPublicInterface());
         this.setPublicIp(vo.getPublicIp());
         this.setUsername(vo.getUsername());
         this.setSshPort(vo.getSshPort());
         this.setStartPort(vo.getStartPort());
         this.setEndPort(vo.getEndPort());
+        this.setInterfaceName(vo.getInterfaceName());
         this.setZoneInventory(ZoneInventory.valueOf(vo.getZone()));
         this.setHostInterfaceInventories(HostInterfaceInventory.valueOf(vo.getHostInterfaces()));
     }
@@ -43,6 +43,14 @@ public class VpnHostInventory extends HostInventory{
             invs.add(VpnHostInventory.valueOf(vo));
         }
         return invs;
+    }
+
+    public String getInterfaceName() {
+        return interfaceName;
+    }
+
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
     }
 
     public Integer getStartPort() {
@@ -84,15 +92,6 @@ public class VpnHostInventory extends HostInventory{
     public void setPublicIp(String publicIp) {
         this.publicIp = publicIp;
     }
-
-    public String getPublicIface() {
-        return publicIface;
-    }
-
-    public void setPublicIface(String publicIface) {
-        this.publicIface = publicIface;
-    }
-
 
     public Integer getSshPort() {
         return sshPort;

@@ -1,33 +1,35 @@
 package com.syscxp.header.vpn.vpn;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.vpn.VpnConstant;
 
-@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"})
-public class APIUpdateVpnCidrMsg extends APIMessage {
-    @APIParam(resourceType = VpnVO.class, checkAccount = true)
-    private String uuid;
+@SuppressCredentialCheck
+@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"read"})
+public class APIGetVpnCertMsg extends APIMessage {
     @APIParam
-    private String vpnCidr;
+    private String name;
+    @APIParam
+    private String sid;
 
-    public String getUuid() {
-        return uuid;
+    public String getName() {
+        return name;
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public void setName(String name) {
+        this.name = name;
     }
 
-    public String getVpnCidr() {
-        return vpnCidr;
+    public String getSid() {
+        return sid;
     }
 
-    public void setVpnCidr(String vpnCidr) {
-        this.vpnCidr = vpnCidr;
+    public void setSid(String sid) {
+        this.sid = sid;
     }
 
     public ApiNotification __notification__() {
@@ -36,8 +38,8 @@ public class APIUpdateVpnCidrMsg extends APIMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update VpnVO vpnCidr")
-                        .resource(uuid, VpnVO.class)
+                ntfy("Download certificate")
+                        .resource(sid, VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };
