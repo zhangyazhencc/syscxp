@@ -640,12 +640,14 @@ public class AccountBase extends AbstractAccount {
             user.setUserType(msg.getUserType());
         }
 
-        RoleVO role = dbf.findByUuid(msg.getRoleUuid(), RoleVO.class);
-        Set<RoleVO> roleSet = new HashSet<>();
-        if (role != null) {
-            roleSet.add(role);
+        if (msg.getRoleUuid() != null){
+            RoleVO role = dbf.findByUuid(msg.getRoleUuid(), RoleVO.class);
+            Set<RoleVO> roleSet = new HashSet<>();
+            if (role != null) {
+                roleSet.add(role);
+            }
+            user.setRoleSet(roleSet);
         }
-        user.setRoleSet(roleSet);
 
         user = dbf.getEntityManager().merge(user);
 
