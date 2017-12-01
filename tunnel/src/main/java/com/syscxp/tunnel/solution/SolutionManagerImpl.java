@@ -110,8 +110,9 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         APIGetProductPriceReply reply = getTunnelPrice(vo, solutionVO.getAccountUuid());
         if(reply.getOriginalPrice().compareTo(vo.getCost()) != 0){
             solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()).add(reply.getOriginalPrice()));
-            vo.setCost(reply.getOriginalPrice());
             dbf.getEntityManager().merge(solutionVO);
+
+            vo.setCost(reply.getOriginalPrice());
             dbf.getEntityManager().merge(vo);
         }
 
