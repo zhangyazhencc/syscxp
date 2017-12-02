@@ -88,7 +88,6 @@ public class RenewJob {
                     aMsg.setUuid(renewVO.getProductUuid());
                     aMsg.setDuration(1);
                     aMsg.setProductChargeModel(renewVO.getProductChargeModel());
-                    aMsg.setAccountUuid(renewVO.getAccountUuid());
                     InnerMessageHelper.setMD5(aMsg);
                     String gstr = RESTApiDecoder.dump(aMsg);
                     RestAPIResponse rsp = syncJsonPost(caller.getProductUrl(), gstr, RestAPIResponse.class,null);
