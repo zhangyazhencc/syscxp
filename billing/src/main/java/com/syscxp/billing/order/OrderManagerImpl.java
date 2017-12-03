@@ -627,6 +627,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         String accountUuid = apiCreateBuyOrderMsg.getProducts().get(0).getAccountUuid();
 
         AccountBalanceVO abvo = dbf.findByUuid(accountUuid, AccountBalanceVO.class);
+        BigDecimal mayPayTotal = BigDecimal.ZERO;
         for (ProductInfoForOrder msg : apiCreateBuyOrderMsg.getProducts()) {
 
             OrderTempProp orderTempProp = calculatePrice(msg.getUnits(), msg.getAccountUuid());
@@ -635,8 +636,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             List<String> productPriceUnitUuids = orderTempProp.getProductPriceUnitUuids();
             BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
 
-
-            BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
+            if (abvo != null)
+                mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
 
             originalPrice = originalPrice.multiply(duration);
             BigDecimal discountPriceOneMonth = discountPrice;
@@ -831,7 +832,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
 
         AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
+        BigDecimal mayPayTotal = BigDecimal.ZERO;
+        if (abvo != null)
+            mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
 
         originalPrice = originalPrice.multiply(duration);
         discountPrice = discountPrice.multiply(duration);
