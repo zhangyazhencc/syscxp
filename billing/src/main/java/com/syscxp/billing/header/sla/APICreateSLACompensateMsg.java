@@ -21,6 +21,7 @@ public class APICreateSLACompensateMsg extends APIMessage {
     @APIParam(emptyString = false,required = false)
     private String productName;
 
+    @APIParam(emptyString = false)
     private String reason;
 
     @APIParam(emptyString = false)
@@ -29,8 +30,8 @@ public class APICreateSLACompensateMsg extends APIMessage {
     @APIParam(emptyString = false)
     private String comment;
 
-
-
+    @APIParam(emptyString = false,required = false)
+    private String description;
 
     public String getAccountUuid() {
         return accountUuid;
@@ -86,5 +87,13 @@ public class APICreateSLACompensateMsg extends APIMessage {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

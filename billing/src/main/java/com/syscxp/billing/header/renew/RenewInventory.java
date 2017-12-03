@@ -36,6 +36,7 @@ public class RenewInventory {
     private Timestamp lastOpDate;
 
     private BigDecimal priceOneMonth;
+    private BigDecimal priceDiscount;
 
     private Timestamp expiredTime;
 
@@ -53,6 +54,7 @@ public class RenewInventory {
         inv.setDescriptionData(vo.getDescriptionData());
         inv.setRenewAuto(vo.isRenewAuto());
         inv.setExpiredTime(vo.getExpiredTime());
+        inv.setPriceDiscount(vo.getPriceDiscount());
         return inv;
     }
 
@@ -166,5 +168,13 @@ public class RenewInventory {
 
     public void setExpiredTime(Timestamp expiredTime) {
         this.expiredTime = expiredTime;
+    }
+
+    public BigDecimal getPriceDiscount() {
+        return priceDiscount;
+    }
+
+    public void setPriceDiscount(BigDecimal priceDiscount) {
+        this.priceDiscount = priceDiscount;
     }
 }
