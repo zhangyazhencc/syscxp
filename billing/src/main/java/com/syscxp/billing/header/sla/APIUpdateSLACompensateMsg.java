@@ -33,13 +33,6 @@ public class APIUpdateSLACompensateMsg extends APIMessage {
 
     @APIParam()
     private Integer duration;
-
-    @APIParam()
-    private Timestamp timeStart;
-
-    @APIParam()
-    private Timestamp timeEnd;
-
     @APIParam(required = false)
     private SLAState state;
 
@@ -105,22 +98,6 @@ public class APIUpdateSLACompensateMsg extends APIMessage {
 
     public void setDuration(Integer duration) {
         this.duration = duration;
-    }
-
-    public Timestamp getTimeStart() {
-        return timeStart;
-    }
-
-    public void setTimeStart(Timestamp timeStart) {
-        this.timeStart = timeStart;
-    }
-
-    public Timestamp getTimeEnd() {
-        return timeEnd;
-    }
-
-    public void setTimeEnd(Timestamp timeEnd) {
-        this.timeEnd = timeEnd;
     }
 
     public String getDescription() {

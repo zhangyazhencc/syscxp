@@ -1,6 +1,7 @@
 package com.syscxp.billing.report;
 
 import com.syscxp.billing.header.report.APIGetDayExpenseReportMsg;
+import com.syscxp.billing.header.report.APIGetDayExpenseReportReply;
 import com.syscxp.billing.header.report.ReportOrderData;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
@@ -14,13 +15,13 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import javax.persistence.Query;
 import java.time.LocalDate;
-import java.time.Period;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 public class ReportManagerImpl extends AbstractService implements ApiMessageInterceptor {
 
@@ -47,10 +48,37 @@ public class ReportManagerImpl extends AbstractService implements ApiMessageInte
         LocalDate start = LocalDate.parse(msg.getDateStart());
         LocalDate end = LocalDate.parse(msg.getDateEnd());
         List<ReportOrderData> list = new ArrayList<>();
-        long duration = ChronoUnit.MONTHS.between(start, end);
-        Period period = Period.between(end, start);
+        long duration = ChronoUnit.DAYS.between(start, end);
+        for (int i = 0; i <= duration; i++) {
+            ReportOrderData e = new ReportOrderData();
+            e.setPayTime(start.format(f));
+            list.add(e);
+            start = start.plusDays(1);
+        }
 
+        String sql = "SELECT DATE_FORMAT(payTime,'%Y-%m-%d')AS payTime,TYPE,productType, SUM(IFNULL(originalPrice,0)) AS originalPrice ,SUM(IFNULL(price,0)) AS price,SUM(IFNULL(payPresent,0)) AS payPresent,SUM(IFNULL(payCash,0)) AS payCash\n" +
+                "FROM OrderVO WHERE state = 'PAID' and DATE_FORMAT(createDate,'%Y-%m-%d') between :dateStart and :dateEnd GROUP BY  DATE_FORMAT(payTime,'%Y-%m-%d'),TYPE,productType ORDER BY payTime,TYPE,productType ";
+        Query q = dbf.getEntityManager().createNativeQuery(sql);
+        q.setParameter("dateStart", msg.getDateStart());
+        q.setParameter("dateEnd", msg.getDateEnd());
+        List<Object[]> objs = q.getResultList();
+        List<ReportOrderData> vos = objs.stream().map(ReportOrderData::new).collect(Collectors.toList());
+        list.forEach(r -> {
+            vos.forEach(v -> {
+                if (r.getPayTime().equals(v.getPayTime())) {
+                    r.setOriginalPrice(v.getOriginalPrice());
+                    r.setPayCash(v.getPayCash());
+                    r.setPayPresent(v.getPayPresent());
+                    r.setPrice(v.getPrice());
+                    r.setProductType(v.getProductType());
+                    r.setType(v.getType());
+                }
+            });
+        });
 
+        APIGetDayExpenseReportReply reply = new APIGetDayExpenseReportReply();
+        reply.setInventories(list);
+        bus.reply(msg, reply);
     }
 
     @Override
