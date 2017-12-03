@@ -169,12 +169,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
         if (msg.getReason() != null) {
             vo.setReason(msg.getReason());
         }
-        if (msg.getTimeStart() != null) {
-            vo.setTimeStart(msg.getTimeStart());
-        }
-        if (msg.getTimeEnd() != null) {
-            vo.setTimeEnd(msg.getTimeEnd());
-        }
+
         if (msg.getProductUuid() != null) {
             vo.setProductUuid(msg.getProductUuid());
         } if (msg.getDescription() != null) {
