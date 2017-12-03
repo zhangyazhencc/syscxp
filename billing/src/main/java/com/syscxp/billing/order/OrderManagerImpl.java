@@ -702,6 +702,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         renewVO.setRenewAuto(true);
         renewVO.setExpiredTime(expiredTime);
         renewVO.setPriceOneMonth(discountPrice);
+        renewVO.setPriceDiscount(discountPrice);
         dbf.getEntityManager().persist(renewVO);
         return renewVO;
     }
