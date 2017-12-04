@@ -21,7 +21,7 @@ public class VpnInventory {
     private String status;
     private String state;
     private Integer duration;
-    private Timestamp expiredDate;
+    private Timestamp expireDate;
     private Integer maxModifies;
     private String sid;
     private String certKey;
@@ -44,7 +44,7 @@ public class VpnInventory {
         inv.setPort(vo.getPort());
         inv.setVlan(vo.getVlan());
         inv.setDuration(vo.getDuration());
-        inv.setExpiredDate(vo.getExpireDate());
+        inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         inv.setSid(vo.getSid());
@@ -162,12 +162,12 @@ public class VpnInventory {
         this.duration = duration;
     }
 
-    public Timestamp getExpiredDate() {
-        return expiredDate;
+    public Timestamp getExpireDate() {
+        return expireDate;
     }
 
-    public void setExpiredDate(Timestamp expiredDate) {
-        this.expiredDate = expiredDate;
+    public void setExpireDate(Timestamp expireDate) {
+        this.expireDate = expireDate;
     }
 
     public Integer getMaxModifies() {

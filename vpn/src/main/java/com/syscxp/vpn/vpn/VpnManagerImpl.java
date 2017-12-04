@@ -266,6 +266,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     public void success(VpnCertInventory returnValue) {
                         vpn.setVpnCertUuid(returnValue.getUuid());
                         dbf.updateAndRefresh(vpn);
+                        trigger.next();
                     }
 
                     @Override
@@ -286,12 +287,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }).error(new FlowErrorHandler(msg) {
             @Override
             public void handle(ErrorCode errCode, Map data) {
+                VpnVO nvo = dbf.reload(vo);
+                dbf.remove(nvo);
                 logger.debug(String.format("failed to add vpn[name:%s, uuid:%s]", vo.getName(), vo.getUuid()));
                 completion.fail(errCode);
             }
         }).start();
     }
-
 
 
     private void handle(APICreateVpnMsg msg) {
@@ -561,39 +563,90 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
 
     public void handle(APIDeleteVpnMsg msg) {
-        APIDeleteVpnEvent evt = new APIDeleteVpnEvent(msg.getId());
+        deleteVpnByApiMessage(msg);
+    }
+
+    private void deleteVpnByApiMessage(APIDeleteVpnMsg msg) {
+        final APIDeleteVpnEvent evt = new APIDeleteVpnEvent(msg.getId());
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+        VpnInventory vinv = VpnInventory.valueOf(vpn);
+        FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
+        chain.setName(String.format("delete-vpn-%s", msg.getUuid()));
+        chain.then(new NoRollbackFlow() {
+            String __name__ = "Unsubcribe-vpn";
 
-        APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(getOrderMsgForVPN(vpn, new UnsubcribeVpnCallBack()));
-        orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
-        orderMsg.setStartTime(vpn.getCreateDate());
-        orderMsg.setExpiredTime(vpn.getExpireDate());
-
-        APICreateOrderReply reply = createOrder(orderMsg);
-
-        if (!reply.isOrderSuccess()) {
-            evt.setError(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, "退订失败", reply.getError()));
-            bus.publish(evt);
-            return;
-        }
-        vpn.setState(VpnState.Disabled);
-        vpn.setStatus(VpnStatus.Disconnected);
-        vpn.setVpnCertUuid(null);
-        final VpnVO vo = dbf.updateAndRefresh(vpn);
-
-
-        deleteVpn(vo, new Completion(evt) {
             @Override
-            public void success() {
-                bus.publish(evt);
+            public void run(final FlowTrigger trigger, Map data) {
+                APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(getOrderMsgForVPN(vpn, new UnsubcribeVpnCallBack()));
+                orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
+                orderMsg.setStartTime(vinv.getCreateDate());
+                orderMsg.setExpiredTime(vinv.getExpireDate());
+                createOrder(orderMsg, new Completion(trigger) {
+                    @Override
+                    public void success() {
+                        vpn.setState(VpnState.Disabled);
+                        vpn.setStatus(VpnStatus.Disconnected);
+                        dbf.updateAndRefresh(vpn);
+                        trigger.next();
+                    }
+
+                    @Override
+                    public void fail(ErrorCode errorCode) {
+                        trigger.fail(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, "退订失败", errorCode));
+                    }
+                });
+
             }
+        }).then(new NoRollbackFlow() {
+            String __name__ = "stop-vpn-service";
 
             @Override
-            public void fail(ErrorCode errorCode) {
-                evt.setError(reply.getError());
-                bus.publish(evt);
+            public void run(final FlowTrigger trigger, Map data) {
+                changeVpnStateByAPI(vpn, VpnState.Disabled, new Completion(trigger) {
+                    @Override
+                    public void success() {
+                        trigger.next();
+                    }
+
+                    @Override
+                    public void fail(ErrorCode errorCode) {
+                        trigger.fail(errorCode);
+                        logger.debug(String.format("failed to stop vpn[uuid:%s] service %s", vpn.getUuid(), errorCode));
+                    }
+                });
+
+            }
+        }).then(new NoRollbackFlow() {
+            String __name__ = "send-delete-host-message";
+
+            @Override
+            public void run(final FlowTrigger trigger, Map data) {
+                deleteVpn(vpn, new Completion(trigger) {
+                    @Override
+                    public void success() {
+                        trigger.next();
+                    }
+
+                    @Override
+                    public void fail(ErrorCode errorCode) {
+                        trigger.fail(errorCode);
+                    }
+                });
             }
         });
+
+        chain.done(new FlowDoneHandler(msg) {
+            @Override
+            public void handle(Map data) {
+                bus.publish(evt);
+            }
+        }).error(new FlowErrorHandler(msg) {
+            @Override
+            public void handle(ErrorCode errCode, Map data) {
+                evt.setError(errf.instantiateErrorCode(SysErrors.DELETE_RESOURCE_ERROR, errCode));
+                bus.publish(evt);
+            }
+        }).start();
     }
 
     private void handleLocalMessage(Message msg) {
@@ -919,7 +972,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
-                    dbf.remove(vo);
                     complete.success();
                 } else {
                     complete.fail(reply.getError());
@@ -943,8 +995,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             if (reply.isOrderSuccess()) {
                 complete.success();
             } else {
-                logger.debug(String.format("Message[%s]:付款失败", orderMsg.getClass().getSimpleName()));
-                complete.fail(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, "付款失败"));
+                logger.debug(String.format("Message[%s]:交易失败", orderMsg.getClass().getSimpleName()));
+                complete.fail(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, "交易失败"));
             }
         } catch (Exception e) {
             logger.debug(String.format("call billing[url: %s] failed.", url));

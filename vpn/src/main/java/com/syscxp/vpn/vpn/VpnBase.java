@@ -278,6 +278,7 @@ public class VpnBase extends AbstractVpn {
         httpCall(destroyVpnPath, cmd, DestroyVpnRsp.class, new ReturnValueCompletion<DestroyVpnRsp>(msg) {
             @Override
             public void success(DestroyVpnRsp ret) {
+                dbf.removeByPrimaryKey(self.getUuid(), VpnVO.class);
                 bus.reply(msg, reply);
             }
 
