@@ -58,7 +58,11 @@ public class VpnCommands {
     }
 
     public static class CreateCertRsp extends AgentResponse {
-        public  String vpnCert;
+        public String ca_crt;
+        public String client_crt;
+        public String server_crt;
+        public String client_key;
+        public String server_key;
     }
 
     /**

@@ -73,9 +73,12 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 CREATE TABLE  `syscxp_vpn`.`VpnCertVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`accountUuid` varchar(32) NOT NULL COMMENT 'VPN',
+	`name` VARCHAR(64) NOT NULL COMMENT '',
 	`caCert` TEXT NOT NULL COMMENT '',
 	`clientCert` TEXT NOT NULL COMMENT '',
 	`clientKey` TEXT NOT NULL COMMENT '',
+	`serverCert` TEXT NOT NULL COMMENT '',
+	`serverKey` TEXT NOT NULL COMMENT '',
 	`clientConf` TEXT NOT NULL COMMENT '',
 	`version` INT(5) DEFAULT 0 COMMENT '',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',

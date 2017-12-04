@@ -14,6 +14,8 @@ public class VpnCertVO {
     @Column
     private String uuid;
     @Column
+    private String name;
+    @Column
     private String accountUuid;
     @Column
     private String caCert;
@@ -21,6 +23,10 @@ public class VpnCertVO {
     private String clientCert;
     @Column
     private String clientKey;
+    @Column
+    private String serverCert;
+    @Column
+    private String serverKey;
     @Column
     private String clientConf;
     @Column
@@ -38,6 +44,30 @@ public class VpnCertVO {
     @PrePersist
     private void prePersistVersion() {
         version = 0;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getServerCert() {
+        return serverCert;
+    }
+
+    public void setServerCert(String serverCert) {
+        this.serverCert = serverCert;
+    }
+
+    public String getServerKey() {
+        return serverKey;
+    }
+
+    public void setServerKey(String serverKey) {
+        this.serverKey = serverKey;
     }
 
     public String getUuid() {
