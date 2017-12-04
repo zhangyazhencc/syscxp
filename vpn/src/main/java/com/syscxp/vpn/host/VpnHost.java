@@ -203,23 +203,19 @@ public class VpnHost extends HostBase implements Host {
                         sshShell.setPassword(getSelf().getPassword());
                         sshShell.setPort(getSelf().getSshPort());
                         ShellUtils.run(String.format("arp -d %s || true", getSelf().getSshPort()));
-                        try {
-                            SshResult ret = sshShell.runCommand(String.format("curl --connect-timeout 10 %s", restf
-                                    .getCallbackUrl()));
-                            if (ret.isSshFailure()) {
-                                trigger.fail(operr("unable to connect to Host[ip:%s, username:%s, sshPort:%d] to check " +
-                                                "the management node connectivity,please check if username/password is wrong; %s",
-                                        self.getHostIp(), getSelf().getUsername(), getSelf().getSshPort(), ret.getExitErrorMessage()));
-                            } else if (ret.getReturnCode() != 0) {
-                                trigger.fail(operr("the host[ip:%s] cannot access the management node's callback url. It seems" +
-                                                " that the host cannot reach the management IP[%s]. %s %s", self.getHostIp(), Platform.getManagementServerIp(),
-                                        ret.getStderr(), ret.getExitErrorMessage()));
-                            }
-                        } catch (Exception e) {
-                            trigger.fail(operr(e.getMessage()));
+                        SshResult ret = sshShell.runCommand(String.format("curl --connect-timeout 10 %s", restf
+                                .getCallbackUrl()));
+                        if (ret.isSshFailure()) {
+                            trigger.fail(operr("unable to connect to Host[ip:%s, username:%s, sshPort:%d] to check " +
+                                            "the management node connectivity,please check if username/password is wrong; %s",
+                                    self.getHostIp(), getSelf().getUsername(), getSelf().getSshPort(), ret.getExitErrorMessage()));
+                        } else if (ret.getReturnCode() != 0) {
+                            trigger.fail(operr("the host[ip:%s] cannot access the management node's callback url. It seems" +
+                                            " that the host cannot reach the management IP[%s]. %s %s", self.getHostIp(), Platform.getManagementServerIp(),
+                                    ret.getStderr(), ret.getExitErrorMessage()));
+                        } else {
+                            trigger.next();
                         }
-
-                        trigger.next();
                     }
                 });
 
@@ -238,7 +234,7 @@ public class VpnHost extends HostBase implements Host {
                         checker.setTargetIp(getSelf().getHostIp());
                         checker.addSrcDestPair(SshFileMd5Checker.SYSCXPLIB_SRC_PATH, String.format
                                 ("/var/lib/syscxp/vpn/package/%s",
-                                AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME));
+                                        AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME));
                         checker.addSrcDestPair(srcPath, destPath);
 
                         AnsibleRunner runner = new AnsibleRunner();
@@ -303,10 +299,10 @@ public class VpnHost extends HostBase implements Host {
                         String script = "which iptables > /dev/null && iptables -C FORWARD -j REJECT --reject-with icmp-host-prohibited > /dev/null 2>&1 && iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited > /dev/null 2>&1 || true";
                         try {
                             runShell(script);
+                            trigger.next();
                         } catch (Exception e) {
                             trigger.fail(errf.instantiateErrorCode(HostErrors.CONNECTION_ERROR, e.getMessage()));
                         }
-                        trigger.next();
                     }
                 });
 
