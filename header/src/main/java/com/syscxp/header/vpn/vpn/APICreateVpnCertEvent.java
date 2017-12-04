@@ -2,7 +2,7 @@ package com.syscxp.header.vpn.vpn;
 
 import com.syscxp.header.message.APIEvent;
 
-public class APICreateVpnCertEvent extends APIEvent{
+public class APICreateVpnCertEvent extends APIEvent {
     VpnCertInventory inventory;
 
     public APICreateVpnCertEvent() {

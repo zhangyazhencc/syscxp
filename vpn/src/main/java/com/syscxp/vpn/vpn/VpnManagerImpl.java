@@ -6,14 +6,19 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.cloudbus.CloudBusSteppingCallback;
 import com.syscxp.core.cloudbus.MessageSafe;
-import com.syscxp.core.db.*;
+import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.GLock;
+import com.syscxp.core.db.Q;
+import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.defer.Defer;
 import com.syscxp.core.defer.Deferred;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.host.HostGlobalProperty;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
+import com.syscxp.core.thread.ChainTask;
 import com.syscxp.core.thread.PeriodicTask;
+import com.syscxp.core.thread.SyncTaskChain;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
@@ -28,6 +33,7 @@ import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.errorcode.SysErrors;
+import com.syscxp.header.host.Host;
 import com.syscxp.header.host.HostState;
 import com.syscxp.header.message.*;
 import com.syscxp.header.query.QueryOp;
@@ -47,7 +53,10 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.data.SizeUnit;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
+import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
+import com.syscxp.vpn.host.VpnHost;
+import com.syscxp.vpn.vpn.VpnCommands.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -168,7 +177,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 bus.send(pushCertMsg, new CloudBusCallBack(trigger) {
                     @Override
                     public void run(MessageReply reply) {
-                        if (reply.isSuccess()){
+                        if (reply.isSuccess()) {
                             trigger.next();
                         } else {
                             trigger.fail(errf.stringToOperationError("push vpn cert failed!"));
@@ -731,22 +740,100 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         certMsg.setAccountUuid(msg.getSession().getAccountUuid());
 
         bus.makeLocalServiceId(certMsg, VpnConstant.SERVICE_ID);
+
         bus.send(certMsg, new CloudBusCallBack(certMsg) {
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
                     evt.setInventory(((CreateCertReply) reply).getInventory());
-                    bus.send(evt);
+                    bus.publish(evt);
                 } else {
                     evt.setError(reply.getError());
-                    bus.send(evt);
+                    bus.publish(evt);
                 }
             }
         });
     }
 
     private void handleLocalMessage(Message msg) {
-        bus.dealWithUnknownMessage(msg);
+        if (msg instanceof CreateCertMsg) {
+            handle((CreateCertMsg) msg);
+        } else {
+            bus.dealWithUnknownMessage(msg);
+        }
+    }
+
+    private void handle(final CreateCertMsg msg) {
+        thdf.chainSubmit(new ChainTask(msg) {
+            @Override
+            public String getSyncSignature() {
+                return getId();
+            }
+
+            @Override
+            public void run(final SyncTaskChain chain) {
+                CreateCertReply reply = new CreateCertReply();
+                CreateCertCmd cmd = new CreateCertCmd();
+                VpnHostVO host = Q.New(VpnHostVO.class).limit(1).find();
+
+                String baseUrl = URLBuilder.buildUrlFromBase(String.format("http://%s:%s/", host.getHostIp(),
+                        VpnGlobalProperty.AGENT_PORT), VpnConstant.CREATE_CERT_PATH);
+                createCert(baseUrl, cmd, new ReturnValueCompletion<CreateCertRsp>(reply) {
+                    @Override
+                    public void success(CreateCertRsp ret) {
+                        VpnCertVO vpnCert = dbf.findByUuid(msg.getVpnCertUuid(), VpnCertVO.class);
+                        if (vpnCert == null) {
+                            vpnCert = new VpnCertVO();
+                            vpnCert.setUuid(msg.getVpnCertUuid());
+                            vpnCert.setAccountUuid(msg.getAccountUuid());
+                        }
+                        vpnCert.setCaCert(ret.ca_crt);
+                        vpnCert.setCaCert(ret.ca_key);
+                        vpnCert.setClientKey(ret.client_key);
+                        vpnCert.setClientCert(ret.client_crt);
+                        vpnCert.setServerKey(ret.server_key);
+                        vpnCert.setServerCert(ret.server_crt);
+                        vpnCert.setDh1024Pem(ret.dh1024_pem);
+                        reply.setInventory(VpnCertInventory.valueOf(dbf.updateAndRefresh(vpnCert)));
+                        bus.reply(msg, reply);
+                        chain.next();
+                    }
+
+                    @Override
+                    public void fail(ErrorCode errorCode) {
+                        reply.setError(errorCode);
+                        bus.reply(msg, reply);
+                        chain.next();
+                    }
+                });
+            }
+
+            @Override
+            public String getName() {
+                return "create-cert";
+            }
+
+            @Override
+            protected int getSyncLevel() {
+                return 2;
+            }
+        });
+    }
+
+    private void createCert(String url, final AgentCommand cmd, final ReturnValueCompletion<CreateCertRsp> completion) {
+
+        try {
+            CreateCertRsp rsp = restf.syncJsonPost(url, cmd, CreateCertRsp.class);
+            if (rsp.isSuccess()) {
+                completion.success(rsp);
+            } else {
+                logger.debug(String.format("ERROR: %s", rsp.getError()));
+                completion.fail(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR, rsp.getError()));
+            }
+        } catch (Exception e) {
+            logger.info(e.getMessage());
+            completion.fail(errf.instantiateErrorCode(SysErrors.HTTP_ERROR, e.getMessage()));
+        }
     }
 
     public String getId() {

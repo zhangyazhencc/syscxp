@@ -90,8 +90,6 @@ public class VpnBase extends AbstractVpn {
     private void handleLocalMessage(Message msg) {
         if (msg instanceof InitVpnMsg) {
             handle((InitVpnMsg) msg);
-        } else if (msg instanceof CreateCertMsg) {
-            handle((CreateCertMsg) msg);
         } else if (msg instanceof StartAllMsg) {
             handle((StartAllMsg) msg);
         } else if (msg instanceof DestroyVpnMsg) {
@@ -219,76 +217,6 @@ public class VpnBase extends AbstractVpn {
         logger.debug(String.format("Vpn %s [uuid:%s] changed status from %s to %s",
                 self.getName(), self.getUuid(), before, next));
         return true;
-    }
-
-    private void handle(final CreateCertMsg msg) {
-        thdf.chainSubmit(new ChainTask(msg) {
-            @Override
-            public String getSyncSignature() {
-                return id;
-            }
-
-            @Override
-            public void run(final SyncTaskChain chain) {
-                createCert(msg, new NoErrorCompletion(chain) {
-                    @Override
-                    public void done() {
-                        chain.next();
-                    }
-                });
-            }
-
-            @Override
-            public String getName() {
-                return String.format("start-vpn-%s-on-host-%s", msg.getVpnUuid(), self.getHostUuid());
-            }
-
-            @Override
-            protected int getSyncLevel() {
-                return getHostSyncLevel();
-            }
-        });
-    }
-
-    private void createCert(final CreateCertMsg msg, final NoErrorCompletion completion) {
-        CreateCertReply reply = new CreateCertReply();
-        CreateCertCmd cmd = new CreateCertCmd();
-        cmd.vpnuuid = msg.getVpnUuid();
-        httpCall(createCertPath, cmd, CreateCertRsp.class, new ReturnValueCompletion<CreateCertRsp>(msg, completion) {
-            @Override
-            public void success(CreateCertRsp ret) {
-                VpnCertVO vpnCert = dbf.findByUuid(msg.getVpnCertUuid(), VpnCertVO.class);
-                if (vpnCert == null) {
-                    vpnCert = new VpnCertVO();
-                    vpnCert.setUuid(msg.getVpnCertUuid());
-                    vpnCert.setAccountUuid(msg.getAccountUuid());
-                }
-                vpnCert.setCaCert(ret.ca_crt);
-                vpnCert.setClientKey(ret.client_key);
-                vpnCert.setClientCert(ret.client_crt);
-                vpnCert.setServerKey(ret.server_key);
-                vpnCert.setServerCert(ret.server_crt);
-                reply.setInventory(VpnCertInventory.valueOf(dbf.updateAndRefresh(vpnCert)));
-                bus.reply(msg, reply);
-                completion.done();
-            }
-
-            @Override
-            public void fail(ErrorCode err) {
-                reply.setError(err);
-                bus.reply(msg, reply);
-                completion.done();
-            }
-        });
-    }
-    private VpnCertVO saveVpnCert(VpnCertVO vpnCert, CertInfo info) {
-        vpnCert.setAccountUuid(info.getAccountUuid());
-        vpnCert.setCaCert(info.getCaCert());
-        vpnCert.setClientCert(info.getClientCert());
-        vpnCert.setClientKey(info.getClientKey());
-        vpnCert.setServerCert(info.getServerCert());
-        vpnCert.setServerKey(info.getServerKey());
-        return dbf.updateAndRefresh(vpnCert);
     }
 
     private void handle(final StartAllMsg msg) {
