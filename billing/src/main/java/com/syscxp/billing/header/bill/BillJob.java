@@ -125,19 +125,24 @@ public class BillJob {
 
 
     public Timestamp getLastMonthFirstDay(Timestamp currentTimestamp){
-        LocalDateTime lastDayOfMonth = currentTimestamp.toLocalDateTime().minusMonths(1);
-        LocalDate date = LocalDate.of(lastDayOfMonth.getYear(), lastDayOfMonth.getMonth(), 1);
+//        LocalDateTime lastDayOfMonth = currentTimestamp.toLocalDateTime().minusMonths(1);
+        LocalDateTime lastDayOfMonth = currentTimestamp.toLocalDateTime().minusDays(1);
+//        LocalDate date = LocalDate.of(lastDayOfMonth.getYear(), lastDayOfMonth.getMonth(), 1);
+        LocalDate date = LocalDate.of(lastDayOfMonth.getYear(), lastDayOfMonth.getMonth(), lastDayOfMonth.getDayOfMonth());
         LocalDateTime lastMonthFirstDay = LocalDateTime.of(date, LocalTime.MIN);
 
         return Timestamp.valueOf(lastMonthFirstDay);
     }
 
     public Timestamp getLastMonthLastDay(Timestamp currentTimestamp){
-        LocalDateTime lastDayOfMonth = currentTimestamp.toLocalDateTime().minusMonths(1);
-        LocalDate date = LocalDate.of(lastDayOfMonth.getYear(), lastDayOfMonth.getMonth(), 1);
+//        LocalDateTime lastDayOfMonth = currentTimestamp.toLocalDateTime().minusMonths(1);
+        LocalDateTime lastDayOfMonth = currentTimestamp.toLocalDateTime().minusDays(1);
+//        LocalDate date = LocalDate.of(lastDayOfMonth.getYear(), lastDayOfMonth.getMonth(), 1);
+        LocalDate date = LocalDate.of(lastDayOfMonth.getYear(), lastDayOfMonth.getMonth(), lastDayOfMonth.getDayOfMonth());
         LocalDateTime lastMonthFirstDay = LocalDateTime.of(date, LocalTime.MIN);
 
-        return Timestamp.valueOf(lastMonthFirstDay.plusMonths(1).minusNanos(1));
+//        return Timestamp.valueOf(lastMonthFirstDay.plusMonths(1).minusNanos(1));
+        return Timestamp.valueOf(lastMonthFirstDay.plusDays(1).minusNanos(1));
     }
 
 

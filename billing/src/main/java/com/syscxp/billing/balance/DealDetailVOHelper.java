@@ -20,7 +20,7 @@ public class DealDetailVOHelper {
     }
 
     @Transactional
-    public void saveDealDetailVO(String accountUuid, DealWay dealWay, BigDecimal income, BigDecimal expend, Timestamp currentTimestamp, DealType dealType, DealState dealState, BigDecimal balance, String outTradeNo, String tradeNo, String opAccountUuid,String comment) {
+    public void saveDealDetailVO(String accountUuid, DealWay dealWay, BigDecimal income, BigDecimal expend, Timestamp currentTimestamp, DealType dealType, DealState dealState, BigDecimal balance, String outTradeNo, String tradeNo, String opAccountUuid,String comment,String orderUuid) {
         DealDetailVO dVO = new DealDetailVO();
         dVO.setUuid(Platform.getUuid());
         dVO.setAccountUuid(accountUuid);
@@ -35,6 +35,7 @@ public class DealDetailVOHelper {
         dVO.setTradeNO(tradeNo);
         dVO.setOpAccountUuid(opAccountUuid);
         dVO.setComment(comment);
+        dVO.setOrderUuid(orderUuid);
         dbf.getEntityManager().persist(dVO);
     }
 }

@@ -10,6 +10,15 @@ public class VpnCommands {
     public static class AgentResponse implements ConditionalValidation {
         private boolean success = true;
         private String error;
+        private String message;
+
+        public String getMessage() {
+            return message;
+        }
+
+        public void setMessage(String message) {
+            this.message = message;
+        }
 
         public boolean isSuccess() {
             return success;
@@ -39,7 +48,7 @@ public class VpnCommands {
     }
 
     public static class VpnStatusResponse extends AgentResponse {
-        public String vpnSatus;
+        public String vpnStatus;
     }
 
     /**

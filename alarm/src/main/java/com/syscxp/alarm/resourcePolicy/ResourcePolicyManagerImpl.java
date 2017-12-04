@@ -10,10 +10,12 @@ import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
+import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconMsg;
 import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconReply;
@@ -21,6 +23,8 @@ import com.syscxp.header.alarm.AlarmConstant;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.ProductType;
+import com.syscxp.header.core.workflow.*;
+import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.falconapi.FalconApiRestConstant;
@@ -144,108 +148,88 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         bus.reply(msg, reply);
     }
 
+    @Transactional
     private void handle(APIAttachPolicyToResourceMsg msg) {
-
 
         APIAttachPolicyToResourceEvent event = new APIAttachPolicyToResourceEvent(msg.getId());
 
-        if (!StringUtils.isEmpty(msg.getPolicyUuid())) {
-            ResourcePolicyRefVO resourcePolicyRefVO = new ResourcePolicyRefVO();
-            resourcePolicyRefVO.setPolicyUuid(msg.getPolicyUuid());
-            resourcePolicyRefVO.setResourceUuid(msg.getResourceUuid());
-            dbf.persistAndRefresh(resourcePolicyRefVO);
-            PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
-            policyVO.setBindResources(policyVO.getBindResources() + 1);
-            dbf.updateAndRefresh(policyVO);
+        PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
 
-            event.setInventory(PolicyInventory.valueOf(policyVO));
-        } else {
-            SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
-            query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
-            List<ResourcePolicyRefVO> list = query.list();
-            if (list != null) {
-                ListIterator<ResourcePolicyRefVO> it = list.listIterator();
-                while (it.hasNext()) {
-                    ResourcePolicyRefVO resourcePolicyRefVO = it.next();
-                    PolicyVO policyVO = dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class);
-                    policyVO.setBindResources(policyVO.getBindResources() - 1);
-                    dbf.updateAndRefresh(policyVO);
-                    event.setInventory(PolicyInventory.valueOf(policyVO));
-                    dbf.remove(resourcePolicyRefVO);
+        ResourcePolicyRefVO refVO = Q.New(ResourcePolicyRefVO.class)
+                .eq(ResourcePolicyRefVO_.policyUuid,msg.getPolicyUuid())
+                .eq(ResourcePolicyRefVO_.resourceUuid,msg.getResourceUuid()).find();
+
+
+        FlowChain attachPolicy = FlowChainBuilder.newSimpleFlowChain();
+        attachPolicy.setName(String.format("Attach-policy"));
+        attachPolicy.then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                ResourcePolicyRefVO newRefVO = new ResourcePolicyRefVO();
+                if (!StringUtils.isEmpty(msg.getPolicyUuid())) {
+                    newRefVO.setPolicyUuid(msg.getPolicyUuid());
+                    newRefVO.setResourceUuid(msg.getResourceUuid());
+                    dbf.persistAndRefresh(newRefVO);
+
+                    PolicyVO newPolicyVO =dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
+                    newPolicyVO.setBindResources(newPolicyVO.getBindResources() + 1);
+                    dbf.updateAndRefresh(newPolicyVO);
+                } else {
+                    SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
+                    query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
+                    List<ResourcePolicyRefVO> list = query.list();
+                    for (ResourcePolicyRefVO resourcePolicyRefVO : list) {
+                        PolicyVO newPolicyVO = dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class);
+
+                        newPolicyVO.setBindResources(newPolicyVO.getBindResources() - 1);
+                        dbf.updateAndRefresh(newPolicyVO);
+                    }
                 }
+
+                trigger.next();
             }
 
-        }
-
-        if (!updatePoliciesByResources(msg.getSession().getAccountUuid(), msg.getResourceUuid())) {
-//            throw new OperationFailureException(Platform.operr("资源不存在！"));
-        }
-
-        bus.publish(event);
-
-    }
-
-    private boolean updatePoliciesByResources(String userid, String ResourceUuid) {
-        TunnelParameter tunnelparameter = new TunnelParameter();
-        List<Rule> rulelist = new ArrayList<>();
-        List<TunnelParameter> tunnelparameterlist = new ArrayList<>();
-
-        List<String> list = new ArrayList<>();
-        list.add(ResourceUuid);
-        Map<String, Object> map = getTunnelInfo(list);
-
-        tunnelparameter.setUser_id(userid);
-        tunnelparameter.setTunnel_id(ResourceUuid);
-        if (map == null || map.get(ResourceUuid) == null) {
-            return false;
-        } else {
-            FalconApiCommands.Tunnel tunnel = JSONObjectUtil.toObject(map.get(ResourceUuid).toString(), FalconApiCommands.Tunnel.class);
-//            tunnelparameter.setEndpointA_vid(tunnel.getEndpointA_vlan());
-//            tunnelparameter.setEndpointB_vid(tunnel.getEndpointB_vlan());
-            tunnelparameter.setEndpointA_ip(tunnel.getEndpointA_ip());
-            tunnelparameter.setEndpointB_ip(tunnel.getEndpointB_ip());
-            tunnelparameter.setBandwidth(tunnel.getBandwidth());
-        }
-
-
-        SimpleQuery<ResourcePolicyRefVO> policyrquery = dbf.createQuery(ResourcePolicyRefVO.class);
-        policyrquery.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, ResourceUuid);
-        List<ResourcePolicyRefVO> policylist = policyrquery.list();
-        Rule rule = null;
-        List<RegulationVO> regulationvolist = null;
-        for (ResourcePolicyRefVO policy : policylist) {
-            SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
-            regulationvoquery.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, policy.getPolicyUuid());
-            regulationvolist = regulationvoquery.list();
-            for (RegulationVO regulationvo : regulationvolist) {
-                rule = new Rule();
-                rule.setAlarm_rule_id(regulationvo.getUuid());
-                rule.setStrategy_type(regulationvo.getMonitorTargetVO().getTargetValue());
-                rule.setOp(regulationvo.getComparisonRuleVO().getComparisonValue());
-                rule.setRight_value(String.valueOf(regulationvo.getAlarmThreshold()));
-                rule.setStay_time(regulationvo.getTriggerPeriod());
-                rulelist.add(rule);
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                trigger.rollback();
             }
-        }
+        }).then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                updateFalconByResource(msg.getSession(), msg.getResourceUuid());
 
-        tunnelparameter.setRules(rulelist);
-        tunnelparameterlist.add(tunnelparameter);
+                trigger.next();
+            }
 
-        String url = CoreGlobalProperty.FALCON_API_IP + ":" + CoreGlobalProperty.FALCON_API_PORT +
-                FalconApiRestConstant.STRATEGY_SYNC;
-        String commandParam = JSONObjectUtil.toJsonString(tunnelparameterlist);
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        requestHeaders.setContentLength(commandParam.length());
-        HttpEntity<String> req = new HttpEntity<>(commandParam, requestHeaders);
-        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
-        FalconApiCommands.RestResponse res = rsp.getBody();
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                if (!StringUtils.isEmpty(msg.getPolicyUuid())) {
+                    ResourcePolicyRefVO refVO = Q.New(ResourcePolicyRefVO.class)
+                            .eq(ResourcePolicyRefVO_.policyUuid,msg.getPolicyUuid())
+                            .eq(ResourcePolicyRefVO_.resourceUuid,msg.getResourceUuid()).find();
+                    dbf.remove(refVO);
 
-        if (!res.isSuccess()) {
-            System.out.println(rsp.getBody());
-            throw new OperationFailureException(Platform.operr("falcon fail "));
-        }
-        return true;
+                    dbf.updateAndRefresh(policyVO);
+                }else{
+                    dbf.persistAndRefresh(refVO);
+                    dbf.updateAndRefresh(policyVO);
+                }
+
+                trigger.rollback();
+            }
+        }).done(new FlowDoneHandler(null) {
+            @Override
+            public void handle(Map data) {
+                event.setInventory(PolicyInventory.valueOf(policyVO));
+                bus.publish(event);
+            }
+        }).error(new FlowErrorHandler(null) {
+            @Override
+            public void handle(ErrorCode errCode, Map data) {
+                event.setError(Platform.operr(errCode.getDetails()));
+                bus.publish(event);
+            }
+        }).start();
     }
 
     private void handle(APIGetMonitorTargetListMsg msg) {
@@ -264,7 +248,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     }
 
     private void handle(APIUpdateTunnelInfoForFalconMsg msg) {
-
         TunnelParameter tunnelparameter = new TunnelParameter();
         tunnelparameter.setTunnel_id(msg.getTunnel_id());
         tunnelparameter.setUser_id(msg.getSession().getAccountUuid());
@@ -321,7 +304,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     }
 
     private void handle(APIDeleteResourceMsg msg) {
-
 
         String url = CoreGlobalProperty.FALCON_API_IP + ":" + CoreGlobalProperty.FALCON_API_PORT;
         Map<String, String> tunnelIdMap = new HashMap<>();
@@ -412,41 +394,120 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
     @Transactional()
     private void handle(APIDeleteRegulationMsg msg) {
-        APIDeleteRegulationEvent event = new APIDeleteRegulationEvent(msg.getId());
-
         RegulationVO regulationVO = dbf.findByUuid(msg.getUuid(), RegulationVO.class);
-        if (regulationVO != null) {
-            dbf.remove(regulationVO);
-        }
-        updateFalcon(msg.getSession(), regulationVO.getPolicyUuid());
 
-        bus.publish(event);
+        APIDeleteRegulationEvent event = new APIDeleteRegulationEvent(msg.getId());
+        FlowChain regulationDelete = FlowChainBuilder.newSimpleFlowChain();
+        regulationDelete.setName(String.format("Delete-Regulation-%s", msg.getUuid()));
+        regulationDelete.then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                RegulationVO deleteRegulation = dbf.findByUuid(msg.getUuid(), RegulationVO.class);
+                if (deleteRegulation != null) {
+                    dbf.remove(deleteRegulation);
+                }
+
+                trigger.next();
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                trigger.rollback();
+            }
+        }).then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                List<ResourcePolicyRefVO> refVOList = Q.New(ResourcePolicyRefVO.class)
+                        .eq(ResourcePolicyRefVO_.policyUuid, regulationVO.getPolicyUuid()).list();
+                if (!refVOList.isEmpty())
+                    updateFalconByPolicy(msg.getSession(), regulationVO.getPolicyUuid());
+
+                trigger.next();
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                dbf.updateAndRefresh(regulationVO);
+                trigger.rollback();
+            }
+        }).done(new FlowDoneHandler(null) {
+            @Override
+            public void handle(Map data) {
+                event.setInventory(RegulationInventory.valueOf(dbf.reload(regulationVO)));
+                bus.publish(event);
+            }
+        }).error(new FlowErrorHandler(null) {
+            @Override
+            public void handle(ErrorCode errCode, Map data) {
+                event.setError(Platform.operr(errCode.getDetails()));
+                bus.publish(event);
+            }
+        }).start();
     }
 
     @Transactional
     private void handle(APIUpdateRegulationMsg msg) {
-
         RegulationVO regulationVO = dbf.findByUuid(msg.getUuid(), RegulationVO.class);
+
         APIUpdateRegulationEvent event = new APIUpdateRegulationEvent(msg.getId());
-//        try {
-        if (msg.getAlarmThreshold() != regulationVO.getAlarmThreshold()) {
-            regulationVO.setAlarmThreshold(msg.getAlarmThreshold());
-        }
-        if (msg.getComparisonRuleUuid() != null) {
-            regulationVO.setComparisonRuleVO(dbf.findByUuid(msg.getComparisonRuleUuid(), ComparisonRuleVO.class));
-        }
-        if (msg.getDetectPeriod() != regulationVO.getDetectPeriod()) {
-            regulationVO.setDetectPeriod(msg.getDetectPeriod());
-        }
-        if (msg.getTriggerPeriod() != regulationVO.getTriggerPeriod()) {
-            regulationVO.setTriggerPeriod(msg.getTriggerPeriod());
-        }
 
-        dbf.updateAndRefresh(regulationVO);
-        updateFalcon(msg.getSession(), regulationVO.getPolicyUuid());
+        FlowChain regulationUpdate = FlowChainBuilder.newSimpleFlowChain();
+        regulationUpdate.setName(String.format("Update-Regulation-%s", msg.getUuid()));
+        regulationUpdate.then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                RegulationVO updateRegulation = dbf.findByUuid(msg.getUuid(), RegulationVO.class);
 
-        event.setInventory(RegulationInventory.valueOf(regulationVO));
-        bus.publish(event);
+                if (msg.getAlarmThreshold() != regulationVO.getAlarmThreshold()) {
+                    updateRegulation.setAlarmThreshold(msg.getAlarmThreshold());
+                }
+                if (msg.getComparisonRuleUuid() != null) {
+                    updateRegulation.setComparisonRuleVO(dbf.findByUuid(msg.getComparisonRuleUuid(), ComparisonRuleVO.class));
+                }
+                if (msg.getDetectPeriod() != regulationVO.getDetectPeriod()) {
+                    updateRegulation.setDetectPeriod(msg.getDetectPeriod());
+                }
+                if (msg.getTriggerPeriod() != regulationVO.getTriggerPeriod()) {
+                    updateRegulation.setTriggerPeriod(msg.getTriggerPeriod());
+                }
+                dbf.updateAndRefresh(updateRegulation);
+
+                trigger.next();
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                trigger.rollback();
+            }
+        }).then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                List<ResourcePolicyRefVO> refVOList = Q.New(ResourcePolicyRefVO.class)
+                        .eq(ResourcePolicyRefVO_.policyUuid, regulationVO.getPolicyUuid()).list();
+                if (!refVOList.isEmpty())
+                    updateFalconByPolicy(msg.getSession(), regulationVO.getPolicyUuid());
+
+                trigger.next();
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                dbf.updateAndRefresh(regulationVO);
+                trigger.rollback();
+            }
+        }).done(new FlowDoneHandler(null) {
+            @Override
+            public void handle(Map data) {
+                event.setInventory(RegulationInventory.valueOf(dbf.reload(regulationVO)));
+                bus.publish(event);
+            }
+        }).error(new FlowErrorHandler(null) {
+            @Override
+            public void handle(ErrorCode errCode, Map data) {
+                event.setError(Platform.operr(errCode.getDetails()));
+                bus.publish(event);
+            }
+        }).start();
     }
 
     private void handle(APIGetRegulationByPolicyMsg msg) {
@@ -463,25 +524,63 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         APICreateRegulationEvent event = new APICreateRegulationEvent(msg.getId());
         RegulationVO regulationVO = new RegulationVO();
 
-        SimpleQuery<RegulationVO> query = dbf.createQuery(RegulationVO.class);
-        query.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
-        long count = query.count();
-        if (count > 5) {
-            throw new IllegalArgumentException("every policy can build 5 regulations");
-        }
-        regulationVO.setUuid(Platform.getUuid());
-        regulationVO.setAlarmThreshold(msg.getAlarmThreshold());
-        regulationVO.setComparisonRuleVO(dbf.findByUuid(msg.getComparisonRuleUuid(), ComparisonRuleVO.class));
-        regulationVO.setMonitorTargetVO(dbf.findByUuid(msg.getMonitorTargetUuid(), MonitorTargetVO.class));
-        regulationVO.setDetectPeriod(msg.getDetectPeriod());
-        regulationVO.setPolicyUuid(msg.getPolicyUuid());
-        regulationVO.setTriggerPeriod(msg.getTriggerPeriod());
-        dbf.persistAndRefresh(regulationVO);
+        FlowChain regulationCreate = FlowChainBuilder.newSimpleFlowChain();
+        regulationCreate.setName(String.format("Create-Regulation"));
+        regulationCreate.then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                SimpleQuery<RegulationVO> query = dbf.createQuery(RegulationVO.class);
+                query.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, msg.getPolicyUuid());
+                long count = query.count();
+                if (count > 5) {
+                    throw new IllegalArgumentException("every policy can build 5 regulations");
+                }
+                regulationVO.setUuid(Platform.getUuid());
+                regulationVO.setAlarmThreshold(msg.getAlarmThreshold());
+                regulationVO.setComparisonRuleVO(dbf.findByUuid(msg.getComparisonRuleUuid(), ComparisonRuleVO.class));
+                regulationVO.setMonitorTargetVO(dbf.findByUuid(msg.getMonitorTargetUuid(), MonitorTargetVO.class));
+                regulationVO.setDetectPeriod(msg.getDetectPeriod());
+                regulationVO.setPolicyUuid(msg.getPolicyUuid());
+                regulationVO.setTriggerPeriod(msg.getTriggerPeriod());
+                dbf.persistAndRefresh(regulationVO);
 
-        updateFalcon(msg.getSession(), regulationVO.getPolicyUuid());
+                trigger.next();
+            }
 
-        event.setInventory(RegulationInventory.valueOf(regulationVO));
-        bus.publish(event);
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                dbf.remove(regulationVO);
+                trigger.rollback();
+            }
+        }).then(new Flow() {
+            @Override
+            public void run(FlowTrigger trigger, Map data) {
+                List<ResourcePolicyRefVO> refVOList = Q.New(ResourcePolicyRefVO.class)
+                        .eq(ResourcePolicyRefVO_.policyUuid, regulationVO.getPolicyUuid()).list();
+                if (!refVOList.isEmpty())
+                    updateFalconByPolicy(msg.getSession(), regulationVO.getPolicyUuid());
+
+                trigger.next();
+            }
+
+            @Override
+            public void rollback(FlowRollback trigger, Map data) {
+                dbf.updateAndRefresh(regulationVO);
+                trigger.rollback();
+            }
+        }).done(new FlowDoneHandler(null) {
+            @Override
+            public void handle(Map data) {
+                event.setInventory(RegulationInventory.valueOf(dbf.reload(regulationVO)));
+                bus.publish(event);
+            }
+        }).error(new FlowErrorHandler(null) {
+            @Override
+            public void handle(ErrorCode errCode, Map data) {
+                event.setError(Platform.operr(errCode.getDetails()));
+                bus.publish(event);
+            }
+        }).start();
     }
 
     private void handle(APICreatePolicyMsg msg) {
@@ -525,39 +624,129 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         return msg;
     }
 
-    private void updateFalcon(SessionInventory session, String policyUuid) {
+    private void updateFalconByPolicy(SessionInventory session, String policyUuid) {
+        String falconCommand = getFalconCommandByPolicy(policyUuid, session);
+        String url = getFalconUrl(FalconApiRestConstant.STRATEGY_SYNC);
+
+        sendFalconCommand(url, falconCommand);
+    }
+
+    private String getFalconCommandByPolicy(String policyUuid, SessionInventory session) {
         SimpleQuery<ResourcePolicyRefVO> resourcequery = dbf.createQuery(ResourcePolicyRefVO.class);
         resourcequery.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, policyUuid);
-        if (resourcequery.isExists()) {
-            FalconApiCommands.Rule rule = null;
-            List<FalconApiCommands.Rule> rulelist = null;
-            List<FalconApiCommands.Tunnel> tunnels = new ArrayList<>();
-            List<RegulationVO> regulationvolist = null;
-            List<ResourcePolicyRefVO> resourcelist = resourcequery.list();
 
-            List<String> prameterlist = new ArrayList<>();
-            for (ResourcePolicyRefVO rvo : resourcelist) {
-                prameterlist.add(rvo.getResourceUuid());
+        List<ResourcePolicyRefVO> refList = resourcequery.list();
+        List<String> prameterlist = new ArrayList<>();
+        for (ResourcePolicyRefVO rvo : refList) {
+            prameterlist.add(rvo.getResourceUuid());
+        }
+        Map<String, Object> map = getTunnelInfo(prameterlist);
+
+        if (map.isEmpty())
+            throw new IllegalArgumentException("failed to get resource info !");
+
+        List<FalconApiCommands.Tunnel> tunnels = new ArrayList<>();
+        for (ResourcePolicyRefVO resource : refList) {
+            if (!map.containsKey(resource.getResourceUuid()))
+                continue;
+
+            FalconApiCommands.Tunnel tunnel = JSONObjectUtil.toObject(map.get(resource.getResourceUuid()).toString(), FalconApiCommands.Tunnel.class);
+            tunnel.setUser_id(session.getAccountUuid());
+
+            List<FalconApiCommands.Rule> rulelist = new ArrayList<>();
+            SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
+            regulationvoquery.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, resource.getPolicyUuid());
+            List<RegulationVO> regulationvolist = regulationvoquery.list();
+            for (RegulationVO regulationvo : regulationvolist) {
+                FalconApiCommands.Rule rule = new FalconApiCommands.Rule();
+                rule.setRegulation_id(regulationvo.getUuid());
+                rule.setRight_value(String.valueOf(regulationvo.getAlarmThreshold()));
+                rule.setStay_time(regulationvo.getTriggerPeriod());
+                rule.setOp(regulationvo.getComparisonRuleVO().getComparisonValue());
+                rule.setStrategy_type(regulationvo.getMonitorTargetVO().getTargetValue());
+                rulelist.add(rule);
             }
 
-            Map<String, Object> map = getTunnelInfo(prameterlist);
-            for (ResourcePolicyRefVO resource : resourcelist) {
-                if (!map.containsKey(resource.getResourceUuid()))
-                    continue;
+            tunnel.setRules(rulelist);
+            tunnels.add(tunnel);
+        }
 
-                FalconApiCommands.Tunnel tunnel = JSONObjectUtil.toObject(map.get(resource.getResourceUuid()).toString(), FalconApiCommands.Tunnel.class);
+        return JSONObjectUtil.toJsonString(tunnels);
+    }
+
+
+    private void updateFalconByResource(SessionInventory session, String resourceUuid) {
+        String falconCommand = getFalconCommandByResource(resourceUuid, session);
+        String url = getFalconUrl(FalconApiRestConstant.STRATEGY_SYNC);
+
+        sendFalconCommand(url, falconCommand);
+    }
+
+    private String getFalconCommandByResource(String resourceUuid, SessionInventory session) {
+        List<String> list = new ArrayList<>();
+        list.add(resourceUuid);
+        Map<String, Object> map = getTunnelInfo(list);
+
+        List<ResourcePolicyRefVO> refVOList = Q.New(ResourcePolicyRefVO.class)
+                .eq(ResourcePolicyRefVO_.resourceUuid, resourceUuid).list();
+
+        List<FalconApiCommands.Tunnel> tunnels = new ArrayList<>();
+        if (refVOList.isEmpty()) {
+            if (map.containsKey(resourceUuid)) {
+                FalconApiCommands.Tunnel tunnel = JSONObjectUtil.toObject(map.get(resourceUuid).toString(), FalconApiCommands.Tunnel.class);
                 tunnel.setUser_id(session.getAccountUuid());
 
-                rulelist = new ArrayList<>();
-                SimpleQuery<ResourcePolicyRefVO> policyrquery = dbf.createQuery(ResourcePolicyRefVO.class);
-                policyrquery.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, resource.getResourceUuid());
-                List<ResourcePolicyRefVO> policylist = policyrquery.list();
-                for (ResourcePolicyRefVO policy : policylist) {
+                List<FalconApiCommands.Rule> rulelist = new ArrayList<>();
+                tunnel.setRules(rulelist);
+                tunnels.add(tunnel);
+            }
+        } else {
+            for (ResourcePolicyRefVO refVO : refVOList) {
+                if (!map.containsKey(refVO.getResourceUuid()))
+                    continue;
+
+                FalconApiCommands.Tunnel tunnel = JSONObjectUtil.toObject(map.get(refVO.getResourceUuid()).toString(), FalconApiCommands.Tunnel.class);
+                tunnel.setUser_id(session.getAccountUuid());
+
+                SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
+                regulationvoquery.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, refVO.getPolicyUuid());
+                List<RegulationVO> regulationvolist = regulationvoquery.list();
+                List<FalconApiCommands.Rule> rulelist = new ArrayList<>();
+                for (RegulationVO regulationvo : regulationvolist) {
+                    FalconApiCommands.Rule rule = new FalconApiCommands.Rule();
+                    rule.setRegulation_id(regulationvo.getUuid());
+                    rule.setRight_value(String.valueOf(regulationvo.getAlarmThreshold()));
+                    rule.setStay_time(regulationvo.getTriggerPeriod());
+                    rule.setOp(regulationvo.getComparisonRuleVO().getComparisonValue());
+                    rule.setStrategy_type(regulationvo.getMonitorTargetVO().getTargetValue());
+                    rulelist.add(rule);
+                }
+                tunnel.setRules(rulelist);
+                tunnels.add(tunnel);
+            }
+        }
+
+        return JSONObjectUtil.toJsonString(tunnels);
+    }
+
+    private String getFalconCommand(List<ResourcePolicyRefVO> resourcePolicyRefVOS, Map map, SessionInventory session) {
+        List<FalconApiCommands.Tunnel> tunnels = new ArrayList<>();
+
+        for (ResourcePolicyRefVO resource : resourcePolicyRefVOS) {
+            if (!map.containsKey(resource.getResourceUuid()))
+                continue;
+
+            FalconApiCommands.Tunnel tunnel = JSONObjectUtil.toObject(map.get(resource.getResourceUuid()).toString(), FalconApiCommands.Tunnel.class);
+            tunnel.setUser_id(session.getAccountUuid());
+
+            List<FalconApiCommands.Rule> rulelist = new ArrayList<>();
+            if (!resourcePolicyRefVOS.isEmpty()) {
+                for (ResourcePolicyRefVO policy : resourcePolicyRefVOS) {
                     SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
                     regulationvoquery.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, policy.getPolicyUuid());
-                    regulationvolist = regulationvoquery.list();
+                    List<RegulationVO> regulationvolist = regulationvoquery.list();
                     for (RegulationVO regulationvo : regulationvolist) {
-                        rule = new FalconApiCommands.Rule();
+                        FalconApiCommands.Rule rule = new FalconApiCommands.Rule();
                         rule.setRegulation_id(regulationvo.getUuid());
                         rule.setRight_value(String.valueOf(regulationvo.getAlarmThreshold()));
                         rule.setStay_time(regulationvo.getTriggerPeriod());
@@ -566,24 +755,31 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                         rulelist.add(rule);
                     }
                 }
-
-                tunnel.setRules(rulelist);
-                tunnels.add(tunnel);
             }
-
-            String url = CoreGlobalProperty.FALCON_API_IP + ":" + CoreGlobalProperty.FALCON_API_PORT +
-                    FalconApiRestConstant.STRATEGY_SYNC;
-            FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
-            try {
-                response = restf.syncJsonPost(url, JSONObjectUtil.toJsonString(tunnels), FalconApiCommands.RestResponse.class);
-            } catch (Exception e) {
-                response.setSuccess(false);
-                response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
-            }
-
-            if (!response.isSuccess())
-                throw new IllegalArgumentException(String.format("strategy sync fail! Error: %s", response.getMsg()));
+            tunnel.setRules(rulelist);
+            tunnels.add(tunnel);
         }
+
+        return JSONObjectUtil.toJsonString(tunnels);
+    }
+
+    private String getFalconUrl(String method) {
+        return CoreGlobalProperty.FALCON_API_IP + ":" + CoreGlobalProperty.FALCON_API_PORT + method;
+    }
+
+    ;
+
+    private void sendFalconCommand(String url, String command) {
+        FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
+        try {
+            response = restf.syncJsonPost(url, command, FalconApiCommands.RestResponse.class);
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
+        }
+
+        if (!response.isSuccess())
+            throw new IllegalArgumentException(String.format("strategy sync fail! Error: %s", response.getMsg()));
     }
 
     private Map getTunnelInfo(List<String> Resources) {

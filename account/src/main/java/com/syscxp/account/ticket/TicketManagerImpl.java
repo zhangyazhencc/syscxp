@@ -135,7 +135,7 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
 
         TicketVO vo =  new TicketVO();
         vo.setUuid(Platform.getUuid());
-        if(!msg.getTicketFrom().toString().equals(TicketFrom.console.toString())){
+        if(msg.getTicketFrom().toString().equals(TicketFrom.console.toString())){
             if(msg.getSession().getUuid() == null){
                 throw new ApiMessageInterceptionException(argerr("uuid of session is null"));
             }
