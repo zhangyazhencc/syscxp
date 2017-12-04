@@ -18,7 +18,7 @@ public class APICreateRegulationMsg extends APIMessage{
     private String monitorTargetUuid;
 
     @APIParam
-    private int alarmThreshold;
+    private float alarmThreshold;
 
     @APIParam(numberRange={1,Integer.MAX_VALUE})
     private int detectPeriod;
@@ -50,11 +50,11 @@ public class APICreateRegulationMsg extends APIMessage{
         this.monitorTargetUuid = monitorTargetUuid;
     }
 
-    public int getAlarmThreshold() {
+    public float getAlarmThreshold() {
         return alarmThreshold;
     }
 
-    public void setAlarmThreshold(int alarmThreshold) {
+    public void setAlarmThreshold(float alarmThreshold) {
         this.alarmThreshold = alarmThreshold;
     }
 
