@@ -92,7 +92,7 @@ public class OrderNotifyJob{
                         if (flag) {
                             notifyOrderVO2.setStatus(NotifyOrderStatus.SUCCESS);
                         } else {
-                            if (times > 10) {
+                            if (times > 5) {
                                 notifyOrderVO2.setStatus(NotifyOrderStatus.TERMINAL);
                             } else {
                                 notifyOrderVO2.setStatus(NotifyOrderStatus.FAILURE);
