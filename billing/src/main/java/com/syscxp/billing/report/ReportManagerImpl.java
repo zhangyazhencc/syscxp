@@ -1,8 +1,6 @@
 package com.syscxp.billing.report;
 
-import com.syscxp.billing.header.report.APIGetDayExpenseReportMsg;
-import com.syscxp.billing.header.report.APIGetDayExpenseReportReply;
-import com.syscxp.billing.header.report.ReportOrderData;
+import com.syscxp.billing.header.report.*;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.header.AbstractService;
@@ -37,10 +35,55 @@ public class ReportManagerImpl extends AbstractService implements ApiMessageInte
 
         if (msg instanceof APIGetDayExpenseReportMsg) {
             handle((APIGetDayExpenseReportMsg) msg);
+        } else if (msg instanceof APIGetMonExpenseReportMsg) {
+            handle((APIGetMonExpenseReportMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
 
+    }
+
+
+    private void handle(APIGetMonExpenseReportMsg msg) {
+        DateTimeFormatter f = DateTimeFormatter.ofPattern("yyyy-MM");
+        LocalDate start = LocalDate.parse(msg.getDateStart());
+        LocalDate end = LocalDate.parse(msg.getDateEnd());
+        List<ReportOrderData> list = new ArrayList<>();
+        long duration = ChronoUnit.MONTHS.between(start, end);
+        for (int i = 0; i <= duration; i++) {
+            ReportOrderData e = new ReportOrderData();
+            e.setPayTime(start.format(f));
+            list.add(e);
+            start = start.plusMonths(1);
+        }
+
+        String sql = "SELECT DATE_FORMAT(payTime,'%Y-%m')AS payTime,TYPE,productType, SUM(IFNULL(originalPrice,0)) AS originalPrice ,SUM(IFNULL(price,0)) AS price,SUM(IFNULL(payPresent,0)) AS payPresent,SUM(IFNULL(payCash,0)) AS payCash\n" +
+                "FROM OrderVO WHERE state = 'PAID' and DATE_FORMAT(createDate,'%Y-%m') between :dateStart and :dateEnd GROUP BY  DATE_FORMAT(payTime,'%Y-%m'),TYPE,productType ORDER BY payTime,TYPE,productType ";
+        Query q = dbf.getEntityManager().createNativeQuery(sql);
+        q.setParameter("dateStart", msg.getDateStart());
+        q.setParameter("dateEnd", msg.getDateEnd());
+        List<Object[]> objs = q.getResultList();
+        List<ReportOrderData> vos = objs.stream().map(ReportOrderData::new).collect(Collectors.toList());
+        filterData(list, vos);
+
+        APIGetMonExpenseReportReply reply = new APIGetMonExpenseReportReply();
+        reply.setInventories(list);
+        bus.reply(msg, reply);
+    }
+
+    private void filterData(List<ReportOrderData> initList, List<ReportOrderData> vos) {
+        initList.forEach(r -> {
+            vos.forEach(v -> {
+                if (r.getPayTime().equals(v.getPayTime())) {
+                    r.setOriginalPrice(v.getOriginalPrice());
+                    r.setPayCash(v.getPayCash());
+                    r.setPayPresent(v.getPayPresent());
+                    r.setPrice(v.getPrice());
+                    r.setProductType(v.getProductType());
+                    r.setType(v.getType());
+                }
+            });
+        });
     }
 
     private void handle(APIGetDayExpenseReportMsg msg) {
@@ -63,18 +106,7 @@ public class ReportManagerImpl extends AbstractService implements ApiMessageInte
         q.setParameter("dateEnd", msg.getDateEnd());
         List<Object[]> objs = q.getResultList();
         List<ReportOrderData> vos = objs.stream().map(ReportOrderData::new).collect(Collectors.toList());
-        list.forEach(r -> {
-            vos.forEach(v -> {
-                if (r.getPayTime().equals(v.getPayTime())) {
-                    r.setOriginalPrice(v.getOriginalPrice());
-                    r.setPayCash(v.getPayCash());
-                    r.setPayPresent(v.getPayPresent());
-                    r.setPrice(v.getPrice());
-                    r.setProductType(v.getProductType());
-                    r.setType(v.getType());
-                }
-            });
-        });
+        filterData(list, vos);
 
         APIGetDayExpenseReportReply reply = new APIGetDayExpenseReportReply();
         reply.setInventories(list);
