@@ -23,6 +23,7 @@ import com.syscxp.header.vpn.agent.*;
 import com.syscxp.header.vpn.vpn.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import com.syscxp.utils.ssh.SshShell;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.vpn.VpnCommands.*;
 import org.springframework.beans.factory.annotation.Autowire;
@@ -109,9 +110,31 @@ public class VpnBase extends AbstractVpn {
             handle((LoginInfoMsg) msg);
         } else if (msg instanceof VpnStatusMsg) {
             handle((VpnStatusMsg) msg);
+        } else if (msg instanceof PushCertMsg) {
+            handle((PushCertMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(PushCertMsg msg) {
+        PushCertReply reply = new PushCertReply();
+
+        InitVpnCmd cmd = new InitVpnCmd();
+        cmd.vpnuuid = msg.getVpnUuid();
+
+        httpCall(initVpnPath, cmd, InitVpnRsp.class, new ReturnValueCompletion<InitVpnRsp>(msg) {
+            @Override
+            public void success(InitVpnRsp ret) {
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode err) {
+                bus.reply(msg, reply);
+            }
+        });
+
     }
 
 
@@ -234,6 +257,18 @@ public class VpnBase extends AbstractVpn {
         httpCall(createCertPath, cmd, CreateCertRsp.class, new ReturnValueCompletion<CreateCertRsp>(msg, completion) {
             @Override
             public void success(CreateCertRsp ret) {
+                VpnCertVO vpnCert = dbf.findByUuid(msg.getVpnCertUuid(), VpnCertVO.class);
+                if (vpnCert == null) {
+                    vpnCert = new VpnCertVO();
+                    vpnCert.setUuid(msg.getVpnCertUuid());
+                    vpnCert.setAccountUuid(msg.getAccountUuid());
+                }
+                vpnCert.setCaCert(ret.ca_crt);
+                vpnCert.setClientKey(ret.client_key);
+                vpnCert.setClientCert(ret.client_crt);
+                vpnCert.setServerKey(ret.server_key);
+                vpnCert.setServerCert(ret.server_crt);
+                reply.setInventory(VpnCertInventory.valueOf(dbf.updateAndRefresh(vpnCert)));
                 bus.reply(msg, reply);
                 completion.done();
             }
@@ -245,6 +280,15 @@ public class VpnBase extends AbstractVpn {
                 completion.done();
             }
         });
+    }
+    private VpnCertVO saveVpnCert(VpnCertVO vpnCert, CertInfo info) {
+        vpnCert.setAccountUuid(info.getAccountUuid());
+        vpnCert.setCaCert(info.getCaCert());
+        vpnCert.setClientCert(info.getClientCert());
+        vpnCert.setClientKey(info.getClientKey());
+        vpnCert.setServerCert(info.getServerCert());
+        vpnCert.setServerKey(info.getServerKey());
+        return dbf.updateAndRefresh(vpnCert);
     }
 
     private void handle(final StartAllMsg msg) {

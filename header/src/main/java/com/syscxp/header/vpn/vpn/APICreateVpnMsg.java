@@ -23,6 +23,16 @@ public class APICreateVpnMsg extends APIVpnMessage {
     private Integer duration;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private Integer vlan;
+    @APIParam(resourceType = VpnCertVO.class, checkAccount = true)
+    private String vpnCertUuid;
+
+    public String getVpnCertUuid() {
+        return vpnCertUuid;
+    }
+
+    public void setVpnCertUuid(String vpnCertUuid) {
+        this.vpnCertUuid = vpnCertUuid;
+    }
 
     public Integer getVlan() {
         return vlan;
