@@ -163,7 +163,7 @@ public class VpnBase extends AbstractVpn {
         httpCall(initVpnPath, cmd, InitVpnRsp.class, new ReturnValueCompletion<InitVpnRsp>(msg, completion) {
             @Override
             public void success(InitVpnRsp ret) {
-                VpnStatus next = "UP".equals(ret.vpnSatus) ? VpnStatus.Connected : VpnStatus.Disconnected;
+                VpnStatus next = "UP".equals(ret.vpnStatus) ? VpnStatus.Connected : VpnStatus.Disconnected;
                 changVpnSatus(next);
                 reply.setStatus(next.toString());
                 bus.reply(msg, reply);
@@ -260,7 +260,7 @@ public class VpnBase extends AbstractVpn {
         httpCall(startAllPath, cmd, StartAllRsp.class, new ReturnValueCompletion<StartAllRsp>(msg) {
             @Override
             public void success(StartAllRsp ret) {
-                VpnStatus next = "UP".equals(ret.vpnSatus) ? VpnStatus.Connected : VpnStatus.Disconnected;
+                VpnStatus next = "UP".equals(ret.vpnStatus) ? VpnStatus.Connected : VpnStatus.Disconnected;
                 changVpnSatus(next);
                 bus.reply(msg, reply);
             }
@@ -305,7 +305,7 @@ public class VpnBase extends AbstractVpn {
                                 httpCall(vpnServicePath, cmd, VpnServiceRsp.class, new ReturnValueCompletion<VpnServiceRsp>(trigger) {
                                     @Override
                                     public void success(VpnServiceRsp ret) {
-                                        VpnStatus next = "UP".equals(ret.vpnSatus) ? VpnStatus.Connected : VpnStatus.Disconnected;
+                                        VpnStatus next = "UP".equals(ret.vpnStatus) ? VpnStatus.Connected : VpnStatus.Disconnected;
                                         changVpnSatus(next);
                                         trigger.next();
                                     }
@@ -391,12 +391,12 @@ public class VpnBase extends AbstractVpn {
         httpCall(vpnServicePath, cmd, VpnServiceRsp.class, new ReturnValueCompletion<VpnServiceRsp>(msg) {
             @Override
             public void success(VpnServiceRsp ret) {
-                if ("UP".equals(ret.vpnSatus) && msg.getState() == VpnState.Enabled) {
+                if ("UP".equals(ret.vpnStatus) && msg.getState() == VpnState.Enabled) {
                     changVpnSatus(VpnStatus.Connected);
-                } else if ("DOWN".equals(ret.vpnSatus)&& msg.getState() == VpnState.Disabled) {
+                } else if ("DOWN".equals(ret.vpnStatus) && msg.getState() == VpnState.Disabled) {
                     changVpnSatus(VpnStatus.Disconnected);
                 } else {
-                    reply.setError(errf.stringToOperationError("failed to change vpn state;"));
+                    reply.setError(errf.stringToOperationError("change vpn state"));
                 }
                 bus.reply(msg, reply);
             }
@@ -447,7 +447,7 @@ public class VpnBase extends AbstractVpn {
         httpCall(vpnServicePath, cmd, VpnServiceRsp.class, new ReturnValueCompletion<VpnServiceRsp>(completion) {
             @Override
             public void success(VpnServiceRsp ret) {
-                if ("UP".equals(ret.vpnSatus)) {
+                if ("UP".equals(ret.vpnStatus)) {
                     completion.success();
                 } else {
                     completion.fail(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR, "vpn service disconnected"));
@@ -553,9 +553,13 @@ public class VpnBase extends AbstractVpn {
     }
 
     private VpnCertVO saveVpnCert(ClientInfoRsp info, String accountUuid) {
-        VpnCertVO vo = new VpnCertVO();
-        vo.setUuid(Platform.getUuid());
-        vo.setAccountUuid(accountUuid);
+
+        VpnCertVO vo = Q.New(VpnCertVO.class).eq(VpnCertVO_.accountUuid, accountUuid).find();
+        if (vo == null) {
+            vo = new VpnCertVO();
+            vo.setUuid(Platform.getUuid());
+            vo.setAccountUuid(accountUuid);
+        }
         vo.setCaCert(info.ca_crt);
         vo.setClientCert(info.client_crt);
         vo.setClientKey(info.client_key);

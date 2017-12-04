@@ -188,29 +188,31 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnHostVO host = dbf.findByUuid(msg.getHostUuid(), VpnHostVO.class);
         checkHostState(host);
 
-        VpnVO vpn = new VpnVO();
-        vpn.setUuid(Platform.getUuid());
-        vpn.setName(msg.getName());
-        vpn.setDescription(msg.getDescription());
-        vpn.setHostUuid(msg.getHostUuid());
-        vpn.setAccountUuid(msg.getAccountUuid());
-        vpn.setInterfaceUuid(msg.getInterfaceUuid());
-        vpn.setPort(generatePort(host));
-        vpn.setVlan(msg.getVlan());
-        vpn.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
-        vpn.setDuration(msg.getDuration());
-        vpn.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
-        vpn.setPayment(Payment.UNPAID);
-        vpn.setState(VpnState.Enabled);
-        vpn.setStatus(VpnStatus.Connecting);
-        vpn.setMaxModifies(VpnGlobalProperty.VPN_MAX_MOTIFIES);
-        vpn.setSid(Platform.getUuid());
-        vpn.setCertKey(generateCertKey(msg.getAccountUuid(), vpn.getSid()));
-
-        final VpnVO vo = dbf.persistAndRefresh(vpn);
+        VpnVO vo = new VpnVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setName(msg.getName());
+        vo.setDescription(msg.getDescription());
+        vo.setHostUuid(msg.getHostUuid());
+        vo.setAccountUuid(msg.getAccountUuid());
+        vo.setInterfaceUuid(msg.getInterfaceUuid());
+        vo.setPort(generatePort(host));
+        vo.setVlan(msg.getVlan());
+        vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
+        vo.setDuration(msg.getDuration());
+        vo.setExpireDate(Timestamp.valueOf(LocalDateTime.now().plusMonths(msg.getDuration())));
+        vo.setPayment(Payment.UNPAID);
+        vo.setState(VpnState.Enabled);
+        vo.setStatus(VpnStatus.Connecting);
+        vo.setMaxModifies(VpnGlobalProperty.VPN_MAX_MOTIFIES);
+        vo.setSid(Platform.getUuid());
+        vo.setCertKey(generateCertKey(msg.getAccountUuid(), vo.getSid()));
+        VpnCertVO vpnCert = Q.New(VpnCertVO.class).eq(VpnCertVO_.accountUuid, msg.getAccountUuid()).find();
+        if (vpnCert != null)
+            vo.setVpnCertUuid(vpnCert.getUuid());
+        final VpnVO vpn = dbf.persistAndRefresh(vo);
 
         FlowChain chain = FlowChainBuilder.newSimpleFlowChain();
-        chain.setName(String.format("add-vpn-%s", vo.getUuid()));
+        chain.setName(String.format("add-vpn-%s", vpn.getUuid()));
 
         chain.then(new NoRollbackFlow() {
             String __name__ = "pay-before-add-vpn";
@@ -258,20 +260,21 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
-                getCertInfo(vpn.getUuid(), new ReturnValueCompletion<VpnCertInventory>(trigger) {
-                    @Override
-                    public void success(VpnCertInventory returnValue) {
-                        vpn.setVpnCertUuid(returnValue.getUuid());
-                        dbf.updateAndRefresh(vpn);
-                        trigger.next();
-                    }
+                if (vpn.getVpnCertUuid() == null) {
+                    getCertInfo(vpn.getUuid(), new ReturnValueCompletion<VpnCertInventory>(trigger) {
+                        @Override
+                        public void success(VpnCertInventory returnValue) {
+                            vpn.setVpnCertUuid(returnValue.getUuid());
+                            dbf.updateAndRefresh(vpn);
+                            trigger.next();
+                        }
 
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        trigger.fail(errorCode);
-                    }
-                });
-
+                        @Override
+                        public void fail(ErrorCode errorCode) {
+                            trigger.next();
+                        }
+                    });
+                }
             }
         }).done(new FlowDoneHandler(msg) {
             @Override
@@ -284,8 +287,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }).error(new FlowErrorHandler(msg) {
             @Override
             public void handle(ErrorCode errCode, Map data) {
-                VpnVO nvo = dbf.reload(vo);
-                dbf.remove(nvo);
                 logger.debug(String.format("failed to add vpn[name:%s, uuid:%s]", vo.getName(), vo.getUuid()));
                 completion.fail(errCode);
             }
@@ -964,7 +965,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         try {
             RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(orderMsg), RestAPIResponse.class);
             APIReply apiReply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
-            if (apiReply.isSuccess() && ((APICreateBuyOrderReply) apiReply).isOrderSuccess()) {
+            if (apiReply.isSuccess()) {
                 complete.success();
             } else {
                 logger.debug(String.format("Message[%s]:交易失败", orderMsg.getClass().getSimpleName()));
@@ -986,11 +987,16 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         bus.send(initVpnMsg, new CloudBusCallBack(complete) {
             @Override
             public void run(MessageReply reply) {
-                VpnVO vpn = dbf.reload(vo);
-                InitVpnReply initVpnReply = reply.castReply();
-                if (vpn.getStatus() != VpnStatus.valueOf(initVpnReply.getStatus())) {
-                    vpn.setStatus(VpnStatus.valueOf(initVpnReply.getStatus()));
-                    dbf.updateAndRefresh(vpn);
+                if (reply.isSuccess()) {
+                    VpnVO vpn = dbf.reload(vo);
+                    InitVpnReply initVpnReply = reply.castReply();
+                    if (vpn.getStatus() != VpnStatus.valueOf(initVpnReply.getStatus())) {
+                        vpn.setStatus(VpnStatus.valueOf(initVpnReply.getStatus()));
+                        dbf.updateAndRefresh(vpn);
+                    }
+                    complete.success();
+                } else {
+                    complete.fail(reply.getError());
                 }
             }
         });
