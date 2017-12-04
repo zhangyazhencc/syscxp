@@ -89,8 +89,6 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
                 vo.setMobile(msg.getMobile());
             }
             dbf.getEntityManager().merge(vo);
-            dbf.getEntityManager().flush();
-            dbf.getEntityManager().refresh(vo);
             UpdateQuery q = UpdateQuery.New(ContactNotifyWayRefVO.class);
             q.condAnd(ContactNotifyWayRefVO_.contactUuid, SimpleQuery.Op.EQ, vo.getUuid());
             q.delete();
@@ -105,7 +103,8 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
             dbf.getEntityManager().flush();
         }
         APIUpdateContactEvent event = new APIUpdateContactEvent(msg.getId());
-        event.setInventory(ContactInventory.valueOf(dbf.findByUuid(msg.getUuid(), ContactVO.class)));
+        ContactVO contactVO = dbf.getEntityManager().find( ContactVO.class,msg.getUuid());
+        event.setInventory(ContactInventory.valueOf(contactVO));
         bus.publish(event);
     }
 
@@ -119,6 +118,7 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
         validateEmail(email, emailCaptcha);
     }
 
+    @Transactional
     private void validateUpdateCaptcha(String mobile, String email, String mobileCaptcha, String emailCaptcha) {
         if (!StringUtils.isEmpty(mobile)) {
             if (StringUtils.isEmpty(mobileCaptcha)) {
