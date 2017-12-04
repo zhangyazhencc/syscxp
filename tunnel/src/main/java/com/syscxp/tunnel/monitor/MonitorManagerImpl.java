@@ -406,7 +406,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param event
      */
     @Transactional
-    public void deleteTunnelMonitor(String tunnelUuid, APIEvent event) {
+    public void deleteTunnelMonitor(String tunnelUuid) {
         // 获取监控通道数据
         List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelUuid);
 

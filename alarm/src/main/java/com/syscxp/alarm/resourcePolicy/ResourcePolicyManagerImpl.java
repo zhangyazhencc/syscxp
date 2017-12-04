@@ -159,7 +159,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 .eq(ResourcePolicyRefVO_.policyUuid,msg.getPolicyUuid())
                 .eq(ResourcePolicyRefVO_.resourceUuid,msg.getResourceUuid()).find();
 
-
         FlowChain attachPolicy = FlowChainBuilder.newSimpleFlowChain();
         attachPolicy.setName(String.format("Attach-policy"));
         attachPolicy.then(new Flow() {
@@ -686,7 +685,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         List<String> list = new ArrayList<>();
         list.add(resourceUuid);
         Map<String, Object> map = getTunnelInfo(list);
-
         List<ResourcePolicyRefVO> refVOList = Q.New(ResourcePolicyRefVO.class)
                 .eq(ResourcePolicyRefVO_.resourceUuid, resourceUuid).list();
 
