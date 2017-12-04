@@ -552,6 +552,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
     }
 
+    @Transactional
     private void handle(APICreateAliEdgeRouterMsg msg){
         AliEdgeRouterVO vo = new AliEdgeRouterVO();
 
@@ -581,7 +582,8 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         try{
             response = client.getAcsResponse(VBR);
             vo.setVbrUuid(response.getVbrId());
-            dbf.persistAndRefresh(vo);
+            dbf.getEntityManager().persist(vo);
+            dbf.getEntityManager().flush();
         }catch(Exception e){
             e.printStackTrace();
             throw new ApiMessageInterceptionException(argerr(e.getMessage()));
