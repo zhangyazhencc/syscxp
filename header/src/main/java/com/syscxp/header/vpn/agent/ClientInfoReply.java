@@ -2,15 +2,17 @@ package com.syscxp.header.vpn.agent;
 
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.vpn.vpn.VpnCertInventory;
+import com.syscxp.header.vpn.vpn.VpnInventory;
+import com.syscxp.header.vpn.vpn.VpnVO;
 
 public class ClientInfoReply extends MessageReply {
-    private VpnCertInventory inventory;
+    private VpnInventory inventory;
 
-    public VpnCertInventory getInventory() {
+    public VpnInventory getInventory() {
         return inventory;
     }
 
-    public void setInventory(VpnCertInventory inventory) {
+    public void setInventory(VpnInventory inventory) {
         this.inventory = inventory;
     }
 }

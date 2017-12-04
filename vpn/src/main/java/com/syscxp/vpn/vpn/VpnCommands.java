@@ -1,6 +1,7 @@
 package com.syscxp.vpn.vpn;
 
 import com.syscxp.core.validation.ConditionalValidation;
+import com.syscxp.header.vpn.agent.CertInfo;
 
 public class VpnCommands {
     public static class AgentCommand {
@@ -151,9 +152,6 @@ public class VpnCommands {
     }
 
     public static class ClientInfoRsp extends AgentResponse {
-        public String ca_crt;
-        public String client_crt;
-        public String client_key;
         public String client_conf;
     }
 
@@ -178,11 +176,9 @@ public class VpnCommands {
         public String vpnport;
         public String ddnport;
         public String speed;
-        public String username;
-        public String passwd;
+        public CertInfo certinfo;
     }
 
     public static class InitVpnRsp extends VpnStatusResponse {
     }
-
 }

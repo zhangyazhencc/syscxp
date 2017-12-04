@@ -5,6 +5,7 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.thread.ChainTask;
 import com.syscxp.core.thread.SyncTaskChain;
 import com.syscxp.core.thread.ThreadFacade;
@@ -177,9 +178,8 @@ public class VpnBase extends AbstractVpn {
         cmd.ddnport = msg.getInterfaceName();
         cmd.vpnport = msg.getVpnPort();
         cmd.vpnvlanid = msg.getVpnVlan();
-        cmd.username = msg.getUsername();
-        cmd.passwd = msg.getPasswd();
         cmd.speed = msg.getSpeed();
+        cmd.certinfo = msg.getCertInfo();
 
         httpCall(initVpnPath, cmd, InitVpnRsp.class, new ReturnValueCompletion<InitVpnRsp>(msg, completion) {
             @Override
@@ -511,8 +511,8 @@ public class VpnBase extends AbstractVpn {
         httpCall(clientInfoPath, cmd, ClientInfoRsp.class, new ReturnValueCompletion<ClientInfoRsp>(msg) {
             @Override
             public void success(ClientInfoRsp ret) {
-                VpnCertVO vpnCert = saveVpnCert(ret, self.getAccountUuid());
-                reply.setInventory(VpnCertInventory.valueOf(vpnCert));
+                self.setClientConf(ret.client_conf);
+                reply.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(self)));
                 bus.reply(msg, reply);
             }
 
@@ -522,21 +522,6 @@ public class VpnBase extends AbstractVpn {
                 bus.reply(msg, reply);
             }
         });
-    }
-
-    private VpnCertVO saveVpnCert(ClientInfoRsp info, String accountUuid) {
-
-        VpnCertVO vo = Q.New(VpnCertVO.class).eq(VpnCertVO_.accountUuid, accountUuid).find();
-        if (vo == null) {
-            vo = new VpnCertVO();
-            vo.setUuid(Platform.getUuid());
-            vo.setAccountUuid(accountUuid);
-        }
-        vo.setCaCert(info.ca_crt);
-        vo.setClientCert(info.client_crt);
-        vo.setClientKey(info.client_key);
-        vo.setClientConf(info.client_conf);
-        return dbf.updateAndRefresh(vo);
     }
 
     private void handle(final LoginInfoMsg msg) {

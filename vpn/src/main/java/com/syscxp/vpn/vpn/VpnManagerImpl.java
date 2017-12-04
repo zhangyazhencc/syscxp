@@ -326,25 +326,21 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 });
             }
         }).then(new NoRollbackFlow() {
-            String __name__ = "get-certInfo-after-add-vpn";
+            String __name__ = "get-certConf-after-add-vpn";
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
-                if (vpn.getVpnCertUuid() == null) {
-                    getCertInfo(vpn.getUuid(), new ReturnValueCompletion<VpnCertInventory>(trigger) {
-                        @Override
-                        public void success(VpnCertInventory returnValue) {
-                            vpn.setVpnCertUuid(returnValue.getUuid());
-                            dbf.updateAndRefresh(vpn);
-                            trigger.next();
-                        }
+                getCertInfo(vpn.getUuid(), new ReturnValueCompletion<VpnInventory>(trigger) {
+                    @Override
+                    public void success(VpnInventory returnValue) {
+                        trigger.next();
+                    }
 
-                        @Override
-                        public void fail(ErrorCode errorCode) {
-                            trigger.next();
-                        }
-                    });
-                }
+                    @Override
+                    public void fail(ErrorCode errorCode) {
+                        trigger.next();
+                    }
+                });
             }
         }).done(new FlowDoneHandler(msg) {
             @Override
@@ -1186,6 +1182,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         BandwidthOfferingVO bandwidth = dbf.findByUuid(vo.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
         initVpnMsg.setSpeed(String.valueOf(SizeUnit.BYTE.toKiloByte(bandwidth.getBandwidth())));
         initVpnMsg.setInterfaceName(vo.getVpnHost().getInterfaceName());
+        initVpnMsg.setCertInfo(CertInfo.valueOf(vo.getVpnCert()));
+
 
         bus.makeLocalServiceId(initVpnMsg, VpnConstant.SERVICE_ID);
         bus.send(initVpnMsg, new CloudBusCallBack(complete) {
@@ -1206,7 +1204,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         });
     }
 
-    private void getCertInfo(String vpnUuid, final ReturnValueCompletion<VpnCertInventory> complete) {
+    private void getCertInfo(String vpnUuid, final ReturnValueCompletion<VpnInventory> complete) {
         ClientInfoMsg msg = new ClientInfoMsg();
         msg.setVpnUuid(vpnUuid);
         bus.makeLocalServiceId(msg, VpnConstant.SERVICE_ID);

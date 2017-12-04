@@ -9,18 +9,23 @@ public class InitVpnMsg extends VpnMessage {
     public String vpnPort;
     public String interfaceName;
     public String speed;
-    public String username;
-    public String passwd;
+    public CertInfo certInfo;
 
     public static InitVpnMsg valueOf(VpnVO vo) {
         InitVpnMsg msg = new InitVpnMsg();
         msg.setVpnUuid(vo.getUuid());
         msg.setHostIp(vo.getVpnHost().getHostIp());
-        msg.setUsername(vo.getAccountUuid());
-        msg.setPasswd(vo.getCertKey());
         msg.setVpnPort(vo.getPort().toString());
         msg.setVpnVlan(vo.getVlan().toString());
         return msg;
+    }
+
+    public CertInfo getCertInfo() {
+        return certInfo;
+    }
+
+    public void setCertInfo(CertInfo certInfo) {
+        this.certInfo = certInfo;
     }
 
     public String getHostIp() {
@@ -63,19 +68,4 @@ public class InitVpnMsg extends VpnMessage {
         this.speed = speed;
     }
 
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getPasswd() {
-        return passwd;
-    }
-
-    public void setPasswd(String passwd) {
-        this.passwd = passwd;
-    }
 }
