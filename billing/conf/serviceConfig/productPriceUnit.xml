@@ -24,6 +24,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.billing.header.price.APIGetBroadPriceListMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.billing.header.price.APIQueryProductPriceUnitMsg</name>
         <serviceId>query</serviceId>
     </message>
