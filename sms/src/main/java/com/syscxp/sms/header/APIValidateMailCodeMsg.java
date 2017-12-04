@@ -11,7 +11,7 @@ public class APIValidateMailCodeMsg extends APISyncCallMessage {
     @APIParam(emptyString = false)
     private String mail;
 
-    @APIParam(emptyString = false, maxLength = 8)
+    @APIParam(emptyString = false, maxLength = 12)
     private String code;
 
     public String getMail() {

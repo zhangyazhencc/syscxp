@@ -121,11 +121,9 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
         return null;
     }
 
-    public void getImage() throws ServletException, IOException {
+    public String getBase64Image() throws ServletException, IOException {
 
-        int width=0,height=0;
-
-
+        int width=166,height=43;
 
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         Graphics g = image.getGraphics();
@@ -133,7 +131,7 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
         g.setColor(getRandColor(220, 250));
         g.fillRect(0, 0, width, height);
         g.setFont(new Font("Times New Roman", Font.PLAIN, 18));
-//g.drawRect(0,0,width-1,height-1);
+            //g.drawRect(0,0,width-1,height-1);
         g.draw3DRect(0, 0, width - 1, height - 1, true);
         g.setColor(getRandColor(160, 200));
         for (int i = 0; i < 155; i++) {
@@ -144,7 +142,7 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
             g.drawLine(x, y, x + xl, y + yl);
         }
         String sRand = "";
-        String s = "012345678901234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ012345678901234567890123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String s = "23456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
         for (int i = 0; i < 4; i++) {
             char rand = s.charAt(random.nextInt(s.length()));
             sRand += rand;
@@ -163,10 +161,8 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
         }
 
         byte[] data = output.toByteArray();
-
-        // 对字节数组Base64编码
         BASE64Encoder encoder = new BASE64Encoder();
-        String asdf =  encoder.encode(data);// 返回Base64编码过的字节数组字符串
+        return  encoder.encode(data);
 
     }
 
