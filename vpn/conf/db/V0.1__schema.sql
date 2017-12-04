@@ -52,7 +52,7 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`hostUuid` varchar(32) NOT NULL COMMENT '物理机',
 	`name` varchar(255) NOT NULL COMMENT '名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '描述',
-	`bandwidthOfferingUuid` BIGINT NOT NULL COMMENT '带宽',
+	`bandwidthOfferingUuid` VARCHAR(32) NOT NULL COMMENT '带宽',
 	`interfaceUuid` VARCHAR(32) NOT NULL COMMENT '接口uuid',
 	`port` INT(10) NOT NULL COMMENT 'VPN端口',
 	`vlan` INT(10) NOT NULL COMMENT 'vlan',
@@ -156,11 +156,11 @@ CREATE TABLE `syscxp_vpn`.`BandwidthOfferingVO` (
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-ALTER TABLE VpnHostVO ADD CONSTRAINT fkMonitorHostVOHostEO FOREIGN KEY (uuid) REFERENCES HostEO (uuid) ON UPDATE RESTRICT ON DELETE CASCADE;
+ALTER TABLE VpnHostVO ADD CONSTRAINT fkVpnHostVOHostEO FOREIGN KEY (uuid) REFERENCES HostEO (uuid) ON UPDATE RESTRICT ON DELETE CASCADE;
 ALTER TABLE VpnHostVO ADD CONSTRAINT fkVpnHostVOZoneVO FOREIGN KEY (zoneUuid) REFERENCES ZoneVO (uuid) ON DELETE RESTRICT;
 ALTER TABLE HostInterfaceVO ADD CONSTRAINT fkHostInterfaceVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE CASCADE;
 ALTER TABLE VpnVO ADD CONSTRAINT fkVpnVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE RESTRICT;
-
+ALTER TABLE VpnVO ADD CONSTRAINT fkVpnVOVpnCertVO FOREIGN KEY (vpnCertUuid) REFERENCES VpnCertVO (uuid) ON DELETE RESTRICT;
 
 INSERT INTO `syscxp_vpn`.`BandwidthOfferingVO` (`uuid`,`name`,`description`,`bandwidth`,`lastOpDate`,`createDate`)
 VALUES ('2G','2G','',2147483648,'2017-11-01 13:51:31','2017-11-01 13:51:31'),
