@@ -81,7 +81,7 @@ CREATE TABLE  `syscxp_vpn`.`VpnCertVO` (
 	`serverCert` TEXT NOT NULL COMMENT '',
 	`serverKey` TEXT NOT NULL COMMENT '',
 	`dh1024Pem` TEXT DEFAULT NULL COMMENT '',
-	`clientConf` TEXT NOT NULL COMMENT '',
+	`clientConf` TEXT DEFAULT NULL COMMENT '',
 	`version` INT(5) DEFAULT 0 COMMENT '',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,

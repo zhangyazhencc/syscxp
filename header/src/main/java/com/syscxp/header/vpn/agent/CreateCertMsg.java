@@ -1,6 +1,8 @@
 package com.syscxp.header.vpn.agent;
 
-public class CreateCertMsg extends VpnMessage {
+import com.syscxp.header.message.NeedReplyMessage;
+
+public class CreateCertMsg extends NeedReplyMessage {
     private String vpnCertUuid;
     private String accountUuid;
 

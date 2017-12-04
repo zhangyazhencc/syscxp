@@ -33,7 +33,6 @@ import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.errorcode.SysErrors;
-import com.syscxp.header.host.Host;
 import com.syscxp.header.host.HostState;
 import com.syscxp.header.message.*;
 import com.syscxp.header.query.QueryOp;
@@ -55,8 +54,9 @@ import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
-import com.syscxp.vpn.host.VpnHost;
-import com.syscxp.vpn.vpn.VpnCommands.*;
+import com.syscxp.vpn.vpn.VpnCommands.AgentCommand;
+import com.syscxp.vpn.vpn.VpnCommands.CreateCertCmd;
+import com.syscxp.vpn.vpn.VpnCommands.CreateCertRsp;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -767,7 +767,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         thdf.chainSubmit(new ChainTask(msg) {
             @Override
             public String getSyncSignature() {
-                return getId();
+                return String.format("craete-cert-%s", msg.getVpnCertUuid());
             }
 
             @Override
@@ -815,7 +815,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
             @Override
             protected int getSyncLevel() {
-                return 2;
+                return 1;
             }
         });
     }
