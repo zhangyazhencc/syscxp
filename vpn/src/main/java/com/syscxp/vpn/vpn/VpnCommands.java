@@ -48,7 +48,7 @@ public class VpnCommands {
     }
 
     public static class VpnStatusResponse extends AgentResponse {
-        public String vpnSatus;
+        public String vpnStatus;
     }
 
     /**

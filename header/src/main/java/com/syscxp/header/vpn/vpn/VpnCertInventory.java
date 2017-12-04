@@ -16,7 +16,6 @@ public class VpnCertInventory {
     private String clientKey;
     private String clientConf;
     private Integer version;
-    private VpnInventory vpnInventory;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -97,14 +96,6 @@ public class VpnCertInventory {
 
     public void setClientConf(String clientConf) {
         this.clientConf = clientConf;
-    }
-
-    public VpnInventory getVpnInventory() {
-        return vpnInventory;
-    }
-
-    public void setVpnInventory(VpnInventory vpnInventory) {
-        this.vpnInventory = vpnInventory;
     }
 
     public Timestamp getLastOpDate() {

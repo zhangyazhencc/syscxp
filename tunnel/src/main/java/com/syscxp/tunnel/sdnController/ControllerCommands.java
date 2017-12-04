@@ -1,6 +1,5 @@
 package com.syscxp.tunnel.sdnController;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -14,8 +13,8 @@ public class ControllerCommands {
      */
     public static class TunnelMonitorCommand {
         private String tunnel_id;
-        private List<TunnelMonitorSdn> sdnConfig;
-        private List<TunnelMonitorMpls> mplsConfig;
+        private List<TunnelMonitorSdn> sdn_switches;
+        private List<TunnelMonitorMpls> mpls_switches;
 
         /**
          *
@@ -26,27 +25,27 @@ public class ControllerCommands {
         public static TunnelMonitorCommand valueOf(String tunnel_id,List<TunnelMonitorSdn> sdnConfigList, List<TunnelMonitorMpls> mplsConfigList) {
 
             TunnelMonitorCommand tunnelMonitorCmd = new TunnelMonitorCommand();
-            tunnelMonitorCmd.setSdnConfig(sdnConfigList);
-            tunnelMonitorCmd.setMplsConfig(mplsConfigList);
+            tunnelMonitorCmd.setSdn_switches(sdnConfigList);
+            tunnelMonitorCmd.setMpls_switches(mplsConfigList);
             tunnelMonitorCmd.setTunnel_id(tunnel_id);
 
             return tunnelMonitorCmd;
         }
 
-        public List<TunnelMonitorSdn> getSdnConfig() {
-            return sdnConfig;
+        public List<TunnelMonitorSdn> getSdn_switches() {
+            return sdn_switches;
         }
 
-        public void setSdnConfig(List<TunnelMonitorSdn> sdnConfig) {
-            this.sdnConfig = sdnConfig;
+        public void setSdn_switches(List<TunnelMonitorSdn> sdn_switches) {
+            this.sdn_switches = sdn_switches;
         }
 
-        public List<TunnelMonitorMpls> getMplsConfig() {
-            return mplsConfig;
+        public List<TunnelMonitorMpls> getMpls_switches() {
+            return mpls_switches;
         }
 
-        public void setMplsConfig(List<TunnelMonitorMpls> mplsConfig) {
-            this.mplsConfig = mplsConfig;
+        public void setMpls_switches(List<TunnelMonitorMpls> mpls_switches) {
+            this.mpls_switches = mpls_switches;
         }
 
         public String getTunnel_id() {
