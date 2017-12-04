@@ -1,6 +1,7 @@
 package com.syscxp.tunnel.host;
 
 import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
@@ -10,6 +11,8 @@ import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.persistence.TypedQuery;
+
+import java.util.List;
 
 import static com.syscxp.core.Platform.argerr;
 
@@ -69,5 +72,12 @@ public class MonitorApiInterceptor implements ApiMessageInterceptor {
         if (q2.isExists())
             throw new ApiMessageInterceptionException(argerr("interfaceName %s is already exist ", msg.getInterfaceName()));
 
+        List<HostSwitchMonitorVO> hostSwitchMonitorVOS = Q.New(HostSwitchMonitorVO.class)
+                .eq(HostSwitchMonitorVO_.hostUuid,msg.getHostUuid())
+                .eq(HostSwitchMonitorVO_.physicalSwitchUuid,msg.getPhysicalSwitchUuid())
+                .list();
+
+        if(!hostSwitchMonitorVOS.isEmpty())
+            throw new ApiMessageInterceptionException(argerr(" duplicated host & switch existed!"));
     }
 }
