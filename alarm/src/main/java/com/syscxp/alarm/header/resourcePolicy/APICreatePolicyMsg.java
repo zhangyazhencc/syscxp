@@ -12,7 +12,6 @@ public class APICreatePolicyMsg extends APIMessage{
     @APIParam(emptyString = false)
     private String name;
 
-    @APIParam(emptyString = false)
     private String description;
 
     @APIParam
