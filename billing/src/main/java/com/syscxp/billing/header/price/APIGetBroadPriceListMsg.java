@@ -18,7 +18,7 @@ public class APIGetBroadPriceListMsg extends APISyncCallMessage{
     @APIParam
     private Category category;
 
-    @APIParam
+    @APIParam(required = false,emptyString = false)
     private String areaCode;
 
     public ProductType getProductType() {
