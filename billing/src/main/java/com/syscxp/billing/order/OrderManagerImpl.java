@@ -749,10 +749,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             ProductPriceUnitVO productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), unit.getAreaCode(), unit.getLineCode(), unit.getConfigCode());
             if (productPriceUnitVO == null) {
                 productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), unit.getAreaCode(), "DEFAULT", unit.getConfigCode());
-                if (productCategoryVO == null) {
+                if (productPriceUnitVO == null) {
                     productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), "DEFAULT", "DEFAULT", unit.getConfigCode());
                 }
-                if (productCategoryVO == null)
+                if (productPriceUnitVO == null)
                     throw new IllegalArgumentException("can not find the product price in database");
             }
 
