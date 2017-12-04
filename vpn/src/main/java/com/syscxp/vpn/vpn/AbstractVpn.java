@@ -22,7 +22,7 @@ public abstract class AbstractVpn {
     @Autowired
     protected RESTFacade restf;
     @Autowired
-    private ErrorFacade errf;
+    protected ErrorFacade errf;
 
     protected VpnVO self;
     protected final String id;

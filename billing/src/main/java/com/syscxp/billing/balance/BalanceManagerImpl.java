@@ -323,10 +323,10 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
         if (msg.getPresent() != null) {
             vo.setPresentBalance(vo.getPresentBalance().add(msg.getPresent()));
-            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.PRESENT_BILL, msg.getPresent(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PRESENT, DealState.SUCCESS, vo.getPresentBalance(), msg.getTradeNO(), outTradeNO, msg.getSession().getAccountUuid(),msg.getComment());
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.PRESENT_BILL, msg.getPresent(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PRESENT, DealState.SUCCESS, vo.getPresentBalance(), msg.getTradeNO(), outTradeNO, msg.getSession().getAccountUuid(),msg.getComment(),null);
         } else if (msg.getCash() != null) {
             vo.setCashBalance(vo.getCashBalance().add(msg.getCash()));
-            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, msg.getCash(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getCashBalance(), msg.getTradeNO(), outTradeNO, msg.getSession().getAccountUuid(),msg.getComment());
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, msg.getCash(), BigDecimal.ZERO, dbf.getCurrentSqlTime(), DealType.PROXY_RECHARGE, DealState.SUCCESS, vo.getCashBalance(), msg.getTradeNO(), outTradeNO, msg.getSession().getAccountUuid(),msg.getComment(),null);
         } else if (msg.getCredit() != null) {
             if(vo.getCashBalance().compareTo(BigDecimal.ZERO)<0 && vo.getCashBalance().add(msg.getCredit()).compareTo(BigDecimal.ZERO)<0){
                 throw new IllegalArgumentException(" the credit point value can not  less than the repay value");
@@ -372,7 +372,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
         int hash = accountUuid.hashCode() < 0 ? ~accountUuid.hashCode() : accountUuid.hashCode();
         String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
         AccountBalanceVO accountBalanceVO = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, total, BigDecimal.ZERO, currentTimestamp, DealType.RECHARGE, DealState.FAILURE, accountBalanceVO.getCashBalance().add(total), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),null);
+        new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, total, BigDecimal.ZERO, currentTimestamp, DealType.RECHARGE, DealState.FAILURE, accountBalanceVO.getCashBalance().add(total), outTradeNO, outTradeNO, msg.getSession().getAccountUuid(),null,null);
 
         AlipayClient alipayClient = new DefaultAlipayClient(BillingGlobalProperty.GATEWAYURL, BillingGlobalProperty.APP_ID, BillingGlobalProperty.MERCHANT_PRIVATE_KEY, "json", BillingGlobalProperty.CHARSET, BillingGlobalProperty.ALIPAY_PUBLIC_KEY, BillingGlobalProperty.SIGN_TYPE);
         AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();

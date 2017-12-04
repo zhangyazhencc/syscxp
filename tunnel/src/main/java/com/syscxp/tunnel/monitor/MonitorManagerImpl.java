@@ -149,7 +149,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(msg.getTunnelUuid());
 
         // 控制器命令删除
-        ControllerCommands.TunnelMonitorCommand cmd = getTunnelMonitorCommand(msg.getTunnelUuid(), tunnelMonitorVOS);
+        ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(msg.getTunnelUuid(), tunnelMonitorVOS);
         stopControllerMonitor(cmd);
 
         // 更新监控IP
@@ -339,6 +339,21 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         return ip + mask;
     }
 
+    /**
+     * 去除ip中的掩码
+     * @param maskIp
+     * @return
+     */
+    private String removeMaskFromIp(String maskIp){
+        String ip = "";
+        if(maskIp.contains("/"))
+            ip = StringUtils.substringBefore(maskIp, "/");
+        else
+            ip = maskIp;
+
+        return ip;
+    }
+
     /***
      * 监控关闭、tunnel中止
      * @param tunnelUuid
@@ -348,7 +363,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelUuid);
 
         // 控制器命令删除
-        ControllerCommands.TunnelMonitorCommand cmd = getTunnelMonitorCommand(tunnelUuid, tunnelMonitorVOS);
+        ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, tunnelMonitorVOS);
         stopControllerMonitor(cmd);
 
         // 关闭agent监控
@@ -396,7 +411,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelUuid);
 
         // 控制器命令删除
-        ControllerCommands.TunnelMonitorCommand cmd = getTunnelMonitorCommand(tunnelUuid, tunnelMonitorVOS);
+        ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, tunnelMonitorVOS);
         stopControllerMonitor(cmd);
 
         // 删除icmp
@@ -417,7 +432,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     private void startControllerMonitor(String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS) {
         String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
-        ControllerCommands.TunnelMonitorCommand cmd = getTunnelMonitorCommand(tunnelUuid, tunnelMonitorVOS);
+        ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, tunnelMonitorVOS);
 
         sendControllerCommand(url, cmd);
     }
@@ -464,7 +479,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelUuid
      * @return
      */
-    public ControllerCommands.TunnelMonitorCommand getTunnelMonitorCommand(String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS) {
+    public ControllerCommands.TunnelMonitorCommand getControllerMonitorCommand(String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS) {
         List<ControllerCommands.TunnelMonitorMpls> mplsList = new ArrayList<>();
         List<ControllerCommands.TunnelMonitorSdn> sdnList = new ArrayList<>();
 
@@ -486,10 +501,13 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 mpls.setPassword(physicalSwitchVO.getPassword());
                 mpls.setSwitch_type(physicalSwitchVO.getSwitchModel().getModel());
                 mpls.setSub_type(physicalSwitchVO.getSwitchModel().getSubModel());
-                mpls.setVlan_id(tunnelSwitchPortVO.getVlan() + 1);
-                mpls.setPort_name(switchPortVO.getPortName());
+                mpls.setVlan_id(tunnelSwitchPortVO.getVlan());
                 mpls.setBandwidth(tunnelVO.getBandwidth());
                 mpls.setVni(tunnelVO.getVsi());
+
+                HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorByHostUuid(tunnelMonitorVO.getHostUuid());
+                mpls.setPort_name(hostSwitchMonitorVO.getPhysicalSwitchPortName());
+
                 mplsList.add(mpls);
             } else if (PhysicalSwitchType.SDN.equals(physicalSwitchVO.getType())) {
                 // 获取上联口对应的物理交换机作为mpls数据
@@ -498,30 +516,19 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                         .list().get(0);
                 PhysicalSwitchVO uplinkPhysicalSwitch = Q.New(PhysicalSwitchVO.class).eq(PhysicalSwitchVO_.uuid, upLinkRef.getUplinkPhysicalSwitchUuid()).find();
 
-                mpls.setM_ip(uplinkPhysicalSwitch.getmIP());
-                mpls.setUsername(uplinkPhysicalSwitch.getUsername());
-                mpls.setPassword(uplinkPhysicalSwitch.getPassword());
-                mpls.setSwitch_type(uplinkPhysicalSwitch.getSwitchModel().getModel());
-                mpls.setSub_type(uplinkPhysicalSwitch.getSwitchModel().getSubModel());
-                mpls.setVlan_id(tunnelSwitchPortVO.getVlan() + 1);
-                mpls.setPort_name(switchPortVO.getPortName());
-                mpls.setVni(tunnelVO.getVsi());
-
-                mplsList.add(mpls);
-
                 ControllerCommands.TunnelMonitorSdn sdn = new ControllerCommands.TunnelMonitorSdn();
                 sdn.setM_ip(physicalSwitchVO.getmIP());
-                sdn.setUplink(upLinkRef.getUplinkPhysicalSwitchPortName());
+                sdn.setUplink(upLinkRef.getPortName());
                 sdn.setBandwidth(tunnelVO.getBandwidth());
-                sdn.setVlan_id(tunnelSwitchPortVO.getVlan() + 1);
+                sdn.setVlan_id(tunnelSwitchPortVO.getVlan());
 
                 if (tunnelSwitchPortVO.getSortTag().equals(InterfaceType.A.toString())) {
-                    sdn.setNw_src(monitorIp.get(InterfaceType.A.toString()));
-                    sdn.setNw_dst(monitorIp.get(InterfaceType.Z.toString()));
+                    sdn.setNw_src(removeMaskFromIp(monitorIp.get(InterfaceType.A.toString())));
+                    sdn.setNw_dst(removeMaskFromIp(monitorIp.get(InterfaceType.Z.toString())));
                     sdn.setIn_port(monitorPort.get(InterfaceType.A.toString()));
                 } else if (tunnelSwitchPortVO.getSortTag().equals(InterfaceType.Z.toString())) {
-                    sdn.setNw_src(monitorIp.get(InterfaceType.Z.toString()));
-                    sdn.setNw_dst(monitorIp.get(InterfaceType.A.toString()));
+                    sdn.setNw_src(removeMaskFromIp(monitorIp.get(InterfaceType.Z.toString())));
+                    sdn.setNw_dst(removeMaskFromIp(monitorIp.get(InterfaceType.A.toString())));
                     sdn.setIn_port(monitorPort.get(InterfaceType.Z.toString()));
                 }
 
@@ -586,14 +593,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
             if (InterfaceType.A.toString().equals(tunnelSwitchPortVO.getSortTag())) {
                 icmp.setHostA_ip(monitorHostVO.getHostIp());
-                icmp.setEndpointA_mip(tunnelMonitorVO.getMonitorIp());
+                icmp.setEndpointA_mip(removeMaskFromIp(tunnelMonitorVO.getMonitorIp()));
                 icmp.setEndpointA_vid(tunnelSwitchPortVO.getVlan());
                 icmp.setEndpointA_id(switchVO.getEndpointUuid());
                 icmp.setEndpointA_ip(switchVO.getPhysicalSwitch().getmIP());
                 icmp.setEndpointA_interface(hostSwitchMonitorVO.getInterfaceName());
             } else if (InterfaceType.Z.toString().equals(tunnelSwitchPortVO.getSortTag())) {
                 icmp.setHostB_ip(monitorHostVO.getHostIp());
-                icmp.setEndpointB_mip(tunnelMonitorVO.getMonitorIp());
+                icmp.setEndpointB_mip(removeMaskFromIp(tunnelMonitorVO.getMonitorIp()));
                 icmp.setEndpointB_vid(tunnelSwitchPortVO.getVlan());
                 icmp.setEndpointB_id(switchVO.getEndpointUuid());
                 icmp.setEndpointB_ip(switchVO.getPhysicalSwitch().getmIP());
@@ -833,7 +840,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         server.setPort(port);
 
         TunnelMonitorVO srcTunnelMonitor = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.uuid, vo.getSrcTunnelMonitorUuid()).find();
-        server.setSrc_ip(StringUtils.substringBefore(srcTunnelMonitor.getMonitorIp(), "/"));
+        server.setSrc_ip(removeMaskFromIp(srcTunnelMonitor.getMonitorIp()));
         server.setInterface_name(getHostSwitchMonitorByHostUuid(srcTunnelMonitor.getHostUuid()).getInterfaceName());
         server.setVlan(getTunnelSwitchPortByUuid(srcTunnelMonitor.getTunnelSwitchPortUuid()).getVlan());
         commandMap.put(MonitorAgentCommands.SpeedCommandType.server.toString(), server);
@@ -846,10 +853,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         client.setPort(port);
 
         TunnelMonitorVO dstTunnelMonitor = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.uuid, vo.getDstTunnelMonitorUuid()).find();
-        client.setSrc_ip(StringUtils.substringBefore(dstTunnelMonitor.getMonitorIp(), "/"));
+        client.setSrc_ip(removeMaskFromIp(dstTunnelMonitor.getMonitorIp()));
         client.setInterface_name(getHostSwitchMonitorByHostUuid(dstTunnelMonitor.getHostUuid()).getInterfaceName());
         client.setVlan(getTunnelSwitchPortByUuid(dstTunnelMonitor.getTunnelSwitchPortUuid()).getVlan());
-        client.setDst_ip(StringUtils.substringBefore(srcTunnelMonitor.getMonitorIp(), "/"));
+        client.setDst_ip(removeMaskFromIp(srcTunnelMonitor.getMonitorIp()));
         client.setProtocol(vo.getProtocolType());
 
         Long bandwidth = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, vo.getTunnelUuid()).select(TunnelVO_.bandwidth).findValue();
@@ -1327,20 +1334,28 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     public TunnelMonitorVO getTunnelMonitorByNodeAndTunnel(String nodeUuid, String tunnelUuid) {
 
-        List<MonitorHostVO> host = Q.New(MonitorHostVO.class)
-                .eq(MonitorHostVO_.nodeUuid, nodeUuid)
-                .eq(MonitorHostVO_.monitorType, MonitorType.TUNNEL)
-                .list();
-        if (host.isEmpty())
-            throw new ApiMessageInterceptionException(argerr("No Monitor Host exist under Node %s", nodeUuid));
+        TunnelMonitorVO tunnelMonitorVO = null;
 
-        List<TunnelMonitorVO> tunnelMonitors = Q.New(TunnelMonitorVO.class)
-                .eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid)
-                .eq(TunnelMonitorVO_.hostUuid, host.get(0).getUuid()).list();
-        if (tunnelMonitors.isEmpty())
-            throw new ApiMessageInterceptionException(argerr("No Tunnel Monitor under tunnel: %s host:%s", tunnelUuid, host.get(0).getUuid()));
+        List<PhysicalSwitchVO> physicalSwitchVOS = Q.New(PhysicalSwitchVO.class)
+                .eq(PhysicalSwitchVO_.nodeUuid,nodeUuid).list();
+        for(PhysicalSwitchVO physicalSwitchVO : physicalSwitchVOS){
+            List<HostSwitchMonitorVO> hostSwitchMonitorVOS = Q.New(HostSwitchMonitorVO.class)
+                    .eq(HostSwitchMonitorVO_.physicalSwitchUuid,physicalSwitchVO.getUuid()).list();
 
-        return tunnelMonitors.get(0);
+            if(!hostSwitchMonitorVOS.isEmpty()){
+                tunnelMonitorVO = Q.New(TunnelMonitorVO.class)
+                        .eq(TunnelMonitorVO_.hostUuid,hostSwitchMonitorVOS.get(0).getHostUuid())
+                        .eq(TunnelMonitorVO_.tunnelUuid,tunnelUuid).find();
+            }
+
+            if(tunnelMonitorVO != null)
+                break;
+        }
+
+        if(tunnelMonitorVO==null)
+            throw new ApiMessageInterceptionException(argerr("No Tunnel Monitor under tunnel: %s node:%s", tunnelUuid, nodeUuid));
+
+        return tunnelMonitorVO;
     }
 
     /**

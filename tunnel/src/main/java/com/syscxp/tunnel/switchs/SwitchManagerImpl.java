@@ -110,7 +110,7 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
         tfq.setParameter("uuid", msg.getUuid());
 
         List<Tuple> ts = tfq.getResultList();
-        reply.setCount(ts.size());
+        reply.setTotal(ts.size());
         for (Tuple t : ts) {
             VlanUsedInventory inventory = new VlanUsedInventory();
             inventory.setCode(t.get(0, String.class));

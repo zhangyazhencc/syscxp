@@ -6,20 +6,20 @@ import com.syscxp.header.message.APISyncCallMessage;
 
 
 @SuppressCredentialCheck
-public class APIValidateMailCodeMsg extends APISyncCallMessage {
+public class APIValidateImageCodeMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false)
-    private String mail;
+    private String uuid;
 
     @APIParam(emptyString = false, maxLength = 12)
     private String code;
 
-    public String getMail() {
-        return mail;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setMail(String mail) {
-        this.mail = mail;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 
     public String getCode() {

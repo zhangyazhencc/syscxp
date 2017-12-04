@@ -1,5 +1,6 @@
 package com.syscxp.vpn.vpn;
 
+import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
@@ -7,23 +8,30 @@ import com.syscxp.core.db.Q;
 import com.syscxp.core.thread.ChainTask;
 import com.syscxp.core.thread.SyncTaskChain;
 import com.syscxp.core.thread.ThreadFacade;
+import com.syscxp.core.workflow.FlowChainBuilder;
+import com.syscxp.core.workflow.ShareFlow;
+import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.NoErrorCompletion;
 import com.syscxp.header.core.ReturnValueCompletion;
+import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.*;
-import com.syscxp.header.vpn.vpn.VpnStatus;
-import com.syscxp.header.vpn.vpn.VpnVO;
-import com.syscxp.header.vpn.vpn.VpnVO_;
+import com.syscxp.header.vpn.vpn.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.vpn.VpnCommands.*;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+
+import java.util.Map;
+
+import static com.syscxp.core.Platform.operr;
 
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 public class VpnBase extends AbstractVpn {
@@ -87,8 +95,8 @@ public class VpnBase extends AbstractVpn {
             handle((StartAllMsg) msg);
         } else if (msg instanceof DestroyVpnMsg) {
             handle((DestroyVpnMsg) msg);
-        } else if (msg instanceof VpnServiceMsg) {
-            handle((VpnServiceMsg) msg);
+        } else if (msg instanceof ChangeVpnStateMsg) {
+            handle((ChangeVpnStateMsg) msg);
         } else if (msg instanceof RateLimitingMsg) {
             handle((RateLimitingMsg) msg);
         } else if (msg instanceof VpnConfMsg) {
@@ -99,10 +107,13 @@ public class VpnBase extends AbstractVpn {
             handle((ClientInfoMsg) msg);
         } else if (msg instanceof LoginInfoMsg) {
             handle((LoginInfoMsg) msg);
+        } else if (msg instanceof VpnStatusMsg) {
+            handle((VpnStatusMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
+
 
     private void handle(final InitVpnMsg msg) {
         thdf.chainSubmit(new ChainTask(msg) {
@@ -152,8 +163,9 @@ public class VpnBase extends AbstractVpn {
         httpCall(initVpnPath, cmd, InitVpnRsp.class, new ReturnValueCompletion<InitVpnRsp>(msg, completion) {
             @Override
             public void success(InitVpnRsp ret) {
-                changVpnSatus(VpnStatus.Connected);
-                reply.setStatus(ret.vpnSatus);
+                VpnStatus next = "UP".equals(ret.vpnStatus) ? VpnStatus.Connected : VpnStatus.Disconnected;
+                changVpnSatus(next);
+                reply.setStatus(next.toString());
                 bus.reply(msg, reply);
                 completion.done();
             }
@@ -162,15 +174,19 @@ public class VpnBase extends AbstractVpn {
             public void fail(ErrorCode err) {
                 changVpnSatus(VpnStatus.Disconnected);
                 reply.setError(err);
+                reply.setSuccess(true);
+                reply.setStatus(VpnStatus.Disconnected.toString());
                 bus.reply(msg, reply);
                 completion.done();
             }
         });
     }
+
     private boolean changVpnSatus(VpnStatus next) {
         if (!Q.New(VpnVO.class).eq(VpnVO_.uuid, self.getUuid()).isExists()) {
             throw new CloudRuntimeException(String.format("change vpn status fail, can not find the vpn[%s]", self.getUuid()));
         }
+
         VpnStatus before = self.getStatus();
         if (before == next) {
             return false;
@@ -218,7 +234,6 @@ public class VpnBase extends AbstractVpn {
         httpCall(createCertPath, cmd, CreateCertRsp.class, new ReturnValueCompletion<CreateCertRsp>(msg, completion) {
             @Override
             public void success(CreateCertRsp ret) {
-                reply.setVpnCert(ret.vpnCert);
                 bus.reply(msg, reply);
                 completion.done();
             }
@@ -245,12 +260,14 @@ public class VpnBase extends AbstractVpn {
         httpCall(startAllPath, cmd, StartAllRsp.class, new ReturnValueCompletion<StartAllRsp>(msg) {
             @Override
             public void success(StartAllRsp ret) {
-                reply.setStatus(ret.vpnSatus);
+                VpnStatus next = "UP".equals(ret.vpnStatus) ? VpnStatus.Connected : VpnStatus.Disconnected;
+                changVpnSatus(next);
                 bus.reply(msg, reply);
             }
 
             @Override
             public void fail(ErrorCode errorCode) {
+                changVpnSatus(VpnStatus.Disconnected);
                 reply.setError(errorCode);
                 bus.reply(msg, reply);
             }
@@ -258,17 +275,129 @@ public class VpnBase extends AbstractVpn {
     }
 
     private void handle(final DestroyVpnMsg msg) {
-        DestroyVpnReply reply = new DestroyVpnReply();
 
-        DestroyVpnCmd cmd = new DestroyVpnCmd();
-        cmd.vpnuuid = msg.getVpnUuid();
-        cmd.ddnport = msg.getInterfaceName();
-        cmd.vpnport = msg.getVpnPort();
-        cmd.vpnvlanid = msg.getVpnVlan();
-        httpCall(destroyVpnPath, cmd, DestroyVpnRsp.class, new ReturnValueCompletion<DestroyVpnRsp>(msg) {
+        thdf.chainSubmit(new ChainTask(msg) {
             @Override
-            public void success(DestroyVpnRsp ret) {
-                reply.setStatus(ret.vpnSatus);
+            public String getSyncSignature() {
+                return String.format("connect-host-%s", self.getUuid());
+            }
+
+            @Override
+            public void run(SyncTaskChain chain) {
+                final DestroyVpnReply reply = new DestroyVpnReply();
+
+                final FlowChain flowChain = FlowChainBuilder.newShareFlowChain();
+                flowChain.setName(String.format("delete-vpn-%s", self.getUuid()));
+                flowChain.then(new ShareFlow() {
+                    @Override
+                    public void setup() {
+                        flow(new NoRollbackFlow() {
+                            String __name__ = "stop-vpn";
+
+                            @Override
+                            public void run(final FlowTrigger trigger, Map data) {
+                                VpnServiceCmd cmd = new VpnServiceCmd();
+                                cmd.vpnuuid = msg.getVpnUuid();
+                                cmd.vpnport = msg.getVpnPort();
+                                cmd.vpnvlanid = msg.getVpnVlan();
+                                cmd.command = "stop";
+
+                                httpCall(vpnServicePath, cmd, VpnServiceRsp.class, new ReturnValueCompletion<VpnServiceRsp>(trigger) {
+                                    @Override
+                                    public void success(VpnServiceRsp ret) {
+                                        VpnStatus next = "UP".equals(ret.vpnStatus) ? VpnStatus.Connected : VpnStatus.Disconnected;
+                                        changVpnSatus(next);
+                                        trigger.next();
+                                    }
+
+                                    @Override
+                                    public void fail(ErrorCode errorCode) {
+                                        trigger.fail(errorCode);
+                                    }
+                                });
+                            }
+                        });
+                        flow(new NoRollbackFlow() {
+                            String __name__ = "destroy-vpn";
+
+                            @Override
+                            public void run(final FlowTrigger trigger, Map data) {
+                                DestroyVpnCmd cmd = new DestroyVpnCmd();
+                                cmd.vpnuuid = msg.getVpnUuid();
+                                cmd.ddnport = msg.getInterfaceName();
+                                cmd.vpnport = msg.getVpnPort();
+                                cmd.vpnvlanid = msg.getVpnVlan();
+                                httpCall(destroyVpnPath, cmd, DestroyVpnRsp.class, new ReturnValueCompletion<DestroyVpnRsp>(trigger) {
+                                    @Override
+                                    public void success(DestroyVpnRsp ret) {
+                                        dbf.removeByPrimaryKey(self.getUuid(), VpnVO.class);
+                                        trigger.next();
+                                    }
+
+                                    @Override
+                                    public void fail(ErrorCode errorCode) {
+                                        trigger.fail(errorCode);
+                                    }
+                                });
+                            }
+                        });
+
+                        done(new FlowDoneHandler(msg) {
+                            @Override
+                            public void handle(Map data) {
+
+                                bus.reply(msg, reply);
+                            }
+                        });
+
+                        error(new FlowErrorHandler(msg) {
+                            @Override
+                            public void handle(ErrorCode errCode, Map data) {
+                                reply.setError(errCode);
+                                bus.reply(msg, reply);
+                            }
+                        });
+
+                        Finally(new FlowFinallyHandler(msg) {
+                            @Override
+                            public void Finally() {
+                                chain.next();
+                            }
+                        });
+                    }
+                }).start();
+            }
+
+            @Override
+            public String getName() {
+                return "delete-vpn";
+            }
+        });
+
+    }
+
+    private void handle(ChangeVpnStateMsg msg) {
+        ChangeVpnStateReply reply = new ChangeVpnStateReply();
+
+        VpnServiceCmd cmd = new VpnServiceCmd();
+        cmd.vpnuuid = self.getUuid();
+        cmd.vpnport = self.getPort().toString();
+        cmd.vpnvlanid = self.getVlan().toString();
+        if (msg.getState() == VpnState.Enabled)
+            cmd.command = "start";
+        else
+            cmd.command = "stop";
+
+        httpCall(vpnServicePath, cmd, VpnServiceRsp.class, new ReturnValueCompletion<VpnServiceRsp>(msg) {
+            @Override
+            public void success(VpnServiceRsp ret) {
+                if ("UP".equals(ret.vpnStatus) && msg.getState() == VpnState.Enabled) {
+                    changVpnSatus(VpnStatus.Connected);
+                } else if ("DOWN".equals(ret.vpnStatus) && msg.getState() == VpnState.Disabled) {
+                    changVpnSatus(VpnStatus.Disconnected);
+                } else {
+                    reply.setError(errf.stringToOperationError("change vpn state"));
+                }
                 bus.reply(msg, reply);
             }
 
@@ -280,26 +409,54 @@ public class VpnBase extends AbstractVpn {
         });
     }
 
-    private void handle(final VpnServiceMsg msg) {
-        VpnServiceReply reply = new VpnServiceReply();
-
-        VpnServiceCmd cmd = new VpnServiceCmd();
-        cmd.vpnuuid = msg.getVpnUuid();
-        cmd.vpnport = msg.getVpnPort();
-        cmd.vpnvlanid = msg.getVpnVlan();
-        cmd.command = msg.getCommand();
-
-        httpCall(vpnServicePath, cmd, VpnServiceRsp.class, new ReturnValueCompletion<VpnServiceRsp>(msg) {
+    private void handle(VpnStatusMsg msg) {
+        VpnStatusReply reply = new VpnStatusReply();
+        if (self.getStatus() == VpnStatus.Connecting) {
+            reply.setError(operr("vpn is connecting"));
+            bus.reply(msg, reply);
+            return;
+        }
+        statusCheck(new Completion(msg) {
             @Override
-            public void success(VpnServiceRsp ret) {
-                reply.setStatus(ret.vpnSatus);
+            public void success() {
+                reply.setConnected(true);
+                reply.setCurrentStatus(self.getStatus());
+
+                changVpnSatus(VpnStatus.Connected);
                 bus.reply(msg, reply);
             }
 
             @Override
             public void fail(ErrorCode errorCode) {
+                reply.setConnected(false);
+                reply.setCurrentStatus(self.getStatus());
                 reply.setError(errorCode);
+                reply.setSuccess(true);
+                changVpnSatus(VpnStatus.Disconnected);
+
                 bus.reply(msg, reply);
+            }
+        });
+
+    }
+
+    protected void statusCheck(final Completion completion) {
+        VpnServiceCmd cmd = new VpnServiceCmd();
+        cmd.vpnuuid = self.getUuid();
+
+        httpCall(vpnServicePath, cmd, VpnServiceRsp.class, new ReturnValueCompletion<VpnServiceRsp>(completion) {
+            @Override
+            public void success(VpnServiceRsp ret) {
+                if ("UP".equals(ret.vpnStatus)) {
+                    completion.success();
+                } else {
+                    completion.fail(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR, "vpn service disconnected"));
+                }
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                completion.fail(errorCode);
             }
         });
     }
@@ -338,7 +495,6 @@ public class VpnBase extends AbstractVpn {
         httpCall(vpnConfPath, cmd, VpnConfRsp.class, new ReturnValueCompletion<VpnConfRsp>(msg) {
             @Override
             public void success(VpnConfRsp ret) {
-                reply.setVpnSucc(ret.vpnSucc);
                 bus.reply(msg, reply);
             }
 
@@ -363,7 +519,6 @@ public class VpnBase extends AbstractVpn {
         httpCall(vpnPortPath, cmd, VpnPortRsp.class, new ReturnValueCompletion<VpnPortRsp>(msg) {
             @Override
             public void success(VpnPortRsp ret) {
-                reply.setStatus(ret.vpnSatus);
                 bus.reply(msg, reply);
             }
 
@@ -384,12 +539,8 @@ public class VpnBase extends AbstractVpn {
         httpCall(clientInfoPath, cmd, ClientInfoRsp.class, new ReturnValueCompletion<ClientInfoRsp>(msg) {
             @Override
             public void success(ClientInfoRsp ret) {
-                CertInfo certInfo = new CertInfo();
-                certInfo.setCaCert(ret.ca_crt);
-                certInfo.setClientCert(ret.client_crt);
-                certInfo.setClientConf(ret.client_conf);
-                certInfo.setClientKey(ret.client_key);
-                reply.setCertInfo(certInfo);
+                VpnCertVO vpnCert = saveVpnCert(ret, self.getAccountUuid());
+                reply.setInventory(VpnCertInventory.valueOf(vpnCert));
                 bus.reply(msg, reply);
             }
 
@@ -399,6 +550,21 @@ public class VpnBase extends AbstractVpn {
                 bus.reply(msg, reply);
             }
         });
+    }
+
+    private VpnCertVO saveVpnCert(ClientInfoRsp info, String accountUuid) {
+
+        VpnCertVO vo = Q.New(VpnCertVO.class).eq(VpnCertVO_.accountUuid, accountUuid).find();
+        if (vo == null) {
+            vo = new VpnCertVO();
+            vo.setUuid(Platform.getUuid());
+            vo.setAccountUuid(accountUuid);
+        }
+        vo.setCaCert(info.ca_crt);
+        vo.setClientCert(info.client_crt);
+        vo.setClientKey(info.client_key);
+        vo.setClientConf(info.client_conf);
+        return dbf.updateAndRefresh(vo);
     }
 
     private void handle(final LoginInfoMsg msg) {

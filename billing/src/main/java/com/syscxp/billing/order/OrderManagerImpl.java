@@ -143,7 +143,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 abvo.setPresentBalance(presentNow);
                 orderVo.setPayPresent(total);
                 orderVo.setPayCash(BigDecimal.ZERO);
-                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.PRESENT_BILL, BigDecimal.ZERO, total.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, presentNow, outTradeNO, orderVo.getUuid(), opAccountUuid, null);
+                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.PRESENT_BILL, BigDecimal.ZERO, total.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, presentNow, outTradeNO, orderVo.getUuid(), opAccountUuid, null,orderVo.getUuid());
             } else {
                 BigDecimal payPresent = abvo.getPresentBalance();
                 BigDecimal payCash = total.subtract(payPresent);
@@ -153,15 +153,15 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 orderVo.setPayPresent(payPresent);
                 orderVo.setPayCash(payCash);
 
-                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.PRESENT_BILL, BigDecimal.ZERO, payPresent.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, BigDecimal.ZERO, outTradeNO + "-1", orderVo.getUuid(), opAccountUuid, null);
-                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, BigDecimal.ZERO, payCash.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, remainCash, outTradeNO + "-2", orderVo.getUuid(), opAccountUuid, null);
+                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.PRESENT_BILL, BigDecimal.ZERO, payPresent.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, BigDecimal.ZERO, outTradeNO + "-1", orderVo.getUuid(), opAccountUuid, null,orderVo.getUuid());
+                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, BigDecimal.ZERO, payCash.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, remainCash, outTradeNO + "-2", orderVo.getUuid(), opAccountUuid, null,orderVo.getUuid());
             }
         } else {
             BigDecimal remainCashBalance = abvo.getCashBalance().subtract(total);
             abvo.setCashBalance(remainCashBalance);
             orderVo.setPayPresent(BigDecimal.ZERO);
             orderVo.setPayCash(total);
-            new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, BigDecimal.ZERO, total, currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, remainCashBalance, outTradeNO, orderVo.getUuid(), opAccountUuid, null);
+            new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, BigDecimal.ZERO, total, currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, remainCashBalance, outTradeNO, orderVo.getUuid(), opAccountUuid, null,orderVo.getUuid());
         }
     }
 
@@ -276,11 +276,11 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        OrderVO orderVo = new OrderVO();
-        setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), msg.getProductType(), null, currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), 0, msg.getCallBackData());
-        orderVo.setType(OrderType.UN_SUBCRIBE);
 
         BigDecimal notUseMonth = getNotUseMonths(currentTimestamp.toLocalDateTime(),msg.getExpiredTime().toLocalDateTime());
+        OrderVO orderVo = new OrderVO();
+        setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), msg.getProductType(), ProductChargeModel.BY_MONTH, currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), notUseMonth.intValue(), msg.getCallBackData());
+        orderVo.setType(OrderType.UN_SUBCRIBE);
 
         RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
         if (renewVO == null) {
@@ -307,7 +307,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setPayCash(remainMoney.negate());
         int hash = msg.getAccountUuid().hashCode() < 0 ? ~msg.getAccountUuid().hashCode() : msg.getAccountUuid().hashCode();
         String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
-        new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, remainMoney, BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, outTradeNO, orderVo.getUuid(), msg.getOpAccountUuid(), null);
+        new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, remainMoney, BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, outTradeNO, orderVo.getUuid(), msg.getOpAccountUuid(), null,orderVo.getUuid());
         deletePriceRefRenews(renewVO.getUuid());
         dbf.getEntityManager().remove(dbf.getEntityManager().merge(renewVO));
 
@@ -390,7 +390,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             abvo.setCashBalance(remainCash);
             int hash = msg.getAccountUuid().hashCode() < 0 ? ~msg.getAccountUuid().hashCode() : msg.getAccountUuid().hashCode();
             String outTradeNO = currentTimestamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash));
-            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, subMoney.negate(), BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, outTradeNO, orderVo.getUuid(), msg.getOpAccountUuid(), null);
+            new DealDetailVOHelper(dbf).saveDealDetailVO(msg.getAccountUuid(), DealWay.CASH_BILL, subMoney.negate(), BigDecimal.ZERO, currentTimestamp, DealType.REFUND, DealState.SUCCESS, remainCash, outTradeNO, orderVo.getUuid(), msg.getOpAccountUuid(), null,orderVo.getUuid());
 
         }
         renewVO.setPriceOneMonth(discountPrice);

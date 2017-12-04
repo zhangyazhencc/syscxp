@@ -11,9 +11,7 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.host.HostBase;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.core.workflow.ShareFlow;
-import com.syscxp.header.core.AsyncLatch;
 import com.syscxp.header.core.Completion;
-import com.syscxp.header.core.NoErrorCompletion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
@@ -22,6 +20,9 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.JsonAsyncRESTCallback;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.vpn.host.APIUpdateVpnHostMsg;
+import com.syscxp.header.vpn.host.VpnHostInventory;
+import com.syscxp.header.vpn.host.VpnHostVO;
 import com.syscxp.utils.ShellUtils;
 import com.syscxp.utils.StringBind;
 import com.syscxp.utils.Utils;
@@ -31,10 +32,10 @@ import com.syscxp.utils.path.PathUtil;
 import com.syscxp.utils.ssh.Ssh;
 import com.syscxp.utils.ssh.SshResult;
 import com.syscxp.utils.ssh.SshShell;
-import com.syscxp.header.vpn.host.APIUpdateVpnHostMsg;
-import com.syscxp.header.vpn.host.VpnHostInventory;
-import com.syscxp.vpn.host.VpnHostCommands.*;
-import com.syscxp.header.vpn.host.VpnHostVO;
+import com.syscxp.vpn.host.VpnHostCommands.ConnectCmd;
+import com.syscxp.vpn.host.VpnHostCommands.ConnectResponse;
+import com.syscxp.vpn.host.VpnHostCommands.PingCmd;
+import com.syscxp.vpn.host.VpnHostCommands.PingResponse;
 import com.syscxp.vpn.vpn.VpnGlobalProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,7 +43,6 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -203,23 +203,19 @@ public class VpnHost extends HostBase implements Host {
                         sshShell.setPassword(getSelf().getPassword());
                         sshShell.setPort(getSelf().getSshPort());
                         ShellUtils.run(String.format("arp -d %s || true", getSelf().getSshPort()));
-                        try {
-                            SshResult ret = sshShell.runCommand(String.format("curl --connect-timeout 10 %s", restf
-                                    .getCallbackUrl()));
-                            if (ret.isSshFailure()) {
-                                trigger.fail(operr("unable to connect to Host[ip:%s, username:%s, sshPort:%d] to check " +
-                                                "the management node connectivity,please check if username/password is wrong; %s",
-                                        self.getHostIp(), getSelf().getUsername(), getSelf().getSshPort(), ret.getExitErrorMessage()));
-                            } else if (ret.getReturnCode() != 0) {
-                                trigger.fail(operr("the host[ip:%s] cannot access the management node's callback url. It seems" +
-                                                " that the host cannot reach the management IP[%s]. %s %s", self.getHostIp(), Platform.getManagementServerIp(),
-                                        ret.getStderr(), ret.getExitErrorMessage()));
-                            }
-                        } catch (Exception e) {
-                            trigger.fail(operr(e.getMessage()));
+                        SshResult ret = sshShell.runCommand(String.format("curl --connect-timeout 10 %s", restf
+                                .getCallbackUrl()));
+                        if (ret.isSshFailure()) {
+                            trigger.fail(operr("unable to connect to Host[ip:%s, username:%s, sshPort:%d] to check " +
+                                            "the management node connectivity,please check if username/password is wrong; %s",
+                                    self.getHostIp(), getSelf().getUsername(), getSelf().getSshPort(), ret.getExitErrorMessage()));
+                        } else if (ret.getReturnCode() != 0) {
+                            trigger.fail(operr("the host[ip:%s] cannot access the management node's callback url. It seems" +
+                                            " that the host cannot reach the management IP[%s]. %s %s", self.getHostIp(), Platform.getManagementServerIp(),
+                                    ret.getStderr(), ret.getExitErrorMessage()));
+                        } else {
+                            trigger.next();
                         }
-
-                        trigger.next();
                     }
                 });
 
@@ -238,7 +234,7 @@ public class VpnHost extends HostBase implements Host {
                         checker.setTargetIp(getSelf().getHostIp());
                         checker.addSrcDestPair(SshFileMd5Checker.SYSCXPLIB_SRC_PATH, String.format
                                 ("/var/lib/syscxp/vpn/package/%s",
-                                AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME));
+                                        AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME));
                         checker.addSrcDestPair(srcPath, destPath);
 
                         AnsibleRunner runner = new AnsibleRunner();
@@ -303,10 +299,10 @@ public class VpnHost extends HostBase implements Host {
                         String script = "which iptables > /dev/null && iptables -C FORWARD -j REJECT --reject-with icmp-host-prohibited > /dev/null 2>&1 && iptables -D FORWARD -j REJECT --reject-with icmp-host-prohibited > /dev/null 2>&1 || true";
                         try {
                             runShell(script);
+                            trigger.next();
                         } catch (Exception e) {
                             trigger.fail(errf.instantiateErrorCode(HostErrors.CONNECTION_ERROR, e.getMessage()));
                         }
-                        trigger.next();
                     }
                 });
 
