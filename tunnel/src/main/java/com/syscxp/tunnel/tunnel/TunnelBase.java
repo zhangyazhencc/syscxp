@@ -139,9 +139,8 @@ public class TunnelBase {
             tsvoC.setSortTag("C");
 
         }
-        dbf.persistAndRefresh(tsvoB);
-        dbf.persistAndRefresh(tsvoC);
-
+        dbf.getEntityManager().persist(tsvoB);
+        dbf.getEntityManager().persist(tsvoC);
     }
 
     /**
