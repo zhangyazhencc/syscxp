@@ -4,6 +4,6 @@ import com.syscxp.header.configuration.PythonClass;
 
 @PythonClass
 public interface ImageCodeConstant {
-    String SERVICE_ID = "ImageCode";
+    String SERVICE_ID = "imageCode";
 
 }
