@@ -45,10 +45,20 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
     private Future<Void> expiredSessionCollector;
 
     public boolean start() {
+        try {
+            startExpiredSessionCollector();
+        } catch (Exception e) {
+            throw new CloudRuntimeException(e);
+        }
+
         return true;
     }
 
     public boolean stop() {
+        logger.debug("imageCode service destroy.");
+        if (expiredSessionCollector != null) {
+            expiredSessionCollector.cancel(true);
+        }
         return true;
     }
 
@@ -87,21 +97,6 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
     @Override
     public boolean ValidateImageCode(String imageId, String code) {
         return false;
-    }
-
-    public void init() {
-        try {
-            startExpiredSessionCollector();
-        } catch (Exception e) {
-            throw new CloudRuntimeException(e);
-        }
-    }
-
-    public void destroy() {
-        logger.debug("imageCode service destroy.");
-        if (expiredSessionCollector != null) {
-            expiredSessionCollector.cancel(true);
-        }
     }
 
     private void startExpiredSessionCollector() {

@@ -53,10 +53,19 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
     private Future<Void> expiredSessionCollector;
 
     public boolean start() {
+        try {
+            startExpiredSessionCollector();
+        } catch (Exception e) {
+            throw new CloudRuntimeException(e);
+        }
         return true;
     }
 
     public boolean stop() {
+        logger.debug("mail service destroy.");
+        if (expiredSessionCollector != null) {
+            expiredSessionCollector.cancel(true);
+        }
         return true;
     }
 
@@ -173,21 +182,6 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
         logger.debug(">>>>>>>>>>>>>>>>>>发送成功<<<<<<<<<<<<<<<<<<<<<<");
 
         return true;
-    }
-
-    public void init() {
-        try {
-            startExpiredSessionCollector();
-        } catch (Exception e) {
-            throw new CloudRuntimeException(e);
-        }
-    }
-
-    public void destroy() {
-        logger.debug("mail service destroy.");
-        if (expiredSessionCollector != null) {
-            expiredSessionCollector.cancel(true);
-        }
     }
 
     private void startExpiredSessionCollector() {
