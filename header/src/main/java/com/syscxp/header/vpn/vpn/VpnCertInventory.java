@@ -12,14 +12,8 @@ public class VpnCertInventory {
     private String uuid;
     private String name;
     private String accountUuid;
-    private String caCert;
-    private String caKey;
-    private String clientCert;
-    private String clientKey;
-    private String serverCert;
-    private String serverKey;
-    private String dh1024Pem;
-    private String clientConf;
+    private String description;
+    private Integer vpnNum;
     private Integer version;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -29,15 +23,9 @@ public class VpnCertInventory {
         inv.setUuid(vo.getUuid());
         inv.setName(vo.getName());
         inv.setAccountUuid(vo.getAccountUuid());
-        inv.setCaCert(vo.getCaCert());
-        inv.setCaKey(vo.getCaKey());
-        inv.setServerCert(vo.getServerCert());
-        inv.setServerKey(vo.getServerKey());
-        inv.setClientCert(vo.getClientCert());
-        inv.setClientConf(vo.getClientConf());
-        inv.setClientKey(vo.getClientKey());
-        inv.setDh1024Pem(vo.getDh1024Pem());
+        inv.setDescription(vo.getDescription());
         inv.setVersion(vo.getVersion());
+        inv.setVpnNum(vo.getVpnNum());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
@@ -52,20 +40,12 @@ public class VpnCertInventory {
         return invs;
     }
 
-    public String getCaKey() {
-        return caKey;
+    public String getDescription() {
+        return description;
     }
 
-    public void setCaKey(String caKey) {
-        this.caKey = caKey;
-    }
-
-    public String getDh1024Pem() {
-        return dh1024Pem;
-    }
-
-    public void setDh1024Pem(String dh1024Pem) {
-        this.dh1024Pem = dh1024Pem;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public String getName() {
@@ -74,22 +54,6 @@ public class VpnCertInventory {
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public String getServerCert() {
-        return serverCert;
-    }
-
-    public void setServerCert(String serverCert) {
-        this.serverCert = serverCert;
-    }
-
-    public String getServerKey() {
-        return serverKey;
-    }
-
-    public void setServerKey(String serverKey) {
-        this.serverKey = serverKey;
     }
 
     public Integer getVersion() {
@@ -116,36 +80,12 @@ public class VpnCertInventory {
         this.accountUuid = accountUuid;
     }
 
-    public String getCaCert() {
-        return caCert;
+    public Integer getVpnNum() {
+        return vpnNum;
     }
 
-    public void setCaCert(String caCert) {
-        this.caCert = caCert;
-    }
-
-    public String getClientCert() {
-        return clientCert;
-    }
-
-    public void setClientCert(String clientCert) {
-        this.clientCert = clientCert;
-    }
-
-    public String getClientKey() {
-        return clientKey;
-    }
-
-    public void setClientKey(String clientKey) {
-        this.clientKey = clientKey;
-    }
-
-    public String getClientConf() {
-        return clientConf;
-    }
-
-    public void setClientConf(String clientConf) {
-        this.clientConf = clientConf;
+    public void setVpnNum(Integer vpnNum) {
+        this.vpnNum = vpnNum;
     }
 
     public Timestamp getLastOpDate() {

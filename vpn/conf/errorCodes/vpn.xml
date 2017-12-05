@@ -3,7 +3,7 @@
 
     <code>
         <id>1000</id>
-        <description>Unable to pay</description>
+        <description>create cert error</description>
     </code>
 
     <code>
@@ -13,8 +13,37 @@
 
     <code>
         <id>1002</id>
+        <description>An error happened when vpn service</description>
+    </code>
+
+    <code>
+        <id>1003</id>
         <description>An error happened when init vpn</description>
     </code>
 
+    <code>
+        <id>1004</id>
+        <description>An error happened when vpn conf</description>
+    </code>
+
+    <code>
+        <id>1005</id>
+        <description>An error happened when vpn restart</description>
+    </code>
+
+    <code>
+        <id>1006</id>
+        <description>An error happened when vpn rate limiting</description>
+    </code>
+
+    <code>
+        <id>1007</id>
+        <description>An error happened when push cert</description>
+    </code>
+
+    <code>
+        <id>1008</id>
+        <description>An error happened when destroy vpn</description>
+    </code>
 </error>
 

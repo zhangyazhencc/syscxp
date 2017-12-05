@@ -23,7 +23,6 @@ public class VpnInventory {
     private Integer duration;
     private Timestamp expireDate;
     private Integer maxModifies;
-    private String sid;
     private String certKey;
     private String clientConf;
     private String payment;
@@ -47,7 +46,6 @@ public class VpnInventory {
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
-        inv.setSid(vo.getSid());
         inv.setCertKey(vo.getCertKey());
         inv.setMaxModifies(vo.getMaxModifies());
         inv.setClientConf(vo.getClientConf());
@@ -175,14 +173,6 @@ public class VpnInventory {
 
     public void setMaxModifies(Integer maxModifies) {
         this.maxModifies = maxModifies;
-    }
-
-    public String getSid() {
-        return sid;
-    }
-
-    public void setSid(String sid) {
-        this.sid = sid;
     }
 
     public String getCertKey() {
