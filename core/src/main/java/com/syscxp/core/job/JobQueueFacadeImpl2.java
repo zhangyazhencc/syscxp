@@ -7,12 +7,13 @@ import com.syscxp.core.db.GLock;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.AsyncThread;
+import com.syscxp.core.thread.PeriodicTask;
+import com.syscxp.core.thread.ThreadFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
-import com.syscxp.core.db.*;
 import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.header.Component;
 import com.syscxp.header.core.Completion;
@@ -30,12 +31,13 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.serializable.SerializableHelper;
 
-import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  */
@@ -45,7 +47,11 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
     private static final String ORPHAN_JOB_LOCK_NAME = "JobQueueFacade.orphanJobLock";
     private static final int LOCK_TIMEOUT = 60;
 
-    private Map<Long, JobWrapper> wrappers = Collections.synchronizedMap(new HashMap<Long, JobWrapper>());
+    private Map<Long, JobWrapper> jobWrappers = Collections.synchronizedMap(new HashMap<Long, JobWrapper>());
+
+    private Map<Long, String> queueWrappers = Collections.synchronizedMap(new HashMap<Long, String>());
+
+    private Future<Void> takeJobsCollector;
 
     @Autowired
     private DatabaseFacade dbf;
@@ -53,6 +59,8 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
     private CloudBus bus;
     @Autowired
     private ErrorFacade errf;
+    @Autowired
+    private ThreadFacade thdf;
 
     private volatile boolean stopped = false;
     private EventSubscriberReceipt unsubscriber;
@@ -64,7 +72,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
         }
 
         JobEvent je = (JobEvent) e;
-        JobWrapper jw = wrappers.get(je.getJobId());
+        JobWrapper jw = jobWrappers.get(je.getJobId());
         if (jw == null) {
             return false;
         }
@@ -83,6 +91,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
     public boolean start() {
         unsubscriber = bus.subscribeEvent(this, new JobEvent());
         stopped = false;
+        startTakeJobs();
         return true;
     }
 
@@ -92,7 +101,38 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
         if (unsubscriber != null) {
             unsubscriber.unsubscribeAll();
         }
+        takeJobsCollector.cancel(true);
         return true;
+    }
+
+    private void startTakeJobs() {
+        logger.debug("start take jobs");
+        takeJobsCollector = thdf.submitPeriodicTask(new PeriodicTask() {
+
+            @Override
+            public void run() {
+                if (jobWrappers.isEmpty()){
+                    takeOverJobs();
+                    takeOverLeftNodeJobs(null);
+                }
+            }
+
+            @Override
+            public TimeUnit getTimeUnit() {
+                return TimeUnit.SECONDS;
+            }
+
+            @Override
+            public long getInterval() {
+                return 60 * 30; // 30 minute
+            }
+
+            @Override
+            public String getName() {
+                return "StartTakeJobsThread";
+            }
+
+        });
     }
 
     private void restartQueue(JobQueueVO qvo, String mgmtId) {
@@ -136,7 +176,26 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
         }
     }
 
-    private void takeOverJobs(String mgmtId) {
+    private void takeOverJobs() {
+        GLock lock = new GLock(ORPHAN_JOB_LOCK_NAME, LOCK_TIMEOUT);
+        lock.lock();
+        try {
+            logger.debug(String.format("management node[id:%s] starts taking over jobs of left management node[%s]",
+                    Platform.getManagementServerId(), Platform.getManagementServerId()));
+            SimpleQuery<JobQueueVO> qq = dbf.createQuery(JobQueueVO.class);
+            qq.add(JobQueueVO_.workerManagementNodeId, SimpleQuery.Op.EQ, Platform.getManagementServerId());
+            List<JobQueueVO> queues = qq.list();
+
+            logger.debug(String.format("[Orphan Queue found]: management node is going to take over %s orphan queues", queues.size()));
+            for (JobQueueVO queue : queues) {
+                restartQueue(queue, Platform.getManagementServerId());
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private void takeOverLeftNodeJobs(String mgmtId) {
         GLock lock = new GLock(ORPHAN_JOB_LOCK_NAME, LOCK_TIMEOUT);
         lock.lock();
         try {
@@ -161,7 +220,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
     @Override
     public void nodeLeft(String nodeId) {
-        takeOverJobs(nodeId);
+        takeOverLeftNodeJobs(nodeId);
     }
 
     @Override
@@ -229,7 +288,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                         ne.getId()));
 
                 myJobId = ne.getId();
-                wrappers.put(myJobId, this);
+                jobWrappers.put(myJobId, this);
                 return ret;
             }
 
@@ -280,6 +339,15 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                 return ev;
             }
 
+            private boolean existHistoryErrorJobQueueEntry(JobQueueVO qvo) {
+                SimpleQuery<JobQueueEntryVO> q = dbf.createQuery(JobQueueEntryVO.class);
+                q.add(JobQueueEntryVO_.state, SimpleQuery.Op.EQ, JobState.Error);
+                q.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
+                q.add(JobQueueEntryVO_.restartable, SimpleQuery.Op.EQ, true);
+                q.setLimit(1);
+                return q.find() != null;
+            }
+
             private Bucket takeJob(final JobQueueVO qvo) {
                 GLock lock = new GLock(LOCK_NAME, LOCK_TIMEOUT);
                 lock.lock();
@@ -287,7 +355,9 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                     JobQueueEntryVO jobe = findJob(qvo);
                     if (jobe == null) {
                         // nothing to do, release queue
-                        dbf.remove(qvo);
+                        if (! existHistoryErrorJobQueueEntry(qvo)) {    // 也没有error的需要再次执行的job
+                            dbf.remove(qvo);
+                        }
                         logger.debug(String.format("[JobQueue released, no pending task, delete the queue] last owner: %s, queue name: %s, queue id: %s",
                                 qvo.getOwner(), qvo.getName(), qvo.getId()));
                         return null;
@@ -390,14 +460,14 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
             @Override
             public void success(Object ret) {
                 DebugUtils.Assert(myJobId!=null, "how can myJobId be null???");
-                wrappers.remove(myJobId);
+                jobWrappers.remove(myJobId);
                 completion.success((T)ret);
             }
 
             @Override
             public void fail(ErrorCode err) {
                 DebugUtils.Assert(myJobId!=null, "how can myJobId be null???");
-                wrappers.remove(myJobId);
+                jobWrappers.remove(myJobId);
                 completion.fail(err);
             }
         }.run();
