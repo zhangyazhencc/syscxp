@@ -441,7 +441,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
-                event.setInventory(RegulationInventory.valueOf(dbf.reload(regulationVO)));
+                event.setInventory(RegulationInventory.valueOf(regulationVO));
                 bus.publish(event);
             }
         }).error(new FlowErrorHandler(null) {
