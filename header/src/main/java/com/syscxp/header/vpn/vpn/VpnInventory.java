@@ -25,6 +25,7 @@ public class VpnInventory {
     private Integer maxModifies;
     private String sid;
     private String certKey;
+    private String clientConf;
     private String payment;
     private VpnHostInventory hostInventory;
     private Timestamp lastOpDate;
@@ -49,6 +50,7 @@ public class VpnInventory {
         inv.setSid(vo.getSid());
         inv.setCertKey(vo.getCertKey());
         inv.setMaxModifies(vo.getMaxModifies());
+        inv.setClientConf(vo.getClientConf());
         inv.setPayment(vo.getPayment().toString());
         inv.setHostInventory(VpnHostInventory.valueOf(vo.getVpnHost()));
         return inv;
@@ -61,6 +63,14 @@ public class VpnInventory {
         }
 
         return invs;
+    }
+
+    public String getClientConf() {
+        return clientConf;
+    }
+
+    public void setClientConf(String clientConf) {
+        this.clientConf = clientConf;
     }
 
     public String getUuid() {

@@ -47,6 +47,8 @@ public class VpnVO {
     @Column
     private Integer duration;
     @Column
+    private String clientConf;
+    @Column
     private String sid;
     @Column
     private String certKey;
@@ -65,6 +67,14 @@ public class VpnVO {
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
+    }
+
+    public String getClientConf() {
+        return clientConf;
+    }
+
+    public void setClientConf(String clientConf) {
+        this.clientConf = clientConf;
     }
 
     public VpnCertVO getVpnCert() {

@@ -13,10 +13,12 @@ public class VpnCertInventory {
     private String name;
     private String accountUuid;
     private String caCert;
+    private String caKey;
     private String clientCert;
     private String clientKey;
     private String serverCert;
     private String serverKey;
+    private String dh1024Pem;
     private String clientConf;
     private Integer version;
     private Timestamp lastOpDate;
@@ -28,11 +30,13 @@ public class VpnCertInventory {
         inv.setName(vo.getName());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setCaCert(vo.getCaCert());
+        inv.setCaKey(vo.getCaKey());
         inv.setServerCert(vo.getServerCert());
         inv.setServerKey(vo.getServerKey());
         inv.setClientCert(vo.getClientCert());
         inv.setClientConf(vo.getClientConf());
         inv.setClientKey(vo.getClientKey());
+        inv.setDh1024Pem(vo.getDh1024Pem());
         inv.setVersion(vo.getVersion());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -46,6 +50,22 @@ public class VpnCertInventory {
         }
 
         return invs;
+    }
+
+    public String getCaKey() {
+        return caKey;
+    }
+
+    public void setCaKey(String caKey) {
+        this.caKey = caKey;
+    }
+
+    public String getDh1024Pem() {
+        return dh1024Pem;
+    }
+
+    public void setDh1024Pem(String dh1024Pem) {
+        this.dh1024Pem = dh1024Pem;
     }
 
     public String getName() {

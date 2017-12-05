@@ -20,6 +20,8 @@ public class VpnCertVO {
     @Column
     private String caCert;
     @Column
+    private String caKey;
+    @Column
     private String clientCert;
     @Column
     private String clientKey;
@@ -27,6 +29,8 @@ public class VpnCertVO {
     private String serverCert;
     @Column
     private String serverKey;
+    @Column
+    private String dh1024Pem;
     @Column
     private String clientConf;
     @Column
@@ -44,6 +48,22 @@ public class VpnCertVO {
     @PrePersist
     private void prePersistVersion() {
         version = 0;
+    }
+
+    public String getDh1024Pem() {
+        return dh1024Pem;
+    }
+
+    public void setDh1024Pem(String dh1024Pem) {
+        this.dh1024Pem = dh1024Pem;
+    }
+
+    public String getCaKey() {
+        return caKey;
+    }
+
+    public void setCaKey(String caKey) {
+        this.caKey = caKey;
     }
 
     public String getName() {
