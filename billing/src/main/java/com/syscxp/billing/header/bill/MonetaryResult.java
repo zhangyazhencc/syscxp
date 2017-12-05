@@ -8,10 +8,10 @@ import java.math.BigInteger;
 public class MonetaryResult {
     private ProductType type;
     private BigInteger categoryCount;
-    private BigDecimal deductionCash;
-    private BigDecimal deductionPresent;
-    private BigDecimal refundCash;
-    private BigDecimal refundPresent;
+    private BigDecimal deductionCash = BigDecimal.ZERO;
+    private BigDecimal deductionPresent = BigDecimal.ZERO;
+    private BigDecimal refundCash = BigDecimal.ZERO;
+    private BigDecimal refundPresent = BigDecimal.ZERO;
 
     public MonetaryResult(){}
     public MonetaryResult(Object[] objs) {

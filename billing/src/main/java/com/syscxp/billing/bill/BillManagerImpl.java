@@ -68,10 +68,6 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
             List<MonetaryOrderType> monetaries = getMonetaryOrderType(msg.getSession().getAccountUuid(), startTime, endTime);
             for (MonetaryOrderType monetary : monetaries) {
                 MonetaryResult result = map.get(monetary.getType().name());
-                if(result!=null && result.getRefundPresent()==null)result.setRefundPresent(BigDecimal.ZERO);
-                if(result !=null && result.getRefundCash()==null)result.setRefundCash(BigDecimal.ZERO);
-                if(result !=null && result.getDeductionPresent()==null)result.setDeductionPresent(BigDecimal.ZERO);
-                if(result !=null && result.getDeductionCash()==null) result.setDeductionCash(BigDecimal.ZERO);
                 if (monetary.getOrderType() == OrderType.BUY || monetary.getOrderType() == OrderType.RENEW || monetary.getOrderType() == OrderType.UPGRADE) {
                     result.setDeductionCash((result.getDeductionCash() == null ? BigDecimal.ZERO : result.getDeductionCash()).add(monetary.getPayCashTotal()));
                     result.setDeductionPresent((result.getDeductionPresent() == null ? BigDecimal.ZERO : result.getDeductionPresent()).add(monetary.getPayPresentTotal()));
