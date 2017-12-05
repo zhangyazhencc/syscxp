@@ -412,7 +412,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 vo.setName(msg.getName());
             }
             if (msg.getDescription() != null) {
-                vo.setDescription(vo.getDescription());
+                vo.setDescription(msg.getDescription());
             }
         }
         dbf.updateAndRefresh(vo);
