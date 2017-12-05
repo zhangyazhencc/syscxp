@@ -23,6 +23,12 @@ public class ProductCaller {
             case PORT:
                 this.productUrl = BillingGlobalProperty.TUNNEL_SERVER_URL;
                 break;
+            case DISK :
+                this.productUrl = BillingGlobalProperty.ECP_SERVER_URL;
+                break;
+                case HOST :
+                this.productUrl = BillingGlobalProperty.ECP_SERVER_URL;
+                break;
         }
     }
 
