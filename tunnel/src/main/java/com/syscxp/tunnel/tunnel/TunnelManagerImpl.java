@@ -1452,7 +1452,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         renewOrderMsg.setDuration(duration);
         renewOrderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo));
         renewOrderMsg.setProductChargeModel(productChargeModel);
-        renewOrderMsg.setAccountUuid(accountUuid);
+        renewOrderMsg.setAccountUuid(vo.getAccountUuid());
         renewOrderMsg.setOpAccountUuid(opAccountUuid);
         renewOrderMsg.setStartTime(dbf.getCurrentSqlTime());
         renewOrderMsg.setExpiredTime(vo.getExpireDate());

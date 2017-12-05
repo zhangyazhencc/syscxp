@@ -84,7 +84,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         }
         String sql = "SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND areaCode = :areaCode  GROUP BY lineCode";
         if (msg.getCategory().equals(Category.REGION)) {
-            sql = "SELECT lineCode,areaCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode";
+            sql = "SELECT areaName as areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode";
         }
 
         Query q = dbf.getEntityManager().createNativeQuery(sql);

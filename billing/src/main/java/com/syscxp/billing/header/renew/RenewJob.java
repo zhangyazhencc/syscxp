@@ -60,7 +60,7 @@ public class RenewJob {
             SimpleQuery<RenewVO> q = dbf.createQuery(RenewVO.class);
             q.add(RenewVO_.isRenewAuto, SimpleQuery.Op.EQ, true);
             List<RenewVO> renewVOs = q.list();
-            if (renewVOs == null) {
+            if (renewVOs == null || renewVOs.size()==0) {
                 logger.info("there is no activity renew product");
                 return;
             }
