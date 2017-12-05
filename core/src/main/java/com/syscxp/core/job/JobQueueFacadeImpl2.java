@@ -34,6 +34,7 @@ import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.*;
 
 /**
@@ -96,17 +97,17 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
     private void restartQueue(JobQueueVO qvo, String mgmtId) {
         SimpleQuery<JobQueueEntryVO> q = dbf.createQuery(JobQueueEntryVO.class);
-        q.select(JobQueueEntryVO_.id, JobQueueEntryVO_.name);
-        q.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
-        q.add(JobQueueEntryVO_.issuerManagementNodeId, SimpleQuery.Op.NULL);
-        List<Tuple> ts = q.listTuple();
-        for (Tuple t : ts) {
-            logger.debug(String.format("[Job Removed]: job[id:%s, name:%s] because its issuer management node[id:%s] became available", t.get(0), t.get(1), mgmtId));
-            dbf.removeByPrimaryKey((Long) t.get(0), JobQueueEntryVO.class);
-        }
+//        q.select(JobQueueEntryVO_.id, JobQueueEntryVO_.name);
+//        q.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
+//        q.add(JobQueueEntryVO_.issuerManagementNodeId, SimpleQuery.Op.NULL);
+//        List<Tuple> ts = q.listTuple();
+//        for (Tuple t : ts) {
+//            logger.debug(String.format("[Job Removed]: job[id:%s, name:%s] because its issuer management node[id:%s] became available", t.get(0), t.get(1), mgmtId));
+//            dbf.removeByPrimaryKey((Long) t.get(0), JobQueueEntryVO.class);
+//        }
 
         q = dbf.createQuery(JobQueueEntryVO.class);
-        q.add(JobQueueEntryVO_.state, SimpleQuery.Op.IN, JobState.Pending, JobState.Processing);
+        q.add(JobQueueEntryVO_.state, SimpleQuery.Op.IN, JobState.Pending, JobState.Processing, JobState.Error);
         q.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
         q.orderBy(JobQueueEntryVO_.id, SimpleQuery.Od.ASC);
         long count = q.count();
@@ -262,7 +263,21 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                 q.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
                 q.setLimit(1);
                 q.orderBy(JobQueueEntryVO_.id, SimpleQuery.Od.ASC);
-                return q.find();
+
+                JobQueueEntryVO ev = q.find();
+
+                if (ev == null){
+                    q.add(JobQueueEntryVO_.state, SimpleQuery.Op.EQ, JobState.Error);
+                    q.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
+                    q.add(JobQueueEntryVO_.restartable, SimpleQuery.Op.EQ, true);
+                    q.add(JobQueueEntryVO_.doneDate, SimpleQuery.Op.LT, Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
+                    q.setLimit(1);
+                    q.orderBy(JobQueueEntryVO_.doneDate, SimpleQuery.Od.ASC);
+
+                    ev = q.find();
+                }
+
+                return ev;
             }
 
             private Bucket takeJob(final JobQueueVO qvo) {
@@ -291,6 +306,9 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                             logger.warn(err, e1);
                             jobFail(jobe, errf.stringToInternalError(err));
                             jobe = findJob(qvo);
+                            if (jobe == null){
+                                return null;
+                            }
                         }
                     }
                 } finally {
