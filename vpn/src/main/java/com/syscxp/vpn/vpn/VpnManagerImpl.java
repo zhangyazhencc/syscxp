@@ -338,7 +338,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
                     @Override
                     public void fail(ErrorCode errorCode) {
-                        trigger.next();
+                        trigger.fail(errorCode);
                     }
                 });
             }
