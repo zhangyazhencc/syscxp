@@ -6,5 +6,6 @@ public enum ProductType {
     PORT,
     VPN,
     HOST,
-    DISK
+    DISK,
+    RESOURCEPOOL
 }
