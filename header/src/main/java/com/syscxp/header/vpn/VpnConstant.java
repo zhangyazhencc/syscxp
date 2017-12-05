@@ -19,4 +19,6 @@ public interface VpnConstant {
     String CLIENT_INFO_PATH = "/vpn/client_info";
     String LOGIN_INFO_PATH = "/vpn/login_info";
     String INIT_VPN_PATH = "/vpn/init_vpn";
+    String PUSH_CERT_PATH = "/vpn/push_cert";
+    String VPN_STATUS_PATH = "/vpn/vpn_status";
 }

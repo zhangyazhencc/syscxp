@@ -18,6 +18,8 @@ public class VpnCertVO {
     @Column
     private String accountUuid;
     @Column
+    private String description;
+    @Column
     private String caCert;
     @Column
     private String caKey;
@@ -32,22 +34,33 @@ public class VpnCertVO {
     @Column
     private String dh1024Pem;
     @Column
-    private String clientConf;
+    private Integer vpnNum;
     @Column
     private Integer version;
     @Column
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
-        version += 1;
     }
 
-    @PrePersist
-    private void prePersistVersion() {
-        version = 0;
+    public Integer getVpnNum() {
+        return vpnNum;
+    }
+
+    public void setVpnNum(Integer vpnNum) {
+        this.vpnNum = vpnNum;
     }
 
     public String getDh1024Pem() {
@@ -136,14 +149,6 @@ public class VpnCertVO {
 
     public void setClientKey(String clientKey) {
         this.clientKey = clientKey;
-    }
-
-    public String getClientConf() {
-        return clientConf;
-    }
-
-    public void setClientConf(String clientConf) {
-        this.clientConf = clientConf;
     }
 
     public Timestamp getLastOpDate() {

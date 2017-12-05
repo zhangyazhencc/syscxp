@@ -49,8 +49,6 @@ public class VpnVO {
     @Column
     private String clientConf;
     @Column
-    private String sid;
-    @Column
     private String certKey;
     @Column
     @Enumerated(EnumType.STRING)
@@ -127,14 +125,6 @@ public class VpnVO {
 
     public void setPayment(Payment payment) {
         this.payment = payment;
-    }
-
-    public String getSid() {
-        return sid;
-    }
-
-    public void setSid(String sid) {
-        this.sid = sid;
     }
 
     public String getHostUuid() {

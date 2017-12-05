@@ -8,9 +8,19 @@ import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.vpn.VpnConstant;
 
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"create"})
-public class APICreateVpnCertMsg extends APIMessage{
-    @APIParam(required = false)
+public class APICreateVpnCertMsg extends APIVpnMessage {
+    @APIParam
     private String name;
+    @APIParam
+    private String description;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public String getName() {
         return name;

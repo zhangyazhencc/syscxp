@@ -21,7 +21,6 @@ public class VpnVO_ {
     public static volatile SingularAttribute<VpnVO, Integer> duration;
     public static volatile SingularAttribute<VpnVO, Timestamp> expireDate;
     public static volatile SingularAttribute<VpnVO, Integer> maxModifies;
-    public static volatile SingularAttribute<VpnVO, String> sid;
     public static volatile SingularAttribute<VpnVO, String> certKey;
     public static volatile SingularAttribute<VpnVO, String> clientConf;
     public static volatile SingularAttribute<VpnVO, Payment> payment;

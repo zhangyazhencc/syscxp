@@ -3,6 +3,8 @@ package com.syscxp.vpn.vpn;
 import com.syscxp.core.validation.ConditionalValidation;
 import com.syscxp.header.vpn.agent.CertInfo;
 
+import java.util.List;
+
 public class VpnCommands {
     public static class AgentCommand {
         public String vpnuuid;
@@ -53,7 +55,7 @@ public class VpnCommands {
     }
 
     /**
-     * 创建化证书：/vpn/create_cert
+     * 创建证书：/vpn/create_cert
      */
     public static class CreateCertCmd extends AgentCommand {
     }
@@ -66,6 +68,16 @@ public class VpnCommands {
         public String client_key;
         public String server_key;
         public String dh1024_pem;
+    }
+
+    /**
+     * 上传证书：/vpn/push_cert
+     */
+    public static class PushCertCmd extends AgentCommand {
+        public CertInfo certinfo;
+    }
+
+    public static class PushCertRsp extends AgentResponse {
     }
 
     /**
@@ -180,5 +192,17 @@ public class VpnCommands {
     }
 
     public static class InitVpnRsp extends VpnStatusResponse {
+    }
+
+    /**
+     * VPN状态：/vpn/vpn_status
+     */
+    public static class VpnStatusCmd extends AgentCommand {
+        public List<String> vpnuuids;
+    }
+
+    public static class VpnStatusRsp extends VpnStatusResponse {
+        public List<String> vpnUp;
+        public List<String> vpnDown;
     }
 }

@@ -30,7 +30,10 @@
         <name>com.syscxp.header.vpn.vpn.APIResetVpnCertMsg</name>
     </message>
     <message>
-        <name>com.syscxp.header.vpn.vpn.APIChangeVpnCertMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIAttachVpnCertMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIDetachVpnCertMsg</name>
     </message>
     <message>
         <name>com.syscxp.header.vpn.vpn.APIGetVpnMsg</name>
