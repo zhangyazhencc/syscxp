@@ -17,6 +17,61 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/`syscxp_billing` /*!40100 DEFAULT CHARAC
 
 USE `syscxp_billing`;
 
+
+CREATE TABLE  `syscxp_account`.`ManagementNodeVO` (
+    `uuid` varchar(32) NOT NULL UNIQUE,
+    `hostName` varchar(255) DEFAULT NULL,
+    `port` int unsigned DEFAULT NULL,
+    `state` varchar(128) NOT NULL,
+    `joinDate` timestamp DEFAULT CURRENT_TIMESTAMP,
+    `heartBeat` timestamp,
+    PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  `syscxp_account`.`GlobalConfigVO` (
+    `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
+    `name` varchar(255) NOT NULL,
+    `description` varchar(1024) DEFAULT NULL,
+    `category` varchar(64) NOT NULL,
+    `defaultValue` text DEFAULT NULL,
+    `value` text DEFAULT NULL,
+    PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  `JobQueueVO` (
+    `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
+    `name` varchar(255) NOT NULL UNIQUE,
+    `owner` varchar(255) DEFAULT NULL,
+    `workerManagementNodeId` varchar(32) DEFAULT NULL,
+    `takenDate` timestamp DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE  `JobQueueEntryVO` (
+    `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
+    `name` varchar(255) NOT NULL,
+    `jobQueueId` bigint unsigned NOT NULL,
+    `state` varchar(128) NOT NULL,
+    `context` blob DEFAULT NULL,
+    `owner` varchar(255) DEFAULT NULL,
+    `issuerManagementNodeId` varchar(32) DEFAULT NULL,
+    `restartable` tinyint(1) unsigned NOT NULL DEFAULT 0,
+    `inDate` timestamp DEFAULT CURRENT_TIMESTAMP,
+    `doneDate` timestamp NULL,
+    `errText` text DEFAULT NULL,
+    PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+# Foreign keys for table JobQueueEntryVO
+
+ALTER TABLE JobQueueEntryVO ADD CONSTRAINT fkJobQueueEntryVOJobQueueVO FOREIGN KEY (jobQueueId) REFERENCES JobQueueVO (id) ON DELETE CASCADE;
+ALTER TABLE JobQueueEntryVO ADD CONSTRAINT fkJobQueueEntryVOManagementNodeVO FOREIGN KEY (issuerManagementNodeId) REFERENCES ManagementNodeVO (uuid) ON DELETE SET NULL;
+
+# Foreign keys for table JobQueueVO
+
+ALTER TABLE JobQueueVO ADD CONSTRAINT fkJobQueueVOManagementNodeVO FOREIGN KEY (workerManagementNodeId) REFERENCES ManagementNodeVO (uuid) ON DELETE SET NULL;
+
+
 /*Table structure for table `AccountBalanceVO` */
 
 DROP TABLE IF EXISTS `AccountBalanceVO`;
@@ -97,77 +152,6 @@ CREATE TABLE `DealDetailVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Data for the table `DealDetailVO` */
-
-/*Table structure for table `GlobalConfigVO` */
-
-DROP TABLE IF EXISTS `GlobalConfigVO`;
-
-CREATE TABLE `GlobalConfigVO` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `description` varchar(1024) DEFAULT NULL,
-  `category` varchar(64) NOT NULL,
-  `defaultValue` text DEFAULT NULL,
-  `value` text DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=19 DEFAULT CHARSET=utf8;
-
-/*Table structure for table `JobQueueEntryVO` */
-
-DROP TABLE IF EXISTS `JobQueueEntryVO`;
-
-CREATE TABLE `JobQueueEntryVO` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `jobQueueId` bigint(20) unsigned NOT NULL,
-  `state` varchar(128) NOT NULL,
-  `context` blob DEFAULT NULL,
-  `owner` varchar(255) DEFAULT NULL,
-  `issuerManagementNodeId` varchar(32) DEFAULT NULL,
-  `restartable` tinyint(1) unsigned NOT NULL DEFAULT 0,
-  `inDate` timestamp NOT NULL DEFAULT current_timestamp(),
-  `doneDate` timestamp NULL DEFAULT NULL,
-  `errText` text DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Data for the table `JobQueueEntryVO` */
-
-/*Table structure for table `JobQueueVO` */
-
-DROP TABLE IF EXISTS `JobQueueVO`;
-
-CREATE TABLE `JobQueueVO` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) NOT NULL,
-  `owner` varchar(255) DEFAULT NULL,
-  `workerManagementNodeId` varchar(32) DEFAULT NULL,
-  `takenDate` timestamp NOT NULL DEFAULT current_timestamp(),
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id` (`id`),
-  UNIQUE KEY `name` (`name`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Data for the table `JobQueueVO` */
-
-/*Table structure for table `ManagementNodeVO` */
-
-DROP TABLE IF EXISTS `ManagementNodeVO`;
-
-CREATE TABLE `ManagementNodeVO` (
-  `uuid` varchar(32) NOT NULL,
-  `hostName` varchar(255) DEFAULT NULL,
-  `port` int(10) unsigned DEFAULT NULL,
-  `state` varchar(128) NOT NULL,
-  `joinDate` timestamp NOT NULL DEFAULT current_timestamp(),
-  `heartBeat` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  PRIMARY KEY (`uuid`),
-  UNIQUE KEY `uuid` (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Data for the table `ManagementNodeVO` */
 
 /*Table structure for table `OrderVO` */
 
