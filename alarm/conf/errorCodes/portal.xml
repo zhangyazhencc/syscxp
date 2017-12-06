@@ -15,5 +15,9 @@
         <id>1002</id>
         <description>Management server is not ready to serve API message</description>
     </code>
+    <code>
+        <id>1003</id>
+        <description>unknown mistake</description>
+    </code>
 </error>
 

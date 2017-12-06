@@ -143,7 +143,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 abvo.setPresentBalance(presentNow);
                 orderVo.setPayPresent(total);
                 orderVo.setPayCash(BigDecimal.ZERO);
-                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.PRESENT_BILL, BigDecimal.ZERO, total.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, presentNow, outTradeNO, orderVo.getUuid(), opAccountUuid, null,orderVo.getUuid());
+                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.PRESENT_BILL, BigDecimal.ZERO, total, currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, presentNow, outTradeNO, orderVo.getUuid(), opAccountUuid, null,orderVo.getUuid());
             } else {
                 BigDecimal payPresent = abvo.getPresentBalance();
                 BigDecimal payCash = total.subtract(payPresent);
@@ -153,8 +153,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 orderVo.setPayPresent(payPresent);
                 orderVo.setPayCash(payCash);
 
-                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.PRESENT_BILL, BigDecimal.ZERO, payPresent.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, BigDecimal.ZERO, outTradeNO + "-1", orderVo.getUuid(), opAccountUuid, null,orderVo.getUuid());
-                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, BigDecimal.ZERO, payCash.negate(), currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, remainCash, outTradeNO + "-2", orderVo.getUuid(), opAccountUuid, null,orderVo.getUuid());
+                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.PRESENT_BILL, BigDecimal.ZERO, payPresent, currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, BigDecimal.ZERO, outTradeNO + "-1", orderVo.getUuid(), opAccountUuid, null,orderVo.getUuid());
+                new DealDetailVOHelper(dbf).saveDealDetailVO(accountUuid, DealWay.CASH_BILL, BigDecimal.ZERO, payCash, currentTimeStamp, DealType.DEDUCTION, DealState.SUCCESS, remainCash, outTradeNO + "-2", orderVo.getUuid(), opAccountUuid, null,orderVo.getUuid());
             }
         } else {
             BigDecimal remainCashBalance = abvo.getCashBalance().subtract(total);

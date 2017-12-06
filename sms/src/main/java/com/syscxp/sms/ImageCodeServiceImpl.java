@@ -133,7 +133,7 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
 
     @Override
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        return null;
+        return msg;
     }
 
     private Random random = new Random();
