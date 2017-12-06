@@ -7,7 +7,6 @@ import com.syscxp.core.db.*;
 import com.syscxp.core.defer.Defer;
 import com.syscxp.core.defer.Deferred;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.host.HostGlobalProperty;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.ChainTask;
@@ -728,16 +727,34 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void handle(APIDetachVpnCertMsg msg) {
         APIDetachVpnCertEvent evt = new APIDetachVpnCertEvent(msg.getId());
-        VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        String vpnCertUuid = vpn.getVpnCertUuid();
-        vpn.setVpnCertUuid(null);
-        vpn = dbf.updateAndRefresh(vpn);
+        VpnVO vo = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+        String vpnCertUuid = vo.getVpnCertUuid();
+        vo.setVpnCertUuid(null);
+        final VpnVO vpn = dbf.updateAndRefresh(vo);
         VpnCertVO vpnCert = dbf.findByUuid(vpnCertUuid, VpnCertVO.class);
         vpnCert.setVpnNum(vpnCert.getVpnNum() - 1);
         dbf.updateAndRefresh(vpnCert);
 
-        evt.setInventory(VpnInventory.valueOf(vpn));
-        bus.publish(evt);
+        ChangeVpnStatusMsg statusMsg = new ChangeVpnStatusMsg();
+        statusMsg.setVpnUuid(vpn.getUuid());
+        statusMsg.setStatus(VpnStatus.Disconnected.toString());
+
+        bus.makeLocalServiceId(statusMsg, VpnConstant.SERVICE_ID);
+        bus.send(statusMsg, new CloudBusCallBack(null) {
+            @Override
+            public void run(MessageReply reply) {
+                if (reply.isSuccess()) {
+                    evt.setInventory(VpnInventory.valueOf(vpn));
+                    bus.publish(evt);
+                } else {
+                    logger.info("delete vpn cert failed!");
+                    evt.setError(reply.getError());
+                    bus.publish(evt);
+                }
+            }
+        });
+
+
     }
 
     private void handle(APIAttachVpnCertMsg msg) {
@@ -1219,30 +1236,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     }
 
-    private void getCertInfo(String vpnUuid, final ReturnValueCompletion<VpnInventory> complete) {
-        ClientInfoMsg msg = new ClientInfoMsg();
-        msg.setVpnUuid(vpnUuid);
-        bus.makeLocalServiceId(msg, VpnConstant.SERVICE_ID);
-        bus.send(msg, new CloudBusCallBack(complete) {
-            @Override
-            public void run(MessageReply reply) {
-                if (reply.isSuccess()) {
-                    ClientInfoReply infoReply = reply.castReply();
-                    complete.success(infoReply.getInventory());
-                } else {
-                    complete.fail(reply.getError());
-                }
-            }
-        });
-    }
-
     private void changeVpnStateByAPI(VpnVO vpn, VpnState next, final Completion complete) {
-        ChangeVpnStateMsg changeVpnStateMsg = new ChangeVpnStateMsg();
-        changeVpnStateMsg.setVpnUuid(vpn.getUuid());
-        changeVpnStateMsg.setCurrentState(vpn.getState());
-        changeVpnStateMsg.setState(next);
-        bus.makeLocalServiceId(changeVpnStateMsg, VpnConstant.SERVICE_ID);
-        bus.send(changeVpnStateMsg, new CloudBusCallBack(complete) {
+        ChangeVpnStatusMsg changeVpnStatusMsg = new ChangeVpnStatusMsg();
+        changeVpnStatusMsg.setVpnUuid(vpn.getUuid());
+        changeVpnStatusMsg.setStatus(vpn.getStatus().toString());
+        bus.makeLocalServiceId(changeVpnStatusMsg, VpnConstant.SERVICE_ID);
+        bus.send(changeVpnStatusMsg, new CloudBusCallBack(complete) {
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {

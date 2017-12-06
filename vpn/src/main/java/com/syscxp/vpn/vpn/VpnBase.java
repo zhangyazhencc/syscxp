@@ -95,8 +95,8 @@ public class VpnBase extends AbstractVpn {
             handle((StartAllMsg) msg);
         } else if (msg instanceof DestroyVpnMsg) {
             handle((DestroyVpnMsg) msg);
-        } else if (msg instanceof ChangeVpnStateMsg) {
-            handle((ChangeVpnStateMsg) msg);
+        } else if (msg instanceof ChangeVpnStatusMsg) {
+            handle((ChangeVpnStatusMsg) msg);
         } else if (msg instanceof RateLimitingMsg) {
             handle((RateLimitingMsg) msg);
         } else if (msg instanceof VpnConfMsg) {
@@ -160,22 +160,24 @@ public class VpnBase extends AbstractVpn {
                             }
                         });
                         flow(new NoRollbackFlow() {
-                            String __name__ = "start-service";
+                            String __name__ = "restart-service";
 
                             @Override
                             public void run(final FlowTrigger trigger, Map data) {
 
-                                vpnService("restart", new Completion(trigger) {
+                                vpnService("restart", new ReturnValueCompletion<String>(trigger) {
                                     @Override
-                                    public void success() {
-                                        changVpnSatus(VpnStatus.Connected);
-                                        trigger.next();
+                                    public void success(String ret) {
+                                        if (VpnStatus.valueOf(ret) == VpnStatus.Connected) {
+                                            trigger.next();
+                                        } else {
+                                            trigger.fail(errf.instantiateErrorCode(VpnErrors.VPN_RESTART_ERROR, "failed to restart vpn service"));
+                                        }
                                     }
 
                                     @Override
                                     public void fail(ErrorCode errorCode) {
-                                        changVpnSatus(VpnStatus.Disconnected);
-                                        trigger.next();
+                                        trigger.fail(errorCode);
                                     }
                                 });
                             }
@@ -274,17 +276,22 @@ public class VpnBase extends AbstractVpn {
                             @Override
                             public void run(final FlowTrigger trigger, Map data) {
 
-                                vpnService("status", new Completion(trigger) {
+                                vpnService("status", new ReturnValueCompletion<String>(trigger) {
                                     @Override
-                                    public void success() {
-                                        changVpnSatus(VpnStatus.Connected);
-                                        trigger.next();
+                                    public void success(String ret) {
+                                        reply.setStatus(ret);
+                                        if (VpnStatus.Connected == VpnStatus.valueOf(ret)) {
+                                            trigger.next();
+                                        } else {
+                                            trigger.fail(errf.instantiateErrorCode(VpnErrors.INIT_VPN_ERROR,
+                                                    "init vpn completed, but vpn status is Disconnected"));
+
+                                        }
                                     }
 
                                     @Override
                                     public void fail(ErrorCode errorCode) {
-                                        changVpnSatus(VpnStatus.Disconnected);
-                                        trigger.next();
+                                        trigger.fail(errorCode);
                                     }
                                 });
                             }
@@ -293,8 +300,6 @@ public class VpnBase extends AbstractVpn {
                         done(new FlowDoneHandler(msg) {
                             @Override
                             public void handle(Map data) {
-                                VpnVO nvpn = dbf.reload(self);
-                                reply.setStatus(nvpn.getStatus().toString());
                                 bus.reply(msg, reply);
                             }
                         });
@@ -426,17 +431,20 @@ public class VpnBase extends AbstractVpn {
 
                             @Override
                             public void run(final FlowTrigger trigger, Map data) {
-                                vpnService("stop", new Completion(trigger) {
+                                vpnService("stop", new ReturnValueCompletion<String>(trigger) {
                                     @Override
-                                    public void success() {
-                                        changVpnSatus(VpnStatus.Connected);
-                                        trigger.next();
+                                    public void success(String ret) {
+                                        if (VpnStatus.valueOf(ret) == VpnStatus.Disconnected) {
+                                            trigger.next();
+                                        } else {
+                                            trigger.fail(errf.instantiateErrorCode(VpnErrors.VPN_DESTROY_ERROR, "failed to stop vpn service"));
+
+                                        }
                                     }
 
                                     @Override
                                     public void fail(ErrorCode errorCode) {
-                                        changVpnSatus(VpnStatus.Disconnected);
-                                        trigger.next();
+                                        trigger.fail(errorCode);
                                     }
                                 });
                             }
@@ -506,31 +514,33 @@ public class VpnBase extends AbstractVpn {
 
     }
 
-    private void handle(ChangeVpnStateMsg msg) {
-        ChangeVpnStateReply reply = new ChangeVpnStateReply();
+    private void handle(ChangeVpnStatusMsg msg) {
+        ChangeVpnStatusReply reply = new ChangeVpnStatusReply();
+        if (VpnStatus.valueOf(msg.getStatus()) == self.getStatus()) {
+            bus.reply(msg, reply);
+            return;
+        }
         String command;
-        if (msg.getState() == VpnState.Enabled) {
+        if (VpnStatus.valueOf(msg.getStatus()) == VpnStatus.Connected) {
             command = "start";
         } else {
             command = "stop";
         }
-        vpnService(command, new Completion(msg) {
+        vpnService(command, new ReturnValueCompletion<String>(msg) {
             @Override
-            public void success() {
-                changVpnSatus(VpnStatus.Disconnected);
+            public void success(String ret) {
                 bus.reply(msg, reply);
             }
 
             @Override
             public void fail(ErrorCode errorCode) {
-                changVpnSatus(VpnStatus.Connected);
                 reply.setError(errorCode);
                 bus.reply(msg, reply);
             }
         });
     }
 
-    private void vpnService(String command, final Completion completion) {
+    private void vpnService(String command, final ReturnValueCompletion<String> completion) {
         VpnServiceCmd cmd = new VpnServiceCmd();
         cmd.vpnuuid = self.getUuid();
         cmd.vpnvlanid = getVlan();
@@ -540,8 +550,14 @@ public class VpnBase extends AbstractVpn {
         httpCall(vpnServicePath, cmd, VpnServiceRsp.class, new ReturnValueCompletion<VpnServiceRsp>(completion) {
             @Override
             public void success(VpnServiceRsp ret) {
-                if (ret.isSuccess() && "UP".equals(ret.vpnStatus)) {
-                    completion.success();
+                if (ret.isSuccess()) {
+                    if ("UP".equals(ret.vpnStatus)) {
+                        changVpnSatus(VpnStatus.Connected);
+                        completion.success(VpnStatus.Connected.toString());
+                    } else {
+                        changVpnSatus(VpnStatus.Disconnected);
+                        completion.success(VpnStatus.Disconnected.toString());
+                    }
                 } else {
                     completion.fail(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR, "vpn service disconnected"));
                 }
@@ -561,12 +577,11 @@ public class VpnBase extends AbstractVpn {
             bus.reply(msg, reply);
             return;
         }
-        vpnService("status", new Completion(msg) {
+        vpnService("status", new ReturnValueCompletion<String>(msg) {
             @Override
-            public void success() {
-                reply.setConnected(true);
+            public void success(String ret) {
+                reply.setConnected(VpnStatus.valueOf(ret) == self.getStatus());
                 reply.setCurrentStatus(self.getStatus());
-                changVpnSatus(VpnStatus.Connected);
                 bus.reply(msg, reply);
             }
 
@@ -576,14 +591,11 @@ public class VpnBase extends AbstractVpn {
                 reply.setCurrentStatus(self.getStatus());
                 reply.setError(errorCode);
                 reply.setSuccess(true);
-                changVpnSatus(VpnStatus.Disconnected);
                 bus.reply(msg, reply);
             }
         });
 
     }
-
-
 
 
     private void handle(final RateLimitingMsg msg) {
