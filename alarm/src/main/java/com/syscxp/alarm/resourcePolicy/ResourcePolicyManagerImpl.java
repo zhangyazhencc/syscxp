@@ -302,7 +302,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
         FalconApiCommands.RestResponse res = rsp.getBody();
         if (!res.isSuccess()) {
-            System.out.println(rsp.getBody());
+
             throw new OperationFailureException(Platform.operr("falcon fail "));
         }
 
