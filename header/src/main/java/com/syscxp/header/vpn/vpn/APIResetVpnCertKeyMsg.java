@@ -8,10 +8,9 @@ import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.vpn.VpnConstant;
 
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"})
-public class APIResetVpnCertMsg extends APIMessage{
-    @APIParam(resourceType = VpnCertVO.class, checkAccount = true)
+public class APIResetVpnCertKeyMsg extends APIMessage{
+    @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String uuid;
-
 
     public String getUuid() {
         return uuid;
@@ -27,8 +26,8 @@ public class APIResetVpnCertMsg extends APIMessage{
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update VpnCertVO")
-                        .resource(uuid, VpnCertVO.class)
+                ntfy("Reset VpnCertVO certKey")
+                        .resource(uuid, VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

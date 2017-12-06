@@ -19,22 +19,22 @@ public class APIAccountPWDBackByEmailMsg extends APIMessage  {
     private String code;
 
     @APIParam(maxLength = 2048)
-    private String newpassword;
+    private String newPassword;
 
     public String getCode() {
         return code;
-    }
-
-    public String getNewpassword() {
-        return newpassword;
     }
 
     public void setCode(String code) {
         this.code = code;
     }
 
-    public void setNewpassword(String newpassword) {
-        this.newpassword = newpassword;
+    public String getNewPassword() {
+        return newPassword;
+    }
+
+    public void setNewPassword(String newPassword) {
+        this.newPassword = newPassword;
     }
 
     public String getEmail() {

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <service xmlns="http://syscxp.com/schema/syscxp">
-    <id>ImageCode</id>
+    <id>imageCode</id>
     <interceptor>ImageCodeService</interceptor>
 
     <message>

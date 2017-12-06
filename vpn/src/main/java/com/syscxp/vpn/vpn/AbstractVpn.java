@@ -45,12 +45,7 @@ public abstract class AbstractVpn {
     public <T extends AgentResponse> void httpCall(final String path, final AgentCommand cmd, final Class<T> retClass, final ReturnValueCompletion<T> completion) {
         try {
             T rsp = restf.syncJsonPost(makeHttpPath(getBaseUrl(), path), cmd, retClass);
-            if (rsp.isSuccess()){
-                completion.success(rsp);
-            } else {
-                logger.debug(String.format("ERROR: %s", rsp.getError()));
-                completion.fail(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR, rsp.getError()));
-            }
+            completion.success(rsp);
         } catch (Exception e) {
             logger.info(e.getMessage());
             completion.fail(errf.instantiateErrorCode(SysErrors.HTTP_ERROR, e.getMessage()));

@@ -2,13 +2,13 @@ package com.syscxp.header.vpn.vpn;
 
 import com.syscxp.header.message.APIEvent;
 
-public class APIChangeVpnCertEvent extends APIEvent{
+public class APIDetachVpnCertEvent extends APIEvent{
     VpnInventory inventory;
 
-    public APIChangeVpnCertEvent() {
+    public APIDetachVpnCertEvent() {
     }
 
-    public APIChangeVpnCertEvent(String apiId) {
+    public APIDetachVpnCertEvent(String apiId) {
         super(apiId);
     }
 

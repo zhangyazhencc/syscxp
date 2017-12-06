@@ -56,10 +56,19 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
     private Future<Void> expiredSessionCollector;
 
     public boolean start() {
+        try {
+            startExpiredSessionCollector();
+        } catch (Exception e) {
+            throw new CloudRuntimeException(e);
+        }
         return true;
     }
 
     public boolean stop() {
+        logger.debug("sms service destroy.");
+        if (expiredSessionCollector != null) {
+            expiredSessionCollector.cancel(true);
+        }
         return true;
     }
 
@@ -217,21 +226,6 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
         dbf.persistAndRefresh(sms);
 
         return sms;
-    }
-
-    public void init() {
-        try {
-            startExpiredSessionCollector();
-        } catch (Exception e) {
-            throw new CloudRuntimeException(e);
-        }
-    }
-
-    public void destroy() {
-        logger.debug("sms service destroy.");
-        if (expiredSessionCollector != null) {
-            expiredSessionCollector.cancel(true);
-        }
     }
 
     private void startExpiredSessionCollector() {
