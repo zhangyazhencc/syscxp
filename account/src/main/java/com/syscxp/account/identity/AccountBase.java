@@ -560,12 +560,11 @@ public class AccountBase extends AbstractAccount {
                 if(msg.getStatus() == AccountStatus.Disabled){
                     List<SessionVO> list = dbf.createQuery(SessionVO.class).add(SessionVO_.accountUuid,
                             SimpleQuery.Op.EQ,msg.getUuid()).list();
-
                     for(SessionVO vo: list){
-                        identiyInterceptor.logOutSession(vo.getUuid());
-                        Map map = identiyInterceptor.getSessions();
-                        map.remove(vo.getUuid());
+                        identiyInterceptor.getSessions().remove(vo.getUuid());
                     }
+                    UpdateQuery.New(SessionVO.class).condAnd(SessionVO_.accountUuid,
+                            SimpleQuery.Op.EQ,msg.getUuid()).delete();
                 }
             }
 
