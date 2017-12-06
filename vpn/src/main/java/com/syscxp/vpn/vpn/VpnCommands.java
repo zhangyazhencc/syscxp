@@ -4,6 +4,7 @@ import com.syscxp.core.validation.ConditionalValidation;
 import com.syscxp.header.vpn.agent.CertInfo;
 
 import java.util.List;
+import java.util.Map;
 
 public class VpnCommands {
     public static class AgentCommand {
@@ -202,7 +203,7 @@ public class VpnCommands {
     }
 
     public static class VpnStatusRsp extends VpnStatusResponse {
-        public List<String> vpnUp;
-        public List<String> vpnDown;
+        public Map<String, String> states;
     }
+
 }

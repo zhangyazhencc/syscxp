@@ -53,4 +53,9 @@
             <syscxp:extension interface="com.syscxp.header.Service" />
         </syscxp:plugin>
     </bean>
+    <bean id="VpnSyncPingTask" class="com.syscxp.vpn.host.VpnSyncPingTask">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.vpn.host.VpnHostPingAgentNoFailureExtensionPoint" />
+        </syscxp:plugin>
+    </bean>
 </beans>
