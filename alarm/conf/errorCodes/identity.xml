@@ -2,39 +2,28 @@
     <prefix>ID</prefix>
 
     <code>
-        <id>3000</id>
-        <description>Unable to authenticate a user</description>
+        <id>1000</id>
+        <description>id mistake</description>
     </code>
 
     <code>
-        <id>3001</id>
-        <description>The session is invalid, either wrong session id or the session has been expired</description>
+        <id>1001</id>
+        <description>who can give me a description</description>
     </code>
 
     <code>
-        <id>3002</id>
+        <id>1002</id>
         <description>The user doesn't have policy to perform the operation</description>
     </code>
 
     <code>
-        <id>3003</id>
+        <id>1003</id>
         <description>The user exceeds a quota of a resource</description>
     </code>
 
     <code>
-        <id>3004</id>id>
+        <id>1004</id>id>
         <description>Invalid quota operation</description>>
-    </code>
-    <code>
-        <id>2000</id>id>
-        <description>Insufficient Balance</description>>
-    </code>
-    <code>
-        <id>2001</id>id>
-        <description>not permit update</description>>
-    </code> <code>
-        <id>2002</id>id>
-        <description>not valid value</description>>
     </code>
 
 </error>

@@ -88,6 +88,7 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
             if (msg.getMobile() != null) {
                 vo.setMobile(msg.getMobile());
             }
+            vo.setLastOpDate(dbf.getCurrentSqlTime());
             dbf.getEntityManager().merge(vo);
             UpdateQuery q = UpdateQuery.New(ContactNotifyWayRefVO.class);
             q.condAnd(ContactNotifyWayRefVO_.contactUuid, SimpleQuery.Op.EQ, vo.getUuid());
