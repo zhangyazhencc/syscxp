@@ -469,6 +469,23 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         stopControllerMonitor(cmd);
     }
 
+    /**
+     * job控制器命令修改：修改vlan、带宽、端口（跨交换机）
+     */
+    public void modifyControllerMonitor(String tunnelUuid) {
+        List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid,tunnelUuid).list();
+        ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid,tunnelMonitorVOS);
+        modifyControllerMonitor(cmd);
+    }
+
+    /**
+     * 控制器命令删除：关闭监控
+     */
+    private void modifyControllerMonitor(ControllerCommands.TunnelMonitorCommand cmd) {
+        String url = getControllerUrl(ControllerRestConstant.MODIFY_TUNNEL_MONITOR);
+        sendControllerCommand(url, cmd);
+    }
+
     /***
      * 获取RYU控制器服务url
      * @param method
