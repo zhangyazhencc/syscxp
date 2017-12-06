@@ -5,7 +5,7 @@ import com.syscxp.header.message.NeedReplyMessage;
 
 import java.util.List;
 
-public class HostVpnStatusMsg extends NeedReplyMessage {
+public class CheckVpnStatusMsg extends NeedReplyMessage {
     private String hostUuid;
     private List<String> vpnUuids;
 
