@@ -131,7 +131,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         // 更新tunnel状态
         updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled);
 
-        event.setInventories(TunnelMonitorInventory.valueOf(tunnelMonitorVOS));
+        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+        event.setInventory(TunnelInventory.valueOf(tunnelVO));
 
         bus.publish(event);
     }
@@ -139,7 +140,10 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     @Transactional
     private void handle(APIStopTunnelMonitorMsg msg) {
         stopTunnelMonitor(msg.getTunnelUuid());
+
+        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         APIStopTunnelMonitorEvent event = new APIStopTunnelMonitorEvent(msg.getId());
+        event.setInventory(TunnelInventory.valueOf(tunnelVO));
         bus.publish(event);
     }
 
@@ -355,7 +359,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     /***
-     * 监控关闭、tunnel中止
+     * 监控关闭
      * @param tunnelUuid
      */
     public void stopTunnelMonitor(String tunnelUuid) {
@@ -437,11 +441,48 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         sendControllerCommand(url, cmd);
     }
 
+    /***
+     * job调用监控命令下发至控制器
+     * @param tunnelUuid
+     * @param tunnelMonitorVOS
+     * @return
+     */
+    public void startControllerMonitor(String tunnelUuid) {
+        List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid,tunnelUuid).list();
+        startControllerMonitor(tunnelUuid,tunnelMonitorVOS);
+    }
+
     /**
-     * 控制器命令删除：关闭监控、中止tunnel
+     * 控制器命令删除：关闭监控
      */
     private void stopControllerMonitor(ControllerCommands.TunnelMonitorCommand cmd) {
         String url = getControllerUrl(ControllerRestConstant.STOP_TUNNEL_MONITOR);
+        sendControllerCommand(url, cmd);
+    }
+
+    /**
+     * job控制器命令删除：中止tunnel
+     */
+    public void stopControllerMonitor(String tunnelUuid) {
+        List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid,tunnelUuid).list();
+        ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid,tunnelMonitorVOS);
+        stopControllerMonitor(cmd);
+    }
+
+    /**
+     * job控制器命令修改：修改vlan、带宽、端口（跨交换机）
+     */
+    public void modifyControllerMonitor(String tunnelUuid) {
+        List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid,tunnelUuid).list();
+        ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid,tunnelMonitorVOS);
+        modifyControllerMonitor(cmd);
+    }
+
+    /**
+     * 控制器命令删除：关闭监控
+     */
+    private void modifyControllerMonitor(ControllerCommands.TunnelMonitorCommand cmd) {
+        String url = getControllerUrl(ControllerRestConstant.MODIFY_TUNNEL_MONITOR);
         sendControllerCommand(url, cmd);
     }
 
