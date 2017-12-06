@@ -563,7 +563,8 @@ public class AccountBase extends AbstractAccount {
 
                     for(SessionVO vo: list){
                         identiyInterceptor.logOutSession(vo.getUuid());
-
+                        Map map = identiyInterceptor.getSessions();
+                        map.remove(vo.getUuid());
                     }
                 }
             }
