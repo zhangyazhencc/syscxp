@@ -147,9 +147,9 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         } else {
 
             SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
-            q.add(AccountVO_.phone, Op.EQ, msg.getEmail());
+            q.add(AccountVO_.email, Op.EQ, msg.getEmail());
             AccountVO account = q.find();
-            account.setPassword(msg.getNewpassword());
+            account.setPassword(msg.getNewPassword());
             evt.setInventory(AccountInventory.valueOf(dbf.updateAndRefresh(account)));
         }
 
