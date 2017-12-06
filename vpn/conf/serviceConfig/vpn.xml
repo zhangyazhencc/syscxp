@@ -18,7 +18,7 @@
         <name>com.syscxp.header.vpn.vpn.APIUpdateVpnStateMsg</name>
     </message>
     <message>
-        <name>com.syscxp.header.vpn.vpn.APIDownloadVpnCertMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIGenerateDownloadUrlMsg</name>
     </message>
     <message>
         <name>com.syscxp.header.vpn.vpn.APICreateVpnCertMsg</name>

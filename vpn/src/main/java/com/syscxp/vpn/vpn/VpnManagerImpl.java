@@ -2,8 +2,14 @@ package com.syscxp.vpn.vpn;
 
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
-import com.syscxp.core.cloudbus.*;
-import com.syscxp.core.db.*;
+import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.core.cloudbus.CloudBusCallBack;
+import com.syscxp.core.cloudbus.CloudBusListCallBack;
+import com.syscxp.core.cloudbus.MessageSafe;
+import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.GLock;
+import com.syscxp.core.db.Q;
+import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.defer.Defer;
 import com.syscxp.core.defer.Deferred;
 import com.syscxp.core.errorcode.ErrorFacade;
@@ -27,7 +33,10 @@ import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.header.host.HostState;
 import com.syscxp.header.host.HostStatus;
-import com.syscxp.header.message.*;
+import com.syscxp.header.message.APIMessage;
+import com.syscxp.header.message.APIReply;
+import com.syscxp.header.message.Message;
+import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.query.QueryOp;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
@@ -47,10 +56,10 @@ import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
-import com.syscxp.vpn.vpn.VpnCommands.AgentCommand;
 import com.syscxp.vpn.vpn.VpnCommands.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -121,8 +130,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APIGetVpnPriceMsg) msg);
         } else if (msg instanceof APIUpdateVpnStateMsg) {
             handle((APIUpdateVpnStateMsg) msg);
-        } else if (msg instanceof APIDownloadVpnCertMsg) {
-            handle((APIDownloadVpnCertMsg) msg);
+        } else if (msg instanceof APIGenerateDownloadUrlMsg) {
+            handle((APIGenerateDownloadUrlMsg) msg);
         } else if (msg instanceof APIRenewVpnMsg) {
             handle((APIRenewVpnMsg) msg);
         } else if (msg instanceof APIRenewAutoVpnMsg) {
@@ -141,19 +150,39 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APIAttachVpnCertMsg) msg);
         } else if (msg instanceof APIDetachVpnCertMsg) {
             handle((APIDetachVpnCertMsg) msg);
+        } else if (msg instanceof APIResetVpnCertKeyMsg) {
+            handle((APIResetVpnCertKeyMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
+    private void handle(APIResetVpnCertKeyMsg msg) {
+        final APIResetVpnCertKeyReply reply = new APIResetVpnCertKeyReply();
+        VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+        vpn.setSid(Platform.getUuid());
+        vpn.setCertKey(generateCertKey(vpn.getAccountUuid(), vpn.getSid()));
+        dbf.updateAndRefresh(vpn);
+        bus.reply(msg, reply);
+    }
 
-    private void handle(APIDownloadVpnCertMsg msg) {
-        // todo
 
-        final APIDownloadVpnCertEvent evt = new APIDownloadVpnCertEvent(msg.getId());
-        VpnCertVO vpnCert = Q.New(VpnCertVO.class).eq(VpnCertVO_.uuid, msg.getUuid()).find();
-        evt.setInventory(VpnCertInventory.valueOf(vpnCert));
-        bus.publish(evt);
+    private void handle(APIGenerateDownloadUrlMsg msg) {
+
+        final APIGenerateDownloadUrlReply reply = new APIGenerateDownloadUrlReply();
+
+        VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+
+        StringBuilder sb = new StringBuilder();
+        long time = System.currentTimeMillis();
+        sb.append(msg.getUuid()).append(":").append(time);
+        sb.append(":").append(DigestUtils.md5Hex(msg.getSession().getAccountUuid() + time + VpnConstant.GENERATE_KEY));
+
+        String path = new String(Base64.encode(sb.toString().getBytes()));
+
+        reply.setDownloadUrl(URLBuilder.buildUrlFromBase(restf.getBaseUrl(), "/download/", msg.getType(), "/", path));
+        bus.reply(msg, reply);
+
     }
 
     private void handle(APIGetVpnCertMsg msg) {
@@ -184,8 +213,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         bus.reply(msg, new APIGetVpnPriceReply(reply));
     }
 
-    private String generateCertKey(String accountUuid, String uuid) {
-        return DigestUtils.md5Hex(accountUuid + uuid + VpnConstant.GENERATE_KEY);
+    private String generateCertKey(String accountUuid, String sid) {
+        return DigestUtils.md5Hex(accountUuid + sid + VpnConstant.GENERATE_KEY);
     }
 
     private void doAddVpn(final APICreateVpnMsg msg, ReturnValueCompletion<VpnInventory> completion) {
@@ -208,7 +237,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vo.setState(VpnState.Enabled);
         vo.setStatus(VpnStatus.Connecting);
         vo.setMaxModifies(VpnGlobalProperty.VPN_MAX_MOTIFIES);
-        vo.setCertKey(generateCertKey(msg.getAccountUuid(), vo.getUuid()));
+        vo.setSid(Platform.getUuid());
+        vo.setCertKey(generateCertKey(msg.getAccountUuid(), vo.getSid()));
         vo.setVpnCertUuid(msg.getVpnCertUuid());
         final VpnVO vpn = dbf.persistAndRefresh(vo);
 
@@ -1058,8 +1088,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             validate((APIQueryVpnMsg) msg);
         } else if (msg instanceof APIUpdateVpnMsg) {
             validate((APIUpdateVpnMsg) msg);
-        } else if (msg instanceof APIDownloadVpnCertMsg) {
-            validate((APIDownloadVpnCertMsg) msg);
         } else if (msg instanceof APIUpdateVpnBandwidthMsg) {
             validate((APIUpdateVpnBandwidthMsg) msg);
         } else if (msg instanceof APIGetVpnCertMsg) {
@@ -1068,10 +1096,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         return msg;
     }
 
-
-    private void validate(APIDownloadVpnCertMsg msg) {
-
-    }
 
     private void validate(APIGetVpnCertMsg msg) {
 

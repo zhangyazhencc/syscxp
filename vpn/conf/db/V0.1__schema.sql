@@ -70,6 +70,7 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`status` VARCHAR(32) DEFAULT NULL COMMENT '运行状态',
 	`duration` int(11) NOT NULL COMMENT '购买时长',
 	`clientConf` TEXT DEFAULT NULL COMMENT 'clientConf',
+	`sid` VARCHAR(32) NOT NULL COMMENT 'sid',
 	`certKey` VARCHAR(32) NOT NULL COMMENT 'cert-key',
 	`payment` VARCHAR(32) NOT NULL COMMENT '支付状态',
 	`maxModifies` INT DEFAULT 5 COMMENT '最大调整次数',
