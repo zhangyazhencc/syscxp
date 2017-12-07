@@ -20,13 +20,17 @@ public class BillInventory {
 
     private Timestamp timeEnd;
 
-    private BigDecimal totolPayCash;
+    private BigDecimal totalDeductionPayCash;
 
-    private BigDecimal totalPayPresent;
+    private BigDecimal totalDeductionPayPresent;
 
-    private BigDecimal totalIncomeCash;
+    private BigDecimal totalRefundIncomeCash;
 
-    private BigDecimal totalIncomePresent;
+    private BigDecimal totalRefundIncomePresent;
+
+    private BigDecimal totalRechargeIncomeCash;
+
+    private BigDecimal totalRechargeIncomePresent;
 
     private BigDecimal repay;
 
@@ -38,7 +42,7 @@ public class BillInventory {
 
     private Timestamp lastOpDate;
 
-    private List<Monetary> bills;
+    private List<MonetaryResult> bills;
 
     public static BillInventory valueOf(BillVO vo) {
         BillInventory inv = new BillInventory();
@@ -49,10 +53,12 @@ public class BillInventory {
         inv.setTimeEnd(vo.getTimeEnd());
         inv.setTimeStart(vo.getTimeStart());
         inv.setCashBalance(vo.getCashBalance());
-        inv.setTotalIncomeCash(vo.getTotalIncomeCash());
-        inv.setTotalIncomePresent(vo.getTotalIncomePresent());
-        inv.setTotalPayPresent(vo.getTotalPayPresent());
-        inv.setTotolPayCash(vo.getTotolPayCash());
+        inv.setTotalDeductionPayCash(vo.getTotalDeductionPayCash());
+        inv.setTotalDeductionPayPresent(vo.getTotalDeductionPayPresent());
+        inv.setTotalRechargeIncomeCash(vo.getTotalRechargeIncomeCash());
+        inv.setTotalRechargeIncomePresent(vo.getTotalRechargeIncomePresent());
+        inv.setTotalRefundIncomeCash(vo.getTotalRefundIncomeCash());
+        inv.setTotalRefundIncomePresent(vo.getTotalRefundIncomePresent());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
 
@@ -99,36 +105,52 @@ public class BillInventory {
         this.timeEnd = timeEnd;
     }
 
-    public BigDecimal getTotolPayCash() {
-        return totolPayCash;
+    public BigDecimal getTotalDeductionPayCash() {
+        return totalDeductionPayCash;
     }
 
-    public void setTotolPayCash(BigDecimal totolPayCash) {
-        this.totolPayCash = totolPayCash;
+    public void setTotalDeductionPayCash(BigDecimal totalDeductionPayCash) {
+        this.totalDeductionPayCash = totalDeductionPayCash;
     }
 
-    public BigDecimal getTotalPayPresent() {
-        return totalPayPresent;
+    public BigDecimal getTotalDeductionPayPresent() {
+        return totalDeductionPayPresent;
     }
 
-    public void setTotalPayPresent(BigDecimal totalPayPresent) {
-        this.totalPayPresent = totalPayPresent;
+    public void setTotalDeductionPayPresent(BigDecimal totalDeductionPayPresent) {
+        this.totalDeductionPayPresent = totalDeductionPayPresent;
     }
 
-    public BigDecimal getTotalIncomeCash() {
-        return totalIncomeCash;
+    public BigDecimal getTotalRefundIncomeCash() {
+        return totalRefundIncomeCash;
     }
 
-    public void setTotalIncomeCash(BigDecimal totalIncomeCash) {
-        this.totalIncomeCash = totalIncomeCash;
+    public void setTotalRefundIncomeCash(BigDecimal totalRefundIncomeCash) {
+        this.totalRefundIncomeCash = totalRefundIncomeCash;
     }
 
-    public BigDecimal getTotalIncomePresent() {
-        return totalIncomePresent;
+    public BigDecimal getTotalRefundIncomePresent() {
+        return totalRefundIncomePresent;
     }
 
-    public void setTotalIncomePresent(BigDecimal totalIncomePresent) {
-        this.totalIncomePresent = totalIncomePresent;
+    public void setTotalRefundIncomePresent(BigDecimal totalRefundIncomePresent) {
+        this.totalRefundIncomePresent = totalRefundIncomePresent;
+    }
+
+    public BigDecimal getTotalRechargeIncomeCash() {
+        return totalRechargeIncomeCash;
+    }
+
+    public void setTotalRechargeIncomeCash(BigDecimal totalRechargeIncomeCash) {
+        this.totalRechargeIncomeCash = totalRechargeIncomeCash;
+    }
+
+    public BigDecimal getTotalRechargeIncomePresent() {
+        return totalRechargeIncomePresent;
+    }
+
+    public void setTotalRechargeIncomePresent(BigDecimal totalRechargeIncomePresent) {
+        this.totalRechargeIncomePresent = totalRechargeIncomePresent;
     }
 
     public BigDecimal getRepay() {
@@ -171,11 +193,11 @@ public class BillInventory {
         this.lastOpDate = lastOpDate;
     }
 
-    public List<Monetary> getBills() {
+    public List<MonetaryResult> getBills() {
         return bills;
     }
 
-    public void setBills(List<Monetary> bills) {
+    public void setBills(List<MonetaryResult> bills) {
         this.bills = bills;
     }
 }
