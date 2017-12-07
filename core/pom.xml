@@ -163,8 +163,8 @@
                 </executions>
                 <configuration>
                     <source>${project.java.version}</source>
-                    <complianceLevel>${project.java.version}</complianceLevel>
                     <target>${project.java.version}</target>
+                    <complianceLevel>${project.java.version}</complianceLevel>
                     <XnoInline>true</XnoInline>
                     <aspectLibraries>
                         <aspectLibrary>
