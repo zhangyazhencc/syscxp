@@ -3,6 +3,7 @@ package com.syscxp.tunnel.tunnel;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
+import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.header.message.APIReply;
 import org.springframework.beans.factory.annotation.Autowire;
@@ -47,7 +48,7 @@ public class TunnelRESTCaller {
         APIReply reply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
         if (!reply.isSuccess()){
             logger.debug(String.format("call billing failed: %s", reply.getError()));
-            throw new ApiMessageInterceptionException(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, reply.getError().getDescription()));
+            throw new OperationFailureException(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, reply.getError().getDetails()));
         }else{
             return reply.castReply();
         }

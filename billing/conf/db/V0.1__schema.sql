@@ -18,7 +18,7 @@ CREATE DATABASE /*!32312 IF NOT EXISTS*/`syscxp_billing` /*!40100 DEFAULT CHARAC
 USE `syscxp_billing`;
 
 
-CREATE TABLE  `syscxp_account`.`ManagementNodeVO` (
+CREATE TABLE  `syscxp_billing`.`ManagementNodeVO` (
     `uuid` varchar(32) NOT NULL UNIQUE,
     `hostName` varchar(255) DEFAULT NULL,
     `port` int unsigned DEFAULT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE  `syscxp_account`.`ManagementNodeVO` (
     PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `syscxp_account`.`GlobalConfigVO` (
+CREATE TABLE  `syscxp_billing`.`GlobalConfigVO` (
     `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
     `name` varchar(255) NOT NULL,
     `description` varchar(1024) DEFAULT NULL,
@@ -113,10 +113,12 @@ CREATE TABLE `BillVO` (
   `uuid` varchar(32) NOT NULL COMMENT '主键',
   `timeStart` timestamp NULL DEFAULT NULL COMMENT '账单开始时间',
   `timeEnd` timestamp NULL DEFAULT NULL COMMENT '账单结束时间',
-  `totolPayCash` decimal(12,4) DEFAULT NULL COMMENT '总支出(现金)',
-  `totalPayPresent` decimal(12,4) DEFAULT NULL COMMENT '总支出(赠送)',
-  `totalIncomeCash` decimal(12,4) DEFAULT NULL COMMENT '总收入(现金)',
-  `totalIncomePresent` decimal(12,4) DEFAULT NULL COMMENT '总收入(赠送)',
+  `totalDeductionPayCash` decimal(13,4) DEFAULT NULL COMMENT '总消费支出(现金)',
+  `totalDeductionPayPresent` decimal(13,4) DEFAULT NULL COMMENT '总消费支出(赠送)',
+  `totalRefundIncomeCash` decimal(13,4) DEFAULT NULL COMMENT '总退费收入(现金)',
+  `totalRefundIncomePresent` decimal(13,4) DEFAULT NULL COMMENT '总退费收入(赠送)',
+  `totalRechargeIncomeCash` decimal(13,4) DEFAULT NULL COMMENT '充值收入现金',
+  `totalRechargeIncomePresent` decimal(13,4) DEFAULT NULL COMMENT '充值收入赠送',
   `repay` decimal(12,4) DEFAULT NULL COMMENT '本期应还',
   `cashBalance` decimal(12,4) DEFAULT NULL COMMENT '期末现金余额',
   `billDate` timestamp NULL DEFAULT NULL COMMENT '账单日',

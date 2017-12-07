@@ -1,5 +1,6 @@
 package com.syscxp.billing.header.bill;
 
+import com.syscxp.billing.header.balance.DealType;
 import com.syscxp.billing.header.balance.DealWay;
 
 import java.math.BigDecimal;
@@ -8,6 +9,7 @@ public class BillStatistics {
 
     private String accountUuid;
     private DealWay dealWay;
+    private DealType type;
     private BigDecimal expend;
     private BigDecimal income;
 
@@ -15,8 +17,9 @@ public class BillStatistics {
     public BillStatistics(Object[] objs) {
         accountUuid = (String) objs[0];
         dealWay = DealWay.valueOf((String) objs[1]);
-        expend = (BigDecimal) objs[2];
-        income = (BigDecimal) objs[3];
+        type = DealType.valueOf((String) objs[2]);
+        expend = (BigDecimal) objs[3];
+        income = (BigDecimal) objs[4];
     }
 
     public String getAccountUuid() {
@@ -49,5 +52,13 @@ public class BillStatistics {
 
     public void setIncome(BigDecimal income) {
         this.income = income;
+    }
+
+    public DealType getType() {
+        return type;
+    }
+
+    public void setType(DealType type) {
+        this.type = type;
     }
 }

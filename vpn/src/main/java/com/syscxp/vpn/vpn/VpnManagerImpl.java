@@ -1001,7 +1001,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
 
     public boolean start() {
-        prepareGlobalConfig();
+//        prepareGlobalConfig();
         restf.registerSyncHttpCallHandler("billing", OrderCallbackCmd.class,
                 cmd -> {
                     Message message = RESTApiDecoder.loads(cmd.getCallBackData());
@@ -1016,7 +1016,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
                                 @Override
                                 public void fail(ErrorCode errorCode) {
-                                    logger.debug("callback from billingm, failed to init vpn;");
+                                    logger.debug("callback from billing, failed to init vpn;");
                                 }
                             });
                         }
