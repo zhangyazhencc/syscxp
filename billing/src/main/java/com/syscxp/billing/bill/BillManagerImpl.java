@@ -61,7 +61,7 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
         Timestamp startTime = new BillJob(dbf).getLastMonthFirstDay(billTimestamp);
         Timestamp endTime = new BillJob(dbf).getLastMonthLastDay(billTimestamp);
         String accountUuid = msg.getSession().getAccountUuid();
-        String sql = "select productType, count(DISTINCT productUuid) as categoryCount, sum(payPresent) as payPresentTotal,sum(payCash) as payCashTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and DATE_FORMAT(payTime,'%Y-%m-%d  %T') BETWEEN :dateStart and  :dateEnd  group by productType ";
+        String sql = "select productType, count(DISTINCT productUuid) as categoryCount, sum(payPresent) as payPresentTotal,sum(payCash) as payCashTotal from OrderVO where accountUuid = :accountUuid and state = 'PAID' and payTime BETWEEN :dateStart and  :dateEnd  group by productType ";
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("accountUuid", accountUuid);
         q.setParameter("dateStart", startTime);
