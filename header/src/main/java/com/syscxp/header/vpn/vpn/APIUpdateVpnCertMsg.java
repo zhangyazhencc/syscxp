@@ -7,10 +7,12 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.vpn.VpnConstant;
 
-@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"read"})
-public class APIDownloadVpnCertMsg extends APIMessage {
-    @APIParam(resourceType = VpnCertVO.class)
+@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"})
+public class APIUpdateVpnCertMsg extends APIMessage{
+    @APIParam(resourceType = VpnCertVO.class, checkAccount = true)
     private String uuid;
+    @APIParam(required = false)
+    private String name;
 
     public String getUuid() {
         return uuid;
@@ -20,14 +22,22 @@ public class APIDownloadVpnCertMsg extends APIMessage {
         this.uuid = uuid;
     }
 
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
     public ApiNotification __notification__() {
         final APIMessage that = this;
 
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Download certificate")
-                        .resource(uuid, VpnCertVO.class)
+                ntfy("Update VpnCertVO")
+                        .resource(uuid, VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

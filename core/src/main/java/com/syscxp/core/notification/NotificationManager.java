@@ -11,6 +11,7 @@ import com.syscxp.core.thread.AsyncThread;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.apimediator.ResourceHavingAccountReference;
 import com.syscxp.header.message.*;
+import com.syscxp.utils.StringDSL;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
@@ -305,7 +306,7 @@ public class NotificationManager extends AbstractService {
 
                     InnerMessageHelper.setMD5(msg);
 
-                    if (NotificationGlobalConfig.WEBHOOK_URL.value() != null && !NotificationGlobalConfig.WEBHOOK_URL.value().equals("null")) {
+                    if (NotificationGlobalConfig.WEBHOOK_URL.value() != null && !"".equals(NotificationGlobalConfig.WEBHOOK_URL.value()) && !NotificationGlobalConfig.WEBHOOK_URL.value().equals("null")) {
                         callWebhook(msg);
 
                     } else {

@@ -1,6 +1,10 @@
 package com.syscxp.vpn.vpn;
 
 import com.syscxp.core.validation.ConditionalValidation;
+import com.syscxp.header.vpn.agent.CertInfo;
+
+import java.util.List;
+import java.util.Map;
 
 public class VpnCommands {
     public static class AgentCommand {
@@ -52,13 +56,29 @@ public class VpnCommands {
     }
 
     /**
-     * 创建化证书：/vpn/create_cert
+     * 创建证书：/vpn/create_cert
      */
     public static class CreateCertCmd extends AgentCommand {
     }
 
     public static class CreateCertRsp extends AgentResponse {
-        public  String vpnCert;
+        public String ca_crt;
+        public String ca_key;
+        public String client_crt;
+        public String server_crt;
+        public String client_key;
+        public String server_key;
+        public String dh1024_pem;
+    }
+
+    /**
+     * 上传证书：/vpn/push_cert
+     */
+    public static class PushCertCmd extends AgentCommand {
+        public CertInfo certinfo;
+    }
+
+    public static class PushCertRsp extends AgentResponse {
     }
 
     /**
@@ -145,9 +165,6 @@ public class VpnCommands {
     }
 
     public static class ClientInfoRsp extends AgentResponse {
-        public String ca_crt;
-        public String client_crt;
-        public String client_key;
         public String client_conf;
     }
 
@@ -172,11 +189,21 @@ public class VpnCommands {
         public String vpnport;
         public String ddnport;
         public String speed;
-        public String username;
-        public String passwd;
+        public CertInfo certinfo;
     }
 
     public static class InitVpnRsp extends VpnStatusResponse {
+    }
+
+    /**
+     * VPN状态：/vpn/vpn_status
+     */
+    public static class VpnStatusCmd extends AgentCommand {
+        public List<String> vpnuuids;
+    }
+
+    public static class VpnStatusRsp extends VpnStatusResponse {
+        public Map<String, String> states;
     }
 
 }

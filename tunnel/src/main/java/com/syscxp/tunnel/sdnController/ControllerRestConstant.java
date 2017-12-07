@@ -16,4 +16,5 @@ public interface ControllerRestConstant {
 
     static final String START_TUNNEL_MONITOR = "/tunnel_monitor/start";
     static final String STOP_TUNNEL_MONITOR = "/tunnel_monitor/stop";
+    static final String MODIFY_TUNNEL_MONITOR = "/tunnel_monitor/modify";
 }

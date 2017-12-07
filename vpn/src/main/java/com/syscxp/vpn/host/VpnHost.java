@@ -11,7 +11,9 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.host.HostBase;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.core.workflow.ShareFlow;
+import com.syscxp.header.core.AsyncLatch;
 import com.syscxp.header.core.Completion;
+import com.syscxp.header.core.NoErrorCompletion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
@@ -43,6 +45,7 @@ import org.springframework.web.client.RestClientException;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -60,8 +63,6 @@ public class VpnHost extends HostBase implements Host {
     @Autowired
     private ErrorFacade errf;
 
-    private VpnHostContext context;
-
     // ///////////////////// REST URL //////////////////////////
     private String baseUrl;
     private String connectPath;
@@ -74,7 +75,6 @@ public class VpnHost extends HostBase implements Host {
     protected VpnHost(HostVO self, VpnHostContext context) {
         super(self);
 
-        this.context = context;
         baseUrl = context.getBaseUrl();
 
         UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(baseUrl);
@@ -162,6 +162,69 @@ public class VpnHost extends HostBase implements Host {
                     }
                 });
 
+                flow(new NoRollbackFlow() {
+                    String __name__ = "call-ping-no-failure-plugins";
+
+                    @Override
+                    public void run(FlowTrigger trigger, Map data) {
+                        List<VpnHostPingAgentNoFailureExtensionPoint> exts = pluginRgty.getExtensionList(VpnHostPingAgentNoFailureExtensionPoint.class);
+                        if (exts.isEmpty()) {
+                            trigger.next();
+                            return;
+                        }
+
+                        AsyncLatch latch = new AsyncLatch(exts.size(), new NoErrorCompletion(trigger) {
+                            @Override
+                            public void done() {
+                                trigger.next();
+                            }
+                        });
+
+                        VpnHostInventory inv = (VpnHostInventory) getSelfInventory();
+                        for (VpnHostPingAgentNoFailureExtensionPoint ext : exts) {
+                            logger.debug(String.format("calling VpnHostPingAgentNoFailureExtensionPoint[%s]", ext.getClass()));
+                            ext.vpnPingAgentNoFailure(inv, new NoErrorCompletion(latch) {
+                                @Override
+                                public void done() {
+                                    latch.ack();
+                                }
+                            });
+                        }
+                    }
+                });
+
+                flow(new NoRollbackFlow() {
+                    String __name__ = "call-ping-plugins";
+
+                    @Override
+                    public void run(FlowTrigger trigger, Map data) {
+                        List<VpnHostPingAgentExtensionPoint> exts = pluginRgty.getExtensionList(VpnHostPingAgentExtensionPoint.class);
+                        Iterator<VpnHostPingAgentExtensionPoint> it = exts.iterator();
+                        callPlugin(it, trigger);
+                    }
+
+                    private void callPlugin(Iterator<VpnHostPingAgentExtensionPoint> it, FlowTrigger trigger) {
+                        if (!it.hasNext()) {
+                            trigger.next();
+                            return;
+                        }
+
+                        VpnHostPingAgentExtensionPoint ext = it.next();
+                        logger.debug(String.format("calling VpnHostPingAgentExtensionPoint[%s]", ext.getClass()));
+                        ext.vpnPingAgent((VpnHostInventory) getSelfInventory(), new Completion(trigger) {
+                            @Override
+                            public void success() {
+                                callPlugin(it, trigger);
+                            }
+
+                            @Override
+                            public void fail(ErrorCode errorCode) {
+                                trigger.fail(errorCode);
+                            }
+                        });
+                    }
+                });
+
                 done(new FlowDoneHandler(completion) {
                     @Override
                     public void handle(Map data) {
@@ -224,17 +287,15 @@ public class VpnHost extends HostBase implements Host {
 
                     @Override
                     public void run(final FlowTrigger trigger, Map data) {
-                        String srcPath = PathUtil.findFileOnClassPath(String.format("ansible/vpn/%s", agentPackageName),
-                                true).getAbsolutePath();
+                        String srcPath = String.format("%s/files/vpn/%s", AnsibleConstant.ROOT_DIR, agentPackageName);
                         String destPath = String.format("/var/lib/syscxp/vpn/package/%s", agentPackageName);
                         SshFileMd5Checker checker = new SshFileMd5Checker();
                         checker.setUsername(getSelf().getUsername());
                         checker.setPassword(getSelf().getPassword());
                         checker.setSshPort(getSelf().getSshPort());
                         checker.setTargetIp(getSelf().getHostIp());
-                        checker.addSrcDestPair(SshFileMd5Checker.SYSCXPLIB_SRC_PATH, String.format
-                                ("/var/lib/syscxp/vpn/package/%s",
-                                        AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME));
+                        checker.addSrcDestPair(AnsibleConstant.SYSCXPLIB_ROOT + AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME,
+                                String.format("/var/lib/syscxp/vpn/package/%s",AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME));
                         checker.addSrcDestPair(srcPath, destPath);
 
                         AnsibleRunner runner = new AnsibleRunner();

@@ -15,7 +15,7 @@ public class APIUpdateRegulationMsg extends APIMessage{
     private String comparisonRuleUuid;
 
     @APIParam(required = false)
-    private int alarmThreshold;
+    private float alarmThreshold;
 
     @APIParam(required = false)
     private int detectPeriod;
@@ -39,11 +39,11 @@ public class APIUpdateRegulationMsg extends APIMessage{
         this.comparisonRuleUuid = comparisonRuleUuid;
     }
 
-    public int getAlarmThreshold() {
+    public float getAlarmThreshold() {
         return alarmThreshold;
     }
 
-    public void setAlarmThreshold(int alarmThreshold) {
+    public void setAlarmThreshold(float alarmThreshold) {
         this.alarmThreshold = alarmThreshold;
     }
 

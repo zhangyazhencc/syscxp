@@ -1,15 +1,14 @@
 package com.syscxp.header.vpn.vpn;
 
 import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.vpn.agent.CertInfo;
 
-public class APIDownloadVpnCertEvent extends APIEvent {
+public class APIResetVpnCertEvent extends APIEvent{
     VpnCertInventory inventory;
 
-    public APIDownloadVpnCertEvent() {
+    public APIResetVpnCertEvent() {
     }
 
-    public APIDownloadVpnCertEvent(String apiId) {
+    public APIResetVpnCertEvent(String apiId) {
         super(apiId);
     }
 

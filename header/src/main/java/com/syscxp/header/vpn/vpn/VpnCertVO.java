@@ -14,30 +14,93 @@ public class VpnCertVO {
     @Column
     private String uuid;
     @Column
+    private String name;
+    @Column
     private String accountUuid;
     @Column
+    private String description;
+    @Column
     private String caCert;
+    @Column
+    private String caKey;
     @Column
     private String clientCert;
     @Column
     private String clientKey;
     @Column
-    private String clientConf;
+    private String serverCert;
+    @Column
+    private String serverKey;
+    @Column
+    private String dh1024Pem;
+    @Column
+    private Integer vpnNum;
     @Column
     private Integer version;
     @Column
     private Timestamp lastOpDate;
     @Column
     private Timestamp createDate;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
-        version += 1;
     }
 
-    @PrePersist
-    private void prePersistVersion() {
-        version = 0;
+    public Integer getVpnNum() {
+        return vpnNum;
+    }
+
+    public void setVpnNum(Integer vpnNum) {
+        this.vpnNum = vpnNum;
+    }
+
+    public String getDh1024Pem() {
+        return dh1024Pem;
+    }
+
+    public void setDh1024Pem(String dh1024Pem) {
+        this.dh1024Pem = dh1024Pem;
+    }
+
+    public String getCaKey() {
+        return caKey;
+    }
+
+    public void setCaKey(String caKey) {
+        this.caKey = caKey;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getServerCert() {
+        return serverCert;
+    }
+
+    public void setServerCert(String serverCert) {
+        this.serverCert = serverCert;
+    }
+
+    public String getServerKey() {
+        return serverKey;
+    }
+
+    public void setServerKey(String serverKey) {
+        this.serverKey = serverKey;
     }
 
     public String getUuid() {
@@ -86,14 +149,6 @@ public class VpnCertVO {
 
     public void setClientKey(String clientKey) {
         this.clientKey = clientKey;
-    }
-
-    public String getClientConf() {
-        return clientConf;
-    }
-
-    public void setClientConf(String clientConf) {
-        this.clientConf = clientConf;
     }
 
     public Timestamp getLastOpDate() {

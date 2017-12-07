@@ -10,11 +10,10 @@ import java.util.List;
 @Inventory(mappingVOClass = VpnCertVO.class)
 public class VpnCertInventory {
     private String uuid;
+    private String name;
     private String accountUuid;
-    private String caCert;
-    private String clientCert;
-    private String clientKey;
-    private String clientConf;
+    private String description;
+    private Integer vpnNum;
     private Integer version;
     private Timestamp lastOpDate;
     private Timestamp createDate;
@@ -22,12 +21,11 @@ public class VpnCertInventory {
     public static VpnCertInventory valueOf(VpnCertVO vo) {
         VpnCertInventory inv = new VpnCertInventory();
         inv.setUuid(vo.getUuid());
+        inv.setName(vo.getName());
         inv.setAccountUuid(vo.getAccountUuid());
-        inv.setCaCert(vo.getCaCert());
-        inv.setClientCert(vo.getClientCert());
-        inv.setClientConf(vo.getClientConf());
-        inv.setClientKey(vo.getClientKey());
+        inv.setDescription(vo.getDescription());
         inv.setVersion(vo.getVersion());
+        inv.setVpnNum(vo.getVpnNum());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
@@ -40,6 +38,22 @@ public class VpnCertInventory {
         }
 
         return invs;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public Integer getVersion() {
@@ -66,36 +80,12 @@ public class VpnCertInventory {
         this.accountUuid = accountUuid;
     }
 
-    public String getCaCert() {
-        return caCert;
+    public Integer getVpnNum() {
+        return vpnNum;
     }
 
-    public void setCaCert(String caCert) {
-        this.caCert = caCert;
-    }
-
-    public String getClientCert() {
-        return clientCert;
-    }
-
-    public void setClientCert(String clientCert) {
-        this.clientCert = clientCert;
-    }
-
-    public String getClientKey() {
-        return clientKey;
-    }
-
-    public void setClientKey(String clientKey) {
-        this.clientKey = clientKey;
-    }
-
-    public String getClientConf() {
-        return clientConf;
-    }
-
-    public void setClientConf(String clientConf) {
-        this.clientConf = clientConf;
+    public void setVpnNum(Integer vpnNum) {
+        this.vpnNum = vpnNum;
     }
 
     public Timestamp getLastOpDate() {

@@ -1,6 +1,5 @@
 package com.syscxp.header.alarm;
 
-import com.syscxp.header.identity.Action;
 import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
@@ -12,61 +11,61 @@ import com.syscxp.header.message.APIParam;
 public class APIUpdateTunnelInfoForFalconMsg extends APIMessage {
 
     @APIParam(emptyString = false,maxLength = 32)
-    private String  tunnel_id;
+    private String tunnelUuid;
 
     @APIParam(emptyString = false)
-    private Integer  endpointA_vid;
+    private Integer switchA_vlan;
 
     @APIParam(emptyString = false)
-    private String  endpointA_ip;
+    private String switchA_ip;
 
     @APIParam(emptyString = false)
-    private Integer  endpointB_vid;
+    private Integer switchB_vlan;
 
     @APIParam(emptyString = false)
-    private String  endpointB_ip;
+    private String switchB_ip;
 
     @APIParam(emptyString = false)
-    private Long  bandwidth;
+    private Long bandwidth;
 
-    public String getTunnel_id() {
-        return tunnel_id;
+    public String getTunnelUuid() {
+        return tunnelUuid;
     }
 
-    public void setTunnel_id(String tunnel_id) {
-        this.tunnel_id = tunnel_id;
+    public void setTunnelUuid(String tunnelUuid) {
+        this.tunnelUuid = tunnelUuid;
     }
 
-    public Integer getEndpointA_vid() {
-        return endpointA_vid;
+    public Integer getSwitchA_vlan() {
+        return switchA_vlan;
     }
 
-    public void setEndpointA_vid(Integer endpointA_vid) {
-        this.endpointA_vid = endpointA_vid;
+    public void setSwitchA_vlan(Integer switchA_vlan) {
+        this.switchA_vlan = switchA_vlan;
     }
 
-    public String getEndpointA_ip() {
-        return endpointA_ip;
+    public String getSwitchA_ip() {
+        return switchA_ip;
     }
 
-    public void setEndpointA_ip(String endpointA_ip) {
-        this.endpointA_ip = endpointA_ip;
+    public void setSwitchA_ip(String switchA_ip) {
+        this.switchA_ip = switchA_ip;
     }
 
-    public Integer getEndpointB_vid() {
-        return endpointB_vid;
+    public Integer getSwitchB_vlan() {
+        return switchB_vlan;
     }
 
-    public void setEndpointB_vid(Integer endpointB_vid) {
-        this.endpointB_vid = endpointB_vid;
+    public void setSwitchB_vlan(Integer switchB_vlan) {
+        this.switchB_vlan = switchB_vlan;
     }
 
-    public String getEndpointB_ip() {
-        return endpointB_ip;
+    public String getSwitchB_ip() {
+        return switchB_ip;
     }
 
-    public void setEndpointB_ip(String endpointB_ip) {
-        this.endpointB_ip = endpointB_ip;
+    public void setSwitchB_ip(String switchB_ip) {
+        this.switchB_ip = switchB_ip;
     }
 
     public Long getBandwidth() {

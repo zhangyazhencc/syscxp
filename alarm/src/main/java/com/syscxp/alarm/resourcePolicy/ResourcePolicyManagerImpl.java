@@ -94,8 +94,8 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             handle((APIUpdatePolicyMsg) msg);
         } else if (msg instanceof APIDeletePolicyMsg) {
             handle((APIDeletePolicyMsg) msg);
-        } else if (msg instanceof APIDeleteResourceMsg) {
-            handle((APIDeleteResourceMsg) msg);
+        } else if (msg instanceof APIDeleteResourcePolicyRefMsg) {
+            handle((APIDeleteResourcePolicyRefMsg) msg);
         } else if (msg instanceof APIUpdateTunnelInfoForFalconMsg) {
             handle((APIUpdateTunnelInfoForFalconMsg) msg);
         } else if (msg instanceof APIGetComparisonRuleListMsg) {
@@ -153,23 +153,19 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
         APIAttachPolicyToResourceEvent event = new APIAttachPolicyToResourceEvent(msg.getId());
 
-        PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
-
-        ResourcePolicyRefVO refVO = Q.New(ResourcePolicyRefVO.class)
-                .eq(ResourcePolicyRefVO_.policyUuid,msg.getPolicyUuid())
-                .eq(ResourcePolicyRefVO_.resourceUuid,msg.getResourceUuid()).find();
-
+        List<ResourcePolicyRefVO> refVO = Q.New(ResourcePolicyRefVO.class).eq(ResourcePolicyRefVO_.resourceUuid,msg.getResourceUuid()).list();
+        String policyUuid = refVO.isEmpty()?msg.getPolicyUuid():refVO.get(0).getPolicyUuid();
 
         FlowChain attachPolicy = FlowChainBuilder.newSimpleFlowChain();
         attachPolicy.setName(String.format("Attach-policy"));
         attachPolicy.then(new Flow() {
             @Override
             public void run(FlowTrigger trigger, Map data) {
-                ResourcePolicyRefVO newRefVO = new ResourcePolicyRefVO();
                 if (!StringUtils.isEmpty(msg.getPolicyUuid())) {
-                    newRefVO.setPolicyUuid(msg.getPolicyUuid());
-                    newRefVO.setResourceUuid(msg.getResourceUuid());
-                    dbf.persistAndRefresh(newRefVO);
+                    ResourcePolicyRefVO refVO = new ResourcePolicyRefVO();
+                    refVO.setPolicyUuid(msg.getPolicyUuid());
+                    refVO.setResourceUuid(msg.getResourceUuid());
+                    dbf.persistAndRefresh(refVO);
 
                     PolicyVO newPolicyVO =dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
                     newPolicyVO.setBindResources(newPolicyVO.getBindResources() + 1);
@@ -183,6 +179,8 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
                         newPolicyVO.setBindResources(newPolicyVO.getBindResources() - 1);
                         dbf.updateAndRefresh(newPolicyVO);
+
+                        dbf.remove(resourcePolicyRefVO);
                     }
                 }
 
@@ -209,9 +207,18 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                             .eq(ResourcePolicyRefVO_.resourceUuid,msg.getResourceUuid()).find();
                     dbf.remove(refVO);
 
+                    PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
+                    policyVO.setBindResources(policyVO.getBindResources()-1);
                     dbf.updateAndRefresh(policyVO);
+
                 }else{
+                    ResourcePolicyRefVO refVO = new ResourcePolicyRefVO();
+                    refVO.setPolicyUuid(policyUuid);
+                    refVO.setResourceUuid(msg.getResourceUuid());
                     dbf.persistAndRefresh(refVO);
+
+                    PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
+                    policyVO.setBindResources(policyVO.getBindResources()+1);
                     dbf.updateAndRefresh(policyVO);
                 }
 
@@ -220,6 +227,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
+                PolicyVO policyVO = dbf.findByUuid(policyUuid,PolicyVO.class);
                 event.setInventory(PolicyInventory.valueOf(policyVO));
                 bus.publish(event);
             }
@@ -249,12 +257,12 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
     private void handle(APIUpdateTunnelInfoForFalconMsg msg) {
         TunnelParameter tunnelparameter = new TunnelParameter();
-        tunnelparameter.setTunnel_id(msg.getTunnel_id());
+        tunnelparameter.setTunnel_id(msg.getTunnelUuid());
         tunnelparameter.setUser_id(msg.getSession().getAccountUuid());
-        tunnelparameter.setEndpointA_vid(msg.getEndpointA_vid());
-        tunnelparameter.setEndpointB_vid(msg.getEndpointB_vid());
-        tunnelparameter.setEndpointA_ip(msg.getEndpointA_ip());
-        tunnelparameter.setEndpointB_ip(msg.getEndpointB_ip());
+        tunnelparameter.setEndpointA_vid(msg.getSwitchA_vlan());
+        tunnelparameter.setEndpointB_vid(msg.getSwitchB_vlan());
+        tunnelparameter.setEndpointA_ip(msg.getSwitchA_ip());
+        tunnelparameter.setEndpointB_ip(msg.getSwitchB_ip());
         tunnelparameter.setBandwidth(msg.getBandwidth());
 
         List<Rule> rulelist = rulelist = new ArrayList<>();
@@ -264,7 +272,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         Rule rule = null;
 
         SimpleQuery<ResourcePolicyRefVO> policyrquery = dbf.createQuery(ResourcePolicyRefVO.class);
-        policyrquery.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnel_id());
+        policyrquery.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnelUuid());
         List<ResourcePolicyRefVO> policylist = policyrquery.list();
         for (ResourcePolicyRefVO policy : policylist) {
             SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
@@ -294,7 +302,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
         FalconApiCommands.RestResponse res = rsp.getBody();
         if (!res.isSuccess()) {
-            System.out.println(rsp.getBody());
+
             throw new OperationFailureException(Platform.operr("falcon fail "));
         }
 
@@ -303,11 +311,11 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
     }
 
-    private void handle(APIDeleteResourceMsg msg) {
+    private void handle(APIDeleteResourcePolicyRefMsg msg) {
 
         String url = CoreGlobalProperty.FALCON_API_IP + ":" + CoreGlobalProperty.FALCON_API_PORT;
         Map<String, String> tunnelIdMap = new HashMap<>();
-        tunnelIdMap.put("tunnel_id", msg.getTunnel_id());
+        tunnelIdMap.put("tunnel_id", msg.getTunnelUuid());
         FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
         try {
             response = restf.syncJsonPost(url + FalconApiRestConstant.STRATEGY_DELETE, JSONObjectUtil.toJsonString(tunnelIdMap), FalconApiCommands.RestResponse.class);
@@ -324,7 +332,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
         if (response.isSuccess()) {
             UpdateQuery q = UpdateQuery.New(ResourcePolicyRefVO.class);
-            q.condAnd(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnel_id());
+            q.condAnd(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnelUuid());
             q.delete();
 
         }
@@ -433,7 +441,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
-                event.setInventory(RegulationInventory.valueOf(dbf.reload(regulationVO)));
+                event.setInventory(RegulationInventory.valueOf(regulationVO));
                 bus.publish(event);
             }
         }).error(new FlowErrorHandler(null) {
@@ -686,7 +694,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         List<String> list = new ArrayList<>();
         list.add(resourceUuid);
         Map<String, Object> map = getTunnelInfo(list);
-
         List<ResourcePolicyRefVO> refVOList = Q.New(ResourcePolicyRefVO.class)
                 .eq(ResourcePolicyRefVO_.resourceUuid, resourceUuid).list();
 

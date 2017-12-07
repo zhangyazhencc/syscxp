@@ -16,7 +16,7 @@ public class Distance {
 
     public static void main(String[] args){
 
-        double d = getDistance(30.600295, 104.070372, 30.61826, 104.158765);
+        double d = getDistance(31.359294, 120.957208, 22.53796, 114.123611);
         System.out.println("Distance2 is:"+d);
     }
 }

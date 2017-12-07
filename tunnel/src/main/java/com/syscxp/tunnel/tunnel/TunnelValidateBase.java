@@ -12,6 +12,7 @@ import com.syscxp.header.billing.APIGetProductPriceMsg;
 import com.syscxp.header.billing.APIGetProductPriceReply;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
+import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.identity.TunnelGlobalConfig;
@@ -27,6 +28,7 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -208,6 +210,12 @@ public class TunnelValidateBase {
         if (Objects.equals(msg.getEndpointAUuid(), msg.getEndpointZUuid())) {
             throw new ApiMessageInterceptionException(argerr("通道两端不允许在同一个连接点 "));
         }
+        //若果跨国，则互联连接点不能为空
+        if(isTransnational(msg.getEndpointAUuid(), msg.getEndpointZUuid())){
+            if(msg.getInnerConnectedEndpointUuid() == null){
+                throw new ApiMessageInterceptionException(argerr("该通道是跨国通道，互联连接点不能为空！ "));
+            }
+        }
         //如果跨国,验证互联连接点和内外联交换机配置
         if (msg.getInnerConnectedEndpointUuid() != null) {
             validateInnerConnectEndpoint(msg.getInnerConnectedEndpointUuid());
@@ -293,6 +301,13 @@ public class TunnelValidateBase {
         //判断通道两端的连接点是否相同，不允许相同
         if (Objects.equals(evoA.getUuid(), evoZ.getUuid())) {
             throw new ApiMessageInterceptionException(argerr("通道两端不允许在同一个连接点 "));
+        }
+
+        //若果跨国，则互联连接点不能为空
+        if(isTransnational(interfaceVOA.getEndpointUuid(), interfaceVOZ.getEndpointUuid())){
+            if(msg.getInnerConnectedEndpointUuid() == null){
+                throw new ApiMessageInterceptionException(argerr("该通道是跨国通道，互联连接点不能为空！ "));
+            }
         }
 
         //如果跨国,验证互联连接点和内外联交换机配置
@@ -558,6 +573,26 @@ public class TunnelValidateBase {
             return true;
         }
 
+    }
+
+    /**
+     * 验证通道是否跨国
+     */
+    private boolean isTransnational(String endpointUuidA,String endpointUuidZ){
+        EndpointVO endpointVOA = dbf.findByUuid(endpointUuidA, EndpointVO.class);
+        EndpointVO endpointVOZ = dbf.findByUuid(endpointUuidZ, EndpointVO.class);
+
+        NodeVO nodeVOA = dbf.findByUuid(endpointVOA.getNodeUuid(), NodeVO.class);
+        NodeVO nodeVOZ = dbf.findByUuid(endpointVOZ.getNodeUuid(), NodeVO.class);
+
+        boolean isTransnational = false;
+        if (nodeVOA.getCountry().equals("CHINA") && !nodeVOZ.getCountry().equals("CHINA")) {
+            isTransnational = true;
+        }
+        if (!nodeVOA.getCountry().equals("CHINA") && nodeVOZ.getCountry().equals("CHINA")) {
+            isTransnational = true;
+        }
+        return isTransnational;
     }
 
     /**

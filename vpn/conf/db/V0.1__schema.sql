@@ -46,6 +46,16 @@ CREATE TABLE  `syscxp_vpn`.`JobQueueEntryVO` (
     PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+# Foreign keys for table JobQueueEntryVO
+
+ALTER TABLE JobQueueEntryVO ADD CONSTRAINT fkJobQueueEntryVOJobQueueVO FOREIGN KEY (jobQueueId) REFERENCES JobQueueVO (id) ON DELETE CASCADE;
+ALTER TABLE JobQueueEntryVO ADD CONSTRAINT fkJobQueueEntryVOManagementNodeVO FOREIGN KEY (issuerManagementNodeId) REFERENCES ManagementNodeVO (uuid) ON DELETE SET NULL;
+
+# Foreign keys for table JobQueueVO
+
+ALTER TABLE JobQueueVO ADD CONSTRAINT fkJobQueueVOManagementNodeVO FOREIGN KEY (workerManagementNodeId) REFERENCES ManagementNodeVO (uuid) ON DELETE SET NULL;
+
+
 CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`accountUuid` varchar(32) NOT NULL COMMENT '所属账户',
@@ -59,7 +69,8 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`state` VARCHAR(32) DEFAULT NULL COMMENT '启用状态',
 	`status` VARCHAR(32) DEFAULT NULL COMMENT '运行状态',
 	`duration` int(11) NOT NULL COMMENT '购买时长',
-	`sid` varchar(32) NOT NULL COMMENT 'SID',
+	`clientConf` TEXT DEFAULT NULL COMMENT 'clientConf',
+	`sid` VARCHAR(32) NOT NULL COMMENT 'sid',
 	`certKey` VARCHAR(32) NOT NULL COMMENT 'cert-key',
 	`payment` VARCHAR(32) NOT NULL COMMENT '支付状态',
 	`maxModifies` INT DEFAULT 5 COMMENT '最大调整次数',
@@ -73,10 +84,16 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 CREATE TABLE  `syscxp_vpn`.`VpnCertVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
 	`accountUuid` varchar(32) NOT NULL COMMENT 'VPN',
-	`caCert` TEXT NOT NULL COMMENT '',
-	`clientCert` TEXT NOT NULL COMMENT '',
-	`clientKey` TEXT NOT NULL COMMENT '',
-	`clientConf` TEXT NOT NULL COMMENT '',
+	`name` VARCHAR(64) NOT NULL COMMENT '',
+	`description` varchar(255) DEFAULT NULL COMMENT '描述',
+	`caCert` TEXT DEFAULT NULL COMMENT '数字证书',
+	`caKey` TEXT DEFAULT NULL COMMENT '',
+	`clientCert` TEXT DEFAULT NULL COMMENT '客户端秘钥',
+	`clientKey` TEXT DEFAULT NULL COMMENT '',
+	`serverCert` TEXT DEFAULT NULL COMMENT '服务端秘钥',
+	`serverKey` TEXT DEFAULT NULL COMMENT '',
+	`dh1024Pem` TEXT DEFAULT NULL COMMENT '',
+	`vpnNum` INT(2) DEFAULT 0 COMMENT '绑定VPN数量',
 	`version` INT(5) DEFAULT 0 COMMENT '',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,
