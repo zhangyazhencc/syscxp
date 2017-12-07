@@ -42,7 +42,22 @@ public class TunnelQuotaOperator implements Quota.QuotaOperator {
         long quotaNum = pairs.get(TunnelConstant.QUOTA_TUNNEL_NUM).getValue();
         long currentUsed = getUsedTunnelNum(msg.getAccountUuid());
 
+        long ifaceQuotaNum = pairs.get(TunnelConstant.QUOTA_INTERFACE_NUM).getValue();
+        long ifaceCurrentUsed = getUsedTunnelNum(msg.getAccountUuid());
+        if (msg.getInterfaceAUuid() == null) {
+            new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_INTERFACE_NUM, ifaceCurrentUsed, ifaceQuotaNum);
+        }
+        if (msg.getInterfaceZUuid() == null) {
+            new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_INTERFACE_NUM, ifaceCurrentUsed, ifaceQuotaNum);
+        }
+
         new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_TUNNEL_NUM, currentUsed, quotaNum);
+    }
+
+    @Transactional(readOnly = true)
+    public long getUsedInterfaceNum(String accountUuid) {
+        Long num = Q.New(InterfaceVO.class).eq(InterfaceVO_.accountUuid, accountUuid).count();
+        return num == null ? 0 : num;
     }
 
     @Transactional(readOnly = true)
