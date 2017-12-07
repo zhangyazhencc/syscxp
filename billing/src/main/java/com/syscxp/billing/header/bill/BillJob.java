@@ -115,7 +115,7 @@ public class BillJob {
     }
 
     private List getBillList(Timestamp currentSqlTime,Timestamp startTime,Timestamp endTime) {
-        String sql = "select accountUuid,dealWay, sum(expend)as expend,sum(income)as income from DealDetailVO where  state = 'SUCCESS' and finishTime between :dateStart and  :dateEnd  group by accountUuid,dealWay";
+        String sql = "select accountUuid,type,dealWay, sum(expend)as expend,sum(income)as income from DealDetailVO where  state = 'SUCCESS' and finishTime between :dateStart and  :dateEnd  group by accountUuid,type,dealWay";
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("dateStart", startTime);
         q.setParameter("dateEnd", endTime);
@@ -149,6 +149,7 @@ public class BillJob {
 
     private void calculateBalance(BillStatistics bill, BillVO bVO) {
         if (bill.getDealWay().equals(DealWay.PRESENT_BILL)) {
+
             bVO.setTotalPayPresent(bill.getExpend() == null ? BigDecimal.ZERO : bill.getExpend());
             bVO.setTotalIncomePresent(bill.getIncome() == null ? BigDecimal.ZERO : bill.getIncome());
         } else if (bill.getDealWay().equals(DealWay.CASH_BILL)) {
