@@ -144,7 +144,7 @@ public class TunnelBase {
     }
 
     /**
-     *  修改接口类型
+     * 修改接口类型
      */
     public void updateNetworkType(InterfaceVO iface, String tunnelUuid, NetworkType newType, List<InnerVlanSegment> segments) {
         UpdateQuery.New(InterfaceVO.class)
@@ -173,10 +173,10 @@ public class TunnelBase {
     }
 
     /**
-     *  删除Tunnel数据库及其关联
+     * 删除Tunnel数据库及其关联
      */
     @Transactional
-    public void deleteTunnel(TunnelVO vo){
+    public void deleteTunnel(TunnelVO vo) {
         dbf.remove(vo);
 
         //删除对应的 TunnelSwitchPortVO 和 QingqVO
@@ -184,7 +184,7 @@ public class TunnelBase {
         q.add(TunnelSwitchPortVO_.tunnelUuid, SimpleQuery.Op.EQ, vo.getUuid());
         List<TunnelSwitchPortVO> tivList = q.list();
         if (tivList.size() > 0) {
-            for(TunnelSwitchPortVO tiv : tivList){
+            for (TunnelSwitchPortVO tiv : tivList) {
                 dbf.remove(tiv);
             }
         }
@@ -192,28 +192,32 @@ public class TunnelBase {
         q2.add(QinqVO_.tunnelUuid, SimpleQuery.Op.EQ, vo.getUuid());
         List<QinqVO> qinqList = q2.list();
         if (qinqList.size() > 0) {
-            for(QinqVO qv : qinqList){
+            for (QinqVO qv : qinqList) {
                 dbf.remove(qv);
             }
         }
     }
 
-    /**根据 switchPort 找出所属的 PhysicalSwitch */
-    public PhysicalSwitchVO getPhysicalSwitch(SwitchPortVO switchPortVO){
-        SwitchVO switchVO = dbf.findByUuid(switchPortVO.getSwitchUuid(),SwitchVO.class);
-        return dbf.findByUuid(switchVO.getPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+    /**
+     * 根据 switchPort 找出所属的 PhysicalSwitch
+     */
+    public PhysicalSwitchVO getPhysicalSwitch(SwitchPortVO switchPortVO) {
+        SwitchVO switchVO = dbf.findByUuid(switchPortVO.getSwitchUuid(), SwitchVO.class);
+        return dbf.findByUuid(switchVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
     }
 
-    /**根据 tunnelSwitchPortVO 获取对端MPLS交换机 */
-    public PhysicalSwitchVO getRemotePhysicalSwitch(TunnelSwitchPortVO tunnelSwitchPortVO){
-        SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
+    /**
+     * 根据 tunnelSwitchPortVO 获取对端MPLS交换机
+     */
+    public PhysicalSwitchVO getRemotePhysicalSwitch(TunnelSwitchPortVO tunnelSwitchPortVO) {
+        SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(), SwitchPortVO.class);
         PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitch(switchPortVO);
-        if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN) {   //SDN接入
+        if (physicalSwitchVO.getType() == PhysicalSwitchType.SDN) {   //SDN接入
             //找到SDN交换机的上联传输交换机
-            PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
-                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchVO.getUuid())
+            PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO = Q.New(PhysicalSwitchUpLinkRefVO.class)
+                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid, physicalSwitchVO.getUuid())
                     .find();
-            physicalSwitchVO = dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(),PhysicalSwitchVO.class);
+            physicalSwitchVO = dbf.findByUuid(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid(), PhysicalSwitchVO.class);
         }
 
         return physicalSwitchVO;
@@ -236,7 +240,7 @@ public class TunnelBase {
      */
     public List<PortOfferingVO> getPortTypeByEndpoint(String endpointUuid) {
 
-        String sql ="SELECT t FROM PortOfferingVO t WHERE t.uuid IN (" +
+        String sql = "SELECT t FROM PortOfferingVO t WHERE t.uuid IN (" +
                 "select DISTINCT sp.portType from SwitchPortVO sp, SwitchVO s where sp.switchUuid=s.uuid " +
                 "and s.endpointUuid=:endpointUuid and s.state=:switchState and sp.state=:state " +
                 "and sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid)) ";
@@ -250,7 +254,7 @@ public class TunnelBase {
     /**
      * 通过连接点和端口规格获取可用的端口
      */
-    public List<SwitchPortVO> getSwitchPortByType(String endpointUuid, String type) {
+    public List<SwitchPortVO> getSwitchPortByType(String endpointUuid, String type, Integer start, Integer limit) {
         String sql = "SELECT sp FROM SwitchPortVO sp, SwitchVO s WHERE sp.switchUuid=s.uuid " +
                 "AND s.endpointUuid = :endpointUuid AND s.state=:switchState AND sp.state=:state AND sp.portType = :portType " +
                 "AND sp.uuid not in (select switchPortUuid from InterfaceVO i where i.endpointUuid=:endpointUuid) ";
@@ -259,6 +263,8 @@ public class TunnelBase {
                 .param("switchState", SwitchState.Enabled)
                 .param("portType", type)
                 .param("endpointUuid", endpointUuid)
+                .offset(start != null ? start : 0)
+                .limit(limit != null ? limit : 10)
                 .list();
     }
 

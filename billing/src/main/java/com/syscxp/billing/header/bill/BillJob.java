@@ -1,5 +1,6 @@
 package com.syscxp.billing.header.bill;
 
+import com.syscxp.billing.header.balance.DealType;
 import com.syscxp.billing.header.balance.DealWay;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.header.billing.AccountBalanceVO_;
@@ -149,12 +150,26 @@ public class BillJob {
 
     private void calculateBalance(BillStatistics bill, BillVO bVO) {
         if (bill.getDealWay().equals(DealWay.PRESENT_BILL)) {
+            if(bill.getType()== DealType.DEDUCTION){
+                bVO.setTotalDeductionPayPresent(bill.getExpend());
+            }
+            if(bill.getType()== DealType.PROXY_RECHARGE){
+                bVO.setTotalRechargeIncomePresent(bill.getIncome());
+            }
+            if(bill.getType()== DealType.REFUND){
+                bVO.setTotalRefundIncomePresent(bill.getIncome());
+            }
 
-            bVO.setTotalPayPresent(bill.getExpend() == null ? BigDecimal.ZERO : bill.getExpend());
-            bVO.setTotalIncomePresent(bill.getIncome() == null ? BigDecimal.ZERO : bill.getIncome());
         } else if (bill.getDealWay().equals(DealWay.CASH_BILL)) {
-            bVO.setTotalIncomeCash(bill.getIncome() == null ? BigDecimal.ZERO : bill.getIncome());
-            bVO.setTotolPayCash(bill.getExpend() == null ? BigDecimal.ZERO : bill.getExpend());
+            if(bill.getType()== DealType.DEDUCTION){
+                bVO.setTotalDeductionPayCash(bill.getExpend());
+            }
+            if(bill.getType()== DealType.PROXY_RECHARGE || bill.getType() == DealType.RECHARGE){
+                bVO.setTotalRechargeIncomeCash((bVO.getTotalRechargeIncomeCash()==null?BigDecimal.ZERO:bVO.getTotalRechargeIncomeCash()).add(bill.getIncome()));
+            }
+            if(bill.getType()== DealType.REFUND){
+                bVO.setTotalRefundIncomeCash(bill.getIncome());
+            }
         }
     }
 
