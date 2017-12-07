@@ -10,6 +10,7 @@ import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
@@ -40,6 +41,8 @@ import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
+import com.syscxp.tunnel.tunnel.job.DisableTunnelJob;
+import com.syscxp.tunnel.tunnel.job.EnableTunnelJob;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
@@ -74,6 +77,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private ThreadFacade thdf;
     @Autowired
     private PluginRegistry pluginRgty;
+    @Autowired
+    private JobQueueFacade jobf;
 
     @Override
     @MessageSafe
@@ -1546,7 +1551,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             bus.publish(evt);
         }else if(vo.getState() == TunnelState.Enabled && vo.getAccountUuid() == null){          //4
             //下发删除
-            taskDeleteTunnel(vo,new ReturnValueCompletion<TunnelInventory>(msg) {
+            taskDeleteTunnel(vo,new ReturnValueCompletion<TunnelInventory>(null) {
                 @Override
                 public void success(TunnelInventory inv) {
                     evt.setInventory(inv);
@@ -1568,7 +1573,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     final TunnelVO vo2 = dbf.updateAndRefresh(vo);
 
                     //下发删除
-                    taskDeleteTunnel(vo2,new ReturnValueCompletion<TunnelInventory>(msg) {
+                    taskDeleteTunnel(vo2,new ReturnValueCompletion<TunnelInventory>(null) {
                         @Override
                         public void success(TunnelInventory inv) {
                             evt.setInventory(inv);
@@ -1616,7 +1621,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         final TunnelVO vo2 = dbf.updateAndRefresh(vo);
 
                         //下发删除
-                        taskDeleteTunnel(vo2,new ReturnValueCompletion<TunnelInventory>(msg) {
+                        taskDeleteTunnel(vo2,new ReturnValueCompletion<TunnelInventory>(null) {
                             @Override
                             public void success(TunnelInventory inv) {
                                 evt.setInventory(inv);
@@ -1784,7 +1789,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     //创建任务
                     TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo, TaskType.Enabled);
 
-                    taskEnableTunnel(vo,taskResourceVO,new ReturnValueCompletion<TunnelInventory>(msg) {
+                    taskEnableTunnel(vo,taskResourceVO,new ReturnValueCompletion<TunnelInventory>(null) {
                         @Override
                         public void success(TunnelInventory inv) {
                             evt.setInventory(inv);
@@ -1801,15 +1806,25 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
 
         } else {                                           //恢复连接和关闭连接
+            final TunnelVO jobVO = vo;
             //创建任务
             TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo, TaskType.valueOf(msg.getState().toString()));
 
             if (msg.getState() == TunnelState.Enabled) {
-                taskEnableTunnel(vo,taskResourceVO,new ReturnValueCompletion<TunnelInventory>(msg) {
+                taskEnableTunnel(vo,taskResourceVO,new ReturnValueCompletion<TunnelInventory>(null) {
                     @Override
                     public void success(TunnelInventory inv) {
+
                         evt.setInventory(inv);
                         bus.publish(evt);
+
+                        if(jobVO.getMonitorState() == TunnelMonitorState.Enabled){
+                            logger.info("专线恢复连接成功，并创建任务：EnableTunnelJob");
+                            EnableTunnelJob job = new EnableTunnelJob();
+                            job.setTunnelUuid(jobVO.getUuid());
+                            jobf.execute("job-Tunnel-Enable", Platform.getManagementServerId(), job);
+                            logger.info("【2】【】【】【】【】【【】【】【】【】【】【【】【】【】");
+                        }
                     }
 
                     @Override
@@ -1819,11 +1834,18 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     }
                 });
             } else {
-                taskDisableTunnel(vo,taskResourceVO,new ReturnValueCompletion<TunnelInventory>(msg) {
+                taskDisableTunnel(vo,taskResourceVO,new ReturnValueCompletion<TunnelInventory>(null) {
                     @Override
                     public void success(TunnelInventory inv) {
                         evt.setInventory(inv);
                         bus.publish(evt);
+
+                        logger.info("专线关闭连接成功，并创建任务：DisableTunnelJob");
+                        DisableTunnelJob job = new DisableTunnelJob();
+                        job.setTunnelUuid(jobVO.getUuid());
+                        jobf.execute("job-Tunnel-Disable", Platform.getManagementServerId(), job);
+                        logger.info("【2】【】【】【】【】【【】【】【】【】【】【【】【】【】");
+
                     }
 
                     @Override
