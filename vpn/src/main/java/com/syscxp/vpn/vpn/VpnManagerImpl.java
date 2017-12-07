@@ -1016,7 +1016,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
                                 @Override
                                 public void fail(ErrorCode errorCode) {
-                                    logger.debug("callback from billingm, failed to init vpn;");
+                                    logger.debug("callback from billing, failed to init vpn;");
                                 }
                             });
                         }

@@ -1,5 +1,7 @@
 package com.syscxp.header.vpn;
 
+import com.syscxp.utils.path.PathUtil;
+
 public interface VpnConstant {
 
     String SERVICE_ID = "vpn";
@@ -8,6 +10,11 @@ public interface VpnConstant {
     String ACTION_CATEGORY_VPN = "vpn";
     String ACTION_CATEGORY_HOST = "host";
     String ACTION_SERVICE = "vpn";
+    String KEYS_DIR = "keys";
+    String CLIENT_CONF_PATH = "client.conf";
+    String CLIENT_CRT_PATH = "client.crt";
+    String CLIENT_KEY_PATH = "client.key";
+    String CA_CRT_PATH = "ca.crt";
 
     String CREATE_CERT_PATH = "/vpn/create_cert";
     String VPN_CONF_PATH = "/vpn/conf_vpn";

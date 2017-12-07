@@ -12,7 +12,7 @@ import com.syscxp.header.vpn.VpnConstant;
 public class APIGenerateDownloadUrlMsg extends APISyncCallMessage {
     @APIParam(emptyString = false)
     private String uuid;
-    @APIParam(validValues = {"conf", "crt"})
+    @APIParam(validValues = {"conf", "cert"})
     private String type;
 
     public String getType() {

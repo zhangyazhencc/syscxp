@@ -1,8 +1,11 @@
 package com.syscxp.vpn.vpn;
 
 import com.syscxp.core.CoreGlobalProperty;
+import com.syscxp.core.ansible.AnsibleConstant;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SQL;
+import com.syscxp.core.defer.Defer;
+import com.syscxp.core.defer.Deferred;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.rest.RESTFacade;
@@ -12,6 +15,7 @@ import com.syscxp.header.vpn.vpn.VpnVO;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.ZipUtils;
 import com.syscxp.utils.logging.CLogger;
+import com.syscxp.utils.path.PathUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
@@ -41,32 +45,78 @@ public class DownloadController {
     @Autowired
     private RESTFacade restf;
 
-    @RequestMapping(value = "/download/{type}/{uuid}", method = {RequestMethod.GET, RequestMethod.POST})
-    public void downLoadZipFile(@PathVariable String type, @PathVariable String uuid, HttpServletResponse response) throws IOException {
+    private String zipName = VpnConstant.KEYS_DIR + ".zip";
 
-        String zipName = "";
-        List<File> fileList = new ArrayList<>();
-        if ("conf".equals(type)) {
-            String vpnUuid = valid(uuid, VpnVO.class.getSimpleName());
-            fileList = createConfFiles(vpnUuid);
-            zipName = "keys.zip";
-        } else if ("crt".equals(type)) {
-            String vpnCertUuid = valid(uuid, VpnCertVO.class.getSimpleName());
-            fileList = createCertFiles(vpnCertUuid);
-            zipName = "conf.zip";
+    @RequestMapping(value = "/download/conf/{uuid}", method = {RequestMethod.GET, RequestMethod.POST})
+    @Deferred
+    public void downLoadConfFile(@PathVariable String uuid, HttpServletResponse response) throws IOException{
+
+        String vpnUuid = valid(uuid, VpnVO.class.getSimpleName());
+
+        File root = PathUtil.findFileOnClassPath(VpnConstant.KEYS_DIR,true);
+
+        VpnVO vpn = dbf.findByUuid(vpnUuid, VpnVO.class);
+        File clientConf = new File(root, VpnConstant.CLIENT_CONF_PATH);
+        try {
+
+            FileUtils.writeStringToFile(clientConf, vpn.getClientConf());
+
+            download(root, response);
+
+            Defer.defer(new Runnable() {
+                @Override
+                public void run() {
+                    clientConf.delete();
+                }
+            });
+        } catch (Throwable t) {
+            logger.warn(t.getMessage(), t);
+            response.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR, t.getMessage());
         }
+    }
+
+    @RequestMapping(value = "/download/cert/{uuid}", method = {RequestMethod.GET, RequestMethod.POST})
+    @Deferred
+    public void downLoadCertFile(@PathVariable String uuid, HttpServletResponse response) throws IOException {
+
+        String vpnCertUuid = valid(uuid, VpnCertVO.class.getSimpleName());
+
+        File root = PathUtil.findFileOnClassPath(VpnConstant.KEYS_DIR, true);
+
+        VpnCertVO cert = dbf.findByUuid(vpnCertUuid, VpnCertVO.class);
+
+        File caCrt = new File(root, VpnConstant.CA_CRT_PATH);
+        File clientCrt = new File(root, VpnConstant.CLIENT_CRT_PATH);
+        File clientKey = new File(root, VpnConstant.CLIENT_KEY_PATH);
+        try {
+            FileUtils.writeStringToFile(caCrt, cert.getCaCert());
+            FileUtils.writeStringToFile(clientCrt, cert.getClientCert());
+            FileUtils.writeStringToFile(clientKey, cert.getClientKey());
+
+            download(root, response);
+
+            Defer.defer(new Runnable() {
+                @Override
+                public void run() {
+                    caCrt.delete();
+                    clientCrt.delete();
+                    clientKey.delete();
+                }
+            });
+        }catch (Throwable t) {
+            logger.warn(t.getMessage(), t);
+            response.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR, t.getMessage());
+        }
+    }
+
+    private void download(File root, HttpServletResponse response) throws IOException {
 
         response.setContentType("APPLICATION/OCTET-STREAM");
         response.setHeader("Content-Disposition", "attachment; filename=" + zipName);
 
-        try (ZipOutputStream out = new ZipOutputStream(response.getOutputStream())) {
-            for (File file : fileList) {
-                ZipUtils.doCompress(file.getName(), out);
-                response.flushBuffer();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        ZipOutputStream out = new ZipOutputStream(response.getOutputStream());
+        ZipUtils.doCompress(root, out);
+        response.flushBuffer();
     }
 
     private String valid(String uuid, String type) {
@@ -79,28 +129,6 @@ public class DownloadController {
         if (!md5.equals(list[2]) || System.currentTimeMillis() - Long.valueOf(list[1]) > CoreGlobalProperty.INNER_MESSAGE_EXPIRE * 1000)
             throw new CloudRuntimeException("The download link is expired");
         return list[0];
-    }
-
-    private List<File> createCertFiles(String vpnCertUuid) throws IOException {
-        VpnCertVO cert = dbf.findByUuid(vpnCertUuid, VpnCertVO.class);
-        List<File> fileList = new ArrayList<>();
-        fileList.add(createFile("ca.crt", cert.getCaCert()));
-        fileList.add(createFile("client.crt", cert.getClientCert()));
-        fileList.add(createFile("client.key", cert.getClientKey()));
-        return fileList;
-    }
-
-    private List<File> createConfFiles(String vpnUuid) throws IOException {
-        VpnVO vpn = dbf.findByUuid(vpnUuid, VpnVO.class);
-        List<File> fileList = new ArrayList<>();
-        fileList.add(createFile("client.conf", vpn.getClientConf()));
-        return fileList;
-    }
-
-    private File createFile(String fileName, String str) throws IOException {
-        File file = new File(fileName);
-        FileUtils.writeStringToFile(file, str);
-        return file;
     }
 
     @ExceptionHandler(Exception.class)
