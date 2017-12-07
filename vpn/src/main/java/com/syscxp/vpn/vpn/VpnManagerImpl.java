@@ -1001,7 +1001,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
 
     public boolean start() {
-        prepareGlobalConfig();
+//        prepareGlobalConfig();
         restf.registerSyncHttpCallHandler("billing", OrderCallbackCmd.class,
                 cmd -> {
                     Message message = RESTApiDecoder.loads(cmd.getCallBackData());
