@@ -2222,7 +2222,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     /**
-     * 查询云专线Alarm信息
+     * Alarm查询云专线信息
      */
     private void handle(APIQueryTunnelDetailForAlarmMsg msg) {
         TunnelBase tunnelBase = new TunnelBase();
