@@ -8,11 +8,11 @@ RESTFacade.port=8080
 RESTFacade.path=vpn
 ApiMediator.apiWorkerNum=50
 
-CloudBus.serverIp.0=rabbitmq
+CloudBus.serverIp.0=192.168.99.100
 CloudBus.rabbitmqUsername=syscxp
 CloudBus.rabbitmqPassword=syscxp123
 
-management.server.ip=192.168.211.160
+management.server.ip=192.168.99.100
 pidFilePath=management-vpn.pid
 org.jboss.logging.provider=slf4j
 DbFacadeDataSource.testConnectionOnCheckout=true
