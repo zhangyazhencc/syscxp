@@ -151,24 +151,24 @@ public class BillJob {
     private void calculateBalance(BillStatistics bill, BillVO bVO) {
         if (bill.getDealWay().equals(DealWay.PRESENT_BILL)) {
             if(bill.getType()== DealType.DEDUCTION){
-                bVO.setTotalDeductionPayPresent(bill.getExpend());
+                bVO.setTotalDeductionPayPresent(bill.getExpend()==null?BigDecimal.ZERO:bill.getExpend());
             }
             if(bill.getType()== DealType.PROXY_RECHARGE){
-                bVO.setTotalRechargeIncomePresent(bill.getIncome());
+                bVO.setTotalRechargeIncomePresent(bill.getIncome()==null?BigDecimal.ZERO:bill.getIncome());
             }
             if(bill.getType()== DealType.REFUND){
-                bVO.setTotalRefundIncomePresent(bill.getIncome());
+                bVO.setTotalRefundIncomePresent(bill.getIncome()==null?BigDecimal.ZERO:bill.getIncome());
             }
 
         } else if (bill.getDealWay().equals(DealWay.CASH_BILL)) {
             if(bill.getType()== DealType.DEDUCTION){
-                bVO.setTotalDeductionPayCash(bill.getExpend());
+                bVO.setTotalDeductionPayCash(bill.getExpend()==null?BigDecimal.ZERO:bill.getExpend());
             }
             if(bill.getType()== DealType.PROXY_RECHARGE || bill.getType() == DealType.RECHARGE){
                 bVO.setTotalRechargeIncomeCash((bVO.getTotalRechargeIncomeCash()==null?BigDecimal.ZERO:bVO.getTotalRechargeIncomeCash()).add(bill.getIncome()));
             }
             if(bill.getType()== DealType.REFUND){
-                bVO.setTotalRefundIncomeCash(bill.getIncome());
+                bVO.setTotalRefundIncomeCash(bill.getIncome()==null?BigDecimal.ZERO:bill.getIncome());
             }
         }
     }
