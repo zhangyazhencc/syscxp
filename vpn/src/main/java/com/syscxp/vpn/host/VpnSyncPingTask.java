@@ -46,6 +46,7 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint,
 
     private void checkState(final String hostUuid, final Completion completion) {
         CheckVpnStatusMsg msg = new CheckVpnStatusMsg();
+        msg.setNoStatusCheck(true);
         msg.setHostUuid(hostUuid);
         List<String> vpnUuids = getVpnUuids(hostUuid);
         if (vpnUuids.isEmpty())

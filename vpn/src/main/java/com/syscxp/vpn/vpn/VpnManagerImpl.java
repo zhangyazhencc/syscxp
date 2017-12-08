@@ -832,7 +832,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         CheckVpnStatusReply reply = new CheckVpnStatusReply();
 
         VpnHostVO host = Q.New(VpnHostVO.class).eq(VpnHostVO_.uuid, msg.getHostUuid()).find();
-        if (host.getStatus() != HostStatus.Connected) {
+        if (!msg.isNoStatusCheck() && host.getStatus() != HostStatus.Connected) {
             reply.setError(operr("the host[uuid:%s, status:%s] is not Connected", host.getUuid(), host.getStatus()));
             bus.reply(msg, reply);
             return;
