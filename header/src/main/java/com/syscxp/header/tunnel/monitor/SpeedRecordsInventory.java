@@ -1,6 +1,10 @@
 package com.syscxp.header.tunnel.monitor;
 
+import com.syscxp.header.query.ExpandedQueries;
+import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
+import com.syscxp.header.tunnel.tunnel.TunnelEO;
+import com.syscxp.header.tunnel.tunnel.TunnelInventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -13,10 +17,16 @@ import java.util.List;
  * @Description: .
  */
 @Inventory(mappingVOClass = SpeedRecordsVO.class)
+@ExpandedQueries({
+        @ExpandedQuery(expandedField = "tunnel", inventoryClass = TunnelInventory.class,
+                foreignKey = "tunnelUuid", expandedInventoryKey = "uuid"),
+
+})
 public class SpeedRecordsInventory {
     private String uuid;
     private String accountUuid;
     private String tunnelUuid;
+    private String tunnelName;
     private String srcTunnelMonitorUuid;
     private String dstTunnelMonitorUuid;
     private String protocolType;
@@ -43,6 +53,7 @@ public class SpeedRecordsInventory {
         inventory.setStatus(vo.getStatus().toString());
         inventory.setLastOpDate(vo.getLastOpDate());
         inventory.setCreateDate(vo.getCreateDate());
+        inventory.setTunnelName(vo.getTunnelEO().getName());
 
         return  inventory;
     }
@@ -158,4 +169,11 @@ public class SpeedRecordsInventory {
         return createDate;
     }
 
+    public String getTunnelName() {
+        return tunnelName;
+    }
+
+    public void setTunnelName(String tunnelName) {
+        this.tunnelName = tunnelName;
+    }
 }
