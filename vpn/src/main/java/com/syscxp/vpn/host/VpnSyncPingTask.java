@@ -13,7 +13,6 @@ import com.syscxp.header.core.workflow.NoRollbackFlow;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.vpn.VpnConstant;
-import com.syscxp.header.vpn.agent.ChangeVpnStatusMsg;
 import com.syscxp.header.vpn.agent.CheckVpnStatusMsg;
 import com.syscxp.header.vpn.agent.CheckVpnStatusReply;
 import com.syscxp.header.vpn.agent.StartAllMsg;

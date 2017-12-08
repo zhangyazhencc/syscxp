@@ -17,7 +17,7 @@ public class VpnInventory {
     private Integer port;
     private Integer vlan;
     private String bandwidth;
-    private String interfaceUuid;
+    private String endpointUuid;
     private String status;
     private String state;
     private Integer duration;
@@ -37,7 +37,7 @@ public class VpnInventory {
         inv.setName(vo.getName());
         inv.setDescription(vo.getDescription());
         inv.setBandwidth(vo.getBandwidthOfferingUuid());
-        inv.setInterfaceUuid(vo.getInterfaceUuid());
+        inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setStatus(vo.getStatus().toString());
         inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
@@ -127,12 +127,12 @@ public class VpnInventory {
         this.bandwidth = bandwidth;
     }
 
-    public String getInterfaceUuid() {
-        return interfaceUuid;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setInterfaceUuid(String interfaceUuid) {
-        this.interfaceUuid = interfaceUuid;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 
     public String getStatus() {

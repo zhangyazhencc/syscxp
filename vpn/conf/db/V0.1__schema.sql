@@ -63,7 +63,7 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`name` varchar(255) NOT NULL COMMENT '名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '描述',
 	`bandwidthOfferingUuid` VARCHAR(32) NOT NULL COMMENT '带宽',
-	`interfaceUuid` VARCHAR(32) NOT NULL COMMENT '接口uuid',
+	`endpointUuid` VARCHAR(32) NOT NULL COMMENT 'endpoint',
 	`port` INT(10) NOT NULL COMMENT 'VPN端口',
 	`vlan` INT(10) NOT NULL COMMENT 'vlan',
 	`state` VARCHAR(32) DEFAULT NULL COMMENT '启用状态',
@@ -136,7 +136,6 @@ CREATE TABLE  `syscxp_vpn`.`VpnHostVO` (
 	`sshPort` VARCHAR(10) NOT NULL COMMENT 'ssh端口',
 	`username` VARCHAR(255) NOT NULL COMMENT '用户名',
 	`password` VARCHAR(255) NOT NULL COMMENT '密码',
-	`interfaceName` VARCHAR(255) NOT NULL COMMENT '',
 	`startPort` INT COMMENT '起始端口',
 	`endPort` INT COMMENT '末尾端口',
 	`zoneUuid` VARCHAR(32) NOT NULL
@@ -147,7 +146,7 @@ CREATE TABLE  `syscxp_vpn`.`HostInterfaceVO` (
 	`name` varchar(255) NOT NULL COMMENT '名称',
 	`hostUuid` VARCHAR(32) NOT NULL COMMENT '物理机',
 	`endpointUuid` varchar(32) NOT NULL COMMENT '连接点',
-	`interfaceUuid` varchar(32) NOT NULL COMMENT '物理接口',
+	`interfaceName` VARCHAR(255) NOT NULL COMMENT '',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)

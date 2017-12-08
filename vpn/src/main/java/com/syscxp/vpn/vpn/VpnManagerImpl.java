@@ -6,10 +6,7 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.cloudbus.CloudBusListCallBack;
 import com.syscxp.core.cloudbus.MessageSafe;
-import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.GLock;
-import com.syscxp.core.db.Q;
-import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.*;
 import com.syscxp.core.defer.Defer;
 import com.syscxp.core.defer.Deferred;
 import com.syscxp.core.errorcode.ErrorFacade;
@@ -227,7 +224,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vo.setDescription(msg.getDescription());
         vo.setHostUuid(msg.getHostUuid());
         vo.setAccountUuid(msg.getAccountUuid());
-        vo.setInterfaceUuid(msg.getInterfaceUuid());
+        vo.setEndpointUuid(msg.getEndpointUuid());
         vo.setPort(generatePort(host));
         vo.setVlan(msg.getVlan());
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
@@ -1147,6 +1144,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
     }
 
+    private List<String> getHostUuid(String endpointUuid, Integer vlan) {
+        String sql = "select hi.hostUuid from HostInterfaceVO hi where hi.endpointUuid = :endpointUuid and hi.hostUuid " +
+                "not in (select v.hostUuid from VpnVO where v.vlan = :vlan and v.endpointUuid = :endpointUuid )";
+
+        return SQL.New(sql).param("endpointUuid", endpointUuid).param("vlan", vlan).list();
+    }
+
     private void validate(APICreateVpnMsg msg) {
         // 区分管理员账户
         if (msg.getSession().isAdminSession() && StringUtils.isEmpty(msg.getAccountUuid())) {
@@ -1160,20 +1164,14 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     argerr("The name[%s] of the vpn can not repeat.", msg.getName()));
         }
         // 物理机
-        String hostUuid = Q.New(HostInterfaceVO.class)
-                .eq(HostInterfaceVO_.interfaceUuid, msg.getInterfaceUuid())
-                .select(HostInterfaceVO_.hostUuid).findValue();
+        List<String> hostUuids = getHostUuid(msg.getEndpointUuid(), msg.getVlan());
 
-        if (hostUuid == null) {
+        if (hostUuids.isEmpty()) {
             throw new ApiMessageInterceptionException(
-                    argerr("The host of the interface[uuid:%s] does not exist.", msg.getInterfaceUuid()));
+                    argerr("The host of the endpoint[uuid:%s] does not exist.", msg.getEndpointUuid()));
         }
-        q = Q.New(VpnVO.class).eq(VpnVO_.hostUuid, hostUuid).eq(VpnVO_.vlan, msg.getVlan());
-        if (q.isExists()) {
-            throw new ApiMessageInterceptionException(
-                    argerr("The vlan[%s] of the host[uuid:%s] is already exist.", msg.getVlan(), hostUuid));
-        }
-        msg.setHostUuid(hostUuid);
+        Random random = new Random();
+        msg.setHostUuid(hostUuids.get(random.nextInt(hostUuids.size())));
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
         priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
         priceMsg.setDuration(msg.getDuration());
