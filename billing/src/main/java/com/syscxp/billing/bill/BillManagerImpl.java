@@ -68,6 +68,10 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
             List<MonetaryOrderType> monetaries = getMonetaryOrderType(msg.getSession().getAccountUuid(), startTime, endTime);
             for (MonetaryOrderType monetary : monetaries) {
                 MonetaryResult result = map.get(monetary.getType().name());
+                result.setRefundPresent(BigDecimal.ZERO);
+                result.setRefundCash(BigDecimal.ZERO);
+                result.setDeductionPresent(BigDecimal.ZERO);
+                result.setDeductionCash(BigDecimal.ZERO);
                 if (monetary.getOrderType() == OrderType.BUY || monetary.getOrderType() == OrderType.RENEW || monetary.getOrderType() == OrderType.UPGRADE) {
                     result.setDeductionCash((result.getDeductionCash() == null ? BigDecimal.ZERO : result.getDeductionCash()).add(monetary.getPayCashTotal()));
                     result.setDeductionPresent((result.getDeductionPresent() == null ? BigDecimal.ZERO : result.getDeductionPresent()).add(monetary.getPayPresentTotal()));
@@ -75,9 +79,9 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
                     result.setRefundCash((result.getRefundCash() == null ? BigDecimal.ZERO : result.getRefundCash()).add(monetary.getPayCashTotal()));
                     result.setRefundPresent((result.getRefundPresent() == null ? BigDecimal.ZERO : result.getRefundPresent()).add(monetary.getPayPresentTotal()));
                 }
-                bills.add(result);
             }
         }
+        bills = map2List(map);
         BillInventory inventory = BillInventory.valueOf(vo);
         APIGetBillReply reply = new APIGetBillReply();
         inventory.setBills(bills);
