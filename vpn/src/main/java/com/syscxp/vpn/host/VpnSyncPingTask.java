@@ -7,12 +7,16 @@ import com.syscxp.core.db.Q;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.NoErrorCompletion;
+import com.syscxp.header.core.workflow.Flow;
+import com.syscxp.header.core.workflow.FlowTrigger;
+import com.syscxp.header.core.workflow.NoRollbackFlow;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.ChangeVpnStatusMsg;
 import com.syscxp.header.vpn.agent.CheckVpnStatusMsg;
 import com.syscxp.header.vpn.agent.CheckVpnStatusReply;
+import com.syscxp.header.vpn.agent.StartAllMsg;
 import com.syscxp.header.vpn.host.VpnHostInventory;
 import com.syscxp.header.vpn.vpn.VpnState;
 import com.syscxp.header.vpn.vpn.VpnStatus;
@@ -24,8 +28,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
-public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint {
+public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint, VpnHostConnectExtensionPoint {
     private static final CLogger logger = Utils.getLogger(VpnSyncPingTask.class);
 
     @Autowired
@@ -60,16 +65,13 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint 
 
                 CheckVpnStatusReply ret = reply.castReply();
 
-                List<ChangeVpnStatusMsg> msgs = new ArrayList<>();
+                List<StartAllMsg> msgs = new ArrayList<>();
                 for (String vpnUuid : vpnUuids) {
                     String status = ret.getStates().get(vpnUuid);
 
-
-
                     if (VpnStatus.Disconnected.toString().equals(status)) {
-                        ChangeVpnStatusMsg vmsg = new ChangeVpnStatusMsg();
+                        StartAllMsg vmsg = new StartAllMsg();
                         vmsg.setVpnUuid(vpnUuid);
-                        vmsg.setStatus(VpnStatus.Connected.toString());
                         bus.makeLocalServiceId(vmsg, VpnConstant.SERVICE_ID);
                         msgs.add(vmsg);
                     } else if ( VpnStatus.Connected.toString().equals(status)) {
@@ -118,5 +120,27 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint 
                 completion.done();
             }
         });
+    }
+
+    @Override
+    public Flow createHostConnectingFlow(VpnHostConnectedContext context) {
+        return new NoRollbackFlow() {
+            @Override
+            public void run(final FlowTrigger trigger, Map data) {
+                checkState(context.getInventory().getUuid(), new Completion(trigger) {
+                    String __name__ = "sync-vpn-status";
+
+                    @Override
+                    public void success() {
+                        trigger.next();
+                    }
+
+                    @Override
+                    public void fail(ErrorCode errorCode) {
+                        trigger.fail(errorCode);
+                    }
+                });
+            }
+        };
     }
 }
