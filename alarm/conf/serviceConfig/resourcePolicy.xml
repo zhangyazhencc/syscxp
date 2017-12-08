@@ -58,7 +58,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.alarm.header.resourcePolicy.APIDeleteResourcePolicyRefMsg</name>
+        <name>com.syscxp.header.alarm.APIDeleteResourcePolicyRefMsg</name>
     </message>
 
     <message>

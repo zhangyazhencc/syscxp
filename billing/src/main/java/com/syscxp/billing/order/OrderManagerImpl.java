@@ -132,7 +132,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         bus.publish(event);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional
     private void payMethod(String accountUuid, String opAccountUuid, OrderVO orderVo, AccountBalanceVO abvo, BigDecimal total, Timestamp currentTimeStamp) {
 
         int hash = accountUuid.hashCode() < 0 ? ~accountUuid.hashCode() : accountUuid.hashCode();
@@ -613,7 +613,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         List<OrderInventory> inventories = new ArrayList<>();
+        String accountUuid = apiCreateBuyOrderMsg.getProducts().get(0).getAccountUuid();
 
+        AccountBalanceVO abvo =dbf.findByUuid(accountUuid,AccountBalanceVO.class);
         for (ProductInfoForOrder msg : apiCreateBuyOrderMsg.getProducts()) {
 
             OrderTempProp orderTempProp = calculatePrice(msg.getUnits(), msg.getAccountUuid());
@@ -622,7 +624,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             List<String> productPriceUnitUuids = orderTempProp.getProductPriceUnitUuids();
             BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
 
-            AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+
             BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
 
             originalPrice = originalPrice.multiply(duration);
@@ -652,12 +654,13 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 saveNotifyBuyOrderVO(msg, orderVo.getUuid());
             }
 
-            dbf.getEntityManager().merge(abvo);
+
             dbf.getEntityManager().persist(orderVo);
-            dbf.getEntityManager().flush();
+
             inventories.add(OrderInventory.valueOf(orderVo));
         }
-
+        dbf.getEntityManager().refresh(abvo);
+        dbf.getEntityManager().flush();
         APICreateBuyOrderReply reply = new APICreateBuyOrderReply();
         reply.setInventories(inventories);
         bus.reply(apiCreateBuyOrderMsg, reply);
