@@ -46,14 +46,6 @@ public class TicketRecordVO {
     @Column
     private Timestamp lastOpDate;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "accountUuid",insertable = false,updatable = false)
-    private AccountVO accountVO;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "userUuid",insertable = false,updatable = false)
-    private UserVO userVO;
-
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
@@ -131,19 +123,4 @@ public class TicketRecordVO {
         this.accountUuid = accountUuid;
     }
 
-    public AccountVO getAccountVO() {
-        return accountVO;
-    }
-
-    public void setAccountVO(AccountVO accountVO) {
-        this.accountVO = accountVO;
-    }
-
-    public UserVO getUserVO() {
-        return userVO;
-    }
-
-    public void setUserVO(UserVO userVO) {
-        this.userVO = userVO;
-    }
 }

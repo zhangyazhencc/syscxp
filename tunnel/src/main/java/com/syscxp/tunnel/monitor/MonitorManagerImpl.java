@@ -606,6 +606,32 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             throw new RuntimeException(String.format("failure to sync icmp: tunnelUuid: %s , Error: %s", tunnelUuid, falconRsp.getMsg()));
     }
 
+    /**
+     * 开启监控、tunnel修改且监控为开启状态时同步ICMP到falcon_portal数据库
+     * 下发监控agent配置
+     */
+    public void icmpSync(String tunnelUuid) {
+        List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelUuid);
+        TunnelVO tunnelVO = dbf.findByUuid(tunnelUuid,TunnelVO.class);
+
+        String falconUrl = getFalconServerUrl(FalconApiRestConstant.ICMP_SYNC);
+        FalconApiCommands.RestResponse falconRsp = new FalconApiCommands.RestResponse();
+        try {
+            FalconApiCommands.Icmp icmp = getIcmp(tunnelVO.getAccountUuid(), tunnelUuid, tunnelVO.getMonitorCidr(), tunnelMonitorVOS);
+            String icmpJson = JSONObjectUtil.toJsonString(icmp);
+
+            logger.info(String.format("Begin to send falcon api command: url: %s command: %s", falconUrl, icmpJson));
+            falconRsp = evtf.syncJsonPost(falconUrl, icmpJson, FalconApiCommands.RestResponse.class);
+
+        } catch (Exception e) {
+            falconRsp.setSuccess(false);
+            falconRsp.setMsg(String.format("unable to post %s. %s", falconUrl, e.getMessage()));
+        }
+
+        if (!falconRsp.isSuccess())
+            throw new RuntimeException(String.format("failure to sync icmp: tunnelUuid: %s , Error: %s", tunnelUuid, falconRsp.getMsg()));
+    }
+
     /***
      * 获取ICMP信息
      * @param accountUuid
@@ -656,7 +682,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * 删除falcon_portal ICMP数据：关闭监控、tunnel删除、tunnel中止
      * @param tunnelUuid
      */
-    private void icmpDelete(String tunnelUuid) {
+    public void icmpDelete(String tunnelUuid) {
         String url = getFalconServerUrl(FalconApiRestConstant.ICMP_DELETE);
         FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
 
