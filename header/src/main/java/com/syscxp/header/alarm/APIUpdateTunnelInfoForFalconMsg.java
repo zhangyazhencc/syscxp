@@ -3,12 +3,13 @@ package com.syscxp.header.alarm;
 import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.message.APISyncCallMessage;
 
 /**
  * Created by wangwg on 2017/11/02
  */
 @InnerCredentialCheck
-public class APIUpdateTunnelInfoForFalconMsg extends APIMessage {
+public class APIUpdateTunnelInfoForFalconMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false,maxLength = 32)
     private String tunnelUuid;
