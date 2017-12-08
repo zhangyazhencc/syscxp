@@ -32,7 +32,6 @@ public class DisableTunnelJob implements Job {
 
         try {
             logger.info("开始执行JOB【关闭监控】");
-            Thread.sleep(5*1000);
             monitorManager.stopControllerMonitor(tunnelUuid);
 
             completion.success(null);

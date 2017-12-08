@@ -1823,7 +1823,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             EnableTunnelJob job = new EnableTunnelJob();
                             job.setTunnelUuid(jobVO.getUuid());
                             jobf.execute("job-Tunnel-Enable", Platform.getManagementServerId(), job);
-                            logger.info("【2】【】【】【】【】【【】【】【】【】【】【【】【】【】");
                         }
                     }
 
@@ -1844,7 +1843,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         DisableTunnelJob job = new DisableTunnelJob();
                         job.setTunnelUuid(jobVO.getUuid());
                         jobf.execute("job-Tunnel-Disable", Platform.getManagementServerId(), job);
-                        logger.info("【2】【】【】【】【】【【】【】【】【】【】【【】【】【】");
 
                     }
 
