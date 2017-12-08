@@ -131,7 +131,7 @@ CREATE TABLE  `UserVO` (
     `emailStatus` varchar(36) NOT NULL COMMENT '邮箱是否认证',
     `phoneStatus` varchar(36) NOT NULL COMMENT '手机是否认证',
     `phone` varchar(11) NOT NULL COMMENT '手机号',
-    `trueName` varchar(128) NOT NULL COMMENT '姓名',
+    `trueName` varchar(128)  COMMENT '姓名',
     `department` varchar(128) DEFAULT NULL COMMENT '部门',
     `status` varchar(128) NOT NULL COMMENT '状态',
     `userType` varchar(36) NOT NULL COMMENT '用户类型（业务员，普通用户）',

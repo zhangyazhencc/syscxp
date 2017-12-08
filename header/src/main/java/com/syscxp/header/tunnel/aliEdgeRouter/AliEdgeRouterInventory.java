@@ -1,10 +1,19 @@
 package com.syscxp.header.tunnel.aliEdgeRouter;
 
 import java.sql.Timestamp;
+
+import com.syscxp.header.query.ExpandedQueries;
+import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
+import com.syscxp.header.tunnel.tunnel.TunnelInventory;
+
 import java.util.*;
 
 @Inventory(mappingVOClass = AliEdgeRouterVO.class)
+@ExpandedQueries({
+        @ExpandedQuery(expandedField = "tunnel", inventoryClass = TunnelInventory.class,
+                foreignKey = "tunnelUuid", expandedInventoryKey = "uuid"),
+})
 public class AliEdgeRouterInventory {
     private String uuid;
     private String tunnelUuid;
@@ -19,6 +28,8 @@ public class AliEdgeRouterInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
     private boolean isCreateFlag;
+
+    private String tunnelName;
 
 
     public static AliEdgeRouterInventory valueOf(AliEdgeRouterVO vo){
@@ -36,6 +47,7 @@ public class AliEdgeRouterInventory {
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         inv.setCreateFlag(vo.isCreateFlag());
+        inv.setTunnelName(vo.getTunnelEO().getName());
         return inv;
     }
 
@@ -151,5 +163,13 @@ public class AliEdgeRouterInventory {
 
     public void setCreateFlag(boolean createFlag) {
         isCreateFlag = createFlag;
+    }
+
+    public String getTunnelName() {
+        return tunnelName;
+    }
+
+    public void setTunnelName(String tunnelName) {
+        this.tunnelName = tunnelName;
     }
 }

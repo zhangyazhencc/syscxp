@@ -123,7 +123,7 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
                 return "ImageCodeExpiredSessionCleanupThread";
             }
 
-        });
+        }, 40);
     }
 
     public String getId() {

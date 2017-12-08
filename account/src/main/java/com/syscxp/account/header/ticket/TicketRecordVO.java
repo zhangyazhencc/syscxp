@@ -1,5 +1,7 @@
 package com.syscxp.account.header.ticket;
 
+import com.syscxp.account.header.account.AccountVO;
+import com.syscxp.account.header.user.UserVO;
 import com.syscxp.header.vo.ForeignKey;
 
 import javax.persistence.*;
@@ -120,4 +122,5 @@ public class TicketRecordVO {
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
     }
+
 }

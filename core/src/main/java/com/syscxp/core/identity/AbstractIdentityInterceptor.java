@@ -150,7 +150,7 @@ public abstract class AbstractIdentityInterceptor implements GlobalApiMessageInt
                 return "ExpiredSessionCleanupThread";
             }
 
-        });
+        }, 100);
     }
 
     private void buildActions() {

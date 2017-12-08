@@ -45,7 +45,7 @@ public class BillJob {
     @Scheduled(cron = "0 0 10 1 * ? ")
     public void generateBill() {
 
-        GLock lock = new GLock(String.format("id-%s", "createBill"), 120);
+        GLock lock = new GLock(String.format("id-%s", "generateBill"), 1);
         lock.lock();
         try {
             logger.info("generate Bill start ..............");
@@ -90,12 +90,12 @@ public class BillJob {
             logger.info("generate Bill end ..............");
         } catch (Exception e) {
             e.printStackTrace();
-            try {
-                TimeUnit.HOURS.sleep(1);
-            } catch (InterruptedException e1) {
-                e1.printStackTrace();
-            }
-            generateBill();
+//            try {
+//                TimeUnit.HOURS.sleep(1);
+//            } catch (InterruptedException e1) {
+//                e1.printStackTrace();
+//            }
+//            generateBill();
         } finally {
             lock.unlock();
         }
@@ -116,7 +116,7 @@ public class BillJob {
     }
 
     private List getBillList(Timestamp currentSqlTime,Timestamp startTime,Timestamp endTime) {
-        String sql = "select accountUuid,type,dealWay, sum(expend)as expend,sum(income)as income from DealDetailVO where  state = 'SUCCESS' and finishTime between :dateStart and  :dateEnd  group by accountUuid,type,dealWay";
+        String sql = "select accountUuid,dealWay,type, sum(expend)as expend,sum(income)as income from DealDetailVO where  state = 'SUCCESS' and finishTime between :dateStart and  :dateEnd  group by accountUuid,dealWay,type";
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("dateStart", startTime);
         q.setParameter("dateEnd", endTime);
@@ -151,24 +151,24 @@ public class BillJob {
     private void calculateBalance(BillStatistics bill, BillVO bVO) {
         if (bill.getDealWay().equals(DealWay.PRESENT_BILL)) {
             if(bill.getType()== DealType.DEDUCTION){
-                bVO.setTotalDeductionPayPresent(bill.getExpend());
+                bVO.setTotalDeductionPayPresent(bill.getExpend()==null?BigDecimal.ZERO:bill.getExpend());
             }
             if(bill.getType()== DealType.PROXY_RECHARGE){
-                bVO.setTotalRechargeIncomePresent(bill.getIncome());
+                bVO.setTotalRechargeIncomePresent(bill.getIncome()==null?BigDecimal.ZERO:bill.getIncome());
             }
             if(bill.getType()== DealType.REFUND){
-                bVO.setTotalRefundIncomePresent(bill.getIncome());
+                bVO.setTotalRefundIncomePresent(bill.getIncome()==null?BigDecimal.ZERO:bill.getIncome());
             }
 
         } else if (bill.getDealWay().equals(DealWay.CASH_BILL)) {
             if(bill.getType()== DealType.DEDUCTION){
-                bVO.setTotalDeductionPayCash(bill.getExpend());
+                bVO.setTotalDeductionPayCash(bill.getExpend()==null?BigDecimal.ZERO:bill.getExpend());
             }
             if(bill.getType()== DealType.PROXY_RECHARGE || bill.getType() == DealType.RECHARGE){
                 bVO.setTotalRechargeIncomeCash((bVO.getTotalRechargeIncomeCash()==null?BigDecimal.ZERO:bVO.getTotalRechargeIncomeCash()).add(bill.getIncome()));
             }
             if(bill.getType()== DealType.REFUND){
-                bVO.setTotalRefundIncomeCash(bill.getIncome());
+                bVO.setTotalRefundIncomeCash(bill.getIncome()==null?BigDecimal.ZERO:bill.getIncome());
             }
         }
     }

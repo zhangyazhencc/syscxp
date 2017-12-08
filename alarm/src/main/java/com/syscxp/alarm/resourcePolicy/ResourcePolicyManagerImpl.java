@@ -17,9 +17,7 @@ import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
-import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconMsg;
-import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconReply;
-import com.syscxp.header.alarm.AlarmConstant;
+import com.syscxp.header.alarm.*;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.ProductType;
@@ -256,20 +254,20 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     }
 
     private void handle(APIUpdateTunnelInfoForFalconMsg msg) {
-        TunnelParameter tunnelparameter = new TunnelParameter();
-        tunnelparameter.setTunnel_id(msg.getTunnelUuid());
-        tunnelparameter.setUser_id(msg.getSession().getAccountUuid());
-        tunnelparameter.setEndpointA_vid(msg.getSwitchA_vlan());
-        tunnelparameter.setEndpointB_vid(msg.getSwitchB_vlan());
-        tunnelparameter.setEndpointA_ip(msg.getSwitchA_ip());
-        tunnelparameter.setEndpointB_ip(msg.getSwitchB_ip());
-        tunnelparameter.setBandwidth(msg.getBandwidth());
+        FalconApiCommands.Tunnel tunnel = new FalconApiCommands.Tunnel();
+        tunnel.setTunnel_id(msg.getTunnelUuid());
+        tunnel.setUser_id(msg.getSession().getAccountUuid());
+        tunnel.setEndpointA_vid(msg.getSwitchA_vlan());
+        tunnel.setEndpointB_vid(msg.getSwitchB_vlan());
+        tunnel.setEndpointA_ip(msg.getSwitchA_ip());
+        tunnel.setEndpointB_ip(msg.getSwitchB_ip());
+        tunnel.setBandwidth(msg.getBandwidth());
 
-        List<Rule> rulelist = rulelist = new ArrayList<>();
+        List<FalconApiCommands.Rule> rulelist = rulelist = new ArrayList<>();
 
-        List<TunnelParameter> tunnelparameterlist = new ArrayList<>();
-        List<RegulationVO> regulationvolist = null;
-        Rule rule = null;
+        List<FalconApiCommands.Tunnel> tunnelList = new ArrayList<>();
+        List<RegulationVO> regulationVOList = null;
+        FalconApiCommands.Rule rule = null;
 
         SimpleQuery<ResourcePolicyRefVO> policyrquery = dbf.createQuery(ResourcePolicyRefVO.class);
         policyrquery.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getTunnelUuid());
@@ -277,24 +275,24 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         for (ResourcePolicyRefVO policy : policylist) {
             SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
             regulationvoquery.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, policy.getPolicyUuid());
-            regulationvolist = regulationvoquery.list();
-            for (RegulationVO regulationvo : regulationvolist) {
-                rule = new Rule();
+            regulationVOList = regulationvoquery.list();
+            for (RegulationVO regulationvo : regulationVOList) {
+                rule = new FalconApiCommands.Rule();
                 rule.setOp(regulationvo.getComparisonRuleVO().getComparisonValue());
                 rule.setStrategy_type(regulationvo.getMonitorTargetVO().getTargetValue());
                 rule.setRight_value(String.valueOf(regulationvo.getAlarmThreshold()));
-                rule.setAlarm_rule_id(regulationvo.getUuid());
+                rule.setRegulation_id(regulationvo.getUuid());
                 rule.setStay_time(regulationvo.getTriggerPeriod());
                 rulelist.add(rule);
             }
         }
 
-        tunnelparameter.setRules(rulelist);
-        tunnelparameterlist.add(tunnelparameter);
+        tunnel.setRules(rulelist);
+        tunnelList.add(tunnel);
 
         String url = CoreGlobalProperty.FALCON_API_IP + ":" + CoreGlobalProperty.FALCON_API_PORT +
                 FalconApiRestConstant.STRATEGY_SYNC;
-        String commandParam = JSONObjectUtil.toJsonString(tunnelparameterlist);
+        String commandParam = JSONObjectUtil.toJsonString(tunnelList);
         HttpHeaders requestHeaders = new HttpHeaders();
         requestHeaders.setContentType(MediaType.APPLICATION_JSON);
         requestHeaders.setContentLength(commandParam.length());
@@ -325,9 +323,9 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
         }
 
-        APIDeleteResourceEvent evt = new APIDeleteResourceEvent(msg.getId());
+        APIDeleteResourceReply reply = new APIDeleteResourceReply();
         if (!response.isSuccess()) {
-            evt.setError(Platform.operr(response.getMsg()));
+            reply.setError(Platform.operr(response.getMsg()));
         }
 
         if (response.isSuccess()) {
@@ -336,7 +334,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             q.delete();
 
         }
-        bus.publish(evt);
+        bus.reply(msg,reply);
 
     }
 
@@ -669,8 +667,8 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 FalconApiCommands.Rule rule = new FalconApiCommands.Rule();
                 rule.setRegulation_id(regulationvo.getUuid());
                 rule.setRight_value(String.valueOf(regulationvo.getAlarmThreshold()));
-                rule.setStay_time(regulationvo.getTriggerPeriod());
                 rule.setOp(regulationvo.getComparisonRuleVO().getComparisonValue());
+                rule.setStay_time(regulationvo.getTriggerPeriod());
                 rule.setStrategy_type(regulationvo.getMonitorTargetVO().getTargetValue());
                 rulelist.add(rule);
             }
@@ -721,8 +719,8 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 List<FalconApiCommands.Rule> rulelist = new ArrayList<>();
                 for (RegulationVO regulationvo : regulationvolist) {
                     FalconApiCommands.Rule rule = new FalconApiCommands.Rule();
-                    rule.setRegulation_id(regulationvo.getUuid());
                     rule.setRight_value(String.valueOf(regulationvo.getAlarmThreshold()));
+                    rule.setRegulation_id(regulationvo.getUuid());
                     rule.setStay_time(regulationvo.getTriggerPeriod());
                     rule.setOp(regulationvo.getComparisonRuleVO().getComparisonValue());
                     rule.setStrategy_type(regulationvo.getMonitorTargetVO().getTargetValue());
@@ -736,39 +734,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         return JSONObjectUtil.toJsonString(tunnels);
     }
 
-    private String getFalconCommand(List<ResourcePolicyRefVO> resourcePolicyRefVOS, Map map, SessionInventory session) {
-        List<FalconApiCommands.Tunnel> tunnels = new ArrayList<>();
-
-        for (ResourcePolicyRefVO resource : resourcePolicyRefVOS) {
-            if (!map.containsKey(resource.getResourceUuid()))
-                continue;
-
-            FalconApiCommands.Tunnel tunnel = JSONObjectUtil.toObject(map.get(resource.getResourceUuid()).toString(), FalconApiCommands.Tunnel.class);
-            tunnel.setUser_id(session.getAccountUuid());
-
-            List<FalconApiCommands.Rule> rulelist = new ArrayList<>();
-            if (!resourcePolicyRefVOS.isEmpty()) {
-                for (ResourcePolicyRefVO policy : resourcePolicyRefVOS) {
-                    SimpleQuery<RegulationVO> regulationvoquery = dbf.createQuery(RegulationVO.class);
-                    regulationvoquery.add(RegulationVO_.policyUuid, SimpleQuery.Op.EQ, policy.getPolicyUuid());
-                    List<RegulationVO> regulationvolist = regulationvoquery.list();
-                    for (RegulationVO regulationvo : regulationvolist) {
-                        FalconApiCommands.Rule rule = new FalconApiCommands.Rule();
-                        rule.setRegulation_id(regulationvo.getUuid());
-                        rule.setRight_value(String.valueOf(regulationvo.getAlarmThreshold()));
-                        rule.setStay_time(regulationvo.getTriggerPeriod());
-                        rule.setOp(regulationvo.getComparisonRuleVO().getComparisonValue());
-                        rule.setStrategy_type(regulationvo.getMonitorTargetVO().getTargetValue());
-                        rulelist.add(rule);
-                    }
-                }
-            }
-            tunnel.setRules(rulelist);
-            tunnels.add(tunnel);
-        }
-
-        return JSONObjectUtil.toJsonString(tunnels);
-    }
 
     private String getFalconUrl(String method) {
         return CoreGlobalProperty.FALCON_API_IP + ":" + CoreGlobalProperty.FALCON_API_PORT + method;
