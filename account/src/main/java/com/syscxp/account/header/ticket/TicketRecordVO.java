@@ -1,5 +1,7 @@
 package com.syscxp.account.header.ticket;
 
+import com.syscxp.account.header.account.AccountVO;
+import com.syscxp.account.header.user.UserVO;
 import com.syscxp.header.vo.ForeignKey;
 
 import javax.persistence.*;
@@ -43,6 +45,14 @@ public class TicketRecordVO {
 
     @Column
     private Timestamp lastOpDate;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "accountUuid",insertable = false,updatable = false)
+    private AccountVO accountVO;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "userUuid",insertable = false,updatable = false)
+    private UserVO userVO;
 
     @PreUpdate
     private void preUpdate() {
@@ -119,5 +129,21 @@ public class TicketRecordVO {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    public AccountVO getAccountVO() {
+        return accountVO;
+    }
+
+    public void setAccountVO(AccountVO accountVO) {
+        this.accountVO = accountVO;
+    }
+
+    public UserVO getUserVO() {
+        return userVO;
+    }
+
+    public void setUserVO(UserVO userVO) {
+        this.userVO = userVO;
     }
 }
