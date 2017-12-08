@@ -17,9 +17,7 @@ import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
-import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconMsg;
-import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconReply;
-import com.syscxp.header.alarm.AlarmConstant;
+import com.syscxp.header.alarm.*;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.ProductType;
@@ -325,9 +323,9 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
         }
 
-        APIDeleteResourceEvent evt = new APIDeleteResourceEvent(msg.getId());
+        APIDeleteResourceReply reply = new APIDeleteResourceReply();
         if (!response.isSuccess()) {
-            evt.setError(Platform.operr(response.getMsg()));
+            reply.setError(Platform.operr(response.getMsg()));
         }
 
         if (response.isSuccess()) {
@@ -336,7 +334,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             q.delete();
 
         }
-        bus.publish(evt);
+        bus.reply(msg,reply);
 
     }
 
