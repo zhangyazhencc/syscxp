@@ -23,6 +23,8 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
+import java.math.BigDecimal;
+
 public class RenewManagerImpl  extends AbstractService implements  ApiMessageInterceptor {
 
     private static final CLogger logger = Utils.getLogger(RenewManagerImpl.class);
@@ -56,9 +58,21 @@ public class RenewManagerImpl  extends AbstractService implements  ApiMessageInt
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APIUpdateRenewMsg) {
             handle((APIUpdateRenewMsg) msg);
+        } else if (msg instanceof APIUpdateRenewPriceMsg) {
+            handle((APIUpdateRenewPriceMsg) msg);
         }  else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIUpdateRenewPriceMsg msg) {
+        RenewVO vo = dbf.findByUuid(msg.getUuid(), RenewVO.class);
+        vo.setPriceOneMonth(BigDecimal.valueOf(msg.getPrice()));
+        dbf.updateAndRefresh(vo);
+        RenewInventory ri = RenewInventory.valueOf(vo);
+        APIUpdateRenewPriceEvent evt = new APIUpdateRenewPriceEvent(msg.getId());
+        evt.setInventory(ri);
+        bus.publish(evt);
     }
 
     private void handle(APIUpdateRenewMsg msg) {
