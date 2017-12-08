@@ -3,7 +3,6 @@ package com.syscxp.header.tunnel.tunnel;
 import com.syscxp.header.query.ExpandedQueries;
 import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
-import com.syscxp.header.tunnel.endpoint.EndpointInventory;
 import com.syscxp.header.tunnel.switchs.SwitchPortInventory;
 
 import java.sql.Timestamp;
@@ -32,6 +31,7 @@ public class InterfaceInventory {
     private String description;
     private String state;
     private String type;
+    private String switchPortType;
     private Integer duration;
     private String productChargeModel;
     private Integer maxModifies;
@@ -47,6 +47,7 @@ public class InterfaceInventory {
         inv.setName(vo.getName());
         inv.setSwitchPortUuid(vo.getSwitchPortUuid());
         inv.setSwitchPortName(vo.getSwitchPortVO().getPortName());
+        inv.setSwitchPortType(vo.getSwitchPortVO().getPortType());
         inv.setEndpointName(vo.getEndpointVO().getName());
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setDescription(vo.getDescription());
@@ -67,6 +68,14 @@ public class InterfaceInventory {
             lst.add(InterfaceInventory.valueOf(vo));
         }
         return lst;
+    }
+
+    public String getSwitchPortType() {
+        return switchPortType;
+    }
+
+    public void setSwitchPortType(String switchPortType) {
+        this.switchPortType = switchPortType;
     }
 
     public String getSwitchPortName() {
