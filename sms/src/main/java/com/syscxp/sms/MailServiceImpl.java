@@ -214,7 +214,7 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
                 return "MailExpiredSessionCleanupThread";
             }
 
-        });
+        }, 50);
     }
 
     public String getId() {
