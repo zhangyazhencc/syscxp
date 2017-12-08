@@ -622,7 +622,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             List<String> productPriceUnitUuids = orderTempProp.getProductPriceUnitUuids();
             BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
 
-            AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+            AccountBalanceVO abvo = dbf.getEntityManager().find( AccountBalanceVO.class,msg.getAccountUuid());
             BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
 
             originalPrice = originalPrice.multiply(duration);
