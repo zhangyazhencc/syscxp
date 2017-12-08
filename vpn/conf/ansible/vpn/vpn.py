@@ -81,18 +81,18 @@ if distro == "RedHat" or distro == "CentOS":
     # handle syscxp_repo
     if syscxp_repo != 'false':
         # name: install related packages on RedHat based OS from user defined repo
-        command = ("yum --enablerepo=%s clean metadata && pkg_list=`rpm -q openssh-clients bridge-utils wget sed vconfig net-tools sshpass iputils libffi-devel "
-                   "rsync nmap ipset wondershaper easy-rsa  openvpn ntpdate pexpect | grep \"not installed\" | awk '{ print $2 }'` && for pkg in $pkg_list; do yum "
+        command = ("yum --enablerepo=%s clean metadata && pkg_list=`rpm -q openssh-clients bridge-utils wget sed vconfig net-tools sshpass iputils "
+                   "rsync nmap ipset wondershaper easy-rsa  openvpn ntpdate  | grep \"not installed\" | awk '{ print $2 }'` && for pkg in $pkg_list; do yum "
                    "--disablerepo=* --enablerepo=%s install -y $pkg; done;") % (syscxp_repo, syscxp_repo)
         host_post_info.post_label = "ansible.shell.install.pkg"
         host_post_info.post_label_param = "openssh-clients,bridge-utils,wget,sed," \
                                           "vconfig,net-tools,sshpass,iputils,rsync,nmap," \
-                                          "ipset,wondershaper,easy-rsa,openvpn,ntpdate,pexpect,libffi-devel"
+                                          "ipset,wondershaper,easy-rsa,openvpn,ntpdate"
         run_remote_command(command, host_post_info)
     else:
         # name: install vpn related packages on RedHat based OS from online
         for pkg in ['openssh-clients', 'bridge-utils', 'wget', 'sed', 'vconfig',
-                    'net-tools', 'sshpass', 'rsync', 'nmap', 'ipset', 'libffi-devel']:
+                    'net-tools', 'sshpass', 'rsync', 'nmap', 'ipset', 'pexpect', 'openvpn', 'easy-rsa', 'wondershaper', 'ntpdate']:
             yum_install_package(pkg, host_post_info)
 
     # handle distro version specific task
