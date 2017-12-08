@@ -10,9 +10,11 @@ import com.syscxp.header.core.NoErrorCompletion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.vpn.VpnConstant;
+import com.syscxp.header.vpn.agent.ChangeVpnStatusMsg;
 import com.syscxp.header.vpn.agent.CheckVpnStatusMsg;
 import com.syscxp.header.vpn.agent.CheckVpnStatusReply;
 import com.syscxp.header.vpn.host.VpnHostInventory;
+import com.syscxp.header.vpn.vpn.VpnState;
 import com.syscxp.header.vpn.vpn.VpnStatus;
 import com.syscxp.header.vpn.vpn.VpnVO;
 import com.syscxp.header.vpn.vpn.VpnVO_;
@@ -20,6 +22,7 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint {
@@ -33,13 +36,15 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint 
     private ErrorFacade errf;
 
     private List<String> getVpnUuids(String hostUuid) {
-        return Q.New(VpnVO.class).select(VpnVO_.uuid).eq(VpnVO_.hostUuid, hostUuid).list();
+        return Q.New(VpnVO.class).select(VpnVO_.uuid).eq(VpnVO_.state, VpnState.Enabled).eq(VpnVO_.hostUuid, hostUuid).list();
     }
 
     private void checkState(final String hostUuid, final Completion completion) {
         CheckVpnStatusMsg msg = new CheckVpnStatusMsg();
         msg.setHostUuid(hostUuid);
         List<String> vpnUuids = getVpnUuids(hostUuid);
+        if (vpnUuids.isEmpty())
+            return;
         msg.setVpnUuids(vpnUuids);
         bus.makeLocalServiceId(msg, VpnConstant.SERVICE_ID);
         bus.send(msg, new CloudBusCallBack(completion) {
@@ -47,7 +52,7 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint 
             public void run(MessageReply reply) {
                 if (!reply.isSuccess()) {
                     //TODO
-                    logger.warn(String.format("unable to check state of the vpn on the host[uuid:%s], %s." +
+                    logger.warn(String.format("unable to check status of the vpn on the host[uuid:%s], %s." +
                             " Put the vm to Unknown state", hostUuid, reply.getError()));
                     completion.fail(reply.getError());
                     return;
@@ -55,25 +60,35 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint 
 
                 CheckVpnStatusReply ret = reply.castReply();
 
+                List<ChangeVpnStatusMsg> msgs = new ArrayList<>();
                 for (String vpnUuid : vpnUuids) {
-                    String state = ret.getStates().get(vpnUuid);
-                    VpnVO vpn = dbf.findByUuid(vpnUuid, VpnVO.class);
-                    if (VpnStatus.Connected.toString().equals(state)) {
-                        changVpnSatus(vpn, VpnStatus.Connected);
-                    } else if (VpnStatus.Disconnected.toString().equals(state)) {
-                        changVpnSatus(vpn, VpnStatus.Disconnected);
-                    } else {
+                    String status = ret.getStates().get(vpnUuid);
+
+
+
+                    if (VpnStatus.Disconnected.toString().equals(status)) {
+                        ChangeVpnStatusMsg vmsg = new ChangeVpnStatusMsg();
+                        vmsg.setVpnUuid(vpnUuid);
+                        vmsg.setStatus(VpnStatus.Connected.toString());
+                        bus.makeLocalServiceId(vmsg, VpnConstant.SERVICE_ID);
+                        msgs.add(vmsg);
+                    } else if ( VpnStatus.Connected.toString().equals(status)) {
+                        changVpnSatus(vpnUuid, VpnStatus.Connected);
+                    }  else {
                         completion.fail(errf.stringToOperationError(String.format("CheckVpnStatusMsg should only report " +
                                         "states[UP or DOWN], but it reports %s for the vpn[uuid:%s] on the host[uuid:%s]",
-                                state, vpn.getUuid(), hostUuid)));
+                                status, vpnUuid, hostUuid)));
+                        return;
                     }
                 }
+                bus.send(msgs);
                 completion.success();
             }
         });
     }
 
-    private VpnVO changVpnSatus(VpnVO vpn, VpnStatus next) {
+    private VpnVO changVpnSatus(String vpnUuid, VpnStatus next) {
+        VpnVO vpn = dbf.findByUuid(vpnUuid, VpnVO.class);
         VpnStatus before = vpn.getStatus();
         if (before == next) {
             return vpn;
