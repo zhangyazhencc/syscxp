@@ -1,7 +1,5 @@
 package com.syscxp.header.vpn;
 
-import com.syscxp.utils.path.PathUtil;
-
 public interface VpnConstant {
 
     String SERVICE_ID = "vpn";
@@ -21,7 +19,7 @@ public interface VpnConstant {
     String RATE_LIMITING_PATH = "/vpn/rate_limiting";
     String VPN_PORT_PATH = "/vpn/vport";
     String VPN_SERVICE_PATH = "/vpn/vpn_service";
-    String START_ALL_PATH = "/vpn/sart_all";
+    String START_ALL_PATH = "/vpn/start_all";
     String DESTROY_VPN_PATH = "/vpn/destroy_vpn";
     String CLIENT_INFO_PATH = "/vpn/client_info";
     String LOGIN_INFO_PATH = "/vpn/login_info";
