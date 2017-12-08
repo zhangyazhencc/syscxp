@@ -86,7 +86,7 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
     private void handle(APISendMailMsg msg) {
         String[] emails = msg.getEmails().toArray(new String[msg.getEmails().size()]);
 
-        boolean result = mailSend(emails,msg.getSubject(),msg.getContent());
+        mailSend(emails,msg.getSubject(),msg.getContent());
 
         APIMaiAlarmSendEvent evt = new APIMaiAlarmSendEvent(msg.getId());
 
