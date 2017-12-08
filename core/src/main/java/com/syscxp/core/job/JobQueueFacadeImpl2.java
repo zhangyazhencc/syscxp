@@ -132,7 +132,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                 return "StartTakeJobsThread";
             }
 
-        });
+        }, 60);
     }
 
     private void restartQueue(JobQueueVO qvo, String mgmtId) {
@@ -382,8 +382,9 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                 }
             }
 
+            @AsyncThread
             private void process(final JobQueueVO qvo) {
-                logger.info("【1】【】【】【】【】【】【】【】【】【】【】【】【】【】【】");
+
                 if (stopped) {
                     logger.warn(String.format("[Job Facade Stopped]: stop processing job"));
                     return;
@@ -470,7 +471,6 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
     }
 
     @Override
-    @AsyncThread
     public <T> void execute(final String queueName, final String owner, final Job job, final ReturnValueCompletion<T> completion, final Class<? extends T> returnType) {
         try {
             JobQueueEntryVO e = new JobQueueEntryVO();

@@ -16,6 +16,7 @@ import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.CollectionUtils;
 
 import java.time.Instant;
 import java.util.*;
@@ -92,6 +93,9 @@ public class TunnelStatusChecker implements Component {
 
                     if (!results.isEmpty()) {
                         QueryResult result = results.get(0);
+                        Map dps = result.getDps();
+                        if (CollectionUtils.isEmpty(dps))
+                            return;
                         Double max = Collections.max(result.getDps().values());
                         Double min = Collections.min(result.getDps().values());
 

@@ -32,7 +32,6 @@ public class EnableTunnelJob implements Job {
 
 		try {
             logger.info("开始执行JOB【开启监控】");
-            Thread.sleep(5*1000);
             monitorManager.startControllerMonitor(tunnelUuid);
 
             completion.success(null);

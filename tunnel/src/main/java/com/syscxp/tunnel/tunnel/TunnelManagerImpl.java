@@ -1823,7 +1823,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             EnableTunnelJob job = new EnableTunnelJob();
                             job.setTunnelUuid(jobVO.getUuid());
                             jobf.execute("job-Tunnel-Enable", Platform.getManagementServerId(), job);
-                            logger.info("【2】【】【】【】【】【【】【】【】【】【】【【】【】【】");
                         }
                     }
 
@@ -1844,7 +1843,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         DisableTunnelJob job = new DisableTunnelJob();
                         job.setTunnelUuid(jobVO.getUuid());
                         jobf.execute("job-Tunnel-Disable", Platform.getManagementServerId(), job);
-                        logger.info("【2】【】【】【】【】【【】【】【】【】【】【【】【】【】");
 
                     }
 
@@ -2058,7 +2056,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 通过连接点和端口规格获取可用的端口
      */
     private void handle(APIListSwitchPortByTypeMsg msg) {
-        List<SwitchPortVO> ports = new TunnelBase().getSwitchPortByType(msg.getUuid(), msg.getType());
+        List<SwitchPortVO> ports = new TunnelBase().getSwitchPortByType(msg.getUuid(), msg.getType(), msg.getStart(), msg.getLimit());
         APIListSwitchPortByTypeReply reply = new APIListSwitchPortByTypeReply();
         reply.setInventories(SwitchPortInventory.valueOf(ports));
         bus.reply(msg, reply);

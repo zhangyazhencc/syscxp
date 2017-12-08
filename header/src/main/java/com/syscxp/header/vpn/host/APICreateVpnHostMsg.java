@@ -1,5 +1,6 @@
 package com.syscxp.header.vpn.host;
 
+import com.syscxp.header.host.APIAddHostEvent;
 import com.syscxp.header.host.APIAddHostMsg;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
@@ -76,7 +77,7 @@ public class APICreateVpnHostMsg extends APIAddHostMsg {
             public void after(APIEvent evt) {
                 String uuid = null;
                 if (evt.isSuccess()) {
-                    uuid = ((APICreateVpnHostEvent) evt).getInventory().getUuid();
+                    uuid = ((APIAddHostEvent) evt).getInventory().getUuid();
                 }
 
                 ntfy("Create VpnHostVO")

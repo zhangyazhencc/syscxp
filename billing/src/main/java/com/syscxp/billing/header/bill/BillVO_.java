@@ -11,10 +11,12 @@ public class BillVO_ {
     public static volatile SingularAttribute<BillVO, String> accountUuid;
     public static volatile SingularAttribute<BillVO, Timestamp> timeStart;
     public static volatile SingularAttribute<BillVO, Timestamp> timeEnd;
-    public static volatile SingularAttribute<BillVO, BigDecimal> totolPayCash;
-    public static volatile SingularAttribute<BillVO, BigDecimal> totalPayPresent;
-    public static volatile SingularAttribute<BillVO, BigDecimal> totalIncomeCash;
-    public static volatile SingularAttribute<BillVO, BigDecimal> totalIncomePresent;
+    public static volatile SingularAttribute<BillVO, BigDecimal> totalDeductionPayCash;
+    public static volatile SingularAttribute<BillVO, BigDecimal> totalDeductionPayPresent;
+    public static volatile SingularAttribute<BillVO, BigDecimal> totalRefundIncomeCash;
+    public static volatile SingularAttribute<BillVO, BigDecimal> totalRefundIncomePresent;
+    public static volatile SingularAttribute<BillVO, BigDecimal> totalRechargeIncomeCash;
+    public static volatile SingularAttribute<BillVO, BigDecimal> totalRechargeIncomePresent;
     public static volatile SingularAttribute<BillVO, BigDecimal> repay;
     public static volatile SingularAttribute<BillVO, BigDecimal> cashBalance;
     public static volatile SingularAttribute<BillVO, Timestamp> billDate;

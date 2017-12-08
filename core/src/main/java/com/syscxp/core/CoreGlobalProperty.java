@@ -76,10 +76,10 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "startVsi", defaultValue = "20000")
     public static Integer START_VSI;
 
-    @GlobalProperty(name = "falconApiIp", defaultValue = "http://192.168.211.96")
+    @GlobalProperty(name = "falconApiIp", defaultValue = "192.168.211.96")
     public static String FALCON_API_IP;
 
-    @GlobalProperty(name = "transferRpcIp", defaultValue = "http://192.168.211.6")
+    @GlobalProperty(name = "transferRpcIp", defaultValue = "192.168.211.6")
     public static String TRANSFER_RPC_IP;
 
     @GlobalProperty(name = "falconApiPort", defaultValue = "6892")

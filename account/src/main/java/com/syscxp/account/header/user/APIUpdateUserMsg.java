@@ -120,7 +120,7 @@ public class APIUpdateUserMsg extends APIMessage implements AccountMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Updating").resource(uuid, UserVO.class)
+                ntfy("UpdateUser").resource(uuid, UserVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

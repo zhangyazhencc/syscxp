@@ -2,9 +2,11 @@ package com.syscxp.header.tunnel.monitor;
 
 import com.syscxp.header.search.SqlTrigger;
 import com.syscxp.header.search.TriggerIndex;
+import com.syscxp.header.tunnel.tunnel.TunnelEO;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * @Author: sunxuelong.
@@ -26,6 +28,10 @@ public class SpeedRecordsVO {
 
     @Column
     private String tunnelUuid;
+
+    @OneToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name = "tunnelUuid", insertable = false, updatable = false)
+    private TunnelEO tunnelEO = new TunnelEO();
 
     @Column
     private String srcTunnelMonitorUuid;
@@ -165,5 +171,13 @@ public class SpeedRecordsVO {
 
     public void setDstTunnelMonitorUuid(String dstTunnelMonitorUuid) {
         this.dstTunnelMonitorUuid = dstTunnelMonitorUuid;
+    }
+
+    public TunnelEO getTunnelEO() {
+        return tunnelEO;
+    }
+
+    public void setTunnelEO(TunnelEO tunnelEO) {
+        this.tunnelEO = tunnelEO;
     }
 }

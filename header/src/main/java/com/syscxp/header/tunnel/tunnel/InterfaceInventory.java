@@ -1,8 +1,9 @@
 package com.syscxp.header.tunnel.tunnel;
 
-import com.syscxp.header.billing.ProductChargeModel;
+import com.syscxp.header.query.ExpandedQueries;
+import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
-import com.syscxp.header.tunnel.endpoint.EndpointInventory;
+import com.syscxp.header.tunnel.switchs.SwitchPortInventory;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -13,17 +14,24 @@ import java.util.List;
  * Created by DCY on 2017-09-08
  */
 @Inventory(mappingVOClass = InterfaceVO.class)
+@ExpandedQueries({
+        @ExpandedQuery(expandedField = "switchPort", inventoryClass = SwitchPortInventory.class,
+                foreignKey = "switchPortUuid", expandedInventoryKey = "uuid"),
+
+})
 public class InterfaceInventory {
     private String uuid;
     private String accountUuid;
     private String ownerAccountUuid;
     private String name;
     private String switchPortUuid;
+    private String switchPortName;
     private String endpointUuid;
-    private EndpointInventory endpoint;
+    private String endpointName;
     private String description;
     private String state;
     private String type;
+    private String switchPortType;
     private Integer duration;
     private String productChargeModel;
     private Integer maxModifies;
@@ -38,7 +46,9 @@ public class InterfaceInventory {
         inv.setOwnerAccountUuid(vo.getOwnerAccountUuid());
         inv.setName(vo.getName());
         inv.setSwitchPortUuid(vo.getSwitchPortUuid());
-        inv.setEndpoint(EndpointInventory.valueOf(vo.getEndpointVO()));
+        inv.setSwitchPortName(vo.getSwitchPortVO().getPortName());
+        inv.setSwitchPortType(vo.getSwitchPortVO().getPortType());
+        inv.setEndpointName(vo.getEndpointVO().getName());
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setDescription(vo.getDescription());
         inv.setState(vo.getState().toString());
@@ -58,6 +68,30 @@ public class InterfaceInventory {
             lst.add(InterfaceInventory.valueOf(vo));
         }
         return lst;
+    }
+
+    public String getSwitchPortType() {
+        return switchPortType;
+    }
+
+    public void setSwitchPortType(String switchPortType) {
+        this.switchPortType = switchPortType;
+    }
+
+    public String getSwitchPortName() {
+        return switchPortName;
+    }
+
+    public void setSwitchPortName(String switchPortName) {
+        this.switchPortName = switchPortName;
+    }
+
+    public String getEndpointName() {
+        return endpointName;
+    }
+
+    public void setEndpointName(String endpointName) {
+        this.endpointName = endpointName;
     }
 
     public String getUuid() {
@@ -122,14 +156,6 @@ public class InterfaceInventory {
 
     public void setCreateDate(Timestamp createDate) {
         this.createDate = createDate;
-    }
-
-    public EndpointInventory getEndpoint() {
-        return endpoint;
-    }
-
-    public void setEndpoint(EndpointInventory endpoint) {
-        this.endpoint = endpoint;
     }
 
     public Integer getDuration() {
