@@ -258,7 +258,7 @@ public class SmsServiceImpl extends AbstractService implements SmsService, ApiMe
                 return "SmsExpiredSessionCleanupThread";
             }
 
-        });
+        }, 30);
     }
 
     public String getId() {
