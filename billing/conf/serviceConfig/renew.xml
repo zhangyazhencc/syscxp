@@ -8,6 +8,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.billing.header.renew.APIUpdateRenewPriceMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.billing.header.renew.APIQueryRenewMsg</name>
         <serviceId>query</serviceId>
     </message>

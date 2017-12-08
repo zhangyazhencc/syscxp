@@ -75,9 +75,9 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
                     result.setRefundCash((result.getRefundCash() == null ? BigDecimal.ZERO : result.getRefundCash()).add(monetary.getPayCashTotal()));
                     result.setRefundPresent((result.getRefundPresent() == null ? BigDecimal.ZERO : result.getRefundPresent()).add(monetary.getPayPresentTotal()));
                 }
+                bills.add(result);
             }
         }
-        bills = map2List(map);
         BillInventory inventory = BillInventory.valueOf(vo);
         APIGetBillReply reply = new APIGetBillReply();
         inventory.setBills(bills);

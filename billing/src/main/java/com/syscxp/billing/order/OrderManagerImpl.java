@@ -94,6 +94,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             handle((APIGetModifyProductPriceDiffMsg) msg);
         } else if (msg instanceof APIGetProductPriceMsg) {
             handle((APIGetProductPriceMsg) msg);
+        }  else if (msg instanceof APIGetRenewProductPriceMsg) {
+            handle((APIGetRenewProductPriceMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -788,6 +790,24 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         }
         return base;
     }
+
+
+    private void handle(APIGetRenewProductPriceMsg msg) {
+        AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+        BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
+        RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
+        BigDecimal originalPrice = renewVO.getPriceOneMonth();
+        BigDecimal discountPrice = renewVO.getPriceOneMonth();
+        boolean payable = discountPrice.compareTo(mayPayTotal) <= 0;
+        APIGetRenewProductPriceReply reply = new APIGetRenewProductPriceReply();
+        reply.setMayPayTotal(mayPayTotal);
+        reply.setOriginalPrice(originalPrice);
+        reply.setDiscountPrice(discountPrice);
+        reply.setPayable(payable);
+        bus.reply(msg, reply);
+
+    }
+
 
     private void handle(APIGetProductPriceMsg msg) {
         List<ProductPriceUnitInventory> productPriceUnits = new ArrayList<>();
