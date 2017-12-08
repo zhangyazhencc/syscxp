@@ -796,8 +796,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
         BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
         RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
-        BigDecimal originalPrice = renewVO.getPriceOneMonth();
-        BigDecimal discountPrice = renewVO.getPriceOneMonth();
+        BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
+        BigDecimal originalPrice = renewVO.getPriceOneMonth().multiply(duration);
+        BigDecimal discountPrice = renewVO.getPriceOneMonth().multiply(duration);
         boolean payable = discountPrice.compareTo(mayPayTotal) <= 0;
         APIGetRenewProductPriceReply reply = new APIGetRenewProductPriceReply();
         reply.setMayPayTotal(mayPayTotal);
