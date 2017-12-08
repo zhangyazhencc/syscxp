@@ -1,6 +1,6 @@
 package com.syscxp.billing.sla;
 
-import com.syscxp.billing.BillingGlobalProperty;
+import com.syscxp.billing.AlipayGlobalProperty;
 import com.syscxp.billing.header.renew.RenewVO;
 import com.syscxp.billing.header.renew.RenewVO_;
 import com.syscxp.billing.header.sla.*;
@@ -21,7 +21,6 @@ import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
-import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
@@ -142,7 +141,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
                 String body = JSONObjectUtil.toJsonString(slaCmd);
 
                 try {
-                    restf.syncJsonPost(BillingGlobalProperty.ECP_SERVER_URL, body, header, Object.class);
+                    restf.syncJsonPost(AlipayGlobalProperty.ECP_SERVER_URL, body, header, Object.class);
                 } catch (Exception e){
                     throw new RuntimeException(e.getMessage());
                 }
