@@ -42,4 +42,14 @@ public class APIGetRenewProductPriceReply extends APIReply {
     public void setPayable(boolean payable) {
         this.payable = payable;
     }
+
+    public APIGetRenewProductPriceReply() {
+    }
+
+    public APIGetRenewProductPriceReply(APIGetRenewProductPriceReply reply) {
+        this.setDiscountPrice(reply.getDiscountPrice());
+        this.setMayPayTotal(reply.getMayPayTotal());
+        this.setPayable(reply.isPayable());
+        this.setOriginalPrice(reply.getOriginalPrice());
+    }
 }
