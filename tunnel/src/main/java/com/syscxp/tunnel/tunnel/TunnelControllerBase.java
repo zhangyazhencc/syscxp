@@ -1,20 +1,17 @@
 package com.syscxp.tunnel.tunnel;
 
 import com.syscxp.core.CoreGlobalProperty;
-import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.tunnel.TunnelState;
 import com.syscxp.header.tunnel.tunnel.TunnelStatus;
 import com.syscxp.header.tunnel.switchs.*;
@@ -22,7 +19,6 @@ import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.sdnController.ControllerCommands;
 import com.syscxp.tunnel.sdnController.ControllerRestConstant;
 import com.syscxp.tunnel.sdnController.ControllerRestFacade;
-import com.syscxp.tunnel.tunnel.job.EnableTunnelJob;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;

@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.switchs;
 
+import com.syscxp.header.message.NoJsonSchema;
 import com.syscxp.header.search.Inventory;
 import com.syscxp.header.tunnel.node.NodeInventory;
 
@@ -27,7 +28,9 @@ public class PhysicalSwitchInventory {
     private String description;
     private String mIP;
     private String localIP;
+    @NoJsonSchema
     private String username;
+    @NoJsonSchema
     private String password;
     private Timestamp createDate;
     private Timestamp lastOpDate;

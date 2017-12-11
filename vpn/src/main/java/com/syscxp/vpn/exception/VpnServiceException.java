@@ -1,8 +1,9 @@
 package com.syscxp.vpn.exception;
 
 import com.syscxp.header.errorcode.ErrorCode;
+import com.syscxp.header.errorcode.OperationFailureException;
 
-public class VpnServiceException extends RuntimeException{
+public class VpnServiceException extends OperationFailureException{
     private ErrorCode errorCode;
 
     @Override
@@ -11,7 +12,7 @@ public class VpnServiceException extends RuntimeException{
     }
 
     public VpnServiceException(ErrorCode errorCode) {
-        this.errorCode = errorCode;
+        super(errorCode);
     }
 
     public ErrorCode getErrorCode() {

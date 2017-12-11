@@ -131,7 +131,7 @@ CREATE TABLE  `UserVO` (
     `emailStatus` varchar(36) NOT NULL COMMENT '邮箱是否认证',
     `phoneStatus` varchar(36) NOT NULL COMMENT '手机是否认证',
     `phone` varchar(11) NOT NULL COMMENT '手机号',
-    `trueName` varchar(128) NOT NULL COMMENT '姓名',
+    `trueName` varchar(128)  COMMENT '姓名',
     `department` varchar(128) DEFAULT NULL COMMENT '部门',
     `status` varchar(128) NOT NULL COMMENT '状态',
     `userType` varchar(36) NOT NULL COMMENT '用户类型（业务员，普通用户）',
@@ -281,6 +281,7 @@ INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES 
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('SolutionFullAccess','管理专线解决方案权限','tunnel','Normal','3','{"actions":["tunnel:solution:.*","tunnel:node:read"],"effect":"Allow"}');
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('NodeReadOnlyAccess','只读访问节点的权限','tunnel','SystemAdmin','4','{"actions":["tunnel:node:read"],"effect":"Allow"}');
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('NodeFullAccess','管理节点权限','tunnel','SystemAdmin','5','{"actions":["tunnel:node:.*"],"effect":"Allow"}');
+INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('NodeExtensionInfoFullAccess','管理节点扩展信息的权限','tunnel','SystemAdmin','2','{"actions":["tunnel:node:read", "tunnel:extensionInfo:.*"],"effect":"Allow"}');
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('SwitchReadOnlyAccess','只读访问交换机的权限','tunnel','SystemAdmin','6','{"actions":["tunnel:switch:read","tunnel:node:read"],"effect":"Allow"}');
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('SwitchFullAccess','管理交换机权限','tunnel','SystemAdmin','7','{"actions":["tunnel:switch:.*","tunnel:node:read"],"effect":"Allow"}');
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('TunnelHostReadOnlyAccess','只读访问监控主机的权限','tunnel','SystemAdmin','8','{"actions":["tunnel:host:read","tunnel:node:read"],"effect":"Allow"}');
@@ -294,6 +295,7 @@ INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES 
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('UserFullAccess','管理User的权限','account','Normal','2','{"actions": ["account:user:.*"],"effect":"Allow"}');
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('ECPReadOnlyAccess','只读访问互联云的权限','ecp','Normal','0','{"actions":["ecp:.*:read"],"effect":"Allow"}');
 INSERT INTO PolicyVO (uuid, name, type, accountType, sortId, permission) VALUES ('ECPFullAccess','管理互联云的权限','ecp','Normal','1','{"actions":["ecp:.*"],"effect":"Allow"}');
+
 
 UPDATE `PolicyVO` p set p.lastOpDate = current_timestamp(), p.createDate = current_timestamp();
 

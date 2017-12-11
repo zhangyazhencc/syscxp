@@ -33,7 +33,7 @@ public class VpnVO {
     @Column
     private String bandwidthOfferingUuid;
     @Column
-    private String interfaceUuid;
+    private String endpointUuid;
     @Column
     private Integer port;
     @Column
@@ -201,12 +201,12 @@ public class VpnVO {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
-    public String getInterfaceUuid() {
-        return interfaceUuid;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setInterfaceUuid(String interfaceUuid) {
-        this.interfaceUuid = interfaceUuid;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 
     public VpnStatus getStatus() {

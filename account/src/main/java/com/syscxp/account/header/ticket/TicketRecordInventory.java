@@ -1,7 +1,6 @@
 package com.syscxp.account.header.ticket;
 
 import com.syscxp.header.search.Inventory;
-
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -21,7 +20,6 @@ public class TicketRecordInventory {
     private Timestamp createDate;
     private Timestamp lastOpDate;
 
-
     public static TicketRecordInventory valueOf(TicketRecordVO vo) {
         TicketRecordInventory inv = new TicketRecordInventory();
         inv.setUuid(vo.getUuid());
@@ -33,6 +31,7 @@ public class TicketRecordInventory {
         inv.setStatus(vo.getStatus().toString());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+
         return inv;
     }
 
@@ -115,4 +114,5 @@ public class TicketRecordInventory {
     public void setLastOpDate(Timestamp lastOpDate) {
         this.lastOpDate = lastOpDate;
     }
+
 }

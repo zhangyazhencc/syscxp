@@ -11,7 +11,7 @@ import java.util.List;
 @Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_ORDER)
 public class APICreateBuyOrderMsg extends APISyncCallMessage{
 
-    @APIParam(nonempty = false)
+    @APIParam(nonempty = true)
     private List<ProductInfoForOrder> products;
 
     public List<ProductInfoForOrder> getProducts() {
