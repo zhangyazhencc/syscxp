@@ -294,8 +294,8 @@ public class VpnHost extends HostBase implements Host {
                         checker.setPassword(getSelf().getPassword());
                         checker.setSshPort(getSelf().getSshPort());
                         checker.setTargetIp(getSelf().getHostIp());
-                        checker.addSrcDestPair(AnsibleConstant.SYSCXPLIB_ROOT + AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME,
-                                String.format("/var/lib/syscxp/vpn/package/%s",AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME));
+                        checker.addSrcDestPair(String.format("%s/%s", AnsibleConstant.SYSCXPLIB_ROOT, AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME),
+                                String.format("/var/lib/syscxp/vpn/package/%s", AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME));
                         checker.addSrcDestPair(srcPath, destPath);
 
                         AnsibleRunner runner = new AnsibleRunner();
@@ -499,6 +499,12 @@ public class VpnHost extends HostBase implements Host {
         }
         if (umsg.getUsername() != null) {
             vo.setUsername(umsg.getUsername());
+        }
+        if (umsg.getUsername() != null) {
+            vo.setUsername(umsg.getUsername());
+        }
+        if (umsg.getNodeUuid() != null) {
+            vo.setNodeUuid(umsg.getNodeUuid());
         }
         if (umsg.getPassword() != null) {
             vo.setPassword(umsg.getPassword());

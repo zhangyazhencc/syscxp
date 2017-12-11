@@ -129,9 +129,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         startAgentMonitor(msg.getSession().getAccountUuid(), msg.getTunnelUuid(), msg.getMonitorCidr(), tunnelMonitorVOS);
 
         // 更新tunnel状态
-        updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled);
-
-        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+        TunnelVO tunnelVO = updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled);
         event.setInventory(TunnelInventory.valueOf(tunnelVO));
 
         bus.publish(event);
@@ -139,9 +137,22 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     @Transactional
     private void handle(APIStopTunnelMonitorMsg msg) {
-        stopTunnelMonitor(msg.getTunnelUuid());
+        // 获取监控通道数据
+        List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(msg.getTunnelUuid());
 
-        TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+        // 控制器命令删除
+        ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(msg.getTunnelUuid(), tunnelMonitorVOS);
+        stopControllerMonitor(cmd);
+
+        // 关闭agent监控
+        stopAgentMonitor(msg.getTunnelUuid(), tunnelMonitorVOS);
+
+        // 删除icmp
+        icmpDelete(msg.getTunnelUuid());
+
+        // 更新tunnel状态
+        TunnelVO tunnelVO = updateTunnel(msg.getTunnelUuid(), "", TunnelMonitorState.Disabled);
+
         APIStopTunnelMonitorEvent event = new APIStopTunnelMonitorEvent(msg.getId());
         event.setInventory(TunnelInventory.valueOf(tunnelVO));
         bus.publish(event);
@@ -174,7 +185,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         icmpSync(msg.getSession().getAccountUuid(), msg.getTunnelUuid(), msg.getMonitorCidr(), tunnelMonitorVOS);
 
         // 更新tunnel状态
-        updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled);
+        TunnelVO tunnelVO = updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled);
 
         APIRestartTunnelMonitorEvent event = new APIRestartTunnelMonitorEvent(msg.getId());
         bus.publish(event);
@@ -362,7 +373,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * 监控关闭
      * @param tunnelUuid
      */
-    public void stopTunnelMonitor(String tunnelUuid) {
+    private void stopTunnelMonitor(String tunnelUuid) {
         // 获取监控通道数据
         List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelUuid);
 
@@ -606,6 +617,32 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             throw new RuntimeException(String.format("failure to sync icmp: tunnelUuid: %s , Error: %s", tunnelUuid, falconRsp.getMsg()));
     }
 
+    /**
+     * 开启监控、tunnel修改且监控为开启状态时同步ICMP到falcon_portal数据库
+     * 下发监控agent配置
+     */
+    public void icmpSync(String tunnelUuid) {
+        List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelUuid);
+        TunnelVO tunnelVO = dbf.findByUuid(tunnelUuid,TunnelVO.class);
+
+        String falconUrl = getFalconServerUrl(FalconApiRestConstant.ICMP_SYNC);
+        FalconApiCommands.RestResponse falconRsp = new FalconApiCommands.RestResponse();
+        try {
+            FalconApiCommands.Icmp icmp = getIcmp(tunnelVO.getAccountUuid(), tunnelUuid, tunnelVO.getMonitorCidr(), tunnelMonitorVOS);
+            String icmpJson = JSONObjectUtil.toJsonString(icmp);
+
+            logger.info(String.format("Begin to send falcon api command: url: %s command: %s", falconUrl, icmpJson));
+            falconRsp = evtf.syncJsonPost(falconUrl, icmpJson, FalconApiCommands.RestResponse.class);
+
+        } catch (Exception e) {
+            falconRsp.setSuccess(false);
+            falconRsp.setMsg(String.format("unable to post %s. %s", falconUrl, e.getMessage()));
+        }
+
+        if (!falconRsp.isSuccess())
+            throw new RuntimeException(String.format("failure to sync icmp: tunnelUuid: %s , Error: %s", tunnelUuid, falconRsp.getMsg()));
+    }
+
     /***
      * 获取ICMP信息
      * @param accountUuid
@@ -656,7 +693,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * 删除falcon_portal ICMP数据：关闭监控、tunnel删除、tunnel中止
      * @param tunnelUuid
      */
-    private void icmpDelete(String tunnelUuid) {
+    public void icmpDelete(String tunnelUuid) {
         String url = getFalconServerUrl(FalconApiRestConstant.ICMP_DELETE);
         FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
 
@@ -914,7 +951,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param monitorCidr
      * @param monitorState
      */
-    private void updateTunnel(String tunnelUuid, String monitorCidr, TunnelMonitorState monitorState) {
+    private TunnelVO updateTunnel(String tunnelUuid, String monitorCidr, TunnelMonitorState monitorState) {
         // 更新tunnel状态
         TunnelVO tunnelVO = Q.New(TunnelVO.class)
                 .eq(TunnelVO_.uuid, tunnelUuid)
@@ -933,6 +970,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
 
         dbf.getEntityManager().persist(tunnelVO);
+
+        return  tunnelVO;
     }
 
     private void handle(APIQuerySpeedTestTunnelNodeMsg msg) {

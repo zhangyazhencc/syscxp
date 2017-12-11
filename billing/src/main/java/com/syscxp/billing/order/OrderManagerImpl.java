@@ -12,12 +12,11 @@ import com.syscxp.billing.header.sla.SLALogVO;
 import com.syscxp.billing.header.sla.SLALogVO_;
 import com.syscxp.billing.header.sla.SLAState;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.errorcode.OperationFailureException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.billing.header.order.APIUpdateOrderExpiredTimeMsg;
 import com.syscxp.billing.BillingErrors;
-import com.syscxp.billing.BillingServiceException;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
@@ -95,6 +94,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             handle((APIGetModifyProductPriceDiffMsg) msg);
         } else if (msg instanceof APIGetProductPriceMsg) {
             handle((APIGetProductPriceMsg) msg);
+        }  else if (msg instanceof APIGetRenewProductPriceMsg) {
+            handle((APIGetRenewProductPriceMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -132,7 +133,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         bus.publish(event);
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
+    @Transactional
     private void payMethod(String accountUuid, String opAccountUuid, OrderVO orderVo, AccountBalanceVO abvo, BigDecimal total, Timestamp currentTimeStamp) {
 
         int hash = accountUuid.hashCode() < 0 ? ~accountUuid.hashCode() : accountUuid.hashCode();
@@ -188,7 +189,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         //discountPrice = discountPrice.multiply(duration);//按现在的价格续费
         BigDecimal discountPrice = renewVO.getPriceOneMonth().multiply(duration);//按上次买的价格续费
         if (discountPrice.compareTo(mayPayTotal) > 0) {
-            throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
+            throw new OperationFailureException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
         }
         payMethod(msg.getAccountUuid(), msg.getOpAccountUuid(), orderVo, abvo, discountPrice, currentTimestamp);
         orderVo.setType(OrderType.RENEW);
@@ -295,8 +296,12 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             remainMoney = valuePayCash;
         }
         BigDecimal refundPresent = BigDecimal.ZERO;
-        updateMoneyIfCreateFailure(msg.isCreateFailure(), msg.getAccountUuid(), msg.getProductUuid(), remainMoney, refundPresent);
+        OrderVO buyOrder = updateMoneyIfCreateFailure( msg.getAccountUuid(), msg.getProductUuid());
 
+        if (msg.isCreateFailure()) {
+            remainMoney = buyOrder.getPayCash();
+            refundPresent = buyOrder.getPayPresent();
+        }
         orderVo.setOriginalPrice(remainMoney);
         orderVo.setPrice(remainMoney);
         orderVo.setProductEffectTimeStart(msg.getStartTime());
@@ -324,15 +329,12 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     }
 
     @Transactional
-    private void updateMoneyIfCreateFailure(boolean isCreateFailure, String accountUuid, String productUuid, BigDecimal remainMoney, BigDecimal refundPresent) {
-        if (isCreateFailure) {
+    private OrderVO updateMoneyIfCreateFailure( String accountUuid, String productUuid) {
             OrderVO refundOrder = getOrderVO(accountUuid, productUuid);
             if (refundOrder == null) {
                 throw new IllegalArgumentException("can not find this product buy history ,please check up");
             }
-            remainMoney = refundOrder.getPayCash();
-            refundPresent = refundOrder.getPayPresent();
-        }
+            return refundOrder;
     }
 
     @Transactional
@@ -367,7 +369,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         if (subMoney.compareTo(BigDecimal.ZERO) >= 0) { //upgrade
             if (subMoney.compareTo(mayPayTotal) > 0) {
-                throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
+                throw new OperationFailureException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
             }
             orderVo.setType(OrderType.UPGRADE);
             orderVo.setOriginalPrice(needPayOriginMoney.subtract(remainMoney));
@@ -556,7 +558,11 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             remainMoney = valuePayCash;
         }
         BigDecimal refundPresent = BigDecimal.ZERO;
-        updateMoneyIfCreateFailure(msg.isCreateFailure(), msg.getAccountUuid(), msg.getProductUuid(), remainMoney, refundPresent);
+        OrderVO buyOrder = updateMoneyIfCreateFailure( msg.getAccountUuid(), msg.getProductUuid());
+        if (msg.isCreateFailure()) {
+            remainMoney = buyOrder.getPayCash();
+            refundPresent = buyOrder.getPayPresent();
+        }
         reply.setReFoundMoney(refundPresent);
         reply.setInventory(remainMoney);
         bus.reply(msg, reply);
@@ -613,7 +619,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         List<OrderInventory> inventories = new ArrayList<>();
+        String accountUuid = apiCreateBuyOrderMsg.getProducts().get(0).getAccountUuid();
 
+        AccountBalanceVO abvo =dbf.findByUuid(accountUuid,AccountBalanceVO.class);
         for (ProductInfoForOrder msg : apiCreateBuyOrderMsg.getProducts()) {
 
             OrderTempProp orderTempProp = calculatePrice(msg.getUnits(), msg.getAccountUuid());
@@ -622,7 +630,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             List<String> productPriceUnitUuids = orderTempProp.getProductPriceUnitUuids();
             BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
 
-            AccountBalanceVO abvo = dbf.getEntityManager().find( AccountBalanceVO.class,msg.getAccountUuid());
+
             BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
 
             originalPrice = originalPrice.multiply(duration);
@@ -630,7 +638,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             discountPrice = discountPrice.multiply(duration);
 
             if (discountPrice.compareTo(mayPayTotal) > 0) {
-                throw new BillingServiceException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
+                throw new OperationFailureException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
             }
             OrderVO orderVo = new OrderVO();
             setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), msg.getProductType(), msg.getProductChargeModel(), currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), msg.getDuration(), msg.getCallBackData());
@@ -652,12 +660,12 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
                 saveNotifyBuyOrderVO(msg, orderVo.getUuid());
             }
 
-            dbf.getEntityManager().merge(abvo);
             dbf.getEntityManager().persist(orderVo);
-            dbf.getEntityManager().flush();
+
             inventories.add(OrderInventory.valueOf(orderVo));
         }
-
+        dbf.getEntityManager().merge(abvo);
+        dbf.getEntityManager().flush();
         APICreateBuyOrderReply reply = new APICreateBuyOrderReply();
         reply.setInventories(inventories);
         bus.reply(apiCreateBuyOrderMsg, reply);
@@ -787,6 +795,25 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         }
         return base;
     }
+
+
+    private void handle(APIGetRenewProductPriceMsg msg) {
+        AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+        BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
+        RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
+        BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
+        BigDecimal originalPrice = renewVO.getPriceOneMonth().multiply(duration);
+        BigDecimal discountPrice = renewVO.getPriceOneMonth().multiply(duration);
+        boolean payable = discountPrice.compareTo(mayPayTotal) <= 0;
+        APIGetRenewProductPriceReply reply = new APIGetRenewProductPriceReply();
+        reply.setMayPayTotal(mayPayTotal);
+        reply.setOriginalPrice(originalPrice);
+        reply.setDiscountPrice(discountPrice);
+        reply.setPayable(payable);
+        bus.reply(msg, reply);
+
+    }
+
 
     private void handle(APIGetProductPriceMsg msg) {
         List<ProductPriceUnitInventory> productPriceUnits = new ArrayList<>();

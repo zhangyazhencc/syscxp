@@ -20,7 +20,7 @@ public class HostInterfaceVO {
     @Column
     private String endpointUuid;
     @Column
-    private String interfaceUuid;
+    private String interfaceName;
     @Column
     private Timestamp lastOpDate;
     @Column
@@ -30,12 +30,12 @@ public class HostInterfaceVO {
         lastOpDate = null;
     }
 
-    public String getInterfaceUuid() {
-        return interfaceUuid;
+    public String getInterfaceName() {
+        return interfaceName;
     }
 
-    public void setInterfaceUuid(String interfaceUuid) {
-        this.interfaceUuid = interfaceUuid;
+    public void setInterfaceName(String interfaceName) {
+        this.interfaceName = interfaceName;
     }
 
     public String getUuid() {

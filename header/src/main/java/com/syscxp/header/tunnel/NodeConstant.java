@@ -10,4 +10,5 @@ public interface NodeConstant {
 
     String SERVICE_ID = "node";
     String ACTION_CATEGORY = "node";
+    String ACTION_EXT_CATEGORY = "extensionInfo";
 }

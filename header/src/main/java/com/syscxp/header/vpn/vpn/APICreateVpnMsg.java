@@ -18,7 +18,7 @@ public class APICreateVpnMsg extends APIVpnMessage {
     @APIParam(resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
     @APIParam(emptyString = false)
-    private String interfaceUuid;
+    private String endpointUuid;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private Integer duration;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
@@ -66,12 +66,12 @@ public class APICreateVpnMsg extends APIVpnMessage {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
     }
 
-    public String getInterfaceUuid() {
-        return interfaceUuid;
+    public String getEndpointUuid() {
+        return endpointUuid;
     }
 
-    public void setInterfaceUuid(String interfaceUuid) {
-        this.interfaceUuid = interfaceUuid;
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 
     public Integer getDuration() {

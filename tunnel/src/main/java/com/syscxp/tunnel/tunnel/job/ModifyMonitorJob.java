@@ -13,12 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
 /**
- * Create by DCY on 2017/12/7
+ * Create by DCY on 2017/12/8
  */
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
-public class DisableTunnelJob implements Job {
-    private static final CLogger logger = Utils.getLogger(DisableTunnelJob.class);
+public class ModifyMonitorJob implements Job {
+    private static final CLogger logger = Utils.getLogger(ModifyMonitorJob.class);
 
     @JobContext
     private String tunnelUuid;
@@ -31,8 +31,8 @@ public class DisableTunnelJob implements Job {
     public void run(ReturnValueCompletion<Object> completion) {
 
         try {
-            logger.info("开始执行JOB【关闭监控】");
-            monitorManager.stopControllerMonitor(tunnelUuid);
+            logger.info("开始执行JOB【修改监控】");
+            monitorManager.modifyControllerMonitor(tunnelUuid);
 
             completion.success(null);
         } catch (Exception e) {

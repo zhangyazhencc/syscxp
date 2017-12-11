@@ -16,7 +16,7 @@ public class VpnVO_ {
     public static volatile SingularAttribute<VpnVO, String> description;
     public static volatile SingularAttribute<VpnVO, String> sid;
     public static volatile SingularAttribute<VpnVO, String> bandwidthOfferingUuid;
-    public static volatile SingularAttribute<VpnVO, String> interfaceUuid;
+    public static volatile SingularAttribute<VpnVO, String> endpointUuid;
     public static volatile SingularAttribute<VpnVO, VpnStatus> status;
     public static volatile SingularAttribute<VpnVO, VpnState> state;
     public static volatile SingularAttribute<VpnVO, Integer> duration;

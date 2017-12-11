@@ -15,7 +15,6 @@
         <class>com.syscxp.header.vpn.host.VpnHostVO</class>
         <class>com.syscxp.header.host.HostVO</class>
         <class>com.syscxp.header.host.HostEO</class>
-        <class>com.syscxp.header.vpn.host.ZoneVO</class>
         <class>com.syscxp.header.vpn.host.HostInterfaceVO</class>
     </persistence-unit>
 </persistence>
