@@ -12,11 +12,21 @@ public class APIUpdateVpnHostMsg extends APIUpdateHostMsg {
     @APIParam(required = false)
     private String publicIp;
     @APIParam(required = false)
+    private String nodeUuid;
+    @APIParam(required = false)
     private Integer sshPort;
     @APIParam(required = false)
     private String username;
     @APIParam(required = false)
     private String password;
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
+    }
 
     public String getUuid() {
         return uuid;
