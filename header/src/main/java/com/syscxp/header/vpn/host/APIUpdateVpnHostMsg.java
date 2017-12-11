@@ -7,8 +7,6 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 
 public class APIUpdateVpnHostMsg extends APIUpdateHostMsg {
-    @APIParam(resourceType = VpnHostVO.class)
-    private String uuid;
     @APIParam(required = false)
     private String publicIp;
     @APIParam(required = false)
@@ -26,14 +24,6 @@ public class APIUpdateVpnHostMsg extends APIUpdateHostMsg {
 
     public void setNodeUuid(String nodeUuid) {
         this.nodeUuid = nodeUuid;
-    }
-
-    public String getUuid() {
-        return uuid;
-    }
-
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
     }
 
     public String getPublicIp() {
@@ -75,7 +65,7 @@ public class APIUpdateVpnHostMsg extends APIUpdateHostMsg {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Update VpnHostVO")
-                        .resource(uuid, VpnHostVO.class)
+                        .resource(getUuid(), VpnHostVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };
