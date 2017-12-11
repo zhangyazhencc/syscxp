@@ -42,6 +42,18 @@
         <name>com.syscxp.header.vpn.vpn.APIGetVpnPriceMsg</name>
     </message>
     <message>
+        <name>com.syscxp.header.vpn.vpn.APIGetRenewVpnPriceMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIGetUnscribeVpnPriceDiffMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIGetModifyVpnPriceDiffMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIListVpnHostMsg</name>
+    </message>
+    <message>
         <name>com.syscxp.header.vpn.vpn.APIRenewVpnMsg</name>
     </message>
     <message>
