@@ -15,6 +15,8 @@ import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
 import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsService;
+import com.syscxp.utils.ShellResult;
+import com.syscxp.utils.ShellUtils;
 import com.syscxp.utils.Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -553,16 +555,23 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             q.add(AccountVO_.phone, Op.EQ, msg.getPhone());
         }
 
-        q.add(AccountVO_.password, Op.EQ, msg.getPassword());
+//        q.add(AccountVO_.password, Op.EQ, msg.getPassword());
+
         AccountVO vo = q.find();
         if (vo == null) {
             reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
-                    "wrong account name or password"));
+                    "Incorrect login name"));
             bus.reply(msg, reply);
             return;
         } else if (vo.getStatus() == AccountStatus.Disabled) {
             reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                     "frozen account"));
+            bus.reply(msg, reply);
+            return;
+        }else if(!msg.getPassword().equals(vo.getPassword())
+                    &&!check_password(msg.getPassword(),vo.getPassword())){
+            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
+                    "Incorrect password"));
             bus.reply(msg, reply);
             return;
         }
@@ -571,6 +580,26 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         bus.reply(msg, reply);
     }
 
+    private boolean check_password(String password, String hash){
+        StringBuffer cmdStr = new StringBuffer();
+        cmdStr.append("python -c ") ;
+        cmdStr.append("'import passlib.hash;") ;
+        cmdStr.append("print passlib.hash.sha512_crypt.verify(\"") ;
+        cmdStr.append(password) ;
+        cmdStr.append("\",") ;
+        cmdStr.append("\"") ;
+        cmdStr.append(hash) ;
+        cmdStr.append("\")'") ;
+
+        String cmd = cmdStr.toString();
+        ShellResult sret= ShellUtils.runAndReturn(cmd);
+
+        sret.raiseExceptionIfFail();
+        logger.error(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        logger.error(sret.getStdout());
+        logger.error(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        return true;
+    }
 
     @Override
     public String getId() {

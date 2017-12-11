@@ -17,7 +17,10 @@ public class APILogInByAccountMsg extends APISessionMessage {
 
     @APIParam
     private String password;
-    
+
+    @APIParam
+    private String plaintext;
+
     public String getAccountName() {
         return accountName;
     }
@@ -45,5 +48,13 @@ public class APILogInByAccountMsg extends APISessionMessage {
 
     public void setEmail(String email) {
         this.email = email;
+    }
+
+    public String getPlaintext() {
+        return plaintext;
+    }
+
+    public void setPlaintext(String plaintext) {
+        this.plaintext = plaintext;
     }
 }
