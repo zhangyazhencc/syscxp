@@ -2892,7 +2892,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     public void preDelete(TunnelVO vo) {
         if (vo.getState() != TunnelState.Unsupport) {
             logger.info("【询问该专线是否被互联云占用】");
-            String url = "http://192.168.211.5/zstack/asyncrest/sendcommand";
+            String url = "http://192.168.211.5:8080/zstack/asyncrest/sendcommand";
 
             Map<String, String> bodyMap = new HashMap<>();
             bodyMap.put("tunnelUuid", vo.getUuid());
@@ -2900,13 +2900,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             Map<String, String> headers = new HashMap<>();
             headers.put("commandPath", "tunnelCheck");
 
-            RestAPIResponse rsp = restf.syncJsonPost(url, JSONObjectUtil.toJsonString(bodyMap), headers, RestAPIResponse.class);
+            Map rsp = restf.syncJsonPost(url, JSONObjectUtil.toJsonString(bodyMap), headers, Map.class);
 
-            Map resultMap = new HashMap<>();
-            resultMap = JSONObjectUtil.toObject(rsp.getResult(), resultMap.getClass());
-
-            if ((Boolean) resultMap.get("success")) {
-                if ((Boolean) resultMap.get("isOccupied")) {
+            if ((Boolean) rsp.get("success")) {
+                if ((Boolean) rsp.get("isOccupied")) {
                     throw new ApiMessageInterceptionException(
                             argerr("该专线[uuid:%s]被互联云占用，不可删除！", vo.getUuid()));
                 }

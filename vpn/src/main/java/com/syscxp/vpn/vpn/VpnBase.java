@@ -242,11 +242,13 @@ public class VpnBase extends AbstractVpn {
                                 initVpn(msg, new Completion(trigger) {
                                     @Override
                                     public void success() {
+                                        changVpnSatus(VpnStatus.Connected);
                                         trigger.next();
                                     }
 
                                     @Override
                                     public void fail(ErrorCode errorCode) {
+                                        changVpnSatus(VpnStatus.Disconnected);
                                         trigger.fail(errorCode);
                                     }
                                 });
@@ -350,7 +352,6 @@ public class VpnBase extends AbstractVpn {
             @Override
             public void success(InitVpnRsp ret) {
                 if (ret.isSuccess()) {
-                    changVpnSatus(VpnStatus.Connected);
                     completion.success();
                 } else {
                     completion.fail(errf.instantiateErrorCode(VpnErrors.INIT_VPN_ERROR, ret.getError()));
@@ -359,7 +360,6 @@ public class VpnBase extends AbstractVpn {
 
             @Override
             public void fail(ErrorCode errorCode) {
-                changVpnSatus(VpnStatus.Disconnected);
                 completion.fail(errorCode);
             }
         });
