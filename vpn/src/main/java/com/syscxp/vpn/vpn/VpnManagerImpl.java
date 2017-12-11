@@ -656,6 +656,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     public void success() {
                         vpn.setState(VpnState.Disabled);
                         vpn.setStatus(VpnStatus.Disconnected);
+                        vpn.setExpireDate(dbf.getCurrentSqlTime());
                         dbf.updateAndRefresh(vpn);
                         trigger.next();
                     }

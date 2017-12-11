@@ -410,7 +410,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             bus.publish(evt);
             return;
         }
-
         //调用退订
         APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(tunnelBillingBase.getOrderMsgForInterface(vo, new UnsubcribeInterfaceCallBack()));
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
@@ -419,6 +418,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         OrderInventory orderInventory = tunnelBillingBase.createOrder(orderMsg);
         if (orderInventory != null) {
+            vo.setExpireDate(dbf.getCurrentSqlTime());
+            dbf.updateAndRefresh(vo);
             //退订成功,记录生效订单
             tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
             //删除产品
