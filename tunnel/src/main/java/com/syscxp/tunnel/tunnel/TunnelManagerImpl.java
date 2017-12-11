@@ -162,6 +162,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIListTraceRouteMsg) msg);
         } else if (msg instanceof APIGetRenewInterfacePriceMsg) {
             handle((APIGetRenewInterfacePriceMsg) msg);
+        } else if (msg instanceof APIGetRenewTunnelPriceMsg) {
+            handle((APIGetRenewTunnelPriceMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -1556,14 +1558,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             evt.setInventory(TunnelInventory.valueOf(vo));
             bus.publish(evt);
         }else if(vo.getState() == TunnelState.Enabled && vo.getAccountUuid() == null){          //4
+            final TunnelVO jobVO = vo;
             //下发删除
-            taskDeleteTunnel(vo,new ReturnValueCompletion<TunnelInventory>(null) {
+            taskDeleteTunnel(jobVO,new ReturnValueCompletion<TunnelInventory>(null) {
                 @Override
                 public void success(TunnelInventory inv) {
                     evt.setInventory(inv);
                     bus.publish(evt);
 
-                    tunnelBase.deleteTunnelJob(vo);
+                    tunnelBase.deleteTunnelJob(jobVO);
                 }
 
                 @Override
@@ -1587,7 +1590,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             evt.setInventory(inv);
                             bus.publish(evt);
 
-                            tunnelBase.deleteTunnelJob(vo);
+                            tunnelBase.deleteTunnelJob(vo2);
                         }
 
                         @Override
@@ -1630,6 +1633,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
                         vo.setAccountUuid(null);
+                        vo.setExpireDate(dbf.getCurrentSqlTime());
                         final TunnelVO vo2 = dbf.updateAndRefresh(vo);
 
                         //下发删除
@@ -1639,7 +1643,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                 evt.setInventory(inv);
                                 bus.publish(evt);
 
-                                tunnelBase.deleteTunnelJob(vo);
+                                tunnelBase.deleteTunnelJob(vo2);
                             }
 
                             @Override
@@ -1652,6 +1656,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     } else {
                         //退订成功,记录生效订单
                         tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+                        vo.setExpireDate(dbf.getCurrentSqlTime());
+                        vo = dbf.updateAndRefresh(vo);
 
                         tunnelBase.deleteTunnel(vo);
                         evt.setInventory(TunnelInventory.valueOf(vo));
@@ -1732,6 +1738,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (orderInventory != null) {
             //退订成功,记录生效订单
             tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+            vo.setExpireDate(dbf.getCurrentSqlTime());
+            vo = dbf.updateAndRefresh(vo);
 
             tunnelBase.deleteTunnel(vo);
 
@@ -2199,6 +2207,25 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     /**
+     * 续费时查询云专线价格
+     */
+    private void handle(APIGetRenewTunnelPriceMsg msg) {
+
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        APIGetRenewProductPriceMsg rpmsg = new APIGetRenewProductPriceMsg();
+
+        rpmsg.setAccountUuid(vo.getAccountUuid());
+        rpmsg.setProductUuid(msg.getUuid());
+        rpmsg.setDuration(msg.getDuration());
+        rpmsg.setProductChargeModel(msg.getProductChargeModel());
+
+        APIGetRenewProductPriceReply priceReply = new TunnelRESTCaller().syncJsonPost(rpmsg);
+
+        bus.reply(msg, new APIGetRenewTunnelPriceReply(priceReply));
+    }
+
+    /**
      * 购买时查询云专线价格
      */
     private void handle(APIGetTunnelPriceMsg msg) {
@@ -2472,9 +2499,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         //退订成功，记录生效订单
         tunnelBillingBase.saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
         if (message.getDescription().equals("forciblydelete")) {
+            vo.setExpireDate(dbf.getCurrentSqlTime());
+            dbf.updateAndRefresh(vo);
             tunnelBase.deleteTunnel(vo);
         } else if (message.getDescription().equals("delete") && vo.getState() == TunnelState.Enabled) {
             vo.setAccountUuid(null);
+            vo.setExpireDate(dbf.getCurrentSqlTime());
             dbf.updateAndRefresh(vo);
 
             //创建任务
@@ -2497,6 +2527,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 }
             });
         } else if (message.getDescription().equals("delete") && vo.getState() == TunnelState.Disabled) {
+            vo.setExpireDate(dbf.getCurrentSqlTime());
+            dbf.updateAndRefresh(vo);
             tunnelBase.deleteTunnel(vo);
 
             tunnelBase.deleteTunnelJob(vo);

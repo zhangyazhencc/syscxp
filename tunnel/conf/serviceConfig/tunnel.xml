@@ -26,6 +26,9 @@
         <name>com.syscxp.header.tunnel.tunnel.APIGetRenewInterfacePriceMsg</name>
     </message>
     <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIGetRenewTunnelPriceMsg</name>
+    </message>
+    <message>
         <name>com.syscxp.header.tunnel.tunnel.APIRenewAutoInterfaceMsg</name>
     </message>
     <message>
