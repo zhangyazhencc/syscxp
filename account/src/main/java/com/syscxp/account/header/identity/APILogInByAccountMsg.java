@@ -18,7 +18,7 @@ public class APILogInByAccountMsg extends APISessionMessage {
     @APIParam
     private String password;
 
-    @APIParam
+    @APIParam(required = false)
     private String plaintext;
 
     public String getAccountName() {
