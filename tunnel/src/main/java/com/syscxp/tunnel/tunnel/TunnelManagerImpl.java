@@ -2900,13 +2900,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             Map<String, String> headers = new HashMap<>();
             headers.put("commandPath", "tunnelCheck");
 
-            RestAPIResponse rsp = restf.syncJsonPost(url, JSONObjectUtil.toJsonString(bodyMap), headers, RestAPIResponse.class);
+            Map rsp = restf.syncJsonPost(url, JSONObjectUtil.toJsonString(bodyMap), headers, Map.class);
 
-            Map resultMap = new HashMap<>();
-            resultMap = JSONObjectUtil.toObject(rsp.getResult(), resultMap.getClass());
-
-            if ((Boolean) resultMap.get("success")) {
-                if ((Boolean) resultMap.get("isOccupied")) {
+            if ((Boolean) rsp.get("success")) {
+                if ((Boolean) rsp.get("isOccupied")) {
                     throw new ApiMessageInterceptionException(
                             argerr("该专线[uuid:%s]被互联云占用，不可删除！", vo.getUuid()));
                 }
