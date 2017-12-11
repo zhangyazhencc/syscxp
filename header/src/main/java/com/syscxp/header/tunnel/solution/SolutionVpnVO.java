@@ -1,7 +1,6 @@
 package com.syscxp.header.tunnel.solution;
 
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
-import com.syscxp.header.vpn.host.ZoneVO;
 
 import javax.persistence.*;
 

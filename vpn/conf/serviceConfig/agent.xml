@@ -4,28 +4,14 @@
     <interceptor>VpnHostApiInterceptor</interceptor>
 
     <message>
-        <name>com.syscxp.header.vpn.host.APICreateZoneMsg</name>
-    </message>
-    <message>
-        <name>com.syscxp.header.vpn.host.APIUpdateZoneMsg</name>
-    </message>
-    <message>
-        <name>com.syscxp.header.vpn.host.APIDeleteZoneMsg</name>
-    </message>
-    <message>
         <name>com.syscxp.header.vpn.host.APICreateHostInterfaceMsg</name>
     </message>
     <message>
         <name>com.syscxp.header.vpn.host.APIDeleteHostInterfaceMsg</name>
     </message>
 
-
     <message>
         <name>com.syscxp.header.vpn.host.APIQueryHostInterfaceMsg</name>
-        <serviceId>query</serviceId>
-    </message>
-    <message>
-        <name>com.syscxp.header.vpn.host.APIQueryZoneMsg</name>
         <serviceId>query</serviceId>
     </message>
 

@@ -10,10 +10,10 @@ import com.syscxp.header.notification.ApiNotification;
 public class APICreateVpnHostMsg extends APIAddHostMsg {
     @APIParam(emptyString = false)
     private String publicIp;
-    @APIParam(emptyString = false, resourceType = ZoneVO.class)
-    private String zoneUuid;
     @APIParam(required = false)
     private Integer sshPort;
+    @APIParam(emptyString = false)
+    private String nodeUuid;
     @APIParam(emptyString = false)
     private String username;
     @APIParam(emptyString = false)
@@ -25,6 +25,14 @@ public class APICreateVpnHostMsg extends APIAddHostMsg {
 
     public void setPublicIp(String publicIp) {
         this.publicIp = publicIp;
+    }
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 
     public Integer getSshPort() {
@@ -41,14 +49,6 @@ public class APICreateVpnHostMsg extends APIAddHostMsg {
 
     public void setUsername(String username) {
         this.username = username;
-    }
-
-    public String getZoneUuid() {
-        return zoneUuid;
-    }
-
-    public void setZoneUuid(String zoneUuid) {
-        this.zoneUuid = zoneUuid;
     }
 
     public String getPassword() {
