@@ -500,6 +500,12 @@ public class VpnHost extends HostBase implements Host {
         if (umsg.getUsername() != null) {
             vo.setUsername(umsg.getUsername());
         }
+        if (umsg.getUsername() != null) {
+            vo.setUsername(umsg.getUsername());
+        }
+        if (umsg.getNodeUuid() != null) {
+            vo.setNodeUuid(umsg.getNodeUuid());
+        }
         if (umsg.getPassword() != null) {
             vo.setPassword(umsg.getPassword());
         }

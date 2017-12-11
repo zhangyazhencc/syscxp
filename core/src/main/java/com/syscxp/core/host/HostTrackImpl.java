@@ -31,7 +31,6 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
     private Set<String> hostInTracking = Collections.synchronizedSet(new HashSet<String>());
     private Future<Void> trackerThread = null;
     private final List<String> inReconnectingHost = Collections.synchronizedList(new ArrayList<String>());
-    private final Map<String, Integer> reconnectTimes = Collections.synchronizedMap(new HashMap<>());
 
     @Autowired
     private DatabaseFacade dbf;
@@ -41,15 +40,6 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
     private CloudBus bus;
     @Autowired
     private ThreadFacade thdf;
-
-    public void count(String hostUuid) {
-        if (reconnectTimes.get(hostUuid) <= HostGlobalProperty.MAX_RECONNECT_TIMES) {
-            reconnectTimes.computeIfPresent(hostUuid, (v, i) -> i + 1);
-        } else {
-            untrackHost(hostUuid);
-            reconnectTimes.remove(hostUuid);
-        }
-    }
 
     private class Tracker implements PeriodicTask {
         @Override
@@ -69,13 +59,8 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
 
         private void handleReply(final String hostUuid, MessageReply reply) {
 
-            if (!reconnectTimes.containsKey(hostUuid)) {
-                reconnectTimes.put(hostUuid, 0);
-            }
-
             if (!reply.isSuccess()) {
                 logger.warn(String.format("[Host Tracker]: unable track host[uuid:%s], %s", hostUuid, reply.getError()));
-                count(hostUuid);
                 return;
             }
 
@@ -100,8 +85,7 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                 }
 
 
-                if (needReconnect && !inReconnectingHost.contains(hostUuid) &&
-                        reconnectTimes.get(hostUuid) <= HostGlobalProperty.MAX_RECONNECT_TIMES) {
+                if (needReconnect) {
                     logger.debug(String.format("[Host Tracker]: detected host[uuid:%s] connection lost, " +
                                     "issue a reconnect because %s is set to true",
                             hostUuid, HostGlobalProperty.AUTO_RECONNECT_ON_ERROR.toString()));
@@ -117,15 +101,10 @@ public class HostTrackImpl implements HostTracker, ManagementNodeChangeListener,
                             if (!reply.isSuccess()) {
                                 logger.warn(String.format("host[uuid:%s] failed to reconnect, %s",
                                         hostUuid, reply.getError()));
-                                count(hostUuid);
-                            } else {
-                                reconnectTimes.remove(hostUuid);
                             }
                         }
                     });
                 }
-            } else {
-                reconnectTimes.remove(hostUuid);
             }
         }
 

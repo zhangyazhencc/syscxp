@@ -55,6 +55,7 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
         APICreateVpnHostMsg amsg = (APICreateVpnHostMsg) msg;
         VpnHostVO host = new VpnHostVO(vo);
         host.setPublicIp(amsg.getPublicIp());
+        host.setNodeUuid(amsg.getNodeUuid());
         host.setUsername(amsg.getUsername());
         host.setPassword(amsg.getPassword());
         host.setSshPort(amsg.getSshPort() != null ? amsg.getSshPort() : 22);
