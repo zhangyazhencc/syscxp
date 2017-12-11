@@ -2,7 +2,7 @@ package com.syscxp.header.tunnel.tunnel;
 
 public interface TunnelDeletionExtensionPoint {
 
-    void preDelete();
+    void preDelete(TunnelVO vo);
 
     void beforeDelete();
 
