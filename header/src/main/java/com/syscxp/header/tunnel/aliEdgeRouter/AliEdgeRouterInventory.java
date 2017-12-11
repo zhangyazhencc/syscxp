@@ -47,7 +47,10 @@ public class AliEdgeRouterInventory {
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         inv.setCreateFlag(vo.isCreateFlag());
-        inv.setTunnelName(vo.getTunnelEO().getName());
+        if(vo.getTunnelEO() != null){
+            inv.setTunnelName(vo.getTunnelEO().getName());
+        }
+
         return inv;
     }
 

@@ -296,7 +296,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             remainMoney = valuePayCash;
         }
         BigDecimal refundPresent = BigDecimal.ZERO;
-        OrderVO buyOrder = updateMoneyIfCreateFailure( msg.getAccountUuid(), msg.getProductUuid(), remainMoney, refundPresent);
+        OrderVO buyOrder = updateMoneyIfCreateFailure( msg.getAccountUuid(), msg.getProductUuid());
 
         if (msg.isCreateFailure()) {
             remainMoney = buyOrder.getPayCash();
@@ -329,7 +329,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     }
 
     @Transactional
-    private OrderVO updateMoneyIfCreateFailure( String accountUuid, String productUuid, BigDecimal remainMoney, BigDecimal refundPresent) {
+    private OrderVO updateMoneyIfCreateFailure( String accountUuid, String productUuid) {
             OrderVO refundOrder = getOrderVO(accountUuid, productUuid);
             if (refundOrder == null) {
                 throw new IllegalArgumentException("can not find this product buy history ,please check up");
@@ -558,7 +558,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             remainMoney = valuePayCash;
         }
         BigDecimal refundPresent = BigDecimal.ZERO;
-        OrderVO buyOrder = updateMoneyIfCreateFailure( msg.getAccountUuid(), msg.getProductUuid(), remainMoney, refundPresent);
+        OrderVO buyOrder = updateMoneyIfCreateFailure( msg.getAccountUuid(), msg.getProductUuid());
         if (msg.isCreateFailure()) {
             remainMoney = buyOrder.getPayCash();
             refundPresent = buyOrder.getPayPresent();

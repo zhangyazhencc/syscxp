@@ -25,6 +25,7 @@ import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
 import com.syscxp.header.message.*;
+import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.tunnel.billingCallBack.*;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
@@ -41,12 +42,13 @@ import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
 import com.syscxp.utils.CollectionDSL;
-import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
-import com.syscxp.utils.function.ForEachFunction;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -1548,15 +1550,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
         for (TunnelDeletionExtensionPoint extp : pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class)) {
-            extp.preDelete();
+            extp.preDelete(vo);
         }
 
-        CollectionUtils.safeForEach(pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class), new ForEachFunction<TunnelDeletionExtensionPoint>() {
+        /*CollectionUtils.safeForEach(pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class), new ForEachFunction<TunnelDeletionExtensionPoint>() {
             @Override
             public void run(TunnelDeletionExtensionPoint arg) {
                 arg.beforeDelete();
             }
-        });
+        });*/
 
         if (vo.getState() == TunnelState.Unsupport) {         //1
             tunnelBase.deleteTunnel(vo);
@@ -2285,6 +2287,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handle(APIGetUnscribeTunnelPriceDiffMsg msg) {
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
+        if(vo.getAccountUuid() == null){
+            APIGetUnscribeProductPriceDiffReply reply = new APIGetUnscribeProductPriceDiffReply();
+            reply.setInventory(new BigDecimal(Double.toString(0.00)));
+            reply.setReFoundMoney(new BigDecimal(Double.toString(0.00)));
+            bus.reply(msg,reply);
+            return;
+        }
+
         APIGetUnscribeProductPriceDiffMsg upmsg = new APIGetUnscribeProductPriceDiffMsg();
         upmsg.setAccountUuid(msg.getAccountUuid());
         upmsg.setProductUuid(msg.getUuid());
@@ -2883,9 +2893,39 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         return list(iQuota, tQuota);
     }
 
-    public void preDelete(){}
+    @Override
+    public void preDelete(TunnelVO vo){
+        if(vo.getState() != TunnelState.Unsupport){
+            logger.info("【询问该专线是否被互联云占用】");
+            String url = "http://192.168.211.5/zstack/asyncrest/sendcommand";
 
+            Map<String,String> bodyMap = new HashMap<>();
+            bodyMap.put("tunnelUuid",vo.getUuid());
+
+            Map<String, String> headers = new HashMap<>();
+            headers.put("commandPath","tunnelCheck");
+
+            RestAPIResponse rsp = restf.syncJsonPost(url, JSONObjectUtil.toJsonString(bodyMap),headers, RestAPIResponse.class);
+
+            Map resultMap = new HashMap<>();
+            resultMap = JSONObjectUtil.toObject(rsp.getResult(),resultMap.getClass());
+
+            if((Boolean) resultMap.get("success")){
+                if((Boolean)resultMap.get("isOccupied")){
+                    throw new ApiMessageInterceptionException(
+                            argerr("该专线[uuid:%s]被互联云占用，不可删除！",vo.getUuid()));
+                }
+            }else{
+                throw new ApiMessageInterceptionException(
+                        argerr("删除专线前询问专线占用情况失败！"));
+            }
+
+        }
+    }
+
+    @Override
     public void beforeDelete(){}
 
+    @Override
     public void afterDelete(){}
 }
