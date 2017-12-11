@@ -7,10 +7,9 @@ import com.syscxp.core.db.Q;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.NoErrorCompletion;
-import com.syscxp.header.core.workflow.Flow;
-import com.syscxp.header.core.workflow.FlowTrigger;
-import com.syscxp.header.core.workflow.NoRollbackFlow;
 import com.syscxp.header.errorcode.ErrorCode;
+import com.syscxp.header.host.HostAfterConnectedExtensionPoint;
+import com.syscxp.header.host.HostInventory;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.CheckVpnStatusMsg;
@@ -27,9 +26,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
-public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint, VpnHostConnectExtensionPoint {
+public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint, HostAfterConnectedExtensionPoint {
     private static final CLogger logger = Utils.getLogger(VpnSyncPingTask.class);
 
     @Autowired
@@ -74,9 +72,9 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint,
                         vmsg.setVpnUuid(vpnUuid);
                         bus.makeLocalServiceId(vmsg, VpnConstant.SERVICE_ID);
                         msgs.add(vmsg);
-                    } else if ( VpnStatus.Connected.toString().equals(status)) {
+                    } else if (VpnStatus.Connected.toString().equals(status)) {
                         changVpnSatus(vpnUuid, VpnStatus.Connected);
-                    }  else {
+                    } else {
                         completion.fail(errf.stringToOperationError(String.format("CheckVpnStatusMsg should only report " +
                                         "states[UP or DOWN], but it reports %s for the vpn[uuid:%s] on the host[uuid:%s]",
                                 status, vpnUuid, hostUuid)));
@@ -122,25 +120,21 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint,
         });
     }
 
+
     @Override
-    public Flow createHostConnectingFlow(VpnHostConnectedContext context) {
-        return new NoRollbackFlow() {
+    public void afterHostConnected(HostInventory host) {
+        checkState(host.getUuid(), new Completion(null) {
+            String __name__ = "sync-vpn-status";
+
             @Override
-            public void run(final FlowTrigger trigger, Map data) {
-                checkState(context.getInventory().getUuid(), new Completion(trigger) {
-                    String __name__ = "sync-vpn-status";
-
-                    @Override
-                    public void success() {
-                        trigger.next();
-                    }
-
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        trigger.fail(errorCode);
-                    }
-                });
+            public void success() {
+                logger.info("sync vpn status success");
             }
-        };
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("sync vpn status failed");
+            }
+        });
     }
 }

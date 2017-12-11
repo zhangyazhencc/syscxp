@@ -1,11 +1,7 @@
 package com.syscxp.header.vpn.host;
 
 
-import com.syscxp.header.core.encrypt.DECRYPT;
-import com.syscxp.header.core.encrypt.ENCRYPTParam;
-import com.syscxp.header.host.HostEO;
 import com.syscxp.header.host.HostVO;
-import com.syscxp.header.vo.EO;
 
 import javax.persistence.*;
 import java.util.List;
@@ -24,8 +20,6 @@ public class VpnHostVO extends HostVO {
     private String password;
     @Column
     private String nodeUuid;
-    @Column
-    private String interfaceName;
     @Column
     private Integer startPort;
     @Column
@@ -48,14 +42,6 @@ public class VpnHostVO extends HostVO {
 
     public void setNodeUuid(String nodeUuid) {
         this.nodeUuid = nodeUuid;
-    }
-
-    public String getInterfaceName() {
-        return interfaceName;
-    }
-
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
     }
 
     public Integer getEndPort() {

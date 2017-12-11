@@ -18,7 +18,6 @@ public class VpnHostInventory extends HostInventory{
     private String nodeUuid;
     private Integer startPort;
     private Integer endPort;
-    private String interfaceName;
     private List<HostInterfaceInventory> hostInterfaceInventories;
 
     public VpnHostInventory(VpnHostVO vo) {
@@ -29,7 +28,6 @@ public class VpnHostInventory extends HostInventory{
         this.setStartPort(vo.getStartPort());
         this.setNodeUuid(vo.getNodeUuid());
         this.setEndPort(vo.getEndPort());
-        this.setInterfaceName(vo.getInterfaceName());
         this.setHostInterfaceInventories(HostInterfaceInventory.valueOf(vo.getHostInterfaces()));
     }
 
@@ -51,14 +49,6 @@ public class VpnHostInventory extends HostInventory{
 
     public void setNodeUuid(String nodeUuid) {
         this.nodeUuid = nodeUuid;
-    }
-
-    public String getInterfaceName() {
-        return interfaceName;
-    }
-
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
     }
 
     public Integer getStartPort() {

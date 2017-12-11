@@ -416,8 +416,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private String getDescriptionForVPN(VpnVO vo) {
         DescriptionData data = new DescriptionData();
-        data.add(new DescriptionItem("name", vo.getName()));
-        data.add(new DescriptionItem("bandwidth", vo.getBandwidthOfferingUuid()));
+        data.add(new DescriptionItem("带宽", vo.getBandwidthOfferingUuid()));
         return JSONObjectUtil.toJsonString(data);
     }
 
