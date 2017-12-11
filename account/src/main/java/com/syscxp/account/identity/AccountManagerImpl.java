@@ -18,6 +18,7 @@ import com.syscxp.sms.SmsService;
 import com.syscxp.utils.ShellResult;
 import com.syscxp.utils.ShellUtils;
 import com.syscxp.utils.Utils;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.account.header.identity.APICheckApiPermissionMsg;
@@ -568,13 +569,15 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                     "frozen account"));
             bus.reply(msg, reply);
             return;
-        }else if(!msg.getPassword().equals(vo.getPassword()) ){
-            if(msg.getPlaintext()!=null
-                    &&!check_password(msg.getPlaintext(),vo.getPassword())){
+        }else if(!msg.getPassword().equals(vo.getPassword()) && msg.getPlaintext() != null){
+            if(!check_password(msg.getPlaintext(),vo.getPassword())){
                 reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                         "Incorrect password"));
                 bus.reply(msg, reply);
                 return;
+            }else{
+               vo.setPassword(DigestUtils.sha512Hex(msg.getPlaintext()));
+               dbf.persistAndRefresh(vo);
             }
         }
 
@@ -597,10 +600,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
         ShellResult sret= ShellUtils.runAndReturn(cmd);
 
         sret.raiseExceptionIfFail();
-        logger.error(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        logger.error(sret.getStdout());
-        logger.error(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        return true;
+        if(sret.getStdout().equals("True")){
+            return true;
+        }
+
+        return false;
+
     }
 
     @Override
