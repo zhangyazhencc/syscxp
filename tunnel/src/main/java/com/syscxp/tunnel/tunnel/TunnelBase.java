@@ -5,6 +5,8 @@ import com.syscxp.core.Platform;
 import com.syscxp.core.db.*;
 import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
+import com.syscxp.header.tunnel.monitor.TunnelMonitorVO;
+import com.syscxp.header.tunnel.monitor.TunnelMonitorVO_;
 import com.syscxp.header.tunnel.node.ZoneNodeRefVO;
 import com.syscxp.header.tunnel.node.ZoneNodeRefVO_;
 import com.syscxp.header.tunnel.switchs.*;
@@ -201,6 +203,7 @@ public class TunnelBase {
                 dbf.remove(qv);
             }
         }
+        UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid,vo.getUuid()).delete();
     }
 
     /**

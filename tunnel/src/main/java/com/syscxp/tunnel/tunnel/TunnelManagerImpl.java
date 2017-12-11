@@ -47,6 +47,8 @@ import com.syscxp.utils.function.ForEachFunction;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -2284,6 +2286,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      */
     private void handle(APIGetUnscribeTunnelPriceDiffMsg msg) {
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        if(vo.getAccountUuid() == null){
+            APIGetUnscribeProductPriceDiffReply reply = new APIGetUnscribeProductPriceDiffReply();
+            reply.setInventory(new BigDecimal(Double.toString(0.00)));
+            reply.setReFoundMoney(new BigDecimal(Double.toString(0.00)));
+            bus.reply(msg,reply);
+            return;
+        }
 
         APIGetUnscribeProductPriceDiffMsg upmsg = new APIGetUnscribeProductPriceDiffMsg();
         upmsg.setAccountUuid(msg.getAccountUuid());
