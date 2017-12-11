@@ -11,7 +11,6 @@ public class VpnHostVO_ extends HostVO_{
     public static volatile SingularAttribute<VpnHostVO, String> publicIp;
     public static volatile SingularAttribute<VpnHostVO, Integer> sshPort;
     public static volatile SingularAttribute<VpnHostVO, String> username;
-    public static volatile SingularAttribute<VpnHostVO, String> interfaceName;
     public static volatile SingularAttribute<VpnHostVO, String> password;
     public static volatile SingularAttribute<VpnHostVO, Integer> startPort;
     public static volatile SingularAttribute<VpnHostVO, Integer> endPort;

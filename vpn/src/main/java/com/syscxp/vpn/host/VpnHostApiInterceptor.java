@@ -25,8 +25,6 @@ public class VpnHostApiInterceptor implements ApiMessageInterceptor {
     private void validate(APIDeleteHostInterfaceMsg msg) {
     }
 
-
-
     private void validate(APICreateVpnHostMsg msg) {
         Q q = Q.New(VpnHostVO.class)
                 .eq(VpnHostVO_.name, msg.getName());

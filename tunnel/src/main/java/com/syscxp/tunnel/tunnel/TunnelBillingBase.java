@@ -230,7 +230,6 @@ public class TunnelBillingBase {
      */
     public String getDescriptionForInterface(InterfaceVO vo) {
         DescriptionData data = new DescriptionData();
-        data.add(new DescriptionItem("名称", vo.getName()));
         String portType = Q.New(SwitchPortVO.class)
                 .eq(SwitchPortVO_.uuid, vo.getSwitchPortUuid())
                 .select(SwitchPortVO_.portType).findValue();
