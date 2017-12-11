@@ -2892,7 +2892,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     public void preDelete(TunnelVO vo) {
         if (vo.getState() != TunnelState.Unsupport) {
             logger.info("【询问该专线是否被互联云占用】");
-            String url = "http://192.168.211.5/zstack/asyncrest/sendcommand";
+            String url = "http://192.168.211.5:8080/zstack/asyncrest/sendcommand";
 
             Map<String, String> bodyMap = new HashMap<>();
             bodyMap.put("tunnelUuid", vo.getUuid());
