@@ -1,5 +1,6 @@
 package com.syscxp.header.tunnel.tunnel;
 
+import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
@@ -12,7 +13,7 @@ import com.syscxp.header.tunnel.TunnelConstant;
 public class APIListCrossTunnelMsg extends APISyncCallMessage {
     @APIParam(emptyString = false, resourceType = InterfaceVO.class)
     private String uuid;
-    @APIParam
+    @APIParam(required = false)
     private String accountUuid;
 
     public String getUuid() {
@@ -24,7 +25,11 @@ public class APIListCrossTunnelMsg extends APISyncCallMessage {
     }
 
     public String getAccountUuid() {
-        return accountUuid;
+        if(getSession().getType() == AccountType.SystemAdmin){
+            return accountUuid;
+        }else{
+            return getSession().getAccountUuid();
+        }
     }
 
     public void setAccountUuid(String accountUuid) {

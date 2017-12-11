@@ -21,21 +21,15 @@ public class VpnHostVO extends HostVO {
     @Column
     private String username;
     @Column
-    @ENCRYPTParam
     private String password;
+    @Column
+    private String nodeUuid;
     @Column
     private String interfaceName;
     @Column
     private Integer startPort;
     @Column
     private Integer endPort;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "zoneUuid", insertable = false, updatable = false)
-    private ZoneVO zone;
-
-    @Column
-    private String zoneUuid;
 
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "hostUuid", insertable = false, updatable = false)
@@ -46,6 +40,14 @@ public class VpnHostVO extends HostVO {
 
     public VpnHostVO(HostVO vo) {
         super(vo);
+    }
+
+    public String getNodeUuid() {
+        return nodeUuid;
+    }
+
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 
     public String getInterfaceName() {
@@ -70,22 +72,6 @@ public class VpnHostVO extends HostVO {
 
     public void setStartPort(Integer startPort) {
         this.startPort = startPort;
-    }
-
-    public String getZoneUuid() {
-        return zoneUuid;
-    }
-
-    public void setZoneUuid(String zoneUuid) {
-        this.zoneUuid = zoneUuid;
-    }
-
-    public ZoneVO getZone() {
-        return zone;
-    }
-
-    public void setZone(ZoneVO zone) {
-        this.zone = zone;
     }
 
     public List<HostInterfaceVO> getHostInterfaces() {
@@ -128,7 +114,6 @@ public class VpnHostVO extends HostVO {
         this.username = username;
     }
 
-    @DECRYPT
     public String getPassword() {
         return password;
     }
