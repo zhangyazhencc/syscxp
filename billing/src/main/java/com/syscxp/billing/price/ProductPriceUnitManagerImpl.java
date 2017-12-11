@@ -96,6 +96,10 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             vo.setUnitPrice(msg.getUnitPrice());
         }
 
+        if(msg.getUnitPrice()== 0 && "SHARE".equals(vo.getConfigCode()) && "共享端口".equals(vo.getConfigName())){
+            vo.setUnitPrice(msg.getUnitPrice());
+        }
+
         dbf.updateAndRefresh(vo);
 
         APIUpdateProductPriceUnitEvent evt = new APIUpdateProductPriceUnitEvent(msg.getId());
