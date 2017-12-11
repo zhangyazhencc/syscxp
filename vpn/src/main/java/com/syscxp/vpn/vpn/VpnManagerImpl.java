@@ -1203,7 +1203,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void validate(APIQueryVpnMsg msg) {
         if (!msg.getSession().isAdminSession()) {
-            msg.addQueryCondition(VpnVO_.accountUuid.toString(), QueryOp.EQ, msg.getSession().getAccountUuid());
+            msg.addQueryCondition("accountUuid", QueryOp.EQ, msg.getSession().getAccountUuid());
         }
     }
 
