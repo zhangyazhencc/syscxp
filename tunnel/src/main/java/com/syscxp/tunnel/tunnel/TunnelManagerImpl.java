@@ -48,7 +48,9 @@ import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.*;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -164,6 +166,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIGetRenewInterfacePriceMsg) msg);
         } else if (msg instanceof APIGetRenewTunnelPriceMsg) {
             handle((APIGetRenewTunnelPriceMsg) msg);
+        } else if (msg instanceof APIGetModifyBandwidthNumMsg) {
+            handle((APIGetModifyBandwidthNumMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -2393,6 +2397,25 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             bus.reply(msg, traceRouteReply);
         }
 
+    }
+
+    /**
+     * 调整带宽的次数查询
+     */
+    private void handle(APIGetModifyBandwidthNumMsg msg){
+        LocalDateTime dateTime =
+                LocalDate.now().withDayOfMonth(LocalDate.MIN.getDayOfMonth()).atTime(LocalTime.MIN);
+        Long times = Q.New(TunnelMotifyRecordVO.class).eq(TunnelMotifyRecordVO_.tunnelUuid, msg.getUuid())
+                .gte(TunnelMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime)).count();
+        Integer maxModifies =
+                Q.New(TunnelVO.class).eq(TunnelVO_.uuid, msg.getUuid()).select(TunnelVO_.maxModifies)
+                        .findValue();
+        APIGetModifyBandwidthNumReply reply = new APIGetModifyBandwidthNumReply();
+        reply.setMaxModifies(maxModifies);
+        reply.setHasModifies(Math.toIntExact(times));
+        reply.setLeftModifies((int) (maxModifies-times));
+
+        bus.reply(msg,reply);
     }
 
     /*******************************    The Following billing call back  processing **************************************************/

@@ -144,6 +144,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.tunnel.tunnel.APIGetModifyBandwidthNumMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.header.tunnel.tunnel.APIQueryInterfaceMsg</name>
         <serviceId>query</serviceId>
     </message>
