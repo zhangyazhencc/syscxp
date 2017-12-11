@@ -7,7 +7,16 @@ import java.util.List;
 
 public class CheckVpnStatusMsg extends NeedReplyMessage {
     private String hostUuid;
+    private boolean noStatusCheck;
     private List<String> vpnUuids;
+
+    public boolean isNoStatusCheck() {
+        return noStatusCheck;
+    }
+
+    public void setNoStatusCheck(boolean noStatusCheck) {
+        this.noStatusCheck = noStatusCheck;
+    }
 
     public List<String> getVpnUuids() {
         return vpnUuids;

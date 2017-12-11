@@ -73,6 +73,12 @@ public class BillJob {
                         vo.setBillDate(currentSqlTime);
                         vo.setTimeStart(startTime);
                         vo.setTimeEnd(endTime);
+                        vo.setTotalRefundIncomeCash(BigDecimal.ZERO);
+                        vo.setTotalRechargeIncomeCash(BigDecimal.ZERO);
+                        vo.setTotalDeductionPayCash(BigDecimal.ZERO);
+                        vo.setTotalRefundIncomePresent(BigDecimal.ZERO);
+                        vo.setTotalRechargeIncomePresent(BigDecimal.ZERO);
+                        vo.setTotalDeductionPayPresent(BigDecimal.ZERO);
                         calculateBalance(bill, vo);
                         AccountBalanceVO abVO =getAccountBalance(accountUuid);
                         BigDecimal balance = abVO.getCashBalance();
@@ -157,7 +163,7 @@ public class BillJob {
                 bVO.setTotalRechargeIncomePresent(bill.getIncome()==null?BigDecimal.ZERO:bill.getIncome());
             }
             if(bill.getType()== DealType.REFUND){
-                bVO.setTotalRefundIncomePresent(bill.getIncome()==null?BigDecimal.ZERO:bill.getIncome());
+                bVO.setTotalRefundIncomePresent(bill.getIncome()==null?BigDecimal.ZERO:bill.getIncome().abs());
             }
 
         } else if (bill.getDealWay().equals(DealWay.CASH_BILL)) {

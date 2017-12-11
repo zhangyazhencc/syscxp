@@ -160,6 +160,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             handle((APIListInnerEndpointMsg) msg);
         } else if (msg instanceof APIListTraceRouteMsg) {
             handle((APIListTraceRouteMsg) msg);
+        } else if (msg instanceof APIGetRenewInterfacePriceMsg) {
+            handle((APIGetRenewInterfacePriceMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
@@ -2175,6 +2177,25 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APIGetUnscribeProductPriceDiffReply reply = new TunnelRESTCaller().syncJsonPost(upmsg);
 
         bus.reply(msg, new APIGetUnscribeInterfacePriceDiffReply(reply));
+    }
+
+    /**
+     * 续费时查询物理接口价格
+     */
+    private void handle(APIGetRenewInterfacePriceMsg msg) {
+
+        InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
+
+        APIGetRenewProductPriceMsg rpmsg = new APIGetRenewProductPriceMsg();
+
+        rpmsg.setAccountUuid(vo.getAccountUuid());
+        rpmsg.setProductUuid(msg.getUuid());
+        rpmsg.setDuration(msg.getDuration());
+        rpmsg.setProductChargeModel(msg.getProductChargeModel());
+
+        APIGetRenewProductPriceReply priceReply = new TunnelRESTCaller().syncJsonPost(rpmsg);
+
+        bus.reply(msg, new APIGetRenewInterfacePriceReply(priceReply));
     }
 
     /**
