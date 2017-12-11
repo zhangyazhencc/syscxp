@@ -22,6 +22,7 @@ import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.tunnel.AliEdgeRouterConstant;
+import com.syscxp.header.tunnel.tunnel.TunnelEO;
 import com.syscxp.header.tunnel.tunnel.TunnelState;
 import com.syscxp.header.tunnel.aliEdgeRouter.*;
 import com.syscxp.utils.CollectionUtils;
@@ -559,6 +560,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(msg.getAccountUuid());
         vo.setAliAccountUuid(msg.getAliAccountUuid());
+        vo.setTunnelEO(dbf.findByUuid(msg.getTunnelUuid(), TunnelEO.class));
         vo.setTunnelUuid(msg.getTunnelUuid());
         vo.setAliRegionId(msg.getAliRegionId());
         vo.setPhysicalLineUuid(msg.getPhysicalLineUuid());
@@ -582,6 +584,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         try{
             response = client.getAcsResponse(VBR);
             vo.setVbrUuid(response.getVbrId());
+//            dbf.persistAndRefresh(vo);
             dbf.getEntityManager().persist(vo);
             dbf.getEntityManager().flush();
         }catch(Exception e){
