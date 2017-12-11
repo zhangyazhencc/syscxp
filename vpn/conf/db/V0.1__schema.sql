@@ -100,17 +100,6 @@ CREATE TABLE  `syscxp_vpn`.`VpnCertVO` (
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `syscxp_vpn`.`ZoneVO` (
-	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-	`name` varchar(255) NOT NULL UNIQUE COMMENT '名称',
-	`province` VARCHAR(32) NOT NULL COMMENT '省份',
-	`description` varchar(255) DEFAULT NULL COMMENT '描述',
-	`nodeUuid` VARCHAR(32) NOT NULL COMMENT '节点',
-	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
-	`createDate` timestamp,
-	PRIMARY KEY  (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE `syscxp_vpn`.`HostEO` (
 	`uuid` varchar(32) NOT NULL COMMENT 'UUID',
 	`name` varchar(128) NOT NULL COMMENT '名称',
@@ -138,7 +127,7 @@ CREATE TABLE  `syscxp_vpn`.`VpnHostVO` (
 	`password` VARCHAR(255) NOT NULL COMMENT '密码',
 	`startPort` INT COMMENT '起始端口',
 	`endPort` INT COMMENT '末尾端口',
-	`zoneUuid` VARCHAR(32) NOT NULL
+	`nodeUuid` VARCHAR(32) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 CREATE TABLE  `syscxp_vpn`.`HostInterfaceVO` (
@@ -173,7 +162,6 @@ CREATE TABLE `syscxp_vpn`.`BandwidthOfferingVO` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ALTER TABLE VpnHostVO ADD CONSTRAINT fkVpnHostVOHostEO FOREIGN KEY (uuid) REFERENCES HostEO (uuid) ON UPDATE RESTRICT ON DELETE CASCADE;
-ALTER TABLE VpnHostVO ADD CONSTRAINT fkVpnHostVOZoneVO FOREIGN KEY (zoneUuid) REFERENCES ZoneVO (uuid) ON DELETE RESTRICT;
 ALTER TABLE HostInterfaceVO ADD CONSTRAINT fkHostInterfaceVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE CASCADE;
 ALTER TABLE VpnVO ADD CONSTRAINT fkVpnVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE RESTRICT;
 ALTER TABLE VpnVO ADD CONSTRAINT fkVpnVOVpnCertVO FOREIGN KEY (vpnCertUuid) REFERENCES VpnCertVO (uuid) ON DELETE RESTRICT;

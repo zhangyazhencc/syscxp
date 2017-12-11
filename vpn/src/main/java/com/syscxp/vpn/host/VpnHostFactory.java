@@ -55,7 +55,7 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
         APICreateVpnHostMsg amsg = (APICreateVpnHostMsg) msg;
         VpnHostVO host = new VpnHostVO(vo);
         host.setPublicIp(amsg.getPublicIp());
-        host.setZoneUuid(amsg.getZoneUuid());
+        host.setNodeUuid(amsg.getNodeUuid());
         host.setUsername(amsg.getUsername());
         host.setPassword(amsg.getPassword());
         host.setSshPort(amsg.getSshPort() != null ? amsg.getSshPort() : 22);
@@ -213,15 +213,9 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
     private void handleApiMessage(APIMessage msg) {
         if (msg instanceof APICreateHostInterfaceMsg) {
             handle((APICreateHostInterfaceMsg) msg);
-        } else if (msg instanceof APICreateZoneMsg) {
-            handle((APICreateZoneMsg) msg);
         } else if (msg instanceof APIDeleteHostInterfaceMsg) {
             handle((APIDeleteHostInterfaceMsg) msg);
-        } else if (msg instanceof APIDeleteZoneMsg) {
-            handle((APIDeleteZoneMsg) msg);
-        } else if (msg instanceof APIUpdateZoneMsg) {
-            handle((APIUpdateZoneMsg) msg);
-        } else if (msg instanceof APIUpdateVpnHostPortMsg) {
+        }  else if (msg instanceof APIUpdateVpnHostPortMsg) {
             handle((APIUpdateVpnHostPortMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
@@ -246,54 +240,6 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
     private void handle(APIDeleteHostInterfaceMsg msg) {
         dbf.removeByPrimaryKey(msg.getUuid(), HostInterfaceVO.class);
         APIDeleteHostInterfaceEvent evt = new APIDeleteHostInterfaceEvent(msg.getId());
-        bus.publish(evt);
-    }
-
-    private void handle(APIDeleteZoneMsg msg) {
-        dbf.removeByPrimaryKey(msg.getUuid(), ZoneVO.class);
-        APIDeleteZoneEvent evt = new APIDeleteZoneEvent(msg.getId());
-        bus.publish(evt);
-    }
-
-    private void handle(APIUpdateZoneMsg msg) {
-        ZoneVO zone = dbf.findByUuid(msg.getUuid(), ZoneVO.class);
-        boolean update = false;
-        if (!StringUtils.isEmpty(msg.getName())) {
-            zone.setName(msg.getName());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getDescription())) {
-            zone.setDescription(msg.getDescription());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getNodeUuid())) {
-            zone.setNodeUuid(msg.getNodeUuid());
-            update = true;
-        }
-        if (!StringUtils.isEmpty(msg.getProvince())) {
-            zone.setProvince(msg.getProvince());
-            update = true;
-        }
-        if (update)
-            zone = dbf.updateAndRefresh(zone);
-
-        APIUpdateZoneEvent evt = new APIUpdateZoneEvent(msg.getId());
-        evt.setInventory(ZoneInventory.valueOf(zone));
-        bus.publish(evt);
-
-    }
-
-    private void handle(APICreateZoneMsg msg) {
-        ZoneVO zone = new ZoneVO();
-        zone.setUuid(Platform.getUuid());
-        zone.setProvince(msg.getProvince());
-        zone.setName(msg.getName());
-        zone.setDescription(msg.getDescription());
-        zone.setNodeUuid(msg.getNodeUuid());
-
-        zone = dbf.persistAndRefresh(zone);
-        APICreateZoneEvent evt = new APICreateZoneEvent(msg.getId());
-        evt.setInventory(ZoneInventory.valueOf(zone));
         bus.publish(evt);
     }
 

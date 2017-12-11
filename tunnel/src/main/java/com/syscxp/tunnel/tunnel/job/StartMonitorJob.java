@@ -17,8 +17,8 @@ import org.springframework.beans.factory.annotation.Configurable;
  */
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
-public class EnableTunnelJob implements Job {
-    private static final CLogger logger = Utils.getLogger(EnableTunnelJob.class);
+public class StartMonitorJob implements Job {
+    private static final CLogger logger = Utils.getLogger(StartMonitorJob.class);
 
     @JobContext
     private String tunnelUuid;

@@ -16,10 +16,6 @@ public class VpnHostApiInterceptor implements ApiMessageInterceptor {
             validate((APICreateVpnHostMsg) msg);
         } else if (msg instanceof APIUpdateVpnHostMsg) {
             validate((APIUpdateVpnHostMsg) msg);
-        } else if (msg instanceof APICreateZoneMsg) {
-            validate((APICreateZoneMsg) msg);
-        } else if (msg instanceof APIDeleteZoneMsg) {
-            validate((APIDeleteZoneMsg) msg);
         } else if (msg instanceof APIDeleteHostInterfaceMsg) {
             validate((APIDeleteHostInterfaceMsg) msg);
         }
@@ -28,26 +24,6 @@ public class VpnHostApiInterceptor implements ApiMessageInterceptor {
 
     private void validate(APIDeleteHostInterfaceMsg msg) {
     }
-
-    private void validate(APIDeleteZoneMsg msg) {
-        Q q = Q.New(VpnHostVO.class)
-                .eq(VpnHostVO_.zoneUuid, msg.getUuid());
-        if (q.isExists())
-            throw new ApiMessageInterceptionException(argerr(
-                    "The Zone[uuid:%s] has at least one vpn host, can not delete.", msg.getUuid()
-            ));
-    }
-
-
-    private void validate(APICreateZoneMsg msg) {
-        Q q = Q.New(ZoneVO.class)
-                .eq(ZoneVO_.name, msg.getName());
-        if (q.isExists())
-            throw new ApiMessageInterceptionException(argerr(
-                    "The ZoneVO[name:%s] is already exist.", msg.getName()
-            ));
-    }
-
 
     private void validate(APICreateVpnHostMsg msg) {
         Q q = Q.New(VpnHostVO.class)

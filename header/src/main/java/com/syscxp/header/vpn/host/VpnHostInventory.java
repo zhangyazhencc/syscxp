@@ -15,10 +15,9 @@ public class VpnHostInventory extends HostInventory{
     private String publicIp;
     private Integer sshPort;
     private String username;
+    private String nodeUuid;
     private Integer startPort;
     private Integer endPort;
-    private String interfaceName;
-    private ZoneInventory zoneInventory;
     private List<HostInterfaceInventory> hostInterfaceInventories;
 
     public VpnHostInventory(VpnHostVO vo) {
@@ -27,9 +26,8 @@ public class VpnHostInventory extends HostInventory{
         this.setUsername(vo.getUsername());
         this.setSshPort(vo.getSshPort());
         this.setStartPort(vo.getStartPort());
+        this.setNodeUuid(vo.getNodeUuid());
         this.setEndPort(vo.getEndPort());
-        this.setInterfaceName(vo.getInterfaceName());
-        this.setZoneInventory(ZoneInventory.valueOf(vo.getZone()));
         this.setHostInterfaceInventories(HostInterfaceInventory.valueOf(vo.getHostInterfaces()));
     }
 
@@ -45,12 +43,12 @@ public class VpnHostInventory extends HostInventory{
         return invs;
     }
 
-    public String getInterfaceName() {
-        return interfaceName;
+    public String getNodeUuid() {
+        return nodeUuid;
     }
 
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 
     public Integer getStartPort() {
@@ -75,14 +73,6 @@ public class VpnHostInventory extends HostInventory{
 
     public void setHostInterfaceInventories(List<HostInterfaceInventory> hostInterfaceInventories) {
         this.hostInterfaceInventories = hostInterfaceInventories;
-    }
-
-    public ZoneInventory getZoneInventory() {
-        return zoneInventory;
-    }
-
-    public void setZoneInventory(ZoneInventory zoneInventory) {
-        this.zoneInventory = zoneInventory;
     }
 
     public String getPublicIp() {

@@ -296,8 +296,12 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             remainMoney = valuePayCash;
         }
         BigDecimal refundPresent = BigDecimal.ZERO;
-        updateMoneyIfCreateFailure(msg.isCreateFailure(), msg.getAccountUuid(), msg.getProductUuid(), remainMoney, refundPresent);
+        OrderVO buyOrder = updateMoneyIfCreateFailure( msg.getAccountUuid(), msg.getProductUuid());
 
+        if (msg.isCreateFailure()) {
+            remainMoney = buyOrder.getPayCash();
+            refundPresent = buyOrder.getPayPresent();
+        }
         orderVo.setOriginalPrice(remainMoney);
         orderVo.setPrice(remainMoney);
         orderVo.setProductEffectTimeStart(msg.getStartTime());
@@ -325,15 +329,12 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     }
 
     @Transactional
-    private void updateMoneyIfCreateFailure(boolean isCreateFailure, String accountUuid, String productUuid, BigDecimal remainMoney, BigDecimal refundPresent) {
-        if (isCreateFailure) {
+    private OrderVO updateMoneyIfCreateFailure( String accountUuid, String productUuid) {
             OrderVO refundOrder = getOrderVO(accountUuid, productUuid);
             if (refundOrder == null) {
                 throw new IllegalArgumentException("can not find this product buy history ,please check up");
             }
-            remainMoney = refundOrder.getPayCash();
-            refundPresent = refundOrder.getPayPresent();
-        }
+            return refundOrder;
     }
 
     @Transactional
@@ -557,7 +558,11 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             remainMoney = valuePayCash;
         }
         BigDecimal refundPresent = BigDecimal.ZERO;
-        updateMoneyIfCreateFailure(msg.isCreateFailure(), msg.getAccountUuid(), msg.getProductUuid(), remainMoney, refundPresent);
+        OrderVO buyOrder = updateMoneyIfCreateFailure( msg.getAccountUuid(), msg.getProductUuid());
+        if (msg.isCreateFailure()) {
+            remainMoney = buyOrder.getPayCash();
+            refundPresent = buyOrder.getPayPresent();
+        }
         reply.setReFoundMoney(refundPresent);
         reply.setInventory(remainMoney);
         bus.reply(msg, reply);

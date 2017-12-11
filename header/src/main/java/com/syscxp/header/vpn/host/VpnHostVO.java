@@ -1,11 +1,7 @@
 package com.syscxp.header.vpn.host;
 
 
-import com.syscxp.header.core.encrypt.DECRYPT;
-import com.syscxp.header.core.encrypt.ENCRYPTParam;
-import com.syscxp.header.host.HostEO;
 import com.syscxp.header.host.HostVO;
-import com.syscxp.header.vo.EO;
 
 import javax.persistence.*;
 import java.util.List;
@@ -21,21 +17,13 @@ public class VpnHostVO extends HostVO {
     @Column
     private String username;
     @Column
-    @ENCRYPTParam
     private String password;
     @Column
-    private String interfaceName;
+    private String nodeUuid;
     @Column
     private Integer startPort;
     @Column
     private Integer endPort;
-
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "zoneUuid", insertable = false, updatable = false)
-    private ZoneVO zone;
-
-    @Column
-    private String zoneUuid;
 
     @OneToMany(fetch = FetchType.EAGER)
     @JoinColumn(name = "hostUuid", insertable = false, updatable = false)
@@ -48,12 +36,12 @@ public class VpnHostVO extends HostVO {
         super(vo);
     }
 
-    public String getInterfaceName() {
-        return interfaceName;
+    public String getNodeUuid() {
+        return nodeUuid;
     }
 
-    public void setInterfaceName(String interfaceName) {
-        this.interfaceName = interfaceName;
+    public void setNodeUuid(String nodeUuid) {
+        this.nodeUuid = nodeUuid;
     }
 
     public Integer getEndPort() {
@@ -70,22 +58,6 @@ public class VpnHostVO extends HostVO {
 
     public void setStartPort(Integer startPort) {
         this.startPort = startPort;
-    }
-
-    public String getZoneUuid() {
-        return zoneUuid;
-    }
-
-    public void setZoneUuid(String zoneUuid) {
-        this.zoneUuid = zoneUuid;
-    }
-
-    public ZoneVO getZone() {
-        return zone;
-    }
-
-    public void setZone(ZoneVO zone) {
-        this.zone = zone;
     }
 
     public List<HostInterfaceVO> getHostInterfaces() {
@@ -128,7 +100,6 @@ public class VpnHostVO extends HostVO {
         this.username = username;
     }
 
-    @DECRYPT
     public String getPassword() {
         return password;
     }

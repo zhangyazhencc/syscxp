@@ -24,11 +24,6 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.host.APIQueryHostMsg</name>
-        <serviceId>query</serviceId>
-    </message>
-
-    <message>
         <name>com.syscxp.header.host.APIGetHostTypesMsg</name>
     </message>
 
@@ -44,6 +39,10 @@
     <message>
         <name>com.syscxp.header.vpn.host.APIUpdateVpnHostMsg</name>
         <interceptor>VpnHostApiInterceptor</interceptor>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.host.APIQueryVpnHostMsg</name>
+        <<serviceId>query</serviceId>
     </message>
 
 </service>

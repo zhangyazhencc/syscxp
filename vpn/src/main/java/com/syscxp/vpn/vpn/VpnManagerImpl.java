@@ -38,21 +38,21 @@ import com.syscxp.header.query.QueryOp;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
+import com.syscxp.header.tunnel.tunnel.APIGetRenewInterfacePriceReply;
 import com.syscxp.header.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.*;
 import com.syscxp.header.vpn.billingCallBack.*;
-import com.syscxp.header.vpn.host.HostInterfaceVO;
-import com.syscxp.header.vpn.host.HostInterfaceVO_;
-import com.syscxp.header.vpn.host.VpnHostVO;
-import com.syscxp.header.vpn.host.VpnHostVO_;
+import com.syscxp.header.vpn.host.*;
 import com.syscxp.header.vpn.vpn.*;
 import com.syscxp.utils.CollectionDSL;
+import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
+import com.syscxp.vpn.host.VpnHost;
 import com.syscxp.vpn.vpn.VpnCommands.*;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -149,9 +149,74 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APIDetachVpnCertMsg) msg);
         } else if (msg instanceof APIResetVpnCertKeyMsg) {
             handle((APIResetVpnCertKeyMsg) msg);
+        } else if (msg instanceof APIListVpnHostMsg) {
+            handle((APIListVpnHostMsg) msg);
+        } else if (msg instanceof APIGetRenewVpnPriceMsg) {
+            handle((APIGetRenewVpnPriceMsg) msg);
+        } else if (msg instanceof APIGetUnscribeVpnPriceDiffMsg) {
+            handle((APIGetUnscribeVpnPriceDiffMsg) msg);
+        } else if (msg instanceof APIGetModifyVpnPriceDiffMsg) {
+            handle((APIGetModifyVpnPriceDiffMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetModifyVpnPriceDiffMsg msg) {
+        VpnVO vo = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+
+        APIGetModifyProductPriceDiffMsg pmsg = new APIGetModifyProductPriceDiffMsg();
+        pmsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid()));
+        pmsg.setProductUuid(msg.getUuid());
+        pmsg.setAccountUuid(vo.getAccountUuid());
+        pmsg.setExpiredTime(vo.getExpireDate());
+
+        APIGetModifyProductPriceDiffReply reply = createOrder(pmsg);
+        bus.reply(msg, new APIGetModifyVpnPriceDiffReply(reply));
+    }
+
+    private void handle(APIGetUnscribeVpnPriceDiffMsg msg) {
+        VpnVO vo = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+
+        APIGetUnscribeProductPriceDiffMsg upmsg = new APIGetUnscribeProductPriceDiffMsg();
+
+        upmsg.setAccountUuid(vo.getAccountUuid());
+        upmsg.setProductUuid(msg.getUuid());
+        upmsg.setExpiredTime(vo.getExpireDate());
+
+        APIGetUnscribeProductPriceDiffReply reply = createOrder(upmsg);
+
+        bus.reply(msg, new APIGetUnscribeVpnPriceDiffReply(reply));
+    }
+
+    private void handle(APIGetRenewVpnPriceMsg msg) {
+        VpnVO vo = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+
+        APIGetRenewProductPriceMsg rpmsg = new APIGetRenewProductPriceMsg();
+
+        rpmsg.setAccountUuid(vo.getAccountUuid());
+        rpmsg.setProductUuid(msg.getUuid());
+        rpmsg.setDuration(msg.getDuration());
+        rpmsg.setProductChargeModel(msg.getProductChargeModel());
+
+        APIGetRenewProductPriceReply reply = createOrder(rpmsg);
+
+        bus.reply(msg, new APIGetRenewInterfacePriceReply(reply));
+    }
+
+    private void handle(APIListVpnHostMsg msg) {
+        APIListVpnHostReply reply = new APIListVpnHostReply();
+        List<String> hostUuids = Q.New(HostInterfaceVO.class).in(HostInterfaceVO_.endpointUuid, msg.getEndpointUuids()).list();
+        if (hostUuids.isEmpty()) {
+            reply.setInventories(new ArrayList<>());
+        } else {
+            List<VpnHostVO> hosts = Q.New(VpnHostVO.class)
+                    .in(VpnHostVO_.uuid, hostUuids)
+                    .eq(VpnHostVO_.status, HostStatus.Connected)
+                    .list();
+            reply.setInventories(VpnHostInventory.valueOf1(hosts));
+        }
+        bus.reply(msg, reply);
     }
 
     private void handle(APIResetVpnCertKeyMsg msg) {
@@ -167,8 +232,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APIGenerateDownloadUrlMsg msg) {
 
         final APIGenerateDownloadUrlReply reply = new APIGenerateDownloadUrlReply();
-
-        VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
 
         StringBuilder sb = new StringBuilder();
         long time = System.currentTimeMillis();
@@ -353,8 +416,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private String getDescriptionForVPN(VpnVO vo) {
         DescriptionData data = new DescriptionData();
-        data.add(new DescriptionItem("name", vo.getName()));
-        data.add(new DescriptionItem("bandwidth", vo.getBandwidthOfferingUuid()));
+        data.add(new DescriptionItem("带宽", vo.getBandwidthOfferingUuid()));
         return JSONObjectUtil.toJsonString(data);
     }
 
@@ -593,6 +655,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     public void success() {
                         vpn.setState(VpnState.Disabled);
                         vpn.setStatus(VpnStatus.Disconnected);
+                        vpn.setExpireDate(dbf.getCurrentSqlTime());
                         dbf.updateAndRefresh(vpn);
                         trigger.next();
                     }

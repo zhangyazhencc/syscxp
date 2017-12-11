@@ -563,7 +563,7 @@ public class TunnelValidateBase {
         String sql = "select b from TunnelVO a, TunnelSwitchPortVO b " +
                 "where a.uuid = b.tunnelUuid " +
                 "and a.vsi = :vsi " +
-                "and b.interfaceUuid = :interfaceName";
+                "and b.interfaceUuid = :interfaceUuid";
         TypedQuery<TunnelSwitchPortVO> vq = dbf.getEntityManager().createQuery(sql, TunnelSwitchPortVO.class);
         vq.setParameter("vsi", vsi);
         vq.setParameter("interfaceUuid", interfaceUuid);

@@ -19,6 +19,8 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.*;
+import com.syscxp.header.vpn.host.HostInterfaceVO;
+import com.syscxp.header.vpn.host.HostInterfaceVO_;
 import com.syscxp.header.vpn.vpn.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.data.SizeUnit;
@@ -751,7 +753,10 @@ public class VpnBase extends AbstractVpn {
     }
 
     private String getInterfaceName() {
-        return self.getVpnHost().getInterfaceName();
+        return Q.New(HostInterfaceVO.class)
+                .eq(HostInterfaceVO_.endpointUuid, self.getEndpointUuid())
+                .eq(HostInterfaceVO_.hostUuid, self.getHostUuid())
+                .select(HostInterfaceVO_.interfaceName).findValue();
     }
 
     private String getPort() {

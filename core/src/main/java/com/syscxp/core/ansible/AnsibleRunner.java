@@ -359,7 +359,7 @@ public class AnsibleRunner {
 
             putArgument("pip_url", AnsibleConstant.PIP_URL);
             putArgument("trusted_host", AnsibleConstant.TRUSTED_HOST);
-            putArgument("yum_server", String.format("%s:8080", Platform.getManagementServerIp()));
+            putArgument("yum_server", AnsibleConstant.YUM_SERVER);
             putArgument("remote_user", username);
             if (password != null && !password.isEmpty()) {
                 putArgument("remote_pass", password);
