@@ -55,6 +55,9 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "billingServerUrl", defaultValue = "http://192.168.211.99:8082")
     public static String BILLING_SERVER_URL;
 
+    @GlobalProperty(name = "alarmServerUrl", defaultValue = "http://192.168.211.99:8085")
+    public static String ALARM_SERVER_URL;
+
     @GlobalProperty(name = "interfaceMaxMotifies", defaultValue = "5")
     public static Integer INTERFACE_MAX_MOTIFIES;
 

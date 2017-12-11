@@ -10,7 +10,6 @@ import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
@@ -41,8 +40,6 @@ import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
-import com.syscxp.tunnel.tunnel.job.DisableTunnelJob;
-import com.syscxp.tunnel.tunnel.job.EnableTunnelJob;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
@@ -77,8 +74,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private ThreadFacade thdf;
     @Autowired
     private PluginRegistry pluginRgty;
-    @Autowired
-    private JobQueueFacade jobf;
 
     @Override
     @MessageSafe
@@ -438,6 +433,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      *
      **/
     private void handle(APIUpdateInterfacePortMsg msg) {
+        TunnelBase tunnelBase = new TunnelBase();
         InterfaceVO iface = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
         logger.info(String.format("before update InterfaceVO: [%s]", iface));
 
@@ -469,7 +465,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             .update();
                 } else {
                     String tunnelUuid = isUsed ? tsPort.getTunnelUuid() : null;
-                    new TunnelBase().updateNetworkType(iface, tunnelUuid, msg.getNetworkType(), msg.getSegments());
+                    tunnelBase.updateNetworkType(iface, tunnelUuid, msg.getNetworkType(), msg.getSegments());
                 }
                 logger.info(String.format("after update InterfaceVO[uuid: %s]", iface.getUuid()));
                 //throw new CloudRuntimeException("update interface port ...............");
@@ -519,7 +515,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     TunnelVO tunnel = Q.New(TunnelVO.class)
                             .eq(TunnelVO_.uuid, tsPort.getTunnelUuid())
                             .find();
-                    TaskResourceVO taskResource = new TunnelBase().newTaskResourceVO(tunnel, TaskType.ModifyPorts);
+                    TaskResourceVO taskResource = tunnelBase.newTaskResourceVO(tunnel, TaskType.ModifyPorts);
                     ModifyTunnelPortsMsg modifyMsg = new ModifyTunnelPortsMsg();
                     modifyMsg.setTunnelUuid(tunnel.getUuid());
                     modifyMsg.setTaskUuid(taskResource.getUuid());
@@ -550,6 +546,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void handle(Map data) {
                 evt.setInventory(InterfaceInventory.valueOf(dbf.reload(iface)));
                 bus.publish(evt);
+
+                tunnelBase.updateInterfacePortsJob(msg);
             }
         }).error(new FlowErrorHandler(null) {
             @Override
@@ -1134,6 +1132,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      **/
     private void handle(APIUpdateTunnelVlanMsg msg) {
         APIUpdateTunnelVlanEvent evt = new APIUpdateTunnelVlanEvent(msg.getId());
+        TunnelBase tunnelBase = new TunnelBase();
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
         TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
@@ -1222,8 +1221,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 }else{
                     trigger.next();
                 }
-
-
             }
 
             @Override
@@ -1235,6 +1232,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void handle(Map data) {
                 evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo)));
                 bus.publish(evt);
+
+                tunnelBase.updateTunnelVlanOrInterfaceJob(vo,msg);
+
             }
         }).error(new FlowErrorHandler(null) {
             @Override
@@ -1243,6 +1243,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 bus.publish(evt);
             }
         }).start();
+
+
     }
 
     /**
@@ -1389,6 +1391,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             bus.send(modifyTunnelBandwidthMsg);
             evt.setInventory(TunnelInventory.valueOf(vo));
             bus.publish(evt);
+
+            tunnelBase.updateTunnelBandwidthJob(vo);
         } else {
             evt.setError(errf.stringToOperationError("订单操作失败"));
             bus.publish(evt);
@@ -1556,6 +1560,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 public void success(TunnelInventory inv) {
                     evt.setInventory(inv);
                     bus.publish(evt);
+
+                    tunnelBase.deleteTunnelJob(vo);
                 }
 
                 @Override
@@ -1578,6 +1584,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         public void success(TunnelInventory inv) {
                             evt.setInventory(inv);
                             bus.publish(evt);
+
+                            tunnelBase.deleteTunnelJob(vo);
                         }
 
                         @Override
@@ -1591,6 +1599,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     tunnelBase.deleteTunnel(vo);
                     evt.setInventory(TunnelInventory.valueOf(vo));
                     bus.publish(evt);
+
+                    tunnelBase.deleteTunnelJob(vo);
                 }
             }else{
                 //调用退订
@@ -1626,6 +1636,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             public void success(TunnelInventory inv) {
                                 evt.setInventory(inv);
                                 bus.publish(evt);
+
+                                tunnelBase.deleteTunnelJob(vo);
                             }
 
                             @Override
@@ -1642,6 +1654,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         tunnelBase.deleteTunnel(vo);
                         evt.setInventory(TunnelInventory.valueOf(vo));
                         bus.publish(evt);
+
+                        tunnelBase.deleteTunnelJob(vo);
                     }
                 }
             }
@@ -1818,12 +1832,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         evt.setInventory(inv);
                         bus.publish(evt);
 
-                        if(jobVO.getMonitorState() == TunnelMonitorState.Enabled){
-                            logger.info("专线恢复连接成功，并创建任务：EnableTunnelJob");
-                            EnableTunnelJob job = new EnableTunnelJob();
-                            job.setTunnelUuid(jobVO.getUuid());
-                            jobf.execute("job-Tunnel-Enable", Platform.getManagementServerId(), job);
-                        }
+                        tunnelBase.enabledTunnelJob(jobVO);
                     }
 
                     @Override
@@ -1839,10 +1848,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         evt.setInventory(inv);
                         bus.publish(evt);
 
-                        logger.info("专线关闭连接成功，并创建任务：DisableTunnelJob");
-                        DisableTunnelJob job = new DisableTunnelJob();
-                        job.setTunnelUuid(jobVO.getUuid());
-                        jobf.execute("job-Tunnel-Disable", Platform.getManagementServerId(), job);
+                        tunnelBase.disabledTunnelJob(jobVO);
 
                     }
 
@@ -2264,10 +2270,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             List<TunnelSwitchPortVO> tunnelSwitchPortVOS = Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.tunnelUuid, tunnelUuid).list();
             for (TunnelSwitchPortVO vo : tunnelSwitchPortVOS) {
                 if ("A".equals(vo.getSortTag())) {
-                    tunnelCmd.setEndpointA_ip(tunnelBase.getPhysicalSwitch(vo.getSwitchPortUuid()));
+                    tunnelCmd.setEndpointA_ip(tunnelBase.getPhysicalSwitchMip(vo.getSwitchPortUuid()));
                     tunnelCmd.setEndpointA_vid(vo.getVlan());
                 } else if ("Z".equals(vo.getSortTag())) {
-                    tunnelCmd.setEndpointB_ip(tunnelBase.getPhysicalSwitch(vo.getSwitchPortUuid()));
+                    tunnelCmd.setEndpointB_ip(tunnelBase.getPhysicalSwitchMip(vo.getSwitchPortUuid()));
                     tunnelCmd.setEndpointB_vid(vo.getVlan());
                 }
             }
@@ -2462,6 +2468,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 public void run(MessageReply reply) {
                     if (reply.isSuccess()) {
                         logger.info("billing通知回调并请求下发成功");
+
+                        tunnelBase.deleteTunnelJob(vo);
                     } else {
                         logger.info("billing通知回调并请求下发失败");
                     }
@@ -2469,6 +2477,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             });
         } else if (message.getDescription().equals("delete") && vo.getState() == TunnelState.Disabled) {
             tunnelBase.deleteTunnel(vo);
+
+            tunnelBase.deleteTunnelJob(vo);
+
         } else if (message.getDescription().equals("unsupport")) {
             vo.setState(TunnelState.Unsupport);
             vo.setExpireDate(dbf.getCurrentSqlTime());
@@ -2494,6 +2505,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         modifyTunnelBandwidthMsg.setTaskUuid(taskResourceVO.getUuid());
         bus.makeLocalServiceId(modifyTunnelBandwidthMsg, TunnelConstant.SERVICE_ID);
         bus.send(modifyTunnelBandwidthMsg);
+
+        new TunnelBase().updateTunnelBandwidthJob(vo);
     }
 
     @Override
@@ -2647,35 +2660,48 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 logger.debug("delete expired tunnel.");
                 if (tunnelVOs.isEmpty())
                     return;
-                List<NeedReplyMessage> msgs = new ArrayList<>();
                 for (TunnelVO vo : tunnelVOs) {
                     if (vo.getExpireDate().before(deleteTime)) {
-                        vo.setAccountUuid(null);
-                        dbf.updateAndRefresh(vo);
-                        TaskResourceVO task = tunnelBase.newTaskResourceVO(vo, TaskType.Delete);
-                        DeleteTunnelMsg msg = new DeleteTunnelMsg();
-                        msg.setTaskUuid(task.getUuid());
-                        msg.setTunnelUuid(vo.getUuid());
-                        bus.makeLocalServiceId(msg, TunnelConstant.SERVICE_ID);
-                        msgs.add(msg);
+                        if (vo.getState() == TunnelState.Enabled) {
+
+                            vo.setAccountUuid(null);
+                            final TunnelVO vo2 = dbf.updateAndRefresh(vo);
+
+                            //下发删除
+                            taskDeleteTunnel(vo2,new ReturnValueCompletion<TunnelInventory>(null) {
+                                @Override
+                                public void success(TunnelInventory inv) {
+                                    tunnelBase.deleteTunnelJob(vo);
+                                }
+
+                                @Override
+                                public void fail(ErrorCode errorCode) {
+                                }
+                            });
+
+                        }else{
+                            tunnelBase.deleteTunnel(vo);
+                            tunnelBase.deleteTunnelJob(vo);
+                        }
                     }
                     if (vo.getExpireDate().before(closeTime)) {
                         if (vo.getState() == TunnelState.Unpaid) {
-                            new TunnelBase().deleteTunnel(vo);
-                        } else {
-                            TaskResourceVO task = tunnelBase.newTaskResourceVO(vo, TaskType.Delete);
-                            DisabledTunnelMsg msg = new DisabledTunnelMsg();
-                            msg.setTaskUuid(task.getUuid());
-                            msg.setTunnelUuid(vo.getUuid());
-                            bus.makeLocalServiceId(msg, TunnelConstant.SERVICE_ID);
-                            msgs.add(msg);
+                            tunnelBase.deleteTunnel(vo);
+                        } else if(vo.getState() == TunnelState.Enabled){
+                            TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo, TaskType.valueOf(TunnelState.Disabled.toString()));
+                            taskDisableTunnel(vo,taskResourceVO,new ReturnValueCompletion<TunnelInventory>(null) {
+                                @Override
+                                public void success(TunnelInventory inv) {
+                                    tunnelBase.disabledTunnelJob(vo);
+                                }
+
+                                @Override
+                                public void fail(ErrorCode errorCode) {
+                                }
+                            });
                         }
                     }
                 }
-                if (msgs.isEmpty()) {
-                    return;
-                }
-                bus.send(msgs);
 
                 List<InterfaceVO> ifaces = getInterfaces();
                 logger.debug("delete expired interface.");
@@ -2780,9 +2806,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         return list(iQuota, tQuota);
     }
 
-    public void preDelete(){};
+    public void preDelete(){}
 
-    public void beforeDelete(){};
+    public void beforeDelete(){}
 
-    public void afterDelete(){};
+    public void afterDelete(){}
 }
