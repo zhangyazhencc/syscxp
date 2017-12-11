@@ -291,6 +291,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
             private void jobFail(JobQueueEntryVO jvo, ErrorCode err) {
                 jvo.setDoneDate(new Timestamp(new Date().getTime()));
                 jvo.setState(JobState.Error);
+                jvo.setErrText(err.getDetails());
                 dbf.update(jvo);
 
                 JobEvent evt = new JobEvent();
