@@ -328,6 +328,8 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                     qvo.setWorkerManagementNodeId(Platform.getManagementServerId());
                     dbf.getEntityManager().merge(qvo);
                     ret = qvo;
+                }else {
+                    ret = qvo;
                 }
 
                 entry.setJobQueueId(qvo.getId());
