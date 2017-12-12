@@ -290,33 +290,44 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         tunnel.setRules(rulelist);
         tunnelList.add(tunnel);
 
-        String url = CoreGlobalProperty.FALCON_API_IP + ":" + CoreGlobalProperty.FALCON_API_PORT +
-                FalconApiRestConstant.STRATEGY_SYNC;
+        String url = getFalconUrl(FalconApiRestConstant.STRATEGY_SYNC);
         String commandParam = JSONObjectUtil.toJsonString(tunnelList);
-        HttpHeaders requestHeaders = new HttpHeaders();
-        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-        requestHeaders.setContentLength(commandParam.length());
-        HttpEntity<String> req = new HttpEntity<>(commandParam, requestHeaders);
-        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
-        FalconApiCommands.RestResponse res = rsp.getBody();
-        if (!res.isSuccess()) {
 
-            throw new OperationFailureException(Platform.operr("falcon fail "));
+        FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
+        try {
+            response = restf.syncJsonPost(url ,commandParam, FalconApiCommands.RestResponse.class);
+        } catch (Exception e) {
+            response.setSuccess(false);
+            response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
         }
 
         APIUpdateTunnelInfoForFalconReply reply = new APIUpdateTunnelInfoForFalconReply();
+        if(!response.isSuccess())
+            reply.setError(Platform.argerr("fail to sync strategy to falcon! Error: %s",response.getMsg()));
+
         bus.reply(msg, reply);
+
+//        HttpHeaders requestHeaders = new HttpHeaders();
+//        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
+//        requestHeaders.setContentLength(commandParam.length());
+//        HttpEntity<String> req = new HttpEntity<>(commandParam, requestHeaders);
+//        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
+//        FalconApiCommands.RestResponse res = rsp.getBody();
+//        if (!res.isSuccess()) {
+//
+//            throw new OperationFailureException(Platform.operr("falcon fail "));
+//        }
+
 
     }
 
     private void handle(APIDeleteResourcePolicyRefMsg msg) {
-
-        String url = CoreGlobalProperty.FALCON_API_IP + ":" + CoreGlobalProperty.FALCON_API_PORT;
+        String url = getFalconUrl(FalconApiRestConstant.STRATEGY_DELETE);
         Map<String, String> tunnelIdMap = new HashMap<>();
         tunnelIdMap.put("tunnel_id", msg.getTunnelUuid());
         FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
         try {
-            response = restf.syncJsonPost(url + FalconApiRestConstant.STRATEGY_DELETE, JSONObjectUtil.toJsonString(tunnelIdMap), FalconApiCommands.RestResponse.class);
+            response = restf.syncJsonPost(url , JSONObjectUtil.toJsonString(tunnelIdMap), FalconApiCommands.RestResponse.class);
         } catch (Exception e) {
             e.printStackTrace();
             response.setSuccess(false);
@@ -736,7 +747,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
 
     private String getFalconUrl(String method) {
-        return CoreGlobalProperty.FALCON_API_IP + ":" + CoreGlobalProperty.FALCON_API_PORT + method;
+        return AlarmGlobalProperty.FALCON_API_URL + method;
     }
 
     ;
