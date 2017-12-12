@@ -84,6 +84,7 @@ CREATE TABLE  `syscxp_tunnel`.`JobQueueEntryVO` (
   `restartable` tinyint(1) unsigned NOT NULL DEFAULT 0,
   `inDate` timestamp DEFAULT CURRENT_TIMESTAMP,
   `takenDate` timestamp NULL,
+  `takenTimes` bigint unsigned DEFAULT 0,
   `doneDate` timestamp NULL,
   `errText` text DEFAULT NULL,
   PRIMARY KEY  (`id`)
