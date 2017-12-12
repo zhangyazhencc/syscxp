@@ -206,16 +206,16 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void handle(APIListVpnHostMsg msg) {
         APIListVpnHostReply reply = new APIListVpnHostReply();
-        List<String> hostUuids = Q.New(HostInterfaceVO.class).in(HostInterfaceVO_.endpointUuid, msg.getEndpointUuids()).list();
-        if (hostUuids.isEmpty()) {
-            reply.setInventories(new ArrayList<>());
-        } else {
-            List<VpnHostVO> hosts = Q.New(VpnHostVO.class)
-                    .in(VpnHostVO_.uuid, hostUuids)
-                    .eq(VpnHostVO_.status, HostStatus.Connected)
-                    .list();
-            reply.setInventories(VpnHostInventory.valueOf1(hosts));
+        Map<String, Boolean> map = new HashMap<>();
+        for (String endpointUuid : msg.getEndpointUuids()) {
+            Q q = Q.New(HostInterfaceVO.class).eq(HostInterfaceVO_.endpointUuid, endpointUuid);
+            if (q.count() > 0) {
+                map.put(endpointUuid, false);
+            } else {
+                map.put(endpointUuid, true);
+            }
         }
+        reply.setMap(map);
         bus.reply(msg, reply);
     }
 
