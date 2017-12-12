@@ -30,7 +30,7 @@ public class APIUpdateTunnelInfoForFalconMsg extends APISyncCallMessage {
     private Long bandwidth;
 
     @APIParam(emptyString = false)
-    private String userUuid;
+    private String accountUuid;
 
     public String getTunnelUuid() {
         return tunnelUuid;
@@ -80,11 +80,11 @@ public class APIUpdateTunnelInfoForFalconMsg extends APISyncCallMessage {
         this.bandwidth = bandwidth;
     }
 
-    public String getUserUuid() {
-        return userUuid;
+    public String getAccountUuid() {
+        return accountUuid;
     }
 
-    public void setUserUuid(String userUuid) {
-        this.userUuid = userUuid;
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

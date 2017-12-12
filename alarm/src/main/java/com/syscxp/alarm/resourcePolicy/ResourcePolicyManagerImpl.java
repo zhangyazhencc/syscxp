@@ -256,7 +256,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     private void handle(APIUpdateTunnelInfoForFalconMsg msg) {
         FalconApiCommands.Tunnel tunnel = new FalconApiCommands.Tunnel();
         tunnel.setTunnel_id(msg.getTunnelUuid());
-        tunnel.setUser_id(msg.getUserUuid());
+        tunnel.setUser_id(msg.getAccountUuid());
         tunnel.setEndpointA_vid(msg.getSwitchAVlan());
         tunnel.setEndpointB_vid(msg.getSwitchBVlan());
         tunnel.setEndpointA_ip(msg.getSwitchAIp());
