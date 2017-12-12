@@ -10,7 +10,9 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.vpn.VpnConstant;
+import com.syscxp.header.vpn.agent.ClientInfo;
 import com.syscxp.header.vpn.vpn.VpnCertVO;
+import com.syscxp.header.vpn.vpn.VpnSystemVO;
 import com.syscxp.header.vpn.vpn.VpnVO;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.ZipUtils;
@@ -23,10 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -47,13 +46,34 @@ public class DownloadController {
 
     private String zipName = VpnConstant.KEYS_DIR + ".zip";
 
-    @RequestMapping(value = "/download/conf/{uuid}", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = VpnConstant.VPN_REPORT_PATH, method = {RequestMethod.PUT, RequestMethod.POST})
+    @ResponseBody
+    public String report(@RequestBody ClientInfo info) {
+        VpnSystemVO vo = dbf.findByUuid(info.getId(), VpnSystemVO.class);
+        if (vo == null) {
+            vo = new VpnSystemVO();
+            dbf.persistAndRefresh(copy(info, vo));
+        } else {
+            dbf.updateAndRefresh(copy(info, vo));
+        }
+        return "success";
+    }
+
+    private VpnSystemVO copy(ClientInfo info, VpnSystemVO vo) {
+        vo.setUuid(info.getId());
+        vo.setVpn(info.getVpn());
+        vo.setTap(info.getTap());
+        vo.setSystem(info.getSystem());
+        return vo;
+    }
+
+    @RequestMapping(value = VpnConstant.CONF_DOWNLOAD_PATH, method = {RequestMethod.GET})
     @Deferred
-    public void downLoadConfFile(@PathVariable String uuid, HttpServletResponse response) throws IOException{
+    public void downLoadConfFile(@PathVariable String uuid, HttpServletResponse response) throws IOException {
 
         String vpnUuid = valid(uuid, VpnVO.class.getSimpleName());
 
-        File root = PathUtil.findFileOnClassPath(VpnConstant.KEYS_DIR,true);
+        File root = PathUtil.findFileOnClassPath(VpnConstant.KEYS_DIR, true);
 
         VpnVO vpn = dbf.findByUuid(vpnUuid, VpnVO.class);
         File clientConf = new File(root, VpnConstant.CLIENT_CONF_PATH);
@@ -75,7 +95,7 @@ public class DownloadController {
         }
     }
 
-    @RequestMapping(value = "/download/cert/{uuid}", method = {RequestMethod.GET, RequestMethod.POST})
+    @RequestMapping(value = VpnConstant.CERT_DOWNLOAD_PATH, method = {RequestMethod.GET})
     @Deferred
     public void downLoadCertFile(@PathVariable String uuid, HttpServletResponse response) throws IOException {
 
@@ -103,7 +123,7 @@ public class DownloadController {
                     clientKey.delete();
                 }
             });
-        }catch (Throwable t) {
+        } catch (Throwable t) {
             logger.warn(t.getMessage(), t);
             response.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR, t.getMessage());
         }
@@ -133,9 +153,8 @@ public class DownloadController {
 
     @ExceptionHandler(Exception.class)
     public void exception(HttpServletRequest request, HttpServletResponse response, Exception ex) throws IOException {
-        HttpEntity<String> entity = restf.httpServletRequestToHttpEntity(request);
         StringBuilder sb = new StringBuilder(String.format("Error when calling %s", request.getRequestURI()));
-        sb.append(String.format("\nexception message: %s", "download failed"));
+        sb.append(String.format("\nexception message: %s", ex.getMessage()));
         logger.debug(sb.toString(), ex);
         response.sendError(HttpStatus.SC_INTERNAL_SERVER_ERROR, sb.toString());
     }

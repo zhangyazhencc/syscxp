@@ -216,8 +216,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                         .in(VpnHostVO_.uuid, q.listValues())
                         .list();
                 map.put(endpointUuid, VpnHostInventory.valueOf1(hosts));
-            } else {
-                map.put(endpointUuid, new ArrayList<>());
             }
         }
         reply.setInventoryMap(map);

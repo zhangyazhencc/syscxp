@@ -1,6 +1,6 @@
 package com.syscxp.account.header.log;
 
-import com.syscxp.core.db.converter.ListAttributeConverter;
+import com.syscxp.header.core.converter.ListAttributeConverter;
 import com.syscxp.header.search.SqlTrigger;
 import com.syscxp.header.search.TriggerIndex;
 

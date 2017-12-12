@@ -161,6 +161,16 @@ CREATE TABLE `syscxp_vpn`.`BandwidthOfferingVO` (
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE `syscxp_vpn`.`VpnSystemVO` (
+	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'uuid',
+	`system` TEXT NOT NULL COMMENT '系统信息',
+	`vpn` TEXT DEFAULT NULL COMMENT 'vpn信息',
+	`tap` TEXT NULL COMMENT '网卡信息',
+	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+	`createDate` timestamp,
+	PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
 ALTER TABLE VpnHostVO ADD CONSTRAINT fkVpnHostVOHostEO FOREIGN KEY (uuid) REFERENCES HostEO (uuid) ON UPDATE RESTRICT ON DELETE CASCADE;
 ALTER TABLE HostInterfaceVO ADD CONSTRAINT fkHostInterfaceVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE CASCADE;
 ALTER TABLE VpnVO ADD CONSTRAINT fkVpnVOVpnHostVO FOREIGN KEY (hostUuid) REFERENCES VpnHostVO (uuid) ON DELETE RESTRICT;
