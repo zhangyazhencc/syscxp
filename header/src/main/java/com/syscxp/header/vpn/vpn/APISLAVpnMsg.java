@@ -16,6 +16,17 @@ public class APISLAVpnMsg extends APISyncCallMessage {
     @APIParam
     private Integer duration;
 
+    @APIParam
+    private String slaUuid;
+
+    public String getSlaUuid() {
+        return slaUuid;
+    }
+
+    public void setSlaUuid(String slaUuid) {
+        this.slaUuid = slaUuid;
+    }
+
     public String getUuid() {
         return uuid;
     }

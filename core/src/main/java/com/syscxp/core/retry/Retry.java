@@ -8,8 +8,6 @@ import com.syscxp.utils.TypeUtils;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 
-import static com.syscxp.core.Platform.i18n;
-
 import java.lang.reflect.Method;
 import java.util.concurrent.TimeUnit;
 

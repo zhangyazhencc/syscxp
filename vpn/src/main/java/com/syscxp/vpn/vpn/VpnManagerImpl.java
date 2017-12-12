@@ -206,16 +206,21 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void handle(APIListVpnHostMsg msg) {
         APIListVpnHostReply reply = new APIListVpnHostReply();
-        List<String> hostUuids = Q.New(HostInterfaceVO.class).in(HostInterfaceVO_.endpointUuid, msg.getEndpointUuids()).list();
-        if (hostUuids.isEmpty()) {
-            reply.setInventories(new ArrayList<>());
-        } else {
-            List<VpnHostVO> hosts = Q.New(VpnHostVO.class)
-                    .in(VpnHostVO_.uuid, hostUuids)
-                    .eq(VpnHostVO_.status, HostStatus.Connected)
-                    .list();
-            reply.setInventories(VpnHostInventory.valueOf1(hosts));
+        Map<String, List<VpnHostInventory>> map = new HashMap<>();
+        for (String endpointUuid : msg.getEndpointUuids()) {
+            Q q = Q.New(HostInterfaceVO.class)
+                    .eq(HostInterfaceVO_.endpointUuid, endpointUuid)
+                    .select(HostInterfaceVO_.hostUuid);
+            if (q.count() > 0) {
+                List<VpnHostVO> hosts = Q.New(VpnHostVO.class)
+                        .in(VpnHostVO_.uuid, q.listValues())
+                        .list();
+                map.put(endpointUuid, VpnHostInventory.valueOf1(hosts));
+            } else {
+                map.put(endpointUuid, new ArrayList<>());
+            }
         }
+        reply.setInventoryMap(map);
         bus.reply(msg, reply);
     }
 
@@ -524,6 +529,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APISLAVpnMsg msg) {
         VpnVO vo = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         APICreateSLACompensationOrderMsg orderMsg = new APICreateSLACompensationOrderMsg(getOrderMsgForVPN(vo, new SlaVpnCallBack()));
+        orderMsg.setSlaUuid(msg.getSlaUuid());
         orderMsg.setDuration(msg.getDuration());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
@@ -559,10 +565,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             bus.publish(evt);
             return;
         }
-        vpn.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
-        vpn.setStatus(VpnStatus.Disconnected);
-        final VpnVO vo = dbf.updateAndRefresh(vpn);
-        saveMotifyRecord(msg);
 
         RateLimitingMsg rateLimitingMsg = new RateLimitingMsg();
 
@@ -571,8 +573,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
-                    vo.setStatus(VpnStatus.Connected);
-                    evt.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vo)));
+                    vpn.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
+                    dbf.updateAndRefresh(vpn);
+                    saveMotifyRecord(msg);
+                    evt.setInventory(VpnInventory.valueOf(dbf.reload(vpn)));
                 } else {
                     evt.setError(reply.getError());
                 }
@@ -1190,9 +1194,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
 
     private void validate(APIUpdateVpnMsg msg) {
-        if (!msg.getSession().isAdminSession() && msg.getMaxModifies() != null) {
-            throw new ApiMessageInterceptionException(
-                    argerr("The account[name:%s] has no permission modify.", msg.getName()));
+        if (!msg.getSession().isAdminSession()) {
+            msg.setMaxModifies(null);
         }
 
         Q q = Q.New(VpnVO.class).eq(VpnVO_.name, msg.getName()).notEq(VpnVO_.uuid, msg.getUuid());

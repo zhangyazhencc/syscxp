@@ -1,7 +1,6 @@
 package com.syscxp.header.alarm;
 
 import com.syscxp.header.identity.InnerCredentialCheck;
-import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
@@ -9,25 +8,29 @@ import com.syscxp.header.message.APISyncCallMessage;
  * Created by wangwg on 2017/11/02
  */
 @InnerCredentialCheck
+//@SuppressCredentialCheck
 public class APIUpdateTunnelInfoForFalconMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false,maxLength = 32)
     private String tunnelUuid;
 
     @APIParam(emptyString = false)
-    private Integer switchA_vlan;
+    private Integer switchAVlan;
 
     @APIParam(emptyString = false)
-    private String switchA_ip;
+    private String switchAIp;
 
     @APIParam(emptyString = false)
-    private Integer switchB_vlan;
+    private Integer switchBVlan;
 
     @APIParam(emptyString = false)
-    private String switchB_ip;
+    private String switchBIp;
 
     @APIParam(emptyString = false)
     private Long bandwidth;
+
+    @APIParam(emptyString = false)
+    private String accountUuid;
 
     public String getTunnelUuid() {
         return tunnelUuid;
@@ -37,36 +40,36 @@ public class APIUpdateTunnelInfoForFalconMsg extends APISyncCallMessage {
         this.tunnelUuid = tunnelUuid;
     }
 
-    public Integer getSwitchA_vlan() {
-        return switchA_vlan;
+    public Integer getSwitchAVlan() {
+        return switchAVlan;
     }
 
-    public void setSwitchA_vlan(Integer switchA_vlan) {
-        this.switchA_vlan = switchA_vlan;
+    public void setSwitchAVlan(Integer switchAVlan) {
+        this.switchAVlan = switchAVlan;
     }
 
-    public String getSwitchA_ip() {
-        return switchA_ip;
+    public String getSwitchAIp() {
+        return switchAIp;
     }
 
-    public void setSwitchA_ip(String switchA_ip) {
-        this.switchA_ip = switchA_ip;
+    public void setSwitchAIp(String switchAIp) {
+        this.switchAIp = switchAIp;
     }
 
-    public Integer getSwitchB_vlan() {
-        return switchB_vlan;
+    public Integer getSwitchBVlan() {
+        return switchBVlan;
     }
 
-    public void setSwitchB_vlan(Integer switchB_vlan) {
-        this.switchB_vlan = switchB_vlan;
+    public void setSwitchBVlan(Integer switchBVlan) {
+        this.switchBVlan = switchBVlan;
     }
 
-    public String getSwitchB_ip() {
-        return switchB_ip;
+    public String getSwitchBIp() {
+        return switchBIp;
     }
 
-    public void setSwitchB_ip(String switchB_ip) {
-        this.switchB_ip = switchB_ip;
+    public void setSwitchBIp(String switchBIp) {
+        this.switchBIp = switchBIp;
     }
 
     public Long getBandwidth() {
@@ -75,5 +78,13 @@ public class APIUpdateTunnelInfoForFalconMsg extends APISyncCallMessage {
 
     public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

@@ -18,8 +18,6 @@ public class APIRenewAutoTunnelMsg extends APISyncCallMessage {
     private Integer duration;
     @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
     private ProductChargeModel productChargeModel;
-    @APIParam(emptyString = false,maxLength = 32)
-    private String accountUuid;
 
     public String getUuid() {
         return uuid;
@@ -45,11 +43,4 @@ public class APIRenewAutoTunnelMsg extends APISyncCallMessage {
         this.productChargeModel = productChargeModel;
     }
 
-    public String getAccountUuid() {
-        return accountUuid;
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
 }

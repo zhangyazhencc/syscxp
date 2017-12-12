@@ -391,10 +391,10 @@ public class TunnelBase {
                         .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
                         .eq(TunnelSwitchPortVO_.sortTag, "Z")
                         .find();
-                job2.setSwitchA_vlan(tunnelSwitchPortA.getVlan());
-                job2.setSwitchB_vlan(tunnelSwitchPortZ.getVlan());
-                job2.setSwitchA_ip(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
-                job2.setSwitchB_ip(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
+                job2.setSwitchAVlan(tunnelSwitchPortA.getVlan());
+                job2.setSwitchBVlan(tunnelSwitchPortZ.getVlan());
+                job2.setSwitchAIp(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
+                job2.setSwitchBIp(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
                 jobf.execute("job-UpdateTunnelInfoForFalcon", Platform.getManagementServerId(), job2);
             }
         }
@@ -447,10 +447,10 @@ public class TunnelBase {
                     .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
                     .eq(TunnelSwitchPortVO_.sortTag, "Z")
                     .find();
-            job2.setSwitchA_vlan(tunnelSwitchPortA.getVlan());
-            job2.setSwitchB_vlan(tunnelSwitchPortZ.getVlan());
-            job2.setSwitchA_ip(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
-            job2.setSwitchB_ip(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
+            job2.setSwitchAVlan(tunnelSwitchPortA.getVlan());
+            job2.setSwitchBVlan(tunnelSwitchPortZ.getVlan());
+            job2.setSwitchAIp(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
+            job2.setSwitchBIp(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
             jobf.execute("job-UpdateTunnelInfoForFalcon", Platform.getManagementServerId(), job2);
         }
     }
@@ -480,10 +480,10 @@ public class TunnelBase {
                 .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "Z")
                 .find();
-        job2.setSwitchA_vlan(tunnelSwitchPortA.getVlan());
-        job2.setSwitchB_vlan(tunnelSwitchPortZ.getVlan());
-        job2.setSwitchA_ip(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
-        job2.setSwitchB_ip(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
+        job2.setSwitchAVlan(tunnelSwitchPortA.getVlan());
+        job2.setSwitchBVlan(tunnelSwitchPortZ.getVlan());
+        job2.setSwitchAIp(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
+        job2.setSwitchBIp(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
         jobf.execute("job-UpdateTunnelInfoForFalcon", Platform.getManagementServerId(), job2);
     }
 
