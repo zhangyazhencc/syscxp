@@ -332,28 +332,28 @@ public class TunnelBase {
 
     /************************************************Tunnel Job*****************************************/
 
-    public void deleteTunnelJob(TunnelVO vo){
+    public void deleteTunnelJob(TunnelVO vo,String queueName){
         if(vo.getMonitorState() == TunnelMonitorState.Enabled){
             if(vo.getState() == TunnelState.Enabled){
                 logger.info("删除通道成功，并创建任务：StopMonitorJob");
                 StopMonitorJob job = new StopMonitorJob();
                 job.setTunnelUuid(vo.getUuid());
-                jobf.execute("job-StopMonitor", Platform.getManagementServerId(), job);
+                jobf.execute(queueName+"-停止监控", Platform.getManagementServerId(), job);
             }
 
             logger.info("删除通道成功，并创建任务：DeleteIcmpJob");
             DeleteIcmpJob job3 = new DeleteIcmpJob();
             job3.setTunnelUuid(vo.getUuid());
-            jobf.execute("job-DeleteIcmp", Platform.getManagementServerId(), job3);
+            jobf.execute(queueName+"-删除ICMP", Platform.getManagementServerId(), job3);
 
         }
         logger.info("删除通道成功，并创建任务：DeleteResourcePolicyRefJob");
         DeleteResourcePolicyRefJob job2 = new DeleteResourcePolicyRefJob();
         job2.setTunnelUuid(vo.getUuid());
-        jobf.execute("job-DeleteResourcePolicyRef", Platform.getManagementServerId(), job2);
+        jobf.execute(queueName+"-策略同步", Platform.getManagementServerId(), job2);
     }
 
-    public void updateInterfacePortsJob(APIUpdateInterfacePortMsg msg){
+    public void updateInterfacePortsJob(APIUpdateInterfacePortMsg msg,String queueName){
         //首先判断该物理接口有没有开通专线
         boolean isBeUsedForTunnel = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.interfaceUuid,msg.getUuid())
@@ -371,12 +371,12 @@ public class TunnelBase {
                     logger.info("修改端口成功，并创建任务：ModifyMonitorJob");
                     ModifyMonitorJob job = new ModifyMonitorJob();
                     job.setTunnelUuid(vo.getUuid());
-                    jobf.execute("job-ModifyMonitor", Platform.getManagementServerId(), job);
+                    jobf.execute(queueName+"更新监控", Platform.getManagementServerId(), job);
 
                     logger.info("修改端口成功，并创建任务：UpdateIcmpJob");
                     UpdateIcmpJob job3 = new UpdateIcmpJob();
                     job3.setTunnelUuid(vo.getUuid());
-                    jobf.execute("job-UpdateIcmp", Platform.getManagementServerId(), job3);
+                    jobf.execute(queueName+"更新ICMP", Platform.getManagementServerId(), job3);
                 }
 
                 logger.info("修改端口成功，并创建任务：UpdateTunnelInfoForFalconJob");
@@ -395,12 +395,13 @@ public class TunnelBase {
                 job2.setSwitchBVlan(tunnelSwitchPortZ.getVlan());
                 job2.setSwitchAIp(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
                 job2.setSwitchBIp(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
-                jobf.execute("job-UpdateTunnelInfoForFalcon", Platform.getManagementServerId(), job2);
+                job2.setAccountUuid(vo.getOwnerAccountUuid());
+                jobf.execute(queueName+"策略同步", Platform.getManagementServerId(), job2);
             }
         }
     }
 
-    public void updateTunnelVlanOrInterfaceJob(TunnelVO vo,APIUpdateTunnelVlanMsg msg){
+    public void updateTunnelVlanOrInterfaceJob(TunnelVO vo,APIUpdateTunnelVlanMsg msg,String queueName){
 
         String oldSwitchPortUuidA = Q.New(InterfaceVO.class)
                 .eq(InterfaceVO_.uuid,msg.getOldInterfaceAUuid())
@@ -427,12 +428,12 @@ public class TunnelBase {
                 logger.info("修改VLAN或物理接口成功，并创建任务：ModifyMonitorJob");
                 ModifyMonitorJob job = new ModifyMonitorJob();
                 job.setTunnelUuid(vo.getUuid());
-                jobf.execute("job-ModifyMonitor", Platform.getManagementServerId(), job);
+                jobf.execute(queueName+"更新监控", Platform.getManagementServerId(), job);
 
                 logger.info("修改VLAN或物理接口成功，并创建任务：UpdateIcmpJob");
                 UpdateIcmpJob job3 = new UpdateIcmpJob();
                 job3.setTunnelUuid(vo.getUuid());
-                jobf.execute("job-UpdateIcmp", Platform.getManagementServerId(), job3);
+                jobf.execute(queueName+"更新ICMP", Platform.getManagementServerId(), job3);
             }
 
             logger.info("修改VLAN或物理接口成功，并创建任务：UpdateTunnelInfoForFalconJob");
@@ -451,21 +452,22 @@ public class TunnelBase {
             job2.setSwitchBVlan(tunnelSwitchPortZ.getVlan());
             job2.setSwitchAIp(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
             job2.setSwitchBIp(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
-            jobf.execute("job-UpdateTunnelInfoForFalcon", Platform.getManagementServerId(), job2);
+            job2.setAccountUuid(vo.getOwnerAccountUuid());
+            jobf.execute(queueName+"策略同步", Platform.getManagementServerId(), job2);
         }
     }
 
-    public void updateTunnelBandwidthJob(TunnelVO vo){
+    public void updateTunnelBandwidthJob(TunnelVO vo,String queueName){
         if(vo.getMonitorState() == TunnelMonitorState.Enabled){
             logger.info("修改带宽成功，并创建任务：ModifyMonitorJob");
             ModifyMonitorJob job = new ModifyMonitorJob();
             job.setTunnelUuid(vo.getUuid());
-            jobf.execute("job-ModifyMonitor", Platform.getManagementServerId(), job);
+            jobf.execute(queueName+"更新监控", Platform.getManagementServerId(), job);
 
             logger.info("修改带宽成功，并创建任务：UpdateIcmpJob");
             UpdateIcmpJob job3 = new UpdateIcmpJob();
             job3.setTunnelUuid(vo.getUuid());
-            jobf.execute("job-UpdateIcmp", Platform.getManagementServerId(), job3);
+            jobf.execute(queueName+"更新ICMP", Platform.getManagementServerId(), job3);
 
         }
         logger.info("修改带宽成功，并创建任务：UpdateTunnelInfoForFalconJob");
@@ -484,24 +486,25 @@ public class TunnelBase {
         job2.setSwitchBVlan(tunnelSwitchPortZ.getVlan());
         job2.setSwitchAIp(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
         job2.setSwitchBIp(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
-        jobf.execute("job-UpdateTunnelInfoForFalcon", Platform.getManagementServerId(), job2);
+        job2.setAccountUuid(vo.getOwnerAccountUuid());
+        jobf.execute(queueName+"策略同步", Platform.getManagementServerId(), job2);
     }
 
-    public void enabledTunnelJob(TunnelVO vo){
+    public void enabledTunnelJob(TunnelVO vo,String queueName){
         if(vo.getMonitorState() == TunnelMonitorState.Enabled){
             logger.info("专线恢复连接成功，并创建任务：StartMonitorJob");
             StartMonitorJob job = new StartMonitorJob();
             job.setTunnelUuid(vo.getUuid());
-            jobf.execute("job-StartMonitor", Platform.getManagementServerId(), job);
+            jobf.execute(queueName+"开启监控", Platform.getManagementServerId(), job);
         }
     }
 
-    public void disabledTunnelJob(TunnelVO vo){
+    public void disabledTunnelJob(TunnelVO vo,String queueName){
         if(vo.getMonitorState() == TunnelMonitorState.Enabled) {
             logger.info("专线关闭连接成功，并创建任务：StopMonitorJob");
             StopMonitorJob job = new StopMonitorJob();
             job.setTunnelUuid(vo.getUuid());
-            jobf.execute("job-StopMonitor", Platform.getManagementServerId(), job);
+            jobf.execute(queueName+"停止监控", Platform.getManagementServerId(), job);
         }
     }
 }

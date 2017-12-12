@@ -76,6 +76,7 @@ CREATE TABLE  `syscxp_tunnel`.`JobQueueVO` (
 CREATE TABLE  `syscxp_tunnel`.`JobQueueEntryVO` (
   `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
   `name` varchar(255) NOT NULL,
+  `jobData` text NOT NULL,
   `jobQueueId` bigint unsigned NOT NULL,
   `state` varchar(128) NOT NULL,
   `context` blob DEFAULT NULL,

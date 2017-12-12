@@ -23,6 +23,9 @@ public class JobQueueEntryVO {
     private String name;
 
     @Column
+    private String jobData;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private JobState state;
 
@@ -160,5 +163,13 @@ public class JobQueueEntryVO {
 
     public void setTakenTimes(long takenTimes) {
         this.takenTimes = takenTimes;
+    }
+
+    public String getJobData() {
+        return jobData;
+    }
+
+    public void setJobData(String jobData) {
+        this.jobData = jobData;
     }
 }
