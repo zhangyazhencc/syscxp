@@ -12,4 +12,7 @@ public class AlarmGlobalProperty {
     @GlobalProperty(name = "alarmServerUrl",defaultValue = "http://192.168.211.99:8085/alarm/api")
     public static String ALARM_SERVER_RUL;
 
+    @GlobalProperty(name = "falconApiUrl",defaultValue = "http://192.168.211.96:6892")
+    public static String FALCON_API_URL;
+
 }

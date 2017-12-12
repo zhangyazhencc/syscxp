@@ -10,6 +10,7 @@ import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconMsg;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.message.APIReply;
+import com.syscxp.header.message.GsonTransient;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
@@ -26,22 +27,29 @@ import org.springframework.beans.factory.annotation.Configurable;
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
 public class UpdateTunnelInfoForFalconJob implements Job {
+    @GsonTransient
     private static final CLogger logger = Utils.getLogger(UpdateTunnelInfoForFalconJob.class);
 
     @JobContext
     private String tunnelUuid;
     @JobContext
-    private Integer switchA_vlan;
+    private Integer switchAVlan;
     @JobContext
-    private String switchA_ip;
+    private String switchAIp;
     @JobContext
-    private Integer switchB_vlan;
+    private Integer switchBVlan;
     @JobContext
-    private String switchB_ip;
+    private String switchBIp;
     @JobContext
     private Long bandwidth;
+    @JobContext
+    private String accountUuid;
+
+    @GsonTransient
     @Autowired
     private ErrorFacade errf;
+
+    @GsonTransient
     @Autowired
     private RESTFacade restf;
 
@@ -54,12 +62,13 @@ public class UpdateTunnelInfoForFalconJob implements Job {
             APIUpdateTunnelInfoForFalconMsg msg = new APIUpdateTunnelInfoForFalconMsg();
             msg.setTunnelUuid(tunnelUuid);
             msg.setBandwidth(bandwidth);
-            msg.setSwitchA_ip(switchA_ip);
-            msg.setSwitchA_vlan(switchA_vlan);
-            msg.setSwitchB_ip(switchB_ip);
-            msg.setSwitchB_vlan(switchB_vlan);
+            msg.setSwitchAIp(switchAIp);
+            msg.setSwitchAVlan(switchAVlan);
+            msg.setSwitchBIp(switchBIp);
+            msg.setSwitchBVlan(switchBVlan);
+            msg.setAccountUuid(accountUuid);
 
-            String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.ALARM_SERVER_URL, RESTConstant.REST_API_CALL);
+            String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.ALARM_SERVER_URL, "/alarm/api");
             InnerMessageHelper.setMD5(msg);
 
             RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(msg), RestAPIResponse.class);
@@ -88,36 +97,36 @@ public class UpdateTunnelInfoForFalconJob implements Job {
         this.tunnelUuid = tunnelUuid;
     }
 
-    public Integer getSwitchA_vlan() {
-        return switchA_vlan;
+    public Integer getSwitchAVlan() {
+        return switchAVlan;
     }
 
-    public void setSwitchA_vlan(Integer switchA_vlan) {
-        this.switchA_vlan = switchA_vlan;
+    public void setSwitchAVlan(Integer switchAVlan) {
+        this.switchAVlan = switchAVlan;
     }
 
-    public String getSwitchA_ip() {
-        return switchA_ip;
+    public String getSwitchAIp() {
+        return switchAIp;
     }
 
-    public void setSwitchA_ip(String switchA_ip) {
-        this.switchA_ip = switchA_ip;
+    public void setSwitchAIp(String switchAIp) {
+        this.switchAIp = switchAIp;
     }
 
-    public Integer getSwitchB_vlan() {
-        return switchB_vlan;
+    public Integer getSwitchBVlan() {
+        return switchBVlan;
     }
 
-    public void setSwitchB_vlan(Integer switchB_vlan) {
-        this.switchB_vlan = switchB_vlan;
+    public void setSwitchBVlan(Integer switchBVlan) {
+        this.switchBVlan = switchBVlan;
     }
 
-    public String getSwitchB_ip() {
-        return switchB_ip;
+    public String getSwitchBIp() {
+        return switchBIp;
     }
 
-    public void setSwitchB_ip(String switchB_ip) {
-        this.switchB_ip = switchB_ip;
+    public void setSwitchBIp(String switchBIp) {
+        this.switchBIp = switchBIp;
     }
 
     public Long getBandwidth() {
@@ -126,5 +135,13 @@ public class UpdateTunnelInfoForFalconJob implements Job {
 
     public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

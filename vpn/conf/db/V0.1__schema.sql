@@ -34,6 +34,7 @@ CREATE TABLE  `syscxp_vpn`.`JobQueueVO` (
 CREATE TABLE  `syscxp_vpn`.`JobQueueEntryVO` (
     `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
     `name` varchar(255) NOT NULL,
+    `jobData` text NOT NULL,
     `jobQueueId` bigint unsigned NOT NULL,
     `state` varchar(128) NOT NULL,
     `context` blob DEFAULT NULL,
@@ -41,6 +42,8 @@ CREATE TABLE  `syscxp_vpn`.`JobQueueEntryVO` (
     `issuerManagementNodeId` varchar(32) DEFAULT NULL,
     `restartable` tinyint(1) unsigned NOT NULL DEFAULT 0,
     `inDate` timestamp DEFAULT CURRENT_TIMESTAMP,
+    `takenDate` timestamp NULL,
+    `takenTimes` bigint unsigned DEFAULT 0,
     `doneDate` timestamp,
     `errText` text DEFAULT NULL,
     PRIMARY KEY  (`id`)
@@ -156,6 +159,16 @@ CREATE TABLE `syscxp_vpn`.`BandwidthOfferingVO` (
 	`name` varchar(255) NOT NULL COMMENT 'bandwidth offering name',
 	`description` varchar(255) DEFAULT NULL COMMENT '描述',
 	`bandwidth` BIGINT NOT NULL COMMENT '带宽',
+	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+	`createDate` timestamp,
+	PRIMARY KEY  (`uuid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+CREATE TABLE `syscxp_vpn`.`VpnSystemVO` (
+	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'uuid',
+	`system` TEXT NOT NULL COMMENT '系统信息',
+	`vpn` TEXT DEFAULT NULL COMMENT 'vpn信息',
+	`tap` TEXT NULL COMMENT '网卡信息',
 	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)

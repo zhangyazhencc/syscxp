@@ -17,7 +17,7 @@ public class APICreateRegulationMsg extends APIMessage{
     @APIParam(emptyString =false, resourceType = MonitorTargetVO.class)
     private String monitorTargetUuid;
 
-    @APIParam(numberRange={1,Integer.MAX_VALUE})
+    @APIParam
     private int alarmThreshold;
 
     @APIParam(numberRange={1,Integer.MAX_VALUE})

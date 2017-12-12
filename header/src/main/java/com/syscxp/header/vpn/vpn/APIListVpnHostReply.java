@@ -4,15 +4,17 @@ import com.syscxp.header.message.APIReply;
 import com.syscxp.header.vpn.host.VpnHostInventory;
 
 import java.util.List;
+import java.util.Map;
 
 public class APIListVpnHostReply extends APIReply {
-    List<VpnHostInventory> inventories;
+    private Map<String, List<VpnHostInventory>> inventoryMap;
 
-    public List<VpnHostInventory> getInventories() {
-        return inventories;
+    public Map<String, List<VpnHostInventory>> getInventoryMap() {
+        return inventoryMap;
     }
 
-    public void setInventories(List<VpnHostInventory> inventories) {
-        this.inventories = inventories;
+    public void setInventoryMap(Map<String, List<VpnHostInventory>> inventoryMap) {
+        this.inventoryMap = inventoryMap;
     }
 }
+

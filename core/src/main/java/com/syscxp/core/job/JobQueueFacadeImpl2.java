@@ -1,14 +1,20 @@
 package com.syscxp.core.job;
 
+import com.google.gson.*;
 import com.syscxp.core.cloudbus.CloudBusEventListener;
 import com.syscxp.core.cloudbus.EventSubscriberReceipt;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.GLock;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.AsyncThread;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
+import com.syscxp.header.message.GsonTransient;
+import com.syscxp.header.message.Message;
+import com.syscxp.utils.gson.GsonTypeCoder;
+import com.syscxp.utils.gson.GsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +39,7 @@ import com.syscxp.utils.serializable.SerializableHelper;
 
 import javax.persistence.TypedQuery;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -64,6 +71,55 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
     private volatile boolean stopped = false;
     private EventSubscriberReceipt unsubscriber;
+
+    private class JobWire implements GsonTypeCoder<Job> {
+
+        private final Gson gson = new GsonUtil().setCoder(Job.class, this).setExclusionStrategies(new ExclusionStrategy[]{
+                new ExclusionStrategy() {
+                    @Override
+                    public boolean shouldSkipField(FieldAttributes fieldAttributes) {
+                        return fieldAttributes.getAnnotation(GsonTransient.class) != null;
+                    }
+
+                    @Override
+                    public boolean shouldSkipClass(Class<?> aClass) {
+                        return false;
+                    }
+                }
+        }).create();
+
+        @Override
+        public Job deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject jObj = jsonElement.getAsJsonObject();
+            Map.Entry<String, JsonElement> entry = jObj.entrySet().iterator().next();
+            String className = entry.getKey();
+            Class<?> clazz;
+            try {
+                clazz = Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                throw new JsonParseException(String.format("Unable to deserialize class[%s]", className), e);
+            }
+            return (Job) gson.fromJson(entry.getValue(), clazz);
+        }
+
+        @Override
+        public JsonElement serialize(Job job, Type type, JsonSerializationContext jsonSerializationContext) {
+            JsonObject jObj = new JsonObject();
+            jObj.add(job.getClass().getName(), gson.toJsonTree(job));
+            return jObj;
+        }
+
+        public Job loads(String jsonStr) {
+            Job job = gson.fromJson(jsonStr, Job.class);
+            return job;
+        }
+
+        public String dumpJob(Job job) {
+            return gson.toJson(job, Job.class);
+        }
+    }
+
+    private final JobWire jobWire = new JobWire();
 
     @Override
     public boolean handleEvent(Event e) {
@@ -328,7 +384,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                     q.add(JobQueueEntryVO_.restartable, SimpleQuery.Op.EQ, true);
                     q.add(JobQueueEntryVO_.doneDate, SimpleQuery.Op.LT, Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
                     q.setLimit(1);
-                    q.orderBy(JobQueueEntryVO_.doneDate, SimpleQuery.Od.ASC);
+                    q.orderBy(JobQueueEntryVO_.takenDate, SimpleQuery.Od.ASC);
 
                     ev = q.find();
                 }
@@ -355,7 +411,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                         if (! existHistoryErrorJobQueueEntry(qvo)) {    // 也没有error的需要再次执行的job
                             dbf.remove(qvo);
                         }
-                        logger.debug(String.format("[JobQueue released, no pending task, delete the queue] last owner: %s, queue name: %s, queue id: %s",
+                        logger.debug(String.format("[JobQueue released, no pending or 1 hour ago error task, delete the queue] last owner: %s, queue name: %s, queue id: %s",
                                 qvo.getOwner(), qvo.getName(), qvo.getId()));
                         return null;
                     }
@@ -363,8 +419,12 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                     while (true) {
                         try {
                             JobContextObject ctx = SerializableHelper.readObject(jobe.getContext());
-                            Job theJob = ctx.load();
+                            //Job theJob = ctx.load();
+
+                            Job theJob = jobWire.loads(jobe.getJobData());
                             jobe.setState(JobState.Processing);
+                            jobe.setTakenDate(new Timestamp(new Date().getTime()));
+                            jobe.setTakenTimes(jobe.getTakenTimes() + 1);
                             jobe = dbf.updateAndRefresh(jobe);
                             return Bucket.newBucket(jobe, theJob);
                         } catch (Exception e1) {
@@ -477,6 +537,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
             JobQueueEntryVO e = new JobQueueEntryVO();
             JobContextObject ctx = new JobContextObject(job);
             byte[] bits = SerializableHelper.writeObject(ctx);
+            e.setJobData(jobWire.dumpJob(job));
             e.setContext(bits);
             e.setRestartable(job.getClass().isAnnotationPresent(RestartableJob.class));
             e.setName(job.getClass().getName());

@@ -1,6 +1,6 @@
 package com.syscxp.core.notification;
 
-import com.syscxp.core.db.converter.MapAttributeConverter;
+import com.syscxp.header.core.converter.MapAttributeConverter;
 import com.syscxp.header.vo.BaseResource;
 
 import javax.persistence.*;
