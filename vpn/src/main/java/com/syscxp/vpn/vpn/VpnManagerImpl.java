@@ -560,10 +560,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             bus.publish(evt);
             return;
         }
-        vpn.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
-        vpn.setStatus(VpnStatus.Disconnected);
-        final VpnVO vo = dbf.updateAndRefresh(vpn);
-        saveMotifyRecord(msg);
 
         RateLimitingMsg rateLimitingMsg = new RateLimitingMsg();
 
@@ -572,8 +568,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
-                    vo.setStatus(VpnStatus.Connected);
-                    evt.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vo)));
+                    vpn.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
+                    dbf.updateAndRefresh(vpn);
+                    saveMotifyRecord(msg);
+                    evt.setInventory(VpnInventory.valueOf(dbf.reload(vpn)));
                 } else {
                     evt.setError(reply.getError());
                 }
