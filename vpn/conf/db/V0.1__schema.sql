@@ -41,6 +41,8 @@ CREATE TABLE  `syscxp_vpn`.`JobQueueEntryVO` (
     `issuerManagementNodeId` varchar(32) DEFAULT NULL,
     `restartable` tinyint(1) unsigned NOT NULL DEFAULT 0,
     `inDate` timestamp DEFAULT CURRENT_TIMESTAMP,
+    `takenDate` timestamp NULL,
+    `takenTimes` bigint unsigned DEFAULT 0,
     `doneDate` timestamp,
     `errText` text DEFAULT NULL,
     PRIMARY KEY  (`id`)

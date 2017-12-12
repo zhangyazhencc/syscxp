@@ -328,7 +328,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                     q.add(JobQueueEntryVO_.restartable, SimpleQuery.Op.EQ, true);
                     q.add(JobQueueEntryVO_.doneDate, SimpleQuery.Op.LT, Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
                     q.setLimit(1);
-                    q.orderBy(JobQueueEntryVO_.doneDate, SimpleQuery.Od.ASC);
+                    q.orderBy(JobQueueEntryVO_.takenDate, SimpleQuery.Od.ASC);
 
                     ev = q.find();
                 }
@@ -355,7 +355,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                         if (! existHistoryErrorJobQueueEntry(qvo)) {    // 也没有error的需要再次执行的job
                             dbf.remove(qvo);
                         }
-                        logger.debug(String.format("[JobQueue released, no pending task, delete the queue] last owner: %s, queue name: %s, queue id: %s",
+                        logger.debug(String.format("[JobQueue released, no pending or 1 hour ago error task, delete the queue] last owner: %s, queue name: %s, queue id: %s",
                                 qvo.getOwner(), qvo.getName(), qvo.getId()));
                         return null;
                     }
@@ -365,6 +365,8 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                             JobContextObject ctx = SerializableHelper.readObject(jobe.getContext());
                             Job theJob = ctx.load();
                             jobe.setState(JobState.Processing);
+                            jobe.setTakenDate(new Timestamp(new Date().getTime()));
+                            jobe.setTakenTimes(jobe.getTakenTimes() + 1);
                             jobe = dbf.updateAndRefresh(jobe);
                             return Bucket.newBucket(jobe, theJob);
                         } catch (Exception e1) {
