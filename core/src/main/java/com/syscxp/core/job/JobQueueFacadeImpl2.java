@@ -7,6 +7,7 @@ import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.GLock;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.AsyncThread;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
@@ -529,6 +530,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
             JobQueueEntryVO e = new JobQueueEntryVO();
             JobContextObject ctx = new JobContextObject(job);
             byte[] bits = SerializableHelper.writeObject(ctx);
+            e.setJobData(RESTApiDecoder.dump(job));
             e.setContext(bits);
             e.setRestartable(job.getClass().isAnnotationPresent(RestartableJob.class));
             e.setName(job.getClass().getName());
