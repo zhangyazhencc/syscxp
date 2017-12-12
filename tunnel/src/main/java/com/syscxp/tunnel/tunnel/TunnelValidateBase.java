@@ -402,8 +402,9 @@ public class TunnelValidateBase {
     }
 
     public void validate(APIUpdateTunnelBandwidthMsg msg) {
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
         //判断该产品是否有未完成订单
-        checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
+        checkOrderNoPay(vo.getOwnerAccountUuid(), msg.getUuid());
 
         //调整次数当月是否达到上限
         LocalDateTime dateTime =
@@ -452,11 +453,12 @@ public class TunnelValidateBase {
                 throw new ApiMessageInterceptionException(
                         argerr("云专线[uuid:%s]购买未超过%s天,不能删除 !", msg.getUuid(), deleteDays));
         }
-        checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
+        checkOrderNoPay(vo.getOwnerAccountUuid(), msg.getUuid());
     }
 
     public void validate(APIDeleteForciblyTunnelMsg msg) {
-        checkOrderNoPay(msg.getAccountUuid(), msg.getUuid());
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+        checkOrderNoPay(vo.getOwnerAccountUuid(), msg.getUuid());
     }
 
     public void validate(APIUpdateTunnelStateMsg msg) {

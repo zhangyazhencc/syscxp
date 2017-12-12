@@ -29,6 +29,10 @@ public class SpeedRecordsInventory {
     private String tunnelName;
     private String srcTunnelMonitorUuid;
     private String dstTunnelMonitorUuid;
+    private String srcNodeUuid;
+    private String srcNodeName;
+    private String dstNodeUuid;
+    private String dstNodeName;
     private String protocolType;
     private Integer duration;
     private Integer avgSpeed;
@@ -54,6 +58,10 @@ public class SpeedRecordsInventory {
         inventory.setLastOpDate(vo.getLastOpDate());
         inventory.setCreateDate(vo.getCreateDate());
         inventory.setTunnelName(vo.getTunnelEO().getName());
+        inventory.setSrcNodeUuid(vo.getSrcNodeUuid());
+        inventory.setSrcNodeName(vo.getSrcNodeEO().getName());
+        inventory.setDstNodeUuid(vo.getDstNodeUuid());
+        inventory.setDstNodeName(vo.getDstNodeEO().getName());
 
         return  inventory;
     }
@@ -175,5 +183,37 @@ public class SpeedRecordsInventory {
 
     public void setTunnelName(String tunnelName) {
         this.tunnelName = tunnelName;
+    }
+
+    public String getSrcNodeUuid() {
+        return srcNodeUuid;
+    }
+
+    public void setSrcNodeUuid(String srcNodeUuid) {
+        this.srcNodeUuid = srcNodeUuid;
+    }
+
+    public String getSrcNodeName() {
+        return srcNodeName;
+    }
+
+    public void setSrcNodeName(String srcNodeName) {
+        this.srcNodeName = srcNodeName;
+    }
+
+    public String getDstNodeUuid() {
+        return dstNodeUuid;
+    }
+
+    public void setDstNodeUuid(String dstNodeUuid) {
+        this.dstNodeUuid = dstNodeUuid;
+    }
+
+    public String getDstNodeName() {
+        return dstNodeName;
+    }
+
+    public void setDstNodeName(String dstNodeName) {
+        this.dstNodeName = dstNodeName;
     }
 }

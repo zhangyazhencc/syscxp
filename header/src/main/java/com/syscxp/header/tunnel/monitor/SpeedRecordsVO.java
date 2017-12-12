@@ -2,6 +2,7 @@ package com.syscxp.header.tunnel.monitor;
 
 import com.syscxp.header.search.SqlTrigger;
 import com.syscxp.header.search.TriggerIndex;
+import com.syscxp.header.tunnel.node.NodeEO;
 import com.syscxp.header.tunnel.tunnel.TunnelEO;
 import com.syscxp.header.vo.NoView;
 
@@ -35,11 +36,27 @@ public class SpeedRecordsVO {
     @NoView
     private TunnelEO tunnelEO;
 
+    @OneToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name = "srcNodeUuid", insertable = false, updatable = false)
+    @NoView
+    private NodeEO srcNodeEO;
+
+    @OneToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name = "dstNodeUuid", insertable = false, updatable = false)
+    @NoView
+    private NodeEO dstNodeEO;
+
     @Column
     private String srcTunnelMonitorUuid;
 
     @Column
     private String dstTunnelMonitorUuid;
+
+    @Column
+    private String srcNodeUuid;
+
+    @Column
+    private String dstNodeUuid;
 
     @Column
     @Enumerated(EnumType.STRING)
@@ -181,5 +198,37 @@ public class SpeedRecordsVO {
 
     public void setTunnelEO(TunnelEO tunnelEO) {
         this.tunnelEO = tunnelEO;
+    }
+
+    public NodeEO getSrcNodeEO() {
+        return srcNodeEO;
+    }
+
+    public void setSrcNodeEO(NodeEO srcNodeEO) {
+        this.srcNodeEO = srcNodeEO;
+    }
+
+    public NodeEO getDstNodeEO() {
+        return dstNodeEO;
+    }
+
+    public void setDstNodeEO(NodeEO dstNodeEO) {
+        this.dstNodeEO = dstNodeEO;
+    }
+
+    public String getSrcNodeUuid() {
+        return srcNodeUuid;
+    }
+
+    public void setSrcNodeUuid(String srcNodeUuid) {
+        this.srcNodeUuid = srcNodeUuid;
+    }
+
+    public String getDstNodeUuid() {
+        return dstNodeUuid;
+    }
+
+    public void setDstNodeUuid(String dstNodeUuid) {
+        this.dstNodeUuid = dstNodeUuid;
     }
 }
