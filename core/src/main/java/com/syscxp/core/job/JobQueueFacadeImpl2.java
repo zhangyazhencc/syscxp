@@ -109,8 +109,13 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
             return jObj;
         }
 
-        public String dumpMessage(Message msg) {
-            return gson.toJson(msg, Message.class);
+        public Job loads(String jsonStr) {
+            Job job = gson.fromJson(jsonStr, Job.class);
+            return job;
+        }
+        
+        public String dumpJob(Job job) {
+            return gson.toJson(job, Job.class);
         }
     }
 
