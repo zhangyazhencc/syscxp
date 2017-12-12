@@ -131,10 +131,6 @@ public class RESTApiDecoder {
         return self.gsonEncoder.toJson(msg, Message.class);
     }
 
-    public static String dump(Job job) {
-        return self.gsonEncoder.toJson(job, Job.class);
-    }
-
     public static String dumpWithSession(Message msg) {
         return self.gsonEncoderWithSession.toJson(msg, Message.class);
     }

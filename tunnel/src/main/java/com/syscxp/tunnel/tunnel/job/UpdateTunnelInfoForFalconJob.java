@@ -10,6 +10,7 @@ import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconMsg;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.message.APIReply;
+import com.syscxp.header.message.GsonTransient;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
@@ -26,6 +27,7 @@ import org.springframework.beans.factory.annotation.Configurable;
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
 public class UpdateTunnelInfoForFalconJob implements Job {
+    @GsonTransient
     private static final CLogger logger = Utils.getLogger(UpdateTunnelInfoForFalconJob.class);
 
     @JobContext
@@ -42,8 +44,12 @@ public class UpdateTunnelInfoForFalconJob implements Job {
     private Long bandwidth;
     @JobContext
     private String accountUuid;
+
+    @GsonTransient
     @Autowired
     private ErrorFacade errf;
+
+    @GsonTransient
     @Autowired
     private RESTFacade restf;
 
