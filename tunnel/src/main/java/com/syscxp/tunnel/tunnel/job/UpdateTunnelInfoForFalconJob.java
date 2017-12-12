@@ -54,10 +54,10 @@ public class UpdateTunnelInfoForFalconJob implements Job {
             APIUpdateTunnelInfoForFalconMsg msg = new APIUpdateTunnelInfoForFalconMsg();
             msg.setTunnelUuid(tunnelUuid);
             msg.setBandwidth(bandwidth);
-            msg.setSwitchA_ip(switchA_ip);
-            msg.setSwitchA_vlan(switchA_vlan);
-            msg.setSwitchB_ip(switchB_ip);
-            msg.setSwitchB_vlan(switchB_vlan);
+            msg.setSwitchAIp(switchA_ip);
+            msg.setSwitchAVlan(switchA_vlan);
+            msg.setSwitchBIp(switchB_ip);
+            msg.setSwitchBVlan(switchB_vlan);
 
             String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.ALARM_SERVER_URL, RESTConstant.REST_API_CALL);
             InnerMessageHelper.setMD5(msg);
