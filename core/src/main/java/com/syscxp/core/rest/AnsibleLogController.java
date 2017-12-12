@@ -30,12 +30,4 @@ public class AnsibleLogController {
 
         return null;
     }
-
-    @ExceptionHandler(Exception.class)
-    public ModelAndView handleAllException(Exception ex) {
-        logger.warn(ex.getMessage(), ex);
-        ModelAndView model = new ModelAndView("error/generic_error");
-        model.addObject("errMsg", ex.getMessage());
-        return model;
-    }
 }
