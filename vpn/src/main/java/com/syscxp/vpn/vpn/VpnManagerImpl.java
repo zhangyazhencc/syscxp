@@ -524,6 +524,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APISLAVpnMsg msg) {
         VpnVO vo = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         APICreateSLACompensationOrderMsg orderMsg = new APICreateSLACompensationOrderMsg(getOrderMsgForVPN(vo, new SlaVpnCallBack()));
+        orderMsg.setSlaUuid(msg.getSlaUuid());
         orderMsg.setDuration(msg.getDuration());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
