@@ -113,13 +113,13 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
             Job job = gson.fromJson(jsonStr, Job.class);
             return job;
         }
-        
+
         public String dumpJob(Job job) {
             return gson.toJson(job, Job.class);
         }
     }
 
-    private final JobWire wire = new JobWire();
+    private final JobWire jobWire = new JobWire();
 
     @Override
     public boolean handleEvent(Event e) {
@@ -535,7 +535,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
             JobQueueEntryVO e = new JobQueueEntryVO();
             JobContextObject ctx = new JobContextObject(job);
             byte[] bits = SerializableHelper.writeObject(ctx);
-            e.setJobData(RESTApiDecoder.dump(job));
+            e.setJobData(jobWire.dumpJob(job));
             e.setContext(bits);
             e.setRestartable(job.getClass().isAnnotationPresent(RestartableJob.class));
             e.setName(job.getClass().getName());
