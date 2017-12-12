@@ -372,6 +372,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
         Timestamp newTime = vo.getExpireDate();
         APICreateSLACompensationOrderMsg orderMsg = new APICreateSLACompensationOrderMsg(tunnelBillingBase.getOrderMsgForInterface(vo, new SlaInterfaceCallBack()));
+        orderMsg.setSlaUuid(msg.getSlaUuid());
         orderMsg.setDuration(msg.getDuration());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
