@@ -1,5 +1,8 @@
 package com.syscxp.core.host;
 
+import com.syscxp.header.tunnel.host.HostSwitchMonitorVO;
+import com.syscxp.header.tunnel.host.HostSwitchMonitorVO_;
+import org.aspectj.weaver.patterns.ThisOrTargetAnnotationPointcut;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
@@ -11,6 +14,8 @@ import com.syscxp.header.apimediator.StopRoutingException;
 import com.syscxp.header.host.*;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.utils.network.NetworkUtils;
+
+import java.util.List;
 
 import static com.syscxp.core.Platform.argerr;
 import static com.syscxp.core.Platform.operr;
@@ -53,6 +58,13 @@ public class HostApiInterceptor implements ApiMessageInterceptor {
             bus.publish(evt);
             throw new StopRoutingException();
         }
+
+        List<HostSwitchMonitorVO> hostSwitchMonitorVOS = Q.New(HostSwitchMonitorVO.class)
+                .eq(HostSwitchMonitorVO_.hostUuid,msg.getUuid())
+                .list();
+
+        if(!hostSwitchMonitorVOS.isEmpty())
+            throw new ApiMessageInterceptionException(argerr("can not delete host whitch exist monitor interface!"));
     }
 
     private void validate(APIUpdateHostMsg msg) {
