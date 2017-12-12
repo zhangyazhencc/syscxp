@@ -254,9 +254,9 @@ public class TunnelBillingBase {
         String endpointNameA = dbf.findByUuid(tunnelSwitchPortVOA.getEndpointUuid(), EndpointVO.class).getName();
         String endpointNameZ = dbf.findByUuid(tunnelSwitchPortVOZ.getEndpointUuid(), EndpointVO.class).getName();
 
-        data.add(new DescriptionItem("endpointNameA", endpointNameA));
-        data.add(new DescriptionItem("endpointNameZ", endpointNameZ));
-        data.add(new DescriptionItem("bandwidth", vo.getBandwidth().toString()));
+        data.add(new DescriptionItem("连接点-A", endpointNameA));
+        data.add(new DescriptionItem("连接点-Z", endpointNameZ));
+        data.add(new DescriptionItem("带宽", vo.getBandwidth().toString()));
 
         return JSONObjectUtil.toJsonString(data);
     }

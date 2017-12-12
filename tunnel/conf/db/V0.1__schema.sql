@@ -523,7 +523,7 @@ CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterEO` (
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 CREATE VIEW `syscxp_tunnel`.`AliEdgeRouterVO` AS SELECT uuid, tunnelUuid, accountUuid, aliAccountUuid, aliRegionId, name, description, vbrUuid, physicalLineUuid, vlan, isCreateFlag, lastOpDate, createDate
-                                        FROM `AliEdgeRouterEO` WHERE deleted = 0;
+                                        FROM `AliEdgeRouterEO` WHERE deleted is null;
 
 ##配置表
 CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterConfigVO` (

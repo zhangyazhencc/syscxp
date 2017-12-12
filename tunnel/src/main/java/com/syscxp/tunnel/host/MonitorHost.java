@@ -226,7 +226,7 @@ public class MonitorHost extends HostBase implements Host {
                         checker.setPassword(getSelf().getPassword());
                         checker.setSshPort(getSelf().getSshPort());
                         checker.setTargetIp(getSelf().getHostIp());
-                        checker.addSrcDestPair(AnsibleConstant.SYSCXPLIB_ROOT + AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME,
+                        checker.addSrcDestPair(String.format("%s/%s", AnsibleConstant.SYSCXPLIB_ROOT, AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME),
                                 String.format("/var/lib/syscxp/monitor/package/%s",AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME));
                         checker.addSrcDestPair(srcPath, destPath);
 
