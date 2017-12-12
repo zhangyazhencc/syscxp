@@ -5,6 +5,7 @@ import com.syscxp.core.job.Job;
 import com.syscxp.core.job.JobContext;
 import com.syscxp.core.job.RestartableJob;
 import com.syscxp.header.core.ReturnValueCompletion;
+import com.syscxp.header.message.GsonTransient;
 import com.syscxp.tunnel.monitor.MonitorManagerImpl;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -18,12 +19,17 @@ import org.springframework.beans.factory.annotation.Configurable;
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
 public class UpdateIcmpJob implements Job {
+    @GsonTransient
     private static final CLogger logger = Utils.getLogger(UpdateIcmpJob.class);
 
     @JobContext
     private String tunnelUuid;
+
+    @GsonTransient
     @Autowired
     private ErrorFacade errf;
+
+    @GsonTransient
     @Autowired
     private MonitorManagerImpl monitorManager;
 

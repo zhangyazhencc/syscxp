@@ -5,6 +5,7 @@ import com.syscxp.core.job.Job;
 import com.syscxp.core.job.JobContext;
 import com.syscxp.core.job.RestartableJob;
 import com.syscxp.header.core.ReturnValueCompletion;
+import com.syscxp.header.message.GsonTransient;
 import com.syscxp.header.rest.APINoSee;
 import com.syscxp.tunnel.monitor.MonitorManagerImpl;
 import com.syscxp.utils.Utils;
@@ -19,17 +20,17 @@ import org.springframework.beans.factory.annotation.Configurable;
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
 public class StopMonitorJob implements Job {
-    @APINoSee
+    @GsonTransient
     private static final CLogger logger = Utils.getLogger(StopMonitorJob.class);
 
     @JobContext
     private String tunnelUuid;
 
-    @APINoSee
+    @GsonTransient
     @Autowired
     private ErrorFacade errf;
 
-    @APINoSee
+    @GsonTransient
     @Autowired
     private MonitorManagerImpl monitorManager;
 
