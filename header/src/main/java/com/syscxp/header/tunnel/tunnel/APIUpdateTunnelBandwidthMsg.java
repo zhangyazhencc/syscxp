@@ -14,8 +14,6 @@ import com.syscxp.header.tunnel.TunnelConstant;
 public class APIUpdateTunnelBandwidthMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
-    @APIParam(emptyString = false,required = false,maxLength = 32)
-    private String accountUuid;
     @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
 
@@ -25,18 +23,6 @@ public class APIUpdateTunnelBandwidthMsg extends APIMessage {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public String getAccountUuid() {
-        if(getSession().getType() == AccountType.SystemAdmin){
-            return accountUuid;
-        }else{
-            return getSession().getAccountUuid();
-        }
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
     }
 
     public String getBandwidthOfferingUuid() {

@@ -257,10 +257,10 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         FalconApiCommands.Tunnel tunnel = new FalconApiCommands.Tunnel();
         tunnel.setTunnel_id(msg.getTunnelUuid());
         tunnel.setUser_id(msg.getSession().getAccountUuid());
-        tunnel.setEndpointA_vid(msg.getSwitchA_vlan());
-        tunnel.setEndpointB_vid(msg.getSwitchB_vlan());
-        tunnel.setEndpointA_ip(msg.getSwitchA_ip());
-        tunnel.setEndpointB_ip(msg.getSwitchB_ip());
+        tunnel.setEndpointA_vid(msg.getSwitchAVlan());
+        tunnel.setEndpointB_vid(msg.getSwitchBVlan());
+        tunnel.setEndpointA_ip(msg.getSwitchAIp());
+        tunnel.setEndpointB_ip(msg.getSwitchBIp());
         tunnel.setBandwidth(msg.getBandwidth());
 
         List<FalconApiCommands.Rule> rulelist = rulelist = new ArrayList<>();

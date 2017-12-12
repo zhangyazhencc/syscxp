@@ -14,6 +14,8 @@ public class SpeedRecordsVO_ {
     public static volatile SingularAttribute<TunnelMonitorVO, String> tunnelUuid;
     public static volatile SingularAttribute<TunnelMonitorVO, String> srcTunnelMonitorUuid;
     public static volatile SingularAttribute<TunnelMonitorVO, String> dstunnelMonitorUuid;
+    public static volatile SingularAttribute<TunnelMonitorVO, String> srcNodeUuid;
+    public static volatile SingularAttribute<TunnelMonitorVO, String> dstNodeUuid;
     public static volatile SingularAttribute<TunnelMonitorVO, ProtocolType> protocolType;
     public static volatile SingularAttribute<TunnelMonitorVO, SpeedRecordStatus> status;
 }

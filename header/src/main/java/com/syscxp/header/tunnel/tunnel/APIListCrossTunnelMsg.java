@@ -13,8 +13,6 @@ import com.syscxp.header.tunnel.TunnelConstant;
 public class APIListCrossTunnelMsg extends APISyncCallMessage {
     @APIParam(emptyString = false, resourceType = InterfaceVO.class)
     private String uuid;
-    @APIParam(required = false)
-    private String accountUuid;
 
     public String getUuid() {
         return uuid;
@@ -24,15 +22,4 @@ public class APIListCrossTunnelMsg extends APISyncCallMessage {
         this.uuid = uuid;
     }
 
-    public String getAccountUuid() {
-        if(getSession().getType() == AccountType.SystemAdmin){
-            return accountUuid;
-        }else{
-            return getSession().getAccountUuid();
-        }
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
 }

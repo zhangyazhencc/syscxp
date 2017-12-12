@@ -14,9 +14,6 @@ public class APIDeleteTunnelMsg extends APIMessage {
     @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
 
-    @APIParam(emptyString = false,required = false,maxLength = 32)
-    private String accountUuid;
-
     public String getUuid() {
         return uuid;
     }
@@ -25,15 +22,4 @@ public class APIDeleteTunnelMsg extends APIMessage {
         this.uuid = uuid;
     }
 
-    public String getAccountUuid() {
-        if(getSession().getType() == AccountType.SystemAdmin){
-            return accountUuid;
-        }else{
-            return getSession().getAccountUuid();
-        }
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
-    }
 }

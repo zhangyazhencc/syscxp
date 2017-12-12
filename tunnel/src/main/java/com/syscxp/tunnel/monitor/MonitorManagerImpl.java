@@ -987,6 +987,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         vo.setProtocolType(msg.getProtocolType());
         vo.setDuration(msg.getDuration());
         vo.setStatus(SpeedRecordStatus.TESTING);
+        vo.setSrcNodeUuid(msg.getSrcNodeUuid());
+        vo.setDstNodeUuid(msg.getDstNodeUuid());
 
         if (msg.getSession() != null) {
             if (StringUtils.isNotEmpty(msg.getSession().getUuid())) {
