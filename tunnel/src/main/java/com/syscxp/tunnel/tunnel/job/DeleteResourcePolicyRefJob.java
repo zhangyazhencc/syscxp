@@ -27,17 +27,14 @@ import org.springframework.beans.factory.annotation.Configurable;
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
 public class DeleteResourcePolicyRefJob implements Job {
-    @GsonTransient
     private static final CLogger logger = Utils.getLogger(DeleteResourcePolicyRefJob.class);
 
     @JobContext
     private String tunnelUuid;
 
-    @GsonTransient
     @Autowired
     private ErrorFacade errf;
 
-    @GsonTransient
     @Autowired
     private RESTFacade restf;
 

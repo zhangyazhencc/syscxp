@@ -39,6 +39,7 @@ import com.syscxp.utils.serializable.SerializableHelper;
 
 import javax.persistence.TypedQuery;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -78,7 +79,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                 new ExclusionStrategy() {
                     @Override
                     public boolean shouldSkipField(FieldAttributes fieldAttributes) {
-                        return fieldAttributes.getAnnotation(GsonTransient.class) != null;
+                        return fieldAttributes.getAnnotation(JobContext.class) == null;
                     }
 
                     @Override
@@ -330,7 +331,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                 }
 
                 entry.setJobQueueId(qvo.getId());
-                entry.setIssuerManagementNodeId(Platform.getManagementServerId());
+                entry.setIssuerManagementNodeId(qvo.getWorkerManagementNodeId());
                 entry.setState(JobState.Pending);
 
                 JobQueueEntryVO ne = dbf.getEntityManager().merge(entry);
