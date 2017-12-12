@@ -210,9 +210,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         for (String endpointUuid : msg.getEndpointUuids()) {
             Q q = Q.New(HostInterfaceVO.class).eq(HostInterfaceVO_.endpointUuid, endpointUuid);
             if (q.count() > 0) {
-                map.put(endpointUuid, false);
-            } else {
                 map.put(endpointUuid, true);
+            } else {
+                map.put(endpointUuid, false);
             }
         }
         reply.setMap(map);
