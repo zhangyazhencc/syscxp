@@ -29,6 +29,17 @@
                 <value>application/json;charset=UTF-8</value>
             </list>
         </property>
+        <property name="objectMapper">
+            <bean class="com.fasterxml.jackson.databind.ObjectMapper">
+                <property name="serializerProvider">
+                    <bean class="com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.Impl">
+                        <property name="nullValueSerializer">
+                            <bean class="com.syscxp.core.jsonlabel.NullJsonSerializer"></bean>
+                        </property>
+                    </bean>
+                </property>
+            </bean>
+        </property>
     </bean>
 
     <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
