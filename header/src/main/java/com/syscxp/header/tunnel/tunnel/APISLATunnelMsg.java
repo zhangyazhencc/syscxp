@@ -19,8 +19,6 @@ public class APISLATunnelMsg extends APISyncCallMessage {
     private String slaUuid;
     @APIParam
     private Integer duration;
-    @APIParam(emptyString = false,maxLength = 32)
-    private String accountUuid;
 
     public String getUuid() {
         return uuid;
@@ -36,14 +34,6 @@ public class APISLATunnelMsg extends APISyncCallMessage {
 
     public void setDuration(Integer duration) {
         this.duration = duration;
-    }
-
-    public String getAccountUuid() {
-        return accountUuid;
-    }
-
-    public void setAccountUuid(String accountUuid) {
-        this.accountUuid = accountUuid;
     }
 
     public String getSlaUuid() {

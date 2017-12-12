@@ -43,7 +43,7 @@ public class TunnelQuotaOperator implements Quota.QuotaOperator {
         long currentUsed = getUsedTunnelNum(msg.getAccountUuid());
 
         long ifaceQuotaNum = pairs.get(TunnelConstant.QUOTA_INTERFACE_NUM).getValue();
-        long ifaceCurrentUsed = getUsedTunnelNum(msg.getAccountUuid());
+        long ifaceCurrentUsed = getUsedInterfaceNum(msg.getAccountUuid());
         if (msg.getInterfaceAUuid() == null) {
             new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_INTERFACE_NUM, ifaceCurrentUsed, ifaceQuotaNum);
         }
