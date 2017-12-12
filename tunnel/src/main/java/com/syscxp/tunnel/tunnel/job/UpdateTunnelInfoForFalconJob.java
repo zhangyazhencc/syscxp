@@ -31,13 +31,13 @@ public class UpdateTunnelInfoForFalconJob implements Job {
     @JobContext
     private String tunnelUuid;
     @JobContext
-    private Integer switchA_vlan;
+    private Integer switchAVlan;
     @JobContext
-    private String switchA_ip;
+    private String switchAIp;
     @JobContext
-    private Integer switchB_vlan;
+    private Integer switchBVlan;
     @JobContext
-    private String switchB_ip;
+    private String switchBIp;
     @JobContext
     private Long bandwidth;
     @Autowired
@@ -54,10 +54,10 @@ public class UpdateTunnelInfoForFalconJob implements Job {
             APIUpdateTunnelInfoForFalconMsg msg = new APIUpdateTunnelInfoForFalconMsg();
             msg.setTunnelUuid(tunnelUuid);
             msg.setBandwidth(bandwidth);
-            msg.setSwitchAIp(switchA_ip);
-            msg.setSwitchAVlan(switchA_vlan);
-            msg.setSwitchBIp(switchB_ip);
-            msg.setSwitchBVlan(switchB_vlan);
+            msg.setSwitchAIp(switchAIp);
+            msg.setSwitchAVlan(switchAVlan);
+            msg.setSwitchBIp(switchBIp);
+            msg.setSwitchBVlan(switchBVlan);
 
             String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.ALARM_SERVER_URL, RESTConstant.REST_API_CALL);
             InnerMessageHelper.setMD5(msg);
@@ -88,36 +88,36 @@ public class UpdateTunnelInfoForFalconJob implements Job {
         this.tunnelUuid = tunnelUuid;
     }
 
-    public Integer getSwitchA_vlan() {
-        return switchA_vlan;
+    public Integer getSwitchAVlan() {
+        return switchAVlan;
     }
 
-    public void setSwitchA_vlan(Integer switchA_vlan) {
-        this.switchA_vlan = switchA_vlan;
+    public void setSwitchAVlan(Integer switchAVlan) {
+        this.switchAVlan = switchAVlan;
     }
 
-    public String getSwitchA_ip() {
-        return switchA_ip;
+    public String getSwitchAIp() {
+        return switchAIp;
     }
 
-    public void setSwitchA_ip(String switchA_ip) {
-        this.switchA_ip = switchA_ip;
+    public void setSwitchAIp(String switchAIp) {
+        this.switchAIp = switchAIp;
     }
 
-    public Integer getSwitchB_vlan() {
-        return switchB_vlan;
+    public Integer getSwitchBVlan() {
+        return switchBVlan;
     }
 
-    public void setSwitchB_vlan(Integer switchB_vlan) {
-        this.switchB_vlan = switchB_vlan;
+    public void setSwitchBVlan(Integer switchBVlan) {
+        this.switchBVlan = switchBVlan;
     }
 
-    public String getSwitchB_ip() {
-        return switchB_ip;
+    public String getSwitchBIp() {
+        return switchBIp;
     }
 
-    public void setSwitchB_ip(String switchB_ip) {
-        this.switchB_ip = switchB_ip;
+    public void setSwitchBIp(String switchBIp) {
+        this.switchBIp = switchBIp;
     }
 
     public Long getBandwidth() {
