@@ -372,6 +372,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
         Timestamp newTime = vo.getExpireDate();
         APICreateSLACompensationOrderMsg orderMsg = new APICreateSLACompensationOrderMsg(tunnelBillingBase.getOrderMsgForInterface(vo, new SlaInterfaceCallBack()));
+        orderMsg.setSlaUuid(msg.getSlaUuid());
         orderMsg.setDuration(msg.getDuration());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
@@ -1364,7 +1365,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setUnits(tunnelBillingBase.getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), nodeAUuid,
                 nodeZUuid, innerEndpointUuid));
         orderMsg.setProductType(ProductType.TUNNEL);
-        orderMsg.setAccountUuid(msg.getAccountUuid());
+        orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         orderMsg.setExpiredTime(vo.getExpireDate());
@@ -1400,11 +1401,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 云专线续费
      **/
     private void handle(APIRenewTunnelMsg msg) {
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
         APIRenewTunnelReply reply
                 = renewTunnel(msg.getUuid(),
                 msg.getDuration(),
                 msg.getProductChargeModel(),
-                msg.getAccountUuid(),
+                vo.getOwnerAccountUuid(),
                 msg.getSession().getAccountUuid());
 
         bus.reply(msg, reply);
@@ -1414,12 +1416,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 云专线自动续费
      **/
     private void handle(APIRenewAutoTunnelMsg msg) {
-
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
         APIRenewTunnelReply reply
                 = renewTunnel(msg.getUuid(),
                 msg.getDuration(),
                 msg.getProductChargeModel(),
-                msg.getAccountUuid(),
+                vo.getOwnerAccountUuid(),
                 msg.getSession().getAccountUuid());
 
         bus.reply(msg, reply);
@@ -1487,12 +1489,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         SalTunnelCallBack sc = new SalTunnelCallBack();
         APICreateSLACompensationOrderMsg slaCompensationOrderMsg =
                 new APICreateSLACompensationOrderMsg();
+        slaCompensationOrderMsg.setSlaUuid(msg.getSlaUuid());
         slaCompensationOrderMsg.setProductUuid(vo.getUuid());
         slaCompensationOrderMsg.setProductName(vo.getName());
         slaCompensationOrderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo));
         slaCompensationOrderMsg.setProductType(ProductType.TUNNEL);
         slaCompensationOrderMsg.setDuration(msg.getDuration());
-        slaCompensationOrderMsg.setAccountUuid(msg.getAccountUuid());
+        slaCompensationOrderMsg.setAccountUuid(vo.getOwnerAccountUuid());
         slaCompensationOrderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         slaCompensationOrderMsg.setStartTime(dbf.getCurrentSqlTime());
         slaCompensationOrderMsg.setExpiredTime(vo.getExpireDate());
@@ -1605,7 +1608,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 orderMsg.setProductUuid(vo.getUuid());
                 orderMsg.setProductType(ProductType.TUNNEL);
                 orderMsg.setProductName(vo.getName());
-                orderMsg.setAccountUuid(msg.getAccountUuid());
+                orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
                 orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
                 orderMsg.setStartTime(dbf.getCurrentSqlTime());
                 orderMsg.setExpiredTime(vo.getExpireDate());
@@ -1710,7 +1713,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         orderMsg.setProductUuid(vo.getUuid());
         orderMsg.setProductType(ProductType.TUNNEL);
         orderMsg.setProductName(vo.getName());
-        orderMsg.setAccountUuid(msg.getAccountUuid());
+        orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
         orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(dbf.getCurrentSqlTime());
         if (vo.getExpireDate() == null) {
@@ -2077,6 +2080,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 通过共点接口查询共点专线
      */
     private void handle(APIListCrossTunnelMsg msg) {
+        InterfaceVO vo = dbf.findByUuid(msg.getUuid(),InterfaceVO.class);
         APIListCrossTunnelReply reply = new APIListCrossTunnelReply();
         List<String> tunnelUuids = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
@@ -2086,7 +2090,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (!tunnelUuids.isEmpty()) {
             tunnelVOS = Q.New(TunnelVO.class).
                     in(TunnelVO_.uuid, tunnelUuids).
-                    eq(TunnelVO_.accountUuid, msg.getAccountUuid()).
+                    eq(TunnelVO_.accountUuid, vo.getOwnerAccountUuid()).
                     eq(TunnelVO_.state, TunnelState.Enabled)
                     .list();
         }
@@ -2201,7 +2205,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         APIGetRenewProductPriceMsg rpmsg = new APIGetRenewProductPriceMsg();
 
-        rpmsg.setAccountUuid(vo.getAccountUuid());
+        rpmsg.setAccountUuid(vo.getOwnerAccountUuid());
         rpmsg.setProductUuid(msg.getUuid());
         rpmsg.setDuration(msg.getDuration());
         rpmsg.setProductChargeModel(msg.getProductChargeModel());
@@ -2230,6 +2234,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 调整带宽时查询云专线差价
      */
     private void handle(APIGetModifyTunnelPriceDiffMsg msg) {
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
         TunnelSwitchPortVO tunnelSwitchPortVOA = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "A")
@@ -2253,7 +2258,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
                 endpointVOZ.getNodeUuid(), innerEndpointUuid));
         pmsg.setProductUuid(msg.getUuid());
-        pmsg.setAccountUuid(msg.getAccountUuid());
+        pmsg.setAccountUuid(vo.getOwnerAccountUuid());
         pmsg.setExpiredTime(dbf.findByUuid(msg.getUuid(), TunnelVO.class).getExpireDate());
 
         APIGetModifyProductPriceDiffReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
@@ -2275,7 +2280,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         APIGetUnscribeProductPriceDiffMsg upmsg = new APIGetUnscribeProductPriceDiffMsg();
-        upmsg.setAccountUuid(msg.getAccountUuid());
+        upmsg.setAccountUuid(vo.getOwnerAccountUuid());
         upmsg.setProductUuid(msg.getUuid());
         if (vo.getExpireDate() == null) {
             upmsg.setExpiredTime(dbf.getCurrentSqlTime());
