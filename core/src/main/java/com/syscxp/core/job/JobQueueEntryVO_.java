@@ -8,6 +8,8 @@ import java.util.Date;
 public class JobQueueEntryVO_ {
     public static volatile SingularAttribute<JobQueueEntryVO, Long> id;
     public static volatile SingularAttribute<JobQueueEntryVO, Long> jobQueueId;
+    public static volatile SingularAttribute<JobQueueEntryVO, Date> takenDate;
+    public static volatile SingularAttribute<JobQueueEntryVO, Long> takenTimes;
     public static volatile SingularAttribute<JobQueueEntryVO, Date> inDate;
     public static volatile SingularAttribute<JobQueueEntryVO, Date> doneDate;
     public static volatile SingularAttribute<JobQueueEntryVO, JobState> state;
@@ -15,6 +17,7 @@ public class JobQueueEntryVO_ {
     public static volatile SingularAttribute<JobQueueEntryVO, Boolean> restartable;
     public static volatile SingularAttribute<JobQueueEntryVO, String> issuerManagementNodeId;
     public static volatile SingularAttribute<JobQueueEntryVO, String> name;
+    public static volatile SingularAttribute<JobQueueEntryVO, String> jobData;
     public static volatile SingularAttribute<JobQueueEntryVO, String> errText;
     public static volatile SingularAttribute<JobQueueEntryVO, Byte[]> context;
 }

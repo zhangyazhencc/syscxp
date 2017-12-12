@@ -38,6 +38,7 @@ CREATE TABLE  `JobQueueVO` (
 CREATE TABLE  `JobQueueEntryVO` (
     `id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
     `name` varchar(255) NOT NULL,
+    `jobData` text NOT NULL,
     `jobQueueId` bigint unsigned NOT NULL,
     `state` varchar(128) NOT NULL,
     `context` blob DEFAULT NULL,
@@ -45,6 +46,8 @@ CREATE TABLE  `JobQueueEntryVO` (
     `issuerManagementNodeId` varchar(32) DEFAULT NULL,
     `restartable` tinyint(1) unsigned NOT NULL DEFAULT 0,
     `inDate` timestamp DEFAULT CURRENT_TIMESTAMP,
+    `takenDate` timestamp NULL,
+    `takenTimes` bigint unsigned DEFAULT 0,
     `doneDate` timestamp NULL,
     `errText` text DEFAULT NULL,
     PRIMARY KEY  (`id`)

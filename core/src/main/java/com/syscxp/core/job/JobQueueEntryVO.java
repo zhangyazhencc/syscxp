@@ -23,9 +23,18 @@ public class JobQueueEntryVO {
     private String name;
 
     @Column
+    private String jobData;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private JobState state;
-    
+
+    @Column
+    private Date takenDate;
+
+    @Column
+    private long takenTimes;
+
     @Column
     private Date inDate;
     
@@ -138,5 +147,29 @@ public class JobQueueEntryVO {
 
     public void setRestartable(boolean restartable) {
         this.restartable = restartable;
+    }
+
+    public Date getTakenDate() {
+        return takenDate;
+    }
+
+    public void setTakenDate(Date takenDate) {
+        this.takenDate = takenDate;
+    }
+
+    public long getTakenTimes() {
+        return takenTimes;
+    }
+
+    public void setTakenTimes(long takenTimes) {
+        this.takenTimes = takenTimes;
+    }
+
+    public String getJobData() {
+        return jobData;
+    }
+
+    public void setJobData(String jobData) {
+        this.jobData = jobData;
     }
 }

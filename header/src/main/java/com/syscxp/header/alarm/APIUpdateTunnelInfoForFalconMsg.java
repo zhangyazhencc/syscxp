@@ -8,6 +8,7 @@ import com.syscxp.header.message.APISyncCallMessage;
  * Created by wangwg on 2017/11/02
  */
 @InnerCredentialCheck
+//@SuppressCredentialCheck
 public class APIUpdateTunnelInfoForFalconMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false,maxLength = 32)
@@ -27,6 +28,9 @@ public class APIUpdateTunnelInfoForFalconMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false)
     private Long bandwidth;
+
+    @APIParam(emptyString = false)
+    private String accountUuid;
 
     public String getTunnelUuid() {
         return tunnelUuid;
@@ -74,5 +78,13 @@ public class APIUpdateTunnelInfoForFalconMsg extends APISyncCallMessage {
 
     public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

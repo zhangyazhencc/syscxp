@@ -1,6 +1,7 @@
 package com.syscxp.core.rest;
 
 import com.google.gson.*;
+import com.syscxp.core.job.Job;
 import com.syscxp.header.account.APIValidateAccountMsg;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
@@ -128,6 +129,10 @@ public class RESTApiDecoder {
     
     public static String dump(Message msg) {
         return self.gsonEncoder.toJson(msg, Message.class);
+    }
+
+    public static String dump(Job job) {
+        return self.gsonEncoder.toJson(job, Job.class);
     }
 
     public static String dumpWithSession(Message msg) {

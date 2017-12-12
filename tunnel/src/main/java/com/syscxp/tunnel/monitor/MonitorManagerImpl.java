@@ -7,7 +7,6 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
-import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.core.workflow.FlowChainBuilder;
@@ -20,7 +19,6 @@ import com.syscxp.header.falconapi.FalconApiCommands;
 import com.syscxp.header.falconapi.FalconApiRestConstant;
 import com.syscxp.header.host.*;
 import com.syscxp.header.identity.SessionInventory;
-import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.rest.RESTFacade;
@@ -63,7 +61,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     @Autowired
     private ThreadFacade thdf;
     @Autowired
-    private RESTFacade evtf;
+    private RESTFacade restf;
     @Autowired
     private IdentityInterceptor identityInterceptor;
 
@@ -750,7 +748,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
             logger.info(String.format("Begin to send controller command: url: %s command: %s", url, jsonCommand));
 
-            response = evtf.syncJsonPost(url, jsonCommand, ControllerCommands.ControllerRestResponse.class);
+            response = restf.syncJsonPost(url, jsonCommand, ControllerCommands.ControllerRestResponse.class);
         } catch (Exception e) {
             response.setSuccess(false);
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
@@ -779,7 +777,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             String icmpJson = JSONObjectUtil.toJsonString(icmp);
 
             logger.info(String.format("Begin to send falcon api command: url: %s command: %s", falconUrl, icmpJson));
-            falconRsp = evtf.syncJsonPost(falconUrl, icmpJson, FalconApiCommands.RestResponse.class);
+            falconRsp = restf.syncJsonPost(falconUrl, icmpJson, FalconApiCommands.RestResponse.class);
 
         } catch (Exception e) {
             falconRsp.setSuccess(false);
@@ -849,7 +847,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             falconApiCommands.setTunnel_id(tunnelUuid);
             String deleteJson = JSONObjectUtil.toJsonString(falconApiCommands);
 
-            response = evtf.syncJsonPost(url, deleteJson, FalconApiCommands.RestResponse.class);
+            response = restf.syncJsonPost(url, deleteJson, FalconApiCommands.RestResponse.class);
         } catch (Exception e) {
             response.setSuccess(false);
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
@@ -893,7 +891,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         try {
             logger.info(String.format("Begin to send agent command: url: %s command: %s", url, command));
 
-            response = evtf.syncJsonPost(url,
+            response = restf.syncJsonPost(url,
                     command, MonitorAgentCommands.RestResponse.class);
         } catch (Exception e) {
             response.setSuccess(false);
@@ -1149,7 +1147,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         String command = JSONObjectUtil.toJsonString(map);
         String url = getMonitorAgentUrl(msg.getHostIp(), MonitorAgentConstant.IPERF_RESULT);
 
-        String resp = evtf.getRESTTemplate().postForObject(url, command, String.class);
+        String resp = restf.getRESTTemplate().postForObject(url, command, String.class);
 
         results = JSON.parseArray(resp, MonitorAgentCommands.SpeedResult.class);
 
@@ -1214,7 +1212,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         String command = JSONObjectUtil.toJsonString(map);
         String url = getMonitorAgentUrl(msg.getHostIp(), MonitorAgentConstant.NETTOOL_RESULT);
 
-        String resp = evtf.getRESTTemplate().postForObject(url, command, String.class);
+        String resp = restf.getRESTTemplate().postForObject(url, command, String.class);
 
         result = JSON.parseArray(resp, MonitorAgentCommands.NettoolResult.class);
 
@@ -1245,7 +1243,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         String condition = getOpenTSDBQueryCondition(msg);
 
         logger.info(String.format("Begin to get OpenTSDB data url: %s condition: %s", url, condition));
-        String resp = evtf.getRESTTemplate().postForObject(url, condition, String.class);
+        String resp = restf.getRESTTemplate().postForObject(url, condition, String.class);
         List<OpenTSDBCommands.QueryResult> results = JSON.parseArray(resp, OpenTSDBCommands.QueryResult.class);
         for (OpenTSDBCommands.QueryResult result : results) {
             String mIP = result.getTags().getEndpoint();
@@ -1711,7 +1709,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     public boolean start() {
         resetSpeedRecordStatus();
 
-        evtf.registerSyncHttpCallHandler("FalconTunnel", MonitorAgentCommands.FalconGetTunnelCommand.class,
+        restf.registerSyncHttpCallHandler("FalconTunnel", MonitorAgentCommands.FalconGetTunnelCommand.class,
                 cmd -> {
 
                     MonitorAgentCommands.FalconResponse falconResponse = new MonitorAgentCommands.FalconResponse();
