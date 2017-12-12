@@ -1,5 +1,6 @@
 package com.syscxp.core.job;
 
+import com.google.gson.*;
 import com.syscxp.core.cloudbus.CloudBusEventListener;
 import com.syscxp.core.cloudbus.EventSubscriberReceipt;
 import com.syscxp.core.db.DatabaseFacade;
@@ -9,6 +10,10 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.AsyncThread;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
+import com.syscxp.header.message.GsonTransient;
+import com.syscxp.header.message.Message;
+import com.syscxp.utils.gson.GsonTypeCoder;
+import com.syscxp.utils.gson.GsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +38,7 @@ import com.syscxp.utils.serializable.SerializableHelper;
 
 import javax.persistence.TypedQuery;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -64,6 +70,50 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
     private volatile boolean stopped = false;
     private EventSubscriberReceipt unsubscriber;
+
+    private class JobWire implements GsonTypeCoder<Job> {
+
+        private final Gson gson = new GsonUtil().setCoder(Job.class, this).setExclusionStrategies(new ExclusionStrategy[]{
+                new ExclusionStrategy() {
+                    @Override
+                    public boolean shouldSkipField(FieldAttributes fieldAttributes) {
+                        return fieldAttributes.getAnnotation(GsonTransient.class) != null;
+                    }
+
+                    @Override
+                    public boolean shouldSkipClass(Class<?> aClass) {
+                        return false;
+                    }
+                }
+        }).create();
+
+        @Override
+        public Job deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject jObj = jsonElement.getAsJsonObject();
+            Map.Entry<String, JsonElement> entry = jObj.entrySet().iterator().next();
+            String className = entry.getKey();
+            Class<?> clazz;
+            try {
+                clazz = Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                throw new JsonParseException(String.format("Unable to deserialize class[%s]", className), e);
+            }
+            return (Job) gson.fromJson(entry.getValue(), clazz);
+        }
+
+        @Override
+        public JsonElement serialize(Job job, Type type, JsonSerializationContext jsonSerializationContext) {
+            JsonObject jObj = new JsonObject();
+            jObj.add(job.getClass().getName(), gson.toJsonTree(job));
+            return jObj;
+        }
+
+        public String dumpMessage(Message msg) {
+            return gson.toJson(msg, Message.class);
+        }
+    }
+
+    private final JobWire wire = new JobWire();
 
     @Override
     public boolean handleEvent(Event e) {
