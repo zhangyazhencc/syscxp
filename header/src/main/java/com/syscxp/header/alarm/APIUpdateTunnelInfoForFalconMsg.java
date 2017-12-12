@@ -1,7 +1,6 @@
 package com.syscxp.header.alarm;
 
 import com.syscxp.header.identity.InnerCredentialCheck;
-import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
@@ -29,6 +28,9 @@ public class APIUpdateTunnelInfoForFalconMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false)
     private Long bandwidth;
+
+    @APIParam(emptyString = false)
+    private String userUuid;
 
     public String getTunnelUuid() {
         return tunnelUuid;
@@ -76,5 +78,13 @@ public class APIUpdateTunnelInfoForFalconMsg extends APISyncCallMessage {
 
     public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
+    }
+
+    public String getUserUuid() {
+        return userUuid;
+    }
+
+    public void setUserUuid(String userUuid) {
+        this.userUuid = userUuid;
     }
 }

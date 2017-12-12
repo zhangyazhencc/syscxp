@@ -256,7 +256,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
     private void handle(APIUpdateTunnelInfoForFalconMsg msg) {
         FalconApiCommands.Tunnel tunnel = new FalconApiCommands.Tunnel();
         tunnel.setTunnel_id(msg.getTunnelUuid());
-        tunnel.setUser_id(msg.getSession().getAccountUuid());
+        tunnel.setUser_id(msg.getUserUuid());
         tunnel.setEndpointA_vid(msg.getSwitchAVlan());
         tunnel.setEndpointB_vid(msg.getSwitchBVlan());
         tunnel.setEndpointA_ip(msg.getSwitchAIp());
@@ -306,18 +306,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             reply.setError(Platform.argerr("fail to sync strategy to falcon! Error: %s",response.getMsg()));
 
         bus.reply(msg, reply);
-
-//        HttpHeaders requestHeaders = new HttpHeaders();
-//        requestHeaders.setContentType(MediaType.APPLICATION_JSON);
-//        requestHeaders.setContentLength(commandParam.length());
-//        HttpEntity<String> req = new HttpEntity<>(commandParam, requestHeaders);
-//        ResponseEntity<FalconApiCommands.RestResponse> rsp = restf.getRESTTemplate().postForEntity(url, req, FalconApiCommands.RestResponse.class);
-//        FalconApiCommands.RestResponse res = rsp.getBody();
-//        if (!res.isSuccess()) {
-//
-//            throw new OperationFailureException(Platform.operr("falcon fail "));
-//        }
-
 
     }
 
