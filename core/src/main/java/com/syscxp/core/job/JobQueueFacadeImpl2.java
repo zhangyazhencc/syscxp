@@ -481,7 +481,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
             JobQueueEntryVO e = new JobQueueEntryVO();
             JobContextObject ctx = new JobContextObject(job);
             byte[] bits = SerializableHelper.writeObject(ctx);
-            e.setJobData(JSONObjectUtil.toJsonString(job));
+            e.setJobData(RESTApiDecoder.dump(job));
             e.setContext(bits);
             e.setRestartable(job.getClass().isAnnotationPresent(RestartableJob.class));
             e.setName(job.getClass().getName());
