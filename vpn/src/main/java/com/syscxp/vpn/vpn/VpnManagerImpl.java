@@ -1189,9 +1189,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
 
     private void validate(APIUpdateVpnMsg msg) {
-        if (!msg.getSession().isAdminSession() && msg.getMaxModifies() != null) {
-            throw new ApiMessageInterceptionException(
-                    argerr("The account[name:%s] has no permission modify.", msg.getName()));
+        if (!msg.getSession().isAdminSession()) {
+            msg.setMaxModifies(null);
         }
 
         Q q = Q.New(VpnVO.class).eq(VpnVO_.name, msg.getName()).notEq(VpnVO_.uuid, msg.getUuid());
