@@ -1489,6 +1489,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         SalTunnelCallBack sc = new SalTunnelCallBack();
         APICreateSLACompensationOrderMsg slaCompensationOrderMsg =
                 new APICreateSLACompensationOrderMsg();
+        slaCompensationOrderMsg.setSlaUuid(msg.getSlaUuid());
         slaCompensationOrderMsg.setProductUuid(vo.getUuid());
         slaCompensationOrderMsg.setProductName(vo.getName());
         slaCompensationOrderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo));
