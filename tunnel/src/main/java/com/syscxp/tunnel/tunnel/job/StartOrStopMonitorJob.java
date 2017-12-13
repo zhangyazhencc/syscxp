@@ -6,7 +6,6 @@ import com.syscxp.core.job.JobContext;
 import com.syscxp.core.job.RestartableJob;
 import com.syscxp.core.job.UniqueResourceJob;
 import com.syscxp.header.core.ReturnValueCompletion;
-import com.syscxp.header.message.GsonTransient;
 import com.syscxp.tunnel.monitor.MonitorManagerImpl;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -20,11 +19,14 @@ import org.springframework.beans.factory.annotation.Configurable;
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
 @UniqueResourceJob
-public class StartMonitorJob implements Job {
-    private static final CLogger logger = Utils.getLogger(StartMonitorJob.class);
+public class StartOrStopMonitorJob implements Job {
+    private static final CLogger logger = Utils.getLogger(StartOrStopMonitorJob.class);
 
     @JobContext
     private String tunnelUuid;
+
+    @JobContext
+    private boolean isStart;
 
     @Autowired
     private ErrorFacade errf;
@@ -36,10 +38,18 @@ public class StartMonitorJob implements Job {
     public void run(ReturnValueCompletion<Object> completion) {
 
 		try {
-            logger.info("开始执行JOB【开启监控】");
-            monitorManager.startControllerMonitor(tunnelUuid);
+		    if(isStart){
+                logger.info("开始执行JOB【开启监控】");
+                monitorManager.startControllerMonitor(tunnelUuid);
 
-            completion.success(null);
+                completion.success(null);
+            }else{
+                logger.info("开始执行JOB【关闭监控】");
+                monitorManager.stopControllerMonitor(tunnelUuid);
+
+                completion.success(null);
+            }
+
 		} catch (Exception e) {
 			logger.warn(e.getMessage(), e);
 
@@ -54,6 +64,14 @@ public class StartMonitorJob implements Job {
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
+    }
+
+    public boolean isStart() {
+        return isStart;
+    }
+
+    public void setStart(boolean start) {
+        isStart = start;
     }
 
     @Override
