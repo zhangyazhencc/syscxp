@@ -32,8 +32,13 @@
             <syscxp:extension interface="com.syscxp.header.Component"/>
             <syscxp:extension interface="com.syscxp.header.Service"/>
             <syscxp:extension interface="com.syscxp.header.apimediator.ApiMessageInterceptor"/>
+            <syscxp:extension interface="com.syscxp.header.host.HostDeleteExtensionPoint"/>
         </syscxp:plugin>
     </bean>
 
-
+    <bean id="HostExtensionPointEmitter" class="com.syscxp.core.host.HostExtensionPointEmitter">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.header.Component" />
+        </syscxp:plugin>
+    </bean>
 </beans>

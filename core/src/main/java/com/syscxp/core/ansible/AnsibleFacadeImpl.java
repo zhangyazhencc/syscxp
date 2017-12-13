@@ -1,16 +1,10 @@
 package com.syscxp.core.ansible;
 
 import com.syscxp.core.CoreGlobalProperty;
-import com.syscxp.core.cloudbus.MessageSafe;
-import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.header.rest.RESTFacade;
-import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.commons.io.DirectoryWalker;
-import org.apache.commons.io.FileUtils;
-import org.ini4j.Wini;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.core.cloudbus.MessageSafe;
+import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.thread.SyncTask;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
@@ -19,16 +13,19 @@ import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.Message;
+import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.DebugUtils;
 import com.syscxp.utils.ShellUtils;
-import com.syscxp.utils.ShellUtils.ShellException;
 import com.syscxp.utils.StringDSL;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.path.PathUtil;
-
-import static com.syscxp.core.Platform.operr;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.DirectoryWalker;
+import org.apache.commons.io.FileUtils;
+import org.ini4j.Wini;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,6 +33,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.*;
+
+import static com.syscxp.core.Platform.operr;
 
 /**
  */

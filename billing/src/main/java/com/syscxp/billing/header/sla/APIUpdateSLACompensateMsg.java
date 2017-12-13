@@ -28,6 +28,9 @@ public class APIUpdateSLACompensateMsg extends APIMessage {
     @APIParam(emptyString =false,required = false)
     private String comment;
 
+    @APIParam(emptyString = false,required = false)
+    private String description;
+
     @APIParam()
     private Integer duration;
 
@@ -118,5 +121,13 @@ public class APIUpdateSLACompensateMsg extends APIMessage {
 
     public void setTimeEnd(Timestamp timeEnd) {
         this.timeEnd = timeEnd;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
