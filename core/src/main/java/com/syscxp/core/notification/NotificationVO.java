@@ -30,7 +30,6 @@ public class NotificationVO {
     @Column
     private String content;
     @Column
-    @Convert(converter = MapAttributeConverter.class)
     private String msgfields;
     @Column
     private String sender;

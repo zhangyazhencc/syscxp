@@ -177,4 +177,9 @@
         <serviceId>query</serviceId>
     </message>
 
+    <message>
+        <name>com.syscxp.tunnel.tunnel.job.APIQueryJobQueueEntryMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
 </service>
