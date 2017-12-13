@@ -3,8 +3,10 @@ package com.syscxp.header.tunnel.tunnel;
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.TunnelConstant;
 
@@ -87,5 +89,23 @@ public class APICreateInterfaceMsg extends APIMessage {
 
     public void setPortOfferingUuid(String portOfferingUuid) {
         this.portOfferingUuid = portOfferingUuid;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateInterfaceEvent) evt).getInventory().getUuid();
+                }
+
+                ntfy("Create InterfaceVO")
+                        .resource(uuid, InterfaceVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

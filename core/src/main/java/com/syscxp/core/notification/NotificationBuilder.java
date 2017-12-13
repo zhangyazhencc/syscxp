@@ -20,7 +20,7 @@ public class NotificationBuilder {
     Class resourceClass;
     Map opaque;
     List arguments = new ArrayList();
-    Map msgfields = new HashMap();
+    String msgfields;
     NotificationType type = NotificationType.Info;
 
 
@@ -50,7 +50,7 @@ public class NotificationBuilder {
         return this;
     }
 
-    public NotificationBuilder msgfields(Map msgfields){
+    public NotificationBuilder msgfields(String msgfields){
         this.msgfields = msgfields;
         return this;
     }

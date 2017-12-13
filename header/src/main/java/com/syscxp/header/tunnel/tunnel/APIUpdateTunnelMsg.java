@@ -1,8 +1,10 @@
 package com.syscxp.header.tunnel.tunnel;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 
@@ -11,11 +13,11 @@ import com.syscxp.header.tunnel.TunnelConstant;
  */
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"})
 public class APIUpdateTunnelMsg extends APIMessage {
-    @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
+    @APIParam(emptyString = false, resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
-    @APIParam(emptyString = false,required = false,maxLength = 128)
+    @APIParam(emptyString = false, required = false, maxLength = 128)
     private String name;
-    @APIParam(emptyString = false,required = false)
+    @APIParam(emptyString = false, required = false)
     private String description;
 
     public String getUuid() {
@@ -42,4 +44,16 @@ public class APIUpdateTunnelMsg extends APIMessage {
         this.description = description;
     }
 
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update TunnelVO")
+                        .resource(uuid, TunnelVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
+    }
 }

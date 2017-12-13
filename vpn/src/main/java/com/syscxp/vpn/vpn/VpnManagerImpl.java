@@ -1232,7 +1232,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         if (hostUuids.isEmpty()) {
             throw new ApiMessageInterceptionException(
-                    argerr("The host of the endpoint[uuid:%s] does not exist.", msg.getEndpointUuid()));
+                    argerr("The endpoint[uuid:%s] has no available host.", msg.getEndpointUuid()));
         }
         Random random = new Random();
         msg.setHostUuid(hostUuids.get(random.nextInt(hostUuids.size())));

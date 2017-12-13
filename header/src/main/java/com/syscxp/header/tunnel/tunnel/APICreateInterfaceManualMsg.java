@@ -2,8 +2,10 @@ package com.syscxp.header.tunnel.tunnel;
 
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.switchs.SwitchPortVO;
@@ -93,5 +95,23 @@ public class APICreateInterfaceManualMsg extends APIMessage {
 
     public void setNetworkType(NetworkType networkType) {
         this.networkType = networkType;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateInterfaceManualEvent) evt).getInventory().getUuid();
+                }
+
+                ntfy("Manual Create InterfaceVO")
+                        .resource(uuid, InterfaceVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

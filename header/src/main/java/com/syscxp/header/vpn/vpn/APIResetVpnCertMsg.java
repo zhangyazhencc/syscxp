@@ -27,7 +27,7 @@ public class APIResetVpnCertMsg extends APIMessage{
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update VpnCertVO")
+                ntfy("Reset VpnCertVO")
                         .resource(uuid, VpnCertVO.class)
                         .messageAndEvent(that, evt).done();
             }
