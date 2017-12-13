@@ -177,6 +177,8 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
         }
         if (msg.getProductUuid() != null) {
             vo.setProductUuid(msg.getProductUuid());
+        } if (msg.getDescription() != null) {
+            vo.setDescription(msg.getDescription());
         }
         dbf.updateAndRefresh(vo);
         SLACompensateInventory ri = SLACompensateInventory.valueOf(vo);
@@ -196,6 +198,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
         vo.setProductName(msg.getProductName());
         vo.setProductType(msg.getProductType());
         vo.setReason(msg.getReason());
+        vo.setDescription(msg.getDescription());
         vo.setState(SLAState.NOT_APPLY);
         dbf.persistAndRefresh(vo);
         SLACompensateInventory ri = SLACompensateInventory.valueOf(vo);
