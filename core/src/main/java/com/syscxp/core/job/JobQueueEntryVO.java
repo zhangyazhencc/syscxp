@@ -23,6 +23,15 @@ public class JobQueueEntryVO {
     private String name;
 
     @Column
+    private String resourceUuid;
+
+    @Column
+    private boolean uniqueResource;
+
+    @Column
+    private String jobData;
+
+    @Column
     @Enumerated(EnumType.STRING)
     private JobState state;
 
@@ -160,5 +169,29 @@ public class JobQueueEntryVO {
 
     public void setTakenTimes(long takenTimes) {
         this.takenTimes = takenTimes;
+    }
+
+    public String getJobData() {
+        return jobData;
+    }
+
+    public void setJobData(String jobData) {
+        this.jobData = jobData;
+    }
+
+    public String getResourceUuid() {
+        return resourceUuid;
+    }
+
+    public void setResourceUuid(String resourceUuid) {
+        this.resourceUuid = resourceUuid;
+    }
+
+    public boolean isUniqueResource() {
+        return uniqueResource;
+    }
+
+    public void setUniqueResource(boolean uniqueResource) {
+        this.uniqueResource = uniqueResource;
     }
 }

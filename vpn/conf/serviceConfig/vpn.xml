@@ -71,6 +71,11 @@
     </message>
 
     <message>
+        <name>com.syscxp.header.vpn.vpn.APIQueryVpnSystemMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
         <name>com.syscxp.header.vpn.vpn.APIQueryVpnCertMsg</name>
         <serviceId>query</serviceId>
     </message>

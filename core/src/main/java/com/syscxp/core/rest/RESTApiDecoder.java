@@ -1,6 +1,7 @@
 package com.syscxp.core.rest;
 
 import com.google.gson.*;
+import com.syscxp.core.job.Job;
 import com.syscxp.header.account.APIValidateAccountMsg;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;

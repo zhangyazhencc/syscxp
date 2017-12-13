@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<service xmlns="http://syscxp.com/schema/syscxp">
+    <id>report</id>
+    <interceptor>ReportManager</interceptor>
+
+
+
+    <message>
+        <name>com.syscxp.billing.header.report.APIGetDayExpenseReportMsg</name>
+    </message>
+
+</service>

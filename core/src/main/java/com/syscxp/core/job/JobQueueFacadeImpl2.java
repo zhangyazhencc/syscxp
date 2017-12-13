@@ -1,14 +1,18 @@
 package com.syscxp.core.job;
 
+import com.google.gson.*;
 import com.syscxp.core.cloudbus.CloudBusEventListener;
 import com.syscxp.core.cloudbus.EventSubscriberReceipt;
-import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.GLock;
-import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.AsyncThread;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
+import com.syscxp.header.message.GsonTransient;
+import com.syscxp.header.message.Message;
+import com.syscxp.utils.gson.GsonTypeCoder;
+import com.syscxp.utils.gson.GsonUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +37,8 @@ import com.syscxp.utils.serializable.SerializableHelper;
 
 import javax.persistence.TypedQuery;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
+import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -64,6 +70,55 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
     private volatile boolean stopped = false;
     private EventSubscriberReceipt unsubscriber;
+
+    private class JobWire implements GsonTypeCoder<Job> {
+
+        private final Gson gson = new GsonUtil().setCoder(Job.class, this).setExclusionStrategies(new ExclusionStrategy[]{
+                new ExclusionStrategy() {
+                    @Override
+                    public boolean shouldSkipField(FieldAttributes fieldAttributes) {
+                        return fieldAttributes.getAnnotation(JobContext.class) == null;
+                    }
+
+                    @Override
+                    public boolean shouldSkipClass(Class<?> aClass) {
+                        return false;
+                    }
+                }
+        }).create();
+
+        @Override
+        public Job deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+            JsonObject jObj = jsonElement.getAsJsonObject();
+            Map.Entry<String, JsonElement> entry = jObj.entrySet().iterator().next();
+            String className = entry.getKey();
+            Class<?> clazz;
+            try {
+                clazz = Class.forName(className);
+            } catch (ClassNotFoundException e) {
+                throw new JsonParseException(String.format("Unable to deserialize class[%s]", className), e);
+            }
+            return (Job) gson.fromJson(entry.getValue(), clazz);
+        }
+
+        @Override
+        public JsonElement serialize(Job job, Type type, JsonSerializationContext jsonSerializationContext) {
+            JsonObject jObj = new JsonObject();
+            jObj.add(job.getClass().getName(), gson.toJsonTree(job));
+            return jObj;
+        }
+
+        public Job loads(String jsonStr) {
+            Job job = gson.fromJson(jsonStr, Job.class);
+            return job;
+        }
+
+        public String dumpJob(Job job) {
+            return gson.toJson(job, Job.class);
+        }
+    }
+
+    private final JobWire jobWire = new JobWire();
 
     @Override
     public boolean handleEvent(Event e) {
@@ -146,7 +201,6 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 //            dbf.removeByPrimaryKey((Long) t.get(0), JobQueueEntryVO.class);
 //        }
 
-        q = dbf.createQuery(JobQueueEntryVO.class);
         q.add(JobQueueEntryVO_.state, SimpleQuery.Op.IN, JobState.Pending, JobState.Processing, JobState.Error);
         q.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
         q.orderBy(JobQueueEntryVO_.id, SimpleQuery.Od.ASC);
@@ -158,7 +212,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
         List<JobQueueEntryVO> es = q.list();
         for (JobQueueEntryVO e : es) {
-            if (e.getState() == JobState.Processing && !e.isRestartable()) {
+            if ((e.getState() == JobState.Processing || e.getState() == JobState.Error)  && !e.isRestartable()) {
                 dbf.remove(e);
                 JobEvent evt = new JobEvent();
                 evt.setErrorCode(errf.instantiateErrorCode(SysErrors.MANAGEMENT_NODE_UNAVAILABLE_ERROR,
@@ -273,8 +327,17 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                     ret = qvo;
                 }
 
+                if (entry.isUniqueResource()){
+
+                    UpdateQuery.New(JobQueueEntryVO.class).set(JobQueueEntryVO_.restartable, false)
+                            .eq(JobQueueEntryVO_.resourceUuid, entry.getResourceUuid())
+                            .eq(JobQueueEntryVO_.name, entry.getName())
+                            .update();
+                }
+
+
                 entry.setJobQueueId(qvo.getId());
-                entry.setIssuerManagementNodeId(Platform.getManagementServerId());
+                entry.setIssuerManagementNodeId(qvo.getWorkerManagementNodeId());
                 entry.setState(JobState.Pending);
 
                 JobQueueEntryVO ne = dbf.getEntityManager().merge(entry);
@@ -323,14 +386,16 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                 JobQueueEntryVO ev = q.find();
 
                 if (ev == null){
-                    q.add(JobQueueEntryVO_.state, SimpleQuery.Op.EQ, JobState.Error);
-                    q.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
-                    q.add(JobQueueEntryVO_.restartable, SimpleQuery.Op.EQ, true);
-                    q.add(JobQueueEntryVO_.doneDate, SimpleQuery.Op.LT, Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
-                    q.setLimit(1);
-                    q.orderBy(JobQueueEntryVO_.takenDate, SimpleQuery.Od.ASC);
 
-                    ev = q.find();
+                    SimpleQuery<JobQueueEntryVO> q2 = dbf.createQuery(JobQueueEntryVO.class);
+                    q2.add(JobQueueEntryVO_.state, SimpleQuery.Op.EQ, JobState.Error);
+                    q2.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
+                    q2.add(JobQueueEntryVO_.restartable, SimpleQuery.Op.EQ, true);
+                    q2.add(JobQueueEntryVO_.doneDate, SimpleQuery.Op.LT, Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
+                    q2.setLimit(1);
+                    q2.orderBy(JobQueueEntryVO_.takenDate, SimpleQuery.Od.ASC);
+
+                    ev = q2.find();
                 }
 
                 return ev;
@@ -363,7 +428,9 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                     while (true) {
                         try {
                             JobContextObject ctx = SerializableHelper.readObject(jobe.getContext());
-                            Job theJob = ctx.load();
+                            //Job theJob = ctx.load();
+
+                            Job theJob = jobWire.loads(jobe.getJobData());
                             jobe.setState(JobState.Processing);
                             jobe.setTakenDate(new Timestamp(new Date().getTime()));
                             jobe.setTakenTimes(jobe.getTakenTimes() + 1);
@@ -477,13 +544,16 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
     public <T> void execute(final String queueName, final String owner, final Job job, final ReturnValueCompletion<T> completion, final Class<? extends T> returnType) {
         try {
             JobQueueEntryVO e = new JobQueueEntryVO();
-            JobContextObject ctx = new JobContextObject(job);
-            byte[] bits = SerializableHelper.writeObject(ctx);
-            e.setContext(bits);
+            //JobContextObject ctx = new JobContextObject(job);
+            //byte[] bits = SerializableHelper.writeObject(ctx);
+            e.setJobData(jobWire.dumpJob(job));
+            //e.setContext(bits);
             e.setRestartable(job.getClass().isAnnotationPresent(RestartableJob.class));
             e.setName(job.getClass().getName());
+            e.setResourceUuid(job.getResourceUuid());
+            e.setUniqueResource(job.getClass().isAnnotationPresent(UniqueResourceJob.class));
             execute(queueName, owner, e, completion, returnType);
-        } catch (IOException e1) {
+        } catch (Exception e1) {
             throw new CloudRuntimeException(e1);
         }
     }

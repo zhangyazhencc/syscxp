@@ -10,6 +10,7 @@ import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconMsg;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.message.APIReply;
+import com.syscxp.header.message.GsonTransient;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
@@ -40,8 +41,12 @@ public class UpdateTunnelInfoForFalconJob implements Job {
     private String switchBIp;
     @JobContext
     private Long bandwidth;
+    @JobContext
+    private String accountUuid;
+
     @Autowired
     private ErrorFacade errf;
+
     @Autowired
     private RESTFacade restf;
 
@@ -58,8 +63,9 @@ public class UpdateTunnelInfoForFalconJob implements Job {
             msg.setSwitchAVlan(switchAVlan);
             msg.setSwitchBIp(switchBIp);
             msg.setSwitchBVlan(switchBVlan);
+            msg.setAccountUuid(accountUuid);
 
-            String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.ALARM_SERVER_URL, RESTConstant.REST_API_CALL);
+            String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.ALARM_SERVER_URL, "/alarm/api");
             InnerMessageHelper.setMD5(msg);
 
             RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(msg), RestAPIResponse.class);
@@ -126,5 +132,13 @@ public class UpdateTunnelInfoForFalconJob implements Job {
 
     public void setBandwidth(Long bandwidth) {
         this.bandwidth = bandwidth;
+    }
+
+    public String getAccountUuid() {
+        return accountUuid;
+    }
+
+    public void setAccountUuid(String accountUuid) {
+        this.accountUuid = accountUuid;
     }
 }

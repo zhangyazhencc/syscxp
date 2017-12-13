@@ -5,6 +5,8 @@ import com.syscxp.core.job.Job;
 import com.syscxp.core.job.JobContext;
 import com.syscxp.core.job.RestartableJob;
 import com.syscxp.header.core.ReturnValueCompletion;
+import com.syscxp.header.message.GsonTransient;
+import com.syscxp.header.rest.APINoSee;
 import com.syscxp.tunnel.monitor.MonitorManagerImpl;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -22,8 +24,10 @@ public class StopMonitorJob implements Job {
 
     @JobContext
     private String tunnelUuid;
+
     @Autowired
     private ErrorFacade errf;
+
     @Autowired
     private MonitorManagerImpl monitorManager;
 

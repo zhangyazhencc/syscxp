@@ -4,7 +4,9 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.job.Job;
 import com.syscxp.core.job.JobContext;
 import com.syscxp.core.job.RestartableJob;
+import com.syscxp.core.job.UniqueResourceJob;
 import com.syscxp.header.core.ReturnValueCompletion;
+import com.syscxp.header.message.GsonTransient;
 import com.syscxp.tunnel.monitor.MonitorManagerImpl;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -17,13 +19,16 @@ import org.springframework.beans.factory.annotation.Configurable;
  */
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
+@UniqueResourceJob
 public class DeleteIcmpJob implements Job {
     private static final CLogger logger = Utils.getLogger(DeleteIcmpJob.class);
 
     @JobContext
     private String tunnelUuid;
+
     @Autowired
     private ErrorFacade errf;
+
     @Autowired
     private MonitorManagerImpl monitorManager;
 
@@ -49,5 +54,10 @@ public class DeleteIcmpJob implements Job {
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
+    }
+
+    @Override
+    public String getResourceUuid() {
+        return tunnelUuid;
     }
 }

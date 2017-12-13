@@ -13,6 +13,9 @@ public interface VpnConstant {
     String CLIENT_CRT_PATH = "client.crt";
     String CLIENT_KEY_PATH = "client.key";
     String CA_CRT_PATH = "ca.crt";
+    String VPN_REPORT_PATH = "/report";
+    String CONF_DOWNLOAD_PATH = "/download/conf/{uuid}";
+    String CERT_DOWNLOAD_PATH = "/download/cert/{uuid}";
 
     String CREATE_CERT_PATH = "/vpn/create_cert";
     String VPN_CONF_PATH = "/vpn/conf_vpn";

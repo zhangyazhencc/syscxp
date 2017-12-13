@@ -10,6 +10,7 @@ import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.alarm.APIDeleteResourcePolicyRefMsg;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.message.APIReply;
+import com.syscxp.header.message.GsonTransient;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
@@ -30,8 +31,10 @@ public class DeleteResourcePolicyRefJob implements Job {
 
     @JobContext
     private String tunnelUuid;
+
     @Autowired
     private ErrorFacade errf;
+
     @Autowired
     private RESTFacade restf;
 
