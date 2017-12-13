@@ -3,9 +3,7 @@ package com.syscxp.core.job;
 import com.google.gson.*;
 import com.syscxp.core.cloudbus.CloudBusEventListener;
 import com.syscxp.core.cloudbus.EventSubscriberReceipt;
-import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.GLock;
-import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.AsyncThread;
@@ -328,9 +326,16 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                     qvo.setWorkerManagementNodeId(Platform.getManagementServerId());
                     dbf.getEntityManager().merge(qvo);
                     ret = qvo;
-                }else {
-                    ret = qvo;
                 }
+
+                if (entry.isUniqueResource()){
+
+                    UpdateQuery.New(JobQueueEntryVO.class).set(JobQueueEntryVO_.restartable, false)
+                            .eq(JobQueueEntryVO_.resourceUuid, entry.getResourceUuid())
+                            .eq(JobQueueEntryVO_.name, entry.getName())
+                            .update();
+                }
+
 
                 entry.setJobQueueId(qvo.getId());
                 entry.setIssuerManagementNodeId(qvo.getWorkerManagementNodeId());
@@ -540,14 +545,16 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
     public <T> void execute(final String queueName, final String owner, final Job job, final ReturnValueCompletion<T> completion, final Class<? extends T> returnType) {
         try {
             JobQueueEntryVO e = new JobQueueEntryVO();
-            JobContextObject ctx = new JobContextObject(job);
-            byte[] bits = SerializableHelper.writeObject(ctx);
+            //JobContextObject ctx = new JobContextObject(job);
+            //byte[] bits = SerializableHelper.writeObject(ctx);
             e.setJobData(jobWire.dumpJob(job));
-            e.setContext(bits);
+            //e.setContext(bits);
             e.setRestartable(job.getClass().isAnnotationPresent(RestartableJob.class));
             e.setName(job.getClass().getName());
+            e.setResourceUuid(job.getResourceUuid());
+            e.setUniqueResource(job.getClass().isAnnotationPresent(UniqueResourceJob.class));
             execute(queueName, owner, e, completion, returnType);
-        } catch (IOException e1) {
+        } catch (Exception e1) {
             throw new CloudRuntimeException(e1);
         }
     }

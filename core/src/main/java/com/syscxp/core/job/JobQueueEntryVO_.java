@@ -20,4 +20,6 @@ public class JobQueueEntryVO_ {
     public static volatile SingularAttribute<JobQueueEntryVO, String> jobData;
     public static volatile SingularAttribute<JobQueueEntryVO, String> errText;
     public static volatile SingularAttribute<JobQueueEntryVO, Byte[]> context;
+    public static volatile SingularAttribute<JobQueueEntryVO, String> resourceUuid;
+    public static volatile SingularAttribute<JobQueueEntryVO, Boolean> uniqueResource;
 }

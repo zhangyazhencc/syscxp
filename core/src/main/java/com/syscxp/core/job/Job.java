@@ -6,4 +6,6 @@ import java.io.Serializable;
 
 public interface Job extends Serializable {
     void run(ReturnValueCompletion<Object> completion);
+
+    String getResourceUuid();
 }

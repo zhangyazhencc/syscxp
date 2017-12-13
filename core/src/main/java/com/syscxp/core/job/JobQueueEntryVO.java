@@ -23,6 +23,12 @@ public class JobQueueEntryVO {
     private String name;
 
     @Column
+    private String resourceUuid;
+
+    @Column
+    private boolean uniqueResource;
+
+    @Column
     private String jobData;
 
     @Column
@@ -171,5 +177,21 @@ public class JobQueueEntryVO {
 
     public void setJobData(String jobData) {
         this.jobData = jobData;
+    }
+
+    public String getResourceUuid() {
+        return resourceUuid;
+    }
+
+    public void setResourceUuid(String resourceUuid) {
+        this.resourceUuid = resourceUuid;
+    }
+
+    public boolean isUniqueResource() {
+        return uniqueResource;
+    }
+
+    public void setUniqueResource(boolean uniqueResource) {
+        this.uniqueResource = uniqueResource;
     }
 }
