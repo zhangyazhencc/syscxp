@@ -13,6 +13,7 @@ import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
+import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.falconapi.FalconApiCommands;
@@ -124,9 +125,20 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(), TunnelVO.class);
         tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
         tunnelVO.setMonitorCidr(msg.getMonitorCidr());
-        startTunnelMonitor(tunnelVO, tunnelMonitorVOS);
+        startTunnelMonitor(tunnelVO, tunnelMonitorVOS, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("开启监控成功："+tunnelVO.getUuid());
+                event.setInventory(TunnelInventory.valueOf(tunnelVO));
+            }
 
-        event.setInventory(TunnelInventory.valueOf(tunnelVO));
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.error("开启监控失败: "+tunnelVO.getUuid() + " Error: "+errorCode.getDetails());
+                event.setError(errorCode);
+            }
+        });
+
         bus.publish(event);
     }
 
@@ -137,10 +149,22 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
         // 停止监控
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(), TunnelVO.class);
-        stopTunnelMonitor(tunnelVO, tunnelMonitorVOS);
 
         APIStopTunnelMonitorEvent event = new APIStopTunnelMonitorEvent(msg.getId());
-        event.setInventory(TunnelInventory.valueOf(tunnelVO));
+        stopTunnelMonitor(tunnelVO, tunnelMonitorVOS, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("关闭监控成功："+tunnelVO.getUuid());
+                event.setInventory(TunnelInventory.valueOf(tunnelVO));
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.error("关闭监控失败: "+tunnelVO.getUuid() + " Error: "+errorCode.getDetails());
+                event.setError(errorCode);
+            }
+        });
+
         bus.publish(event);
     }
 
@@ -458,7 +482,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     }
 
     @Transactional()
-    private void startTunnelMonitor(TunnelVO tunnelVO, List<TunnelMonitorVO> tunnelMonitorVOS) {
+    private void startTunnelMonitor(TunnelVO tunnelVO, List<TunnelMonitorVO> tunnelMonitorVOS,final Completion completion) {
         FalconApiCommands.Icmp icmp = getIcmp(tunnelVO.getAccountUuid(), tunnelVO.getUuid(), tunnelVO.getMonitorCidr(), tunnelMonitorVOS);
         ControllerCommands.TunnelMonitorCommand controllerCmd =
                 getControllerMonitorCommand(tunnelVO.getUuid(), tunnelMonitorVOS);
@@ -475,7 +499,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
             @Override
             public void rollback(FlowRollback trigger, Map data) {
-                stopControllerMonitor(controllerCmd);
+                stopControllerMonitor(tunnelVO.getUuid());
                 trigger.rollback();
             }
         }).then(new Flow() {
@@ -521,18 +545,18 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
-
+                completion.success();
             }
         }).error(new FlowErrorHandler(null) {
             @Override
             public void handle(ErrorCode errCode, Map data) {
-                throw new RuntimeException(String.format("failed to stop tunnel monitor for tunnel %s", tunnelVO.getName()));
+                completion.fail(errCode);
             }
         }).start();
     }
 
     @Transactional()
-    private void stopTunnelMonitor(TunnelVO tunnelVO, List<TunnelMonitorVO> tunnelMonitorVOS) {
+    private void stopTunnelMonitor(TunnelVO tunnelVO, List<TunnelMonitorVO> tunnelMonitorVOS, final Completion completion) {
         FalconApiCommands.Icmp icmp = getIcmp(tunnelVO.getAccountUuid(), tunnelVO.getUuid(), tunnelVO.getMonitorCidr(), tunnelMonitorVOS);
         ControllerCommands.TunnelMonitorCommand controllerCmd =
                 getControllerMonitorCommand(tunnelVO.getUuid(), tunnelMonitorVOS);
@@ -542,7 +566,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         stopMonitor.then(new Flow() {
             @Override
             public void run(FlowTrigger trigger, Map data) {
-                stopControllerMonitor(controllerCmd);
+                stopControllerMonitor(tunnelVO.getUuid());
 
                 trigger.next();
             }
@@ -595,12 +619,13 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
-
+                completion.success();
             }
         }).error(new FlowErrorHandler(null) {
             @Override
             public void handle(ErrorCode errCode, Map data) {
-                throw new RuntimeException(String.format("failed to stop tunnel monitor for tunnel %s", tunnelVO.getName()));
+                completion.fail(errCode);
+                // throw new RuntimeException(String.format("failed to stop tunnel monitor for tunnel %s", tunnelVO.getName()));
             }
         }).start();
     }
@@ -612,10 +637,12 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @return
      */
     public void startControllerMonitor(String tunnelUuid) {
-        List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).list();
-        ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, tunnelMonitorVOS);
+        if(dbf.isExist(tunnelUuid,TunnelVO.class)) {
+            List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).list();
+            ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, tunnelMonitorVOS);
 
-        startControllerMonitor(cmd);
+            startControllerMonitor(cmd);
+        }
     }
 
     /***
@@ -624,33 +651,40 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     private void startControllerMonitor(ControllerCommands.TunnelMonitorCommand cmd) {
         String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
-        sendControllerCommand(url, cmd);
+        sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
     }
 
     /**
      * job控制器命令删除：中止tunnel
      */
     public void stopControllerMonitor(String tunnelUuid) {
-        List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).list();
-        ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, tunnelMonitorVOS);
-        stopControllerMonitor(cmd);
+        if(dbf.isExist(tunnelUuid,TunnelVO.class)){
+            List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).list();
+            //ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, tunnelMonitorVOS);
+            Map<String,String> cmd = new HashMap<>();
+            cmd.put("tunnel_id",tunnelUuid);
+
+            stopControllerMonitor(cmd);
+        }
     }
 
     /**
      * 控制器命令删除：关闭监控
      */
-    private void stopControllerMonitor(ControllerCommands.TunnelMonitorCommand cmd) {
+    private void stopControllerMonitor(Map<String,String> cmd) {
         String url = getControllerUrl(ControllerRestConstant.STOP_TUNNEL_MONITOR);
-        sendControllerCommand(url, cmd);
+        sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
     }
 
     /**
      * job控制器命令修改：修改vlan、带宽、端口（跨交换机）
      */
     public void modifyControllerMonitor(String tunnelUuid) {
-        List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).list();
-        ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, tunnelMonitorVOS);
-        modifyControllerMonitor(cmd);
+        if(dbf.isExist(tunnelUuid,TunnelVO.class)){
+            List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).list();
+            ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, tunnelMonitorVOS);
+            modifyControllerMonitor(cmd);
+        }
     }
 
     /**
@@ -658,7 +692,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     private void modifyControllerMonitor(ControllerCommands.TunnelMonitorCommand cmd) {
         String url = getControllerUrl(ControllerRestConstant.MODIFY_TUNNEL_MONITOR);
-        sendControllerCommand(url, cmd);
+        sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
     }
 
     /**
@@ -741,11 +775,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         return url;
     }
 
-    private void sendControllerCommand(String url, ControllerCommands.TunnelMonitorCommand command) {
+    private void sendControllerCommand(String url, String jsonCommand) {
         ControllerCommands.ControllerRestResponse response = new ControllerCommands.ControllerRestResponse();
         try {
-            String jsonCommand = JSONObjectUtil.toJsonString(command);
-
             logger.info(String.format("Begin to send controller command: url: %s command: %s", url, jsonCommand));
 
             response = restf.syncJsonPost(url, jsonCommand, ControllerCommands.ControllerRestResponse.class);
@@ -763,11 +795,13 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * 下发监控agent配置
      */
     public void icmpSync(String tunnelUuid) {
-        List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelUuid);
-        TunnelVO tunnelVO = dbf.findByUuid(tunnelUuid, TunnelVO.class);
-        FalconApiCommands.Icmp icmp = getIcmp(tunnelVO.getAccountUuid(), tunnelUuid, tunnelVO.getMonitorCidr(), tunnelMonitorVOS);
+        if(dbf.isExist(tunnelUuid,TunnelVO.class)){
+            List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelUuid);
+            TunnelVO tunnelVO = dbf.findByUuid(tunnelUuid, TunnelVO.class);
+            FalconApiCommands.Icmp icmp = getIcmp(tunnelVO.getAccountUuid(), tunnelUuid, tunnelVO.getMonitorCidr(), tunnelMonitorVOS);
 
-        icmpSync(icmp);
+            icmpSync(icmp);
+        }
     }
 
     private void icmpSync(FalconApiCommands.Icmp icmp) {
@@ -1777,12 +1811,20 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                         .eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid())
                         .list();
 
-                stopTunnelMonitor(tunnelVO, tunnelMonitorVOS);
-            }
+                stopTunnelMonitor(tunnelVO, tunnelMonitorVOS, new Completion(null) {
+                    @Override
+                    public void success() {
+                        // 清除TunnelMonitorVO.hostUuid记录
+                        tunnelMonitorVO.setHostUuid("");
+                        dbf.getEntityManager().merge(tunnelMonitorVO);
+                    }
 
-            // 清除TunnelMonitorVO.hostUuid记录
-            tunnelMonitorVO.setHostUuid("");
-            dbf.getEntityManager().merge(tunnelMonitorVO);
+                    @Override
+                    public void fail(ErrorCode errorCode) {
+                        throw new RuntimeException(String.format("failed to stop tunnel monitor! host: %s tunnel: %s",inventory.getUuid(),tunnelMonitorVOS.get(0).getTunnelUuid()));
+                    }
+                });
+            }
         }
     }
 
