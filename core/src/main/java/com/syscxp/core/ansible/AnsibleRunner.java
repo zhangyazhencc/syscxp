@@ -1,19 +1,14 @@
 package com.syscxp.core.ansible;
 
-import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.header.rest.RESTFacade;
-import org.apache.commons.io.FileUtils;
-import org.springframework.beans.factory.annotation.Autowire;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
-import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.defer.Defer;
 import com.syscxp.core.defer.Deferred;
+import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.MessageReply;
+import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.ShellUtils;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -21,6 +16,10 @@ import com.syscxp.utils.network.NetworkUtils;
 import com.syscxp.utils.path.PathUtil;
 import com.syscxp.utils.ssh.SshResult;
 import com.syscxp.utils.ssh.SshShell;
+import org.apache.commons.io.FileUtils;
+import org.springframework.beans.factory.annotation.Autowire;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Configurable;
 
 import java.io.File;
 import java.io.IOException;
