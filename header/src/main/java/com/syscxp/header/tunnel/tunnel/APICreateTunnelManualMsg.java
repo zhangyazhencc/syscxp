@@ -3,8 +3,10 @@ package com.syscxp.header.tunnel.tunnel;
 import com.syscxp.header.billing.ProductChargeModel;
 import com.syscxp.header.configuration.BandwidthOfferingVO;
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.TunnelConstant;
 
@@ -16,29 +18,29 @@ import java.util.List;
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"create"}, adminOnly = true)
 public class APICreateTunnelManualMsg extends APIMessage {
 
-    @APIParam(emptyString = false,maxLength = 32)
+    @APIParam(emptyString = false, maxLength = 32)
     private String accountUuid;
-    @APIParam(emptyString = false,maxLength = 128)
+    @APIParam(emptyString = false, maxLength = 128)
     private String name;
-    @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
+    @APIParam(emptyString = false, maxLength = 32, resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
-    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceAUuid;
     @APIParam(numberRange = {1, 4094})
     private Integer aVlan;
-    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceZUuid;
     @APIParam(numberRange = {1, 4094})
     private Integer zVlan;
     @APIParam
     private Integer duration;
-    @APIParam(emptyString = false,validValues = {"BY_MONTH", "BY_YEAR","BY_DAY"})
+    @APIParam(emptyString = false, validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
     private ProductChargeModel productChargeModel;
-    @APIParam(emptyString = false,required = false)
+    @APIParam(emptyString = false, required = false)
     private String description;
     @APIParam(required = false)
     private List<InnerVlanSegment> vlanSegment;
-    @APIParam(emptyString = false,required = false,maxLength = 32,resourceType = EndpointVO.class)
+    @APIParam(emptyString = false, required = false, maxLength = 32, resourceType = EndpointVO.class)
     private String innerConnectedEndpointUuid;
 
     public String getAccountUuid() {
@@ -138,4 +140,21 @@ public class APICreateTunnelManualMsg extends APIMessage {
         this.innerConnectedEndpointUuid = innerConnectedEndpointUuid;
     }
 
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateTunnelManualEvent) evt).getInventory().getUuid();
+                }
+
+                ntfy("Manual Create TunnelVO")
+                        .resource(uuid, TunnelVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
+    }
 }

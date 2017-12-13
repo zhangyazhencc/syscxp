@@ -1,8 +1,10 @@
 package com.syscxp.header.tunnel.tunnel;
 
 import com.syscxp.header.identity.Action;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 /**
@@ -10,23 +12,23 @@ import com.syscxp.header.tunnel.TunnelConstant;
  */
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = TunnelConstant.ACTION_CATEGORY, names = {"update"}, adminOnly = true)
 public class APIUpdateForciblyTunnelVlanMsg extends APIMessage {
-    @APIParam(emptyString = false,resourceType = TunnelVO.class, checkAccount = true)
+    @APIParam(emptyString = false, resourceType = TunnelVO.class, checkAccount = true)
     private String uuid;
 
-    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceAUuid;
     @APIParam(numberRange = {1, 4094})
     private Integer aVlan;
-    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String interfaceZUuid;
     @APIParam(numberRange = {1, 4094})
     private Integer zVlan;
 
-    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String oldInterfaceAUuid;
     @APIParam(numberRange = {1, 4094})
     private Integer oldAVlan;
-    @APIParam(emptyString = false,resourceType = InterfaceVO.class, checkAccount = true)
+    @APIParam(emptyString = false, resourceType = InterfaceVO.class, checkAccount = true)
     private String oldInterfaceZUuid;
     @APIParam(numberRange = {1, 4094})
     private Integer oldZVlan;
@@ -101,5 +103,18 @@ public class APIUpdateForciblyTunnelVlanMsg extends APIMessage {
 
     public void setOldZVlan(Integer oldZVlan) {
         this.oldZVlan = oldZVlan;
+    }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("Update TunnelVO Forcibly")
+                        .resource(uuid, TunnelVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
     }
 }

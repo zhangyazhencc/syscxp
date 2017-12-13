@@ -31,7 +31,7 @@ public class NotificationVO {
     private String content;
     @Column
     @Convert(converter = MapAttributeConverter.class)
-    private Map msgfields;
+    private String msgfields;
     @Column
     private String sender;
     @Column
@@ -139,11 +139,11 @@ public class NotificationVO {
         this.time = time;
     }
 
-    public Map getMsgfields() {
+    public String getMsgfields() {
         return msgfields;
     }
 
-    public void setMsgfields(Map msgfields) {
+    public void setMsgfields(String msgfields) {
         this.msgfields = msgfields;
     }
 

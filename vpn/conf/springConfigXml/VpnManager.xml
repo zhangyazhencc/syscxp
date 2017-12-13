@@ -21,6 +21,7 @@
         <property name="resourceTypeForAccountRef">
             <list>
                 <value>com.syscxp.header.vpn.vpn.VpnVO</value>
+                <value>com.syscxp.header.vpn.vpn.VpnCertVO</value>
             </list>
         </property>
     </bean>

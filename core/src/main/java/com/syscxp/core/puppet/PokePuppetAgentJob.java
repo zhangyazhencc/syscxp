@@ -42,4 +42,9 @@ public class PokePuppetAgentJob implements Job {
 		bus.reply(msg, reply);
 		complete.success(null);
 	}
+
+	@Override
+	public String getResourceUuid() {
+		return null;
+	}
 }

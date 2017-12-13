@@ -6,6 +6,7 @@ import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.job.Job;
 import com.syscxp.core.job.JobContext;
 import com.syscxp.core.job.RestartableJob;
+import com.syscxp.core.job.UniqueResourceJob;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.alarm.APIUpdateTunnelInfoForFalconMsg;
 import com.syscxp.header.core.ReturnValueCompletion;
@@ -26,6 +27,7 @@ import org.springframework.beans.factory.annotation.Configurable;
  */
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
+@UniqueResourceJob
 public class UpdateTunnelInfoForFalconJob implements Job {
     private static final CLogger logger = Utils.getLogger(UpdateTunnelInfoForFalconJob.class);
 
@@ -140,5 +142,10 @@ public class UpdateTunnelInfoForFalconJob implements Job {
 
     public void setAccountUuid(String accountUuid) {
         this.accountUuid = accountUuid;
+    }
+
+    @Override
+    public String getResourceUuid() {
+        return tunnelUuid;
     }
 }

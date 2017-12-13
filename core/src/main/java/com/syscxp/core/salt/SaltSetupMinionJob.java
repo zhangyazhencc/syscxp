@@ -219,4 +219,9 @@ public class SaltSetupMinionJob implements Job {
     public void setCleanMasterKey(boolean cleanMasterKey) {
         this.cleanMasterKey = cleanMasterKey;
     }
+
+    @Override
+    public String getResourceUuid() {
+        return null;
+    }
 }

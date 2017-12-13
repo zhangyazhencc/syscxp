@@ -2,8 +2,11 @@ package com.syscxp.header.tunnel.tunnel;
 
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.identity.InnerCredentialCheck;
+import com.syscxp.header.message.APIEvent;
+import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
+import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.tunnel.TunnelConstant;
 
 /**
@@ -43,4 +46,18 @@ public class APISLATunnelMsg extends APISyncCallMessage {
     public void setSlaUuid(String slaUuid) {
         this.slaUuid = slaUuid;
     }
+
+    public ApiNotification __notification__() {
+        final APIMessage that = this;
+
+        return new ApiNotification() {
+            @Override
+            public void after(APIEvent evt) {
+                ntfy("TunnelVO SLA")
+                        .resource(uuid, TunnelVO.class)
+                        .messageAndEvent(that, evt).done();
+            }
+        };
+    }
+
 }

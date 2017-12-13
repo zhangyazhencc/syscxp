@@ -335,9 +335,10 @@ public class TunnelBase {
     public void deleteTunnelJob(TunnelVO vo,String queueName){
         if(vo.getMonitorState() == TunnelMonitorState.Enabled){
             if(vo.getState() == TunnelState.Enabled){
-                logger.info("删除通道成功，并创建任务：StopMonitorJob");
-                StopMonitorJob job = new StopMonitorJob();
+                logger.info("删除通道成功，并创建任务：StartOrStopMonitorJob");
+                StartOrStopMonitorJob job = new StartOrStopMonitorJob();
                 job.setTunnelUuid(vo.getUuid());
+                job.setStart(false);
                 jobf.execute(queueName+"-停止监控", Platform.getManagementServerId(), job);
             }
 
@@ -492,18 +493,20 @@ public class TunnelBase {
 
     public void enabledTunnelJob(TunnelVO vo,String queueName){
         if(vo.getMonitorState() == TunnelMonitorState.Enabled){
-            logger.info("专线恢复连接成功，并创建任务：StartMonitorJob");
-            StartMonitorJob job = new StartMonitorJob();
+            logger.info("专线恢复连接成功，并创建任务：StartOrStopMonitorJob");
+            StartOrStopMonitorJob job = new StartOrStopMonitorJob();
             job.setTunnelUuid(vo.getUuid());
+            job.setStart(true);
             jobf.execute(queueName+"-开启监控", Platform.getManagementServerId(), job);
         }
     }
 
     public void disabledTunnelJob(TunnelVO vo,String queueName){
         if(vo.getMonitorState() == TunnelMonitorState.Enabled) {
-            logger.info("专线关闭连接成功，并创建任务：StopMonitorJob");
-            StopMonitorJob job = new StopMonitorJob();
+            logger.info("专线关闭连接成功，并创建任务：StartOrStopMonitorJob");
+            StartOrStopMonitorJob job = new StartOrStopMonitorJob();
             job.setTunnelUuid(vo.getUuid());
+            job.setStart(false);
             jobf.execute(queueName+"-停止监控", Platform.getManagementServerId(), job);
         }
     }
