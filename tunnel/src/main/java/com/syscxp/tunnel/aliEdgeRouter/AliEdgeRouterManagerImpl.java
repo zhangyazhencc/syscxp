@@ -463,6 +463,11 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             vo.setDescription(msg.getDescription());
             update = true;
         }
+
+        if(msg.getLocalGatewayIp() != null && msg.getPeerGatewayIp() != null && msg.getPeeringSubnetMask() != null){
+            update = true;
+        }
+
         String AliAccessKeyId = null;
         String AliAccessKeySecret = null;
 
