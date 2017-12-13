@@ -39,6 +39,7 @@ import com.syscxp.utils.serializable.SerializableHelper;
 
 import javax.persistence.TypedQuery;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -78,7 +79,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                 new ExclusionStrategy() {
                     @Override
                     public boolean shouldSkipField(FieldAttributes fieldAttributes) {
-                        return fieldAttributes.getAnnotation(GsonTransient.class) != null;
+                        return fieldAttributes.getAnnotation(JobContext.class) == null;
                     }
 
                     @Override
@@ -327,10 +328,12 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                     qvo.setWorkerManagementNodeId(Platform.getManagementServerId());
                     dbf.getEntityManager().merge(qvo);
                     ret = qvo;
+                }else {
+                    ret = qvo;
                 }
 
                 entry.setJobQueueId(qvo.getId());
-                entry.setIssuerManagementNodeId(Platform.getManagementServerId());
+                entry.setIssuerManagementNodeId(qvo.getWorkerManagementNodeId());
                 entry.setState(JobState.Pending);
 
                 JobQueueEntryVO ne = dbf.getEntityManager().merge(entry);
@@ -379,14 +382,16 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                 JobQueueEntryVO ev = q.find();
 
                 if (ev == null){
-                    q.add(JobQueueEntryVO_.state, SimpleQuery.Op.EQ, JobState.Error);
-                    q.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
-                    q.add(JobQueueEntryVO_.restartable, SimpleQuery.Op.EQ, true);
-                    q.add(JobQueueEntryVO_.doneDate, SimpleQuery.Op.LT, Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
-                    q.setLimit(1);
-                    q.orderBy(JobQueueEntryVO_.takenDate, SimpleQuery.Od.ASC);
 
-                    ev = q.find();
+                    SimpleQuery<JobQueueEntryVO> q2 = dbf.createQuery(JobQueueEntryVO.class);
+                    q2.add(JobQueueEntryVO_.state, SimpleQuery.Op.EQ, JobState.Error);
+                    q2.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
+                    q2.add(JobQueueEntryVO_.restartable, SimpleQuery.Op.EQ, true);
+                    q2.add(JobQueueEntryVO_.doneDate, SimpleQuery.Op.LT, Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
+                    q2.setLimit(1);
+                    q2.orderBy(JobQueueEntryVO_.takenDate, SimpleQuery.Od.ASC);
+
+                    ev = q2.find();
                 }
 
                 return ev;
