@@ -3,9 +3,7 @@ package com.syscxp.core.job;
 import com.google.gson.*;
 import com.syscxp.core.cloudbus.CloudBusEventListener;
 import com.syscxp.core.cloudbus.EventSubscriberReceipt;
-import com.syscxp.core.db.DatabaseFacade;
-import com.syscxp.core.db.GLock;
-import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.AsyncThread;
@@ -39,6 +37,7 @@ import com.syscxp.utils.serializable.SerializableHelper;
 
 import javax.persistence.TypedQuery;
 import java.io.IOException;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
@@ -78,7 +77,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                 new ExclusionStrategy() {
                     @Override
                     public boolean shouldSkipField(FieldAttributes fieldAttributes) {
-                        return fieldAttributes.getAnnotation(GsonTransient.class) != null;
+                        return fieldAttributes.getAnnotation(JobContext.class) == null;
                     }
 
                     @Override
@@ -202,7 +201,6 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 //            dbf.removeByPrimaryKey((Long) t.get(0), JobQueueEntryVO.class);
 //        }
 
-        q = dbf.createQuery(JobQueueEntryVO.class);
         q.add(JobQueueEntryVO_.state, SimpleQuery.Op.IN, JobState.Pending, JobState.Processing, JobState.Error);
         q.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
         q.orderBy(JobQueueEntryVO_.id, SimpleQuery.Od.ASC);
@@ -214,7 +212,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
         List<JobQueueEntryVO> es = q.list();
         for (JobQueueEntryVO e : es) {
-            if (e.getState() == JobState.Processing && !e.isRestartable()) {
+            if ((e.getState() == JobState.Processing || e.getState() == JobState.Error)  && !e.isRestartable()) {
                 dbf.remove(e);
                 JobEvent evt = new JobEvent();
                 evt.setErrorCode(errf.instantiateErrorCode(SysErrors.MANAGEMENT_NODE_UNAVAILABLE_ERROR,
@@ -329,8 +327,17 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                     ret = qvo;
                 }
 
+                if (entry.isUniqueResource()){
+
+                    UpdateQuery.New(JobQueueEntryVO.class).set(JobQueueEntryVO_.restartable, false)
+                            .eq(JobQueueEntryVO_.resourceUuid, entry.getResourceUuid())
+                            .eq(JobQueueEntryVO_.name, entry.getName())
+                            .update();
+                }
+
+
                 entry.setJobQueueId(qvo.getId());
-                entry.setIssuerManagementNodeId(Platform.getManagementServerId());
+                entry.setIssuerManagementNodeId(qvo.getWorkerManagementNodeId());
                 entry.setState(JobState.Pending);
 
                 JobQueueEntryVO ne = dbf.getEntityManager().merge(entry);
@@ -379,14 +386,16 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                 JobQueueEntryVO ev = q.find();
 
                 if (ev == null){
-                    q.add(JobQueueEntryVO_.state, SimpleQuery.Op.EQ, JobState.Error);
-                    q.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
-                    q.add(JobQueueEntryVO_.restartable, SimpleQuery.Op.EQ, true);
-                    q.add(JobQueueEntryVO_.doneDate, SimpleQuery.Op.LT, Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
-                    q.setLimit(1);
-                    q.orderBy(JobQueueEntryVO_.takenDate, SimpleQuery.Od.ASC);
 
-                    ev = q.find();
+                    SimpleQuery<JobQueueEntryVO> q2 = dbf.createQuery(JobQueueEntryVO.class);
+                    q2.add(JobQueueEntryVO_.state, SimpleQuery.Op.EQ, JobState.Error);
+                    q2.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
+                    q2.add(JobQueueEntryVO_.restartable, SimpleQuery.Op.EQ, true);
+                    q2.add(JobQueueEntryVO_.doneDate, SimpleQuery.Op.LT, Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
+                    q2.setLimit(1);
+                    q2.orderBy(JobQueueEntryVO_.takenDate, SimpleQuery.Od.ASC);
+
+                    ev = q2.find();
                 }
 
                 return ev;
@@ -535,14 +544,16 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
     public <T> void execute(final String queueName, final String owner, final Job job, final ReturnValueCompletion<T> completion, final Class<? extends T> returnType) {
         try {
             JobQueueEntryVO e = new JobQueueEntryVO();
-            JobContextObject ctx = new JobContextObject(job);
-            byte[] bits = SerializableHelper.writeObject(ctx);
+            //JobContextObject ctx = new JobContextObject(job);
+            //byte[] bits = SerializableHelper.writeObject(ctx);
             e.setJobData(jobWire.dumpJob(job));
-            e.setContext(bits);
+            //e.setContext(bits);
             e.setRestartable(job.getClass().isAnnotationPresent(RestartableJob.class));
             e.setName(job.getClass().getName());
+            e.setResourceUuid(job.getResourceUuid());
+            e.setUniqueResource(job.getClass().isAnnotationPresent(UniqueResourceJob.class));
             execute(queueName, owner, e, completion, returnType);
-        } catch (IOException e1) {
+        } catch (Exception e1) {
             throw new CloudRuntimeException(e1);
         }
     }
