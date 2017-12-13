@@ -26,6 +26,8 @@ public class SLACompensateInventory {
 
     private String comment;
 
+    private String description;
+
     private int duration;
 
     private Timestamp timeStart;
@@ -57,6 +59,7 @@ public class SLACompensateInventory {
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setApplyTime(vo.getApplyTime());
+        inv.setDescription(vo.getDescription());
 
         return inv;
     }
@@ -179,5 +182,13 @@ public class SLACompensateInventory {
 
     public void setApplyTime(Timestamp applyTime) {
         this.applyTime = applyTime;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

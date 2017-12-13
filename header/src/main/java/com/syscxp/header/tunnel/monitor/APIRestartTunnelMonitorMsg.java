@@ -18,7 +18,7 @@ public class APIRestartTunnelMonitorMsg extends APIMessage {
     @APIParam(emptyString = false, resourceType = TunnelVO.class, checkAccount = true, maxLength = 32)
     private String tunnelUuid;
 
-    @APIParam(required = false,maxLength = 128)
+    @APIParam(required = true,maxLength = 128)
     private String monitorCidr;
 
     public String getTunnelUuid() {

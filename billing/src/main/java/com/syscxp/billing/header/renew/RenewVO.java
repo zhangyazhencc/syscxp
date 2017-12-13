@@ -52,6 +52,8 @@ public class RenewVO {
     @Column
     private BigDecimal priceOneMonth;
     @Column
+    private BigDecimal priceDiscount;
+    @Column
     private Timestamp expiredTime;
 
     public BigDecimal getPriceOneMonth() {
@@ -153,5 +155,13 @@ public class RenewVO {
 
     public void setExpiredTime(Timestamp expiredTime) {
         this.expiredTime = expiredTime;
+    }
+
+    public BigDecimal getPriceDiscount() {
+        return priceDiscount;
+    }
+
+    public void setPriceDiscount(BigDecimal priceDiscount) {
+        this.priceDiscount = priceDiscount;
     }
 }

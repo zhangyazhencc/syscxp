@@ -15,6 +15,7 @@ public class SLACompensateVO_ {
     public static volatile SingularAttribute<SLACompensateVO, String> productName;
     public static volatile SingularAttribute<SLACompensateVO, String> reason;
     public static volatile SingularAttribute<SLACompensateVO, String> comment;
+    public static volatile SingularAttribute<SLACompensateVO, String> description;
     public static volatile SingularAttribute<SLACompensateVO, Integer> duration;
     public static volatile SingularAttribute<SLACompensateVO, Timestamp> timeStart;
     public static volatile SingularAttribute<SLACompensateVO, Timestamp> timeEnd;
