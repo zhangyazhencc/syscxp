@@ -201,7 +201,6 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 //            dbf.removeByPrimaryKey((Long) t.get(0), JobQueueEntryVO.class);
 //        }
 
-        q = dbf.createQuery(JobQueueEntryVO.class);
         q.add(JobQueueEntryVO_.state, SimpleQuery.Op.IN, JobState.Pending, JobState.Processing, JobState.Error);
         q.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
         q.orderBy(JobQueueEntryVO_.id, SimpleQuery.Od.ASC);
@@ -213,7 +212,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
         List<JobQueueEntryVO> es = q.list();
         for (JobQueueEntryVO e : es) {
-            if (e.getState() == JobState.Processing && !e.isRestartable()) {
+            if ((e.getState() == JobState.Processing || e.getState() == JobState.Error)  && !e.isRestartable()) {
                 dbf.remove(e);
                 JobEvent evt = new JobEvent();
                 evt.setErrorCode(errf.instantiateErrorCode(SysErrors.MANAGEMENT_NODE_UNAVAILABLE_ERROR,
