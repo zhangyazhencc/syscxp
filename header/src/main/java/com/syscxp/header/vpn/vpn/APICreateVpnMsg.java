@@ -88,8 +88,13 @@ public class APICreateVpnMsg extends APIVpnMessage {
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
+                String uuid = null;
+                if (evt.isSuccess()) {
+                    uuid = ((APICreateVpnEvent) evt).getInventory().getUuid();
+                }
+
                 ntfy("Create VpnVO")
-                        .resource(null, VpnVO.class)
+                        .resource(uuid, VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

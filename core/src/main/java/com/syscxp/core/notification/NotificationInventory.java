@@ -23,7 +23,7 @@ public class NotificationInventory {
     private String category;
     private String remoteIp;
     private Boolean success;
-    private Map msgfields;
+    private String msgfields;
     private String sender;
     private String status;
     private String resourceUuid;
@@ -142,11 +142,11 @@ public class NotificationInventory {
         this.content = content;
     }
 
-    public Map getMsgfields() {
+    public String getMsgfields() {
         return msgfields;
     }
 
-    public void setMsgfields(Map msgfields) {
+    public void setMsgfields(String msgfields) {
         this.msgfields = msgfields;
     }
 

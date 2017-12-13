@@ -4,6 +4,7 @@ import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.rest.APINoSee;
 import com.syscxp.header.rest.APIWithSession;
 import com.syscxp.utils.FieldUtils;
+import com.syscxp.utils.gson.JSONObjectUtil;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -37,7 +38,7 @@ public abstract class APIMessage extends NeedReplyMessage {
     }
 
 
-    public Map<String, Object> getDeclaredFieldAndValues() {
+    public String getDeclaredFieldAndValues() {
         Field[] fields = this.getClass().getDeclaredFields();
         Map<String, Object> msgFields = new HashMap<>();
 
@@ -45,7 +46,7 @@ public abstract class APIMessage extends NeedReplyMessage {
             Object value = FieldUtils.getFieldValue(field.getName(), this);
             msgFields.put(field.getName(), value);
         }
-        return msgFields;
+        return JSONObjectUtil.toJsonString(msgFields);
     }
 
     private String signature;

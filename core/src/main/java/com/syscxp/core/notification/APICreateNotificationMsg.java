@@ -21,7 +21,7 @@ public class APICreateNotificationMsg extends APIMessage {
     @APIParam
     private String content;
     @APIParam
-    private Map msgfields;
+    private String msgfields;
     @APIParam
     private String sender;
     @APIParam
@@ -94,11 +94,11 @@ public class APICreateNotificationMsg extends APIMessage {
         this.content = content;
     }
 
-    public Map getMsgfields() {
+    public String getMsgfields() {
         return msgfields;
     }
 
-    public void setMsgfields(Map msgfields) {
+    public void setMsgfields(String msgfields) {
         this.msgfields = msgfields;
     }
 
