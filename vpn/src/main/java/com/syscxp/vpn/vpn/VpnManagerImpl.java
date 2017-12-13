@@ -1144,6 +1144,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
+        if (msg instanceof APIVpnMessage) {
+            validate((APIVpnMessage) msg);
+        }
         if (msg instanceof APICreateVpnMsg) {
             validate((APICreateVpnMsg) msg);
         } else if (msg instanceof APIQueryVpnMsg) {
@@ -1156,6 +1159,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             validate((APIGetVpnCertMsg) msg);
         }
         return msg;
+    }
+
+    private void validate(APIVpnMessage msg) {
+        // 区分管理员账户
+        if (msg.getSession().isAdminSession() && StringUtils.isEmpty(msg.getAccountUuid())) {
+            throw new ApiMessageInterceptionException(
+                    argerr("The Account[uuid:%s] is not a admin or proxy.",
+                            msg.getSession().getAccountUuid()));
+        }
     }
 
 
@@ -1216,12 +1228,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APICreateVpnMsg msg) {
-        // 区分管理员账户
-        if (msg.getSession().isAdminSession() && StringUtils.isEmpty(msg.getAccountUuid())) {
-            throw new ApiMessageInterceptionException(
-                    argerr("The Account[uuid:%s] is not a admin or proxy.",
-                            msg.getSession().getAccountUuid()));
-        }
         Q q = Q.New(VpnVO.class).eq(VpnVO_.name, msg.getName()).eq(VpnVO_.accountUuid, msg.getAccountUuid());
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(
