@@ -229,7 +229,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductEffectTimeEnd(Timestamp.valueOf(msg.getExpiredTime().toLocalDateTime().plusDays(msg.getDuration())));
         orderVo.setProductStatus(1);
 
-        RenewVO renewVO = getRenewVO(msg.getProductUuid(), msg.getProductUuid());
+        RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
         if (renewVO == null) {
             throw new IllegalArgumentException("please input the correct value");
         }
@@ -702,6 +702,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         renewVO.setRenewAuto(true);
         renewVO.setExpiredTime(expiredTime);
         renewVO.setPriceOneMonth(discountPrice);
+        renewVO.setPriceDiscount(discountPrice);
         dbf.getEntityManager().persist(renewVO);
         return renewVO;
     }
