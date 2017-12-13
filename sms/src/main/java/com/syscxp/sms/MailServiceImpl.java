@@ -132,7 +132,8 @@ public class MailServiceImpl extends AbstractService implements MailService, Api
     private void  handle(APIMailCodeSendMsg msg) throws OperationFailureException {
 
         String code = StringDSL.getRandomNumbersString(10);
-        boolean result = mailSend(msg.getMail(),"验证码", code);
+        String context = String.format("【犀思云】尊敬的用户：您的校验码：%s，工作人员不会索取，请勿泄漏。", code);
+        boolean result = mailSend(msg.getMail(),"犀思云验证码", context);
         if(result){
             VerificationCode verificationCode = sessions.get(msg.getMail());
             long expiredTime = System.currentTimeMillis() + TimeUnit.SECONDS.toMillis(60 * 10);   // 10 minute
