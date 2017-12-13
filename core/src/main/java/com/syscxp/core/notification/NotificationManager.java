@@ -149,7 +149,7 @@ public class NotificationManager extends AbstractService {
 
                 lst.add(new NotificationBuilder()
                         .content(inner.getContent())
-                        .msgfields(b.message.getDeclaredFieldAndValues())
+                        .msgfields(JSONObjectUtil.toJsonString(b.message.getDeclaredFieldAndValues()))
                         .category(aevt.getType(bus.getBusProjectId()).toString())
                         .account(inner.getAccountUuid())
                         .action(b.message.getIp(), aevt.isSuccess())
