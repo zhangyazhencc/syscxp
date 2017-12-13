@@ -19,6 +19,10 @@ public class JobQueueEntryVO {
     @ForeignKey(parentEntityClass = JobQueueVO.class, onDeleteAction = ReferenceOption.CASCADE)
     private long jobQueueId;
 
+    @ManyToOne(fetch= FetchType.EAGER)
+    @JoinColumn(name="jobQueueId", insertable=false, updatable=false)
+    private JobQueueVO jobQueueVO;
+
     @Column
     private String name;
 
@@ -193,5 +197,13 @@ public class JobQueueEntryVO {
 
     public void setUniqueResource(boolean uniqueResource) {
         this.uniqueResource = uniqueResource;
+    }
+
+    public JobQueueVO getJobQueueVO() {
+        return jobQueueVO;
+    }
+
+    public void setJobQueueVO(JobQueueVO jobQueueVO) {
+        this.jobQueueVO = jobQueueVO;
     }
 }
