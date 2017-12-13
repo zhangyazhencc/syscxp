@@ -40,6 +40,8 @@ CREATE TABLE  `JobQueueEntryVO` (
     `name` varchar(255) NOT NULL,
     `jobData` text NOT NULL,
     `jobQueueId` bigint unsigned NOT NULL,
+    `resourceUuid` varchar(32) DEFAULT NULL,
+    `uniqueResource` tinyint(1) unsigned NOT NULL DEFAULT 0,
     `state` varchar(128) NOT NULL,
     `context` blob DEFAULT NULL,
     `owner` varchar(255) DEFAULT NULL,

@@ -4,6 +4,7 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.job.Job;
 import com.syscxp.core.job.JobContext;
 import com.syscxp.core.job.RestartableJob;
+import com.syscxp.core.job.UniqueResourceJob;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.message.GsonTransient;
 import com.syscxp.header.rest.APINoSee;
@@ -19,6 +20,7 @@ import org.springframework.beans.factory.annotation.Configurable;
  */
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
+@UniqueResourceJob
 public class StopMonitorJob implements Job {
     private static final CLogger logger = Utils.getLogger(StopMonitorJob.class);
 
@@ -53,5 +55,10 @@ public class StopMonitorJob implements Job {
 
     public void setTunnelUuid(String tunnelUuid) {
         this.tunnelUuid = tunnelUuid;
+    }
+
+    @Override
+    public String getResourceUuid() {
+        return tunnelUuid;
     }
 }
