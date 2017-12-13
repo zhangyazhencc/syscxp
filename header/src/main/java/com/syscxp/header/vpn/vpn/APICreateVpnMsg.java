@@ -94,7 +94,7 @@ public class APICreateVpnMsg extends APIVpnMessage {
                 }
 
                 ntfy("Create VpnVO")
-                        .resource(uuid, VpnVO.class)
+                        .resource(null, VpnVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

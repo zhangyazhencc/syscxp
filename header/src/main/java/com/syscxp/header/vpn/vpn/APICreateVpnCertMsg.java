@@ -37,7 +37,7 @@ public class APICreateVpnCertMsg extends APIVpnMessage {
             @Override
             public void after(APIEvent evt) {
                 ntfy("Update VpnCertVO")
-                        .resource(null, VpnVO.class)
+                        .resource(null, VpnCertVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };
