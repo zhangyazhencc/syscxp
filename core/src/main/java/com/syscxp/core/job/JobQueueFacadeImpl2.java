@@ -427,7 +427,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
                     while (true) {
                         try {
-                            JobContextObject ctx = SerializableHelper.readObject(jobe.getContext());
+                            //JobContextObject ctx = SerializableHelper.readObject(jobe.getContext());
                             //Job theJob = ctx.load();
 
                             Job theJob = jobWire.loads(jobe.getJobData());
