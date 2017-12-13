@@ -38,6 +38,9 @@ public class SLACompensateVO {
     private String comment;
 
     @Column
+    private String description;
+
+    @Column
     private int duration;
 
     @Column
@@ -175,5 +178,13 @@ public class SLACompensateVO {
 
     public void setApplyTime(Timestamp applyTime) {
         this.applyTime = applyTime;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }

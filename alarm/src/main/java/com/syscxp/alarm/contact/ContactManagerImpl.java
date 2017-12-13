@@ -104,7 +104,7 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
             dbf.getEntityManager().flush();
         }
         APIUpdateContactEvent event = new APIUpdateContactEvent(msg.getId());
-        ContactVO contactVO = dbf.getEntityManager().find( ContactVO.class,msg.getUuid());
+        ContactVO contactVO = dbf.findByUuid(msg.getUuid(),ContactVO.class);
         event.setInventory(ContactInventory.valueOf(contactVO));
         bus.publish(event);
     }
@@ -196,7 +196,7 @@ public class ContactManagerImpl extends AbstractService implements ApiMessageInt
         ContactNotifyWayRefVO contactNotifyWayRefVO = new ContactNotifyWayRefVO();
         contactNotifyWayRefVO.setContactUuid(contactUuid);
         contactNotifyWayRefVO.setNotifyWayUuid(notifyWayVO.getUuid());
-        dbf.getEntityManager().persist(contactNotifyWayRefVO);
+        dbf.persistAndRefresh(contactNotifyWayRefVO);
     }
 
 
