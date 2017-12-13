@@ -186,7 +186,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         OrderVO orderVo = new OrderVO();
         setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), msg.getProductType(), msg.getProductChargeModel(), currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), msg.getDuration(), msg.getCallBackData());
         //discountPrice = discountPrice.multiply(duration);//按现在的价格续费
-        BigDecimal discountPrice = renewVO.getPriceOneMonth().multiply(duration);//按上次买的价格续费
+//        BigDecimal discountPrice = renewVO.getPriceOneMonth().multiply(duration);//按上次买的价格续费
+        BigDecimal discountPrice = renewVO.getPriceDiscount().multiply(duration);//-- 按续费的价格续费可能会调低
         if (discountPrice.compareTo(mayPayTotal) > 0) {
             throw new OperationFailureException(errf.instantiateErrorCode(BillingErrors.INSUFFICIENT_BALANCE, String.format("you have no enough balance to pay this product. your pay money can not greater than %s. please go to recharge", mayPayTotal.toString())));
         }
@@ -199,6 +200,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         renewVO.setExpiredTime(orderVo.getProductEffectTimeEnd());
         renewVO.setProductChargeModel(msg.getProductChargeModel());
+        renewVO.setPriceOneMonth(renewVO.getPriceDiscount());
 
         dbf.getEntityManager().merge(renewVO);
         dbf.getEntityManager().merge(abvo);
@@ -398,6 +400,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         }
         renewVO.setPriceOneMonth(discountPrice);
+        renewVO.setPriceDiscount(discountPrice);
 
         updatePriceRefRenews(msg.getAccountUuid(), renewVO.getUuid(), productPriceUnitUuids);
         saveNotifyOrderVO(msg, orderVo.getUuid());
@@ -806,7 +809,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
         BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
         BigDecimal originalPrice = renewVO.getPriceOneMonth().multiply(duration);
-        BigDecimal discountPrice = renewVO.getPriceOneMonth().multiply(duration);
+        BigDecimal discountPrice = renewVO.getPriceDiscount().multiply(duration);
         boolean payable = discountPrice.compareTo(mayPayTotal) <= 0;
         APIGetRenewProductPriceReply reply = new APIGetRenewProductPriceReply();
         reply.setMayPayTotal(mayPayTotal);

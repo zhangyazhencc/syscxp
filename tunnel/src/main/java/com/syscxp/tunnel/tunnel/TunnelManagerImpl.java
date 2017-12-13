@@ -2789,15 +2789,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     private boolean clearExpiredTunnel(TunnelVO vo) {
-        String url = "http://192.168.211.5/zstack/asyncrest/sendcommand";
-
         Map<String, String> bodyMap = new HashMap<>();
         bodyMap.put("tunnelUuid", vo.getUuid());
 
         Map<String, String> headers = new HashMap<>();
         headers.put("commandPath", "tunnelDelete");
 
-        Map rsp = restf.syncJsonPost(url, JSONObjectUtil.toJsonString(bodyMap), headers, Map.class);
+        Map rsp = restf.syncJsonPost(CoreGlobalProperty.ECP_SERVER_URL, JSONObjectUtil.toJsonString(bodyMap), headers, Map.class);
 
         return (Boolean) rsp.get("success");
     }
@@ -2897,7 +2895,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     public void preDelete(TunnelVO vo) {
         if (vo.getState() != TunnelState.Unsupport) {
             logger.info("【询问该专线是否被互联云占用】");
-            String url = "http://192.168.211.5:8080/zstack/asyncrest/sendcommand";
 
             Map<String, String> bodyMap = new HashMap<>();
             bodyMap.put("tunnelUuid", vo.getUuid());
@@ -2905,7 +2902,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             Map<String, String> headers = new HashMap<>();
             headers.put("commandPath", "tunnelCheck");
 
-            Map rsp = restf.syncJsonPost(url, JSONObjectUtil.toJsonString(bodyMap), headers, Map.class);
+            Map rsp = restf.syncJsonPost(CoreGlobalProperty.ECP_SERVER_URL, JSONObjectUtil.toJsonString(bodyMap), headers, Map.class);
 
             if ((Boolean) rsp.get("success")) {
                 if ((Boolean) rsp.get("isOccupied")) {
