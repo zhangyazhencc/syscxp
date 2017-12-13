@@ -382,14 +382,16 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                 JobQueueEntryVO ev = q.find();
 
                 if (ev == null){
-                    q.add(JobQueueEntryVO_.state, SimpleQuery.Op.EQ, JobState.Error);
-                    q.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
-                    q.add(JobQueueEntryVO_.restartable, SimpleQuery.Op.EQ, true);
-                    q.add(JobQueueEntryVO_.doneDate, SimpleQuery.Op.LT, Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
-                    q.setLimit(1);
-                    q.orderBy(JobQueueEntryVO_.takenDate, SimpleQuery.Od.ASC);
 
-                    ev = q.find();
+                    SimpleQuery<JobQueueEntryVO> q2 = dbf.createQuery(JobQueueEntryVO.class);
+                    q2.add(JobQueueEntryVO_.state, SimpleQuery.Op.EQ, JobState.Error);
+                    q2.add(JobQueueEntryVO_.jobQueueId, SimpleQuery.Op.EQ, qvo.getId());
+                    q2.add(JobQueueEntryVO_.restartable, SimpleQuery.Op.EQ, true);
+                    q2.add(JobQueueEntryVO_.doneDate, SimpleQuery.Op.LT, Timestamp.valueOf(LocalDateTime.now().minusHours(1)));
+                    q2.setLimit(1);
+                    q2.orderBy(JobQueueEntryVO_.takenDate, SimpleQuery.Od.ASC);
+
+                    ev = q2.find();
                 }
 
                 return ev;
