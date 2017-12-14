@@ -208,7 +208,7 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
             data = tmp.toByteArray();
             BASE64Encoder encoder = new BASE64Encoder();
             base64Code = encoder.encode(data);
-            base64Code = base64Code.replaceAll("\r|\n", "");
+//            base64Code = base64Code.replaceAll("\r|\n", "");
         } catch (Exception e) {
             e.printStackTrace();
         }finally {
