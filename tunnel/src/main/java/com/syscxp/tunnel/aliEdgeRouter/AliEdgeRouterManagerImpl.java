@@ -97,9 +97,72 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             handle((APIListAliTunnelMsg) msg);
         }else if(msg instanceof APIListAliRegionMsg){
             handle((APIListAliRegionMsg) msg);
+        } else if(msg instanceof APITerminateAliEdgeRouterMsg){
+            handle((APITerminateAliEdgeRouterMsg) msg);
+        } else if(msg instanceof APIRecoverAliEdgeRouterMsg){
+            handle((APIRecoverAliEdgeRouterMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+
+    }
+
+    private void handle(APIRecoverAliEdgeRouterMsg msg) {
+        AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
+
+        String RegionId = vo.getAliRegionId();
+        String AliAccessKeyId = AliUserGlobalProperty.ALI_KEY;
+        String AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
+
+
+        // 创建DefaultAcsClient实例并初始化
+        DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);
+        IAcsClient client = new DefaultAcsClient(profile);
+
+        RecoverVirtualBorderRouterRequest request = new RecoverVirtualBorderRouterRequest();
+        request.setVbrId(vo.getVbrUuid());
+
+        RecoverVirtualBorderRouterResponse response;
+        try{
+            response = client.getAcsResponse(request);
+
+        }catch (Exception e){
+            e.printStackTrace();
+            throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+        }
+
+        APIRecoverAliEdgeRouterEvent evt = new APIRecoverAliEdgeRouterEvent(msg.getId());
+        evt.setRouterInventory(AliEdgeRouterInventory.valueOf(vo));
+        bus.publish(evt);
+    }
+
+    private void handle(APITerminateAliEdgeRouterMsg msg) {
+        AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
+
+        String RegionId = vo.getAliRegionId();
+        String AliAccessKeyId = AliUserGlobalProperty.ALI_KEY;
+        String AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
+
+        // 创建DefaultAcsClient实例并初始化
+        DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);
+        IAcsClient client = new DefaultAcsClient(profile);
+
+        TerminateVirtualBorderRouterRequest request = new TerminateVirtualBorderRouterRequest();
+        request.setVbrId(vo.getVbrUuid());
+
+        TerminateVirtualBorderRouterResponse response;
+
+        try{
+            response = client.getAcsResponse(request);
+
+        }catch(Exception e){
+            e.printStackTrace();
+            throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+        }
+
+        APITerminateAliEdgeRouterEvent evt = new APITerminateAliEdgeRouterEvent(msg.getId());
+        evt.setRouterInventory(AliEdgeRouterInventory.valueOf(vo));
+        bus.publish(evt);
 
     }
 
