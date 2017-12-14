@@ -12,6 +12,8 @@ public class APIUpdateVpnCertMsg extends APIMessage{
     private String uuid;
     @APIParam(required = false)
     private String name;
+    @APIParam(required = false)
+    private String description;
 
     public String getUuid() {
         return uuid;

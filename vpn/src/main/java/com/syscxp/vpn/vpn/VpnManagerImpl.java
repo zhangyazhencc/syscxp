@@ -714,11 +714,20 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APIUpdateVpnCertMsg msg) {
         VpnCertVO vpnCert = dbf.findByUuid(msg.getUuid(), VpnCertVO.class);
 
+        boolean update = false;
         if (!StringUtils.isEmpty(msg.getName())) {
             vpnCert.setName(msg.getName());
-            dbf.updateAndRefresh(vpnCert);
+            update = true;
+        }
+        if (!StringUtils.isEmpty(msg.getName())) {
+            vpnCert.setName(msg.getName());
+            update = true;
+        }
+        if (update) {
+            dbf.update(vpnCert);
         }
         APIUpdateVpnCertEvent evt = new APIUpdateVpnCertEvent(msg.getId());
+        evt.setInventory(VpnCertInventory.valueOf(dbf.reload(vpnCert)));
         bus.publish(evt);
     }
 
@@ -1088,6 +1097,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
 
     }
+
     private void placeCreateCert() {
         File createCert = PathUtil.findFileOnClassPath("tools/create_cert.py");
         if (createCert == null) {
