@@ -54,4 +54,12 @@
         <name>com.syscxp.header.tunnel.aliEdgeRouter.APIListAliRegionMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.header.tunnel.aliEdgeRouter.APITerminateAliEdgeRouterMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.header.tunnel.aliEdgeRouter.APIRecoverAliEdgeRouterMsg</name>
+    </message>
+
 </service>
