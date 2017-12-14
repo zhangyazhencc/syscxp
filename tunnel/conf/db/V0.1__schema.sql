@@ -522,6 +522,7 @@ CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterEO` (
 	  `description` varchar(255) DEFAULT NULL COMMENT '描述',
 	  `vbrUuid` varchar(64) NOT NULL COMMENT '虚拟边界路由器id',
 	  `physicalLineUuid` varchar(32) NOT NULL COMMENT '物理专线id',
+	  `status` VARCHAR(128) NOT NULL COMMENT '边界路由器状态',
 	  `isCreateFlag` tinyint(1) unsigned DEFAULT 0 COMMENT '是否确认创建',
 	  `vlan` int(11) NOT NULL COMMENT '端口号',
 	  `deleted` varchar(255) DEFAULT NULL COMMENT '是否删除',
@@ -529,7 +530,7 @@ CREATE TABLE `syscxp_tunnel`.`AliEdgeRouterEO` (
 	  `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`AliEdgeRouterVO` AS SELECT uuid, tunnelUuid, accountUuid, aliAccountUuid, aliRegionId, name, description, vbrUuid, physicalLineUuid, vlan, isCreateFlag, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`AliEdgeRouterVO` AS SELECT uuid, tunnelUuid, accountUuid, aliAccountUuid, aliRegionId, name, description, vbrUuid, physicalLineUuid, vlan, status, isCreateFlag, lastOpDate, createDate
                                         FROM `AliEdgeRouterEO` WHERE deleted is null;
 
 ##配置表
