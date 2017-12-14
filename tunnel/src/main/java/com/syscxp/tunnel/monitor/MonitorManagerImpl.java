@@ -658,14 +658,13 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * job控制器命令删除：中止tunnel
      */
     public void stopControllerMonitor(String tunnelUuid) {
-        if(dbf.isExist(tunnelUuid,TunnelVO.class)){
             List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid).list();
             //ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelUuid, tunnelMonitorVOS);
             Map<String,String> cmd = new HashMap<>();
             cmd.put("tunnel_id",tunnelUuid);
 
             stopControllerMonitor(cmd);
-        }
+
     }
 
     /**

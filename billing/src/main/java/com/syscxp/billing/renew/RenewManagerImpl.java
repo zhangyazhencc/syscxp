@@ -4,6 +4,7 @@ import com.syscxp.billing.header.renew.APIUpdateRenewEvent;
 import com.syscxp.billing.header.renew.APIUpdateRenewMsg;
 import com.syscxp.billing.header.renew.RenewInventory;
 import com.syscxp.billing.header.renew.RenewVO;
+import com.syscxp.core.Platform;
 import com.syscxp.header.billing.APICreateOrderMsg;
 import com.syscxp.header.billing.BillingConstant;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,13 +67,29 @@ public class RenewManagerImpl  extends AbstractService implements  ApiMessageInt
     }
 
     private void handle(APIUpdateRenewPriceMsg msg) {
+        if (msg.getPrice().compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException(" input valuable vlue");
+        }
         RenewVO vo = dbf.findByUuid(msg.getUuid(), RenewVO.class);
-        vo.setPriceOneMonth(BigDecimal.valueOf(msg.getPrice()));
+        vo.setPriceDiscount(msg.getPrice());
         dbf.updateAndRefresh(vo);
+        saveRenewPriceLog(vo.getAccountUuid(), msg.getSession().getAccountUuid(), vo.getProductUuid(), msg.getSession().getUserUuid(), vo.getPriceDiscount(), msg.getPrice());
         RenewInventory ri = RenewInventory.valueOf(vo);
         APIUpdateRenewPriceEvent evt = new APIUpdateRenewPriceEvent(msg.getId());
         evt.setInventory(ri);
         bus.publish(evt);
+    }
+
+    private void saveRenewPriceLog(String accountUuid,String opAccountUuid,String productUuid,String opUserUuid,BigDecimal originPrice,BigDecimal nowPrice) {
+        RenewPriceLogVO vo = new RenewPriceLogVO();
+        vo.setUuid(Platform.getUuid());
+        vo.setAccountUuid(accountUuid);
+        vo.setOpAccountUuid(opAccountUuid);
+        vo.setProductUuid(productUuid);
+        vo.setOpUserUuid(opUserUuid);
+        vo.setOriginPrice(originPrice);
+        vo.setNowPrice(nowPrice);
+        dbf.persistAndRefresh(vo);
     }
 
     private void handle(APIUpdateRenewMsg msg) {

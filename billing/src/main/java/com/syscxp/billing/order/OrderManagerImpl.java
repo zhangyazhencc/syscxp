@@ -229,7 +229,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         orderVo.setProductEffectTimeEnd(Timestamp.valueOf(msg.getExpiredTime().toLocalDateTime().plusDays(msg.getDuration())));
         orderVo.setProductStatus(1);
 
-        RenewVO renewVO = getRenewVO(msg.getProductUuid(), msg.getProductUuid());
+        RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
         if (renewVO == null) {
             throw new IllegalArgumentException("please input the correct value");
         }
@@ -627,6 +627,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         String accountUuid = apiCreateBuyOrderMsg.getProducts().get(0).getAccountUuid();
 
         AccountBalanceVO abvo = dbf.findByUuid(accountUuid, AccountBalanceVO.class);
+        BigDecimal mayPayTotal = BigDecimal.ZERO;
         for (ProductInfoForOrder msg : apiCreateBuyOrderMsg.getProducts()) {
 
             OrderTempProp orderTempProp = calculatePrice(msg.getUnits(), msg.getAccountUuid());
@@ -635,8 +636,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             List<String> productPriceUnitUuids = orderTempProp.getProductPriceUnitUuids();
             BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
 
-
-            BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
+            if (abvo != null)
+                mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
 
             originalPrice = originalPrice.multiply(duration);
             BigDecimal discountPriceOneMonth = discountPrice;
@@ -702,6 +703,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         renewVO.setRenewAuto(true);
         renewVO.setExpiredTime(expiredTime);
         renewVO.setPriceOneMonth(discountPrice);
+        renewVO.setPriceDiscount(discountPrice);
         dbf.getEntityManager().persist(renewVO);
         return renewVO;
     }
@@ -747,10 +749,10 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             ProductPriceUnitVO productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), unit.getAreaCode(), unit.getLineCode(), unit.getConfigCode());
             if (productPriceUnitVO == null) {
                 productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), unit.getAreaCode(), "DEFAULT", unit.getConfigCode());
-                if (productCategoryVO == null) {
+                if (productPriceUnitVO == null) {
                     productPriceUnitVO = getProductPriceUnitVO(productCategoryVO.getUuid(), "DEFAULT", "DEFAULT", unit.getConfigCode());
                 }
-                if (productCategoryVO == null)
+                if (productPriceUnitVO == null)
                     throw new IllegalArgumentException("can not find the product price in database");
             }
 
@@ -830,7 +832,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
 
         AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-        BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
+        BigDecimal mayPayTotal = BigDecimal.ZERO;
+        if (abvo != null)
+            mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
 
         originalPrice = originalPrice.multiply(duration);
         discountPrice = discountPrice.multiply(duration);

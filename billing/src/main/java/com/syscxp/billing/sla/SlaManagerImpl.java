@@ -67,9 +67,19 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
             handle((APIUpdateSLACompensateMsg) msg);
         }else if (msg instanceof APIUpdateSLACompensateStateMsg) {
             handle((APIUpdateSLACompensateStateMsg) msg);
+        } else if (msg instanceof APIDeleteSLACompensateMsg) {
+            handle((APIDeleteSLACompensateMsg) msg);
         }  else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIDeleteSLACompensateMsg msg) {
+
+        SLACompensateVO vo = dbf.findByUuid(msg.getUuid(), SLACompensateVO.class);
+        dbf.remove(vo);
+        APIDeleteSLACompensateEvent event = new APIDeleteSLACompensateEvent(msg.getId());
+        bus.publish(event);
     }
 
     private void handle(APIUpdateSLACompensateStateMsg msg) {
