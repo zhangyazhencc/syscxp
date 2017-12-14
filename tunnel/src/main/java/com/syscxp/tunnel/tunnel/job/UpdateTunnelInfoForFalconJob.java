@@ -1,6 +1,7 @@
 package com.syscxp.tunnel.tunnel.job;
 
 import com.syscxp.core.CoreGlobalProperty;
+import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.job.Job;
@@ -15,6 +16,7 @@ import com.syscxp.header.message.GsonTransient;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
+import com.syscxp.header.tunnel.tunnel.TunnelVO;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -52,33 +54,41 @@ public class UpdateTunnelInfoForFalconJob implements Job {
     @Autowired
     private RESTFacade restf;
 
+    @Autowired
+    private DatabaseFacade dbf;
+
     @Override
     public void run(ReturnValueCompletion<Object> completion) {
 
         try {
-            logger.info("开始执行JOB【策略同步-更新】");
+            if(dbf.isExist(tunnelUuid, TunnelVO.class)){
+                logger.info("开始执行JOB【策略同步-更新】");
 
-            APIUpdateTunnelInfoForFalconMsg msg = new APIUpdateTunnelInfoForFalconMsg();
-            msg.setTunnelUuid(tunnelUuid);
-            msg.setBandwidth(bandwidth);
-            msg.setSwitchAIp(switchAIp);
-            msg.setSwitchAVlan(switchAVlan);
-            msg.setSwitchBIp(switchBIp);
-            msg.setSwitchBVlan(switchBVlan);
-            msg.setAccountUuid(accountUuid);
+                APIUpdateTunnelInfoForFalconMsg msg = new APIUpdateTunnelInfoForFalconMsg();
+                msg.setTunnelUuid(tunnelUuid);
+                msg.setBandwidth(bandwidth);
+                msg.setSwitchAIp(switchAIp);
+                msg.setSwitchAVlan(switchAVlan);
+                msg.setSwitchBIp(switchBIp);
+                msg.setSwitchBVlan(switchBVlan);
+                msg.setAccountUuid(accountUuid);
 
-            String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.ALARM_SERVER_URL, "/alarm/api");
-            InnerMessageHelper.setMD5(msg);
+                String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.ALARM_SERVER_URL, "/alarm/api");
+                InnerMessageHelper.setMD5(msg);
 
-            RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(msg), RestAPIResponse.class);
-            APIReply reply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
+                RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(msg), RestAPIResponse.class);
+                APIReply reply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
 
-            if (!reply.isSuccess()){
-                logger.warn("【策略同步-更新】失败");
-                completion.fail(reply.getError());
+                if (!reply.isSuccess()){
+                    logger.warn("【策略同步-更新】失败");
+                    completion.fail(reply.getError());
+                }else{
+                    completion.success(null);
+                }
             }else{
                 completion.success(null);
             }
+
 
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);

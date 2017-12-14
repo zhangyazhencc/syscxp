@@ -206,6 +206,25 @@ public class TunnelValidateBase {
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ", msg.getName()));
         }
+        //两个相同接口的专线不允许存在共点
+        if(msg.getCrossTunnelUuid() != null){
+            if(msg.getInterfaceAUuid() != null && msg.getInterfaceZUuid() != null){
+                String crossInterfaceAUuid = Q.New(TunnelSwitchPortVO.class)
+                        .eq(TunnelSwitchPortVO_.tunnelUuid,msg.getCrossTunnelUuid())
+                        .eq(TunnelSwitchPortVO_.sortTag,"A")
+                        .select(TunnelSwitchPortVO_.interfaceUuid)
+                        .findValue();
+                String crossInterfaceZUuid = Q.New(TunnelSwitchPortVO.class)
+                        .eq(TunnelSwitchPortVO_.tunnelUuid,msg.getCrossTunnelUuid())
+                        .eq(TunnelSwitchPortVO_.sortTag,"Z")
+                        .select(TunnelSwitchPortVO_.interfaceUuid)
+                        .findValue();
+                if((msg.getInterfaceAUuid().equals(crossInterfaceAUuid) && msg.getInterfaceZUuid().equals(crossInterfaceZUuid))
+                        || (msg.getInterfaceAUuid().equals(crossInterfaceZUuid) && msg.getInterfaceZUuid().equals(crossInterfaceAUuid))){
+                    throw new ApiMessageInterceptionException(argerr("该通道已使用相同的接口创建过，不能使用共点！"));
+                }
+            }
+        }
         //判断通道两端的连接点是否相同，不允许相同
         if (Objects.equals(msg.getEndpointAUuid(), msg.getEndpointZUuid())) {
             throw new ApiMessageInterceptionException(argerr("通道两端不允许在同一个连接点 "));

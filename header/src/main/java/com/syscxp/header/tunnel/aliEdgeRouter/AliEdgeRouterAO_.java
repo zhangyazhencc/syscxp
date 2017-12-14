@@ -15,6 +15,7 @@ public class AliEdgeRouterAO_ {
     public static volatile SingularAttribute<AliEdgeRouterAO, String> description;
     public static volatile SingularAttribute<AliEdgeRouterAO, String> vbrUuid;
     public static volatile SingularAttribute<AliEdgeRouterAO, String> physicalLineUuid;
+    public static volatile SingularAttribute<AliEdgeRouterAO, AliEdgeRouterStatus> status;
     public static volatile SingularAttribute<AliEdgeRouterAO, Integer> vlan;
     public static volatile SingularAttribute<AliEdgeRouterAO, Timestamp> createDate;
     public static volatile SingularAttribute<AliEdgeRouterAO, Timestamp> lastOpDate;

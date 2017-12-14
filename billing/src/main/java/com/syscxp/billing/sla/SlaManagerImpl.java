@@ -67,9 +67,19 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
             handle((APIUpdateSLACompensateMsg) msg);
         }else if (msg instanceof APIUpdateSLACompensateStateMsg) {
             handle((APIUpdateSLACompensateStateMsg) msg);
+        } else if (msg instanceof APIDeleteSLACompensateMsg) {
+            handle((APIDeleteSLACompensateMsg) msg);
         }  else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIDeleteSLACompensateMsg msg) {
+
+        SLACompensateVO vo = dbf.findByUuid(msg.getUuid(), SLACompensateVO.class);
+        dbf.remove(vo);
+        APIDeleteSLACompensateEvent event = new APIDeleteSLACompensateEvent(msg.getId());
+        bus.publish(event);
     }
 
     private void handle(APIUpdateSLACompensateStateMsg msg) {
@@ -169,12 +179,7 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
         if (msg.getReason() != null) {
             vo.setReason(msg.getReason());
         }
-        if (msg.getTimeStart() != null) {
-            vo.setTimeStart(msg.getTimeStart());
-        }
-        if (msg.getTimeEnd() != null) {
-            vo.setTimeEnd(msg.getTimeEnd());
-        }
+
         if (msg.getProductUuid() != null) {
             vo.setProductUuid(msg.getProductUuid());
         } if (msg.getDescription() != null) {

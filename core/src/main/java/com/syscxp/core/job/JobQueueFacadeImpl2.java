@@ -179,7 +179,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
             @Override
             public long getInterval() {
-                return 60 * 30; // 30 minute
+                return 60 * 10; // 10 minute
             }
 
             @Override
@@ -419,6 +419,10 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
                         // nothing to do, release queue
                         if (! existHistoryErrorJobQueueEntry(qvo)) {    // 也没有error的需要再次执行的job
                             dbf.remove(qvo);
+                        }else{
+                            UpdateQuery.New(JobQueueVO.class).set(JobQueueVO_.workerManagementNodeId, null)
+                                    .eq(JobQueueVO_.id, qvo.getId())
+                                    .update();
                         }
                         logger.debug(String.format("[JobQueue released, no pending or 1 hour ago error task, delete the queue] last owner: %s, queue name: %s, queue id: %s",
                                 qvo.getOwner(), qvo.getName(), qvo.getId()));
@@ -427,7 +431,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
                     while (true) {
                         try {
-                            JobContextObject ctx = SerializableHelper.readObject(jobe.getContext());
+                            //JobContextObject ctx = SerializableHelper.readObject(jobe.getContext());
                             //Job theJob = ctx.load();
 
                             Job theJob = jobWire.loads(jobe.getJobData());
