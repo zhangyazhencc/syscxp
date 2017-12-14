@@ -105,6 +105,8 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             handle((APIQueryNettoolResultMsg) msg);
         } else if (msg instanceof APIQueryNettoolNodeMsg) {
             handle((APIQueryNettoolNodeMsg) msg);
+        }  else if (msg instanceof APIQueryNettoolMonitorHostMsg) {
+            handle((APIQueryNettoolMonitorHostMsg) msg);
         } else if (msg instanceof APIQueryMonitorResultMsg) {
             handle((APIQueryMonitorResultMsg) msg);
         } else if (msg instanceof APICreateSpeedTestTunnelMsg) {
@@ -1243,12 +1245,9 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         nettoolCommand.setRemote_ip(msg.getRemoteIp());
         String command = JSONObjectUtil.toJsonString(nettoolCommand);
 
-        MonitorHostVO host = getMonitorHostByNodeAndType(msg.getNodeUuid(), MonitorType.NETTOOL);
-
-        if (host == null)
-            throw new IllegalArgumentException(String.format("No monitor host exist under node %s", msg.getNodeUuid()));
-
+        MonitorHostVO host = dbf.findByUuid(msg.getMonitorHostUuid(),MonitorHostVO.class);
         String url = getMonitorAgentUrl(host.getHostIp(), MonitorAgentConstant.NETTOOL);
+
         sendMonitorAgentCommand(url, command);
 
         event.setInventory(NettoolRecordInventory.valueOf(nettoolCommand, host.getHostIp()));
@@ -1284,6 +1283,20 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 .list();
 
         reply.setInventories(MonitorHostInventory.valueOf1(monitorHostVOS));
+
+        bus.reply(msg, reply);
+    }
+
+    private void handle(APIQueryNettoolMonitorHostMsg msg) {
+        APIQueryNettoolMonitorHostReply reply = new APIQueryNettoolMonitorHostReply();
+
+        List<MonitorHostVO> monitorHostVOS = Q.New(MonitorHostVO.class)
+                .eq(MonitorHostVO_.monitorType, MonitorType.NETTOOL)
+                .eq(MonitorHostVO_.status, HostStatus.Connected)
+                .eq(MonitorHostVO_.state, HostState.Enabled)
+                .list();
+
+        reply.setInventories(NettoolMonitorHostInventory.valueOf(monitorHostVOS));
 
         bus.reply(msg, reply);
     }
