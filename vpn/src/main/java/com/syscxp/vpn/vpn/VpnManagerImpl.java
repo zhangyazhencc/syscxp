@@ -29,6 +29,7 @@ import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.errorcode.SysErrors;
+import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.host.HostState;
 import com.syscxp.header.host.HostStatus;
 import com.syscxp.header.message.APIMessage;
@@ -51,6 +52,7 @@ import com.syscxp.header.vpn.vpn.*;
 import com.syscxp.utils.*;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
+import com.syscxp.utils.path.PathUtil;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
 import com.syscxp.header.vpn.host.VpnHostConstant;
@@ -240,11 +242,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APIGenerateDownloadUrlMsg msg) {
 
         final APIGenerateDownloadUrlReply reply = new APIGenerateDownloadUrlReply();
-
+        String type = "cert".equals(msg.getType()) ? VpnCertVO.class.getSimpleName() : VpnVO.class.getSimpleName();
+        String accountUuid = SQL.New(String.format("select r.accountUuid from %s r where r.uuid = :uuid ", type))
+                .param("uuid", msg.getUuid()).find();
         StringBuilder sb = new StringBuilder();
         long time = System.currentTimeMillis();
         sb.append(msg.getUuid()).append(":").append(time);
-        sb.append(":").append(DigestUtils.md5Hex(msg.getSession().getAccountUuid() + time + VpnConstant.GENERATE_KEY));
+        sb.append(":").append(DigestUtils.md5Hex(accountUuid + time + VpnConstant.GENERATE_KEY));
 
         String path = new String(Base64.encode(sb.toString().getBytes()));
 
@@ -1084,10 +1088,18 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
 
     }
+    private void placeCreateCert() {
+        File createCert = PathUtil.findFileOnClassPath("tools/create_cert.py");
+        if (createCert == null) {
+            throw new CloudRuntimeException(String.format("cannot find tools/create_cert.py on classpath"));
+        }
 
+        ShellUtils.run(String.format("yes | cp %s %s", createCert.getAbsolutePath(), AnsibleConstant.ROOT_DIR));
+    }
 
     public boolean start() {
 //        prepareGlobalConfig();
+        placeCreateCert();
         restf.registerSyncHttpCallHandler("billing", OrderCallbackCmd.class,
                 cmd -> {
                     Message message = RESTApiDecoder.loads(cmd.getCallBackData());
@@ -1399,9 +1411,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     @Override
     public List<Quota> reportQuota() {
 
-        VpnQuotaOperator interfaceQuotaOperator = new VpnQuotaOperator();
+        VpnQuotaOperator vpnQuotaOperator = new VpnQuotaOperator();
         Quota vQuota = new Quota();
-        vQuota.setOperator(interfaceQuotaOperator);
+        vQuota.setOperator(vpnQuotaOperator);
         vQuota.addMessageNeedValidation(APICreateVpnCertMsg.class);
         vQuota.addMessageNeedValidation(APICreateVpnMsg.class);
 

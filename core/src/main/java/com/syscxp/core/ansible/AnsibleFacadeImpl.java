@@ -86,20 +86,6 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
         ShellUtils.run(String.format("yes | cp %s %s", ansible.getAbsolutePath(), filesDir));
     }
 
-    private void placeCreateCert() {
-        File createCert = PathUtil.findFileOnClassPath("tools/create_cert.py");
-        if (createCert == null) {
-            throw new CloudRuntimeException(String.format("cannot find tools/create_cert.py on classpath"));
-        }
-
-        File root = new File(filesDir);
-        if (!root.exists()) {
-            root.mkdirs();
-        }
-
-        ShellUtils.run(String.format("yes | cp %s %s", createCert.getAbsolutePath(), AnsibleConstant.ROOT_DIR));
-    }
-
     void init() {
         if (CoreGlobalProperty.UNIT_TEST_ON) {
             logger.debug("skip AnsibleFacade init as it's unittest");
@@ -153,7 +139,6 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
 
             placePip901();
             placeAnsible196();
-            placeCreateCert();
 
 //            ShellUtils.run(String.format("if ! ansible --version | grep -q 1.9.6; then " +
 //                    "if grep -i -s centos /etc/system-release; then " +
