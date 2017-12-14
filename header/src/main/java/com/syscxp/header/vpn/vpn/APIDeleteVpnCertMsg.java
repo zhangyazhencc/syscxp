@@ -6,22 +6,10 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
 
-@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"})
-public class APIUpdateVpnCertMsg extends APIMessage{
+@Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"delete"})
+public class APIDeleteVpnCertMsg extends APIMessage {
     @APIParam(resourceType = VpnCertVO.class, checkAccount = true)
     private String uuid;
-    @APIParam(required = false)
-    private String name;
-    @APIParam(required = false)
-    private String description;
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
 
     public String getUuid() {
         return uuid;
@@ -31,22 +19,14 @@ public class APIUpdateVpnCertMsg extends APIMessage{
         this.uuid = uuid;
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
     public ApiNotification __notification__() {
         final APIMessage that = this;
 
         return new ApiNotification() {
             @Override
             public void after(APIEvent evt) {
-                ntfy("Update VpnCertVO")
-                        .resource(uuid, VpnVO.class)
+                ntfy("Delete VpnCertVO")
+                        .resource(uuid, VpnCertVO.class)
                         .messageAndEvent(that, evt).done();
             }
         };

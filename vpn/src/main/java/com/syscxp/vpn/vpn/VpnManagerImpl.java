@@ -128,6 +128,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APIUpdateVpnBandwidthMsg) msg);
         } else if (msg instanceof APIDeleteVpnMsg) {
             handle((APIDeleteVpnMsg) msg);
+        } else if (msg instanceof APIDeleteVpnCertMsg) {
+            handle((APIDeleteVpnCertMsg) msg);
         } else if (msg instanceof APIGetVpnMsg) {
             handle((APIGetVpnMsg) msg);
         } else if (msg instanceof APIGetVpnPriceMsg) {
@@ -167,6 +169,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIDeleteVpnCertMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(), VpnCertVO.class);
+        APIDeleteHostInterfaceEvent evt = new APIDeleteHostInterfaceEvent(msg.getId());
+        bus.publish(evt);
     }
 
     private void handle(APIGetModifyVpnPriceDiffMsg msg) {
@@ -719,8 +727,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             vpnCert.setName(msg.getName());
             update = true;
         }
-        if (!StringUtils.isEmpty(msg.getName())) {
-            vpnCert.setName(msg.getName());
+        if (!StringUtils.isEmpty(msg.getDescription())) {
+            vpnCert.setDescription(msg.getDescription());
             update = true;
         }
         if (update) {
@@ -1190,9 +1198,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
-        if (msg instanceof APIVpnMessage) {
-            validate((APIVpnMessage) msg);
-        }
         if (msg instanceof APICreateVpnMsg) {
             validate((APICreateVpnMsg) msg);
         } else if (msg instanceof APIQueryVpnMsg) {
@@ -1203,8 +1208,17 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             validate((APIUpdateVpnBandwidthMsg) msg);
         } else if (msg instanceof APIGetVpnCertMsg) {
             validate((APIGetVpnCertMsg) msg);
+        } else if (msg instanceof APIDeleteVpnCertMsg) {
+            validate((APIDeleteVpnCertMsg) msg);
         }
         return msg;
+    }
+
+    private void validate(APIDeleteVpnCertMsg msg) {
+        VpnCertVO cert = dbf.findByUuid(msg.getUuid(), VpnCertVO.class);
+        if (cert.getVpnNum() > 0)
+            throw new ApiMessageInterceptionException(
+                    argerr("The VpnCertVO[uuid:%s] has already binding Vpn.", msg.getUuid()));
     }
 
     private void validate(APIVpnMessage msg) {
@@ -1214,6 +1228,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     argerr("The Account[uuid:%s] is not a admin or proxy.",
                             msg.getSession().getAccountUuid()));
         }
+
     }
 
 
@@ -1232,6 +1247,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APIUpdateVpnBandwidthMsg msg) {
+        // 区分管理员账户
+        if (msg.getSession().isAdminSession() && StringUtils.isEmpty(msg.getAccountUuid())) {
+            throw new ApiMessageInterceptionException(
+                    argerr("The Account[uuid:%s] is not a admin or proxy.",
+                            msg.getSession().getAccountUuid()));
+        }
+
         LocalDateTime dateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atTime(LocalTime.MIN);
         Long times = Q.New(VpnMotifyRecordVO.class)
                 .eq(VpnMotifyRecordVO_.vpnUuid, msg.getUuid())
@@ -1274,6 +1296,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APICreateVpnMsg msg) {
+        // 区分管理员账户
+        if (msg.getSession().isAdminSession() && StringUtils.isEmpty(msg.getAccountUuid())) {
+            throw new ApiMessageInterceptionException(
+                    argerr("The Account[uuid:%s] is not a admin or proxy.",
+                            msg.getSession().getAccountUuid()));
+        }
         Q q = Q.New(VpnVO.class).eq(VpnVO_.name, msg.getName()).eq(VpnVO_.accountUuid, msg.getAccountUuid());
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(
