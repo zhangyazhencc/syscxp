@@ -1,4 +1,4 @@
-package com.syscxp.header.vpn;
+package com.syscxp.header.vpn.vpn;
 
 public interface VpnConstant {
 
@@ -13,6 +13,11 @@ public interface VpnConstant {
     String CLIENT_CRT_PATH = "client.crt";
     String CLIENT_KEY_PATH = "client.key";
     String CA_CRT_PATH = "ca.crt";
+    String CA_KEY_PATH = "ca.key";
+    String SERVER_CRT_PATH = "server.crt";
+    String SERVER_KEY_PATH = "server.key";
+    String DH1024_PEM_PATH = "dh1024.pem";
+
     String VPN_REPORT_PATH = "/report";
     String CONF_DOWNLOAD_PATH = "/download/conf/{uuid}";
     String CERT_DOWNLOAD_PATH = "/download/cert/{uuid}";
@@ -29,4 +34,8 @@ public interface VpnConstant {
     String INIT_VPN_PATH = "/vpn/init_vpn";
     String PUSH_CERT_PATH = "/vpn/push_cert";
     String CHECK_VPN_STATUS_PATH = "/vpn/vpn_status";
+
+
+    String QUOTA_VPN_NUM = "vpn.num";
+    String QUOTA_VPN_CERT_NUM = "vpnCert.num";
 }

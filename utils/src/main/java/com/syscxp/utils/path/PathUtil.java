@@ -33,7 +33,7 @@ public class PathUtil {
         return new File(path).getAbsolutePath();
     }
 
-    public static String getsyscxpHomeFolder() {
+    public static String getSyscxpHomeFolder() {
         String homeDir = System.getProperty(HOME_DIR_PROPERTY_NAME);
         File f = new File(homeDir);
         if (!f.exists()) {
@@ -43,7 +43,7 @@ public class PathUtil {
     }
 
     public static String getFolderUndersyscxpHomeFolder(String folder) {
-        String path = join(getsyscxpHomeFolder(), folder);
+        String path = join(getSyscxpHomeFolder(), folder);
         File f = new File(path);
         if (!f.exists()) {
             f.mkdirs();

@@ -1,4 +1,6 @@
-package com.syscxp.vpn.host;
+package com.syscxp.header.vpn.host;
+
+import com.syscxp.utils.path.PathUtil;
 
 public interface VpnHostConstant {
 
@@ -12,6 +14,8 @@ public interface VpnHostConstant {
      String AGENT_ECHO_PATH = "/host/echo";
 
      String ANSIBLE_PLAYBOOK_NAME = "vpn.py";
+     String CREATE_CERT_PATH = PathUtil.getFilePathUndersyscxpHomeFolder("ansible/create_cert.py");
+     String RSA_KEYS_PATH = PathUtil.getFolderUndersyscxpHomeFolder("ansible/easy-rsa/keys");
      String ANSIBLE_MODULE_PATH = "ansible/vpn";
 
 }
