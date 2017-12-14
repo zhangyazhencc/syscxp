@@ -129,14 +129,8 @@ export KEY_NAME="server"
         cmd = './build-dh'
         subprocess.call(cmd, shell=True, stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w'))
 
-    def copy_cert(self):
-        if not os.path.isdir(self.VPN_DIR):
-            os.mkdir(self.VPN_DIR, 0755)
-        os.system('\cp -rp {} {}'.format(self.KEY_DIR, "{}/keys".format(self.VPN_DIR)))
-        os.system('rm -f ' + self.VPN_DIR + '/keys/{0*.pem,index*,serial*}')
-
     def check_cert(self):
-        cmd = "du -b {}/*".format(self.KEY_DIR)
+        cmd = "du -b {}/*".format(self.EASY_RSA_DIR)
         files_list = os.popen(cmd).read().strip().split("\n")
         res = True
         for file in files_list:

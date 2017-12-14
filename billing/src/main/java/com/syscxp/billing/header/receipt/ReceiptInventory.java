@@ -1,5 +1,7 @@
 package com.syscxp.billing.header.receipt;
 
+import com.syscxp.header.query.ExpandedQueries;
+import com.syscxp.header.query.ExpandedQuery;
 import com.syscxp.header.search.Inventory;
 
 import java.math.BigDecimal;
@@ -9,12 +11,10 @@ import java.util.Collection;
 import java.util.List;
 
 @Inventory(mappingVOClass = ReceiptVO.class)
-//@ExpandedQueries({
-//        @ExpandedQuery(expandedField = "receiptInfo", inventoryClass = ReceiptInfoInventory.class,
-//                foreignKey = "receiptInfoUuid", expandedInventoryKey = "uuid"),
-//        @ExpandedQuery(expandedField = "receiptPostAddress", inventoryClass = ReceiptPostAddressInventory.class,
-//                foreignKey = "receiptAddressUuid", expandedInventoryKey = "uuid")
-//})
+@ExpandedQueries({
+        @ExpandedQuery(expandedField = "receiptInfoInventory", inventoryClass = ReceiptInfoInventory.class,
+                foreignKey = "receiptInfoUuid", expandedInventoryKey = "uuid")
+})
 
 public class ReceiptInventory {
 
@@ -42,6 +42,8 @@ public class ReceiptInventory {
 
     private String comment;
 
+    private String receiptInfoUuid;
+
     public static ReceiptInventory valueOf(ReceiptVO vo) {
         ReceiptInventory inv = new ReceiptInventory();
         inv.setUuid(vo.getUuid());
@@ -58,6 +60,7 @@ public class ReceiptInventory {
         inv.setOpMan(vo.getOpMan());
         inv.setReceiptNO(vo.getReceiptNO());
         inv.setComment(vo.getCommet());
+        inv.setReceiptInfoUuid(vo.getReceiptInfoUuid());
 
         return inv;
     }
@@ -164,5 +167,13 @@ public class ReceiptInventory {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public String getReceiptInfoUuid() {
+        return receiptInfoUuid;
+    }
+
+    public void setReceiptInfoUuid(String receiptInfoUuid) {
+        this.receiptInfoUuid = receiptInfoUuid;
     }
 }
