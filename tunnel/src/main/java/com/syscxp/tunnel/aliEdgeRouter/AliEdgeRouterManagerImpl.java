@@ -125,7 +125,8 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         RecoverVirtualBorderRouterResponse response;
         try{
             response = client.getAcsResponse(request);
-
+            vo.setStatus(AliEdgeRouterStatus.normal);
+            dbf.updateAndRefresh(vo);
         }catch (Exception e){
             e.printStackTrace();
             throw new ApiMessageInterceptionException(argerr(e.getMessage()));
@@ -154,6 +155,8 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         try{
             response = client.getAcsResponse(request);
+            vo.setStatus(AliEdgeRouterStatus.Terminate);
+            dbf.updateAndRefresh(vo);
 
         }catch(Exception e){
             e.printStackTrace();
@@ -597,6 +600,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
             if (update){
                 vo.setCreateFlag(true);
+                vo.setStatus(AliEdgeRouterStatus.normal);
                 vo = dbf.updateAndRefresh(vo);
             }
 
@@ -634,6 +638,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         vo.setAliRegionId(msg.getAliRegionId());
         vo.setPhysicalLineUuid(msg.getPhysicalLineUuid());
         vo.setVlan(msg.getVlan());
+        vo.setStatus(AliEdgeRouterStatus.WaitCreate);
 
         String RegionId = msg.getAliRegionId();
         String AliAccessKeyId = AliUserGlobalProperty.ALI_KEY;

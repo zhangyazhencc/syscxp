@@ -31,6 +31,8 @@ public class AliEdgeRouterInventory {
 
     private String tunnelName;
 
+    private AliEdgeRouterStatus status;
+
 
     public static AliEdgeRouterInventory valueOf(AliEdgeRouterVO vo){
         AliEdgeRouterInventory inv = new AliEdgeRouterInventory();
@@ -47,6 +49,7 @@ public class AliEdgeRouterInventory {
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setCreateDate(vo.getCreateDate());
         inv.setCreateFlag(vo.isCreateFlag());
+        inv.setStatus(vo.getStatus());
         if(vo.getTunnelEO() != null){
             inv.setTunnelName(vo.getTunnelEO().getName());
         }
@@ -174,5 +177,13 @@ public class AliEdgeRouterInventory {
 
     public void setTunnelName(String tunnelName) {
         this.tunnelName = tunnelName;
+    }
+
+    public AliEdgeRouterStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AliEdgeRouterStatus status) {
+        this.status = status;
     }
 }
