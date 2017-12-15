@@ -1,4 +1,4 @@
-package com.syscxp.sms.header;
+package com.syscxp.sms;
 
 import com.cloopen.rest.sdk.utils.encoder.BASE64Encoder;
 import com.syscxp.core.Platform;
@@ -12,10 +12,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-public class ImageUtil {
+public class ImageVerifyCodeUtils1 {
 
     private Random random = new Random();
-    private String randString = "0123456789";
+    private String randString = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
     private int width = 80;
     private int height = 23;
     private int lineSize = 40;

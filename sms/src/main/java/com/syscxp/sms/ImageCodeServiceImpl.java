@@ -77,7 +77,7 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
         APIGetImageCodeReply reply = new APIGetImageCodeReply();
 
 
-        Map<String,String> map = new ImageUtil().getBase64Code();
+        Map<String,String> map = new ImageVerifyCodeUtils1().getBase64Code();
 
         reply.setImageUuid(map.get("uuid"));
         reply.setImageCode(map.get("base64Code"));
