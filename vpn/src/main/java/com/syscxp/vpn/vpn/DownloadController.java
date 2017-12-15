@@ -1,28 +1,26 @@
 package com.syscxp.vpn.vpn;
 
 import com.syscxp.core.CoreGlobalProperty;
-import com.syscxp.core.ansible.AnsibleConstant;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SQL;
 import com.syscxp.core.defer.Defer;
 import com.syscxp.core.defer.Deferred;
-import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.header.vpn.VpnConstant;
+import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.ClientInfo;
 import com.syscxp.header.vpn.vpn.VpnCertVO;
 import com.syscxp.header.vpn.vpn.VpnSystemVO;
 import com.syscxp.header.vpn.vpn.VpnVO;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.ZipUtils;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.path.PathUtil;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -31,8 +29,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.zip.ZipOutputStream;
 
 @Controller
@@ -48,7 +44,8 @@ public class DownloadController {
 
     @RequestMapping(value = VpnConstant.VPN_REPORT_PATH, method = {RequestMethod.PUT, RequestMethod.POST})
     @ResponseBody
-    public String report(@RequestBody ClientInfo info) {
+    public String report(@RequestBody String body) {
+        ClientInfo info = JSONObjectUtil.toObject(body, ClientInfo.class);
         VpnSystemVO vo = dbf.findByUuid(info.getId(), VpnSystemVO.class);
         if (vo == null) {
             vo = new VpnSystemVO();

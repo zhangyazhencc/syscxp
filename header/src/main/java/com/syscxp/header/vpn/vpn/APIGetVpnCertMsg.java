@@ -3,8 +3,6 @@ package com.syscxp.header.vpn.vpn;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.*;
-import com.syscxp.header.notification.ApiNotification;
-import com.syscxp.header.vpn.VpnConstant;
 
 @SuppressCredentialCheck
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"read"})

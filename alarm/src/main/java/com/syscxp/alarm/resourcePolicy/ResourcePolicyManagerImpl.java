@@ -48,6 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.syscxp.utils.CollectionDSL.list;
 
@@ -156,32 +157,41 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
         FlowChain attachPolicy = FlowChainBuilder.newSimpleFlowChain();
         attachPolicy.setName(String.format("Attach-policy"));
+        final StringBuilder sb = new StringBuilder();
+        final AtomicBoolean flag = new AtomicBoolean(false);
         attachPolicy.then(new Flow() {
             @Override
             public void run(FlowTrigger trigger, Map data) {
                 if (!StringUtils.isEmpty(msg.getPolicyUuid())) {
-                    ResourcePolicyRefVO refVO = new ResourcePolicyRefVO();
-                    refVO.setPolicyUuid(msg.getPolicyUuid());
-                    refVO.setResourceUuid(msg.getResourceUuid());
-                    dbf.persistAndRefresh(refVO);
-
-                    PolicyVO newPolicyVO =dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
-                    newPolicyVO.setBindResources(newPolicyVO.getBindResources() + 1);
-                    dbf.updateAndRefresh(newPolicyVO);
+                    SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
+                    query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
+                    ResourcePolicyRefVO resourcePolicyRefVO = query.find();
+                    if (resourcePolicyRefVO != null) {
+                        sb.append(resourcePolicyRefVO.getPolicyUuid());
+                        flag.set(true);
+                        resourcePolicyRefVO.setPolicyUuid(msg.getPolicyUuid());
+                        dbf.updateAndRefresh(resourcePolicyRefVO);
+                    }else{
+                        ResourcePolicyRefVO refVO = new ResourcePolicyRefVO();
+                        refVO.setPolicyUuid(msg.getPolicyUuid());
+                        refVO.setResourceUuid(msg.getResourceUuid());
+                        dbf.persistAndRefresh(refVO);
+                        PolicyVO newPolicyVO =dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
+                        newPolicyVO.setBindResources(newPolicyVO.getBindResources() + 1);
+                        dbf.updateAndRefresh(newPolicyVO);
+                    }
                 } else {
                     SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
                     query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
-                    List<ResourcePolicyRefVO> list = query.list();
-                    for (ResourcePolicyRefVO resourcePolicyRefVO : list) {
+                    ResourcePolicyRefVO resourcePolicyRefVO = query.find();
+                    if (resourcePolicyRefVO != null) {
+                        sb.append(resourcePolicyRefVO.getPolicyUuid());
+                        dbf.remove(resourcePolicyRefVO);
                         PolicyVO newPolicyVO = dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class);
-
                         newPolicyVO.setBindResources(newPolicyVO.getBindResources() - 1);
                         dbf.updateAndRefresh(newPolicyVO);
-
-                        dbf.remove(resourcePolicyRefVO);
                     }
                 }
-
                 trigger.next();
             }
 
@@ -200,24 +210,36 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             @Override
             public void rollback(FlowRollback trigger, Map data) {
                 if (!StringUtils.isEmpty(msg.getPolicyUuid())) {
-                    ResourcePolicyRefVO refVO = Q.New(ResourcePolicyRefVO.class)
-                            .eq(ResourcePolicyRefVO_.policyUuid,msg.getPolicyUuid())
-                            .eq(ResourcePolicyRefVO_.resourceUuid,msg.getResourceUuid()).find();
-                    dbf.remove(refVO);
+                    if (flag.get()) {
+                        SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
+                        query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, msg.getResourceUuid());
+                        ResourcePolicyRefVO resourcePolicyRefVO = query.find();
+                        resourcePolicyRefVO.setPolicyUuid(sb.toString());
+                        dbf.updateAndRefresh(resourcePolicyRefVO);
+                    }else {
+                        ResourcePolicyRefVO refVO = Q.New(ResourcePolicyRefVO.class)
+                                .eq(ResourcePolicyRefVO_.policyUuid,msg.getPolicyUuid())
+                                .eq(ResourcePolicyRefVO_.resourceUuid,msg.getResourceUuid()).find();
+                        dbf.remove(refVO);
 
-                    PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
-                    policyVO.setBindResources(policyVO.getBindResources()-1);
-                    dbf.updateAndRefresh(policyVO);
+                        PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
+                        policyVO.setBindResources(policyVO.getBindResources()-1);
+                        dbf.updateAndRefresh(policyVO);
+                    }
+
 
                 }else{
-                    ResourcePolicyRefVO refVO = new ResourcePolicyRefVO();
-                    refVO.setPolicyUuid(policyUuid);
-                    refVO.setResourceUuid(msg.getResourceUuid());
-                    dbf.persistAndRefresh(refVO);
+                    if (!StringUtils.isEmpty(sb.toString())) {
+                        ResourcePolicyRefVO refVO = new ResourcePolicyRefVO();
+                        refVO.setPolicyUuid(sb.toString());
+                        refVO.setResourceUuid(msg.getResourceUuid());
+                        dbf.persistAndRefresh(refVO);
 
-                    PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
-                    policyVO.setBindResources(policyVO.getBindResources()+1);
-                    dbf.updateAndRefresh(policyVO);
+                        PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
+                        policyVO.setBindResources(policyVO.getBindResources()+1);
+                        dbf.updateAndRefresh(policyVO);
+                    }
+
                 }
 
                 trigger.rollback();
@@ -226,7 +248,9 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             @Override
             public void handle(Map data) {
                 PolicyVO policyVO = dbf.findByUuid(policyUuid,PolicyVO.class);
-                event.setInventory(PolicyInventory.valueOf(policyVO));
+                if (!StringUtils.isEmpty(msg.getPolicyUuid())) {
+                    event.setInventory(PolicyInventory.valueOf(policyVO));
+                }
                 bus.publish(event);
             }
         }).error(new FlowErrorHandler(null) {

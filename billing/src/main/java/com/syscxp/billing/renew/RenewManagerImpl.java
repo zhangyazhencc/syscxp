@@ -124,7 +124,7 @@ public class RenewManagerImpl  extends AbstractService implements  ApiMessageInt
 
     @Override
     public boolean stop() {
-        return false;
+        return true;
     }
 
     @Override

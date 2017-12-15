@@ -1,6 +1,8 @@
 package com.syscxp.sms;
 
 import com.cloopen.rest.sdk.utils.encoder.BASE64Encoder;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.thread.PeriodicTask;
@@ -14,8 +16,10 @@ import com.syscxp.header.message.Message;
 import com.syscxp.sms.header.*;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
-
+import org.springframework.web.util.HtmlUtils;
+import org.apache.commons.lang.StringEscapeUtils;
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -95,7 +99,11 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
     }
 
     @Override
-    public boolean ValidateImageCode(String imageId, String code) {
+    public boolean ValidateImageCode(String imageUuid, String imageCode) {
+        if(sessions.get(imageUuid) != null && sessions.get(imageUuid).equals(imageCode)){
+            return true;
+        }
+
         return false;
     }
 
@@ -137,7 +145,7 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
     }
 
     private Random random = new Random();
-    private String randString = "123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private String randString = "0123456789";
     private int width = 80;
     private int height = 23;
     private int lineSize = 40;
@@ -204,6 +212,10 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
             data = tmp.toByteArray();
             BASE64Encoder encoder = new BASE64Encoder();
             base64Code = encoder.encode(data);
+//            base64Code = base64Code.replaceAll("\r|\n","");
+            logger.error(">>>>>>>>>>>>>>>>>>>>>");
+            logger.error(base64Code);
+            logger.error(">>>>>>>>>>>>>>>>>>>>>>");
         } catch (Exception e) {
             e.printStackTrace();
         }finally {
@@ -220,5 +232,6 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
         sessions.put(map.get("uuid"),randomString);
         return map;
     }
+
 
 }

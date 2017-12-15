@@ -147,8 +147,9 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
 //                    "sudo apt-get --assume-yes remove ansible; " +
 //                    "else echo \"Warning: can't remove ansible from unknown platform\"; " +
 //                    "fi; " +
-//                    "sudo pip install -i http://localhost/%s --trusted-host localhost -I ansible==1.9.6; " +
-//                    "fi", AnsibleConstant.PYPI_REPO), false);
+//                    "sudo pip install -i %s --trusted-host %s -I ansible==1.9.6; " +
+//                    "fi", AnsibleConstant.PIP_URL, AnsibleConstant.TRUSTED_HOST), false);
+            ShellUtils.run("if ! pip show pexpect; then sudo pip install pexpect; fi", false);
 
             deployModule("ansible/syscxplib", "syscxplib.py");
         } catch (IOException e) {
@@ -196,46 +197,44 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
                 arguments.put("pkg_syscxplib", AnsibleGlobalProperty.SYSCXPLIB_PACKAGE_NAME);
                 arguments.putAll(getVariables());
                 String playBookPath = msg.getPlayBookPath();
-                if ( ! playBookPath.contains("py")) {
-                   arguments.put("ansible_ssh_user", arguments.get("remote_user"));
-                   arguments.put("ansible_ssh_port", arguments.get("remote_port"));
-                   arguments.put("ansible_ssh_pass", arguments.get("remote_pass"));
-                   arguments.remove("remote_user");
-                   arguments.remove("remote_pass");
-                   arguments.remove("remote_port");
-                   if  ( ! arguments.get("ansible_ssh_user").equals("root")) {
-                       arguments.put("ansible_become", "yes");
-                       arguments.put("become_user", "root");
-                       arguments.put("ansible_become_pass", arguments.get("ansible_ssh_pass"));
-                   }
+                if (!playBookPath.contains("py")) {
+                    arguments.put("ansible_ssh_user", arguments.get("remote_user"));
+                    arguments.put("ansible_ssh_port", arguments.get("remote_port"));
+                    arguments.put("ansible_ssh_pass", arguments.get("remote_pass"));
+                    arguments.remove("remote_user");
+                    arguments.remove("remote_pass");
+                    arguments.remove("remote_port");
+                    if (!arguments.get("ansible_ssh_user").equals("root")) {
+                        arguments.put("ansible_become", "yes");
+                        arguments.put("become_user", "root");
+                        arguments.put("ansible_become_pass", arguments.get("ansible_ssh_pass"));
+                    }
                 }
                 String executable = msg.getAnsibleExecutable() == null ? AnsibleGlobalProperty.EXECUTABLE : msg.getAnsibleExecutable();
                 try {
                     String output;
                     if (AnsibleGlobalProperty.DEBUG_MODE2) {
                         output = ShellUtils.run(String.format("PYTHONPATH=%s %s %s -i %s -vvvv --private-key %s -e '%s' | tee -a %s",
-                                        AnsibleConstant.SYSCXPLIB_ROOT, executable, playBookPath, AnsibleConstant.INVENTORY_FILE, msg.getPrivateKeyFile(), JSONObjectUtil.toJsonString(arguments), AnsibleConstant.LOG_PATH),
+                                AnsibleConstant.SYSCXPLIB_ROOT, executable, playBookPath, AnsibleConstant.INVENTORY_FILE, msg.getPrivateKeyFile(), JSONObjectUtil.toJsonString(arguments), AnsibleConstant.LOG_PATH),
                                 AnsibleConstant.ROOT_DIR);
                     } else if (AnsibleGlobalProperty.DEBUG_MODE) {
                         output = ShellUtils.run(String.format("PYTHONPATH=%s %s %s -i %s -vvvv --private-key %s -e '%s'",
-                                        AnsibleConstant.SYSCXPLIB_ROOT, executable, playBookPath, AnsibleConstant.INVENTORY_FILE, msg.getPrivateKeyFile(), JSONObjectUtil.toJsonString(arguments)),
+                                AnsibleConstant.SYSCXPLIB_ROOT, executable, playBookPath, AnsibleConstant.INVENTORY_FILE, msg.getPrivateKeyFile(), JSONObjectUtil.toJsonString(arguments)),
                                 AnsibleConstant.ROOT_DIR);
                     } else {
                         output = ShellUtils.run(String.format("PYTHONPATH=%s %s %s -i %s --private-key %s -e '%s'",
-                                        AnsibleConstant.SYSCXPLIB_ROOT, executable, playBookPath, AnsibleConstant.INVENTORY_FILE, msg.getPrivateKeyFile(), JSONObjectUtil.toJsonString(arguments)),
+                                AnsibleConstant.SYSCXPLIB_ROOT, executable, playBookPath, AnsibleConstant.INVENTORY_FILE, msg.getPrivateKeyFile(), JSONObjectUtil.toJsonString(arguments)),
                                 AnsibleConstant.ROOT_DIR);
                     }
 
                     if (output.contains("skipping: no hosts matched")) {
                         throw new OperationFailureException(operr(output));
                     }
-
+                    completion.success();
                 } catch (Exception se) {
                     logger.warn(se.getMessage(), se);
                     completion.fail(operr(se.getMessage()));
                 }
-
-                completion.success();
             }
 
             @Override
@@ -342,7 +341,7 @@ public class AnsibleFacadeImpl extends AbstractService implements AnsibleFacade 
             logger.debug(String.format("no file changed in ansible module[%s], no need to deploy", moduleName));
             needed = false;
             return needed;
-        }  finally {
+        } finally {
             moduleChanges.put(moduleName, needed);
         }
     }

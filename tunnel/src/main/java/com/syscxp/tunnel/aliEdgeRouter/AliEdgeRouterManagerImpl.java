@@ -108,6 +108,8 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     }
 
     private void handle(APIRecoverAliEdgeRouterMsg msg) {
+
+        boolean flag = true;
         AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
 
         String RegionId = vo.getAliRegionId();
@@ -127,17 +129,29 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             response = client.getAcsResponse(request);
             vo.setStatus(AliEdgeRouterStatus.normal);
             dbf.updateAndRefresh(vo);
-        }catch (Exception e){
+        }catch (ClientException e){
             e.printStackTrace();
-            throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+            if(e.getErrCode().equals("InvalidOperation.OperationNotAllowedInState")){
+                flag = false;
+            } else{
+                throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+            }
         }
 
         APIRecoverAliEdgeRouterEvent evt = new APIRecoverAliEdgeRouterEvent(msg.getId());
-        evt.setRouterInventory(AliEdgeRouterInventory.valueOf(vo));
+        if(flag){
+            evt.setRouterInventory(AliEdgeRouterInventory.valueOf(vo));
+            evt.setRecoverFlag(false);
+        }else{
+            evt.setRecoverFlag(true);
+        }
+
         bus.publish(evt);
     }
 
     private void handle(APITerminateAliEdgeRouterMsg msg) {
+
+        boolean flag = true;
         AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
 
         String RegionId = vo.getAliRegionId();
@@ -158,13 +172,25 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             vo.setStatus(AliEdgeRouterStatus.Terminate);
             dbf.updateAndRefresh(vo);
 
-        }catch(Exception e){
+        }catch(ClientException e){
             e.printStackTrace();
+
+            if(e.getErrCode().equals("InvalidOperation.OperationNotAllowedInState")){
+                flag = false;
+            } else{
+                throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+            }
             throw new ApiMessageInterceptionException(argerr(e.getMessage()));
         }
 
         APITerminateAliEdgeRouterEvent evt = new APITerminateAliEdgeRouterEvent(msg.getId());
-        evt.setRouterInventory(AliEdgeRouterInventory.valueOf(vo));
+        if(flag){
+            evt.setRouterInventory(AliEdgeRouterInventory.valueOf(vo));
+            evt.setTerminateFlag(false);
+        }else{
+            evt.setTerminateFlag(true);
+        }
+
         bus.publish(evt);
 
     }

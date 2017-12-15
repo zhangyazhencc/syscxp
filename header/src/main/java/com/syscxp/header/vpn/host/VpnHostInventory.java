@@ -3,7 +3,7 @@ package com.syscxp.header.vpn.host;
 import com.syscxp.header.host.HostInventory;
 import com.syscxp.header.search.Inventory;
 import com.syscxp.header.search.Parent;
-import com.syscxp.header.vpn.VpnConstant;
+import com.syscxp.header.vpn.vpn.VpnConstant;
 
 import java.util.ArrayList;
 import java.util.Collection;

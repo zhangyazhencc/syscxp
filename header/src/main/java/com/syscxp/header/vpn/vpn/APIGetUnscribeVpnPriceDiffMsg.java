@@ -3,7 +3,6 @@ package com.syscxp.header.vpn.vpn;
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
-import com.syscxp.header.vpn.VpnConstant;
 
 /**
  * Create by DCY on 2017/11/20

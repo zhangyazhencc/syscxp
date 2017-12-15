@@ -21,10 +21,9 @@ import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.header.vpn.host.*;
-import com.syscxp.header.vpn.VpnConstant;
+import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.vpn.vpn.VpnGlobalProperty;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;

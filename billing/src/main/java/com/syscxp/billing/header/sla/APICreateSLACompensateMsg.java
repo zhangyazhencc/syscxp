@@ -27,7 +27,7 @@ public class APICreateSLACompensateMsg extends APIMessage {
     @APIParam(emptyString = false)
     private int duration;
 
-    @APIParam(emptyString = false)
+    @APIParam(emptyString = false,required = false)
     private String comment;
 
     @APIParam(emptyString = false,required = false)

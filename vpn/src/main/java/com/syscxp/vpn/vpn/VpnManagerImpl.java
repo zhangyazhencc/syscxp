@@ -2,6 +2,7 @@ package com.syscxp.vpn.vpn;
 
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
+import com.syscxp.core.ansible.AnsibleConstant;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.cloudbus.CloudBusListCallBack;
@@ -28,6 +29,7 @@ import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.errorcode.SysErrors;
+import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.host.HostState;
 import com.syscxp.header.host.HostStatus;
 import com.syscxp.header.message.APIMessage;
@@ -35,32 +37,36 @@ import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.query.QueryOp;
+import com.syscxp.header.quota.Quota;
+import com.syscxp.header.quota.QuotaConstant;
+import com.syscxp.header.quota.ReportQuotaExtensionPoint;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.tunnel.tunnel.APIGetRenewInterfacePriceReply;
-import com.syscxp.header.vpn.VpnConstant;
+import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.*;
 import com.syscxp.header.vpn.billingCallBack.*;
 import com.syscxp.header.vpn.host.*;
 import com.syscxp.header.vpn.vpn.*;
-import com.syscxp.utils.CollectionDSL;
-import com.syscxp.utils.CollectionUtils;
-import com.syscxp.utils.URLBuilder;
-import com.syscxp.utils.Utils;
+import com.syscxp.utils.*;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
+import com.syscxp.utils.path.PathUtil;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
-import com.syscxp.vpn.host.VpnHost;
+import com.syscxp.header.vpn.host.VpnHostConstant;
+import com.syscxp.vpn.quota.VpnQuotaOperator;
 import com.syscxp.vpn.vpn.VpnCommands.*;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
 import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -72,9 +78,10 @@ import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.argerr;
 import static com.syscxp.core.Platform.operr;
+import static com.syscxp.utils.CollectionDSL.list;
 
 @Component
-public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMessageInterceptor {
+public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMessageInterceptor, ReportQuotaExtensionPoint {
     private static final CLogger logger = Utils.getLogger(VpnManagerImpl.class);
 
     @Autowired
@@ -121,6 +128,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APIUpdateVpnBandwidthMsg) msg);
         } else if (msg instanceof APIDeleteVpnMsg) {
             handle((APIDeleteVpnMsg) msg);
+        } else if (msg instanceof APIDeleteVpnCertMsg) {
+            handle((APIDeleteVpnCertMsg) msg);
         } else if (msg instanceof APIGetVpnMsg) {
             handle((APIGetVpnMsg) msg);
         } else if (msg instanceof APIGetVpnPriceMsg) {
@@ -160,6 +169,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIDeleteVpnCertMsg msg) {
+        dbf.removeByPrimaryKey(msg.getUuid(), VpnCertVO.class);
+        APIDeleteHostInterfaceEvent evt = new APIDeleteHostInterfaceEvent(msg.getId());
+        bus.publish(evt);
     }
 
     private void handle(APIGetModifyVpnPriceDiffMsg msg) {
@@ -235,11 +250,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APIGenerateDownloadUrlMsg msg) {
 
         final APIGenerateDownloadUrlReply reply = new APIGenerateDownloadUrlReply();
-
+        String type = "cert".equals(msg.getType()) ? VpnCertVO.class.getSimpleName() : VpnVO.class.getSimpleName();
+        String accountUuid = SQL.New(String.format("select r.accountUuid from %s r where r.uuid = :uuid ", type))
+                .param("uuid", msg.getUuid()).find();
         StringBuilder sb = new StringBuilder();
         long time = System.currentTimeMillis();
         sb.append(msg.getUuid()).append(":").append(time);
-        sb.append(":").append(DigestUtils.md5Hex(msg.getSession().getAccountUuid() + time + VpnConstant.GENERATE_KEY));
+        sb.append(":").append(DigestUtils.md5Hex(accountUuid + time + VpnConstant.GENERATE_KEY));
 
         String path = new String(Base64.encode(sb.toString().getBytes()));
 
@@ -705,11 +722,20 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void handle(APIUpdateVpnCertMsg msg) {
         VpnCertVO vpnCert = dbf.findByUuid(msg.getUuid(), VpnCertVO.class);
 
+        boolean update = false;
         if (!StringUtils.isEmpty(msg.getName())) {
             vpnCert.setName(msg.getName());
-            dbf.updateAndRefresh(vpnCert);
+            update = true;
+        }
+        if (!StringUtils.isEmpty(msg.getDescription())) {
+            vpnCert.setDescription(msg.getDescription());
+            update = true;
+        }
+        if (update) {
+            dbf.update(vpnCert);
         }
         APIUpdateVpnCertEvent evt = new APIUpdateVpnCertEvent(msg.getId());
+        evt.setInventory(VpnCertInventory.valueOf(dbf.reload(vpnCert)));
         bus.publish(evt);
     }
 
@@ -722,24 +748,47 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vo.setDescription(msg.getDescription());
         vo.setVpnNum(0);
         vo.setVersion(0);
-        final VpnCertVO vpnCert = dbf.persistAndRefresh(vo);
-
-        CreateCertMsg certMsg = new CreateCertMsg();
-        certMsg.setVpnCertUuid(vpnCert.getUuid());
-
-        bus.makeLocalServiceId(certMsg, VpnConstant.SERVICE_ID);
-
-        bus.send(certMsg, new CloudBusCallBack(null) {
+        createCert(vo, new Completion(evt) {
             @Override
-            public void run(MessageReply reply) {
-                if (reply.isSuccess()) {
-                    evt.setInventory(VpnCertInventory.valueOf(dbf.reload(vpnCert)));
-                } else {
-                    evt.setError(reply.getError());
-                }
+            public void success() {
+                evt.setInventory(VpnCertInventory.valueOf(dbf.reload(vo)));
+                bus.publish(evt);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                evt.setError(errorCode);
                 bus.publish(evt);
             }
         });
+    }
+
+    private void createCert(VpnCertVO vpnCert, Completion completion) {
+        try {
+            String output = ShellUtils.run(String.format("PYTHONPATH=%s %s %s -d '%s' ",
+                    AnsibleConstant.ROOT_DIR, "python", VpnHostConstant.CREATE_CERT_PATH, AnsibleConstant.ROOT_DIR),
+                    AnsibleConstant.ROOT_DIR);
+            ShellUtils.run(String.format("chmod -R 755 %s", VpnHostConstant.EASY_RSA_PATH), AnsibleConstant.ROOT_DIR);
+            logger.debug(String.format("run command: python create_cert.py %s, output: %s", AnsibleConstant.ROOT_DIR, output));
+            if (output.contains("Error")) {
+                completion.fail(operr(output));
+            }
+
+            vpnCert.setCaCert(FileUtils.readFileToString(new File(VpnHostConstant.EASY_RSA_PATH, VpnConstant.CA_CRT_PATH)));
+            vpnCert.setCaKey(FileUtils.readFileToString(new File(VpnHostConstant.EASY_RSA_PATH, VpnConstant.CA_KEY_PATH)));
+            vpnCert.setClientCert(FileUtils.readFileToString(new File(VpnHostConstant.EASY_RSA_PATH, VpnConstant.CLIENT_CRT_PATH)));
+            vpnCert.setClientKey(FileUtils.readFileToString(new File(VpnHostConstant.EASY_RSA_PATH, VpnConstant.CLIENT_KEY_PATH)));
+            vpnCert.setServerCert(FileUtils.readFileToString(new File(VpnHostConstant.EASY_RSA_PATH, VpnConstant.SERVER_CRT_PATH)));
+            vpnCert.setServerKey(FileUtils.readFileToString(new File(VpnHostConstant.EASY_RSA_PATH, VpnConstant.SERVER_KEY_PATH)));
+            vpnCert.setDh1024Pem(FileUtils.readFileToString(new File(VpnHostConstant.EASY_RSA_PATH, VpnConstant.DH1024_PEM_PATH)));
+            vpnCert.setVersion(vpnCert.getVersion() + 1);
+
+            dbf.updateAndRefresh(vpnCert);
+            completion.success();
+        } catch (Exception se) {
+            logger.debug(se.getMessage(), se);
+            completion.fail(errf.instantiateErrorCode(VpnErrors.CREATE_CERT_ERRORS, "create cert failed"));
+        }
     }
 
 
@@ -755,19 +804,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
-
-                CreateCertMsg certMsg = new CreateCertMsg();
-                certMsg.setVpnCertUuid(vpnCert.getUuid());
-                bus.makeLocalServiceId(certMsg, VpnConstant.SERVICE_ID);
-
-                bus.send(certMsg, new CloudBusCallBack(trigger) {
+                createCert(vpnCert, new Completion(trigger) {
                     @Override
-                    public void run(MessageReply reply) {
-                        if (reply.isSuccess()) {
-                            trigger.next();
-                        } else {
-                            trigger.fail(reply.getError());
-                        }
+                    public void success() {
+                        trigger.next();
+                    }
+
+                    @Override
+                    public void fail(ErrorCode errorCode) {
+                        trigger.fail(errorCode);
                     }
                 });
             }
@@ -1061,9 +1106,18 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     }
 
+    private void placeCreateCert() {
+        File createCert = PathUtil.findFileOnClassPath("tools/create_cert.py");
+        if (createCert == null) {
+            throw new CloudRuntimeException(String.format("cannot find tools/create_cert.py on classpath"));
+        }
+
+        ShellUtils.run(String.format("yes | cp %s %s", createCert.getAbsolutePath(), AnsibleConstant.ROOT_DIR));
+    }
 
     public boolean start() {
 //        prepareGlobalConfig();
+        placeCreateCert();
         restf.registerSyncHttpCallHandler("billing", OrderCallbackCmd.class,
                 cmd -> {
                     Message message = RESTApiDecoder.loads(cmd.getCallBackData());
@@ -1154,8 +1208,27 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             validate((APIUpdateVpnBandwidthMsg) msg);
         } else if (msg instanceof APIGetVpnCertMsg) {
             validate((APIGetVpnCertMsg) msg);
+        } else if (msg instanceof APIDeleteVpnCertMsg) {
+            validate((APIDeleteVpnCertMsg) msg);
         }
         return msg;
+    }
+
+    private void validate(APIDeleteVpnCertMsg msg) {
+        VpnCertVO cert = dbf.findByUuid(msg.getUuid(), VpnCertVO.class);
+        if (cert.getVpnNum() > 0)
+            throw new ApiMessageInterceptionException(
+                    argerr("The VpnCertVO[uuid:%s] has already binding Vpn.", msg.getUuid()));
+    }
+
+    private void validate(APIVpnMessage msg) {
+        // 区分管理员账户
+        if (msg.getSession().isAdminSession() && StringUtils.isEmpty(msg.getAccountUuid())) {
+            throw new ApiMessageInterceptionException(
+                    argerr("The Account[uuid:%s] is not a admin or proxy.",
+                            msg.getSession().getAccountUuid()));
+        }
+
     }
 
 
@@ -1174,6 +1247,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APIUpdateVpnBandwidthMsg msg) {
+        // 区分管理员账户
+        if (msg.getSession().isAdminSession() && StringUtils.isEmpty(msg.getAccountUuid())) {
+            throw new ApiMessageInterceptionException(
+                    argerr("The Account[uuid:%s] is not a admin or proxy.",
+                            msg.getSession().getAccountUuid()));
+        }
+
         LocalDateTime dateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atTime(LocalTime.MIN);
         Long times = Q.New(VpnMotifyRecordVO.class)
                 .eq(VpnMotifyRecordVO_.vpnUuid, msg.getUuid())
@@ -1366,5 +1446,27 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
     }
 
+    @Override
+    public List<Quota> reportQuota() {
+
+        VpnQuotaOperator vpnQuotaOperator = new VpnQuotaOperator();
+        Quota vQuota = new Quota();
+        vQuota.setOperator(vpnQuotaOperator);
+        vQuota.addMessageNeedValidation(APICreateVpnCertMsg.class);
+        vQuota.addMessageNeedValidation(APICreateVpnMsg.class);
+
+        Quota.QuotaPair p = new Quota.QuotaPair();
+        p.setName(VpnConstant.QUOTA_VPN_CERT_NUM);
+        p.setValue(QuotaConstant.QUOTA_VPN_CERT_NUM);
+        vQuota.addPair(p);
+
+        p = new Quota.QuotaPair();
+        p.setName(VpnConstant.QUOTA_VPN_NUM);
+        p.setValue(QuotaConstant.QUOTA_VPN_NUM);
+        vQuota.addPair(p);
+
+
+        return list(vQuota);
+    }
 
 }

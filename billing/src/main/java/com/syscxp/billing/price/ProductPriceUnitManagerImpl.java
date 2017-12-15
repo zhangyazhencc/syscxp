@@ -1,5 +1,6 @@
 package com.syscxp.billing.price;
 
+import com.syscxp.billing.header.balance.ExpenseGross;
 import com.syscxp.billing.header.price.*;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -21,9 +22,14 @@ import com.syscxp.header.message.Message;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
+import javax.persistence.Query;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
-public class ProductPriceUnitManagerImpl extends AbstractService implements ProductPriceUnitManager,ApiMessageInterceptor {
+public class ProductPriceUnitManagerImpl extends AbstractService implements ProductPriceUnitManager, ApiMessageInterceptor {
 
     @Autowired
     private CloudBus bus;
@@ -43,7 +49,6 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
     private EventFacade evtf;
 
 
-
     @Override
     public void handleMessage(Message msg) {
         if (msg instanceof APIMessage) {
@@ -54,19 +59,73 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
     }
 
     private void handleApiMessage(APIMessage msg) {
-        if(msg instanceof APICreateTunnelProductPriceUnitMsg){
+        if (msg instanceof APICreateTunnelProductPriceUnitMsg) {
             handle((APICreateTunnelProductPriceUnitMsg) msg);
-        }else if(msg instanceof APICreateECPProductPriceUnitMsg){
+        } else if (msg instanceof APICreateECPProductPriceUnitMsg) {
             handle((APICreateECPProductPriceUnitMsg) msg);
-        }else if(msg instanceof APIDeleteProductPriceUnitMsg){
+        } else if (msg instanceof APIDeleteProductPriceUnitMsg) {
             handle((APIDeleteProductPriceUnitMsg) msg);
-        }else if(msg instanceof APIUpdateProductPriceUnitMsg){
+        } else if (msg instanceof APIUpdateProductPriceUnitMsg) {
             handle((APIUpdateProductPriceUnitMsg) msg);
-        }else if(msg instanceof APIGetProductCategoryListMsg){
+        } else if (msg instanceof APIGetProductCategoryListMsg) {
             handle((APIGetProductCategoryListMsg) msg);
-        }else{
+        } else if (msg instanceof APIGetBroadPriceListMsg) {
+            handle((APIGetBroadPriceListMsg) msg);
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetBroadPriceListMsg msg) {
+
+        ProductCategoryVO vo = findProductCategoryVO(msg.getProductType(), msg.getCategory());
+        if (vo == null) {
+            throw new IllegalArgumentException("can not find the product type or category");
+        }
+        String sql = "SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND areaCode = :areaCode  GROUP BY lineCode";
+        if (msg.getCategory().equals(Category.AREA)) {
+            sql = "SELECT lineCode,areaCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode";
+        }
+
+        Query q = dbf.getEntityManager().createNativeQuery(sql);
+        q.setParameter("productCategoryUuid", vo.getUuid());
+        if (!msg.getCategory().equals(Category.AREA)) {
+            q.setParameter("areaCode", msg.getAreaCode());
+        }
+        List<Object[]> objs = q.getResultList();
+        List<PriceData> vos = objs.stream().map(PriceData::new).collect(Collectors.toList());
+        vos.forEach(priceData -> {
+            Arrays.stream(priceData.getConfigMixPrice().split(",")).forEach(e -> {
+                String[] split = e.split("-");
+                setPrice(split[0], new BigDecimal(split[1]), priceData);
+            });
+        });
+
+        APIGetBroadPriceListReply reply = new APIGetBroadPriceListReply();
+        reply.setInventories(vos);
+        bus.reply(msg, reply);
+    }
+
+    private void setPrice(String configName, BigDecimal price, PriceData priceData) {
+        Class clazz = priceData.getClass();
+        try {
+            Method m = clazz.getMethod("setConfig" + configName.toUpperCase() + "Price", new Class[]{BigDecimal.class});
+            m.invoke(priceData, price);
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    private ProductCategoryVO findProductCategoryVO(ProductType productType, Category category) {
+        SimpleQuery<ProductCategoryVO> query = dbf.createQuery(ProductCategoryVO.class);
+        query.add(ProductCategoryVO_.productTypeCode, SimpleQuery.Op.EQ, productType);
+        query.add(ProductCategoryVO_.code, SimpleQuery.Op.EQ, category);
+        return query.find();
     }
 
 
@@ -75,7 +134,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         q.groupBy(ProductCategoryVO_.productTypeCode);
         List<ProductCategoryVO> adVO = q.list();
         List<ProductDataDictionary> productTypes = new ArrayList<>();
-        for(ProductCategoryVO eo: adVO){
+        for (ProductCategoryVO eo : adVO) {
             ProductDataDictionary dictionary = new ProductDataDictionary();
             dictionary.setCode(eo.getProductTypeCode().toString());
             dictionary.setName(eo.getProductTypeName());
@@ -87,16 +146,16 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         }
         APIGetProductCategoryListReply reply = new APIGetProductCategoryListReply();
         reply.setInventories(productTypes);
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
     }
 
     private void handle(APIUpdateProductPriceUnitMsg msg) {
-        ProductPriceUnitVO vo = dbf.findByUuid(msg.getUuid(),ProductPriceUnitVO.class);
-        if(msg.getUnitPrice() > 0){
+        ProductPriceUnitVO vo = dbf.findByUuid(msg.getUuid(), ProductPriceUnitVO.class);
+        if (msg.getUnitPrice() > 0) {
             vo.setUnitPrice(msg.getUnitPrice());
         }
 
-        if(msg.getUnitPrice()== 0 && "SHARE".equals(vo.getConfigCode()) && "共享端口".equals(vo.getConfigName())){
+        if (msg.getUnitPrice() == 0 && "SHARE".equals(vo.getConfigCode()) && "共享端口".equals(vo.getConfigName())) {
             vo.setUnitPrice(msg.getUnitPrice());
         }
 
@@ -109,15 +168,15 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
 
     private void handle(APIDeleteProductPriceUnitMsg msg) {
         APIDeleteProductPriceUnitEvent evt = new APIDeleteProductPriceUnitEvent(msg.getId());
-        if(!StringUtils.isEmpty(msg.getLineName())){
+        if (!StringUtils.isEmpty(msg.getLineName())) {
 
             UpdateQuery q = UpdateQuery.New(ProductPriceUnitVO.class);
             q.condAnd(ProductPriceUnitVO_.lineName, SimpleQuery.Op.EQ, msg.getLineName());
             q.condAnd(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, msg.getProductCategoryUuid());
             q.delete();
 
-        }else if (!StringUtils.isEmpty(msg.getUuid())){
-            ProductPriceUnitVO vo = dbf.findByUuid(msg.getUuid(),ProductPriceUnitVO.class);
+        } else if (!StringUtils.isEmpty(msg.getUuid())) {
+            ProductPriceUnitVO vo = dbf.findByUuid(msg.getUuid(), ProductPriceUnitVO.class);
             dbf.remove(vo);
             evt.setInventory(ProductPriceUnitInventory.valueOf(vo));
         }

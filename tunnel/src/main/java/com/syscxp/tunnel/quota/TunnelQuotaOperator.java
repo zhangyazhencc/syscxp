@@ -33,6 +33,8 @@ public class TunnelQuotaOperator implements Quota.QuotaOperator {
         long quotaNum = pairs.get(TunnelConstant.QUOTA_TUNNEL_NUM).getValue();
         long currentUsed = getUsedTunnelNum(msg.getAccountUuid());
 
+        checkInterfaceWithTunnel(msg.getAccountUuid(), pairs);
+
         new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_TUNNEL_NUM, currentUsed, quotaNum);
     }
 
@@ -42,16 +44,20 @@ public class TunnelQuotaOperator implements Quota.QuotaOperator {
         long quotaNum = pairs.get(TunnelConstant.QUOTA_TUNNEL_NUM).getValue();
         long currentUsed = getUsedTunnelNum(msg.getAccountUuid());
 
-        long ifaceQuotaNum = pairs.get(TunnelConstant.QUOTA_INTERFACE_NUM).getValue();
-        long ifaceCurrentUsed = getUsedInterfaceNum(msg.getAccountUuid());
-        if (msg.getInterfaceAUuid() == null) {
-            new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_INTERFACE_NUM, ifaceCurrentUsed, ifaceQuotaNum);
-        }
-        if (msg.getInterfaceZUuid() == null) {
-            new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_INTERFACE_NUM, ifaceCurrentUsed, ifaceQuotaNum);
-        }
+        checkInterfaceWithTunnel(msg.getAccountUuid(), pairs);
 
         new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_TUNNEL_NUM, currentUsed, quotaNum);
+    }
+
+    private void checkInterfaceWithTunnel(String accountUuid, Map<String, Quota.QuotaPair> pairs) {
+        long ifaceQuotaNum = pairs.get(TunnelConstant.QUOTA_INTERFACE_NUM).getValue();
+        long ifaceCurrentUsed = getUsedInterfaceNum(accountUuid);
+        if (accountUuid == null) {
+            new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_INTERFACE_NUM, ifaceCurrentUsed, ifaceQuotaNum);
+        }
+        if (accountUuid == null) {
+            new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_INTERFACE_NUM, ifaceCurrentUsed, ifaceQuotaNum);
+        }
     }
 
     @Transactional(readOnly = true)

@@ -17,7 +17,7 @@ import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
-import com.syscxp.header.vpn.VpnConstant;
+import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.*;
 import com.syscxp.header.vpn.host.HostInterfaceVO;
 import com.syscxp.header.vpn.host.HostInterfaceVO_;
