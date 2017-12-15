@@ -3,20 +3,19 @@ package com.syscxp.tunnel.host;
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.ansible.AnsibleFacade;
-import com.syscxp.core.cloudbus.*;
+import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.core.cloudbus.CloudBusSteppingCallback;
+import com.syscxp.core.cloudbus.MessageSafe;
+import com.syscxp.core.cloudbus.ResourceDestinationMaker;
 import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SimpleQuery;
-import com.syscxp.core.host.HostGlobalProperty;
+import com.syscxp.core.host.HostGlobalConfig;
 import com.syscxp.core.notification.N;
 import com.syscxp.core.thread.AsyncThread;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.Component;
 import com.syscxp.header.host.*;
-import com.syscxp.header.host.HostInventory;
-import com.syscxp.header.host.HostStatus;
-import com.syscxp.header.host.HostVO;
-import com.syscxp.header.host.HostVO_;
 import com.syscxp.header.managementnode.ManagementNodeReadyExtensionPoint;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
@@ -24,7 +23,7 @@ import com.syscxp.header.message.MessageReply;
 import com.syscxp.header.message.NeedReplyMessage;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.host.*;
-import com.syscxp.tunnel.host.MonitorAgentCommands.*;
+import com.syscxp.tunnel.host.MonitorAgentCommands.ReconnectMeCmd;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -209,7 +208,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
             msgs.add(msg);
         }
 
-        bus.send(msgs, HostGlobalProperty.HOST_LOAD_PARALLELISM_DEGREE, new CloudBusSteppingCallback(null) {
+        bus.send(msgs, HostGlobalConfig.HOST_LOAD_PARALLELISM_DEGREE.value(Integer.class), new CloudBusSteppingCallback(null) {
             @Override
             public void run(NeedReplyMessage msg, MessageReply reply) {
                 ConnectHostMsg cmsg = (ConnectHostMsg) msg;

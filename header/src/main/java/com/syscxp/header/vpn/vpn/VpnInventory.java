@@ -19,6 +19,7 @@ public class VpnInventory {
     private String bandwidth;
     private String endpointUuid;
     private String status;
+    private String vpnCertUuid;
     private String state;
     private Integer duration;
     private Timestamp expireDate;
@@ -48,6 +49,7 @@ public class VpnInventory {
         inv.setCreateDate(vo.getCreateDate());
         inv.setCertKey(vo.getCertKey());
         inv.setMaxModifies(vo.getMaxModifies());
+        inv.setVpnCertUuid(vo.getVpnCertUuid());
         inv.setClientConf(vo.getClientConf());
         inv.setPayment(vo.getPayment().toString());
         inv.setHostInventory(VpnHostInventory.valueOf(vo.getVpnHost()));
@@ -61,6 +63,14 @@ public class VpnInventory {
         }
 
         return invs;
+    }
+
+    public String getVpnCertUuid() {
+        return vpnCertUuid;
+    }
+
+    public void setVpnCertUuid(String vpnCertUuid) {
+        this.vpnCertUuid = vpnCertUuid;
     }
 
     public String getClientConf() {

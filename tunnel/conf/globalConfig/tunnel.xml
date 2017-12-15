@@ -7,4 +7,32 @@
         <defaultValue>7</defaultValue>
         <type>java.lang.Integer</type>
     </config>
+    <config>
+        <category>tunnel</category>
+        <name>tunnelStatus.interval</name>
+        <description> interval</description>
+        <defaultValue>5</defaultValue>
+        <type>java.lang.Integer</type>
+    </config>
+    <config>
+        <category>tunnel</category>
+        <name>expiredProduct.cleanInterval</name>
+        <description>expired product clean interval</description>
+        <defaultValue>1</defaultValue>
+        <type>java.lang.Integer</type>
+    </config>
+    <config>
+        <category>tunnel</category>
+        <name>expiredProduct.closeInterval</name>
+        <description>expired product clean interval</description>
+        <defaultValue>3</defaultValue>
+        <type>java.lang.Integer</type>
+    </config>
+    <config>
+        <category>tunnel</category>
+        <name>expiredProduct.deleteInterval</name>
+        <description>expired product delete interval</description>
+        <defaultValue>10</defaultValue>
+        <type>java.lang.Integer</type>
+    </config>
 </globalConfig>
