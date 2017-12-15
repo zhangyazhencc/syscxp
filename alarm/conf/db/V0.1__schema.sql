@@ -242,7 +242,7 @@ CREATE TABLE `ResourcePolicyRefVO` (
   `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`uuid`),
-  UNIQUE KEY `unique` (`resourceUuid`,`policyUuid`)
+  UNIQUE KEY `unique` (`resourceUuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 /*Table structure for table `SmsVO` */

@@ -10,4 +10,13 @@ public class TunnelGlobalConfig {
 
     @GlobalConfigValidation(numberGreaterThan = 0)
     public static GlobalConfig PRODUCT_DELETE_DAYS = new GlobalConfig(CATEGORY, "productDelete.days");
+
+    @GlobalConfigValidation(numberGreaterThan = 0)
+    public static GlobalConfig CHECK_TUNNEL_STATUS_INTERVAL = new GlobalConfig(CATEGORY, "tunnelStatus.interval");
+    @GlobalConfigValidation(numberGreaterThan = 0)
+    public static GlobalConfig CLEAN_EXPIRED_PRODUCT_INTERVAL = new GlobalConfig(CATEGORY, "expiredProduct.cleanInterval");
+    @GlobalConfigValidation(numberGreaterThan = 0)
+    public static GlobalConfig EXPIRED_PRODUCT_CLOSE_TIME = new GlobalConfig(CATEGORY, "expiredProduct.closeInterval");
+    @GlobalConfigValidation(numberGreaterThan = 0)
+    public static GlobalConfig EXPIRED_PRODUCT_DELETE_TIME = new GlobalConfig(CATEGORY, "expiredProduct.deleteInterval");
 }

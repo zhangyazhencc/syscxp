@@ -36,6 +36,9 @@
         <name>com.syscxp.header.vpn.vpn.APIDetachVpnCertMsg</name>
     </message>
     <message>
+        <name>com.syscxp.header.vpn.vpn.APIDeleteVpnCertMsg</name>
+    </message>
+    <message>
         <name>com.syscxp.header.vpn.vpn.APIGetVpnMsg</name>
     </message>
     <message>
