@@ -5,7 +5,6 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
-import com.syscxp.header.vpn.VpnConstant;
 
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"})
 public class APIUpdateVpnCertMsg extends APIMessage{
@@ -13,6 +12,16 @@ public class APIUpdateVpnCertMsg extends APIMessage{
     private String uuid;
     @APIParam(required = false)
     private String name;
+    @APIParam(required = false)
+    private String description;
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
 
     public String getUuid() {
         return uuid;

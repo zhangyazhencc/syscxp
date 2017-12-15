@@ -219,18 +219,14 @@ public class SlaManagerImpl  extends AbstractService implements  ApiMessageInter
 
     @Override
     public boolean start() {
-        try {
 
-        } catch (Exception e) {
-            throw new CloudRuntimeException(e);
-        }
         return true;
     }
 
 
     @Override
     public boolean stop() {
-        return false;
+        return true;
     }
 
     @Override

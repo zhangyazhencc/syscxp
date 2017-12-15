@@ -11,7 +11,7 @@ import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.host.HostAfterConnectedExtensionPoint;
 import com.syscxp.header.host.HostInventory;
 import com.syscxp.header.message.MessageReply;
-import com.syscxp.header.vpn.VpnConstant;
+import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.CheckVpnStatusMsg;
 import com.syscxp.header.vpn.agent.CheckVpnStatusReply;
 import com.syscxp.header.vpn.agent.StartAllMsg;

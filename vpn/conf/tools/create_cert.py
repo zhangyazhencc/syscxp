@@ -1,21 +1,21 @@
 #!/usr/bin/env python
-#coding:utf-8
+# coding:utf-8
 
 import os
 import sys
 import pexpect
 import subprocess
 import shutil
+import re
+import argparse
 
 
 class VpnCert(object):
-    def __init__(self, uuid):
-        self.UUID = uuid
+    def __init__(self, base_dir):
 
-        self.BASE_DIR = '/var/lib/syscxp/vpndata/'
+        self.BASE_DIR = base_dir or '/root/ansible'
         self.EASY_RSA_DIR = os.path.join(self.BASE_DIR, 'easy-rsa')
         self.KEY_DIR = os.path.join(self.EASY_RSA_DIR, 'keys')
-        self.VPN_DIR = os.path.join(self.BASE_DIR, 'vpn-{}'.format(self.UUID))
         self.vars_text = '''
 export EASY_RSA="`pwd`"
 export OPENSSL="openssl"
@@ -39,13 +39,18 @@ export KEY_NAME="server"
 '''
 
     def check_env(self):
-        if not os.path.isdir(self.EASY_RSA_DIR):
+        if os.path.isdir(self.EASY_RSA_DIR):
+            os.system("rm -rf {}".format(self.EASY_RSA_DIR))
+        if os.path.exists("/usr/share/easy-rsa/2.0/"):
             shutil.copytree("/usr/share/easy-rsa/2.0/", self.EASY_RSA_DIR)
-            os.chdir(self.EASY_RSA_DIR)
-            shutil.copy("openssl-1.0.0.cnf", "openssl.cnf")
-            os.mkdir(self.KEY_DIR)
-            with open('vars', 'wb') as vars_f:
-                vars_f.write(self.vars_text)
+        else:
+            shutil.copytree("/usr/share/easy-rsa/", self.EASY_RSA_DIR)
+
+        os.chdir(self.EASY_RSA_DIR)
+        shutil.copy("openssl-1.0.0.cnf", "openssl.cnf")
+        os.mkdir(self.KEY_DIR, 0755)
+        with open('vars', 'wb') as vars_f:
+            vars_f.write(self.vars_text)
 
         os.chdir(self.EASY_RSA_DIR)
         build_env = '[^"]source ./vars'
@@ -60,7 +65,6 @@ export KEY_NAME="server"
                 else:
                     os.system("sed -i '2a source ./vars' {}".format(file_name))
 
-
     def build_ca(self):
         os.chdir(self.EASY_RSA_DIR)
         cmd_init = "source ./vars;./clean-all "
@@ -68,8 +72,6 @@ export KEY_NAME="server"
         cmd = './build-ca'
 
         create_cmd = pexpect.spawn(cmd)
-        ## debug for create ca
-        # create_cmd.logfile = sys.stdout
         create_cmd.expect('Country Name')
         create_cmd.sendline('\n')
         create_cmd.expect('State or Province Name')
@@ -88,7 +90,6 @@ export KEY_NAME="server"
         create_cmd.sendline('')
         create_cmd.expect(pexpect.EOF)
 
-
     def build_key(self, common_name):
         if common_name == 'server':
             cmd = './build-key-server {}'.format(common_name)
@@ -98,8 +99,6 @@ export KEY_NAME="server"
             raise ValueError('build_key suppport param "server or client"')
 
         create_cmd = pexpect.spawn(cmd, timeout=3)
-        ## debug for create
-        #create_cmd.logfile = sys.stdout
         create_cmd.expect("Country Name")
         create_cmd.sendline("")
         create_cmd.expect("State or Province Name")
@@ -130,14 +129,8 @@ export KEY_NAME="server"
         cmd = './build-dh'
         subprocess.call(cmd, shell=True, stdout=open('/dev/null', 'w'), stderr=open('/dev/null', 'w'))
 
-    def copy_cert(self):
-        if not os.path.isdir(self.VPN_DIR):
-            os.mkdir(self.VPN_DIR)
-        os.system('\cp -rp {} {}'.format(self.KEY_DIR, "{}/keys".format(self.VPN_DIR)))
-        os.system('rm -f ' + self.VPN_DIR + '/keys/{0*.pem,index*,serial*}')
-
     def check_cert(self):
-        cmd = "du -b {}/*".format(self.VPN_DIR)
+        cmd = "du -b {}/*".format(self.EASY_RSA_DIR)
         files_list = os.popen(cmd).read().strip().split("\n")
         res = True
         for file in files_list:
@@ -148,17 +141,33 @@ export KEY_NAME="server"
                 res = False
         return res
 
+    def cert_content(self):
+        os.chdir(self.KEY_DIR)
+        certs = ['ca.crt', 'ca.key', 'dh1024.pem', 'server.crt', 'server.key', 'client.crt', 'client.key']
+        certs_dict = {}
+        for cert in certs:
+            with open(cert, 'rb') as fc:
+                newname = re.sub('\.', '_', cert)
+                certs_dict[newname] = fc.read()
+        return certs_dict
+
     def create_vpn_cert(self):
         self.check_env()
         self.build_ca()
         self.build_dh()
         self.build_key('server')
         self.build_key('client')
-        self.copy_cert()
         res = self.check_cert()
-        return res
+        if res:
+            certd_dict = self.cert_content()
+            return certd_dict
+        else:
+            return False
 
-if __name__ == '__main__':
-    uuid = sys.argv[1]
-    vpnCert = VpnCert(uuid)
-    vpnCert.create_vpn_cert()
+
+parser = argparse.ArgumentParser(description='Create cert')
+parser.add_argument('-d', type=str, help="""specify cert file
+                            default=/root/ansible""")
+args = parser.parse_args()
+vpnCert = VpnCert(args.d)
+vpnCert.create_vpn_cert()

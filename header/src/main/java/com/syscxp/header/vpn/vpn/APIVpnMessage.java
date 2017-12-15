@@ -23,9 +23,9 @@ public class APIVpnMessage extends APIMessage {
     }
 
     public String getAccountUuid() {
-        if (accountUuid == null || accountUuid.isEmpty())
-            return getOpAccountUuid();
-        return accountUuid;
+        if (getSession().isAdminSession())
+            return accountUuid;
+        return getOpAccountUuid();
     }
 
     public void setAccountUuid(String accountUuid) {

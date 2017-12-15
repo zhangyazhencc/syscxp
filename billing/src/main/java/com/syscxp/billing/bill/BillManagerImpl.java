@@ -151,7 +151,7 @@ public class BillManagerImpl extends AbstractService implements ApiMessageInterc
 
     @Override
     public boolean stop() {
-        return false;
+        return true;
     }
 
     @Override

@@ -21,6 +21,13 @@ public class APILogInByAccountMsg extends APISessionMessage {
     @APIParam(required = false)
     private String plaintext;
 
+    @APIParam
+    private String imageUuid;
+
+    @APIParam
+    private String imageCode;
+
+
     public String getAccountName() {
         return accountName;
     }
@@ -56,5 +63,21 @@ public class APILogInByAccountMsg extends APISessionMessage {
 
     public void setPlaintext(String plaintext) {
         this.plaintext = plaintext;
+    }
+
+    public String getImageUuid() {
+        return imageUuid;
+    }
+
+    public void setImageUuid(String imageUuid) {
+        this.imageUuid = imageUuid;
+    }
+
+    public String getImageCode() {
+        return imageCode;
+    }
+
+    public void setImageCode(String imageCode) {
+        this.imageCode = imageCode;
     }
 }

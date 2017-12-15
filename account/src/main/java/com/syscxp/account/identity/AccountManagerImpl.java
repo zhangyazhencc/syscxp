@@ -13,6 +13,7 @@ import com.syscxp.header.message.Message;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
+import com.syscxp.sms.ImageCodeService;
 import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsService;
 import com.syscxp.utils.ShellResult;
@@ -67,6 +68,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private SmsService smsService;
     @Autowired
     private MailService mailService;
+    @Autowired
+    private ImageCodeService imageCodeService;
 
     @Override
     @MessageSafe
@@ -494,6 +497,13 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void handle(APILogInByUserMsg msg) {
         APILogInReply reply = new APILogInReply();
 
+//        if(!imageCodeService.ValidateImageCode(msg.getImageUuid(),msg.getImageCode())){
+//            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
+//                    "Incorrect Validate Image Code"));
+//            bus.reply(msg, reply);
+//            return;
+//        }
+
         AccountVO account;
 
         SimpleQuery<AccountVO> accountq = dbf.createQuery(AccountVO.class);
@@ -540,13 +550,20 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     }
 
     private void handle(APILogInByAccountMsg msg) {
+        APILogInReply reply = new APILogInReply();
+
+//        if(!imageCodeService.ValidateImageCode(msg.getImageUuid(),msg.getImageCode())){
+//            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
+//                    "Incorrect Validate Image Code"));
+//            bus.reply(msg, reply);
+//            return;
+//        }
 
         if (msg.getAccountName() == null && msg.getEmail() == null &&
                 msg.getPhone() == null) {
             throw new OperationFailureException(operr("account/email/phone all is null"));
 
         }
-        APILogInReply reply = new APILogInReply();
         SimpleQuery<AccountVO> q = dbf.createQuery(AccountVO.class);
         if (msg.getAccountName() != null) {
             q.add(AccountVO_.name, Op.EQ, msg.getAccountName());
