@@ -1172,6 +1172,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 .find();
 
         tunnelVO.setMonitorState(monitorState);
+        tunnelVO.setState(TunnelState.Enabled);
         if (StringUtils.isNotEmpty(monitorCidr)) {
             tunnelVO.setMonitorCidr(monitorCidr);
         }
