@@ -1426,7 +1426,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 msg.getDuration(),
                 msg.getProductChargeModel(),
                 vo.getOwnerAccountUuid(),
-                msg.getSession().getAccountUuid());
+                vo.getAccountUuid());
 
         bus.reply(msg, reply);
     }

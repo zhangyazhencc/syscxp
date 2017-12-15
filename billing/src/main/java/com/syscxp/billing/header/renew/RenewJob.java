@@ -60,7 +60,7 @@ public class RenewJob {
             SimpleQuery<RenewVO> q = dbf.createQuery(RenewVO.class);
             q.add(RenewVO_.isRenewAuto, SimpleQuery.Op.EQ, true);
             List<RenewVO> renewVOs = q.list();
-            if (renewVOs == null) {
+            if (renewVOs == null || renewVOs.size()==0) {
                 logger.info("there is no activity renew product");
                 return;
             }
@@ -121,6 +121,16 @@ public class RenewJob {
                 }else if (renewVO.getProductType().equals(ProductType.HOST)) {
                     Map<String, String> header = new HashMap<>();
                     header.put(RESTConstant.COMMAND_PATH, "autoRenewEcpHost");
+                    RenewCmd renewCmd = new RenewCmd();
+                    renewCmd.setAccountUuid(renewVO.getAccountUuid());
+                    renewCmd.setDuration(1);
+                    renewCmd.setProductChargeModel(renewVO.getProductChargeModel());
+                    renewCmd.setUuid(renewVO.getProductUuid());
+                    String body = JSONObjectUtil.toJsonString(renewCmd);
+                    syncJsonPost(caller.getProductUrl(), body, RestAPIResponse.class,header);
+                }else if (renewVO.getProductType().equals(ProductType.RESOURCEPOOL)) {
+                    Map<String, String> header = new HashMap<>();
+                    header.put(RESTConstant.COMMAND_PATH, "autoRenewEcpResourcePool");
                     RenewCmd renewCmd = new RenewCmd();
                     renewCmd.setAccountUuid(renewVO.getAccountUuid());
                     renewCmd.setDuration(1);
