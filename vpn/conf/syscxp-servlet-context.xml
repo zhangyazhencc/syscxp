@@ -9,7 +9,7 @@
          http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
          http://www.springframework.org/schema/context
          http://www.springframework.org/schema/context/spring-context-3.0.xsd
-         http://www.springframework.org/schema/tx 
+         http://www.springframework.org/schema/tx
          http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
          http://www.springframework.org/schema/mvc
          http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd"
@@ -17,39 +17,5 @@
 	
 	<context:component-scan base-package="com.syscxp" />
 	<!--aop:aspectj-autoproxy proxy-target-class="true" /-->
-
-    <bean id="stringHttpMessageConverter" class="org.springframework.http.converter.StringHttpMessageConverter">
-        <constructor-arg value="UTF-8" />
-    </bean>
-
-    <bean id="jackson2HttpMessageConverter"
-          class="org.springframework.http.converter.json.MappingJackson2HttpMessageConverter">
-        <property name="supportedMediaTypes">
-            <list>
-                <value>application/json;charset=UTF-8</value>
-            </list>
-        </property>
-        <property name="objectMapper">
-            <bean class="com.fasterxml.jackson.databind.ObjectMapper">
-                <property name="serializerProvider">
-                    <bean class="com.fasterxml.jackson.databind.ser.DefaultSerializerProvider.Impl">
-                        <property name="nullValueSerializer">
-                            <bean class="com.syscxp.core.jsonlabel.NullJsonSerializer"></bean>
-                        </property>
-                    </bean>
-                </property>
-            </bean>
-        </property>
-    </bean>
-
-    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping"/>
-    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
-        <property name="messageConverters">
-            <list>
-                <ref bean="stringHttpMessageConverter"/>
-                <ref bean="jackson2HttpMessageConverter"/>
-            </list>
-        </property>
-    </bean>
     <mvc:annotation-driven />
 </beans>

@@ -852,7 +852,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
     @Override
     public boolean stop() {
-        return false;
+        return true;
     }
 
     @Override

@@ -7,23 +7,24 @@ import com.syscxp.header.message.APIReply;
  */
 public class APIGetImageCodeReply extends APIReply {
 
-    String ImageUuid;
+    String imageUuid;
 
-    String ImageCode;
+    String imageCode;
 
     public String getImageUuid() {
-        return ImageUuid;
+        return imageUuid;
     }
 
     public void setImageUuid(String imageUuid) {
-        ImageUuid = imageUuid;
+        this.imageUuid = imageUuid;
     }
 
     public String getImageCode() {
-        return ImageCode;
+        return imageCode;
     }
 
     public void setImageCode(String imageCode) {
-        ImageCode = imageCode;
+        this.imageCode = imageCode;
     }
+
 }

@@ -8,5 +8,8 @@
     <message>
         <name>com.syscxp.billing.header.report.APIGetDayExpenseReportMsg</name>
     </message>
+    <message>
+        <name>com.syscxp.billing.header.report.APIGetMonExpenseReportMsg</name>
+    </message>
 
 </service>

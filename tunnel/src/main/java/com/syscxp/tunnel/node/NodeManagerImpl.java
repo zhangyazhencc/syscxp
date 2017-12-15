@@ -9,6 +9,8 @@ import com.syscxp.header.tunnel.node.*;
 import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
 import com.syscxp.header.tunnel.switchs.SwitchVO;
 import com.syscxp.header.tunnel.switchs.SwitchVO_;
+import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO;
+import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO_;
 import com.syscxp.utils.Digest;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -795,7 +797,32 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     }
 
     private void validate(APIDeleteInnerEndpointMsg msg) {
+        //判断该互联连接点是否被跨国通道使用
+        InnerConnectedEndpointVO vo = dbf.findByUuid(msg.getUuid(),InnerConnectedEndpointVO.class);
+        String endpointUuid = vo.getEndpointUuid();
+        String connectedEndpointUuid = vo.getConnectedEndpointUuid();
+        List<String> tunnelList = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.endpointUuid,endpointUuid)
+                .select(TunnelSwitchPortVO_.tunnelUuid)
+                .groupBy(TunnelSwitchPortVO_.tunnelUuid)
+                .listValues();
 
+        if(!tunnelList.isEmpty()){
+            for(String tunnelUuid : tunnelList){
+                String endpointA = Q.New(TunnelSwitchPortVO.class)
+                        .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelUuid)
+                        .eq(TunnelSwitchPortVO_.sortTag,"A")
+                        .find();
+                String endpointZ = Q.New(TunnelSwitchPortVO.class)
+                        .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelUuid)
+                        .eq(TunnelSwitchPortVO_.sortTag,"Z")
+                        .find();
+                if(endpointA.equals(connectedEndpointUuid) || endpointZ.equals(connectedEndpointUuid)){
+                    throw new ApiMessageInterceptionException(argerr("该互联连接点至目的连接点已经被通道[%s]使用！",tunnelUuid));
+                }
+
+            }
+        }
     }
 
     /**

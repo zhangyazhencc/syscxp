@@ -12,7 +12,7 @@ import java.io.IOException;
  */
 public class BootErrorLog {
     private static final CLogger logger = Utils.getLogger(BootErrorLog.class);
-    private String bootErrorPath = PathUtil.join(PathUtil.getsyscxpHomeFolder(), "bootError.log");
+    private String bootErrorPath = PathUtil.join(PathUtil.getSyscxpHomeFolder(), "bootError.log");
 
     public void write(String log) {
         try {
