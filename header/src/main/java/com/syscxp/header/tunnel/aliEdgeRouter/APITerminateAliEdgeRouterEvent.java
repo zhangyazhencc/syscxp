@@ -4,6 +4,7 @@ import com.syscxp.header.message.APIEvent;
 
 public class APITerminateAliEdgeRouterEvent extends APIEvent{
     private AliEdgeRouterInventory routerInventory;
+    private boolean terminateFlag;
 
     public APITerminateAliEdgeRouterEvent() {
     }
@@ -18,5 +19,13 @@ public class APITerminateAliEdgeRouterEvent extends APIEvent{
 
     public void setRouterInventory(AliEdgeRouterInventory routerInventory) {
         this.routerInventory = routerInventory;
+    }
+
+    public boolean isTerminateFlag() {
+        return terminateFlag;
+    }
+
+    public void setTerminateFlag(boolean terminateFlag) {
+        this.terminateFlag = terminateFlag;
     }
 }

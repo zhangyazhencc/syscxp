@@ -5,6 +5,8 @@ import com.syscxp.core.Platform;
 import com.syscxp.core.db.*;
 import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
+import com.syscxp.header.tunnel.monitor.SpeedTestTunnelVO;
+import com.syscxp.header.tunnel.monitor.SpeedTestTunnelVO_;
 import com.syscxp.header.tunnel.monitor.TunnelMonitorVO;
 import com.syscxp.header.tunnel.monitor.TunnelMonitorVO_;
 import com.syscxp.header.tunnel.node.ZoneNodeRefVO;
@@ -204,6 +206,7 @@ public class TunnelBase {
             }
         }
         UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid,vo.getUuid()).delete();
+        UpdateQuery.New(SpeedTestTunnelVO.class).eq(SpeedTestTunnelVO_.tunnelUuid,vo.getUuid()).delete();
     }
 
     /**

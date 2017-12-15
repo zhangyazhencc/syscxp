@@ -5,6 +5,8 @@ import com.syscxp.header.message.APIEvent;
 public class APIRecoverAliEdgeRouterEvent extends APIEvent {
     private AliEdgeRouterInventory routerInventory;
 
+    private boolean recoverFlag;
+
     public APIRecoverAliEdgeRouterEvent() {
     }
 
@@ -21,4 +23,11 @@ public class APIRecoverAliEdgeRouterEvent extends APIEvent {
         this.routerInventory = routerInventory;
     }
 
+    public boolean isRecoverFlag() {
+        return recoverFlag;
+    }
+
+    public void setRecoverFlag(boolean recoverFlag) {
+        this.recoverFlag = recoverFlag;
+    }
 }
