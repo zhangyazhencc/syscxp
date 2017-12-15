@@ -186,6 +186,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             public void success() {
                 updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled);
                 logger.info("重启监控成功：" + tunnelVO.getUuid());
+                event.setInventory(TunnelInventory.valueOf(tunnelVO));
             }
 
             @Override
