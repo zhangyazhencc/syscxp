@@ -28,7 +28,6 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -428,8 +427,8 @@ public class TunnelValidateBase {
         //调整次数当月是否达到上限
         LocalDateTime dateTime =
                 LocalDate.now().withDayOfMonth(LocalDate.MIN.getDayOfMonth()).atTime(LocalTime.MIN);
-        Long times = Q.New(TunnelMotifyRecordVO.class).eq(TunnelMotifyRecordVO_.tunnelUuid, msg.getUuid())
-                .gte(TunnelMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime)).count();
+        Long times = Q.New(ResourceMotifyRecordVO.class).eq(ResourceMotifyRecordVO_.resourceUuid, msg.getUuid())
+                .gte(ResourceMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime)).count();
         Integer maxModifies =
                 Q.New(TunnelVO.class).eq(TunnelVO_.uuid, msg.getUuid()).select(TunnelVO_.maxModifies)
                         .findValue();
