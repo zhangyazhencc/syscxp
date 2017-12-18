@@ -28,6 +28,10 @@
     </message>
 
     <message>
+        <name>com.syscxp.billing.header.price.APIUpdateBroadPriceMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.billing.header.price.APIQueryProductPriceUnitMsg</name>
         <serviceId>query</serviceId>
     </message>

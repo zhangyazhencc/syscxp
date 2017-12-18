@@ -29,5 +29,6 @@ test-premium/syscxp-integration-test-result/
 envDSLTree
 test/syscxp-integration-test-result/
 */container_settings.json
-
+rebel.xml
+syscxp_local.properties
 

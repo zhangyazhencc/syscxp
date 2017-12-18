@@ -71,9 +71,32 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             handle((APIGetProductCategoryListMsg) msg);
         } else if (msg instanceof APIGetBroadPriceListMsg) {
             handle((APIGetBroadPriceListMsg) msg);
+        } else if (msg instanceof APIUpdateBroadPriceMsg) {
+            handle((APIUpdateBroadPriceMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIUpdateBroadPriceMsg msg) {
+        ProductCategoryVO vo = findProductCategoryVO(msg.getProductType(), msg.getCategory());
+        if (vo == null) {
+            throw new IllegalArgumentException("can not find the product type or category");
+        }
+        SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
+        q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, vo.getUuid());
+        q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, msg.getAreaCode());
+        q.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, msg.getLineCode());
+        q.add(ProductPriceUnitVO_.configCode, SimpleQuery.Op.EQ, msg.getConfigCode());
+        ProductPriceUnitVO productPriceUnitVO = q.find();
+        if (productPriceUnitVO == null) {
+            throw new IllegalArgumentException("can not find the product price in database");
+        }
+        productPriceUnitVO.setUnitPrice(msg.getPrice());
+        dbf.updateAndRefresh(productPriceUnitVO);
+        APIUpdateBroadPriceEvent event = new APIUpdateBroadPriceEvent(msg.getId());
+        event.setInventory(productPriceUnitVO);
+        bus.publish(event);
     }
 
     private void handle(APIGetBroadPriceListMsg msg) {
@@ -84,7 +107,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         }
         String sql = "SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND areaCode = :areaCode  GROUP BY lineCode";
         if (msg.getCategory().equals(Category.REGION)) {
-            sql = "SELECT lineCode,areaCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode";
+            sql = "SELECT areaName as areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode";
         }
 
         Query q = dbf.getEntityManager().createNativeQuery(sql);
