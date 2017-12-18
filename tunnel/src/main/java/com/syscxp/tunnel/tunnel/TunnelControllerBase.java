@@ -181,7 +181,7 @@ public class TunnelControllerBase extends AbstractTunnel {
             public void success() {
                 logger.info("下发删除成功！");
 
-                new TunnelBase().deleteTunnel(tunnelVO);
+                new TunnelBase().deleteTunnelDB(tunnelVO);
 
                 //更新任务状态
                 taskResourceVO.setBody(command);
