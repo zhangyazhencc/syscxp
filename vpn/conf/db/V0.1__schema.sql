@@ -146,11 +146,13 @@ CREATE TABLE  `syscxp_vpn`.`HostInterfaceVO` (
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-CREATE TABLE  `syscxp_vpn`.`VpnMotifyRecordVO` (
+CREATE TABLE  `syscxp_vpn`.`ResourceMotifyRecordVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-	`vpnUuid` varchar(32) NOT NULL COMMENT 'vpnUuid',
+	`resourceUuid` varchar(32) NOT NULL COMMENT 'vpnUuid',
+	`resourceType` varchar(32) NOT NULL COMMENT 'vpnUuid',
 	`motifyType` varchar(32) NOT NULL COMMENT '升级、降级',
 	`opAccountUuid` varchar(32) NOT NULL COMMENT '操作人',
+	`opUserUuid` varchar(32) NOT NULL COMMENT '操作人',
 	`createDate` timestamp,
 	PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
