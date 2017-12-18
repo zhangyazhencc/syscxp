@@ -87,5 +87,9 @@
         <name>com.syscxp.header.configuration.APIQueryResourceMotifyRecordMsg</name>
         <serviceId>query</serviceId>
     </message>
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIQueryBandwidthOfferingMsg</name>
+        <serviceId>query</serviceId>
+    </message>
 
 </service>

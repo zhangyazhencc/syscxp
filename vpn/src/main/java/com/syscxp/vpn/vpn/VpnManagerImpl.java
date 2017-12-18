@@ -46,7 +46,7 @@ import com.syscxp.header.quota.ReportQuotaExtensionPoint;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
-import com.syscxp.header.tunnel.tunnel.APIGetRenewInterfacePriceReply;
+import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.*;
 import com.syscxp.header.vpn.billingCallBack.*;
@@ -224,19 +224,35 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void handle(APIListVpnHostMsg msg) {
         APIListVpnHostReply reply = new APIListVpnHostReply();
-        Map<String, List<VpnHostInventory>> map = new HashMap<>();
-        for (String endpointUuid : msg.getEndpointUuids()) {
+
+        APIQueryTunnelMsg tunnelMsg = new APIQueryTunnelMsg();
+        tunnelMsg.addQueryCondition("uuid", "=", msg.getTunnelUuid());
+        tunnelMsg.setSession(msg.getSession());
+
+        String url = URLBuilder.buildUrlFromBase(VpnGlobalProperty.TUNNEL_SERVER_RUL, RESTConstant.REST_API_CALL);
+        TunnelInventory inventory;
+        try {
+            RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dumpWithSession(tunnelMsg), RestAPIResponse.class);
+            APIReply apiReply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
+            if (!reply.isSuccess()) {
+                throw new OperationFailureException(errf.instantiateErrorCode(SysErrors.RESOURCE_NOT_FOUND, "failed to get tunnel."));
+            }
+            inventory = ((APIQueryTunnelReply) apiReply).getInventories().get(0);
+        } catch (Exception e) {
+            throw new OperationFailureException(errf.instantiateErrorCode(SysErrors.HTTP_ERROR, String.format("call tunnel[url: %s] failed.", url)));
+        }
+
+        List<String> endpointUuids = new ArrayList<>();
+
+        for (TunnelSwitchPortInventory switchPortInventory : inventory.getTunnelSwitchs()) {
             Q q = Q.New(HostInterfaceVO.class)
-                    .eq(HostInterfaceVO_.endpointUuid, endpointUuid)
+                    .eq(HostInterfaceVO_.endpointUuid, switchPortInventory.getEndpointUuid())
                     .select(HostInterfaceVO_.hostUuid);
             if (q.count() > 0) {
-                List<VpnHostVO> hosts = Q.New(VpnHostVO.class)
-                        .in(VpnHostVO_.uuid, q.listValues())
-                        .list();
-                map.put(endpointUuid, VpnHostInventory.valueOf1(hosts));
+                endpointUuids.add(switchPortInventory.getEndpointUuid());
             }
         }
-        reply.setInventoryMap(map);
+        reply.setEndpointUuids(endpointUuids);
         bus.reply(msg, reply);
     }
 
