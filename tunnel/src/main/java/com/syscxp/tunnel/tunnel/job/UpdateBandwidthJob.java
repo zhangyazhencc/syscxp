@@ -62,7 +62,7 @@ public class UpdateBandwidthJob implements Job {
                         new TunnelBase().updateTunnelBandwidthJob(vo, "调整专线带宽");
                         completion.success(null);
                     } else {
-                        completion.fail(errf.stringToOperationError("下发控制器修改带宽失败"));
+                        completion.fail(reply.getError());
                     }
                 }
             });
