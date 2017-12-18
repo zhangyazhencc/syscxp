@@ -2598,20 +2598,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
         vo.setBandwidth(message.getBandwidth());
-        dbf.updateAndRefresh(vo);
+        vo = dbf.updateAndRefresh(vo);
         //付款成功,记录生效订单
         tunnelBillingBase.saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
-        //创建任务
-        TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.ModifyBandwidth);
-
-        ModifyTunnelBandwidthMsg modifyTunnelBandwidthMsg = new ModifyTunnelBandwidthMsg();
-        modifyTunnelBandwidthMsg.setTunnelUuid(vo.getUuid());
-        modifyTunnelBandwidthMsg.setTaskUuid(taskResourceVO.getUuid());
-        bus.makeLocalServiceId(modifyTunnelBandwidthMsg, TunnelConstant.SERVICE_ID);
-        bus.send(modifyTunnelBandwidthMsg);
-
-        new TunnelBase().updateTunnelBandwidthJob(vo, "调整专线带宽");
+        logger.info("修改带宽支付成功，并创建任务：UpdateBandwidthJob");
+        UpdateBandwidthJob job = new UpdateBandwidthJob();
+        job.setTunnelUuid(vo.getUuid());
+        jobf.execute("调整专线带宽-控制器下发", Platform.getManagementServerId(), job);
     }
 
     @Override
