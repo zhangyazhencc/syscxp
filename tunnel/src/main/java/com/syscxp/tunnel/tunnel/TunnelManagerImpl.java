@@ -8,8 +8,11 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.CloudBusCallBack;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.componentloader.PluginRegistry;
+import com.syscxp.core.config.GlobalConfig;
+import com.syscxp.core.config.GlobalConfigUpdateExtensionPoint;
 import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.host.HostGlobalConfig;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
@@ -38,6 +41,7 @@ import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO_;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
+import com.syscxp.tunnel.identity.TunnelGlobalConfig;
 import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
 import com.syscxp.utils.CollectionDSL;
@@ -550,7 +554,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 evt.setInventory(InterfaceInventory.valueOf(dbf.reload(iface)));
                 bus.publish(evt);
 
-                tunnelBase.updateInterfacePortsJob(msg,"更改端口");
+                tunnelBase.updateInterfacePortsJob(msg, "更改端口");
             }
         }).error(new FlowErrorHandler(null) {
             @Override
@@ -1233,7 +1237,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 evt.setInventory(TunnelInventory.valueOf(dbf.reload(vo)));
                 bus.publish(evt);
 
-                tunnelBase.updateTunnelVlanOrInterfaceJob(vo, msg,"更换接口或VLAN");
+                tunnelBase.updateTunnelVlanOrInterfaceJob(vo, msg, "更换接口或VLAN");
 
             }
         }).error(new FlowErrorHandler(null) {
@@ -1390,7 +1394,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             evt.setInventory(TunnelInventory.valueOf(vo));
             bus.publish(evt);
 
-            tunnelBase.updateTunnelBandwidthJob(vo,"调整专线带宽");
+            tunnelBase.updateTunnelBandwidthJob(vo, "调整专线带宽");
         } else {
             evt.setError(errf.stringToOperationError("订单操作失败"));
             bus.publish(evt);
@@ -1401,7 +1405,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 云专线续费
      **/
     private void handle(APIRenewTunnelMsg msg) {
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
         APIRenewTunnelReply reply
                 = renewTunnel(msg.getUuid(),
                 msg.getDuration(),
@@ -1416,13 +1420,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 云专线自动续费
      **/
     private void handle(APIRenewAutoTunnelMsg msg) {
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
         APIRenewTunnelReply reply
                 = renewTunnel(msg.getUuid(),
                 msg.getDuration(),
                 msg.getProductChargeModel(),
                 vo.getOwnerAccountUuid(),
-                msg.getSession().getAccountUuid());
+                vo.getAccountUuid());
 
         bus.reply(msg, reply);
     }
@@ -1559,7 +1563,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     evt.setInventory(inv);
                     bus.publish(evt);
 
-                    tunnelBase.deleteTunnelJob(jobVO,"删除专线");
+                    tunnelBase.deleteTunnelJob(jobVO, "删除专线");
                 }
 
                 @Override
@@ -1583,7 +1587,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             evt.setInventory(inv);
                             bus.publish(evt);
 
-                            tunnelBase.deleteTunnelJob(vo2,"删除专线");
+                            tunnelBase.deleteTunnelJob(vo2, "删除专线");
                         }
 
                         @Override
@@ -1598,7 +1602,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     evt.setInventory(TunnelInventory.valueOf(vo));
                     bus.publish(evt);
 
-                    tunnelBase.deleteTunnelJob(vo,"删除专线");
+                    tunnelBase.deleteTunnelJob(vo, "删除专线");
                 }
             } else {
                 //调用退订
@@ -1636,7 +1640,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                 evt.setInventory(inv);
                                 bus.publish(evt);
 
-                                tunnelBase.deleteTunnelJob(vo2,"删除专线");
+                                tunnelBase.deleteTunnelJob(vo2, "删除专线");
                             }
 
                             @Override
@@ -1656,7 +1660,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         evt.setInventory(TunnelInventory.valueOf(vo));
                         bus.publish(evt);
 
-                        tunnelBase.deleteTunnelJob(vo,"删除专线");
+                        tunnelBase.deleteTunnelJob(vo, "删除专线");
                     }
                 }
             }
@@ -1833,7 +1837,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         evt.setInventory(inv);
                         bus.publish(evt);
 
-                        tunnelBase.enabledTunnelJob(jobVO,"恢复专线连接");
+                        tunnelBase.enabledTunnelJob(jobVO, "恢复专线连接");
                     }
 
                     @Override
@@ -1849,7 +1853,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         evt.setInventory(inv);
                         bus.publish(evt);
 
-                        tunnelBase.disabledTunnelJob(jobVO,"关闭专线连接");
+                        tunnelBase.disabledTunnelJob(jobVO, "关闭专线连接");
 
                     }
 
@@ -2080,7 +2084,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 通过共点接口查询共点专线
      */
     private void handle(APIListCrossTunnelMsg msg) {
-        InterfaceVO vo = dbf.findByUuid(msg.getUuid(),InterfaceVO.class);
+        InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
         APIListCrossTunnelReply reply = new APIListCrossTunnelReply();
         List<String> tunnelUuids = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
@@ -2234,7 +2238,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * 调整带宽时查询云专线差价
      */
     private void handle(APIGetModifyTunnelPriceDiffMsg msg) {
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
         TunnelSwitchPortVO tunnelSwitchPortVOA = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "A")
@@ -2538,7 +2542,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     if (reply.isSuccess()) {
                         logger.info("billing通知回调并请求下发成功");
 
-                        tunnelBase.deleteTunnelJob(vo,"删除专线");
+                        tunnelBase.deleteTunnelJob(vo, "删除专线");
                     } else {
                         logger.info("billing通知回调并请求下发失败");
                     }
@@ -2549,7 +2553,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             dbf.updateAndRefresh(vo);
             tunnelBase.deleteTunnel(vo);
 
-            tunnelBase.deleteTunnelJob(vo,"删除专线");
+            tunnelBase.deleteTunnelJob(vo, "删除专线");
 
         } else if (message.getDescription().equals("unsupport")) {
             vo.setState(TunnelState.Unsupport);
@@ -2577,12 +2581,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         bus.makeLocalServiceId(modifyTunnelBandwidthMsg, TunnelConstant.SERVICE_ID);
         bus.send(modifyTunnelBandwidthMsg);
 
-        new TunnelBase().updateTunnelBandwidthJob(vo,"调整专线带宽");
+        new TunnelBase().updateTunnelBandwidthJob(vo, "调整专线带宽");
     }
 
     @Override
     public boolean start() {
-        startCleanExpiredProduct();
+        restartCleanExpiredProduct();
 
         restf.registerSyncHttpCallHandler("billing", OrderCallbackCmd.class,
                 cmd -> {
@@ -2664,9 +2668,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private int expiredProductDeleteTime;
 
     private void startCleanExpiredProduct() {
-        cleanExpiredProductInterval = CoreGlobalProperty.CLEAN_EXPIRED_PRODUCT_INTERVAL;
-        expiredProductCloseTime = CoreGlobalProperty.EXPIRED_PRODUCT_CLOSE_TIME;
-        expiredProductDeleteTime = CoreGlobalProperty.EXPIRED_PRODUCT_DELETE_TIME;
+        cleanExpiredProductInterval = TunnelGlobalConfig.CLEAN_EXPIRED_PRODUCT_INTERVAL.value(Integer.class);
+        expiredProductCloseTime = TunnelGlobalConfig.EXPIRED_PRODUCT_CLOSE_TIME.value(Integer.class);
+        expiredProductDeleteTime = TunnelGlobalConfig.EXPIRED_PRODUCT_DELETE_TIME.value(Integer.class);
+
         if (cleanExpiredProductThread != null) {
             cleanExpiredProductThread.cancel(true);
         }
@@ -2674,6 +2679,36 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         cleanExpiredProductThread = thdf.submitPeriodicTask(new CleanExpiredProductThread(), TimeUnit.SECONDS.toMillis(10));
         logger.debug(String
                 .format("security group cleanExpiredProductThread starts[cleanExpiredProductInterval: %s day]", cleanExpiredProductInterval));
+    }
+
+    private void restartCleanExpiredProduct() {
+
+        startCleanExpiredProduct();
+
+        TunnelGlobalConfig.CLEAN_EXPIRED_PRODUCT_INTERVAL.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
+            @Override
+            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
+                logger.debug(String.format("%s change from %s to %s, restart tracker thread",
+                        oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
+                startCleanExpiredProduct();
+            }
+        });
+        TunnelGlobalConfig.EXPIRED_PRODUCT_CLOSE_TIME.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
+            @Override
+            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
+                logger.debug(String.format("%s change from %s to %s, restart tracker thread",
+                        oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
+                startCleanExpiredProduct();
+            }
+        });
+        TunnelGlobalConfig.EXPIRED_PRODUCT_DELETE_TIME.installUpdateExtension(new GlobalConfigUpdateExtensionPoint() {
+            @Override
+            public void updateGlobalConfig(GlobalConfig oldConfig, GlobalConfig newConfig) {
+                logger.debug(String.format("%s change from %s to %s, restart tracker thread",
+                        oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
+                startCleanExpiredProduct();
+            }
+        });
     }
 
     private class CleanExpiredProductThread implements PeriodicTask {
@@ -2742,7 +2777,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             taskDeleteTunnel(vo2, new ReturnValueCompletion<TunnelInventory>(null) {
                                 @Override
                                 public void success(TunnelInventory inv) {
-                                    tunnelBase.deleteTunnelJob(vo,"专线过期清理");
+                                    tunnelBase.deleteTunnelJob(vo, "专线过期清理");
                                 }
 
                                 @Override
@@ -2752,7 +2787,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
                         } else {
                             tunnelBase.deleteTunnel(vo);
-                            tunnelBase.deleteTunnelJob(vo,"专线过期清理");
+                            tunnelBase.deleteTunnelJob(vo, "专线过期清理");
                         }
 
 
@@ -2765,7 +2800,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             taskDisableTunnel(vo, taskResourceVO, new ReturnValueCompletion<TunnelInventory>(null) {
                                 @Override
                                 public void success(TunnelInventory inv) {
-                                    tunnelBase.disabledTunnelJob(vo,"专线过期中止");
+                                    tunnelBase.disabledTunnelJob(vo, "专线过期中止");
                                 }
 
                                 @Override

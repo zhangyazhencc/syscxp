@@ -180,7 +180,6 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             } else{
                 throw new ApiMessageInterceptionException(argerr(e.getMessage()));
             }
-            throw new ApiMessageInterceptionException(argerr(e.getMessage()));
         }
 
         APITerminateAliEdgeRouterEvent evt = new APITerminateAliEdgeRouterEvent(msg.getId());

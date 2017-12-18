@@ -8,7 +8,9 @@ import java.sql.Timestamp;
 public class VpnMotifyRecordVO_ {
 
     public static volatile SingularAttribute<VpnMotifyRecordVO, String> uuid;
-    public static volatile SingularAttribute<VpnMotifyRecordVO, String> vpnUuid;
+    public static volatile SingularAttribute<VpnMotifyRecordVO, String> resourceUuid;
+    public static volatile SingularAttribute<VpnMotifyRecordVO, String> resourceType;
+    public static volatile SingularAttribute<VpnMotifyRecordVO, String> opUserUuid;
     public static volatile SingularAttribute<VpnMotifyRecordVO, String> opAccountUuid;
     public static volatile SingularAttribute<VpnMotifyRecordVO, String> motifyType;
     public static volatile SingularAttribute<VpnMotifyRecordVO, Timestamp> createDate;

@@ -10,14 +10,42 @@ public class VpnMotifyRecordVO {
     @Column
     private String uuid;
     @Column
-    private String vpnUuid;
+    private String resourceUuid;
+    @Column
+    private String resourceType;
     @Column
     private String opAccountUuid;
+    @Column
+    private String opUserUuid;
     @Column
     @Enumerated(EnumType.STRING)
     private String motifyType;
     @Column
     private Timestamp createDate;
+
+    public String getResourceUuid() {
+        return resourceUuid;
+    }
+
+    public void setResourceUuid(String resourceUuid) {
+        this.resourceUuid = resourceUuid;
+    }
+
+    public String getResourceType() {
+        return resourceType;
+    }
+
+    public void setResourceType(String resourceType) {
+        this.resourceType = resourceType;
+    }
+
+    public String getOpUserUuid() {
+        return opUserUuid;
+    }
+
+    public void setOpUserUuid(String opUserUuid) {
+        this.opUserUuid = opUserUuid;
+    }
 
     public Timestamp getCreateDate() {
         return createDate;
@@ -33,14 +61,6 @@ public class VpnMotifyRecordVO {
 
     public void setUuid(String uuid) {
         this.uuid = uuid;
-    }
-
-    public String getVpnUuid() {
-        return vpnUuid;
-    }
-
-    public void setVpnUuid(String vpnUuid) {
-        this.vpnUuid = vpnUuid;
     }
 
     public String getOpAccountUuid() {

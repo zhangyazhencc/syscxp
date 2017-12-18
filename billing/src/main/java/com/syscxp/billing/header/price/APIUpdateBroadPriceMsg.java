@@ -4,12 +4,11 @@ import com.syscxp.header.billing.BillingConstant;
 import com.syscxp.header.billing.Category;
 import com.syscxp.header.billing.ProductType;
 import com.syscxp.header.identity.Action;
-import com.syscxp.header.identity.SuppressCredentialCheck;
+import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.header.message.APISyncCallMessage;
 
 @Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_PRICE)
-public class APIGetBroadPriceListMsg extends APISyncCallMessage{
+public class APIUpdateBroadPriceMsg extends APIMessage {
 
     @APIParam
     private ProductType productType;
@@ -17,8 +16,25 @@ public class APIGetBroadPriceListMsg extends APISyncCallMessage{
     @APIParam
     private Category category;
 
-    @APIParam(required = false,emptyString = false)
+    @APIParam
     private String areaCode;
+
+    @APIParam
+    private String lineCode;
+
+    @APIParam
+    private String configCode;
+
+    @APIParam
+    private int price;
+
+    public int getPrice() {
+        return price;
+    }
+
+    public void setPrice(int price) {
+        this.price = price;
+    }
 
     public ProductType getProductType() {
         return productType;
@@ -42,5 +58,21 @@ public class APIGetBroadPriceListMsg extends APISyncCallMessage{
 
     public void setAreaCode(String areaCode) {
         this.areaCode = areaCode;
+    }
+
+    public String getLineCode() {
+        return lineCode;
+    }
+
+    public void setLineCode(String lineCode) {
+        this.lineCode = lineCode;
+    }
+
+    public String getConfigCode() {
+        return configCode;
+    }
+
+    public void setConfigCode(String configCode) {
+        this.configCode = configCode;
     }
 }

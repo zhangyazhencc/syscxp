@@ -497,12 +497,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void handle(APILogInByUserMsg msg) {
         APILogInReply reply = new APILogInReply();
 
-//        if(!imageCodeService.ValidateImageCode(msg.getImageUuid(),msg.getImageCode())){
-//            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
-//                    "Incorrect Validate Image Code"));
-//            bus.reply(msg, reply);
-//            return;
-//        }
+        if(!imageCodeService.ValidateImageCode(msg.getImageUuid(),msg.getImageCode())){
+            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
+                    "Incorrect Validate Image Code"));
+            bus.reply(msg, reply);
+            return;
+        }
 
         AccountVO account;
 
@@ -552,12 +552,12 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
     private void handle(APILogInByAccountMsg msg) {
         APILogInReply reply = new APILogInReply();
 
-//        if(!imageCodeService.ValidateImageCode(msg.getImageUuid(),msg.getImageCode())){
-//            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
-//                    "Incorrect Validate Image Code"));
-//            bus.reply(msg, reply);
-//            return;
-//        }
+        if(!imageCodeService.ValidateImageCode(msg.getImageUuid(),msg.getImageCode())){
+            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
+                    "Incorrect Validate Image Code"));
+            bus.reply(msg, reply);
+            return;
+        }
 
         if (msg.getAccountName() == null && msg.getEmail() == null &&
                 msg.getPhone() == null) {
@@ -586,8 +586,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                     "frozen account"));
             bus.reply(msg, reply);
             return;
-        }else if(!msg.getPassword().equals(vo.getPassword()) && msg.getPlaintext() != null){
-            if(!check_password(msg.getPlaintext(),vo.getPassword())){
+        }else if(!msg.getPassword().equals(vo.getPassword())){
+            if(msg.getPlaintext() != null && !check_password(msg.getPlaintext(),vo.getPassword())){
                 reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                         "Incorrect password"));
                 bus.reply(msg, reply);
