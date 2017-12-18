@@ -22,6 +22,7 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.configuration.BandwidthOfferingVO;
+import com.syscxp.header.core.Completion;
 import com.syscxp.header.configuration.MotifyType;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO;
 import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
@@ -1536,8 +1537,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      **/
     private void handle(APIDeleteTunnelMsg msg) {
         APIDeleteTunnelEvent evt = new APIDeleteTunnelEvent(msg.getId());
-        TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
-        TunnelBase tunnelBase = new TunnelBase();
+
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
@@ -1552,26 +1552,47 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         });*/
 
+        doDeleteTunnel(vo,msg.getSession().getAccountUuid(),new ReturnValueCompletion<TunnelInventory>(null) {
+
+            @Override
+            public void success(TunnelInventory inv) {
+                evt.setInventory(inv);
+                bus.publish(evt);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                evt.setError(errorCode);
+                bus.publish(evt);
+            }
+        });
+
+    }
+
+    private void doDeleteTunnel(TunnelVO vo,String opAccountUuid, ReturnValueCompletion<TunnelInventory> completion){
+        TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
+        TunnelBase tunnelBase = new TunnelBase();
+
         if (vo.getState() == TunnelState.Unsupport) {         //1
-            tunnelBase.deleteTunnel(vo);
-            evt.setInventory(TunnelInventory.valueOf(vo));
-            bus.publish(evt);
+            tunnelBase.deleteTunnelDB(vo);
+            completion.success(TunnelInventory.valueOf(vo));
+
         } else if (vo.getState() == TunnelState.Enabled && vo.getAccountUuid() == null) {          //4
             final TunnelVO jobVO = vo;
             //下发删除
-            taskDeleteTunnel(jobVO, new ReturnValueCompletion<TunnelInventory>(null) {
+            taskDeleteTunnel(jobVO, new Completion(null) {
                 @Override
-                public void success(TunnelInventory inv) {
-                    evt.setInventory(inv);
-                    bus.publish(evt);
+                public void success() {
 
                     tunnelBase.deleteTunnelJob(jobVO, "删除专线");
+
+                    completion.success(TunnelInventory.valueOf(jobVO));
+
                 }
 
                 @Override
                 public void fail(ErrorCode errorCode) {
-                    evt.setError(errorCode);
-                    bus.publish(evt);
+                    completion.fail(errorCode);
                 }
             });
 
@@ -1580,31 +1601,31 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 if (vo.getState() == TunnelState.Enabled) {
 
                     vo.setAccountUuid(null);
-                    final TunnelVO vo2 = dbf.updateAndRefresh(vo);
+                    final TunnelVO jobVO = dbf.updateAndRefresh(vo);
 
                     //下发删除
-                    taskDeleteTunnel(vo2, new ReturnValueCompletion<TunnelInventory>(null) {
+                    taskDeleteTunnel(jobVO, new Completion(null) {
                         @Override
-                        public void success(TunnelInventory inv) {
-                            evt.setInventory(inv);
-                            bus.publish(evt);
+                        public void success() {
 
-                            tunnelBase.deleteTunnelJob(vo2, "删除专线");
+                            tunnelBase.deleteTunnelJob(jobVO, "删除专线");
+
+                            completion.success(TunnelInventory.valueOf(jobVO));
+
                         }
 
                         @Override
                         public void fail(ErrorCode errorCode) {
-                            evt.setError(errorCode);
-                            bus.publish(evt);
+                            completion.fail(errorCode);
                         }
                     });
 
                 } else {
-                    tunnelBase.deleteTunnel(vo);
-                    evt.setInventory(TunnelInventory.valueOf(vo));
-                    bus.publish(evt);
+                    tunnelBase.deleteTunnelDB(vo);
 
                     tunnelBase.deleteTunnelJob(vo, "删除专线");
+
+                    completion.success(TunnelInventory.valueOf(vo));
                 }
             } else {
                 //调用退订
@@ -1615,7 +1636,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 orderMsg.setProductType(ProductType.TUNNEL);
                 orderMsg.setProductName(vo.getName());
                 orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
-                orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
+                orderMsg.setOpAccountUuid(opAccountUuid);
                 orderMsg.setStartTime(dbf.getCurrentSqlTime());
                 orderMsg.setExpiredTime(vo.getExpireDate());
                 orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo));
@@ -1624,8 +1645,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
                 OrderInventory orderInventory = tunnelBillingBase.createOrder(orderMsg);
                 if (orderInventory == null) {
-                    evt.setError(errf.stringToOperationError("退订失败"));
-                    bus.publish(evt);
+                    completion.fail(errf.stringToOperationError("退订失败"));
                 } else {
                     if (vo.getState() == TunnelState.Enabled) {
                         //退订成功,记录生效订单
@@ -1633,22 +1653,22 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
                         vo.setAccountUuid(null);
                         vo.setExpireDate(dbf.getCurrentSqlTime());
-                        final TunnelVO vo2 = dbf.updateAndRefresh(vo);
+                        final TunnelVO jobVO = dbf.updateAndRefresh(vo);
 
                         //下发删除
-                        taskDeleteTunnel(vo2, new ReturnValueCompletion<TunnelInventory>(null) {
+                        taskDeleteTunnel(jobVO, new Completion(null) {
                             @Override
-                            public void success(TunnelInventory inv) {
-                                evt.setInventory(inv);
-                                bus.publish(evt);
+                            public void success() {
 
-                                tunnelBase.deleteTunnelJob(vo2, "删除专线");
+                                tunnelBase.deleteTunnelJob(jobVO, "删除专线");
+
+                                completion.success(TunnelInventory.valueOf(jobVO));
+
                             }
 
                             @Override
                             public void fail(ErrorCode errorCode) {
-                                evt.setError(errorCode);
-                                bus.publish(evt);
+                                completion.fail(errorCode);
                             }
                         });
 
@@ -1658,21 +1678,20 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         vo.setExpireDate(dbf.getCurrentSqlTime());
                         vo = dbf.updateAndRefresh(vo);
 
-                        tunnelBase.deleteTunnel(vo);
-                        evt.setInventory(TunnelInventory.valueOf(vo));
-                        bus.publish(evt);
+                        tunnelBase.deleteTunnelDB(vo);
 
                         tunnelBase.deleteTunnelJob(vo, "删除专线");
+
+                        completion.success(TunnelInventory.valueOf(vo));
                     }
                 }
             }
         } else {
-            evt.setError(errf.stringToOperationError("该删除专线操作没有符合正确的条件！"));
-            bus.publish(evt);
+            completion.fail(errf.stringToOperationError("该删除专线操作没有符合正确的条件"));
         }
     }
 
-    private void taskDeleteTunnel(TunnelVO vo, ReturnValueCompletion<TunnelInventory> completion) {
+    private void taskDeleteTunnel(TunnelVO vo, Completion completionTask) {
         //创建任务
         TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.Delete);
 
@@ -1684,9 +1703,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
-                    completion.success(TunnelInventory.valueOf(vo));
+                    completionTask.success();
                 } else {
-                    completion.fail(reply.getError());
+                    completionTask.fail(reply.getError());
                 }
             }
         });
@@ -1706,7 +1725,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
         if (vo.getExpireDate() != null && (vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())) || vo.getAccountUuid() == null)) {
-            tunnelBase.deleteTunnel(vo);
+            tunnelBase.deleteTunnelDB(vo);
             evt.setInventory(TunnelInventory.valueOf(vo));
             bus.publish(evt);
             return;
@@ -1739,7 +1758,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo.setExpireDate(dbf.getCurrentSqlTime());
             vo = dbf.updateAndRefresh(vo);
 
-            tunnelBase.deleteTunnel(vo);
+            tunnelBase.deleteTunnelDB(vo);
 
             evt.setInventory(TunnelInventory.valueOf(vo));
         } else {
@@ -2525,7 +2544,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (message.getDescription().equals("forciblydelete")) {
             vo.setExpireDate(dbf.getCurrentSqlTime());
             dbf.updateAndRefresh(vo);
-            tunnelBase.deleteTunnel(vo);
+            tunnelBase.deleteTunnelDB(vo);
         } else if (message.getDescription().equals("delete") && vo.getState() == TunnelState.Enabled) {
             vo.setAccountUuid(null);
             vo.setExpireDate(dbf.getCurrentSqlTime());
@@ -2553,7 +2572,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         } else if (message.getDescription().equals("delete") && vo.getState() == TunnelState.Disabled) {
             vo.setExpireDate(dbf.getCurrentSqlTime());
             dbf.updateAndRefresh(vo);
-            tunnelBase.deleteTunnel(vo);
+            tunnelBase.deleteTunnelDB(vo);
 
             tunnelBase.deleteTunnelJob(vo, "删除专线");
 
@@ -2772,29 +2791,22 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     if (vo.getExpireDate().before(deleteTime)) {
                         if (!clearExpiredTunnel(vo))
                             continue;
-                        if (vo.getState() == TunnelState.Enabled) {
-                            vo.setAccountUuid(null);
-                            final TunnelVO vo2 = dbf.updateAndRefresh(vo);
-                            //下发删除
-                            taskDeleteTunnel(vo2, new ReturnValueCompletion<TunnelInventory>(null) {
-                                @Override
-                                public void success(TunnelInventory inv) {
-                                    tunnelBase.deleteTunnelJob(vo, "专线过期清理");
-                                }
+                        doDeleteTunnel(vo,vo.getOwnerAccountUuid(),new ReturnValueCompletion<TunnelInventory>(null) {
 
-                                @Override
-                                public void fail(ErrorCode errorCode) {
-                                }
-                            });
+                            @Override
+                            public void success(TunnelInventory inv) {
+                            }
 
-                        } else {
-                            tunnelBase.deleteTunnel(vo);
-                            tunnelBase.deleteTunnelJob(vo, "专线过期清理");
-                        }
+                            @Override
+                            public void fail(ErrorCode errorCode) {
+                            }
+                        });
+
+
                     }
                     if (vo.getExpireDate().before(closeTime)) {
                         if (vo.getState() == TunnelState.Unpaid) {
-                            tunnelBase.deleteTunnel(vo);
+                            tunnelBase.deleteTunnelDB(vo);
                         } else if (vo.getState() == TunnelState.Enabled) {
                             TaskResourceVO taskResourceVO = tunnelBase.newTaskResourceVO(vo, TaskType.valueOf(TunnelState.Disabled.toString()));
                             taskDisableTunnel(vo, taskResourceVO, new ReturnValueCompletion<TunnelInventory>(null) {

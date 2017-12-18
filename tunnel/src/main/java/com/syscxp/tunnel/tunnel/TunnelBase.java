@@ -185,7 +185,7 @@ public class TunnelBase {
      * 删除Tunnel数据库及其关联
      */
     @Transactional
-    public void deleteTunnel(TunnelVO vo) {
+    public void deleteTunnelDB(TunnelVO vo) {
         dbf.remove(vo);
 
         //删除对应的 TunnelSwitchPortVO 和 QingqVO
