@@ -2706,7 +2706,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             cleanExpiredProductThread.cancel(true);
         }
 
-        cleanExpiredProductThread = thdf.submitPeriodicTask(new CleanExpiredProductThread(), TimeUnit.SECONDS.toMillis(10));
+        cleanExpiredProductThread = thdf.submitPeriodicTask(new CleanExpiredProductThread(), TimeUnit.SECONDS.toMillis(60));
         logger.debug(String
                 .format("security group cleanExpiredProductThread starts[cleanExpiredProductInterval: %s day]", cleanExpiredProductInterval));
     }
