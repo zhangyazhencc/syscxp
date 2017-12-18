@@ -303,6 +303,8 @@ public class TunnelControllerBase extends AbstractTunnel {
     }
 
     private void handle(ModifyTunnelBandwidthMsg msg){
+        ModifyTunnelBandwidthReply reply = new ModifyTunnelBandwidthReply();
+
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
         TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
@@ -319,6 +321,8 @@ public class TunnelControllerBase extends AbstractTunnel {
                 taskResourceVO.setBody(command);
                 taskResourceVO.setStatus(TaskStatus.Success);
                 dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
             }
 
             @Override
@@ -330,6 +334,9 @@ public class TunnelControllerBase extends AbstractTunnel {
                 taskResourceVO.setBody(command);
                 taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
                 dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
             }
         });
     }
