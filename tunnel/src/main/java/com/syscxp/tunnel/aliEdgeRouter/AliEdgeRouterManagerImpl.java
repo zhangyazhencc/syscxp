@@ -451,6 +451,11 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
                     vo.setDescription(virtualBorderRouterType.getDescription());
                     vo.setCreateFlag(true);
                 }
+
+                if("active".equals(virtualBorderRouterType.getStatus())){
+                    vo.setStatus(AliEdgeRouterStatus.normal);
+                }
+
                 dbf.updateAndRefresh(vo);
             }
         }catch (ClientException e){
