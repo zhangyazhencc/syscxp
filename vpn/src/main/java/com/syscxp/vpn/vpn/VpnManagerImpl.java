@@ -558,7 +558,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void saveMotifyRecord(APIUpdateVpnBandwidthMsg msg) {
         VpnMotifyRecordVO record = new VpnMotifyRecordVO();
         record.setUuid(Platform.getUuid());
-        record.setVpnUuid(msg.getUuid());
         record.setOpAccountUuid(msg.getOpAccountUuid());
         dbf.persistAndRefresh(record);
     }
@@ -1201,10 +1200,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     public APIMessage intercept(APIMessage msg) throws ApiMessageInterceptionException {
         if (msg instanceof APICreateVpnMsg) {
             validate((APICreateVpnMsg) msg);
-        } else if (msg instanceof APIQueryVpnMsg) {
-            validate((APIQueryVpnMsg) msg);
-        } else if (msg instanceof APIQueryVpnCertMsg) {
-            validate((APIQueryVpnCertMsg) msg);
         } else if (msg instanceof APIUpdateVpnMsg) {
             validate((APIUpdateVpnMsg) msg);
         } else if (msg instanceof APIUpdateVpnBandwidthMsg) {
@@ -1223,17 +1218,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             throw new ApiMessageInterceptionException(
                     argerr("The VpnCertVO[uuid:%s] has already binding Vpn.", msg.getUuid()));
     }
-
-    private void validate(APIVpnMessage msg) {
-        // 区分管理员账户
-        if (msg.getSession().isAdminSession() && StringUtils.isEmpty(msg.getAccountUuid())) {
-            throw new ApiMessageInterceptionException(
-                    argerr("The Account[uuid:%s] is not a admin or proxy.",
-                            msg.getSession().getAccountUuid()));
-        }
-
-    }
-
 
     private void validate(APIGetVpnCertMsg msg) {
 
@@ -1259,7 +1243,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         LocalDateTime dateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atTime(LocalTime.MIN);
         Long times = Q.New(VpnMotifyRecordVO.class)
-                .eq(VpnMotifyRecordVO_.vpnUuid, msg.getUuid())
+                .eq(VpnMotifyRecordVO_.resourceUuid, msg.getUuid())
                 .gte(VpnMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime))
                 .count();
         Integer maxModifies = Q.New(VpnVO.class)
@@ -1283,17 +1267,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         if (q.isExists())
             throw new ApiMessageInterceptionException(
                     argerr("The Vpn[name:%s] is already exist.", msg.getName()));
-    }
-
-    private void validate(APIQueryVpnMsg msg) {
-        if (!msg.getSession().isAdminSession()) {
-            msg.addQueryCondition("accountUuid", QueryOp.EQ, msg.getSession().getAccountUuid());
-        }
-    }
-    private void validate(APIQueryVpnCertMsg msg) {
-        if (!msg.getSession().isAdminSession()) {
-            msg.addQueryCondition("accountUuid", QueryOp.EQ, msg.getSession().getAccountUuid());
-        }
     }
 
     private List<String> getHostUuid(String endpointUuid, Integer vlan) {
