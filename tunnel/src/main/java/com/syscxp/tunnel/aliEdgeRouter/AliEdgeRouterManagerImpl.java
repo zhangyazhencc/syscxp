@@ -441,6 +441,22 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
                 inventory.setLocalGatewayIp(virtualBorderRouterType.getLocalGatewayIp());
                 inventory.setPeerGatewayIp(virtualBorderRouterType.getPeerGatewayIp());
                 inventory.setPeeringSubnetMask(virtualBorderRouterType.getPeeringSubnetMask());
+
+                //更新数据，我们本地消息同阿里那边的消息一致
+                if(virtualBorderRouterType.getName() != null || virtualBorderRouterType.getName() != ""){
+                    vo.setName(virtualBorderRouterType.getName());
+                    vo.setCreateFlag(true);
+                }
+                if(virtualBorderRouterType.getDescription() != null || virtualBorderRouterType.getDescription() != ""){
+                    vo.setDescription(virtualBorderRouterType.getDescription());
+                    vo.setCreateFlag(true);
+                }
+
+                if("active".equals(virtualBorderRouterType.getStatus())){
+                    vo.setStatus(AliEdgeRouterStatus.normal);
+                }
+
+                dbf.updateAndRefresh(vo);
             }
         }catch (ClientException e){
             e.printStackTrace();

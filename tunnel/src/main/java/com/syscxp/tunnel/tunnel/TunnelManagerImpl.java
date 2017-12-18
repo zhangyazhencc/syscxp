@@ -12,6 +12,7 @@ import com.syscxp.core.config.GlobalConfig;
 import com.syscxp.core.config.GlobalConfigUpdateExtensionPoint;
 import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
@@ -47,6 +48,7 @@ import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.tunnel.identity.TunnelGlobalConfig;
 import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
+import com.syscxp.tunnel.tunnel.job.UpdateBandwidthJob;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
@@ -84,6 +86,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private ThreadFacade thdf;
     @Autowired
     private PluginRegistry pluginRgty;
+    @Autowired
+    private JobQueueFacade jobf;
 
     @Override
     @MessageSafe
@@ -1386,18 +1390,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo.setBandwidth(bandwidthOfferingVO.getBandwidth());
             vo = dbf.updateAndRefresh(vo);
 
-            //创建任务
-            TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.ModifyBandwidth);
+            logger.info("修改带宽支付成功，并创建任务：UpdateBandwidthJob");
+            UpdateBandwidthJob job = new UpdateBandwidthJob();
+            job.setTunnelUuid(vo.getUuid());
+            jobf.execute("调整专线带宽-控制器下发", Platform.getManagementServerId(), job);
 
-            ModifyTunnelBandwidthMsg modifyTunnelBandwidthMsg = new ModifyTunnelBandwidthMsg();
-            modifyTunnelBandwidthMsg.setTunnelUuid(vo.getUuid());
-            modifyTunnelBandwidthMsg.setTaskUuid(taskResourceVO.getUuid());
-            bus.makeLocalServiceId(modifyTunnelBandwidthMsg, TunnelConstant.SERVICE_ID);
-            bus.send(modifyTunnelBandwidthMsg);
             evt.setInventory(TunnelInventory.valueOf(vo));
             bus.publish(evt);
 
-            tunnelBase.updateTunnelBandwidthJob(vo, "调整专线带宽");
         } else {
             evt.setError(errf.stringToOperationError("订单操作失败"));
             bus.publish(evt);
@@ -1575,7 +1575,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 extp.beforeDelete(vo);
             }
         } catch (Throwable t) {
-            completion.fail(errf.stringToOperationError("该删除专线操作没有符合正确的条件"));
+            completion.fail(errf.stringToOperationError("删除专线相关联互联云失败"));
             return;
         }
 
@@ -2598,20 +2598,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
         vo.setBandwidth(message.getBandwidth());
-        dbf.updateAndRefresh(vo);
+        vo = dbf.updateAndRefresh(vo);
         //付款成功,记录生效订单
         tunnelBillingBase.saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
-        //创建任务
-        TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.ModifyBandwidth);
-
-        ModifyTunnelBandwidthMsg modifyTunnelBandwidthMsg = new ModifyTunnelBandwidthMsg();
-        modifyTunnelBandwidthMsg.setTunnelUuid(vo.getUuid());
-        modifyTunnelBandwidthMsg.setTaskUuid(taskResourceVO.getUuid());
-        bus.makeLocalServiceId(modifyTunnelBandwidthMsg, TunnelConstant.SERVICE_ID);
-        bus.send(modifyTunnelBandwidthMsg);
-
-        new TunnelBase().updateTunnelBandwidthJob(vo, "调整专线带宽");
+        logger.info("修改带宽支付成功，并创建任务：UpdateBandwidthJob");
+        UpdateBandwidthJob job = new UpdateBandwidthJob();
+        job.setTunnelUuid(vo.getUuid());
+        jobf.execute("调整专线带宽-控制器下发", Platform.getManagementServerId(), job);
     }
 
     @Override
@@ -2965,7 +2959,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         Map rsp = restf.syncJsonPost(CoreGlobalProperty.ECP_SERVER_URL, JSONObjectUtil.toJsonString(bodyMap), headers, Map.class);
 
-        if (!(Boolean) rsp.get("success"))
+        if (!(Boolean) rsp.get("result"))
             throw new ApiMessageInterceptionException(
                     argerr("该专线[uuid:%s]互联云删除失败！", vo.getUuid()));
     }
