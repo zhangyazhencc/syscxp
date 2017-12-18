@@ -12,7 +12,6 @@ import com.syscxp.core.config.GlobalConfig;
 import com.syscxp.core.config.GlobalConfigUpdateExtensionPoint;
 import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
-import com.syscxp.core.host.HostGlobalConfig;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
@@ -23,6 +22,9 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.configuration.BandwidthOfferingVO;
+import com.syscxp.header.configuration.MotifyType;
+import com.syscxp.header.configuration.ResourceMotifyRecordVO;
+import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
@@ -1354,7 +1356,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         record.setResourceUuid(vo.getUuid());
         record.setResourceType("TunnelVO");
         record.setOpAccountUuid(msg.getSession().getAccountUuid());
-        record.setMotifyType(bandwidthOfferingVO.getBandwidth() > vo.getBandwidth() ? MotifyType.UPGRADE : MotifyType.DEMOTION);
+        record.setMotifyType(bandwidthOfferingVO.getBandwidth() > vo.getBandwidth() ? MotifyType.UPGRADE : MotifyType.DOWNGRADE);
         dbf.persistAndRefresh(record);
 
         //调用支付-调整带宽
@@ -2789,8 +2791,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             tunnelBase.deleteTunnel(vo);
                             tunnelBase.deleteTunnelJob(vo, "专线过期清理");
                         }
-
-
                     }
                     if (vo.getExpireDate().before(closeTime)) {
                         if (vo.getState() == TunnelState.Unpaid) {
