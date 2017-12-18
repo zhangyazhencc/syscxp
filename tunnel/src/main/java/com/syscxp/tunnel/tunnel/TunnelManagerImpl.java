@@ -1552,7 +1552,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         });*/
 
-        doDeleteTunnel(vo,msg.getSession().getAccountUuid(),new ReturnValueCompletion<TunnelInventory>(null) {
+        doDeleteTunnel(vo, msg.getSession().getAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
 
             @Override
             public void success(TunnelInventory inv) {
@@ -1569,7 +1569,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     }
 
-    private void doDeleteTunnel(TunnelVO vo,String opAccountUuid, ReturnValueCompletion<TunnelInventory> completion){
+    private void doDeleteTunnel(TunnelVO vo, String opAccountUuid, ReturnValueCompletion<TunnelInventory> completion) {
+        try {
+            for (TunnelDeletionExtensionPoint extp : pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class)) {
+                extp.beforeDelete(vo);
+            }
+        } catch (Throwable t) {
+            completion.fail(errf.stringToOperationError("该删除专线操作没有符合正确的条件"));
+            return;
+        }
+
         TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
         TunnelBase tunnelBase = new TunnelBase();
 
@@ -2779,8 +2788,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         @Override
         public void run() {
             TunnelBase tunnelBase = new TunnelBase();
-            Timestamp closeTime = Timestamp.valueOf(LocalDateTime.now().plusDays(expiredProductCloseTime));
-            Timestamp deleteTime = Timestamp.valueOf(LocalDateTime.now().plusDays(expiredProductDeleteTime));
+            Timestamp closeTime = Timestamp.valueOf(LocalDateTime.now().minusDays(expiredProductCloseTime));
+            Timestamp deleteTime = Timestamp.valueOf(LocalDateTime.now().minusDays(expiredProductDeleteTime));
 
             try {
                 List<TunnelVO> tunnelVOs = getTunnels();
@@ -2789,9 +2798,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     return;
                 for (TunnelVO vo : tunnelVOs) {
                     if (vo.getExpireDate().before(deleteTime)) {
-                        if (!clearExpiredTunnel(vo))
-                            continue;
-                        doDeleteTunnel(vo,vo.getOwnerAccountUuid(),new ReturnValueCompletion<TunnelInventory>(null) {
+                        doDeleteTunnel(vo, vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
                             @Override
                             public void success(TunnelInventory inv) {
                             }
@@ -2800,8 +2807,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             public void fail(ErrorCode errorCode) {
                             }
                         });
-                    }
-                    if (vo.getExpireDate().before(closeTime)) {
+                    } else if (vo.getExpireDate().before(closeTime)) {
                         if (vo.getState() == TunnelState.Unpaid) {
                             tunnelBase.deleteTunnelDB(vo);
                         } else if (vo.getState() == TunnelState.Enabled) {
@@ -2830,18 +2836,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         }
 
-    }
-
-    private boolean clearExpiredTunnel(TunnelVO vo) {
-        Map<String, String> bodyMap = new HashMap<>();
-        bodyMap.put("tunnelUuid", vo.getUuid());
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put("commandPath", "tunnelDelete");
-
-        Map rsp = restf.syncJsonPost(CoreGlobalProperty.ECP_SERVER_URL, JSONObjectUtil.toJsonString(bodyMap), headers, Map.class);
-
-        return (Boolean) rsp.get("success");
     }
 
     @Override
@@ -2962,7 +2956,18 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     @Override
-    public void beforeDelete() {
+    public void beforeDelete(TunnelVO vo) {
+        Map<String, String> bodyMap = new HashMap<>();
+        bodyMap.put("tunnelUuid", vo.getUuid());
+
+        Map<String, String> headers = new HashMap<>();
+        headers.put("commandPath", "tunnelDelete");
+
+        Map rsp = restf.syncJsonPost(CoreGlobalProperty.ECP_SERVER_URL, JSONObjectUtil.toJsonString(bodyMap), headers, Map.class);
+
+        if (!(Boolean) rsp.get("success"))
+            throw new ApiMessageInterceptionException(
+                    argerr("该专线[uuid:%s]互联云删除失败！", vo.getUuid()));
     }
 
     @Override
