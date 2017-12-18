@@ -2792,7 +2792,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         if (!clearExpiredTunnel(vo))
                             continue;
                         doDeleteTunnel(vo,vo.getOwnerAccountUuid(),new ReturnValueCompletion<TunnelInventory>(null) {
-
                             @Override
                             public void success(TunnelInventory inv) {
                             }
@@ -2801,8 +2800,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             public void fail(ErrorCode errorCode) {
                             }
                         });
-
-
                     }
                     if (vo.getExpireDate().before(closeTime)) {
                         if (vo.getState() == TunnelState.Unpaid) {
