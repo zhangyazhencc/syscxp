@@ -10,6 +10,8 @@ import com.syscxp.header.billing.APIGetHasNotifyMsg;
 import com.syscxp.header.billing.APIGetHasNotifyReply;
 import com.syscxp.header.billing.APIGetProductPriceMsg;
 import com.syscxp.header.billing.APIGetProductPriceReply;
+import com.syscxp.header.configuration.ResourceMotifyRecordVO;
+import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
 import com.syscxp.header.identity.AccountType;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.node.NodeVO;

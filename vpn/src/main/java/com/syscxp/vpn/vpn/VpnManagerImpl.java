@@ -23,6 +23,9 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.configuration.MotifyType;
+import com.syscxp.header.configuration.ResourceMotifyRecordVO;
+import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.core.workflow.*;
@@ -555,10 +558,14 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         afterRenewVpn(reply, vo, msg);
     }
 
-    private void saveMotifyRecord(APIUpdateVpnBandwidthMsg msg) {
-        VpnMotifyRecordVO record = new VpnMotifyRecordVO();
+    private void saveMotifyRecord(APIUpdateVpnBandwidthMsg msg, MotifyType type) {
+        ResourceMotifyRecordVO record = new ResourceMotifyRecordVO();
+        record.setResourceUuid(msg.getUuid());
+        record.setResourceType(VpnVO.class.getSimpleName());
         record.setUuid(Platform.getUuid());
+        record.setMotifyType(type);
         record.setOpAccountUuid(msg.getOpAccountUuid());
+        record.setOpUserUuid(msg.getSession().getUserUuid());
         dbf.persistAndRefresh(record);
     }
 
@@ -579,6 +586,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             bus.publish(evt);
             return;
         }
+        vpn.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
+        dbf.updateAndRefresh(vpn);
+        saveMotifyRecord(msg, MotifyType.valueOf(reply.getInventory().getType()));
 
         RateLimitingMsg rateLimitingMsg = new RateLimitingMsg();
 
@@ -587,9 +597,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
-                    vpn.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
-                    dbf.updateAndRefresh(vpn);
-                    saveMotifyRecord(msg);
                     evt.setInventory(VpnInventory.valueOf(dbf.reload(vpn)));
                 } else {
                     evt.setError(reply.getError());
@@ -1171,8 +1178,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void updateMotifyRecord(OrderCallbackCmd cmd) {
-        VpnMotifyRecordVO record = dbf.getEntityManager().find(VpnMotifyRecordVO.class, cmd.getPorductUuid());
-        record.setMotifyType(cmd.getType().toString());
+        ResourceMotifyRecordVO record = dbf.getEntityManager().find(ResourceMotifyRecordVO.class, cmd.getPorductUuid());
+        record.setMotifyType(MotifyType.valueOf(cmd.getType()));
         dbf.update(record);
     }
 
@@ -1242,9 +1249,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
 
         LocalDateTime dateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atTime(LocalTime.MIN);
-        Long times = Q.New(VpnMotifyRecordVO.class)
-                .eq(VpnMotifyRecordVO_.resourceUuid, msg.getUuid())
-                .gte(VpnMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime))
+        Long times = Q.New(ResourceMotifyRecordVO.class)
+                .eq(ResourceMotifyRecordVO_.resourceUuid, msg.getUuid())
+                .gte(ResourceMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime))
                 .count();
         Integer maxModifies = Q.New(VpnVO.class)
                 .eq(VpnVO_.uuid, msg.getUuid())
