@@ -2959,7 +2959,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         Map rsp = restf.syncJsonPost(CoreGlobalProperty.ECP_SERVER_URL, JSONObjectUtil.toJsonString(bodyMap), headers, Map.class);
 
-        if (!(Boolean) rsp.get("success"))
+        if (!(Boolean) rsp.get("result"))
             throw new ApiMessageInterceptionException(
                     argerr("该专线[uuid:%s]互联云删除失败！", vo.getUuid()));
     }
