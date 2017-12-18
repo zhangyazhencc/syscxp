@@ -88,7 +88,7 @@ public class ImageCodeServiceImpl extends AbstractService implements ImageCodeSe
 
     @Override
     public boolean ValidateImageCode(String imageUuid, String imageCode) {
-        if(sessions.get(imageUuid) != null && sessions.get(imageUuid).equals(imageCode)){
+        if(sessions.get(imageUuid) != null && sessions.get(imageUuid).equalsIgnoreCase(imageCode)){
             return true;
         }
 
