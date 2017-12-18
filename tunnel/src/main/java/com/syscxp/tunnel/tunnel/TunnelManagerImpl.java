@@ -28,7 +28,6 @@ import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
 import com.syscxp.header.message.*;
-import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.tunnel.billingCallBack.*;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
@@ -1350,9 +1349,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
 
         //调整次数记录表
-        TunnelMotifyRecordVO record = new TunnelMotifyRecordVO();
+        ResourceMotifyRecordVO record = new ResourceMotifyRecordVO();
         record.setUuid(Platform.getUuid());
-        record.setTunnelUuid(vo.getUuid());
+        record.setResourceUuid(vo.getUuid());
+        record.setResourceType("TunnelVO");
         record.setOpAccountUuid(msg.getSession().getAccountUuid());
         record.setMotifyType(bandwidthOfferingVO.getBandwidth() > vo.getBandwidth() ? MotifyType.UPGRADE : MotifyType.DEMOTION);
         dbf.persistAndRefresh(record);
@@ -2403,8 +2403,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handle(APIGetModifyBandwidthNumMsg msg) {
         LocalDateTime dateTime =
                 LocalDate.now().withDayOfMonth(LocalDate.MIN.getDayOfMonth()).atTime(LocalTime.MIN);
-        Long times = Q.New(TunnelMotifyRecordVO.class).eq(TunnelMotifyRecordVO_.tunnelUuid, msg.getUuid())
-                .gte(TunnelMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime)).count();
+        Long times = Q.New(ResourceMotifyRecordVO.class).eq(ResourceMotifyRecordVO_.resourceUuid, msg.getUuid())
+                .gte(ResourceMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime)).count();
         Integer maxModifies =
                 Q.New(TunnelVO.class).eq(TunnelVO_.uuid, msg.getUuid()).select(TunnelVO_.maxModifies)
                         .findValue();
