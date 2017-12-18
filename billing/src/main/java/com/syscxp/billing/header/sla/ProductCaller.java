@@ -1,8 +1,7 @@
 package com.syscxp.billing.header.sla;
 
-import com.syscxp.billing.BillingGlobalProperty;
+import com.syscxp.billing.AlipayGlobalProperty;
 import com.syscxp.header.billing.ProductType;
-import com.syscxp.header.tunnel.tunnel.*;
 
 public class ProductCaller {
     private String productUrl;
@@ -18,16 +17,16 @@ public class ProductCaller {
     private void initMsg(ProductType type){
         switch (type){
             case TUNNEL:
-                this.productUrl = BillingGlobalProperty.TUNNEL_SERVER_URL;
+                this.productUrl = AlipayGlobalProperty.TUNNEL_SERVER_URL;
                 break;
             case PORT:
-                this.productUrl = BillingGlobalProperty.TUNNEL_SERVER_URL;
+                this.productUrl = AlipayGlobalProperty.TUNNEL_SERVER_URL;
                 break;
             case DISK :
-                this.productUrl = BillingGlobalProperty.ECP_SERVER_URL;
+                this.productUrl = AlipayGlobalProperty.ECP_SERVER_URL;
                 break;
                 case HOST :
-                this.productUrl = BillingGlobalProperty.ECP_SERVER_URL;
+                this.productUrl = AlipayGlobalProperty.ECP_SERVER_URL;
                 break;
         }
     }
