@@ -586,8 +586,8 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
                     "frozen account"));
             bus.reply(msg, reply);
             return;
-        }else if(!msg.getPassword().equals(vo.getPassword()) && msg.getPlaintext() != null){
-            if(!check_password(msg.getPlaintext(),vo.getPassword())){
+        }else if(!msg.getPassword().equals(vo.getPassword())){
+            if(msg.getPlaintext() != null && !check_password(msg.getPlaintext(),vo.getPassword())){
                 reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                         "Incorrect password"));
                 bus.reply(msg, reply);
