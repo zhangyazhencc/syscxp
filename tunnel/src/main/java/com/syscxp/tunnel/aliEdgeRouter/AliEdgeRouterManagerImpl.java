@@ -149,6 +149,35 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
         bus.publish(evt);
     }
 
+    //tunnel删除，把边界路由器终止
+    public void TerminateAliEdgeRouter(String aliEdgeRouterUuid){
+
+        AliEdgeRouterVO vo = dbf.findByUuid(aliEdgeRouterUuid, AliEdgeRouterVO.class);
+
+        String RegionId = vo.getAliRegionId();
+        String AliAccessKeyId = AliUserGlobalProperty.ALI_KEY;
+        String AliAccessKeySecret = AliUserGlobalProperty.ALI_VALUE;
+
+        // 创建DefaultAcsClient实例并初始化
+        DefaultProfile profile = DefaultProfile.getProfile(RegionId,AliAccessKeyId,AliAccessKeySecret);
+        IAcsClient client = new DefaultAcsClient(profile);
+
+        TerminateVirtualBorderRouterRequest request = new TerminateVirtualBorderRouterRequest();
+        request.setVbrId(vo.getVbrUuid());
+
+        TerminateVirtualBorderRouterResponse response;
+
+        try{
+            response = client.getAcsResponse(request);
+            vo.setStatus(AliEdgeRouterStatus.Terminate);
+            dbf.updateAndRefresh(vo);
+
+        }catch(ClientException e){
+            throw new ApiMessageInterceptionException(argerr(e.getMessage()));
+        }
+
+    }
+
     private void handle(APITerminateAliEdgeRouterMsg msg) {
 
         boolean flag = true;

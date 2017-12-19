@@ -1,6 +1,7 @@
 package com.syscxp.alarm.header.resourcePolicy;
 
 import com.syscxp.alarm.header.BaseVO;
+import com.syscxp.header.billing.ProductType;
 
 import javax.persistence.*;
 import java.sql.Timestamp;
@@ -18,7 +19,18 @@ public class ResourcePolicyRefVO{
     private String resourceUuid;
 
     @Column
+    private ProductType productType;
+
+    @Column
     private String policyUuid;
+
+    public ProductType getProductType() {
+        return productType;
+    }
+
+    public void setProductType(ProductType productType) {
+        this.productType = productType;
+    }
 
     public String getResourceUuid() {
         return resourceUuid;
