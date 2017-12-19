@@ -253,7 +253,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),
                 NodeExtensionInfo.class,"nodeExtensionInfo");
 
-        if(node.getImages_url() != null){
+        if(node != null && node.getImages_url() != null){
             reply.setImages_url(node.getImages_url());
         }
 
