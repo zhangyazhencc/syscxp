@@ -1,4 +1,4 @@
-package com.syscxp.header.vpn.vpn;
+package com.syscxp.header.configuration;
 
 import com.syscxp.header.search.Inventory;
 
@@ -7,8 +7,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-@Inventory(mappingVOClass = VpnMotifyRecordVO.class)
-public class VpnMotifyRecordInventory {
+@Inventory(mappingVOClass = ResourceMotifyRecordVO.class)
+public class ResourceMotifyRecordInventory {
     private String uuid;
     private String resourceUuid;
     private String resourceType;
@@ -17,21 +17,21 @@ public class VpnMotifyRecordInventory {
     private String motifyType;
     private Timestamp createDate;
 
-    public static VpnMotifyRecordInventory valueOf(VpnMotifyRecordVO vo) {
-        VpnMotifyRecordInventory inv = new VpnMotifyRecordInventory();
+    public static ResourceMotifyRecordInventory valueOf(ResourceMotifyRecordVO vo) {
+        ResourceMotifyRecordInventory inv = new ResourceMotifyRecordInventory();
         inv.setUuid(vo.getUuid());
         inv.setResourceUuid(vo.getResourceUuid());
         inv.setResourceType(vo.getResourceType());
         inv.setOpUserUuid(vo.getOpUserUuid());
-        inv.setMotifyType(vo.getMotifyType());
+        inv.setMotifyType(vo.getMotifyType().toString());
         inv.setOpAccountUuid(vo.getOpAccountUuid());
         inv.setCreateDate(vo.getCreateDate());
         return inv;
     }
-    public static List<VpnMotifyRecordInventory> valueOf(Collection<VpnMotifyRecordVO> vos) {
-        List<VpnMotifyRecordInventory> invs = new ArrayList<>();
-        for (VpnMotifyRecordVO vo : vos) {
-            invs.add(VpnMotifyRecordInventory.valueOf(vo));
+    public static List<ResourceMotifyRecordInventory> valueOf(Collection<ResourceMotifyRecordVO> vos) {
+        List<ResourceMotifyRecordInventory> invs = new ArrayList<>();
+        for (ResourceMotifyRecordVO vo : vos) {
+            invs.add(ResourceMotifyRecordInventory.valueOf(vo));
         }
 
         return invs;

@@ -580,35 +580,30 @@ public class AccountManagerImpl extends AbstractService implements AccountManage
             reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                     "Incorrect login name"));
             bus.reply(msg, reply);
-            return;
         } else if (vo.getStatus() == AccountStatus.Disabled) {
             reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
-                    "frozen account"));
+                    "Blocked account"));
             bus.reply(msg, reply);
-            return;
-        }else if(!msg.getPassword().equals(vo.getPassword())){
+        }else if(! msg.getPassword().equals(vo.getPassword())){
             if(msg.getPlaintext() != null){
-                if( !check_password(msg.getPlaintext(),vo.getPassword())){
+                if( !check_password(msg.getPlaintext(), vo.getPassword())){
                     reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                             "Incorrect password"));
                     bus.reply(msg, reply);
-                    return;
                 }else{
                     vo.setPassword(DigestUtils.sha512Hex(msg.getPlaintext()));
                     dbf.persistAndRefresh(vo);
+                    reply.setInventory(identiyInterceptor.initSession(vo, null));
                 }
             }else{
                 reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
                         "Incorrect password"));
                 bus.reply(msg, reply);
-                return;
             }
-
-
-
+        }else{
+            reply.setInventory(identiyInterceptor.initSession(vo, null));
         }
 
-        reply.setInventory(identiyInterceptor.initSession(vo, null));
         bus.reply(msg, reply);
     }
 

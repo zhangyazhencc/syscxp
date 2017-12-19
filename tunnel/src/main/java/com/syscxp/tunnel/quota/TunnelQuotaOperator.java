@@ -35,10 +35,10 @@ public class TunnelQuotaOperator implements Quota.QuotaOperator {
 
         long ifaceQuotaNum = pairs.get(TunnelConstant.QUOTA_INTERFACE_NUM).getValue();
         long ifaceCurrentUsed = getUsedInterfaceNum(msg.getAccountUuid());
-        if (msg.getEndpointAUuid() == null) {
+        if (msg.getInterfaceAUuid() == null) {
             new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_INTERFACE_NUM, ifaceCurrentUsed, ifaceQuotaNum);
         }
-        if (msg.getEndpointZUuid() == null) {
+        if (msg.getInterfaceZUuid() == null) {
             new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_INTERFACE_NUM, ifaceCurrentUsed, ifaceQuotaNum);
         }
         new QuotaUtil().CheckQuota(TunnelConstant.QUOTA_TUNNEL_NUM, currentUsed, quotaNum);

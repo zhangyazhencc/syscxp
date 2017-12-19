@@ -23,6 +23,9 @@ import com.syscxp.header.agent.OrderCallbackCmd;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.configuration.MotifyType;
+import com.syscxp.header.configuration.ResourceMotifyRecordVO;
+import com.syscxp.header.configuration.ResourceMotifyRecordVO_;
 import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.core.workflow.*;
@@ -36,14 +39,13 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.message.MessageReply;
-import com.syscxp.header.query.QueryOp;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
 import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
-import com.syscxp.header.tunnel.tunnel.APIGetRenewInterfacePriceReply;
+import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.*;
 import com.syscxp.header.vpn.billingCallBack.*;
@@ -158,8 +160,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APIDetachVpnCertMsg) msg);
         } else if (msg instanceof APIResetVpnCertKeyMsg) {
             handle((APIResetVpnCertKeyMsg) msg);
-        } else if (msg instanceof APIListVpnHostMsg) {
-            handle((APIListVpnHostMsg) msg);
+        } else if (msg instanceof APIListSupportedEndpointMsg) {
+            handle((APIListSupportedEndpointMsg) msg);
         } else if (msg instanceof APIGetRenewVpnPriceMsg) {
             handle((APIGetRenewVpnPriceMsg) msg);
         } else if (msg instanceof APIGetUnscribeVpnPriceDiffMsg) {
@@ -219,21 +221,43 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         bus.reply(msg, new APIGetRenewInterfacePriceReply(reply));
     }
 
-    private void handle(APIListVpnHostMsg msg) {
-        APIListVpnHostReply reply = new APIListVpnHostReply();
-        Map<String, List<VpnHostInventory>> map = new HashMap<>();
-        for (String endpointUuid : msg.getEndpointUuids()) {
+    private void handle(APIListSupportedEndpointMsg msg) {
+        APIListSuppoetedEndpointReply reply = new APIListSuppoetedEndpointReply();
+
+        APIQueryTunnelMsg tunnelMsg = new APIQueryTunnelMsg();
+        tunnelMsg.addQueryCondition("uuid", "=", msg.getTunnelUuid());
+        tunnelMsg.setSession(msg.getSession());
+
+        String url = URLBuilder.buildUrlFromBase(VpnGlobalProperty.TUNNEL_SERVER_RUL, RESTConstant.REST_API_CALL);
+        TunnelInventory inventory;
+        try {
+            RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dumpWithSession(tunnelMsg), RestAPIResponse.class);
+            APIReply apiReply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
+            if (!reply.isSuccess() && ((APIQueryTunnelReply) apiReply).getInventories().isEmpty()) {
+                throw new OperationFailureException(errf.instantiateErrorCode(SysErrors.RESOURCE_NOT_FOUND,
+                        String.format("the tunnel[uuid:%s] can not found.", msg.getTunnelUuid())));
+            }
+            inventory = ((APIQueryTunnelReply) apiReply).getInventories().get(0);
+
+        } catch (Exception e) {
+            throw new OperationFailureException(errf.instantiateErrorCode(SysErrors.HTTP_ERROR, String.format("call tunnel[url: %s] failed.", url)));
+        }
+
+        List<APIListSuppoetedEndpointReply.SupportedEndpointInventory> inventories = new ArrayList<>();
+
+        for (TunnelSwitchPortInventory switchPortInventory : inventory.getTunnelSwitchs()) {
             Q q = Q.New(HostInterfaceVO.class)
-                    .eq(HostInterfaceVO_.endpointUuid, endpointUuid)
+                    .eq(HostInterfaceVO_.endpointUuid, switchPortInventory.getEndpointUuid())
                     .select(HostInterfaceVO_.hostUuid);
             if (q.count() > 0) {
-                List<VpnHostVO> hosts = Q.New(VpnHostVO.class)
-                        .in(VpnHostVO_.uuid, q.listValues())
-                        .list();
-                map.put(endpointUuid, VpnHostInventory.valueOf1(hosts));
+                APIListSuppoetedEndpointReply.SupportedEndpointInventory inv = new APIListSuppoetedEndpointReply.SupportedEndpointInventory();
+                inv.setUuid(switchPortInventory.getEndpointUuid());
+                inv.setName(switchPortInventory.getEndpoint().getName());
+                inv.setVlan(switchPortInventory.getVlan());
+                inventories.add(inv);
             }
         }
-        reply.setInventoryMap(map);
+        reply.setInventories(inventories);
         bus.reply(msg, reply);
     }
 
@@ -555,10 +579,14 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         afterRenewVpn(reply, vo, msg);
     }
 
-    private void saveMotifyRecord(APIUpdateVpnBandwidthMsg msg) {
-        VpnMotifyRecordVO record = new VpnMotifyRecordVO();
+    private void saveMotifyRecord(APIUpdateVpnBandwidthMsg msg, MotifyType type) {
+        ResourceMotifyRecordVO record = new ResourceMotifyRecordVO();
+        record.setResourceUuid(msg.getUuid());
+        record.setResourceType(VpnVO.class.getSimpleName());
         record.setUuid(Platform.getUuid());
+        record.setMotifyType(type);
         record.setOpAccountUuid(msg.getOpAccountUuid());
+        record.setOpUserUuid(msg.getSession().getUserUuid());
         dbf.persistAndRefresh(record);
     }
 
@@ -579,6 +607,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             bus.publish(evt);
             return;
         }
+        vpn.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
+        dbf.updateAndRefresh(vpn);
+        saveMotifyRecord(msg, MotifyType.valueOf(reply.getInventory().getType()));
 
         RateLimitingMsg rateLimitingMsg = new RateLimitingMsg();
 
@@ -587,9 +618,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
-                    vpn.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
-                    dbf.updateAndRefresh(vpn);
-                    saveMotifyRecord(msg);
                     evt.setInventory(VpnInventory.valueOf(dbf.reload(vpn)));
                 } else {
                     evt.setError(reply.getError());
@@ -1171,8 +1199,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void updateMotifyRecord(OrderCallbackCmd cmd) {
-        VpnMotifyRecordVO record = dbf.getEntityManager().find(VpnMotifyRecordVO.class, cmd.getPorductUuid());
-        record.setMotifyType(cmd.getType().toString());
+        ResourceMotifyRecordVO record = dbf.getEntityManager().find(ResourceMotifyRecordVO.class, cmd.getPorductUuid());
+        record.setMotifyType(MotifyType.valueOf(cmd.getType()));
         dbf.update(record);
     }
 
@@ -1242,9 +1270,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
 
         LocalDateTime dateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atTime(LocalTime.MIN);
-        Long times = Q.New(VpnMotifyRecordVO.class)
-                .eq(VpnMotifyRecordVO_.resourceUuid, msg.getUuid())
-                .gte(VpnMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime))
+        Long times = Q.New(ResourceMotifyRecordVO.class)
+                .eq(ResourceMotifyRecordVO_.resourceUuid, msg.getUuid())
+                .gte(ResourceMotifyRecordVO_.createDate, Timestamp.valueOf(dateTime))
                 .count();
         Integer maxModifies = Q.New(VpnVO.class)
                 .eq(VpnVO_.uuid, msg.getUuid())

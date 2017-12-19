@@ -29,4 +29,6 @@ public class VpnGlobalProperty {
     @GlobalProperty(name = "vpn.vpnStatusCheckWorkerInterval", defaultValue = "60")
     public static int VPN_STATUS_CHECK_WORKER_INTERVAL;
 
+    @GlobalProperty(name = "tunnelServerUrl",defaultValue = "http://192.168.211.99:8083/tunnel")
+    public static String TUNNEL_SERVER_RUL;
 }

@@ -9,21 +9,27 @@ import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.cloudbus.ResourceDestinationMaker;
 import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.db.DatabaseFacade;
+import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.host.HostGlobalConfig;
 import com.syscxp.core.notification.N;
 import com.syscxp.core.thread.AsyncThread;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.Component;
+import com.syscxp.header.core.Completion;
+import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.host.*;
 import com.syscxp.header.managementnode.ManagementNodeReadyExtensionPoint;
-import com.syscxp.header.message.APIMessage;
-import com.syscxp.header.message.Message;
-import com.syscxp.header.message.MessageReply;
-import com.syscxp.header.message.NeedReplyMessage;
+import com.syscxp.header.message.*;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.host.*;
+import com.syscxp.header.tunnel.monitor.TunnelMonitorVO;
+import com.syscxp.header.tunnel.monitor.TunnelMonitorVO_;
+import com.syscxp.header.tunnel.tunnel.TunnelMonitorState;
+import com.syscxp.header.tunnel.tunnel.TunnelVO;
 import com.syscxp.tunnel.host.MonitorAgentCommands.ReconnectMeCmd;
+import com.syscxp.tunnel.monitor.MonitorManager;
+import com.syscxp.tunnel.monitor.MonitorManagerImpl;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -240,13 +246,52 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
     private void handle(APIUpdateHostSwitchMonitorMsg msg) {
         HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
 
-        vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
+        String originalPhysicalSwitchPortName = vo.getPhysicalSwitchPortName();
+        String originalInterfaceName = vo.getInterfaceName();
+
+        // vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
         vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
         vo.setInterfaceName(msg.getInterfaceName());
         vo = dbf.updateAndRefresh(vo);
 
+        // 更新所有受影响的监控通道（监控重启）
+        List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
+                .eq(TunnelMonitorVO_.hostUuid,vo.getHostUuid())
+                .list();
+
         APIUpdateHostSwitchMonitorEvent event = new APIUpdateHostSwitchMonitorEvent(msg.getId());
-        event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
+        MonitorManagerImpl monitorManager = new MonitorManagerImpl();
+        for (TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS){
+            logger.info(String.format("修改监控接口 %s - 重启监控！",msg.getUuid()));
+            if(event.isSuccess()){
+                TunnelVO tunnelVO = dbf.findByUuid(tunnelMonitorVO.getTunnelUuid(),TunnelVO.class);
+
+                if(tunnelVO.getMonitorState().equals(TunnelMonitorState.Enabled)){
+                    monitorManager.restartTunnelMonitor(false, tunnelVO, new Completion(null) {
+                        @Override
+                        public void success() {
+                            logger.info(String.format("通道：%s - 重启监控成功！",tunnelVO.getName()));
+                        }
+
+                        @Override
+                        public void fail(ErrorCode errorCode) {
+                            logger.info(String.format("通道：%s - 重启监控失败！",errorCode.getDetails()));
+                            HostSwitchMonitorVO originalVO = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
+                            originalVO.setPhysicalSwitchPortName(originalPhysicalSwitchPortName);
+                            originalVO.setInterfaceName(originalInterfaceName);
+
+                            originalVO = dbf.updateAndRefresh(originalVO);
+
+                            event.setInventory(HostSwitchMonitorInventory.valueOf(originalVO));
+                            event.setError(errorCode);
+                        }
+                    });
+                }
+            }
+        }
+
+        if(event.isSuccess())
+            event.setInventory(HostSwitchMonitorInventory.valueOf(vo));
         bus.publish(event);
     }
 
