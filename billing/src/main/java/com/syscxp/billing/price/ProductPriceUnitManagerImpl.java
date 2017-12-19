@@ -115,6 +115,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         if (!msg.getCategory().equals(Category.REGION)) {
             q.setParameter("areaCode", msg.getAreaCode());
         }
+
         List<Object[]> objs = q.getResultList();
         List<PriceData> vos = objs.stream().map(PriceData::new).collect(Collectors.toList());
         vos.forEach(priceData -> {
