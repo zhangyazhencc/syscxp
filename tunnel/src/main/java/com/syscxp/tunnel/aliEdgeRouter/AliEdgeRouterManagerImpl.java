@@ -150,7 +150,7 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     }
 
     //tunnel删除，把边界路由器终止
-    public boolean TerminateAliEdgeRouter(String aliEdgeRouterUuid){
+    public void TerminateAliEdgeRouter(String aliEdgeRouterUuid){
 
         AliEdgeRouterVO vo = dbf.findByUuid(aliEdgeRouterUuid, AliEdgeRouterVO.class);
 
@@ -177,7 +177,6 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             throw new ApiMessageInterceptionException(argerr(e.getMessage()));
         }
 
-        return true;
     }
 
     private void handle(APITerminateAliEdgeRouterMsg msg) {
