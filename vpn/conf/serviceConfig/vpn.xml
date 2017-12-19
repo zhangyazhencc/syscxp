@@ -54,7 +54,7 @@
         <name>com.syscxp.header.vpn.vpn.APIGetModifyVpnPriceDiffMsg</name>
     </message>
     <message>
-        <name>com.syscxp.header.vpn.vpn.APIListVpnHostMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIListSupportedEndpointMsg</name>
     </message>
     <message>
         <name>com.syscxp.header.vpn.vpn.APIRenewVpnMsg</name>

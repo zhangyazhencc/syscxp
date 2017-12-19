@@ -39,7 +39,6 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.message.MessageReply;
-import com.syscxp.header.query.QueryOp;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
@@ -161,8 +160,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APIDetachVpnCertMsg) msg);
         } else if (msg instanceof APIResetVpnCertKeyMsg) {
             handle((APIResetVpnCertKeyMsg) msg);
-        } else if (msg instanceof APIListVpnHostMsg) {
-            handle((APIListVpnHostMsg) msg);
+        } else if (msg instanceof APIListSupportedEndpointMsg) {
+            handle((APIListSupportedEndpointMsg) msg);
         } else if (msg instanceof APIGetRenewVpnPriceMsg) {
             handle((APIGetRenewVpnPriceMsg) msg);
         } else if (msg instanceof APIGetUnscribeVpnPriceDiffMsg) {
@@ -222,8 +221,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         bus.reply(msg, new APIGetRenewInterfacePriceReply(reply));
     }
 
-    private void handle(APIListVpnHostMsg msg) {
-        APIListVpnHostReply reply = new APIListVpnHostReply();
+    private void handle(APIListSupportedEndpointMsg msg) {
+        APIListSuppoetedEndpointReply reply = new APIListSuppoetedEndpointReply();
 
         APIQueryTunnelMsg tunnelMsg = new APIQueryTunnelMsg();
         tunnelMsg.addQueryCondition("uuid", "=", msg.getTunnelUuid());
@@ -242,17 +241,21 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             throw new OperationFailureException(errf.instantiateErrorCode(SysErrors.HTTP_ERROR, String.format("call tunnel[url: %s] failed.", url)));
         }
 
-        List<String> endpointUuids = new ArrayList<>();
+        List<APIListSuppoetedEndpointReply.SupportedEndpointInventory> inventories = new ArrayList<>();
 
         for (TunnelSwitchPortInventory switchPortInventory : inventory.getTunnelSwitchs()) {
             Q q = Q.New(HostInterfaceVO.class)
                     .eq(HostInterfaceVO_.endpointUuid, switchPortInventory.getEndpointUuid())
                     .select(HostInterfaceVO_.hostUuid);
             if (q.count() > 0) {
-                endpointUuids.add(switchPortInventory.getEndpointUuid());
+                APIListSuppoetedEndpointReply.SupportedEndpointInventory inv = new APIListSuppoetedEndpointReply.SupportedEndpointInventory();
+                inv.setUuid(switchPortInventory.getEndpointUuid());
+                inv.setName(switchPortInventory.getEndpoint().getName());
+                inv.setVlan(switchPortInventory.getVlan());
+                inventories.add(inv);
             }
         }
-        reply.setEndpointUuids(endpointUuids);
+        reply.setInventories(inventories);
         bus.reply(msg, reply);
     }
 
