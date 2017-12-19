@@ -3,6 +3,8 @@ package com.syscxp.alarm.resourcePolicy;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.syscxp.alarm.AlarmGlobalProperty;
+import com.syscxp.alarm.header.log.AlarmLogVO;
+import com.syscxp.alarm.header.log.AlarmLogVO_;
 import com.syscxp.alarm.header.resourcePolicy.*;
 import com.syscxp.alarm.quota.AlarmQuotaOperator;
 import com.syscxp.core.CoreGlobalProperty;
@@ -14,6 +16,8 @@ import com.syscxp.core.db.Q;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.identity.InnerMessageHelper;
+import com.syscxp.core.jsonlabel.JsonLabelVO;
+import com.syscxp.core.jsonlabel.JsonLabelVO_;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
@@ -364,7 +368,9 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 dbf.updateAndRefresh(policyVO);
 
             }
-
+            UpdateQuery q = UpdateQuery.New(AlarmLogVO.class);
+            q.condAnd(AlarmLogVO_.productUuid, SimpleQuery.Op.EQ, msg.getTunnelUuid());
+            q.delete();
         }
         bus.reply(msg,reply);
 

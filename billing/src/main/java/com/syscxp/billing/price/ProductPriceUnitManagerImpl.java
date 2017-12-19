@@ -26,6 +26,7 @@ import javax.persistence.Query;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -123,7 +124,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         if (!msg.getCategory().equals(Category.REGION)) {
             q_count.setParameter("areaCode", msg.getAreaCode());
         }
-        long count = (long) q_count.getSingleResult();
+        BigInteger count = (BigInteger) q_count.getSingleResult();
         q.setFirstResult(msg.getStart());
         q.setMaxResults(msg.getLimit());
         List<Object[]> objs = q.getResultList();
@@ -136,7 +137,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         });
 
         APIGetBroadPriceListReply reply = new APIGetBroadPriceListReply();
-        reply.setCount(count);
+        reply.setCount(count.longValue());
         reply.setInventories(vos);
         bus.reply(msg, reply);
     }
