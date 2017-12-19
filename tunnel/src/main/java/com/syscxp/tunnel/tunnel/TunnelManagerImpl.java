@@ -1733,7 +1733,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
-        if (vo.getExpireDate() != null && (vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())) || vo.getAccountUuid() == null)) {
+        if (vo.getExpireDate() != null && (vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())) || vo.getAccountUuid() == null)) {     //无法开通或退订成功下发失败
             tunnelBase.deleteTunnelDB(vo);
             evt.setInventory(TunnelInventory.valueOf(vo));
             bus.publish(evt);
@@ -2558,6 +2558,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo.setExpireDate(dbf.getCurrentSqlTime());
             dbf.updateAndRefresh(vo);
             tunnelBase.deleteTunnelDB(vo);
+
+            tunnelBase.deleteTunnelJob(vo, "强制删除专线");
         } else if (message.getDescription().equals("delete") && vo.getState() == TunnelState.Enabled) {
             vo.setAccountUuid(null);
             vo.setExpireDate(dbf.getCurrentSqlTime());
