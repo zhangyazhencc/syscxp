@@ -173,7 +173,6 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
             dbf.updateAndRefresh(vo);
 
         }catch(ClientException e){
-            e.printStackTrace();
             throw new ApiMessageInterceptionException(argerr(e.getMessage()));
         }
 
