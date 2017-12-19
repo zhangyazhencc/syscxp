@@ -385,6 +385,9 @@ public class MonitorAgentCommands {
         }
     }
 
+    /**
+     * falcon-alarm 按mIp、vlan查询tunnel信息
+     */
     public static class FalconGetTunnelCommand {
         private String physicalSwitchMip;
         private Integer vlan;

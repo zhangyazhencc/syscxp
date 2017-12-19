@@ -44,30 +44,32 @@ public class UpdateBandwidthJob implements Job {
     public void run(ReturnValueCompletion<Object> completion) {
 
         try {
-            logger.info("开始执行JOB【修改带宽】");
+            if(dbf.isExist(tunnelUuid, TunnelVO.class)){
+                logger.info("开始执行JOB【修改带宽】");
 
-            TunnelVO vo = dbf.findByUuid(tunnelUuid,TunnelVO.class);
-            //创建任务
-            TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.ModifyBandwidth);
+                TunnelVO vo = dbf.findByUuid(tunnelUuid,TunnelVO.class);
+                //创建任务
+                TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.ModifyBandwidth);
 
-            ModifyTunnelBandwidthMsg modifyTunnelBandwidthMsg = new ModifyTunnelBandwidthMsg();
-            modifyTunnelBandwidthMsg.setTunnelUuid(vo.getUuid());
-            modifyTunnelBandwidthMsg.setTaskUuid(taskResourceVO.getUuid());
-            bus.makeLocalServiceId(modifyTunnelBandwidthMsg, TunnelConstant.SERVICE_ID);
-            bus.send(modifyTunnelBandwidthMsg, new CloudBusCallBack(null) {
-                @Override
-                public void run(MessageReply reply) {
-                    if (reply.isSuccess()) {
+                ModifyTunnelBandwidthMsg modifyTunnelBandwidthMsg = new ModifyTunnelBandwidthMsg();
+                modifyTunnelBandwidthMsg.setTunnelUuid(vo.getUuid());
+                modifyTunnelBandwidthMsg.setTaskUuid(taskResourceVO.getUuid());
+                bus.makeLocalServiceId(modifyTunnelBandwidthMsg, TunnelConstant.SERVICE_ID);
+                bus.send(modifyTunnelBandwidthMsg, new CloudBusCallBack(null) {
+                    @Override
+                    public void run(MessageReply reply) {
+                        if (reply.isSuccess()) {
 
-                        new TunnelBase().updateTunnelBandwidthJob(vo, "调整专线带宽");
-                        completion.success(null);
-                    } else {
-                        completion.fail(reply.getError());
+                            new TunnelBase().updateTunnelBandwidthJob(vo, "调整专线带宽");
+                            completion.success(null);
+                        } else {
+                            completion.fail(reply.getError());
+                        }
                     }
-                }
-            });
-
-
+                });
+            }else{
+                completion.success(null);
+            }
         } catch (Exception e) {
             logger.warn(e.getMessage(), e);
 
