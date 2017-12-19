@@ -20,6 +20,28 @@ public class APIGetBroadPriceListMsg extends APISyncCallMessage{
     @APIParam(required = false,emptyString = false)
     private String areaCode;
 
+    @APIParam
+    private int start;
+
+    @APIParam
+    private int limit;
+
+    public int getStart() {
+        return start;
+    }
+
+    public void setStart(int start) {
+        this.start = start;
+    }
+
+    public int getLimit() {
+        return limit;
+    }
+
+    public void setLimit(int limit) {
+        this.limit = limit;
+    }
+
     public ProductType getProductType() {
         return productType;
     }
