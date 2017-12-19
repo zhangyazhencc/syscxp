@@ -233,10 +233,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         try {
             RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dumpWithSession(tunnelMsg), RestAPIResponse.class);
             APIReply apiReply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
-            if (!reply.isSuccess()) {
-                throw new OperationFailureException(errf.instantiateErrorCode(SysErrors.RESOURCE_NOT_FOUND, "failed to get tunnel."));
+            if (!reply.isSuccess() && ((APIQueryTunnelReply) apiReply).getInventories().isEmpty()) {
+                throw new OperationFailureException(errf.instantiateErrorCode(SysErrors.RESOURCE_NOT_FOUND,
+                        String.format("the tunnel[uuid:%s] can not found.", msg.getTunnelUuid())));
             }
             inventory = ((APIQueryTunnelReply) apiReply).getInventories().get(0);
+
         } catch (Exception e) {
             throw new OperationFailureException(errf.instantiateErrorCode(SysErrors.HTTP_ERROR, String.format("call tunnel[url: %s] failed.", url)));
         }
