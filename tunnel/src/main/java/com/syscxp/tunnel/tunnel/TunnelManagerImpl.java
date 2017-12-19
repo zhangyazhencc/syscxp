@@ -1737,6 +1737,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             tunnelBase.deleteTunnelDB(vo);
             evt.setInventory(TunnelInventory.valueOf(vo));
             bus.publish(evt);
+
+            tunnelBase.deleteTunnelJob(vo, "强制删除专线");
             return;
         }
 
@@ -1768,6 +1770,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo = dbf.updateAndRefresh(vo);
 
             tunnelBase.deleteTunnelDB(vo);
+
+            tunnelBase.deleteTunnelJob(vo, "强制删除专线");
 
             evt.setInventory(TunnelInventory.valueOf(vo));
         } else {
