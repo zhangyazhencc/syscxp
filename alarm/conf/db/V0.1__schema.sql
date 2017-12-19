@@ -99,25 +99,6 @@ CREATE TABLE `AlarmLogVO` (
 
 /*Data for the table `AlarmLogVO` */
 
-
-/*Table structure for table `AlarmTemplateVO` */
-
-DROP TABLE IF EXISTS `AlarmTemplateVO`;
-
-CREATE TABLE `AlarmTemplateVO` (
-  `uuid` varchar(32) NOT NULL,
-  `productType` varchar(255) DEFAULT NULL COMMENT '产品类型',
-  `regulationType` varchar(128) DEFAULT NULL COMMENT '规则ID',
-  `template` varchar(255) DEFAULT NULL COMMENT '模板',
-  `status` varchar(127) DEFAULT NULL COMMENT '报警状态',
-  `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  PRIMARY KEY (`uuid`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
-/*Data for the table `AlarmTemplateVO` */
-
-
 /*Table structure for table `ComparisonRuleVO` */
 DROP TABLE IF EXISTS `ComparisonRuleVO`;
 

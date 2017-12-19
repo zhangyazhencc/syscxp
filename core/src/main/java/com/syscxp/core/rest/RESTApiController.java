@@ -130,6 +130,8 @@ public class RESTApiController {
             return t.getMessage();
         }
 
+        logger.info(String.format("Received request body:", body));
+
         RestAPIResponse rsp = null;
         if (amsg instanceof APISyncCallMessage) {
             rsp = restApi.call(amsg);
