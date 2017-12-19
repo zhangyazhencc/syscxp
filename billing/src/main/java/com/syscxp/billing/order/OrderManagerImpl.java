@@ -807,8 +807,14 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
     private void handle(APIGetRenewProductPriceMsg msg) {
         AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
+        if (abvo == null) {
+            throw new IllegalArgumentException("no enough money to continue");
+        }
         BigDecimal mayPayTotal = abvo.getCashBalance().add(abvo.getPresentBalance()).add(abvo.getCreditPoint());//可支付金额
         RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
+        if (renewVO == null) {
+            throw new IllegalArgumentException("might your product had caught by ET.");
+        }
         BigDecimal duration = realDurationToMonth(msg.getDuration(), msg.getProductChargeModel());
         BigDecimal originalPrice = renewVO.getPriceOneMonth().multiply(duration);
         BigDecimal discountPrice = renewVO.getPriceDiscount().multiply(duration);

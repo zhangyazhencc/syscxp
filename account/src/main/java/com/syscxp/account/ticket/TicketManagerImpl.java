@@ -119,6 +119,7 @@ public class TicketManagerImpl extends AbstractService implements TicketManager,
 
         TicketVO tvo = dbf.findByUuid(msg.getTicketUuid(),TicketVO.class);
         tvo.setStatus(msg.getStatus());
+        tvo.setLastOpDate(dbf.getCurrentSqlTime());
         if(msg.getSession() != null && vo.getRecordBy() == RecordBy.AdminUser){
             tvo.setAdminUserUuid(msg.getSession().getUserUuid());
         }

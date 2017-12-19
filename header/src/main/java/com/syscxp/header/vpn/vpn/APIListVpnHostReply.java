@@ -7,14 +7,14 @@ import java.util.List;
 import java.util.Map;
 
 public class APIListVpnHostReply extends APIReply {
-    private Map<String, List<VpnHostInventory>> inventoryMap;
+    private List<String> endpointUuids;
 
-    public Map<String, List<VpnHostInventory>> getInventoryMap() {
-        return inventoryMap;
+    public List<String> getEndpointUuids() {
+        return endpointUuids;
     }
 
-    public void setInventoryMap(Map<String, List<VpnHostInventory>> inventoryMap) {
-        this.inventoryMap = inventoryMap;
+    public void setEndpointUuids(List<String> endpointUuids) {
+        this.endpointUuids = endpointUuids;
     }
 }
 

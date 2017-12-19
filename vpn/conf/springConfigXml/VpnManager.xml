@@ -26,6 +26,12 @@
         </property>
     </bean>
 
+    <bean id="TunnelSubQueryExtension" class="com.syscxp.vpn.identity.VpnSubQueryExtension">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.query.MysqlQuerySubQueryExtension"/>
+        </syscxp:plugin>
+    </bean>
+
     <bean id="VpnManager" class="com.syscxp.vpn.vpn.VpnManagerImpl">
         <syscxp:plugin>
             <syscxp:extension interface="com.syscxp.header.Service"/>

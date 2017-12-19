@@ -4,7 +4,7 @@ public interface TunnelDeletionExtensionPoint {
 
     void preDelete(TunnelVO vo);
 
-    void beforeDelete();
+    void beforeDelete(TunnelVO vo);
 
     void afterDelete();
 
