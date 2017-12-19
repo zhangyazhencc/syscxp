@@ -104,6 +104,8 @@
         <name>com.syscxp.header.tunnel.node.APIListCityNodeMsg</name>
     </message>
 
-
+    <message>
+        <name>com.syscxp.header.tunnel.node.APIGetImageDeleteInfoMsg</name>
+    </message>
 
 </service>
