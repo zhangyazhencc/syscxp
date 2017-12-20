@@ -178,7 +178,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.core.job.APIQueryJobQueueEntryMsg</name>
+        <name>com.syscxp.core.job.APIQueryJobQueueEntryMsg</name>
         <serviceId>query</serviceId>
     </message>
 

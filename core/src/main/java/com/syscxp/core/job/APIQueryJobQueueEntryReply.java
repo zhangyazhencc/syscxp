@@ -1,4 +1,4 @@
-package com.syscxp.header.core.job;
+package com.syscxp.core.job;
 
 import com.syscxp.core.job.JobQueueEntryInventory;
 import com.syscxp.header.query.APIQueryReply;
