@@ -677,7 +677,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         saveMotifyRecord(msg, MotifyType.valueOf(reply.getInventory().getType()));
 
         RateLimitingMsg rateLimitingMsg = new RateLimitingMsg();
-
+        rateLimitingMsg.setVpnUuid(vo.getUuid());
         bus.makeLocalServiceId(rateLimitingMsg, VpnConstant.SERVICE_ID);
         bus.send(rateLimitingMsg, new CloudBusCallBack(null) {
             @Override
