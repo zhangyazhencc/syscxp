@@ -652,13 +652,14 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     public void handle(APIUpdateVpnBandwidthMsg msg) {
         APIUpdateVpnBandwidthEvent evt = new APIUpdateVpnBandwidthEvent(msg.getId());
 
-        VpnVO vpn = dbf.getEntityManager().find(VpnVO.class, msg.getUuid());
+        VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
 
-        if (vpn.getTunnelUuid() == null) {
-            evt.setError(errf.instantiateErrorCode(SysErrors.OPERATION_ERROR, "VPN连接的Tunnel已删除。"));
+        if (msg.getBandwidthOfferingUuid().equals(vpn.getBandwidthOfferingUuid())) {
+            evt.setInventory(VpnInventory.valueOf(dbf.reload(vpn)));
             bus.publish(evt);
             return;
         }
+
         APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg(getOrderMsgForVPN(vpn, new UpdateVpnBandwidthCallBack()));
         orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
         orderMsg.setStartTime(vpn.getCreateDate());
@@ -672,7 +673,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             return;
         }
         vpn.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
-        dbf.updateAndRefresh(vpn);
+        final VpnVO vo = dbf.updateAndRefresh(vpn);
         saveMotifyRecord(msg, MotifyType.valueOf(reply.getInventory().getType()));
 
         RateLimitingMsg rateLimitingMsg = new RateLimitingMsg();
@@ -682,7 +683,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
-                    evt.setInventory(VpnInventory.valueOf(dbf.reload(vpn)));
+                    evt.setInventory(VpnInventory.valueOf(vo));
                 } else {
                     evt.setError(reply.getError());
                 }
@@ -1256,7 +1257,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                         }
                     } else if (message instanceof UpdateVpnBandwidthCallBack) {
                         VpnVO vpn = updateVpnFromOrder(cmd);
-                        updateMotifyRecord(cmd);
                         if (vpn != null && vpn.getStatus() == VpnStatus.Disconnected)
                             reconnectVpn(vpn);
                     } else {
@@ -1265,12 +1265,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     return null;
                 });
         return true;
-    }
-
-    private void updateMotifyRecord(OrderCallbackCmd cmd) {
-        ResourceMotifyRecordVO record = dbf.getEntityManager().find(ResourceMotifyRecordVO.class, cmd.getPorductUuid());
-        record.setMotifyType(MotifyType.valueOf(cmd.getType()));
-        dbf.update(record);
     }
 
     private VpnVO updateVpnFromOrder(OrderCallbackCmd cmd) {
@@ -1347,11 +1341,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     argerr("The Account[uuid:%s] is not a admin or proxy.",
                             msg.getSession().getAccountUuid()));
         }
+
         String tunnelUuid = Q.New(VpnVO.class).eq(VpnVO_.uuid, msg.getUuid()).select(VpnVO_.tunnelUuid).findValue();
         if (tunnelUuid == null) {
             throw new OperationFailureException(
                     operr("VPN[uuid: %s]连接的Tunnel已删除。", msg.getUuid()));
         }
+
         LocalDateTime dateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atTime(LocalTime.MIN);
         Long times = Q.New(ResourceMotifyRecordVO.class)
                 .eq(ResourceMotifyRecordVO_.resourceUuid, msg.getUuid())
