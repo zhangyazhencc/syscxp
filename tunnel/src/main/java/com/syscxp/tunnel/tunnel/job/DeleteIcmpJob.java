@@ -37,7 +37,7 @@ public class DeleteIcmpJob implements Job {
 
         try {
             logger.info("开始执行JOB【删除ICMP】");
-            monitorManager.icmpDelete(tunnelUuid);
+            //monitorManager.icmpDelete(tunnelUuid);
 
             completion.success(null);
         } catch (Exception e) {
