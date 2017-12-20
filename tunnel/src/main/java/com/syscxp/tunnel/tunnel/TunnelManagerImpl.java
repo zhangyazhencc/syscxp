@@ -422,7 +422,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
 
-        if (vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now()))) {
+        if (!vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now()))) {
             dbf.remove(vo);
             bus.publish(evt);
             return;
@@ -1606,7 +1606,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelBase tunnelBase = new TunnelBase();
 
         if(isForcibly){
-            if (vo.getExpireDate() != null && (vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())) || vo.getAccountUuid() == null)) {     //无法开通或退订成功下发失败
+            if (vo.getExpireDate() != null && (!vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now())) || vo.getAccountUuid() == null)) {     //无法开通或退订成功下发失败
                 tunnelBase.deleteTunnelDB(vo);
                 tunnelBase.deleteTunnelJob(vo, "强制删除专线");
 
@@ -1674,7 +1674,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 });
 
             } else if ((vo.getState() == TunnelState.Enabled && vo.getAccountUuid() != null) || vo.getState() == TunnelState.Disabled) {  //2,3
-                if (vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now()))) {     //专线已到期，不用退订
+                if (!vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now()))) {     //专线已到期，不用退订
                     if (vo.getState() == TunnelState.Enabled) {
 
                         vo.setAccountUuid(null);
