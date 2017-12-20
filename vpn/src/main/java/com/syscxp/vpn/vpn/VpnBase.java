@@ -466,12 +466,10 @@ public class VpnBase extends AbstractVpn {
                                     @Override
                                     public void success(DestroyVpnRsp ret) {
                                         if (ret.isSuccess()) {
-                                            dbf.removeByPrimaryKey(self.getUuid(), VpnVO.class);
                                             trigger.next();
                                         } else {
                                             trigger.fail(errf.instantiateErrorCode(VpnErrors.VPN_DESTROY_ERROR, ret.getError()));
                                         }
-
                                     }
 
                                     @Override
@@ -485,7 +483,8 @@ public class VpnBase extends AbstractVpn {
                         done(new FlowDoneHandler(msg) {
                             @Override
                             public void handle(Map data) {
-
+                                if (msg.isDeleteDb())
+                                    dbf.removeByPrimaryKey(self.getUuid(), VpnVO.class);
                                 bus.reply(msg, reply);
                             }
                         });
