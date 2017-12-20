@@ -54,7 +54,7 @@
         <name>com.syscxp.header.vpn.vpn.APIGetModifyVpnPriceDiffMsg</name>
     </message>
     <message>
-        <name>com.syscxp.header.vpn.vpn.APIListVpnHostMsg</name>
+        <name>com.syscxp.header.vpn.vpn.APIListSupportedEndpointMsg</name>
     </message>
     <message>
         <name>com.syscxp.header.vpn.vpn.APIRenewVpnMsg</name>
@@ -67,6 +67,15 @@
     </message>
     <message>
         <name>com.syscxp.header.vpn.vpn.APIGetVpnCertMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIDestroyVpnMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APIGetVpnModifyMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.vpn.vpn.APICheckVpnForTunnelMsg</name>
     </message>
     <message>
         <name>com.syscxp.header.vpn.vpn.APIQueryVpnMsg</name>
@@ -89,6 +98,11 @@
     </message>
     <message>
         <name>com.syscxp.header.vpn.vpn.APIQueryBandwidthOfferingMsg</name>
+        <serviceId>query</serviceId>
+    </message>
+
+    <message>
+        <name>com.syscxp.core.job.APIQueryJobQueueEntryMsg</name>
         <serviceId>query</serviceId>
     </message>
 

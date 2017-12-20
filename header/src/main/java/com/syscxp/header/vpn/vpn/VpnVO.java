@@ -35,6 +35,8 @@ public class VpnVO {
     @Column
     private String endpointUuid;
     @Column
+    private String tunnelUuid;
+    @Column
     private Integer port;
     @Column
     private Integer vlan;
@@ -67,6 +69,14 @@ public class VpnVO {
     @PreUpdate
     private void preUpdate() {
         lastOpDate = null;
+    }
+
+    public String getTunnelUuid() {
+        return tunnelUuid;
+    }
+
+    public void setTunnelUuid(String tunnelUuid) {
+        this.tunnelUuid = tunnelUuid;
     }
 
     public String getSid() {

@@ -1,6 +1,12 @@
 package com.syscxp.tunnel.node;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.syscxp.core.db.Q;
+import com.syscxp.core.identity.IdentityGlobalProperty;
+import com.syscxp.core.rest.RESTApiDecoder;
+import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.tunnel.NodeConstant;
 import com.syscxp.header.tunnel.endpoint.*;
 import com.syscxp.header.tunnel.host.MonitorHostVO;
@@ -9,6 +15,7 @@ import com.syscxp.header.tunnel.node.*;
 import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
 import com.syscxp.header.tunnel.switchs.SwitchVO;
 import com.syscxp.header.tunnel.switchs.SwitchVO_;
+import com.syscxp.header.tunnel.tunnel.APIQueryTunnelDetailForAlarmReply;
 import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO;
 import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO_;
 import com.syscxp.utils.Digest;
@@ -36,6 +43,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
+import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -73,7 +81,8 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     @Autowired
     private MongoTemplate mongoTemplate;
-
+    @Autowired
+    private RESTFacade restf;
 
     @Override
     @MessageSafe
@@ -127,10 +136,38 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIListProvinceNodeMsg) msg);
         }else if(msg instanceof APIListCityNodeMsg){
             handle((APIListCityNodeMsg) msg);
+        }else if(msg instanceof APIDeleteImageMsg){
+            handle((APIDeleteImageMsg) msg);
         }
         else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIDeleteImageMsg msg) {
+        APIDeleteImageEvent event = new APIDeleteImageEvent();
+
+        String timestamp = String.valueOf(System.currentTimeMillis()/1000);
+        String md5 = Digest.getMD5(msg.getNodeId() + timestamp + ImageUploadInfoConstant.upload_key + msg.getImage_url());
+        Map map = new HashMap();
+        map.put("node_id", msg.getNodeId());
+        map.put("image_url", msg.getImage_url());
+        map.put("timestamp", timestamp);
+        map.put("md5", md5);
+
+        RestAPIResponse rsp = restf.syncJsonPost(ImageUploadInfoConstant.delete_url,
+                JSONObjectUtil.toJsonString(map), RestAPIResponse.class);
+
+        if(rsp.getResult().equals("success")){
+            mongoTemplate.updateFirst(new Query(Criteria.where("node_id").is(msg.getNodeId())),
+                    new Update().set("images_url", mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),
+                            NodeExtensionInfo.class).getImages_url().remove(msg.getImage_url())),NodeExtensionInfo.class);
+
+        }else{
+            event.setError(Platform.argerr("delete image fail"));
+        }
+
+        bus.publish(event);
     }
 
     private void handle(APIListCityNodeMsg msg) {
@@ -253,7 +290,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),
                 NodeExtensionInfo.class,"nodeExtensionInfo");
 
-        if(node.getImages_url() != null){
+        if(node != null && node.getImages_url() != null){
             reply.setImages_url(node.getImages_url());
         }
 
@@ -404,7 +441,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     }
 
     private void handle(APIDeleteNodeExtensionInfoMsg msg) {
-        mongoTemplate.remove(new Query(Criteria.where("node_id").is(msg.getNodeId())),NodeExtensionInfo.class,"nodeExtensionInfo");
+        mongoTemplate.remove(new Query(Criteria.where("node_id").is(msg.getUuid())),NodeExtensionInfo.class,"nodeExtensionInfo");
         APIDeleteNodeExtensionInfoEvent event = new APIDeleteNodeExtensionInfoEvent(msg.getId());
         bus.publish(event);
     }

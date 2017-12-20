@@ -12,6 +12,7 @@ import com.syscxp.core.config.GlobalConfig;
 import com.syscxp.core.config.GlobalConfigUpdateExtensionPoint;
 import com.syscxp.core.db.*;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.PeriodicTask;
@@ -32,6 +33,7 @@ import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.QuotaConstant;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
 import com.syscxp.header.message.*;
+import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.tunnel.billingCallBack.*;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
@@ -45,11 +47,16 @@ import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO_;
 import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
+import com.syscxp.header.vpn.vpn.APICheckVpnForTunnelMsg;
+import com.syscxp.header.vpn.vpn.APICheckVpnForTunnelReply;
+import com.syscxp.header.vpn.vpn.APIDestroyVpnMsg;
 import com.syscxp.tunnel.identity.TunnelGlobalConfig;
 import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
 import com.syscxp.tunnel.tunnel.job.UpdateBandwidthJob;
 import com.syscxp.utils.CollectionDSL;
+import com.syscxp.utils.CollectionUtils;
+import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -415,7 +422,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         InterfaceVO vo = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
 
-        if (vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now()))) {
+        if (!vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now()))) {
             dbf.remove(vo);
             bus.publish(evt);
             return;
@@ -850,9 +857,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         }
 
+        dbf.getEntityManager().persist(vo);
         dbf.getEntityManager().persist(tsvoA);
         dbf.getEntityManager().persist(tsvoZ);
-        dbf.getEntityManager().persist(vo);
 
         return vo.getUuid();
     }
@@ -1063,6 +1070,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         }
 
+        dbf.getEntityManager().persist(vo);
+
         //如果开启Qinq,需要指定内部vlan段
         if (interfaceVOA.getType() == NetworkType.QINQ || interfaceVOZ.getType() == NetworkType.QINQ) {
             List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
@@ -1078,7 +1087,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         dbf.getEntityManager().persist(tsvoA);
         dbf.getEntityManager().persist(tsvoZ);
-        dbf.getEntityManager().persist(vo);
 
         return vo.getUuid();
     }
@@ -1144,8 +1152,16 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handle(APIUpdateTunnelVlanMsg msg) {
         APIUpdateTunnelVlanEvent evt = new APIUpdateTunnelVlanEvent(msg.getId());
         TunnelBase tunnelBase = new TunnelBase();
-
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        //如果vlan改变，问专线是否被使用
+        if(!msg.getaVlan().equals(msg.getOldAVlan()) || !msg.getzVlan().equals(msg.getOldZVlan())){
+            for (TunnelDeletionExtensionPoint extp : pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class)) {
+                extp.preDelete(vo);
+            }
+        }
+
+
         TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "A")
@@ -1264,6 +1280,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     @Transactional
     private void handle(APIUpdateForciblyTunnelVlanMsg msg) {
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+
+        //如果vlan改变，问专线是否被使用
+        if(!msg.getaVlan().equals(msg.getOldAVlan()) || !msg.getzVlan().equals(msg.getOldZVlan())){
+            for (TunnelDeletionExtensionPoint extp : pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class)) {
+                extp.preDelete(vo);
+            }
+        }
+
         boolean updateA = false;
         boolean updateZ = false;
         TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
@@ -1538,7 +1562,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     private void handle(APIDeleteTunnelMsg msg) {
         APIDeleteTunnelEvent evt = new APIDeleteTunnelEvent(msg.getId());
 
-
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
         for (TunnelDeletionExtensionPoint extp : pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class)) {
@@ -1552,7 +1575,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         });*/
 
-        doDeleteTunnel(vo, msg.getSession().getAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
+        doDeleteTunnel(vo,false, msg.getSession().getAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
 
             @Override
             public void success(TunnelInventory inv) {
@@ -1569,7 +1592,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     }
 
-    private void doDeleteTunnel(TunnelVO vo, String opAccountUuid, ReturnValueCompletion<TunnelInventory> completion) {
+    private void doDeleteTunnel(TunnelVO vo, boolean isForcibly, String opAccountUuid, ReturnValueCompletion<TunnelInventory> completion) {
         try {
             for (TunnelDeletionExtensionPoint extp : pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class)) {
                 extp.beforeDelete(vo);
@@ -1582,86 +1605,79 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
         TunnelBase tunnelBase = new TunnelBase();
 
-        if (vo.getState() == TunnelState.Unsupport) {         //1
-            tunnelBase.deleteTunnelDB(vo);
-            completion.success(TunnelInventory.valueOf(vo));
+        if(isForcibly){
+            if (vo.getExpireDate() != null && (!vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now())) || vo.getAccountUuid() == null)) {     //无法开通或退订成功下发失败
+                tunnelBase.deleteTunnelDB(vo);
+                tunnelBase.deleteTunnelJob(vo, "强制删除专线");
 
-        } else if (vo.getState() == TunnelState.Enabled && vo.getAccountUuid() == null) {          //4
-            final TunnelVO jobVO = vo;
-            //下发删除
-            taskDeleteTunnel(jobVO, new Completion(null) {
-                @Override
-                public void success() {
+                completion.success(TunnelInventory.valueOf(vo));
+                return;
+            }
 
-                    tunnelBase.deleteTunnelJob(jobVO, "删除专线");
-
-                    completion.success(TunnelInventory.valueOf(jobVO));
-
-                }
-
-                @Override
-                public void fail(ErrorCode errorCode) {
-                    completion.fail(errorCode);
-                }
-            });
-
-        } else if ((vo.getState() == TunnelState.Enabled && vo.getAccountUuid() != null) || vo.getState() == TunnelState.Disabled) {  //2,3
-            if (vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now()))) {     //专线已到期，不用退订
-                if (vo.getState() == TunnelState.Enabled) {
-
-                    vo.setAccountUuid(null);
-                    final TunnelVO jobVO = dbf.updateAndRefresh(vo);
-
-                    //下发删除
-                    taskDeleteTunnel(jobVO, new Completion(null) {
-                        @Override
-                        public void success() {
-
-                            tunnelBase.deleteTunnelJob(jobVO, "删除专线");
-
-                            completion.success(TunnelInventory.valueOf(jobVO));
-
-                        }
-
-                        @Override
-                        public void fail(ErrorCode errorCode) {
-                            completion.fail(errorCode);
-                        }
-                    });
-
-                } else {
-                    tunnelBase.deleteTunnelDB(vo);
-
-                    tunnelBase.deleteTunnelJob(vo, "删除专线");
-
-                    completion.success(TunnelInventory.valueOf(vo));
-                }
+            //调用退订
+            DeleteTunnelCallBack dc = new DeleteTunnelCallBack();
+            dc.setDescription("forciblydelete");
+            APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
+            orderMsg.setProductUuid(vo.getUuid());
+            orderMsg.setProductType(ProductType.TUNNEL);
+            orderMsg.setProductName(vo.getName());
+            orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
+            orderMsg.setOpAccountUuid(opAccountUuid);
+            orderMsg.setStartTime(dbf.getCurrentSqlTime());
+            if (vo.getExpireDate() == null) {
+                orderMsg.setExpiredTime(dbf.getCurrentSqlTime());
+                orderMsg.setCreateFailure(true);
             } else {
-                //调用退订
-                DeleteTunnelCallBack dc = new DeleteTunnelCallBack();
-                dc.setDescription("delete");
-                APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
-                orderMsg.setProductUuid(vo.getUuid());
-                orderMsg.setProductType(ProductType.TUNNEL);
-                orderMsg.setProductName(vo.getName());
-                orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
-                orderMsg.setOpAccountUuid(opAccountUuid);
-                orderMsg.setStartTime(dbf.getCurrentSqlTime());
                 orderMsg.setExpiredTime(vo.getExpireDate());
-                orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo));
-                orderMsg.setCallBackData(RESTApiDecoder.dump(dc));
-                orderMsg.setNotifyUrl(restf.getSendCommandUrl());
+            }
+            orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo));
+            orderMsg.setCallBackData(RESTApiDecoder.dump(dc));
+            orderMsg.setNotifyUrl(restf.getSendCommandUrl());
 
-                OrderInventory orderInventory = tunnelBillingBase.createOrder(orderMsg);
-                if (orderInventory == null) {
-                    completion.fail(errf.stringToOperationError("退订失败"));
-                } else {
+            OrderInventory orderInventory = tunnelBillingBase.createOrder(orderMsg);
+            if (orderInventory != null) {
+                //退订成功,记录生效订单
+                tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+                vo.setExpireDate(dbf.getCurrentSqlTime());
+                vo = dbf.updateAndRefresh(vo);
+
+                tunnelBase.deleteTunnelDB(vo);
+
+                tunnelBase.deleteTunnelJob(vo, "强制删除专线");
+
+                completion.success(TunnelInventory.valueOf(vo));
+            } else {
+                completion.fail(errf.stringToOperationError("退订失败"));
+            }
+        }else{
+            if (vo.getState() == TunnelState.Unsupport) {         //1
+                tunnelBase.deleteTunnelDB(vo);
+                completion.success(TunnelInventory.valueOf(vo));
+
+            } else if (vo.getState() == TunnelState.Enabled && vo.getAccountUuid() == null) {          //4
+                final TunnelVO jobVO = vo;
+                //下发删除
+                taskDeleteTunnel(jobVO, new Completion(null) {
+                    @Override
+                    public void success() {
+
+                        tunnelBase.deleteTunnelJob(jobVO, "删除专线");
+
+                        completion.success(TunnelInventory.valueOf(jobVO));
+
+                    }
+
+                    @Override
+                    public void fail(ErrorCode errorCode) {
+                        completion.fail(errorCode);
+                    }
+                });
+
+            } else if ((vo.getState() == TunnelState.Enabled && vo.getAccountUuid() != null) || vo.getState() == TunnelState.Disabled) {  //2,3
+                if (!vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now()))) {     //专线已到期，不用退订
                     if (vo.getState() == TunnelState.Enabled) {
-                        //退订成功,记录生效订单
-                        tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
                         vo.setAccountUuid(null);
-                        vo.setExpireDate(dbf.getCurrentSqlTime());
                         final TunnelVO jobVO = dbf.updateAndRefresh(vo);
 
                         //下发删除
@@ -1682,22 +1698,76 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                         });
 
                     } else {
-                        //退订成功,记录生效订单
-                        tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
-                        vo.setExpireDate(dbf.getCurrentSqlTime());
-                        vo = dbf.updateAndRefresh(vo);
-
                         tunnelBase.deleteTunnelDB(vo);
 
                         tunnelBase.deleteTunnelJob(vo, "删除专线");
 
                         completion.success(TunnelInventory.valueOf(vo));
                     }
+                } else {
+                    //调用退订
+                    DeleteTunnelCallBack dc = new DeleteTunnelCallBack();
+                    dc.setDescription("delete");
+                    APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
+                    orderMsg.setProductUuid(vo.getUuid());
+                    orderMsg.setProductType(ProductType.TUNNEL);
+                    orderMsg.setProductName(vo.getName());
+                    orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
+                    orderMsg.setOpAccountUuid(opAccountUuid);
+                    orderMsg.setStartTime(dbf.getCurrentSqlTime());
+                    orderMsg.setExpiredTime(vo.getExpireDate());
+                    orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo));
+                    orderMsg.setCallBackData(RESTApiDecoder.dump(dc));
+                    orderMsg.setNotifyUrl(restf.getSendCommandUrl());
+
+                    OrderInventory orderInventory = tunnelBillingBase.createOrder(orderMsg);
+                    if (orderInventory == null) {
+                        completion.fail(errf.stringToOperationError("退订失败"));
+                    } else {
+                        if (vo.getState() == TunnelState.Enabled) {
+                            //退订成功,记录生效订单
+                            tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+
+                            vo.setAccountUuid(null);
+                            vo.setExpireDate(dbf.getCurrentSqlTime());
+                            final TunnelVO jobVO = dbf.updateAndRefresh(vo);
+
+                            //下发删除
+                            taskDeleteTunnel(jobVO, new Completion(null) {
+                                @Override
+                                public void success() {
+
+                                    tunnelBase.deleteTunnelJob(jobVO, "删除专线");
+
+                                    completion.success(TunnelInventory.valueOf(jobVO));
+
+                                }
+
+                                @Override
+                                public void fail(ErrorCode errorCode) {
+                                    completion.fail(errorCode);
+                                }
+                            });
+
+                        } else {
+                            //退订成功,记录生效订单
+                            tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
+                            vo.setExpireDate(dbf.getCurrentSqlTime());
+                            vo = dbf.updateAndRefresh(vo);
+
+                            tunnelBase.deleteTunnelDB(vo);
+
+                            tunnelBase.deleteTunnelJob(vo, "删除专线");
+
+                            completion.success(TunnelInventory.valueOf(vo));
+                        }
+                    }
                 }
+            } else {
+                completion.fail(errf.stringToOperationError("该删除专线操作没有符合正确的条件"));
             }
-        } else {
-            completion.fail(errf.stringToOperationError("该删除专线操作没有符合正确的条件"));
         }
+
     }
 
     private void taskDeleteTunnel(TunnelVO vo, Completion completionTask) {
@@ -1727,53 +1797,29 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
      * Disabled
      **/
     private void handle(APIDeleteForciblyTunnelMsg msg) {
-        TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
-        TunnelBase tunnelBase = new TunnelBase();
         APIDeleteForciblyTunnelEvent evt = new APIDeleteForciblyTunnelEvent(msg.getId());
 
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
-        if (vo.getExpireDate() != null && (vo.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())) || vo.getAccountUuid() == null)) {
-            tunnelBase.deleteTunnelDB(vo);
-            evt.setInventory(TunnelInventory.valueOf(vo));
-            bus.publish(evt);
-            return;
+        for (TunnelDeletionExtensionPoint extp : pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class)) {
+            extp.preDelete(vo);
         }
 
-        //调用退订
-        DeleteTunnelCallBack dc = new DeleteTunnelCallBack();
-        dc.setDescription("forciblydelete");
-        APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg();
-        orderMsg.setProductUuid(vo.getUuid());
-        orderMsg.setProductType(ProductType.TUNNEL);
-        orderMsg.setProductName(vo.getName());
-        orderMsg.setAccountUuid(vo.getOwnerAccountUuid());
-        orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
-        orderMsg.setStartTime(dbf.getCurrentSqlTime());
-        if (vo.getExpireDate() == null) {
-            orderMsg.setExpiredTime(dbf.getCurrentSqlTime());
-            orderMsg.setCreateFailure(true);
-        } else {
-            orderMsg.setExpiredTime(vo.getExpireDate());
-        }
-        orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo));
-        orderMsg.setCallBackData(RESTApiDecoder.dump(dc));
-        orderMsg.setNotifyUrl(restf.getSendCommandUrl());
+        doDeleteTunnel(vo,true, msg.getSession().getAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
 
-        OrderInventory orderInventory = tunnelBillingBase.createOrder(orderMsg);
-        if (orderInventory != null) {
-            //退订成功,记录生效订单
-            tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
-            vo.setExpireDate(dbf.getCurrentSqlTime());
-            vo = dbf.updateAndRefresh(vo);
+            @Override
+            public void success(TunnelInventory inv) {
+                evt.setInventory(inv);
+                bus.publish(evt);
+            }
 
-            tunnelBase.deleteTunnelDB(vo);
+            @Override
+            public void fail(ErrorCode errorCode) {
+                evt.setError(errorCode);
+                bus.publish(evt);
+            }
+        });
 
-            evt.setInventory(TunnelInventory.valueOf(vo));
-        } else {
-            evt.setError(errf.stringToOperationError("退订失败"));
-        }
-        bus.publish(evt);
     }
 
     /**
@@ -2545,45 +2591,51 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     private void unsubcribeTunnel(OrderCallbackCmd cmd, DeleteTunnelCallBack message) {
         TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
-        TunnelBase tunnelBase = new TunnelBase();
         TunnelVO vo = dbf.findByUuid(cmd.getPorductUuid(), TunnelVO.class);
 
         //退订成功，记录生效订单
         tunnelBillingBase.saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
         if (message.getDescription().equals("forciblydelete")) {
             vo.setExpireDate(dbf.getCurrentSqlTime());
-            dbf.updateAndRefresh(vo);
-            tunnelBase.deleteTunnelDB(vo);
+            vo = dbf.updateAndRefresh(vo);
+            doDeleteTunnel(vo,true, vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
+
+                @Override
+                public void success(TunnelInventory inv) {
+                }
+
+                @Override
+                public void fail(ErrorCode errorCode) {
+                }
+            });
         } else if (message.getDescription().equals("delete") && vo.getState() == TunnelState.Enabled) {
             vo.setAccountUuid(null);
             vo.setExpireDate(dbf.getCurrentSqlTime());
-            dbf.updateAndRefresh(vo);
+            vo = dbf.updateAndRefresh(vo);
 
-            //创建任务
-            TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.Delete);
+            doDeleteTunnel(vo,false, vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
 
-            DeleteTunnelMsg deleteTunnelMsg = new DeleteTunnelMsg();
-            deleteTunnelMsg.setTunnelUuid(vo.getUuid());
-            deleteTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
-            bus.makeLocalServiceId(deleteTunnelMsg, TunnelConstant.SERVICE_ID);
-            bus.send(deleteTunnelMsg, new CloudBusCallBack(null) {
                 @Override
-                public void run(MessageReply reply) {
-                    if (reply.isSuccess()) {
-                        logger.info("billing通知回调并请求下发成功");
+                public void success(TunnelInventory inv) {
+                }
 
-                        tunnelBase.deleteTunnelJob(vo, "删除专线");
-                    } else {
-                        logger.info("billing通知回调并请求下发失败");
-                    }
+                @Override
+                public void fail(ErrorCode errorCode) {
                 }
             });
         } else if (message.getDescription().equals("delete") && vo.getState() == TunnelState.Disabled) {
             vo.setExpireDate(dbf.getCurrentSqlTime());
-            dbf.updateAndRefresh(vo);
-            tunnelBase.deleteTunnelDB(vo);
+            vo = dbf.updateAndRefresh(vo);
+            doDeleteTunnel(vo,false, vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
 
-            tunnelBase.deleteTunnelJob(vo, "删除专线");
+                @Override
+                public void success(TunnelInventory inv) {
+                }
+
+                @Override
+                public void fail(ErrorCode errorCode) {
+                }
+            });
 
         } else if (message.getDescription().equals("unsupport")) {
             vo.setState(TunnelState.Unsupport);
@@ -2700,7 +2752,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             cleanExpiredProductThread.cancel(true);
         }
 
-        cleanExpiredProductThread = thdf.submitPeriodicTask(new CleanExpiredProductThread(), TimeUnit.SECONDS.toMillis(60));
+        cleanExpiredProductThread = thdf.submitPeriodicTask(new CleanExpiredProductThread(), TimeUnit.SECONDS.toSeconds(60));
         logger.debug(String
                 .format("security group cleanExpiredProductThread starts[cleanExpiredProductInterval: %s day]", cleanExpiredProductInterval));
     }
@@ -2739,12 +2791,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         @Override
         public TimeUnit getTimeUnit() {
-            return TimeUnit.MILLISECONDS;
+            return TimeUnit.SECONDS;
         }
 
         @Override
         public long getInterval() {
-            return TimeUnit.DAYS.toMillis(cleanExpiredProductInterval);
+            return TimeUnit.DAYS.toSeconds(cleanExpiredProductInterval);
         }
 
         @Override
@@ -2792,7 +2844,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     return;
                 for (TunnelVO vo : tunnelVOs) {
                     if (vo.getExpireDate().before(deleteTime)) {
-                        doDeleteTunnel(vo, vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
+                        vo.setAccountUuid(null);
+                        final TunnelVO vo2 = dbf.updateAndRefresh(vo);
+                        doDeleteTunnel(vo2, false,vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
                             @Override
                             public void success(TunnelInventory inv) {
                             }
@@ -2925,7 +2979,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     @Override
     public void preDelete(TunnelVO vo) {
-        if (vo.getState() != TunnelState.Unsupport) {
+        if (vo.getState() != TunnelState.Unsupport && vo.getState() != TunnelState.Deployfailure) {
             logger.info("【询问该专线是否被互联云占用】");
 
             Map<String, String> bodyMap = new HashMap<>();
@@ -2939,11 +2993,32 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             if ((Boolean) rsp.get("success")) {
                 if ((Boolean) rsp.get("isOccupied")) {
                     throw new ApiMessageInterceptionException(
-                            argerr("该专线[uuid:%s]被互联云占用，不可删除！", vo.getUuid()));
+                            argerr("该专线[uuid:%s]被互联云占用！", vo.getUuid()));
                 }
             } else {
                 throw new ApiMessageInterceptionException(
-                        argerr("删除专线前询问专线占用情况失败！"));
+                        argerr("询问专线占用情况失败！"));
+            }
+
+
+            logger.info("【询问该专线是否被VPN占用】");
+            APICheckVpnForTunnelMsg msg = new APICheckVpnForTunnelMsg();
+            msg.setTunnelUuid(vo.getUuid());
+            String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.VPN_SERVER_URL);
+            InnerMessageHelper.setMD5(msg);
+
+            RestAPIResponse restAPIResponse = restf.syncJsonPost(url, RESTApiDecoder.dump(msg), RestAPIResponse.class);
+            APIReply reply = (APIReply) RESTApiDecoder.loads(restAPIResponse.getResult());
+
+            if (!reply.isSuccess()){
+                throw new ApiMessageInterceptionException(
+                        argerr("询问该专线[uuid:%s]是否被VPN占用失败！", vo.getUuid()));
+            }else{
+                APICheckVpnForTunnelReply apiCheckVpnForTunnelReply = reply.castReply();
+                if(apiCheckVpnForTunnelReply.isUsed()){
+                    throw new ApiMessageInterceptionException(
+                            argerr("该专线[uuid:%s]被VPN占用！", vo.getUuid()));
+                }
             }
 
         }
@@ -2951,6 +3026,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
     @Override
     public void beforeDelete(TunnelVO vo) {
+        logger.info("【删除专线对应的互联云】");
         Map<String, String> bodyMap = new HashMap<>();
         bodyMap.put("tunnelUuid", vo.getUuid());
 
@@ -2962,6 +3038,21 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (!(Boolean) rsp.get("result"))
             throw new ApiMessageInterceptionException(
                     argerr("该专线[uuid:%s]互联云删除失败！", vo.getUuid()));
+
+
+        logger.info("【删除专线对应的VPN】");
+        APIDestroyVpnMsg msg = new APIDestroyVpnMsg();
+        msg.setTunnelUuid(vo.getUuid());
+        String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.VPN_SERVER_URL);
+        InnerMessageHelper.setMD5(msg);
+
+        RestAPIResponse restAPIResponse = restf.syncJsonPost(url, RESTApiDecoder.dump(msg), RestAPIResponse.class);
+        APIReply reply = (APIReply) RESTApiDecoder.loads(restAPIResponse.getResult());
+
+        if (!reply.isSuccess()){
+            throw new ApiMessageInterceptionException(
+                    argerr("该专线[uuid:%s]VPN删除失败！", vo.getUuid()));
+        }
     }
 
     @Override

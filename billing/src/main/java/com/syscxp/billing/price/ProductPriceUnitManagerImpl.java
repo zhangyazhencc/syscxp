@@ -26,6 +26,7 @@ import javax.persistence.Query;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -106,15 +107,26 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             throw new IllegalArgumentException("can not find the product type or category");
         }
         String sql = "SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND areaCode = :areaCode  GROUP BY lineCode";
+        String sql_count = "SELECT COUNT(*) as num from (SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND areaCode = :areaCode  GROUP BY lineCode) as t";
         if (msg.getCategory().equals(Category.REGION)) {
             sql = "SELECT areaName as areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode";
+            sql_count = "SELECT COUNT(*) as num FROM (SELECT areaName as areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode) as T";
         }
+
 
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("productCategoryUuid", vo.getUuid());
         if (!msg.getCategory().equals(Category.REGION)) {
             q.setParameter("areaCode", msg.getAreaCode());
         }
+        Query q_count = dbf.getEntityManager().createNativeQuery(sql_count);
+        q_count.setParameter("productCategoryUuid", vo.getUuid());
+        if (!msg.getCategory().equals(Category.REGION)) {
+            q_count.setParameter("areaCode", msg.getAreaCode());
+        }
+        BigInteger count = (BigInteger) q_count.getSingleResult();
+        q.setFirstResult(msg.getStart());
+        q.setMaxResults(msg.getLimit());
         List<Object[]> objs = q.getResultList();
         List<PriceData> vos = objs.stream().map(PriceData::new).collect(Collectors.toList());
         vos.forEach(priceData -> {
@@ -125,6 +137,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         });
 
         APIGetBroadPriceListReply reply = new APIGetBroadPriceListReply();
+        reply.setCount(count.longValue());
         reply.setInventories(vos);
         bus.reply(msg, reply);
     }
