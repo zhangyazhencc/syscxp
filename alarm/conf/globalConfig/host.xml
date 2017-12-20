@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<globalConfig xmlns="http://syscxp.com/schema/syscxp">
+    <config>
+        <category>host</category>
+        <name>connection.autoReconnectOnError</name>
+        <description>A boolean value indicating whether management server automatically starts a reconnect if a host ping command fails</description>
+        <defaultValue>true</defaultValue>
+        <type>java.lang.Boolean</type>
+    </config>
+    <config>
+        <category>host</category>
+        <name>load.parallelismDegree</name>
+        <description>The max hosts management server connects in parallel, when management server boots up or takes over another dead management server's hosts. It only effects when 'load.simultaneous' set to false.</description>
+        <defaultValue>100</defaultValue>
+        <type>java.lang.Integer</type>
+    </config>
+    <config>
+        <category>host</category>
+        <name>ping.parallelismDegree</name>
+        <description>The max hosts management server sends ping command to host in parallel</description>
+        <defaultValue>100</defaultValue>
+        <type>java.lang.Integer</type>
+    </config>
+    <config>
+        <category>host</category>
+        <name>ping.interval</name>
+        <description>The interval management server sends ping command to host, in seconds</description>
+        <defaultValue>60</defaultValue>
+        <type>java.lang.Integer</type>
+    </config>
+    <config>
+        <category>host</category>
+        <name>reconnectAllOnBoot</name>
+        <description>Whether to reconnect all hosts when the management node starts</description>
+        <defaultValue>true</defaultValue>
+        <type>java.lang.Boolean</type>
+    </config>
+</globalConfig>
