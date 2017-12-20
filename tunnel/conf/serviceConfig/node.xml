@@ -105,7 +105,7 @@
     </message>
 
     <message>
-        <name>com.syscxp.header.tunnel.node.APIGetImageDeleteInfoMsg</name>
+        <name>com.syscxp.header.tunnel.node.APIDeleteImageMsg</name>
     </message>
 
 </service>
