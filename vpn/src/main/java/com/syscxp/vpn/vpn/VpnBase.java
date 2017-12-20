@@ -483,8 +483,6 @@ public class VpnBase extends AbstractVpn {
                         done(new FlowDoneHandler(msg) {
                             @Override
                             public void handle(Map data) {
-                                if (msg.isDeleteDb())
-                                    dbf.removeByPrimaryKey(self.getUuid(), VpnVO.class);
                                 bus.reply(msg, reply);
                             }
                         });

@@ -201,7 +201,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         for (String vpnUuid : vpnUuids) {
             DestroyVpnMsg destroyVpnMsg = new DestroyVpnMsg();
             destroyVpnMsg.setVpnUuid(vpnUuid);
-            destroyVpnMsg.setDeleteDb(false);
             bus.makeLocalServiceId(destroyVpnMsg, VpnConstant.SERVICE_ID);
             msgs.add(destroyVpnMsg);
         }
@@ -654,6 +653,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         VpnVO vpn = dbf.getEntityManager().find(VpnVO.class, msg.getUuid());
 
+        if (vpn.getTunnelUuid() == null) {
+            evt.setError(errf.instantiateErrorCode(SysErrors.OPERATION_ERROR, "VPN连接的Tunnel已删除。"));
+            bus.publish(evt);
+            return;
+        }
         APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg(getOrderMsgForVPN(vpn, new UpdateVpnBandwidthCallBack()));
         orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
         orderMsg.setStartTime(vpn.getCreateDate());
@@ -777,24 +781,28 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
-                deleteVpn(vpn.getUuid(), new Completion(trigger) {
-                    @Override
-                    public void success() {
-                        trigger.next();
-                    }
+                if (vpn.getTunnelUuid() !=null) {
+                    deleteVpn(vpn.getUuid(), new Completion(trigger) {
+                        @Override
+                        public void success() {
+                            trigger.next();
+                        }
 
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        trigger.fail(errorCode);
-                    }
-                });
+                        @Override
+                        public void fail(ErrorCode errorCode) {
+                            trigger.fail(errorCode);
+                        }
+                    });
+                }
             }
         });
 
         chain.done(new FlowDoneHandler(msg) {
             @Override
             public void handle(Map data) {
+                dbf.removeByPrimaryKey(vpn.getUuid(), VpnVO.class);
                 bus.publish(evt);
+
             }
         }).error(new FlowErrorHandler(msg) {
             @Override
@@ -1236,6 +1244,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                             deleteVpn(vpn.getUuid(), new Completion(message) {
                                 @Override
                                 public void success() {
+                                    dbf.removeByPrimaryKey(vpn.getUuid(), VpnVO.class);
                                 }
 
                                 @Override
@@ -1293,10 +1302,20 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             validate((APIUpdateVpnBandwidthMsg) msg);
         } else if (msg instanceof APIGetVpnCertMsg) {
             validate((APIGetVpnCertMsg) msg);
+        } else if (msg instanceof APIUpdateVpnStateMsg) {
+            validate((APIUpdateVpnStateMsg) msg);
         } else if (msg instanceof APIDeleteVpnCertMsg) {
             validate((APIDeleteVpnCertMsg) msg);
         }
         return msg;
+    }
+
+    private void validate(APIUpdateVpnStateMsg msg) {
+        String tunnelUuid = Q.New(VpnVO.class).eq(VpnVO_.uuid, msg.getUuid()).select(VpnVO_.tunnelUuid).findValue();
+        if (tunnelUuid == null) {
+            throw new OperationFailureException(
+                    operr("VPN[uuid: %s]连接的Tunnel已删除。", msg.getUuid()));
+        }
     }
 
     private void validate(APIDeleteVpnCertMsg msg) {
@@ -1327,7 +1346,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     argerr("The Account[uuid:%s] is not a admin or proxy.",
                             msg.getSession().getAccountUuid()));
         }
-
+        String tunnelUuid = Q.New(VpnVO.class).eq(VpnVO_.uuid, msg.getUuid()).select(VpnVO_.tunnelUuid).findValue();
+        if (tunnelUuid == null) {
+            throw new OperationFailureException(
+                    operr("VPN[uuid: %s]连接的Tunnel已删除。", msg.getUuid()));
+        }
         LocalDateTime dateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atTime(LocalTime.MIN);
         Long times = Q.New(ResourceMotifyRecordVO.class)
                 .eq(ResourceMotifyRecordVO_.resourceUuid, msg.getUuid())
@@ -1415,7 +1438,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void deleteVpn(String uuid, final Completion complete) {
         DestroyVpnMsg destroyVpnMsg = new DestroyVpnMsg();
         destroyVpnMsg.setVpnUuid(uuid);
-        destroyVpnMsg.setDeleteDb(true);
         bus.makeLocalServiceId(destroyVpnMsg, VpnConstant.SERVICE_ID);
         bus.send(destroyVpnMsg, new CloudBusCallBack(complete) {
             @Override
