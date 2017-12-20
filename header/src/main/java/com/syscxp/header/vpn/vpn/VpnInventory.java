@@ -21,6 +21,7 @@ public class VpnInventory {
     private String tunnelUuid;
     private String status;
     private String vpnCertUuid;
+    private String vpnCertName;
     private String state;
     private Integer duration;
     private Timestamp expireDate;
@@ -55,6 +56,8 @@ public class VpnInventory {
         inv.setClientConf(vo.getClientConf());
         inv.setPayment(vo.getPayment().toString());
         inv.setHostInventory(VpnHostInventory.valueOf(vo.getVpnHost()));
+        if (vo.getVpnCert() != null)
+            inv.setVpnCertName(vo.getVpnCert().getName());
         return inv;
     }
 
@@ -65,6 +68,14 @@ public class VpnInventory {
         }
 
         return invs;
+    }
+
+    public String getVpnCertName() {
+        return vpnCertName;
+    }
+
+    public void setVpnCertName(String vpnCertName) {
+        this.vpnCertName = vpnCertName;
     }
 
     public String getTunnelUuid() {
