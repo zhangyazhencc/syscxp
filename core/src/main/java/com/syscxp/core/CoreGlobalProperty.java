@@ -76,6 +76,9 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "ecpServerUrl", defaultValue = "http://192.168.211.5:8080/zstack/asyncrest/sendcommand")
     public static String ECP_SERVER_URL;
 
+    @GlobalProperty(name = "vpnServerUrl", defaultValue = "http://192.168.211.99/vpn/api")
+    public static String VPN_SERVER_URL;
+
     @GlobalProperty(name = "startVsi", defaultValue = "20000")
     public static Integer START_VSI;
 

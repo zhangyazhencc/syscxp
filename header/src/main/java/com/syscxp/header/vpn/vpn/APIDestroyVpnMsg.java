@@ -1,10 +1,11 @@
 package com.syscxp.header.vpn.vpn;
 
+import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 
-@SuppressCredentialCheck
+@InnerCredentialCheck
 public class APIDestroyVpnMsg extends APISyncCallMessage {
     @APIParam
     private String tunnelUuid;
