@@ -12,6 +12,7 @@ import com.syscxp.core.defer.Defer;
 import com.syscxp.core.defer.Deferred;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.identity.InnerMessageHelper;
+import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.ChainTask;
 import com.syscxp.core.thread.PeriodicTask;
@@ -58,6 +59,7 @@ import com.syscxp.utils.path.PathUtil;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
 import com.syscxp.header.vpn.host.VpnHostConstant;
+import com.syscxp.vpn.job.DestroyVpnJob;
 import com.syscxp.vpn.quota.VpnQuotaOperator;
 import com.syscxp.vpn.vpn.VpnCommands.*;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -96,6 +98,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private ErrorFacade errf;
     @Autowired
     private ThreadFacade thdf;
+    @Autowired
+    private JobQueueFacade jobf;
 
     @Override
     @MessageSafe
@@ -206,36 +210,24 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 .eq(VpnVO_.tunnelUuid, msg.getTunnelUuid())
                 .select(VpnVO_.uuid)
                 .listValues();
-        List<DestroyVpnMsg> msgs = new ArrayList<>();
-        for (String vpnUuid : vpnUuids) {
-            DestroyVpnMsg destroyVpnMsg = new DestroyVpnMsg();
-            destroyVpnMsg.setVpnUuid(vpnUuid);
-            bus.makeLocalServiceId(destroyVpnMsg, VpnConstant.SERVICE_ID);
-            msgs.add(destroyVpnMsg);
-        }
-        if (msgs.isEmpty()) {
+
+        if (vpnUuids.isEmpty()) {
             bus.reply(msg, reply);
             return;
         }
-        bus.send(msgs, new CloudBusListCallBack(null) {
-            @Override
-            public void run(List<MessageReply> replies) {
-                for (MessageReply r : replies) {
-                    if (!r.isSuccess()) {
-                        reply.setError(r.getError());
-                        bus.reply(msg, reply);
-                        return;
-                    }
-                }
-                UpdateQuery.New(VpnVO.class)
-                        .in(VpnVO_.uuid, vpnUuids)
-                        .set(VpnVO_.tunnelUuid, null)
-                        .update();
 
-                bus.reply(msg, reply);
-            }
-        });
+        for (String vpnUuid : vpnUuids) {
+            DestroyVpnJob job3 = new DestroyVpnJob();
+            job3.setVpnUuid(vpnUuid);
+            jobf.execute("销毁VPN服务", Platform.getManagementServerId(), job3);
+        }
 
+        UpdateQuery.New(VpnVO.class)
+                .in(VpnVO_.uuid, vpnUuids)
+                .set(VpnVO_.tunnelUuid, null)
+                .update();
+
+        bus.reply(msg, reply);
 
     }
 
