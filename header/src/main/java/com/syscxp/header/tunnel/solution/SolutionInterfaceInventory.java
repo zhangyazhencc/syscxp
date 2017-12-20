@@ -23,6 +23,7 @@ public class SolutionInterfaceInventory {
 
     private String  endpointName;
     private String  portOfferingName;
+    private String name;
     /*private String endpointUuid;
     private String portOfferingUuid;*/
 
@@ -35,6 +36,7 @@ public class SolutionInterfaceInventory {
         inv.setDuration(vo.getDuration());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        inv.setName(vo.getName());
 
         if(vo.getEndpointVO() != null){
             inv.setEndpointName(vo.getEndpointVO().getName());
@@ -123,5 +125,13 @@ public class SolutionInterfaceInventory {
 
     public void setPortOfferingName(String portOfferingName) {
         this.portOfferingName = portOfferingName;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
