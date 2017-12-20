@@ -7,7 +7,7 @@ import java.util.Set;
 public class Test {
 
     String jsonnew = "{\"id\":1,\"name\":\"eric\",\"named\":\"aaaaeric\",\"ida\":{\"name\":\"erica\",\"idddd\":100,\"qqqq\":{\"bb\":\"mmm\"}}, \"newobj\":{\"nn\":5555}}";
-    String jsonold = "{\"name\":\"ericdddd\",\"id\":55,\"ida\":{\"name\":\"eric\",\"id\":1,\"ida\":{\"bb\":\"mmm\"}}, \"wo\":\"sdfsf\"}";
+    String jsonold = "{\"name\":\"ericdddd\",\"id\":55,\"ida\":{\"name\":\"eric\",\"id\":1,\"ida\":{\"bb\":\"mmm\"}}, \"wo\":\"sdfsf\",\"newobj\":3}";
 
     @org.junit.Test
     public void test5() throws Exception {
@@ -30,7 +30,11 @@ public class Test {
 
             if (value.isJsonObject()){
                 if (objOld.has(key)){
-                    mergeJson(value.getAsJsonObject(), objOld.get(key).getAsJsonObject());
+                    if (objOld.get(key).isJsonObject()) {
+                        mergeJson(value.getAsJsonObject(), objOld.get(key).getAsJsonObject());
+                    }else{
+                        objOld.add(key, value);
+                    }
                 }else{
                     objOld.add(key, value);
                 }
