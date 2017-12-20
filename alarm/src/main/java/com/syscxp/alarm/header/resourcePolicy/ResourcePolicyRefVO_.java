@@ -1,6 +1,7 @@
 package com.syscxp.alarm.header.resourcePolicy;
 
 import com.syscxp.alarm.header.BaseVO;
+import com.syscxp.header.billing.ProductType;
 
 import javax.persistence.metamodel.SingularAttribute;
 import javax.persistence.metamodel.StaticMetamodel;
@@ -12,6 +13,7 @@ public class ResourcePolicyRefVO_ {
     public static volatile SingularAttribute<ResourcePolicyRefVO, String> resourceUuid;
     public static volatile SingularAttribute<ResourcePolicyRefVO, Long> id;
     public static volatile SingularAttribute<ResourcePolicyRefVO, String> policyUuid;
+    public static volatile SingularAttribute<ResourcePolicyRefVO, ProductType> productType;
     public static volatile SingularAttribute<BaseVO, Timestamp> createDate;
     public static volatile SingularAttribute<BaseVO, Timestamp> lastOpDate;
 }
