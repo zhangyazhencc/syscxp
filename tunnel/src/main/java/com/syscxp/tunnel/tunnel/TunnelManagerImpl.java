@@ -1063,6 +1063,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         }
 
+        dbf.getEntityManager().persist(vo);
+
         //如果开启Qinq,需要指定内部vlan段
         if (interfaceVOA.getType() == NetworkType.QINQ || interfaceVOZ.getType() == NetworkType.QINQ) {
             List<InnerVlanSegment> vlanSegments = msg.getVlanSegment();
@@ -1076,7 +1078,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         }
 
-        dbf.getEntityManager().persist(vo);
         dbf.getEntityManager().persist(tsvoA);
         dbf.getEntityManager().persist(tsvoZ);
 
