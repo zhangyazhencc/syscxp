@@ -2825,7 +2825,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     if (!Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid, vo.getUuid()).isExists())
                         dbf.remove(vo);
                 }
-                if (vo.getExpireDate().after(close) && vo.getState() == InterfaceState.Unpaid) {
+                if (vo.getExpireDate().before(close) && vo.getState() == InterfaceState.Unpaid) {
                     dbf.remove(vo);
                 }
             }
