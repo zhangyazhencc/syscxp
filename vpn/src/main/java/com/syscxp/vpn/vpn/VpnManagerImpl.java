@@ -172,9 +172,18 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             handle((APIDestroyVpnMsg) msg);
         } else if (msg instanceof APIGetVpnModifyMsg) {
             handle((APIGetVpnModifyMsg) msg);
+        } else if (msg instanceof APICheckVpnForTunnelMsg) {
+            handle((APICheckVpnForTunnelMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APICheckVpnForTunnelMsg msg) {
+        APICheckVpnForTunnelReply reply = new APICheckVpnForTunnelReply();
+        Q q = Q.New(VpnVO.class).eq(VpnVO_.tunnelUuid, msg.getTunnelUuid());
+        reply.setUsed(q.isExists());
+        bus.reply(msg, reply);
     }
 
     private void handle(APIGetVpnModifyMsg msg) {
