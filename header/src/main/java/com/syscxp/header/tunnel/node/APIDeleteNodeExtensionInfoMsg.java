@@ -12,14 +12,14 @@ import com.syscxp.header.tunnel.TunnelConstant;
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = NodeConstant.ACTION_CATEGORY, names = {"delete"}, adminOnly = true)
 public class APIDeleteNodeExtensionInfoMsg extends APIDeleteMessage {
 
-    @APIParam(emptyString = false)
-    private String nodeId;
+    @APIParam(emptyString = false,resourceType = NodeVO.class)
+    private String uuid;
 
-    public String getNodeId() {
-        return nodeId;
+    public String getUuid() {
+        return uuid;
     }
 
-    public void setNodeId(String nodeId) {
-        this.nodeId = nodeId;
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
     }
 }

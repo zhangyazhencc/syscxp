@@ -355,6 +355,11 @@ public class TunnelBase {
         DeleteResourcePolicyRefJob job2 = new DeleteResourcePolicyRefJob();
         job2.setTunnelUuid(vo.getUuid());
         jobf.execute(queueName+"-策略同步", Platform.getManagementServerId(), job2);
+
+        logger.info("删除通道成功，并创建任务：TerminateAliEdgeRouterJob");
+        TerminateAliEdgeRouterJob job4 = new TerminateAliEdgeRouterJob();
+        job4.setTunnelUuid(vo.getUuid());
+        jobf.execute(queueName+"-中止阿里边界路由器", Platform.getManagementServerId(), job4);
     }
 
     public void updateInterfacePortsJob(APIUpdateInterfacePortMsg msg,String queueName){

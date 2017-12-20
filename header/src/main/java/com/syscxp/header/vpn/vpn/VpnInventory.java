@@ -18,6 +18,7 @@ public class VpnInventory {
     private Integer vlan;
     private String bandwidth;
     private String endpointUuid;
+    private String tunnelUuid;
     private String status;
     private String vpnCertUuid;
     private String state;
@@ -43,6 +44,7 @@ public class VpnInventory {
         inv.setState(vo.getState().toString());
         inv.setPort(vo.getPort());
         inv.setVlan(vo.getVlan());
+        inv.setTunnelUuid(vo.getTunnelUuid());
         inv.setDuration(vo.getDuration());
         inv.setExpireDate(vo.getExpireDate());
         inv.setLastOpDate(vo.getLastOpDate());
@@ -63,6 +65,14 @@ public class VpnInventory {
         }
 
         return invs;
+    }
+
+    public String getTunnelUuid() {
+        return tunnelUuid;
+    }
+
+    public void setTunnelUuid(String tunnelUuid) {
+        this.tunnelUuid = tunnelUuid;
     }
 
     public String getVpnCertUuid() {

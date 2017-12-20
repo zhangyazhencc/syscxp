@@ -17,6 +17,8 @@ public class APICreateVpnMsg extends APIVpnMessage {
     @APIParam(resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
     @APIParam(emptyString = false)
+    private String tunnelUuid;
+    @APIParam(emptyString = false)
     private String endpointUuid;
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private Integer duration;
@@ -24,6 +26,14 @@ public class APICreateVpnMsg extends APIVpnMessage {
     private Integer vlan;
     @APIParam(resourceType = VpnCertVO.class, checkAccount = true)
     private String vpnCertUuid;
+
+    public String getTunnelUuid() {
+        return tunnelUuid;
+    }
+
+    public void setTunnelUuid(String tunnelUuid) {
+        this.tunnelUuid = tunnelUuid;
+    }
 
     public String getVpnCertUuid() {
         return vpnCertUuid;
