@@ -26,6 +26,7 @@ CREATE TABLE `syscxp_tunnel`.`SpeedTestTunnelVO` (
   `createDate` timestamp,
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='测速专线列表';
+ALTER TABLE SpeedTestTunnelVO ADD CONSTRAINT fkSpeedTestTunnelVOTunnelVO FOREIGN KEY (tunnelUuid) REFERENCES TunnelEO (uuid) ON DELETE CASCADE;
 
 CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`HostSwitchMonitorEO` (
   `uuid` varchar(32) NOT NULL UNIQUE,
@@ -436,6 +437,7 @@ CREATE TABLE  `syscxp_tunnel`.`TunnelSwitchPortVO` (
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ALTER TABLE TunnelSwitchPortVO ADD CONSTRAINT fkTunnelSwitchPortVOTunnelVO FOREIGN KEY (tunnelUuid) REFERENCES TunnelEO (uuid) ON DELETE CASCADE;
 
 ##Qinq模式网段
 CREATE TABLE  `syscxp_tunnel`.`QinqVO` (
@@ -447,6 +449,7 @@ CREATE TABLE  `syscxp_tunnel`.`QinqVO` (
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ALTER TABLE QinqVO ADD CONSTRAINT fkQinqVOTunnelVO FOREIGN KEY (tunnelUuid) REFERENCES TunnelEO (uuid) ON DELETE CASCADE;
 
 ############################################################################################################################
 ##########################################监控##############################################################################
@@ -467,6 +470,7 @@ CREATE TABLE IF NOT EXISTS `syscxp_tunnel`.`TunnelMonitorVO` (
 ENGINE=InnoDB
 DEFAULT CHARSET=utf8
 COMMENT '通道监控';
+ALTER TABLE TunnelMonitorVO ADD CONSTRAINT fkTunnelMonitorVOTunnelVO FOREIGN KEY (tunnelUuid) REFERENCES TunnelEO (uuid) ON DELETE CASCADE;
 
 
 ##监控机
