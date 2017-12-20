@@ -244,8 +244,7 @@ public class MonitorHost extends HostBase implements Host {
                             runner.setFullDeploy(true);
                         }
                         runner.putArgument("pkg_monitoragent", agentPackageName);
-                        runner.putArgument("falcon_ip", CoreGlobalProperty.FALCON_API_IP);
-                        runner.putArgument("falcon_port", CoreGlobalProperty.FALCON_API_PORT);
+                        runner.putArgument("tunnel_server_url",CoreGlobalProperty.TUNNEL_SERVER_URL);
                         runner.putArgument("transfer_rpc_ip", CoreGlobalProperty.TRANSFER_RPC_IP);
                         runner.putArgument("hostname", String.format("%s.syscxp.com", self.getHostIp().replaceAll("\\.", "-")));
 

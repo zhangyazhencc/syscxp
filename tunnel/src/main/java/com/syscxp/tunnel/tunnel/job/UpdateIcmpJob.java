@@ -37,7 +37,7 @@ public class UpdateIcmpJob implements Job {
 
         try {
             logger.info("开始执行JOB【更新ICMP】");
-            monitorManager.icmpSync(tunnelUuid);
+            //monitorManager.icmpSync(tunnelUuid);
 
             completion.success(null);
         } catch (Exception e) {
