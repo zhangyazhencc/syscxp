@@ -127,10 +127,28 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIListProvinceNodeMsg) msg);
         }else if(msg instanceof APIListCityNodeMsg){
             handle((APIListCityNodeMsg) msg);
+        }else if(msg instanceof APIGetImageDeleteInfoMsg){
+            handle((APIGetImageDeleteInfoMsg) msg);
         }
         else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetImageDeleteInfoMsg msg) {
+        APIGetImageDeleteInfoReply reply = new APIGetImageDeleteInfoReply();
+
+        reply.setDelete_url(ImageUploadInfoConstant.delete_url);
+        reply.setImages_url(msg.getImage_url());
+
+        String timestamp = String.valueOf(System.currentTimeMillis()/1000);
+        String md5 = Digest.getMD5(msg.getNodeId() + timestamp + ImageUploadInfoConstant.upload_key + msg.getImage_url());
+
+        reply.setNodeId(msg.getNodeId());
+        reply.setTimestamp(timestamp);
+        reply.setMd5(md5);
+
+        bus.reply(msg,reply);
     }
 
     private void handle(APIListCityNodeMsg msg) {
