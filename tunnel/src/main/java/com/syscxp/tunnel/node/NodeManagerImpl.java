@@ -441,7 +441,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     }
 
     private void handle(APIDeleteNodeExtensionInfoMsg msg) {
-        mongoTemplate.remove(new Query(Criteria.where("node_id").is(msg.getNodeId())),NodeExtensionInfo.class,"nodeExtensionInfo");
+        mongoTemplate.remove(new Query(Criteria.where("node_id").is(msg.getUuid())),NodeExtensionInfo.class,"nodeExtensionInfo");
         APIDeleteNodeExtensionInfoEvent event = new APIDeleteNodeExtensionInfoEvent(msg.getId());
         bus.publish(event);
     }
