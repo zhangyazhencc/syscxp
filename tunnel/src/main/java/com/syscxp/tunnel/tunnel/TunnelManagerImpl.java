@@ -850,9 +850,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         }
 
+        dbf.getEntityManager().persist(vo);
         dbf.getEntityManager().persist(tsvoA);
         dbf.getEntityManager().persist(tsvoZ);
-        dbf.getEntityManager().persist(vo);
 
         return vo.getUuid();
     }
@@ -1076,9 +1076,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         }
 
+        dbf.getEntityManager().persist(vo);
         dbf.getEntityManager().persist(tsvoA);
         dbf.getEntityManager().persist(tsvoZ);
-        dbf.getEntityManager().persist(vo);
 
         return vo.getUuid();
     }
