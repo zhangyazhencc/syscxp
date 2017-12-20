@@ -781,7 +781,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
-                if (vpn.getTunnelUuid() !=null) {
+                if (vpn.getTunnelUuid() != null) {
                     deleteVpn(vpn.getUuid(), new Completion(trigger) {
                         @Override
                         public void success() {

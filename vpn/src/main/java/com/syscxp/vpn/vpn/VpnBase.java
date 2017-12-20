@@ -437,10 +437,11 @@ public class VpnBase extends AbstractVpn {
                                     @Override
                                     public void success(String ret) {
                                         if (VpnStatus.valueOf(ret) == VpnStatus.Disconnected) {
+                                            self.setState(VpnState.Disabled);
+                                            dbf.updateAndRefresh(self);
                                             trigger.next();
                                         } else {
                                             trigger.fail(errf.instantiateErrorCode(VpnErrors.VPN_DESTROY_ERROR, "failed to stop vpn service"));
-
                                         }
                                     }
 
