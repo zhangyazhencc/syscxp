@@ -59,12 +59,18 @@ public class TunnelValidateBase {
         SwitchPortVO switchPort = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, iface.getSwitchPortUuid()).find();
         if (switchPort.getPortType().equals("SHARE"))
             throw new ApiMessageInterceptionException(
-                    argerr("The type of Interface[uuid:%s] is %s, could not modify！", msg.getUuid(), switchPort.getPortType()));
+                    argerr("The type of Interface[uuid:%s] is %s, can not modify！", msg.getUuid(), switchPort.getPortType()));
 
-        if (msg.getSwitchPortUuid().equals(iface.getSwitchPortUuid())
-                && (msg.getSegments() == null || msg.getSegments().isEmpty())) {
-            throw new ApiMessageInterceptionException(
-                    argerr("The InnerVlans cannot be empty！"));
+        if (msg.getSwitchPortUuid().equals(iface.getSwitchPortUuid())) {
+            if (msg.getNetworkType() == iface.getType()) {
+                throw new ApiMessageInterceptionException(
+                        argerr("The type or Interface must be different！"));
+            }
+
+            if (msg.getNetworkType() == NetworkType.QINQ && (msg.getSegments() == null || msg.getSegments().isEmpty())) {
+                throw new ApiMessageInterceptionException(
+                        argerr("The InnerVlans cannot be empty！"));
+            }
         }
     }
 
@@ -186,16 +192,16 @@ public class TunnelValidateBase {
 
     public void validate(APICreateTunnelMsg msg) {
         //BOSS创建验证物理接口的账户是否一致
-        if(msg.getSession().getType() == AccountType.SystemAdmin){
-            if(msg.getInterfaceAUuid() != null){
-                String accountUuid = dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class).getAccountUuid();
-                if(!Objects.equals(msg.getAccountUuid(),accountUuid)){
+        if (msg.getSession().getType() == AccountType.SystemAdmin) {
+            if (msg.getInterfaceAUuid() != null) {
+                String accountUuid = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class).getAccountUuid();
+                if (!Objects.equals(msg.getAccountUuid(), accountUuid)) {
                     throw new ApiMessageInterceptionException(argerr("物理接口A不属于该用户！"));
                 }
             }
-            if(msg.getInterfaceZUuid() != null){
-                String accountUuid = dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class).getAccountUuid();
-                if(!Objects.equals(msg.getAccountUuid(),accountUuid)){
+            if (msg.getInterfaceZUuid() != null) {
+                String accountUuid = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getAccountUuid();
+                if (!Objects.equals(msg.getAccountUuid(), accountUuid)) {
                     throw new ApiMessageInterceptionException(argerr("物理接口Z不属于该用户！"));
                 }
             }
@@ -208,20 +214,20 @@ public class TunnelValidateBase {
             throw new ApiMessageInterceptionException(argerr("Tunnel's name %s is already exist ", msg.getName()));
         }
         //两个相同接口的专线不允许存在共点
-        if(msg.getCrossTunnelUuid() != null){
-            if(msg.getInterfaceAUuid() != null && msg.getInterfaceZUuid() != null){
+        if (msg.getCrossTunnelUuid() != null) {
+            if (msg.getInterfaceAUuid() != null && msg.getInterfaceZUuid() != null) {
                 String crossInterfaceAUuid = Q.New(TunnelSwitchPortVO.class)
-                        .eq(TunnelSwitchPortVO_.tunnelUuid,msg.getCrossTunnelUuid())
-                        .eq(TunnelSwitchPortVO_.sortTag,"A")
+                        .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getCrossTunnelUuid())
+                        .eq(TunnelSwitchPortVO_.sortTag, "A")
                         .select(TunnelSwitchPortVO_.interfaceUuid)
                         .findValue();
                 String crossInterfaceZUuid = Q.New(TunnelSwitchPortVO.class)
-                        .eq(TunnelSwitchPortVO_.tunnelUuid,msg.getCrossTunnelUuid())
-                        .eq(TunnelSwitchPortVO_.sortTag,"Z")
+                        .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getCrossTunnelUuid())
+                        .eq(TunnelSwitchPortVO_.sortTag, "Z")
                         .select(TunnelSwitchPortVO_.interfaceUuid)
                         .findValue();
-                if((msg.getInterfaceAUuid().equals(crossInterfaceAUuid) && msg.getInterfaceZUuid().equals(crossInterfaceZUuid))
-                        || (msg.getInterfaceAUuid().equals(crossInterfaceZUuid) && msg.getInterfaceZUuid().equals(crossInterfaceAUuid))){
+                if ((msg.getInterfaceAUuid().equals(crossInterfaceAUuid) && msg.getInterfaceZUuid().equals(crossInterfaceZUuid))
+                        || (msg.getInterfaceAUuid().equals(crossInterfaceZUuid) && msg.getInterfaceZUuid().equals(crossInterfaceAUuid))) {
                     throw new ApiMessageInterceptionException(argerr("该通道已使用相同的接口创建过，不能使用共点！"));
                 }
             }
@@ -231,8 +237,8 @@ public class TunnelValidateBase {
             throw new ApiMessageInterceptionException(argerr("通道两端不允许在同一个连接点 "));
         }
         //若果跨国，则互联连接点不能为空
-        if(isTransnational(msg.getEndpointAUuid(), msg.getEndpointZUuid())){
-            if(msg.getInnerConnectedEndpointUuid() == null){
+        if (isTransnational(msg.getEndpointAUuid(), msg.getEndpointZUuid())) {
+            if (msg.getInnerConnectedEndpointUuid() == null) {
                 throw new ApiMessageInterceptionException(argerr("该通道是跨国通道，互联连接点不能为空！ "));
             }
         }
@@ -299,11 +305,11 @@ public class TunnelValidateBase {
         InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
         //BOSS创建验证物理接口的账户是否一致
 
-        if(!Objects.equals(msg.getAccountUuid(),interfaceVOA.getAccountUuid())){
+        if (!Objects.equals(msg.getAccountUuid(), interfaceVOA.getAccountUuid())) {
             throw new ApiMessageInterceptionException(argerr("物理接口A不属于该用户！"));
         }
 
-        if(!Objects.equals(msg.getAccountUuid(),interfaceVOZ.getAccountUuid())){
+        if (!Objects.equals(msg.getAccountUuid(), interfaceVOZ.getAccountUuid())) {
             throw new ApiMessageInterceptionException(argerr("物理接口Z不属于该用户！"));
         }
 
@@ -324,8 +330,8 @@ public class TunnelValidateBase {
         }
 
         //若果跨国，则互联连接点不能为空
-        if(isTransnational(interfaceVOA.getEndpointUuid(), interfaceVOZ.getEndpointUuid())){
-            if(msg.getInnerConnectedEndpointUuid() == null){
+        if (isTransnational(interfaceVOA.getEndpointUuid(), interfaceVOZ.getEndpointUuid())) {
+            if (msg.getInnerConnectedEndpointUuid() == null) {
                 throw new ApiMessageInterceptionException(argerr("该通道是跨国通道，互联连接点不能为空！ "));
             }
         }
@@ -422,7 +428,7 @@ public class TunnelValidateBase {
     }
 
     public void validate(APIUpdateTunnelBandwidthMsg msg) {
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
         //判断该产品是否有未完成订单
         checkOrderNoPay(vo.getOwnerAccountUuid(), msg.getUuid());
 
@@ -466,8 +472,8 @@ public class TunnelValidateBase {
     }
 
     public void validate(APIDeleteTunnelMsg msg) {
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
-        if(msg.getSession().getType() != AccountType.SystemAdmin && (vo.getState()==TunnelState.Enabled || vo.getState()==TunnelState.Disabled)){
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
+        if (msg.getSession().getType() != AccountType.SystemAdmin && (vo.getState() == TunnelState.Enabled || vo.getState() == TunnelState.Disabled)) {
             int deleteDays = TunnelGlobalConfig.PRODUCT_DELETE_DAYS.value(Integer.class);
             if (vo.getCreateDate().toLocalDateTime().plusDays(deleteDays).isAfter(LocalDateTime.now()))
                 throw new ApiMessageInterceptionException(
@@ -477,7 +483,7 @@ public class TunnelValidateBase {
     }
 
     public void validate(APIDeleteForciblyTunnelMsg msg) {
-        TunnelVO vo = dbf.findByUuid(msg.getUuid(),TunnelVO.class);
+        TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
         checkOrderNoPay(vo.getOwnerAccountUuid(), msg.getUuid());
     }
 
@@ -600,7 +606,7 @@ public class TunnelValidateBase {
     /**
      * 验证通道是否跨国
      */
-    private boolean isTransnational(String endpointUuidA,String endpointUuidZ){
+    private boolean isTransnational(String endpointUuidA, String endpointUuidZ) {
         EndpointVO endpointVOA = dbf.findByUuid(endpointUuidA, EndpointVO.class);
         EndpointVO endpointVOZ = dbf.findByUuid(endpointUuidZ, EndpointVO.class);
 

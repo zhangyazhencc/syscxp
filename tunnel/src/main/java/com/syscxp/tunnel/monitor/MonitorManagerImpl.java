@@ -864,7 +864,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
 
         if (!response.isSuccess())
-            throw new RuntimeException(String.format("failed to send agent command! command! Error: %s"
+            throw new RuntimeException(String.format("failed to send agent command! Error: %s"
                     , response.getMsg()));
     }
 
