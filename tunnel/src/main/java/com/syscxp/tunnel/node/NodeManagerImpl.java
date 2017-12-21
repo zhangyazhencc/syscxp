@@ -245,18 +245,18 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
         Query query = new Query();
         if(msg.getOperatorCategory() != null){
-            query.addCriteria(Criteria.where("operatorCategory").is(msg.getOperatorCategory()));
+            query.addCriteria(Criteria.where("machineRoomInfo.outer.operatorCategory").is(msg.getOperatorCategory()));
         }
         if(msg.getProvince() != null){
             query.addCriteria(Criteria.where("province").is(msg.getProvince()));
         }
         if(msg.getRoomLevel() != null){
-            query.addCriteria(Criteria.where("roomLevel").is(msg.getRoomLevel()));
+            query.addCriteria(Criteria.where("machineRoomInfo.outer.roomLevel").is(msg.getRoomLevel()));
         }
         if(msg.getProperty() != null){
-            query.addCriteria(Criteria.where("property").is(msg.getProperty()));
+            query.addCriteria(Criteria.where("property").all(msg.getProperty()));
         }else{
-            query.addCriteria(Criteria.where("property").is("idc_node"));
+            query.addCriteria(Criteria.where("property").all("idc_node"));
 
         }
 
@@ -284,6 +284,13 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         NodeExtensionInfoList nodes = new NodeExtensionInfoList();
         nodes.setPage_no(msg.getPageNo());
         nodes.setCount(String.valueOf(count));
+        Long pageCout = count/Integer.valueOf(msg.getPage_size()) + 1;
+        List<Integer> PageRange = new ArrayList<>();
+        for (int i = 0; i < pageCout; i++) {
+            PageRange.add(i+1);
+        }
+        nodes.setPage_count(String.valueOf(pageCout));
+        nodes.setPage_range(PageRange);
         nodes.setNodeExtensionInfos(JSONObjectUtil.toJsonString(list));
         nodes.setTotal(String.valueOf(total));
         nodes.setPage_size(msg.getPage_size());
