@@ -358,7 +358,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             throw new IllegalArgumentException("could not find the product purchased history ");
         }
 
-        BigDecimal notUseMonth = getNotUseMonths(currentTimestamp.toLocalDateTime(), msg.getExpiredTime().toLocalDateTime());
+        BigDecimal notUseMonth = getNotUseMonths(currentTimestamp.toLocalDateTime().minusDays(1), msg.getExpiredTime().toLocalDateTime());
         BigDecimal remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
         BigDecimal needPayMoney = discountPrice.multiply(notUseMonth);
         BigDecimal subMoney = needPayMoney.subtract(remainMoney);
@@ -367,7 +367,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         if (subMoney.compareTo(BigDecimal.ZERO) >= 0) { //upgrade
 
-            notUseMonth = getNotUseMonths(currentTimestamp.toLocalDateTime().minusDays(1), msg.getExpiredTime().toLocalDateTime());
+            notUseMonth = getNotUseMonths(currentTimestamp.toLocalDateTime(), msg.getExpiredTime().toLocalDateTime());
             remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
             needPayMoney = discountPrice.multiply(notUseMonth);
             BigDecimal needPayOriginMoney = originalPrice.multiply(notUseMonth);
