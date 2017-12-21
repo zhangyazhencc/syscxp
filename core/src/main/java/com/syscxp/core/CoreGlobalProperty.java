@@ -86,7 +86,7 @@ public class CoreGlobalProperty {
     public static String TRANSFER_RPC_IP;
 
     @GlobalProperty(name = "tunnelServerUrl", defaultValue = "http://192.168.211.185:8080/asyncrest/sendcommand")
-    public static int TUNNEL_SERVER_URL;
+    public static String TUNNEL_SERVER_URL;
 
     @GlobalProperty(name = "openTSDBServerUrl", defaultValue = "http://192.168.211.6:4242")
     public static String OPENTSDB_SERVER_URL;
