@@ -1322,26 +1322,20 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void validate(APIDetachVpnCertMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        if (vpn.getVpnCertUuid() == null) {
-            throw new OperationFailureException(
-                    operr("VPN[uuid: %s]的证书已经解绑，请勿重复操作。", msg.getUuid()));
-        }
+        checkVpnCert(vpn);
     }
 
     private void validate(APIAttachVpnCertMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        if (vpn.getVpnCertUuid() != null) {
+        if (vpn.getVpnCertUuid() == null) {
             throw new OperationFailureException(
-                    operr("请先解绑VPN[uuid: %s]的证书。", msg.getUuid()));
+                    operr("VPN[uuid: %s]已绑定证书证书, 请先解绑证书", vpn.getUuid()));
         }
     }
 
     private void validate(APIUpdateVpnStateMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        if ("".equals(vpn.getTunnelUuid()) && vpn.getVpnCertUuid() == null) {
-            throw new OperationFailureException(
-                    operr("VPN[uuid: %s]没有指定专线或者证书。", msg.getUuid()));
-        }
+        checkTunnelAndVpnCert(vpn);
     }
 
     private void validate(APIDeleteVpnCertMsg msg) {
@@ -1364,7 +1358,24 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             ));
         }
     }
+    private void checkTunnel(VpnVO vpn) {
+        if ("".equals(vpn.getTunnelUuid())) {
+            throw new OperationFailureException(
+                    operr("VPN[uuid: %s]没有指定专线。", vpn.getUuid()));
+        }
+    }
 
+    private void checkVpnCert(VpnVO vpn) {
+        if (vpn.getVpnCertUuid() == null) {
+            throw new OperationFailureException(
+                    operr("VPN[uuid: %s]的证书已经解绑, 请绑定证书", vpn.getUuid()));
+        }
+    }
+
+    private void checkTunnelAndVpnCert(VpnVO vpn) {
+        checkTunnel(vpn);
+        checkVpnCert(vpn);
+    }
     private void validate(APIUpdateVpnBandwidthMsg msg) {
         // 区分管理员账户
         if (msg.getSession().isAdminSession() && StringUtils.isEmpty(msg.getAccountUuid())) {
@@ -1375,10 +1386,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
 
-        if ("".equals(vpn.getTunnelUuid()) && vpn.getVpnCertUuid() == null) {
-            throw new OperationFailureException(
-                    operr("VPN[uuid: %s]没有指定专线或者证书。", msg.getUuid()));
-        }
+        checkTunnelAndVpnCert(vpn);
 
         LocalDateTime dateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atTime(LocalTime.MIN);
         Long times = Q.New(ResourceMotifyRecordVO.class)
