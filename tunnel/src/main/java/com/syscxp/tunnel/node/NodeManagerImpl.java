@@ -174,14 +174,9 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         prame.append("&md5=");
         prame.append(md5);
 
-//        Map map = new HashMap();
-//        map.put("node_id", msg.getNodeId());
-//        map.put("image_url", msg.getImage_url());
-//        map.put("timestamp", timestamp);
-//        map.put("md5", md5);
 
-        Map rsp = restf.syncJsonPost(NodeImageGlobalProperty.DELETE_IP+NodeImageGlobalProperty.DELETE_URL,
-                prame.toString(), Map.class);
+        Map rsp = restf.syncJsonPost(NodeImageGlobalProperty.DELETE_IP+NodeImageGlobalProperty.DELETE_URL+"?"+
+                prame.toString(), null,Map.class);
 
         if(rsp.get("success") != null && (boolean)rsp.get("success")){
             System.out.println("successfully");
