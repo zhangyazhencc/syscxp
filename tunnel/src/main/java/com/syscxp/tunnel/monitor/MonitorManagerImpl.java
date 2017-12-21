@@ -1734,14 +1734,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 map -> {
                     MonitorAgentCommands.RestResponse restResponse = new MonitorAgentCommands.RestResponse();
                     try {
-                        String icmpInfo = getIcmpsByMonitorHostIp(map.get("monitorHostIp").toString());
+                         List<MonitorAgentCommands.AgentIcmp> agentIcmps = getIcmpsByMonitorHostIp(map.get("monitorHostIp").toString());
 
-                        if (icmpInfo == null) {
+                        if (agentIcmps == null || agentIcmps.isEmpty()) {
                             restResponse.setSuccess(false);
                             restResponse.setMsg("no data exist!");
                         } else {
                             restResponse.setSuccess(true);
-                            restResponse.setMsg(icmpInfo);
+                            restResponse.setMsg(JSONObjectUtil.toJsonString(agentIcmps));
                         }
                     } catch (Exception e) {
                         restResponse.setSuccess(false);
@@ -2019,7 +2019,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param monitorHostIp
      * @return
      */
-    private String getIcmpsByMonitorHostIp(String monitorHostIp) {
+    private List<MonitorAgentCommands.AgentIcmp> getIcmpsByMonitorHostIp(String monitorHostIp) {
         List<MonitorAgentCommands.AgentIcmp> icmps = new ArrayList<>();
         List<MonitorHostVO> monitorHostVOS = Q.New(MonitorHostVO.class)
                 .eq(MonitorHostVO_.hostIp, monitorHostIp)
@@ -2043,7 +2043,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             }
         }
 
-        return JSONObjectUtil.toJsonString(icmps);
+        return icmps;
     }
 
     /***

@@ -383,7 +383,7 @@ public class VpnBase extends AbstractVpn {
 
     private void handle(final StartAllMsg msg) {
         StartAllReply reply = new StartAllReply();
-
+        changVpnSatus(VpnStatus.Disconnected);
         StartAllCmd cmd = new StartAllCmd();
         cmd.vpnuuid = self.getUuid();
         cmd.ddnport = getInterfaceName();
@@ -395,7 +395,9 @@ public class VpnBase extends AbstractVpn {
             @Override
             public void success(StartAllRsp ret) {
                 if (ret.isSuccess()) {
-                    changVpnSatus(VpnStatus.Connected);
+                    if ("UP".equals(ret.vpnStatus)) {
+                        changVpnSatus(VpnStatus.Connected);
+                    }
                 } else {
                     reply.setError(errf.instantiateErrorCode(VpnErrors.VPN_RESTART_ERROR, ret.getError()));
                 }
@@ -404,7 +406,6 @@ public class VpnBase extends AbstractVpn {
 
             @Override
             public void fail(ErrorCode errorCode) {
-                changVpnSatus(VpnStatus.Disconnected);
                 reply.setError(errorCode);
                 bus.reply(msg, reply);
             }

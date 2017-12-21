@@ -826,6 +826,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         }
 
+        dbf.getEntityManager().persist(vo);
+
         //创建TunnelSwitchPort
         TunnelSwitchPortVO tsvoA = new TunnelSwitchPortVO();
         tsvoA.setUuid(Platform.getUuid());
@@ -856,8 +858,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
 
         }
-
-        dbf.getEntityManager().persist(vo);
         dbf.getEntityManager().persist(tsvoA);
         dbf.getEntityManager().persist(tsvoZ);
 
@@ -1061,6 +1061,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         tsvoZ.setVlan(msg.getzVlan());
         tsvoZ.setSortTag("Z");
 
+        dbf.getEntityManager().persist(vo);
+
         //如果跨国,将出海口设备添加至TunnelSwitchPort
         if (msg.getInnerConnectedEndpointUuid() != null) {
             if (nvoA.getCountry().equals("CHINA")) {
@@ -1069,8 +1071,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 tunnelBase.createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, false);
             }
         }
-
-        dbf.getEntityManager().persist(vo);
 
         //如果开启Qinq,需要指定内部vlan段
         if (interfaceVOA.getType() == NetworkType.QINQ || interfaceVOZ.getType() == NetworkType.QINQ) {
