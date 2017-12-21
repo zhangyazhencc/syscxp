@@ -383,7 +383,7 @@ public class VpnBase extends AbstractVpn {
 
     private void handle(final StartAllMsg msg) {
         StartAllReply reply = new StartAllReply();
-
+        changVpnSatus(VpnStatus.Disconnected);
         StartAllCmd cmd = new StartAllCmd();
         cmd.vpnuuid = self.getUuid();
         cmd.ddnport = getInterfaceName();
@@ -395,7 +395,9 @@ public class VpnBase extends AbstractVpn {
             @Override
             public void success(StartAllRsp ret) {
                 if (ret.isSuccess()) {
-                    changVpnSatus(VpnStatus.Connected);
+                    if ("UP".equals(ret.vpnStatus)) {
+                        changVpnSatus(VpnStatus.Connected);
+                    }
                 } else {
                     reply.setError(errf.instantiateErrorCode(VpnErrors.VPN_RESTART_ERROR, ret.getError()));
                 }
@@ -404,7 +406,6 @@ public class VpnBase extends AbstractVpn {
 
             @Override
             public void fail(ErrorCode errorCode) {
-                changVpnSatus(VpnStatus.Disconnected);
                 reply.setError(errorCode);
                 bus.reply(msg, reply);
             }
@@ -515,18 +516,9 @@ public class VpnBase extends AbstractVpn {
     }
 
     private void handle(ChangeVpnStatusMsg msg) {
+        changVpnSatus(VpnStatus.Disconnected);
         ChangeVpnStatusReply reply = new ChangeVpnStatusReply();
-        if (VpnStatus.valueOf(msg.getStatus()) == self.getStatus()) {
-            bus.reply(msg, reply);
-            return;
-        }
-        String command;
-        if (VpnStatus.valueOf(msg.getStatus()) == VpnStatus.Connected) {
-            command = "start";
-        } else {
-            command = "stop";
-        }
-        vpnService(command, new ReturnValueCompletion<String>(msg) {
+        vpnService(msg.getCommand(), new ReturnValueCompletion<String>(msg) {
             @Override
             public void success(String ret) {
                 bus.reply(msg, reply);
@@ -541,12 +533,12 @@ public class VpnBase extends AbstractVpn {
     }
 
     private void vpnService(String command, final ReturnValueCompletion<String> completion) {
+
         VpnServiceCmd cmd = new VpnServiceCmd();
         cmd.vpnuuid = self.getUuid();
         cmd.vpnvlanid = getVlan();
         cmd.vpnport = getPort();
         cmd.command = command;
-
         httpCall(vpnServicePath, cmd, VpnServiceRsp.class, new ReturnValueCompletion<VpnServiceRsp>(completion) {
             @Override
             public void success(VpnServiceRsp ret) {

@@ -176,11 +176,12 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                         resourcePolicyRefVO.setPolicyUuid(msg.getPolicyUuid());
                         dbf.updateAndRefresh(resourcePolicyRefVO);
                     }else{
+                        PolicyVO newPolicyVO =dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
                         ResourcePolicyRefVO refVO = new ResourcePolicyRefVO();
                         refVO.setPolicyUuid(msg.getPolicyUuid());
                         refVO.setResourceUuid(msg.getResourceUuid());
+                        refVO.setProductType(newPolicyVO.getProductType());
                         dbf.persistAndRefresh(refVO);
-                        PolicyVO newPolicyVO =dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
                         newPolicyVO.setBindResources(getCount(msg.getResourceUuid(),policyUuid));
                         dbf.updateAndRefresh(newPolicyVO);
                     }
@@ -234,12 +235,14 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
                 }else{
                     if (!StringUtils.isEmpty(sb.toString())) {
+                        PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
                         ResourcePolicyRefVO refVO = new ResourcePolicyRefVO();
                         refVO.setPolicyUuid(sb.toString());
                         refVO.setResourceUuid(msg.getResourceUuid());
+                        refVO.setProductType(policyVO.getProductType());
                         dbf.persistAndRefresh(refVO);
 
-                        PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
+
                         policyVO.setBindResources(getCount(msg.getResourceUuid(),policyUuid));
                         dbf.updateAndRefresh(policyVO);
                     }
