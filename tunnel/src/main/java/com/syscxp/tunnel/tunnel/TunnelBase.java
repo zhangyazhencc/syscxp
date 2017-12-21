@@ -155,30 +155,33 @@ public class TunnelBase {
     /**
      * 修改接口类型
      */
-    public void updateNetworkType(InterfaceVO iface, String tunnelUuid, NetworkType newType, List<InnerVlanSegment> segments) {
+    public List<String> updateNetworkType(InterfaceVO iface, String tunnelUuid, NetworkType newType, List<InnerVlanSegment> segments) {
         UpdateQuery.New(InterfaceVO.class)
                 .set(InterfaceVO_.type, newType)
                 .eq(InterfaceVO_.uuid, iface.getUuid())
                 .update();
 
-        if (tunnelUuid == null)
-            return;
+        List<String> vos = new ArrayList<>();
+        if (tunnelUuid == null) {
+            return vos;
+        }
 
-        if (iface.getType() == NetworkType.QINQ)
+        if (iface.getType() == NetworkType.QINQ) {
             UpdateQuery.New(QinqVO.class).eq(QinqVO_.tunnelUuid, tunnelUuid).delete();
+        }
 
         if (newType == NetworkType.QINQ) {
-            List<QinqVO> vos = new ArrayList<>();
             for (InnerVlanSegment segment : segments) {
                 QinqVO qinq = new QinqVO();
                 qinq.setUuid(Platform.getUuid());
                 qinq.setTunnelUuid(tunnelUuid);
                 qinq.setStartVlan(segment.getStartVlan());
                 qinq.setEndVlan(segment.getEndVlan());
-                vos.add(qinq);
+                qinq = dbf.persistAndRefresh(qinq);
+                vos.add(qinq.getUuid());
             }
-            dbf.persistCollection(vos);
         }
+        return vos;
     }
 
     /**
@@ -205,8 +208,8 @@ public class TunnelBase {
                 dbf.remove(qv);
             }
         }
-        UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid,vo.getUuid()).delete();
-        UpdateQuery.New(SpeedTestTunnelVO.class).eq(SpeedTestTunnelVO_.tunnelUuid,vo.getUuid()).delete();
+        UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, vo.getUuid()).delete();
+        UpdateQuery.New(SpeedTestTunnelVO.class).eq(SpeedTestTunnelVO_.tunnelUuid, vo.getUuid()).delete();
     }
 
     /**
@@ -319,73 +322,64 @@ public class TunnelBase {
     /**
      * 修改端口和物理接口是否跨了物理交换机
      */
-    public boolean isChangeSwitchCauseUpdatePort(String oldSwitchPortUuid,String newSwitchPortUuid){
-        SwitchPortVO oldPort = dbf.findByUuid(oldSwitchPortUuid,SwitchPortVO.class);
-        SwitchVO oldSwitch = dbf.findByUuid(oldPort.getSwitchUuid(),SwitchVO.class);
+    public boolean isChangeSwitchCauseUpdatePort(String oldSwitchPortUuid, String newSwitchPortUuid) {
+        SwitchPortVO oldPort = dbf.findByUuid(oldSwitchPortUuid, SwitchPortVO.class);
+        SwitchVO oldSwitch = dbf.findByUuid(oldPort.getSwitchUuid(), SwitchVO.class);
 
-        SwitchPortVO newPort = dbf.findByUuid(newSwitchPortUuid,SwitchPortVO.class);
-        SwitchVO newSwitch = dbf.findByUuid(newPort.getSwitchUuid(),SwitchVO.class);
+        SwitchPortVO newPort = dbf.findByUuid(newSwitchPortUuid, SwitchPortVO.class);
+        SwitchVO newSwitch = dbf.findByUuid(newPort.getSwitchUuid(), SwitchVO.class);
 
-        if(oldSwitch.getPhysicalSwitchUuid().equals(newSwitch.getPhysicalSwitchUuid())){
+        if (oldSwitch.getPhysicalSwitchUuid().equals(newSwitch.getPhysicalSwitchUuid())) {
             return false;
-        }else{
+        } else {
             return true;
         }
     }
 
     /************************************************Tunnel Job*****************************************/
 
-    public void deleteTunnelJob(TunnelVO vo,String queueName){
-        if(vo.getMonitorState() == TunnelMonitorState.Enabled){
-            if(vo.getState() == TunnelState.Enabled){
+    public void deleteTunnelJob(TunnelVO vo, String queueName) {
+        if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
+            if (vo.getState() == TunnelState.Enabled) {
                 logger.info("删除通道成功，并创建任务：StartOrStopMonitorJob");
                 StartOrStopMonitorJob job = new StartOrStopMonitorJob();
                 job.setTunnelUuid(vo.getUuid());
                 job.setStart(false);
-                jobf.execute(queueName+"-停止监控", Platform.getManagementServerId(), job);
+                jobf.execute(queueName + "-停止监控", Platform.getManagementServerId(), job);
             }
-
-            logger.info("删除通道成功，并创建任务：DeleteIcmpJob");
-            DeleteIcmpJob job3 = new DeleteIcmpJob();
-            job3.setTunnelUuid(vo.getUuid());
-            jobf.execute(queueName+"-删除ICMP", Platform.getManagementServerId(), job3);
 
         }
         logger.info("删除通道成功，并创建任务：DeleteResourcePolicyRefJob");
         DeleteResourcePolicyRefJob job2 = new DeleteResourcePolicyRefJob();
         job2.setTunnelUuid(vo.getUuid());
-        jobf.execute(queueName+"-策略同步", Platform.getManagementServerId(), job2);
+        jobf.execute(queueName + "-策略同步", Platform.getManagementServerId(), job2);
 
         logger.info("删除通道成功，并创建任务：TerminateAliEdgeRouterJob");
         TerminateAliEdgeRouterJob job4 = new TerminateAliEdgeRouterJob();
         job4.setTunnelUuid(vo.getUuid());
-        jobf.execute(queueName+"-中止阿里边界路由器", Platform.getManagementServerId(), job4);
+        jobf.execute(queueName + "-中止阿里边界路由器", Platform.getManagementServerId(), job4);
     }
 
-    public void updateInterfacePortsJob(APIUpdateInterfacePortMsg msg,String queueName){
+    public void updateInterfacePortsJob(APIUpdateInterfacePortMsg msg, String queueName) {
         //首先判断该物理接口有没有开通专线
         boolean isBeUsedForTunnel = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.interfaceUuid,msg.getUuid())
+                .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
                 .isExists();
-        if(msg.isIssue() && isBeUsedForTunnel){
+        if (msg.isIssue() && isBeUsedForTunnel) {
             String tunnelUuid = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.interfaceUuid,msg.getUuid())
+                    .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
                     .select(TunnelSwitchPortVO_.tunnelUuid)
                     .findValue();
-            InterfaceVO interfaceVO = dbf.findByUuid(msg.getUuid(),InterfaceVO.class);
-            TunnelVO vo = dbf.findByUuid(tunnelUuid,TunnelVO.class);
-            boolean isChangeSwitch = isChangeSwitchCauseUpdatePort(interfaceVO.getSwitchPortUuid(),msg.getSwitchPortUuid());
-            if(isChangeSwitch){
-                if(vo.getMonitorState() == TunnelMonitorState.Enabled){
+            InterfaceVO interfaceVO = dbf.findByUuid(msg.getUuid(), InterfaceVO.class);
+            TunnelVO vo = dbf.findByUuid(tunnelUuid, TunnelVO.class);
+            boolean isChangeSwitch = isChangeSwitchCauseUpdatePort(interfaceVO.getSwitchPortUuid(), msg.getSwitchPortUuid());
+            if (isChangeSwitch) {
+                if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
                     logger.info("修改端口成功，并创建任务：ModifyMonitorJob");
                     ModifyMonitorJob job = new ModifyMonitorJob();
                     job.setTunnelUuid(vo.getUuid());
-                    jobf.execute(queueName+"-更新监控", Platform.getManagementServerId(), job);
+                    jobf.execute(queueName + "-更新监控", Platform.getManagementServerId(), job);
 
-                    logger.info("修改端口成功，并创建任务：UpdateIcmpJob");
-                    UpdateIcmpJob job3 = new UpdateIcmpJob();
-                    job3.setTunnelUuid(vo.getUuid());
-                    jobf.execute(queueName+"-更新ICMP", Platform.getManagementServerId(), job3);
                 }
 
                 logger.info("修改端口成功，并创建任务：UpdateTunnelInfoForFalconJob");
@@ -405,44 +399,40 @@ public class TunnelBase {
                 job2.setSwitchAIp(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
                 job2.setSwitchBIp(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
                 job2.setAccountUuid(vo.getOwnerAccountUuid());
-                jobf.execute(queueName+"-策略同步", Platform.getManagementServerId(), job2);
+                jobf.execute(queueName + "-策略同步", Platform.getManagementServerId(), job2);
             }
         }
     }
 
-    public void updateTunnelVlanOrInterfaceJob(TunnelVO vo,APIUpdateTunnelVlanMsg msg,String queueName){
+    public void updateTunnelVlanOrInterfaceJob(TunnelVO vo, APIUpdateTunnelVlanMsg msg, String queueName) {
 
         String oldSwitchPortUuidA = Q.New(InterfaceVO.class)
-                .eq(InterfaceVO_.uuid,msg.getOldInterfaceAUuid())
+                .eq(InterfaceVO_.uuid, msg.getOldInterfaceAUuid())
                 .select(InterfaceVO_.switchPortUuid)
                 .findValue();
         String newSwitchPortUuidA = Q.New(InterfaceVO.class)
-                .eq(InterfaceVO_.uuid,msg.getInterfaceAUuid())
+                .eq(InterfaceVO_.uuid, msg.getInterfaceAUuid())
                 .select(InterfaceVO_.switchPortUuid)
                 .findValue();
         String oldSwitchPortUuidZ = Q.New(InterfaceVO.class)
-                .eq(InterfaceVO_.uuid,msg.getOldInterfaceZUuid())
+                .eq(InterfaceVO_.uuid, msg.getOldInterfaceZUuid())
                 .select(InterfaceVO_.switchPortUuid)
                 .findValue();
         String newSwitchPortUuidZ = Q.New(InterfaceVO.class)
-                .eq(InterfaceVO_.uuid,msg.getInterfaceZUuid())
+                .eq(InterfaceVO_.uuid, msg.getInterfaceZUuid())
                 .select(InterfaceVO_.switchPortUuid)
                 .findValue();
-        boolean isChangeA = isChangeSwitchCauseUpdatePort(oldSwitchPortUuidA,newSwitchPortUuidA);
-        boolean isChangeZ = isChangeSwitchCauseUpdatePort(oldSwitchPortUuidZ,newSwitchPortUuidZ);
-        if((!Objects.equals(msg.getaVlan(), msg.getOldAVlan()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan()))
-                || (isChangeA || isChangeZ)){
+        boolean isChangeA = isChangeSwitchCauseUpdatePort(oldSwitchPortUuidA, newSwitchPortUuidA);
+        boolean isChangeZ = isChangeSwitchCauseUpdatePort(oldSwitchPortUuidZ, newSwitchPortUuidZ);
+        if ((!Objects.equals(msg.getaVlan(), msg.getOldAVlan()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan()))
+                || (isChangeA || isChangeZ)) {
 
-            if(vo.getMonitorState() == TunnelMonitorState.Enabled){
+            if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
                 logger.info("修改VLAN或物理接口成功，并创建任务：ModifyMonitorJob");
                 ModifyMonitorJob job = new ModifyMonitorJob();
                 job.setTunnelUuid(vo.getUuid());
-                jobf.execute(queueName+"-更新监控", Platform.getManagementServerId(), job);
+                jobf.execute(queueName + "-更新监控", Platform.getManagementServerId(), job);
 
-                logger.info("修改VLAN或物理接口成功，并创建任务：UpdateIcmpJob");
-                UpdateIcmpJob job3 = new UpdateIcmpJob();
-                job3.setTunnelUuid(vo.getUuid());
-                jobf.execute(queueName+"-更新ICMP", Platform.getManagementServerId(), job3);
             }
 
             logger.info("修改VLAN或物理接口成功，并创建任务：UpdateTunnelInfoForFalconJob");
@@ -462,21 +452,17 @@ public class TunnelBase {
             job2.setSwitchAIp(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
             job2.setSwitchBIp(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
             job2.setAccountUuid(vo.getOwnerAccountUuid());
-            jobf.execute(queueName+"-策略同步", Platform.getManagementServerId(), job2);
+            jobf.execute(queueName + "-策略同步", Platform.getManagementServerId(), job2);
         }
     }
 
-    public void updateTunnelBandwidthJob(TunnelVO vo,String queueName){
-        if(vo.getMonitorState() == TunnelMonitorState.Enabled){
+    public void updateTunnelBandwidthJob(TunnelVO vo, String queueName) {
+        if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
             logger.info("修改带宽成功，并创建任务：ModifyMonitorJob");
             ModifyMonitorJob job = new ModifyMonitorJob();
             job.setTunnelUuid(vo.getUuid());
-            jobf.execute(queueName+"-更新监控", Platform.getManagementServerId(), job);
+            jobf.execute(queueName + "-更新监控", Platform.getManagementServerId(), job);
 
-            logger.info("修改带宽成功，并创建任务：UpdateIcmpJob");
-            UpdateIcmpJob job3 = new UpdateIcmpJob();
-            job3.setTunnelUuid(vo.getUuid());
-            jobf.execute(queueName+"-更新ICMP", Platform.getManagementServerId(), job3);
 
         }
         logger.info("修改带宽成功，并创建任务：UpdateTunnelInfoForFalconJob");
@@ -496,26 +482,26 @@ public class TunnelBase {
         job2.setSwitchAIp(getPhysicalSwitchMip(tunnelSwitchPortA.getSwitchPortUuid()));
         job2.setSwitchBIp(getPhysicalSwitchMip(tunnelSwitchPortZ.getSwitchPortUuid()));
         job2.setAccountUuid(vo.getOwnerAccountUuid());
-        jobf.execute(queueName+"-策略同步", Platform.getManagementServerId(), job2);
+        jobf.execute(queueName + "-策略同步", Platform.getManagementServerId(), job2);
     }
 
-    public void enabledTunnelJob(TunnelVO vo,String queueName){
-        if(vo.getMonitorState() == TunnelMonitorState.Enabled){
+    public void enabledTunnelJob(TunnelVO vo, String queueName) {
+        if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
             logger.info("专线恢复连接成功，并创建任务：StartOrStopMonitorJob");
             StartOrStopMonitorJob job = new StartOrStopMonitorJob();
             job.setTunnelUuid(vo.getUuid());
             job.setStart(true);
-            jobf.execute(queueName+"-开启监控", Platform.getManagementServerId(), job);
+            jobf.execute(queueName + "-开启监控", Platform.getManagementServerId(), job);
         }
     }
 
-    public void disabledTunnelJob(TunnelVO vo,String queueName){
-        if(vo.getMonitorState() == TunnelMonitorState.Enabled) {
+    public void disabledTunnelJob(TunnelVO vo, String queueName) {
+        if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
             logger.info("专线关闭连接成功，并创建任务：StartOrStopMonitorJob");
             StartOrStopMonitorJob job = new StartOrStopMonitorJob();
             job.setTunnelUuid(vo.getUuid());
             job.setStart(false);
-            jobf.execute(queueName+"-停止监控", Platform.getManagementServerId(), job);
+            jobf.execute(queueName + "-停止监控", Platform.getManagementServerId(), job);
         }
     }
 }

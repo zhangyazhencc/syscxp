@@ -599,8 +599,18 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         BigDecimal needPayOriginMoney = originalPrice.multiply(notUseMonth);
         BigDecimal subMoney = needPayMoney.subtract(remainMoney);
 
-        if (subMoney.compareTo(BigDecimal.ZERO) < 0) {//downgrade substract sla
+        if (subMoney.compareTo(BigDecimal.ZERO) >= 0) { //upgrade
+
+            notUseMonth = getNotUseMonths(dbf.getCurrentSqlTime().toLocalDateTime().minusDays(1), msg.getExpiredTime().toLocalDateTime());
+            remainMoney = renewVO.getPriceOneMonth().multiply(notUseMonth);
+            needPayMoney = discountPrice.multiply(notUseMonth);
+            needPayOriginMoney = originalPrice.multiply(notUseMonth);
+            subMoney = needPayMoney.subtract(remainMoney);
+
+        } else { //downgrade
+            BigDecimal valuePayCash = getValuablePayCash(msg.getAccountUuid(), msg.getProductUuid());
             subMoney = subMoney.add(getDownGradeDiffMoney(msg.getAccountUuid(), msg.getProductUuid(), discountPrice));
+
         }
 
         APIGetModifyProductPriceDiffReply reply = new APIGetModifyProductPriceDiffReply();

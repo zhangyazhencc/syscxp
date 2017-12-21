@@ -909,11 +909,13 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                 String endpointA = Q.New(TunnelSwitchPortVO.class)
                         .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelUuid)
                         .eq(TunnelSwitchPortVO_.sortTag,"A")
-                        .find();
+                        .select(TunnelSwitchPortVO_.endpointUuid)
+                        .findValue();
                 String endpointZ = Q.New(TunnelSwitchPortVO.class)
                         .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelUuid)
                         .eq(TunnelSwitchPortVO_.sortTag,"Z")
-                        .find();
+                        .select(TunnelSwitchPortVO_.endpointUuid)
+                        .findValue();
                 if(endpointA.equals(connectedEndpointUuid) || endpointZ.equals(connectedEndpointUuid)){
                     throw new ApiMessageInterceptionException(argerr("该互联连接点至目的连接点已经被通道[%s]使用！",tunnelUuid));
                 }
