@@ -1,12 +1,32 @@
 package com.syscxp.header.tunnel.node;
 
+import java.util.List;
+
 public class NodeExtensionInfoList {
 
     private String page_no;
+    private String page_count;
     private String page_size;
     private String total;
     private String count;
+    private List<Integer> page_range;
     private String nodeExtensionInfos;
+
+    public List<Integer> getPage_range() {
+        return page_range;
+    }
+
+    public void setPage_range(List<Integer> page_range) {
+        this.page_range = page_range;
+    }
+
+    public String getPage_count() {
+        return page_count;
+    }
+
+    public void setPage_count(String page_count) {
+        this.page_count = page_count;
+    }
 
     public String getPage_no() {
         return page_no;
