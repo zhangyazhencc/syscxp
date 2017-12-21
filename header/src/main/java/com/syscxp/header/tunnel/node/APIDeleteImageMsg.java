@@ -19,7 +19,6 @@ public class APIDeleteImageMsg extends APIMessage {
     @APIParam(emptyString = false)
     private String image_url;
 
-
     public String getNodeId() {
         return nodeId;
     }
