@@ -1329,7 +1329,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         checkTunnel(vpn);
         if (vpn.getVpnCertUuid() != null) {
-            throw new VpnServiceException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
                     String.format("VPN[uuid: %s]已绑定证书, 请先解绑证书", vpn.getUuid())));
         }
     }
@@ -1342,7 +1342,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void validate(APIDeleteVpnCertMsg msg) {
         VpnCertVO cert = dbf.findByUuid(msg.getUuid(), VpnCertVO.class);
         if (cert.getVpnNum() > 0)
-            throw new VpnServiceException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
                     String.format("The VpnCertVO[uuid:%s] has already binding Vpn.", msg.getUuid())));
     }
 
@@ -1362,14 +1362,14 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void checkTunnel(VpnVO vpn) {
         if ("".equals(vpn.getTunnelUuid())) {
-            throw new VpnServiceException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
                     String.format("VPN[uuid: %s]没有指定专线。", vpn.getUuid())));
         }
     }
 
     private void checkVpnCert(VpnVO vpn) {
         if (vpn.getVpnCertUuid() == null) {
-            throw new VpnServiceException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
                     String.format("VPN[uuid: %s]的证书已经解绑, 请绑定证书", vpn.getUuid())));
         }
     }
@@ -1402,7 +1402,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 .findValue();
 
         if (times >= maxModifies) {
-            throw new VpnServiceException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
                     String.format("The Vpn[uuid:%s] has motified %s times.", msg.getUuid(), times)));
         }
     }
@@ -1415,7 +1415,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         Q q = Q.New(VpnVO.class).eq(VpnVO_.name, msg.getName()).notEq(VpnVO_.uuid, msg.getUuid());
         if (q.isExists())
-            throw new VpnServiceException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
                     String.format("The Vpn[name:%s] is already exist.", msg.getName())));
     }
 
@@ -1442,7 +1442,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         List<String> hostUuids = getHostUuid(msg.getEndpointUuid(), msg.getVlan());
 
         if (hostUuids.isEmpty()) {
-            throw new VpnServiceException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
                     String.format("The endpoint[uuid:%s] has no available host.", msg.getEndpointUuid())));
         }
         Random random = new Random();
@@ -1455,7 +1455,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         APIGetProductPriceReply reply = createOrder(priceMsg);
         if (!reply.isPayable())
-            throw new VpnServiceException(errf.instantiateErrorCode(VpnErrors.CALL_BILLING_ERROR,
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.CALL_BILLING_ERROR,
                     String.format("The Account[uuid:%s] has no money to pay.", msg.getEndpointUuid())));
     }
 
