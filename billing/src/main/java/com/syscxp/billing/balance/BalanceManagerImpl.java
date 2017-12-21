@@ -463,6 +463,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
                     dealDetailVO.setTradeNO(trade_no);
                     dealDetailVO.setOutTradeNO(out_trade_no);
                     dbf.getEntityManager().merge(dealDetailVO);
+                    dbf.getEntityManager().flush();
                 }
 
                 //注意：
@@ -514,6 +515,7 @@ public class BalanceManagerImpl extends AbstractService implements ApiMessageInt
                 dealDetailVO.setFinishTime(dbf.getCurrentSqlTime());
                 dealDetailVO.setTradeNO(trade_no);
                 dbf.getEntityManager().merge(dealDetailVO);
+                dbf.getEntityManager().flush();
             }
         }
         reply.setInventory(signVerified);
