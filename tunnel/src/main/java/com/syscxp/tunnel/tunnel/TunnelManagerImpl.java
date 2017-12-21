@@ -466,7 +466,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (tsPort != null && iface.getType() == NetworkType.QINQ) {
             List<QinqVO> qinqs = Q.New(QinqVO.class)
                     .eq(QinqVO_.tunnelUuid, tsPort.getTunnelUuid()).list();
-            rollback.put("qinqs", qinqs);
+            rollback.put("qinQs", qinqs);
         }
 
 
@@ -488,7 +488,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     String tunnelUuid = isUsed ? tsPort.getTunnelUuid() : null;
                     List<String> qinqs = tunnelBase.updateNetworkType(iface, tunnelUuid, msg.getNetworkType(), msg.getSegments());
                     if (!qinqs.isEmpty())
-                        data.put("newqinqs", qinqs);
+                        data.put("newQinQs", qinqs);
                 }
                 logger.info(String.format("after update InterfaceVO[uuid: %s]", iface.getUuid()));
                 //throw new CloudRuntimeException("update interface port ...............");
@@ -500,8 +500,10 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 logger.info(String.format("rollback to update InterfaceVO[uuid: %s]", iface.getUuid()));
                 dbf.updateAndRefresh(iface);
                 if (isUsed) {
-                    List<QinqVO> qinqs = (List<QinqVO>) data.getOrDefault("qinqs", new ArrayList());
+                    List<QinqVO> qinqs = (List<QinqVO>) data.getOrDefault("qinQs", new ArrayList());
                     dbf.updateCollection(qinqs);
+                    List<String> qinqUuids = (List<String>) data.getOrDefault("newQinQs", new ArrayList());
+                    dbf.removeByPrimaryKeys(qinqUuids, QinqVO.class);
                 }
                 trigger.rollback();
             }
@@ -525,8 +527,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void rollback(FlowRollback trigger, Map data) {
                 if (isUsed) {
                     dbf.updateAndRefresh(tsPort);
-                    List<String> qinqs = (List<String>) data.getOrDefault("newqinqs", new ArrayList());
-                    dbf.removeByPrimaryKeys(qinqs, QinqVO.class);
                     logger.info(String.format("rollback to update TunnelSwitchPortVO[uuid: %s]", tsPort.getUuid()));
                 }
                 trigger.rollback();
