@@ -2,13 +2,13 @@ package com.syscxp.header.vpn.agent;
 
 
 public class ChangeVpnStatusMsg extends VpnMessage {
-    private String status;
+    private String command;
 
-    public String getStatus() {
-        return status;
+    public String getCommand() {
+        return command;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setCommand(String command) {
+        this.command = command;
     }
 }

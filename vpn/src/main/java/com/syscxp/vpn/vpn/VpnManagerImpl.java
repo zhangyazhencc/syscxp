@@ -730,12 +730,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         changeVpnStateByAPI(vpn, next, new Completion(evt) {
             @Override
             public void success() {
-                evt.setInventory(VpnInventory.valueOf(vpn));
+                evt.setInventory(VpnInventory.valueOf(dbf.reload(vpn)));
                 bus.publish(evt);
             }
 
             @Override
             public void fail(ErrorCode errorCode) {
+                evt.setInventory(VpnInventory.valueOf(dbf.reload(vpn)));
                 evt.setError(errorCode);
                 bus.publish(evt);
             }
@@ -1488,15 +1489,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void changeVpnStateByAPI(VpnVO vpn, VpnState next, final Completion complete) {
+        changeVpnState(vpn, next);
         ChangeVpnStatusMsg changeVpnStatusMsg = new ChangeVpnStatusMsg();
         changeVpnStatusMsg.setVpnUuid(vpn.getUuid());
-        changeVpnStatusMsg.setStatus(VpnState.Enabled == next ? VpnStatus.Connected.toString() : VpnStatus.Disconnected.toString());
+        changeVpnStatusMsg.setCommand(VpnState.Enabled == next ? "start" : "stop");
         bus.makeLocalServiceId(changeVpnStatusMsg, VpnConstant.SERVICE_ID);
         bus.send(changeVpnStatusMsg, new CloudBusCallBack(complete) {
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
-                    changeVpnState(vpn, next);
                     complete.success();
                 } else {
                     complete.fail(reply.getError());
