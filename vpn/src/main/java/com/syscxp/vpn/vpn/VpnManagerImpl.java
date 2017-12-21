@@ -765,10 +765,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 createOrder(orderMsg, new Completion(trigger) {
                     @Override
                     public void success() {
-                        vpn.setState(VpnState.Disabled);
-                        vpn.setStatus(VpnStatus.Disconnected);
-                        vpn.setExpireDate(dbf.getCurrentSqlTime());
-                        dbf.updateAndRefresh(vpn);
+                        if (vpn.getVpnCertUuid() != null)
+                            detachVpnCert(vpn.getUuid(), vpn.getVpnCert().getUuid());
                         trigger.next();
                     }
 
@@ -793,6 +791,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
                         @Override
                         public void fail(ErrorCode errorCode) {
+                            VpnVO vpnVO = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+                            vpnVO.setState(VpnState.Disabled);
+                            vpnVO.setStatus(VpnStatus.Disconnected);
+                            vpnVO.setExpireDate(dbf.getCurrentSqlTime());
+                            dbf.updateAndRefresh(vpnVO);
                             trigger.fail(errorCode);
                         }
                     });
