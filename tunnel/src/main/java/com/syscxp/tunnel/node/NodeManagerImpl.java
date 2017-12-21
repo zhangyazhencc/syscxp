@@ -2,6 +2,10 @@ package com.syscxp.tunnel.node;
 
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.syscxp.core.db.Q;
 import com.syscxp.core.identity.IdentityGlobalProperty;
 import com.syscxp.core.rest.RESTApiDecoder;
@@ -20,6 +24,13 @@ import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO;
 import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO_;
 import com.syscxp.utils.Digest;
 import com.syscxp.utils.gson.JSONObjectUtil;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -51,6 +62,9 @@ import org.springframework.util.StringUtils;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.util.*;
 
 import static com.syscxp.core.Platform.argerr;
@@ -93,7 +107,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         } else {
             handleLocalMessage(msg);
         }
-    }
+     }
 
     private void handleLocalMessage(Message msg) {
         bus.dealWithUnknownMessage(msg);
@@ -145,20 +159,32 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     }
 
     private void handle(APIDeleteImageMsg msg) {
-        APIDeleteImageEvent event = new APIDeleteImageEvent();
+        APIDeleteImageEvent event = new APIDeleteImageEvent(msg.getId());
 
         String timestamp = String.valueOf(System.currentTimeMillis()/1000);
-        String md5 = Digest.getMD5(msg.getNodeId() + timestamp + ImageUploadInfoConstant.upload_key + msg.getImage_url());
-        Map map = new HashMap();
-        map.put("node_id", msg.getNodeId());
-        map.put("image_url", msg.getImage_url());
-        map.put("timestamp", timestamp);
-        map.put("md5", md5);
+        String md5 = Digest.getMD5(msg.getNodeId() + timestamp + NodeImageGlobalProperty.UPLOAD_KEY + msg.getImage_url());
 
-        RestAPIResponse rsp = restf.syncJsonPost(ImageUploadInfoConstant.delete_url,
-                JSONObjectUtil.toJsonString(map), RestAPIResponse.class);
+        StringBuffer prame = new StringBuffer();
+        prame.append("node_id=");
+        prame.append(msg.getNodeId());
+        prame.append("&image_url=");
+        prame.append(msg.getImage_url());
+        prame.append("&timestamp=");
+        prame.append(timestamp);
+        prame.append("&md5=");
+        prame.append(md5);
 
-        if(rsp.getResult().equals("success")){
+//        Map map = new HashMap();
+//        map.put("node_id", msg.getNodeId());
+//        map.put("image_url", msg.getImage_url());
+//        map.put("timestamp", timestamp);
+//        map.put("md5", md5);
+
+        Map rsp = restf.syncJsonPost(NodeImageGlobalProperty.DELETE_IP+NodeImageGlobalProperty.DELETE_URL,
+                prame.toString(), Map.class);
+
+        if(rsp.get("success") != null && (boolean)rsp.get("success")){
+            System.out.println("successfully");
             mongoTemplate.updateFirst(new Query(Criteria.where("node_id").is(msg.getNodeId())),
                     new Update().set("images_url", mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),
                             NodeExtensionInfo.class).getImages_url().remove(msg.getImage_url())),NodeExtensionInfo.class);
@@ -275,13 +301,13 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
     private void handle(APIGetImageUploadInfoMsg msg) {
         APIGetImageUploadInfoReply reply = new APIGetImageUploadInfoReply();
 
-        reply.setUpload_url(ImageUploadInfoConstant.upload_url);
-        reply.setDelete_url(ImageUploadInfoConstant.delete_url);
-        reply.setImage_url_prefix(ImageUploadInfoConstant.image_url_prefix);
-        reply.setFileNumLimit(ImageUploadInfoConstant.fileNumLimit);
+        reply.setUpload_url(NodeImageGlobalProperty.UPLOAD_URL);
+        reply.setDelete_url(NodeImageGlobalProperty.DELETE_URL);
+        reply.setImage_url_prefix(NodeImageGlobalProperty.IMAGE_URL_PREFIX);
+        reply.setFileNumLimit(NodeImageGlobalProperty.FILENUMLIMIT);
 
         String timestamp = String.valueOf(System.currentTimeMillis()/1000);
-        String md5 = Digest.getMD5(msg.getNodeId() + timestamp + ImageUploadInfoConstant.upload_key);
+        String md5 = Digest.getMD5(msg.getNodeId() + timestamp + NodeImageGlobalProperty.UPLOAD_KEY);
 
         reply.setNodeId(msg.getNodeId());
         reply.setTimestamp(timestamp);
@@ -299,145 +325,178 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIUpdateNodeExtensionInfoMsg msg) {
 
-        com.alibaba.fastjson.JSONObject newInfo = com.alibaba.fastjson.JSONObject.
-                parseObject(msg.getNewNodeExtensionInfo());
+//        com.alibaba.fastjson.JSONObject newInfo = com.alibaba.fastjson.JSONObject.
+//                parseObject(msg.getNewNodeExtensionInfo());
+//
+//        NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
+//                newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class,"nodeExtensionInfo");
+//
+//        String oldmogo = "{" +"\"nodeExtensionInfo\":" + JSONObjectUtil.toJsonString(node) +"}";
+//        com.alibaba.fastjson.JSONObject oldInfo = com.alibaba.fastjson.JSONObject.parseObject(oldmogo);
+//
+//        Map<String,Object> oldmap = oldInfo;
+//        Map<String,Object> newmap = newInfo;
+//        Set<String> keySet = oldmap.keySet();
+//        for (String key : keySet) {
+//            if(newmap.containsKey(key)){
+//                if(newmap.get(key) instanceof com.alibaba.fastjson.JSONObject){
+//                    Map<String,Object> oldmap1 = (Map)oldmap.get(key);
+//                    Map<String,Object> newmap1 = (Map)newmap.get(key);
+//                    Set<String> keySet1 = oldmap1.keySet();
+//                    for (String key1 : keySet1) {  //node_id
+//                        if(newmap1.containsKey(key1)){
+//                            if(oldmap1.get(key1) instanceof com.alibaba.fastjson.JSONObject){
+//                                Map<String,Object> oldmap2 = (Map)oldmap1.get(key1);
+//                                Map<String,Object> newmap2 = (Map)newmap1.get(key1);
+//                                Set<String> keySet2 = oldmap2.keySet();
+//                                for (String key2 : keySet2) {
+//                                    if(newmap2.containsKey(key2)){
+//                                        if(oldmap2.get(key2) instanceof com.alibaba.fastjson.JSONObject){
+//                                            Map<String,Object> oldmap3 = (Map)oldmap2.get(key2);
+//                                            Map<String,Object> newmap3 = (Map)newmap2.get(key2);
+//                                            Set<String> keySet3 = oldmap3.keySet();
+//                                            for (String key3 : keySet3) {
+//                                                if(newmap3.containsKey(key3)){
+//                                                    if(oldmap3.get(key3) instanceof com.alibaba.fastjson.JSONObject){
+//                                                        Map<String,Object> oldmap4 = (Map)oldmap3.get(key3);
+//                                                        Map<String,Object> newmap4 = (Map)newmap3.get(key3);
+//                                                        Set<String> keySet4 = oldmap4.keySet();
+//                                                        for (String key4 : keySet4) {
+//                                                            if(newmap4.containsKey(key4)){
+//                                                                if(oldmap4.get(key4) instanceof com.alibaba.fastjson.JSONObject){
+//                                                                    System.out.println("/");
+//                                                                }else{
+//                                                                    oldmap4.put(key4, newmap4.get(key4));
+//                                                                }
+//                                                            }
+//                                                        }
+//                                                        oldmap3.put(key3, oldmap4);
+//                                                    }else{
+//                                                        oldmap3.put(key3, newmap3.get(key3));
+//                                                    }
+//                                                }
+//                                            }
+//                                            oldmap2.put(key2, oldmap3);
+//                                        }else{
+//                                            oldmap2.put(key2, newmap2.get(key2));
+//                                        }
+//                                    }
+//                                }
+//                                oldmap1.put(key1, oldmap2);
+//                            }else{
+//                                oldmap1.put(key1, newmap1.get(key1));
+//                            }
+//                        }
+//                    }
+//                    oldmap1.put("_id",node.get_id());
+//                    oldmap.put(key,oldmap1);
+//                }else{
+//                    oldmap.put(key,newmap.get(key));
+//                }
+//            }
+//        }
+//
+//
+//        Set<String> keySett = newmap.keySet();
+//        for (String key : keySett) {
+//            if(oldmap.containsKey(key)){
+//                if(newmap.get(key) instanceof com.alibaba.fastjson.JSONObject){
+//                    Map<String,Object> oldmap1 = (Map)oldmap.get(key);
+//                    Map<String,Object> newmap1 = (Map)newmap.get(key);
+//                    Set<String> keySet1 = newmap1.keySet();
+//                    for (String key1 : keySet1) {
+//                        if(oldmap1.containsKey(key1)){
+//                            if(newmap1.get(key1) instanceof com.alibaba.fastjson.JSONObject){
+//                                Map<String,Object> oldmap2 = (Map)oldmap1.get(key1);
+//                                Map<String,Object> newmap2 = (Map)newmap1.get(key1);
+//                                Set<String> keySet2 = newmap2.keySet();
+//                                for (String key2 : keySet2) {
+//                                    if(oldmap2.containsKey(key2)){
+//                                        if(newmap2.get(key2) instanceof com.alibaba.fastjson.JSONObject){
+//                                            Map<String,Object> oldmap3 = (Map)oldmap2.get(key2);
+//                                            Map<String,Object> newmap3 = (Map)newmap2.get(key2);
+//                                            Set<String> keySet3 = newmap3.keySet();
+//                                            for (String key3 : keySet3) {
+//                                                if(oldmap3.containsKey(key3)){
+//                                                    if(newmap3.get(key3) instanceof com.alibaba.fastjson.JSONObject){
+//                                                        Map<String,Object> oldmap4 = (Map)oldmap3.get(key3);
+//                                                        Map<String,Object> newmap4 = (Map)newmap3.get(key3);
+//                                                        Set<String> keySet4 = newmap4.keySet();
+//                                                        for (String key4 : keySet4) {
+//                                                            if(oldmap4.containsKey(key4)){
+//                                                                if(newmap4.get(key4) instanceof com.alibaba.fastjson.JSONObject){
+//                                                                    System.out.println("/");
+//                                                                }
+//                                                            }else{
+//                                                                oldmap4.put(key4, newmap4.get(key4));
+//                                                            }
+//                                                        }
+//                                                        oldmap3.put(key3, oldmap4);
+//                                                    }
+//                                                }else{
+//                                                    oldmap3.put(key3, newmap3.get(key3));
+//                                                }
+//                                            }
+//                                            oldmap2.put(key2, oldmap3);
+//                                        }
+//                                    }else{
+//                                        oldmap2.put(key2, newmap2.get(key2));
+//                                    }
+//                                }
+//                                oldmap1.put(key1, oldmap2);
+//                            }
+//                        }else{
+//                            oldmap1.put(key1, newmap1.get(key1));
+//                        }
+//                    }
+//                    oldmap.put(key, oldmap1);
+//                }
+//            }else{
+//                oldmap.put(key, newmap.get(key));
+//            }
+//        }
 
+        JsonParser parser = new JsonParser();
+        JsonObject objnew = (JsonObject) parser.parse(msg.getNewNodeExtensionInfo());
         NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
-                newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class,"nodeExtensionInfo");
-
+                objnew.getAsJsonObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class,"nodeExtensionInfo");
         String oldmogo = "{" +"\"nodeExtensionInfo\":" + JSONObjectUtil.toJsonString(node) +"}";
-        com.alibaba.fastjson.JSONObject oldInfo = com.alibaba.fastjson.JSONObject.parseObject(oldmogo);
-
-        Map<String,Object> oldmap = oldInfo;
-        Map<String,Object> newmap = newInfo;
-        Set<String> keySet = oldmap.keySet();
-        for (String key : keySet) {
-            if(newmap.containsKey(key)){
-                if(newmap.get(key) instanceof com.alibaba.fastjson.JSONObject){
-                    Map<String,Object> oldmap1 = (Map)oldmap.get(key);
-                    Map<String,Object> newmap1 = (Map)newmap.get(key);
-                    Set<String> keySet1 = oldmap1.keySet();
-                    for (String key1 : keySet1) {  //node_id
-                        if(newmap1.containsKey(key1)){
-                            if(oldmap1.get(key1) instanceof com.alibaba.fastjson.JSONObject){
-                                Map<String,Object> oldmap2 = (Map)oldmap1.get(key1);
-                                Map<String,Object> newmap2 = (Map)newmap1.get(key1);
-                                Set<String> keySet2 = oldmap2.keySet();
-                                for (String key2 : keySet2) {
-                                    if(newmap2.containsKey(key2)){
-                                        if(oldmap2.get(key2) instanceof com.alibaba.fastjson.JSONObject){
-                                            Map<String,Object> oldmap3 = (Map)oldmap2.get(key2);
-                                            Map<String,Object> newmap3 = (Map)newmap2.get(key2);
-                                            Set<String> keySet3 = oldmap3.keySet();
-                                            for (String key3 : keySet3) {
-                                                if(newmap3.containsKey(key3)){
-                                                    if(oldmap3.get(key3) instanceof com.alibaba.fastjson.JSONObject){
-                                                        Map<String,Object> oldmap4 = (Map)oldmap3.get(key3);
-                                                        Map<String,Object> newmap4 = (Map)newmap3.get(key3);
-                                                        Set<String> keySet4 = oldmap4.keySet();
-                                                        for (String key4 : keySet4) {
-                                                            if(newmap4.containsKey(key4)){
-                                                                if(oldmap4.get(key4) instanceof com.alibaba.fastjson.JSONObject){
-                                                                    System.out.println("/");
-                                                                }else{
-                                                                    oldmap4.put(key4, newmap4.get(key4));
-                                                                }
-                                                            }
-                                                        }
-                                                        oldmap3.put(key3, oldmap4);
-                                                    }else{
-                                                        oldmap3.put(key3, newmap3.get(key3));
-                                                    }
-                                                }
-                                            }
-                                            oldmap2.put(key2, oldmap3);
-                                        }else{
-                                            oldmap2.put(key2, newmap2.get(key2));
-                                        }
-                                    }
-                                }
-                                oldmap1.put(key1, oldmap2);
-                            }else{
-                                oldmap1.put(key1, newmap1.get(key1));
-                            }
-                        }
-                    }
-                    oldmap1.put("_id",node.get_id());
-                    oldmap.put(key,oldmap1);
-                }else{
-                    oldmap.put(key,newmap.get(key));
-                }
-            }
-        }
-
-
-        Set<String> keySett = newmap.keySet();
-        for (String key : keySett) {
-            if(oldmap.containsKey(key)){
-                if(newmap.get(key) instanceof com.alibaba.fastjson.JSONObject){
-                    Map<String,Object> oldmap1 = (Map)oldmap.get(key);
-                    Map<String,Object> newmap1 = (Map)newmap.get(key);
-                    Set<String> keySet1 = newmap1.keySet();
-                    for (String key1 : keySet1) {
-                        if(oldmap1.containsKey(key1)){
-                            if(newmap1.get(key1) instanceof com.alibaba.fastjson.JSONObject){
-                                Map<String,Object> oldmap2 = (Map)oldmap1.get(key1);
-                                Map<String,Object> newmap2 = (Map)newmap1.get(key1);
-                                Set<String> keySet2 = newmap2.keySet();
-                                for (String key2 : keySet2) {
-                                    if(oldmap2.containsKey(key2)){
-                                        if(newmap2.get(key2) instanceof com.alibaba.fastjson.JSONObject){
-                                            Map<String,Object> oldmap3 = (Map)oldmap2.get(key2);
-                                            Map<String,Object> newmap3 = (Map)newmap2.get(key2);
-                                            Set<String> keySet3 = newmap3.keySet();
-                                            for (String key3 : keySet3) {
-                                                if(oldmap3.containsKey(key3)){
-                                                    if(newmap3.get(key3) instanceof com.alibaba.fastjson.JSONObject){
-                                                        Map<String,Object> oldmap4 = (Map)oldmap3.get(key3);
-                                                        Map<String,Object> newmap4 = (Map)newmap3.get(key3);
-                                                        Set<String> keySet4 = newmap4.keySet();
-                                                        for (String key4 : keySet4) {
-                                                            if(oldmap4.containsKey(key4)){
-                                                                if(newmap4.get(key4) instanceof com.alibaba.fastjson.JSONObject){
-                                                                    System.out.println("/");
-                                                                }
-                                                            }else{
-                                                                oldmap4.put(key4, newmap4.get(key4));
-                                                            }
-                                                        }
-                                                        oldmap3.put(key3, oldmap4);
-                                                    }
-                                                }else{
-                                                    oldmap3.put(key3, newmap3.get(key3));
-                                                }
-                                            }
-                                            oldmap2.put(key2, oldmap3);
-                                        }
-                                    }else{
-                                        oldmap2.put(key2, newmap2.get(key2));
-                                    }
-                                }
-                                oldmap1.put(key1, oldmap2);
-                            }
-                        }else{
-                            oldmap1.put(key1, newmap1.get(key1));
-                        }
-                    }
-                    oldmap.put(key, oldmap1);
-                }
-            }else{
-                oldmap.put(key, newmap.get(key));
-            }
-        }
-
+        JsonObject objold = (JsonObject) parser.parse(oldmogo);
+        JsonObject obj = mergeJson(objnew, objold);
 
         APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent(msg.getId());
 
-        mongoTemplate.save(((com.alibaba.fastjson.JSONObject)oldmap).get("nodeExtensionInfo"),"nodeExtensionInfo");
-        event.setInventory(oldmap.toString());
+        mongoTemplate.save(obj.getAsJsonObject("nodeExtensionInfo"),"nodeExtensionInfo");
+        event.setInventory(obj.toString());
 
         bus.publish(event);
 
+    }
+
+    private JsonObject mergeJson(JsonObject objNew, JsonObject objOld){
+        Iterator<Map.Entry<String, JsonElement>> newIter =  objNew.entrySet().iterator();
+        while (newIter.hasNext()) {
+            Map.Entry<String, JsonElement> entry = newIter.next();
+            String key = entry.getKey();
+            JsonElement value = entry.getValue();
+
+            if (value.isJsonObject()){
+                if (objOld.has(key)){
+                    if (objOld.get(key).isJsonObject()) {
+                        mergeJson(value.getAsJsonObject(), objOld.get(key).getAsJsonObject());
+                    }else{
+                        objOld.add(key, value);
+                    }
+                }else{
+                    objOld.add(key, value);
+                }
+            }else{
+                objOld.add(key, value);
+            }
+
+        }
+
+        return objOld;
     }
 
     private void handle(APIDeleteNodeExtensionInfoMsg msg) {
@@ -451,7 +510,6 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         APIGetNodeExtensionInfoReply reply = new APIGetNodeExtensionInfoReply();
         reply.setNodeExtensionInfo(JSONObjectUtil.toJsonString(
                 mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),NodeExtensionInfo.class,"nodeExtensionInfo")
-//                mongoTemplate.findById(msg.getNodeId(),NodeExtensionInfo.class,"nodeExtensionInfo")
         ));
         bus.reply(msg,reply);
     }
