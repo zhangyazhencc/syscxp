@@ -973,8 +973,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 vpnCert.setVpnNum(vpnCert.getVpnNum() - 1);
                 dbf.updateAndRefresh(vpnCert);
 
-                vo.setVpnCertUuid(null);
-                evt.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vo)));
+                VpnVO vpn = dbf.reload(vo);
+                vpn.setVpnCertUuid(null);
+                evt.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vpn)));
                 bus.publish(evt);
             }
 
