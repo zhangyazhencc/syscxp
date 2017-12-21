@@ -1322,11 +1322,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void validate(APIDetachVpnCertMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        checkVpnCert(vpn);
+        checkTunnelAndVpnCert(vpn);
     }
 
     private void validate(APIAttachVpnCertMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+        checkTunnel(vpn);
         if (vpn.getVpnCertUuid() == null) {
             throw new OperationFailureException(
                     operr("VPN[uuid: %s]已绑定证书证书, 请先解绑证书", vpn.getUuid()));
