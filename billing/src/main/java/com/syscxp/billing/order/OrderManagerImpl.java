@@ -138,7 +138,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         int hash = accountUuid.hashCode() < 0 ? ~accountUuid.hashCode() : accountUuid.hashCode();
         String outTradeNO = currentTimeStamp.toString().replaceAll("\\D+", "").concat(String.valueOf(hash)) + atomicInteger.getAndIncrement();
         if (abvo.getPresentBalance().compareTo(BigDecimal.ZERO) > 0) {
-            if (abvo.getPresentBalance().compareTo(total) > 0) {
+            if (abvo.getPresentBalance().compareTo(total) >= 0) {
                 BigDecimal presentNow = abvo.getPresentBalance().subtract(total);
                 abvo.setPresentBalance(presentNow);
                 orderVo.setPayPresent(total);
