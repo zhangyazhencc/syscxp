@@ -971,7 +971,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
                 detachVpnCert(msg.getUuid(), vo.getVpnCertUuid());
 
-                evt.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vo)));
+                evt.setInventory(VpnInventory.valueOf(dbf.findByUuid(vo.getUuid(), VpnVO.class)));
                 bus.publish(evt);
             }
 
@@ -1314,8 +1314,18 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             validate((APIDeleteVpnCertMsg) msg);
         } else if (msg instanceof APIAttachVpnCertMsg) {
             validate((APIAttachVpnCertMsg) msg);
+        } else if (msg instanceof APIDetachVpnCertMsg) {
+            validate((APIDetachVpnCertMsg) msg);
         }
         return msg;
+    }
+
+    private void validate(APIDetachVpnCertMsg msg) {
+        VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+        if (vpn.getVpnCertUuid() == null) {
+            throw new OperationFailureException(
+                    operr("VPN[uuid: %s]的证书已经解绑，请勿重复操作。", msg.getUuid()));
+        }
     }
 
     private void validate(APIAttachVpnCertMsg msg) {
