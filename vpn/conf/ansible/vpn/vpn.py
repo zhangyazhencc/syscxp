@@ -152,7 +152,8 @@ command = "[ -f %s/bin/python ] || virtualenv --system-site-packages %s " % (vir
 host_post_info.post_label = "ansible.shell.check.virtualenv"
 host_post_info.post_label_param = None
 run_remote_command(command, host_post_info)
-command = "%s/bin/pip install -U pip " % virtenv_path
+
+command = "%s/bin/pip install -U pip --trusted-host %s -i %s" % (virtenv_path, trusted_host, pip_url)
 run_remote_command(command, host_post_info)
 
 # name: install syscxplib
@@ -167,7 +168,7 @@ if copy_syscxplib != "changed:False":
 # name: install vpn agent
 if copy_vpnagent != "changed:False":
     agent_install_arg = AgentInstallArg(trusted_host, pip_url, virtenv_path, init_install)
-    agent_install_arg.agent_name = "vpn agent"
+    agent_install_arg.agent_name = "vpnagent"
     agent_install_arg.agent_root = vpn_root
     agent_install_arg.pkg_name = pkg_vpnagent
     agent_install_arg.virtualenv_site_packages = "yes"
