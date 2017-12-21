@@ -218,8 +218,9 @@ DROP TABLE IF EXISTS `ResourcePolicyRefVO`;
 
 CREATE TABLE `ResourcePolicyRefVO` (
   `uuid` varchar(32) NOT NULL,
-  `resourceUuid` varchar(32) DEFAULT NULL,
-  `policyUuid` varchar(32) DEFAULT NULL,
+  `resourceUuid` varchar(32) NOT NULL,
+  `policyUuid` varchar(32) NOT NULL,
+  `productType` varchar(50) NOT NULL,
   `createDate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `lastOpDate` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   PRIMARY KEY (`uuid`),

@@ -359,6 +359,63 @@ public class MonitorAgentCommands {
         client
     }
 
+    public static class AgentIcmp {
+        private String tunnel_id;
+        private String switch_mip;
+        private String src_monitor_ip;
+        private String dst_monitor_ip;
+        private Integer vlan;
+        private String interface_name;
+
+        public String getTunnel_id() {
+            return tunnel_id;
+        }
+
+        public void setTunnel_id(String tunnel_id) {
+            this.tunnel_id = tunnel_id;
+        }
+
+        public String getSwitch_mip() {
+            return switch_mip;
+        }
+
+        public void setSwitch_mip(String switch_mip) {
+            this.switch_mip = switch_mip;
+        }
+
+        public String getSrc_monitor_ip() {
+            return src_monitor_ip;
+        }
+
+        public void setSrc_monitor_ip(String src_monitor_ip) {
+            this.src_monitor_ip = src_monitor_ip;
+        }
+
+        public String getDst_monitor_ip() {
+            return dst_monitor_ip;
+        }
+
+        public void setDst_monitor_ip(String dst_monitor_ip) {
+            this.dst_monitor_ip = dst_monitor_ip;
+        }
+
+        public Integer getVlan() {
+            return vlan;
+        }
+
+        public void setVlan(Integer vlan) {
+            this.vlan = vlan;
+        }
+
+        public String getInterface_name() {
+            return interface_name;
+        }
+
+        public void setInterface_name(String interface_name) {
+            this.interface_name = interface_name;
+        }
+    }
+
     /**
      * @Author: sunxuelong.
      * @Cretion Date: 2017-11-02.

@@ -19,7 +19,6 @@ import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.falconapi.FalconApiCommands;
-import com.syscxp.header.falconapi.FalconApiRestConstant;
 import com.syscxp.header.host.*;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
@@ -411,7 +410,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     @Transactional()
     private void startTunnelMonitor(TunnelVO tunnelVO, List<TunnelMonitorVO> tunnelMonitorVOS
             , final Completion completion) {
-        FalconApiCommands.Icmp icmp = getIcmp(tunnelVO);
         ControllerCommands.TunnelMonitorCommand controllerCmd =
                 getControllerMonitorCommand(tunnelVO.getUuid(), tunnelMonitorVOS);
 
@@ -433,27 +431,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }).then(new Flow() {
             @Override
             public void run(FlowTrigger trigger, Map data) {
-                startAgentMonitor(icmp, tunnelMonitorVOS);
+                startAgentMonitor(tunnelMonitorVOS);
 
                 trigger.next();
             }
 
             @Override
             public void rollback(FlowRollback trigger, Map data) {
-                stopAgentMonitor(tunnelVO.getUuid(), tunnelMonitorVOS);
-
-                trigger.rollback();
-            }
-        }).then(new Flow() {
-            @Override
-            public void run(FlowTrigger trigger, Map data) {
-                icmpSync(icmp);
-                trigger.next();
-            }
-
-            @Override
-            public void rollback(FlowRollback trigger, Map data) {
-                icmpDelete(tunnelVO.getUuid());
+                stopAgentMonitor(tunnelMonitorVOS);
 
                 trigger.rollback();
             }
@@ -486,7 +471,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     @Transactional()
     private void stopTunnelMonitor(TunnelVO tunnelVO, List<TunnelMonitorVO> tunnelMonitorVOS
             , final Completion completion) {
-        FalconApiCommands.Icmp icmp = getIcmp(tunnelVO);
         ControllerCommands.TunnelMonitorCommand controllerCmd =
                 getControllerMonitorCommand(tunnelVO.getUuid(), tunnelMonitorVOS);
 
@@ -508,27 +492,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }).then(new Flow() {
             @Override
             public void run(FlowTrigger trigger, Map data) {
-                stopAgentMonitor(tunnelVO.getUuid(), tunnelMonitorVOS);
+                stopAgentMonitor(tunnelMonitorVOS);
 
                 trigger.next();
             }
 
             @Override
             public void rollback(FlowRollback trigger, Map data) {
-                startAgentMonitor(icmp, tunnelMonitorVOS);
-
-                trigger.rollback();
-            }
-        }).then(new Flow() {
-            @Override
-            public void run(FlowTrigger trigger, Map data) {
-                icmpDelete(tunnelVO.getUuid());
-                trigger.next();
-            }
-
-            @Override
-            public void rollback(FlowRollback trigger, Map data) {
-                icmpSync(icmp);
+                startAgentMonitor(tunnelMonitorVOS);
 
                 trigger.rollback();
             }
@@ -564,14 +535,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelVO.getUuid());
 
         final Map<String, String> tunnelMonitorIp = new HashMap<>();
+        final Map<String, String> agentCmd = new HashMap<>();
         for (TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS) {
             tunnelMonitorIp.put(tunnelMonitorVO.getUuid(), tunnelMonitorVO.getMonitorIp());
+            agentCmd.put(tunnelMonitorVO.getUuid(), JSONObjectUtil.toJsonString(getAgentIcmp(tunnelMonitorVO)));
         }
 
-        FalconApiCommands.Icmp icmp = getIcmp(tunnelVO);
         ControllerCommands.TunnelMonitorCommand controllerCmd =
                 getControllerMonitorCommand(tunnelVO.getUuid(), tunnelMonitorVOS);
-
 
         FlowChain stopMonitor = FlowChainBuilder.newSimpleFlowChain();
         stopMonitor.setName(String.format("restart-tunnel-monitor-%s", tunnelVO.getName()));
@@ -627,16 +598,24 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }).then(new Flow() {
             @Override
             public void run(FlowTrigger trigger, Map data) {
-                FalconApiCommands.Icmp newIcmp = getIcmp(tunnelVO);
+                List<TunnelMonitorVO> newTunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
+                        .eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid())
+                        .list();
 
-                icmpSync(newIcmp);
+                updateAgentMonitor(newTunnelMonitorVOS);
 
                 trigger.next();
             }
 
             @Override
             public void rollback(FlowRollback trigger, Map data) {
-                icmpSync(icmp);
+                for (TunnelMonitorVO tunnelMonitor : tunnelMonitorVOS) {
+                    String hostIp = getMonitorHostIpByTunnelMonitorUuid(tunnelMonitor.getUuid());
+                    String url = getMonitorAgentUrl(hostIp, MonitorAgentConstant.UPDATE_MONITOR);
+
+                    sendMonitorAgentCommand(url, agentCmd.get(tunnelMonitor.getUuid()));
+                }
+
                 trigger.rollback();
             }
         }).done(new FlowDoneHandler(null) {
@@ -819,39 +798,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                     , response.getMsg()));
     }
 
-    /**
-     * 开启监控、tunnel修改且监控为开启状态时同步ICMP到falcon_portal数据库
-     * 下发监控agent配置
-     */
-    public void icmpSync(String tunnelUuid) {
-        if (dbf.isExist(tunnelUuid, TunnelVO.class)) {
-            List<TunnelMonitorVO> tunnelMonitorVOS = getTunnelMonitorByTunnel(tunnelUuid);
-            TunnelVO tunnelVO = dbf.findByUuid(tunnelUuid, TunnelVO.class);
-            FalconApiCommands.Icmp icmp = getIcmp(tunnelVO);
-
-            icmpSync(icmp);
-        }
-    }
-
-    private void icmpSync(FalconApiCommands.Icmp icmp) {
-        String falconUrl = getFalconServerUrl(FalconApiRestConstant.ICMP_SYNC);
-        FalconApiCommands.RestResponse falconRsp = new FalconApiCommands.RestResponse();
-        try {
-            String icmpJson = JSONObjectUtil.toJsonString(icmp);
-
-            logger.info(String.format("Begin to send falcon api command: url: %s command: %s", falconUrl, icmpJson));
-            falconRsp = restf.syncJsonPost(falconUrl, icmpJson, FalconApiCommands.RestResponse.class);
-
-        } catch (Exception e) {
-            falconRsp.setSuccess(false);
-            falconRsp.setMsg(String.format("unable to post %s. %s", falconUrl, e.getMessage()));
-        }
-
-        if (!falconRsp.isSuccess())
-            throw new RuntimeException(String.format("failure to sync icmp: tunnelUuid: %s , Error: %s"
-                    , icmp.getTunnel_id(), falconRsp.getMsg()));
-    }
-
     /***
      * 获取ICMP信息
      * @param accountUuid
@@ -860,87 +806,31 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelMonitorVOS
      * @return
      */
-    public FalconApiCommands.Icmp getIcmp(TunnelVO tunnelVO) {
-        if (tunnelVO.getMonitorState().equals(TunnelMonitorState.Disabled))
-            return null;
+    public MonitorAgentCommands.AgentIcmp getAgentIcmp(TunnelMonitorVO tunnelMonitorVO) {
 
-        FalconApiCommands.Icmp icmp = new FalconApiCommands.Icmp();
+        MonitorAgentCommands.AgentIcmp icmp = new MonitorAgentCommands.AgentIcmp();
 
-        icmp.setTunnel_id(tunnelVO.getUuid());
-        icmp.setTunnel_name(tunnelVO.getName());
-        icmp.setUser_id(tunnelVO.getAccountUuid());
-        icmp.setCidr(tunnelVO.getMonitorCidr());
-        icmp.setBandwidth(tunnelVO.getBandwidth());
+        icmp.setTunnel_id(tunnelMonitorVO.getTunnelUuid());
+        icmp.setSrc_monitor_ip(tunnelMonitorVO.getMonitorIp());
 
-        List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
-                .eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid())
+        TunnelSwitchPortVO tunnelSwitchPortVO =
+                dbf.findByUuid(tunnelMonitorVO.getTunnelSwitchPortUuid(), TunnelSwitchPortVO.class);
+        icmp.setVlan(tunnelSwitchPortVO.getVlan());
+
+        SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(), SwitchPortVO.class);
+        icmp.setSwitch_mip(switchPortVO.getSwitchs().getPhysicalSwitch().getmIP());
+
+        HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorByHostUuid(tunnelMonitorVO.getHostUuid());
+        icmp.setInterface_name(hostSwitchMonitorVO.getInterfaceName());
+
+        List<TunnelMonitorVO> tunnelMonitors = Q.New(TunnelMonitorVO.class)
+                .eq(TunnelMonitorVO_.tunnelUuid, tunnelMonitorVO.getTunnelUuid())
+                .notEq(TunnelMonitorVO_.uuid, tunnelMonitorVO.getUuid())
                 .list();
-
-        for (TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS) {
-            TunnelSwitchPortVO tunnelSwitchPortVO = dbf.findByUuid(tunnelMonitorVO.getTunnelSwitchPortUuid()
-                    , TunnelSwitchPortVO.class);
-
-            SwitchVO switchVO = getSwitchBySwitchPort(tunnelSwitchPortVO.getSwitchPortUuid());
-            HostSwitchMonitorVO hostSwitchMonitorVO = getHostSwitchMonitorByHostUuid(tunnelMonitorVO.getHostUuid());
-            MonitorHostVO monitorHostVO = Q.New(MonitorHostVO.class)
-                    .eq(MonitorHostVO_.uuid, hostSwitchMonitorVO.getHostUuid())
-                    .find();
-            if (monitorHostVO == null)
-                throw new IllegalArgumentException(String.format("failed to get host %s"
-                        , hostSwitchMonitorVO.getHostUuid()));
-
-            if (InterfaceType.A.toString().equals(tunnelSwitchPortVO.getSortTag())) {
-                icmp.setHostA_ip(monitorHostVO.getHostIp());
-                icmp.setEndpointA_mip(removeMaskFromIp(tunnelMonitorVO.getMonitorIp()));
-                icmp.setEndpointA_vid(tunnelSwitchPortVO.getVlan());
-                icmp.setEndpointA_id(switchVO.getEndpointUuid());
-                icmp.setEndpointA_ip(switchVO.getPhysicalSwitch().getmIP());
-                icmp.setEndpointA_interface(hostSwitchMonitorVO.getInterfaceName());
-            } else if (InterfaceType.Z.toString().equals(tunnelSwitchPortVO.getSortTag())) {
-                icmp.setHostB_ip(monitorHostVO.getHostIp());
-                icmp.setEndpointB_mip(removeMaskFromIp(tunnelMonitorVO.getMonitorIp()));
-                icmp.setEndpointB_vid(tunnelSwitchPortVO.getVlan());
-                icmp.setEndpointB_id(switchVO.getEndpointUuid());
-                icmp.setEndpointB_ip(switchVO.getPhysicalSwitch().getmIP());
-                icmp.setEndpointB_interface(hostSwitchMonitorVO.getInterfaceName());
-            }
-        }
+        if (!tunnelMonitors.isEmpty())
+            icmp.setDst_monitor_ip(tunnelMonitors.get(0).getMonitorIp());
 
         return icmp;
-    }
-
-    /***
-     * 删除falcon_portal ICMP数据：关闭监控、tunnel删除、tunnel中止
-     * @param tunnelUuid
-     */
-    public void icmpDelete(String tunnelUuid) {
-        String url = getFalconServerUrl(FalconApiRestConstant.ICMP_DELETE);
-        FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
-
-        try {
-            FalconApiCommands falconApiCommands = new FalconApiCommands();
-            falconApiCommands.setTunnel_id(tunnelUuid);
-            String deleteJson = JSONObjectUtil.toJsonString(falconApiCommands);
-
-            response = restf.syncJsonPost(url, deleteJson, FalconApiCommands.RestResponse.class);
-        } catch (Exception e) {
-            response.setSuccess(false);
-            response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
-        }
-
-        if (!response.isSuccess())
-            throw new RuntimeException(String.format("failed to delete icmp data! Error: %s", response.getMsg()));
-    }
-
-    /**
-     * 获取falcon API地址
-     *
-     * @param method：方法名称
-     * @return falcon api url地址
-     */
-    public String getFalconServerUrl(String method) {
-        return String.format("http://%s:%s%s",
-                CoreGlobalProperty.FALCON_API_IP, CoreGlobalProperty.FALCON_API_PORT, method);
     }
 
     /***
@@ -974,7 +864,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         }
 
         if (!response.isSuccess())
-            throw new RuntimeException(String.format("failed to send agent command! command! Error: %s"
+            throw new RuntimeException(String.format("failed to send agent command! Error: %s"
                     , response.getMsg()));
     }
 
@@ -993,16 +883,15 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * 开启agnet监控
      * @return
      */
-    private void startAgentMonitor(FalconApiCommands.Icmp icmp, List<TunnelMonitorVO> tunnelMonitorVOS) {
+    private void startAgentMonitor(List<TunnelMonitorVO> tunnelMonitorVOS) {
         // 下发监控agent配置
-        List<FalconApiCommands.Icmp> icmps = new ArrayList<>();
-        icmps.add(icmp);
-        String icmpJson = formatIcmpCommand(icmps);
         for (TunnelMonitorVO tunnelMonitor : tunnelMonitorVOS) {
+            MonitorAgentCommands.AgentIcmp agentIcmp = getAgentIcmp(tunnelMonitor);
+
             String hostIp = getMonitorHostIpByTunnelMonitorUuid(tunnelMonitor.getUuid());
             String url = getMonitorAgentUrl(hostIp, MonitorAgentConstant.START_MONITOR);
 
-            sendMonitorAgentCommand(url, icmpJson);
+            sendMonitorAgentCommand(url, JSONObjectUtil.toJsonString(agentIcmp));
         }
     }
 
@@ -1011,11 +900,11 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param tunnelUuid
      * @param tunnelMonitorVOS
      */
-    private void stopAgentMonitor(String tunnelUuid, List<TunnelMonitorVO> tunnelMonitorVOS) {
+    private void stopAgentMonitor(List<TunnelMonitorVO> tunnelMonitorVOS) {
         for (TunnelMonitorVO tunnelMonitor : tunnelMonitorVOS) {
             String hostIp = getMonitorHostIpByTunnelMonitorUuid(tunnelMonitor.getUuid());
             Map<String, String> tunnelMap = new HashMap<>();
-            tunnelMap.put("tunnel_id", tunnelUuid);
+            tunnelMap.put("tunnel_id", tunnelMonitor.getTunnelUuid());
 
             String url = getMonitorAgentUrl(hostIp, MonitorAgentConstant.STOP_MONITOR);
             sendMonitorAgentCommand(url, JSONObjectUtil.toJsonString(tunnelMap));
@@ -1025,29 +914,15 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     /***
      * 修改agent监控
      */
-    private void updateAgentMonitor(FalconApiCommands.Icmp icmp, List<TunnelMonitorVO> tunnelMonitorVOS) {
+    private void updateAgentMonitor(List<TunnelMonitorVO> tunnelMonitorVOS) {
         // 下发监控agent配置
-        List<FalconApiCommands.Icmp> icmps = new ArrayList<>();
-        icmps.add(icmp);
-        String icmpJson = formatIcmpCommand(icmps);
         for (TunnelMonitorVO tunnelMonitor : tunnelMonitorVOS) {
+            MonitorAgentCommands.AgentIcmp agentIcmp = getAgentIcmp(tunnelMonitor);
             String hostIp = getMonitorHostIpByTunnelMonitorUuid(tunnelMonitor.getUuid());
             String url = getMonitorAgentUrl(hostIp, MonitorAgentConstant.UPDATE_MONITOR);
 
-            sendMonitorAgentCommand(url, icmpJson);
+            sendMonitorAgentCommand(url, JSONObjectUtil.toJsonString(agentIcmp));
         }
-    }
-
-    private String formatIcmpCommand(List<FalconApiCommands.Icmp> icmps) {
-        Map<String, Object> strategies = new HashMap<>();
-        strategies.put("strategies", icmps);
-
-        Map<String, Object> strategyList = new HashMap<>();
-        strategyList.put("strategyList", strategies);
-
-        String icmpsJson = JSONObjectUtil.toJsonString(strategyList);
-
-        return icmpsJson;
     }
 
     /**
@@ -1885,16 +1760,16 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                     try {
                         List list = getVlanEndpoints();
 
-                        if(list.isEmpty()){
-                            resultMap.put("success",false);
-                            resultMap.put("msg","no data exist!");
-                        }else {
-                            resultMap.put("success",true);
-                            resultMap.put("msg",list);
+                        if (list.isEmpty()) {
+                            resultMap.put("success", false);
+                            resultMap.put("msg", "no data exist!");
+                        } else {
+                            resultMap.put("success", true);
+                            resultMap.put("msg", list);
                         }
                     } catch (Exception e) {
-                        resultMap.put("success",false);
-                        resultMap.put("msg",String.format(
+                        resultMap.put("success", false);
+                        resultMap.put("msg", String.format(
                                 "[MONITOR/VLANENDPOINT] fail to get vlan_endpoint info! Error: %s", e.getMessage()));
                         logger.error(resultMap.get("msg").toString());
                     }
@@ -1902,7 +1777,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                     return JSONObjectUtil.toJsonString(resultMap);
                 });
 
-        class tsdbResp{
+        class tsdbResp {
             List msg;
             String success;
 
@@ -2139,30 +2014,36 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         return portsSet;
     }
 
+    /***
+     * 按监控机ip获取所有icmp数据
+     * @param monitorHostIp
+     * @return
+     */
     private String getIcmpsByMonitorHostIp(String monitorHostIp) {
-        List<FalconApiCommands.Icmp> icmps = new ArrayList<>();
+        List<MonitorAgentCommands.AgentIcmp> icmps = new ArrayList<>();
         List<MonitorHostVO> monitorHostVOS = Q.New(MonitorHostVO.class)
                 .eq(MonitorHostVO_.hostIp, monitorHostIp)
                 .list();
-
         if (monitorHostVOS.isEmpty())
             return null;
 
         List<TunnelMonitorVO> hostTunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
                 .eq(TunnelMonitorVO_.hostUuid, monitorHostVOS.get(0).getUuid())
                 .list();
-
         if (hostTunnelMonitorVOS.isEmpty())
             return null;
 
         for (TunnelMonitorVO hostTunnelMonitorVO : hostTunnelMonitorVOS) {
             TunnelVO tunnelVO = dbf.findByUuid(hostTunnelMonitorVO.getTunnelUuid(), TunnelVO.class);
-            if (tunnelVO != null && tunnelVO.getMonitorState().equals(TunnelMonitorState.Enabled))
-                logger.info("tunnelUuid: " + tunnelVO.getUuid());
-            icmps.add(getIcmp(tunnelVO));
+            if (tunnelVO != null && tunnelVO.getMonitorState().equals(TunnelMonitorState.Enabled)) {
+                // logger.info("tunnelUuid: " + tunnelVO.getUuid());
+                MonitorAgentCommands.AgentIcmp agentIcmp = getAgentIcmp(hostTunnelMonitorVO);
+                if (agentIcmp != null)
+                    icmps.add(agentIcmp);
+            }
         }
 
-        return formatIcmpCommand(icmps);
+        return JSONObjectUtil.toJsonString(icmps);
     }
 
     /***
@@ -2173,12 +2054,12 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         List list = new ArrayList();
 
         List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
-                .eq(TunnelVO_.state,TunnelState.Enabled)
-                .eq(TunnelVO_.monitorState,TunnelMonitorState.Enabled)
+                .eq(TunnelVO_.state, TunnelState.Enabled)
+                .eq(TunnelVO_.monitorState, TunnelMonitorState.Enabled)
                 .list();
 
-        for(TunnelVO tunnelVO : tunnelVOS){
-            for(TunnelSwitchPortVO tunnelSwitchPortVO : tunnelVO.getTunnelSwitchPortVOS()){
+        for (TunnelVO tunnelVO : tunnelVOS) {
+            for (TunnelSwitchPortVO tunnelSwitchPortVO : tunnelVO.getTunnelSwitchPortVOS()) {
                 List subList = new ArrayList();
 
                 PhysicalSwitchVO physicalSwitchVO = getPhysicalSwitchBySwitchPort(tunnelSwitchPortVO.getSwitchPortUuid());

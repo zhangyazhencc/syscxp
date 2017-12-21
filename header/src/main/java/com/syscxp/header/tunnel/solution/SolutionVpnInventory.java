@@ -22,6 +22,7 @@ public class SolutionVpnInventory {
     private String zoneUuid;
     private String endpointName;
     private String bandwidthOfferingUuid;
+    private String name;
 
     public static SolutionVpnInventory valueOf(SolutionVpnVO vo) {
         SolutionVpnInventory inv = new SolutionVpnInventory();
@@ -32,6 +33,7 @@ public class SolutionVpnInventory {
         inv.setDuration(vo.getDuration());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        inv.setName(vo.getName());
         if(vo.getEndpointVO() != null){
             inv.setEndpointName(vo.getEndpointVO().getName());
         }
@@ -126,5 +128,13 @@ public class SolutionVpnInventory {
 
     public void setBandwidthOfferingUuid(String bandwidthOfferingUuid) {
         this.bandwidthOfferingUuid = bandwidthOfferingUuid;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }

@@ -69,6 +69,7 @@ CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`description` varchar(255) DEFAULT NULL COMMENT '描述',
 	`bandwidthOfferingUuid` VARCHAR(32) NOT NULL COMMENT '带宽',
 	`endpointUuid` VARCHAR(32) NOT NULL COMMENT 'endpoint',
+	`tunnelUuid` VARCHAR(32) DEFAULT NULL COMMENT 'tunnel',
 	`port` INT(10) NOT NULL COMMENT 'VPN端口',
 	`vlan` INT(10) NOT NULL COMMENT 'vlan',
 	`state` VARCHAR(32) DEFAULT NULL COMMENT '启用状态',

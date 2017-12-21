@@ -22,6 +22,7 @@ public class SolutionTunnelInventory {
     private String endpointNameA;
     private String endpointNameZ;
     private String innerConnectedEndpointName;
+    private String name;
 
     public static SolutionTunnelInventory valueOf(SolutionTunnelVO vo) {
         SolutionTunnelInventory inv = new SolutionTunnelInventory();
@@ -32,6 +33,7 @@ public class SolutionTunnelInventory {
         inv.setDuration(vo.getDuration());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        inv.setName(vo.getName());
         if(vo.getEndpointVOA() != null){
             inv.setEndpointNameA(vo.getEndpointVOA().getName());
         }
@@ -140,5 +142,13 @@ public class SolutionTunnelInventory {
 
     public void setInnerConnectedEndpointName(String innerConnectedEndpointName) {
         this.innerConnectedEndpointName = innerConnectedEndpointName;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 }
