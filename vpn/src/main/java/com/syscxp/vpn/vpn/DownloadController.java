@@ -88,10 +88,11 @@ public class DownloadController {
             @Override
             public void run() {
                 clientConf.delete();
+                zip.delete();
             }
         });
 
-        return download(zip, response);
+        return download(zip);
     }
 
     @RequestMapping(value = RESTConstant.REST_API_CALL + VpnConstant.CERT_DOWNLOAD_PATH, method = {RequestMethod.GET})
@@ -120,13 +121,14 @@ public class DownloadController {
                 caCrt.delete();
                 clientCrt.delete();
                 clientKey.delete();
+                zip.delete();
             }
         });
-        return download(zip, response);
+        return download(zip);
 
     }
 
-    private ResponseEntity<byte[]> download(File zipFile, HttpServletResponse response) throws IOException {
+    private ResponseEntity<byte[]> download(File zipFile) throws IOException {
 
 
         HttpHeaders headers = new HttpHeaders();
