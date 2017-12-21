@@ -24,8 +24,8 @@ public class SolutionInterfaceInventory {
     private String  endpointName;
     private String  portOfferingName;
     private String name;
-    /*private String endpointUuid;
-    private String portOfferingUuid;*/
+    private String endpointUuid;
+    private String portOfferingUuid;
 
     public static SolutionInterfaceInventory valueOf(SolutionInterfaceVO vo) {
         SolutionInterfaceInventory inv = new SolutionInterfaceInventory();
@@ -37,13 +37,11 @@ public class SolutionInterfaceInventory {
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         inv.setName(vo.getName());
+        inv.setEndpointUuid(vo.getEndpointUuid());
+        inv.setPortOfferingUuid(vo.getPortOfferingUuid());
+        inv.setEndpointName(vo.getEndpointVO().getName());
+        inv.setPortOfferingName(vo.getPortOfferingVO().getName());
 
-        if(vo.getEndpointVO() != null){
-            inv.setEndpointName(vo.getEndpointVO().getName());
-        }
-        if(vo.getPortOfferingVO() != null){
-            inv.setPortOfferingName(vo.getPortOfferingVO().getName());
-        }
         return inv;
     }
 
@@ -133,5 +131,21 @@ public class SolutionInterfaceInventory {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getEndpointUuid() {
+        return endpointUuid;
+    }
+
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
+    }
+
+    public String getPortOfferingUuid() {
+        return portOfferingUuid;
+    }
+
+    public void setPortOfferingUuid(String portOfferingUuid) {
+        this.portOfferingUuid = portOfferingUuid;
     }
 }
