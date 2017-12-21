@@ -38,7 +38,9 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint,
     private ErrorFacade errf;
 
     private List<String> getVpnUuids(String hostUuid) {
-        return Q.New(VpnVO.class).select(VpnVO_.uuid).eq(VpnVO_.state, VpnState.Enabled).eq(VpnVO_.hostUuid, hostUuid).list();
+        return Q.New(VpnVO.class).select(VpnVO_.uuid)
+                .eq(VpnVO_.state, VpnState.Enabled)
+                .eq(VpnVO_.hostUuid, hostUuid).list();
     }
 
     private void checkState(final String hostUuid, final Completion completion) {

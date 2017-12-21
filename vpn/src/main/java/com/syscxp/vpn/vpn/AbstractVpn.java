@@ -35,10 +35,10 @@ public abstract class AbstractVpn {
         this.self = self;
         id = "Vpn-" + self.getUuid();
 
-        if (!"".equals(rootPath)) {
-            baseUrl = URLBuilder.buildUrl(scheme, self.getVpnHost().getHostIp(), port, rootPath);
-        } else {
+        if ("".equals(rootPath)) {
             baseUrl = URLBuilder.buildUrl(scheme, self.getVpnHost().getHostIp(), port);
+        } else {
+            baseUrl = URLBuilder.buildUrl(scheme, self.getVpnHost().getHostIp(), port, rootPath);
         }
     }
 

@@ -345,11 +345,6 @@ public class TunnelBase {
                 jobf.execute(queueName+"-停止监控", Platform.getManagementServerId(), job);
             }
 
-            logger.info("删除通道成功，并创建任务：DeleteIcmpJob");
-            DeleteIcmpJob job3 = new DeleteIcmpJob();
-            job3.setTunnelUuid(vo.getUuid());
-            jobf.execute(queueName+"-删除ICMP", Platform.getManagementServerId(), job3);
-
         }
         logger.info("删除通道成功，并创建任务：DeleteResourcePolicyRefJob");
         DeleteResourcePolicyRefJob job2 = new DeleteResourcePolicyRefJob();
@@ -382,10 +377,6 @@ public class TunnelBase {
                     job.setTunnelUuid(vo.getUuid());
                     jobf.execute(queueName+"-更新监控", Platform.getManagementServerId(), job);
 
-                    logger.info("修改端口成功，并创建任务：UpdateIcmpJob");
-                    UpdateIcmpJob job3 = new UpdateIcmpJob();
-                    job3.setTunnelUuid(vo.getUuid());
-                    jobf.execute(queueName+"-更新ICMP", Platform.getManagementServerId(), job3);
                 }
 
                 logger.info("修改端口成功，并创建任务：UpdateTunnelInfoForFalconJob");
@@ -439,10 +430,6 @@ public class TunnelBase {
                 job.setTunnelUuid(vo.getUuid());
                 jobf.execute(queueName+"-更新监控", Platform.getManagementServerId(), job);
 
-                logger.info("修改VLAN或物理接口成功，并创建任务：UpdateIcmpJob");
-                UpdateIcmpJob job3 = new UpdateIcmpJob();
-                job3.setTunnelUuid(vo.getUuid());
-                jobf.execute(queueName+"-更新ICMP", Platform.getManagementServerId(), job3);
             }
 
             logger.info("修改VLAN或物理接口成功，并创建任务：UpdateTunnelInfoForFalconJob");
@@ -473,10 +460,6 @@ public class TunnelBase {
             job.setTunnelUuid(vo.getUuid());
             jobf.execute(queueName+"-更新监控", Platform.getManagementServerId(), job);
 
-            logger.info("修改带宽成功，并创建任务：UpdateIcmpJob");
-            UpdateIcmpJob job3 = new UpdateIcmpJob();
-            job3.setTunnelUuid(vo.getUuid());
-            jobf.execute(queueName+"-更新ICMP", Platform.getManagementServerId(), job3);
 
         }
         logger.info("修改带宽成功，并创建任务：UpdateTunnelInfoForFalconJob");

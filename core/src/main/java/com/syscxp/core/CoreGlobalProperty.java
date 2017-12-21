@@ -76,17 +76,17 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "ecpServerUrl", defaultValue = "http://192.168.211.5:8080/zstack/asyncrest/sendcommand")
     public static String ECP_SERVER_URL;
 
+    @GlobalProperty(name = "vpnServerUrl", defaultValue = "http://192.168.211.99/vpn/api")
+    public static String VPN_SERVER_URL;
+
     @GlobalProperty(name = "startVsi", defaultValue = "20000")
     public static Integer START_VSI;
-
-    @GlobalProperty(name = "falconApiIp", defaultValue = "192.168.211.96")
-    public static String FALCON_API_IP;
 
     @GlobalProperty(name = "transferRpcIp", defaultValue = "192.168.211.6")
     public static String TRANSFER_RPC_IP;
 
-    @GlobalProperty(name = "falconApiPort", defaultValue = "6892")
-    public static int FALCON_API_PORT;
+    @GlobalProperty(name = "tunnelServerUrl", defaultValue = "http://192.168.211.185:8080/asyncrest/sendcommand")
+    public static String TUNNEL_SERVER_URL;
 
     @GlobalProperty(name = "openTSDBServerUrl", defaultValue = "http://192.168.211.6:4242")
     public static String OPENTSDB_SERVER_URL;

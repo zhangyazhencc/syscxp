@@ -20,7 +20,7 @@ public class ResourcePolicyRefInventory {
 
     private String policyUuid;
     private String resourceUuid;
-
+    private String productType;
     private PolicyInventory policyInventory;
 
     private Timestamp createDate;
@@ -33,6 +33,7 @@ public class ResourcePolicyRefInventory {
         inv.setPolicyUuid(vo.getPolicyUuid());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
+        inv.setProductType(vo.getProductType().toString());
 
         return inv;
     }
@@ -43,6 +44,14 @@ public class ResourcePolicyRefInventory {
             lst.add(ResourcePolicyRefInventory.valueOf(vo));
         }
         return lst;
+    }
+
+    public String getProductType() {
+        return productType;
+    }
+
+    public void setProductType(String productType) {
+        this.productType = productType;
     }
 
     public String getUuid() {
