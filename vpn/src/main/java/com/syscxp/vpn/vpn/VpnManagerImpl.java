@@ -225,7 +225,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         UpdateQuery.New(VpnVO.class)
                 .in(VpnVO_.uuid, vpnUuids)
-                .set(VpnVO_.tunnelUuid, null)
+                .set(VpnVO_.tunnelUuid, "")
                 .update();
 
         bus.reply(msg, reply);
@@ -974,7 +974,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 dbf.updateAndRefresh(vpnCert);
 
                 VpnVO vpn = dbf.reload(vo);
-                vpn.setVpnCertUuid(null);
+                vpn.setVpnCertUuid("");
                 evt.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vpn)));
                 bus.publish(evt);
             }
@@ -1305,7 +1305,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void validate(APIUpdateVpnStateMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        if (vpn.getTunnelUuid() == null && vpn.getVpnCertUuid() == null) {
+        if ("".equals(vpn.getTunnelUuid()) && "".equals(vpn.getVpnCertUuid())) {
             throw new OperationFailureException(
                     operr("VPN[uuid: %s]没有指定专线或者证书。", msg.getUuid()));
         }
@@ -1342,7 +1342,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
 
-        if (vpn.getTunnelUuid() == null && vpn.getVpnCertUuid() == null) {
+        if ("".equals(vpn.getTunnelUuid()) && "".equals(vpn.getVpnCertUuid())) {
             throw new OperationFailureException(
                     operr("VPN[uuid: %s]没有指定专线或者证书。", msg.getUuid()));
         }
