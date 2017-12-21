@@ -12,6 +12,7 @@ import com.syscxp.header.tunnel.node.NodeVO;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.*;
 import com.syscxp.utils.Utils;
+import com.syscxp.utils.data.SizeUnit;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowire;
@@ -256,7 +257,12 @@ public class TunnelBillingBase {
 
         data.add(new DescriptionItem("连接点-A", endpointNameA));
         data.add(new DescriptionItem("连接点-Z", endpointNameZ));
-        data.add(new DescriptionItem("带宽", vo.getBandwidth().toString()));
+
+        if(vo.getBandwidth() < 1073741824L){
+            data.add(new DescriptionItem("带宽", String.valueOf(SizeUnit.BYTE.toMegaByte(vo.getBandwidth()))+"M"));
+        }else{
+            data.add(new DescriptionItem("带宽", String.valueOf(SizeUnit.BYTE.toGigaByte(vo.getBandwidth()))+"G"));
+        }
 
         return JSONObjectUtil.toJsonString(data);
     }
