@@ -56,6 +56,7 @@ public class VpnInventory {
         inv.setClientConf(vo.getClientConf());
         inv.setPayment(vo.getPayment().toString());
         inv.setHostInventory(VpnHostInventory.valueOf(vo.getVpnHost()));
+        inv.setVpnCertName("");
         if (vo.getVpnCert() != null)
             inv.setVpnCertName(vo.getVpnCert().getName());
         return inv;
