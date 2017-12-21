@@ -500,8 +500,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 logger.info(String.format("rollback to update InterfaceVO[uuid: %s]", iface.getUuid()));
                 dbf.updateAndRefresh(iface);
                 if (isUsed) {
-                    List<String> qinqs = (List<String>) data.getOrDefault("qinqs", new ArrayList());
-                    dbf.removeByPrimaryKeys(qinqs, QinqVO.class);
+                    List<QinqVO> qinqs = (List<QinqVO>) data.getOrDefault("qinqs", new ArrayList());
+                    dbf.updateCollection(qinqs);
                 }
                 trigger.rollback();
             }
@@ -525,9 +525,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void rollback(FlowRollback trigger, Map data) {
                 if (isUsed) {
                     dbf.updateAndRefresh(tsPort);
-                        List<QinqVO> qinqs = (List<QinqVO>) data.getOrDefault("newqinqs", new ArrayList());
-
-                        UpdateQuery.New(QinqVO.class).eq(QinqVO_.tunnelUuid, tsPort.getTunnelUuid()).delete();
+                    List<String> qinqs = (List<String>) data.getOrDefault("newqinqs", new ArrayList());
+                    dbf.removeByPrimaryKeys(qinqs, QinqVO.class);
                     logger.info(String.format("rollback to update TunnelSwitchPortVO[uuid: %s]", tsPort.getUuid()));
                 }
                 trigger.rollback();
