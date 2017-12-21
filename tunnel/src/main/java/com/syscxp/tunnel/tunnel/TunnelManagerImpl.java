@@ -523,6 +523,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void rollback(FlowRollback trigger, Map data) {
                 if (isUsed) {
                     dbf.updateAndRefresh(tsPort);
+                    if (msg.getNetworkType() == NetworkType.QINQ)
+                        UpdateQuery.New(QinqVO.class).eq(QinqVO_.tunnelUuid, tsPort.getTunnelUuid()).delete();
                     logger.info(String.format("rollback to update TunnelSwitchPortVO[uuid: %s]", tsPort.getUuid()));
                 }
                 trigger.rollback();
