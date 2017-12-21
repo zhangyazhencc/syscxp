@@ -486,7 +486,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             .update();
                 } else {
                     String tunnelUuid = isUsed ? tsPort.getTunnelUuid() : null;
-                    tunnelBase.updateNetworkType(iface, tunnelUuid, msg.getNetworkType(), msg.getSegments());
+                    List<String> qinqs = tunnelBase.updateNetworkType(iface, tunnelUuid, msg.getNetworkType(), msg.getSegments());
+                    if (!qinqs.isEmpty())
+                        data.put("newqinqs", qinqs);
                 }
                 logger.info(String.format("after update InterfaceVO[uuid: %s]", iface.getUuid()));
                 //throw new CloudRuntimeException("update interface port ...............");
@@ -498,8 +500,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 logger.info(String.format("rollback to update InterfaceVO[uuid: %s]", iface.getUuid()));
                 dbf.updateAndRefresh(iface);
                 if (isUsed) {
-                    List<QinqVO> qinqs = (List<QinqVO>) data.getOrDefault("qinqs", new ArrayList());
-                    dbf.updateCollection(qinqs);
+                    List<String> qinqs = (List<String>) data.getOrDefault("qinqs", new ArrayList());
+                    dbf.removeByPrimaryKeys(qinqs, QinqVO.class);
                 }
                 trigger.rollback();
             }
@@ -523,7 +525,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void rollback(FlowRollback trigger, Map data) {
                 if (isUsed) {
                     dbf.updateAndRefresh(tsPort);
-                    if (msg.getNetworkType() == NetworkType.QINQ)
+                        List<QinqVO> qinqs = (List<QinqVO>) data.getOrDefault("newqinqs", new ArrayList());
+
                         UpdateQuery.New(QinqVO.class).eq(QinqVO_.tunnelUuid, tsPort.getTunnelUuid()).delete();
                     logger.info(String.format("rollback to update TunnelSwitchPortVO[uuid: %s]", tsPort.getUuid()));
                 }
@@ -1157,7 +1160,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
         //如果vlan改变，问专线是否被使用
-        if(!msg.getaVlan().equals(msg.getOldAVlan()) || !msg.getzVlan().equals(msg.getOldZVlan())){
+        if (!msg.getaVlan().equals(msg.getOldAVlan()) || !msg.getzVlan().equals(msg.getOldZVlan())) {
             for (TunnelDeletionExtensionPoint extp : pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class)) {
                 extp.preDelete(vo);
             }
@@ -1284,7 +1287,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelVO vo = dbf.findByUuid(msg.getUuid(), TunnelVO.class);
 
         //如果vlan改变，问专线是否被使用
-        if(!msg.getaVlan().equals(msg.getOldAVlan()) || !msg.getzVlan().equals(msg.getOldZVlan())){
+        if (!msg.getaVlan().equals(msg.getOldAVlan()) || !msg.getzVlan().equals(msg.getOldZVlan())) {
             for (TunnelDeletionExtensionPoint extp : pluginRgty.getExtensionList(TunnelDeletionExtensionPoint.class)) {
                 extp.preDelete(vo);
             }
@@ -1577,7 +1580,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         });*/
 
-        doDeleteTunnel(vo,false, msg.getSession().getAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
+        doDeleteTunnel(vo, false, msg.getSession().getAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
 
             @Override
             public void success(TunnelInventory inv) {
@@ -1607,7 +1610,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         TunnelBillingBase tunnelBillingBase = new TunnelBillingBase();
         TunnelBase tunnelBase = new TunnelBase();
 
-        if(isForcibly){
+        if (isForcibly) {
             if (vo.getExpireDate() != null && (!vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now())) || vo.getAccountUuid() == null)) {     //无法开通或退订成功下发失败
                 tunnelBase.deleteTunnelDB(vo);
                 tunnelBase.deleteTunnelJob(vo, "强制删除专线");
@@ -1651,7 +1654,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             } else {
                 completion.fail(errf.stringToOperationError("退订失败"));
             }
-        }else{
+        } else {
             if (vo.getState() == TunnelState.Unsupport) {         //1
                 tunnelBase.deleteTunnelDB(vo);
                 completion.success(TunnelInventory.valueOf(vo));
@@ -1807,7 +1810,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             extp.preDelete(vo);
         }
 
-        doDeleteTunnel(vo,true, msg.getSession().getAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
+        doDeleteTunnel(vo, true, msg.getSession().getAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
 
             @Override
             public void success(TunnelInventory inv) {
@@ -2600,7 +2603,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         if (message.getDescription().equals("forciblydelete")) {
             vo.setExpireDate(dbf.getCurrentSqlTime());
             vo = dbf.updateAndRefresh(vo);
-            doDeleteTunnel(vo,true, vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
+            doDeleteTunnel(vo, true, vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
 
                 @Override
                 public void success(TunnelInventory inv) {
@@ -2615,7 +2618,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo.setExpireDate(dbf.getCurrentSqlTime());
             vo = dbf.updateAndRefresh(vo);
 
-            doDeleteTunnel(vo,false, vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
+            doDeleteTunnel(vo, false, vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
 
                 @Override
                 public void success(TunnelInventory inv) {
@@ -2628,7 +2631,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         } else if (message.getDescription().equals("delete") && vo.getState() == TunnelState.Disabled) {
             vo.setExpireDate(dbf.getCurrentSqlTime());
             vo = dbf.updateAndRefresh(vo);
-            doDeleteTunnel(vo,false, vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
+            doDeleteTunnel(vo, false, vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
 
                 @Override
                 public void success(TunnelInventory inv) {
@@ -2848,7 +2851,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     if (vo.getExpireDate().before(deleteTime)) {
                         vo.setAccountUuid(null);
                         final TunnelVO vo2 = dbf.updateAndRefresh(vo);
-                        doDeleteTunnel(vo2, false,vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
+                        doDeleteTunnel(vo2, false, vo.getOwnerAccountUuid(), new ReturnValueCompletion<TunnelInventory>(null) {
                             @Override
                             public void success(TunnelInventory inv) {
                             }
@@ -3012,12 +3015,12 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             RestAPIResponse restAPIResponse = restf.syncJsonPost(url, RESTApiDecoder.dump(msg), RestAPIResponse.class);
             APIReply reply = (APIReply) RESTApiDecoder.loads(restAPIResponse.getResult());
 
-            if (!reply.isSuccess()){
+            if (!reply.isSuccess()) {
                 throw new ApiMessageInterceptionException(
                         argerr("询问该专线[uuid:%s]是否被VPN占用失败！", vo.getUuid()));
-            }else{
+            } else {
                 APICheckVpnForTunnelReply apiCheckVpnForTunnelReply = reply.castReply();
-                if(apiCheckVpnForTunnelReply.isUsed()){
+                if (apiCheckVpnForTunnelReply.isUsed()) {
                     throw new ApiMessageInterceptionException(
                             argerr("该专线[uuid:%s]被VPN占用！", vo.getUuid()));
                 }
@@ -3051,7 +3054,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         RestAPIResponse restAPIResponse = restf.syncJsonPost(url, RESTApiDecoder.dump(msg), RestAPIResponse.class);
         APIReply reply = (APIReply) RESTApiDecoder.loads(restAPIResponse.getResult());
 
-        if (!reply.isSuccess()){
+        if (!reply.isSuccess()) {
             throw new ApiMessageInterceptionException(
                     argerr("该专线[uuid:%s]VPN删除失败！", vo.getUuid()));
         }
