@@ -284,7 +284,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         NodeExtensionInfoList nodes = new NodeExtensionInfoList();
         nodes.setPage_no(msg.getPageNo());
         nodes.setCount(String.valueOf(count));
-        Long pageCout = count/Integer.valueOf(msg.getPage_size());
+        Long pageCout = count/Integer.valueOf(msg.getPage_size()) + 1;
         List<Integer> PageRange = new ArrayList<>();
         for (int i = 0; i < pageCout; i++) {
             PageRange.add(i+1);
