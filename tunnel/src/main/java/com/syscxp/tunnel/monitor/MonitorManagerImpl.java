@@ -199,12 +199,11 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 tunnelMonitorVO.setMonitorIp(monitorIp);
                 dbf.getEntityManager().merge(tunnelMonitorVO);
             }
-
-            ControllerCommands.TunnelMonitorCommand controllerCmd =
-                    getControllerMonitorCommand(tunnelVO.getUuid(), tunnelMonitorVOS);
-
-            modifyControllerMonitor(controllerCmd);
         }
+
+        ControllerCommands.TunnelMonitorCommand controllerCmd =
+                getControllerMonitorCommand(tunnelVO.getUuid(), tunnelMonitorVOS);
+        modifyControllerMonitor(controllerCmd);
 
         updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled);
 
