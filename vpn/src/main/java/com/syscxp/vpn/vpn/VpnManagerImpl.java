@@ -1563,7 +1563,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             complete.success();
             return;
         }
-        changeVpnState(vpn, next);
         VpnMessage vpnMessage = VpnState.Enabled == next ? new StartVpnMsg() : new StopVpnMsg();
         vpnMessage.setVpnUuid(vpn.getUuid());
 
@@ -1572,6 +1571,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
+                    changeVpnState(vpn, next);
                     complete.success();
                 } else {
                     complete.fail(reply.getError());
