@@ -426,9 +426,12 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         EndpointVO endpointVOZ = dbf.findByUuid(vo.getEndpointVOZ().getUuid(),EndpointVO.class);
         InnerConnectedEndpointVO innerConnectedEndpointVO = dbf.findByUuid(vo.getInnerConnectedEndpointUuid(),InnerConnectedEndpointVO.class);
 
-        if(endpointVOA != null && endpointVOZ !=null){
+        if(endpointVOA != null && endpointVOZ !=null && innerConnectedEndpointVO != null){
             pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
                     endpointVOZ.getNodeUuid(), innerConnectedEndpointVO.getEndpointUuid()));
+        }else if(endpointVOA != null && endpointVOZ !=null && innerConnectedEndpointVO == null){
+            pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
+                    endpointVOZ.getNodeUuid(), null));
         }
 
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);
