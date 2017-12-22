@@ -15,9 +15,9 @@ public class APIListSwitchPortByTypeMsg extends APISyncCallMessage {
     private String uuid;
     @APIParam
     private String type;
-    @APIParam(required = false, numberRange = {0, 20})
+    @APIParam(required = false, numberRange = {0, 200})
     private Integer limit;
-    @APIParam(required = false, numberRange = {0, Integer.MAX_VALUE})
+    @APIParam(required = false, numberRange = {0, 200})
     private Integer start;
 
     public Integer getLimit() {
