@@ -19,6 +19,7 @@ import com.syscxp.header.quota.ReportQuotaExtensionPoint;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
+import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO;
 import com.syscxp.header.tunnel.solution.*;
 import com.syscxp.tunnel.quota.SolutionQuotaOperator;
 import com.syscxp.tunnel.tunnel.TunnelBillingBase;
@@ -423,10 +424,14 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         pmsg.setAccountUuid(accountUuid);
         EndpointVO endpointVOA = dbf.findByUuid(vo.getEndpointVOA().getUuid(), EndpointVO.class);
         EndpointVO endpointVOZ = dbf.findByUuid(vo.getEndpointVOZ().getUuid(),EndpointVO.class);
+        InnerConnectedEndpointVO innerConnectedEndpointVO = dbf.findByUuid(vo.getInnerConnectedEndpointUuid(),InnerConnectedEndpointVO.class);
 
-        if(endpointVOA != null && endpointVOZ !=null){
+        if(endpointVOA != null && endpointVOZ !=null && innerConnectedEndpointVO != null){
             pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
-                    endpointVOZ.getNodeUuid(), vo.getInnerConnectedEndpointUuid()));
+                    endpointVOZ.getNodeUuid(), innerConnectedEndpointVO.getEndpointUuid()));
+        }else if(endpointVOA != null && endpointVOZ !=null && innerConnectedEndpointVO == null){
+            pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
+                    endpointVOZ.getNodeUuid(), null));
         }
 
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);

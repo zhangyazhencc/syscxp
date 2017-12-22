@@ -615,32 +615,28 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     }
 
     @Transactional
-    private String doCreateTunnelVO(APICreateTunnelMsg msg) {
+    private String doCreateTunnelVO(APICreateTunnelMsg msg){
         TunnelBase tunnelBase = new TunnelBase();
         TunnelStrategy ts = new TunnelStrategy();
 
-        TunnelVO vo = new TunnelVO();
-        InterfaceVO interfaceVOA = new InterfaceVO();
-        InterfaceVO interfaceVOZ = new InterfaceVO();
-
         BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
-
         EndpointVO evoA = dbf.findByUuid(msg.getEndpointAUuid(), EndpointVO.class);
         EndpointVO evoZ = dbf.findByUuid(msg.getEndpointZUuid(), EndpointVO.class);
-
         NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
         NodeVO nvoZ = dbf.findByUuid(evoZ.getNodeUuid(), NodeVO.class);
 
         boolean crossTunnel = false;        //是否存在共点专线
-        Integer crossVsi;                   //共点VSI
+        Integer vsi;                        //VSI
         Integer crossVlan = null;           //共点VLAN
-        Integer vlanA;
-        Integer vlanZ;
+        boolean abroad = false;             //是否跨国
+        if(msg.getInnerConnectedEndpointUuid() != null){
+            abroad = true;
+        }
 
-
-        if (msg.getCrossTunnelUuid() != null) {   //存在关联云专线，获取VSI和VLAN
+        //首先判断是否存在共点专线，若存在，获取VSI和VLAN
+        if (msg.getCrossTunnelUuid() != null) {
             crossTunnel = true;
-            crossVsi = Q.New(TunnelVO.class)
+            vsi = Q.New(TunnelVO.class)
                     .eq(TunnelVO_.uuid, msg.getCrossTunnelUuid())
                     .select(TunnelVO_.vsi)
                     .findValue();
@@ -649,14 +645,40 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getCrossInterfaceUuid())
                     .select(TunnelSwitchPortVO_.vlan)
                     .findValue();
-            vo.setVsi(crossVsi);
         } else {
-            vo.setVsi(tunnelBase.getVsiAuto());
+            vsi = tunnelBase.getVsiAuto();
         }
 
+        //若新购，创建物理接口
+        boolean isIfaceANew = false;
+        if(msg.getInterfaceAUuid() == null){
+            isIfaceANew = true;
+        }
+        boolean isIfaceZNew = false;
+        if(msg.getInterfaceZUuid() == null){
+            isIfaceZNew = true;
+        }
+        InterfaceVO interfaceVOA;
+        InterfaceVO interfaceVOZ;
+        if (!isIfaceANew){
+            interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
+        } else {
+            interfaceVOA = tunnelBase.createInterfaceByTunnel(msg.getEndpointAUuid(),msg.getPortOfferingUuidA(),msg);
+        }
+        if (!isIfaceZNew){
+            interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
+        } else {
+            interfaceVOZ = tunnelBase.createInterfaceByTunnel(msg.getEndpointZUuid(),msg.getPortOfferingUuidZ(),msg);
+        }
+        SwitchPortVO switchPortVOA = dbf.findByUuid(interfaceVOA.getSwitchPortUuid(),SwitchPortVO.class);
+        SwitchPortVO switchPortVOZ = dbf.findByUuid(interfaceVOZ.getSwitchPortUuid(),SwitchPortVO.class);
+
+        //创建专线
+        TunnelVO vo = new TunnelVO();
         vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(null);
         vo.setOwnerAccountUuid(msg.getAccountUuid());
+        vo.setVsi(vsi);
         vo.setMonitorCidr(null);
         vo.setName(msg.getName());
         vo.setBandwidth(bandwidthOfferingVO.getBandwidth());
@@ -669,203 +691,107 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setMonitorState(TunnelMonitorState.Disabled);
         vo.setMaxModifies(CoreGlobalProperty.TUNNEL_MAX_MOTIFIES);
         vo.setDistance(Distance.getDistance(nvoA.getLongitude(), nvoA.getLatitude(), nvoZ.getLongitude(), nvoZ.getLatitude()));
-
-        if (msg.getInterfaceAUuid() != null && msg.getInterfaceZUuid() != null) {         //没有新购接口
-            interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
-            interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
-
-            if (crossTunnel) {
-                if (msg.getInterfaceAUuid().equals(msg.getCrossInterfaceUuid())) {
-                    vlanA = crossVlan;
-                    vlanZ = ts.getVlanByStrategy(msg.getInterfaceZUuid());
-                    if (vlanZ == 0) {
-                        throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-                    }
-                } else {
-                    vlanA = ts.getVlanByStrategy(msg.getInterfaceAUuid());
-                    if (vlanA == 0) {
-                        throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-                    }
-                    vlanZ = crossVlan;
-                }
-            } else {
-                vlanA = ts.getVlanByStrategy(msg.getInterfaceAUuid());
-                if (vlanA == 0) {
-                    throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-                }
-                vlanZ = ts.getVlanByStrategy(msg.getInterfaceZUuid());
-                if (vlanZ == 0) {
-                    throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-                }
-            }
-
-        } else if (msg.getInterfaceAUuid() == null && msg.getInterfaceZUuid() == null) {   //都是新购接口
-            //分配A端口
-            String switchPortUuidA = ts.getSwitchPortByStrategy(msg.getAccountUuid(), msg.getEndpointAUuid(), msg.getPortOfferingUuidA());
-            if (switchPortUuidA == null) {
-                throw new ApiMessageInterceptionException(argerr("该连接点A下无可用的端口"));
-            }
-            interfaceVOA.setUuid(Platform.getUuid());
-            interfaceVOA.setAccountUuid(null);
-            interfaceVOA.setOwnerAccountUuid(msg.getAccountUuid());
-            interfaceVOA.setName(evoA.getName() + "_接口_" + Platform.getUuid().substring(0, 6));
-            interfaceVOA.setEndpointUuid(msg.getEndpointAUuid());
-            interfaceVOA.setSwitchPortUuid(switchPortUuidA);
-            interfaceVOA.setType(NetworkType.TRUNK);
-            interfaceVOA.setDuration(msg.getDuration());
-            interfaceVOA.setProductChargeModel(msg.getProductChargeModel());
-            interfaceVOA.setDescription(null);
-            interfaceVOA.setState(InterfaceState.Unpaid);
-            interfaceVOA.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
-            interfaceVOA.setExpireDate(dbf.getCurrentSqlTime());
-            //分配vlanA
-            vlanA = ts.getVlanBySwitch(dbf.findByUuid(switchPortUuidA, SwitchPortVO.class).getSwitchUuid());
-            if (vlanA == 0) {
-                throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-            }
-
-            //分配Z端口
-            String switchPortUuidZ = ts.getSwitchPortByStrategy(msg.getAccountUuid(), msg.getEndpointZUuid(), msg.getPortOfferingUuidZ());
-            if (switchPortUuidZ == null) {
-                throw new ApiMessageInterceptionException(argerr("该连接点Z下无可用的端口"));
-            }
-            interfaceVOZ.setUuid(Platform.getUuid());
-            interfaceVOZ.setAccountUuid(null);
-            interfaceVOZ.setOwnerAccountUuid(msg.getAccountUuid());
-            interfaceVOZ.setName(evoZ.getName() + "_接口_" + Platform.getUuid().substring(0, 6));
-            interfaceVOZ.setEndpointUuid(msg.getEndpointZUuid());
-            interfaceVOZ.setSwitchPortUuid(switchPortUuidZ);
-            interfaceVOZ.setType(NetworkType.TRUNK);
-            interfaceVOZ.setDuration(msg.getDuration());
-            interfaceVOZ.setProductChargeModel(msg.getProductChargeModel());
-            interfaceVOZ.setDescription(null);
-            interfaceVOZ.setState(InterfaceState.Unpaid);
-            interfaceVOZ.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
-            interfaceVOZ.setExpireDate(dbf.getCurrentSqlTime());
-            //分配vlanZ
-            vlanZ = ts.getVlanBySwitch(dbf.findByUuid(switchPortUuidZ, SwitchPortVO.class).getSwitchUuid());
-            if (vlanZ == 0) {
-                throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-            }
-
-            dbf.getEntityManager().persist(interfaceVOA);
-            dbf.getEntityManager().persist(interfaceVOZ);
-
-        } else {                                              //有一端为新购
-            if (msg.getInterfaceAUuid() == null) {            //A新购，Z已有
-                String switchPortUuidA = ts.getSwitchPortByStrategy(msg.getAccountUuid(), msg.getEndpointAUuid(), msg.getPortOfferingUuidA());
-                if (switchPortUuidA == null) {
-                    throw new ApiMessageInterceptionException(argerr("该连接点A下无可用的端口"));
-                }
-                //保存数据
-                interfaceVOA.setUuid(Platform.getUuid());
-                interfaceVOA.setAccountUuid(null);
-                interfaceVOA.setOwnerAccountUuid(msg.getAccountUuid());
-                interfaceVOA.setName(evoA.getName() + "_接口_" + Platform.getUuid().substring(0, 6));
-                interfaceVOA.setEndpointUuid(msg.getEndpointAUuid());
-                interfaceVOA.setSwitchPortUuid(switchPortUuidA);
-                interfaceVOA.setType(NetworkType.TRUNK);
-                interfaceVOA.setDuration(msg.getDuration());
-                interfaceVOA.setProductChargeModel(msg.getProductChargeModel());
-                interfaceVOA.setDescription(null);
-                interfaceVOA.setState(InterfaceState.Unpaid);
-                interfaceVOA.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
-                interfaceVOA.setExpireDate(dbf.getCurrentSqlTime());
-                //分配vlanA
-                vlanA = ts.getVlanBySwitch(dbf.findByUuid(switchPortUuidA, SwitchPortVO.class).getSwitchUuid());
-                if (vlanA == 0) {
-                    throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-                }
-
-                if (crossTunnel) {
-                    vlanZ = crossVlan;
-                } else {
-                    vlanZ = ts.getVlanByStrategy(msg.getInterfaceZUuid());
-                    if (vlanZ == 0) {
-                        throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-                    }
-                }
-
-                dbf.getEntityManager().persist(interfaceVOA);
-                interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
-
-            } else {                                          //Z新购，A已有
-                String switchPortUuidZ = ts.getSwitchPortByStrategy(msg.getAccountUuid(), msg.getEndpointZUuid(), msg.getPortOfferingUuidZ());
-                if (switchPortUuidZ == null) {
-                    throw new ApiMessageInterceptionException(argerr("该连接点Z下无可用的端口"));
-                }
-                //保存数据
-                interfaceVOZ.setUuid(Platform.getUuid());
-                interfaceVOZ.setAccountUuid(null);
-                interfaceVOZ.setOwnerAccountUuid(msg.getAccountUuid());
-                interfaceVOZ.setName(evoZ.getName() + "_接口_" + Platform.getUuid().substring(0, 6));
-                interfaceVOZ.setEndpointUuid(msg.getEndpointZUuid());
-                interfaceVOZ.setSwitchPortUuid(switchPortUuidZ);
-                interfaceVOZ.setType(NetworkType.TRUNK);
-                interfaceVOZ.setDuration(msg.getDuration());
-                interfaceVOZ.setProductChargeModel(msg.getProductChargeModel());
-                interfaceVOZ.setDescription(null);
-                interfaceVOZ.setState(InterfaceState.Unpaid);
-                interfaceVOZ.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
-                interfaceVOZ.setExpireDate(dbf.getCurrentSqlTime());
-                //分配vlanZ
-                vlanZ = ts.getVlanBySwitch(dbf.findByUuid(switchPortUuidZ, SwitchPortVO.class).getSwitchUuid());
-                if (vlanZ == 0) {
-                    throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-                }
-
-                if (crossTunnel) {
-                    vlanA = crossVlan;
-                } else {
-                    vlanA = ts.getVlanByStrategy(msg.getInterfaceAUuid());
-                    if (vlanA == 0) {
-                        throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下已无可使用的VLAN，请联系系统管理员 "));
-                    }
-                }
-
-                interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
-                dbf.getEntityManager().persist(interfaceVOZ);
-
-            }
-
-        }
-
         dbf.getEntityManager().persist(vo);
 
         //创建TunnelSwitchPort
-        TunnelSwitchPortVO tsvoA = new TunnelSwitchPortVO();
-        tsvoA.setUuid(Platform.getUuid());
-        tsvoA.setTunnelUuid(vo.getUuid());
-        tsvoA.setInterfaceUuid(interfaceVOA.getUuid());
-        tsvoA.setEndpointUuid(msg.getEndpointAUuid());
-        tsvoA.setSwitchPortUuid(interfaceVOA.getSwitchPortUuid());
-        tsvoA.setType(interfaceVOA.getType());
-        tsvoA.setVlan(vlanA);
-        tsvoA.setSortTag("A");
+        Integer vlanA;
+        Integer vlanZ;
 
-        TunnelSwitchPortVO tsvoZ = new TunnelSwitchPortVO();
-        tsvoZ.setUuid(Platform.getUuid());
-        tsvoZ.setTunnelUuid(vo.getUuid());
-        tsvoZ.setInterfaceUuid(interfaceVOZ.getUuid());
-        tsvoZ.setEndpointUuid(msg.getEndpointZUuid());
-        tsvoZ.setSwitchPortUuid(interfaceVOZ.getSwitchPortUuid());
-        tsvoZ.setType(interfaceVOZ.getType());
-        tsvoZ.setVlan(vlanZ);
-        tsvoZ.setSortTag("Z");
-
-        //如果跨国,将出海口设备添加至TunnelSwitchPort
-        if (msg.getInnerConnectedEndpointUuid() != null) {
-            if (nvoA.getCountry().equals("CHINA")) {
-                tunnelBase.createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, true);
-            } else {
-                tunnelBase.createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, false);
+        if(crossTunnel){    //共点专线
+            if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOA,switchPortVOZ)){     //从同一个物理交换机进和出，不可能跨国
+                vlanA = crossVlan;
+                vlanZ = vlanA;
+            }else{
+                if (!isIfaceANew && msg.getInterfaceAUuid().equals(msg.getCrossInterfaceUuid())){   //A是共点
+                    vlanA = crossVlan;
+                    vlanZ = ts.getVlanBySwitch(switchPortVOZ.getSwitchUuid());
+                    if (vlanZ == 0) {
+                        throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOZ.getUuid()));
+                    }
+                }else{
+                    vlanA = ts.getVlanBySwitch(switchPortVOA.getSwitchUuid());
+                    if (vlanA == 0) {
+                        throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOA.getUuid()));
+                    }
+                    vlanZ = crossVlan;
+                }
             }
-
+        }else{
+            if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOA,switchPortVOZ)) {     //从同一个物理交换机进和出，不可能跨国
+                vlanA = ts.getVlanBySwitch(switchPortVOA.getSwitchUuid());
+                if (vlanA == 0) {
+                    throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOA.getUuid()));
+                }
+                vlanZ = vlanA;
+            }else{
+                vlanA = ts.getVlanBySwitch(switchPortVOA.getSwitchUuid());
+                if (vlanA == 0) {
+                    throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOA.getUuid()));
+                }
+                vlanZ = ts.getVlanBySwitch(switchPortVOZ.getSwitchUuid());
+                if (vlanZ == 0) {
+                    throw new ApiMessageInterceptionException(argerr("该端口[%s]所属虚拟交换机下已无可使用的VLAN，请联系系统管理员",switchPortVOZ.getUuid()));
+                }
+            }
         }
-        dbf.getEntityManager().persist(tsvoA);
-        dbf.getEntityManager().persist(tsvoZ);
+
+        if(abroad){     //跨国
+            doAbroad(msg.getInnerConnectedEndpointUuid(),nvoA,vlanA,vlanZ,switchPortVOA,switchPortVOZ,vo);
+        }
+
+        tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,vlanA,"A");
+        tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,vlanZ,"Z");
 
         return vo.getUuid();
+    }
+
+    private void doAbroad(String innerConnectedEndpointUuid,
+                          NodeVO nvoA,
+                          Integer vlanA,
+                          Integer vlanZ,
+                          SwitchPortVO switchPortVOA,
+                          SwitchPortVO switchPortVOZ,
+                          TunnelVO vo){
+        TunnelBase tunnelBase = new TunnelBase();
+        TunnelStrategy ts = new TunnelStrategy();
+
+        //通过互联连接点找到内联交换机和内联端口
+        SwitchVO innerSwitch = Q.New(SwitchVO.class)
+                .eq(SwitchVO_.endpointUuid, innerConnectedEndpointUuid)
+                .eq(SwitchVO_.type, SwitchType.INNER)
+                .find();
+        SwitchPortVO innerSwitchPort = Q.New(SwitchPortVO.class)
+                .eq(SwitchPortVO_.switchUuid, innerSwitch.getUuid())
+                .find();
+        //通过互联连接点找到外联交换机和外联端口
+        SwitchVO outerSwitch = Q.New(SwitchVO.class)
+                .eq(SwitchVO_.endpointUuid, innerConnectedEndpointUuid)
+                .eq(SwitchVO_.type, SwitchType.OUTER)
+                .find();
+        SwitchPortVO outerSwitchPort = Q.New(SwitchPortVO.class)
+                .eq(SwitchPortVO_.switchUuid, outerSwitch.getUuid())
+                .find();
+        Integer vlanBC;
+
+        if(nvoA.getCountry().equals("CHINA")){  //A端国内Z端国外
+            if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOA,innerSwitchPort)){
+                vlanBC = vlanA;
+            }else{
+                vlanBC = ts.getVlanBySwitch(innerSwitch.getUuid());
+            }
+
+            tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,innerSwitchPort.getUuid(),vlanBC,"B");
+            tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,outerSwitchPort.getUuid(),vlanBC,"C");
+        }else{                                  //A端国外Z端国内
+            if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOZ,innerSwitchPort)){
+                vlanBC = vlanZ;
+            }else{
+                vlanBC = ts.getVlanBySwitch(innerSwitch.getUuid());
+            }
+
+            tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,outerSwitchPort.getUuid(),vlanBC,"B");
+            tunnelBase.createTunnelSwitchPortForAbroad(vo,innerConnectedEndpointUuid,innerSwitchPort.getUuid(),vlanBC,"C");
+        }
     }
 
     private void afterCreateTunnel(TunnelVO vo, APICreateTunnelMsg msg, ReturnValueCompletion<TunnelInventory> completion) {
@@ -983,8 +909,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
             completion.fail(errf.stringToOperationError("付款失败"));
         }
-
-
     }
 
     /**
@@ -1018,16 +942,18 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
     @Transactional
     private String doCreateTunnelVOManual(APICreateTunnelManualMsg msg) {
         TunnelBase tunnelBase = new TunnelBase();
-        //保存数据
-        TunnelVO vo = new TunnelVO();
+
         BandwidthOfferingVO bandwidthOfferingVO = dbf.findByUuid(msg.getBandwidthOfferingUuid(), BandwidthOfferingVO.class);
         InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
         InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
+        SwitchPortVO switchPortVOA = dbf.findByUuid(interfaceVOA.getSwitchPortUuid(),SwitchPortVO.class);
+        SwitchPortVO switchPortVOZ = dbf.findByUuid(interfaceVOZ.getSwitchPortUuid(),SwitchPortVO.class);
         EndpointVO evoA = dbf.findByUuid(interfaceVOA.getEndpointUuid(), EndpointVO.class);
         EndpointVO evoZ = dbf.findByUuid(interfaceVOZ.getEndpointUuid(), EndpointVO.class);
         NodeVO nvoA = dbf.findByUuid(evoA.getNodeUuid(), NodeVO.class);
         NodeVO nvoZ = dbf.findByUuid(evoZ.getNodeUuid(), NodeVO.class);
 
+        TunnelVO vo = new TunnelVO();
         vo.setUuid(Platform.getUuid());
         vo.setAccountUuid(null);
         vo.setOwnerAccountUuid(msg.getAccountUuid());
@@ -1044,36 +970,14 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         vo.setMonitorState(TunnelMonitorState.Disabled);
         vo.setMaxModifies(CoreGlobalProperty.TUNNEL_MAX_MOTIFIES);
         vo.setDistance(Distance.getDistance(nvoA.getLongitude(), nvoA.getLatitude(), nvoZ.getLongitude(), nvoZ.getLatitude()));
-
-        TunnelSwitchPortVO tsvoA = new TunnelSwitchPortVO();
-        tsvoA.setUuid(Platform.getUuid());
-        tsvoA.setTunnelUuid(vo.getUuid());
-        tsvoA.setInterfaceUuid(msg.getInterfaceAUuid());
-        tsvoA.setEndpointUuid(interfaceVOA.getEndpointUuid());
-        tsvoA.setSwitchPortUuid(interfaceVOA.getSwitchPortUuid());
-        tsvoA.setType(interfaceVOA.getType());
-        tsvoA.setVlan(msg.getaVlan());
-        tsvoA.setSortTag("A");
-
-        TunnelSwitchPortVO tsvoZ = new TunnelSwitchPortVO();
-        tsvoZ.setUuid(Platform.getUuid());
-        tsvoZ.setTunnelUuid(vo.getUuid());
-        tsvoZ.setInterfaceUuid(msg.getInterfaceZUuid());
-        tsvoZ.setEndpointUuid(interfaceVOZ.getEndpointUuid());
-        tsvoZ.setSwitchPortUuid(interfaceVOZ.getSwitchPortUuid());
-        tsvoZ.setType(interfaceVOZ.getType());
-        tsvoZ.setVlan(msg.getzVlan());
-        tsvoZ.setSortTag("Z");
-
         dbf.getEntityManager().persist(vo);
+
+        tunnelBase.createTunnelSwitchPort(vo,interfaceVOA,msg.getaVlan(),"A");
+        tunnelBase.createTunnelSwitchPort(vo,interfaceVOZ,msg.getzVlan(),"Z");
 
         //如果跨国,将出海口设备添加至TunnelSwitchPort
         if (msg.getInnerConnectedEndpointUuid() != null) {
-            if (nvoA.getCountry().equals("CHINA")) {
-                tunnelBase.createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, true);
-            } else {
-                tunnelBase.createTunnelSwitchPortForAbroad(msg.getInnerConnectedEndpointUuid(), vo, false);
-            }
+            doAbroad(msg.getInnerConnectedEndpointUuid(),nvoA,msg.getaVlan(),msg.getzVlan(),switchPortVOA,switchPortVOZ,vo);
         }
 
         //如果开启Qinq,需要指定内部vlan段
@@ -1088,9 +992,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 dbf.getEntityManager().persist(qvo);
             }
         }
-
-        dbf.getEntityManager().persist(tsvoA);
-        dbf.getEntityManager().persist(tsvoZ);
 
         return vo.getUuid();
     }

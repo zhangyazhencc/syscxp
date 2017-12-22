@@ -320,8 +320,20 @@ public class TunnelValidateBase {
     }
 
     public void validate(APICreateTunnelManualMsg msg) {
+        TunnelBase tunnelBase = new TunnelBase();
+
         InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class);
         InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class);
+        SwitchPortVO switchPortVOA = dbf.findByUuid(interfaceVOA.getSwitchPortUuid(),SwitchPortVO.class);
+        SwitchPortVO switchPortVOZ = dbf.findByUuid(interfaceVOZ.getSwitchPortUuid(),SwitchPortVO.class);
+
+        //如果是同一个物理交换机的接入和接出，VLAN必须一样
+        if(tunnelBase.isSamePhysicalSwitchForTunnel(switchPortVOA,switchPortVOZ)){
+            if(!msg.getaVlan().equals(msg.getzVlan())){
+                throw new ApiMessageInterceptionException(argerr("该专线是从同一个物理交换机进出，两端VLAN要一样！"));
+            }
+        }
+
         //BOSS创建验证物理接口的账户是否一致
 
         if (!Objects.equals(msg.getAccountUuid(), interfaceVOA.getAccountUuid())) {

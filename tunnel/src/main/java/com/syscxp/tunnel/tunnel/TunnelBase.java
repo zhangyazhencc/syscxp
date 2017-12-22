@@ -4,6 +4,7 @@ import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
 import com.syscxp.core.db.*;
 import com.syscxp.core.job.JobQueueFacade;
+import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.monitor.SpeedTestTunnelVO;
 import com.syscxp.header.tunnel.monitor.SpeedTestTunnelVO_;
@@ -25,6 +26,8 @@ import javax.persistence.TypedQuery;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static com.syscxp.core.Platform.argerr;
 
 /**
  * Create by DCY on 2017/12/1
@@ -81,75 +84,82 @@ public class TunnelBase {
     }
 
     /**
-     * 创建云专线 如果跨国,将出海口设备添加至TunnelSwitchPort
+     * 创建跨国的TunnelSwitchPort
      */
-    public void createTunnelSwitchPortForAbroad(String innerConnectedEndpointUuid, TunnelVO vo, boolean isBInner) {
-        TunnelStrategy ts = new TunnelStrategy();
+    public void createTunnelSwitchPortForAbroad(TunnelVO vo,String endpointUuid,String switchPortUuid,Integer vlan,String sortTag){
+        TunnelSwitchPortVO tsvo = new TunnelSwitchPortVO();
+        tsvo.setUuid(Platform.getUuid());
+        tsvo.setTunnelUuid(vo.getUuid());
+        tsvo.setEndpointUuid(endpointUuid);
+        tsvo.setInterfaceUuid(null);
+        tsvo.setSwitchPortUuid(switchPortUuid);
+        tsvo.setType(NetworkType.TRUNK);
+        tsvo.setVlan(vlan);
+        tsvo.setSortTag(sortTag);
 
-        //通过互联连接点找到内联交换机和内联端口
-        SwitchVO innerSwitch = Q.New(SwitchVO.class)
-                .eq(SwitchVO_.endpointUuid, innerConnectedEndpointUuid)
-                .eq(SwitchVO_.type, SwitchType.INNER)
-                .find();
-        SwitchPortVO innerSwitchPort = Q.New(SwitchPortVO.class)
-                .eq(SwitchPortVO_.switchUuid, innerSwitch.getUuid())
-                .find();
-        //通过互联连接点找到外联交换机和外联端口
-        SwitchVO outerSwitch = Q.New(SwitchVO.class)
-                .eq(SwitchVO_.endpointUuid, innerConnectedEndpointUuid)
-                .eq(SwitchVO_.type, SwitchType.OUTER)
-                .find();
-        SwitchPortVO outerSwitchPort = Q.New(SwitchPortVO.class)
-                .eq(SwitchPortVO_.switchUuid, outerSwitch.getUuid())
-                .find();
-        //获取互联设备的VLAN
-        Integer innerVlan = ts.getVlanBySwitch(innerSwitch.getUuid());
+        dbf.getEntityManager().persist(tsvo);
+    }
 
-        TunnelSwitchPortVO tsvoB = new TunnelSwitchPortVO();
-        TunnelSwitchPortVO tsvoC = new TunnelSwitchPortVO();
+    /**
+     * 创建TunnelSwitchPort
+     */
+    public void createTunnelSwitchPort(TunnelVO tunnelVO,InterfaceVO interfaceVO,Integer vlan,String sortTag){
+        TunnelSwitchPortVO tsvo = new TunnelSwitchPortVO();
+        tsvo.setUuid(Platform.getUuid());
+        tsvo.setTunnelUuid(tunnelVO.getUuid());
+        tsvo.setInterfaceUuid(interfaceVO.getUuid());
+        tsvo.setEndpointUuid(interfaceVO.getEndpointUuid());
+        tsvo.setSwitchPortUuid(interfaceVO.getSwitchPortUuid());
+        tsvo.setType(interfaceVO.getType());
+        tsvo.setVlan(vlan);
+        tsvo.setSortTag(sortTag);
 
-        if (isBInner) {
-            tsvoB.setUuid(Platform.getUuid());
-            tsvoB.setTunnelUuid(vo.getUuid());
-            tsvoB.setEndpointUuid(innerConnectedEndpointUuid);
-            tsvoB.setInterfaceUuid(null);
-            tsvoB.setSwitchPortUuid(innerSwitchPort.getUuid());
-            tsvoB.setType(NetworkType.TRUNK);
-            tsvoB.setVlan(innerVlan);
-            tsvoB.setSortTag("B");
+        dbf.getEntityManager().persist(tsvo);
+    }
 
+    /**
+     * 创建云专线时判断两端端口是否属于同一个物理交换机
+     */
+    public boolean isSamePhysicalSwitchForTunnel(SwitchPortVO switchPortA,SwitchPortVO switchPortZ){
 
-            tsvoC.setUuid(Platform.getUuid());
-            tsvoC.setTunnelUuid(vo.getUuid());
-            tsvoC.setInterfaceUuid(null);
-            tsvoC.setEndpointUuid(innerConnectedEndpointUuid);
-            tsvoC.setSwitchPortUuid(outerSwitchPort.getUuid());
-            tsvoC.setType(NetworkType.TRUNK);
-            tsvoC.setVlan(innerVlan);
-            tsvoC.setSortTag("C");
+        PhysicalSwitchVO physicalSwitchA = getPhysicalSwitch(switchPortA);
+        PhysicalSwitchVO physicalSwitchZ = getPhysicalSwitch(switchPortZ);
 
-        } else {
-            tsvoB.setUuid(Platform.getUuid());
-            tsvoB.setTunnelUuid(vo.getUuid());
-            tsvoB.setInterfaceUuid(null);
-            tsvoB.setEndpointUuid(innerConnectedEndpointUuid);
-            tsvoB.setSwitchPortUuid(outerSwitchPort.getUuid());
-            tsvoB.setType(NetworkType.TRUNK);
-            tsvoB.setVlan(innerVlan);
-            tsvoB.setSortTag("B");
-
-            tsvoC.setUuid(Platform.getUuid());
-            tsvoC.setTunnelUuid(vo.getUuid());
-            tsvoC.setInterfaceUuid(null);
-            tsvoC.setEndpointUuid(innerConnectedEndpointUuid);
-            tsvoC.setSwitchPortUuid(innerSwitchPort.getUuid());
-            tsvoC.setType(NetworkType.TRUNK);
-            tsvoC.setVlan(innerVlan);
-            tsvoC.setSortTag("C");
-
+        if(physicalSwitchA.getUuid().equals(physicalSwitchZ.getUuid())){
+            return true;
+        }else{
+            return false;
         }
-        dbf.getEntityManager().persist(tsvoB);
-        dbf.getEntityManager().persist(tsvoC);
+    }
+
+    /**
+     * 创建云专线的新购物理接口
+     */
+    public InterfaceVO createInterfaceByTunnel(String endpointUuid,String portOfferingUuid,APICreateTunnelMsg msg){
+        TunnelStrategy ts = new TunnelStrategy();
+        EndpointVO endpointVO = dbf.findByUuid(endpointUuid, EndpointVO.class);
+        InterfaceVO interfaceVO = new InterfaceVO();
+
+        String switchPortUuid = ts.getSwitchPortByStrategy(msg.getAccountUuid(), endpointUuid, portOfferingUuid);
+        if (switchPortUuid == null) {
+            throw new ApiMessageInterceptionException(argerr("该连接点[%s]下无可用的端口",endpointUuid));
+        }
+        interfaceVO.setUuid(Platform.getUuid());
+        interfaceVO.setAccountUuid(null);
+        interfaceVO.setOwnerAccountUuid(msg.getAccountUuid());
+        interfaceVO.setName(endpointVO.getName() + "_接口_" + Platform.getUuid().substring(0, 6));
+        interfaceVO.setEndpointUuid(endpointUuid);
+        interfaceVO.setSwitchPortUuid(switchPortUuid);
+        interfaceVO.setType(NetworkType.TRUNK);
+        interfaceVO.setDuration(msg.getDuration());
+        interfaceVO.setProductChargeModel(msg.getProductChargeModel());
+        interfaceVO.setDescription(null);
+        interfaceVO.setState(InterfaceState.Unpaid);
+        interfaceVO.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
+        interfaceVO.setExpireDate(dbf.getCurrentSqlTime());
+
+        dbf.getEntityManager().persist(interfaceVO);
+        return interfaceVO;
     }
 
     /**

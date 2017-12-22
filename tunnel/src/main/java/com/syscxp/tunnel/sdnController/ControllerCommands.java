@@ -300,7 +300,6 @@ public class ControllerCommands {
      */
     public static class TunnelConfig{
         private String tunnel_id;
-        private boolean is_on_local;
         private List<TunnelMplsConfig> mpls_switches;
         private List<TunnelSdnConfig> sdn_switches;
 
@@ -326,14 +325,6 @@ public class ControllerCommands {
 
         public void setSdn_switches(List<TunnelSdnConfig> sdn_switches) {
             this.sdn_switches = sdn_switches;
-        }
-
-        public boolean isIs_on_local() {
-            return is_on_local;
-        }
-
-        public void setIs_on_local(boolean is_on_local) {
-            this.is_on_local = is_on_local;
         }
     }
 
