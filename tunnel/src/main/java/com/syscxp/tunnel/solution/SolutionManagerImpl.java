@@ -302,11 +302,11 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         //创建物理接口
         if(msg.getPortOfferingUuidA() != null){
             SolutionInterfaceVO faceA = createSolutionInterface(msg, msg.getEndpointUuidA(), msg.getPortOfferingUuidA());
-            tunnelCost = msg.getCost().subtract(faceA.getCost());
+            tunnelCost = tunnelCost.subtract(faceA.getCost());
         }
         if(msg.getPortOfferingUuidZ() != null){
             SolutionInterfaceVO faceb = createSolutionInterface(msg, msg.getEndpointUuidZ(), msg.getPortOfferingUuidZ());
-            tunnelCost = msg.getCost().subtract(faceb.getCost());
+            tunnelCost = tunnelCost.subtract(faceb.getCost());
         }
 
         vo.setCost(tunnelCost);
