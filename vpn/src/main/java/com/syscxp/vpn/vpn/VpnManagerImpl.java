@@ -1470,7 +1470,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         APIGetProductPriceReply reply = createOrder(priceMsg);
         if (!reply.isPayable())
             throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.CALL_BILLING_ERROR,
-                    String.format("The Account[uuid:%s] has no money to pay.", msg.getEndpointUuid())));
+                    String.format("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid())));
     }
 
     private void reconnectVpn(VpnVO vo, final Completion complete) {
