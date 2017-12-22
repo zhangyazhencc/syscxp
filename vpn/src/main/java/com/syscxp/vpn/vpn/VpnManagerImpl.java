@@ -351,7 +351,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         String path = new String(Base64.encode(sb.toString().getBytes()));
 
-        reply.setDownloadUrl(URLBuilder.buildUrlFromBase(restf.getBaseUrl(), "/download/", msg.getType(), "/", path));
+        reply.setDownloadUrl(URLBuilder.buildUrlFromBase(restf.getBaseUrl(),RESTConstant.REST_API_CALL, "/", msg.getType(), "/", path));
         bus.reply(msg, reply);
 
     }

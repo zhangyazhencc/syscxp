@@ -19,8 +19,8 @@ public interface VpnConstant {
     String DH1024_PEM_PATH = "dh1024.pem";
 
     String VPN_REPORT_PATH = "/report";
-    String CONF_DOWNLOAD_PATH = "/download/conf/{uuid}";
-    String CERT_DOWNLOAD_PATH = "/download/cert/{uuid}";
+    String CONF_DOWNLOAD_PATH = "/conf/{uuid}";
+    String CERT_DOWNLOAD_PATH = "/cert/{uuid}";
 
     String CREATE_CERT_PATH = "/vpn/create_cert";
     String VPN_CONF_PATH = "/vpn/conf_vpn";
