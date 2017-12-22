@@ -14,7 +14,7 @@ public class APIUpdateHostMsg extends APIMessage implements HostMessage {
     private String uuid;
     @APIParam(maxLength = 255, required = false)
     private String name;
-    @APIParam(emptyString = false, maxLength = 128)
+    @APIParam(emptyString = false,required = false, maxLength = 128)
     private String code;
     @APIParam(maxLength = 255, required = false, emptyString = false)
     private String hostIp;
