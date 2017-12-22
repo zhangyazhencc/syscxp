@@ -47,19 +47,21 @@ import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.tunnel.tunnel.*;
-import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.*;
 import com.syscxp.header.vpn.billingCallBack.*;
-import com.syscxp.header.vpn.host.*;
+import com.syscxp.header.vpn.host.APIDeleteHostInterfaceEvent;
+import com.syscxp.header.vpn.host.VpnHostConstant;
+import com.syscxp.header.vpn.host.VpnHostVO;
 import com.syscxp.header.vpn.vpn.*;
-import com.syscxp.utils.*;
+import com.syscxp.utils.CollectionDSL;
+import com.syscxp.utils.ShellUtils;
+import com.syscxp.utils.URLBuilder;
+import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.path.PathUtil;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
-import com.syscxp.header.vpn.host.VpnHostConstant;
-import com.syscxp.vpn.host.VpnHost;
 import com.syscxp.vpn.job.DestroyVpnJob;
 import com.syscxp.vpn.quota.VpnQuotaOperator;
 import com.syscxp.vpn.vpn.VpnCommands.*;
@@ -69,6 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -305,10 +308,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         List<APIListSuppoetedEndpointReply.SupportedEndpointInventory> inventories = new ArrayList<>();
 
         for (TunnelSwitchPortInventory switchPortInventory : inventory.getTunnelSwitchs()) {
-            Q q = Q.New(HostInterfaceVO.class)
-                    .eq(HostInterfaceVO_.endpointUuid, switchPortInventory.getEndpointUuid())
-                    .select(HostInterfaceVO_.hostUuid);
-            if (q.count() > 0) {
+
+            String sql = "select vh.uuid from VpnHostVO vh, HostInterfaceVO hi where vh.uuid = hi.hostUuid " +
+                    "and hi.endpointUuid = :endpointUuid and vh.status = :status";
+
+            List<String> uuids = SQL.New(sql)
+                    .param("endpointUuid", switchPortInventory.getEndpointUuid())
+                    .param("status", HostStatus.Connected)
+                    .list();
+            if (!CollectionUtils.isEmpty(uuids)) {
                 APIListSuppoetedEndpointReply.SupportedEndpointInventory inv = new APIListSuppoetedEndpointReply.SupportedEndpointInventory();
                 inv.setUuid(switchPortInventory.getEndpointUuid());
                 inv.setName(switchPortInventory.getEndpoint().getName());
@@ -343,7 +351,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         String path = new String(Base64.encode(sb.toString().getBytes()));
 
-        reply.setDownloadUrl(URLBuilder.buildUrlFromBase(restf.getBaseUrl(), "/download/", msg.getType(), "/", path));
+        reply.setDownloadUrl(URLBuilder.buildUrlFromBase(restf.getBaseUrl(),RESTConstant.REST_API_CALL, "/", msg.getType(), "/", path));
         bus.reply(msg, reply);
 
     }
@@ -720,13 +728,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         APIUpdateVpnStateEvent evt = new APIUpdateVpnStateEvent(msg.getId());
 
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        VpnState next = msg.getState();
-        if (vpn.getState() == next) {
-            evt.setInventory(VpnInventory.valueOf(vpn));
-            bus.publish(evt);
-            return;
-        }
-        changeVpnStateByAPI(vpn, next, new Completion(evt) {
+
+        changeVpnStateByAPI(vpn, msg.getState(), new Completion(evt) {
             @Override
             public void success() {
                 evt.setInventory(VpnInventory.valueOf(dbf.reload(vpn)));
@@ -1234,7 +1237,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     Message message = RESTApiDecoder.loads(cmd.getCallBackData());
                     if (message instanceof CreateVpnCallBack) {
                         VpnVO vpn = updateVpnFromOrder(cmd);
-                        if (vpn != null && vpn.getStatus() == VpnStatus.Connecting) {
+                        if (vpn != null) {
                             createVpn(vpn, new Completion(message) {
                                 @Override
                                 public void success() {
@@ -1272,7 +1275,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     } else if (message instanceof UpdateVpnBandwidthCallBack) {
                         VpnVO vpn = updateVpnFromOrder(cmd);
                         if (vpn != null && vpn.getStatus() == VpnStatus.Disconnected)
-                            reconnectVpn(vpn);
+                            reconnectVpn(vpn, new Completion(null) {
+                                @Override
+                                public void success() {
+                                }
+
+                                @Override
+                                public void fail(ErrorCode errorCode) {
+                                }
+                            });
                     } else {
                         logger.debug("未知回调！！！！！！！！");
                     }
@@ -1423,10 +1434,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private List<String> getHostUuid(String endpointUuid, Integer vlan) {
-        String sql = "select hi.hostUuid from HostInterfaceVO hi where hi.endpointUuid = :endpointUuid and hi.hostUuid " +
-                "not in (select v.hostUuid from VpnVO v where v.vlan = :vlan and v.endpointUuid = :endpointUuid )";
+        String sql = "select vh.uuid from VpnHostVO vh, HostInterfaceVO hi where vh.uuid = hi.hostUuid " +
+                "and hi.endpointUuid = :endpointUuid and vh.status = :status and " +
+                "hi.hostUuid not in (select v.hostUuid from VpnVO v where v.vlan = :vlan and v.endpointUuid = :endpointUuid )";
 
-        return SQL.New(sql).param("endpointUuid", endpointUuid).param("vlan", vlan).list();
+        return SQL.New(sql).param("endpointUuid", endpointUuid)
+                .param("status", HostStatus.Connected).param("vlan", vlan).list();
     }
 
     private void validate(APICreateVpnMsg msg) {
@@ -1448,8 +1461,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
                     String.format("The endpoint[uuid:%s] has no available host.", msg.getEndpointUuid())));
         }
-        Random random = new Random();
-        msg.setHostUuid(hostUuids.get(random.nextInt(hostUuids.size())));
+        Long sum = Q.New(VpnVO.class).in(VpnVO_.hostUuid, hostUuids).eq(VpnVO_.state, VpnState.Enabled).count();
+        msg.setHostUuid(hostUuids.get((int) (sum % hostUuids.size())));
         APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
         priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
         priceMsg.setDuration(msg.getDuration());
@@ -1459,23 +1472,28 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         APIGetProductPriceReply reply = createOrder(priceMsg);
         if (!reply.isPayable())
             throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.CALL_BILLING_ERROR,
-                    String.format("The Account[uuid:%s] has no money to pay.", msg.getEndpointUuid())));
+                    String.format("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid())));
     }
 
-    private boolean reconnectVpn(VpnVO vo) {
+    private void reconnectVpn(VpnVO vo, final Completion complete) {
         checkState(vo);
-        createVpn(vo, new Completion(null) {
-            @Override
-            public void success() {
-                logger.debug(String.format("reconnect vpn[UUID: %s]", vo.getUuid()));
-            }
 
+        StartVpnMsg vmsg = new StartVpnMsg();
+        vmsg.setVpnUuid(vo.getUuid());
+        bus.makeLocalServiceId(vmsg, VpnConstant.SERVICE_ID);
+
+        bus.send(vmsg, new CloudBusCallBack(null) {
             @Override
-            public void fail(ErrorCode errorCode) {
-                logger.debug(String.format("ERROR[%s]: %s", errorCode.getCode(), errorCode.getDetails()));
+            public void run(MessageReply reply) {
+                if (reply.isSuccess()) {
+                    logger.debug("run command[StartVpn] success!");
+                    complete.success();
+                } else {
+                    logger.debug(String.format("run command[StartVpn] fail! ERROR:[%s]", reply.getError()));
+                    complete.fail(reply.getError());
+                }
             }
         });
-        return true;
     }
 
     private void deleteVpn(String uuid, final Completion complete) {
@@ -1486,8 +1504,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
+                    logger.debug("run command[destroyVpn] success!");
                     complete.success();
                 } else {
+                    logger.debug("run command[destroyVpn] failed!");
                     complete.fail(reply.getError());
                 }
             }
@@ -1527,8 +1547,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                         vpn.setStatus(VpnStatus.valueOf(initVpnReply.getStatus()));
                         dbf.updateAndRefresh(vpn);
                     }*/
+                    logger.debug("run command[initVpn] success!");
                     complete.success();
                 } else {
+                    logger.debug("run command[initVpn] failed!");
                     complete.fail(reply.getError());
                 }
             }
@@ -1537,15 +1559,19 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void changeVpnStateByAPI(VpnVO vpn, VpnState next, final Completion complete) {
-        changeVpnState(vpn, next);
-        ChangeVpnStatusMsg changeVpnStatusMsg = new ChangeVpnStatusMsg();
-        changeVpnStatusMsg.setVpnUuid(vpn.getUuid());
-        changeVpnStatusMsg.setCommand(VpnState.Enabled == next ? "start" : "stop");
-        bus.makeLocalServiceId(changeVpnStatusMsg, VpnConstant.SERVICE_ID);
-        bus.send(changeVpnStatusMsg, new CloudBusCallBack(complete) {
+        if (vpn.getState() == next) {
+            complete.success();
+            return;
+        }
+        VpnMessage vpnMessage = VpnState.Enabled == next ? new StartVpnMsg() : new StopVpnMsg();
+        vpnMessage.setVpnUuid(vpn.getUuid());
+
+        bus.makeLocalServiceId(vpnMessage, VpnConstant.SERVICE_ID);
+        bus.send(vpnMessage, new CloudBusCallBack(complete) {
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
+                    changeVpnState(vpn, next);
                     complete.success();
                 } else {
                     complete.fail(reply.getError());

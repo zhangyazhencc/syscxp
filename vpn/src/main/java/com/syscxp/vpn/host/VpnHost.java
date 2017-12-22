@@ -2,10 +2,7 @@ package com.syscxp.vpn.host;
 
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
-import com.syscxp.core.ansible.AnsibleConstant;
-import com.syscxp.core.ansible.AnsibleGlobalProperty;
-import com.syscxp.core.ansible.AnsibleRunner;
-import com.syscxp.core.ansible.SshFileMd5Checker;
+import com.syscxp.core.ansible.*;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.host.HostBase;
@@ -311,13 +308,12 @@ public class VpnHost extends HostBase implements Host {
                             runner.setFullDeploy(true);
                         }
                         runner.putArgument("pkg_vpnagent", agentPackageName);
-                        runner.putArgument("falcon_ip",CoreGlobalProperty.FALCON_API_IP);
-                        runner.putArgument("transfer_rpc_ip", CoreGlobalProperty.TRANSFER_RPC_IP);
+                        runner.putArgument("falcon_ip", AgentGlobalConfig.FALCON_API_IP);
+                        runner.putArgument("transfer_rpc_ip", AgentGlobalConfig.TRANSFER_RPC_IP);
                         runner.putArgument("hostname", String.format("%s.syscxp.com", self.getHostIp().replaceAll("\\.", "-")));
 
                         UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(restf.getBaseUrl());
-                        ub.path(new StringBind(AnsibleConstant.AGENT_ANSIBLE_LOG_PATH_FROMAT).bind("uuid", self.getUuid()).toString
-                                ());
+                        ub.path(new StringBind(AnsibleConstant.AGENT_ANSIBLE_LOG_PATH_FROMAT).bind("uuid", self.getUuid()).toString());
                         String postUrl = ub.build().toString();
 
                         runner.putArgument("post_url", postUrl);
