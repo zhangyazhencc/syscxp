@@ -13,7 +13,7 @@ banner("Starting to deploy monitor agent")
 start_time = datetime.now()
 # set default value
 file_root = "files/monitor"
-pip_url = "https=//pypi.python.org/simple/"
+pip_url = "http://pypi.python.org/simple/"
 chroot_env = 'false'
 init_install = 'false'
 syscxp_repo = 'false'
@@ -39,7 +39,7 @@ locals().update(argument_dict)
 virtenv_path = "%s/virtualenv/monitor/" % syscxp_root
 workplace = "%s/monitor" % syscxp_root
 monitor_root = "%s/package" % workplace
-agent_conf = "%s/monitoragent.conf" % file_root
+
 
 host_post_info = HostPostInfo()
 host_post_info.host_inventory = args.i
@@ -90,12 +90,11 @@ if distro == "RedHat" or distro == "CentOS":
                   "rsync nmap ipset | grep \"not installed\" | awk '{ print $2 }'` && for pkg in $pkg_list; do yum "
                   "--disablerepo=* --enablerepo=%s install -y $pkg; done;") % (syscxp_repo, syscxp_repo)
         host_post_info.post_label = "ansible.shell.install.pkg"
-        host_post_info.post_label_param = "openssh-clients,bridge-utils,wget,sed," \
-                                          "vconfig,net-tools,sshpass,iputils,rsync,nmap,ipset,libffi-devel,expect-devel"
+        host_post_info.post_label_param = "openssh-clients,bridge-utils,wget,sed,vconfig,net-tools,sshpass,iputils,rsync,nmap,ipset,libffi-devel,expect-devel,iperf3"
         run_remote_command(command, host_post_info)
     else:
         # name: install monitor related packages on RedHat based OS from online
-        for pkg in ['openssh-clients', 'bridge-utils', 'wget', 'sed', 'vconfig',
+        for pkg in ['openssh-clients', 'bridge-utils', 'wget', 'sed', 'vconfig', 'iperf3',
                     'net-tools', 'sshpass', 'rsync', 'nmap', 'ipset', 'libffi-devel', 'expect-devel']:
             yum_install_package(pkg, host_post_info)
 
@@ -142,6 +141,7 @@ copy_arg.dest = "/etc/init.d/"
 copy_arg.args = "mode=755"
 copy(copy_arg, host_post_info)
 
+agent_conf = "%s/monitoragent-%s.conf" % (file_root, host_post_info.host)
 config = ConfigParser.ConfigParser()
 if not config.has_section(monitor_section):
     config.add_section(monitor_section)
@@ -156,6 +156,9 @@ copy_arg.src = agent_conf
 copy_arg.dest = "/etc/monitor/"
 copy_arg.args = "mode=755"
 copy(copy_arg, host_post_info)
+run_remote_command("mv /etc/monitor/*.conf /etc/monitor/monitoragent.conf" , host_post_info)
+import os
+os.remove(agent_conf)
 
 # name: install virtualenv
 virtual_env_status = check_and_install_virtual_env(virtualenv_version, trusted_host, pip_url, host_post_info)
@@ -170,7 +173,8 @@ command = "[ -f %s/bin/python ] || virtualenv --system-site-packages %s " % (vir
 host_post_info.post_label = "ansible.shell.check.virtualenv"
 host_post_info.post_label_param = None
 run_remote_command(command, host_post_info)
-command = "%s/bin/pip install -U pip " % virtenv_path
+
+command = "%s/bin/pip install -U pip --trusted-host %s -i %s" % (virtenv_path, trusted_host, pip_url)
 run_remote_command(command, host_post_info)
 
 # name: install syscxplib

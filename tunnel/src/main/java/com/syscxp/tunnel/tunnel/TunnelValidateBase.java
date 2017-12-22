@@ -67,9 +67,28 @@ public class TunnelValidateBase {
                         argerr("The type or Interface must be different！"));
             }
 
-            if (msg.getNetworkType() == NetworkType.QINQ && (msg.getSegments() == null || msg.getSegments().isEmpty())) {
-                throw new ApiMessageInterceptionException(
-                        argerr("The InnerVlans cannot be empty！"));
+            if (msg.getNetworkType() == NetworkType.QINQ) {
+                if (msg.getSegments() == null || msg.getSegments().isEmpty()) {
+                    throw new ApiMessageInterceptionException(
+                            argerr("The InnerVlans cannot be empty！"));
+                }
+                //判断同一个switchPort下内部VLAN段是否有重叠
+                String sql = "select count(a.uuid) from QinqVO a " +
+                        "where a.tunnelUuid in (select b.tunnelUuid from TunnelSwitchPortVO b where b.switchPortUuid = :switchPortUuid and b.type = 'QINQ') " +
+                        "and ((a.startVlan between :startVlan and :endVlan) " +
+                        "or (a.endVlan between :startVlan and :endVlan) " +
+                        "or (:startVlan between a.startVlan and a.endVlan) " +
+                        "or (:endVlan between a.startVlan and a.endVlan))";
+                for (InnerVlanSegment segment : msg.getSegments()) {
+                    TypedQuery<Long> vq = dbf.getEntityManager().createQuery(sql, Long.class);
+                    vq.setParameter("switchPortUuid", msg.getSwitchPortUuid());
+                    vq.setParameter("startVlan", segment.getStartVlan());
+                    vq.setParameter("endVlan", segment.getEndVlan());
+                    Long count = vq.getSingleResult();
+                    if (count > 0) {
+                        throw new ApiMessageInterceptionException(argerr("vlan has overlapping"));
+                    }
+                }
             }
         }
     }

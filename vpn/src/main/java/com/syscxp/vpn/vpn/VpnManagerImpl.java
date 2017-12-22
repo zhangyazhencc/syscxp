@@ -765,10 +765,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 createOrder(orderMsg, new Completion(trigger) {
                     @Override
                     public void success() {
-                        vpn.setState(VpnState.Disabled);
-                        vpn.setStatus(VpnStatus.Disconnected);
-                        vpn.setExpireDate(dbf.getCurrentSqlTime());
-                        dbf.updateAndRefresh(vpn);
+                        if (vpn.getVpnCertUuid() != null)
+                            detachVpnCert(vpn.getUuid(), vpn.getVpnCert().getUuid());
                         trigger.next();
                     }
 
@@ -793,6 +791,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
                         @Override
                         public void fail(ErrorCode errorCode) {
+                            VpnVO vpnVO = dbf.findByUuid(msg.getUuid(), VpnVO.class);
+                            vpnVO.setState(VpnState.Disabled);
+                            vpnVO.setStatus(VpnStatus.Disconnected);
+                            vpnVO.setExpireDate(dbf.getCurrentSqlTime());
+                            dbf.updateAndRefresh(vpnVO);
                             trigger.fail(errorCode);
                         }
                     });
@@ -1322,14 +1325,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void validate(APIDetachVpnCertMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        checkVpnCert(vpn);
+        checkTunnelAndVpnCert(vpn);
     }
 
     private void validate(APIAttachVpnCertMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        if (vpn.getVpnCertUuid() == null) {
-            throw new OperationFailureException(
-                    operr("VPN[uuid: %s]已绑定证书证书, 请先解绑证书", vpn.getUuid()));
+        checkTunnel(vpn);
+        if (vpn.getVpnCertUuid() != null) {
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
+                    String.format("VPN[uuid: %s]已绑定证书, 请先解绑证书", vpn.getUuid())));
         }
     }
 
@@ -1341,8 +1345,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private void validate(APIDeleteVpnCertMsg msg) {
         VpnCertVO cert = dbf.findByUuid(msg.getUuid(), VpnCertVO.class);
         if (cert.getVpnNum() > 0)
-            throw new ApiMessageInterceptionException(
-                    argerr("The VpnCertVO[uuid:%s] has already binding Vpn.", msg.getUuid()));
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
+                    String.format("The VpnCertVO[uuid:%s] has already binding Vpn.", msg.getUuid())));
     }
 
     private void validate(APIGetVpnCertMsg msg) {
@@ -1358,17 +1362,18 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             ));
         }
     }
+
     private void checkTunnel(VpnVO vpn) {
         if ("".equals(vpn.getTunnelUuid())) {
-            throw new OperationFailureException(
-                    operr("VPN[uuid: %s]没有指定专线。", vpn.getUuid()));
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
+                    String.format("VPN[uuid: %s]没有指定专线。", vpn.getUuid())));
         }
     }
 
     private void checkVpnCert(VpnVO vpn) {
         if (vpn.getVpnCertUuid() == null) {
-            throw new OperationFailureException(
-                    operr("VPN[uuid: %s]的证书已经解绑, 请绑定证书", vpn.getUuid()));
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
+                    String.format("VPN[uuid: %s]的证书已经解绑, 请绑定证书", vpn.getUuid())));
         }
     }
 
@@ -1376,6 +1381,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         checkTunnel(vpn);
         checkVpnCert(vpn);
     }
+
     private void validate(APIUpdateVpnBandwidthMsg msg) {
         // 区分管理员账户
         if (msg.getSession().isAdminSession() && StringUtils.isEmpty(msg.getAccountUuid())) {
@@ -1399,8 +1405,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 .findValue();
 
         if (times >= maxModifies) {
-            throw new OperationFailureException(
-                    operr("The Vpn[uuid:%s] has motified %s times.", msg.getUuid(), times));
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
+                    String.format("The Vpn[uuid:%s] has motified %s times.", msg.getUuid(), times)));
         }
     }
 
@@ -1412,8 +1418,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         Q q = Q.New(VpnVO.class).eq(VpnVO_.name, msg.getName()).notEq(VpnVO_.uuid, msg.getUuid());
         if (q.isExists())
-            throw new ApiMessageInterceptionException(
-                    argerr("The Vpn[name:%s] is already exist.", msg.getName()));
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
+                    String.format("The Vpn[name:%s] is already exist.", msg.getName())));
     }
 
     private List<String> getHostUuid(String endpointUuid, Integer vlan) {
@@ -1439,8 +1445,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         List<String> hostUuids = getHostUuid(msg.getEndpointUuid(), msg.getVlan());
 
         if (hostUuids.isEmpty()) {
-            throw new ApiMessageInterceptionException(
-                    argerr("The endpoint[uuid:%s] has no available host.", msg.getEndpointUuid()));
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
+                    String.format("The endpoint[uuid:%s] has no available host.", msg.getEndpointUuid())));
         }
         Random random = new Random();
         msg.setHostUuid(hostUuids.get(random.nextInt(hostUuids.size())));
@@ -1452,8 +1458,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         APIGetProductPriceReply reply = createOrder(priceMsg);
         if (!reply.isPayable())
-            throw new ApiMessageInterceptionException(
-                    argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.CALL_BILLING_ERROR,
+                    String.format("The Account[uuid:%s] has no money to pay.", msg.getEndpointUuid())));
     }
 
     private boolean reconnectVpn(VpnVO vo) {

@@ -3,7 +3,7 @@ package com.syscxp.vpn.exception;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.errorcode.OperationFailureException;
 
-public class VpnServiceException extends OperationFailureException{
+public class VpnServiceException extends OperationFailureException {
     private ErrorCode errorCode;
 
     @Override
