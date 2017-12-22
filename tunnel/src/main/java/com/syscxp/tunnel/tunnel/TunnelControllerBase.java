@@ -452,7 +452,6 @@ public class TunnelControllerBase extends AbstractTunnel {
         }
 
         tunnelConfig.setTunnel_id(tunnelVO.getUuid());
-        tunnelConfig.setIs_on_local(isOnLock(tunnelSwitchPortA,tunnelSwitchPortZ));
         tunnelConfig.setMpls_switches(mplsList);
         if(sdnList.size()>0){
             tunnelConfig.setSdn_switches(sdnList);
@@ -582,24 +581,4 @@ public class TunnelControllerBase extends AbstractTunnel {
         return buf.toString();
     }
 
-    /**
-     *  判断该通道是否onlock
-     */
-    private boolean isOnLock(TunnelSwitchPortVO tunnelSwitchPortA,TunnelSwitchPortVO tunnelSwitchPortZ){
-        TunnelBase tunnelBase = new TunnelBase();
-        boolean isonlock = false;
-        SwitchPortVO switchPortA = dbf.findByUuid(tunnelSwitchPortA.getSwitchPortUuid(),SwitchPortVO.class);
-        PhysicalSwitchVO physicalSwitchA = tunnelBase.getPhysicalSwitch(switchPortA);
-
-        SwitchPortVO switchPortZ = dbf.findByUuid(tunnelSwitchPortZ.getSwitchPortUuid(),SwitchPortVO.class);
-        PhysicalSwitchVO physicalSwitchZ = tunnelBase.getPhysicalSwitch(switchPortZ);
-
-        if(physicalSwitchA.getAccessType() == physicalSwitchZ.getAccessType()){
-            if(physicalSwitchA.getUuid().equals(physicalSwitchZ.getUuid())){
-                isonlock = true;
-            }
-        }
-
-        return isonlock;
-    }
 }
