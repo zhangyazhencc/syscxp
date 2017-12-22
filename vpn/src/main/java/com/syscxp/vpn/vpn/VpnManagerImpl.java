@@ -309,7 +309,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
         for (TunnelSwitchPortInventory switchPortInventory : inventory.getTunnelSwitchs()) {
 
-            String sql = "select vh.uuid from VpnHostVo vh, HostInterfaceVO hi where vh.uuid = hi.hostUuid " +
+            String sql = "select vh.uuid from VpnHostVO vh, HostInterfaceVO hi where vh.uuid = hi.hostUuid " +
                     "and hi.endpointUuid = :endpointUuid and vh.status = :status";
 
             List<String> uuids = SQL.New(sql)
