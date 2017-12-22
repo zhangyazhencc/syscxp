@@ -85,6 +85,9 @@ public class CoreGlobalProperty {
     @GlobalProperty(name = "transferRpcIp", defaultValue = "192.168.211.6")
     public static String TRANSFER_RPC_IP;
 
+    @GlobalProperty(name = "falconApiIp", defaultValue = "192.168.211.96")
+    public static String FALCON_API_IP;
+
     @GlobalProperty(name = "tunnelServerUrl", defaultValue = "http://192.168.211.185:8080/asyncrest/sendcommand")
     public static String TUNNEL_SERVER_URL;
 

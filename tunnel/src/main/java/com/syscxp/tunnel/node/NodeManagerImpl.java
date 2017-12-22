@@ -174,14 +174,9 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         prame.append("&md5=");
         prame.append(md5);
 
-//        Map map = new HashMap();
-//        map.put("node_id", msg.getNodeId());
-//        map.put("image_url", msg.getImage_url());
-//        map.put("timestamp", timestamp);
-//        map.put("md5", md5);
 
-        Map rsp = restf.syncJsonPost(NodeImageGlobalProperty.DELETE_IP+NodeImageGlobalProperty.DELETE_URL,
-                prame.toString(), Map.class);
+        Map rsp = restf.syncJsonPost(NodeImageGlobalProperty.DELETE_IP+NodeImageGlobalProperty.DELETE_URL+"?"+
+                prame.toString(), null,Map.class);
 
         if(rsp.get("success") != null && (boolean)rsp.get("success")){
             System.out.println("successfully");
@@ -250,18 +245,18 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
         Query query = new Query();
         if(msg.getOperatorCategory() != null){
-            query.addCriteria(Criteria.where("operatorCategory").is(msg.getOperatorCategory()));
+            query.addCriteria(Criteria.where("machineRoomInfo.outer.operatorCategory").is(msg.getOperatorCategory()));
         }
         if(msg.getProvince() != null){
             query.addCriteria(Criteria.where("province").is(msg.getProvince()));
         }
         if(msg.getRoomLevel() != null){
-            query.addCriteria(Criteria.where("roomLevel").is(msg.getRoomLevel()));
+            query.addCriteria(Criteria.where("machineRoomInfo.outer.roomLevel").is(msg.getRoomLevel()));
         }
         if(msg.getProperty() != null){
-            query.addCriteria(Criteria.where("property").is(msg.getProperty()));
+            query.addCriteria(Criteria.where("property").all(msg.getProperty()));
         }else{
-            query.addCriteria(Criteria.where("property").is("idc_node"));
+            query.addCriteria(Criteria.where("property").all("idc_node"));
 
         }
 
@@ -289,6 +284,13 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
         NodeExtensionInfoList nodes = new NodeExtensionInfoList();
         nodes.setPage_no(msg.getPageNo());
         nodes.setCount(String.valueOf(count));
+        Long pageCout = count/Integer.valueOf(msg.getPage_size()) + 1;
+        List<Integer> PageRange = new ArrayList<>();
+        for (int i = 0; i < pageCout; i++) {
+            PageRange.add(i+1);
+        }
+        nodes.setPage_count(String.valueOf(pageCout));
+        nodes.setPage_range(PageRange);
         nodes.setNodeExtensionInfos(JSONObjectUtil.toJsonString(list));
         nodes.setTotal(String.valueOf(total));
         nodes.setPage_size(msg.getPage_size());
@@ -907,11 +909,13 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
                 String endpointA = Q.New(TunnelSwitchPortVO.class)
                         .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelUuid)
                         .eq(TunnelSwitchPortVO_.sortTag,"A")
-                        .find();
+                        .select(TunnelSwitchPortVO_.endpointUuid)
+                        .findValue();
                 String endpointZ = Q.New(TunnelSwitchPortVO.class)
                         .eq(TunnelSwitchPortVO_.tunnelUuid,tunnelUuid)
                         .eq(TunnelSwitchPortVO_.sortTag,"Z")
-                        .find();
+                        .select(TunnelSwitchPortVO_.endpointUuid)
+                        .findValue();
                 if(endpointA.equals(connectedEndpointUuid) || endpointZ.equals(connectedEndpointUuid)){
                     throw new ApiMessageInterceptionException(argerr("该互联连接点至目的连接点已经被通道[%s]使用！",tunnelUuid));
                 }

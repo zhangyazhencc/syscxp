@@ -516,18 +516,9 @@ public class VpnBase extends AbstractVpn {
     }
 
     private void handle(ChangeVpnStatusMsg msg) {
+        changVpnSatus(VpnStatus.Disconnected);
         ChangeVpnStatusReply reply = new ChangeVpnStatusReply();
-        if (VpnStatus.valueOf(msg.getStatus()) == self.getStatus()) {
-            bus.reply(msg, reply);
-            return;
-        }
-        String command;
-        if (VpnStatus.valueOf(msg.getStatus()) == VpnStatus.Connected) {
-            command = "start";
-        } else {
-            command = "stop";
-        }
-        vpnService(command, new ReturnValueCompletion<String>(msg) {
+        vpnService(msg.getCommand(), new ReturnValueCompletion<String>(msg) {
             @Override
             public void success(String ret) {
                 bus.reply(msg, reply);
@@ -542,12 +533,12 @@ public class VpnBase extends AbstractVpn {
     }
 
     private void vpnService(String command, final ReturnValueCompletion<String> completion) {
+
         VpnServiceCmd cmd = new VpnServiceCmd();
         cmd.vpnuuid = self.getUuid();
         cmd.vpnvlanid = getVlan();
         cmd.vpnport = getPort();
         cmd.command = command;
-
         httpCall(vpnServicePath, cmd, VpnServiceRsp.class, new ReturnValueCompletion<VpnServiceRsp>(completion) {
             @Override
             public void success(VpnServiceRsp ret) {

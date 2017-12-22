@@ -311,6 +311,8 @@ public class VpnHost extends HostBase implements Host {
                             runner.setFullDeploy(true);
                         }
                         runner.putArgument("pkg_vpnagent", agentPackageName);
+                        runner.putArgument("falcon_ip",CoreGlobalProperty.FALCON_API_IP);
+                        runner.putArgument("transfer_rpc_ip", CoreGlobalProperty.TRANSFER_RPC_IP);
                         runner.putArgument("hostname", String.format("%s.syscxp.com", self.getHostIp().replaceAll("\\.", "-")));
 
                         UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(restf.getBaseUrl());
