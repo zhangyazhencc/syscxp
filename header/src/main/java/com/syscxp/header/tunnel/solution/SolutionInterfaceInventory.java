@@ -39,9 +39,12 @@ public class SolutionInterfaceInventory {
         inv.setName(vo.getName());
         inv.setEndpointUuid(vo.getEndpointUuid());
         inv.setPortOfferingUuid(vo.getPortOfferingUuid());
-        inv.setEndpointName(vo.getEndpointVO().getName());
-        inv.setPortOfferingName(vo.getPortOfferingVO().getName());
-
+        if(vo.getEndpointVO() != null){
+            inv.setEndpointName(vo.getEndpointVO().getName());
+        }
+        if(vo.getPortOfferingVO() != null){
+            inv.setPortOfferingName(vo.getPortOfferingVO().getName());
+        }
         return inv;
     }
 

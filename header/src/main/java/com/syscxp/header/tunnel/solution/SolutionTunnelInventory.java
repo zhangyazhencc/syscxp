@@ -40,9 +40,16 @@ public class SolutionTunnelInventory {
         inv.setEndpointUuidA(vo.getEndpointUuidA());
         inv.setEndpointUuidZ(vo.getEndpointUuidZ());
         inv.setInnerConnectedEndpointUuid(vo.getInnerConnectedEndpointUuid());
-        inv.setEndpointNameA(vo.getEndpointVOA().getName());
-        inv.setEndpointNameZ(vo.getEndpointVOZ().getName());
-        inv.setInnerConnectedEndpointName(vo.getInnerConnectedEndpointVO().getName());
+        if(vo.getEndpointVOA() != null){
+            inv.setEndpointNameA(vo.getEndpointVOA().getName());
+        }
+        if(vo.getEndpointVOZ() != null){
+            inv.setEndpointNameZ(vo.getEndpointVOZ().getName());
+        }
+
+        if(vo.getInnerConnectedEndpointVO() != null){
+            inv.setInnerConnectedEndpointName(vo.getInnerConnectedEndpointVO().getName());
+        }
 
         inv.setBandwidthOfferingUuid(vo.getBandwidthOfferingUuid());
 
