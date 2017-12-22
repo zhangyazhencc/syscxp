@@ -47,19 +47,21 @@ import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.tunnel.tunnel.*;
-import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.*;
 import com.syscxp.header.vpn.billingCallBack.*;
-import com.syscxp.header.vpn.host.*;
+import com.syscxp.header.vpn.host.APIDeleteHostInterfaceEvent;
+import com.syscxp.header.vpn.host.VpnHostConstant;
+import com.syscxp.header.vpn.host.VpnHostVO;
 import com.syscxp.header.vpn.vpn.*;
-import com.syscxp.utils.*;
+import com.syscxp.utils.CollectionDSL;
+import com.syscxp.utils.ShellUtils;
+import com.syscxp.utils.URLBuilder;
+import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.path.PathUtil;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
-import com.syscxp.header.vpn.host.VpnHostConstant;
-import com.syscxp.vpn.host.VpnHost;
 import com.syscxp.vpn.job.DestroyVpnJob;
 import com.syscxp.vpn.quota.VpnQuotaOperator;
 import com.syscxp.vpn.vpn.VpnCommands.*;
@@ -69,6 +71,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.codec.Base64;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
 
 import java.io.File;
@@ -305,10 +308,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         List<APIListSuppoetedEndpointReply.SupportedEndpointInventory> inventories = new ArrayList<>();
 
         for (TunnelSwitchPortInventory switchPortInventory : inventory.getTunnelSwitchs()) {
-            Q q = Q.New(HostInterfaceVO.class)
-                    .eq(HostInterfaceVO_.endpointUuid, switchPortInventory.getEndpointUuid())
-                    .select(HostInterfaceVO_.hostUuid);
-            if (q.count() > 0) {
+
+            String sql = "select vh.uuid from VpnHostVo vh, HostInterfaceVO hi where vh.uuid = hi.hostUuid " +
+                    "and hi.endpointUuid = :endpointUuid and vh.status = :status";
+
+            List<String> uuids = SQL.New(sql)
+                    .param("endpointUuid", switchPortInventory.getEndpointUuid())
+                    .param("status", HostStatus.Connected)
+                    .list();
+            if (!CollectionUtils.isEmpty(uuids)) {
                 APIListSuppoetedEndpointReply.SupportedEndpointInventory inv = new APIListSuppoetedEndpointReply.SupportedEndpointInventory();
                 inv.setUuid(switchPortInventory.getEndpointUuid());
                 inv.setName(switchPortInventory.getEndpoint().getName());
