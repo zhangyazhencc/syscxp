@@ -6,6 +6,7 @@ import com.syscxp.core.db.SQL;
 import com.syscxp.core.defer.Defer;
 import com.syscxp.core.defer.Deferred;
 import com.syscxp.header.exception.CloudRuntimeException;
+import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.header.vpn.agent.ClientInfo;
@@ -67,7 +68,7 @@ public class DownloadController {
         return vo;
     }
 
-    @RequestMapping(value = VpnConstant.CONF_DOWNLOAD_PATH, method = {RequestMethod.GET})
+    @RequestMapping(value = RESTConstant.REST_API_CALL + VpnConstant.CONF_DOWNLOAD_PATH, method = {RequestMethod.GET})
     @Deferred
     public void downLoadConfFile(@PathVariable String uuid, HttpServletResponse response) throws IOException {
 
@@ -95,7 +96,7 @@ public class DownloadController {
         }
     }
 
-    @RequestMapping(value = VpnConstant.CERT_DOWNLOAD_PATH, method = {RequestMethod.GET})
+    @RequestMapping(value = RESTConstant.REST_API_CALL + VpnConstant.CERT_DOWNLOAD_PATH, method = {RequestMethod.GET})
     @Deferred
     public void downLoadCertFile(@PathVariable String uuid, HttpServletResponse response) throws IOException {
 
