@@ -728,13 +728,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         APIUpdateVpnStateEvent evt = new APIUpdateVpnStateEvent(msg.getId());
 
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        VpnState next = msg.getState();
-        if (vpn.getState() == next) {
-            evt.setInventory(VpnInventory.valueOf(vpn));
-            bus.publish(evt);
-            return;
-        }
-        changeVpnStateByAPI(vpn, next, new Completion(evt) {
+
+        changeVpnStateByAPI(vpn, msg.getState(), new Completion(evt) {
             @Override
             public void success() {
                 evt.setInventory(VpnInventory.valueOf(dbf.reload(vpn)));
@@ -1242,7 +1237,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     Message message = RESTApiDecoder.loads(cmd.getCallBackData());
                     if (message instanceof CreateVpnCallBack) {
                         VpnVO vpn = updateVpnFromOrder(cmd);
-                        if (vpn != null && vpn.getStatus() == VpnStatus.Connecting) {
+                        if (vpn != null) {
                             createVpn(vpn, new Completion(message) {
                                 @Override
                                 public void success() {
@@ -1280,7 +1275,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     } else if (message instanceof UpdateVpnBandwidthCallBack) {
                         VpnVO vpn = updateVpnFromOrder(cmd);
                         if (vpn != null && vpn.getStatus() == VpnStatus.Disconnected)
-                            reconnectVpn(vpn);
+                            reconnectVpn(vpn, new Completion(null) {
+                                @Override
+                                public void success() {
+                                }
+
+                                @Override
+                                public void fail(ErrorCode errorCode) {
+                                }
+                            });
                     } else {
                         logger.debug("未知回调！！！！！！！！");
                     }
@@ -1470,20 +1473,25 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     String.format("The Account[uuid:%s] has no money to pay.", msg.getEndpointUuid())));
     }
 
-    private boolean reconnectVpn(VpnVO vo) {
+    private void reconnectVpn(VpnVO vo, final Completion complete) {
         checkState(vo);
-        createVpn(vo, new Completion(null) {
-            @Override
-            public void success() {
-                logger.debug(String.format("reconnect vpn[UUID: %s]", vo.getUuid()));
-            }
 
+        StartVpnMsg vmsg = new StartVpnMsg();
+        vmsg.setVpnUuid(vo.getUuid());
+        bus.makeLocalServiceId(vmsg, VpnConstant.SERVICE_ID);
+
+        bus.send(vmsg, new CloudBusCallBack(null) {
             @Override
-            public void fail(ErrorCode errorCode) {
-                logger.debug(String.format("ERROR[%s]: %s", errorCode.getCode(), errorCode.getDetails()));
+            public void run(MessageReply reply) {
+                if (reply.isSuccess()) {
+                    logger.debug("run command[StartVpn] success!");
+                    complete.success();
+                } else {
+                    logger.debug(String.format("run command[StartVpn] fail! ERROR:[%s]", reply.getError()));
+                    complete.fail(reply.getError());
+                }
             }
         });
-        return true;
     }
 
     private void deleteVpn(String uuid, final Completion complete) {
@@ -1494,8 +1502,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
+                    logger.debug("run command[destroyVpn] success!");
                     complete.success();
                 } else {
+                    logger.debug("run command[destroyVpn] failed!");
                     complete.fail(reply.getError());
                 }
             }
@@ -1535,8 +1545,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                         vpn.setStatus(VpnStatus.valueOf(initVpnReply.getStatus()));
                         dbf.updateAndRefresh(vpn);
                     }*/
+                    logger.debug("run command[initVpn] success!");
                     complete.success();
                 } else {
+                    logger.debug("run command[initVpn] failed!");
                     complete.fail(reply.getError());
                 }
             }
@@ -1545,12 +1557,16 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void changeVpnStateByAPI(VpnVO vpn, VpnState next, final Completion complete) {
+        if (vpn.getState() == next) {
+            complete.success();
+            return;
+        }
         changeVpnState(vpn, next);
-        ChangeVpnStatusMsg changeVpnStatusMsg = new ChangeVpnStatusMsg();
-        changeVpnStatusMsg.setVpnUuid(vpn.getUuid());
-        changeVpnStatusMsg.setCommand(VpnState.Enabled == next ? "start" : "stop");
-        bus.makeLocalServiceId(changeVpnStatusMsg, VpnConstant.SERVICE_ID);
-        bus.send(changeVpnStatusMsg, new CloudBusCallBack(complete) {
+        VpnMessage vpnMessage = VpnState.Enabled == next ? new StartVpnMsg() : new StopVpnMsg();
+        vpnMessage.setVpnUuid(vpn.getUuid());
+
+        bus.makeLocalServiceId(vpnMessage, VpnConstant.SERVICE_ID);
+        bus.send(vpnMessage, new CloudBusCallBack(complete) {
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
