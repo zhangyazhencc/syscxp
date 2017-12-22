@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding=utf-8
 import argparse
+import string
 from datetime import datetime
 
 from syscxplib import *
@@ -12,16 +13,20 @@ banner("Starting to deploy vpn agent")
 start_time = datetime.now()
 # set default value
 file_root = "files/vpn"
+of_file_root = "files/open-falcon"
 pip_url = "https=//pypi.python.org/simple/"
 chroot_env = 'false'
 init_install = 'false'
 syscxp_repo = 'false'
 post_url = ""
 pkg_vpnagent = ""
+pkg_ofagent = "open-falcon-agent.tar.gz"
 virtualenv_version = "12.1.1"
 remote_user = "root"
 remote_pass = None
 remote_port = None
+template_json = "%s/template.json" % of_file_root
+of_agent_josn = "%s/cfg.json" % of_file_root
 
 # get parameter from shell
 parser = argparse.ArgumentParser(description='Deploy vpn to host')
@@ -38,9 +43,14 @@ virtenv_path = "%s/virtualenv/vpn/" % syscxp_root
 workplace = "%s/vpn" % syscxp_root
 vpn_root = "%s/package" % workplace
 
+of_path = "%s/open-falcon" % syscxp_root
+of_root = "%s/of_package" % syscxp_root
+
 host_post_info = HostPostInfo()
 host_post_info.host_inventory = args.i
 host_post_info.host = host
+host_post_info.falcon_ip = falcon_ip
+host_post_info.transfer_rpc_ip = transfer_rpc_ip
 host_post_info.post_url = post_url
 host_post_info.private_key = args.private_key
 host_post_info.remote_user = remote_user
@@ -139,6 +149,34 @@ copy_arg.dest = "/etc/init.d/"
 copy_arg.args = "mode=755"
 copy(copy_arg, host_post_info)
 
+# name: copy open-falcon
+copy_arg = CopyArg()
+copy_arg.src = "%s/%s" % (of_file_root, pkg_ofagent)
+copy_arg.dest = "%s/%s" % (of_root, pkg_ofagent)
+copy_ofagent = copy(copy_arg, host_post_info)
+
+
+copy_arg = CopyArg()
+copy_arg.src = "files/open-falcon/open-falcon.sh"
+copy_arg.dest = "/etc/init.d/"
+copy_arg.args = "mode=755"
+copy(copy_arg, host_post_info)
+
+with open(template_json, "rb") as f:
+    content = f.read()
+of_temp = string.Template(content)
+ip_d = {'ip': host_post_info.host, 'addr': host_post_info.falcon_ip + ':6030',
+        'addrs': host_post_info.transfer_rpc_ip + ':8433'}
+open_falcon_conf = of_temp.safe_substitute(ip_d)
+with open(of_agent_josn, 'wb') as f:
+    f.write(open_falcon_conf)
+
+copy_arg = CopyArg()
+copy_arg.src = of_agent_josn
+copy_arg.dest = "/var/lib/syscxp/open-falcon/agent/config/"
+copy_arg.args = "mode=644"
+copy(copy_arg, host_post_info)
+
 # name: install virtualenv
 virtual_env_status = check_and_install_virtual_env(virtualenv_version, trusted_host, pip_url, host_post_info)
 if virtual_env_status is False:
@@ -171,6 +209,14 @@ if copy_vpnagent != "changed:False":
     agent_install_arg.agent_name = "vpnagent"
     agent_install_arg.agent_root = vpn_root
     agent_install_arg.pkg_name = pkg_vpnagent
+    agent_install_arg.virtualenv_site_packages = "yes"
+    agent_install(agent_install_arg, host_post_info)
+
+if copy_ofagent != "changed:False":
+    agent_install_arg = AgentInstallArg(trusted_host, pip_url, virtenv_path, init_install)
+    agent_install_arg.agent_name = "open-falcon agent"
+    agent_install_arg.agent_root = of_root
+    agent_install_arg.pkg_name = pkg_ofagent
     agent_install_arg.virtualenv_site_packages = "yes"
     agent_install(agent_install_arg, host_post_info)
 

@@ -18,6 +18,7 @@ import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
 import com.syscxp.utils.path.PathUtil;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.Charsets;
 import org.apache.commons.io.FileUtils;
 import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,8 @@ public class DownloadController {
     private RESTFacade restf;
 
     private String zipName = VpnConstant.KEYS_DIR + ".zip";
+
+    private String charset = "GBK";
 
     @RequestMapping(value = VpnConstant.VPN_REPORT_PATH, method = {RequestMethod.PUT, RequestMethod.POST})
     @ResponseBody
@@ -76,7 +79,7 @@ public class DownloadController {
         File clientConf = new File(root, VpnConstant.CLIENT_CONF_PATH);
         try {
 
-            FileUtils.writeStringToFile(clientConf, vpn.getClientConf());
+            FileUtils.writeStringToFile(clientConf, vpn.getClientConf(), charset);
 
             download(root, response);
 
@@ -106,9 +109,9 @@ public class DownloadController {
         File clientCrt = new File(root, VpnConstant.CLIENT_CRT_PATH);
         File clientKey = new File(root, VpnConstant.CLIENT_KEY_PATH);
         try {
-            FileUtils.writeStringToFile(caCrt, cert.getCaCert());
-            FileUtils.writeStringToFile(clientCrt, cert.getClientCert());
-            FileUtils.writeStringToFile(clientKey, cert.getClientKey());
+            FileUtils.writeStringToFile(caCrt, cert.getCaCert(), charset);
+            FileUtils.writeStringToFile(clientCrt, cert.getClientCert(), charset);
+            FileUtils.writeStringToFile(clientKey, cert.getClientKey(), charset);
 
             download(root, response);
 
