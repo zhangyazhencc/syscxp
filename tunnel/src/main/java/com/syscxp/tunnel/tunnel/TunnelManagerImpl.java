@@ -1300,7 +1300,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg();
         orderMsg.setProductUuid(vo.getUuid());
         orderMsg.setProductName(vo.getName());
-        orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo));
+        orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo,bandwidthOfferingVO.getBandwidth()));
         orderMsg.setCallBackData(RESTApiDecoder.dump(uc));
         orderMsg.setUnits(tunnelBillingBase.getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), nodeAUuid,
                 nodeZUuid, innerEndpointUuid));
@@ -1382,7 +1382,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         renewOrderMsg.setProductName(vo.getName());
         renewOrderMsg.setProductType(ProductType.TUNNEL);
         renewOrderMsg.setDuration(duration);
-        renewOrderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo));
+        renewOrderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo,null));
         renewOrderMsg.setProductChargeModel(productChargeModel);
         renewOrderMsg.setAccountUuid(accountUuid);
         renewOrderMsg.setOpAccountUuid(opAccountUuid);
@@ -1428,7 +1428,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         slaCompensationOrderMsg.setSlaUuid(msg.getSlaUuid());
         slaCompensationOrderMsg.setProductUuid(vo.getUuid());
         slaCompensationOrderMsg.setProductName(vo.getName());
-        slaCompensationOrderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo));
+        slaCompensationOrderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo,null));
         slaCompensationOrderMsg.setProductType(ProductType.TUNNEL);
         slaCompensationOrderMsg.setDuration(msg.getDuration());
         slaCompensationOrderMsg.setAccountUuid(vo.getOwnerAccountUuid());
@@ -1535,7 +1535,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             } else {
                 orderMsg.setExpiredTime(vo.getExpireDate());
             }
-            orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo));
+            orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo,null));
             orderMsg.setCallBackData(RESTApiDecoder.dump(dc));
             orderMsg.setNotifyUrl(restf.getSendCommandUrl());
 
@@ -1621,7 +1621,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     orderMsg.setOpAccountUuid(opAccountUuid);
                     orderMsg.setStartTime(dbf.getCurrentSqlTime());
                     orderMsg.setExpiredTime(vo.getExpireDate());
-                    orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo));
+                    orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo,null));
                     orderMsg.setCallBackData(RESTApiDecoder.dump(dc));
                     orderMsg.setNotifyUrl(restf.getSendCommandUrl());
 
@@ -1752,7 +1752,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 orderMsg.setStartTime(dbf.getCurrentSqlTime());
                 orderMsg.setExpiredTime(dbf.getCurrentSqlTime());
                 orderMsg.setCreateFailure(true);
-                orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo));
+                orderMsg.setDescriptionData(tunnelBillingBase.getDescriptionForTunnel(vo,null));
                 orderMsg.setCallBackData(RESTApiDecoder.dump(dc));
                 orderMsg.setNotifyUrl(restf.getSendCommandUrl());
 

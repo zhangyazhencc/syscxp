@@ -48,12 +48,9 @@ public class UpdateBandwidthJob implements Job {
                 logger.info("开始执行JOB【修改带宽】");
 
                 TunnelVO vo = dbf.findByUuid(tunnelUuid,TunnelVO.class);
-                //创建任务
-                TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.ModifyBandwidth);
 
                 ModifyTunnelBandwidthMsg modifyTunnelBandwidthMsg = new ModifyTunnelBandwidthMsg();
                 modifyTunnelBandwidthMsg.setTunnelUuid(vo.getUuid());
-                modifyTunnelBandwidthMsg.setTaskUuid(taskResourceVO.getUuid());
                 bus.makeLocalServiceId(modifyTunnelBandwidthMsg, TunnelConstant.SERVICE_ID);
                 bus.send(modifyTunnelBandwidthMsg, new CloudBusCallBack(null) {
                     @Override
