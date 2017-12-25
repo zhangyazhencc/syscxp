@@ -95,6 +95,9 @@ public class ReceiptManagerImpl  extends AbstractService implements  ApiMessageI
     }
     @Transactional
     private void handle(APICreateReceiptMsg msg) {
+        if(msg.getTotal() ==null || msg.getTotal().compareTo(BigDecimal.ZERO)<=0){
+            throw new IllegalArgumentException(" please input the valuable num");
+        }
         String accountUuid = msg.getSession().getAccountUuid();
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         BigDecimal total = msg.getTotal();
