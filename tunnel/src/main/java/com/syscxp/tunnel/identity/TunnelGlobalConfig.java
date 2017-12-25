@@ -19,4 +19,7 @@ public class TunnelGlobalConfig {
     public static GlobalConfig EXPIRED_PRODUCT_CLOSE_TIME = new GlobalConfig(CATEGORY, "expiredProduct.closeInterval");
     @GlobalConfigValidation(numberGreaterThan = 0)
     public static GlobalConfig EXPIRED_PRODUCT_DELETE_TIME = new GlobalConfig(CATEGORY, "expiredProduct.deleteInterval");
+
+    @GlobalConfigValidation
+    public static GlobalConfig TRANSFER_RPC_IP = new GlobalConfig(CATEGORY, "transferRpcIp");
 }
