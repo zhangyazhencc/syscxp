@@ -246,7 +246,7 @@ public class MonitorHost extends HostBase implements Host {
                         }
                         runner.putArgument("pkg_monitoragent", agentPackageName);
                         runner.putArgument("tunnel_server_url",CoreGlobalProperty.TUNNEL_SERVER_URL);
-                        runner.putArgument("transfer_rpc_ip", TunnelGlobalConfig.TRANSFER_RPC_IP);
+                        runner.putArgument("transfer_rpc_ip", TunnelGlobalConfig.TRANSFER_RPC_IP.value());
                         runner.putArgument("hostname", String.format("%s.syscxp.com", self.getHostIp().replaceAll("\\.", "-")));
 
                         UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(restf.getBaseUrl());
