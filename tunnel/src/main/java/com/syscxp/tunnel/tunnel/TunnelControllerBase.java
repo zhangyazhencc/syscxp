@@ -452,6 +452,8 @@ public class TunnelControllerBase extends AbstractTunnel {
         }
 
         tunnelConfig.setTunnel_id(tunnelVO.getUuid());
+        tunnelConfig.setCross_tunnel(getCrossPhysicalSwitchUuid(tunnelVO));
+        tunnelConfig.setSame_switch(getSameSwitch(tunnelVO));
         tunnelConfig.setMpls_switches(mplsList);
         if(sdnList.size()>0){
             tunnelConfig.setSdn_switches(sdnList);
@@ -462,6 +464,95 @@ public class TunnelControllerBase extends AbstractTunnel {
 
         return ControllerCommands.IssuedTunnelCommand.valueOf(tunnelList);
     }
+
+    /**
+     * 通过专线找出same_switch
+     * */
+    private String[] getSameSwitch(TunnelVO vo){
+        TunnelBase tunnelBase = new TunnelBase();
+        String switchPortUuidA = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag,"A")
+                .select(TunnelSwitchPortVO_.switchPortUuid)
+                .findValue();
+        String switchPortUuidB = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag,"B")
+                .select(TunnelSwitchPortVO_.switchPortUuid)
+                .findValue();
+        String switchPortUuidC = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag,"C")
+                .select(TunnelSwitchPortVO_.switchPortUuid)
+                .findValue();
+        String switchPortUuidZ = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag,"Z")
+                .select(TunnelSwitchPortVO_.switchPortUuid)
+                .findValue();
+        if(switchPortUuidB == null){
+            return tunnelBase.getSamePhysicalSwitchUuidForControl(switchPortUuidA,switchPortUuidZ);
+        }else{
+            if(tunnelBase.isSamePhysicalSwitchForTunnel(dbf.findByUuid(switchPortUuidA,SwitchPortVO.class),dbf.findByUuid(switchPortUuidB,SwitchPortVO.class))){
+                return tunnelBase.getSamePhysicalSwitchUuidForControl(switchPortUuidA,switchPortUuidB);
+            }else{
+                return tunnelBase.getSamePhysicalSwitchUuidForControl(switchPortUuidC,switchPortUuidZ);
+            }
+        }
+
+    }
+
+    /**
+     * 通过专线找出共点的交换机
+     * */
+    private String[] getCrossPhysicalSwitchUuid(TunnelVO vo){
+        TunnelValidateBase tunnelValidateBase = new TunnelValidateBase();
+        TunnelBase tunnelBase = new TunnelBase();
+        String interfaceUuidA = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag,"A")
+                .select(TunnelSwitchPortVO_.interfaceUuid)
+                .findValue();
+        String interfaceUuidZ = Q.New(TunnelSwitchPortVO.class)
+                .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
+                .eq(TunnelSwitchPortVO_.sortTag,"Z")
+                .select(TunnelSwitchPortVO_.interfaceUuid)
+                .findValue();
+        if(tunnelValidateBase.isCross(vo.getUuid(),interfaceUuidA)){
+            String switchPortUuidA = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
+                    .eq(TunnelSwitchPortVO_.sortTag,"A")
+                    .select(TunnelSwitchPortVO_.switchPortUuid)
+                    .findValue();
+            PhysicalSwitchVO physicalSwitchVOA = tunnelBase.getPhysicalSwitchBySwitchPortUuid(switchPortUuidA);
+            if(physicalSwitchVOA.getType() == PhysicalSwitchType.SDN){
+                PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVOA= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                        .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchVOA.getUuid())
+                        .find();
+                return new String[]{physicalSwitchVOA.getUuid(),physicalSwitchUpLinkRefVOA.getUplinkPhysicalSwitchUuid()};
+            }else{
+                return new String[]{physicalSwitchVOA.getUuid()};
+            }
+        }else if(tunnelValidateBase.isCross(vo.getUuid(),interfaceUuidZ)){
+            String switchPortUuidZ = Q.New(TunnelSwitchPortVO.class)
+                    .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
+                    .eq(TunnelSwitchPortVO_.sortTag,"Z")
+                    .select(TunnelSwitchPortVO_.switchPortUuid)
+                    .findValue();
+            PhysicalSwitchVO physicalSwitchVOZ = tunnelBase.getPhysicalSwitchBySwitchPortUuid(switchPortUuidZ);
+            if(physicalSwitchVOZ.getType() == PhysicalSwitchType.SDN){
+                PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVOZ= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                        .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchVOZ.getUuid())
+                        .find();
+                return new String[]{physicalSwitchVOZ.getUuid(),physicalSwitchUpLinkRefVOZ.getUplinkPhysicalSwitchUuid()};
+            }else{
+                return new String[]{physicalSwitchVOZ.getUuid()};
+            }
+        }else{
+            return new String[]{""};
+        }
+    }
+
 
     /**
      *  MPLS 下发配置

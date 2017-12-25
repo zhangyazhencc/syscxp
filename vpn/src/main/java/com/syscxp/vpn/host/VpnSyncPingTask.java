@@ -27,8 +27,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * @author wangjie
+ */
 public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint, HostAfterConnectedExtensionPoint {
-    private static final CLogger logger = Utils.getLogger(VpnSyncPingTask.class);
+    private static final CLogger LOGGER = Utils.getLogger(VpnSyncPingTask.class);
 
     @Autowired
     private DatabaseFacade dbf;
@@ -48,8 +51,9 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint,
         msg.setNoStatusCheck(true);
         msg.setHostUuid(hostUuid);
         List<String> vpnUuids = getVpnUuids(hostUuid);
-        if (vpnUuids.isEmpty())
+        if (vpnUuids.isEmpty()) {
             return;
+        }
         msg.setVpnUuids(vpnUuids);
         bus.makeLocalServiceId(msg, VpnConstant.SERVICE_ID);
         bus.send(msg, new CloudBusCallBack(completion) {
@@ -57,7 +61,7 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint,
             public void run(MessageReply reply) {
                 if (!reply.isSuccess()) {
                     //TODO
-                    logger.warn(String.format("unable to check status of the vpn on the host[uuid:%s], %s." +
+                    LOGGER.warn(String.format("unable to check status of the vpn on the host[uuid:%s], %s." +
                             " Put the vm to Unknown state", hostUuid, reply.getError()));
                     completion.fail(reply.getError());
                     return;
@@ -97,7 +101,7 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint,
         }
         vpn.setStatus(next);
         vpn = dbf.updateAndRefresh(vpn);
-        logger.debug(String.format("Vpn %s [uuid:%s] changed status from %s to %s",
+        LOGGER.debug(String.format("Vpn %s [uuid:%s] changed status from %s to %s",
                 vpn.getName(), vpn.getUuid(), before, next));
         return vpn;
     }
@@ -115,7 +119,7 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint,
             @Override
             public void fail(ErrorCode errorCode) {
                 //TODO
-                logger.warn(String.format("failed to sync vpn states on the host[uuid:%s, name:%s, ip:%s], %s",
+                LOGGER.warn(String.format("failed to sync vpn states on the host[uuid:%s, name:%s, ip:%s], %s",
                         host.getUuid(), host.getName(), host.getHostIp(), errorCode));
                 completion.done();
             }
@@ -130,12 +134,12 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint,
 
             @Override
             public void success() {
-                logger.info("sync vpn status success");
+                LOGGER.info("sync vpn status success");
             }
 
             @Override
             public void fail(ErrorCode errorCode) {
-                logger.info("sync vpn status failed");
+                LOGGER.info("sync vpn status failed");
             }
         });
     }

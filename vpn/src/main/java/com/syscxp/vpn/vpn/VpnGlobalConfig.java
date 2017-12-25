@@ -1,12 +1,15 @@
-package com.syscxp.core.ansible;
+package com.syscxp.vpn.vpn;
 
 import com.syscxp.core.config.GlobalConfig;
 import com.syscxp.core.config.GlobalConfigDefinition;
 import com.syscxp.core.config.GlobalConfigValidation;
 
+/**
+ * @author wangjie
+ */
 @GlobalConfigDefinition
-public class AgentGlobalConfig {
-    public static final String CATEGORY = "agent";
+public class VpnGlobalConfig {
+    public static final String CATEGORY = "vpn";
 
     @GlobalConfigValidation
     public static GlobalConfig TRANSFER_RPC_IP = new GlobalConfig(CATEGORY, "transferRpcIp");

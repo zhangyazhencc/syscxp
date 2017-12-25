@@ -2,7 +2,10 @@ package com.syscxp.vpn.host;
 
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
-import com.syscxp.core.ansible.*;
+import com.syscxp.core.ansible.AnsibleConstant;
+import com.syscxp.core.ansible.AnsibleGlobalProperty;
+import com.syscxp.core.ansible.AnsibleRunner;
+import com.syscxp.core.ansible.SshFileMd5Checker;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.host.HostBase;
@@ -35,6 +38,7 @@ import com.syscxp.vpn.host.VpnHostCommands.ConnectCmd;
 import com.syscxp.vpn.host.VpnHostCommands.ConnectResponse;
 import com.syscxp.vpn.host.VpnHostCommands.PingCmd;
 import com.syscxp.vpn.host.VpnHostCommands.PingResponse;
+import com.syscxp.vpn.vpn.VpnGlobalConfig;
 import com.syscxp.vpn.vpn.VpnGlobalProperty;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -49,8 +53,11 @@ import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.operr;
 
+/**
+ * @author wangjie
+ */
 public class VpnHost extends HostBase implements Host {
-    private static final CLogger logger = Utils.getLogger(VpnHost.class);
+    private static final CLogger LOGGER = Utils.getLogger(VpnHost.class);
 
     @Autowired
     @Qualifier("VpnHostFactory")
@@ -60,7 +67,6 @@ public class VpnHost extends HostBase implements Host {
     @Autowired
     private ErrorFacade errf;
 
-    // ///////////////////// REST URL //////////////////////////
     private String baseUrl;
     private String connectPath;
     private String pingPath;
@@ -131,7 +137,7 @@ public class VpnHost extends HostBase implements Host {
                                                     "expected: %s but: %s] of Vpnagent, it's mainly caused by Vpnagent " +
                                                     "restarts behind syscxp management server. Report this to ping task, " +
                                                     "it will issue a reconnect soon", self.getUuid(), ret.getHostUuid());
-                                            logger.warn(info);
+                                            LOGGER.warn(info);
                                             ReconnectHostMsg rmsg = new ReconnectHostMsg();
                                             rmsg.setHostUuid(self.getUuid());
                                             bus.makeLocalServiceId(rmsg, HostConstant.SERVICE_ID);
@@ -142,7 +148,7 @@ public class VpnHost extends HostBase implements Host {
                                     trigger.next();
                                 } else {
                                     if (isSshPortOpen()) {
-                                        logger.debug(String.format("ssh port of host[uuid:%s, ip:%s] is open, ping success",
+                                        LOGGER.debug(String.format("ssh port of host[uuid:%s, ip:%s] is open, ping success",
                                                 self.getUuid(), self.getHostIp()));
                                         trigger.next();
                                     } else {
@@ -179,7 +185,7 @@ public class VpnHost extends HostBase implements Host {
 
                         VpnHostInventory inv = (VpnHostInventory) getSelfInventory();
                         for (VpnHostPingAgentNoFailureExtensionPoint ext : exts) {
-                            logger.debug(String.format("calling VpnHostPingAgentNoFailureExtensionPoint[%s]", ext.getClass()));
+                            LOGGER.debug(String.format("calling VpnHostPingAgentNoFailureExtensionPoint[%s]", ext.getClass()));
                             ext.vpnPingAgentNoFailure(inv, new NoErrorCompletion(latch) {
                                 @Override
                                 public void done() {
@@ -207,7 +213,7 @@ public class VpnHost extends HostBase implements Host {
                         }
 
                         VpnHostPingAgentExtensionPoint ext = it.next();
-                        logger.debug(String.format("calling VpnHostPingAgentExtensionPoint[%s]", ext.getClass()));
+                        LOGGER.debug(String.format("calling VpnHostPingAgentExtensionPoint[%s]", ext.getClass()));
                         ext.vpnPingAgent((VpnHostInventory) getSelfInventory(), new Completion(trigger) {
                             @Override
                             public void success() {
@@ -241,7 +247,7 @@ public class VpnHost extends HostBase implements Host {
 
     @Override
     protected void changeStateHook(HostState current, HostStateEvent stateEvent, HostState next) {
-        logger.debug(String.format("Host: %s changed state from %s to %s by %s", self.getName(), current, next, stateEvent));
+        LOGGER.debug(String.format("Host: %s changed state from %s to %s by %s", self.getName(), current, next, stateEvent));
     }
 
     @Override
@@ -308,8 +314,8 @@ public class VpnHost extends HostBase implements Host {
                             runner.setFullDeploy(true);
                         }
                         runner.putArgument("pkg_vpnagent", agentPackageName);
-                        runner.putArgument("falcon_ip", AgentGlobalConfig.FALCON_API_IP);
-                        runner.putArgument("transfer_rpc_ip", AgentGlobalConfig.TRANSFER_RPC_IP);
+                        runner.putArgument("falcon_ip", VpnGlobalConfig.FALCON_API_IP);
+                        runner.putArgument("transfer_rpc_ip", VpnGlobalConfig.TRANSFER_RPC_IP);
                         runner.putArgument("hostname", String.format("%s.syscxp.com", self.getHostIp().replaceAll("\\.", "-")));
 
                         UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(restf.getBaseUrl());
@@ -398,7 +404,7 @@ public class VpnHost extends HostBase implements Host {
             errCode = operr("unable to connect to host[uuid:%s, ip:%s, url:%s], because %s", self.getUuid(), self.getHostIp(),
                     connectPath, e.getMessage());
         } catch (Throwable t) {
-            logger.warn(t.getMessage(), t);
+            LOGGER.warn(t.getMessage(), t);
             errCode = errf.throwableToInternalError(t);
         }
 
@@ -443,7 +449,7 @@ public class VpnHost extends HostBase implements Host {
 
     @Override
     protected void deleteHook() {
-        logger.debug(String.format("Host: %s is being deleted", self.getName()));
+        LOGGER.debug(String.format("Host: %s is being deleted", self.getName()));
         dbf.removeByPrimaryKey(self.getUuid(), VpnHostVO.class);
     }
 

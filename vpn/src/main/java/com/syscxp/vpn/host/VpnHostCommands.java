@@ -4,6 +4,9 @@ import com.syscxp.core.validation.ConditionalValidation;
 
 import java.util.List;
 
+/**
+ * @author wangjie
+ */
 public class VpnHostCommands {
     public static class AgentResponse implements ConditionalValidation {
         private boolean success = true;

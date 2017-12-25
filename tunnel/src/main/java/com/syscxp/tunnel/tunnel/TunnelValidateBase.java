@@ -615,7 +615,7 @@ public class TunnelValidateBase {
      * 判断物理接口是否是共点
      */
 
-    private boolean isCross(String tunnelUuid, String interfaceUuid) {
+    public boolean isCross(String tunnelUuid, String interfaceUuid) {
         TunnelVO vo = dbf.findByUuid(tunnelUuid, TunnelVO.class);
         Integer vsi = vo.getVsi();
 

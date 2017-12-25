@@ -5,6 +5,9 @@ import com.syscxp.core.GlobalPropertyDefinition;
 
 import java.util.List;
 
+/**
+ * @author wangjie
+ */
 @GlobalPropertyDefinition
 public class VpnGlobalProperty {
 

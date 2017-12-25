@@ -3,7 +3,10 @@ package com.syscxp.tunnel.host;
 
 import com.syscxp.core.CoreGlobalProperty;
 import com.syscxp.core.Platform;
-import com.syscxp.core.ansible.*;
+import com.syscxp.core.ansible.AnsibleConstant;
+import com.syscxp.core.ansible.AnsibleGlobalProperty;
+import com.syscxp.core.ansible.AnsibleRunner;
+import com.syscxp.core.ansible.SshFileMd5Checker;
 import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.host.HostBase;
 import com.syscxp.core.workflow.FlowChainBuilder;
@@ -22,6 +25,7 @@ import com.syscxp.tunnel.host.MonitorAgentCommands.ConnectCmd;
 import com.syscxp.tunnel.host.MonitorAgentCommands.ConnectResponse;
 import com.syscxp.tunnel.host.MonitorAgentCommands.PingCmd;
 import com.syscxp.tunnel.host.MonitorAgentCommands.PingResponse;
+import com.syscxp.tunnel.identity.TunnelGlobalConfig;
 import com.syscxp.utils.ShellUtils;
 import com.syscxp.utils.StringBind;
 import com.syscxp.utils.Utils;
@@ -242,7 +246,7 @@ public class MonitorHost extends HostBase implements Host {
                         }
                         runner.putArgument("pkg_monitoragent", agentPackageName);
                         runner.putArgument("tunnel_server_url",CoreGlobalProperty.TUNNEL_SERVER_URL);
-                        runner.putArgument("transfer_rpc_ip", AgentGlobalConfig.TRANSFER_RPC_IP);
+                        runner.putArgument("transfer_rpc_ip", TunnelGlobalConfig.TRANSFER_RPC_IP);
                         runner.putArgument("hostname", String.format("%s.syscxp.com", self.getHostIp().replaceAll("\\.", "-")));
 
                         UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(restf.getBaseUrl());

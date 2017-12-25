@@ -125,10 +125,103 @@ public class TunnelBase {
         PhysicalSwitchVO physicalSwitchA = getPhysicalSwitch(switchPortA);
         PhysicalSwitchVO physicalSwitchZ = getPhysicalSwitch(switchPortZ);
 
-        if(physicalSwitchA.getUuid().equals(physicalSwitchZ.getUuid())){
-            return true;
+        if(physicalSwitchA.getType() == PhysicalSwitchType.SDN && physicalSwitchZ.getType() == PhysicalSwitchType.SDN){
+            //两端都是SDN接入
+            PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVOA= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchA.getUuid())
+                    .find();
+            PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVOZ= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchZ.getUuid())
+                    .find();
+            if(physicalSwitchUpLinkRefVOA.getUplinkPhysicalSwitchUuid().equals(physicalSwitchUpLinkRefVOZ.getUplinkPhysicalSwitchUuid())){
+                return true;
+            }else{
+                return false;
+            }
+
+        }else if(physicalSwitchA.getType() == PhysicalSwitchType.MPLS && physicalSwitchZ.getType() == PhysicalSwitchType.MPLS){
+            //两端都是MPLS接入
+            if(physicalSwitchA.getUuid().equals(physicalSwitchZ.getUuid())){
+                return true;
+            }else{
+                return false;
+            }
         }else{
-            return false;
+            //一端SDN,一端MPLS，则应该拿SDN上联的MPLS去和另一端MPLS判断
+            if(physicalSwitchA.getType() == PhysicalSwitchType.SDN){
+                //A是SDN，Z是MPLS
+                PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                        .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchA.getUuid())
+                        .find();
+                if(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid().equals(physicalSwitchZ.getUuid())){
+                    return true;
+                }else{
+                    return false;
+                }
+            }else{
+                //A是MPLS,Z是SDN
+                PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                        .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchZ.getUuid())
+                        .find();
+                if(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid().equals(physicalSwitchA.getUuid())){
+                    return true;
+                }else{
+                    return false;
+                }
+            }
+
+        }
+    }
+
+    public String[] getSamePhysicalSwitchUuidForControl(String switchPortUuidA,String switchPortUuidZ){
+        PhysicalSwitchVO physicalSwitchA = getPhysicalSwitch(dbf.findByUuid(switchPortUuidA,SwitchPortVO.class));
+        PhysicalSwitchVO physicalSwitchZ = getPhysicalSwitch(dbf.findByUuid(switchPortUuidZ,SwitchPortVO.class));
+
+        if(physicalSwitchA.getType() == PhysicalSwitchType.SDN && physicalSwitchZ.getType() == PhysicalSwitchType.SDN){
+            //两端都是SDN接入
+            PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVOA= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchA.getUuid())
+                    .find();
+            PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVOZ= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchZ.getUuid())
+                    .find();
+            if(physicalSwitchUpLinkRefVOA.getUplinkPhysicalSwitchUuid().equals(physicalSwitchUpLinkRefVOZ.getUplinkPhysicalSwitchUuid())){
+                return new String[]{physicalSwitchUpLinkRefVOA.getUplinkPhysicalSwitchUuid()};
+            }else{
+                return new String[]{""};
+            }
+
+        }else if(physicalSwitchA.getType() == PhysicalSwitchType.MPLS && physicalSwitchZ.getType() == PhysicalSwitchType.MPLS){
+            //两端都是MPLS接入
+            if(physicalSwitchA.getUuid().equals(physicalSwitchZ.getUuid())){
+                return new String[]{physicalSwitchA.getUuid()};
+            }else{
+                return new String[]{""};
+            }
+        }else{
+            //一端SDN,一端MPLS，则应该拿SDN上联的MPLS去和另一端MPLS判断
+            if(physicalSwitchA.getType() == PhysicalSwitchType.SDN){
+                //A是SDN，Z是MPLS
+                PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                        .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchA.getUuid())
+                        .find();
+                if(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid().equals(physicalSwitchZ.getUuid())){
+                    return new String[]{physicalSwitchZ.getUuid()};
+                }else{
+                    return new String[]{""};
+                }
+            }else{
+                //A是MPLS,Z是SDN
+                PhysicalSwitchUpLinkRefVO physicalSwitchUpLinkRefVO= Q.New(PhysicalSwitchUpLinkRefVO.class)
+                        .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchZ.getUuid())
+                        .find();
+                if(physicalSwitchUpLinkRefVO.getUplinkPhysicalSwitchUuid().equals(physicalSwitchA.getUuid())){
+                    return new String[]{physicalSwitchA.getUuid()};
+                }else{
+                    return new String[]{""};
+                }
+            }
+
         }
     }
 
@@ -228,6 +321,10 @@ public class TunnelBase {
     public PhysicalSwitchVO getPhysicalSwitch(SwitchPortVO switchPortVO) {
         SwitchVO switchVO = dbf.findByUuid(switchPortVO.getSwitchUuid(), SwitchVO.class);
         return dbf.findByUuid(switchVO.getPhysicalSwitchUuid(), PhysicalSwitchVO.class);
+    }
+
+    public PhysicalSwitchVO getPhysicalSwitchBySwitchPortUuid(String switchPortUuid){
+        return getPhysicalSwitch(dbf.findByUuid(switchPortUuid,SwitchPortVO.class));
     }
 
     /**

@@ -31,12 +31,15 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
-
+/**
+ * Create on 2017/10/26
+ * @author wangjie
+ */
 public class VpnHostFactory extends AbstractService implements HostFactory, Component,
         ManagementNodeReadyExtensionPoint {
-    private static final CLogger logger = Utils.getLogger(VpnHostFactory.class);
+    private static final CLogger LOGGER = Utils.getLogger(VpnHostFactory.class);
 
-    public static final HostType hostType = new HostType(VpnConstant.HOST_TYPE);
+    public static final HostType HOST_TYPE = new HostType(VpnConstant.HOST_TYPE);
     private List<VpnHostConnectExtensionPoint> connectExtensions = new ArrayList<>();
 
     @Autowired
@@ -78,7 +81,7 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
 
     @Override
     public HostType getHostType() {
-        return hostType;
+        return HOST_TYPE;
     }
 
     private List<String> getHostManagedByUs() {
@@ -178,7 +181,7 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
             return;
         }
 
-        logger.debug(String.format("need to connect hosts because host changed, uuids:%s", hostUuids));
+        LOGGER.debug(String.format("need to connect hosts because host changed, uuids:%s", hostUuids));
 
         List<ConnectHostMsg> msgs = new ArrayList<>();
         for (String huuid : hostUuids) {
@@ -194,9 +197,9 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
             public void run(NeedReplyMessage msg, MessageReply reply) {
                 ConnectHostMsg cmsg = (ConnectHostMsg) msg;
                 if (!reply.isSuccess()) {
-                    logger.warn(String.format("failed to connect host[uuid:%s], %s", cmsg.getHostUuid(), reply.getError()));
+                    LOGGER.warn(String.format("failed to connect host[uuid:%s], %s", cmsg.getHostUuid(), reply.getError()));
                 } else {
-                    logger.debug(String.format("successfully to connect kvm host[uuid:%s]", cmsg.getHostUuid()));
+                    LOGGER.debug(String.format("successfully to connect kvm host[uuid:%s]", cmsg.getHostUuid()));
                 }
             }
         });
@@ -217,7 +220,7 @@ public class VpnHostFactory extends AbstractService implements HostFactory, Comp
             handle((APICreateHostInterfaceMsg) msg);
         } else if (msg instanceof APIDeleteHostInterfaceMsg) {
             handle((APIDeleteHostInterfaceMsg) msg);
-        }  else if (msg instanceof APIUpdateVpnHostPortMsg) {
+        } else if (msg instanceof APIUpdateVpnHostPortMsg) {
             handle((APIUpdateVpnHostPortMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);

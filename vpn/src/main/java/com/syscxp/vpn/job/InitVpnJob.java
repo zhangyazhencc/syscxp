@@ -9,7 +9,7 @@ import com.syscxp.core.job.RestartableJob;
 import com.syscxp.core.job.UniqueResourceJob;
 import com.syscxp.header.core.ReturnValueCompletion;
 import com.syscxp.header.message.MessageReply;
-import com.syscxp.header.vpn.agent.DestroyVpnMsg;
+import com.syscxp.header.vpn.agent.InitVpnMsg;
 import com.syscxp.header.vpn.vpn.VpnConstant;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
@@ -23,8 +23,8 @@ import org.springframework.beans.factory.annotation.Configurable;
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
 @UniqueResourceJob
-public class DestroyVpnJob implements Job {
-    private static final CLogger LOGGER = Utils.getLogger(DestroyVpnJob.class);
+public class InitVpnJob implements Job {
+    private static final CLogger LOGGER = Utils.getLogger(InitVpnJob.class);
 
     @JobContext
     private String vpnUuid;
@@ -38,11 +38,11 @@ public class DestroyVpnJob implements Job {
     public void run(ReturnValueCompletion<Object> completion) {
 
         try {
-            LOGGER.info("开始执行JOB【Destroy Vpn】");
-            DestroyVpnMsg destroyVpnMsg = new DestroyVpnMsg();
-            destroyVpnMsg.setVpnUuid(vpnUuid);
-            bus.makeLocalServiceId(destroyVpnMsg, VpnConstant.SERVICE_ID);
-            bus.send(destroyVpnMsg, new CloudBusCallBack(completion) {
+            LOGGER.info("开始执行JOB【Init Vpn】");
+            InitVpnMsg initVpnMsg = new InitVpnMsg();
+            initVpnMsg.setVpnUuid(vpnUuid);
+            bus.makeLocalServiceId(initVpnMsg, VpnConstant.SERVICE_ID);
+            bus.send(initVpnMsg, new CloudBusCallBack(completion) {
                 @Override
                 public void run(MessageReply reply) {
                     if (reply.isSuccess()) {
