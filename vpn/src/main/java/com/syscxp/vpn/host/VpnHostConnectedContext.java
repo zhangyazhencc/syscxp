@@ -3,6 +3,7 @@ package com.syscxp.vpn.host;
 import com.syscxp.header.vpn.host.VpnHostInventory;
 
 /**
+ * @author wangjie
  */
 public class VpnHostConnectedContext {
     private VpnHostInventory inventory;
