@@ -55,7 +55,6 @@ import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
 import com.syscxp.tunnel.tunnel.job.UpdateBandwidthJob;
 import com.syscxp.utils.CollectionDSL;
-import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.gson.JSONObjectUtil;
@@ -1320,8 +1319,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             vo = dbf.updateAndRefresh(vo);
 
             logger.info("修改带宽支付成功，并创建任务：UpdateBandwidthJob");
-            UpdateBandwidthJob job = new UpdateBandwidthJob();
-            job.setTunnelUuid(vo.getUuid());
+            UpdateBandwidthJob job = new UpdateBandwidthJob(vo.getUuid());
             jobf.execute("调整专线带宽-控制器下发", Platform.getManagementServerId(), job);
 
             evt.setInventory(TunnelInventory.valueOf(vo));
@@ -2560,8 +2558,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         tunnelBillingBase.saveResourceOrderEffective(cmd.getOrderUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
         logger.info("修改带宽支付成功，并创建任务：UpdateBandwidthJob");
-        UpdateBandwidthJob job = new UpdateBandwidthJob();
-        job.setTunnelUuid(vo.getUuid());
+        UpdateBandwidthJob job = new UpdateBandwidthJob(vo.getUuid());
         jobf.execute("调整专线带宽-控制器下发", Platform.getManagementServerId(), job);
     }
 

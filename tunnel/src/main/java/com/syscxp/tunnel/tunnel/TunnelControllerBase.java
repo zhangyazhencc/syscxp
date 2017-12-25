@@ -371,7 +371,7 @@ public class TunnelControllerBase extends AbstractTunnel {
     /**
      *  获取控制器下发配置
      */
-    private ControllerCommands.IssuedTunnelCommand getTunnelConfigInfo(TunnelVO tunnelVO){
+    public ControllerCommands.IssuedTunnelCommand getTunnelConfigInfo(TunnelVO tunnelVO){
 
         List<ControllerCommands.TunnelConfig> tunnelList = new ArrayList<>();
 
@@ -456,7 +456,7 @@ public class TunnelControllerBase extends AbstractTunnel {
     /**
      * 通过专线找出same_switch
      * */
-    private String[] getSameSwitch(TunnelVO vo){
+    public String[] getSameSwitch(TunnelVO vo){
         TunnelBase tunnelBase = new TunnelBase();
         String switchPortUuidA = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.tunnelUuid,vo.getUuid())
@@ -493,7 +493,7 @@ public class TunnelControllerBase extends AbstractTunnel {
     /**
      * 通过专线找出共点的交换机
      * */
-    private String[] getCrossPhysicalSwitchUuid(TunnelVO vo){
+    public String[] getCrossPhysicalSwitchUuid(TunnelVO vo){
         TunnelValidateBase tunnelValidateBase = new TunnelValidateBase();
         TunnelBase tunnelBase = new TunnelBase();
         String interfaceUuidA = Q.New(TunnelSwitchPortVO.class)
@@ -545,7 +545,7 @@ public class TunnelControllerBase extends AbstractTunnel {
     /**
      *  MPLS 下发配置
      */
-    private ControllerCommands.TunnelMplsConfig getTunnelMplsConfig(TunnelVO tunnelVO, TunnelSwitchPortVO tunnelSwitchPortVO, TunnelSwitchPortVO remoteSwitchPortVO, List<QinqVO> qinqVOs, String sortTag){
+    public ControllerCommands.TunnelMplsConfig getTunnelMplsConfig(TunnelVO tunnelVO, TunnelSwitchPortVO tunnelSwitchPortVO, TunnelSwitchPortVO remoteSwitchPortVO, List<QinqVO> qinqVOs, String sortTag){
         TunnelBase tunnelBase = new TunnelBase();
 
         ControllerCommands.TunnelMplsConfig tmc = new ControllerCommands.TunnelMplsConfig();
@@ -605,7 +605,7 @@ public class TunnelControllerBase extends AbstractTunnel {
     /**
      *  SDN 下发配置
      */
-    private ControllerCommands.TunnelSdnConfig getTunnelSdnConfig(Long bandwidth, TunnelSwitchPortVO tunnelSwitchPortVO, List<QinqVO> qinqVOs, String sortTag){
+    public ControllerCommands.TunnelSdnConfig getTunnelSdnConfig(Long bandwidth, TunnelSwitchPortVO tunnelSwitchPortVO, List<QinqVO> qinqVOs, String sortTag){
         ControllerCommands.TunnelSdnConfig tsc = new ControllerCommands.TunnelSdnConfig();
         SwitchPortVO switchPortVO = dbf.findByUuid(tunnelSwitchPortVO.getSwitchPortUuid(),SwitchPortVO.class);
         PhysicalSwitchVO physicalSwitchVO = new TunnelBase().getPhysicalSwitch(switchPortVO);
@@ -633,7 +633,7 @@ public class TunnelControllerBase extends AbstractTunnel {
     }
 
     /**内部VLAN段拼接成字符串 */
-    private String getInnerVlanToString(List<QinqVO> qinqVOs){
+    public String getInnerVlanToString(List<QinqVO> qinqVOs){
         StringBuffer buf=new StringBuffer();
         for(int i=0;i<qinqVOs.size();i++){
             QinqVO qinqVO = qinqVOs.get(i);
