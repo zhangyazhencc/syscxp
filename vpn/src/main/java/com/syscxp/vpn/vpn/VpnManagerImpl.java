@@ -15,7 +15,6 @@ import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.core.thread.ChainTask;
-import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.SyncTaskChain;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.core.workflow.FlowChainBuilder;
@@ -81,8 +80,10 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.TemporalAdjusters;
-import java.util.*;
-import java.util.concurrent.Future;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.argerr;
@@ -120,9 +121,10 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void passThrough(VpnMessage msg) {
         VpnVO vo = dbf.findByUuid(msg.getVpnUuid(), VpnVO.class);
+
         if (vo == null) {
-            String err = String.format("unable to find vpn[uuid=%s]", msg.getVpnUuid());
-            bus.replyErrorByMessageType(msg, errf.instantiateErrorCode(SysErrors.RESOURCE_NOT_FOUND, err));
+            String err = "Cannot find vpn: " + msg.getVpnUuid() + ", it may have been deleted";
+            bus.replyErrorByMessageType(msg, err);
             return;
         }
 
