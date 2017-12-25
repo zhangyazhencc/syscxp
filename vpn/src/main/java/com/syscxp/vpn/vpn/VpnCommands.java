@@ -6,6 +6,9 @@ import com.syscxp.header.vpn.agent.CertInfo;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author wangjie
+ */
 public class VpnCommands {
     public static class AgentCommand {
         public String vpnuuid;

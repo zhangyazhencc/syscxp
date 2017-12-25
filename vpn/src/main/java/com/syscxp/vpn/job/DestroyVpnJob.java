@@ -18,13 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
 /**
- * Create by DCY on 2017/12/8
+ * @author wangjie
  */
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE)
 @RestartableJob
 @UniqueResourceJob
 public class DestroyVpnJob implements Job {
-    private static final CLogger logger = Utils.getLogger(DestroyVpnJob.class);
+    private static final CLogger LOGGER = Utils.getLogger(DestroyVpnJob.class);
 
     @JobContext
     private String vpnUuid;
@@ -38,7 +38,7 @@ public class DestroyVpnJob implements Job {
     public void run(ReturnValueCompletion<Object> completion) {
 
         try {
-            logger.info("开始执行JOB【Destroy Vpn】");
+            LOGGER.info("开始执行JOB【Destroy Vpn】");
             DestroyVpnMsg destroyVpnMsg = new DestroyVpnMsg();
             destroyVpnMsg.setVpnUuid(vpnUuid);
             bus.makeLocalServiceId(destroyVpnMsg, VpnConstant.SERVICE_ID);
@@ -54,7 +54,7 @@ public class DestroyVpnJob implements Job {
             });
             completion.success(null);
         } catch (Exception e) {
-            logger.warn(e.getMessage(), e);
+            LOGGER.warn(e.getMessage(), e);
 
             completion.fail(errf.throwableToInternalError(e));
         }

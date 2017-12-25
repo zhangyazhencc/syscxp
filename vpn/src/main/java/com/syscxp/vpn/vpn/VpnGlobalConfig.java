@@ -4,6 +4,9 @@ import com.syscxp.core.config.GlobalConfig;
 import com.syscxp.core.config.GlobalConfigDefinition;
 import com.syscxp.core.config.GlobalConfigValidation;
 
+/**
+ * @author wangjie
+ */
 @GlobalConfigDefinition
 public class VpnGlobalConfig {
     public static final String CATEGORY = "vpn";

@@ -11,6 +11,9 @@ import com.syscxp.header.vpn.vpn.VpnVO_;
 
 import static com.syscxp.core.Platform.argerr;
 
+/**
+ * @author wangjie
+ */
 public class VpnHostApiInterceptor implements ApiMessageInterceptor {
 
     @Override
@@ -28,10 +31,11 @@ public class VpnHostApiInterceptor implements ApiMessageInterceptor {
     private void validate(APIDeleteHostMsg msg) {
         Q q = Q.New(VpnVO.class)
                 .eq(VpnVO_.uuid, msg.getUuid());
-        if (q.isExists())
+        if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr(
                     "The VpnHost[uuid:%s] has vpn server.", msg.getUuid()
             ));
+        }
 
     }
 
@@ -39,20 +43,22 @@ public class VpnHostApiInterceptor implements ApiMessageInterceptor {
     private void validate(APICreateVpnHostMsg msg) {
         Q q = Q.New(VpnHostVO.class)
                 .eq(VpnHostVO_.name, msg.getName());
-        if (q.isExists())
+        if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr(
                     "The VpnHost[name:%s] is already exist.", msg.getName()
             ));
+        }
         msg.setHostType(VpnHostConstant.HOST_TYPE);
     }
 
     private void validate(APIUpdateVpnHostMsg msg) {
         Q q = Q.New(VpnHostVO.class)
                 .eq(VpnHostVO_.name, msg.getName());
-        if (q.isExists())
+        if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr(
                     "The VpnHost[name:%s] is already exist.", msg.getName()
             ));
+        }
     }
 
 }

@@ -3,6 +3,9 @@ package com.syscxp.vpn.host;
 import com.syscxp.header.vpn.host.VpnHostInventory;
 import org.springframework.web.util.UriComponentsBuilder;
 
+/**
+ * @author wangjie
+ */
 public class VpnHostContext {
     private VpnHostInventory inventory;
     private String baseUrl;

@@ -6,7 +6,7 @@ import com.syscxp.query.QueryUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Created by DCY on 2017-09-07
+ * @author wangjie
  */
 public class VpnSubQueryExtension extends AbstractMysqlQuerySubQueryExtension {
     @Autowired
