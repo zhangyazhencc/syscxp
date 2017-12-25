@@ -33,6 +33,7 @@ import com.syscxp.tunnel.monitor.MonitorManagerImpl;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.ArrayList;
@@ -243,6 +244,8 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
         bus.publish(event);
     }
 
+    // TODO: 存在部分更新问题，确认是否需要使用job更新监控
+    @Transactional
     private void handle(APIUpdateHostSwitchMonitorMsg msg) {
         HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
 
@@ -267,7 +270,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
                 TunnelVO tunnelVO = dbf.findByUuid(tunnelMonitorVO.getTunnelUuid(),TunnelVO.class);
 
                 if(tunnelVO.getMonitorState().equals(TunnelMonitorState.Enabled)){
-                    monitorManager.restartTunnelMonitor(false, tunnelVO, new Completion(null) {
+                    monitorManager.restartTunnelMonitor(tunnelVO, new Completion(null) {
                         @Override
                         public void success() {
                             logger.info(String.format("通道：%s - 重启监控成功！",tunnelVO.getName()));

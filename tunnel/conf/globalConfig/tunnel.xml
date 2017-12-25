@@ -35,4 +35,11 @@
         <defaultValue>10</defaultValue>
         <type>java.lang.Integer</type>
     </config>
+    <config>
+        <category>tunnel</category>
+        <name>transferRpcIp</name>
+        <description>TRANSFER_RPC_IP</description>
+        <defaultValue>192.168.211.6</defaultValue>
+        <type>java.lang.String</type>
+    </config>
 </globalConfig>
