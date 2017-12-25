@@ -300,6 +300,8 @@ public class ControllerCommands {
      */
     public static class TunnelConfig{
         private String tunnel_id;
+        private String[] cross_tunnel;
+        private String[] same_switch;
         private List<TunnelMplsConfig> mpls_switches;
         private List<TunnelSdnConfig> sdn_switches;
 
@@ -325,6 +327,22 @@ public class ControllerCommands {
 
         public void setSdn_switches(List<TunnelSdnConfig> sdn_switches) {
             this.sdn_switches = sdn_switches;
+        }
+
+        public String[] getCross_tunnel() {
+            return cross_tunnel;
+        }
+
+        public void setCross_tunnel(String[] cross_tunnel) {
+            this.cross_tunnel = cross_tunnel;
+        }
+
+        public String[] getSame_switch() {
+            return same_switch;
+        }
+
+        public void setSame_switch(String[] same_switch) {
+            this.same_switch = same_switch;
         }
     }
 
