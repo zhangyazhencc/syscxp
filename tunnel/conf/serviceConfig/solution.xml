@@ -72,5 +72,11 @@
     <message>
         <name>com.syscxp.header.tunnel.solution.APIGetTunnelPriceMsg</name>
     </message>
+    <message>
+        <name>com.syscxp.header.tunnel.solution.APIGetVPNPriceMsg</name>
+    </message>
+    <message>
+        <name>com.syscxp.header.tunnel.solution.APIRecountVPNPriceMsg</name>
+    </message>
 
 </service>
