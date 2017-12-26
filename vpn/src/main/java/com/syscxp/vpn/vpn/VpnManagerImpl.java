@@ -418,6 +418,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         vo.setSid(Platform.getUuid());
         vo.setCertKey(generateCertKey(msg.getAccountUuid(), vo.getSid()));
         dbf.persistAndRefresh(vo);
+        LOGGER.debug(String.format("successfully added vpn[name:%s, uuid:%s]", vo.getName(), vo.getUuid()));
 
         attachVpnCert(vo.getUuid(), msg.getVpnCertUuid());
 
@@ -440,11 +441,13 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                     public void success() {
                         vpn.setPayment(Payment.PAID);
                         dbf.updateAndRefresh(vpn);
+                        LOGGER.debug(String.format("VPN[name:%s, uuid:%s]付款成功", vo.getName(), vo.getUuid()));
                         trigger.next();
                     }
 
                     @Override
                     public void fail(ErrorCode errorCode) {
+                        LOGGER.debug(String.format("VPN[name:%s, uuid:%s]付款失败", vo.getName(), vo.getUuid()));
                         trigger.fail(errorCode);
                     }
                 });
@@ -458,6 +461,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 InitVpnJob initVpnJob = new InitVpnJob();
                 initVpnJob.setVpnUuid(vpn.getUuid());
                 jobf.execute("InitVPN服务", Platform.getManagementServerId(), initVpnJob);
+                LOGGER.debug(String.format("创建VPN[name:%s, uuid:%s]初始化任务", vo.getName(), vo.getUuid()));
                 trigger.next();
             }
         }).done(new FlowDoneHandler(msg) {
@@ -763,52 +767,64 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
-                APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(getOrderMsgForVPN(vpn, new UnsubcribeVpnCallBack()));
-                orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
-                orderMsg.setStartTime(vinv.getCreateDate());
-                orderMsg.setExpiredTime(vinv.getExpireDate());
-                createOrder(orderMsg, new Completion(trigger) {
-                    @Override
-                    public void success() {
-                        if (vpn.getVpnCertUuid() != null) {
-                            detachVpnCert(vpn.getUuid(), vpn.getVpnCert().getUuid());
+                if (vpn.getAccountUuid() == null) {
+                    APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(getOrderMsgForVPN(vpn, new UnsubcribeVpnCallBack()));
+                    orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
+                    orderMsg.setStartTime(vinv.getCreateDate());
+                    orderMsg.setExpiredTime(vinv.getExpireDate());
+                    createOrder(orderMsg, new Completion(trigger) {
+                        @Override
+                        public void success() {
+                            vpn.setAccountUuid(null);
+                            vpn.setState(VpnState.Disabled);
+                            vpn.setExpireDate(dbf.getCurrentSqlTime());
+                            dbf.updateAndRefresh(vpn);
+                            LOGGER.debug(String.format("VPN[UUID:%s] 退订成功", vpn.getUuid()));
+                            trigger.next();
                         }
-                        vpn.setAccountUuid(null);
-                        vpn.setState(VpnState.Disabled);
-                        vpn.setStatus(VpnStatus.Disconnected);
-                        vpn.setExpireDate(dbf.getCurrentSqlTime());
-                        dbf.updateAndRefresh(vpn);
-                        trigger.next();
-                    }
 
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        trigger.fail(errf.instantiateErrorCode(VpnErrors.CALL_BILLING_ERROR, "退订失败", errorCode));
-                    }
-                });
+                        @Override
+                        public void fail(ErrorCode errorCode) {
+                            LOGGER.debug(String.format("VPN[UUID:%s] 退订失败", vpn.getUuid()));
+                            trigger.fail(errf.instantiateErrorCode(VpnErrors.CALL_BILLING_ERROR, "退订失败", errorCode));
+                        }
+                    });
+                }
+            }
+        }).then(new NoRollbackFlow() {
+            String __name__ = "detach-vpn-cert";
 
+            @Override
+            public void run(final FlowTrigger trigger, Map data) {
+                if (vpn.getVpnCertUuid() != null) {
+                    detachVpnCert(vpn.getUuid(), vpn.getVpnCert().getUuid());
+                    LOGGER.debug(String.format("VPN[UUID:%s]解绑证书[UUID:%s]成功", vpn.getUuid(), vpn.getVpnCertUuid()));
+                }
+                trigger.next();
             }
         }).then(new NoRollbackFlow() {
             String __name__ = "send-delete-vpn-message";
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
+                LOGGER.debug(String.format("创建VPN[UUID:%s]销毁任务", vpn.getUuid()));
                 DestroyVpnJob destroyVpnJob = new DestroyVpnJob();
                 destroyVpnJob.setVpnUuid(vpn.getUuid());
                 jobf.execute("销毁VPN服务", Platform.getManagementServerId(), destroyVpnJob, new Completion(null) {
                     @Override
                     public void success() {
                         dbf.removeByPrimaryKey(msg.getUuid(), VpnVO.class);
+                        LOGGER.debug(String.format("VPN[UUID:%s]销毁成功", vpn.getUuid()));
                     }
 
                     @Override
                     public void fail(ErrorCode errorCode) {
-
+                        LOGGER.debug(String.format("VPN[UUID:%s]销毁失败", vpn.getUuid()));
                     }
                 });
                 trigger.next();
             }
-        });
+        });;
 
         chain.done(new FlowDoneHandler(msg) {
             @Override

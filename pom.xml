@@ -31,6 +31,7 @@
         <module>vpn</module>
         <module>alarm</module>
         <module>sdk</module>
+        <module>rest</module>
     </modules>
 
     <dependencyManagement>

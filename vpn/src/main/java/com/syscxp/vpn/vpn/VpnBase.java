@@ -61,8 +61,8 @@ public class VpnBase extends AbstractVpn {
     private String initVpnPath;
     private String pushCertPath;
 
-    public static final String UP ="UP";
-    public static final String DOWN ="DOWN";
+    public static final String UP = "UP";
+    public static final String DOWN = "DOWN";
 
     protected VpnBase(VpnVO self) {
         super(self);
@@ -421,7 +421,7 @@ public class VpnBase extends AbstractVpn {
         thdf.chainSubmit(new ChainTask(msg) {
             @Override
             public String getSyncSignature() {
-                return String.format("connect-host-%s", self.getUuid());
+                return String.format("delete-vpn-%s", self.getUuid());
             }
 
             @Override
@@ -438,24 +438,24 @@ public class VpnBase extends AbstractVpn {
 
                             @Override
                             public void run(final FlowTrigger trigger, Map data) {
-                                vpnService("stop", new ReturnValueCompletion<String>(trigger) {
-                                    @Override
-                                    public void success(String ret) {
-                                        if (DOWN.equals(ret)) {
-                                            self.setState(VpnState.Disabled);
-                                            self.setStatus(VpnStatus.Disconnected);
-                                            dbf.updateAndRefresh(self);
-                                            trigger.next();
-                                        } else {
-                                            trigger.fail(errf.instantiateErrorCode(VpnErrors.VPN_DESTROY_ERROR, "failed to stop vpn service"));
+                                if (VpnStatus.Disconnected == self.getStatus()) {
+                                    vpnService("stop", new ReturnValueCompletion<String>(trigger) {
+                                        @Override
+                                        public void success(String ret) {
+                                            if (DOWN.equals(ret)) {
+                                                changVpnSatus(VpnStatus.Disconnected);
+                                                trigger.next();
+                                            } else {
+                                                trigger.fail(errf.instantiateErrorCode(VpnErrors.VPN_DESTROY_ERROR, "failed to stop vpn service"));
+                                            }
                                         }
-                                    }
 
-                                    @Override
-                                    public void fail(ErrorCode errorCode) {
-                                        trigger.fail(errorCode);
-                                    }
-                                });
+                                        @Override
+                                        public void fail(ErrorCode errorCode) {
+                                            trigger.fail(errorCode);
+                                        }
+                                    });
+                                }
                             }
                         });
 
