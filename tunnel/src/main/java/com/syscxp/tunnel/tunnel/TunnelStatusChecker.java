@@ -111,8 +111,10 @@ public class TunnelStatusChecker implements Component {
                     if (!results.isEmpty()) {
                         QueryResult result = results.get(0);
                         Map dps = result.getDps();
-                        if (CollectionUtils.isEmpty(dps))
-                            return;
+                        if (CollectionUtils.isEmpty(dps)) {
+                            logger.debug(String.format("THe monitor of the tunnel[UUID: %s] has no data:", vo.getUuid()));
+                            continue;
+                        }
                         Double max = Collections.max(result.getDps().values());
                         Double min = Collections.min(result.getDps().values());
 
