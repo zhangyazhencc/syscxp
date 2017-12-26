@@ -19,6 +19,7 @@ public class ResourcePolicyRefVO{
     private String resourceUuid;
 
     @Column
+    @Enumerated(EnumType.STRING)
     private ProductType productType;
 
     @Column

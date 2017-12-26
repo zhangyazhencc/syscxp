@@ -381,7 +381,6 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
     private long getCount(String resourceUuid,String policyUuid) {
         SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
-        query.add(ResourcePolicyRefVO_.resourceUuid, SimpleQuery.Op.EQ, resourceUuid);
         query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, policyUuid);
         return query.count();
     }

@@ -33,10 +33,14 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
+/**
+ * @author wangjie
+ */
 @Controller
 public class DownloadController {
-    private static final CLogger logger = Utils.getLogger(DownloadController.class);
+    private static final CLogger LOGGER = Utils.getLogger(DownloadController.class);
 
     @Autowired
     private DatabaseFacade dbf;
@@ -144,8 +148,9 @@ public class DownloadController {
         String sql = String.format("select r.accountUuid from %s r where r.uuid = :uuid ", type);
         String accountUuid = SQL.New(sql).param("uuid", list[0]).find();
         String md5 = DigestUtils.md5Hex(accountUuid + list[1] + VpnConstant.GENERATE_KEY);
-        if (!md5.equals(list[2]) || System.currentTimeMillis() - Long.valueOf(list[1]) > CoreGlobalProperty.INNER_MESSAGE_EXPIRE * 1000)
+        if (!md5.equals(list[2]) || System.currentTimeMillis() - Long.valueOf(list[1]) > TimeUnit.SECONDS.toMillis(CoreGlobalProperty.INNER_MESSAGE_EXPIRE)) {
             throw new CloudRuntimeException("The download link is expired");
+        }
         return list[0];
     }
 
@@ -153,7 +158,7 @@ public class DownloadController {
     public void exception(HttpServletRequest request, HttpServletResponse response, Exception ex) throws IOException {
         StringBuilder sb = new StringBuilder(String.format("Error when calling %s", request.getRequestURI()));
         sb.append(String.format("\nexception message: %s", ex.getMessage()));
-        logger.debug(sb.toString(), ex);
+        LOGGER.debug(sb.toString(), ex);
         response.sendError(HttpStatus.INTERNAL_SERVER_ERROR.value(), sb.toString());
     }
 

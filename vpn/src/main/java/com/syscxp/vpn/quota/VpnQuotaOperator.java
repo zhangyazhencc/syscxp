@@ -12,6 +12,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * @author wangjie
+ */
 public class VpnQuotaOperator implements Quota.QuotaOperator {
 
     public class VpnQuota {

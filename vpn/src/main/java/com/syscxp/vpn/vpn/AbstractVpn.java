@@ -8,16 +8,18 @@ import com.syscxp.header.vpn.vpn.VpnVO;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
-import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.vpn.VpnCommands.AgentCommand;
 import com.syscxp.vpn.vpn.VpnCommands.AgentResponse;
 import org.springframework.beans.factory.annotation.Autowire;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 
+/**
+ * @author wangjie
+ */
 @Configurable(preConstruction = true, autowire = Autowire.BY_TYPE, dependencyCheck = true)
 public abstract class AbstractVpn {
-    private static final CLogger logger = Utils.getLogger(AbstractVpn.class);
+    private static final CLogger LOGGER = Utils.getLogger(AbstractVpn.class);
 
     @Autowired
     protected RESTFacade restf;
@@ -47,7 +49,7 @@ public abstract class AbstractVpn {
             T rsp = restf.syncJsonPost(makeHttpPath(getBaseUrl(), path), cmd, retClass);
             completion.success(rsp);
         } catch (Exception e) {
-            logger.info(e.getMessage());
+            LOGGER.info(e.getMessage());
             completion.fail(errf.instantiateErrorCode(SysErrors.HTTP_ERROR, e.getMessage()));
         }
     }

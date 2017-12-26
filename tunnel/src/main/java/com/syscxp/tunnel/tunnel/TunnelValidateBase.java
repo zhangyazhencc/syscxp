@@ -615,7 +615,7 @@ public class TunnelValidateBase {
      * 判断物理接口是否是共点
      */
 
-    private boolean isCross(String tunnelUuid, String interfaceUuid) {
+    public boolean isCross(String tunnelUuid, String interfaceUuid) {
         TunnelVO vo = dbf.findByUuid(tunnelUuid, TunnelVO.class);
         Integer vsi = vo.getVsi();
 
@@ -673,7 +673,7 @@ public class TunnelValidateBase {
         List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid);
 
         //判断外部VLAN是否在该虚拟交换机的VLAN段中
-        Boolean inner = false;
+        /*Boolean inner = false;
         for (SwitchVlanVO switchVlanVO : vlanList) {
             if (vlan >= switchVlanVO.getStartVlan() && vlan <= switchVlanVO.getEndVlan()) {
                 inner = true;
@@ -682,7 +682,7 @@ public class TunnelValidateBase {
         }
         if (!inner) {
             throw new ApiMessageInterceptionException(argerr("avlan not in switchVlan"));
-        }
+        }*/
         //判断外部vlan是否可用
         if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
             throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", vlan));
