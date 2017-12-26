@@ -156,8 +156,8 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
         APIAttachPolicyToResourceEvent event = new APIAttachPolicyToResourceEvent(msg.getId());
 
-        List<ResourcePolicyRefVO> refVO = Q.New(ResourcePolicyRefVO.class).eq(ResourcePolicyRefVO_.resourceUuid,msg.getResourceUuid()).list();
-        String policyUuid = refVO.isEmpty()?msg.getPolicyUuid():refVO.get(0).getPolicyUuid();
+        List<ResourcePolicyRefVO> refVO = Q.New(ResourcePolicyRefVO.class).eq(ResourcePolicyRefVO_.resourceUuid, msg.getResourceUuid()).list();
+        String policyUuid = refVO.isEmpty() ? msg.getPolicyUuid() : refVO.get(0).getPolicyUuid();
 
         FlowChain attachPolicy = FlowChainBuilder.newSimpleFlowChain();
         attachPolicy.setName(String.format("Attach-policy"));
@@ -175,14 +175,21 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                         flag.set(true);
                         resourcePolicyRefVO.setPolicyUuid(msg.getPolicyUuid());
                         dbf.updateAndRefresh(resourcePolicyRefVO);
-                    }else{
-                        PolicyVO newPolicyVO =dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
+                        PolicyVO oldPolicy = dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class);
+                        oldPolicy.setBindResources(getCount(msg.getResourceUuid(), resourcePolicyRefVO.getPolicyUuid()));
+                        dbf.updateAndRefresh(oldPolicy);
+                        PolicyVO newPolicy = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
+                        newPolicy.setBindResources(getCount(msg.getResourceUuid(), msg.getPolicyUuid()));
+                        dbf.updateAndRefresh(newPolicy);
+
+                    } else {
+                        PolicyVO newPolicyVO = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
                         ResourcePolicyRefVO refVO = new ResourcePolicyRefVO();
                         refVO.setPolicyUuid(msg.getPolicyUuid());
                         refVO.setResourceUuid(msg.getResourceUuid());
                         refVO.setProductType(newPolicyVO.getProductType());
                         dbf.persistAndRefresh(refVO);
-                        newPolicyVO.setBindResources(getCount(msg.getResourceUuid(),policyUuid));
+                        newPolicyVO.setBindResources(getCount(msg.getResourceUuid(), policyUuid));
                         dbf.updateAndRefresh(newPolicyVO);
                     }
                 } else {
@@ -193,8 +200,14 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                         sb.append(resourcePolicyRefVO.getPolicyUuid());
                         dbf.remove(resourcePolicyRefVO);
                         PolicyVO newPolicyVO = dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class);
-                        newPolicyVO.setBindResources(getCount(msg.getResourceUuid(),policyUuid));
+                        newPolicyVO.setBindResources(getCount(msg.getResourceUuid(), policyUuid));
                         dbf.updateAndRefresh(newPolicyVO);
+                        PolicyVO oldPolicy = dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class);
+                        oldPolicy.setBindResources(getCount(msg.getResourceUuid(), resourcePolicyRefVO.getPolicyUuid()));
+                        dbf.updateAndRefresh(oldPolicy);
+                        PolicyVO newPolicy = dbf.findByUuid(sb.toString(), PolicyVO.class);
+                        newPolicy.setBindResources(getCount(msg.getResourceUuid(), sb.toString()));
+                        dbf.updateAndRefresh(newPolicy);
                     }
                 }
                 trigger.next();
@@ -221,21 +234,21 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                         ResourcePolicyRefVO resourcePolicyRefVO = query.find();
                         resourcePolicyRefVO.setPolicyUuid(sb.toString());
                         dbf.updateAndRefresh(resourcePolicyRefVO);
-                    }else {
+                    } else {
                         ResourcePolicyRefVO refVO = Q.New(ResourcePolicyRefVO.class)
-                                .eq(ResourcePolicyRefVO_.policyUuid,msg.getPolicyUuid())
-                                .eq(ResourcePolicyRefVO_.resourceUuid,msg.getResourceUuid()).find();
+                                .eq(ResourcePolicyRefVO_.policyUuid, msg.getPolicyUuid())
+                                .eq(ResourcePolicyRefVO_.resourceUuid, msg.getResourceUuid()).find();
                         dbf.remove(refVO);
 
-                        PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
-                        policyVO.setBindResources(getCount(msg.getResourceUuid(),policyUuid));
+                        PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
+                        policyVO.setBindResources(getCount(msg.getResourceUuid(), policyUuid));
                         dbf.updateAndRefresh(policyVO);
                     }
 
 
-                }else{
+                } else {
                     if (!StringUtils.isEmpty(sb.toString())) {
-                        PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(),PolicyVO.class);
+                        PolicyVO policyVO = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
                         ResourcePolicyRefVO refVO = new ResourcePolicyRefVO();
                         refVO.setPolicyUuid(sb.toString());
                         refVO.setResourceUuid(msg.getResourceUuid());
@@ -243,7 +256,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                         dbf.persistAndRefresh(refVO);
 
 
-                        policyVO.setBindResources(getCount(msg.getResourceUuid(),policyUuid));
+                        policyVO.setBindResources(getCount(msg.getResourceUuid(), policyUuid));
                         dbf.updateAndRefresh(policyVO);
                     }
 
@@ -254,7 +267,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
-                PolicyVO policyVO = dbf.findByUuid(policyUuid,PolicyVO.class);
+                PolicyVO policyVO = dbf.findByUuid(policyUuid, PolicyVO.class);
                 if (!StringUtils.isEmpty(msg.getPolicyUuid())) {
                     event.setInventory(PolicyInventory.valueOf(policyVO));
                 }
@@ -327,15 +340,15 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
 
         FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
         try {
-            response = restf.syncJsonPost(url ,commandParam, FalconApiCommands.RestResponse.class);
+            response = restf.syncJsonPost(url, commandParam, FalconApiCommands.RestResponse.class);
         } catch (Exception e) {
             response.setSuccess(false);
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
         }
 
         APIUpdateTunnelInfoForFalconReply reply = new APIUpdateTunnelInfoForFalconReply();
-        if(!response.isSuccess())
-            reply.setError(Platform.argerr("fail to sync strategy to falcon! Error: %s",response.getMsg()));
+        if (!response.isSuccess())
+            reply.setError(Platform.argerr("fail to sync strategy to falcon! Error: %s", response.getMsg()));
 
         bus.reply(msg, reply);
 
@@ -347,7 +360,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         tunnelIdMap.put("tunnel_id", msg.getTunnelUuid());
         FalconApiCommands.RestResponse response = new FalconApiCommands.RestResponse();
         try {
-            response = restf.syncJsonPost(url , JSONObjectUtil.toJsonString(tunnelIdMap), FalconApiCommands.RestResponse.class);
+            response = restf.syncJsonPost(url, JSONObjectUtil.toJsonString(tunnelIdMap), FalconApiCommands.RestResponse.class);
         } catch (Exception e) {
             e.printStackTrace();
             response.setSuccess(false);
@@ -367,7 +380,7 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                 String policyUuid = resourcePolicyRefVO.getPolicyUuid();
                 dbf.remove(resourcePolicyRefVO);
                 PolicyVO policyVO = dbf.findByUuid(policyUuid, PolicyVO.class);
-                policyVO.setBindResources(getCount(msg.getTunnelUuid(),policyUuid));
+                policyVO.setBindResources(getCount(msg.getTunnelUuid(), policyUuid));
                 dbf.updateAndRefresh(policyVO);
 
             }
@@ -375,11 +388,11 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
             q.condAnd(AlarmLogVO_.productUuid, SimpleQuery.Op.EQ, msg.getTunnelUuid());
             q.delete();
         }
-        bus.reply(msg,reply);
+        bus.reply(msg, reply);
 
     }
 
-    private long getCount(String resourceUuid,String policyUuid) {
+    private long getCount(String resourceUuid, String policyUuid) {
         SimpleQuery<ResourcePolicyRefVO> query = dbf.createQuery(ResourcePolicyRefVO.class);
         query.add(ResourcePolicyRefVO_.policyUuid, SimpleQuery.Op.EQ, policyUuid);
         return query.count();
