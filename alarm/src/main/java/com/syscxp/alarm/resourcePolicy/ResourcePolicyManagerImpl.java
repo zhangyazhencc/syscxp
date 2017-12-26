@@ -205,8 +205,8 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
                         PolicyVO oldPolicy = dbf.findByUuid(resourcePolicyRefVO.getPolicyUuid(), PolicyVO.class);
                         oldPolicy.setBindResources(getCount(msg.getResourceUuid(), resourcePolicyRefVO.getPolicyUuid()));
                         dbf.updateAndRefresh(oldPolicy);
-                        PolicyVO newPolicy = dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class);
-                        newPolicy.setBindResources(getCount(msg.getResourceUuid(), msg.getPolicyUuid()));
+                        PolicyVO newPolicy = dbf.findByUuid(sb.toString(), PolicyVO.class);
+                        newPolicy.setBindResources(getCount(msg.getResourceUuid(), sb.toString()));
                         dbf.updateAndRefresh(newPolicy);
                     }
                 }
