@@ -685,25 +685,38 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             bus.publish(evt);
             return;
         }
-        vpn.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
-        final VpnVO vo = dbf.updateAndRefresh(vpn);
-        saveMotifyRecord(msg, MotifyType.valueOf(reply.getInventory().getType()));
+        motifyRecordVpn(msg, MotifyType.valueOf(reply.getInventory().getType()));
 
         RateLimitingMsg rateLimitingMsg = new RateLimitingMsg();
-        rateLimitingMsg.setVpnUuid(vo.getUuid());
+        rateLimitingMsg.setVpnUuid(vpn.getUuid());
         bus.makeLocalServiceId(rateLimitingMsg, VpnConstant.SERVICE_ID);
         bus.send(rateLimitingMsg, new CloudBusCallBack(null) {
             @Override
             public void run(MessageReply reply) {
                 if (reply.isSuccess()) {
-                    evt.setInventory(VpnInventory.valueOf(vo));
+                    evt.setInventory(VpnInventory.valueOf(dbf.reload(vpn)));
                 } else {
                     evt.setError(reply.getError());
                 }
                 bus.publish(evt);
             }
         });
+    }
 
+    @Transactional
+    private void motifyRecordVpn(APIUpdateVpnBandwidthMsg msg, MotifyType type) {
+        VpnVO vpn = dbf.getEntityManager().find(VpnVO.class, msg.getUuid());
+        vpn.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
+        dbf.getEntityManager().merge(vpn);
+
+        ResourceMotifyRecordVO record = new ResourceMotifyRecordVO();
+        record.setResourceUuid(msg.getUuid());
+        record.setResourceType(VpnVO.class.getSimpleName());
+        record.setUuid(Platform.getUuid());
+        record.setMotifyType(type);
+        record.setOpAccountUuid(msg.getSession().getAccountUuid());
+        record.setOpUserUuid(msg.getSession().getUserUuid());
+        dbf.getEntityManager().persist(record);
     }
 
     @Transactional
