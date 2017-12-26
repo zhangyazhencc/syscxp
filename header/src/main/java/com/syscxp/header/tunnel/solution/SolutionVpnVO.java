@@ -21,16 +21,16 @@ public class SolutionVpnVO extends SolutionBaseVO{
     private EndpointVO endpointVO;
 
     @Column
-    private String zoneUuid;
+    private String solutionTunnelUuid;
     @Column
     private String bandwidthOfferingUuid;
 
-    public String getZoneUuid() {
-        return zoneUuid;
+    public String getSolutionTunnelUuid() {
+        return solutionTunnelUuid;
     }
 
-    public void setZoneUuid(String zoneUuid) {
-        this.zoneUuid = zoneUuid;
+    public void setSolutionTunnelUuid(String solutionTunnelUuid) {
+        this.solutionTunnelUuid = solutionTunnelUuid;
     }
 
     public EndpointVO getEndpointVO() {
