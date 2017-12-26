@@ -52,7 +52,6 @@ public class DestroyVpnJob implements Job {
                     }
                 }
             });
-            completion.success(null);
         } catch (Exception e) {
             LOGGER.warn(e.getMessage(), e);
 
