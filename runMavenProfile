@@ -37,7 +37,7 @@ apihelper() {
 
 
 doc() {
-    cd test
+    cd rest
     mvn test -Dtest=TestGenerateDocTemplate
     cd - > /dev/null
 }
@@ -53,7 +53,7 @@ docpremium() {
 }
 
 md() {
-    cd test
+    cd rest
     mvn test -Dtest=TestGenerateMarkDownDoc
     cd - > /dev/null
 }
@@ -136,7 +136,7 @@ sdk() {
     if [ -d premium/test-premium ]; then
    	cd premium/test-premium
     else
-    	cd test
+    	cd rest
     fi
     
     mvn test -Dtest=TestGenerateSDK

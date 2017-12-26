@@ -14,19 +14,21 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.syscxp</groupId>
-            <artifactId>utils</artifactId>
-            <version>${project.version}</version>
+            <groupId>com.squareup.okhttp3</groupId>
+            <artifactId>okhttp</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.syscxp</groupId>
-            <artifactId>core</artifactId>
-            <version>${project.version}</version>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.syscxp</groupId>
-            <artifactId>header</artifactId>
-            <version>${project.version}</version>
+            <groupId>commons-beanutils</groupId>
+            <artifactId>commons-beanutils</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>servlet-api</artifactId>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -37,42 +39,9 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>${project.compiler.version}</version>
                 <configuration>
-                    <source>${project.java.version}</source>
-                    <target>${project.java.version}</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                     <debug>true</debug>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>aspectj-maven-plugin</artifactId>
-                <version>${aspectj.plugin.version}</version>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>test-compile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <source>${project.java.version}</source>
-                    <target>${project.java.version}</target>
-                    <complianceLevel>${project.java.version}</complianceLevel>
-                    <XnoInline>true</XnoInline>
-                    <aspectLibraries>
-                        <aspectLibrary>
-                            <groupId>org.springframework</groupId>
-                            <artifactId>spring-aspects</artifactId>
-                        </aspectLibrary>
-                        <aspectLibrary>
-                            <groupId>com.syscxp</groupId>
-                            <artifactId>core</artifactId>
-                        </aspectLibrary>
-                        <aspectLibrary>
-                            <groupId>com.syscxp</groupId>
-                            <artifactId>header</artifactId>
-                        </aspectLibrary>
-                    </aspectLibraries>
                 </configuration>
             </plugin>
         </plugins>
