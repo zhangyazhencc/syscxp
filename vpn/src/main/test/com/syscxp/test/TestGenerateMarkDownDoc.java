@@ -14,7 +14,7 @@ import java.nio.file.Paths;
 class TestGenerateMarkDownDoc {
 
     @Test
-    void test() {
+    public void test() {
         RestServer.generateMarkdownDoc(Paths.get("../").toAbsolutePath().normalize().toString());
     }
 }

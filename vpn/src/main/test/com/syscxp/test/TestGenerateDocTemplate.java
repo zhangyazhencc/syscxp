@@ -15,7 +15,7 @@ import java.nio.file.Paths;
 class TestGenerateDocTemplate {
 
     @Test
-    void test() {
+    public void test() {
         if (System.getProperty("recreate") != null) {
             RestServer.generateDocTemplate(Paths.get("../").toAbsolutePath().normalize().toString(), DocumentGenerator.DocMode.RECREATE_ALL);
         } else if (System.getProperty("repair") != null) {
