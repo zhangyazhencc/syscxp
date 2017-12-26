@@ -119,9 +119,9 @@ public class TunnelStatusChecker implements Component {
                         Double min = Collections.min(result.getDps().values());
 
                         TunnelStatus status;
-                        if (min > PACKETS_LOST_MAX)
+                        if (min.compareTo(PACKETS_LOST_MAX) > 0)
                             status = TunnelStatus.Disconnected;
-                        else if (max < PACKETS_LOST_MIN)
+                        else if (max.compareTo(PACKETS_LOST_MIN) < 0)
                             status = TunnelStatus.Connected;
                         else
                             status = TunnelStatus.Warning;
