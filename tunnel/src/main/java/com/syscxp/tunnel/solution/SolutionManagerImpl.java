@@ -175,8 +175,6 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setCost(msg.getCost());
-        vo.setProductChargeModel(msg.getProductChargeModel());
-        vo.setDuration(msg.getDuration());
         dbf.getEntityManager().merge(vo);
 
         APIUpdateSolutionTunnelEvent event = new APIUpdateSolutionTunnelEvent(msg.getId());

@@ -673,7 +673,7 @@ public class TunnelValidateBase {
         List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid);
 
         //判断外部VLAN是否在该虚拟交换机的VLAN段中
-        Boolean inner = false;
+        /*Boolean inner = false;
         for (SwitchVlanVO switchVlanVO : vlanList) {
             if (vlan >= switchVlanVO.getStartVlan() && vlan <= switchVlanVO.getEndVlan()) {
                 inner = true;
@@ -682,7 +682,7 @@ public class TunnelValidateBase {
         }
         if (!inner) {
             throw new ApiMessageInterceptionException(argerr("avlan not in switchVlan"));
-        }
+        }*/
         //判断外部vlan是否可用
         if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
             throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", vlan));
