@@ -657,7 +657,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         record.setResourceType(VpnVO.class.getSimpleName());
         record.setUuid(Platform.getUuid());
         record.setMotifyType(type);
-        record.setOpAccountUuid(msg.getOpAccountUuid());
+        record.setOpAccountUuid(msg.getSession().getAccountUuid());
         record.setOpUserUuid(msg.getSession().getUserUuid());
         dbf.persistAndRefresh(record);
     }
@@ -674,7 +674,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
 
         APICreateModifyOrderMsg orderMsg = new APICreateModifyOrderMsg(getOrderMsgForVPN(vpn, new UpdateVpnBandwidthCallBack()));
-        orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
+        orderMsg.setOpAccountUuid(msg.getSession().getAccountUuid());
         orderMsg.setStartTime(vpn.getCreateDate());
         orderMsg.setExpiredTime(vpn.getExpireDate());
 
@@ -824,7 +824,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 });
                 trigger.next();
             }
-        });;
+        });
+        ;
 
         chain.done(new FlowDoneHandler(msg) {
             @Override
@@ -884,7 +885,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             }
         });
     }
+
     private String ERROR = "ERROR";
+
     private void createCert(VpnCertVO vpnCert, Completion completion) {
         try {
             String output = ShellUtils.run(String.format("PYTHONPATH=%s %s %s -d '%s' ",
@@ -1290,18 +1293,19 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             validate((APIAttachVpnCertMsg) msg);
         } else if (msg instanceof APIDetachVpnCertMsg) {
             validate((APIDetachVpnCertMsg) msg);
+        } else if (msg instanceof APICreateVpnCertMsg) {
+            validate((APICreateVpnCertMsg) msg);
         }
         return msg;
     }
 
     private void validate(APIDetachVpnCertMsg msg) {
-        VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        checkTunnelAndVpnCert(vpn);
+        checkTunnelAndVpnCert(msg.getUuid());
     }
 
     private void validate(APIAttachVpnCertMsg msg) {
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        checkTunnel(vpn);
+        checkTunnel(msg.getUuid());
         if (vpn.getVpnCertUuid() != null) {
             throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
                     String.format("VPN[uuid: %s]已绑定证书, 请先解绑证书", vpn.getUuid())));
@@ -1309,8 +1313,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void validate(APIUpdateVpnStateMsg msg) {
-        VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-        checkTunnelAndVpnCert(vpn);
+        checkTunnelAndVpnCert(msg.getUuid());
     }
 
     private void validate(APIDeleteVpnCertMsg msg) {
@@ -1318,6 +1321,15 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         if (cert.getVpnNum() > 0) {
             throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
                     String.format("The VpnCertVO[uuid:%s] has already binding Vpn.", msg.getUuid())));
+        }
+    }
+
+    private void validate(APICreateVpnCertMsg msg) {
+        // 区分管理员账户
+        if (msg.getSession().isAdminSession() && StringUtils.isEmpty(msg.getAccountUuid())) {
+            throw new ApiMessageInterceptionException(
+                    argerr("The Account[uuid:%s] is a admin or proxy, cannot create vpncert for self",
+                            msg.getSession().getAccountUuid()));
         }
     }
 
@@ -1335,36 +1347,27 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
     }
 
-    private void checkTunnel(VpnVO vpn) {
-        if ("".equals(vpn.getTunnelUuid())) {
-            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
-                    String.format("VPN[uuid: %s]没有指定专线。", vpn.getUuid())));
+    private void checkTunnel(String tunnelUuid) {
+        if ("".equals(tunnelUuid)) {
+            throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR, "VPN没有指定专线。"));
         }
     }
 
-    private void checkVpnCert(VpnVO vpn) {
-        if (vpn.getVpnCertUuid() == null) {
+    private void checkVpnCert(String vpnCertUuid) {
+        if (vpnCertUuid == null) {
             throw new OperationFailureException(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR,
-                    String.format("VPN[uuid: %s]的证书已经解绑, 请绑定证书", vpn.getUuid())));
+                    "VPN[uuid: %s]的证书已经解绑, 请绑定证书"));
         }
     }
 
-    private void checkTunnelAndVpnCert(VpnVO vpn) {
-        checkTunnel(vpn);
-        checkVpnCert(vpn);
+    private void checkTunnelAndVpnCert(String vpnUuid) {
+        VpnVO vpn = dbf.findByUuid(vpnUuid, VpnVO.class);
+        checkTunnel(vpn.getTunnelUuid());
+        checkVpnCert(vpn.getVpnCertUuid());
     }
 
     private void validate(APIUpdateVpnBandwidthMsg msg) {
-        // 区分管理员账户
-        if (msg.getSession().isAdminSession() && StringUtils.isEmpty(msg.getAccountUuid())) {
-            throw new ApiMessageInterceptionException(
-                    argerr("The Account[uuid:%s] is not a admin or proxy.",
-                            msg.getSession().getAccountUuid()));
-        }
-
-        VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
-
-        checkTunnelAndVpnCert(vpn);
+        checkTunnelAndVpnCert(msg.getUuid());
 
         LocalDateTime dateTime = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).atTime(LocalTime.MIN);
         Long times = Q.New(ResourceMotifyRecordVO.class)
@@ -1408,7 +1411,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         // 区分管理员账户
         if (msg.getSession().isAdminSession() && StringUtils.isEmpty(msg.getAccountUuid())) {
             throw new ApiMessageInterceptionException(
-                    argerr("The Account[uuid:%s] is not a admin or proxy.",
+                    argerr("The Account[uuid:%s] is a admin or proxy, cannot create vpn for self",
                             msg.getSession().getAccountUuid()));
         }
         Q q = Q.New(VpnVO.class).eq(VpnVO_.name, msg.getName()).eq(VpnVO_.accountUuid, msg.getAccountUuid());
