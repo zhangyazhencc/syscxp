@@ -22,6 +22,11 @@ public class SolutionVpnVO extends SolutionBaseVO{
 
     @Column
     private String solutionTunnelUuid;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "solutionTunnelUuid", insertable = false, updatable = false)
+    private SolutionTunnelVO solutionTunnelVO;
+
     @Column
     private String bandwidthOfferingUuid;
 
@@ -55,5 +60,13 @@ public class SolutionVpnVO extends SolutionBaseVO{
 
     public void setEndpointUuid(String endpointUuid) {
         this.endpointUuid = endpointUuid;
+    }
+
+    public SolutionTunnelVO getSolutionTunnelVO() {
+        return solutionTunnelVO;
+    }
+
+    public void setSolutionTunnelVO(SolutionTunnelVO solutionTunnelVO) {
+        this.solutionTunnelVO = solutionTunnelVO;
     }
 }
