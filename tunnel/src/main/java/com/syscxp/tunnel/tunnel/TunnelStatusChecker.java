@@ -50,6 +50,7 @@ public class TunnelStatusChecker implements Component {
         logger.debug(String
                 .format("security group cleanExpiredProductThread starts[cleanExpiredProductInterval: %s day]", checkTunnelStatusInterval));
     }
+
     private void restartCleanExpiredProduct() {
 
         startCleanExpiredProduct();
@@ -102,6 +103,7 @@ public class TunnelStatusChecker implements Component {
                     Long endTime = Instant.now().getEpochSecond();
                     Long startTime = endTime - 5 * 30;
 
+                    logger.debug(String.format("start check tunnel[UUID: %s] status:", vo.getUuid()));
                     String condition = getOpenTSDBQueryCondition(vo.getUuid(), TUNNEL_PACKETS_LOST, startTime, endTime);
                     String resp = restf.getRESTTemplate().postForObject(OPENTSDB_SERVER_URL, condition, String.class);
                     List<QueryResult> results = JSONObjectUtil.toCollection(resp, ArrayList.class, QueryResult.class);
@@ -109,8 +111,10 @@ public class TunnelStatusChecker implements Component {
                     if (!results.isEmpty()) {
                         QueryResult result = results.get(0);
                         Map dps = result.getDps();
-                        if (CollectionUtils.isEmpty(dps))
-                            return;
+                        if (CollectionUtils.isEmpty(dps)) {
+                            logger.debug(String.format("THe monitor of the tunnel[UUID: %s] has no data:", vo.getUuid()));
+                            continue;
+                        }
                         Double max = Collections.max(result.getDps().values());
                         Double min = Collections.min(result.getDps().values());
 
@@ -121,13 +125,15 @@ public class TunnelStatusChecker implements Component {
                             status = TunnelStatus.Connected;
                         else
                             status = TunnelStatus.Warning;
-                        if (vo.getStatus() != status)
+                        if (vo.getStatus() != status) {
                             UpdateQuery.New(TunnelVO.class)
                                     .eq(TunnelVO_.uuid, vo.getUuid())
                                     .eq(TunnelVO_.state, TunnelState.Enabled)
                                     .eq(TunnelVO_.monitorState, TunnelMonitorState.Enabled)
                                     .set(TunnelVO_.status, status)
                                     .update();
+                        }
+                        logger.debug(String.format("change tunnel[UUID: %s] status %s to %s:", vo.getUuid(), vo.getStatus(), status));
                     }
                 }
                 tunnelVOs.clear();
