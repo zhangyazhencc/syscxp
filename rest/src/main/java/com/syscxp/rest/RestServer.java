@@ -125,7 +125,7 @@ public class RestServer implements Component, CloudBusEventListener {
     }
 
     public static void generateJavaSdk() {
-        String path = PathUtil.join(System.getProperty("user.home"), "zstack-sdk/java");
+        String path = PathUtil.join(System.getProperty("user.home"), "syscxp-sdk/java");
         File folder = new File(path);
         if (!folder.exists()) {
             folder.mkdirs();
