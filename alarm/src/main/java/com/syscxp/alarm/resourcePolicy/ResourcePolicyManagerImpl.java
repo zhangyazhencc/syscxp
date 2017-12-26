@@ -267,9 +267,9 @@ public class ResourcePolicyManagerImpl extends AbstractService implements ApiMes
         }).done(new FlowDoneHandler(null) {
             @Override
             public void handle(Map data) {
-                PolicyVO policyVO = dbf.findByUuid(policyUuid, PolicyVO.class);
+
                 if (!StringUtils.isEmpty(msg.getPolicyUuid())) {
-                    event.setInventory(PolicyInventory.valueOf(policyVO));
+                    event.setInventory(PolicyInventory.valueOf(dbf.findByUuid(msg.getPolicyUuid(), PolicyVO.class)));
                 }
                 bus.publish(event);
             }

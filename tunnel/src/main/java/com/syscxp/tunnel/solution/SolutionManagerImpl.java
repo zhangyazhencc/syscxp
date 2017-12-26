@@ -94,9 +94,22 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             handle((APIRecountInterfacePriceMsg) msg);
         }else if(msg instanceof APIRecountTunnelPriceMsg){
             handle((APIRecountTunnelPriceMsg) msg);
+        }else if(msg instanceof APIGetTunnelPriceMsg){
+            handle((APIGetTunnelPriceMsg) msg);
         }else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetTunnelPriceMsg msg) {
+        SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(), SolutionTunnelVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
+
+        APIGetProductPriceReply reply = getTunnelPrice(vo, solutionVO.getAccountUuid());
+
+        APIGetTunnelPriceReply priceReply = new APIGetTunnelPriceReply();
+        priceReply.setPrice(reply.getOriginalPrice());
+        bus.reply(msg, priceReply);
     }
 
 
@@ -153,8 +166,6 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setCost(msg.getCost());
-        vo.setProductChargeModel(msg.getProductChargeModel());
-        vo.setDuration(msg.getDuration());
         dbf.getEntityManager().merge(vo);
 
         APIUpdateSolutionVpnEvent event = new APIUpdateSolutionVpnEvent(msg.getId());
@@ -265,7 +276,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setSolutionUuid(msg.getSolutionUuid());
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setEndpointUuid(msg.getEndpointUuid());
-        vo.setZoneUuid(msg.getZoneUuid());
+        vo.setSolutionTunnelUuid(msg.getSolutionTunnelUuid());
         vo.setName(msg.getName());
 
         dbf.getEntityManager().persist(vo);
