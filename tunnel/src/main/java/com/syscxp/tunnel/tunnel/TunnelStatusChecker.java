@@ -151,7 +151,7 @@ public class TunnelStatusChecker implements Component {
                 if (!tunnelPort.getSortTag().equals("A") && !tunnelPort.getSortTag().equals("Z"))
                     continue;
                 PhysicalSwitchVO physicalSwitch = getPhysicalSwitchBySwitchPort(tunnelPort.getSwitchPortUuid());
-                Tags tags = new Tags(physicalSwitch.getmIP(), "Vlanif" + tunnelPort.getVlan());
+                Tags tags = new Tags(physicalSwitch.getmIP(), "Vlanif" + tunnelPort.getVlan(), tunnelUuid);
                 Query query = new Query("avg", metric, tags);
                 queries.add(query);
                 break;
