@@ -37,7 +37,7 @@ public class SolutionVpnInventory {
         if(vo.getEndpointVO() != null){
             inv.setEndpointName(vo.getEndpointVO().getName());
         }
-        inv.setZoneUuid(vo.getZoneUuid());
+        inv.setZoneUuid(vo.getSolutionTunnelUuid());
         inv.setBandwidthOfferingUuid(vo.getBandwidthOfferingUuid());
         return inv;
     }
