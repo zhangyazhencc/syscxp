@@ -143,10 +143,11 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIUploadImageUrlMsg msg) {
         APIUploadImageUrlEvent event = new APIUploadImageUrlEvent(msg.getId());
-
+        List<String> list= mongoTemplate.findOne(new Query(Criteria.where("node_id").
+                is(msg.getNodeId())), NodeExtensionInfo.class).getImages_url();
+        list.addAll(msg.getImage_urls());
         mongoTemplate.updateFirst(new Query(Criteria.where("node_id").is(msg.getNodeId())),
-                new Update().set("images_url", mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),
-                        NodeExtensionInfo.class).getImages_url().add(msg.getImage_url())),NodeExtensionInfo.class);
+                new Update().set("images_url", list),NodeExtensionInfo.class);
 
         bus.publish(event);
     }
@@ -173,9 +174,11 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
         if(rsp.get("success") != null && (boolean)rsp.get("success")){
             System.out.println("successfully");
+            List<String> list = mongoTemplate.findOne(new Query(Criteria.where("node_id")
+                            .is(msg.getNodeId())),NodeExtensionInfo.class).getImages_url();
+            list.remove(msg.getImage_url());
             mongoTemplate.updateFirst(new Query(Criteria.where("node_id").is(msg.getNodeId())),
-                    new Update().set("images_url", mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),
-                            NodeExtensionInfo.class).getImages_url().remove(msg.getImage_url())),NodeExtensionInfo.class);
+                    new Update().set("images_url", list),NodeExtensionInfo.class);
 
         }else{
             event.setError(Platform.argerr("delete image fail"));

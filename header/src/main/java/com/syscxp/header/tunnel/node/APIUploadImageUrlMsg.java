@@ -6,6 +6,8 @@ import com.syscxp.header.message.APIParam;
 import com.syscxp.header.tunnel.NodeConstant;
 import com.syscxp.header.tunnel.TunnelConstant;
 
+import java.util.List;
+
 /**
  * Created by wangwg on 2017/12/27
  */
@@ -16,7 +18,7 @@ public class APIUploadImageUrlMsg extends APIMessage {
     private String nodeId;
 
     @APIParam(emptyString = false)
-    private String image_url;
+    private List<String> image_urls;
 
     public String getNodeId() {
         return nodeId;
@@ -26,11 +28,11 @@ public class APIUploadImageUrlMsg extends APIMessage {
         this.nodeId = nodeId;
     }
 
-    public String getImage_url() {
-        return image_url;
+    public List<String> getImage_urls() {
+        return image_urls;
     }
 
-    public void setImage_url(String image_url) {
-        this.image_url = image_url;
+    public void setImage_urls(List<String> image_urls) {
+        this.image_urls = image_urls;
     }
 }
