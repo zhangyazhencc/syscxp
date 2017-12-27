@@ -179,7 +179,7 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
 
             @Override
             public long getInterval() {
-                return 60 * 10; // 10 minute
+                return 60 * 30; // 30 minute
             }
 
             @Override
