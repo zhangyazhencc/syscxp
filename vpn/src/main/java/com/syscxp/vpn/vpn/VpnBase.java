@@ -69,7 +69,7 @@ public class VpnBase extends AbstractVpn {
     private static final String VPN_STOP = "stop";
     private static final String VPN_STATUS = "status";
 
-    private static final String RATE_LIMITING = "clean";
+    private static final String RATE_LIMITING = "set";
 
     protected VpnBase(VpnVO self) {
         super(self);
