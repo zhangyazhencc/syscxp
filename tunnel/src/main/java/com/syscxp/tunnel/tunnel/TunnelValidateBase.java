@@ -57,7 +57,7 @@ public class TunnelValidateBase {
             throw new ApiMessageInterceptionException(
                     argerr("The Interface[uuid:%s] has been used by two tunnel as least！", msg.getUuid()));
         SwitchPortVO switchPort = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, iface.getSwitchPortUuid()).find();
-        if (switchPort.getPortType().equals("SHARE"))
+        if (switchPort.getPortType().equals("SHARE") || msg.getNetworkType() == NetworkType.ACCESS)
             throw new ApiMessageInterceptionException(
                     argerr("The type of Interface[uuid:%s] is %s, can not modify！", msg.getUuid(), switchPort.getPortType()));
 
@@ -576,7 +576,10 @@ public class TunnelValidateBase {
     }
 
     public void validate(APIUpdateTunnelVlanMsg msg) {
-
+        InterfaceVO interfaceVOA = dbf.findByUuid(msg.getInterfaceAUuid(),InterfaceVO.class);
+        InterfaceVO interfaceVOZ = dbf.findByUuid(msg.getInterfaceZUuid(),InterfaceVO.class);
+        InterfaceVO oldInterfaceVOA = dbf.findByUuid(msg.getOldInterfaceAUuid(),InterfaceVO.class);
+        InterfaceVO oldInterfaceVOZ = dbf.findByUuid(msg.getOldInterfaceZUuid(),InterfaceVO.class);
 
         if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())) {
             if (isCross(msg.getUuid(), msg.getOldInterfaceAUuid())) {
@@ -590,6 +593,28 @@ public class TunnelValidateBase {
                 throw new ApiMessageInterceptionException(argerr("该接口Z为共点，不能修改配置！！"));
             }
             validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
+        }
+
+        if(!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())){
+            if(interfaceVOA.getType() == oldInterfaceVOA.getType()){
+                if((interfaceVOA.getType() == NetworkType.ACCESS || interfaceVOA.getType() == NetworkType.QINQ)
+                        && Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid,interfaceVOA.getUuid()).isExists()){
+                    throw new ApiMessageInterceptionException(argerr("ACCESS或QINQ的物理接口已经开通了专线，不能切换成该物理接口！！"));
+                }
+            }else{
+                throw new ApiMessageInterceptionException(argerr("切换物理接口，不能切换接口模式！！"));
+            }
+        }
+
+        if(!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid())){
+            if(interfaceVOZ.getType() == oldInterfaceVOZ.getType()){
+                if((interfaceVOZ.getType() == NetworkType.ACCESS || interfaceVOZ.getType() == NetworkType.QINQ)
+                        && Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid,interfaceVOZ.getUuid()).isExists()){
+                    throw new ApiMessageInterceptionException(argerr("ACCESS或QINQ的物理接口已经开通了专线，不能切换成该物理接口！！"));
+                }
+            }else{
+                throw new ApiMessageInterceptionException(argerr("切换物理接口，不能切换接口模式！！"));
+            }
         }
 
     }

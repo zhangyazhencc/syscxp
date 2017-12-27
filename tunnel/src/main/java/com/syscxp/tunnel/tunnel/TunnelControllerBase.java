@@ -306,6 +306,7 @@ public class TunnelControllerBase extends AbstractTunnel {
         ModifyTunnelBandwidthReply reply = new ModifyTunnelBandwidthReply();
 
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(),TunnelVO.class);
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
 
         ControllerCommands.IssuedTunnelCommand issuedTunnelCommand = getTunnelConfigInfo(tunnelVO);
         String command = JSONObjectUtil.toJsonString(issuedTunnelCommand);
@@ -316,12 +317,23 @@ public class TunnelControllerBase extends AbstractTunnel {
             public void success() {
                 logger.info("下发调整带宽成功！");
 
+                //更新任务状态
+                taskResourceVO.setBody(command);
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
                 bus.reply(msg, reply);
             }
 
             @Override
             public void fail(ErrorCode errorCode) {
                 logger.info("下发调整带宽失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(command);
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
 
                 reply.setError(errorCode);
                 bus.reply(msg, reply);

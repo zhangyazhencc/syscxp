@@ -188,12 +188,9 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
         if(rsp.get("success") != null && (boolean)rsp.get("success")){
             System.out.println("successfully");
-            List<String> list = mongoTemplate.findOne(new Query(Criteria.where("node_id")
-                            .is(msg.getNodeId())),NodeExtensionInfo.class).getImages_url();
 
-            list.remove(msg.getImage_url());
-            mongoTemplate.updateFirst(new Query(Criteria.where("node_id").is(msg.getNodeId())),
-                    new Update().set("images_url", list),NodeExtensionInfo.class);
+            mongoTemplate.updateMulti(new Query(Criteria.where("node_id").is(msg.getNodeId())),
+                    new Update().pull("images_url", msg.getImage_url()),NodeExtensionInfo.class);
 
         }else{
             event.setError(Platform.argerr("delete image fail"));
