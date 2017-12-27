@@ -1,8 +1,6 @@
 package com.syscxp.tunnel.node;
 
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.syscxp.core.db.Q;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.NodeConstant;
@@ -17,7 +15,6 @@ import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO;
 import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO_;
 import com.syscxp.utils.Digest;
 import com.syscxp.utils.gson.JSONObjectUtil;
-import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -136,10 +133,22 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIListCityNodeMsg) msg);
         }else if(msg instanceof APIDeleteImageMsg){
             handle((APIDeleteImageMsg) msg);
+        }else if(msg instanceof APIUploadImageUrlMsg){
+            handle((APIUploadImageUrlMsg) msg);
         }
         else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIUploadImageUrlMsg msg) {
+        APIUploadImageUrlEvent event = new APIUploadImageUrlEvent(msg.getId());
+
+        mongoTemplate.updateFirst(new Query(Criteria.where("node_id").is(msg.getNodeId())),
+                new Update().set("images_url", mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),
+                        NodeExtensionInfo.class).getImages_url().add(msg.getImage_url())),NodeExtensionInfo.class);
+
+        bus.publish(event);
     }
 
     private void handle(APIDeleteImageMsg msg) {
