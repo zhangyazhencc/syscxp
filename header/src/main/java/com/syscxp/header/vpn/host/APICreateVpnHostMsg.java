@@ -1,11 +1,7 @@
 package com.syscxp.header.vpn.host;
 
-import com.syscxp.header.host.APIAddHostEvent;
 import com.syscxp.header.host.APIAddHostMsg;
-import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.header.notification.ApiNotification;
 
 public class APICreateVpnHostMsg extends APIAddHostMsg {
     @APIParam(emptyString = false)
@@ -59,21 +55,4 @@ public class APICreateVpnHostMsg extends APIAddHostMsg {
         this.password = password;
     }
 
-    public ApiNotification __notification__() {
-        final APIMessage that = this;
-
-        return new ApiNotification() {
-            @Override
-            public void after(APIEvent evt) {
-                String uuid = null;
-                if (evt.isSuccess()) {
-                    uuid = ((APIAddHostEvent) evt).getInventory().getUuid();
-                }
-
-                ntfy("Create VpnHostVO")
-                        .resource(uuid, VpnHostVO.class)
-                        .messageAndEvent(that, evt).done();
-            }
-        };
-    }
 }

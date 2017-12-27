@@ -13,7 +13,7 @@ banner("Starting to deploy vpn agent")
 start_time = datetime.now()
 # set default value
 file_root = "files/vpn"
-of_file_root = "files/open-falcon"
+of_file_root = "files/vpn/open-falcon"
 pip_url = "https=//pypi.python.org/simple/"
 chroot_env = 'false'
 init_install = 'false'
@@ -87,6 +87,18 @@ else:
 run_remote_command("rm -rf %s/*" % vpn_root, host_post_info)
 
 
+if file_dir_exist("path=" + of_root, host_post_info):
+    init_install = False
+else:
+    init_install = True
+    # name: create root directories
+    command = 'mkdir -p %s ' % of_root
+    host_post_info.post_label = "ansible.shell.mkdir"
+    host_post_info.post_label_param = "%s " % of_root
+    run_remote_command(command, host_post_info)
+
+run_remote_command("rm -rf %s/*" % of_root, host_post_info)
+
 if distro == "RedHat" or distro == "CentOS":
     # handle syscxp_repo
     if syscxp_repo != 'false':
@@ -155,6 +167,7 @@ copy_arg.src = "%s/%s" % (of_file_root, pkg_ofagent)
 copy_arg.dest = "%s/%s" % (of_root, pkg_ofagent)
 copy_ofagent = copy(copy_arg, host_post_info)
 
+run_remote_command("cd %s && tar -zxvf %s -C %s" % (of_root, pkg_ofagent, syscxp_root), host_post_info)
 
 copy_arg = CopyArg()
 copy_arg.src = "files/open-falcon/open-falcon.sh"
@@ -212,14 +225,6 @@ if copy_vpnagent != "changed:False":
     agent_install_arg.virtualenv_site_packages = "yes"
     agent_install(agent_install_arg, host_post_info)
 
-if copy_ofagent != "changed:False":
-    agent_install_arg = AgentInstallArg(trusted_host, pip_url, virtenv_path, init_install)
-    agent_install_arg.agent_name = "open-falcon agent"
-    agent_install_arg.agent_root = of_root
-    agent_install_arg.pkg_name = pkg_ofagent
-    agent_install_arg.virtualenv_site_packages = "yes"
-    agent_install(agent_install_arg, host_post_info)
-
 # name: add audit rules for signals
 command = "systemctl enable auditd; systemctl start auditd; " \
           "auditctl -D -k syscxp_log_kill; " \
@@ -234,7 +239,7 @@ if chroot_env == 'false':
     # name: restart vpnagent, do not use ansible systemctl due to vpnagent can start by itself, so systemctl will not know
     # the vpn agent status when we want to restart it to use the latest vpn agent code
     if distro == "RedHat" or distro == "CentOS":
-        command = "service syscxp-vpnagent stop && service syscxp-vpnagent start && chkconfig syscxp-vpnagent on"
+        command = "service syscxp-vpnagent stop && service syscxp-vpnagent start && chkconfig syscxp-vpnagent on && /etc/init.d/open-falcon.sh start"
     else:
         error("unsupported OS!")
 

@@ -19,7 +19,8 @@ public class SolutionVpnInventory {
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
-    private String zoneUuid;
+    private String solutionTunnelUuid;
+    private String solutionTunnelName;
     private String endpointName;
     private String bandwidthOfferingUuid;
     private String name;
@@ -37,7 +38,11 @@ public class SolutionVpnInventory {
         if(vo.getEndpointVO() != null){
             inv.setEndpointName(vo.getEndpointVO().getName());
         }
-        inv.setZoneUuid(vo.getZoneUuid());
+        if(vo.getSolutionTunnelVO() != null){
+            inv.setSolutionTunnelName(vo.getSolutionTunnelVO().getName());
+        }
+
+        inv.setSolutionTunnelUuid(vo.getSolutionTunnelUuid());
         inv.setBandwidthOfferingUuid(vo.getBandwidthOfferingUuid());
         return inv;
     }
@@ -106,12 +111,12 @@ public class SolutionVpnInventory {
         this.createDate = createDate;
     }
 
-    public String getZoneUuid() {
-        return zoneUuid;
+    public String getSolutionTunnelUuid() {
+        return solutionTunnelUuid;
     }
 
-    public void setZoneUuid(String zoneUuid) {
-        this.zoneUuid = zoneUuid;
+    public void setSolutionTunnelUuid(String solutionTunnelUuid) {
+        this.solutionTunnelUuid = solutionTunnelUuid;
     }
 
     public String getEndpointName() {
@@ -136,5 +141,13 @@ public class SolutionVpnInventory {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getSolutionTunnelName() {
+        return solutionTunnelName;
+    }
+
+    public void setSolutionTunnelName(String solutionTunnelName) {
+        this.solutionTunnelName = solutionTunnelName;
     }
 }

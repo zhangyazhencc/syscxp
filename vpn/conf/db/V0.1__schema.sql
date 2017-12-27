@@ -51,6 +51,15 @@ CREATE TABLE  `syscxp_vpn`.`JobQueueEntryVO` (
     PRIMARY KEY  (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+CREATE TABLE  `syscxp_vpn`.`AsyncRestVO` (
+	`id` bigint unsigned NOT NULL UNIQUE AUTO_INCREMENT,
+	`requestData` TEXT NOT NULL,
+	`state` varchar(32) NOT NULL,
+	`result` varchar(32) DEFAULT NULL,
+	`lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
+	`createDate` timestamp,
+	PRIMARY KEY  (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 # Foreign keys for table JobQueueEntryVO
 
 ALTER TABLE JobQueueEntryVO ADD CONSTRAINT fkJobQueueEntryVOJobQueueVO FOREIGN KEY (jobQueueId) REFERENCES JobQueueVO (id) ON DELETE CASCADE;

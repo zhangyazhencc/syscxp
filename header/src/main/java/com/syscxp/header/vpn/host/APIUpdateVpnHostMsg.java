@@ -1,10 +1,7 @@
 package com.syscxp.header.vpn.host;
 
 import com.syscxp.header.host.APIUpdateHostMsg;
-import com.syscxp.header.message.APIEvent;
-import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
-import com.syscxp.header.notification.ApiNotification;
 
 public class APIUpdateVpnHostMsg extends APIUpdateHostMsg {
     @APIParam(required = false)
@@ -58,16 +55,4 @@ public class APIUpdateVpnHostMsg extends APIUpdateHostMsg {
         this.password = password;
     }
 
-    public ApiNotification __notification__() {
-        final APIMessage that = this;
-
-        return new ApiNotification() {
-            @Override
-            public void after(APIEvent evt) {
-                ntfy("Update VpnHostVO")
-                        .resource(getUuid(), VpnHostVO.class)
-                        .messageAndEvent(that, evt).done();
-            }
-        };
-    }
 }
