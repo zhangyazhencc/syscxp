@@ -241,7 +241,7 @@ public class TunnelBillingBase {
     /**
      * 获取tunnel Description
      */
-    public String getDescriptionForTunnel(TunnelVO vo) {
+    public String getDescriptionForTunnel(TunnelVO vo,Long newBandwidth) {
         DescriptionData data = new DescriptionData();
 
         TunnelSwitchPortVO tunnelSwitchPortVOA = Q.New(TunnelSwitchPortVO.class)
@@ -258,10 +258,16 @@ public class TunnelBillingBase {
         data.add(new DescriptionItem("连接点-A", endpointNameA));
         data.add(new DescriptionItem("连接点-Z", endpointNameZ));
 
-        if(vo.getBandwidth() < 1073741824L){
-            data.add(new DescriptionItem("带宽", String.valueOf(SizeUnit.BYTE.toMegaByte(vo.getBandwidth()))+"M"));
+        Long bandwidth;
+        if(newBandwidth != null){
+            bandwidth = newBandwidth;
         }else{
-            data.add(new DescriptionItem("带宽", String.valueOf(SizeUnit.BYTE.toGigaByte(vo.getBandwidth()))+"G"));
+            bandwidth = vo.getBandwidth();
+        }
+        if(bandwidth < 1073741824L){
+            data.add(new DescriptionItem("带宽", String.valueOf(SizeUnit.BYTE.toMegaByte(bandwidth))+"M"));
+        }else{
+            data.add(new DescriptionItem("带宽", String.valueOf(SizeUnit.BYTE.toGigaByte(bandwidth))+"G"));
         }
 
         return JSONObjectUtil.toJsonString(data);
@@ -284,7 +290,7 @@ public class TunnelBillingBase {
         order.setDuration(vo.getDuration());
         order.setAccountUuid(vo.getOwnerAccountUuid());
         order.setOpAccountUuid(msg.getSession().getAccountUuid());
-        order.setDescriptionData(getDescriptionForTunnel(vo));
+        order.setDescriptionData(getDescriptionForTunnel(vo,null));
         order.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(), evoZ.getNodeUuid(), msg.getInnerConnectedEndpointUuid()));
         order.setNotifyUrl(restf.getSendCommandUrl());
         return order;
@@ -305,7 +311,7 @@ public class TunnelBillingBase {
         order.setProductName(vo.getName());
         order.setAccountUuid(vo.getOwnerAccountUuid());
         order.setOpAccountUuid(msg.getSession().getAccountUuid());
-        order.setDescriptionData(getDescriptionForTunnel(vo));
+        order.setDescriptionData(getDescriptionForTunnel(vo,null));
         order.setUnits(getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(), evoZ.getNodeUuid(), msg.getInnerConnectedEndpointUuid()));
         order.setNotifyUrl(restf.getSendCommandUrl());
         return order;

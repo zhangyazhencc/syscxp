@@ -1,16 +1,8 @@
 package com.syscxp.tunnel.node;
 
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import com.syscxp.core.db.Q;
-import com.syscxp.core.identity.IdentityGlobalProperty;
-import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.rest.RESTFacade;
-import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.tunnel.NodeConstant;
 import com.syscxp.header.tunnel.endpoint.*;
 import com.syscxp.header.tunnel.host.MonitorHostVO;
@@ -19,18 +11,10 @@ import com.syscxp.header.tunnel.node.*;
 import com.syscxp.header.tunnel.switchs.PhysicalSwitchVO;
 import com.syscxp.header.tunnel.switchs.SwitchVO;
 import com.syscxp.header.tunnel.switchs.SwitchVO_;
-import com.syscxp.header.tunnel.tunnel.APIQueryTunnelDetailForAlarmReply;
 import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO;
 import com.syscxp.header.tunnel.tunnel.TunnelSwitchPortVO_;
 import com.syscxp.utils.Digest;
 import com.syscxp.utils.gson.JSONObjectUtil;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -62,9 +46,6 @@ import org.springframework.util.StringUtils;
 import javax.persistence.Tuple;
 import javax.persistence.TypedQuery;
 
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.util.*;
 
 import static com.syscxp.core.Platform.argerr;
@@ -152,10 +133,23 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIListCityNodeMsg) msg);
         }else if(msg instanceof APIDeleteImageMsg){
             handle((APIDeleteImageMsg) msg);
+        }else if(msg instanceof APIUploadImageUrlMsg){
+            handle((APIUploadImageUrlMsg) msg);
         }
         else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIUploadImageUrlMsg msg) {
+        APIUploadImageUrlEvent event = new APIUploadImageUrlEvent(msg.getId());
+        List<String> list= mongoTemplate.findOne(new Query(Criteria.where("node_id").
+                is(msg.getNodeId())), NodeExtensionInfo.class).getImages_url();
+        list.addAll(msg.getImage_urls());
+        mongoTemplate.updateFirst(new Query(Criteria.where("node_id").is(msg.getNodeId())),
+                new Update().set("images_url", list),NodeExtensionInfo.class);
+
+        bus.publish(event);
     }
 
     private void handle(APIDeleteImageMsg msg) {
@@ -180,9 +174,11 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
         if(rsp.get("success") != null && (boolean)rsp.get("success")){
             System.out.println("successfully");
+            List<String> list = mongoTemplate.findOne(new Query(Criteria.where("node_id")
+                            .is(msg.getNodeId())),NodeExtensionInfo.class).getImages_url();
+            list.remove(msg.getImage_url());
             mongoTemplate.updateFirst(new Query(Criteria.where("node_id").is(msg.getNodeId())),
-                    new Update().set("images_url", mongoTemplate.findOne(new Query(Criteria.where("node_id").is(msg.getNodeId())),
-                            NodeExtensionInfo.class).getImages_url().remove(msg.getImage_url())),NodeExtensionInfo.class);
+                    new Update().set("images_url", list),NodeExtensionInfo.class);
 
         }else{
             event.setError(Platform.argerr("delete image fail"));
@@ -327,47 +323,24 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIUpdateNodeExtensionInfoMsg msg) {
 
-        JsonParser parser = new JsonParser();
-        JsonObject objnew = (JsonObject) parser.parse(msg.getNewNodeExtensionInfo());
-        NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
-                objnew.getAsJsonObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class,"nodeExtensionInfo");
-        String oldmogo = "{" +"\"nodeExtensionInfo\":" + JSONObjectUtil.toJsonString(node) +"}";
-        JsonObject objold = (JsonObject) parser.parse(oldmogo);
-        JsonObject obj = mergeJson(objnew, objold);
+        JSONObject newInfo = JSONObject.parseObject(msg.getNewNodeExtensionInfo());
 
+        NodeExtensionInfo node = mongoTemplate.findOne(new Query(Criteria.where("node_id").is(
+                newInfo.getJSONObject("nodeExtensionInfo").get("node_id"))),NodeExtensionInfo.class,"nodeExtensionInfo");
+
+        String oldmogo = "{" +"\"nodeExtensionInfo\":" + JSONObjectUtil.toJsonString(node) +"}";
+
+        JSONObject obj = new JSONObject();
+        obj.putAll(JSONObject.parseObject(oldmogo));
+        obj.putAll(newInfo);
+        ((Map)obj.get("nodeExtensionInfo")).put("_id",node.get_id());
         APIUpdateNodeExtensionInfoEvent event =  new APIUpdateNodeExtensionInfoEvent(msg.getId());
 
-        mongoTemplate.save(obj.getAsJsonObject("nodeExtensionInfo"),"nodeExtensionInfo");
+        mongoTemplate.save(obj.get("nodeExtensionInfo"),"nodeExtensionInfo");
         event.setInventory(obj.toString());
 
         bus.publish(event);
 
-    }
-
-    private JsonObject mergeJson(JsonObject objNew, JsonObject objOld){
-        Iterator<Map.Entry<String, JsonElement>> newIter =  objNew.entrySet().iterator();
-        while (newIter.hasNext()) {
-            Map.Entry<String, JsonElement> entry = newIter.next();
-            String key = entry.getKey();
-            JsonElement value = entry.getValue();
-
-            if (value.isJsonObject()){
-                if (objOld.has(key)){
-                    if (objOld.get(key).isJsonObject()) {
-                        mergeJson(value.getAsJsonObject(), objOld.get(key).getAsJsonObject());
-                    }else{
-                        objOld.add(key, value);
-                    }
-                }else{
-                    objOld.add(key, value);
-                }
-            }else{
-                objOld.add(key, value);
-            }
-
-        }
-
-        return objOld;
     }
 
     private void handle(APIDeleteNodeExtensionInfoMsg msg) {

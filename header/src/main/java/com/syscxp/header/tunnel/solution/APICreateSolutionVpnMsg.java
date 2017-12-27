@@ -22,8 +22,8 @@ public class APICreateSolutionVpnMsg extends  APIMessage {
     @APIParam(maxLength = 32)
     private int duration;
 
-    @APIParam(maxLength = 128)
-    private String zoneUuid;
+    @APIParam(maxLength = 128, resourceType = SolutionTunnelVO.class)
+    private String solutionTunnelUuid;
     @APIParam(maxLength = 128, resourceType = EndpointVO.class)
     private String endpointUuid;
     @APIParam(maxLength = 128, resourceType = BandwidthOfferingVO.class)
@@ -63,12 +63,12 @@ public class APICreateSolutionVpnMsg extends  APIMessage {
         this.duration = duration;
     }
 
-    public String getZoneUuid() {
-        return zoneUuid;
+    public String getSolutionTunnelUuid() {
+        return solutionTunnelUuid;
     }
 
-    public void setZoneUuid(String zoneUuid) {
-        this.zoneUuid = zoneUuid;
+    public void setSolutionTunnelUuid(String solutionTunnelUuid) {
+        this.solutionTunnelUuid = solutionTunnelUuid;
     }
 
     public String getEndpointUuid() {

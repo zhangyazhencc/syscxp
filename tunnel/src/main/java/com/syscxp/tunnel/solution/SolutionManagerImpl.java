@@ -8,15 +8,22 @@ import com.syscxp.core.db.SQL;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.errorcode.ErrorFacade;
+import com.syscxp.core.identity.InnerMessageHelper;
+import com.syscxp.core.rest.RESTApiDecoder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.billing.*;
+import com.syscxp.header.errorcode.OperationFailureException;
+import com.syscxp.header.errorcode.SysErrors;
 import com.syscxp.header.message.APIMessage;
+import com.syscxp.header.message.APIReply;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.quota.Quota;
 import com.syscxp.header.quota.ReportQuotaExtensionPoint;
+import com.syscxp.header.rest.RESTConstant;
 import com.syscxp.header.rest.RESTFacade;
+import com.syscxp.header.rest.RestAPIResponse;
 import com.syscxp.header.tunnel.TunnelConstant;
 import com.syscxp.header.tunnel.endpoint.EndpointVO;
 import com.syscxp.header.tunnel.endpoint.InnerConnectedEndpointVO;
@@ -25,6 +32,8 @@ import com.syscxp.tunnel.quota.SolutionQuotaOperator;
 import com.syscxp.tunnel.tunnel.TunnelBillingBase;
 import com.syscxp.tunnel.tunnel.TunnelControllerBase;
 import com.syscxp.tunnel.tunnel.TunnelRESTCaller;
+import com.syscxp.utils.CollectionDSL;
+import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.logging.CLogger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -94,9 +103,56 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             handle((APIRecountInterfacePriceMsg) msg);
         }else if(msg instanceof APIRecountTunnelPriceMsg){
             handle((APIRecountTunnelPriceMsg) msg);
-        }else {
+        }else if(msg instanceof APIGetTunnelPriceMsg){
+            handle((APIGetTunnelPriceMsg) msg);
+        }else if(msg instanceof APIRecountVPNPriceMsg){
+            handle((APIRecountVPNPriceMsg) msg);
+        } else if(msg instanceof APIGetVPNPriceMsg){
+            handle((APIGetVPNPriceMsg) msg);
+        } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIGetVPNPriceMsg msg) {
+        APIGetProductPriceReply reply = getVPNPrice(msg);
+
+        APIGetVPNPriceReply priceReply = new APIGetVPNPriceReply();
+        priceReply.setPrice(reply.getOriginalPrice());
+        bus.reply(msg, priceReply);
+    }
+
+    @Transactional
+    private void handle(APIRecountVPNPriceMsg msg) {
+        SolutionVpnVO vo = dbf.findByUuid(msg.getUuid(), SolutionVpnVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
+
+        APIGetProductPriceReply reply = getVPNPrice(vo, solutionVO.getAccountUuid());
+        if(reply.getOriginalPrice().compareTo(vo.getCost()) != 0){
+            solutionVO.setTotalCost(solutionVO.getTotalCost().subtract(vo.getCost()).add(reply.getOriginalPrice()));
+            dbf.getEntityManager().merge(solutionVO);
+
+            vo.setCost(reply.getOriginalPrice());
+            dbf.getEntityManager().merge(vo);
+        }
+
+        APIRecountVPNPriceReply priceReply = new APIRecountVPNPriceReply();
+        priceReply.setSolutionInventory(SolutionInventory.valueOf(solutionVO));
+        priceReply.setVpnInventory(SolutionVpnInventory.valueOf(vo));
+        bus.reply(msg, priceReply);
+
+    }
+
+    private void handle(APIGetTunnelPriceMsg msg) {
+        SolutionTunnelVO vo = dbf.findByUuid(msg.getUuid(), SolutionTunnelVO.class);
+        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
+        vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
+
+        APIGetProductPriceReply reply = getTunnelPrice(vo, solutionVO.getAccountUuid());
+
+        APIGetTunnelPriceReply priceReply = new APIGetTunnelPriceReply();
+        priceReply.setPrice(reply.getOriginalPrice());
+        bus.reply(msg, priceReply);
     }
 
 
@@ -153,8 +209,6 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setCost(msg.getCost());
-        vo.setProductChargeModel(msg.getProductChargeModel());
-        vo.setDuration(msg.getDuration());
         dbf.getEntityManager().merge(vo);
 
         APIUpdateSolutionVpnEvent event = new APIUpdateSolutionVpnEvent(msg.getId());
@@ -175,8 +229,6 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
 
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setCost(msg.getCost());
-        vo.setProductChargeModel(msg.getProductChargeModel());
-        vo.setDuration(msg.getDuration());
         dbf.getEntityManager().merge(vo);
 
         APIUpdateSolutionTunnelEvent event = new APIUpdateSolutionTunnelEvent(msg.getId());
@@ -267,7 +319,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setSolutionUuid(msg.getSolutionUuid());
         vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
         vo.setEndpointUuid(msg.getEndpointUuid());
-        vo.setZoneUuid(msg.getZoneUuid());
+        vo.setSolutionTunnelUuid(msg.getSolutionTunnelUuid());
         vo.setName(msg.getName());
 
         dbf.getEntityManager().persist(vo);
@@ -414,7 +466,35 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         APIGetProductPriceReply reply = new TunnelRESTCaller().syncJsonPost(pmsg);
         return reply;
     }
+    /*获取VPN的价格*/
+    private APIGetProductPriceReply getVPNPrice(APIGetVPNPriceMsg msg) {
+        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+        priceMsg.setProductChargeModel(msg.getProductChargeModel());
+        priceMsg.setDuration(msg.getDuration());
+        priceMsg.setAccountUuid(msg.getSession().getAccountUuid());
+        priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid()));
 
+        APIGetProductPriceReply reply = createOrder(priceMsg);
+        return reply;
+    }
+
+    private APIGetProductPriceReply getVPNPrice(SolutionVpnVO vo, String accountUuid) {
+        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+        priceMsg.setProductChargeModel(vo.getProductChargeModel());
+        priceMsg.setDuration(vo.getDuration());
+        priceMsg.setAccountUuid(accountUuid);
+        priceMsg.setUnits(generateUnits(vo.getBandwidthOfferingUuid()));
+
+        APIGetProductPriceReply reply = createOrder(priceMsg);
+        return reply;
+    }
+
+
+    private List<ProductPriceUnit> generateUnits(String bandwidth) {
+
+        return CollectionDSL.list(ProductPriceUnitFactory
+                .createVpnPriceUnit(bandwidth));
+    }
     /*获取云专线的价格*/
     private APIGetProductPriceReply getTunnelPrice(SolutionTunnelVO vo, String accountUuid) {
 
@@ -495,5 +575,21 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         quota.addPair(p);
 
         return list(quota);
+    }
+
+    private <T extends APIReply> T createOrder(APIMessage orderMsg) {
+        String url = URLBuilder.buildUrlFromBase(CoreGlobalProperty.BILLING_SERVER_URL, RESTConstant.REST_API_CALL);
+        InnerMessageHelper.setMD5(orderMsg);
+        APIReply reply;
+        try {
+            RestAPIResponse rsp = restf.syncJsonPost(url, RESTApiDecoder.dump(orderMsg), RestAPIResponse.class);
+            reply = (APIReply) RESTApiDecoder.loads(rsp.getResult());
+            if (!reply.isSuccess()) {
+                throw new OperationFailureException(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, "failed to operate order."));
+            }
+        } catch (Exception e) {
+            throw new OperationFailureException(errf.instantiateErrorCode(SysErrors.BILLING_ERROR, String.format("call billing[url: %s] failed.", url)));
+        }
+        return reply.castReply();
     }
 }

@@ -3,47 +3,47 @@
 
     <code>
         <id>1000</id>
-        <description>create cert error</description>
+        <description>创建证书出错</description>
     </code>
 
     <code>
         <id>1001</id>
-        <description>An error happened when call billing</description>
+        <description>调用billing失败</description>
     </code>
 
     <code>
         <id>1002</id>
-        <description>An error happened when vpn service</description>
+        <description>VPN服务出错</description>
     </code>
 
     <code>
         <id>1003</id>
-        <description>An error happened when init vpn</description>
+        <description>初始化VPN服务出错</description>
     </code>
 
     <code>
         <id>1004</id>
-        <description>An error happened when vpn conf</description>
+        <description>VPN服务配置出错</description>
     </code>
 
     <code>
         <id>1005</id>
-        <description>An error happened when vpn restart</description>
+        <description>重启VPN服务出错</description>
     </code>
 
     <code>
         <id>1006</id>
-        <description>An error happened when vpn rate limiting</description>
+        <description>VPN服务限速出错</description>
     </code>
 
     <code>
         <id>1007</id>
-        <description>An error happened when push cert</description>
+        <description>VPN证书上传出错</description>
     </code>
 
     <code>
         <id>1008</id>
-        <description>An error happened when destroy vpn</description>
+        <description>销毁VPN服务出错</description>
     </code>
 </error>
 

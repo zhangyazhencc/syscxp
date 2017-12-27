@@ -20,10 +20,6 @@ public class APIUpdateSolutionVpnMsg extends  APIMessage {
 
     @APIParam(numberRange = {0,Long.MAX_VALUE})
     private BigDecimal cost;
-    @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
-    private ProductChargeModel productChargeModel;
-    @APIParam(maxLength = 32)
-    private int duration;
 
     public String getUuid() {
         return uuid;
@@ -49,19 +45,5 @@ public class APIUpdateSolutionVpnMsg extends  APIMessage {
         this.cost = cost;
     }
 
-    public ProductChargeModel getProductChargeModel() {
-        return productChargeModel;
-    }
 
-    public void setProductChargeModel(ProductChargeModel productChargeModel) {
-        this.productChargeModel = productChargeModel;
-    }
-
-    public int getDuration() {
-        return duration;
-    }
-
-    public void setDuration(int duration) {
-        this.duration = duration;
-    }
 }

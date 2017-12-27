@@ -3,7 +3,7 @@ package com.syscxp.header.tunnel.solution;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.rest.RestResponse;
 
-@RestResponse(allTo = "inventory")
+@RestResponse(allTo = "solutionInventory")
 public class APIDeleteSolutionInterfaceEvent extends APIEvent {
     private SolutionInventory solutionInventory;
     public APIDeleteSolutionInterfaceEvent(String apiId) {
