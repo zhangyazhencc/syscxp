@@ -12,6 +12,7 @@ public class OperationFailureException extends RuntimeException {
 
     public OperationFailureException(ErrorCode errorCode) {
         this.errorCode = errorCode;
+
     }
 
     public ErrorCode getErrorCode() {
