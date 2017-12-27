@@ -18,6 +18,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 
+
 /**
  * @Author: sunxuelong.
  * @Cretion Date: 2017-10-13.
@@ -87,17 +88,9 @@ public class ControllerRestFacade {
         }
         ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
 
-        if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
-            throw new RuntimeException(String.format("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
-        }
-
         if (logger.isTraceEnabled()) {
             logger.trace(String.format("[http response(url: %s)] %s", url, rsp.getBody()));
         }
-
-        logger.debug(String.format("[http response(url: %s)] %s", url, rsp.getBody()));
-
-        // ControllerRestResponse restResponse = restf.syncJsonPost(url, commandParam,ControllerRestResponse.class);
 
         if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
             throw new RuntimeException(String.format("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
