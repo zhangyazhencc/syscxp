@@ -6,11 +6,15 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.tunnel.TunnelConstant;
+import com.syscxp.header.tunnel.endpoint.EndpointVO;
 
 @Action(services = {TunnelConstant.ACTION_SERVICE}, category = SolutionConstant.ACTION_CATEGORY, names = "read")
 public class APIGetVPNPriceMsg extends APISyncCallMessage {
     @APIParam(emptyString = false,maxLength = 32,resourceType = BandwidthOfferingVO.class)
     private String bandwidthOfferingUuid;
+
+    @APIParam(maxLength = 128, resourceType = EndpointVO.class)
+    private String endpointUuid;
 
     @APIParam(validValues = {"BY_MONTH", "BY_YEAR", "BY_DAY"})
     private ProductChargeModel productChargeModel;
@@ -39,5 +43,13 @@ public class APIGetVPNPriceMsg extends APISyncCallMessage {
 
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public String getEndpointUuid() {
+        return endpointUuid;
+    }
+
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 }
