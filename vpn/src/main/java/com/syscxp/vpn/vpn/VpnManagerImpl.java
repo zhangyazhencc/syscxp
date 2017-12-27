@@ -1369,7 +1369,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private List<String> getHostUuid(String endpointUuid, Integer vlan) {
         String sql = "select vh.uuid from VpnHostVO vh, HostInterfaceVO hi where vh.uuid = hi.hostUuid " +
                 "and hi.endpointUuid = :endpointUuid and vh.status = :status and " +
-                "hi.hostUuid not in (select v.hostUuid from VpnVO v where v.vlan = :vlan and v.endpointUuid = :endpointUuid )";
+                ":vlan not in (select v.vlan from VpnVO v where vh.uuid = v.hostUuid) ";
 
         return SQL.New(sql).param("endpointUuid", endpointUuid)
                 .param("status", HostStatus.Connected).param("vlan", vlan).list();
