@@ -11,8 +11,8 @@ public class OperationFailureException extends RuntimeException {
     }
 
     public OperationFailureException(ErrorCode errorCode) {
+        super(String.format("%s: %s: %s", errorCode.getCode(), errorCode.getDescription(), errorCode.getDetails()));
         this.errorCode = errorCode;
-
     }
 
     public ErrorCode getErrorCode() {
