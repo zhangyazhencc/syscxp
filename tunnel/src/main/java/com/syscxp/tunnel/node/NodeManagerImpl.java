@@ -143,11 +143,25 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIUploadImageUrlMsg msg) {
         APIUploadImageUrlEvent event = new APIUploadImageUrlEvent(msg.getId());
-        List<String> list= mongoTemplate.findOne(new Query(Criteria.where("node_id").
-                is(msg.getNodeId())), NodeExtensionInfo.class).getImages_url();
-        list.addAll(msg.getImage_urls());
-        mongoTemplate.updateFirst(new Query(Criteria.where("node_id").is(msg.getNodeId())),
-                new Update().set("images_url", list),NodeExtensionInfo.class);
+
+        NodeExtensionInfo node =  mongoTemplate.findOne(new Query(Criteria.where("node_id").
+                is(msg.getNodeId())), NodeExtensionInfo.class);
+        if(node != null){
+            List<String> list = new ArrayList();
+            if(node.getImages_url() != null){
+                list= node.getImages_url();
+                list.addAll(msg.getImage_urls());
+            }else{
+                list.addAll(msg.getImage_urls());
+            }
+            mongoTemplate.updateMulti(new Query(Criteria.where("node_id").is(msg.getNodeId())),
+                    new Update().set("images_url", list),NodeExtensionInfo.class);
+        }else{
+            List<String> list = new ArrayList();
+            list.addAll(msg.getImage_urls());
+            mongoTemplate.upsert(new Query(Criteria.where("node_id").is(msg.getNodeId())),
+                    new Update().set("images_url", list),NodeExtensionInfo.class);
+        }
 
         bus.publish(event);
     }
@@ -176,6 +190,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             System.out.println("successfully");
             List<String> list = mongoTemplate.findOne(new Query(Criteria.where("node_id")
                             .is(msg.getNodeId())),NodeExtensionInfo.class).getImages_url();
+
             list.remove(msg.getImage_url());
             mongoTemplate.updateFirst(new Query(Criteria.where("node_id").is(msg.getNodeId())),
                     new Update().set("images_url", list),NodeExtensionInfo.class);
