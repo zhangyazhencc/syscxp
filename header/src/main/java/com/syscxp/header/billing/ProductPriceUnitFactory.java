@@ -6,6 +6,10 @@ public class ProductPriceUnitFactory {
         return createProductPriceUnit(configCode, "DEFAULT", "DEFAULT");
     }
 
+    public static ProductPriceUnit createVpnPriceUnit(String configCode, String areaCode) {
+        return createProductPriceUnit(configCode, areaCode, "DEFAULT");
+    }
+
     private static ProductPriceUnit createProductPriceUnit(Category category, ProductType type, String configCode,
                                                            String areaCode, String lineCode){
         ProductPriceUnit unit = new ProductPriceUnit();
