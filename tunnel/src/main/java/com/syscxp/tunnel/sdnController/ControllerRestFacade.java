@@ -88,7 +88,7 @@ public class ControllerRestFacade {
         ResponseEntity<String> rsp = restf.getRESTTemplate().postForEntity(url, req, String.class);
 
         if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
-            throw new OperationFailureException(Platform.operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
+            throw new RuntimeException(String.format("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
         }
 
         if (logger.isTraceEnabled()) {
@@ -100,7 +100,7 @@ public class ControllerRestFacade {
         // ControllerRestResponse restResponse = restf.syncJsonPost(url, commandParam,ControllerRestResponse.class);
 
         if (rsp.getStatusCode() != org.springframework.http.HttpStatus.OK) {
-            throw new OperationFailureException(Platform.operr("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
+            throw new RuntimeException(String.format("failed to post to %s, status code: %s, response body: %s", url, rsp.getStatusCode(), rsp.getBody()));
         }
 
         return JSONObjectUtil.toObject(rsp.getBody(), ControllerCommands.ControllerRestResponse.class);
