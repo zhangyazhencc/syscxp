@@ -366,7 +366,8 @@ public class JobQueueFacadeImpl2 implements JobQueueFacade, CloudBusEventListene
             private void jobDone(JobQueueEntryVO jvo, Object ret) {
                 jvo.setDoneDate(new Timestamp(new Date().getTime()));
                 jvo.setState(JobState.Completed);
-                dbf.update(jvo);
+                //dbf.update(jvo);
+                dbf.remove(jvo);
 
                 JobEvent evt = new JobEvent();
                 evt.setJobId(jvo.getId());
