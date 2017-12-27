@@ -610,6 +610,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
             ControllerCommands.TunnelMonitorMpls mpls = new ControllerCommands.TunnelMonitorMpls();
             if (PhysicalSwitchType.MPLS.equals(physicalSwitchVO.getType())) {
+                mpls.setUuid(physicalSwitchVO.getUuid());
                 mpls.setM_ip(physicalSwitchVO.getmIP());
                 mpls.setUsername(physicalSwitchVO.getUsername());
                 mpls.setPassword(physicalSwitchVO.getPassword());
