@@ -251,7 +251,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnVO vo = dbf.findByUuid(msg.getUuid(), VpnVO.class);
 
         APIGetModifyProductPriceDiffMsg pmsg = new APIGetModifyProductPriceDiffMsg();
-        pmsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid()));
+        pmsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid(), vo.getEndpointUuid()));
         pmsg.setProductUuid(msg.getUuid());
         pmsg.setAccountUuid(vo.getAccountUuid());
         pmsg.setExpiredTime(vo.getExpireDate());
@@ -384,7 +384,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setAccountUuid(msg.getAccountUuid());
-        priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid()));
+        priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid(), msg.getEndpointUuid()));
 
         APIGetProductPriceReply reply = createOrder(priceMsg);
         bus.reply(msg, new APIGetVpnPriceReply(reply));
@@ -520,7 +520,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         order.setDescriptionData(getDescriptionForVPN(vo));
         order.setCallBackData(RESTApiDecoder.dump(callBack));
         order.setAccountUuid(vo.getAccountUuid());
-        order.setUnits(generateUnits(vo.getBandwidthOfferingUuid()));
+        order.setUnits(generateUnits(vo.getBandwidthOfferingUuid(), vo.getEndpointUuid()));
         order.setNotifyUrl(restf.getSendCommandUrl());
         return order;
     }
@@ -532,7 +532,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         orderMsg.setProductType(ProductType.VPN);
         orderMsg.setDescriptionData(getDescriptionForVPN(vo));
         orderMsg.setAccountUuid(vo.getAccountUuid());
-        orderMsg.setUnits(generateUnits(vo.getBandwidthOfferingUuid()));
+        orderMsg.setUnits(generateUnits(vo.getBandwidthOfferingUuid(), vo.getEndpointUuid()));
         orderMsg.setCallBackData(RESTApiDecoder.dump(callBack));
         orderMsg.setNotifyUrl(restf.getSendCommandUrl());
         return orderMsg;
@@ -544,10 +544,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         return JSONObjectUtil.toJsonString(data);
     }
 
-    private List<ProductPriceUnit> generateUnits(String bandwidth) {
+    private List<ProductPriceUnit> generateUnits(String bandwidth, String areaCode) {
 
-        return CollectionDSL.list(ProductPriceUnitFactory
-                .createVpnPriceUnit(bandwidth));
+        return CollectionDSL.list(ProductPriceUnitFactory.createVpnPriceUnit(bandwidth, areaCode));
     }
 
     private <T extends APIReply> T createOrder(APIMessage orderMsg) {
@@ -1400,7 +1399,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         priceMsg.setProductChargeModel(ProductChargeModel.BY_MONTH);
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setAccountUuid(msg.getAccountUuid());
-        priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid()));
+        priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid(), msg.getEndpointUuid()));
 
         APIGetProductPriceReply reply = createOrder(priceMsg);
         if (!reply.isPayable()) {
