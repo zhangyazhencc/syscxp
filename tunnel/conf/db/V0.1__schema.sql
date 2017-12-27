@@ -644,7 +644,7 @@ CREATE TABLE SolutionVpnVO (
   `duration` int(11) NOT NULL COMMENT '购买时长',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
-  `zoneUuid` varchar(32) NOT NULL COMMENT '区域',
+  `solutionTunnelUuid` varchar(32) NOT NULL COMMENT '专线',
   `endpointUuid` varchar(32) NOT NULL COMMENT '连接点',
   `bandwidthOfferingUuid` varchar(32) NOT NULL COMMENT '带宽Uuid',
   PRIMARY KEY  (`uuid`),

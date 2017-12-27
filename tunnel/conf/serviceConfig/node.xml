@@ -108,4 +108,8 @@
         <name>com.syscxp.header.tunnel.node.APIDeleteImageMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.header.tunnel.node.APIUploadImageUrlMsg</name>
+    </message>
+
 </service>

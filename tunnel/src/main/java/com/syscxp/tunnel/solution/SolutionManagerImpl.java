@@ -115,17 +115,11 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
     }
 
     private void handle(APIGetVPNPriceMsg msg) {
-        SolutionVpnVO vo =dbf.findByUuid(msg.getUuid(),SolutionVpnVO.class);
-        SolutionVO solutionVO = dbf.findByUuid(vo.getSolutionUuid(), SolutionVO.class);
-        vo.setBandwidthOfferingUuid(msg.getBandwidthOfferingUuid());
-
-        APIGetProductPriceReply reply = getVPNPrice(vo, solutionVO.getAccountUuid());
+        APIGetProductPriceReply reply = getVPNPrice(msg);
 
         APIGetVPNPriceReply priceReply = new APIGetVPNPriceReply();
         priceReply.setPrice(reply.getOriginalPrice());
         bus.reply(msg, priceReply);
-
-
     }
 
     @Transactional
@@ -470,6 +464,17 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         pmsg.setAccountUuid(accountUuid);
         pmsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(vo.getPortOfferingUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller().syncJsonPost(pmsg);
+        return reply;
+    }
+    /*获取VPN的价格*/
+    private APIGetProductPriceReply getVPNPrice(APIGetVPNPriceMsg msg) {
+        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+        priceMsg.setProductChargeModel(msg.getProductChargeModel());
+        priceMsg.setDuration(msg.getDuration());
+        priceMsg.setAccountUuid(msg.getSession().getAccountUuid());
+        priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid()));
+
+        APIGetProductPriceReply reply = createOrder(priceMsg);
         return reply;
     }
 

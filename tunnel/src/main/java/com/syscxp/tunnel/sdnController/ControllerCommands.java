@@ -68,6 +68,7 @@ public class ControllerCommands {
         private String sub_type;
         private String port_name;
         private Integer vlan_id;
+        private String uuid; //物理交换机uuid
         private String m_ip;
         private String username;
         private String password;
@@ -144,6 +145,14 @@ public class ControllerCommands {
 
         public void setVni(Integer vni) {
             this.vni = vni;
+        }
+
+        public String getUuid() {
+            return uuid;
+        }
+
+        public void setUuid(String uuid) {
+            this.uuid = uuid;
         }
     }
 
