@@ -472,7 +472,7 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
         priceMsg.setAccountUuid(msg.getSession().getAccountUuid());
-        priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid()));
+        priceMsg.setUnits(generateUnits(msg.getBandwidthOfferingUuid(),msg.getEndpointUuid()));
 
         APIGetProductPriceReply reply = createOrder(priceMsg);
         return reply;
@@ -483,17 +483,16 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         priceMsg.setProductChargeModel(vo.getProductChargeModel());
         priceMsg.setDuration(vo.getDuration());
         priceMsg.setAccountUuid(accountUuid);
-        priceMsg.setUnits(generateUnits(vo.getBandwidthOfferingUuid()));
+        priceMsg.setUnits(generateUnits(vo.getBandwidthOfferingUuid(), vo.getEndpointUuid()));
 
         APIGetProductPriceReply reply = createOrder(priceMsg);
         return reply;
     }
 
 
-    private List<ProductPriceUnit> generateUnits(String bandwidth) {
+    private List<ProductPriceUnit> generateUnits(String bandwidth, String areaCode) {
 
-        return CollectionDSL.list(ProductPriceUnitFactory
-                .createVpnPriceUnit(bandwidth));
+        return CollectionDSL.list(ProductPriceUnitFactory.createVpnPriceUnit(bandwidth, areaCode));
     }
     /*获取云专线的价格*/
     private APIGetProductPriceReply getTunnelPrice(SolutionTunnelVO vo, String accountUuid) {
