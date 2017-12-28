@@ -161,7 +161,7 @@ public class TunnelStrategy  {
                 .findValue();
 
         String sql = "select distinct a.vlan from TunnelSwitchPortVO a,SwitchPortVO b,SwitchVO c " +
-                "where a.switchPortUuid = b.uuid and b.switchUuid = c.uuid" +
+                "where a.switchPortUuid = b.uuid and b.switchUuid = c.uuid " +
                 "and c.physicalSwitchUuid = :physicalSwitchUuid ";
         TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);
         avq.setParameter("physicalSwitchUuid",physicalSwitchUuid);
