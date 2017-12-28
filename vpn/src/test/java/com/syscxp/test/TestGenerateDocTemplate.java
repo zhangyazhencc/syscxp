@@ -12,7 +12,7 @@ import java.nio.file.Paths;
  * Date: 2017/12/26 15:40
  * Author: wj
  */
-class TestGenerateDocTemplate {
+public class TestGenerateDocTemplate {
 
     @Test
     public void test() {
