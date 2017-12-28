@@ -78,6 +78,9 @@
         <name>com.syscxp.header.vpn.vpn.APICheckVpnForTunnelMsg</name>
     </message>
     <message>
+        <name>com.syscxp.header.vpn.vpn.APIResetVpnCertKeyMsg</name>
+    </message>
+    <message>
         <name>com.syscxp.header.vpn.vpn.APIQueryVpnMsg</name>
         <serviceId>query</serviceId>
     </message>

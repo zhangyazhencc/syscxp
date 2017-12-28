@@ -11,9 +11,9 @@ public class APIGetVpnPriceMsg extends APISyncCallMessage {
     @APIParam(numberRange = {1,Integer.MAX_VALUE})
     private int duration;
 
-    public int getDuration() {
-        return duration;
-    }
+    @APIParam(emptyString = false)
+    private String endpointUuid;
+
     @APIParam(required = false)
     private String accountUuid;
 
@@ -27,8 +27,20 @@ public class APIGetVpnPriceMsg extends APISyncCallMessage {
         return getSession().getAccountUuid();
     }
 
+    public String getEndpointUuid() {
+        return endpointUuid;
+    }
+
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
+    }
+
     public void setDuration(int duration) {
         this.duration = duration;
+    }
+
+    public int getDuration() {
+        return duration;
     }
 
     public String getBandwidthOfferingUuid() {

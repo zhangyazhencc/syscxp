@@ -18,5 +18,7 @@
         <class>com.syscxp.header.vpn.vpn.VpnVO</class>
         <class>com.syscxp.header.vpn.vpn.VpnCertVO</class>
         <class>com.syscxp.header.vpn.vpn.VpnSystemVO</class>
+
+        <class>com.syscxp.rest.AsyncRestVO</class>
     </persistence-unit>
 </persistence>
