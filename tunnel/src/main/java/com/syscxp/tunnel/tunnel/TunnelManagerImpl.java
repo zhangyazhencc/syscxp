@@ -1652,50 +1652,44 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             return;
         }
 
-        if(isForcibly){
+        //退订，删除
+        doUnsubcribeTunnel(vo, isForcibly,false,opAccountUuid,new Completion(null) {
+            @Override
+            public void success() {
+                final TunnelVO vo2;
 
-            //退订，删除
-            doUnsubcribeTunnel(vo,true,false,opAccountUuid,new Completion(null) {
-                @Override
-                public void success() {
-                    final TunnelVO vo2 = doDeleteTunnelDBAfterUnsubcribeSuccess(vo);
-
-                    completion.success(TunnelInventory.valueOf(vo2));
+                if (isForcibly){
+                    vo2 = doDeleteTunnelDBAfterUnsubcribeSuccess(vo);
+                }else{
+                    vo2 = doControlDeleteTunnelAfterUnsubcribeSuccess(vo);
                 }
+                completion.success(TunnelInventory.valueOf(vo2));
+            }
 
-                @Override
-                public void fail(ErrorCode errorCode) {
-                    completion.fail(errorCode);
-                }
-            });
+            @Override
+            public void fail(ErrorCode errorCode) {
+                completion.fail(errorCode);
+            }
+        });
 
-        }else{
-
-            //退订，下发，删除
-            doUnsubcribeTunnel(vo,false,false,opAccountUuid,new Completion(null) {
-                @Override
-                public void success() {
-                    final TunnelVO vo2 = doControlDeleteTunnelAfterUnsubcribeSuccess(vo);
-                    completion.success(TunnelInventory.valueOf(vo2));
-                }
-
-                @Override
-                public void fail(ErrorCode errorCode) {
-                    completion.fail(errorCode);
-                }
-            });
-
-        }
     }
 
     private TunnelVO doControlDeleteTunnelAfterUnsubcribeSuccess(TunnelVO vo){
+        TunnelBase tunnelBase = new TunnelBase();
         if(vo.getExpireDate() == null || vo.getExpireDate().after(Timestamp.valueOf(LocalDateTime.now()))){
             vo.setExpireDate(dbf.getCurrentSqlTime());
         }
         vo.setAccountUuid(null);
         vo = dbf.updateAndRefresh(vo);
 
-        taskDeleteTunnel(vo);
+        if(tunnelBase.isNeedControlDelete(vo.getState())){
+            taskDeleteTunnel(vo);
+        }else{
+            tunnelBase.deleteTunnelDB(vo);
+
+            tunnelBase.deleteTunnelJob(vo, "删除专线");
+        }
+
 
         return vo;
     }
@@ -2783,7 +2777,6 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                             taskDisableTunnel(vo,new ReturnValueCompletion<TunnelInventory>(null) {
                                 @Override
                                 public void success(TunnelInventory inv) {
-                                    tunnelBase.disabledTunnelJob(vo, "专线过期中止");
                                 }
 
                                 @Override

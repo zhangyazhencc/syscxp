@@ -611,4 +611,15 @@ public class TunnelBase {
             jobf.execute(queueName + "-停止监控", Platform.getManagementServerId(), job);
         }
     }
+
+    /**
+     * 判断是否需要调用控制器下发删除
+     */
+    public boolean isNeedControlDelete(TunnelState tunnelState){
+        if(tunnelState == TunnelState.Unpaid || tunnelState ==TunnelState.Disabled){
+            return false;
+        }else{
+            return true;
+        }
+    }
 }

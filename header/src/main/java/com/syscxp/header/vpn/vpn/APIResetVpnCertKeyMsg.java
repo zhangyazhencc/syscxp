@@ -4,10 +4,11 @@ import com.syscxp.header.identity.Action;
 import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.message.APISyncCallMessage;
 import com.syscxp.header.notification.ApiNotification;
 
 @Action(services = {VpnConstant.ACTION_SERVICE}, category = VpnConstant.ACTION_CATEGORY_VPN, names = {"update"})
-public class APIResetVpnCertKeyMsg extends APIMessage{
+public class APIResetVpnCertKeyMsg extends APISyncCallMessage {
     @APIParam(resourceType = VpnVO.class, checkAccount = true)
     private String uuid;
 
