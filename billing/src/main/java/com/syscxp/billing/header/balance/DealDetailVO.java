@@ -61,6 +61,8 @@ public class DealDetailVO {
 
     @Column
     private String opAccountUuid;
+    @Column
+    private String opUserUuid;
 
     @Column
     private String orderUuid;
@@ -191,5 +193,13 @@ public class DealDetailVO {
 
     public void setComment(String comment) {
         this.comment = comment;
+    }
+
+    public String getOpUserUuid() {
+        return opUserUuid;
+    }
+
+    public void setOpUserUuid(String opUserUuid) {
+        this.opUserUuid = opUserUuid;
     }
 }

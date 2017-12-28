@@ -181,25 +181,36 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     @Transactional
     private void handle(APIRestartTunnelMonitorMsg msg) {
-        APIRestartTunnelMonitorEvent event = new APIRestartTunnelMonitorEvent(msg.getId());
 
         // 获取监控通道数据
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(), TunnelVO.class);
         if (!tunnelVO.getState().equals(TunnelState.Enabled))
             throw new IllegalArgumentException(String.format("can not restart monitor for %s tunnel!", tunnelVO.getState()));
 
-        List<TunnelMonitorVO> tunnelMonitorVOS = initTunnelMonitor(tunnelVO.getUuid(), msg.getMonitorCidr());
+        List<TunnelMonitorVO> originalTunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
+                .eq(TunnelMonitorVO_.tunnelUuid,tunnelVO.getUuid())
+                .list();
+        ControllerCommands.TunnelMonitorCommand originalControllerCmd =
+                getControllerMonitorCommand(tunnelVO.getUuid(), originalTunnelMonitorVOS);
+        String originalMonitorCidr = tunnelVO.getMonitorCidr();
+
         tunnelVO.setMonitorCidr(msg.getMonitorCidr());
+        restartTunnelMonitor(tunnelVO, new Completion(null) {
+            @Override
+            public void success() {
+                logger.info(String.format("通道：%s - 重启监控成功！",tunnelVO.getName()));
+            }
 
-        ControllerCommands.TunnelMonitorCommand controllerCmd =
-                getControllerMonitorCommand(tunnelVO.getUuid(), tunnelMonitorVOS);
-        modifyControllerMonitor(controllerCmd);
+            @Override
+            public void fail(ErrorCode errorCode) {
+                modifyControllerMonitor(originalControllerCmd);
+                tunnelVO.setMonitorCidr(originalMonitorCidr);
+                updateTunnel(tunnelVO.getUuid(), tunnelVO.getMonitorCidr(), TunnelMonitorState.Disabled);
+            }
+        });
 
-        updateTunnel(msg.getTunnelUuid(), msg.getMonitorCidr(), TunnelMonitorState.Enabled);
-
-        logger.info("重启监控成功：" + tunnelVO.getUuid());
+        APIRestartTunnelMonitorEvent event = new APIRestartTunnelMonitorEvent(msg.getId());
         event.setInventory(TunnelInventory.valueOf(tunnelVO));
-
         bus.publish(event);
     }
 
@@ -509,13 +520,19 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     @Transactional
     public void restartTunnelMonitor(TunnelVO tunnelVO, final Completion completion) {
-        List<TunnelMonitorVO> tunnelMonitorVOS = initTunnelMonitor(tunnelVO.getUuid(),tunnelVO.getMonitorCidr());
-        ControllerCommands.TunnelMonitorCommand controllerCmd =
-                getControllerMonitorCommand(tunnelVO.getUuid(), tunnelMonitorVOS);
+        try{
+            List<TunnelMonitorVO> tunnelMonitorVOS = initTunnelMonitor(tunnelVO.getUuid(),tunnelVO.getMonitorCidr());
+            ControllerCommands.TunnelMonitorCommand controllerCmd =
+                    getControllerMonitorCommand(tunnelVO.getUuid(), tunnelMonitorVOS);
 
-        modifyControllerMonitor(controllerCmd);
+            modifyControllerMonitor(controllerCmd);
 
-        updateTunnel(tunnelVO.getUuid(), tunnelVO.getMonitorCidr(), TunnelMonitorState.Enabled);
+            updateTunnel(tunnelVO.getUuid(), tunnelVO.getMonitorCidr(), TunnelMonitorState.Enabled);
+
+            completion.success();
+        }catch (Exception e){
+            completion.fail(Platform.operr("faile to restart tunnel monitor %s. %s", e.getMessage()));
+        }
     }
 
     /***

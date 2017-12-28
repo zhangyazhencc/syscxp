@@ -13,6 +13,7 @@ public class DealDetailVO_ {
     public static volatile SingularAttribute<DealDetailVO, String> uuid;
     public static volatile SingularAttribute<DealDetailVO, String> accountUuid;
     public static volatile SingularAttribute<DealDetailVO, String> opAccountUuid;
+    public static volatile SingularAttribute<DealDetailVO, String> opUserUuid;
     public static volatile SingularAttribute<DealDetailVO, DealType> type;
     public static volatile SingularAttribute<DealDetailVO, BigDecimal> expend;
     public static volatile SingularAttribute<DealDetailVO, BigDecimal> income;
