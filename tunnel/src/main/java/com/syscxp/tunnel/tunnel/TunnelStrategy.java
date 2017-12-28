@@ -180,6 +180,9 @@ public class TunnelStrategy  {
                     allocatedVlan.add(alloc);
                 }
             }
+            if(allocatedVlan.isEmpty()){
+                return startVlan;
+            }
             vlan = NetworkUtils.randomAllocateVlan(startVlan,endVlan,allocatedVlan);
             if(vlan != 0){
                 break;
