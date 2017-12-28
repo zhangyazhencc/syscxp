@@ -244,15 +244,10 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
         bus.publish(event);
     }
 
-    // TODO: 存在部分更新问题，确认是否需要使用job更新监控
     @Transactional
     private void handle(APIUpdateHostSwitchMonitorMsg msg) {
         HostSwitchMonitorVO vo = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
 
-        String originalPhysicalSwitchPortName = vo.getPhysicalSwitchPortName();
-        String originalInterfaceName = vo.getInterfaceName();
-
-        // vo.setPhysicalSwitchUuid(msg.getPhysicalSwitchUuid());
         vo.setPhysicalSwitchPortName(msg.getPhysicalSwitchPortName());
         vo.setInterfaceName(msg.getInterfaceName());
         vo = dbf.updateAndRefresh(vo);
@@ -269,6 +264,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
             if(event.isSuccess()){
                 TunnelVO tunnelVO = dbf.findByUuid(tunnelMonitorVO.getTunnelUuid(),TunnelVO.class);
 
+                // TODO: 存在部分更新问题，确认是否需要使用job更新监控
                 if(tunnelVO.getMonitorState().equals(TunnelMonitorState.Enabled)){
                     monitorManager.restartTunnelMonitor(tunnelVO, new Completion(null) {
                         @Override
@@ -278,15 +274,10 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
 
                         @Override
                         public void fail(ErrorCode errorCode) {
-                            logger.info(String.format("通道：%s - 重启监控失败！",errorCode.getDetails()));
-                            HostSwitchMonitorVO originalVO = dbf.findByUuid(msg.getUuid(), HostSwitchMonitorVO.class);
-                            originalVO.setPhysicalSwitchPortName(originalPhysicalSwitchPortName);
-                            originalVO.setInterfaceName(originalInterfaceName);
+                            logger.info(String.format("通道：%s - 重启监控失败！Error: %s",tunnelVO.getName(),errorCode.getDetails()));
 
-                            originalVO = dbf.updateAndRefresh(originalVO);
-
-                            event.setInventory(HostSwitchMonitorInventory.valueOf(originalVO));
-                            event.setError(errorCode);
+                            tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
+                            dbf.updateAndRefresh(tunnelVO);
                         }
                     });
                 }
