@@ -121,7 +121,7 @@ public class RestServer implements Component, CloudBusEventListener {
     public static void generateMarkdownDoc(String path) {
         System.setProperty(Constants.UUID_FOR_EXAMPLE, "true");
         DocumentGenerator rg =  GroovyUtils.newInstance("scripts/RestDocumentationGenerator.groovy");
-        rg.generateMarkDown(path, PathUtil.join(System.getProperty("user.home"), "zstack-markdown"));
+        rg.generateMarkDown(path, PathUtil.join(System.getProperty("user.home"), "syscxp-markdown"));
     }
 
     public static void generateJavaSdk() {
