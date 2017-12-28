@@ -1110,6 +1110,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void run(FlowTrigger trigger, Map data) {
                 if (!Objects.equals(msg.getInterfaceAUuid(), msg.getOldInterfaceAUuid()) || !Objects.equals(msg.getaVlan(), msg.getOldAVlan())) {
                     UpdateQuery.New(TunnelSwitchPortVO.class)
+                            .set(TunnelSwitchPortVO_.interfaceUuid,msg.getInterfaceAUuid())
                             .set(TunnelSwitchPortVO_.switchPortUuid, dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class).getSwitchPortUuid())
                             .set(TunnelSwitchPortVO_.vlan, msg.getaVlan())
                             .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
@@ -1151,6 +1152,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             public void run(FlowTrigger trigger, Map data) {
                 if (!Objects.equals(msg.getInterfaceZUuid(), msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
                     UpdateQuery.New(TunnelSwitchPortVO.class)
+                            .set(TunnelSwitchPortVO_.interfaceUuid,msg.getInterfaceZUuid())
                             .set(TunnelSwitchPortVO_.switchPortUuid, dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid())
                             .set(TunnelSwitchPortVO_.vlan, msg.getzVlan())
                             .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
@@ -1290,6 +1292,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
 
         if (!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())) {
+            tunnelSwitchPortA.setInterfaceUuid(msg.getInterfaceAUuid());
             tunnelSwitchPortA.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceAUuid(), InterfaceVO.class).getSwitchPortUuid());
             tunnelSwitchPortA.setVlan(msg.getaVlan());
             updateA = true;
@@ -1300,6 +1303,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         }
         if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid())) {
+            tunnelSwitchPortZ.setInterfaceUuid(msg.getInterfaceZUuid());
             tunnelSwitchPortZ.setSwitchPortUuid(dbf.findByUuid(msg.getInterfaceZUuid(), InterfaceVO.class).getSwitchPortUuid());
             tunnelSwitchPortZ.setVlan(msg.getzVlan());
             updateZ = true;
