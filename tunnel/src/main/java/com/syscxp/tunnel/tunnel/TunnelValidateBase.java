@@ -585,14 +585,14 @@ public class TunnelValidateBase {
             if (isCross(msg.getUuid(), msg.getOldInterfaceAUuid())) {
                 throw new ApiMessageInterceptionException(argerr("该接口A为共点，不能修改配置！！"));
             }
-            validateVlan(msg.getInterfaceAUuid(), msg.getaVlan());
+            validateVlanForUpdateVlanOrInterface(msg.getInterfaceAUuid(),msg.getOldInterfaceAUuid(), msg.getaVlan(),msg.getOldAVlan());
         }
 
         if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
             if (isCross(msg.getUuid(), msg.getOldInterfaceZUuid())) {
                 throw new ApiMessageInterceptionException(argerr("该接口Z为共点，不能修改配置！！"));
             }
-            validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
+            validateVlanForUpdateVlanOrInterface(msg.getInterfaceZUuid(),msg.getOldInterfaceZUuid(), msg.getzVlan(),msg.getOldZVlan());
         }
 
         if(!msg.getInterfaceAUuid().equals(msg.getOldInterfaceAUuid())){
@@ -625,14 +625,14 @@ public class TunnelValidateBase {
             if (isCross(msg.getUuid(), msg.getOldInterfaceAUuid())) {
                 throw new ApiMessageInterceptionException(argerr("该接口A为共点，不能修改配置！！"));
             }
-            validateVlan(msg.getInterfaceAUuid(), msg.getaVlan());
+            validateVlanForUpdateVlanOrInterface(msg.getInterfaceAUuid(),msg.getOldInterfaceAUuid(), msg.getaVlan(),msg.getOldAVlan());
         }
 
         if (!msg.getInterfaceZUuid().equals(msg.getOldInterfaceZUuid()) || !Objects.equals(msg.getzVlan(), msg.getOldZVlan())) {
             if (isCross(msg.getUuid(), msg.getOldInterfaceZUuid())) {
                 throw new ApiMessageInterceptionException(argerr("该接口Z为共点，不能修改配置！！"));
             }
-            validateVlan(msg.getInterfaceZUuid(), msg.getzVlan());
+            validateVlanForUpdateVlanOrInterface(msg.getInterfaceZUuid(),msg.getOldInterfaceZUuid(), msg.getzVlan(),msg.getOldZVlan());
         }
     }
 
@@ -694,7 +694,7 @@ public class TunnelValidateBase {
             throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
         }
 
-        //查询该虚拟交换机下已经分配的Vlan
+        //查询该虚拟交换机所属的物理交换机已经分配的Vlan
         List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid);
 
         //判断外部VLAN是否在该虚拟交换机的VLAN段中
@@ -711,6 +711,46 @@ public class TunnelValidateBase {
         //判断外部vlan是否可用
         if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
             throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", vlan));
+        }
+    }
+
+    /**
+     * 修改物理接口或VLAN时判断外部VLAN是否可用
+     */
+    private void validateVlanForUpdateVlanOrInterface(String interfaceUuid,String oldInterfaceUuid, Integer vlan, Integer oldVlan){
+        TunnelStrategy ts = new TunnelStrategy();
+        //查询该TUNNEL的物理接口所属的虚拟交换机
+        String switchUuid = ts.findSwitchByInterface(interfaceUuid);
+        String oldSwitchUuid = ts.findSwitchByInterface(oldInterfaceUuid);
+        String physicalSwitchUuid = Q.New(SwitchVO.class)
+                .eq(SwitchVO_.uuid,switchUuid)
+                .select(SwitchVO_.physicalSwitchUuid)
+                .findValue();
+        String oldPhysicalSwitchUuid = Q.New(SwitchVO.class)
+                .eq(SwitchVO_.uuid,oldSwitchUuid)
+                .select(SwitchVO_.physicalSwitchUuid)
+                .findValue();
+
+        //查询该虚拟交换机下所有的Vlan段
+        List<SwitchVlanVO> vlanList = ts.findSwitchVlanBySwitch(switchUuid);
+
+        if (vlanList.isEmpty()) {
+            throw new ApiMessageInterceptionException(argerr("该端口所属虚拟交换机下未配置VLAN，请联系系统管理员 "));
+        }
+
+        //查询该虚拟交换机所属物理交换机下Tunnel已经分配的Vlan
+        List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid);
+
+        if(physicalSwitchUuid.equals(oldPhysicalSwitchUuid)){
+            if(!oldVlan.equals(vlan)){
+                if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
+                    throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", vlan));
+                }
+            }
+        }else{
+            if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
+                throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", vlan));
+            }
         }
     }
 
