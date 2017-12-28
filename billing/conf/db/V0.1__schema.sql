@@ -155,6 +155,7 @@ CREATE TABLE `DealDetailVO` (
   `orderUuid` varchar(32) DEFAULT NULL,
   `opAccountUuid` varchar(32) DEFAULT NULL COMMENT '操作人',
    `comment` varchar(2000) DEFAULT NULL,
+  `opUserUuid` varchar(32) DEFAULT NULL,
   PRIMARY KEY (`uuid`),
   UNIQUE KEY `NewIndex1` (`outTradeNO`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

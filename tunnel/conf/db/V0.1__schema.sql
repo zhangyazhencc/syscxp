@@ -652,3 +652,5 @@ CREATE TABLE SolutionVpnVO (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
 ########################################################
+
+CREATE INDEX idxTaskResourceVOcreateDate ON TaskResourceVO (lastOpDate);

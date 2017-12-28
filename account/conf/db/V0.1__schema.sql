@@ -119,8 +119,8 @@ CREATE TABLE  `ProxyAccountRefVO` (
 CREATE TABLE  `AccountApiSecurityVO` (
     `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
     `accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '所属账户UUID',
-    `publicKey` varchar(128) DEFAULT NULL COMMENT 'API密钥-公钥',
-    `privateKey` varchar(128) DEFAULT NULL COMMENT 'API密钥-私钥',
+    `secretId` varchar(128) DEFAULT NULL COMMENT 'API密钥-公钥',
+    `secretKey` varchar(128) DEFAULT NULL COMMENT 'API密钥-私钥',
     `allowIp` text DEFAULT NULL COMMENT '允许访问IP的集合',
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
     `createDate` timestamp ,

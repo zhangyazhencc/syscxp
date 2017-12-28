@@ -18,9 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
-import com.syscxp.account.header.identity.*;
-import com.syscxp.account.header.account.*;
-import com.syscxp.account.header.user.*;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cascade.CascadeFacade;
 import com.syscxp.core.cloudbus.CloudBus;
@@ -288,8 +285,8 @@ public class AccountBase extends AbstractAccount {
         q.add(AccountApiSecurityVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         AccountApiSecurityVO api = q.find();
 
-        api.setPublicKey(getRandomString(16));
-        api.setPrivateKey(getRandomString(30));
+        api.setSecretId(getRandomString(16));
+        api.setSecretKey(getRandomString(30));
 
         dbf.updateAndRefresh(api);
 
@@ -715,8 +712,8 @@ public class AccountBase extends AbstractAccount {
         AccountApiSecurityVO api = new AccountApiSecurityVO();
         api.setUuid(Platform.getUuid());
         api.setAccountUuid(accountVO.getUuid());
-        api.setPrivateKey(getRandomString(30));
-        api.setPublicKey(getRandomString(16));
+        api.setSecretKey(getRandomString(30));
+        api.setSecretId(getRandomString(16));
         dbf.getEntityManager().persist(api);
 
 

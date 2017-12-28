@@ -11,8 +11,8 @@ import java.util.List;
 public class AccountApiSecurityInventory {
     private String uuid;
     private String accountUuid;
-    private String publicKey;
-    private String privateKey;
+    private String secretId;
+    private String secretKey;
     private String allowIp;
     private Timestamp createDate;
     private Timestamp lastOpDate;
@@ -22,8 +22,8 @@ public class AccountApiSecurityInventory {
         inv.setUuid(vo.getUuid());
         inv.setAccountUuid(vo.getAccountUuid());
         inv.setAllowIp(vo.getAllowIp());
-        inv.setPrivateKey(vo.getPrivateKey());
-        inv.setPublicKey(vo.getPublicKey());
+        inv.setSecretKey(vo.getSecretKey());
+        inv.setSecretId(vo.getSecretId());
         inv.setCreateDate(vo.getCreateDate());
         inv.setLastOpDate(vo.getLastOpDate());
         return inv;
@@ -46,12 +46,12 @@ public class AccountApiSecurityInventory {
         return accountUuid;
     }
 
-    public String getPublicKey() {
-        return publicKey;
+    public String getSecretId() {
+        return secretId;
     }
 
-    public String getPrivateKey() {
-        return privateKey;
+    public String getSecretKey() {
+        return secretKey;
     }
 
     public String getAllowIp() {
@@ -74,12 +74,12 @@ public class AccountApiSecurityInventory {
         this.accountUuid = accountUuid;
     }
 
-    public void setPublicKey(String publicKey) {
-        this.publicKey = publicKey;
+    public void setSecretId(String secretId) {
+        this.secretId = secretId;
     }
 
-    public void setPrivateKey(String privateKey) {
-        this.privateKey = privateKey;
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     public void setAllowIp(String allowIp) {

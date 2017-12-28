@@ -25,6 +25,7 @@ import com.syscxp.header.tunnel.AliEdgeRouterConstant;
 import com.syscxp.header.tunnel.tunnel.TunnelEO;
 import com.syscxp.header.tunnel.tunnel.TunnelState;
 import com.syscxp.header.tunnel.aliEdgeRouter.*;
+import com.syscxp.header.tunnel.tunnel.TunnelVO;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.function.Function;
@@ -111,6 +112,11 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
 
         boolean flag = true;
         AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
+        TunnelVO tunnelVO = dbf.findByUuid(vo.getTunnelUuid(),TunnelVO.class);
+
+        if(tunnelVO == null){
+            throw new ApiMessageInterceptionException(argerr("该边界路由器不能恢复，专线已经被删除"));
+        }
 
         String RegionId = vo.getAliRegionId();
         String AliAccessKeyId = AliUserGlobalProperty.ALI_KEY;
