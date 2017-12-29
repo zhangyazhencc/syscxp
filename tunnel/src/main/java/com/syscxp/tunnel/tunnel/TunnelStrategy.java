@@ -1,5 +1,6 @@
 package com.syscxp.tunnel.tunnel;
 
+import com.syscxp.core.db.Q;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.tunnel.switchs.*;
 import com.syscxp.header.tunnel.tunnel.InterfaceVO;
@@ -100,7 +101,7 @@ public class TunnelStrategy  {
         String switchUuid = findSwitchByInterface(interfaceUuid);
         //查询该虚拟交换机下所有的Vlan段
         List<SwitchVlanVO> vlanList = findSwitchVlanBySwitch(switchUuid);
-        //查询该虚拟交换机下已经分配的Vlan
+        //查询该虚拟交换机所属物理交换机下已经分配的Vlan
         List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
 
         if(vlanList.isEmpty()){
@@ -120,7 +121,7 @@ public class TunnelStrategy  {
 
         //查询该虚拟交换机下所有的Vlan段
         List<SwitchVlanVO> vlanList = findSwitchVlanBySwitch(switchUuid);
-        //查询该虚拟交换机下已经分配的Vlan
+        //查询该虚拟交换机所属物理交换机下已经分配的Vlan
         List<Integer> allocatedVlans = fingAllocateVlanBySwitch(switchUuid);
 
         if(vlanList.isEmpty()){
@@ -152,18 +153,20 @@ public class TunnelStrategy  {
         return svq.getResultList();
     }
 
-    //查询该虚拟交换机下Tunnel已经分配的Vlan
+    //查询该虚拟交换机所属物理交换机下Tunnel已经分配的Vlan
     public List<Integer> fingAllocateVlanBySwitch(String switchUuid){
+        String physicalSwitchUuid = Q.New(SwitchVO.class)
+                .eq(SwitchVO_.uuid,switchUuid)
+                .select(SwitchVO_.physicalSwitchUuid)
+                .findValue();
 
-        String sql = "select distinct a.vlan from TunnelSwitchPortVO a,SwitchPortVO b " +
-                "where a.switchPortUuid = b.uuid " +
-                "and b.switchUuid = :switchUuid ";
+        String sql = "select distinct a.vlan from TunnelSwitchPortVO a,SwitchPortVO b,SwitchVO c " +
+                "where a.switchPortUuid = b.uuid and b.switchUuid = c.uuid " +
+                "and c.physicalSwitchUuid = :physicalSwitchUuid ";
         TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);
-        avq.setParameter("switchUuid",switchUuid);
+        avq.setParameter("physicalSwitchUuid",physicalSwitchUuid);
         return avq.getResultList();
     }
-
-
 
     //分配可用VLAN
     public int allocateVlan(List<SwitchVlanVO> vlanList, List<Integer> allocatedVlans){
@@ -176,6 +179,9 @@ public class TunnelStrategy  {
                 if(alloc >= startVlan && alloc <= endVlan){
                     allocatedVlan.add(alloc);
                 }
+            }
+            if(allocatedVlan.isEmpty()){
+                return startVlan;
             }
             vlan = NetworkUtils.randomAllocateVlan(startVlan,endVlan,allocatedVlan);
             if(vlan != 0){

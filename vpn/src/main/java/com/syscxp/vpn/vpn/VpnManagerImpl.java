@@ -339,7 +339,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         vpn.setSid(Platform.getUuid());
         vpn.setCertKey(generateCertKey(vpn.getAccountUuid(), vpn.getSid()));
-        dbf.updateAndRefresh(vpn);
+        reply.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vpn)));
         bus.reply(msg, reply);
     }
 

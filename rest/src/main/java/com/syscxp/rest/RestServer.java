@@ -1063,13 +1063,19 @@ public class RestServer implements Component, CloudBusEventListener {
 
     private void collectRestRequestErrConfigApi(List<String> errorApiList, Class apiClass, RestRequest apiRestRequest){
         if (apiRestRequest.isAction() && !RESTConstant.DEFAULT_PARAMETER_NAME.equals(apiRestRequest.parameterName())) {
-            errorApiList.add(String.format("[%s] RestRequest config error, Setting parameterName is not allowed when isAction set true", apiClass.getName()));
+            errorApiList.add(String.format("[%s] RestRequest config error, Setting parameterName is not allowed " +
+                    "when isAction set true", apiClass.getName()));
         } else if (apiRestRequest.isAction() && HttpMethod.PUT != apiRestRequest.method()) {
-            errorApiList.add(String.format("[%s] RestRequest config error, method can only be set to HttpMethod.PUT when isAction set true", apiClass.getName()));
-        }else if (!RESTConstant.DEFAULT_PARAMETER_NAME.equals(apiRestRequest.parameterName()) && (HttpMethod.PUT == apiRestRequest.method() || HttpMethod.DELETE == apiRestRequest.method())){
-            errorApiList.add(String.format("[%s] RestRequest config error, method is not allowed to set to HttpMethod.PUT(HttpMethod.DELETE) when parameterName set a value", apiClass.getName()));
-        }else if(HttpMethod.GET == apiRestRequest.method() && !RESTConstant.DEFAULT_PARAMETER_NAME.equals(apiRestRequest.parameterName())){
-            errorApiList.add(String.format("[%s] RestRequest config error, Setting parameterName is not allowed when method set HttpMethod.GET", apiClass.getName()));
+            errorApiList.add(String.format("[%s] RestRequest config error, method can only be set to HttpMethod.PUT" +
+                    " when isAction set true", apiClass.getName()));
+        }else if (!RESTConstant.DEFAULT_PARAMETER_NAME.equals(apiRestRequest.parameterName())
+                && (HttpMethod.PUT == apiRestRequest.method() || HttpMethod.DELETE == apiRestRequest.method())){
+            errorApiList.add(String.format("[%s] RestRequest config error, method is not allowed to set to " +
+                    "HttpMethod.PUT(HttpMethod.DELETE) when parameterName set a value", apiClass.getName()));
+        }else if(HttpMethod.GET == apiRestRequest.method()
+                && !RESTConstant.DEFAULT_PARAMETER_NAME.equals(apiRestRequest.parameterName())){
+            errorApiList.add(String.format("[%s] RestRequest config error, Setting parameterName is not allowed " +
+                    "when method set HttpMethod.GET", apiClass.getName()));
         }
     }
 
@@ -1078,7 +1084,7 @@ public class RestServer implements Component, CloudBusEventListener {
         Set<Class<?>> classes = reflections.getTypesAnnotatedWith(RestRequest.class).stream()
                 .filter(it -> it.isAnnotationPresent(RestRequest.class)).collect(Collectors.toSet());
 
-        List<String> errorApiList = new ArrayList();
+        List<String> errorApiList = new ArrayList<>();
         for (Class clz : classes) {
             RestRequest at = (RestRequest) clz.getAnnotation(RestRequest.class);
             Api api = new Api(clz, at);
