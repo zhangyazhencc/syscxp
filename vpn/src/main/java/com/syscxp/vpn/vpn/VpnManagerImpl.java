@@ -809,6 +809,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                             trigger.fail(errf.instantiateErrorCode(VpnErrors.CALL_BILLING_ERROR, "退订失败", errorCode));
                         }
                     });
+                } else {
+                    trigger.next();
                 }
             }
         }).then(new NoRollbackFlow() {
