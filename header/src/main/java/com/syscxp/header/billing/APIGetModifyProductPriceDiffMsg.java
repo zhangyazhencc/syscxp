@@ -1,6 +1,5 @@
 package com.syscxp.header.billing;
 
-import com.syscxp.header.billing.ProductPriceUnit;
 import com.syscxp.header.identity.InnerCredentialCheck;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.message.APISyncCallMessage;

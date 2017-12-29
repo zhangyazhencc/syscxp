@@ -7,7 +7,6 @@ import com.syscxp.core.defer.Defer;
 import com.syscxp.core.defer.Deferred;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.rest.RESTConstant;
-import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.vpn.agent.ClientInfo;
 import com.syscxp.header.vpn.vpn.VpnCertVO;
 import com.syscxp.header.vpn.vpn.VpnConstant;
@@ -44,12 +43,10 @@ public class DownloadController {
 
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private RESTFacade restf;
 
-    private String zipName = VpnConstant.KEYS_DIR + ".zip";
+    private static final String KEYS_ZIP_NAME = "keys.zip";
 
-    private String charset = "GBK";
+    private static final String CONF_ZIP_NAME = "conf.zip";
 
     @RequestMapping(value = VpnConstant.VPN_REPORT_PATH, method = {RequestMethod.PUT, RequestMethod.POST})
     @ResponseBody
@@ -76,7 +73,7 @@ public class DownloadController {
     @RequestMapping(value = RESTConstant.REST_API_CALL + VpnConstant.CONF_DOWNLOAD_PATH, method = {RequestMethod.GET})
     @ResponseBody
     @Deferred
-    public ResponseEntity<byte[]> downLoadConfFile(@PathVariable String uuid, HttpServletResponse response) throws IOException {
+    public ResponseEntity<byte[]> downLoadConfFile(@PathVariable String uuid) throws IOException {
 
         String vpnUuid = valid(uuid, VpnVO.class.getSimpleName());
 
@@ -88,28 +85,24 @@ public class DownloadController {
         FileUtils.writeStringToFile(clientConf, vpn.getClientConf());
         File zip = ZipUtils2.zip(root.getAbsolutePath());
 
-        Defer.defer(new Runnable() {
-            @Override
-            public void run() {
-                clientConf.delete();
-                zip.delete();
-            }
+        Defer.defer(() -> {
+            clientConf.delete();
+            zip.delete();
         });
 
-        return download(zip);
+        return download(zip, CONF_ZIP_NAME);
     }
 
     @RequestMapping(value = RESTConstant.REST_API_CALL + VpnConstant.CERT_DOWNLOAD_PATH, method = {RequestMethod.GET})
     @ResponseBody
     @Deferred
-    public ResponseEntity<byte[]> downLoadCertFile(@PathVariable String uuid, HttpServletResponse response) throws IOException {
+    public ResponseEntity<byte[]> downLoadCertFile(@PathVariable String uuid) throws IOException {
 
         String vpnCertUuid = valid(uuid, VpnCertVO.class.getSimpleName());
 
         File root = PathUtil.findFileOnClassPath(VpnConstant.KEYS_DIR, true);
 
         VpnCertVO cert = dbf.findByUuid(vpnCertUuid, VpnCertVO.class);
-
         File caCrt = new File(root, VpnConstant.CA_CRT_PATH);
         File clientCrt = new File(root, VpnConstant.CLIENT_CRT_PATH);
         File clientKey = new File(root, VpnConstant.CLIENT_KEY_PATH);
@@ -119,26 +112,23 @@ public class DownloadController {
 
         File zip = ZipUtils2.zip(root.getAbsolutePath());
 
-        Defer.defer(new Runnable() {
-            @Override
-            public void run() {
-                caCrt.delete();
-                clientCrt.delete();
-                clientKey.delete();
-                zip.delete();
-            }
+        Defer.defer(() -> {
+            caCrt.delete();
+            clientCrt.delete();
+            clientKey.delete();
+            zip.delete();
         });
-        return download(zip);
+        return download(zip, KEYS_ZIP_NAME);
 
     }
 
-    private ResponseEntity<byte[]> download(File zipFile) throws IOException {
+    private ResponseEntity<byte[]> download(File zipFile, String zipName) throws IOException {
 
 
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_OCTET_STREAM);
         headers.setContentDispositionFormData("attachment", zipName);
-        return new ResponseEntity<byte[]>(FileUtils.readFileToByteArray(zipFile), headers, HttpStatus.CREATED);
+        return new ResponseEntity<>(FileUtils.readFileToByteArray(zipFile), headers, HttpStatus.CREATED);
     }
 
     private String valid(String uuid, String type) {
@@ -147,7 +137,7 @@ public class DownloadController {
 
         String sql = String.format("select r.accountUuid from %s r where r.uuid = :uuid ", type);
         String accountUuid = SQL.New(sql).param("uuid", list[0]).find();
-        String md5 = DigestUtils.md5Hex(accountUuid + list[1] + VpnConstant.GENERATE_KEY);
+        String md5 = DigestUtils.md5Hex(accountUuid + list[1] + VpnConstant.URL_GENERATE_KEY);
         if (!md5.equals(list[2]) || System.currentTimeMillis() - Long.valueOf(list[1]) > TimeUnit.SECONDS.toMillis(CoreGlobalProperty.INNER_MESSAGE_EXPIRE)) {
             throw new CloudRuntimeException("The download link is expired");
         }

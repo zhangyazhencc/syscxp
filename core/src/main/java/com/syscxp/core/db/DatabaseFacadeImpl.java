@@ -669,7 +669,7 @@ public class DatabaseFacadeImpl implements DatabaseFacade, Component {
 
     @Override
     public <T> List<T> listAll(int offset, int length, Class<T> clazz) {
-        return listByPrimaryKeys(null, offset, length, clazz);
+        return getEntityInfo(clazz).listByPrimaryKeys(null, offset, length);
     }
 
     @Override
@@ -679,7 +679,11 @@ public class DatabaseFacadeImpl implements DatabaseFacade, Component {
 
     @Override
     public <T> List<T> listByPrimaryKeys(Collection ids, int offset, int length, Class<T> clazz) {
-        return getEntityInfo(clazz).listByPrimaryKeys(ids, offset, length);
+        if (ids == null || ids.isEmpty()) {
+            return  Collections.EMPTY_LIST;
+        }else {
+            return getEntityInfo(clazz).listByPrimaryKeys(ids, offset, length);
+        }
     }
 
     @Override
