@@ -424,109 +424,28 @@ public class VpnBase extends AbstractVpn {
     }
 
     private void handle(final DestroyVpnMsg msg) {
-
-        thdf.chainSubmit(new ChainTask(msg) {
+        changVpnSatus(VpnStatus.Disconnected);
+        final DestroyVpnReply reply = new DestroyVpnReply();
+        DestroyVpnCmd cmd = new DestroyVpnCmd();
+        cmd.vpnuuid = self.getUuid();
+        cmd.vpnport = getPort();
+        cmd.vpnvlanid = getVlan();
+        cmd.ddnport = getInterfaceName();
+        httpCall(destroyVpnPath, cmd, DestroyVpnRsp.class, new ReturnValueCompletion<DestroyVpnRsp>(msg) {
             @Override
-            public String getSyncSignature() {
-                return String.format("destroy-vpn-%s", self.getUuid());
+            public void success(DestroyVpnRsp ret) {
+                if (!ret.isSuccess()) {
+                    reply.setError(errf.instantiateErrorCode(VpnErrors.VPN_DESTROY_ERROR, ret.getError()));
+                }
+                bus.reply(msg, reply);
             }
 
             @Override
-            public void run(SyncTaskChain chain) {
-                final DestroyVpnReply reply = new DestroyVpnReply();
-
-                final FlowChain flowChain = FlowChainBuilder.newShareFlowChain();
-                flowChain.setName(String.format("destroy-vpn-%s", self.getUuid()));
-                flowChain.then(new ShareFlow() {
-                    @Override
-                    public void setup() {
-                        flow(new NoRollbackFlow() {
-                            String __name__ = "stop-vpn";
-
-                            @Override
-                            public void run(final FlowTrigger trigger, Map data) {
-                                if (VpnStatus.Disconnected == self.getStatus()) {
-                                    vpnService(VPN_STOP, new ReturnValueCompletion<String>(trigger) {
-                                        @Override
-                                        public void success(String ret) {
-                                            if (DOWN.equals(ret)) {
-                                                changVpnSatus(VpnStatus.Disconnected);
-                                                trigger.next();
-                                            } else {
-                                                trigger.fail(errf.instantiateErrorCode(VpnErrors.VPN_DESTROY_ERROR, "停止VPN服务失败"));
-                                            }
-                                        }
-
-                                        @Override
-                                        public void fail(ErrorCode errorCode) {
-                                            trigger.fail(errorCode);
-                                        }
-                                    });
-                                } else {
-                                    trigger.next();
-                                }
-                            }
-                        });
-
-                        flow(new NoRollbackFlow() {
-                            String __name__ = "destroy-vpn";
-
-                            @Override
-                            public void run(final FlowTrigger trigger, Map data) {
-                                DestroyVpnCmd cmd = new DestroyVpnCmd();
-                                cmd.vpnuuid = self.getUuid();
-                                cmd.vpnport = getPort();
-                                cmd.vpnvlanid = getVlan();
-                                cmd.ddnport = getInterfaceName();
-                                httpCall(destroyVpnPath, cmd, DestroyVpnRsp.class, new ReturnValueCompletion<DestroyVpnRsp>(trigger) {
-                                    @Override
-                                    public void success(DestroyVpnRsp ret) {
-                                        if (ret.isSuccess()) {
-                                            trigger.next();
-                                        } else {
-                                            trigger.fail(errf.instantiateErrorCode(VpnErrors.VPN_DESTROY_ERROR, ret.getError()));
-                                        }
-                                    }
-
-                                    @Override
-                                    public void fail(ErrorCode errorCode) {
-                                        trigger.fail(errorCode);
-                                    }
-                                });
-                            }
-                        });
-
-                        done(new FlowDoneHandler(msg) {
-                            @Override
-                            public void handle(Map data) {
-                                bus.reply(msg, reply);
-                            }
-                        });
-
-                        error(new FlowErrorHandler(msg) {
-                            @Override
-                            public void handle(ErrorCode errCode, Map data) {
-                                reply.setError(errCode);
-                                bus.reply(msg, reply);
-                            }
-                        });
-
-                        Finally(new FlowFinallyHandler(msg) {
-                            @Override
-                            public void Finally() {
-                                chain.next();
-                            }
-                        });
-                    }
-                }).start();
-            }
-
-            @Override
-            public String getName() {
-                return "destroy-vpn";
+            public void fail(ErrorCode errorCode) {
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
             }
         });
-
     }
 
     private void handle(StopVpnMsg msg) {

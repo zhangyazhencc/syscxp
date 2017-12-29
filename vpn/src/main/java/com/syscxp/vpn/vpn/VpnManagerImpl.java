@@ -223,17 +223,17 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
             return;
         }
 
+        UpdateQuery.New(VpnVO.class)
+                .in(VpnVO_.uuid, vpnUuids)
+                .set(VpnVO_.tunnelUuid, "")
+                .set(VpnVO_.state, VpnState.Disabled)
+                .update();
+
         for (String vpnUuid : vpnUuids) {
             DestroyVpnJob destroyVpnJob = new DestroyVpnJob();
             destroyVpnJob.setVpnUuid(vpnUuid);
             jobf.execute("销毁VPN服务", Platform.getManagementServerId(), destroyVpnJob);
         }
-
-        UpdateQuery.New(VpnVO.class)
-                .in(VpnVO_.uuid, vpnUuids)
-                .set(VpnVO_.tunnelUuid, "")
-                .update();
-
         bus.reply(msg, reply);
 
     }
