@@ -201,7 +201,8 @@ public class AlarmLogManagerImpl extends AbstractService implements ApiMessageIn
         RegulationVO regulationVO = dbf.findByUuid(cmd.getRegulationUuid(), RegulationVO.class);
         if (regulationVO != null) {
             //持续时间
-            alarmLogVO.setDuration((long) regulationVO.getDetectPeriod() * regulationVO.getTriggerPeriod());
+//            alarmLogVO.setDuration((long) regulationVO.getDetectPeriod() * regulationVO.getTriggerPeriod());
+            alarmLogVO.setDuration(0);
 
             PolicyVO policyVO = dbf.findByUuid(regulationVO.getPolicyUuid(), PolicyVO.class);
             if (policyVO != null) {
