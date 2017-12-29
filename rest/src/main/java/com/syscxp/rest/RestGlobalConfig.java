@@ -15,4 +15,7 @@ public class RestGlobalConfig {
     public static GlobalConfig COMPLETED_API_EXPIRED_PERIOD = new GlobalConfig(CATEGORY, "completedApi.expiredPeriod");
     @GlobalConfigValidation
     public static GlobalConfig SCAN_EXPIRED_API_INTERVAL = new GlobalConfig(CATEGORY, "expiredApi.scanInterval");
+
+    @GlobalConfigValidation
+    public static GlobalConfig SYSCXP_API_SERVER_URL = new GlobalConfig(CATEGORY, "syscxpApi.serverUrl");
 }

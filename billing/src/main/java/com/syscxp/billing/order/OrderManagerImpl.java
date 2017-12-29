@@ -497,8 +497,8 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
     @Transactional
     private BigDecimal getNotUseMonths(LocalDateTime stateTime, LocalDateTime expiredTime) {
-        long months = ChronoUnit.MONTHS.between(stateTime, expiredTime);
-        long days = ChronoUnit.DAYS.between(stateTime, expiredTime.minusMonths(months));
+        long months = Math.abs(ChronoUnit.MONTHS.between(stateTime, expiredTime));
+        long days = Math.abs(ChronoUnit.DAYS.between(stateTime, expiredTime.minusMonths(months)));
         BigDecimal thisMonthDays = BigDecimal.valueOf(stateTime.toLocalDate().lengthOfMonth());
         return BigDecimal.valueOf(months).add(BigDecimal.valueOf(days).divide(thisMonthDays, 4, RoundingMode.HALF_UP)).setScale(2, RoundingMode.HALF_UP);
     }

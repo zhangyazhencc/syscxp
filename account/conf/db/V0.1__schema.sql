@@ -353,7 +353,13 @@ INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('Tunnel','云专线', 'c
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('Host','云服务器', 'console');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('Account','账户', 'console');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('Billing','账务', 'console');
+INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('PrivateWireNetwork','专线网络', 'console');
+INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('ConnectedCloud','互联云', 'console');
+INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('VPN','VPN网关', 'console');
+INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('InternetTools','网络工具', 'console');
+INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('AlertManager','报警管理', 'console');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('Others','其他','console');
+
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('cloudLine','申请云专线工单','officialWebsite');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('trustee','申请托管工单','officialWebsite');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('leadCable','申请引接缆工单','officialWebsite');

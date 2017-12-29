@@ -4,7 +4,7 @@ public interface VpnConstant {
 
     String SERVICE_ID = "vpn";
     String HOST_TYPE = "VPN";
-    String GENERATE_KEY = "asdjhsajfhasowjl234jhfv";
+    String URL_GENERATE_KEY = "asdjhsajfhasowjl234jhfv";
     String ACTION_CATEGORY_VPN = "vpn";
     String ACTION_CATEGORY_HOST = "host";
     String ACTION_SERVICE = "vpn";
