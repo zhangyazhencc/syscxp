@@ -160,16 +160,16 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             date.set("property", msg.getProperty());
         }
         if(msg.getRoomName() != null){
-            date.set("roomName", msg.getRoomName());
+            date.set("machineRoomInfo.outer.roomName", msg.getRoomName());
         }
         if(msg.getRoomAddress() != null){
-            date.set("roomAddress", msg.getRoomAddress());
+            date.set("machineRoomInfo.outer.roomAddress", msg.getRoomAddress());
         }
         if(msg.getConsignee() != null){
-            date.set("consignee", msg.getConsignee());
+            date.set("roomNOC.inner.consignee", msg.getConsignee());
         }
         if(msg.getConsigneePhone() != null){
-            date.set("consigneePhone", msg.getConsigneePhone());
+            date.set("roomNOC.inner.consigneePhone", msg.getConsigneePhone());
         }
 
         mongoTemplate.updateFirst(new Query(Criteria.where("node_id").is(msg.getNode_id())),
