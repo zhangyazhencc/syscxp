@@ -428,7 +428,7 @@ public class VpnBase extends AbstractVpn {
         thdf.chainSubmit(new ChainTask(msg) {
             @Override
             public String getSyncSignature() {
-                return String.format("delete-vpn-%s", self.getUuid());
+                return String.format("destroy-vpn-%s", self.getUuid());
             }
 
             @Override
@@ -436,7 +436,7 @@ public class VpnBase extends AbstractVpn {
                 final DestroyVpnReply reply = new DestroyVpnReply();
 
                 final FlowChain flowChain = FlowChainBuilder.newShareFlowChain();
-                flowChain.setName(String.format("delete-vpn-%s", self.getUuid()));
+                flowChain.setName(String.format("destroy-vpn-%s", self.getUuid()));
                 flowChain.then(new ShareFlow() {
                     @Override
                     public void setup() {
@@ -462,6 +462,8 @@ public class VpnBase extends AbstractVpn {
                                             trigger.fail(errorCode);
                                         }
                                     });
+                                } else {
+                                    trigger.next();
                                 }
                             }
                         });
@@ -521,7 +523,7 @@ public class VpnBase extends AbstractVpn {
 
             @Override
             public String getName() {
-                return "delete-vpn";
+                return "destroy-vpn";
             }
         });
 
@@ -579,11 +581,7 @@ public class VpnBase extends AbstractVpn {
         httpCall(vpnServicePath, cmd, VpnServiceRsp.class, new ReturnValueCompletion<VpnServiceRsp>(completion) {
             @Override
             public void success(VpnServiceRsp ret) {
-                if (UP.equals(ret.vpnStatus)) {
-                    completion.success(ret.vpnStatus);
-                } else {
-                    completion.fail(errf.instantiateErrorCode(VpnErrors.VPN_OPERATE_ERROR, "VPN服务操作失败"));
-                }
+                completion.success(ret.vpnStatus);
             }
 
             @Override
@@ -603,12 +601,7 @@ public class VpnBase extends AbstractVpn {
         vpnService(VPN_STATUS, new ReturnValueCompletion<String>(msg) {
             @Override
             public void success(String ret) {
-                if (UP.equals(ret)) {
-                    reply.setConnected(true);
-                } else {
-                    reply.setConnected(false);
-                    reply.setSuccess(true);
-                }
+                reply.setConnected(UP.equals(ret));
                 reply.setCurrentStatus(self.getStatus());
                 bus.reply(msg, reply);
             }

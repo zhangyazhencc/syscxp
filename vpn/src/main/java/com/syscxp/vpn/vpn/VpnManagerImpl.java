@@ -224,9 +224,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
 
         for (String vpnUuid : vpnUuids) {
-            DestroyVpnJob job3 = new DestroyVpnJob();
-            job3.setVpnUuid(vpnUuid);
-            jobf.execute("销毁VPN服务", Platform.getManagementServerId(), job3);
+            DestroyVpnJob destroyVpnJob = new DestroyVpnJob();
+            destroyVpnJob.setVpnUuid(vpnUuid);
+            jobf.execute("销毁VPN服务", Platform.getManagementServerId(), destroyVpnJob);
         }
 
         UpdateQuery.New(VpnVO.class)
@@ -832,18 +832,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 LOGGER.debug(String.format("创建VPN[UUID:%s]销毁任务", vpn.getUuid()));
                 DestroyVpnJob destroyVpnJob = new DestroyVpnJob();
                 destroyVpnJob.setVpnUuid(vpn.getUuid());
-                jobf.execute("销毁VPN服务", Platform.getManagementServerId(), destroyVpnJob, new Completion(null) {
-                    @Override
-                    public void success() {
-                        dbf.removeByPrimaryKey(msg.getUuid(), VpnVO.class);
-                        LOGGER.debug(String.format("VPN[UUID:%s]销毁成功", vpn.getUuid()));
-                    }
-
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        LOGGER.debug(String.format("VPN[UUID:%s]销毁失败", vpn.getUuid()));
-                    }
-                });
+                destroyVpnJob.setDelete(true);
+                jobf.execute("销毁VPN服务", Platform.getManagementServerId(), destroyVpnJob);
                 trigger.next();
             }
         });
