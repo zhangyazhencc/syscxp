@@ -787,7 +787,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
-                if (vpn.getAccountUuid() == null) {
+                if (vpn.getAccountUuid() != null) {
                     APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(getOrderMsgForVPN(vpn, new UnsubcribeVpnCallBack()));
                     orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
                     orderMsg.setStartTime(vinv.getCreateDate());
@@ -847,7 +847,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 trigger.next();
             }
         });
-        ;
 
         chain.done(new FlowDoneHandler(msg) {
             @Override
