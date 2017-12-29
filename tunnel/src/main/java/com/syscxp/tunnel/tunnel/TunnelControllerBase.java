@@ -96,7 +96,7 @@ public class TunnelControllerBase extends AbstractTunnel {
         }
 
         String command = JSONObjectUtil.toJsonString(tunnelMplsConfig);
-        System.out.println("----TraceRoute----:"+command);
+        logger.info("----TraceRoute----:"+command);
 
         String url = CoreGlobalProperty.CONTROLLER_MANAGER_URL+ControllerRestConstant.TUNNEL_TRACE;
         try {
