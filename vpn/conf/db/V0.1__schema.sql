@@ -72,7 +72,7 @@ ALTER TABLE JobQueueVO ADD CONSTRAINT fkJobQueueVOManagementNodeVO FOREIGN KEY (
 
 CREATE TABLE  `syscxp_vpn`.`VpnVO` (
 	`uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
-	`accountUuid` varchar(32) NOT NULL COMMENT '所属账户',
+	`accountUuid` varchar(32) DEFAULT NULL COMMENT '所属账户',
 	`hostUuid` varchar(32) NOT NULL COMMENT '物理机',
 	`name` varchar(255) NOT NULL COMMENT '名称',
 	`description` varchar(255) DEFAULT NULL COMMENT '描述',
