@@ -119,8 +119,8 @@ CREATE TABLE  `ProxyAccountRefVO` (
 CREATE TABLE  `AccountApiSecurityVO` (
     `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
     `accountUuid` varchar(32) NOT NULL UNIQUE COMMENT '所属账户UUID',
-    `publicKey` varchar(128) DEFAULT NULL COMMENT 'API密钥-公钥',
-    `privateKey` varchar(128) DEFAULT NULL COMMENT 'API密钥-私钥',
+    `secretId` varchar(128) DEFAULT NULL COMMENT 'API密钥-公钥',
+    `secretKey` varchar(128) DEFAULT NULL COMMENT 'API密钥-私钥',
     `allowIp` text DEFAULT NULL COMMENT '允许访问IP的集合',
     `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
     `createDate` timestamp ,
@@ -353,7 +353,13 @@ INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('Tunnel','云专线', 'c
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('Host','云服务器', 'console');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('Account','账户', 'console');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('Billing','账务', 'console');
+INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('PrivateWireNetwork','专线网络', 'console');
+INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('ConnectedCloud','互联云', 'console');
+INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('VPN','VPN网关', 'console');
+INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('InternetTools','网络工具', 'console');
+INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('AlertManager','报警管理', 'console');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('Others','其他','console');
+
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('cloudLine','申请云专线工单','officialWebsite');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('trustee','申请托管工单','officialWebsite');
 INSERT INTO TicketTypeVO (uuid, name, category) VALUES ('leadCable','申请引接缆工单','officialWebsite');

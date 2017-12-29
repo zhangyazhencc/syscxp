@@ -8,24 +8,27 @@ public class ProductCaller {
 
     private ProductType type;
 
-    public ProductCaller(ProductType type){
+    public ProductCaller(ProductType type) {
         this.type = type;
         initMsg(type);
     }
 
 
-    private void initMsg(ProductType type){
-        switch (type){
+    private void initMsg(ProductType type) {
+        switch (type) {
             case TUNNEL:
                 this.productUrl = AlipayGlobalProperty.TUNNEL_SERVER_URL;
                 break;
             case PORT:
                 this.productUrl = AlipayGlobalProperty.TUNNEL_SERVER_URL;
                 break;
-            case DISK :
+            case DISK:
                 this.productUrl = AlipayGlobalProperty.ECP_SERVER_URL;
                 break;
-                case HOST :
+            case HOST:
+                this.productUrl = AlipayGlobalProperty.ECP_SERVER_URL;
+                break;
+            case RESOURCEPOOL:
                 this.productUrl = AlipayGlobalProperty.ECP_SERVER_URL;
                 break;
         }

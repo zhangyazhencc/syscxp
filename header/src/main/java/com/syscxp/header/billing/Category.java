@@ -18,5 +18,5 @@ public enum Category {
     EXCLUSIVE,
     SHARE ,
     PORT,
-    ResourcePool
+    RESOURCEPOOL
 }

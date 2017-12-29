@@ -11,7 +11,7 @@ import java.nio.file.Paths;
  * Date: 2017/12/26 15:39
  * Author: wj
  */
-class TestGenerateMarkDownDoc {
+public class TestGenerateMarkDownDoc {
 
     @Test
     public void test() {

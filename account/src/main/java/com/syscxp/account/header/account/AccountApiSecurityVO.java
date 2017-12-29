@@ -26,10 +26,10 @@ public class AccountApiSecurityVO {
     private String accountUuid;
 
     @Column
-    private String publicKey;
+    private String secretId;
 
     @Column
-    private String privateKey;
+    private String secretKey;
 
     @Column
     private String allowIp;
@@ -53,24 +53,24 @@ public class AccountApiSecurityVO {
         return accountUuid;
     }
 
-    public String getPublicKey() {
-        return publicKey;
+    public String getSecretId() {
+        return secretId;
     }
 
-    public String getPrivateKey() {
-        return privateKey;
+    public String getSecretKey() {
+        return secretKey;
     }
 
     public String getAllowIp() {
         return allowIp;
     }
 
-    public void setPublicKey(String publicKey) {
-        this.publicKey = "account" + publicKey;
+    public void setSecretId(String secretId) {
+        this.secretId = "account" + secretId;
     }
 
-    public void setPrivateKey(String privateKey) {
-        this.privateKey = privateKey;
+    public void setSecretKey(String secretKey) {
+        this.secretKey = secretKey;
     }
 
     public void setAllowIp(String allowIp) {

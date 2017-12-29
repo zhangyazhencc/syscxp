@@ -14,8 +14,6 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
-import com.syscxp.core.thread.ChainTask;
-import com.syscxp.core.thread.SyncTaskChain;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
@@ -62,7 +60,6 @@ import com.syscxp.utils.path.PathUtil;
 import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
 import com.syscxp.vpn.job.DestroyVpnJob;
-import com.syscxp.vpn.job.InitVpnJob;
 import com.syscxp.vpn.quota.VpnQuotaOperator;
 import com.syscxp.vpn.vpn.VpnCommands.*;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -227,9 +224,9 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
 
         for (String vpnUuid : vpnUuids) {
-            DestroyVpnJob job3 = new DestroyVpnJob();
-            job3.setVpnUuid(vpnUuid);
-            jobf.execute("销毁VPN服务", Platform.getManagementServerId(), job3);
+            DestroyVpnJob destroyVpnJob = new DestroyVpnJob();
+            destroyVpnJob.setVpnUuid(vpnUuid);
+            jobf.execute("销毁VPN服务", Platform.getManagementServerId(), destroyVpnJob);
         }
 
         UpdateQuery.New(VpnVO.class)
@@ -339,7 +336,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         vpn.setSid(Platform.getUuid());
         vpn.setCertKey(generateCertKey(vpn.getAccountUuid(), vpn.getSid()));
-        dbf.updateAndRefresh(vpn);
+        reply.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vpn)));
         bus.reply(msg, reply);
     }
 
@@ -350,16 +347,17 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         String type = "cert".equals(msg.getType()) ? VpnCertVO.class.getSimpleName() : VpnVO.class.getSimpleName();
         String accountUuid = SQL.New(String.format("select r.accountUuid from %s r where r.uuid = :uuid ", type))
                 .param("uuid", msg.getUuid()).find();
-        StringBuilder sb = new StringBuilder();
-        long time = System.currentTimeMillis();
-        sb.append(msg.getUuid()).append(":").append(time);
-        sb.append(":").append(DigestUtils.md5Hex(accountUuid + time + VpnConstant.GENERATE_KEY));
+        if (accountUuid != null) {
+            StringBuilder sb = new StringBuilder();
+            long time = System.currentTimeMillis();
+            sb.append(msg.getUuid()).append(":").append(time);
+            sb.append(":").append(DigestUtils.md5Hex(accountUuid + time + VpnConstant.URL_GENERATE_KEY));
 
-        String path = new String(Base64.encode(sb.toString().getBytes()));
+            String path = new String(Base64.encode(sb.toString().getBytes()));
 
-        reply.setDownloadUrl(URLBuilder.buildUrlFromBase(restf.getBaseUrl(), RESTConstant.REST_API_CALL, "/", msg.getType(), "/", path));
+            reply.setDownloadUrl(URLBuilder.buildUrlFromBase(restf.getBaseUrl(), RESTConstant.REST_API_CALL, "/", msg.getType(), "/", path));
+        }
         bus.reply(msg, reply);
-
     }
 
     private void handle(APIGetVpnCertMsg msg) {
@@ -391,7 +389,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private String generateCertKey(String accountUuid, String sid) {
-        return DigestUtils.md5Hex(accountUuid + sid + VpnConstant.GENERATE_KEY);
+        return DigestUtils.md5Hex(accountUuid + sid + VpnConstant.URL_GENERATE_KEY);
     }
 
     private void doAddVpn(final APICreateVpnMsg msg, ReturnValueCompletion<VpnInventory> completion) {
@@ -789,7 +787,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
             @Override
             public void run(final FlowTrigger trigger, Map data) {
-                if (vpn.getAccountUuid() == null) {
+                if (vpn.getAccountUuid() != null) {
                     APICreateUnsubcribeOrderMsg orderMsg = new APICreateUnsubcribeOrderMsg(getOrderMsgForVPN(vpn, new UnsubcribeVpnCallBack()));
                     orderMsg.setOpAccountUuid(msg.getOpAccountUuid());
                     orderMsg.setStartTime(vinv.getCreateDate());
@@ -811,6 +809,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                             trigger.fail(errf.instantiateErrorCode(VpnErrors.CALL_BILLING_ERROR, "退订失败", errorCode));
                         }
                     });
+                } else {
+                    trigger.next();
                 }
             }
         }).then(new NoRollbackFlow() {
@@ -832,22 +832,11 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
                 LOGGER.debug(String.format("创建VPN[UUID:%s]销毁任务", vpn.getUuid()));
                 DestroyVpnJob destroyVpnJob = new DestroyVpnJob();
                 destroyVpnJob.setVpnUuid(vpn.getUuid());
-                jobf.execute("销毁VPN服务", Platform.getManagementServerId(), destroyVpnJob, new Completion(null) {
-                    @Override
-                    public void success() {
-                        dbf.removeByPrimaryKey(msg.getUuid(), VpnVO.class);
-                        LOGGER.debug(String.format("VPN[UUID:%s]销毁成功", vpn.getUuid()));
-                    }
-
-                    @Override
-                    public void fail(ErrorCode errorCode) {
-                        LOGGER.debug(String.format("VPN[UUID:%s]销毁失败", vpn.getUuid()));
-                    }
-                });
+                destroyVpnJob.setDelete(true);
+                jobf.execute("销毁VPN服务", Platform.getManagementServerId(), destroyVpnJob);
                 trigger.next();
             }
         });
-        ;
 
         chain.done(new FlowDoneHandler(msg) {
             @Override
