@@ -36,7 +36,7 @@ public class DestroyVpnJob implements Job {
     private DatabaseFacade dbf;
     @Autowired
     private ErrorFacade errf;
-
+    @JobContext
     private boolean delete = false;
 
     @Override
@@ -54,6 +54,7 @@ public class DestroyVpnJob implements Job {
                         LOGGER.debug(String.format("VPN[UUID:%s]销毁成功", vpnUuid));
                         if (delete) {
                             dbf.removeByPrimaryKey(vpnUuid, VpnVO.class);
+                            LOGGER.debug(String.format("数据库删除VPN[UUID:%s]成功", vpnUuid));
                         }
                         completion.success(null);
                     } else {
