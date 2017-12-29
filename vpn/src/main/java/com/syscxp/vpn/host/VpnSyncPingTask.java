@@ -43,6 +43,8 @@ public class VpnSyncPingTask implements VpnHostPingAgentNoFailureExtensionPoint,
     private List<String> getVpnUuids(String hostUuid) {
         return Q.New(VpnVO.class).select(VpnVO_.uuid)
                 .eq(VpnVO_.state, VpnState.Enabled)
+                .notNull(VpnVO_.accountUuid)
+                .notNull(VpnVO_.tunnelUuid)
                 .eq(VpnVO_.hostUuid, hostUuid).list();
     }
 
