@@ -13,6 +13,7 @@
 
     <message>
         <name>com.syscxp.header.host.APIDeleteHostMsg</name>
+        <interceptor>VpnHostApiInterceptor</interceptor>
     </message>
 
     <message>
