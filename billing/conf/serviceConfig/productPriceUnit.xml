@@ -32,6 +32,14 @@
     </message>
 
     <message>
+        <name>com.syscxp.billing.header.price.APICreateVPNPriceMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.billing.header.price.APIDeleteVPNPriceMsg</name>
+    </message>
+
+    <message>
         <name>com.syscxp.billing.header.price.APIQueryProductPriceUnitMsg</name>
         <serviceId>query</serviceId>
     </message>

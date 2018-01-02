@@ -2,6 +2,7 @@ package com.syscxp.tunnel.node;
 
 import com.alibaba.fastjson.JSONObject;
 import com.syscxp.core.db.Q;
+import com.syscxp.header.message.APIParam;
 import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.header.tunnel.NodeConstant;
 import com.syscxp.header.tunnel.endpoint.*;
@@ -135,10 +136,48 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
             handle((APIDeleteImageMsg) msg);
         }else if(msg instanceof APIUploadImageUrlMsg){
             handle((APIUploadImageUrlMsg) msg);
+        }else if(msg instanceof APIReconcileNodeExtensionInfoMsg){
+            handle((APIReconcileNodeExtensionInfoMsg) msg);
         }
         else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIReconcileNodeExtensionInfoMsg msg) {
+
+        APIReconcileNodeExtensionInfoEvent event = new APIReconcileNodeExtensionInfoEvent(msg.getId());
+
+        Update date = new Update();
+
+        if(msg.getStatus() != null){
+            date.set("status", msg.getStatus());
+        }
+        if(msg.getProvince() != null){
+            date.set("province", msg.getProvince());
+        }
+        if(msg.getProperty() != null){
+            date.set("property", msg.getProperty());
+        }
+        if(msg.getRoomName() != null){
+            date.set("machineRoomInfo.outer.roomName", msg.getRoomName());
+        }
+        if(msg.getRoomAddress() != null){
+            date.set("machineRoomInfo.outer.roomAddress", msg.getRoomAddress());
+        }
+        if(msg.getConsignee() != null){
+            date.set("roomNOC.inner.consignee", msg.getConsignee());
+        }
+        if(msg.getConsigneePhone() != null){
+            date.set("roomNOC.inner.consigneePhone", msg.getConsigneePhone());
+        }
+
+        mongoTemplate.updateFirst(new Query(Criteria.where("node_id").is(msg.getNode_id())),
+                date,NodeExtensionInfo.class);
+
+        bus.publish(event);
+
+
     }
 
     private void handle(APIUploadImageUrlMsg msg) {
