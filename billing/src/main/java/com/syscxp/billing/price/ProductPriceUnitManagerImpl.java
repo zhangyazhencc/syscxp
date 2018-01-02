@@ -74,18 +74,67 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             handle((APIGetBroadPriceListMsg) msg);
         } else if (msg instanceof APIUpdateBroadPriceMsg) {
             handle((APIUpdateBroadPriceMsg) msg);
+        } else if (msg instanceof APICreateVPNPriceMsg) {
+            handle((APICreateVPNPriceMsg) msg);
+        }  else if (msg instanceof APIDeleteVPNPriceMsg) {
+            handle((APIDeleteVPNPriceMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APIUpdateBroadPriceMsg msg) {
-        ProductCategoryVO vo = findProductCategoryVO(msg.getProductType(), msg.getCategory());
+    private void handle(APIDeleteVPNPriceMsg msg) {
+        String productCategoryUuid = validateProductTypeAndCategory(msg.getProductType(), msg.getCategory());
+        if (msg.getLineCode().equalsIgnoreCase("DEFAULT")) {
+            throw new IllegalArgumentException("The default price can not remove");
+        }
+        SimpleQuery<ProductPriceUnitVO> query = dbf.createQuery(ProductPriceUnitVO.class);
+        query.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryUuid);
+        query.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, msg.getAreaCode());
+        query.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, msg.getLineCode());
+        List<ProductPriceUnitVO> list = query.list();
+
+        UpdateQuery q = UpdateQuery.New(ProductPriceUnitVO.class);
+        q.condAnd(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryUuid);
+        q.condAnd(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, msg.getLineCode());
+        q.condAnd(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, msg.getAreaCode());
+        q.delete();
+
+        APIDeleteVPNPriceEvent event = new APIDeleteVPNPriceEvent(msg.getId());
+        event.setInventories(ProductPriceUnitInventory.valueOf(list));
+        bus.publish(event);
+    }
+
+    private String validateProductTypeAndCategory(ProductType productType, Category category) {
+        ProductCategoryVO vo = findProductCategoryVO(productType, category);
         if (vo == null) {
             throw new IllegalArgumentException("can not find the product type or category");
         }
+        return vo.getUuid();
+    }
+
+    private void handle(APICreateVPNPriceMsg msg) {
+        String productCategoryUuid = validateProductTypeAndCategory(msg.getProductType(), msg.getCategory());
+        ProductPriceUnitVO  productPriceUnitVO = new ProductPriceUnitVO();
+        productPriceUnitVO.setUuid(Platform.getUuid());
+        productPriceUnitVO.setProductCategoryUuid(productCategoryUuid);
+        productPriceUnitVO.setAreaCode(msg.getAreaCode());
+        productPriceUnitVO.setAreaName(msg.getAreaName());
+        productPriceUnitVO.setLineCode(msg.getLineCode());
+        productPriceUnitVO.setLineName(msg.getLineName());
+        productPriceUnitVO.setConfigCode(msg.getConfigCode());
+        productPriceUnitVO.setConfigName(msg.getConfigName());
+        productPriceUnitVO.setUnitPrice(msg.getUnitPrice());
+        dbf.persistAndRefresh(productPriceUnitVO);
+        APICreateVPNPriceEvent event = new APICreateVPNPriceEvent(msg.getId());
+        event.setInventory(ProductPriceUnitInventory.valueOf(productPriceUnitVO));
+        bus.publish(event);
+    }
+
+    private void handle(APIUpdateBroadPriceMsg msg) {
+        String productCategoryUuid = validateProductTypeAndCategory(msg.getProductType(), msg.getCategory());
         SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-        q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, vo.getUuid());
+        q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryUuid);
         q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, msg.getAreaCode());
         q.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, msg.getLineCode());
         q.add(ProductPriceUnitVO_.configCode, SimpleQuery.Op.EQ, msg.getConfigCode());
