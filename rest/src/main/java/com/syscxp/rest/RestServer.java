@@ -111,7 +111,7 @@ public class RestServer implements Component, CloudBusEventListener {
         }
     }
 
-    private static final String ASYNC_JOB_PATH_PATTERN = String.format("%s/%s/{uuid}", RestConstants.API_VERSION, RestConstants.ASYNC_JOB_PATH);
+    private static final String ASYNC_JOB_PATH_PATTERN = String.format("%s/%s/{uuid}", RestConstants.API_VERSION, RestConstants.ASYNC_JOB_ACTION);
 
     public static void generateDocTemplate(String path, DocumentGenerator.DocMode mode) {
         DocumentGenerator rg =  GroovyUtils.newInstance("scripts/RestDocumentationGenerator.groovy");
@@ -993,7 +993,7 @@ public class RestServer implements Component, CloudBusEventListener {
             asyncStore.save(d);
             UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(restf.getBaseUrl());
             ub.path(RestConstants.API_VERSION);
-            ub.path(RestConstants.ASYNC_JOB_PATH);
+            ub.path(RestConstants.ASYNC_JOB_ACTION);
             ub.path("/" + msg.getId());
 
             ApiResponse response = new ApiResponse();
@@ -1008,6 +1008,8 @@ public class RestServer implements Component, CloudBusEventListener {
     @Override
     public boolean start() {
         build();
+        registerRestServletRequestInterceptor(new PublicParamsValidateInterceptor());
+        registerRestServletRequestInterceptor(new SignatureValidateInterceptor());
         return true;
     }
 
