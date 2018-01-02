@@ -146,7 +146,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
     private void handle(APIReconcileNodeExtensionInfoMsg msg) {
 
-        APIReconcileNodeExtensionInfoEvent event = new APIReconcileNodeExtensionInfoEvent();
+        APIReconcileNodeExtensionInfoEvent event = new APIReconcileNodeExtensionInfoEvent(msg.getId());
 
         Update date = new Update();
 
@@ -174,6 +174,7 @@ public class NodeManagerImpl extends AbstractService implements NodeManager, Api
 
         mongoTemplate.updateFirst(new Query(Criteria.where("node_id").is(msg.getNode_id())),
                 date,NodeExtensionInfo.class);
+
         bus.publish(event);
 
 
