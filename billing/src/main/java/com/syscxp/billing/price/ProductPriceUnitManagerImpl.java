@@ -20,15 +20,18 @@ import com.syscxp.header.billing.*;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.Query;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ProductPriceUnitManagerImpl extends AbstractService implements ProductPriceUnitManager, ApiMessageInterceptor {
 
@@ -76,7 +79,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             handle((APIUpdateBroadPriceMsg) msg);
         } else if (msg instanceof APICreateVPNPriceMsg) {
             handle((APICreateVPNPriceMsg) msg);
-        }  else if (msg instanceof APIDeleteVPNPriceMsg) {
+        } else if (msg instanceof APIDeleteVPNPriceMsg) {
             handle((APIDeleteVPNPriceMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
@@ -115,20 +118,39 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
 
     private void handle(APICreateVPNPriceMsg msg) {
         String productCategoryUuid = validateProductTypeAndCategory(msg.getProductType(), msg.getCategory());
-        ProductPriceUnitVO  productPriceUnitVO = new ProductPriceUnitVO();
-        productPriceUnitVO.setUuid(Platform.getUuid());
+        List<ProductPriceUnitVO> list = new ArrayList<>();
+        ProductPriceUnitVO productPriceUnitVO = new ProductPriceUnitVO();
         productPriceUnitVO.setProductCategoryUuid(productCategoryUuid);
         productPriceUnitVO.setAreaCode(msg.getAreaCode());
         productPriceUnitVO.setAreaName(msg.getAreaName());
         productPriceUnitVO.setLineCode(msg.getLineCode());
         productPriceUnitVO.setLineName(msg.getLineName());
-        productPriceUnitVO.setConfigCode(msg.getConfigCode());
-        productPriceUnitVO.setConfigName(msg.getConfigName());
-        productPriceUnitVO.setUnitPrice(msg.getUnitPrice());
+        Field[] fields = msg.getClass().getDeclaredFields();
+        Stream.of(fields).filter(field -> field.getName().startsWith("config")).forEach(field -> {
+            field.setAccessible(true);
+            String configCode = field.getName().replaceAll("\\D", "")+"M";
+            try {
+                int unitPrice = (int) field.get(msg);
+                createPriceUnit(productPriceUnitVO, configCode, configCode, unitPrice);
+                list.add(productPriceUnitVO);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
+        });
+
         dbf.persistAndRefresh(productPriceUnitVO);
         APICreateVPNPriceEvent event = new APICreateVPNPriceEvent(msg.getId());
-        event.setInventory(ProductPriceUnitInventory.valueOf(productPriceUnitVO));
+        event.setInventories(ProductPriceUnitInventory.valueOf(list));
         bus.publish(event);
+    }
+
+    private void createPriceUnit(ProductPriceUnitVO vo, String configCode, String configName, Integer unitPrice) {
+        vo.setUuid(Platform.getUuid());
+        vo.setConfigCode(configCode);
+        vo.setConfigName(configName);
+        vo.setUnitPrice(unitPrice);
+        dbf.persistAndRefresh(vo);
     }
 
     private void handle(APIUpdateBroadPriceMsg msg) {

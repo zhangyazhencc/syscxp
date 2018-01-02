@@ -28,14 +28,26 @@ public class APICreateVPNPriceMsg extends APIMessage {
     @APIParam( maxLength = 256,emptyString = false)
     private String lineName;
 
-    @APIParam(maxLength = 256,emptyString = false)
-    private String configCode;
+    @APIParam(numberRange = {0,Integer.MAX_VALUE})
+    private Integer config2MPrice;
 
-    @APIParam(maxLength = 256,emptyString = false)
-    private String configName;
+    @APIParam(numberRange = {0,Integer.MAX_VALUE})
+    private Integer config5MPrice;
 
-    @APIParam(maxLength = 256,emptyString = false)
-    private Integer unitPrice;
+    @APIParam(numberRange = {0,Integer.MAX_VALUE})
+    private Integer config10MPrice;
+
+    @APIParam(numberRange = {0,Integer.MAX_VALUE})
+    private Integer config20MPrice;
+
+    @APIParam(numberRange = {0,Integer.MAX_VALUE})
+    private Integer config50MPrice;
+
+    @APIParam(numberRange = {0,Integer.MAX_VALUE})
+    private Integer config100MPrice;
+
+    @APIParam(numberRange = {0,Integer.MAX_VALUE})
+    private Integer config200MPrice;
 
     public ProductType getProductType() {
         return productType;
@@ -85,27 +97,60 @@ public class APICreateVPNPriceMsg extends APIMessage {
         this.lineName = lineName;
     }
 
-    public String getConfigCode() {
-        return configCode;
+
+    public Integer getConfig2MPrice() {
+        return config2MPrice;
     }
 
-    public void setConfigCode(String configCode) {
-        this.configCode = configCode;
+    public void setConfig2MPrice(Integer config2MPrice) {
+        this.config2MPrice = config2MPrice;
     }
 
-    public String getConfigName() {
-        return configName;
+    public Integer getConfig5MPrice() {
+        return config5MPrice;
     }
 
-    public void setConfigName(String configName) {
-        this.configName = configName;
+    public void setConfig5MPrice(Integer config5MPrice) {
+        this.config5MPrice = config5MPrice;
     }
 
-    public Integer getUnitPrice() {
-        return unitPrice;
+    public Integer getConfig10MPrice() {
+        return config10MPrice;
     }
 
-    public void setUnitPrice(Integer unitPrice) {
-        this.unitPrice = unitPrice;
+    public void setConfig10MPrice(Integer config10MPrice) {
+        this.config10MPrice = config10MPrice;
+    }
+
+    public Integer getConfig20MPrice() {
+        return config20MPrice;
+    }
+
+    public void setConfig20MPrice(Integer config20MPrice) {
+        this.config20MPrice = config20MPrice;
+    }
+
+    public Integer getConfig50MPrice() {
+        return config50MPrice;
+    }
+
+    public void setConfig50MPrice(Integer config50MPrice) {
+        this.config50MPrice = config50MPrice;
+    }
+
+    public Integer getConfig100MPrice() {
+        return config100MPrice;
+    }
+
+    public void setConfig100MPrice(Integer config100MPrice) {
+        this.config100MPrice = config100MPrice;
+    }
+
+    public Integer getConfig200MPrice() {
+        return config200MPrice;
+    }
+
+    public void setConfig200MPrice(Integer config200MPrice) {
+        this.config200MPrice = config200MPrice;
     }
 }
