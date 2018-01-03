@@ -262,7 +262,7 @@ public class MonitorHostFactory extends AbstractService implements HostFactory, 
             TunnelVO tunnelVO = dbf.findByUuid(hostTunnelMonitorVO.getTunnelUuid(),TunnelVO.class);
             MonitorManagerImpl monitorManager = new MonitorManagerImpl();
 
-            monitorManager.initTunnelMonitor(tunnelVO.getUuid(),tunnelVO.getMonitorCidr());
+            monitorManager.initTunnelMonitor(tunnelVO);
             try {
                 monitorManager.modifyControllerMonitor(hostTunnelMonitorVO.getTunnelUuid());
                 logger.info("修改监控成功：" + hostTunnelMonitorVO.getTunnelUuid());
