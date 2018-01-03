@@ -153,19 +153,29 @@ public class TunnelStrategy  {
         return svq.getResultList();
     }
 
-    //查询该虚拟交换机所属物理交换机下Tunnel已经分配的Vlan
+    //查询该虚拟交换机所属物理交换机下及上联交换机Tunnel已经分配的Vlan
     public List<Integer> fingAllocateVlanBySwitch(String switchUuid){
         String physicalSwitchUuid = Q.New(SwitchVO.class)
                 .eq(SwitchVO_.uuid,switchUuid)
                 .select(SwitchVO_.physicalSwitchUuid)
                 .findValue();
-
+        PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(physicalSwitchUuid,PhysicalSwitchVO.class);
+        String uplinkPhysicalSwitchUuid;
+        if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){
+            uplinkPhysicalSwitchUuid = Q.New(PhysicalSwitchUpLinkRefVO.class)
+                    .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchUuid)
+                    .select(PhysicalSwitchUpLinkRefVO_.uplinkPhysicalSwitchUuid)
+                    .findValue();
+        }else{
+            uplinkPhysicalSwitchUuid = physicalSwitchUuid;
+        }
         String sql = "select distinct a.vlan from TunnelSwitchPortVO a,SwitchPortVO b,SwitchVO c " +
                 "where a.switchPortUuid = b.uuid and b.switchUuid = c.uuid " +
-                "and c.physicalSwitchUuid = :physicalSwitchUuid ";
+                "and (c.physicalSwitchUuid = :uplinkPhysicalSwitchUuid or c.physicalSwitchUuid in (select physicalSwitchUuid from PhysicalSwitchUpLinkRefVO where uplinkPhysicalSwitchUuid = :uplinkPhysicalSwitchUuid)) ";
         TypedQuery<Integer> avq = dbf.getEntityManager().createQuery(sql,Integer.class);
-        avq.setParameter("physicalSwitchUuid",physicalSwitchUuid);
+        avq.setParameter("uplinkPhysicalSwitchUuid",uplinkPhysicalSwitchUuid);
         return avq.getResultList();
+
     }
 
     //分配可用VLAN

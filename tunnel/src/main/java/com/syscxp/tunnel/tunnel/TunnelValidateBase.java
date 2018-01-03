@@ -767,7 +767,7 @@ public class TunnelValidateBase {
         //查询该虚拟交换机所属物理交换机下Tunnel已经分配的Vlan
         List<Integer> allocatedVlans = ts.fingAllocateVlanBySwitch(switchUuid);
 
-        if(physicalSwitchUuid.equals(oldPhysicalSwitchUuid)){
+        if(needValidateForUpdateInterface(physicalSwitchUuid,oldPhysicalSwitchUuid)){
             if(!oldVlan.equals(vlan)){
                 if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
                     throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", vlan));
@@ -776,6 +776,54 @@ public class TunnelValidateBase {
         }else{
             if (!allocatedVlans.isEmpty() && allocatedVlans.contains(vlan)) {
                 throw new ApiMessageInterceptionException(argerr("该vlan %s 已经被占用", vlan));
+            }
+        }
+    }
+
+    private boolean needValidateForUpdateInterface(String physicalSwitchUuid,String oldPhysicalSwitchUuid){
+        if(physicalSwitchUuid.equals(oldPhysicalSwitchUuid)){
+            return true;
+        }else{
+            PhysicalSwitchVO physicalSwitchVO = dbf.findByUuid(physicalSwitchUuid,PhysicalSwitchVO.class);
+            PhysicalSwitchVO oldPhysicalSwitchVO = dbf.findByUuid(oldPhysicalSwitchUuid,PhysicalSwitchVO.class);
+            if(physicalSwitchVO.getType() == PhysicalSwitchType.MPLS && oldPhysicalSwitchVO.getType() == PhysicalSwitchType.MPLS){
+                return false;
+            }else if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN && oldPhysicalSwitchVO.getType() == PhysicalSwitchType.SDN){
+                String mplsPhysicalSwitchUuid = Q.New(PhysicalSwitchUpLinkRefVO.class)
+                        .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchUuid)
+                        .select(PhysicalSwitchUpLinkRefVO_.uplinkPhysicalSwitchUuid)
+                        .findValue();
+                String oldMplsPhysicalSwitchUuid = Q.New(PhysicalSwitchUpLinkRefVO.class)
+                        .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,oldPhysicalSwitchUuid)
+                        .select(PhysicalSwitchUpLinkRefVO_.uplinkPhysicalSwitchUuid)
+                        .findValue();
+                if(mplsPhysicalSwitchUuid.equals(oldMplsPhysicalSwitchUuid)){
+                    return true;
+                }else{
+                    return false;
+                }
+            }else{
+                if(physicalSwitchVO.getType() == PhysicalSwitchType.SDN){
+                    String mplsPhysicalSwitchUuid = Q.New(PhysicalSwitchUpLinkRefVO.class)
+                            .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,physicalSwitchUuid)
+                            .select(PhysicalSwitchUpLinkRefVO_.uplinkPhysicalSwitchUuid)
+                            .findValue();
+                    if(mplsPhysicalSwitchUuid.equals(oldPhysicalSwitchUuid)){
+                        return true;
+                    }else{
+                        return false;
+                    }
+                }else{
+                    String oldMplsPhysicalSwitchUuid = Q.New(PhysicalSwitchUpLinkRefVO.class)
+                            .eq(PhysicalSwitchUpLinkRefVO_.physicalSwitchUuid,oldPhysicalSwitchUuid)
+                            .select(PhysicalSwitchUpLinkRefVO_.uplinkPhysicalSwitchUuid)
+                            .findValue();
+                    if(oldMplsPhysicalSwitchUuid.equals(physicalSwitchUuid)){
+                        return true;
+                    }else{
+                        return false;
+                    }
+                }
             }
         }
     }
