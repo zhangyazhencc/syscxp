@@ -235,6 +235,7 @@ public class ControllerCommands {
      */
     public static class ControllerRestResponse {
         private boolean success;
+        private Boolean rollback;
         private String msg;
 
         public boolean isSuccess() {
@@ -251,6 +252,14 @@ public class ControllerCommands {
 
         public void setMsg(String msg) {
             this.msg = msg;
+        }
+
+        public Boolean isRollback() {
+            return rollback;
+        }
+
+        public void setRollback(Boolean rollback) {
+            this.rollback = rollback;
         }
     }
 

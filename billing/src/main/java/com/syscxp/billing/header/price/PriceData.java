@@ -9,6 +9,7 @@ public class PriceData {
 
     private String areaCode;
     private String lineCode;
+    private String lineName;
     private String configMixPrice;
     private BigDecimal config2MPrice;
     private BigDecimal config5MPrice;
@@ -27,7 +28,8 @@ public class PriceData {
     public PriceData(Object[] objs) {
         areaCode = (String) objs[0];
         lineCode = (String) objs[1];
-        configMixPrice = (String) objs[2];
+        lineName = (String) objs[2];
+        configMixPrice = (String) objs[3];
     }
 
     public String getConfigMixPrice() {
@@ -148,5 +150,13 @@ public class PriceData {
 
     public void setConfig10GPrice(BigDecimal config10GPrice) {
         this.config10GPrice = config10GPrice;
+    }
+
+    public String getLineName() {
+        return lineName;
+    }
+
+    public void setLineName(String lineName) {
+        this.lineName = lineName;
     }
 }

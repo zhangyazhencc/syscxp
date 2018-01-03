@@ -55,6 +55,7 @@ import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
 import com.syscxp.tunnel.tunnel.job.DeleteTunnelControlJob;
 import com.syscxp.tunnel.tunnel.job.EnabledOrDisabledTunnelControlJob;
+import com.syscxp.tunnel.tunnel.job.RevertTunnelControlJob;
 import com.syscxp.tunnel.tunnel.job.UpdateBandwidthJob;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.URLBuilder;
@@ -463,6 +464,17 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
                 .find();
         boolean isUsed = tsPort != null;
+        String commands = null;
+
+        if(isUsed){
+            TunnelVO vo = Q.New(TunnelVO.class)
+                    .eq(TunnelVO_.uuid, tsPort.getTunnelUuid())
+                    .find();
+            commands = JSONObjectUtil.toJsonString(new TunnelControllerBase().getTunnelConfigInfo(vo));
+        }
+
+        final String revertCommands = commands;
+
         Map<String, Object> rollback = new HashMap<>();
         if (tsPort != null && iface.getType() == NetworkType.QINQ) {
             List<QinqVO> qinqs = Q.New(QinqVO.class)
@@ -538,6 +550,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void run(FlowTrigger trigger, Map data) {
                 if (isUsed && msg.isIssue()) {
+
                     TunnelVO tunnel = Q.New(TunnelVO.class)
                             .eq(TunnelVO_.uuid, tsPort.getTunnelUuid())
                             .find();
@@ -554,6 +567,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                 trigger.next();
                             } else {
                                 logger.info(String.format("Failed to restart tunnel[uuid:%s].", tunnel.getUuid()));
+
+                                //恢复Tunnel
+                                if(reply.getError().getDetails().contains("failed to execute the command and rollback")){
+                                    logger.info("修改专线失败，控制器回滚失败，开始恢复专线");
+                                    taskRevertTunnel(tunnel,revertCommands);
+                                }
+
                                 trigger.fail(reply.getError());
                             }
                         }
@@ -1067,6 +1087,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         }
 
+        String revertCommands = JSONObjectUtil.toJsonString(new TunnelControllerBase().getTunnelConfigInfo(vo));
+
         TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "A")
@@ -1207,6 +1229,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                 trigger.next();
                             } else {
                                 logger.info(String.format("Failed update vlan of tunnel[uuid:%s].", vo.getUuid()));
+
+                                //恢复Tunnel
+                                if(reply.getError().getDetails().contains("failed to execute the command and rollback")){
+                                    logger.info("修改专线失败，控制器回滚失败，开始恢复专线");
+                                    taskRevertTunnel(vo,revertCommands);
+                                }
+
                                 trigger.fail(reply.getError());
                             }
                         }
@@ -1852,6 +1881,29 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 });
             }
         }
+    }
+
+    private void taskRevertTunnel(TunnelVO vo,String commands){
+        TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.Revert);
+
+        RevertTunnelMsg revertTunnelMsg = new RevertTunnelMsg();
+        revertTunnelMsg.setCommands(commands);
+        revertTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+        bus.makeLocalServiceId(revertTunnelMsg, TunnelConstant.SERVICE_ID);
+        bus.send(revertTunnelMsg, new CloudBusCallBack(null) {
+            @Override
+            public void run(MessageReply reply) {
+                if (reply.isSuccess()) {
+                    logger.info("恢复专线成功");
+                } else {
+                    logger.info("下发恢复通道失败，创建任务：RevertTunnelControlJob");
+                    RevertTunnelControlJob job = new RevertTunnelControlJob();
+                    job.setTunnelUuid(vo.getUuid());
+                    job.setCommands(commands);
+                    jobf.execute("恢复专线-控制器下发", Platform.getManagementServerId(), job);
+                }
+            }
+        });
     }
 
     private void taskDeleteTunnel(TunnelVO vo) {

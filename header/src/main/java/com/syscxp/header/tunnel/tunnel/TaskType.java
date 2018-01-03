@@ -9,5 +9,6 @@ public enum TaskType {
     ModifyBandwidth,
     ModifyPorts,
     Create,
-    Delete
+    Delete,
+    Revert
 }
