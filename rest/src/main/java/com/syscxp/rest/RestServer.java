@@ -918,8 +918,7 @@ public class RestServer implements Component, CloudBusEventListener {
             if (!"null".equals(api.action)) {
                 actions.add(api.action);
             }
-            actions.addAll(api.optionalActions);
-
+            Collections.addAll(actions, at.optionalActions());
 
             for (String action : actions) {
                 api = new Api(clz, at);
