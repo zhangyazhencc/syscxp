@@ -8,8 +8,8 @@ package com.syscxp.rest;
  */
 public interface RestConstants {
     String API_VERSION = "/v1";
-    String ASYNC_JOB_PATH = "/api-jobs";
     String ALL_PATH = "/v1/**";
+    String ASYNC_JOB_ACTION = "ApiResult";
 
     String HEADER_JSON_SCHEMA = "X-JSON-Schema";
     String HEADER_WEBHOOK = "X-Web-Hook";
@@ -17,5 +17,4 @@ public interface RestConstants {
     String HEADER_JOB_SUCCESS = "X-Job-Success";
     String HEADER_OAUTH = "OAuth";
 
-    String UNIT_TEST_WEBHOOK_PATH = "/rest-webhook";
 }

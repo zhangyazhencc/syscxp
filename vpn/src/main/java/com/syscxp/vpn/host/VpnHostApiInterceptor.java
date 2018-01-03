@@ -30,7 +30,7 @@ public class VpnHostApiInterceptor implements ApiMessageInterceptor {
 
     private void validate(APIDeleteHostMsg msg) {
         Q q = Q.New(VpnVO.class)
-                .eq(VpnVO_.uuid, msg.getUuid());
+                .eq(VpnVO_.hostUuid, msg.getUuid());
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr(
                     "The VpnHost[uuid:%s] has vpn server.", msg.getUuid()
