@@ -5,7 +5,15 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.rest.RestRequest;
+import org.springframework.http.HttpMethod;
 
+
+@RestRequest(
+        method = HttpMethod.DELETE,
+        isAction = true,
+        responseClass = APIDeleteHostInterfaceEvent.class
+)
 public class APIDeleteHostInterfaceMsg extends APIDeleteMessage {
     @APIParam(resourceType = HostInterfaceVO.class)
     private String uuid;

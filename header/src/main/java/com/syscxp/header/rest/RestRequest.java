@@ -13,12 +13,23 @@ import java.lang.annotation.Target;
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface RestRequest {
-    String path();
-    String[] optionalPaths() default  {};
+    String path() default RESTConstant.EMPTY_STRING;
+
+    String[] optionalPaths() default {};
+
     HttpMethod method();
+
     boolean isAction() default false;
-    String parameterName() default RESTConstant.DEFAULT_PARAMETER_NAME;
+
+    String action() default RESTConstant.EMPTY_STRING;
+
+    String[] optionalActions() default {};
+
+    String parameterName() default RESTConstant.EMPTY_STRING;
+
     String[] mappingFields() default {};
+
     Class responseClass();
-    String category() default "";
+
+    String category() default RESTConstant.EMPTY_STRING;
 }

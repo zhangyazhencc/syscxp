@@ -3,14 +3,15 @@ package com.syscxp.rest;
 import com.syscxp.core.Platform;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.CloudBusEventListener;
+import com.syscxp.core.componentloader.PluginRegistry;
 import com.syscxp.core.retry.Retry;
 import com.syscxp.core.retry.RetryCondition;
+import com.syscxp.header.Component;
 import com.syscxp.header.Constants;
 import com.syscxp.header.MapField;
 import com.syscxp.header.apimediator.ApiMediatorConstant;
 import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.identity.SessionInventory;
-import com.syscxp.header.identity.SuppressCredentialCheck;
 import com.syscxp.header.message.*;
 import com.syscxp.header.query.APIQueryMessage;
 import com.syscxp.header.query.APIQueryReply;
@@ -20,7 +21,6 @@ import com.syscxp.header.rest.*;
 import com.syscxp.rest.sdk.DocumentGenerator;
 import com.syscxp.rest.sdk.SdkFile;
 import com.syscxp.rest.sdk.SdkTemplate;
-import com.syscxp.header.Component;
 import com.syscxp.utils.*;
 import com.syscxp.utils.gson.JSONObjectUtil;
 import com.syscxp.utils.logging.CLogger;
@@ -39,7 +39,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.util.AntPathMatcher;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -53,7 +52,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.net.URLDecoder;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -79,6 +77,8 @@ public class RestServer implements Component, CloudBusEventListener {
     private AsyncRestApiStore asyncStore;
     @Autowired
     private RESTFacade restf;
+    @Autowired
+    private PluginRegistry pluginRgty;
 
     private List<RestServletRequestInterceptor> interceptors = new ArrayList<>();
 
@@ -98,7 +98,7 @@ public class RestServer implements Component, CloudBusEventListener {
             session = req.getSession();
             remoteHost = req.getRemoteHost();
 
-            for (Enumeration e = req.getHeaderNames(); e.hasMoreElements() ;) {
+            for (Enumeration e = req.getHeaderNames(); e.hasMoreElements(); ) {
                 String name = e.nextElement().toString();
                 headers.add(name, req.getHeader(name));
             }
@@ -111,16 +111,14 @@ public class RestServer implements Component, CloudBusEventListener {
         }
     }
 
-    private static final String ASYNC_JOB_PATH_PATTERN = String.format("%s/%s/{uuid}", RestConstants.API_VERSION, RestConstants.ASYNC_JOB_ACTION);
-
     public static void generateDocTemplate(String path, DocumentGenerator.DocMode mode) {
-        DocumentGenerator rg =  GroovyUtils.newInstance("scripts/RestDocumentationGenerator.groovy");
+        DocumentGenerator rg = GroovyUtils.newInstance("scripts/RestDocumentationGenerator.groovy");
         rg.generateDocTemplates(path, mode);
     }
 
     public static void generateMarkdownDoc(String path) {
         System.setProperty(Constants.UUID_FOR_EXAMPLE, "true");
-        DocumentGenerator rg =  GroovyUtils.newInstance("scripts/RestDocumentationGenerator.groovy");
+        DocumentGenerator rg = GroovyUtils.newInstance("scripts/RestDocumentationGenerator.groovy");
         rg.generateMarkDown(path, PathUtil.join(System.getProperty("user.home"), "syscxp-markdown"));
     }
 
@@ -263,21 +261,21 @@ public class RestServer implements Component, CloudBusEventListener {
         RestResponse responseAnnotation;
         Map<String, String> requestMappingFields;
         String path;
-        List<String> optionalPaths = new ArrayList<>();
-        String actionName;
+        String action;
+        List<String> optionalActions;
 
         Map<String, Field> allApiClassFields = new HashMap<>();
 
         @Override
         public String toString() {
-            return String.format("%s-%s", requestAnnotation.method(), "null".equals(requestAnnotation.path()) ? apiClass.getName() : path);
+            return String.format("%s-%s-%s", requestAnnotation.method(), path, action);
         }
 
         Api(Class clz, RestRequest at) {
             apiClass = clz;
             requestAnnotation = at;
             apiResponseClass = at.responseClass();
-            path = String.format("%s%s", RestConstants.API_VERSION, at.path());
+            path = String.format("%s%s%s", RestGlobalConfig.SYSCXP_API_SERVER_URL.value(), RestConstants.BASE_PATH, RestConstants.API_VERSION);
 
             if (at.mappingFields().length > 0) {
                 requestMappingFields = new HashMap<>();
@@ -294,18 +292,20 @@ public class RestServer implements Component, CloudBusEventListener {
 
             responseAnnotation = (RestResponse) apiResponseClass.getAnnotation(RestResponse.class);
             DebugUtils.Assert(responseAnnotation != null, String.format("%s must be annotated with @RestResponse", apiResponseClass));
-            Collections.addAll(optionalPaths, at.optionalPaths());
-            optionalPaths = optionalPaths.stream().map( p -> String.format("%s%s", RestConstants.API_VERSION, p)).collect(Collectors.toList());
 
-            if (at.isAction()) {
-                actionName = StringUtils.removeStart(apiClass.getSimpleName(), "API");
-                actionName = StringUtils.removeEnd(actionName, "Msg");
-                actionName = StringUtils.uncapitalize(actionName);
+            Collections.addAll(optionalActions, at.optionalActions());
+
+            if (!at.isAction() && requestAnnotation.action().isEmpty()) {
+                throw new CloudRuntimeException(String.format("Invalid @RestRequest of %s, either isAction must be set to true or" +
+                        " action is set to a non-empty string", apiClass.getName()));
             }
 
-            if (!at.isAction() && requestAnnotation.parameterName().isEmpty() && requestAnnotation.method() == HttpMethod.PUT) {
-                throw new CloudRuntimeException(String.format("Invalid @RestRequest of %s, either isAction must be set to true or" +
-                        " parameterName is set to a non-empty string", apiClass.getName()));
+            if (at.isAction()) {
+                action = StringUtils.removeStart(apiClass.getSimpleName(), "API");
+                action = StringUtils.removeEnd(action, "Msg");
+//                action = StringUtils.uncapitalize(action);
+            } else {
+                action = requestAnnotation.action();
             }
 
             List<Field> fs = FieldUtils.getAllFields(apiClass);
@@ -339,14 +339,6 @@ public class RestServer implements Component, CloudBusEventListener {
             }
         }
 
-        String getMappingField(String key) {
-            if (requestMappingFields == null) {
-                return null;
-            }
-
-            return requestMappingFields.get(key);
-        }
-
         private void mapQueryParameterToApiFieldValue(String name, String[] vals, Map<String, Object> params) throws RestException {
             String[] pairs = name.split("\\.");
             String fname = pairs[0];
@@ -359,7 +351,7 @@ public class RestServer implements Component, CloudBusEventListener {
             }
 
             MapField at = f.getAnnotation(MapField.class);
-            DebugUtils.Assert(at!=null, String.format("%s::%s must be annotated by @MapField", apiClass, fname));
+            DebugUtils.Assert(at != null, String.format("%s::%s must be annotated by @MapField", apiClass, fname));
 
             Map m = (Map) params.get(fname);
             if (m == null) {
@@ -435,7 +427,8 @@ public class RestServer implements Component, CloudBusEventListener {
 
                 if (annotation.fieldsTo().length == 1 && "all".equals(annotation.fieldsTo()[0])) {
                     List<Field> apiFields = FieldUtils.getAllFields(apiResponseClass);
-                    apiFields = apiFields.stream().filter(f -> !f.isAnnotationPresent(APINoSee.class) && !Modifier.isStatic(f.getModifiers())).collect(Collectors.toList());
+                    apiFields = apiFields.stream().filter(f -> !f.isAnnotationPresent(APINoSee.class)
+                            && !Modifier.isStatic(f.getModifiers())).collect(Collectors.toList());
 
                     for (Field f : apiFields) {
                         responseMappingFields.put(f.getName(), f.getName());
@@ -463,7 +456,7 @@ public class RestServer implements Component, CloudBusEventListener {
 
     private AntPathMatcher matcher = new AntPathMatcher();
 
-    private Map<String, Object> apis = new HashMap<>();
+    private Map<String, Api> apis = new HashMap<>();
     private Map<Class, RestResponseWrapper> responseAnnotationByClass = new HashMap<>();
 
     private HttpEntity<String> toHttpEntity(HttpServletRequest req) {
@@ -472,7 +465,7 @@ public class RestServer implements Component, CloudBusEventListener {
             req.getReader().close();
 
             HttpHeaders header = new HttpHeaders();
-            for (Enumeration e = req.getHeaderNames(); e.hasMoreElements() ;) {
+            for (Enumeration e = req.getHeaderNames(); e.hasMoreElements(); ) {
                 String name = e.nextElement().toString();
                 header.add(name, req.getHeader(name));
             }
@@ -500,22 +493,11 @@ public class RestServer implements Component, CloudBusEventListener {
         rsp.getWriter().write(body == null ? "" : body);
     }
 
-    private String getDecodedUrl(HttpServletRequest req) {
-        try {
-            if (req.getContextPath() == null) {
-                return URLDecoder.decode(req.getRequestURI(), "UTF-8");
-            } else {
-                return URLDecoder.decode(StringUtils.removeStart(req.getRequestURI(), req.getContextPath()), "UTF-8");
-            }
-        } catch (UnsupportedEncodingException e) {
-            throw new CloudRuntimeException(e);
-        }
-    }
 
     void handle(HttpServletRequest req, HttpServletResponse rsp) throws IOException, IllegalAccessException, NoSuchMethodException, InvocationTargetException {
         requestInfo.set(new RequestInfo(req));
         rsp.setCharacterEncoding("utf-8");
-        String path = getDecodedUrl(req);
+        String action = req.getParameter(RestConstants.ACTION);
         HttpEntity<String> entity = toHttpEntity(req);
 
         if (requestLogger.isTraceEnabled()) {
@@ -540,36 +522,25 @@ public class RestServer implements Component, CloudBusEventListener {
             return;
         }
 
-        if (matcher.match(ASYNC_JOB_PATH_PATTERN, path)) {
+        if (RestConstants.ASYNC_JOB_ACTION.equals(action)) {
             handleJobQuery(req, rsp);
             return;
         }
 
-        Object api = apis.get(path);
-        if (api == null) {
-            for (String p : apis.keySet()) {
-                if (matcher.match(p, path)) {
-                    api = apis.get(p);
-                    break;
-                }
-            }
-        }
+        Api api = apis.get(action);
+
 
         if (api == null) {
-            sendResponse(HttpStatus.NOT_FOUND.value(), String.format("no api mapping to %s", path), rsp);
+            sendResponse(HttpStatus.NOT_FOUND.value(), String.format("no api mapping to Action[name: %s]", action), rsp);
             return;
         }
 
         try {
-            if (api instanceof Api) {
-                handleUniqueApi((Api) api, entity, req, rsp);
-            } else {
-                handleNonUniqueApi((Collection)api, entity, req, rsp);
-            }
+            handleApi(api, req, rsp);
         } catch (RestException e) {
             sendResponse(e.statusCode, e.error, rsp);
         } catch (Throwable e) {
-            logger.warn(String.format("failed to handle API to %s", path), e);
+            logger.warn(String.format("failed to handle API to Action[name: %s]", action), e);
             sendResponse(HttpStatus.INTERNAL_SERVER_ERROR.value(), e.getMessage(), rsp);
         }
     }
@@ -580,8 +551,7 @@ public class RestServer implements Component, CloudBusEventListener {
             return;
         }
 
-        Map<String, String> vars = matcher.extractUriTemplateVariables(ASYNC_JOB_PATH_PATTERN, getDecodedUrl(req));
-        String uuid = vars.get("uuid");
+        String uuid = req.getParameter("uuid");
         AsyncRestQueryResult ret = asyncStore.query(uuid);
 
         if (ret.getState() == AsyncRestState.expired) {
@@ -615,121 +585,50 @@ public class RestServer implements Component, CloudBusEventListener {
         sendResponse(statusCode, response.isEmpty() ? "" : JSONObjectUtil.toJsonString(response), rsp);
     }
 
-    private void handleNonUniqueApi(Collection<Api> apis, HttpEntity<String> entity, HttpServletRequest req, HttpServletResponse rsp) throws RestException, InvocationTargetException, NoSuchMethodException, InstantiationException, IllegalAccessException, IOException {
-        Map m = JSONObjectUtil.toObject(entity.getBody(), LinkedHashMap.class);
-        Api api;
+    private String getSession(HttpServletRequest req) {
 
-        String parameterName = null;
-        if ("POST".equals(req.getMethod())) {
-            // create API
-            Optional<Api> o = apis.stream().filter(a -> a.requestAnnotation.method().name().equals("POST")).findAny();
-            if (!o.isPresent()) {
-                throw new RestException(HttpStatus.INTERNAL_SERVER_ERROR.value(), String.format("No creational API found" +
-                        " for the path[%s]", req.getRequestURI()));
-            }
 
-            api = o.get();
-        } else if ("PUT".equals(req.getMethod())) {
-            // action API
-            Optional<Api> o = apis.stream().filter(a -> m.containsKey(a.actionName)).findAny();
-
-            if (!o.isPresent()) {
-                throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("the body doesn't contain action mapping" +
-                        " to the URL[%s]", getDecodedUrl(req)));
-            }
-
-            api = o.get();
-            parameterName = api.actionName;
-        } else if ("GET".equals(req.getMethod())) {
-            // query API
-            Optional<Api> o = apis.stream().filter(a -> a.requestAnnotation.method().name().equals("GET")).findAny();
-            if (!o.isPresent()) {
-                throw new RestException(HttpStatus.INTERNAL_SERVER_ERROR.value(), String.format("No query API found" +
-                        " for the path[%s]", req.getRequestURI()));
-            }
-
-            api = o.get();
-        } else if ("DELETE".equals(req.getMethod())) {
-            // DELETE API
-            Optional<Api> o = apis.stream().filter(a -> a.requestAnnotation.method().name().equals("DELETE")).findAny();
-            if (!o.isPresent()) {
-                throw new RestException(HttpStatus.INTERNAL_SERVER_ERROR.value(), String.format("No delete API found" +
-                        " for the path[%s]", req.getRequestURI()));
-            }
-
-            api = o.get();
-        } else {
-            throw new RestException(HttpStatus.METHOD_NOT_ALLOWED.value(), String.format("The method[%s] is not allowed for" +
-                    " the path[%s]", req.getMethod(), req.getRequestURI()));
-        }
-
-        parameterName = parameterName == null ? api.requestAnnotation.parameterName() : parameterName;
-        handleApi(api, m, parameterName, entity, req, rsp);
+        return req.getParameter("sessionUuid");
     }
 
-    private void handleApi(Api api, Map body, String parameterName, HttpEntity<String> entity, HttpServletRequest req, HttpServletResponse rsp) throws RestException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, IOException {
-        if (body == null) {
-            // for some POST request, the body may be null, for example, attach primary storage to a cluster
-            body = new HashMap();
-        }
+    private void handleApi(Api api, HttpServletRequest req, HttpServletResponse rsp) throws RestException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, IOException {
 
-        String sessionId = null;
-        if (!api.apiClass.isAnnotationPresent(SuppressCredentialCheck.class)) {
-            String auth = entity.getHeaders().getFirst("Authorization");
-            if (auth == null) {
-                throw new RestException(HttpStatus.BAD_REQUEST.value(), "missing header 'Authorization'");
-            }
-
-            auth = auth.trim();
-            if (!auth.startsWith(RestConstants.HEADER_OAUTH)) {
-                throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Authorization type must be '%s'", RestConstants.HEADER_OAUTH));
-            }
-
-            sessionId = auth.replaceFirst("OAuth", "").trim();
-        }
+        String sessionId = getSession(req);
 
         if (APIQueryMessage.class.isAssignableFrom(api.apiClass)) {
             handleQueryApi(api, sessionId, req, rsp);
             return;
         }
 
-        Object parameter;
-        if (req.getMethod().equals(HttpMethod.GET.toString()) || req.getMethod().equals(HttpMethod.DELETE.toString())) {
-            // GET uses query string to pass parameters
-            Map<String, Object> m = new HashMap<>();
+        // uses query string to pass parameters
+        Map<String, Object> parameter = new HashMap<>();
 
-            Map<String, String[]> queryParameters = req.getParameterMap();
-            for (Map.Entry<String,  String[]> e : queryParameters.entrySet()) {
-                String k = e.getKey();
-                String[] vals = e.getValue();
+        Map<String, String[]> vars = req.getParameterMap();
+        for (Map.Entry<String, String[]> e : vars.entrySet()) {
+            String k = e.getKey();
+            String[] vals = e.getValue();
 
-                if (k.contains(".")) {
-                    // this is a map parameter
-                    api.mapQueryParameterToApiFieldValue(k, vals, m);
-                } else {
-                    Object val = api.queryParameterToApiFieldValue(k, vals);
-                    if (val == null) {
-                        logger.warn(String.format("unknown query parameter[%s], ignored", k));
-                        continue;
-                    }
-
-                    m.put(k, val);
+            if (k.contains(".")) {
+                // this is a map parameter
+                api.mapQueryParameterToApiFieldValue(k, vals, parameter);
+            } else {
+                Object val = api.queryParameterToApiFieldValue(k, vals);
+                if (val == null) {
+                    logger.warn(String.format("unknown query parameter[%s], ignored", k));
+                    continue;
                 }
+                parameter.put(k, val);
             }
-
-            parameter = m;
-        } else {
-            parameter = body.get(parameterName);
         }
 
         APIMessage msg;
-        if (parameter == null) {
+        if (!parameter.isEmpty()) {
             msg = (APIMessage) api.apiClass.newInstance();
         } else {
             // check boolean type parameters
             for (Field f : api.apiClass.getDeclaredFields()) {
                 if (f.getType().isAssignableFrom(boolean.class)) {
-                    Object booleanObject = ((Map) parameter).get(f.getName());
+                    Object booleanObject = parameter.get(f.getName());
                     if (booleanObject == null) {
                         continue;
                     }
@@ -763,25 +662,12 @@ public class RestServer implements Component, CloudBusEventListener {
             msg.setSession(session);
         }
 
-        if (!req.getMethod().equals(HttpMethod.GET.toString()) && !req.getMethod().equals(HttpMethod.DELETE.toString())) {
-            Object systemTags = body.get("systemTags");
-            if (systemTags != null) {
-                msg.setSystemTags((List<String>) systemTags);
-            }
-
-            Object userTags = body.get("userTags");
-            if (userTags != null) {
-                msg.setUserTags((List<String>) userTags);
-            }
-        }
-
-        Map<String, String> vars = matcher.extractUriTemplateVariables(api.path, getDecodedUrl(req));
-        for (Map.Entry<String, String> e : vars.entrySet()) {
-            // set fields parsed from the URL
-            String key = e.getKey();
-            String mappingKey = api.getMappingField(key);
-            PropertyUtils.setProperty(msg, mappingKey == null ? key : mappingKey, e.getValue());
-        }
+//        for (Map.Entry<String, String[]> e : vars.entrySet()) {
+//            // set fields parsed from the URL
+//            String key = e.getKey();
+//            String mappingKey = api.getMappingField(key);
+//            PropertyUtils.setProperty(msg, mappingKey == null ? key : mappingKey, e.getValue()[0]);
+//        }
 
         msg.setServiceId(ApiMediatorConstant.SERVICE_ID);
         sendMessage(msg, api, rsp);
@@ -818,10 +704,8 @@ public class RestServer implements Component, CloudBusEventListener {
         msg.setSession(session);
         msg.setServiceId(ApiMediatorConstant.SERVICE_ID);
 
-        Map<String, String> urlvars = matcher.extractUriTemplateVariables(api.path, getDecodedUrl(req));
-        String uuid = urlvars.get("uuid");
+        String uuid = req.getParameter("uuid");
         if (uuid != null) {
-            // this is a GET /xxxx/uuid
             // return the resource directly
             QueryCondition qc = new QueryCondition();
             qc.setName("uuid");
@@ -868,47 +752,44 @@ public class RestServer implements Component, CloudBusEventListener {
                 }
 
                 msg.setSortBy(varvalue);
-            } else if ("q".startsWith(varname)) {
-                String[] conds = e.getValue();
+            } else if (Pattern.matches(RestConstants.CONDITION, varname)) {
 
-                for (String cond : conds) {
-                    String OP = null;
-                    String delimiter = null;
-                    for (String op : QUERY_OP_MAPPING.keySet()) {
-                        if (cond.contains(op)) {
-                            OP = QUERY_OP_MAPPING.get(op);
-                            delimiter = op;
-                            break;
-                        }
+                String OP = null;
+                String delimiter = null;
+                for (String op : QUERY_OP_MAPPING.keySet()) {
+                    if (varvalue.contains(op)) {
+                        OP = QUERY_OP_MAPPING.get(op);
+                        delimiter = op;
+                        break;
                     }
-
-                    if (OP == null) {
-                        throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid query parameter." +
-                                " The '%s' in the parameter[q] doesn't contain any query operator. Valid query operators are" +
-                                " %s", cond, asList(QUERY_OP_MAPPING.keySet())));
-                    }
-
-                    QueryCondition qc = new QueryCondition();
-                    String[] ks = StringUtils.splitByWholeSeparator(cond, delimiter, 2);
-                    if (OP.equals(QueryOp.IS_NULL.toString()) || OP.equals(QueryOp.NOT_NULL.toString())) {
-                        String cname = ks[0].trim();
-                        qc.setName(cname);
-                        qc.setOp(OP);
-                    } else {
-                        if (ks.length != 2) {
-                            throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid query parameter." +
-                                    " The '%s' in parameter[q] is not a key-value pair split by %s", cond, OP));
-                        }
-
-                        String cname = ks[0].trim();
-                        String cvalue = ks[1]; // don't trim the value, a space is valid in some conditions
-                        qc.setName(cname);
-                        qc.setOp(OP);
-                        qc.setValue(cvalue);
-                    }
-
-                    msg.getConditions().add(qc);
                 }
+
+                if (OP == null) {
+                    throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid query parameter." +
+                            " The '%s' in the parameter[q] doesn't contain any query operator. Valid query operators are" +
+                            " %s", varvalue, asList(QUERY_OP_MAPPING.keySet())));
+                }
+
+                QueryCondition qc = new QueryCondition();
+                String[] ks = StringUtils.splitByWholeSeparator(varvalue, delimiter, 2);
+                if (OP.equals(QueryOp.IS_NULL.toString()) || OP.equals(QueryOp.NOT_NULL.toString())) {
+                    String cname = ks[0].trim();
+                    qc.setName(cname);
+                    qc.setOp(OP);
+                } else {
+                    if (ks.length != 2) {
+                        throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid query parameter." +
+                                " The '%s' in parameter[q] is not a key-value pair split by %s", varvalue, OP));
+                    }
+
+                    String cname = ks[0].trim();
+                    String cvalue = ks[1]; // don't trim the value, a space is valid in some conditions
+                    qc.setName(cname);
+                    qc.setOp(OP);
+                    qc.setValue(cvalue);
+                }
+
+                msg.getConditions().add(qc);
             } else if ("fields".equals(varname)) {
                 List<String> fs = new ArrayList<>();
                 for (String f : varvalue.split(",")) {
@@ -916,24 +797,18 @@ public class RestServer implements Component, CloudBusEventListener {
                 }
 
                 if (fs.isEmpty()) {
-                    throw new RestException(HttpStatus.BAD_REQUEST.value(), String.format("Invalid query parameter. 'fields'" +
-                            " contains zero field"));
+                    throw new RestException(HttpStatus.BAD_REQUEST.value(), "Invalid query parameter. 'fields'" +
+                            " contains zero field");
                 }
                 msg.setFields(fs);
             }
         }
 
         if (msg.getConditions() == null) {
-            // no condition specified, query all
             msg.setConditions(new ArrayList<>());
         }
 
         sendMessage(msg, api, rsp);
-    }
-
-    private void handleUniqueApi(Api api, HttpEntity<String> entity, HttpServletRequest req, HttpServletResponse rsp) throws RestException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, IOException {
-        handleApi(api, JSONObjectUtil.toObject(entity.getBody(), LinkedHashMap.class),
-                api.requestAnnotation.isAction() ? api.actionName : api.requestAnnotation.parameterName(), entity, req, rsp);
     }
 
     private void writeResponse(ApiResponse response, RestResponseWrapper w, Object replyOrEvent) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
@@ -991,13 +866,9 @@ public class RestServer implements Component, CloudBusEventListener {
             }
 
             asyncStore.save(d);
-            UriComponentsBuilder ub = UriComponentsBuilder.fromHttpUrl(restf.getBaseUrl());
-            ub.path(RestConstants.API_VERSION);
-            ub.path(RestConstants.ASYNC_JOB_ACTION);
-            ub.path("/" + msg.getId());
 
             ApiResponse response = new ApiResponse();
-            response.setLocation(ub.build().toUriString());
+            response.setResult(msg.getId());
 
             bus.send(msg);
 
@@ -1008,76 +879,25 @@ public class RestServer implements Component, CloudBusEventListener {
     @Override
     public boolean start() {
         build();
-        registerRestServletRequestInterceptor(new PublicParamsValidateInterceptor());
-        registerRestServletRequestInterceptor(new SignatureValidateInterceptor());
+        populateExtensions();
+        RestGlobalConfig.SYSCXP_API_SERVER_URL.installUpdateExtension((oldConfig, newConfig) -> {
+            logger.debug(String.format("%s change from %s to %s, restart tracker thread",
+                    oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
+            build();
+        });
         return true;
     }
 
-    private String substituteUrl(String url, Map<String, String> tokens) {
-        Pattern pattern = Pattern.compile("\\{(.+?)\\}");
-        Matcher matcher = pattern.matcher(url);
-        StringBuffer buffer = new StringBuffer();
-        while (matcher.find()) {
-            String varName = matcher.group(1);
-            Object replacement = tokens.get(varName);
-            if (replacement == null) {
-                throw new CloudRuntimeException(String.format("cannot find value for URL variable[%s]", varName));
-            }
-
-            matcher.appendReplacement(buffer, "");
-            buffer.append(replacement.toString());
+    private void populateExtensions() {
+        for (RestServletRequestInterceptor ri : pluginRgty.getExtensionList(RestServletRequestInterceptor.class)) {
+            registerRestServletRequestInterceptor(ri);
         }
-
-        matcher.appendTail(buffer);
-        return buffer.toString();
     }
 
-    private List<String> getVarNamesFromUrl(String url) {
-        Pattern pattern = Pattern.compile("\\{(.+?)\\}");
-        Matcher matcher = pattern.matcher(url);
-
-        List<String> urlVars = new ArrayList<>();
-        while (matcher.find()) {
-            urlVars.add(matcher.group(1));
-        }
-
-        return urlVars;
-    }
-
-    private String normalizePath(String p) {
-        // normalize the path,
-        // paths for example /backup-storage/{backupStorageUuid}/actions
-        // and /backup-storage/{uuid}/actions are treated as equal,
-        // and will be normalized to /backup-storage/{0}/actions
-
-        List<String> varNames = getVarNamesFromUrl(p);
-        if (varNames.isEmpty()) {
-            return p;
-        }
-
-        Map<String, String> m = new HashMap<>();
-        for (int i=0; i<varNames.size(); i++) {
-            m.put(varNames.get(i), String.format("{%s}", i));
-        }
-
-        return substituteUrl(p, m);
-    }
-
-    private void collectRestRequestErrConfigApi(List<String> errorApiList, Class apiClass, RestRequest apiRestRequest){
-        if (apiRestRequest.isAction() && !RESTConstant.DEFAULT_PARAMETER_NAME.equals(apiRestRequest.parameterName())) {
-            errorApiList.add(String.format("[%s] RestRequest config error, Setting parameterName is not allowed " +
+    private void collectRestRequestErrConfigApi(List<String> errorApiList, Class apiClass, RestRequest apiRestRequest) {
+        if (apiRestRequest.isAction() && !RESTConstant.EMPTY_STRING.equals(apiRestRequest.action())) {
+            errorApiList.add(String.format("[%s] RestRequest config error, Setting action is not allowed " +
                     "when isAction set true", apiClass.getName()));
-        } else if (apiRestRequest.isAction() && HttpMethod.PUT != apiRestRequest.method()) {
-            errorApiList.add(String.format("[%s] RestRequest config error, method can only be set to HttpMethod.PUT" +
-                    " when isAction set true", apiClass.getName()));
-        }else if (!RESTConstant.DEFAULT_PARAMETER_NAME.equals(apiRestRequest.parameterName())
-                && (HttpMethod.PUT == apiRestRequest.method() || HttpMethod.DELETE == apiRestRequest.method())){
-            errorApiList.add(String.format("[%s] RestRequest config error, method is not allowed to set to " +
-                    "HttpMethod.PUT(HttpMethod.DELETE) when parameterName set a value", apiClass.getName()));
-        }else if(HttpMethod.GET == apiRestRequest.method()
-                && !RESTConstant.DEFAULT_PARAMETER_NAME.equals(apiRestRequest.parameterName())){
-            errorApiList.add(String.format("[%s] RestRequest config error, Setting parameterName is not allowed " +
-                    "when method set HttpMethod.GET", apiClass.getName()));
         }
     }
 
@@ -1089,47 +909,36 @@ public class RestServer implements Component, CloudBusEventListener {
         List<String> errorApiList = new ArrayList<>();
         for (Class clz : classes) {
             RestRequest at = (RestRequest) clz.getAnnotation(RestRequest.class);
-            Api api = new Api(clz, at);
 
             collectRestRequestErrConfigApi(errorApiList, clz, at);
 
-            List<String> paths = new ArrayList<>();
-            if (!"null".equals(api.path)) {
-                paths.add(api.path);
+            Api api = new Api(clz, at);
+
+            List<String> actions = new ArrayList<>();
+            if (!"null".equals(api.action)) {
+                actions.add(api.action);
             }
-            paths.addAll(api.optionalPaths);
+            actions.addAll(api.optionalActions);
 
 
-            for (String path : paths) {
-                String normalizedPath = normalizePath(path);
-
+            for (String action : actions) {
                 api = new Api(clz, at);
-                api.path = path;
+                api.action = action;
 
-                if (!apis.containsKey(normalizedPath)) {
-                    apis.put(normalizedPath, api);
-                } else {
-                    Object c = apis.get(normalizedPath);
+                Api old = apis.get(action);
 
-                    List lst;
-                    if (c instanceof Api) {
-                        // merge to a list
-                        lst = new ArrayList();
-                        lst.add(c);
-
-                        apis.put(normalizedPath, lst);
-                    } else {
-                        lst = (List) c;
-                    }
-
-                    lst.add(api);
+                if (old != null) {
+                    throw new CloudRuntimeException(String.format("duplicate rest API[%s, %s], they are both actions with the" +
+                            " same action name[%s]", clz, old.apiClass, action));
                 }
+                apis.put(action, api);
             }
+
 
             responseAnnotationByClass.put(api.apiResponseClass, new RestResponseWrapper(api.responseAnnotation, api.apiResponseClass));
         }
 
-        responseAnnotationByClass.put(APIEvent.class, new RestResponseWrapper(new RestResponse(){
+        responseAnnotationByClass.put(APIEvent.class, new RestResponseWrapper(new RestResponse() {
             @Override
             public Class<? extends Annotation> annotationType() {
                 return null;
@@ -1147,44 +956,11 @@ public class RestServer implements Component, CloudBusEventListener {
 
         }, APIEvent.class));
 
-        if (errorApiList.size() > 0){
+        if (errorApiList.size() > 0) {
             logger.error(String.format("Error Api list : %s", errorApiList));
             throw new RuntimeException(String.format("Error Api list : %s", errorApiList));
         }
 
-        // below codes are checking if there
-        // are duplicated APIs
-        for (Object o : apis.values()) {
-            if (!(o instanceof List)) {
-                continue;
-            }
-
-            List<Api> as = (List<Api>) o;
-            List<Api> nonActions = as.stream().filter(a -> !a.requestAnnotation.isAction()).collect(Collectors.toList());
-
-            Map<String, Api> set = new HashMap<>();
-            for (Api a : nonActions) {
-                Api old = set.get(a.toString());
-                if (old != null) {
-                    throw new CloudRuntimeException(String.format("duplicate rest API[%s, %s], they both have the same" +
-                            " HTTP methods and paths, and both are not actions. %s", a.apiClass, old.apiClass, a.toString()));
-                }
-
-                set.put(a.toString(), a);
-            }
-
-            List<Api> actions = as.stream().filter(a -> a.requestAnnotation.isAction()).collect(Collectors.toList());
-            set = new HashMap<>();
-            for (Api a : actions) {
-                Api old = set.get(a.actionName);
-                if (old != null) {
-                    throw new CloudRuntimeException(String.format("duplicate rest API[%s, %s], they are both actions with the" +
-                            " same action name[%s]", a.apiClass, old.apiClass, a.actionName));
-                }
-
-                set.put(a.actionName, a);
-            }
-        }
     }
 
     @Override

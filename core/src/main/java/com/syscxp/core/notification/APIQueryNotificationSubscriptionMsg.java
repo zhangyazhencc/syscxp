@@ -13,8 +13,7 @@ import static java.util.Arrays.asList;
  * Created by xing5 on 2017/3/18.
  */
 @RestRequest(
-        path = "/notifications/subscriptions",
-        optionalPaths = {"/notifications/subscriptions/{uuid}"},
+        isAction = true,
         method = HttpMethod.GET,
         responseClass = APIQueryNotificationSubscriptionReply.class
 )

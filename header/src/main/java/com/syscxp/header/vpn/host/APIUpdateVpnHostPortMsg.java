@@ -4,7 +4,14 @@ import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
 import com.syscxp.header.notification.ApiNotification;
+import com.syscxp.header.rest.RestRequest;
+import org.springframework.http.HttpMethod;
 
+@RestRequest(
+        method = HttpMethod.PUT,
+        isAction = true,
+        responseClass = APIUpdateVpnHostPortEvent.class
+)
 public class APIUpdateVpnHostPortMsg extends APIMessage{
     @APIParam(resourceType = VpnHostVO.class)
     private String uuid;
