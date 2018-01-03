@@ -139,7 +139,6 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
 
         });
 
-        dbf.persistAndRefresh(productPriceUnitVO);
         APICreateVPNPriceEvent event = new APICreateVPNPriceEvent(msg.getId());
         event.setInventories(ProductPriceUnitInventory.valueOf(list));
         bus.publish(event);
