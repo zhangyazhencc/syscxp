@@ -8,7 +8,6 @@ import com.syscxp.header.message.APISyncCallMessage;
  * Created by Mei Lei <meilei007@gmail.com> on 11/1/16.
  */
 @RestRequest(
-        path = "/management-nodes/actions",
         isAction = true,
         method = HttpMethod.PUT,
         responseClass = APIGetCurrentTimeReply.class

@@ -13,9 +13,8 @@ import static java.util.Arrays.asList;
  * Created by xing5 on 2017/3/18.
  */
 @RestRequest(
-        path = "/notifications",
-        optionalPaths = {"/notifications/{uuid}"},
         method = HttpMethod.GET,
+        isAction = true,
         responseClass = APIQueryNotificationReply.class
 )
 @AutoQuery(replyClass = APIQueryNotificationReply.class, inventoryClass = NotificationInventory.class)

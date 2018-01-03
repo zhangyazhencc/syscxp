@@ -1,8 +1,17 @@
 package com.syscxp.header.vpn.host;
 
+import com.syscxp.header.host.APIUpdateHostEvent;
 import com.syscxp.header.host.APIUpdateHostMsg;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.rest.RestRequest;
+import org.springframework.http.HttpMethod;
 
+
+@RestRequest(
+        method = HttpMethod.PUT,
+        isAction = true,
+        responseClass = APIUpdateHostEvent.class
+)
 public class APIUpdateVpnHostMsg extends APIUpdateHostMsg {
     @APIParam(required = false)
     private String publicIp;

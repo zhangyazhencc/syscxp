@@ -332,12 +332,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     }
 
     private void handle(APIResetVpnCertKeyMsg msg) {
-        final APIResetVpnCertKeyReply reply = new APIResetVpnCertKeyReply();
+        final APIResetVpnCertKeyEvent event = new APIResetVpnCertKeyEvent(msg.getId());
         VpnVO vpn = dbf.findByUuid(msg.getUuid(), VpnVO.class);
         vpn.setSid(Platform.getUuid());
         vpn.setCertKey(generateCertKey(vpn.getAccountUuid(), vpn.getSid()));
-        reply.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vpn)));
-        bus.reply(msg, reply);
+        event.setInventory(VpnInventory.valueOf(dbf.updateAndRefresh(vpn)));
+        bus.publish(event);
     }
 
 

@@ -30,7 +30,7 @@ public abstract class APIQueryMessage extends APISyncCallMessage {
 
     public List<QueryCondition> getConditions() {
         if (conditions == null) {
-            conditions = new ArrayList<QueryCondition>();
+            conditions = new ArrayList<>();
         }
         return conditions;
     }

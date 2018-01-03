@@ -9,7 +9,6 @@ import com.syscxp.header.message.APIMessage;
  * Created by xing5 on 2017/5/7.
  */
 @RestRequest(
-        path = "/web-hooks/{uuid}",
         method = HttpMethod.PUT,
         isAction = true,
         responseClass = APIUpdateWebhookEvent.class

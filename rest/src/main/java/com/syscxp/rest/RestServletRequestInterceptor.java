@@ -19,11 +19,7 @@ public interface RestServletRequestInterceptor {
         }
     }
 
-    String SIGNATURE = "Signature";
-    String SECRET_ID = "SecretId";
-    String TIMESTAMP = "Timestamp";
-    String ACTION = "Action";
-    String NONCE = "Nonce";
+
 
     void intercept(HttpServletRequest req) throws RestServletRequestInterceptorException;
 }

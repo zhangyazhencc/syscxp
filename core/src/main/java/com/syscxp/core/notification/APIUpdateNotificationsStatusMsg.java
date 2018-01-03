@@ -13,7 +13,6 @@ import static java.util.Arrays.asList;
  * Created by xing5 on 2017/3/18.
  */
 @RestRequest(
-        path = "/notifications/actions",
         method = HttpMethod.PUT,
         isAction = true,
         responseClass = APIUpdateNotificationsStatusEvent.class
