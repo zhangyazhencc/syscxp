@@ -201,7 +201,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         bus.publish(event);
     }
 
-    @Transactional
     private void handle(APIStopTunnelMonitorMsg msg) {
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(), TunnelVO.class);
         try {
@@ -228,7 +227,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         bus.publish(event);
     }
 
-    @Transactional
     private void handle(APIRestartTunnelMonitorMsg msg) {
 
         APIRestartTunnelMonitorEvent event = new APIRestartTunnelMonitorEvent(msg.getId());
@@ -851,11 +849,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         client.setVlan(getTunnelSwitchPortByUuid(dstTunnelMonitor.getTunnelSwitchPortUuid()).getVlan());
         client.setDst_ip(removeMaskFromIp(srcTunnelMonitor.getMonitorIp()));
         client.setProtocol(vo.getProtocolType());
-
-        Long bandwidth = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, vo.getTunnelUuid())
-                .select(TunnelVO_.bandwidth)
-                .findValue();
-        client.setBandwidth(bandwidth);
+        client.setBandwidth(SizeUnit.BYTE.toMegaByte(tunnelVO.getBandwidth())); //M
 
         commandMap.put(MonitorAgentCommands.SpeedCommandType.client.toString(), client);
 

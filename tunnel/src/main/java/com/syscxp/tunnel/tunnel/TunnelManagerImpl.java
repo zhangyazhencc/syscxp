@@ -1942,13 +1942,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     new TunnelBase().enabledTunnelJob(vo, "恢复专线连接");
                     completionTask.success(TunnelInventory.valueOf(dbf.reload(vo)));
                 } else {
-
-                    logger.info("恢复专线连接失败，创建任务：EnabledOrDisabledTunnelControlJob");
-                    EnabledOrDisabledTunnelControlJob job = new EnabledOrDisabledTunnelControlJob();
-                    job.setTunnelUuid(vo.getUuid());
-                    job.setJobType(TunnelState.Enabled);
-                    jobf.execute("恢复专线连接-控制器下发", Platform.getManagementServerId(), job);
-
+                    if(vo.getState() != TunnelState.Deployfailure && vo.getState() != TunnelState.Deploying){
+                        logger.info("恢复专线连接失败，创建任务：EnabledOrDisabledTunnelControlJob");
+                        EnabledOrDisabledTunnelControlJob job = new EnabledOrDisabledTunnelControlJob();
+                        job.setTunnelUuid(vo.getUuid());
+                        job.setJobType(TunnelState.Enabled);
+                        jobf.execute("恢复专线连接-控制器下发", Platform.getManagementServerId(), job);
+                    }
                     completionTask.fail(reply.getError());
                 }
             }
