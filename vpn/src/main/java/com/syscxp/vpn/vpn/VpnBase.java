@@ -354,7 +354,7 @@ public class VpnBase extends AbstractVpn {
     private void initVpn(final InitVpnMsg msg, final Completion completion) {
         InitVpnCmd cmd = new InitVpnCmd();
         cmd.vpnuuid = self.getUuid();
-        cmd.hostip = getHostIp();
+        cmd.hostip = getPublicIp();
         cmd.ddnport = getInterfaceName();
         cmd.vpnport = getPort();
         cmd.vpnvlanid = getVlan();
@@ -570,7 +570,7 @@ public class VpnBase extends AbstractVpn {
         VpnConfCmd cmd = new VpnConfCmd();
         cmd.vpnuuid = self.getUuid();
         cmd.vpnport = getPort();
-        cmd.hostip = getHostIp();
+        cmd.hostip = getPublicIp();
 
         httpCall(vpnConfPath, cmd, VpnConfRsp.class, new ReturnValueCompletion<VpnConfRsp>(msg) {
             @Override
@@ -688,6 +688,10 @@ public class VpnBase extends AbstractVpn {
 
     private String getHostIp() {
         return self.getVpnHost().getHostIp();
+    }
+
+    private String getPublicIp() {
+        return self.getVpnHost().getPublicIp();
     }
 
     private String getInterfaceName() {

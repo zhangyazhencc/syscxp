@@ -586,14 +586,21 @@ public class RestServer implements Component, CloudBusEventListener {
     }
 
     private String getSession(HttpServletRequest req) {
-
-
-        return req.getParameter("sessionUuid");
+//        return (String) req.getAttribute(RestConstants.SESSION_UUID);
+        return req.getParameter(RestConstants.SESSION_UUID);
     }
 
     private void handleApi(Api api, HttpServletRequest req, HttpServletResponse rsp) throws RestException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, IOException {
 
         String sessionId = getSession(req);
+
+        Map<String, String[]> vars = req.getParameterMap();
+        vars.remove(RestConstants.ACTION);
+        vars.remove(RestConstants.SECRET_ID);
+        vars.remove(RestConstants.TIMESTAMP);
+        vars.remove(RestConstants.SIGNATURE);
+        vars.remove(RestConstants.NONCE);
+        vars.remove(RestConstants.SIGNATURE_METHOD);
 
         if (APIQueryMessage.class.isAssignableFrom(api.apiClass)) {
             handleQueryApi(api, sessionId, req, rsp);
@@ -602,8 +609,6 @@ public class RestServer implements Component, CloudBusEventListener {
 
         // uses query string to pass parameters
         Map<String, Object> parameter = new HashMap<>();
-
-        Map<String, String[]> vars = req.getParameterMap();
         for (Map.Entry<String, String[]> e : vars.entrySet()) {
             String k = e.getKey();
             String[] vals = e.getValue();
@@ -661,13 +666,6 @@ public class RestServer implements Component, CloudBusEventListener {
             session.setUuid(sessionId);
             msg.setSession(session);
         }
-
-//        for (Map.Entry<String, String[]> e : vars.entrySet()) {
-//            // set fields parsed from the URL
-//            String key = e.getKey();
-//            String mappingKey = api.getMappingField(key);
-//            PropertyUtils.setProperty(msg, mappingKey == null ? key : mappingKey, e.getValue()[0]);
-//        }
 
         msg.setServiceId(ApiMediatorConstant.SERVICE_ID);
         sendMessage(msg, api, rsp);
