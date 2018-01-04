@@ -14,7 +14,6 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
-import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.agent.OrderCallbackCmd;
@@ -61,7 +60,10 @@ import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
 import com.syscxp.vpn.job.DestroyVpnJob;
 import com.syscxp.vpn.quota.VpnQuotaOperator;
-import com.syscxp.vpn.vpn.VpnCommands.*;
+import com.syscxp.vpn.vpn.VpnCommands.AgentCommand;
+import com.syscxp.vpn.vpn.VpnCommands.AgentResponse;
+import com.syscxp.vpn.vpn.VpnCommands.VpnStatusCmd;
+import com.syscxp.vpn.vpn.VpnCommands.VpnStatusRsp;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,8 +104,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private RESTFacade restf;
     @Autowired
     private ErrorFacade errf;
-    @Autowired
-    private ThreadFacade thdf;
     @Autowired
     private JobQueueFacade jobf;
 

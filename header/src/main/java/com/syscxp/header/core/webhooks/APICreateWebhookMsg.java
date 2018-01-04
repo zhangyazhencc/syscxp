@@ -9,7 +9,7 @@ import org.springframework.http.HttpMethod;
  * Created by xing5 on 2017/5/7.
  */
 @RestRequest(
-        method = HttpMethod.POST,
+        method = HttpMethod.GET,
         isAction = true,
         responseClass = APICreateWebhookEvent.class
 )

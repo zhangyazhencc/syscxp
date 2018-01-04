@@ -8,7 +8,7 @@ import org.springframework.http.HttpMethod;
 
 
 @RestRequest(
-        method = HttpMethod.PUT,
+        method = HttpMethod.GET,
         isAction = true,
         responseClass = APIUpdateHostEvent.class
 )

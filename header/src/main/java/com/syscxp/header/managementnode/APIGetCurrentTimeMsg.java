@@ -9,7 +9,7 @@ import com.syscxp.header.message.APISyncCallMessage;
  */
 @RestRequest(
         isAction = true,
-        method = HttpMethod.PUT,
+        method = HttpMethod.GET,
         responseClass = APIGetCurrentTimeReply.class
 )
 public class APIGetCurrentTimeMsg extends APISyncCallMessage {

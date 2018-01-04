@@ -8,7 +8,7 @@ import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.rest.RestRequest;
 
 @RestRequest(
-        method = HttpMethod.PUT,
+        method = HttpMethod.GET,
         isAction = true,
         responseClass = APIUpdateGlobalConfigEvent.class
 )
