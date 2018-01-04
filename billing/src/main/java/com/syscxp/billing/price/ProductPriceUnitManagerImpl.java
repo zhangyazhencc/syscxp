@@ -88,7 +88,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
 
     private void handle(APIDeleteVPNPriceMsg msg) {
         String productCategoryUuid = validateProductTypeAndCategory(msg.getProductType(), msg.getCategory());
-        if (msg.getLineCode().equalsIgnoreCase("DEFAULT")) {
+        if (msg.getAreaCode().equalsIgnoreCase("DEFAULT")) {
             throw new IllegalArgumentException("The default price can not remove");
         }
         SimpleQuery<ProductPriceUnitVO> query = dbf.createQuery(ProductPriceUnitVO.class);
