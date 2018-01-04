@@ -9,8 +9,8 @@ import com.syscxp.header.message.APIParam;
  * Created by xing5 on 2017/5/7.
  */
 @RestRequest(
-        path = "/web-hooks/{uuid}",
-        method = HttpMethod.DELETE,
+        method = HttpMethod.GET,
+        isAction = true,
         responseClass = APIDeleteWebhookEvent.class
 )
 public class APIDeleteWebhookMsg extends APIDeleteMessage {

@@ -1,10 +1,18 @@
 package com.syscxp.header.vpn.vpn;
 
-import com.syscxp.header.message.APIReply;
+import com.syscxp.header.message.APIEvent;
 import com.syscxp.header.rest.RestResponse;
 
 @RestResponse(allTo = "inventory")
-public class APIResetVpnCertKeyReply extends APIReply {
+public class APIResetVpnCertKeyEvent extends APIEvent {
+
+
+    public APIResetVpnCertKeyEvent() {
+    }
+
+    public APIResetVpnCertKeyEvent(String apiId) {
+        super(apiId);
+    }
 
     private VpnInventory inventory;
 

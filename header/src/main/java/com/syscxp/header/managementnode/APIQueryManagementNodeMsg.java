@@ -13,9 +13,8 @@ import static java.util.Arrays.asList;
  */
 @AutoQuery(replyClass = APIQueryManagementNodeReply.class, inventoryClass = ManagementNodeInventory.class)
 @RestRequest(
-        path = "/management-nodes",
-        optionalPaths = {"/management-nodes/{uuid}"},
         method = HttpMethod.GET,
+        isAction = true,
         responseClass = APIQueryManagementNodeReply.class
 )
 public class APIQueryManagementNodeMsg extends APIQueryMessage {

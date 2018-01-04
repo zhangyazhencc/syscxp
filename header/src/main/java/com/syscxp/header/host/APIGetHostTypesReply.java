@@ -9,7 +9,7 @@ import java.util.List;
 public class APIGetHostTypesReply extends APIReply {
     private List<String> hostTypes;
 
-    public List<String> getHypervisorTypes() {
+    public List<String> getHostTypes() {
         return hostTypes;
     }
 

@@ -1,21 +1,16 @@
 package com.syscxp.core.host;
 
-import com.syscxp.header.tunnel.host.HostSwitchMonitorVO;
-import com.syscxp.header.tunnel.host.HostSwitchMonitorVO_;
-import org.aspectj.weaver.patterns.ThisOrTargetAnnotationPointcut;
-import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
-import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.apimediator.StopRoutingException;
 import com.syscxp.header.host.*;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.utils.network.NetworkUtils;
-
-import java.util.List;
+import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import static com.syscxp.core.Platform.argerr;
 import static com.syscxp.core.Platform.operr;
@@ -23,8 +18,6 @@ import static com.syscxp.core.Platform.operr;
 public class HostApiInterceptor implements ApiMessageInterceptor {
     @Autowired
     private CloudBus bus;
-    @Autowired
-    private ErrorFacade errf;
     @Autowired
     private DatabaseFacade dbf;
 
@@ -61,6 +54,9 @@ public class HostApiInterceptor implements ApiMessageInterceptor {
     }
 
     private void validate(APIUpdateHostMsg msg) {
+        if (!StringUtils.isEmpty(msg.getHostIp()) && !NetworkUtils.isIpv4Address(msg.getHostIp()) && !NetworkUtils.isHostname(msg.getHostIp())) {
+            throw new ApiMessageInterceptionException(argerr("managementIp[%s] is neither an IPv4 address nor a valid hostname", msg.getHostIp()));
+        }
         HostStatus hostStatus = Q.New(HostVO.class)
                 .select(HostVO_.status)
                 .eq(HostVO_.uuid,msg.getHostUuid())

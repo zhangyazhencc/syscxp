@@ -19,5 +19,7 @@ public interface RestServletRequestInterceptor {
         }
     }
 
+
+
     void intercept(HttpServletRequest req) throws RestServletRequestInterceptorException;
 }

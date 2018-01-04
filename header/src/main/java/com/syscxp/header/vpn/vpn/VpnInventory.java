@@ -30,6 +30,7 @@ public class VpnInventory {
     private String clientConf;
     private String payment;
     private VpnHostInventory hostInventory;
+    private String vpnHostName;
     private Timestamp lastOpDate;
     private Timestamp createDate;
 
@@ -56,6 +57,7 @@ public class VpnInventory {
         inv.setClientConf(vo.getClientConf());
         inv.setPayment(vo.getPayment().toString());
         inv.setHostInventory(VpnHostInventory.valueOf(vo.getVpnHost()));
+        inv.setVpnHostName(vo.getVpnHost().getName());
         inv.setVpnCertName("");
         if (vo.getVpnCert() != null)
             inv.setVpnCertName(vo.getVpnCert().getName());
@@ -69,6 +71,14 @@ public class VpnInventory {
         }
 
         return invs;
+    }
+
+    public String getVpnHostName() {
+        return vpnHostName;
+    }
+
+    public void setVpnHostName(String vpnHostName) {
+        this.vpnHostName = vpnHostName;
     }
 
     public String getVpnCertName() {

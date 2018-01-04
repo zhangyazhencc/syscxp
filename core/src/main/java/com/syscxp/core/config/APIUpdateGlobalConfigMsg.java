@@ -8,8 +8,7 @@ import com.syscxp.header.notification.ApiNotification;
 import com.syscxp.header.rest.RestRequest;
 
 @RestRequest(
-        path = "/global-configurations/{category}/{name}/actions",
-        method = HttpMethod.PUT,
+        method = HttpMethod.GET,
         isAction = true,
         responseClass = APIUpdateGlobalConfigEvent.class
 )

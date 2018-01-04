@@ -8,5 +8,5 @@ public interface RESTConstant {
     String REST_API_RESULT = "/api/result/";
     String REST_API_CALL = "/api";
     String COMMAND_PATH = "commandpath";
-    String DEFAULT_PARAMETER_NAME = "";
+    String EMPTY_STRING = "";
 }

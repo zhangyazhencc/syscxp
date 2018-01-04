@@ -25,7 +25,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 @Controller
-@RequestMapping("/api")
 public class AlipayController {
 
     private static final CLogger logger = Utils.getLogger(RESTApiController.class);

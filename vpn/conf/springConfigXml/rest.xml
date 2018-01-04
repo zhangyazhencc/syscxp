@@ -17,9 +17,22 @@
 
     <bean id="MysqlAsyncRestStore" class="com.syscxp.rest.MysqlAsyncRestStore" />
 
+
+    <bean id="PublicParamsInterceptor" class="com.syscxp.rest.PublicParamsValidateInterceptor">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.rest.RestServletRequestInterceptor"/>
+        </syscxp:plugin>
+    </bean>
+
+    <bean id="SignatureInterceptor" class="com.syscxp.rest.SignatureValidateInterceptor">
+        <syscxp:plugin>
+            <syscxp:extension interface="com.syscxp.rest.RestServletRequestInterceptor"/>
+        </syscxp:plugin>
+    </bean>
+
     <bean id="RestServer" class="com.syscxp.rest.RestServer">
         <syscxp:plugin>
-    		<syscxp:extension interface="com.syscxp.header.Component"/>
+            <syscxp:extension interface="com.syscxp.header.Component"/>
         </syscxp:plugin>
     </bean>
 </beans>
