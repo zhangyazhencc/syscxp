@@ -201,7 +201,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         bus.publish(event);
     }
 
-    @Transactional
     private void handle(APIStopTunnelMonitorMsg msg) {
         TunnelVO tunnelVO = dbf.findByUuid(msg.getTunnelUuid(), TunnelVO.class);
         try {
@@ -228,7 +227,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         bus.publish(event);
     }
 
-    @Transactional
     private void handle(APIRestartTunnelMonitorMsg msg) {
 
         APIRestartTunnelMonitorEvent event = new APIRestartTunnelMonitorEvent(msg.getId());
