@@ -1456,7 +1456,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
     }
 
-    private void changeVpnStateByAPI(VpnVO vpn, VpnState next, final Completion complete) {
+    private void changeVpnStateByAPI(final VpnVO vpn, VpnState next, final Completion complete) {
         if (vpn.getState() == next) {
             complete.success();
             return;
@@ -1488,7 +1488,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         VpnVO vo = dbf.reload(vpn);
         vo.setState(next);
         dbf.updateAndRefresh(vo);
-        LOGGER.debug(String.format("Vpn[%s]'s state changed from %s to %s", vpn.getUuid(), currentState, vpn.getState()));
+        LOGGER.debug(String.format("Vpn[%s]'s state changed from %s to %s", vpn.getUuid(), currentState, vo.getState()));
     }
 
     private void checkHostState(VpnHostVO vo) {
