@@ -1485,6 +1485,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
 
     private void changeVpnState(VpnVO vpn, VpnState next) {
         VpnState currentState = vpn.getState();
+        dbf.reload(vpn);
         vpn.setState(next);
         dbf.updateAndRefresh(vpn);
         LOGGER.debug(String.format("Vpn[%s]'s state changed from %s to %s", vpn.getUuid(), currentState, vpn.getState()));
