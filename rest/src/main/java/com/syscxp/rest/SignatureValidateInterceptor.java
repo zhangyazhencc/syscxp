@@ -1,11 +1,14 @@
 package com.syscxp.rest;
 
+import com.syscxp.core.cloudbus.CloudBus;
+import com.syscxp.header.rest.RESTFacade;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.HMAC;
 import com.syscxp.utils.Utils;
 import com.syscxp.utils.data.StringTemplate;
 import com.syscxp.utils.function.Function;
 import com.syscxp.utils.logging.CLogger;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
@@ -24,6 +27,12 @@ import static com.syscxp.utils.StringDSL.s;
  */
 public class SignatureValidateInterceptor implements RestServletRequestInterceptor {
     private static final CLogger LOGGER = Utils.getLogger(SignatureValidateInterceptor.class);
+
+    @Autowired
+    private CloudBus bus;
+    @Autowired
+    private RESTFacade restf;
+
     private static final long EXPIRE_TIME = 600 * 1000;
 
     private Map<String, String> sessionUuids = new ConcurrentHashMap<>();
@@ -42,7 +51,7 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
         }
         LOGGER.debug("Signature校验成功，获取sessionUuid");
 
-        req.setAttribute(RestConstants.SESSION_UUID, getSessionUuid(secretId));
+        req.setAttribute(RestConstants.SESSION_UUID, getSessionUuid(secretId, secretKey));
     }
 
     private String getSignatureString(HttpServletRequest req, String secretKey) {
@@ -52,9 +61,7 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
         List<String> params = CollectionUtils.transformToList(vars.entrySet(),
                 (Function<String, Map.Entry<String, String[]>>) arg -> arg.getKey() + "=" + s(arg.getValue()));
 
-        System.out.println(req.getRequestURL().toString());
-
-        String requestString = req.getMethod() + "?" + StringTemplate.join(params, "&");
+        String requestString = req.getMethod() + req.getRequestURL().toString() + "?" + StringTemplate.join(params, "&");
 
         String hmac;
         if (req.getParameterMap().containsKey(RestConstants.SIGNATURE_METHOD)) {
@@ -77,8 +84,8 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
         return secretKey;
     }
 
-    private String getSessionUuid(String secretId) {
-        String sessionUuid = sessionUuids.get(secretId);
+    private String getSessionUuid(String secretId, String secretKey) {
+        String sessionUuid = sessionUuids.get(secretId + secretKey);
         if (sessionUuid == null) {
             sessionUuid = secretId;
 
