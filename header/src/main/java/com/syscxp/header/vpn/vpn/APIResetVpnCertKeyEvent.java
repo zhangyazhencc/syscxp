@@ -6,6 +6,14 @@ import com.syscxp.header.rest.RestResponse;
 @RestResponse(allTo = "inventory")
 public class APIResetVpnCertKeyEvent extends APIEvent {
 
+
+    public APIResetVpnCertKeyEvent() {
+    }
+
+    public APIResetVpnCertKeyEvent(String apiId) {
+        super(apiId);
+    }
+
     private VpnInventory inventory;
 
     public VpnInventory getInventory() {

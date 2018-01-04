@@ -35,26 +35,29 @@ public class HMAC {
 
     /**
      * BASE64 加密
-     * @param key 需要加密的字节数组
+     *
+     * @param key 需要加密的字符串
      * @return 字符串
      */
-    public static String encryptBase64(byte[] key){
-        return decodeUTF8(key);
+    public static String encryptBase64(String key) {
+        return Base64.encodeBase64String(encodeUTF8(key));
     }
 
     /**
      * BASE64 解密
+     *
      * @param key 需要解密的字符串
      * @return 字节数组
      */
-    public static byte[] decryptBase64(String key) {
-        return Base64.decodeBase64(key);
+    public static String decryptBase64(String key) {
+        return decodeUTF8(Base64.decodeBase64(key));
     }
 
     /**
      * HMAC加密
+     *
      * @param data 需要加密的字节数组
-     * @param key 密钥
+     * @param key  密钥
      * @return 字节数组
      */
     public static byte[] encryptHMAC(byte[] data, String key) {
@@ -66,7 +69,7 @@ public class HMAC {
         byte[] bytes = null;
         try {
             byte[] srcBytes = encodeUTF8(key);
-            secretKey = new SecretKeySpec(Base64.decodeBase64(srcBytes), algorithm);
+            secretKey = new SecretKeySpec(srcBytes, algorithm);
             Mac mac = Mac.getInstance(secretKey.getAlgorithm());
             mac.init(secretKey);
             bytes = mac.doFinal(data);
@@ -76,17 +79,11 @@ public class HMAC {
         return bytes;
     }
 
-    public static byte[] encryptHMAC(String data, String key) {
-        return encryptHMAC(data, key, KEY_MAC_DEFAULT);
-    }
-    public static byte[] encryptHMAC(String data, String key, String algorithm) {
-        return encryptHMAC(data.getBytes(), key, algorithm);
-    }
-
     /**
      * HMAC加密
+     *
      * @param data 需要加密的字符串
-     * @param key 密钥
+     * @param key  密钥
      * @return 字符串
      */
     public static String encryptHMACString(String data, String key) {
@@ -97,9 +94,8 @@ public class HMAC {
         if (StringUtils.isEmpty(data)) {
             return null;
         }
-        byte[] bytes = encryptHMAC(data, key, algorithm);
-        byte[] base64EncryptData = Base64.encodeBase64(bytes);
-        return decodeUTF8(base64EncryptData);
+        byte[] bytes = encryptHMAC(data.getBytes(), key, algorithm);
+        return byte2hex(bytes);
     }
 
 
@@ -111,4 +107,16 @@ public class HMAC {
         return string.getBytes(UTF8_CHARSET);
     }
 
+    private static String byte2hex(final byte[] b) {
+        StringBuilder hs = new StringBuilder();
+        for (int n = 0; n < b.length; n++) {
+            // 以十六进制（基数 16）无符号整数形式返回一个整数参数的字符串表示形式。
+            String stmp = Integer.toHexString(b[n] & 0xFF);
+            if (stmp.length() == 1) {
+                hs.append("0");
+            }
+            hs.append(stmp);
+        }
+        return hs.toString();
+    }
 }

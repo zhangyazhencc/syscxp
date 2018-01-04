@@ -1,11 +1,9 @@
 package com.syscxp.rest;
 
-import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.utils.CollectionUtils;
 import com.syscxp.utils.HMAC;
 import com.syscxp.utils.data.StringTemplate;
 import com.syscxp.utils.function.Function;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Comparator;
@@ -22,10 +20,6 @@ import static com.syscxp.utils.StringDSL.s;
  * Author: wj
  */
 public class SignatureValidateInterceptor implements RestServletRequestInterceptor {
-
-    @Autowired
-    private CloudBus bus;
-
 
     private static final long EXPIRE_TIME = 600 * 1000;
 
@@ -44,23 +38,28 @@ public class SignatureValidateInterceptor implements RestServletRequestIntercept
     }
 
     private String getSignatureString(HttpServletRequest req, String secretKey) {
-        Map<String, String[]> vars = new TreeMap<>(Comparator.naturalOrder());
+        Map<String, String[]> vars = new TreeMap<>(Comparator.comparing(String::toLowerCase));
         vars.putAll(req.getParameterMap());
         vars.remove(RestConstants.SIGNATURE);
         List<String> params = CollectionUtils.transformToList(vars.entrySet(),
-                (Function<String, Map.Entry<String, String[]>>) arg -> arg.getKey() + "=" + s(arg.getKey()));
+                (Function<String, Map.Entry<String, String[]>>) arg -> arg.getKey() + "=" + s(arg.getValue()));
 
-        String requestString = req.getMethod() + req.getRequestURL() + "?" + StringTemplate.join(params, "&") + secretKey;
+        System.out.println(req.getRequestURL().toString());
+
+        String requestString = req.getMethod() + "?" + StringTemplate.join(params, "&");
+
+        String hmac;
         if (req.getParameterMap().containsKey(RestConstants.SIGNATURE_METHOD)) {
-            return HMAC.encryptHMACString(requestString,secretKey, req.getParameter(RestConstants.SIGNATURE_METHOD));
+            hmac = HMAC.encryptHMACString(requestString,secretKey, req.getParameter(RestConstants.SIGNATURE_METHOD));
         } else {
-            return HMAC.encryptHMACString(requestString,secretKey);
+            hmac = HMAC.encryptHMACString(requestString,secretKey);
         }
+        return HMAC.encryptBase64(hmac);
     }
 
     private String getSecretKey(String secretId) {
 
-
+// todo
 
         return secretId;
     }
