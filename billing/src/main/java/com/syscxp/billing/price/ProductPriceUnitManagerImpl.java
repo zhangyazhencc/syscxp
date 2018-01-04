@@ -186,12 +186,12 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
 
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("productCategoryUuid", vo.getUuid());
-        if (!msg.getCategory().equals(Category.REGION)) {
+        if (!msg.getCategory().equals(Category.REGION) && !msg.getCategory().equals(Category.VPN)) {
             q.setParameter("areaCode", msg.getAreaCode());
         }
         Query q_count = dbf.getEntityManager().createNativeQuery(sql_count);
         q_count.setParameter("productCategoryUuid", vo.getUuid());
-        if (!msg.getCategory().equals(Category.REGION)) {
+        if (!msg.getCategory().equals(Category.REGION) && !msg.getCategory().equals(Category.VPN)) {
             q_count.setParameter("areaCode", msg.getAreaCode());
         }
         BigInteger count = (BigInteger) q_count.getSingleResult();
