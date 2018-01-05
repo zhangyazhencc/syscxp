@@ -5,7 +5,11 @@ import com.syscxp.billing.header.renew.APIUpdateRenewMsg;
 import com.syscxp.billing.header.renew.RenewInventory;
 import com.syscxp.billing.header.renew.RenewVO;
 import com.syscxp.core.Platform;
+import com.syscxp.core.db.SimpleQuery;
+import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.header.billing.APICreateOrderMsg;
+import com.syscxp.header.billing.APIDeleteExpiredRenewEvent;
+import com.syscxp.header.billing.APIDeleteExpiredRenewMsg;
 import com.syscxp.header.billing.BillingConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.syscxp.billing.header.renew.*;
@@ -61,9 +65,21 @@ public class RenewManagerImpl  extends AbstractService implements  ApiMessageInt
             handle((APIUpdateRenewMsg) msg);
         } else if (msg instanceof APIUpdateRenewPriceMsg) {
             handle((APIUpdateRenewPriceMsg) msg);
+        }  else if (msg instanceof APIDeleteExpiredRenewMsg) {
+            handle((APIDeleteExpiredRenewMsg) msg);
         }  else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APIDeleteExpiredRenewMsg msg) {
+        UpdateQuery q = UpdateQuery.New(RenewVO.class);
+        q.condAnd(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
+        q.condAnd(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
+        q.delete();
+        APIDeleteExpiredRenewEvent event = new APIDeleteExpiredRenewEvent(msg.getId());
+        event.setInventory(true);
+        bus.publish(event);
     }
 
     private void handle(APIUpdateRenewPriceMsg msg) {
