@@ -719,7 +719,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 .list();
 
         for(TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS)
-            locateIps.add(tunnelMonitorVO.getMonitorIp());
+            locateIps.add(StringUtils.substringBeforeLast(tunnelMonitorVO.getMonitorIp(),"/"));
 
         String cidrPrefix = monitorCidr.substring(0, monitorCidr.lastIndexOf("."));
         locateIps.add(cidrPrefix + ".0");
