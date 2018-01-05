@@ -367,7 +367,6 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     /***
      * job调用监控命令下发至控制器
      * @param tunnelUuid
-     * @param tunnelMonitorVOS
      * @return
      */
     public void startControllerMonitor(String tunnelUuid) {
@@ -555,7 +554,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     /***
      * 关闭agent监控
      * @param tunnelUuid
-     * @param tunnelMonitorVOS
+     * @param tunnelUuid
      */
     private void stopAgentMonitor(String tunnelUuid) {
         List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
@@ -592,10 +591,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     /***
      * 获取ICMP信息
-     * @param accountUuid
-     * @param tunnelUuid
-     * @param monitorCidr
-     * @param tunnelMonitorVOS
+     * @param tunnelMonitorVO
      * @return
      */
     public MonitorAgentCommands.AgentIcmp getAgentIcmp(TunnelMonitorVO tunnelMonitorVO) {
@@ -674,14 +670,14 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     /**
      * 生成监控ip
      *
-     * @param tunnelSwitchPortVO
+     * @param tunnelMonitorVO
      * @param monitorCidr
      * @return
      */
     private String generateMonitorIp(TunnelMonitorVO tunnelMonitorVO, String monitorCidr) {
         String ip = null;
 
-        List<String> locatedIps = getLocatedIps(tunnelMonitorVO, monitorCidr);
+        List<String> locatedIps = getLocatedIps(tunnelMonitorVO.getTunnelUuid(), monitorCidr);
 
         CIDRUtils cidrUtils = null;
         try {
@@ -715,8 +711,15 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      * @param monitorCidr
      * @return
      */
-    private List<String> getLocatedIps(TunnelMonitorVO tunnelMonitorVO, String monitorCidr) {
+    private List<String> getLocatedIps(String tunnelUuid, String monitorCidr) {
         List<String> locateIps = new ArrayList<>();
+
+        List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
+                .eq(TunnelMonitorVO_.tunnelUuid,tunnelUuid)
+                .list();
+
+        for(TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS)
+            locateIps.add(tunnelMonitorVO.getMonitorIp());
 
         String cidrPrefix = monitorCidr.substring(0, monitorCidr.lastIndexOf("."));
         locateIps.add(cidrPrefix + ".0");
@@ -1754,25 +1757,28 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 TunnelVO tunnelVO = new TunnelVO();
                 tunnelVO = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, portTunnel.getTunnelUuid()).find();
 
-                MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
-                for (TunnelSwitchPortVO tunnelSwitchPort : tunnelVO.getTunnelSwitchPortVOS()) {
-                    if (tunnelSwitchPort.getSortTag().equals(InterfaceType.A.toString())) {
-                        endpointTunnel.setNodeA(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
-                        endpointTunnel.setEndpoingAMip(getPhysicalSwitchBySwitchPort(
-                                tunnelSwitchPort.getSwitchPortUuid()).getmIP());
-                    } else if (tunnelSwitchPort.getSortTag().equals(InterfaceType.Z.toString())) {
-                        endpointTunnel.setNodeZ(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
-                        endpointTunnel.setEndpoingZMip(getPhysicalSwitchBySwitchPort(
-                                tunnelSwitchPort.getSwitchPortUuid()).getmIP());
+                if(tunnelVO.getState() == TunnelState.Enabled){
+                    logger.info("----------cessssss");
+                    MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
+                    for (TunnelSwitchPortVO tunnelSwitchPort : tunnelVO.getTunnelSwitchPortVOS()) {
+                        if (tunnelSwitchPort.getSortTag().equals(InterfaceType.A.toString())) {
+                            endpointTunnel.setNodeA(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
+                            endpointTunnel.setEndpoingAMip(getPhysicalSwitchBySwitchPort(
+                                    tunnelSwitchPort.getSwitchPortUuid()).getmIP());
+                        } else if (tunnelSwitchPort.getSortTag().equals(InterfaceType.Z.toString())) {
+                            endpointTunnel.setNodeZ(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
+                            endpointTunnel.setEndpoingZMip(getPhysicalSwitchBySwitchPort(
+                                    tunnelSwitchPort.getSwitchPortUuid()).getmIP());
+                        }
                     }
+
+                    endpointTunnel.setTunnelUuid(tunnelVO.getUuid());
+                    endpointTunnel.setTunnelName(tunnelVO.getName());
+                    endpointTunnel.setBandwidth(tunnelVO.getBandwidth());
+                    endpointTunnel.setAccountUuid(tunnelVO.getAccountUuid());
+
+                    endpointTunnels.add(endpointTunnel);
                 }
-
-                endpointTunnel.setTunnelUuid(tunnelVO.getUuid());
-                endpointTunnel.setTunnelName(tunnelVO.getName());
-                endpointTunnel.setBandwidth(tunnelVO.getBandwidth());
-                endpointTunnel.setAccountUuid(tunnelVO.getAccountUuid());
-
-                endpointTunnels.add(endpointTunnel);
             }
         }
 
