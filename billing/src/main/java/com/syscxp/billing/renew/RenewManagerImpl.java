@@ -8,7 +8,7 @@ import com.syscxp.core.Platform;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.header.billing.APICreateOrderMsg;
-import com.syscxp.header.billing.APIDeleteExpiredRenewEvent;
+import com.syscxp.header.billing.APIDeleteExpiredRenewReply;
 import com.syscxp.header.billing.APIDeleteExpiredRenewMsg;
 import com.syscxp.header.billing.BillingConstant;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -77,9 +77,9 @@ public class RenewManagerImpl  extends AbstractService implements  ApiMessageInt
         q.condAnd(RenewVO_.accountUuid, SimpleQuery.Op.EQ, msg.getAccountUuid());
         q.condAnd(RenewVO_.productUuid, SimpleQuery.Op.EQ, msg.getProductUuid());
         q.delete();
-        APIDeleteExpiredRenewEvent event = new APIDeleteExpiredRenewEvent(msg.getId());
-        event.setInventory(true);
-        bus.publish(event);
+        APIDeleteExpiredRenewReply reply = new APIDeleteExpiredRenewReply();
+        reply.setInventory(true);
+        bus.reply(msg,reply);
     }
 
     private void handle(APIUpdateRenewPriceMsg msg) {

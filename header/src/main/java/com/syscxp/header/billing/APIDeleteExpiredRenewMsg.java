@@ -2,12 +2,12 @@ package com.syscxp.header.billing;
 
 import com.syscxp.header.identity.Action;
 import com.syscxp.header.identity.InnerCredentialCheck;
-import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.APIParam;
+import com.syscxp.header.message.APISyncCallMessage;
 
 @InnerCredentialCheck
 @Action(services = {BillingConstant.ACTION_SERVICE}, category = BillingConstant.ACTION_CATEGORY_RENEW)
-public class APIDeleteExpiredRenewMsg extends APIMessage {
+public class APIDeleteExpiredRenewMsg extends APISyncCallMessage {
 
     @APIParam(emptyString = false)
     private String accountUuid;
