@@ -221,6 +221,14 @@
         <name>com.syscxp.account.header.account.APIAccountPWDBackByEmailMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.account.header.account.APIGetSecretKeyMsg</name>
+    </message>
+
+    <message>
+        <name>com.syscxp.account.header.identity.APILogInBySecretIdMsg</name>
+    </message>
+
 
 
 </service>

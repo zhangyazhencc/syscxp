@@ -14,7 +14,6 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
-import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.agent.OrderCallbackCmd;
@@ -61,7 +60,10 @@ import com.syscxp.vpn.exception.VpnErrors;
 import com.syscxp.vpn.exception.VpnServiceException;
 import com.syscxp.vpn.job.DestroyVpnJob;
 import com.syscxp.vpn.quota.VpnQuotaOperator;
-import com.syscxp.vpn.vpn.VpnCommands.*;
+import com.syscxp.vpn.vpn.VpnCommands.AgentCommand;
+import com.syscxp.vpn.vpn.VpnCommands.AgentResponse;
+import com.syscxp.vpn.vpn.VpnCommands.VpnStatusCmd;
+import com.syscxp.vpn.vpn.VpnCommands.VpnStatusRsp;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -102,8 +104,6 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private RESTFacade restf;
     @Autowired
     private ErrorFacade errf;
-    @Autowired
-    private ThreadFacade thdf;
     @Autowired
     private JobQueueFacade jobf;
 
@@ -1456,7 +1456,7 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         }
     }
 
-    private void changeVpnStateByAPI(VpnVO vpn, VpnState next, final Completion complete) {
+    private void changeVpnStateByAPI(final VpnVO vpn, VpnState next, final Completion complete) {
         if (vpn.getState() == next) {
             complete.success();
             return;
@@ -1483,11 +1483,12 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         checkVpnState(vo);
     }
 
-    private void changeVpnState(VpnVO vpn, VpnState next) {
+    private void changeVpnState(final VpnVO vpn, VpnState next) {
         VpnState currentState = vpn.getState();
-        vpn.setState(next);
-        dbf.updateAndRefresh(vpn);
-        LOGGER.debug(String.format("Vpn[%s]'s state changed from %s to %s", vpn.getUuid(), currentState, vpn.getState()));
+        VpnVO vo = dbf.reload(vpn);
+        vo.setState(next);
+        dbf.updateAndRefresh(vo);
+        LOGGER.debug(String.format("Vpn[%s]'s state changed from %s to %s", vpn.getUuid(), currentState, vo.getState()));
     }
 
     private void checkHostState(VpnHostVO vo) {

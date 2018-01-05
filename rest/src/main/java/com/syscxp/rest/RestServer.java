@@ -529,9 +529,14 @@ public class RestServer implements Component, CloudBusEventListener {
 
         Api api = apis.get(action);
 
-
         if (api == null) {
             sendResponse(HttpStatus.NOT_FOUND.value(), String.format("no api mapping to Action[name: %s]", action), rsp);
+            return;
+        }
+
+        if (HttpMethod.valueOf(req.getMethod()) != api.requestAnnotation.method()) {
+            sendResponse(HttpStatus.METHOD_NOT_ALLOWED.value(), String.format("The method[%s] is not allowed for" +
+                    " the path[%s]", req.getMethod(), req.getRequestURI()), rsp);
             return;
         }
 
@@ -586,28 +591,31 @@ public class RestServer implements Component, CloudBusEventListener {
     }
 
     private String getSession(HttpServletRequest req) {
-
-
-        return req.getParameter("sessionUuid");
+//        return (String) req.getAttribute(RestConstants.SESSION_UUID);
+        return req.getParameter(RestConstants.SESSION_UUID);
     }
 
     private void handleApi(Api api, HttpServletRequest req, HttpServletResponse rsp) throws RestException, IllegalAccessException, InstantiationException, InvocationTargetException, NoSuchMethodException, IOException {
 
         String sessionId = getSession(req);
 
+        Map<String, String[]> vars = req.getParameterMap();
+
         if (APIQueryMessage.class.isAssignableFrom(api.apiClass)) {
             handleQueryApi(api, sessionId, req, rsp);
             return;
         }
-
+        List<String> params = asList(RestConstants.ACTION, RestConstants.SECRET_ID, RestConstants.SIGNATURE,
+                RestConstants.SIGNATURE_METHOD, RestConstants.NONCE, RestConstants.TIMESTAMP);
         // uses query string to pass parameters
         Map<String, Object> parameter = new HashMap<>();
-
-        Map<String, String[]> vars = req.getParameterMap();
         for (Map.Entry<String, String[]> e : vars.entrySet()) {
             String k = e.getKey();
             String[] vals = e.getValue();
 
+            if (params.contains(k)) {
+                continue;
+            }
             if (k.contains(".")) {
                 // this is a map parameter
                 api.mapQueryParameterToApiFieldValue(k, vals, parameter);
@@ -661,13 +669,6 @@ public class RestServer implements Component, CloudBusEventListener {
             session.setUuid(sessionId);
             msg.setSession(session);
         }
-
-//        for (Map.Entry<String, String[]> e : vars.entrySet()) {
-//            // set fields parsed from the URL
-//            String key = e.getKey();
-//            String mappingKey = api.getMappingField(key);
-//            PropertyUtils.setProperty(msg, mappingKey == null ? key : mappingKey, e.getValue()[0]);
-//        }
 
         msg.setServiceId(ApiMediatorConstant.SERVICE_ID);
         sendMessage(msg, api, rsp);

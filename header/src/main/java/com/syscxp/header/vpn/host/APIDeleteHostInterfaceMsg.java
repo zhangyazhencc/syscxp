@@ -10,7 +10,7 @@ import org.springframework.http.HttpMethod;
 
 
 @RestRequest(
-        method = HttpMethod.DELETE,
+        method = HttpMethod.GET,
         isAction = true,
         responseClass = APIDeleteHostInterfaceEvent.class
 )

@@ -6,10 +6,7 @@ import com.syscxp.account.header.user.*;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
-import com.syscxp.header.identity.AbstractAccount;
-import com.syscxp.header.identity.AccountStatus;
-import com.syscxp.header.identity.AccountType;
-import com.syscxp.header.identity.ValidateStatus;
+import com.syscxp.header.identity.*;
 import com.syscxp.sms.MailService;
 import com.syscxp.sms.SmsService;
 import org.hibernate.exception.ConstraintViolationException;
@@ -158,10 +155,46 @@ public class AccountBase extends AbstractAccount {
             handle((APIDeleteProxyAccountRefMsg) msg);
         } else if (msg instanceof APIUserMailAuthenticationMsg) {
             handle((APIUserMailAuthenticationMsg)msg);
+        } else if (msg instanceof APIGetSecretKeyMsg) {
+            handle((APIGetSecretKeyMsg)msg);
+        } else if (msg instanceof APILogInBySecretIdMsg) {
+            handle((APILogInBySecretIdMsg)msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
 
+
+    }
+
+    private void handle(APILogInBySecretIdMsg msg) {
+        APILogInReply reply = new APILogInReply();
+
+        SimpleQuery<AccountApiSecurityVO> q = dbf.createQuery(AccountApiSecurityVO.class);
+        q.add(AccountApiSecurityVO_.secretId, SimpleQuery.Op.EQ, msg.getSecretId());
+        q.add(AccountApiSecurityVO_.secretKey, SimpleQuery.Op.EQ, msg.getSecretKey());
+
+        if(q.isExists()){
+            AccountApiSecurityVO api = q.find();
+            reply.setInventory(identiyInterceptor.initSession(
+                    dbf.findByUuid(api.getAccountUuid(),AccountVO.class), null));
+
+        }else{
+            reply.setError(errf.instantiateErrorCode(IdentityErrors.AUTHENTICATION_ERROR,
+                    "Incorrect secretId or secretKey"));
+        }
+
+        bus.reply(msg, reply);
+    }
+
+    private void handle(APIGetSecretKeyMsg msg) {
+
+        APIGetSecretKeyReply reply = new APIGetSecretKeyReply();
+
+        SimpleQuery<AccountApiSecurityVO> q = dbf.createQuery(AccountApiSecurityVO.class);
+        q.add(AccountApiSecurityVO_.secretId, SimpleQuery.Op.EQ, msg.getSecretId());
+        AccountApiSecurityVO api = q.find();
+        reply.setSecretKey(api.getSecretKey());
+        bus.reply(msg, reply);
 
     }
 

@@ -8,6 +8,8 @@ import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.vpn.host.*;
 import com.syscxp.header.vpn.vpn.VpnVO;
 import com.syscxp.header.vpn.vpn.VpnVO_;
+import com.syscxp.utils.network.NetworkUtils;
+import org.apache.commons.lang.StringUtils;
 
 import static com.syscxp.core.Platform.argerr;
 
@@ -41,6 +43,9 @@ public class VpnHostApiInterceptor implements ApiMessageInterceptor {
 
 
     private void validate(APICreateVpnHostMsg msg) {
+        if (!NetworkUtils.isIpv4Address(msg.getPublicIp()) && !NetworkUtils.isHostname(msg.getPublicIp())) {
+            throw new ApiMessageInterceptionException(argerr("publicIp[%s] is neither an IPv4 address nor a valid hostname", msg.getHostIp()));
+        }
         Q q = Q.New(VpnHostVO.class)
                 .eq(VpnHostVO_.name, msg.getName());
         if (q.isExists()) {
@@ -52,6 +57,9 @@ public class VpnHostApiInterceptor implements ApiMessageInterceptor {
     }
 
     private void validate(APIUpdateVpnHostMsg msg) {
+        if (!StringUtils.isEmpty(msg.getPublicIp()) && !NetworkUtils.isIpv4Address(msg.getPublicIp()) && !NetworkUtils.isHostname(msg.getPublicIp())) {
+            throw new ApiMessageInterceptionException(argerr("publicIp[%s] is neither an IPv4 address nor a valid hostname", msg.getHostIp()));
+        }
         Q q = Q.New(VpnHostVO.class)
                 .eq(VpnHostVO_.name, msg.getName());
         if (q.isExists()) {

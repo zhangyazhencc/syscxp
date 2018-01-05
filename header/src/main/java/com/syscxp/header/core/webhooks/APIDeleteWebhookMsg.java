@@ -9,7 +9,7 @@ import com.syscxp.header.message.APIParam;
  * Created by xing5 on 2017/5/7.
  */
 @RestRequest(
-        method = HttpMethod.DELETE,
+        method = HttpMethod.GET,
         isAction = true,
         responseClass = APIDeleteWebhookEvent.class
 )

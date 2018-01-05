@@ -8,7 +8,7 @@ import com.syscxp.header.rest.RestRequest;
 import org.springframework.http.HttpMethod;
 
 @RestRequest(
-        method = HttpMethod.POST,
+        method = HttpMethod.GET,
         isAction = true,
         responseClass = APICreateHostInterfaceEvent.class
 )
