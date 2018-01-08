@@ -311,8 +311,16 @@ public class TunnelBase {
                 dbf.remove(qv);
             }
         }
+        //删除Monitor和速度测试
         UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, vo.getUuid()).delete();
         UpdateQuery.New(SpeedTestTunnelVO.class).eq(SpeedTestTunnelVO_.tunnelUuid, vo.getUuid()).delete();
+        //删除续费表
+        logger.info("删除通道成功，并创建任务：DeleteRenewVOAfterDeleteResourceJob");
+        DeleteRenewVOAfterDeleteResourceJob job = new DeleteRenewVOAfterDeleteResourceJob();
+        job.setAccountUuid(vo.getOwnerAccountUuid());
+        job.setResourceType(vo.getClass().getSimpleName());
+        job.setResourceUuid(vo.getUuid());
+        jobf.execute("删除专线-删除续费表", Platform.getManagementServerId(), job);
     }
 
     /**
