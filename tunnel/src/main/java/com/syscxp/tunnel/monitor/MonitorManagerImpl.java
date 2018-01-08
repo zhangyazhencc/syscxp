@@ -8,18 +8,14 @@ import com.syscxp.core.cloudbus.CloudBus;
 import com.syscxp.core.cloudbus.MessageSafe;
 import com.syscxp.core.db.DatabaseFacade;
 import com.syscxp.core.db.Q;
-import com.syscxp.core.db.SimpleQuery;
 import com.syscxp.core.db.UpdateQuery;
 import com.syscxp.core.job.JobQueueFacade;
-import com.syscxp.core.jsonlabel.JsonLabelVO;
-import com.syscxp.core.jsonlabel.JsonLabelVO_;
 import com.syscxp.core.thread.PeriodicTask;
 import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
-import com.syscxp.header.core.Completion;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
 import com.syscxp.header.host.*;
@@ -48,7 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.persistence.TypedQuery;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
@@ -386,7 +381,16 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     private void startControllerMonitor(ControllerCommands.TunnelMonitorCommand cmd) {
         String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
-        sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+
+        ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+        if (!response.isRollback()) {
+            cmd.setRollback(true);
+            sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+
+            if (!response.isSuccess())
+                throw new RuntimeException(String.format("Failure to execute RYU start command! Error:%s"
+                        , response.getMsg()));
+        }
     }
 
     /**
@@ -404,7 +408,11 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     private void stopControllerMonitor(Map<String, String> cmd) {
         String url = getControllerUrl(ControllerRestConstant.STOP_TUNNEL_MONITOR);
-        sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+
+        ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+        if (!response.isSuccess())
+            throw new RuntimeException(String.format("Failure to execute RYU stop command! Error:%s"
+                    , response.getMsg()));
     }
 
     /**
@@ -423,7 +431,16 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     private void modifyControllerMonitor(ControllerCommands.TunnelMonitorCommand cmd) {
         String url = getControllerUrl(ControllerRestConstant.MODIFY_TUNNEL_MONITOR);
-        sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+
+        ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+        if (!response.isRollback()) {
+            cmd.setRollback(true);
+            sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+
+            if (!response.isSuccess())
+                throw new RuntimeException(String.format("Failure to execute RYU modify command! Error:%s"
+                        , response.getMsg()));
+        }
     }
 
     /**
@@ -515,7 +532,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         return url;
     }
 
-    private void sendControllerCommand(String url, String jsonCommand) {
+    private ControllerCommands.ControllerRestResponse sendControllerCommand(String url, String jsonCommand) {
         ControllerCommands.ControllerRestResponse response = new ControllerCommands.ControllerRestResponse();
         try {
             logger.info(String.format("======= Begin to send controller command: url: %s command: %s", url, jsonCommand));
@@ -526,9 +543,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
         }
 
-        if (!response.isSuccess())
-            throw new RuntimeException(String.format("Failure to execute RYU start command! Error:%s"
-                    , response.getMsg()));
+        return response;
     }
 
     /***
@@ -715,11 +730,11 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         List<String> locateIps = new ArrayList<>();
 
         List<TunnelMonitorVO> tunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
-                .eq(TunnelMonitorVO_.tunnelUuid,tunnelUuid)
+                .eq(TunnelMonitorVO_.tunnelUuid, tunnelUuid)
                 .list();
 
-        for(TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS)
-            locateIps.add(StringUtils.substringBeforeLast(tunnelMonitorVO.getMonitorIp(),"/"));
+        for (TunnelMonitorVO tunnelMonitorVO : tunnelMonitorVOS)
+            locateIps.add(StringUtils.substringBeforeLast(tunnelMonitorVO.getMonitorIp(), "/"));
 
         String cidrPrefix = monitorCidr.substring(0, monitorCidr.lastIndexOf("."));
         locateIps.add(cidrPrefix + ".0");
@@ -1528,7 +1543,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 cmd -> {
                     MonitorAgentCommands.FalconResponse falconResponse = new MonitorAgentCommands.FalconResponse();
                     try {
-                        List<EndpointTunnelsInventory> tunnels = getEndpointTunnels(cmd);
+                        List<EndpointTunnelsInventory> tunnels = getSharePointTunnels(cmd);
 
                         falconResponse.setSuccess(true);
                         falconResponse.setMsg("success");
@@ -1536,8 +1551,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                     } catch (Exception e) {
                         falconResponse.setSuccess(false);
                         falconResponse.setMsg(String.format("[FalconTunnel] Get tunnels failed! " +
-                                        "Physical Switch mIp:  %s, vlan: %s, Error: %s",
-                                cmd.getPhysicalSwitchMip(), cmd.getVlan(), e.getMessage()));
+                                "tunnelUuid:  %s, Error: %s", cmd.getTunnelUuid(), e.getMessage()));
                         logger.error(falconResponse.getMsg());
                     }
 
@@ -1725,103 +1739,42 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
     /***
      * 按物理交换机mIP与vlan查找所有共点专线
-     * @param cmd：查询你条件
+     * @param cmd：查询条件
      * @return：共点专线清单
      */
-    private List<EndpointTunnelsInventory> getEndpointTunnels(MonitorAgentCommands.FalconGetTunnelCommand cmd) {
-        List<EndpointTunnelsInventory> tunnels = new ArrayList<>();
-
-        // 按物理交换机IP获取交换机端口
-        Set<String> ports = getPortsByPhysicalSwitch(cmd.getPhysicalSwitchMip());
-
-        // 按交换机端口、vlan获取tunnel
-        List<MonitorAgentCommands.EndpointTunnel> endpointTunnels = getTunnelBySwitchAndVlan(ports
-                , cmd.getPhysicalSwitchMip(), cmd.getVlan());
-
-        return EndpointTunnelsInventory.valueOf(endpointTunnels);
-    }
-
-    private List<MonitorAgentCommands.EndpointTunnel> getTunnelBySwitchAndVlan(Set<String> ports
-            , String physicalSwitchMip, Integer vlan) {
+    private List<EndpointTunnelsInventory> getSharePointTunnels(MonitorAgentCommands.FalconGetTunnelCommand cmd) {
         List<MonitorAgentCommands.EndpointTunnel> endpointTunnels = new ArrayList<>();
 
-        for (String portUuid : ports) {
-            List<TunnelSwitchPortVO> portTunnels = Q.New(TunnelSwitchPortVO.class)
-                    .eq(TunnelSwitchPortVO_.switchPortUuid, portUuid)
-                    .eq(TunnelSwitchPortVO_.vlan, vlan).list();
+        TunnelVO cmdTunnel = dbf.findByUuid(cmd.getTunnelUuid(), TunnelVO.class);
 
-            if (portTunnels.isEmpty())
-                continue;
-
-            for (TunnelSwitchPortVO portTunnel : portTunnels) {
-                TunnelVO tunnelVO = new TunnelVO();
-                tunnelVO = Q.New(TunnelVO.class).eq(TunnelVO_.uuid, portTunnel.getTunnelUuid()).find();
-
-                if(tunnelVO.getState() == TunnelState.Enabled){
-                    logger.info("----------cessssss");
-                    MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
-                    for (TunnelSwitchPortVO tunnelSwitchPort : tunnelVO.getTunnelSwitchPortVOS()) {
-                        if (tunnelSwitchPort.getSortTag().equals(InterfaceType.A.toString())) {
-                            endpointTunnel.setNodeA(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
-                            endpointTunnel.setEndpoingAMip(getPhysicalSwitchBySwitchPort(
-                                    tunnelSwitchPort.getSwitchPortUuid()).getmIP());
-                        } else if (tunnelSwitchPort.getSortTag().equals(InterfaceType.Z.toString())) {
-                            endpointTunnel.setNodeZ(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
-                            endpointTunnel.setEndpoingZMip(getPhysicalSwitchBySwitchPort(
-                                    tunnelSwitchPort.getSwitchPortUuid()).getmIP());
-                        }
+        List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
+                .eq(TunnelVO_.vsi, cmdTunnel.getVsi())
+                .list();
+        for (TunnelVO tunnelVO : tunnelVOS) {
+            if (tunnelVO.getState() == TunnelState.Enabled) {
+                MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
+                for (TunnelSwitchPortVO tunnelSwitchPort : tunnelVO.getTunnelSwitchPortVOS()) {
+                    if (tunnelSwitchPort.getSortTag().equals(InterfaceType.A.toString())) {
+                        endpointTunnel.setNodeA(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
+                        endpointTunnel.setEndpoingAMip(getPhysicalSwitchBySwitchPort(
+                                tunnelSwitchPort.getSwitchPortUuid()).getmIP());
+                    } else if (tunnelSwitchPort.getSortTag().equals(InterfaceType.Z.toString())) {
+                        endpointTunnel.setNodeZ(tunnelSwitchPort.getEndpointVO().getNodeVO().getName());
+                        endpointTunnel.setEndpoingZMip(getPhysicalSwitchBySwitchPort(
+                                tunnelSwitchPort.getSwitchPortUuid()).getmIP());
                     }
-
-                    endpointTunnel.setTunnelUuid(tunnelVO.getUuid());
-                    endpointTunnel.setTunnelName(tunnelVO.getName());
-                    endpointTunnel.setBandwidth(tunnelVO.getBandwidth());
-                    endpointTunnel.setAccountUuid(tunnelVO.getAccountUuid());
-
-                    endpointTunnels.add(endpointTunnel);
                 }
+
+                endpointTunnel.setTunnelUuid(tunnelVO.getUuid());
+                endpointTunnel.setTunnelName(tunnelVO.getName());
+                endpointTunnel.setBandwidth(tunnelVO.getBandwidth());
+                endpointTunnel.setAccountUuid(tunnelVO.getAccountUuid());
+
+                endpointTunnels.add(endpointTunnel);
             }
         }
 
-        if (endpointTunnels.isEmpty())
-            throw new IllegalArgumentException(String.format("No tunnel exist under endpoint %s vlan %s "
-                    , physicalSwitchMip, vlan));
-
-        return endpointTunnels;
-    }
-
-    private Set<String> getPortsByPhysicalSwitch(String physicalSwitchMip) {
-        // 查询物理交换机
-        List<PhysicalSwitchVO> physicalSwitchVOS = Q.New(PhysicalSwitchVO.class)
-                .eq(PhysicalSwitchVO_.mIP, physicalSwitchMip)
-                .list();
-
-        if (physicalSwitchVOS.isEmpty())
-            throw new IllegalArgumentException(String.format("No physicalSwitch exist under endpoint %s!"
-                    , physicalSwitchMip));
-
-        // 查询逻辑交换机
-        List<SwitchVO> switchVOS = Q.New(SwitchVO.class)
-                .eq(SwitchVO_.physicalSwitchUuid, physicalSwitchVOS.get(0).getUuid())
-                .list();
-        if (switchVOS.isEmpty())
-            throw new IllegalArgumentException(String.format("No logical switch exist under physical switch %s!"
-                    , physicalSwitchVOS.get(0).getCode()));
-
-        // 逻辑交换机端口
-        List<String> portVOS = Q.New(SwitchPortVO.class)
-                .eq(SwitchPortVO_.switchUuid, switchVOS.get(0).getUuid())
-                .select(SwitchPortVO_.uuid)
-                .list();
-
-        if (portVOS.isEmpty())
-            throw new IllegalArgumentException(String.format("No switch port exist under logical switch %s!"
-                    , switchVOS.get(0).getCode()));
-
-        Set<String> portsSet = new HashSet();
-        for (String portUuid : portVOS)
-            portsSet.add(portUuid);
-
-        return portsSet;
+        return EndpointTunnelsInventory.valueOf(endpointTunnels);
     }
 
     /***

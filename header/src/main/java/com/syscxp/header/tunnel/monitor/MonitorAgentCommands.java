@@ -446,23 +446,14 @@ public class MonitorAgentCommands {
      * falcon-alarm 按mIp、vlan查询tunnel信息
      */
     public static class FalconGetTunnelCommand {
-        private String physicalSwitchMip;
-        private Integer vlan;
+        private String tunnelUuid;
 
-        public String getPhysicalSwitchMip() {
-            return physicalSwitchMip;
+        public String getTunnelUuid() {
+            return tunnelUuid;
         }
 
-        public void setPhysicalSwitchMip(String physicalSwitchMip) {
-            this.physicalSwitchMip = physicalSwitchMip;
-        }
-
-        public Integer getVlan() {
-            return vlan;
-        }
-
-        public void setVlan(Integer vlan) {
-            this.vlan = vlan;
+        public void setTunnelUuid(String tunnelUuid) {
+            this.tunnelUuid = tunnelUuid;
         }
     }
 
