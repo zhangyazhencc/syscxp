@@ -13,6 +13,7 @@ public class ControllerCommands {
      */
     public static class TunnelMonitorCommand {
         private String tunnel_id;
+        private boolean rollback;
         private List<TunnelMonitorSdn> sdn_switches;
         private List<TunnelMonitorMpls> mpls_switches;
 
@@ -54,6 +55,14 @@ public class ControllerCommands {
 
         public void setTunnel_id(String tunnel_id) {
             this.tunnel_id = tunnel_id;
+        }
+
+        public boolean isRollback() {
+            return rollback;
+        }
+
+        public void setRollback(boolean rollback) {
+            this.rollback = rollback;
         }
     }
 

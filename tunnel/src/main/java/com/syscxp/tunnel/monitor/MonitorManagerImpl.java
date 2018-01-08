@@ -381,7 +381,16 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     private void startControllerMonitor(ControllerCommands.TunnelMonitorCommand cmd) {
         String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
-        sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+
+        ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+        if (!response.isRollback()) {
+            cmd.setRollback(true);
+            sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+
+            if (!response.isSuccess())
+                throw new RuntimeException(String.format("Failure to execute RYU start command! Error:%s"
+                        , response.getMsg()));
+        }
     }
 
     /**
@@ -399,7 +408,11 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     private void stopControllerMonitor(Map<String, String> cmd) {
         String url = getControllerUrl(ControllerRestConstant.STOP_TUNNEL_MONITOR);
-        sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+
+        ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+        if (!response.isSuccess())
+            throw new RuntimeException(String.format("Failure to execute RYU stop command! Error:%s"
+                    , response.getMsg()));
     }
 
     /**
@@ -418,7 +431,16 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
      */
     private void modifyControllerMonitor(ControllerCommands.TunnelMonitorCommand cmd) {
         String url = getControllerUrl(ControllerRestConstant.MODIFY_TUNNEL_MONITOR);
-        sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+
+        ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+        if (!response.isRollback()) {
+            cmd.setRollback(true);
+            sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+
+            if (!response.isSuccess())
+                throw new RuntimeException(String.format("Failure to execute RYU modify command! Error:%s"
+                        , response.getMsg()));
+        }
     }
 
     /**
@@ -510,7 +532,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         return url;
     }
 
-    private void sendControllerCommand(String url, String jsonCommand) {
+    private ControllerCommands.ControllerRestResponse sendControllerCommand(String url, String jsonCommand) {
         ControllerCommands.ControllerRestResponse response = new ControllerCommands.ControllerRestResponse();
         try {
             logger.info(String.format("======= Begin to send controller command: url: %s command: %s", url, jsonCommand));
@@ -521,9 +543,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             response.setMsg(String.format("unable to post %s. %s", url, e.getMessage()));
         }
 
-        if (!response.isSuccess())
-            throw new RuntimeException(String.format("Failure to execute RYU start command! Error:%s"
-                    , response.getMsg()));
+        return response;
     }
 
     /***
@@ -1725,12 +1745,12 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
     private List<EndpointTunnelsInventory> getSharePointTunnels(MonitorAgentCommands.FalconGetTunnelCommand cmd) {
         List<MonitorAgentCommands.EndpointTunnel> endpointTunnels = new ArrayList<>();
 
-        TunnelVO cmdTunnel = dbf.findByUuid(cmd.getTunnelUuid(),TunnelVO.class);
+        TunnelVO cmdTunnel = dbf.findByUuid(cmd.getTunnelUuid(), TunnelVO.class);
 
         List<TunnelVO> tunnelVOS = Q.New(TunnelVO.class)
-                .eq(TunnelVO_.vsi,cmdTunnel.getVsi())
+                .eq(TunnelVO_.vsi, cmdTunnel.getVsi())
                 .list();
-        for (TunnelVO tunnelVO : tunnelVOS){
+        for (TunnelVO tunnelVO : tunnelVOS) {
             if (tunnelVO.getState() == TunnelState.Enabled) {
                 MonitorAgentCommands.EndpointTunnel endpointTunnel = new MonitorAgentCommands.EndpointTunnel();
                 for (TunnelSwitchPortVO tunnelSwitchPort : tunnelVO.getTunnelSwitchPortVOS()) {
