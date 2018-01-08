@@ -631,19 +631,21 @@ public class SwitchManagerImpl extends AbstractService implements SwitchManager,
             if(msg.getType() == SwitchType.INNER){  //创建内联交换机
                 if(switchInner != null){
                     throw new ApiMessageInterceptionException(argerr("该互联连接点下已经存在内联交换机!"));
-                }else{
+                }
+                /*else{
                     if(switchOuter != null && msg.getPhysicalSwitchUuid().equals(switchOuter.getPhysicalSwitchUuid())){
                         throw new ApiMessageInterceptionException(argerr("该互联连接点下内联/外联交换机所属的物理交换机不能是同一个!"));
                     }
-                }
+                }*/
             }else{                                  //创建外链交换机
                 if(switchOuter != null){
                     throw new ApiMessageInterceptionException(argerr("该互联连接点下已经存在外联交换机!"));
-                }else{
+                }
+                /*else{
                     if(switchInner != null && msg.getPhysicalSwitchUuid().equals(switchInner.getPhysicalSwitchUuid())){
                         throw new ApiMessageInterceptionException(argerr("该互联连接点下内联/外联交换机所属的物理交换机不能是同一个!"));
                     }
-                }
+                }*/
             }
         }
 
