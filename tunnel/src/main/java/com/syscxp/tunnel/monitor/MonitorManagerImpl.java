@@ -144,6 +144,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             @Override
             public void run(FlowTrigger trigger, Map data) {
                 initTunnelMonitor(tunnelVO);
+                logger.info("this is a test text!");
 
                 trigger.next();
             }
