@@ -74,6 +74,8 @@ public class TunnelControllerBase extends AbstractTunnel {
             handle((ModifyTunnelPortsMsg) msg);
         }else if(msg instanceof ListTraceRouteMsg){
             handle((ListTraceRouteMsg) msg);
+        }else if(msg instanceof RevertTunnelMsg){
+            handle((RevertTunnelMsg) msg);
         }else{
             bus.dealWithUnknownMessage(msg);
         }
@@ -96,7 +98,7 @@ public class TunnelControllerBase extends AbstractTunnel {
         }
 
         String command = JSONObjectUtil.toJsonString(tunnelMplsConfig);
-        System.out.println("----TraceRoute----:"+command);
+        logger.info("----TraceRoute----:"+command);
 
         String url = CoreGlobalProperty.CONTROLLER_MANAGER_URL+ControllerRestConstant.TUNNEL_TRACE;
         try {
@@ -106,11 +108,47 @@ public class TunnelControllerBase extends AbstractTunnel {
 
             bus.reply(msg, reply);
         } catch (Exception e) {
-            String errorMsg = String.format("unable to post TraceRoute %s. %s", url, e.getMessage());
+            String errorMsg = String.format("Exception: TraceRoute %s. %s", url, e.getMessage());
             reply.setError(errf.stringToOperationError(errorMsg));
 
             bus.reply(msg, reply);
         }
+    }
+
+    private void handle(RevertTunnelMsg msg){
+        RevertTunnelReply reply = new RevertTunnelReply();
+
+        TaskResourceVO taskResourceVO = dbf.findByUuid(msg.getTaskUuid(),TaskResourceVO.class);
+
+        ControllerRestFacade crf = new ControllerRestFacade(CoreGlobalProperty.CONTROLLER_MANAGER_URL);
+
+        crf.sendCommand(ControllerRestConstant.START_TUNNEL, msg.getCommands(), new Completion(null) {
+            @Override
+            public void success() {
+                logger.info("下发恢复成功！");
+
+                //更新任务状态
+                taskResourceVO.setBody(msg.getCommands());
+                taskResourceVO.setStatus(TaskStatus.Success);
+                dbf.updateAndRefresh(taskResourceVO);
+
+                bus.reply(msg, reply);
+            }
+
+            @Override
+            public void fail(ErrorCode errorCode) {
+                logger.info("下发恢复失败！");
+
+                //更新任务状态
+                taskResourceVO.setStatus(TaskStatus.Fail);
+                taskResourceVO.setBody(msg.getCommands());
+                taskResourceVO.setResult(JSONObjectUtil.toJsonString(errorCode));
+                dbf.updateAndRefresh(taskResourceVO);
+
+                reply.setError(errorCode);
+                bus.reply(msg, reply);
+            }
+        });
     }
 
     private void handle(CreateTunnelMsg msg){

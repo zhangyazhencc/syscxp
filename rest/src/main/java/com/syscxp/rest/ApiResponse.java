@@ -12,12 +12,12 @@ import java.util.Map;
  * Author: wj
  */
 public class ApiResponse extends HashMap {
-    private String location;
+    private String result;
     private ErrorCode error;
     private Map<String, String> schema;
 
-    public String getLocation() {
-        return location;
+    public String getResult() {
+        return result;
     }
 
     public Map<String, String> getSchema() {
@@ -29,9 +29,9 @@ public class ApiResponse extends HashMap {
         put("schema", schema);
     }
 
-    public void setLocation(String location) {
-        this.location = location;
-        put("location", location);
+    public void setResult(String result) {
+        this.result = result;
+        put("result", result);
     }
 
     public ErrorCode getError() {

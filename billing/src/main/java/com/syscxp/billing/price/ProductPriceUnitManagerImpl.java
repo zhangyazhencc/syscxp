@@ -20,15 +20,18 @@ import com.syscxp.header.billing.*;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.Query;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class ProductPriceUnitManagerImpl extends AbstractService implements ProductPriceUnitManager, ApiMessageInterceptor {
 
@@ -74,18 +77,85 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             handle((APIGetBroadPriceListMsg) msg);
         } else if (msg instanceof APIUpdateBroadPriceMsg) {
             handle((APIUpdateBroadPriceMsg) msg);
+        } else if (msg instanceof APICreateVPNPriceMsg) {
+            handle((APICreateVPNPriceMsg) msg);
+        } else if (msg instanceof APIDeleteVPNPriceMsg) {
+            handle((APIDeleteVPNPriceMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
     }
 
-    private void handle(APIUpdateBroadPriceMsg msg) {
-        ProductCategoryVO vo = findProductCategoryVO(msg.getProductType(), msg.getCategory());
+    private void handle(APIDeleteVPNPriceMsg msg) {
+        String productCategoryUuid = validateProductTypeAndCategory(msg.getProductType(), msg.getCategory());
+        if (msg.getAreaCode().equalsIgnoreCase("DEFAULT")) {
+            throw new IllegalArgumentException("The default price can not remove");
+        }
+        SimpleQuery<ProductPriceUnitVO> query = dbf.createQuery(ProductPriceUnitVO.class);
+        query.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryUuid);
+        query.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, msg.getAreaCode());
+        query.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, msg.getLineCode());
+        List<ProductPriceUnitVO> list = query.list();
+
+        UpdateQuery q = UpdateQuery.New(ProductPriceUnitVO.class);
+        q.condAnd(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryUuid);
+        q.condAnd(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, msg.getLineCode());
+        q.condAnd(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, msg.getAreaCode());
+        q.delete();
+
+        APIDeleteVPNPriceEvent event = new APIDeleteVPNPriceEvent(msg.getId());
+        event.setInventories(ProductPriceUnitInventory.valueOf(list));
+        bus.publish(event);
+    }
+
+    private String validateProductTypeAndCategory(ProductType productType, Category category) {
+        ProductCategoryVO vo = findProductCategoryVO(productType, category);
         if (vo == null) {
             throw new IllegalArgumentException("can not find the product type or category");
         }
+        return vo.getUuid();
+    }
+
+    private void handle(APICreateVPNPriceMsg msg) {
+        String productCategoryUuid = validateProductTypeAndCategory(msg.getProductType(), msg.getCategory());
+        List<ProductPriceUnitVO> list = new ArrayList<>();
+        ProductPriceUnitVO productPriceUnitVO = new ProductPriceUnitVO();
+        productPriceUnitVO.setProductCategoryUuid(productCategoryUuid);
+        productPriceUnitVO.setAreaCode(msg.getAreaCode());
+        productPriceUnitVO.setAreaName(msg.getAreaName());
+        productPriceUnitVO.setLineCode(msg.getLineCode());
+        productPriceUnitVO.setLineName(msg.getLineName());
+        Field[] fields = msg.getClass().getDeclaredFields();
+        Stream.of(fields).filter(field -> field.getName().startsWith("config")).forEach(field -> {
+            field.setAccessible(true);
+            String configCode = field.getName().replaceAll("\\D", "")+"M";
+            try {
+                int unitPrice = (int) field.get(msg);
+                createPriceUnit(productPriceUnitVO, configCode, configCode, unitPrice);
+                list.add(productPriceUnitVO);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+
+        });
+
+        APICreateVPNPriceEvent event = new APICreateVPNPriceEvent(msg.getId());
+        event.setInventories(ProductPriceUnitInventory.valueOf(list));
+        bus.publish(event);
+    }
+
+    private void createPriceUnit(ProductPriceUnitVO vo, String configCode, String configName, Integer unitPrice) {
+        vo.setUuid(Platform.getUuid());
+        vo.setConfigCode(configCode);
+        vo.setConfigName(configName);
+        vo.setUnitPrice(unitPrice);
+        dbf.persistAndRefresh(vo);
+    }
+
+    private void handle(APIUpdateBroadPriceMsg msg) {
+        String productCategoryUuid = validateProductTypeAndCategory(msg.getProductType(), msg.getCategory());
         SimpleQuery<ProductPriceUnitVO> q = dbf.createQuery(ProductPriceUnitVO.class);
-        q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, vo.getUuid());
+        q.add(ProductPriceUnitVO_.productCategoryUuid, SimpleQuery.Op.EQ, productCategoryUuid);
         q.add(ProductPriceUnitVO_.areaCode, SimpleQuery.Op.EQ, msg.getAreaCode());
         q.add(ProductPriceUnitVO_.lineCode, SimpleQuery.Op.EQ, msg.getLineCode());
         q.add(ProductPriceUnitVO_.configCode, SimpleQuery.Op.EQ, msg.getConfigCode());
@@ -106,22 +176,22 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         if (vo == null) {
             throw new IllegalArgumentException("can not find the product type or category");
         }
-        String sql = "SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND areaCode = :areaCode  GROUP BY lineCode";
+        String sql = "SELECT areaCode,areaName,lineCode,lineName,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND areaCode = :areaCode  GROUP BY lineCode,lineName ";
         String sql_count = "SELECT COUNT(*) as num from (SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND areaCode = :areaCode  GROUP BY lineCode) as t";
-        if (msg.getCategory().equals(Category.REGION)) {
-            sql = "SELECT areaName as areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode";
+        if (msg.getCategory().equals(Category.REGION)|| msg.getCategory().equals(Category.VPN)) {
+            sql = "SELECT areaCode,areaName,lineCode,lineName,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode,areaName ";
             sql_count = "SELECT COUNT(*) as num FROM (SELECT areaName as areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode) as T";
         }
 
 
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("productCategoryUuid", vo.getUuid());
-        if (!msg.getCategory().equals(Category.REGION)) {
+        if (!msg.getCategory().equals(Category.REGION) && !msg.getCategory().equals(Category.VPN)) {
             q.setParameter("areaCode", msg.getAreaCode());
         }
         Query q_count = dbf.getEntityManager().createNativeQuery(sql_count);
         q_count.setParameter("productCategoryUuid", vo.getUuid());
-        if (!msg.getCategory().equals(Category.REGION)) {
+        if (!msg.getCategory().equals(Category.REGION) && !msg.getCategory().equals(Category.VPN)) {
             q_count.setParameter("areaCode", msg.getAreaCode());
         }
         BigInteger count = (BigInteger) q_count.getSingleResult();

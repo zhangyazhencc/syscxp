@@ -12,8 +12,8 @@ import java.sql.Timestamp;
 public class AccountApiSecurityVO_ {
     public static volatile SingularAttribute<AccountApiSecurityVO, String> uuid;
     public static volatile SingularAttribute<AccountApiSecurityVO, String> accountUuid;
-    public static volatile SingularAttribute<AccountApiSecurityVO, String> publicKey;
-    public static volatile SingularAttribute<AccountApiSecurityVO, String> privateKey;
+    public static volatile SingularAttribute<AccountApiSecurityVO, String> secretId;
+    public static volatile SingularAttribute<AccountApiSecurityVO, String> secretKey;
     public static volatile SingularAttribute<AccountApiSecurityVO, String> allowIp;
     public static volatile SingularAttribute<AccountApiSecurityVO, Timestamp> createDate;
     public static volatile SingularAttribute<AccountApiSecurityVO, Timestamp> lastOpDate;

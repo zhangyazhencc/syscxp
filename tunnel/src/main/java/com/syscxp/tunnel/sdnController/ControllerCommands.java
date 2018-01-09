@@ -13,16 +13,16 @@ public class ControllerCommands {
      */
     public static class TunnelMonitorCommand {
         private String tunnel_id;
+        private boolean rollback;
         private List<TunnelMonitorSdn> sdn_switches;
         private List<TunnelMonitorMpls> mpls_switches;
 
         /**
-         *
-         * @param sdnConfigList sdn交换机命令
+         * @param sdnConfigList  sdn交换机命令
          * @param mplsConfigList mpls交换机命令
          * @return 启动监控机命令
          */
-        public static TunnelMonitorCommand valueOf(String tunnel_id,List<TunnelMonitorSdn> sdnConfigList, List<TunnelMonitorMpls> mplsConfigList) {
+        public static TunnelMonitorCommand valueOf(String tunnel_id, List<TunnelMonitorSdn> sdnConfigList, List<TunnelMonitorMpls> mplsConfigList) {
 
             TunnelMonitorCommand tunnelMonitorCmd = new TunnelMonitorCommand();
             tunnelMonitorCmd.setSdn_switches(sdnConfigList);
@@ -54,6 +54,14 @@ public class ControllerCommands {
 
         public void setTunnel_id(String tunnel_id) {
             this.tunnel_id = tunnel_id;
+        }
+
+        public boolean isRollback() {
+            return rollback;
+        }
+
+        public void setRollback(boolean rollback) {
+            this.rollback = rollback;
         }
     }
 
@@ -235,6 +243,7 @@ public class ControllerCommands {
      */
     public static class ControllerRestResponse {
         private boolean success;
+        private Boolean rollback = true;
         private String msg;
 
         public boolean isSuccess() {
@@ -251,6 +260,14 @@ public class ControllerCommands {
 
         public void setMsg(String msg) {
             this.msg = msg;
+        }
+
+        public Boolean isRollback() {
+            return rollback;
+        }
+
+        public void setRollback(Boolean rollback) {
+            this.rollback = rollback;
         }
     }
 
@@ -288,7 +305,7 @@ public class ControllerCommands {
     public static class IssuedTunnelCommand {
         private List<TunnelConfig> tunnel;
 
-        public static IssuedTunnelCommand valueOf(List<TunnelConfig> tunnelList){
+        public static IssuedTunnelCommand valueOf(List<TunnelConfig> tunnelList) {
             IssuedTunnelCommand issuedTunnelCommand = new IssuedTunnelCommand();
             issuedTunnelCommand.setTunnel(tunnelList);
             return issuedTunnelCommand;
@@ -307,7 +324,7 @@ public class ControllerCommands {
      * Create by DCY on 2017/10/12
      * TUNNEL下发 tunnel 配置
      */
-    public static class TunnelConfig{
+    public static class TunnelConfig {
         private String tunnel_id;
         private String[] cross_tunnel;
         private String[] same_switch;

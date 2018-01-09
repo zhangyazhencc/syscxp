@@ -311,8 +311,16 @@ public class TunnelBase {
                 dbf.remove(qv);
             }
         }
+        //删除Monitor和速度测试
         UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, vo.getUuid()).delete();
         UpdateQuery.New(SpeedTestTunnelVO.class).eq(SpeedTestTunnelVO_.tunnelUuid, vo.getUuid()).delete();
+        //删除续费表
+        logger.info("删除通道成功，并创建任务：DeleteRenewVOAfterDeleteResourceJob");
+        DeleteRenewVOAfterDeleteResourceJob job = new DeleteRenewVOAfterDeleteResourceJob();
+        job.setAccountUuid(vo.getOwnerAccountUuid());
+        job.setResourceType(vo.getClass().getSimpleName());
+        job.setResourceUuid(vo.getUuid());
+        jobf.execute("删除专线-删除续费表", Platform.getManagementServerId(), job);
     }
 
     /**
@@ -448,10 +456,10 @@ public class TunnelBase {
     public void deleteTunnelJob(TunnelVO vo, String queueName) {
         if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
             if (vo.getState() == TunnelState.Enabled) {
-                logger.info("删除通道成功，并创建任务：StartOrStopMonitorJob");
-                StartOrStopMonitorJob job = new StartOrStopMonitorJob();
+                logger.info("删除通道成功，并创建任务：TunnelMonitorJob");
+                TunnelMonitorJob job = new TunnelMonitorJob();
                 job.setTunnelUuid(vo.getUuid());
-                job.setStart(false);
+                job.setJobType(MonitorJobType.STOP);
                 jobf.execute(queueName + "-停止监控", Platform.getManagementServerId(), job);
             }
 
@@ -482,9 +490,10 @@ public class TunnelBase {
             boolean isChangeSwitch = isChangeSwitchCauseUpdatePort(interfaceVO.getSwitchPortUuid(), msg.getSwitchPortUuid());
             if (isChangeSwitch) {
                 if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
-                    logger.info("修改端口成功，并创建任务：ModifyMonitorJob");
-                    ModifyMonitorJob job = new ModifyMonitorJob();
+                    logger.info("修改端口成功，并创建任务：TunnelMonitorJob");
+                    TunnelMonitorJob job = new TunnelMonitorJob();
                     job.setTunnelUuid(vo.getUuid());
+                    job.setJobType(MonitorJobType.MODIFY);
                     jobf.execute(queueName + "-更新监控", Platform.getManagementServerId(), job);
 
                 }
@@ -535,9 +544,10 @@ public class TunnelBase {
                 || (isChangeA || isChangeZ)) {
 
             if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
-                logger.info("修改VLAN或物理接口成功，并创建任务：ModifyMonitorJob");
-                ModifyMonitorJob job = new ModifyMonitorJob();
+                logger.info("修改VLAN或物理接口成功，并创建任务：TunnelMonitorJob");
+                TunnelMonitorJob job = new TunnelMonitorJob();
                 job.setTunnelUuid(vo.getUuid());
+                job.setJobType(MonitorJobType.MODIFY);
                 jobf.execute(queueName + "-更新监控", Platform.getManagementServerId(), job);
 
             }
@@ -565,9 +575,10 @@ public class TunnelBase {
 
     public void updateTunnelBandwidthJob(TunnelVO vo, String queueName) {
         if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
-            logger.info("修改带宽成功，并创建任务：ModifyMonitorJob");
-            ModifyMonitorJob job = new ModifyMonitorJob();
+            logger.info("修改带宽成功，并创建任务：TunnelMonitorJob");
+            TunnelMonitorJob job = new TunnelMonitorJob();
             job.setTunnelUuid(vo.getUuid());
+            job.setJobType(MonitorJobType.MODIFY);
             jobf.execute(queueName + "-更新监控", Platform.getManagementServerId(), job);
 
 
@@ -594,20 +605,20 @@ public class TunnelBase {
 
     public void enabledTunnelJob(TunnelVO vo, String queueName) {
         if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
-            logger.info("专线恢复连接成功，并创建任务：StartOrStopMonitorJob");
-            StartOrStopMonitorJob job = new StartOrStopMonitorJob();
+            logger.info("专线恢复连接成功，并创建任务：TunnelMonitorJob");
+            TunnelMonitorJob job = new TunnelMonitorJob();
             job.setTunnelUuid(vo.getUuid());
-            job.setStart(true);
+            job.setJobType(MonitorJobType.START);
             jobf.execute(queueName + "-开启监控", Platform.getManagementServerId(), job);
         }
     }
 
     public void disabledTunnelJob(TunnelVO vo, String queueName) {
         if (vo.getMonitorState() == TunnelMonitorState.Enabled) {
-            logger.info("专线关闭连接成功，并创建任务：StartOrStopMonitorJob");
-            StartOrStopMonitorJob job = new StartOrStopMonitorJob();
+            logger.info("专线关闭连接成功，并创建任务：TunnelMonitorJob");
+            TunnelMonitorJob job = new TunnelMonitorJob();
             job.setTunnelUuid(vo.getUuid());
-            job.setStart(false);
+            job.setJobType(MonitorJobType.STOP);
             jobf.execute(queueName + "-停止监控", Platform.getManagementServerId(), job);
         }
     }

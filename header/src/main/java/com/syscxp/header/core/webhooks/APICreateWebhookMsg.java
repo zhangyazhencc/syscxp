@@ -9,9 +9,8 @@ import org.springframework.http.HttpMethod;
  * Created by xing5 on 2017/5/7.
  */
 @RestRequest(
-        path = "/web-hooks",
-        method = HttpMethod.POST,
-        parameterName = "params",
+        method = HttpMethod.GET,
+        isAction = true,
         responseClass = APICreateWebhookEvent.class
 )
 public class APICreateWebhookMsg extends APICreateMessage {

@@ -15,8 +15,8 @@ import static java.util.Arrays.asList;
 @AutoQuery(replyClass = APIQueryGlobalConfigReply.class, inventoryClass = GlobalConfigInventory.class)
 @Action(category = "configuration", names = {"read"})
 @RestRequest(
-        path = "/global-configurations",
         method = HttpMethod.GET,
+        isAction = true,
         responseClass = APIQueryGlobalConfigReply.class
 )
 public class APIQueryGlobalConfigMsg extends APIQueryMessage {

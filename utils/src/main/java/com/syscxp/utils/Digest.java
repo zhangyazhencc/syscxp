@@ -9,6 +9,8 @@ import java.io.FileInputStream;
  * Created by frank on 3/3/2016.
  */
 public class Digest {
+
+
     public static String getMD5ByFile(String filePath) {
         try {
             FileInputStream fis = new FileInputStream(new File(filePath));
@@ -27,5 +29,6 @@ public class Digest {
             throw new RuntimeException(e);
         }
     }
+
 
 }

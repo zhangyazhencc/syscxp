@@ -53,9 +53,7 @@ import com.syscxp.header.vpn.vpn.APIDestroyVpnMsg;
 import com.syscxp.tunnel.identity.TunnelGlobalConfig;
 import com.syscxp.tunnel.quota.InterfaceQuotaOperator;
 import com.syscxp.tunnel.quota.TunnelQuotaOperator;
-import com.syscxp.tunnel.tunnel.job.DeleteTunnelControlJob;
-import com.syscxp.tunnel.tunnel.job.EnabledOrDisabledTunnelControlJob;
-import com.syscxp.tunnel.tunnel.job.UpdateBandwidthJob;
+import com.syscxp.tunnel.tunnel.job.*;
 import com.syscxp.utils.CollectionDSL;
 import com.syscxp.utils.URLBuilder;
 import com.syscxp.utils.Utils;
@@ -442,6 +440,15 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
             //删除产品
             dbf.remove(vo);
+
+            //删除续费表
+            logger.info("删除接口成功，并创建任务：DeleteRenewVOAfterDeleteResourceJob");
+            DeleteRenewVOAfterDeleteResourceJob job = new DeleteRenewVOAfterDeleteResourceJob();
+            job.setAccountUuid(vo.getOwnerAccountUuid());
+            job.setResourceType(vo.getClass().getSimpleName());
+            job.setResourceUuid(vo.getUuid());
+            jobf.execute("删除物理接口-删除续费表", Platform.getManagementServerId(), job);
+
             evt.setInventory(InterfaceInventory.valueOf(vo));
         } else {
             //退订失败
@@ -463,6 +470,17 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                 .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid())
                 .find();
         boolean isUsed = tsPort != null;
+        String commands = null;
+
+        if(isUsed){
+            TunnelVO vo = Q.New(TunnelVO.class)
+                    .eq(TunnelVO_.uuid, tsPort.getTunnelUuid())
+                    .find();
+            commands = JSONObjectUtil.toJsonString(new TunnelControllerBase().getTunnelConfigInfo(vo));
+        }
+
+        final String revertCommands = commands;
+
         Map<String, Object> rollback = new HashMap<>();
         if (tsPort != null && iface.getType() == NetworkType.QINQ) {
             List<QinqVO> qinqs = Q.New(QinqVO.class)
@@ -538,6 +556,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             @Override
             public void run(FlowTrigger trigger, Map data) {
                 if (isUsed && msg.isIssue()) {
+
                     TunnelVO tunnel = Q.New(TunnelVO.class)
                             .eq(TunnelVO_.uuid, tsPort.getTunnelUuid())
                             .find();
@@ -554,6 +573,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                 trigger.next();
                             } else {
                                 logger.info(String.format("Failed to restart tunnel[uuid:%s].", tunnel.getUuid()));
+
+                                //恢复Tunnel
+                                if(reply.getError().getDetails().contains("failed to execute the command and rollback")){
+                                    logger.info("修改专线失败，控制器回滚失败，开始恢复专线");
+                                    taskRevertTunnel(tunnel,revertCommands);
+                                }
+
                                 trigger.fail(reply.getError());
                             }
                         }
@@ -1067,6 +1093,8 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             }
         }
 
+        String revertCommands = JSONObjectUtil.toJsonString(new TunnelControllerBase().getTunnelConfigInfo(vo));
+
         TunnelSwitchPortVO tunnelSwitchPortA = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.tunnelUuid, msg.getUuid())
                 .eq(TunnelSwitchPortVO_.sortTag, "A")
@@ -1207,6 +1235,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                                 trigger.next();
                             } else {
                                 logger.info(String.format("Failed update vlan of tunnel[uuid:%s].", vo.getUuid()));
+
+                                //恢复Tunnel
+                                if(reply.getError().getDetails().contains("failed to execute the command and rollback")){
+                                    logger.info("修改专线失败，控制器回滚失败，开始恢复专线");
+                                    taskRevertTunnel(vo,revertCommands);
+                                }
+
                                 trigger.fail(reply.getError());
                             }
                         }
@@ -1854,6 +1889,29 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
         }
     }
 
+    private void taskRevertTunnel(TunnelVO vo,String commands){
+        TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.Revert);
+
+        RevertTunnelMsg revertTunnelMsg = new RevertTunnelMsg();
+        revertTunnelMsg.setCommands(commands);
+        revertTunnelMsg.setTaskUuid(taskResourceVO.getUuid());
+        bus.makeLocalServiceId(revertTunnelMsg, TunnelConstant.SERVICE_ID);
+        bus.send(revertTunnelMsg, new CloudBusCallBack(null) {
+            @Override
+            public void run(MessageReply reply) {
+                if (reply.isSuccess()) {
+                    logger.info("恢复专线成功");
+                } else {
+                    logger.info("下发恢复通道失败，创建任务：RevertTunnelControlJob");
+                    RevertTunnelControlJob job = new RevertTunnelControlJob();
+                    job.setTunnelUuid(vo.getUuid());
+                    job.setCommands(commands);
+                    jobf.execute("恢复专线-控制器下发", Platform.getManagementServerId(), job);
+                }
+            }
+        });
+    }
+
     private void taskDeleteTunnel(TunnelVO vo) {
         TaskResourceVO taskResourceVO = new TunnelBase().newTaskResourceVO(vo, TaskType.Delete);
 
@@ -1890,13 +1948,13 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
                     new TunnelBase().enabledTunnelJob(vo, "恢复专线连接");
                     completionTask.success(TunnelInventory.valueOf(dbf.reload(vo)));
                 } else {
-
-                    logger.info("恢复专线连接失败，创建任务：EnabledOrDisabledTunnelControlJob");
-                    EnabledOrDisabledTunnelControlJob job = new EnabledOrDisabledTunnelControlJob();
-                    job.setTunnelUuid(vo.getUuid());
-                    job.setJobType(TunnelState.Enabled);
-                    jobf.execute("恢复专线连接-控制器下发", Platform.getManagementServerId(), job);
-
+                    if(vo.getState() != TunnelState.Deployfailure && vo.getState() != TunnelState.Deploying){
+                        logger.info("恢复专线连接失败，创建任务：EnabledOrDisabledTunnelControlJob");
+                        EnabledOrDisabledTunnelControlJob job = new EnabledOrDisabledTunnelControlJob();
+                        job.setTunnelUuid(vo.getUuid());
+                        job.setJobType(TunnelState.Enabled);
+                        jobf.execute("恢复专线连接-控制器下发", Platform.getManagementServerId(), job);
+                    }
                     completionTask.fail(reply.getError());
                 }
             }
@@ -2741,8 +2799,17 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
             for (InterfaceVO vo : ifaces) {
                 if (vo.getExpireDate().before(delete)) {
-                    if (!Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid, vo.getUuid()).isExists())
+                    if (!Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid, vo.getUuid()).isExists()){
                         dbf.remove(vo);
+                        //删除续费表
+                        logger.info("删除接口成功，并创建任务：DeleteRenewVOAfterDeleteResourceJob");
+                        DeleteRenewVOAfterDeleteResourceJob job = new DeleteRenewVOAfterDeleteResourceJob();
+                        job.setAccountUuid(vo.getOwnerAccountUuid());
+                        job.setResourceType(vo.getClass().getSimpleName());
+                        job.setResourceUuid(vo.getUuid());
+                        jobf.execute("删除物理接口-删除续费表", Platform.getManagementServerId(), job);
+                    }
+
                 }
                 if (vo.getExpireDate().before(close) && vo.getState() == InterfaceState.Unpaid) {
                     dbf.remove(vo);

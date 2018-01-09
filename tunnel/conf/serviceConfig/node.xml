@@ -112,4 +112,8 @@
         <name>com.syscxp.header.tunnel.node.APIUploadImageUrlMsg</name>
     </message>
 
+    <message>
+        <name>com.syscxp.header.tunnel.node.APIReconcileNodeExtensionInfoMsg</name>
+    </message>
+
 </service>

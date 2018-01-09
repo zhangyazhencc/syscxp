@@ -13,8 +13,8 @@ import static java.util.Arrays.asList;
  * Created by xing5 on 2017/3/18.
  */
 @RestRequest(
-        path = "/notifications",
-        method = HttpMethod.DELETE,
+        method = HttpMethod.GET,
+        isAction = true,
         responseClass = APIDeleteNotificationsEvent.class
 )
 public class APIDeleteNotificationsMsg extends APIMessage {

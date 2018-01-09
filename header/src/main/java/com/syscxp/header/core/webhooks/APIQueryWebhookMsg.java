@@ -10,9 +10,8 @@ import com.syscxp.header.query.AutoQuery;
  */
 @AutoQuery(inventoryClass = WebhookInventory.class, replyClass = APIQueryWebhookReply.class)
 @RestRequest(
-        path = "/web-hooks",
-        optionalPaths = {"/web-hooks/{uuid}"},
         method = HttpMethod.GET,
+        isAction = true,
         responseClass = APIQueryWebhookReply.class
 )
 public class APIQueryWebhookMsg extends APIQueryMessage {

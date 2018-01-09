@@ -52,7 +52,16 @@ public class ControllerRestFacade {
                     completion.success();
                     logger.debug(String.format("successfully execute the command[%s].", url));
                 } else {
-                    completion.fail(Platform.operr("failed to execute the command[%s]. %s", url, returnValue.getMsg()));
+                    if(returnValue.isRollback()==null){
+                        completion.fail(Platform.operr("failed to execute the command[%s]. %s", url, returnValue.getMsg()));
+                    }else {
+                        if(returnValue.isRollback()){
+                            completion.fail(Platform.operr("failed to execute the command[%s]. %s", url, returnValue.getMsg()));
+                        }else{
+                            completion.fail(Platform.operr("failed to execute the command and rollback [%s]. %s", url, returnValue.getMsg()));
+                        }
+                    }
+
                 }
             }
 

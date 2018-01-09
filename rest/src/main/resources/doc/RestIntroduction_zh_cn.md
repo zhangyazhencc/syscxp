@@ -184,7 +184,7 @@ Status Code: 202
 Body: 
 
 {
-	"location": "http://localhost:8989/v1/api-jobs/967a26b7431c49c0b1d50d709ef1aef3"
+	"result": "http://localhost:8989/v1/api-jobs/967a26b7431c49c0b1d50d709ef1aef3"
 }
 ```
 
@@ -357,7 +357,7 @@ status code: 202
 body:
 
 {
-	"location": "http://localhost:8989/v1/api-jobs/d0345d3ddcae485f8170572b15a2b581"
+	"result": "http://localhost:8989/v1/api-jobs/d0345d3ddcae485f8170572b15a2b581"
 }
 ```
 
