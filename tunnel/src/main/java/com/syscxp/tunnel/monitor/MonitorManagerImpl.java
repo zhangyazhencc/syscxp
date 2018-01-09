@@ -18,6 +18,7 @@ import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
 import com.syscxp.header.core.workflow.*;
 import com.syscxp.header.errorcode.ErrorCode;
+import com.syscxp.header.errorcode.OperationFailureException;
 import com.syscxp.header.host.*;
 import com.syscxp.header.identity.SessionInventory;
 import com.syscxp.header.message.APIMessage;
@@ -131,17 +132,17 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         if (!tunnelVO.getState().equals(TunnelState.Enabled))
             throw new IllegalArgumentException(String.format("can not start monitor for %s tunnel!", tunnelVO.getState()));
 
+        // 初始化监控通道
         tunnelVO.setMonitorCidr(msg.getMonitorCidr());
         tunnelVO.setMonitorState(TunnelMonitorState.Enabled);
         tunnelVO.setStatus(TunnelStatus.Connected);
+        dbf.updateAndRefresh(tunnelVO);
 
         FlowChain startMonitor = FlowChainBuilder.newSimpleFlowChain();
         startMonitor.setName(String.format("start-tunnel-monitor-%s", tunnelVO.getName()));
         startMonitor.then(new Flow() {
             @Override
             public void run(FlowTrigger trigger, Map data) {
-                // 初始化监控通道
-                dbf.updateAndRefresh(tunnelVO);
                 initTunnelMonitor(tunnelVO);
 
                 trigger.next();
@@ -149,6 +150,11 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
             @Override
             public void rollback(FlowRollback trigger, Map data) {
+                tunnelVO.setMonitorCidr(null);
+                tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
+                tunnelVO.setStatus(TunnelStatus.Connected);
+                dbf.updateAndRefresh(tunnelVO);
+
                 trigger.rollback();
             }
         }).then(new Flow() {
@@ -175,7 +181,16 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
 
             @Override
             public void rollback(FlowRollback trigger, Map data) {
-                stopControllerMonitor(tunnelVO.getUuid());
+                try {
+                    stopControllerMonitor(tunnelVO.getUuid());
+                } catch (Exception e) {
+                    logger.error("开启监控-回滚关闭控制器监控失败，启动job: " + tunnelVO.getName() + " Error: " + e.getMessage());
+                    TunnelMonitorJob monitorJob = new TunnelMonitorJob();
+                    monitorJob.setTunnelUuid(tunnelVO.getUuid());
+                    monitorJob.setJobType(MonitorJobType.STOP);
+
+                    jobf.execute("开启监控失败回滚-关闭监控", Platform.getManagementServerId(), monitorJob);
+                }
 
                 trigger.rollback();
             }
@@ -210,6 +225,12 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             jobf.execute("关闭监控失败-停止监控", Platform.getManagementServerId(), monitorJob);
         }
 
+        try {
+            stopAgentMonitor(tunnelVO.getUuid());
+        } catch (Exception e) {
+            logger.info("关闭监控-关闭agent失败！");
+        }
+
         tunnelVO.setStatus(TunnelStatus.Connected);
         tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
         tunnelVO.setMonitorCidr("");
@@ -235,77 +256,55 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
             throw new IllegalArgumentException("please start tunnel first!");
 
         String originalMonitorCidr = tunnelVO.getMonitorCidr();
-        tunnelVO.setMonitorCidr(msg.getMonitorCidr());
-
         List<TunnelMonitorVO> originalTunnelMonitorVOS = Q.New(TunnelMonitorVO.class)
                 .eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid())
                 .list();
 
-        FlowChain restartMonitor = FlowChainBuilder.newSimpleFlowChain();
-        restartMonitor.setName(String.format("restart-tunnel-monitor-%s", tunnelVO.getName()));
-        restartMonitor.then(new Flow() {
-            @Override
-            public void run(FlowTrigger trigger, Map data) {
-                dbf.updateAndRefresh(tunnelVO);
-                initTunnelMonitor(tunnelVO);
+        tunnelVO.setMonitorCidr(msg.getMonitorCidr());
+        dbf.updateAndRefresh(tunnelVO);
 
-                trigger.next();
+        List<TunnelMonitorVO> tunnelMonitorVOS = new ArrayList<>();
+        try {
+            tunnelMonitorVOS = initTunnelMonitor(tunnelVO);
+        } catch (Exception e) {
+            UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid()).delete();
+            dbf.persistCollection(originalTunnelMonitorVOS);
+
+            throw new OperationFailureException(Platform.operr("Fail to modiry cidr! Error: cannot init TunnelMonitor"));
+        }
+
+        try {
+            modifyControllerMonitor(tunnelVO.getUuid());
+        } catch (Exception e) {
+            ControllerCommands.TunnelMonitorCommand cmd = getControllerMonitorCommand(tunnelVO.getUuid(),originalTunnelMonitorVOS);
+
+            String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
+            ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
+            if (needRollback(response)) {
+                cmd.setRollback(true);
+                sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
             }
 
-            @Override
-            public void rollback(FlowRollback trigger, Map data) {
-                trigger.rollback();
-            }
-        }).then(new Flow() {
-            // 下发控制器命令
-            @Override
-            public void run(FlowTrigger trigger, Map data) {
-                modifyControllerMonitor(tunnelVO.getUuid());
+            if(response.isSuccess()){
+                UpdateQuery.New(TunnelMonitorVO.class).eq(TunnelMonitorVO_.tunnelUuid, tunnelVO.getUuid()).delete();
+                dbf.persistCollection(originalTunnelMonitorVOS);
 
-                trigger.next();
-            }
-
-            @Override
-            public void rollback(FlowRollback trigger, Map data) {
                 tunnelVO.setMonitorCidr(originalMonitorCidr);
                 dbf.updateAndRefresh(tunnelVO);
-                initTunnelMonitor(tunnelVO);
 
-                trigger.rollback();
-            }
-        }).then(new Flow() {
-            // 下发监控agent命令
-            @Override
-            public void run(FlowTrigger trigger, Map data) {
-                updateAgentMonitor(tunnelVO.getUuid());
-
-                trigger.next();
-            }
-
-            @Override
-            public void rollback(FlowRollback trigger, Map data) {
-                tunnelVO.setMonitorCidr(originalMonitorCidr);
+                throw new OperationFailureException(Platform.operr("Fail to modiry cidr! Error: %s", e.getMessage()));
+            }else{
+                tunnelVO.setMonitorCidr(null);
+                tunnelVO.setMonitorState(TunnelMonitorState.Disabled);
+                tunnelVO.setStatus(TunnelStatus.Connected);
                 dbf.updateAndRefresh(tunnelVO);
-                initTunnelMonitor(tunnelVO);
 
-                modifyControllerMonitor(tunnelVO.getUuid());
-                updateAgentMonitor(tunnelVO.getUuid());
+                throw new OperationFailureException(Platform.operr("Fail to modiry cidr! Fail to restart monitor! Error: %s", response.getMsg()));
+            }
+        }
 
-                trigger.rollback();
-            }
-        }).done(new FlowDoneHandler(null) {
-            @Override
-            public void handle(Map data) {
-                event.setInventory(TunnelInventory.valueOf(tunnelVO));
-                logger.info(String.format("%s reset cidr success!", tunnelVO.getName()));
-            }
-        }).error(new FlowErrorHandler(null) {
-            @Override
-            public void handle(ErrorCode errCode, Map data) {
-                logger.error(String.format("%s reset cidr failed! Error: %s", tunnelVO.getName(), errCode.getDetails()));
-                event.setError(errCode);
-            }
-        }).start();
+        event.setInventory(TunnelInventory.valueOf(tunnelVO));
+        logger.info(String.format("%s reset cidr success!", tunnelVO.getName()));
 
         bus.publish(event);
     }
@@ -383,7 +382,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         String url = getControllerUrl(ControllerRestConstant.START_TUNNEL_MONITOR);
 
         ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
-        if (!response.isRollback()) {
+        if (needRollback(response)) {
             cmd.setRollback(true);
             sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
 
@@ -433,7 +432,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
         String url = getControllerUrl(ControllerRestConstant.MODIFY_TUNNEL_MONITOR);
 
         ControllerCommands.ControllerRestResponse response = sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
-        if (!response.isRollback()) {
+        if (needRollback(response)) {
             cmd.setRollback(true);
             sendControllerCommand(url, JSONObjectUtil.toJsonString(cmd));
 
@@ -441,6 +440,17 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 throw new RuntimeException(String.format("Failure to execute RYU modify command! Error:%s"
                         , response.getMsg()));
         }
+    }
+
+    public boolean needRollback(ControllerCommands.ControllerRestResponse response){
+        boolean needRollback = false;
+
+        if(response.isRollback() == null || response.isRollback())
+            needRollback = false;
+        else
+            needRollback = true;
+
+        return needRollback;
     }
 
     /**
