@@ -19,6 +19,7 @@ import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.apimediator.ApiMessageInterceptionException;
 import com.syscxp.header.apimediator.ApiMessageInterceptor;
+import com.syscxp.header.exception.CloudRuntimeException;
 import com.syscxp.header.message.APIMessage;
 import com.syscxp.header.message.Message;
 import com.syscxp.header.tunnel.AliEdgeRouterConstant;
@@ -591,6 +592,10 @@ public class AliEdgeRouterManagerImpl extends AbstractService implements AliEdge
     private void handle(APIUpdateAliEdgeRouterMsg msg){
         AliEdgeRouterVO vo = dbf.findByUuid(msg.getUuid(),AliEdgeRouterVO.class);
         Boolean flag = true;
+
+        if(vo.getStatus() == AliEdgeRouterStatus.Terminate){
+            throw new CloudRuntimeException("边界路由器处于终止状态，不可以修改");
+        }
 
         AliEdgeRouterInformationInventory inventory = new AliEdgeRouterInformationInventory();
         APIUpdateAliEdgeRouterEvent evt = new APIUpdateAliEdgeRouterEvent(msg.getId());
