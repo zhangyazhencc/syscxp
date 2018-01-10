@@ -380,16 +380,16 @@ LOCK TABLES `ProductCategoryVO` WRITE;
 insert  into `ProductCategoryVO`(`uuid`,`code`,`name`,`productTypeCode`,`productTypeName`,`status`,`lastOpDate`,`createDate`) values ('02b70538bd4511e7a08b525400c2a7e2','PORT','端口','PORT','端口','enable','2017-10-31 19:02:22','2017-10-30 17:18:12'),('19d625bebd4611e7a08b523200c2a7e3','VPN','VPN','VPN','VPN','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),('1f33d476bd4611e7a08b525400c2a7e2','BANDWIDTH','带宽','ECP','互联云','enable','2017-10-30 17:18:12','2017-10-30 17:18:12'),('29dacd2ebd4611e7a08b525400c2a7e2','DISK','数据盘','ECP','互联云','enable','2017-10-30 17:59:39','2017-10-30 15:46:12'),('3575883fbd4611e7a08b525400c2a7e2','HOST','主机','ECP','互联云','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),('417add07bd4611e7a08b525400c2a7e2','ABROAD','跨国','TUNNEL','专线','enable','2017-10-30 17:18:12','2017-10-30 17:18:12'),('4c4f62e9bd4611e7a08b525400c2a7e2','CITY','同城','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),('53d2e637bd4611e7a08b525400c2a7e2','LONG','长传','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),('59d625bebd4611e7a08b525400c2a7e2','REGION','区域','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),('8fb5502ddbef11e7b42e060400ef5315','ResourcePool','资源池','ECP','互联云','enable','2017-10-30 15:46:12','2017-10-30 15:46:12');
 
 insert  into `ProductCategoryVO`(`uuid`,`code`,`name`,`productTypeCode`,`productTypeName`,`status`,`lastOpDate`,`createDate`) values
-('PORT-PORT','PORT','端口','PORT','端口','enable','2017-10-31 19:02:22','2017-10-30 17:18:12'),
-('VPN-VPN','VPN','VPN','VPN','VPN','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
-('ECP-BANDWIDTH','BANDWIDTH','带宽','ECP','互联云','enable','2017-10-30 17:18:12','2017-10-30 17:18:12'),
-('ECP-DISK','DISK','数据盘','ECP','互联云','enable','2017-10-30 17:59:39','2017-10-30 15:46:12'),
-('ECP-HOST','HOST','主机','ECP','互联云','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
-('TUNNEL-ABROAD','ABROAD','跨国','TUNNEL','专线','enable','2017-10-30 17:18:12','2017-10-30 17:18:12'),
-('TUNNEL-CITY','CITY','同城','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
-('TUNNEL-LONG','LONG','长传','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
-('TUNNEL-REGION','REGION','区域','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
-('ECP-ResourcePool','ResourcePool','资源池','ECP','互联云','enable','2017-10-30 15:46:12','2017-10-30 15:46:12');
+('PORT','PORT','端口','PORT','端口','enable','2017-10-31 19:02:22','2017-10-30 17:18:12'),
+('VPN','VPN','VPN','VPN','VPN','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
+('BANDWIDTH','BANDWIDTH','带宽','ECP','互联云','enable','2017-10-30 17:18:12','2017-10-30 17:18:12'),
+('DISK','DISK','数据盘','ECP','互联云','enable','2017-10-30 17:59:39','2017-10-30 15:46:12'),
+('HOST','HOST','主机','ECP','互联云','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
+('ABROAD','ABROAD','跨国','TUNNEL','专线','enable','2017-10-30 17:18:12','2017-10-30 17:18:12'),
+('CITY','CITY','同城','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
+('LONG','LONG','长传','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
+('REGION','REGION','区域','TUNNEL','专线','enable','2017-10-30 15:46:12','2017-10-30 15:46:12'),
+('RESOURCEPOOL','RESOURCEPOOL','资源池','ECP','互联云','enable','2017-10-30 15:46:12','2017-10-30 15:46:12');
 
 
 UNLOCK TABLES;
