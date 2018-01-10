@@ -88,6 +88,9 @@ public class AlarmLogVO extends BaseVO {
     }
 
     public long getDuration() {
+        if(duration == 0){
+            duration = (System.currentTimeMillis() - alarmTime.getTime()) / 1000;
+        }
         return duration;
     }
 
