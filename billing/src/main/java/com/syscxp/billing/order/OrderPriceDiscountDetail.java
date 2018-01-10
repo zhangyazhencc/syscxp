@@ -4,6 +4,8 @@ import java.math.BigDecimal;
 
 public class OrderPriceDiscountDetail {
 
+    private String configName;
+
     private BigDecimal originalPrice;
 
     private BigDecimal realPayPrice;
@@ -32,5 +34,13 @@ public class OrderPriceDiscountDetail {
 
     public void setDiscount(int discount) {
         this.discount = discount;
+    }
+
+    public String getConfigName() {
+        return configName;
+    }
+
+    public void setConfigName(String configName) {
+        this.configName = configName;
     }
 }

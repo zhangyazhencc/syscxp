@@ -826,6 +826,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderPriceDiscountDetail.setDiscount(productDiscount);
             orderPriceDiscountDetail.setRealPayPrice(currentDiscount);
             orderPriceDiscountDetails.add(orderPriceDiscountDetail);
+            orderPriceDiscountDetail.setConfigName(productPriceUnitVO.getConfigName());
 
         }
         OrderTempProp orderTempProp = new OrderTempProp();
