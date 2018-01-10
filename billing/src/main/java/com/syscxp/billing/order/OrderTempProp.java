@@ -9,6 +9,7 @@ public class OrderTempProp {
     private BigDecimal originalPrice;
     private BigDecimal discountPrice;
     private List<String> productPriceUnitUuids = new ArrayList<>();
+    private List<OrderPriceDiscountDetail> orderPriceDiscountDetails = new ArrayList<>();
 
     public BigDecimal getOriginalPrice() {
         return originalPrice;
@@ -32,5 +33,13 @@ public class OrderTempProp {
 
     public void setProductPriceUnitUuids(List<String> productPriceUnitUuids) {
         this.productPriceUnitUuids = productPriceUnitUuids;
+    }
+
+    public List<OrderPriceDiscountDetail> getOrderPriceDiscountDetails() {
+        return orderPriceDiscountDetails;
+    }
+
+    public void setOrderPriceDiscountDetails(List<OrderPriceDiscountDetail> orderPriceDiscountDetails) {
+        this.orderPriceDiscountDetails = orderPriceDiscountDetails;
     }
 }

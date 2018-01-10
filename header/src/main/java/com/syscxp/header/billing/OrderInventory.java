@@ -51,6 +51,7 @@ public class OrderInventory {
     private int duration;
 
     private int productStatus;
+    private String productPriceDiscountDetail;
 
     public static OrderInventory valueOf(OrderVO vo) {
         OrderInventory inv = new OrderInventory();
@@ -75,6 +76,7 @@ public class OrderInventory {
         inv.setDuration(vo.getDuration());
         inv.setProductStatus(vo.getProductStatus());
         inv.setCallBackData(vo.getCallBackData());
+        inv.setProductPriceDiscountDetail(vo.getProductPriceDiscountDetail());
         return inv;
     }
 
@@ -252,5 +254,13 @@ public class OrderInventory {
 
     public void setCallBackData(String callBackData) {
         this.callBackData = callBackData;
+    }
+
+    public String getProductPriceDiscountDetail() {
+        return productPriceDiscountDetail;
+    }
+
+    public void setProductPriceDiscountDetail(String productPriceDiscountDetail) {
+        this.productPriceDiscountDetail = productPriceDiscountDetail;
     }
 }

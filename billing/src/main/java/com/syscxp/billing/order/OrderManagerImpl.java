@@ -13,6 +13,7 @@ import com.syscxp.billing.header.sla.SLALogVO_;
 import com.syscxp.billing.header.sla.SLAState;
 import com.syscxp.header.billing.*;
 import com.syscxp.header.errorcode.OperationFailureException;
+import com.syscxp.utils.gson.JSONObjectUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import com.syscxp.billing.header.order.APIUpdateOrderExpiredTimeMsg;
@@ -278,7 +279,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
-
+        if (currentTimestamp.toLocalDateTime().isAfter(msg.getExpiredTime().toLocalDateTime())) {
+            throw new IllegalArgumentException("the expired time is gt now");
+        }
         BigDecimal notUseMonth = getNotUseMonths(currentTimestamp.toLocalDateTime(), msg.getExpiredTime().toLocalDateTime());
         OrderVO orderVo = new OrderVO();
         setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), msg.getProductType(), ProductChargeModel.BY_MONTH, currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), notUseMonth.intValue(), msg.getCallBackData());
@@ -352,7 +355,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
         OrderVO orderVo = new OrderVO();
         setOrderValue(orderVo, msg.getAccountUuid(), msg.getProductName(), msg.getProductType(), null, currentTimestamp, msg.getDescriptionData(), msg.getProductUuid(), 0, msg.getCallBackData());
-
+        orderVo.setProductPriceDiscountDetail(JSONObjectUtil.toJsonString(orderTempProp.getOrderPriceDiscountDetails()));
         RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
         if (renewVO == null) {
             throw new IllegalArgumentException("could not find the product purchased history ");
@@ -549,7 +552,9 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
 
     private void handle(APIGetUnscribeProductPriceDiffMsg msg) {
         APIGetUnscribeProductPriceDiffReply reply = new APIGetUnscribeProductPriceDiffReply();
-
+        if (dbf.getCurrentSqlTime().toLocalDateTime().isAfter(msg.getExpiredTime().toLocalDateTime())) {
+            throw new IllegalArgumentException("the expired time is gt now");
+        }
         BigDecimal notUseMonth = getNotUseMonths(dbf.getCurrentSqlTime().toLocalDateTime(), msg.getExpiredTime().toLocalDateTime());
         RenewVO renewVO = getRenewVO(msg.getAccountUuid(), msg.getProductUuid());
         if (renewVO == null) {
@@ -661,6 +666,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             orderVo.setOriginalPrice(originalPrice);
             orderVo.setPrice(discountPrice);
             orderVo.setType(OrderType.BUY);
+            orderVo.setProductPriceDiscountDetail(JSONObjectUtil.toJsonString(orderTempProp.getOrderPriceDiscountDetails()));
             if (msg.getProductType() == ProductType.TUNNEL) {
                 orderVo.setProductStatus(0);
             }
@@ -745,10 +751,11 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
     @Transactional
     private OrderTempProp calculatePrice(List<ProductPriceUnit> units, String accountUuid) {
         List<String> productPriceUnitUuids = new ArrayList<String>();
+        List<OrderPriceDiscountDetail> orderPriceDiscountDetails = new ArrayList<>();
         BigDecimal discountPrice = BigDecimal.ZERO;
         BigDecimal originalPrice = BigDecimal.ZERO;
         for (ProductPriceUnit unit : units) {
-
+            OrderPriceDiscountDetail orderPriceDiscountDetail = new OrderPriceDiscountDetail();
             ProductCategoryVO productCategoryVO = getProductCategoryVO(unit.getCategoryCode(), unit.getProductTypeCode());
             if (productCategoryVO == null) {
                 throw new IllegalArgumentException("can not find productType or category");
@@ -776,12 +783,17 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
             originalPrice = originalPrice.add(BigDecimal.valueOf(productPriceUnitVO.getUnitPrice() * base));
             BigDecimal currentDiscount = BigDecimal.valueOf(productPriceUnitVO.getUnitPrice() * base).multiply(BigDecimal.valueOf(productDiscount)).divide(BigDecimal.valueOf(100), 4, RoundingMode.HALF_DOWN).setScale(2, RoundingMode.HALF_UP);
             discountPrice = discountPrice.add(currentDiscount);
+            orderPriceDiscountDetail.setOriginalPrice(originalPrice);
+            orderPriceDiscountDetail.setDiscount(productDiscount);
+            orderPriceDiscountDetail.setRealPayPrice(currentDiscount);
+            orderPriceDiscountDetails.add(orderPriceDiscountDetail);
 
         }
         OrderTempProp orderTempProp = new OrderTempProp();
         orderTempProp.setDiscountPrice(discountPrice);
         orderTempProp.setOriginalPrice(originalPrice);
         orderTempProp.setProductPriceUnitUuids(productPriceUnitUuids);
+        orderTempProp.setOrderPriceDiscountDetails(orderPriceDiscountDetails);
         return orderTempProp;
     }
 
