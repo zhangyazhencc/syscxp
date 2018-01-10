@@ -45,6 +45,9 @@
     <message>
         <name>com.syscxp.header.billing.APIGetRenewProductPriceMsg</name>
     </message>
+    <message>
+        <name>com.syscxp.header.billing.APICreateBuyEdgeLineOrderMsg</name>
+    </message>
 
     <message>
         <name>com.syscxp.billing.header.order.APIQueryOrderMsg</name>

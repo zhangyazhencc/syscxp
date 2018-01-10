@@ -188,6 +188,7 @@ CREATE TABLE `OrderVO` (
   `duration` int(10) unsigned NOT NULL DEFAULT 0,
   `productStatus` tinyint(1) unsigned DEFAULT 1 COMMENT '产品是否开通',
   `callBackData` varchar(1000) DEFAULT NULL,
+  `productPriceDiscountDetail` varchar(1000) DEFAULT NULL COMMENT '产品价格信息',
   PRIMARY KEY (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
