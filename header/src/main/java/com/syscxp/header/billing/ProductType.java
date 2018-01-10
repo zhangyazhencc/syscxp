@@ -7,5 +7,6 @@ public enum ProductType {
     VPN,
     HOST,
     DISK,
-    RESOURCEPOOL
+    RESOURCEPOOL,
+    EDGELINE
 }

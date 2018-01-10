@@ -80,6 +80,9 @@ public class OrderVO {
     @Column
     private int productStatus;
 
+    @Column
+    private String productPriceDiscountDetail;
+
     public String getUuid() {
         return uuid;
     }
@@ -246,6 +249,14 @@ public class OrderVO {
 
     public void setCallBackData(String callBackData) {
         this.callBackData = callBackData;
+    }
+
+    public String getProductPriceDiscountDetail() {
+        return productPriceDiscountDetail;
+    }
+
+    public void setProductPriceDiscountDetail(String productPriceDiscountDetail) {
+        this.productPriceDiscountDetail = productPriceDiscountDetail;
     }
 
     @PreUpdate
