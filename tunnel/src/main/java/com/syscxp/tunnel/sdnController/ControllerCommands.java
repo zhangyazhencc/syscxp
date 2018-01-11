@@ -178,6 +178,7 @@ public class ControllerCommands {
         private String nw_dst;
         private String uplink;
         private Long bandwidth;
+        private String uuid; //sdn交换机uuid
 
         public Integer getVlan_id() {
             return vlan_id;
@@ -233,6 +234,14 @@ public class ControllerCommands {
 
         public void setBandwidth(Long bandwidth) {
             this.bandwidth = bandwidth;
+        }
+
+        public String getUuid() {
+            return uuid;
+        }
+
+        public void setUuid(String uuid) {
+            this.uuid = uuid;
         }
     }
 

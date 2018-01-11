@@ -510,6 +510,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 sdn.setUplink(upLinkRef.getPortName());
                 sdn.setBandwidth(SizeUnit.BYTE.toKiloByte(tunnelVO.getBandwidth()));
                 sdn.setVlan_id(tunnelSwitchPortVO.getVlan());
+                sdn.setUuid(physicalSwitchVO.getUuid());
 
                 if (tunnelSwitchPortVO.getSortTag().equals(InterfaceType.A.toString())) {
                     sdn.setNw_src(removeMaskFromIp(monitorIp.get(InterfaceType.A.toString())));
