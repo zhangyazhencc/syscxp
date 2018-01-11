@@ -1779,7 +1779,7 @@ public class MonitorManagerImpl extends AbstractService implements MonitorManage
                 endpointTunnel.setTunnelUuid(tunnelVO.getUuid());
                 endpointTunnel.setTunnelName(tunnelVO.getName());
                 endpointTunnel.setBandwidth(tunnelVO.getBandwidth());
-                endpointTunnel.setAccountUuid(tunnelVO.getAccountUuid());
+                endpointTunnel.setAccountUuid(tunnelVO.getOwnerAccountUuid());
 
                 endpointTunnels.add(endpointTunnel);
             }
