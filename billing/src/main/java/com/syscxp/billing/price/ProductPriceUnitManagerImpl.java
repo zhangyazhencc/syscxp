@@ -39,19 +39,6 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
     private CloudBus bus;
     @Autowired
     private DatabaseFacade dbf;
-    @Autowired
-    private PluginRegistry pluginRgty;
-    @Autowired
-    private DbEntityLister dl;
-    @Autowired
-    private ErrorFacade errf;
-    @Autowired
-    private ResourceDestinationMaker destMaker;
-    @Autowired
-    private ThreadFacade thdf;
-    @Autowired
-    private EventFacade evtf;
-
 
     @Override
     public void handleMessage(Message msg) {
@@ -81,9 +68,35 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             handle((APICreateVPNPriceMsg) msg);
         } else if (msg instanceof APIDeleteVPNPriceMsg) {
             handle((APIDeleteVPNPriceMsg) msg);
+        } else if (msg instanceof APICreateSharePortPriceMsg) {
+            handle((APICreateSharePortPriceMsg) msg);
         } else {
             bus.dealWithUnknownMessage(msg);
         }
+    }
+
+    private void handle(APICreateSharePortPriceMsg msg) {
+        String productCategoryUuid = validateProductTypeAndCategory(msg.getProductType(), msg.getCategory());
+        List<ProductPriceUnitVO> list = new ArrayList<>();
+        ProductPriceUnitVO productPriceUnitVO = new ProductPriceUnitVO();
+        productPriceUnitVO.setProductCategoryUuid(productCategoryUuid);
+        productPriceUnitVO.setAreaCode(msg.getAreaCode());
+        productPriceUnitVO.setAreaName(msg.getAreaName());
+        productPriceUnitVO.setLineCode(msg.getLineCode());
+        productPriceUnitVO.setLineName(msg.getLineName());
+        list.add(createPriceUnitWithConfig(productPriceUnitVO, msg.getConfigLT500MCode(), msg.getConfigLT500MName(), msg.getConfigLT500MPrice()));
+        list.add(createPriceUnitWithConfig(productPriceUnitVO, msg.getConfigGT500MLT2GCode(), msg.getConfigGT500MLT2GName(), msg.getConfigGT500MLT2GPrice()));
+        list.add(createPriceUnitWithConfig(productPriceUnitVO, msg.getConfigGT2GCode(), msg.getConfigGT2GName(), msg.getConfigGT2GPrice()));
+        APICreateSharePortPriceEvent event = new APICreateSharePortPriceEvent(msg.getId());
+        event.setInventories(list);
+        bus.publish(event);
+    }
+
+    private ProductPriceUnitVO createPriceUnitWithConfig(ProductPriceUnitVO productPriceUnitVO, String configCode, String configName, Integer configPrice) {
+        productPriceUnitVO.setConfigCode(configCode);
+        productPriceUnitVO.setConfigName(configName);
+        productPriceUnitVO.setUnitPrice(configPrice);
+        return dbf.persistAndRefresh(productPriceUnitVO);
     }
 
     private void handle(APIDeleteVPNPriceMsg msg) {
@@ -212,10 +225,10 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         bus.reply(msg, reply);
     }
 
-    private void setPrice(String configName, BigDecimal price, PriceData priceData) {
+    private void setPrice(String configCode, BigDecimal price, PriceData priceData) {
         Class clazz = priceData.getClass();
         try {
-            Method m = clazz.getMethod("setConfig" + configName.toUpperCase() + "Price", new Class[]{BigDecimal.class});
+            Method m = clazz.getMethod("setConfig" + configCode.toUpperCase() + "Price", new Class[]{BigDecimal.class});
             m.invoke(priceData, price);
         } catch (NoSuchMethodException e) {
             e.printStackTrace();
