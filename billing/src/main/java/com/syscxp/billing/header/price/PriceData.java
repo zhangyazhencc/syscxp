@@ -24,6 +24,9 @@ public class PriceData {
     private BigDecimal config2GPrice;
     private BigDecimal config5GPrice;
     private BigDecimal config10GPrice;
+    private BigDecimal configLT500MPrice;
+    private BigDecimal configGT500MLT2GPrice;
+    private BigDecimal configGT2GPrice;
 
     public PriceData(){ }
     public PriceData(Object[] objs) {
@@ -168,5 +171,29 @@ public class PriceData {
 
     public void setAreaName(String areaName) {
         this.areaName = areaName;
+    }
+
+    public BigDecimal getConfigLT500MPrice() {
+        return configLT500MPrice;
+    }
+
+    public void setConfigLT500MPrice(BigDecimal configLT500MPrice) {
+        this.configLT500MPrice = configLT500MPrice;
+    }
+
+    public BigDecimal getConfigGT500MLT2GPrice() {
+        return configGT500MLT2GPrice;
+    }
+
+    public void setConfigGT500MLT2GPrice(BigDecimal configGT500MLT2GPrice) {
+        this.configGT500MLT2GPrice = configGT500MLT2GPrice;
+    }
+
+    public BigDecimal getConfigGT2GPrice() {
+        return configGT2GPrice;
+    }
+
+    public void setConfigGT2GPrice(BigDecimal configGT2GPrice) {
+        this.configGT2GPrice = configGT2GPrice;
     }
 }
