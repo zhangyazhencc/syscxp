@@ -181,8 +181,15 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         if (vo == null) {
             throw new IllegalArgumentException("can not find the product type or category");
         }
-        String sql = "SELECT areaCode,areaName,lineCode,lineName,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND areaCode = :areaCode  GROUP BY lineCode,lineName ";
-        String sql_count = "SELECT COUNT(*) as num from (SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND areaCode = :areaCode  GROUP BY lineCode) as t";
+        String sql = "SELECT areaCode,areaName,lineCode,lineName,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND " ;
+        String sql_count = "SELECT COUNT(*) as num from (SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND ";
+        if (!msg.getAreaCode().equalsIgnoreCase("ALL")) {
+            sql += "areaCode = :areaCode ";
+            sql_count += "areaCode = :areaCode ";
+        }
+        sql+=" GROUP BY lineCode,lineName ";
+        sql_count += " GROUP BY lineCode) as t";
+
         if (msg.getCategory().equals(Category.REGION)|| msg.getCategory().equals(Category.VPN)) {
             sql = "SELECT areaCode,areaName,lineCode,lineName,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode,areaName ";
             sql_count = "SELECT COUNT(*) as num FROM (SELECT areaName as areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode) as T";
@@ -191,12 +198,12 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
 
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("productCategoryUuid", vo.getUuid());
-        if (!msg.getCategory().equals(Category.REGION) && !msg.getCategory().equals(Category.VPN)) {
+        if (!msg.getCategory().equals(Category.REGION) && !msg.getCategory().equals(Category.VPN) && !msg.getAreaCode().equalsIgnoreCase("ALL")) {
             q.setParameter("areaCode", msg.getAreaCode());
         }
         Query q_count = dbf.getEntityManager().createNativeQuery(sql_count);
         q_count.setParameter("productCategoryUuid", vo.getUuid());
-        if (!msg.getCategory().equals(Category.REGION) && !msg.getCategory().equals(Category.VPN)) {
+        if (!msg.getCategory().equals(Category.REGION) && !msg.getCategory().equals(Category.VPN) && !msg.getAreaCode().equalsIgnoreCase("ALL")) {
             q_count.setParameter("areaCode", msg.getAreaCode());
         }
         BigInteger count = (BigInteger) q_count.getSingleResult();
