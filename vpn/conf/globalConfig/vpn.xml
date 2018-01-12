@@ -14,4 +14,19 @@
         <defaultValue>192.168.211.6</defaultValue>
         <type>java.lang.String</type>
     </config>
+
+    <config>
+        <category>vpn</category>
+        <name>expiredVpn.deleteInterval</name>
+        <description>expired vpn delete interval</description>
+        <defaultValue>7</defaultValue>
+        <type>java.lang.Integer</type>
+    </config>
+    <config>
+        <category>vpn</category>
+        <name>expiredVpn.cleanInterval</name>
+        <description>expired vpn clean interval</description>
+        <defaultValue>1</defaultValue>
+        <type>java.lang.Integer</type>
+    </config>
 </globalConfig>
