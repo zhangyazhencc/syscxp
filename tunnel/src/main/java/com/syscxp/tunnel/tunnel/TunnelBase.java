@@ -226,33 +226,53 @@ public class TunnelBase {
     }
 
     /**
-     * 创建云专线的新购物理接口
+     * 创建云专线的新购物理接口-共享端口
      */
-    public InterfaceVO createInterfaceByTunnel(String endpointUuid,String portOfferingUuid,APICreateTunnelMsg msg){
+    public InterfaceVO createInterfaceByTunnel(String endpointUuid,APICreateTunnelMsg msg){
         TunnelStrategy ts = new TunnelStrategy();
         EndpointVO endpointVO = dbf.findByUuid(endpointUuid, EndpointVO.class);
         InterfaceVO interfaceVO = new InterfaceVO();
 
-        String switchPortUuid = ts.getSwitchPortByStrategy(msg.getAccountUuid(), endpointUuid, portOfferingUuid);
+        String switchPortUuid = ts.getSwitchPortByStrategy(msg.getAccountUuid(), endpointUuid, "SHARE");
         if (switchPortUuid == null) {
-            throw new ApiMessageInterceptionException(argerr("该连接点[%s]下无可用的端口",endpointUuid));
+            throw new ApiMessageInterceptionException(argerr("该连接点[%s]下无可用的共享端口",endpointUuid));
         }
         interfaceVO.setUuid(Platform.getUuid());
-        interfaceVO.setAccountUuid(null);
+        interfaceVO.setAccountUuid(msg.getAccountUuid());
         interfaceVO.setOwnerAccountUuid(msg.getAccountUuid());
-        interfaceVO.setName(endpointVO.getName() + "_接口_" + Platform.getUuid().substring(0, 6));
+        interfaceVO.setName(endpointVO.getName() + "_共享接口_" + Platform.getUuid().substring(0, 6));
         interfaceVO.setEndpointUuid(endpointUuid);
         interfaceVO.setSwitchPortUuid(switchPortUuid);
         interfaceVO.setType(NetworkType.TRUNK);
         interfaceVO.setDuration(msg.getDuration());
         interfaceVO.setProductChargeModel(msg.getProductChargeModel());
         interfaceVO.setDescription(null);
-        interfaceVO.setState(InterfaceState.Unpaid);
+        interfaceVO.setState(InterfaceState.Up);
         interfaceVO.setMaxModifies(CoreGlobalProperty.INTERFACE_MAX_MOTIFIES);
-        interfaceVO.setExpireDate(dbf.getCurrentSqlTime());
+        interfaceVO.setExpireDate(null);
 
         dbf.getEntityManager().persist(interfaceVO);
         return interfaceVO;
+    }
+
+    /**
+     * 判断云专线的物理接口是否为共享端口
+     */
+    public boolean isShareForInterface(String interfaceUuid){
+        boolean isShare = false;
+        if(interfaceUuid == null){
+            isShare =  true;
+        }else{
+            InterfaceVO interfaceVO = dbf.findByUuid(interfaceUuid,InterfaceVO.class);
+            String portType = Q.New(SwitchPortVO.class)
+                    .eq(SwitchPortVO_.uuid, interfaceVO.getSwitchPortUuid())
+                    .select(SwitchPortVO_.portType).find();
+            if(portType.equals("SHARE")){
+                isShare =  true;
+            }
+        }
+
+        return isShare;
     }
 
     /**
@@ -351,18 +371,6 @@ public class TunnelBase {
 
         return physicalSwitchVO;
     }
-
-    /**
-     * 根据TunnelSwicth获取两端节点
-     */
-    public String getNodeUuid(TunnelVO vo, String sortTag) {
-        TunnelSwitchPortVO tunnelSwitch = Q.New(TunnelSwitchPortVO.class)
-                .eq(TunnelSwitchPortVO_.tunnelUuid, vo.getUuid())
-                .eq(TunnelSwitchPortVO_.sortTag, sortTag)
-                .find();
-        return dbf.findByUuid(tunnelSwitch.getEndpointUuid(), EndpointVO.class).getNodeUuid();
-    }
-
 
     /**
      * 通过连接点获取可用的端口规格

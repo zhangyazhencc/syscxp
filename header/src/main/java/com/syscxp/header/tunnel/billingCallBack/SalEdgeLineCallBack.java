@@ -3,7 +3,7 @@ package com.syscxp.header.tunnel.billingCallBack;
 import com.syscxp.header.billing.NotifyCallBackData;
 
 /**
- * Create by DCY on 2017/11/16
+ * Create by DCY on 2018/1/12
  */
-public class SalTunnelCallBack extends NotifyCallBackData {
+public class SalEdgeLineCallBack extends NotifyCallBackData {
 }

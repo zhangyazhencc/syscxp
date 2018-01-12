@@ -45,21 +45,63 @@ public class TunnelValidateBase {
     @Autowired
     private DatabaseFacade dbf;
 
+    public void validate(APIOpenEdgeLineMsg msg){
+        EdgeLineVO vo = dbf.findByUuid(msg.getUuid() ,EdgeLineVO.class);
+        if(vo.getPrices() == null){
+            throw new ApiMessageInterceptionException(argerr("该最后一公里未设置金额！"));
+        }
+    }
+
+    public void validate(APICreateEdgeLineMsg msg){
+        //BOSS创建验证物理接口的账户是否一致
+        if (msg.getSession().getType() == AccountType.SystemAdmin) {
+            String accountUuid = dbf.findByUuid(msg.getInterfaceUuid(), InterfaceVO.class).getAccountUuid();
+            if (!Objects.equals(msg.getAccountUuid(), accountUuid)) {
+                throw new ApiMessageInterceptionException(argerr("物理接口不属于该用户！"));
+            }
+        }
+
+        if(Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid,msg.getInterfaceUuid()).isExists()){
+            throw new ApiMessageInterceptionException(argerr("一个物理接口只能申请开通一次！"));
+        }
+    }
+
+    public void validate(APIDeleteEdgeLineMsg msg) {
+        EdgeLineVO vo = dbf.findByUuid(msg.getUuid(), EdgeLineVO.class);
+
+        if(Q.New(TunnelSwitchPortVO.class).eq(TunnelSwitchPortVO_.interfaceUuid,vo.getInterfaceUuid()).isExists()){
+            throw new ApiMessageInterceptionException(argerr("该最后一公里下的接口已经开通专线，不能删！"));
+        }
+
+        checkOrderNoPay(vo.getAccountUuid(), msg.getUuid());
+    }
+
     public void validate(APIUpdateInterfacePortMsg msg) {
 
+        //过期接口不让改
         InterfaceVO iface = Q.New(InterfaceVO.class).eq(InterfaceVO_.uuid, msg.getUuid()).find();
         if (iface.getExpireDate().before(Timestamp.valueOf(LocalDateTime.now())))
             throw new ApiMessageInterceptionException(
                     argerr("The Interface[uuid:%s] has expired！", msg.getUuid()));
+
+        //接口被两条专线使用，不让改
         Q q = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.interfaceUuid, iface.getUuid());
         if (q.count() > 1)
             throw new ApiMessageInterceptionException(
                     argerr("The Interface[uuid:%s] has been used by two tunnel as least！", msg.getUuid()));
+
+        //共享端口不让改
         SwitchPortVO switchPort = Q.New(SwitchPortVO.class).eq(SwitchPortVO_.uuid, iface.getSwitchPortUuid()).find();
-        if (switchPort.getPortType().equals("SHARE") || msg.getNetworkType() == NetworkType.ACCESS)
+        if (switchPort.getPortType().equals("SHARE"))
             throw new ApiMessageInterceptionException(
                     argerr("The type of Interface[uuid:%s] is %s, can not modify！", msg.getUuid(), switchPort.getPortType()));
+
+        //接口类型暂时不支持改成ACCESS
+        if(msg.getNetworkType() == NetworkType.ACCESS){
+            throw new ApiMessageInterceptionException(
+                    argerr("接口类型暂时不支持改成ACCESS！"));
+        }
 
         if (msg.getSwitchPortUuid().equals(iface.getSwitchPortUuid())) {
             if (msg.getNetworkType() == iface.getType()) {
@@ -102,17 +144,19 @@ public class TunnelValidateBase {
             throw new ApiMessageInterceptionException(argerr("物理接口名称【%s】已经存在!", msg.getName()));
         }
 
+        if(!msg.getPortOfferingUuid().equals("SHARE")){
+            //判断账户金额是否充足
+            APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+            priceMsg.setAccountUuid(msg.getAccountUuid());
+            priceMsg.setProductChargeModel(msg.getProductChargeModel());
+            priceMsg.setDuration(msg.getDuration());
+            priceMsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(msg.getPortOfferingUuid()));
+            APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+            if (!reply.isPayable())
+                throw new ApiMessageInterceptionException(
+                        argerr("账户[uuid:%s]余额不足!", msg.getAccountUuid()));
+        }
 
-        //判断账户金额是否充足
-        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
-        priceMsg.setAccountUuid(msg.getAccountUuid());
-        priceMsg.setProductChargeModel(msg.getProductChargeModel());
-        priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(msg.getPortOfferingUuid()));
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
-        if (!reply.isPayable())
-            throw new ApiMessageInterceptionException(
-                    argerr("账户[uuid:%s]余额不足!", msg.getAccountUuid()));
     }
 
     public void validate(APICreateInterfaceManualMsg msg) {
@@ -124,6 +168,7 @@ public class TunnelValidateBase {
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(argerr("物理接口名称【%s】已经存在!", msg.getName()));
         }
+
         String portType = Q.New(SwitchPortVO.class)
                 .eq(SwitchPortVO_.uuid, msg.getSwitchPortUuid())
                 .select(SwitchPortVO_.portType).find();
@@ -140,18 +185,18 @@ public class TunnelValidateBase {
             if (!itq.getResultList().isEmpty()) {
                 throw new ApiMessageInterceptionException(argerr("一个用户在同一个连接点下只能购买一个共享口！ "));
             }
+        }else{
+            //判断账户金额是否充足
+            APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
+            priceMsg.setAccountUuid(msg.getAccountUuid());
+            priceMsg.setProductChargeModel(msg.getProductChargeModel());
+            priceMsg.setDuration(msg.getDuration());
+            priceMsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(portType));
+            APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
+            if (!reply.isPayable())
+                throw new ApiMessageInterceptionException(
+                        argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
         }
-
-        //判断账户金额是否充足
-        APIGetProductPriceMsg priceMsg = new APIGetProductPriceMsg();
-        priceMsg.setAccountUuid(msg.getAccountUuid());
-        priceMsg.setProductChargeModel(msg.getProductChargeModel());
-        priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(new TunnelBillingBase().getInterfacePriceUnit(portType));
-        APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
-        if (!reply.isPayable())
-            throw new ApiMessageInterceptionException(
-                    argerr("The Account[uuid:%s] has no money to pay.", msg.getAccountUuid()));
 
     }
 
@@ -197,12 +242,19 @@ public class TunnelValidateBase {
         if (!msg.getSession().isAdminSession() && iface.getCreateDate().toLocalDateTime().plusDays(deleteDays).isAfter(LocalDateTime.now()))
             throw new ApiMessageInterceptionException(
                     argerr("物理接口[uuid:%s]购买未超过%s天,不能删除 !", msg.getUuid(), deleteDays));
+
         //判断云专线下是否有该物理接口
         Q q = Q.New(TunnelSwitchPortVO.class)
                 .eq(TunnelSwitchPortVO_.interfaceUuid, msg.getUuid());
         if (q.isExists()) {
             throw new ApiMessageInterceptionException(
                     argerr("The interface[uuid:%s] is being used, cannot delete!", msg.getUuid()));
+        }
+
+        //判断物理接口有没有被最后一公里绑定
+        if(Q.New(EdgeLineVO.class).eq(EdgeLineVO_.interfaceUuid,msg.getUuid()).isExists()){
+            throw new ApiMessageInterceptionException(
+                    argerr("该物理接口[uuid:%s] 被最后一公里绑定, 先删除最后一公里!", msg.getUuid()));
         }
 
         //判断该产品是否有未完成订单
@@ -273,8 +325,7 @@ public class TunnelValidateBase {
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(),
-                evoZ.getNodeUuid(), msg.getInnerConnectedEndpointUuid()));
+        priceMsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getInterfaceAUuid(), msg.getInterfaceZUuid(), evoA, evoZ, msg.getInnerConnectedEndpointUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
@@ -435,8 +486,7 @@ public class TunnelValidateBase {
         priceMsg.setAccountUuid(msg.getAccountUuid());
         priceMsg.setProductChargeModel(msg.getProductChargeModel());
         priceMsg.setDuration(msg.getDuration());
-        priceMsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), evoA.getNodeUuid(),
-                evoZ.getNodeUuid(), msg.getInnerConnectedEndpointUuid()));
+        priceMsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(msg.getBandwidthOfferingUuid(), msg.getInterfaceAUuid(), msg.getInterfaceZUuid(), evoA, evoZ, msg.getInnerConnectedEndpointUuid()));
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(priceMsg);
         if (!reply.isPayable())
             throw new ApiMessageInterceptionException(
@@ -476,6 +526,30 @@ public class TunnelValidateBase {
             throw new ApiMessageInterceptionException(
                     argerr("The Tunnel[uuid:%s] has motified %s times.", msg.getUuid(), times));
         }
+    }
+
+    public void validate(APIRenewEdgeLineMsg msg){
+        String accountUuid = Q.New(EdgeLineVO.class)
+                .eq(EdgeLineVO_.uuid, msg.getUuid())
+                .select(EdgeLineVO_.accountUuid)
+                .findValue();
+        checkOrderNoPay(accountUuid, msg.getUuid());
+    }
+
+    public void validate(APIRenewAutoEdgeLineMsg msg){
+        String accountUuid = Q.New(EdgeLineVO.class)
+                .eq(EdgeLineVO_.uuid, msg.getUuid())
+                .select(EdgeLineVO_.accountUuid)
+                .findValue();
+        checkOrderNoPay(accountUuid, msg.getUuid());
+    }
+
+    public void validate(APISLAEdgeLineMsg msg){
+        String accountUuid = Q.New(EdgeLineVO.class)
+                .eq(EdgeLineVO_.uuid, msg.getUuid())
+                .select(EdgeLineVO_.accountUuid)
+                .findValue();
+        checkOrderNoPay(accountUuid, msg.getUuid());
     }
 
     public void validate(APIRenewTunnelMsg msg) {

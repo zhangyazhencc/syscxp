@@ -5,5 +5,6 @@ package com.syscxp.header.tunnel.tunnel;
  */
 public enum InterfaceState {
     Unpaid,
-    Paid
+    Up,
+    Down
 }
