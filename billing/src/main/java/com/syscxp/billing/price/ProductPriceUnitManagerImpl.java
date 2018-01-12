@@ -185,6 +185,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         String sql_count = "SELECT COUNT(*) as num from (SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid AND ";
         if (!msg.getAreaCode().equalsIgnoreCase("ALL")) {
             sql += "areaCode = :areaCode ";
+            sql_count += "areaCode = :areaCode ";
         }
         sql+=" GROUP BY lineCode,lineName ";
         sql_count += " GROUP BY lineCode) as t";
