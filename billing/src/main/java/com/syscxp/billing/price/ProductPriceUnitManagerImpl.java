@@ -84,19 +84,12 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         productPriceUnitVO.setAreaName(msg.getAreaName());
         productPriceUnitVO.setLineCode(msg.getLineCode());
         productPriceUnitVO.setLineName(msg.getLineName());
-        list.add(createPriceUnitWithConfig(productPriceUnitVO, msg.getConfigLT500MCode(), msg.getConfigLT500MName(), msg.getConfigLT500MPrice()));
-        list.add(createPriceUnitWithConfig(productPriceUnitVO, msg.getConfigGT500MLT2GCode(), msg.getConfigGT500MLT2GName(), msg.getConfigGT500MLT2GPrice()));
-        list.add(createPriceUnitWithConfig(productPriceUnitVO, msg.getConfigGT2GCode(), msg.getConfigGT2GName(), msg.getConfigGT2GPrice()));
+        list.add(createPriceUnit(productPriceUnitVO, msg.getConfigLT500MCode(), msg.getConfigLT500MName(), msg.getConfigLT500MPrice()));
+        list.add(createPriceUnit(productPriceUnitVO, msg.getConfigGT500MLT2GCode(), msg.getConfigGT500MLT2GName(), msg.getConfigGT500MLT2GPrice()));
+        list.add(createPriceUnit(productPriceUnitVO, msg.getConfigGT2GCode(), msg.getConfigGT2GName(), msg.getConfigGT2GPrice()));
         APICreateSharePortPriceEvent event = new APICreateSharePortPriceEvent(msg.getId());
         event.setInventories(list);
         bus.publish(event);
-    }
-
-    private ProductPriceUnitVO createPriceUnitWithConfig(ProductPriceUnitVO productPriceUnitVO, String configCode, String configName, Integer configPrice) {
-        productPriceUnitVO.setConfigCode(configCode);
-        productPriceUnitVO.setConfigName(configName);
-        productPriceUnitVO.setUnitPrice(configPrice);
-        return dbf.persistAndRefresh(productPriceUnitVO);
     }
 
     private void handle(APIDeleteVPNPriceMsg msg) {
@@ -144,8 +137,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             String configCode = field.getName().replaceAll("\\D", "")+"M";
             try {
                 int unitPrice = (int) field.get(msg);
-                createPriceUnit(productPriceUnitVO, configCode, configCode, unitPrice);
-                list.add(productPriceUnitVO);
+                list.add(createPriceUnit(productPriceUnitVO, configCode, configCode, unitPrice));
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -157,12 +149,12 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         bus.publish(event);
     }
 
-    private void createPriceUnit(ProductPriceUnitVO vo, String configCode, String configName, Integer unitPrice) {
+    private ProductPriceUnitVO createPriceUnit(ProductPriceUnitVO vo, String configCode, String configName, Integer unitPrice) {
         vo.setUuid(Platform.getUuid());
         vo.setConfigCode(configCode);
         vo.setConfigName(configName);
         vo.setUnitPrice(unitPrice);
-        dbf.persistAndRefresh(vo);
+       return dbf.persistAndRefresh(vo);
     }
 
     private void handle(APIUpdateBroadPriceMsg msg) {
