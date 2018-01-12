@@ -18,5 +18,6 @@ public enum Category {
     EXCLUSIVE,
     SHARE ,
     PORT,
-    RESOURCEPOOL
+    RESOURCEPOOL,
+    POOLNETWORK
 }
