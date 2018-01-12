@@ -362,6 +362,9 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
             tunnelCost = tunnelCost.subtract(faceb.getCost());
         }
 
+        vo.setShareA(msg.isShareA());
+        vo.setShareZ(msg.isShareZ());
+
         vo.setCost(tunnelCost);
         dbf.getEntityManager().persist(vo);
 
@@ -387,7 +390,6 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         vo.setEndpointUuid(msg.getEndpointUuid());
         vo.setPortOfferingUuid(msg.getPortOfferingUuid());
         vo.setName(msg.getName());
-
 
         dbf.getEntityManager().persist(vo);
 
@@ -509,11 +511,11 @@ public class SolutionManagerImpl extends AbstractService implements SolutionMana
         }
 
         if(endpointVOA != null && endpointVOZ !=null && innerConnectedEndpointVO != null){
-            pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
-                    endpointVOZ.getNodeUuid(), innerConnectedEndpointVO.getEndpointUuid()));
+            pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), vo.isShareA(), vo.isShareZ(), endpointVOA,
+                    endpointVOZ, innerConnectedEndpointVO.getEndpointUuid()));
         }else if(endpointVOA != null && endpointVOZ !=null && innerConnectedEndpointVO == null){
-            pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), endpointVOA.getNodeUuid(),
-                    endpointVOZ.getNodeUuid(), null));
+            pmsg.setUnits(new TunnelBillingBase().getTunnelPriceUnit(vo.getBandwidthOfferingUuid(), vo.isShareA(), vo.isShareZ(), endpointVOA,
+                    endpointVOZ, null));
         }
 
         APIGetProductPriceReply reply = new TunnelRESTCaller(CoreGlobalProperty.BILLING_SERVER_URL).syncJsonPost(pmsg);

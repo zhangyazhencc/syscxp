@@ -27,6 +27,9 @@ public class SolutionTunnelInventory {
     private String endpointUuidZ;
     private String innerConnectedEndpointUuid;
 
+    private boolean isShareA;
+    private boolean isShareZ;
+
     public static SolutionTunnelInventory valueOf(SolutionTunnelVO vo) {
         SolutionTunnelInventory inv = new SolutionTunnelInventory();
         inv.setUuid(vo.getUuid());
@@ -50,7 +53,8 @@ public class SolutionTunnelInventory {
         if(vo.getInnerConnectedEndpointVO() != null){
             inv.setInnerConnectedEndpointName(vo.getInnerConnectedEndpointVO().getName());
         }
-
+        inv.setShareA(vo.isShareA());
+        inv.setShareZ(vo.isShareZ());
         inv.setBandwidthOfferingUuid(vo.getBandwidthOfferingUuid());
 
         return inv;
@@ -182,5 +186,21 @@ public class SolutionTunnelInventory {
 
     public void setInnerConnectedEndpointUuid(String innerConnectedEndpointUuid) {
         this.innerConnectedEndpointUuid = innerConnectedEndpointUuid;
+    }
+
+    public boolean isShareA() {
+        return isShareA;
+    }
+
+    public void setShareA(boolean shareA) {
+        isShareA = shareA;
+    }
+
+    public boolean isShareZ() {
+        return isShareZ;
+    }
+
+    public void setShareZ(boolean shareZ) {
+        isShareZ = shareZ;
     }
 }

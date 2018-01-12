@@ -648,6 +648,8 @@ CREATE TABLE `SolutionTunnelVO` (
   `duration` int(11) NOT NULL COMMENT '购买时长',
   `lastOpDate` timestamp ON UPDATE CURRENT_TIMESTAMP COMMENT '最后一次操作时间',
   `createDate` timestamp,
+  `isShareA` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT 'A端是否共享端口',
+  `isShareZ` TINYINT(1)  NOT NULL DEFAULT '1' COMMENT 'Z端是否共享端口',
   `endpointUuidA` varchar(32) NOT NULL COMMENT '连接点A',
   `endpointUuidZ` varchar(32) NOT NULL COMMENT '连接点Z',
   `bandwidthOfferingUuid` varchar(32) NOT NULL COMMENT '带宽Uuid',

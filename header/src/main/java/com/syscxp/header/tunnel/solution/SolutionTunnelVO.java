@@ -32,6 +32,12 @@ public class SolutionTunnelVO extends SolutionBaseVO{
     @Column
     private String innerConnectedEndpointUuid;
 
+    @Column
+    private boolean isShareA;
+
+    @Column
+    private boolean isShareZ;
+
     @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "innerConnectedEndpointUuid", insertable = false, updatable = false)
     private InnerConnectedEndpointVO innerConnectedEndpointVO;
@@ -90,5 +96,21 @@ public class SolutionTunnelVO extends SolutionBaseVO{
 
     public void setInnerConnectedEndpointVO(InnerConnectedEndpointVO innerConnectedEndpointVO) {
         this.innerConnectedEndpointVO = innerConnectedEndpointVO;
+    }
+
+    public boolean isShareA() {
+        return isShareA;
+    }
+
+    public void setShareA(boolean shareA) {
+        isShareA = shareA;
+    }
+
+    public boolean isShareZ() {
+        return isShareZ;
+    }
+
+    public void setShareZ(boolean shareZ) {
+        isShareZ = shareZ;
     }
 }
