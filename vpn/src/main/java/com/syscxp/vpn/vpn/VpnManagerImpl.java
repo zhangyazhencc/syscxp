@@ -14,6 +14,8 @@ import com.syscxp.core.errorcode.ErrorFacade;
 import com.syscxp.core.identity.InnerMessageHelper;
 import com.syscxp.core.job.JobQueueFacade;
 import com.syscxp.core.rest.RESTApiDecoder;
+import com.syscxp.core.thread.PeriodicTask;
+import com.syscxp.core.thread.ThreadFacade;
 import com.syscxp.core.workflow.FlowChainBuilder;
 import com.syscxp.header.AbstractService;
 import com.syscxp.header.agent.OrderCallbackCmd;
@@ -83,6 +85,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static com.syscxp.core.Platform.argerr;
@@ -106,6 +109,8 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
     private ErrorFacade errf;
     @Autowired
     private JobQueueFacade jobf;
+    @Autowired
+    private ThreadFacade thdf;
 
     @Override
     @MessageSafe
@@ -1160,9 +1165,102 @@ public class VpnManagerImpl extends AbstractService implements VpnManager, ApiMe
         ShellUtils.run(String.format("yes | cp %s %s", createCert.getAbsolutePath(), AnsibleConstant.ROOT_DIR));
     }
 
+    private class CleanExpiredVpnThread implements PeriodicTask {
+
+        @Override
+        public TimeUnit getTimeUnit() {
+            return TimeUnit.SECONDS;
+        }
+
+        @Override
+        public long getInterval() {
+            return TimeUnit.DAYS.toSeconds(cleanExpiredVpnInterval);
+        }
+
+        @Override
+        public String getName() {
+            return "clean-expired-vpn-" + Platform.getManagementServerId();
+        }
+
+        private List<VpnVO> getVpnVOs() {
+            return Q.New(VpnVO.class)
+                    .lte(VpnVO_.expireDate, dbf.getCurrentSqlTime())
+                    .list();
+        }
+
+        @Override
+        public void run() {
+            Timestamp deleteTime = Timestamp.valueOf(LocalDateTime.now().minusDays(expiredVpnDeleteTime));
+
+            try {
+                List<VpnVO> vpnVOS = getVpnVOs();
+
+                if (vpnVOS.isEmpty())
+                    return;
+                for (VpnVO vo : vpnVOS) {
+                    if (vo.getExpireDate().before(deleteTime)) {
+                        LOGGER.debug(String.format("The Vpn[name:%s, UUID:%s] has expired, start to delete it.", vo.getName(), vo.getUuid()));
+                        if (vo.getExpireDate().before(deleteTime)) {
+                             deleteVpn(vo.getUuid(), new Completion(null) {
+                                 @Override
+                                 public void success() {
+                                     LOGGER.debug(String.format("Delete expired Vpn[UUID:%s] success.", vo.getUuid()));
+                                 }
+
+                                 @Override
+                                 public void fail(ErrorCode errorCode) {
+                                     LOGGER.debug(String.format("Delete expired Vpn[UUID:%s] failed.", vo.getUuid()));
+                                 }
+                             });
+                        }
+                    }
+                }
+            } catch (Throwable t) {
+                LOGGER.warn(String.format("unhandled exception in the thread[name: %s]", getName()), t);
+            }
+        }
+
+
+    }
+
+    private Future<Void> cleanExpiredVpnThread = null;
+    private int cleanExpiredVpnInterval;
+    private int expiredVpnDeleteTime;
+
+    private void startCleanExpiredProduct() {
+        cleanExpiredVpnInterval = VpnGlobalConfig.CLEAN_EXPIRED_VPN_INTERVAL.value(Integer.class);
+        expiredVpnDeleteTime = VpnGlobalConfig.EXPIRED_VPN_DELETE_TIME.value(Integer.class);
+
+        if (cleanExpiredVpnThread != null) {
+            cleanExpiredVpnThread.cancel(true);
+        }
+
+        cleanExpiredVpnThread = thdf.submitPeriodicTask(new CleanExpiredVpnThread(), TimeUnit.SECONDS.toSeconds(60));
+        LOGGER.debug(String.format("security group cleanExpiredVpnThread " +
+                "starts[cleanExpiredVpnInterval: %s day]", cleanExpiredVpnInterval));
+    }
+
+    private void restartCleanExpiredProduct() {
+
+        startCleanExpiredProduct();
+
+        VpnGlobalConfig.EXPIRED_VPN_DELETE_TIME.installUpdateExtension((oldConfig, newConfig) -> {
+            LOGGER.debug(String.format("%s change from %s to %s, restart tracker thread",
+                    oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
+            startCleanExpiredProduct();
+        });
+
+        VpnGlobalConfig.CLEAN_EXPIRED_VPN_INTERVAL.installUpdateExtension((oldConfig, newConfig) -> {
+            LOGGER.debug(String.format("%s change from %s to %s, restart tracker thread",
+                    oldConfig.getCanonicalName(), oldConfig.value(), newConfig.value()));
+            startCleanExpiredProduct();
+        });
+    }
+
     @Override
     public boolean start() {
         placeCreateCert();
+        restartCleanExpiredProduct();
         restf.registerSyncHttpCallHandler("billing", OrderCallbackCmd.class,
                 cmd -> {
                     Message message = RESTApiDecoder.loads(cmd.getCallBackData());
