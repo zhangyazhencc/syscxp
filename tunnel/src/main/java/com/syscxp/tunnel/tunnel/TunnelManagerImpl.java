@@ -2980,7 +2980,9 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         InterfaceVO interfaceVO = dbf.findByUuid(vo.getInterfaceUuid(), InterfaceVO.class);
         interfaceVO.setState(InterfaceState.Up);
-        interfaceVO.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),interfaceVO.getProductChargeModel(),interfaceVO.getDuration()));
+        if(interfaceVO.getExpireDate() == null){
+            interfaceVO.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),interfaceVO.getProductChargeModel(),interfaceVO.getDuration()));
+        }
         dbf.updateAndRefresh(interfaceVO);
 
         //付款成功,记录生效订单
