@@ -103,6 +103,7 @@ public class OrderManagerImpl extends AbstractService implements ApiMessageInter
         }
     }
 
+    @Transactional
     private void handle(APICreateBuyEdgeLineOrderMsg msg) {
         Timestamp currentTimestamp = dbf.getCurrentSqlTime();
         AccountBalanceVO abvo = dbf.findByUuid(msg.getAccountUuid(), AccountBalanceVO.class);
