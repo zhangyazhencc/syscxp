@@ -799,6 +799,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
             tunnelBillingBase.saveResourceOrderEffective(orderInventory.getUuid(), vo.getUuid(), vo.getClass().getSimpleName());
 
             vo.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),ProductChargeModel.BY_MONTH,1));
+            vo.setState(EdgeLineState.Opened);
             vo = dbf.updateAndRefresh(vo);
 
             InterfaceVO interfaceVO = dbf.findByUuid(vo.getInterfaceUuid(), InterfaceVO.class);
@@ -2976,6 +2977,7 @@ public class TunnelManagerImpl extends AbstractService implements TunnelManager,
 
         EdgeLineVO vo = dbf.findByUuid(cmd.getPorductUuid(), EdgeLineVO.class);
         vo.setExpireDate(tunnelBillingBase.getExpireDate(dbf.getCurrentSqlTime(),ProductChargeModel.BY_MONTH,1));
+        vo.setState(EdgeLineState.Opened);
         vo = dbf.updateAndRefresh(vo);
 
         InterfaceVO interfaceVO = dbf.findByUuid(vo.getInterfaceUuid(), InterfaceVO.class);
