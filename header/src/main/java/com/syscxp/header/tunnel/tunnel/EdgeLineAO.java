@@ -19,6 +19,9 @@ public class EdgeLineAO {
     private String interfaceUuid;
 
     @Column
+    private String endpointUuid;
+
+    @Column
     private String type;
 
     @Column
@@ -134,5 +137,13 @@ public class EdgeLineAO {
 
     public void setDestinationInfo(String destinationInfo) {
         this.destinationInfo = destinationInfo;
+    }
+
+    public String getEndpointUuid() {
+        return endpointUuid;
+    }
+
+    public void setEndpointUuid(String endpointUuid) {
+        this.endpointUuid = endpointUuid;
     }
 }

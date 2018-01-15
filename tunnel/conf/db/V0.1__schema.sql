@@ -313,6 +313,7 @@ CREATE TABLE  `syscxp_tunnel`.`EdgeLineEO` (
   `uuid` varchar(32) NOT NULL UNIQUE COMMENT 'UUID',
   `accountUuid` VARCHAR(32) NOT NULL COMMENT '分配账户',
   `interfaceUuid` VARCHAR(32) NOT NULL COMMENT '关联物理接口',
+  `endpointUuid` VARCHAR(32) NOT NULL COMMENT '连接点',
   `type` VARCHAR(32) NOT NULL COMMENT '类型',
   `destinationInfo` varchar(255) NOT NULL COMMENT '终点信息',
   `description` varchar(255) DEFAULT NULL COMMENT '描述',
@@ -324,7 +325,7 @@ CREATE TABLE  `syscxp_tunnel`.`EdgeLineEO` (
   `createDate` timestamp,
   PRIMARY KEY  (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-CREATE VIEW `syscxp_tunnel`.`EdgeLineVO` AS SELECT uuid, accountUuid, interfaceUuid, type, destinationInfo, description, state, prices, expireDate, lastOpDate, createDate
+CREATE VIEW `syscxp_tunnel`.`EdgeLineVO` AS SELECT uuid, accountUuid, interfaceUuid, endpointUuid, type, destinationInfo, description, state, prices, expireDate, lastOpDate, createDate
                                              FROM `EdgeLineEO` WHERE deleted IS NULL;
 
 ##云专线
