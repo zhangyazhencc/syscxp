@@ -187,7 +187,7 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
         }
         String sql = "SELECT areaCode,areaName,lineCode,lineName,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  " ;
         String sql_count = "SELECT COUNT(*) as num from (SELECT areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  ";
-        if (!msg.getAreaCode().equalsIgnoreCase("ALL")) {
+        if (!StringUtils.isEmpty(msg.getAreaCode()) && !msg.getAreaCode().equalsIgnoreCase("ALL")) {
             sql += "AND areaCode = :areaCode ";
             sql_count += "AND areaCode = :areaCode ";
         }
@@ -198,8 +198,6 @@ public class ProductPriceUnitManagerImpl extends AbstractService implements Prod
             sql = "SELECT areaCode,areaName,lineCode,lineName,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode,areaName ";
             sql_count = "SELECT COUNT(*) as num FROM (SELECT areaName as areaCode,lineCode,GROUP_CONCAT(CONCAT(CONCAT(configCode,'-'),unitPrice)) AS configMixPrice FROM `ProductPriceUnitVO` WHERE productCategoryUuid = :productCategoryUuid  GROUP BY areaCode) as T";
         }
-        logger.info(sql);
-        logger.info(sql_count);
         Query q = dbf.getEntityManager().createNativeQuery(sql);
         q.setParameter("productCategoryUuid", vo.getUuid());
         if (!msg.getCategory().equals(Category.REGION) && !msg.getCategory().equals(Category.VPN) && !msg.getAreaCode().equalsIgnoreCase("ALL")) {
