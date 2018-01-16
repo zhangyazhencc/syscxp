@@ -226,7 +226,7 @@ public class TunnelBillingBase {
         unit.setProductTypeCode(ProductType.PORT);
         unit.setCategoryCode(Category.SHARE);
         unit.setAreaCode(nodeVO.getCity());
-        unit.setLineCode(endpointVO.getCode());
+        unit.setLineCode(endpointVO.getUuid());
         unit.setConfigCode(getSharePortBandwidthOffering(bandwidthOfferingUuid));
         return unit;
     }
